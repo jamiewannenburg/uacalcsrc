@@ -1,0 +1,21 @@
+[package]
+name = "uacalc-py"
+version = "0.1.0"
+edition = "2021"
+description = "Python bindings for UACalc core library"
+license = "MIT"
+repository = "https://github.com/uacalc/uacalc-rust"
+
+[lib]
+name = "uacalc"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.19", features = ["extension-module"] }
+uacalc-core = { path = "../uacalc-core" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+[build-dependencies]
+pyo3 = { version = "0.19", features = ["extension-module"] }
+

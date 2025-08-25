@@ -1,0 +1,33 @@
+[package]
+name = "uacalc-core"
+version = "0.1.0"
+edition = "2021"
+description = "Core universal algebra library for UACalc"
+license = "MIT"
+repository = "https://github.com/uacalc/uacalc-rust"
+keywords = ["algebra", "mathematics", "universal-algebra"]
+categories = ["science", "mathematics"]
+
+[dependencies]
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+num-traits = { workspace = true }
+num-integer = { workspace = true }
+bitvec = { workspace = true }
+petgraph = { workspace = true }
+rayon = { workspace = true, optional = true }
+
+[features]
+default = []
+parallel = ["rayon"]
+bench = ["criterion"]
+
+[dev-dependencies]
+criterion = { workspace = true }
+
+[[bench]]
+name = "algebra_benchmarks"
+harness = false
+
