@@ -64,8 +64,7 @@ Documentation = "https://uacalc.readthedocs.io/"
 Repository = "https://github.com/uacalc/uacalc-rust"
 "Bug Tracker" = "https://github.com/uacalc/uacalc-rust/issues"
 
-[project.scripts]
-uacalc = "uacalc.cli:main"
+
 
 [tool.maturin]
 features = ["pyo3/extension-module"]

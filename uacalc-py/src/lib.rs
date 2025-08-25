@@ -4,14 +4,16 @@ use uacalc_core::prelude::*;
 use uacalc_core::operation::{TableOperation, FunctionOperation};
 use uacalc_core::partition::finest_partition;
 use uacalc_core::binary_relation::{identity_relation, universal_relation};
+use std::sync::Arc;
 
 /// Python module for UACalc
 #[pymodule]
-fn uacalc(_py: Python, m: &PyModule) -> PyResult<()> {
+fn _core(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyAlgebra>()?;
     m.add_class::<PyOperation>()?;
     m.add_class::<PyPartition>()?;
     m.add_class::<PyBinaryRelation>()?;
+    #[cfg(feature = "conlat")]
     m.add_class::<PyCongruenceLattice>()?;
     m.add_function(wrap_pyfunction!(create_algebra, m)?)?;
     m.add_function(wrap_pyfunction!(create_operation, m)?)?;
@@ -37,8 +39,7 @@ impl PyAlgebra {
     
     #[pyo3(name = "add_operation")]
     fn py_add_operation(&mut self, symbol: String, operation: PyOperation) -> PyResult<()> {
-        let op_box = Box::new(operation.inner);
-        self.inner.add_operation(symbol, op_box)
+        self.inner.add_operation(symbol, Arc::clone(&operation.inner))
             .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))
     }
     
@@ -57,24 +58,23 @@ impl PyAlgebra {
         self.inner.cardinality()
     }
     
-    #[getter]
     fn operations(&self) -> Vec<PyOperation> {
         self.inner.operations()
             .iter()
-            .map(|op| PyOperation { inner: op.as_ref().clone() })
+            .map(|op| PyOperation { inner: Arc::clone(op) })
             .collect()
     }
     
     fn operation(&self, index: usize) -> PyResult<PyOperation> {
-        let op = self.inner.operation(index)
+        let op = self.inner.operation_arc(index)
             .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
-        Ok(PyOperation { inner: op.clone() })
+        Ok(PyOperation { inner: op })
     }
     
     fn operation_by_symbol(&self, symbol: &str) -> PyResult<PyOperation> {
-        let op = self.inner.operation_by_symbol(symbol)
+        let op = self.inner.operation_arc_by_symbol(symbol)
             .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
-        Ok(PyOperation { inner: op.clone() })
+        Ok(PyOperation { inner: op })
     }
     
     fn is_finite(&self) -> bool {
@@ -110,12 +110,11 @@ impl PyAlgebra {
 /// Python wrapper for Operation
 #[pyclass]
 pub struct PyOperation {
-    inner: Box<dyn Operation>,
+    inner: Arc<dyn Operation>,
 }
 
 #[pymethods]
 impl PyOperation {
-    #[getter]
     fn arity(&self) -> usize {
         self.inner.arity()
     }
@@ -193,13 +192,13 @@ impl PyPartition {
     fn join(&self, other: &PyPartition) -> PyResult<PyPartition> {
         let result = self.inner.join(&other.inner)
             .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
-        Ok(PyPartition { inner: result.downcast::<BasicPartition>().unwrap() })
+        Ok(PyPartition { inner: result })
     }
     
     fn meet(&self, other: &PyPartition) -> PyResult<PyPartition> {
         let result = self.inner.meet(&other.inner)
             .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
-        Ok(PyPartition { inner: result.downcast::<BasicPartition>().unwrap() })
+        Ok(PyPartition { inner: result })
     }
     
     fn is_finer_than(&self, other: &PyPartition) -> PyResult<bool> {
@@ -253,27 +252,27 @@ impl PyBinaryRelation {
     }
     
     fn reflexive_closure(&self) -> PyResult<PyBinaryRelation> {
-        let closure = self.inner.reflexive_closure()
+        let closure = self.inner.reflexive_closure_owned()
             .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
-        Ok(PyBinaryRelation { inner: closure.downcast::<BasicBinaryRelation>().unwrap() })
+        Ok(PyBinaryRelation { inner: closure })
     }
     
     fn symmetric_closure(&self) -> PyResult<PyBinaryRelation> {
-        let closure = self.inner.symmetric_closure()
+        let closure = self.inner.symmetric_closure_owned()
             .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
-        Ok(PyBinaryRelation { inner: closure.downcast::<BasicBinaryRelation>().unwrap() })
+        Ok(PyBinaryRelation { inner: closure })
     }
     
     fn transitive_closure(&self) -> PyResult<PyBinaryRelation> {
-        let closure = self.inner.transitive_closure()
+        let closure = self.inner.transitive_closure_owned()
             .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
-        Ok(PyBinaryRelation { inner: closure.downcast::<BasicBinaryRelation>().unwrap() })
+        Ok(PyBinaryRelation { inner: closure })
     }
     
     fn equivalence_closure(&self) -> PyResult<PyBinaryRelation> {
-        let closure = self.inner.equivalence_closure()
+        let closure = self.inner.equivalence_closure_owned()
             .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
-        Ok(PyBinaryRelation { inner: closure.downcast::<BasicBinaryRelation>().unwrap() })
+        Ok(PyBinaryRelation { inner: closure })
     }
     
     fn is_reflexive(&self) -> PyResult<bool> {
@@ -297,74 +296,6 @@ impl PyBinaryRelation {
     }
 }
 
-/// Python wrapper for BasicCongruenceLattice
-#[pyclass]
-pub struct PyCongruenceLattice {
-    inner: BasicCongruenceLattice,
-}
-
-#[pymethods]
-impl PyCongruenceLattice {
-    #[new]
-    fn new(algebra: PyAlgebra) -> PyResult<Self> {
-        let algebra_box = Box::new(algebra.inner);
-        let lattice = BasicCongruenceLattice::new(algebra_box)
-            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
-        Ok(Self { inner: lattice })
-    }
-    
-    #[getter]
-    fn num_congruences(&self) -> usize {
-        self.inner.num_congruences()
-    }
-    
-    fn congruences(&self) -> Vec<PyPartition> {
-        self.inner.congruences()
-            .iter()
-            .map(|cong| PyPartition { inner: cong.downcast::<BasicPartition>().unwrap() })
-            .collect()
-    }
-    
-    fn bottom(&self) -> PyPartition {
-        PyPartition { inner: self.inner.bottom().downcast::<BasicPartition>().unwrap() }
-    }
-    
-    fn top(&self) -> PyPartition {
-        PyPartition { inner: self.inner.top().downcast::<BasicPartition>().unwrap() }
-    }
-    
-    fn is_congruence(&self, partition: &PyPartition) -> PyResult<bool> {
-        self.inner.is_congruence(&partition.inner)
-            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))
-    }
-    
-    fn join(&self, a: &PyPartition, b: &PyPartition) -> PyResult<PyPartition> {
-        let result = self.inner.join(&a.inner, &b.inner)
-            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
-        Ok(PyPartition { inner: result.downcast::<BasicPartition>().unwrap() })
-    }
-    
-    fn meet(&self, a: &PyPartition, b: &PyPartition) -> PyResult<PyPartition> {
-        let result = self.inner.meet(&a.inner, &b.inner)
-            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
-        Ok(PyPartition { inner: result.downcast::<BasicPartition>().unwrap() })
-    }
-    
-    fn atoms(&self) -> Vec<PyPartition> {
-        self.inner.atoms()
-            .iter()
-            .map(|atom| PyPartition { inner: atom.downcast::<BasicPartition>().unwrap() })
-            .collect()
-    }
-    
-    fn coatoms(&self) -> Vec<PyPartition> {
-        self.inner.coatoms()
-            .iter()
-            .map(|coatom| PyPartition { inner: coatom.downcast::<BasicPartition>().unwrap() })
-            .collect()
-    }
-}
-
 /// Helper function to create an algebra
 #[pyfunction]
 fn create_algebra(name: String, universe: Vec<usize>) -> PyResult<PyAlgebra> {
@@ -375,9 +306,54 @@ fn create_algebra(name: String, universe: Vec<usize>) -> PyResult<PyAlgebra> {
 #[pyfunction]
 fn create_operation(name: String, arity: usize, table: Vec<Vec<usize>>) -> PyResult<PyOperation> {
     let symbol = uacalc_core::operation::OperationSymbol::new(name, arity);
-    let operation = TableOperation::new(symbol, table)
+    
+    // Normalize table format to [args..., result]
+    let normalized_table = if arity == 0 {
+        // Constant operation: expect [[value]]
+        if table.len() == 1 && table[0].len() == 1 {
+            table
+        } else {
+            return Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+                "Constant operation should have table [[value]]".to_string()
+            ));
+        }
+    } else if arity == 1 {
+        // Unary operation: handle both [value] and [input, value] formats
+        if table.len() > 0 && table[0].len() == 1 {
+            // Transform [value] format to [input, value]
+            let mut normalized = Vec::with_capacity(table.len());
+            for (i, row) in table.iter().enumerate() {
+                normalized.push(vec![i, row[0]]);
+            }
+            normalized
+        } else {
+            // Already in [input, value] format
+            table
+        }
+    } else if arity == 2 {
+        // Binary operation: handle NxN matrix format
+        let n = table.len();
+        if n > 0 && table[0].len() == n {
+            // Transform NxN matrix to [i, j, result] format
+            let mut normalized = Vec::with_capacity(n * n);
+            for i in 0..n {
+                for j in 0..n {
+                    normalized.push(vec![i, j, table[i][j]]);
+                }
+            }
+            normalized
+        } else {
+            // Already in [i, j, result] format
+            table
+        }
+    } else {
+        // Higher arity: expect [args..., result] format
+        table
+    };
+    
+    let operation = TableOperation::new(symbol, normalized_table)
         .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
-    Ok(PyOperation { inner: Box::new(operation) })
+    Ok(PyOperation { inner: Arc::new(operation) })
 }
 
 /// Helper function to create a partition

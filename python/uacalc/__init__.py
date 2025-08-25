@@ -16,7 +16,6 @@ try:
         PyOperation as Operation,
         PyPartition as Partition,
         PyBinaryRelation as BinaryRelation,
-        PyCongruenceLattice as CongruenceLattice,
         create_algebra,
         create_operation,
         create_partition,
@@ -39,7 +38,6 @@ __all__ = [
     "Operation", 
     "Partition",
     "BinaryRelation",
-    "CongruenceLattice",
     
     # Factory functions
     "create_algebra",

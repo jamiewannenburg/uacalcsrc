@@ -176,7 +176,7 @@ def _generate_ua_content(algebra: Algebra) -> str:
     for i, operation in enumerate(algebra.operations()):
         op_elem = ET.SubElement(root, 'op')
         op_elem.set('name', operation.symbol)
-        op_elem.set('arity', str(operation.arity))
+        op_elem.set('arity', str(operation.arity()))
         
         # Generate operation table
         table_elem = ET.SubElement(op_elem, 'table')
@@ -184,7 +184,9 @@ def _generate_ua_content(algebra: Algebra) -> str:
         table_elem.text = table_text
     
     # Convert to string with proper formatting
-    ET.indent(root, space="  ")
+    # Guard for Python 3.8 compatibility
+    if hasattr(ET, 'indent'):
+        ET.indent(root, space="  ")
     return ET.tostring(root, encoding='unicode')
 
 def _generate_table_text(operation: Operation, universe: List[int]) -> str:
@@ -192,7 +194,7 @@ def _generate_table_text(operation: Operation, universe: List[int]) -> str:
     lines = []
     
     # Generate all possible input combinations
-    for args in _generate_combinations(universe, operation.arity):
+    for args in _generate_combinations(universe, operation.arity()):
         result = operation.value(args)
         line = ' '.join(map(str, args)) + ' ' + str(result)
         lines.append(line)

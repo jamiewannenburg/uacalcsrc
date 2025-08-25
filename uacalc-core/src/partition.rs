@@ -1,9 +1,11 @@
 use crate::{UACalcError, UACalcResult};
+use crate::utils::validate_partition_elements;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::cell::RefCell;
 
 /// Trait for partition data structures
-pub trait Partition: Clone + Send + Sync {
+pub trait Partition: Clone {
     /// Get the number of elements in the partition
     fn size(&self) -> usize;
     
@@ -22,11 +24,17 @@ pub trait Partition: Clone + Send + Sync {
     /// Get all blocks of the partition
     fn blocks(&self) -> Vec<Vec<usize>>;
     
+    /// Get all block representatives
+    fn representatives(&self) -> Vec<usize>;
+    
+    /// Get the block index for an element
+    fn block_index(&self, element: usize) -> UACalcResult<usize>;
+    
     /// Join two partitions
-    fn join(&self, other: &dyn Partition) -> UACalcResult<Box<dyn Partition>>;
+    fn join(&self, other: &dyn Partition) -> UACalcResult<BasicPartition>;
     
     /// Meet two partitions
-    fn meet(&self, other: &dyn Partition) -> UACalcResult<Box<dyn Partition>>;
+    fn meet(&self, other: &dyn Partition) -> UACalcResult<BasicPartition>;
     
     /// Check if this partition is finer than another
     fn is_finer_than(&self, other: &dyn Partition) -> UACalcResult<bool>;
@@ -35,15 +43,30 @@ pub trait Partition: Clone + Send + Sync {
     fn is_coarser_than(&self, other: &dyn Partition) -> UACalcResult<bool> {
         other.is_finer_than(self)
     }
+    
+    /// Check if this is the finest partition (all elements in separate blocks)
+    fn is_zero(&self) -> bool;
+    
+    /// Check if this is the coarsest partition (all elements in one block)
+    fn is_one(&self) -> bool;
+    
+    /// Check if all blocks have the same size
+    fn is_uniform(&self) -> bool;
+    
+    /// Convert to representative array (mirrors Java's toArray)
+    fn to_array(&self) -> Vec<usize>;
+    
+    /// Create from representative array
+    fn from_array(array: &[usize]) -> UACalcResult<BasicPartition>;
 }
 
-/// Basic partition implementation using union-find
+/// Basic partition implementation using union-find with interior mutability
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BasicPartition {
     size: usize,
-    parent: Vec<usize>,
-    rank: Vec<usize>,
-    block_cache: Option<Vec<Vec<usize>>>,
+    parent: RefCell<Vec<usize>>,
+    rank: RefCell<Vec<usize>>,
+    num_blocks_cache: RefCell<Option<usize>>,
 }
 
 impl BasicPartition {
@@ -59,9 +82,9 @@ impl BasicPartition {
         
         Self {
             size,
-            parent,
-            rank,
-            block_cache: None,
+            parent: RefCell::new(parent),
+            rank: RefCell::new(rank),
+            num_blocks_cache: RefCell::new(None),
         }
     }
     
@@ -74,77 +97,186 @@ impl BasicPartition {
                 continue;
             }
             
+            // Validate all elements in the block
+            validate_partition_elements(&block, size)?;
+            
             let representative = block[0];
             for &element in &block[1..] {
-                partition.union(representative, element)?;
+                partition.union_elements(representative, element)?;
             }
         }
         
         Ok(partition)
     }
     
+    /// Create a partition from a representative array
+    pub fn from_array(array: &[usize]) -> UACalcResult<Self> {
+        let size = array.len();
+        let mut partition = Self::new(size);
+        
+        for (element, &representative) in array.iter().enumerate() {
+            if representative >= size {
+                return Err(UACalcError::IndexOutOfBounds {
+                    index: representative,
+                    size,
+                });
+            }
+            partition.union_elements(representative, element)?;
+        }
+        
+        Ok(partition)
+    }
+    
     /// Find the representative of an element (with path compression)
-    fn find(&mut self, mut x: usize) -> UACalcResult<usize> {
-        if x >= self.size {
-            return Err(UACalcError::IndexOutOfBounds {
-                index: x,
-                size: self.size,
-            });
+    fn find_mut(&self, x: usize) -> UACalcResult<usize> {
+        if x >= self.size { return Err(UACalcError::IndexOutOfBounds { index: x, size: self.size }); }
+        let mut parent = self.parent.borrow_mut();
+        let mut v = x;
+        // Find root
+        while parent[v] != v {
+            v = parent[v];
         }
-        
-        if self.parent[x] != x {
-            self.parent[x] = self.find(self.parent[x])?;
+        let root = v;
+        // Path compression
+        v = x;
+        while parent[v] != v {
+            let p = parent[v];
+            parent[v] = root;
+            v = p;
         }
-        
-        Ok(self.parent[x])
+        Ok(root)
     }
     
     /// Union two elements (with union by rank)
-    pub fn union(&mut self, x: usize, y: usize) -> UACalcResult<()> {
-        let root_x = self.find(x)?;
-        let root_y = self.find(y)?;
+    pub fn union_elements(&self, x: usize, y: usize) -> UACalcResult<bool> {
+        let root_x = self.find_mut(x)?;
+        let root_y = self.find_mut(y)?;
         
         if root_x == root_y {
-            return Ok(());
+            return Ok(false); // No union occurred
         }
         
-        if self.rank[root_x] < self.rank[root_y] {
-            self.parent[root_x] = root_y;
-        } else if self.rank[root_x] > self.rank[root_y] {
-            self.parent[root_y] = root_x;
+        let mut parent = self.parent.borrow_mut();
+        let mut rank = self.rank.borrow_mut();
+        
+        if rank[root_x] < rank[root_y] {
+            parent[root_x] = root_y;
+        } else if rank[root_x] > rank[root_y] {
+            parent[root_y] = root_x;
         } else {
-            self.parent[root_y] = root_x;
-            self.rank[root_x] += 1;
+            parent[root_y] = root_x;
+            rank[root_x] += 1;
         }
         
         // Invalidate cache
-        self.block_cache = None;
+        *self.num_blocks_cache.borrow_mut() = None;
         
+        Ok(true) // Union occurred
+    }
+    
+    /// Join two blocks by their representatives
+    pub fn join_blocks(&self, repr1: usize, repr2: usize) -> UACalcResult<()> {
+        self.union_elements(repr1, repr2)?;
         Ok(())
     }
     
-    /// Get the current blocks (with caching)
-    fn get_blocks(&mut self) -> UACalcResult<Vec<Vec<usize>>> {
-        if let Some(ref blocks) = self.block_cache {
-            return Ok(blocks.clone());
-        }
-        
+    /// Get the current blocks efficiently
+    fn get_blocks(&self) -> UACalcResult<Vec<Vec<usize>>> {
         let mut block_map: HashMap<usize, Vec<usize>> = HashMap::new();
         
         for element in 0..self.size {
-            let representative = self.find(element)?;
+            let representative = self.find_mut(element)?;
             block_map.entry(representative).or_insert_with(Vec::new).push(element);
         }
         
-        let blocks: Vec<Vec<usize>> = block_map.into_values().collect();
-        self.block_cache = Some(blocks.clone());
-        
+        let mut blocks: Vec<Vec<usize>> = block_map.into_values().collect();
+        blocks.sort_by_key(|block| block[0]); // Sort by representative
         Ok(blocks)
     }
     
-    /// Get the number of blocks (with caching)
-    fn get_num_blocks(&mut self) -> UACalcResult<usize> {
-        Ok(self.get_blocks()?.len())
+    /// Get the number of blocks efficiently
+    fn get_num_blocks(&self) -> UACalcResult<usize> {
+        // Check cache first
+        if let Some(num_blocks) = *self.num_blocks_cache.borrow() {
+            return Ok(num_blocks);
+        }
+        
+        let num_blocks = self.get_blocks()?.len();
+        *self.num_blocks_cache.borrow_mut() = Some(num_blocks);
+        Ok(num_blocks)
+    }
+    
+    /// Get all representatives efficiently
+    fn get_representatives(&self) -> UACalcResult<Vec<usize>> {
+        let mut representatives = Vec::new();
+        let mut seen = std::collections::HashSet::new();
+        
+        for element in 0..self.size {
+            let representative = self.find_mut(element)?;
+            if !seen.contains(&representative) {
+                seen.insert(representative);
+                representatives.push(representative);
+            }
+        }
+        
+        representatives.sort();
+        Ok(representatives)
+    }
+    
+    /// Get block index for an element
+    fn get_block_index(&self, element: usize) -> UACalcResult<usize> {
+        let representative = self.find_mut(element)?;
+        let representatives = self.get_representatives()?;
+        
+        representatives.binary_search(&representative)
+            .map_err(|_| UACalcError::InvalidOperation {
+                message: "Representative not found in sorted list".to_string(),
+            })
+    }
+    
+    /// Check if this is the finest partition
+    fn is_zero_partition(&self) -> bool {
+        for element in 0..self.size {
+            if self.find_mut(element).unwrap_or(element) != element {
+                return false;
+            }
+        }
+        true
+    }
+    
+    /// Check if this is the coarsest partition
+    fn is_one_partition(&self) -> bool {
+        if self.size <= 1 {
+            return true;
+        }
+        
+        let first_representative = self.find_mut(0).unwrap_or(0);
+        for element in 1..self.size {
+            if self.find_mut(element).unwrap_or(element) != first_representative {
+                return false;
+            }
+        }
+        true
+    }
+    
+    /// Check if all blocks have the same size
+    fn is_uniform_partition(&self) -> bool {
+        let blocks = self.get_blocks().unwrap_or_default();
+        if blocks.len() <= 1 {
+            return true;
+        }
+        
+        let first_size = blocks[0].len();
+        blocks.iter().all(|block| block.len() == first_size)
+    }
+    
+    /// Convert to representative array
+    fn to_array_partition(&self) -> Vec<usize> {
+        let mut array = Vec::with_capacity(self.size);
+        for element in 0..self.size {
+            array.push(self.find_mut(element).unwrap_or(element));
+        }
+        array
     }
 }
 
@@ -154,18 +286,15 @@ impl Partition for BasicPartition {
     }
     
     fn num_blocks(&self) -> usize {
-        // This is a bit awkward due to the need for mutable access
-        // In practice, you might want to cache this or use a different approach
-        let mut this = self.clone();
-        this.get_num_blocks().unwrap_or(0)
+        self.get_num_blocks().unwrap_or(0)
     }
     
     fn block(&self, element: usize) -> UACalcResult<Vec<usize>> {
-        let mut this = self.clone();
-        let blocks = this.get_blocks()?;
+        let representative = self.find_mut(element)?;
+        let blocks = self.get_blocks()?;
         
         for block in blocks {
-            if block.contains(&element) {
+            if block.contains(&representative) {
                 return Ok(block);
             }
         }
@@ -177,23 +306,28 @@ impl Partition for BasicPartition {
     }
     
     fn representative(&self, element: usize) -> UACalcResult<usize> {
-        let mut this = self.clone();
-        this.find(element)
+        self.find_mut(element)
     }
     
     fn same_block(&self, a: usize, b: usize) -> UACalcResult<bool> {
-        let mut this = self.clone();
-        let rep_a = this.find(a)?;
-        let rep_b = this.find(b)?;
+        let rep_a = self.find_mut(a)?;
+        let rep_b = self.find_mut(b)?;
         Ok(rep_a == rep_b)
     }
     
     fn blocks(&self) -> Vec<Vec<usize>> {
-        let mut this = self.clone();
-        this.get_blocks().unwrap_or_default()
+        self.get_blocks().unwrap_or_default()
     }
     
-    fn join(&self, other: &dyn Partition) -> UACalcResult<Box<dyn Partition>> {
+    fn representatives(&self) -> Vec<usize> {
+        self.get_representatives().unwrap_or_default()
+    }
+    
+    fn block_index(&self, element: usize) -> UACalcResult<usize> {
+        self.get_block_index(element)
+    }
+    
+    fn join(&self, other: &dyn Partition) -> UACalcResult<BasicPartition> {
         if self.size() != other.size() {
             return Err(UACalcError::InvalidOperation {
                 message: "Cannot join partitions of different sizes".to_string(),
@@ -208,15 +342,15 @@ impl Partition for BasicPartition {
             if block.len() > 1 {
                 let representative = block[0];
                 for &element in &block[1..] {
-                    result.union(representative, element)?;
+                    result.union_elements(representative, element)?;
                 }
             }
         }
         
-        Ok(Box::new(result))
+        Ok(result)
     }
     
-    fn meet(&self, other: &dyn Partition) -> UACalcResult<Box<dyn Partition>> {
+    fn meet(&self, other: &dyn Partition) -> UACalcResult<BasicPartition> {
         if self.size() != other.size() {
             return Err(UACalcError::InvalidOperation {
                 message: "Cannot meet partitions of different sizes".to_string(),
@@ -225,7 +359,6 @@ impl Partition for BasicPartition {
         
         // The meet is more complex - we need to find the finest partition
         // that is coarser than both self and other
-        // This is a simplified implementation
         let mut result = BasicPartition::new(self.size());
         
         // For each element, find the intersection of its blocks in both partitions
@@ -243,12 +376,12 @@ impl Partition for BasicPartition {
             if intersection.len() > 1 {
                 let representative = intersection[0];
                 for &x in &intersection[1..] {
-                    result.union(representative, x)?;
+                    result.union_elements(representative, x)?;
                 }
             }
         }
         
-        Ok(Box::new(result))
+        Ok(result)
     }
     
     fn is_finer_than(&self, other: &dyn Partition) -> UACalcResult<bool> {
@@ -275,6 +408,26 @@ impl Partition for BasicPartition {
         
         Ok(true)
     }
+    
+    fn is_zero(&self) -> bool {
+        self.is_zero_partition()
+    }
+    
+    fn is_one(&self) -> bool {
+        self.is_one_partition()
+    }
+    
+    fn is_uniform(&self) -> bool {
+        self.is_uniform_partition()
+    }
+    
+    fn to_array(&self) -> Vec<usize> {
+        self.to_array_partition()
+    }
+    
+    fn from_array(array: &[usize]) -> UACalcResult<BasicPartition> {
+        Self::from_array(array)
+    }
 }
 
 /// Create the finest partition (all elements in separate blocks)
@@ -287,7 +440,7 @@ pub fn coarsest_partition(size: usize) -> UACalcResult<BasicPartition> {
     let mut partition = BasicPartition::new(size);
     if size > 1 {
         for i in 1..size {
-            partition.union(0, i)?;
+            partition.union_elements(0, i)?;
         }
     }
     Ok(partition)

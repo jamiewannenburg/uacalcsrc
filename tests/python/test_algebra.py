@@ -13,7 +13,7 @@ from pathlib import Path
 try:
     import uacalc
     from uacalc import (
-        Algebra, Operation, Partition, BinaryRelation, CongruenceLattice,
+        Algebra, Operation, Partition, BinaryRelation,
         create_algebra, create_operation, create_partition, create_binary_relation,
         load_algebra, save_algebra
     )

@@ -15,6 +15,9 @@ pub enum UACalcError {
     #[error("Algebra not found: {name}")]
     AlgebraNotFound { name: String },
     
+    #[error("Operation not found: {symbol}")]
+    OperationNotFound { symbol: String },
+    
     #[error("IO error: {0}")]
     Io(#[from] std::io::Error),
     
