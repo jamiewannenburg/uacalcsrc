@@ -32,6 +32,9 @@ pub enum UACalcError {
 
     #[error("Arithmetic overflow: {operation}")]
     ArithmeticOverflow { operation: String },
+
+    #[error("Operation cancelled: {message}")]
+    Cancelled { message: String },
 }
 
 /// Result type for UACalc operations

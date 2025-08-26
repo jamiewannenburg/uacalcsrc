@@ -14,6 +14,18 @@ impl OperationSymbol {
     pub fn new(name: String, arity: usize) -> Self {
         Self { name, arity }
     }
+
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn arity(&self) -> usize {
+        self.arity
+    }
+
+    pub fn set_arity(&mut self, arity: usize) {
+        self.arity = arity;
+    }
 }
 
 /// Type of operation
@@ -98,6 +110,11 @@ impl FlatOperationTable {
         self.set(index, value)
     }
 
+    /// Get the value at the given arguments (alias for get_value)
+    pub fn value_at(&self, args: &[usize]) -> UACalcResult<usize> {
+        self.get_value(args)
+    }
+
     /// Get the arity of the operation
     pub fn arity(&self) -> usize {
         self.arity
@@ -130,7 +147,7 @@ impl FlatOperationTable {
 }
 
 /// Trait for operations in universal algebras
-pub trait Operation: fmt::Debug + Send + Sync {
+pub trait Operation: fmt::Debug + Send + Sync + std::any::Any {
     /// Get the arity of the operation
     fn arity(&self) -> usize;
 
@@ -549,7 +566,7 @@ where
 
 impl<F> Operation for FunctionOperation<F>
 where
-    F: Fn(&[usize]) -> UACalcResult<usize> + Send + Sync + std::fmt::Debug,
+    F: Fn(&[usize]) -> UACalcResult<usize> + Send + Sync + std::fmt::Debug + 'static,
 {
     fn arity(&self) -> usize {
         self.symbol.arity

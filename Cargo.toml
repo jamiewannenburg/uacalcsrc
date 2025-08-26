@@ -12,6 +12,9 @@ bitvec = "1.0"
 petgraph = "0.6"
 rayon = "1.7"
 criterion = "0.5"
+smallvec = "1.10"
+ahash = "0.8"
+arrayvec = "0.7"
 
 [profile.release]
 opt-level = 3

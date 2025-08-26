@@ -10,6 +10,10 @@ pub mod conlat;
 pub mod error;
 pub mod operation;
 pub mod partition;
+#[cfg(feature = "taylor")]
+pub mod taylor;
+#[cfg(feature = "term-eval")]
+pub mod term;
 pub mod utils;
 
 pub use algebra::{Algebra, BasicAlgebra, SmallAlgebra};
@@ -31,6 +35,17 @@ pub use utils::{
     PERFORMANCE_THRESHOLD,
 };
 
+#[cfg(feature = "conlat")]
+pub use conlat::{
+    cg, find_join_irreducibles, principal_congruence, BasicCongruenceLattice, CongruenceLattice,
+    CongruenceLatticeBuilder,
+};
+
+#[cfg(feature = "taylor")]
+pub use taylor::{IntArray, Taylor, TaylorSpec};
+#[cfg(feature = "term-eval")]
+pub use term::{eval_term, eval_term_int, EvaluationContext, Term, TermArena};
+
 /// Re-export commonly used types
 pub mod prelude {
     pub use crate::{
@@ -51,7 +66,16 @@ pub mod prelude {
     };
 
     #[cfg(feature = "conlat")]
-    pub use crate::{CongruenceLattice, CongruenceLatticeBuilder};
+    pub use crate::{
+        cg, find_join_irreducibles, principal_congruence, BasicCongruenceLattice,
+        CongruenceLattice, CongruenceLatticeBuilder,
+    };
+
+    #[cfg(feature = "term-eval")]
+    pub use crate::{eval_term, eval_term_int, EvaluationContext, Term, TermArena};
+
+    #[cfg(feature = "taylor")]
+    pub use crate::{markovic_mckenzie_term, siggers_term, IntArray, Taylor, TaylorSpec};
 }
 
 /// Common type aliases for better ergonomics
@@ -59,3 +83,7 @@ pub type AlgebraResult<T> = Result<T, UACalcError>;
 pub type OperationTable = FlatOperationTable;
 pub type PartitionResult<T> = Result<T, UACalcError>;
 pub type RelationResult<T> = Result<T, UACalcError>;
+#[cfg(feature = "term-eval")]
+pub type TermResult<T> = Result<T, UACalcError>;
+#[cfg(feature = "taylor")]
+pub type TaylorResult<T> = Result<T, UACalcError>;

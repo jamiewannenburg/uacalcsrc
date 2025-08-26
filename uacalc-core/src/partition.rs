@@ -1,11 +1,12 @@
 use crate::utils::validate_partition_elements;
 use crate::{UACalcError, UACalcResult};
 use serde::{Deserialize, Serialize};
-use std::cell::RefCell;
 use std::collections::HashMap;
+use std::sync::RwLock;
+use std::hash::{Hash, Hasher};
 
 /// Trait for partition data structures
-pub trait Partition {
+pub trait Partition: Send + Sync + std::any::Any {
     /// Get the number of elements in the partition
     fn size(&self) -> usize;
 
@@ -75,12 +76,11 @@ pub trait Partition {
 }
 
 /// Basic partition implementation using union-find with interior mutability
-#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BasicPartition {
     size: usize,
-    parent: RefCell<Vec<usize>>,
-    rank: RefCell<Vec<usize>>,
-    num_blocks_cache: RefCell<Option<usize>>,
+    parent: RwLock<Vec<usize>>,
+    rank: RwLock<Vec<usize>>,
+    num_blocks_cache: RwLock<Option<usize>>,
 }
 
 impl BasicPartition {
@@ -96,9 +96,9 @@ impl BasicPartition {
 
         Self {
             size,
-            parent: RefCell::new(parent),
-            rank: RefCell::new(rank),
-            num_blocks_cache: RefCell::new(None),
+            parent: RwLock::new(parent),
+            rank: RwLock::new(rank),
+            num_blocks_cache: RwLock::new(None),
         }
     }
 
@@ -160,7 +160,7 @@ impl BasicPartition {
                 size: self.size,
             });
         }
-        let mut parent = self.parent.borrow_mut();
+        let mut parent = self.parent.write().unwrap();
         let mut v = x;
         // Find root
         while parent[v] != v {
@@ -186,8 +186,8 @@ impl BasicPartition {
             return Ok(false); // No union occurred
         }
 
-        let mut parent = self.parent.borrow_mut();
-        let mut rank = self.rank.borrow_mut();
+        let mut parent = self.parent.write().unwrap();
+        let mut rank = self.rank.write().unwrap();
 
         if rank[root_x] < rank[root_y] {
             parent[root_x] = root_y;
@@ -199,9 +199,15 @@ impl BasicPartition {
         }
 
         // Invalidate cache
-        *self.num_blocks_cache.borrow_mut() = None;
+        *self.num_blocks_cache.write().unwrap() = None;
 
         Ok(true) // Union occurred
+    }
+
+    /// Union two elements (alias for union_elements)
+    pub fn union(&mut self, x: usize, y: usize) -> UACalcResult<()> {
+        self.union_elements(x, y)?;
+        Ok(())
     }
 
     /// Join two blocks by their representatives
@@ -230,12 +236,12 @@ impl BasicPartition {
     /// Get the number of blocks efficiently
     fn get_num_blocks(&self) -> UACalcResult<usize> {
         // Check cache first
-        if let Some(num_blocks) = *self.num_blocks_cache.borrow() {
+        if let Some(num_blocks) = *self.num_blocks_cache.read().unwrap() {
             return Ok(num_blocks);
         }
 
         let num_blocks = self.get_blocks()?.len();
-        *self.num_blocks_cache.borrow_mut() = Some(num_blocks);
+        *self.num_blocks_cache.write().unwrap() = Some(num_blocks);
         Ok(num_blocks)
     }
 
@@ -464,6 +470,16 @@ impl Partition for BasicPartition {
     }
 }
 
+impl Hash for BasicPartition {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        // Hash based on the parent vector which represents the partition structure
+        let parent = self.parent.read().unwrap();
+        parent.hash(state);
+    }
+}
+
+
+
 /// Create the finest partition (all elements in separate blocks)
 pub fn finest_partition(size: usize) -> BasicPartition {
     BasicPartition::new(size)
@@ -479,3 +495,45 @@ pub fn coarsest_partition(size: usize) -> UACalcResult<BasicPartition> {
     }
     Ok(partition)
 }
+
+impl std::fmt::Debug for BasicPartition {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("BasicPartition")
+            .field("size", &self.size)
+            .field("parent", &"<RwLock<Vec<usize>>>")
+            .field("rank", &"<RwLock<Vec<usize>>>")
+            .field("num_blocks_cache", &"<RwLock<Option<usize>>>")
+            .finish()
+    }
+}
+
+impl Clone for BasicPartition {
+    fn clone(&self) -> Self {
+        let parent = self.parent.read().unwrap().clone();
+        let rank = self.rank.read().unwrap().clone();
+        let num_blocks_cache = self.num_blocks_cache.read().unwrap().clone();
+
+        Self {
+            size: self.size,
+            parent: RwLock::new(parent),
+            rank: RwLock::new(rank),
+            num_blocks_cache: RwLock::new(num_blocks_cache),
+        }
+    }
+}
+
+impl PartialEq for BasicPartition {
+    fn eq(&self, other: &Self) -> bool {
+        if self.size != other.size {
+            return false;
+        }
+
+        let self_parent = self.parent.read().unwrap();
+        let other_parent = other.parent.read().unwrap();
+
+        // Compare the parent arrays
+        *self_parent == *other_parent
+    }
+}
+
+impl Eq for BasicPartition {}

@@ -18,11 +18,16 @@ num-integer = { workspace = true }
 bitvec = { workspace = true, features = ["alloc", "serde"] }
 petgraph = { workspace = true }
 rayon = { workspace = true, optional = true }
+smallvec = { workspace = true }
+ahash = { workspace = true }
+arrayvec = { workspace = true }
 
 [features]
-default = []
+default = ["conlat", "term-eval"]
 parallel = ["rayon"]
 conlat = []
+term-eval = []
+taylor = []
 
 [dev-dependencies]
 criterion = { workspace = true }
