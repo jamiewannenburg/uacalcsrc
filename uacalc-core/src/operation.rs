@@ -85,6 +85,12 @@ impl FlatOperationTable {
     /// Set the value for given arguments using Horner encoding
     pub fn set_value(&mut self, args: &[usize], value: usize) -> UACalcResult<()> {
         validate_operation_args(args, self.arity, self.set_size)?;
+        if value >= self.set_size {
+            return Err(UACalcError::IndexOutOfBounds {
+                index: value,
+                size: self.set_size,
+            });
+        }
         let index =
             horner_encode(args, self.set_size).ok_or_else(|| UACalcError::InvalidOperation {
                 message: "Failed to encode arguments".to_string(),
@@ -176,12 +182,14 @@ pub trait Operation: fmt::Debug + Send + Sync {
 
     /// Check if the operation is idempotent on the given set size
     fn is_idempotent_on_set(&self, set_size: usize) -> UACalcResult<bool> {
-        if self.arity() != 1 {
-            return Ok(false);
+        let k = self.arity();
+        if k == 0 {
+            return Ok(true); // Conventionally true for constants
         }
 
-        for element in 0..set_size {
-            if self.int_value_at(&[element])? != element {
+        for a in 0..set_size {
+            let args = vec![a; k];
+            if self.int_value_at(&args)? != a {
                 return Ok(false);
             }
         }
@@ -276,6 +284,15 @@ impl TableOperation {
             }
         }
 
+        // Compute expected table size and validate completeness
+        let expected_rows = horner_table_size(symbol.arity, set_size).ok_or_else(|| {
+            UACalcError::InvalidOperation {
+                message: "Table size would overflow".to_string(),
+            }
+        })?;
+
+        let mut visited = vec![false; expected_rows];
+
         let mut operation = Self {
             symbol,
             table: None,
@@ -285,13 +302,54 @@ impl TableOperation {
         // Build the flat table from the row-based table
         operation.make_table(set_size)?;
 
-        // Populate the flat table
+        // Populate the flat table and track visited entries
         if let Some(ref mut flat_table) = operation.table {
             for row in table {
                 let args = &row[..row.len() - 1];
                 let result = row[row.len() - 1];
+
+                // Validate arguments and result
+                for &arg in args {
+                    if arg >= set_size {
+                        return Err(UACalcError::IndexOutOfBounds {
+                            index: arg,
+                            size: set_size,
+                        });
+                    }
+                }
+                if result >= set_size {
+                    return Err(UACalcError::IndexOutOfBounds {
+                        index: result,
+                        size: set_size,
+                    });
+                }
+
+                // Encode arguments to index and mark as visited
+                let index =
+                    horner_encode(args, set_size).ok_or_else(|| UACalcError::InvalidOperation {
+                        message: "Failed to encode arguments".to_string(),
+                    })?;
+
+                if visited[index] {
+                    return Err(UACalcError::InvalidOperation {
+                        message: format!("Duplicate entry for arguments {:?}", args),
+                    });
+                }
+
+                visited[index] = true;
                 flat_table.set_value(args, result)?;
             }
+        }
+
+        // Check that all entries are covered
+        if !visited.iter().all(|&v| v) {
+            return Err(UACalcError::InvalidOperation {
+                message: format!(
+                    "Table is incomplete: {} of {} entries provided",
+                    visited.iter().filter(|&&v| v).count(),
+                    expected_rows
+                ),
+            });
         }
 
         Ok(operation)
@@ -322,7 +380,7 @@ impl TableOperation {
     }
 
     /// Create a unary operation from a function
-    pub fn unary<F>(name: String, set_size: usize, f: F) -> Self
+    pub fn unary<F>(name: String, set_size: usize, f: F) -> UACalcResult<Self>
     where
         F: Fn(usize) -> usize,
     {
@@ -333,20 +391,20 @@ impl TableOperation {
         };
 
         // Build flat table
-        operation.make_table(set_size).unwrap();
+        operation.make_table(set_size)?;
 
         // Populate the table
         if let Some(ref mut flat_table) = operation.table {
             for i in 0..set_size {
-                flat_table.set_value(&[i], f(i)).unwrap();
+                flat_table.set_value(&[i], f(i))?;
             }
         }
 
-        operation
+        Ok(operation)
     }
 
     /// Create a binary operation from a function
-    pub fn binary<F>(name: String, set_size: usize, f: F) -> Self
+    pub fn binary<F>(name: String, set_size: usize, f: F) -> UACalcResult<Self>
     where
         F: Fn(usize, usize) -> usize,
     {
@@ -357,18 +415,18 @@ impl TableOperation {
         };
 
         // Build flat table
-        operation.make_table(set_size).unwrap();
+        operation.make_table(set_size)?;
 
         // Populate the table
         if let Some(ref mut flat_table) = operation.table {
             for i in 0..set_size {
                 for j in 0..set_size {
-                    flat_table.set_value(&[i, j], f(i, j)).unwrap();
+                    flat_table.set_value(&[i, j], f(i, j))?;
                 }
             }
         }
 
-        operation
+        Ok(operation)
     }
 
     /// Create an operation from a function with arbitrary arity
@@ -409,7 +467,7 @@ impl TableOperation {
     }
 
     /// Create the identity operation
-    pub fn identity(set_size: usize) -> Self {
+    pub fn identity(set_size: usize) -> UACalcResult<Self> {
         Self::unary("id".to_string(), set_size, |x| x)
     }
 }
@@ -452,6 +510,11 @@ impl Operation for TableOperation {
     }
 
     fn make_table(&mut self, set_size: usize) -> UACalcResult<()> {
+        if set_size != self.set_size {
+            return Err(UACalcError::InvalidOperation {
+                message: format!("set_size mismatch: {} != {}", set_size, self.set_size),
+            });
+        }
         self.table = Some(FlatOperationTable::new(self.arity(), set_size)?);
         Ok(())
     }
@@ -512,6 +575,12 @@ where
     }
 
     fn make_table(&mut self, set_size: usize) -> UACalcResult<()> {
+        if set_size != self.set_size {
+            return Err(UACalcError::InvalidOperation {
+                message: format!("set_size mismatch: {} != {}", set_size, self.set_size),
+            });
+        }
+
         let mut flat_table = FlatOperationTable::new(self.arity(), set_size)?;
 
         // Populate the table using Horner encoding
@@ -570,3 +639,133 @@ where
 // Note: FunctionOperation cannot implement Deserialize because function types
 // cannot be reconstructed from serialized data. If deserialization is needed,
 // consider using TableOperation or implementing a custom deserialization strategy.
+
+/// Serializable operation enum that can hold different types of operations
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum SerializableOperation {
+    Table(TableOperation),
+    // Add other operation types here as needed
+}
+
+impl SerializableOperation {
+    /// Create a new table operation
+    pub fn new_table(
+        symbol: OperationSymbol,
+        table: Vec<Vec<usize>>,
+        set_size: usize,
+    ) -> UACalcResult<Self> {
+        Ok(Self::Table(TableOperation::new(symbol, table, set_size)?))
+    }
+
+    /// Create a constant operation
+    pub fn constant(name: String, value: usize, set_size: usize) -> UACalcResult<Self> {
+        Ok(Self::Table(TableOperation::constant(
+            name, value, set_size,
+        )?))
+    }
+
+    /// Create a unary operation from a function
+    pub fn unary<F>(name: String, set_size: usize, f: F) -> UACalcResult<Self>
+    where
+        F: Fn(usize) -> usize,
+    {
+        Ok(Self::Table(TableOperation::unary(name, set_size, f)?))
+    }
+
+    /// Create a binary operation from a function
+    pub fn binary<F>(name: String, set_size: usize, f: F) -> UACalcResult<Self>
+    where
+        F: Fn(usize, usize) -> usize,
+    {
+        Ok(Self::Table(TableOperation::binary(name, set_size, f)?))
+    }
+
+    /// Create an operation from a function with arbitrary arity
+    pub fn from_function<F>(symbol: OperationSymbol, set_size: usize, f: F) -> UACalcResult<Self>
+    where
+        F: Fn(&[usize]) -> UACalcResult<usize>,
+    {
+        Ok(Self::Table(TableOperation::from_function(
+            symbol, set_size, f,
+        )?))
+    }
+
+    /// Create the identity operation
+    pub fn identity(set_size: usize) -> UACalcResult<Self> {
+        Ok(Self::Table(TableOperation::identity(set_size)?))
+    }
+}
+
+impl Operation for SerializableOperation {
+    fn arity(&self) -> usize {
+        match self {
+            Self::Table(op) => op.arity(),
+        }
+    }
+
+    fn symbol(&self) -> &OperationSymbol {
+        match self {
+            Self::Table(op) => op.symbol(),
+        }
+    }
+
+    fn value(&self, args: &[usize]) -> UACalcResult<usize> {
+        match self {
+            Self::Table(op) => op.value(args),
+        }
+    }
+
+    fn int_value_at(&self, args: &[usize]) -> UACalcResult<usize> {
+        match self {
+            Self::Table(op) => op.int_value_at(args),
+        }
+    }
+
+    fn int_value_at_index(&self, horner_index: usize) -> UACalcResult<usize> {
+        match self {
+            Self::Table(op) => op.int_value_at_index(horner_index),
+        }
+    }
+
+    fn set_size(&self) -> usize {
+        match self {
+            Self::Table(op) => op.set_size(),
+        }
+    }
+
+    fn make_table(&mut self, set_size: usize) -> UACalcResult<()> {
+        match self {
+            Self::Table(op) => op.make_table(set_size),
+        }
+    }
+
+    fn get_table(&self) -> Option<&FlatOperationTable> {
+        match self {
+            Self::Table(op) => op.get_table(),
+        }
+    }
+
+    fn operation_type(&self) -> OperationType {
+        match self {
+            Self::Table(op) => op.operation_type(),
+        }
+    }
+
+    fn is_idempotent_on_set(&self, set_size: usize) -> UACalcResult<bool> {
+        match self {
+            Self::Table(op) => op.is_idempotent_on_set(set_size),
+        }
+    }
+
+    fn is_associative_on_set(&self, set_size: usize) -> UACalcResult<bool> {
+        match self {
+            Self::Table(op) => op.is_associative_on_set(set_size),
+        }
+    }
+
+    fn is_commutative_on_set(&self, set_size: usize) -> UACalcResult<bool> {
+        match self {
+            Self::Table(op) => op.is_commutative_on_set(set_size),
+        }
+    }
+}

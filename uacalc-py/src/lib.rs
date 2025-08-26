@@ -180,8 +180,9 @@ impl PyPartition {
             .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))
     }
     
-    fn blocks(&self) -> Vec<Vec<usize>> {
+    fn blocks(&self) -> PyResult<Vec<Vec<usize>>> {
         self.inner.blocks()
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))
     }
     
     fn union(&mut self, x: usize, y: usize) -> PyResult<()> {

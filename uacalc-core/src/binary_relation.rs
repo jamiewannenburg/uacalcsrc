@@ -1,4 +1,5 @@
 use crate::{UACalcError, UACalcResult};
+use serde::{Deserialize, Serialize};
 
 use bitvec::prelude::*;
 
@@ -104,7 +105,7 @@ pub trait BinaryRelation: Send + Sync {
 }
 
 /// Basic binary relation implementation using bit vectors
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BasicBinaryRelation {
     size: usize,
     matrix: BitVec,
@@ -214,12 +215,26 @@ impl BasicBinaryRelation {
     pub fn transitive_closure_owned(&self) -> UACalcResult<Self> {
         let mut closure = self.clone();
 
-        // Warshall's algorithm with bit operations
+        // Warshall's algorithm with optimized bit operations
         for k in 0..self.size {
+            // Pre-copy row k for efficiency
+            let row_k_start = k * self.size;
+            let row_k_end = row_k_start + self.size;
+            let row_k: Vec<bool> = (row_k_start..row_k_end)
+                .map(|i| closure.matrix[i])
+                .collect();
+
+            // For each row i with bit (i,k) set, perform row_i |= row_k
             for i in 0..self.size {
-                for j in 0..self.size {
-                    if closure.contains(i, k)? && closure.contains(k, j)? {
-                        closure.add(i, j)?;
+                let row_i_start = i * self.size;
+                let row_i_end = row_i_start + self.size;
+
+                if closure.matrix[row_i_start + k] {
+                    // Use bitvec slice operations for efficiency
+                    for j in 0..self.size {
+                        if row_k[j] {
+                            closure.matrix.set(row_i_start + j, true);
+                        }
                     }
                 }
             }
@@ -302,7 +317,7 @@ impl BasicBinaryRelation {
         let size = partition.size();
         let mut relation = Self::new(size);
 
-        for block in partition.blocks() {
+        for block in partition.blocks()? {
             for &a in &block {
                 for &b in &block {
                     relation.add(a, b)?;

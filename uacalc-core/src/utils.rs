@@ -3,11 +3,11 @@ use crate::{UACalcError, UACalcResult};
 /// Mixed-radix encoding utilities for operation tables
 
 /// Encode arguments using Horner's method for mixed-radix indexing
-/// 
+///
 /// # Arguments
 /// * `args` - The arguments to encode
 /// * `base` - The base (set size) for encoding
-/// 
+///
 /// # Returns
 /// * `Some(index)` if encoding succeeds without overflow
 /// * `None` if overflow would occur
@@ -15,55 +15,55 @@ pub fn horner_encode(args: &[usize], base: usize) -> Option<usize> {
     if base == 0 {
         return None;
     }
-    
+
     let mut index: usize = 0;
     for &arg in args {
         if arg >= base {
             return None;
         }
-        
+
         // Check for overflow in multiplication
         let new_index = index.checked_mul(base)?;
         // Check for overflow in addition
         let final_index = new_index.checked_add(arg)?;
         index = final_index;
     }
-    
+
     Some(index)
 }
 
 /// Decode an index back to arguments using mixed-radix decoding
-/// 
+///
 /// # Arguments
 /// * `index` - The encoded index
 /// * `arity` - The number of arguments
 /// * `base` - The base (set size) used for encoding
-/// 
+///
 /// # Returns
 /// * Vector of decoded arguments
 pub fn horner_decode(index: usize, arity: usize, base: usize) -> Vec<usize> {
     if base == 0 || arity == 0 {
         return vec![];
     }
-    
+
     let mut args = Vec::with_capacity(arity);
     let mut remaining = index;
-    
+
     for _ in 0..arity {
         args.push(remaining % base);
         remaining /= base;
     }
-    
+
     args.reverse();
     args
 }
 
 /// Calculate the size of a Horner-encoded table
-/// 
+///
 /// # Arguments
 /// * `arity` - The arity of the operation
 /// * `base` - The base (set size)
-/// 
+///
 /// # Returns
 /// * `Some(size)` if calculation succeeds without overflow
 /// * `None` if overflow would occur
@@ -74,7 +74,7 @@ pub fn horner_table_size(arity: usize, base: usize) -> Option<usize> {
     if arity == 0 {
         return Some(1);
     }
-    
+
     let mut size: usize = 1;
     for _ in 0..arity {
         size = size.checked_mul(base)?;
@@ -91,15 +91,18 @@ pub fn validate_universe_contiguous(universe: &[usize]) -> UACalcResult<()> {
             message: "Universe cannot be empty".to_string(),
         });
     }
-    
+
     for (i, &element) in universe.iter().enumerate() {
         if element != i {
             return Err(UACalcError::InvalidOperation {
-                message: format!("Universe must be contiguous starting from 0, found {} at position {}", element, i),
+                message: format!(
+                    "Universe must be contiguous starting from 0, found {} at position {}",
+                    element, i
+                ),
             });
         }
     }
-    
+
     Ok(())
 }
 
@@ -111,7 +114,7 @@ pub fn validate_operation_args(args: &[usize], arity: usize, set_size: usize) ->
             actual: args.len(),
         });
     }
-    
+
     for &arg in args {
         if arg >= set_size {
             return Err(UACalcError::IndexOutOfBounds {
@@ -120,7 +123,7 @@ pub fn validate_operation_args(args: &[usize], arity: usize, set_size: usize) ->
             });
         }
     }
-    
+
     Ok(())
 }
 
@@ -134,7 +137,7 @@ pub fn validate_partition_elements(elements: &[usize], size: usize) -> UACalcRes
             });
         }
     }
-    
+
     Ok(())
 }
 
@@ -148,7 +151,7 @@ pub fn power_checked(base: usize, exp: usize) -> Option<usize> {
     if base == 1 {
         return Some(1);
     }
-    
+
     let mut result: usize = 1;
     for _ in 0..exp {
         result = result.checked_mul(base)?;
@@ -161,7 +164,7 @@ pub fn factorial(n: usize) -> Option<usize> {
     if n == 0 || n == 1 {
         return Some(1);
     }
-    
+
     let mut result: usize = 1;
     for i in 2..=n {
         result = result.checked_mul(i)?;
@@ -177,10 +180,10 @@ pub fn binomial_coefficient(n: usize, k: usize) -> Option<usize> {
     if k == 0 || k == n {
         return Some(1);
     }
-    
+
     // Use symmetry to minimize computation
     let k = k.min(n - k);
-    
+
     let mut result: usize = 1;
     for i in 0..k {
         result = result.checked_mul(n - i)?;
@@ -240,11 +243,11 @@ mod tests {
         let encoded = horner_encode(&args, base).unwrap();
         let decoded = horner_decode(encoded, 3, base);
         assert_eq!(decoded, args);
-        
+
         // Test edge cases
         assert_eq!(horner_encode(&[], 5), Some(0));
-        assert_eq!(horner_decode(0, 0, 5), vec![]);
-        
+        assert_eq!(horner_decode(0, 0, 5), vec![] as Vec<usize>);
+
         // Test overflow detection
         assert_eq!(horner_encode(&[usize::MAX], 2), None);
     }
@@ -255,20 +258,20 @@ mod tests {
         assert_eq!(horner_table_size(1, 5), Some(5));
         assert_eq!(horner_table_size(2, 5), Some(25));
         assert_eq!(horner_table_size(3, 5), Some(125));
-        
-        // Test overflow detection
-        assert_eq!(horner_table_size(20, 2), None);
+
+        // Test overflow detection - use a larger exponent that will definitely overflow
+        assert_eq!(horner_table_size(64, 2), None);
     }
 
     #[test]
     fn test_validation_functions() {
         // Test valid universe
         validate_universe_contiguous(&[0, 1, 2, 3]).unwrap();
-        
+
         // Test invalid universe
         assert!(validate_universe_contiguous(&[1, 2, 3]).is_err());
         assert!(validate_universe_contiguous(&[0, 1, 3]).is_err());
-        
+
         // Test operation args validation
         validate_operation_args(&[0, 1], 2, 5).unwrap();
         assert!(validate_operation_args(&[0, 1], 1, 5).is_err());
@@ -280,11 +283,11 @@ mod tests {
         assert_eq!(power_checked(2, 3), Some(8));
         assert_eq!(power_checked(0, 0), Some(1));
         assert_eq!(power_checked(2, 100), None); // Overflow
-        
+
         assert_eq!(factorial(0), Some(1));
         assert_eq!(factorial(5), Some(120));
-        assert_eq!(factorial(20), None); // Overflow
-        
+        assert_eq!(factorial(21), None); // Overflow
+
         assert_eq!(binomial_coefficient(5, 2), Some(10));
         assert_eq!(binomial_coefficient(5, 0), Some(1));
         assert_eq!(binomial_coefficient(5, 6), Some(0));
@@ -293,6 +296,6 @@ mod tests {
     #[test]
     fn test_memory_estimation() {
         assert_eq!(estimate_table_memory(2, 5), Some(200)); // 25 * 8 bytes
-        assert_eq!(estimate_table_memory(10, 2), None); // Overflow
+        assert_eq!(estimate_table_memory(64, 2), None); // Overflow
     }
 }
