@@ -16,7 +16,7 @@ pub fn horner_encode(args: &[usize], base: usize) -> Option<usize> {
         return None;
     }
     
-    let mut index = 0;
+    let mut index: usize = 0;
     for &arg in args {
         if arg >= base {
             return None;
@@ -75,7 +75,7 @@ pub fn horner_table_size(arity: usize, base: usize) -> Option<usize> {
         return Some(1);
     }
     
-    let mut size = 1;
+    let mut size: usize = 1;
     for _ in 0..arity {
         size = size.checked_mul(base)?;
     }
@@ -149,7 +149,7 @@ pub fn power_checked(base: usize, exp: usize) -> Option<usize> {
         return Some(1);
     }
     
-    let mut result = 1;
+    let mut result: usize = 1;
     for _ in 0..exp {
         result = result.checked_mul(base)?;
     }
@@ -162,7 +162,7 @@ pub fn factorial(n: usize) -> Option<usize> {
         return Some(1);
     }
     
-    let mut result = 1;
+    let mut result: usize = 1;
     for i in 2..=n {
         result = result.checked_mul(i)?;
     }
@@ -181,10 +181,10 @@ pub fn binomial_coefficient(n: usize, k: usize) -> Option<usize> {
     // Use symmetry to minimize computation
     let k = k.min(n - k);
     
-    let mut result = 1;
+    let mut result: usize = 1;
     for i in 0..k {
         result = result.checked_mul(n - i)?;
-        result = result.checked_div(i + 1)?;
+        result = result.checked_div((i + 1) as usize)?;
     }
     Some(result)
 }

@@ -1,7 +1,7 @@
 use crate::{UACalcError, UACalcResult};
 use crate::operation::Operation;
 use crate::utils::validate_universe_contiguous;
-use serde::{Deserialize, Serialize};
+
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -341,23 +341,28 @@ impl SmallAlgebra for BasicAlgebra {
                     
                     loop {
                         // Set arguments for current combination
+                        let mut valid_combination = true;
                         for (i, &idx) in indices.iter().enumerate() {
                             if idx >= current_universe.len() {
-                                if i == 0 {
-                                    // We're done with this operation
-                                    break;
-                                }
-                                // Reset this position and increment the previous one
-                                indices[i] = 0;
-                                indices[i - 1] += 1;
-                                continue;
+                                valid_combination = false;
+                                break;
                             }
                             args[i] = current_universe[idx];
                         }
                         
-                        // Check if we're done
-                        if indices[0] >= current_universe.len() {
-                            break;
+                        if !valid_combination {
+                            // Try to increment indices
+                            let mut i = arity - 1;
+                            while i > 0 && indices[i] >= current_universe.len() {
+                                indices[i] = 0;
+                                i -= 1;
+                                indices[i] += 1;
+                            }
+                            
+                            if i == 0 && indices[0] >= current_universe.len() {
+                                break; // We're done
+                            }
+                            continue;
                         }
                         
                         // Apply operation
@@ -391,4 +396,5 @@ impl SmallAlgebra for BasicAlgebra {
         })
     }
 }
+
 

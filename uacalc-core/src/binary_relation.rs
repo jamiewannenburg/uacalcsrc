@@ -1,93 +1,110 @@
 use crate::{UACalcError, UACalcResult};
-use serde::{Deserialize, Serialize};
+
 use bitvec::prelude::*;
 
 /// Trait for binary relations
-pub trait BinaryRelation: Clone + Send + Sync {
+pub trait BinaryRelation: Send + Sync {
     /// Get the size of the relation (number of elements)
     fn size(&self) -> usize;
-    
+
     /// Check if the relation contains a pair
     fn contains(&self, a: usize, b: usize) -> UACalcResult<bool>;
-    
+
     /// Check if the relation contains a pair (alias for contains to mirror Java)
     fn is_related(&self, a: usize, b: usize) -> UACalcResult<bool> {
         self.contains(a, b)
     }
-    
+
     /// Add a pair to the relation
     fn add(&mut self, a: usize, b: usize) -> UACalcResult<()>;
-    
+
     /// Remove a pair from the relation
     fn remove(&mut self, a: usize, b: usize) -> UACalcResult<()>;
-    
+
     /// Get all pairs in the relation
     fn pairs(&self) -> Vec<(usize, usize)>;
-    
+
     /// Get all pairs in the relation (mirrors Java getPairs)
     fn get_pairs(&self) -> Vec<(usize, usize)> {
         self.pairs()
     }
-    
+
     /// Iterate over pairs in the relation
     fn iter_pairs(&self) -> Box<dyn Iterator<Item = (usize, usize)> + '_>;
-    
+
     /// Get the as_any method for downcasting
     fn as_any(&self) -> &dyn std::any::Any;
-    
+
     /// Compute the reflexive closure
-    fn reflexive_closure(&self) -> UACalcResult<Box<dyn BinaryRelation>>;
-    
+    fn reflexive_closure(&self) -> UACalcResult<Box<dyn BinaryRelation>>
+    where
+        Self: Sized;
+
     /// Compute the symmetric closure
-    fn symmetric_closure(&self) -> UACalcResult<Box<dyn BinaryRelation>>;
-    
+    fn symmetric_closure(&self) -> UACalcResult<Box<dyn BinaryRelation>>
+    where
+        Self: Sized;
+
     /// Compute the transitive closure using Warshall's algorithm
-    fn transitive_closure(&self) -> UACalcResult<Box<dyn BinaryRelation>>;
-    
+    fn transitive_closure(&self) -> UACalcResult<Box<dyn BinaryRelation>>
+    where
+        Self: Sized;
+
     /// Compute the equivalence closure
-    fn equivalence_closure(&self) -> UACalcResult<Box<dyn BinaryRelation>>;
-    
+    fn equivalence_closure(&self) -> UACalcResult<Box<dyn BinaryRelation>>
+    where
+        Self: Sized;
+
     /// Check if the relation is reflexive
     fn is_reflexive(&self) -> UACalcResult<bool>;
-    
+
     /// Check if the relation is symmetric
     fn is_symmetric(&self) -> UACalcResult<bool>;
-    
+
     /// Check if the relation is transitive
     fn is_transitive(&self) -> UACalcResult<bool>;
-    
+
     /// Check if the relation is an equivalence relation
     fn is_equivalence(&self) -> UACalcResult<bool>;
-    
+
     /// Union with another relation
-    fn union(&self, other: &dyn BinaryRelation) -> UACalcResult<Box<dyn BinaryRelation>>;
-    
+    fn union(&self, other: &dyn BinaryRelation) -> UACalcResult<Box<dyn BinaryRelation>>
+    where
+        Self: Sized;
+
     /// Intersection with another relation
-    fn intersection(&self, other: &dyn BinaryRelation) -> UACalcResult<Box<dyn BinaryRelation>>;
-    
+    fn intersection(&self, other: &dyn BinaryRelation) -> UACalcResult<Box<dyn BinaryRelation>>
+    where
+        Self: Sized;
+
     /// Composition with another relation (mirrors Java compose)
-    fn compose(&self, other: &dyn BinaryRelation) -> UACalcResult<Box<dyn BinaryRelation>> {
+    fn compose(&self, other: &dyn BinaryRelation) -> UACalcResult<Box<dyn BinaryRelation>>
+    where
+        Self: Sized,
+    {
         self.composition(other)
     }
-    
+
     /// Composition with another relation
-    fn composition(&self, other: &dyn BinaryRelation) -> UACalcResult<Box<dyn BinaryRelation>>;
-    
+    fn composition(&self, other: &dyn BinaryRelation) -> UACalcResult<Box<dyn BinaryRelation>>
+    where
+        Self: Sized;
+
     /// Iterate over rows
     fn rows(&self) -> Box<dyn Iterator<Item = Box<dyn Iterator<Item = bool> + '_>> + '_>;
-    
+
     /// Iterate over columns
     fn columns(&self) -> Box<dyn Iterator<Item = Box<dyn Iterator<Item = bool> + '_>> + '_>;
-    
+
     /// Check if relation contains all given pairs
     fn contains_all(&self, pairs: &[(usize, usize)]) -> UACalcResult<bool>;
-    
+
     /// Add all given pairs to the relation
     fn add_all(&mut self, pairs: &[(usize, usize)]) -> UACalcResult<()>;
 }
 
 /// Basic binary relation implementation using bit vectors
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
 pub struct BasicBinaryRelation {
     size: usize,
     matrix: BitVec,
@@ -101,7 +118,7 @@ impl BasicBinaryRelation {
             matrix: bitvec![0; size * size],
         }
     }
-    
+
     /// Create a binary relation from a list of pairs
     pub fn from_pairs(size: usize, pairs: Vec<(usize, usize)>) -> UACalcResult<Self> {
         let mut relation = Self::new(size);
@@ -110,7 +127,7 @@ impl BasicBinaryRelation {
         }
         Ok(relation)
     }
-    
+
     /// Get the index in the bit vector for pair (a, b)
     fn index(&self, a: usize, b: usize) -> UACalcResult<usize> {
         if a >= self.size || b >= self.size {
@@ -121,7 +138,7 @@ impl BasicBinaryRelation {
         }
         Ok(a * self.size + b)
     }
-    
+
     /// Create the identity relation
     pub fn identity(size: usize) -> Self {
         let mut relation = Self::new(size);
@@ -130,7 +147,7 @@ impl BasicBinaryRelation {
         }
         relation
     }
-    
+
     /// Create the universal relation
     pub fn universal(size: usize) -> Self {
         let mut relation = Self::new(size);
@@ -139,22 +156,25 @@ impl BasicBinaryRelation {
         }
         relation
     }
-    
+
     /// Create an empty relation
     pub fn empty(size: usize) -> Self {
         Self::new(size)
     }
-    
+
     /// Matrix multiplication for composition
-    pub fn matrix_multiply(&self, other: &BasicBinaryRelation) -> UACalcResult<BasicBinaryRelation> {
+    pub fn matrix_multiply(
+        &self,
+        other: &BasicBinaryRelation,
+    ) -> UACalcResult<BasicBinaryRelation> {
         if self.size != other.size {
             return Err(UACalcError::InvalidOperation {
                 message: "Cannot multiply relations of different sizes".to_string(),
             });
         }
-        
+
         let mut result = BasicBinaryRelation::new(self.size);
-        
+
         for i in 0..self.size {
             for j in 0..self.size {
                 for k in 0..self.size {
@@ -164,10 +184,10 @@ impl BasicBinaryRelation {
                 }
             }
         }
-        
+
         Ok(result)
     }
-    
+
     /// Compute the reflexive closure (owned version)
     pub fn reflexive_closure_owned(&self) -> UACalcResult<Self> {
         let mut closure = self.clone();
@@ -176,7 +196,7 @@ impl BasicBinaryRelation {
         }
         Ok(closure)
     }
-    
+
     /// Compute the symmetric closure (owned version)
     pub fn symmetric_closure_owned(&self) -> UACalcResult<Self> {
         let mut closure = self.clone();
@@ -189,11 +209,11 @@ impl BasicBinaryRelation {
         }
         Ok(closure)
     }
-    
+
     /// Compute the transitive closure using Warshall's algorithm (owned version)
     pub fn transitive_closure_owned(&self) -> UACalcResult<Self> {
         let mut closure = self.clone();
-        
+
         // Warshall's algorithm with bit operations
         for k in 0..self.size {
             for i in 0..self.size {
@@ -204,48 +224,57 @@ impl BasicBinaryRelation {
                 }
             }
         }
-        
+
         Ok(closure)
     }
-    
+
     /// Compute the equivalence closure (owned version)
     pub fn equivalence_closure_owned(&self) -> UACalcResult<Self> {
         let reflexive = self.reflexive_closure_owned()?;
         let symmetric = reflexive.symmetric_closure_owned()?;
         symmetric.transitive_closure_owned()
     }
-    
+
     /// Efficient union with another BasicBinaryRelation using bitwise operations
-    pub fn union_efficient(&self, other: &BasicBinaryRelation) -> UACalcResult<BasicBinaryRelation> {
+    pub fn union_efficient(
+        &self,
+        other: &BasicBinaryRelation,
+    ) -> UACalcResult<BasicBinaryRelation> {
         if self.size != other.size {
             return Err(UACalcError::InvalidOperation {
                 message: "Cannot union relations of different sizes".to_string(),
             });
         }
-        
+
         let mut result = self.clone();
         result.matrix |= &other.matrix;
         Ok(result)
     }
-    
+
     /// Efficient intersection with another BasicBinaryRelation using bitwise operations
-    pub fn intersection_efficient(&self, other: &BasicBinaryRelation) -> UACalcResult<BasicBinaryRelation> {
+    pub fn intersection_efficient(
+        &self,
+        other: &BasicBinaryRelation,
+    ) -> UACalcResult<BasicBinaryRelation> {
         if self.size != other.size {
             return Err(UACalcError::InvalidOperation {
                 message: "Cannot intersect relations of different sizes".to_string(),
             });
         }
-        
+
         let mut result = self.clone();
         result.matrix &= &other.matrix;
         Ok(result)
     }
-    
+
     /// Efficient composition with another BasicBinaryRelation using bit matrix multiplication
-    pub fn composition_efficient(&self, other: &BasicBinaryRelation) -> UACalcResult<BasicBinaryRelation> {
+    pub fn composition_efficient(
+        &self,
+        other: &BasicBinaryRelation,
+    ) -> UACalcResult<BasicBinaryRelation> {
         self.matrix_multiply(other)
     }
-    
+
     /// Convert to partition (for equivalence relations)
     pub fn to_partition(&self) -> UACalcResult<crate::partition::BasicPartition> {
         if !self.is_equivalence()? {
@@ -253,9 +282,9 @@ impl BasicBinaryRelation {
                 message: "Relation is not an equivalence relation".to_string(),
             });
         }
-        
+
         let mut partition = crate::partition::BasicPartition::new(self.size);
-        
+
         // Use the relation to build the partition
         for i in 0..self.size {
             for j in 0..self.size {
@@ -264,15 +293,15 @@ impl BasicBinaryRelation {
                 }
             }
         }
-        
+
         Ok(partition)
     }
-    
+
     /// Create from partition
     pub fn from_partition(partition: &dyn crate::partition::Partition) -> UACalcResult<Self> {
         let size = partition.size();
         let mut relation = Self::new(size);
-        
+
         for block in partition.blocks() {
             for &a in &block {
                 for &b in &block {
@@ -280,7 +309,7 @@ impl BasicBinaryRelation {
                 }
             }
         }
-        
+
         Ok(relation)
     }
 }
@@ -289,24 +318,24 @@ impl BinaryRelation for BasicBinaryRelation {
     fn size(&self) -> usize {
         self.size
     }
-    
+
     fn contains(&self, a: usize, b: usize) -> UACalcResult<bool> {
         let index = self.index(a, b)?;
         Ok(self.matrix[index])
     }
-    
+
     fn add(&mut self, a: usize, b: usize) -> UACalcResult<()> {
         let index = self.index(a, b)?;
         self.matrix.set(index, true);
         Ok(())
     }
-    
+
     fn remove(&mut self, a: usize, b: usize) -> UACalcResult<()> {
         let index = self.index(a, b)?;
         self.matrix.set(index, false);
         Ok(())
     }
-    
+
     fn pairs(&self) -> Vec<(usize, usize)> {
         let mut pairs = Vec::new();
         for a in 0..self.size {
@@ -319,10 +348,10 @@ impl BinaryRelation for BasicBinaryRelation {
         }
         pairs
     }
-    
+
     fn iter_pairs(&self) -> Box<dyn Iterator<Item = (usize, usize)> + '_> {
         let size = self.size;
-        let matrix = self.matrix.clone();
+        let matrix = &self.matrix;
         Box::new((0..size).flat_map(move |a| {
             (0..size).filter_map(move |b| {
                 let index = a * size + b;
@@ -334,27 +363,27 @@ impl BinaryRelation for BasicBinaryRelation {
             })
         }))
     }
-    
+
     fn reflexive_closure(&self) -> UACalcResult<Box<dyn BinaryRelation>> {
         let closure = self.reflexive_closure_owned()?;
         Ok(Box::new(closure))
     }
-    
+
     fn symmetric_closure(&self) -> UACalcResult<Box<dyn BinaryRelation>> {
         let closure = self.symmetric_closure_owned()?;
         Ok(Box::new(closure))
     }
-    
+
     fn transitive_closure(&self) -> UACalcResult<Box<dyn BinaryRelation>> {
         let closure = self.transitive_closure_owned()?;
         Ok(Box::new(closure))
     }
-    
+
     fn equivalence_closure(&self) -> UACalcResult<Box<dyn BinaryRelation>> {
         let closure = self.equivalence_closure_owned()?;
         Ok(Box::new(closure))
     }
-    
+
     fn is_reflexive(&self) -> UACalcResult<bool> {
         for i in 0..self.size {
             if !self.contains(i, i)? {
@@ -363,7 +392,7 @@ impl BinaryRelation for BasicBinaryRelation {
         }
         Ok(true)
     }
-    
+
     fn is_symmetric(&self) -> UACalcResult<bool> {
         for a in 0..self.size {
             for b in 0..self.size {
@@ -374,7 +403,7 @@ impl BinaryRelation for BasicBinaryRelation {
         }
         Ok(true)
     }
-    
+
     fn is_transitive(&self) -> UACalcResult<bool> {
         for a in 0..self.size {
             for b in 0..self.size {
@@ -387,18 +416,18 @@ impl BinaryRelation for BasicBinaryRelation {
         }
         Ok(true)
     }
-    
+
     fn is_equivalence(&self) -> UACalcResult<bool> {
         Ok(self.is_reflexive()? && self.is_symmetric()? && self.is_transitive()?)
     }
-    
+
     fn union(&self, other: &dyn BinaryRelation) -> UACalcResult<Box<dyn BinaryRelation>> {
         if self.size() != other.size() {
             return Err(UACalcError::InvalidOperation {
                 message: "Cannot union relations of different sizes".to_string(),
             });
         }
-        
+
         // Try to use efficient union if both are BasicBinaryRelation
         if let Some(other_basic) = other.as_any().downcast_ref::<BasicBinaryRelation>() {
             let result = self.union_efficient(other_basic)?;
@@ -412,14 +441,14 @@ impl BinaryRelation for BasicBinaryRelation {
             Ok(Box::new(result))
         }
     }
-    
+
     fn intersection(&self, other: &dyn BinaryRelation) -> UACalcResult<Box<dyn BinaryRelation>> {
         if self.size() != other.size() {
             return Err(UACalcError::InvalidOperation {
                 message: "Cannot intersect relations of different sizes".to_string(),
             });
         }
-        
+
         // Try to use efficient intersection if both are BasicBinaryRelation
         if let Some(other_basic) = other.as_any().downcast_ref::<BasicBinaryRelation>() {
             let result = self.intersection_efficient(other_basic)?;
@@ -437,14 +466,14 @@ impl BinaryRelation for BasicBinaryRelation {
             Ok(Box::new(result))
         }
     }
-    
+
     fn composition(&self, other: &dyn BinaryRelation) -> UACalcResult<Box<dyn BinaryRelation>> {
         if self.size() != other.size() {
             return Err(UACalcError::InvalidOperation {
                 message: "Cannot compose relations of different sizes".to_string(),
             });
         }
-        
+
         // Try to use efficient composition if both are BasicBinaryRelation
         if let Some(other_basic) = other.as_any().downcast_ref::<BasicBinaryRelation>() {
             let result = self.composition_efficient(other_basic)?;
@@ -464,20 +493,20 @@ impl BinaryRelation for BasicBinaryRelation {
             Ok(Box::new(result))
         }
     }
-    
+
     fn rows(&self) -> Box<dyn Iterator<Item = Box<dyn Iterator<Item = bool> + '_>> + '_> {
         let size = self.size;
-        let matrix = self.matrix.clone();
+        let matrix = &self.matrix;
         Box::new((0..size).map(move |row| {
             let start = row * size;
             let end = start + size;
             Box::new((start..end).map(move |i| matrix[i])) as Box<dyn Iterator<Item = bool> + '_>
         }))
     }
-    
+
     fn columns(&self) -> Box<dyn Iterator<Item = Box<dyn Iterator<Item = bool> + '_>> + '_> {
         let size = self.size;
-        let matrix = self.matrix.clone();
+        let matrix = &self.matrix;
         Box::new((0..size).map(move |col| {
             Box::new((0..size).map(move |row| {
                 let index = row * size + col;
@@ -485,7 +514,7 @@ impl BinaryRelation for BasicBinaryRelation {
             })) as Box<dyn Iterator<Item = bool> + '_>
         }))
     }
-    
+
     fn contains_all(&self, pairs: &[(usize, usize)]) -> UACalcResult<bool> {
         for &(a, b) in pairs {
             if !self.contains(a, b)? {
@@ -494,20 +523,18 @@ impl BinaryRelation for BasicBinaryRelation {
         }
         Ok(true)
     }
-    
+
     fn add_all(&mut self, pairs: &[(usize, usize)]) -> UACalcResult<()> {
         for &(a, b) in pairs {
             self.add(a, b)?;
         }
         Ok(())
     }
-    
+
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }
 }
-
-
 
 /// Create the identity relation
 pub fn identity_relation(size: usize) -> BasicBinaryRelation {
@@ -525,7 +552,8 @@ pub fn empty_relation(size: usize) -> BasicBinaryRelation {
 }
 
 /// Create an equivalence relation from a partition
-pub fn equivalence_from_partition(partition: &dyn crate::partition::Partition) -> UACalcResult<BasicBinaryRelation> {
+pub fn equivalence_from_partition(
+    partition: &dyn crate::partition::Partition,
+) -> UACalcResult<BasicBinaryRelation> {
     BasicBinaryRelation::from_partition(partition)
 }
-
