@@ -1,8 +1,23 @@
 use crate::{UACalcError, UACalcResult};
+use smallvec::SmallVec;
 use std::collections::VecDeque;
 use std::sync::{Arc, Mutex};
 use std::time::Instant;
-use smallvec::SmallVec;
+
+// Global allocator configuration
+#[cfg(feature = "mimalloc")]
+use mimalloc::MiMalloc;
+
+#[cfg(feature = "jemalloc")]
+use jemallocator::Jemalloc;
+
+#[cfg(feature = "mimalloc")]
+#[global_allocator]
+static GLOBAL: MiMalloc = MiMalloc;
+
+#[cfg(feature = "jemalloc")]
+#[global_allocator]
+static GLOBAL: Jemalloc = Jemalloc;
 
 /// Mixed-radix encoding utilities for operation tables
 
@@ -157,7 +172,7 @@ impl<T> ThreadLocalPool<T> {
 }
 
 /// SIMD Utilities for bulk operations
-#[cfg(target_arch = "x86_64")]
+#[cfg(all(target_arch = "x86_64", feature = "simd"))]
 pub mod simd {
     use std::arch::x86_64::*;
 
@@ -171,16 +186,35 @@ pub mod simd {
         let mut i = 0;
         let len = a.len();
 
-        // Process 8 elements at a time with AVX2
-        while i + 8 <= len {
-            let va = _mm256_loadu_si256(a.as_ptr().add(i) as *const __m256i);
-            let vb = _mm256_loadu_si256(b.as_ptr().add(i) as *const __m256i);
-            let cmp = _mm256_cmpeq_epi32(va, vb);
-            let mask = _mm256_movemask_ps(_mm256_castsi256_ps(cmp));
-            if mask != 0b11111111 {
-                return false;
+        // Use 64-bit comparisons for usize on 64-bit platforms
+        #[cfg(target_pointer_width = "64")]
+        {
+            // Process 4 elements at a time with AVX2 (64-bit lanes)
+            while i + 4 <= len {
+                let va = _mm256_loadu_si256(a.as_ptr().add(i) as *const __m256i);
+                let vb = _mm256_loadu_si256(b.as_ptr().add(i) as *const __m256i);
+                let cmp = _mm256_cmpeq_epi64(va, vb);
+                let mask = _mm256_movemask_pd(_mm256_castsi256_pd(cmp));
+                if mask != 0b1111 {
+                    return false;
+                }
+                i += 4;
             }
-            i += 8;
+        }
+
+        #[cfg(target_pointer_width = "32")]
+        {
+            // Process 8 elements at a time with AVX2 (32-bit lanes)
+            while i + 8 <= len {
+                let va = _mm256_loadu_si256(a.as_ptr().add(i) as *const __m256i);
+                let vb = _mm256_loadu_si256(b.as_ptr().add(i) as *const __m256i);
+                let cmp = _mm256_cmpeq_epi32(va, vb);
+                let mask = _mm256_movemask_ps(_mm256_castsi256_ps(cmp));
+                if mask != 0b11111111 {
+                    return false;
+                }
+                i += 8;
+            }
         }
 
         // Handle remaining elements
@@ -200,22 +234,47 @@ pub mod simd {
         let min_len = a.len().min(b.len());
         let mut i = 0;
 
-        // Process 8 elements at a time with AVX2
-        while i + 8 <= min_len {
-            let va = _mm256_loadu_si256(a.as_ptr().add(i) as *const __m256i);
-            let vb = _mm256_loadu_si256(b.as_ptr().add(i) as *const __m256i);
-            let cmp = _mm256_cmpeq_epi32(va, vb);
-            let mask = _mm256_movemask_ps(_mm256_castsi256_ps(cmp));
-            
-            if mask != 0b11111111 {
-                // Find the first difference in this block
-                for j in 0..8 {
-                    if a[i + j] != b[i + j] {
-                        return Some(i + j);
+        // Use 64-bit comparisons for usize on 64-bit platforms
+        #[cfg(target_pointer_width = "64")]
+        {
+            // Process 4 elements at a time with AVX2 (64-bit lanes)
+            while i + 4 <= min_len {
+                let va = _mm256_loadu_si256(a.as_ptr().add(i) as *const __m256i);
+                let vb = _mm256_loadu_si256(b.as_ptr().add(i) as *const __m256i);
+                let cmp = _mm256_cmpeq_epi64(va, vb);
+                let mask = _mm256_movemask_pd(_mm256_castsi256_pd(cmp));
+
+                if mask != 0b1111 {
+                    // Find the first difference in this block
+                    for j in 0..4 {
+                        if a[i + j] != b[i + j] {
+                            return Some(i + j);
+                        }
                     }
                 }
+                i += 4;
             }
-            i += 8;
+        }
+
+        #[cfg(target_pointer_width = "32")]
+        {
+            // Process 8 elements at a time with AVX2 (32-bit lanes)
+            while i + 8 <= min_len {
+                let va = _mm256_loadu_si256(a.as_ptr().add(i) as *const __m256i);
+                let vb = _mm256_loadu_si256(b.as_ptr().add(i) as *const __m256i);
+                let cmp = _mm256_cmpeq_epi32(va, vb);
+                let mask = _mm256_movemask_ps(_mm256_castsi256_ps(cmp));
+
+                if mask != 0b11111111 {
+                    // Find the first difference in this block
+                    for j in 0..8 {
+                        if a[i + j] != b[i + j] {
+                            return Some(i + j);
+                        }
+                    }
+                }
+                i += 8;
+            }
         }
 
         // Handle remaining elements
@@ -234,14 +293,14 @@ pub mod simd {
     }
 }
 
-#[cfg(not(target_arch = "x86_64"))]
+#[cfg(not(all(target_arch = "x86_64", feature = "simd")))]
 pub mod simd {
-    /// Fallback implementation for non-x86_64 architectures
+    /// Fallback implementation for non-x86_64 architectures or when SIMD feature is disabled
     pub fn simd_compare_arrays(a: &[usize], b: &[usize]) -> bool {
         a == b
     }
 
-    /// Fallback implementation for non-x86_64 architectures
+    /// Fallback implementation for non-x86_64 architectures or when SIMD feature is disabled
     pub fn simd_find_first_difference(a: &[usize], b: &[usize]) -> Option<usize> {
         a.iter().zip(b.iter()).position(|(x, y)| x != y)
     }

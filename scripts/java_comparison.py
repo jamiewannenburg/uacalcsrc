@@ -64,7 +64,7 @@ class JavaUACalcRunner:
         try:
             # Compile the wrapper
             result = subprocess.run([
-                "javac", "-cp", self.java_jar_path, 
+                "javac", "-cp", f"{self.java_jar_path}{os.pathsep}scripts", 
                 "-d", "scripts", self.java_wrapper_path
             ], capture_output=True, text=True)
             
@@ -84,8 +84,8 @@ class JavaUACalcRunner:
             
         try:
             result = subprocess.run([
-                "java", "-cp", f"{self.java_jar_path};scripts/scripts",
-                "scripts.JavaWrapper", "properties", ua_file
+                "java", "-cp", f"{self.java_jar_path}{os.pathsep}scripts",
+                "JavaWrapper", "properties", ua_file
             ], capture_output=True, text=True, timeout=30)
             
             if result.returncode != 0:
@@ -106,8 +106,8 @@ class JavaUACalcRunner:
             
         try:
             result = subprocess.run([
-                "java", "-cp", f"{self.java_jar_path};scripts/scripts",
-                "scripts.JavaWrapper", "cg", ua_file, str(a), str(b)
+                "java", "-cp", f"{self.java_jar_path}{os.pathsep}scripts",
+                "JavaWrapper", "cg", ua_file, str(a), str(b)
             ], capture_output=True, text=True, timeout=60)
             
             if result.returncode != 0:
@@ -130,8 +130,8 @@ class JavaUACalcRunner:
             
         try:
             result = subprocess.run([
-                "java", "-cp", f"{self.java_jar_path};scripts/scripts",
-                "scripts.JavaWrapper", "lattice", ua_file
+                "java", "-cp", f"{self.java_jar_path}{os.pathsep}scripts",
+                "JavaWrapper", "lattice", ua_file
             ], capture_output=True, text=True, timeout=300)
             
             if result.returncode != 0:
@@ -161,9 +161,9 @@ class RustUACalcRunner:
             return AlgebraProperties(
                 name=algebra.name,
                 cardinality=algebra.cardinality,
-                operation_count=len(list(algebra.operations())),
-                operation_symbols=[op.symbol for op in algebra.operations()],
-                operation_arities=[op.arity for op in algebra.operations()]
+                operation_count=len(algebra.operations),
+                operation_symbols=[op.symbol for op in algebra.operations],
+                operation_arities=[op.arity for op in algebra.operations]
             )
             
         except Exception as e:
@@ -175,7 +175,7 @@ class RustUACalcRunner:
         try:
             import uacalc
             algebra = uacalc.load_algebra(ua_file)
-            lattice = uacalc.create_congruence_lattice(algebra)
+            lattice = algebra.congruence_lattice()
             partition = lattice.principal_congruence(a, b)
             
             # Convert partition to list of blocks
@@ -193,13 +193,13 @@ class RustUACalcRunner:
         try:
             import uacalc
             algebra = uacalc.load_algebra(ua_file)
-            lattice = uacalc.create_congruence_lattice(algebra)
+            lattice = algebra.congruence_lattice()
             
             return {
-                "size": lattice.size(),
-                "join_irreducibles": len(lattice.join_irreducibles()),
-                "height": lattice.height(),
-                "width": lattice.width()
+                "size": len(lattice),
+                "join_irreducibles": len(lattice.join_irreducibles),
+                "height": lattice.height,
+                "width": lattice.width
             }
             
         except Exception as e:
@@ -226,7 +226,7 @@ def measure_memory_usage() -> Optional[float]:
     except ImportError:
         return None
 
-def time_operation(operation_func, *args, **kwargs) -> Tuple[float, Optional[float]]:
+def time_operation(operation_func, *args, **kwargs) -> Tuple[float, Optional[float], Any]:
     """Time an operation and optionally measure memory usage"""
     start_memory = measure_memory_usage()
     start_time = time.time()
@@ -355,7 +355,7 @@ def compare_lattice_operations(ua_file: str, java_runner: JavaUACalcRunner,
     # Calculate speedup and memory improvement
     speedup = java_time / rust_time if rust_time > 0 else float('inf')
     memory_improvement = None
-    if java_memory is not None and rust_memory is not None:
+    if java_memory is not None and java_memory > 0 and rust_memory is not None:
         memory_improvement = (java_memory - rust_memory) / java_memory * 100
     
     result = ComparisonResult(

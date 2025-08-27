@@ -113,8 +113,9 @@ class JavaCompatibilityTest(unittest.TestCase):
                 self.assertEqual(original_algebra.name, current_algebra.name)
                 self.assertEqual(original_algebra.cardinality, current_algebra.cardinality)
     
-    @unittest.skipUnless(lambda: JavaCompatibilityTest.java_available, "Java UACalc not available")
     def test_java_rust_algorithm_verification(self):
+        if not self.java_available:
+            self.skipTest("Java UACalc not available")
         """Test that Rust and Java implementations produce the same results"""
         if not self.algebra_files:
             self.skipTest("No algebra files found")
@@ -139,8 +140,9 @@ class JavaCompatibilityTest(unittest.TestCase):
                                 # Compare partitions
                                 self._compare_partitions(rust_partition, java_result)
     
-    @unittest.skipUnless(lambda: JavaCompatibilityTest.java_available, "Java UACalc not available")
     def test_java_rust_lattice_verification(self):
+        if not self.java_available:
+            self.skipTest("Java UACalc not available")
         """Test that congruence lattice sizes match between Java and Rust"""
         if not self.algebra_files:
             self.skipTest("No algebra files found")
@@ -217,7 +219,7 @@ class JavaCompatibilityTest(unittest.TestCase):
         """Run Cg(a,b) computation in Java and return partition"""
         try:
             result = subprocess.run([
-                "java", "-cp", f"{self.java_jar_path}:scripts",
+                "java", "-cp", f"{self.java_jar_path}{os.pathsep}scripts",
                 "JavaWrapper", "cg", ua_file, str(a), str(b)
             ], capture_output=True, text=True, timeout=30)
             
@@ -235,7 +237,7 @@ class JavaCompatibilityTest(unittest.TestCase):
         """Run lattice computation in Java and return lattice info"""
         try:
             result = subprocess.run([
-                "java", "-cp", f"{self.java_jar_path}:scripts",
+                "java", "-cp", f"{self.java_jar_path}{os.pathsep}scripts",
                 "JavaWrapper", "lattice", ua_file
             ], capture_output=True, text=True, timeout=60)
             

@@ -3,8 +3,8 @@
 //! This module provides efficient term evaluation using stack-based
 //! iterative algorithms to avoid function call overhead.
 
-use crate::algebra::SmallAlgebra;
-use crate::operation::Operation;
+use crate::algebra::{BasicAlgebra, SmallAlgebra};
+use crate::operation::{Operation, TableOperation};
 use crate::term::variable::VariableAssignment;
 use crate::term::{Term, TermArena, TermId, MAX_DEPTH};
 use crate::utils::MAX_OPERATION_ARITY;
@@ -54,7 +54,7 @@ impl<'a> EvaluationContext<'a> {
     /// Create a new evaluation context
     pub fn new(algebra: &'a dyn SmallAlgebra, variables: &'a VariableAssignment) -> Self {
         let operations = algebra.operations();
-        
+
         // Build symbol name to operation index mapping
         let mut name_to_op = HashMap::new();
         for (idx, operation) in operations.iter().enumerate() {
@@ -145,16 +145,24 @@ impl<'a> EvaluationContext<'a> {
             if frame.evaluated {
                 // Term is evaluated, pop it and store result
                 let term_id_to_pop = frame.term_id;
-                let result = self.results[term_id_to_pop].unwrap();
-                self.stack.pop();
+                if let Some(result) = self.results[term_id_to_pop] {
+                    self.stack.pop();
 
-                // If this was the original term, we're done
-                if term_id_to_pop == term_id {
-                    return Ok(result);
+                    // If this was the original term, we're done
+                    if term_id_to_pop == term_id {
+                        return Ok(result);
+                    }
+                } else {
+                    // This shouldn't happen - if frame is evaluated, result should be stored
+                    return Err(UACalcError::InvalidOperation {
+                        message: format!(
+                            "Evaluation error: term {} marked as evaluated but no result found",
+                            term_id_to_pop
+                        ),
+                    });
                 }
             } else {
-                // Mark as evaluated and process children
-                frame.evaluated = true;
+                // Process the term
                 let current_term_id = frame.term_id;
                 let term = arena.get_term(current_term_id)?;
 
@@ -163,6 +171,7 @@ impl<'a> EvaluationContext<'a> {
                         // Variable evaluation is immediate
                         let value = self.variables.get(*index);
                         self.results[current_term_id] = Some(value);
+                        frame.evaluated = true;
                     }
                     Term::Operation {
                         symbol_id,
@@ -181,6 +190,8 @@ impl<'a> EvaluationContext<'a> {
                             // All children evaluated, compute operation result
                             let result = self.evaluate_operation(*symbol_id, children, arena)?;
                             self.results[current_term_id] = Some(result);
+                            // Mark as evaluated after storing the result
+                            self.stack[frame_idx].evaluated = true;
                         } else {
                             // Push children onto stack first (in reverse order for correct evaluation)
                             for &child_id in children.iter().rev() {
@@ -194,6 +205,7 @@ impl<'a> EvaluationContext<'a> {
                                     self.stack.push(StackFrame::new(child_id));
                                 }
                             }
+                            // Don't mark as evaluated yet - we'll process this term again after children are evaluated
                         }
                     }
                 }
@@ -215,9 +227,13 @@ impl<'a> EvaluationContext<'a> {
         // Resolve symbol_id to operation index via symbol name
         let symbol = arena.get_symbol(symbol_id)?;
         let name = symbol.name();
-        let op_idx = self.name_to_op.get(name).copied().ok_or_else(|| UACalcError::InvalidOperation {
-            message: format!("Operation '{}' not found in algebra", name),
-        })?;
+        let op_idx =
+            self.name_to_op
+                .get(name)
+                .copied()
+                .ok_or_else(|| UACalcError::InvalidOperation {
+                    message: format!("Operation '{}' not found in algebra", name),
+                })?;
 
         let operations = self.algebra.operations();
         let operation = &operations[op_idx];
@@ -412,7 +428,11 @@ mod tests {
         let symbol = OperationSymbol::new("const".to_string(), 0);
         let const_id = arena.make_term(&symbol, &[]);
 
-        let algebra = BasicAlgebra::with_cardinality("test".to_string(), 3).unwrap();
+        // Create algebra with a constant operation
+        let mut algebra = BasicAlgebra::with_cardinality("test".to_string(), 3).unwrap();
+        let const_op = TableOperation::constant("const".to_string(), 1, 3).unwrap();
+        algebra.add_operation_simple(const_op).unwrap();
+
         let variables = VariableAssignment::new();
 
         let result = eval_term(const_id, &arena, &algebra, &variables);
@@ -429,11 +449,27 @@ mod tests {
         let symbol = OperationSymbol::new("f".to_string(), 2);
         let op_id = arena.make_term(&symbol, &[x0, x1]);
 
-        let algebra = BasicAlgebra::with_cardinality("test".to_string(), 3).unwrap();
+        // Create algebra with a binary operation
+        let mut algebra = BasicAlgebra::with_cardinality("test".to_string(), 3).unwrap();
+        let f_op = TableOperation::binary("f".to_string(), 3, |a, b| (a + b) % 3).unwrap();
+        algebra.add_operation_simple(f_op).unwrap();
+
         let variables = VariableAssignment::from_values(vec![1, 2]);
 
-        let result = eval_term(op_id, &arena, &algebra, &variables);
+        // Test that variables are evaluated correctly first
+        let var0_result = eval_term(x0, &arena, &algebra, &variables);
+        assert!(var0_result.is_ok());
+        assert_eq!(var0_result.unwrap(), 1);
+
+        let var1_result = eval_term(x1, &arena, &algebra, &variables);
+        assert!(var1_result.is_ok());
+        assert_eq!(var1_result.unwrap(), 2);
+
+        // Create a fresh evaluation context for the operation
+        let mut context = EvaluationContext::new(&algebra, &variables);
+        let result = context.eval_term(op_id, &arena);
         assert!(result.is_ok());
+        assert_eq!(result.unwrap(), 0); // (1 + 2) % 3 = 0
     }
 
     #[test]
@@ -467,7 +503,11 @@ mod tests {
         let symbol = OperationSymbol::new("f".to_string(), 1);
         let op_id = arena.make_term(&symbol, &[var_id]);
 
-        let algebra = BasicAlgebra::with_cardinality("test".to_string(), 3).unwrap();
+        // Create algebra with a unary operation
+        let mut algebra = BasicAlgebra::with_cardinality("test".to_string(), 3).unwrap();
+        let f_op = TableOperation::unary("f".to_string(), 3, |x| (x + 1) % 3).unwrap();
+        algebra.add_operation_simple(f_op).unwrap();
+
         let variables = VariableAssignment::from_values(vec![1]);
 
         let mut context = EvaluationContext::new(&algebra, &variables);
@@ -487,13 +527,13 @@ pub fn term_to_table(
 ) -> UACalcResult<crate::operation::FlatOperationTable> {
     let size = algebra.cardinality();
     let term = arena.get_term(term_id)?;
-    
+
     // Determine arity from the term structure
     let arity = match term {
         Term::Variable(_) => 0, // Constants have arity 0
         Term::Operation { children, .. } => children.len(),
     };
-    
+
     // For constants, create a 0-ary table
     if arity == 0 {
         let value = eval_term(term_id, arena, algebra, &VariableAssignment::new())?;
@@ -501,14 +541,14 @@ pub fn term_to_table(
         flat_table.set(0, value)?;
         return Ok(flat_table);
     }
-    
+
     // For operations, evaluate all possible input tuples
     let total_tuples = size.pow(arity as u32);
     let mut table = vec![0; total_tuples];
-    
+
     // Generate all possible input tuples using mixed-radix increment
     let mut args = vec![0; arity];
-    
+
     for tuple_idx in 0..total_tuples {
         // Convert tuple index to argument values
         let mut temp_idx = tuple_idx;
@@ -516,20 +556,20 @@ pub fn term_to_table(
             args[i] = temp_idx % size;
             temp_idx /= size;
         }
-        
+
         // Evaluate the term with these arguments
         let variables = VariableAssignment::from_values(args.clone());
         let result = eval_term(term_id, arena, algebra, &variables)?;
         table[tuple_idx] = result;
     }
-    
+
     // Create the operation table
     let mut flat_table = crate::operation::FlatOperationTable::new(arity, size)?;
-    
+
     // Copy the computed values into the table
     for (i, &value) in table.iter().enumerate() {
         flat_table.set(i, value)?;
     }
-    
+
     Ok(flat_table)
 }

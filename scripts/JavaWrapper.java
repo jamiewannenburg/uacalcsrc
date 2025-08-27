@@ -1,5 +1,3 @@
-package scripts;
-
 import org.uacalc.alg.Algebra;
 import org.uacalc.alg.conlat.CongruenceLattice;
 import org.uacalc.alg.conlat.Partition;

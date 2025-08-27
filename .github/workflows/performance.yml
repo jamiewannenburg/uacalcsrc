@@ -91,7 +91,7 @@ jobs:
         export PATH=$JAVA_HOME/bin:$PATH
         
         # Compile Java wrapper
-        javac -cp "jars/uacalc.jar:scripts" -d scripts scripts/JavaWrapper.java
+        javac -cp "jars/uacalc.jar${PATH_SEPARATOR}scripts" -d scripts scripts/JavaWrapper.java
         
         # Run comparison tests
         python tests/python/test_java_compatibility.py

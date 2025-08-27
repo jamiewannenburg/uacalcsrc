@@ -268,19 +268,5 @@ criterion_group!(term_benches, benchmark_term_evaluation);
 #[cfg(feature = "taylor")]
 criterion_group!(taylor_benches, benchmark_taylor_search);
 
-// Main function for running benchmarks
-#[cfg(any(feature = "conlat", feature = "term-eval", feature = "taylor"))]
-criterion_main!(
-    #[cfg(feature = "conlat")]
-    conlat_benches,
-    #[cfg(feature = "term-eval")]
-    term_benches,
-    #[cfg(feature = "taylor")]
-    taylor_benches
-);
-
-// Fallback main for when no features are enabled
-#[cfg(not(any(feature = "conlat", feature = "term-eval", feature = "taylor")))]
-fn main() {
-    println!("No benchmark features enabled. Enable 'conlat', 'term-eval', or 'taylor' features to run benchmarks.");
-}
+// Configure criterion main
+criterion_main!(conlat_benches, term_benches, taylor_benches);
