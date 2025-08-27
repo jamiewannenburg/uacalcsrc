@@ -404,11 +404,11 @@ impl<'a> LatticeBuilder<'a> {
                 continue;
             }
 
-            // Compute join of this combination (optimized to reduce cloning)
+            // Compute join of this combination
             let mut join = self.join_irreducibles[combination[0]].clone();
             for &ji_idx in &combination[1..] {
-                // Use in-place join operation to avoid cloning
-                join.join_into(&self.join_irreducibles[ji_idx])?;
+                // Use join operation to combine partitions
+                join = join.join(&self.join_irreducibles[ji_idx])?;
             }
 
             // Deduplicate per level using canonical form

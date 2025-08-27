@@ -63,7 +63,7 @@ public class JavaWrapper {
     private static void outputProperties(String uaFile) throws Exception {
         long startMemory = getMemoryUsage();
 
-        Algebra algebra = AlgebraIO.readAlgebra(uaFile);
+        Algebra algebra = AlgebraIO.readAlgebraFile(uaFile);
 
         long endMemory = getMemoryUsage();
 
@@ -109,7 +109,7 @@ public class JavaWrapper {
     private static void outputCg(String uaFile, int a, int b) throws Exception {
         long startMemory = getMemoryUsage();
 
-        Algebra algebra = AlgebraIO.readAlgebra(uaFile);
+        Algebra algebra = AlgebraIO.readAlgebraFile(uaFile);
 
         // Cast to SmallAlgebra since CongruenceLattice requires it
         org.uacalc.alg.SmallAlgebra smallAlgebra = (org.uacalc.alg.SmallAlgebra) algebra;
@@ -148,7 +148,7 @@ public class JavaWrapper {
     private static void outputLattice(String uaFile) throws Exception {
         long startMemory = getMemoryUsage();
 
-        Algebra algebra = AlgebraIO.readAlgebra(uaFile);
+        Algebra algebra = AlgebraIO.readAlgebraFile(uaFile);
 
         // Cast to SmallAlgebra since CongruenceLattice requires it
         org.uacalc.alg.SmallAlgebra smallAlgebra = (org.uacalc.alg.SmallAlgebra) algebra;
