@@ -9,7 +9,6 @@ from typing import Optional, Dict, Any, Union, Type, Callable, List
 import traceback
 import logging
 import warnings
-import time
 from functools import wraps
 from contextlib import contextmanager
 
@@ -153,6 +152,100 @@ class ConfigurationError(UACalcError, ValueError):
             base += f" (config: {self.config_key})"
         return base
 
+# I/O Error Classes for .ua file handling
+
+class BadUAFileError(UACalcError, ValueError):
+    """Exception for malformed .ua files.
+    
+    Maps to Java's BadAlgebraFileException.
+    """
+    
+    def __init__(self, message: str, file_path: Optional[str] = None, 
+                 line_number: Optional[int] = None, column_number: Optional[int] = None, **kwargs):
+        super().__init__(message)
+        self.file_path = file_path
+        self.line_number = line_number
+        self.column_number = column_number
+        self.details = kwargs
+    
+    def __str__(self) -> str:
+        base = super().__str__()
+        if self.file_path:
+            base += f" (file: {self.file_path})"
+        if self.line_number is not None:
+            base += f" (line: {self.line_number})"
+        if self.column_number is not None:
+            base += f" (column: {self.column_number})"
+        return base
+
+class InvalidOperationTableError(BadUAFileError):
+    """Exception for invalid operation tables in .ua files."""
+    
+    def __init__(self, message: str, file_path: Optional[str] = None, 
+                 operation_name: Optional[str] = None, expected_size: Optional[int] = None,
+                 actual_size: Optional[int] = None, row_index: Optional[int] = None, **kwargs):
+        super().__init__(message, file_path, **kwargs)
+        self.operation_name = operation_name
+        self.expected_size = expected_size
+        self.actual_size = actual_size
+        self.row_index = row_index
+    
+    def __str__(self) -> str:
+        base = super().__str__()
+        if self.operation_name:
+            base += f" (operation: {self.operation_name})"
+        if self.expected_size is not None and self.actual_size is not None:
+            base += f" (expected: {self.expected_size}, actual: {self.actual_size})"
+        if self.row_index is not None:
+            base += f" (row: {self.row_index})"
+        return base
+
+class UnsupportedAlgebraTypeError(BadUAFileError):
+    """Exception for unsupported algebra types in .ua files."""
+    
+    def __init__(self, message: str, file_path: Optional[str] = None,
+                 algebra_type: Optional[str] = None, supported_types: Optional[List[str]] = None, **kwargs):
+        super().__init__(message, file_path, **kwargs)
+        self.algebra_type = algebra_type
+        self.supported_types = supported_types or []
+    
+    def __str__(self) -> str:
+        base = super().__str__()
+        if self.algebra_type:
+            base += f" (type: {self.algebra_type})"
+        if self.supported_types:
+            base += f" (supported: {', '.join(self.supported_types)})"
+        return base
+
+class XMLParsingError(BadUAFileError):
+    """Exception for XML parsing errors in .ua files."""
+    
+    def __init__(self, message: str, file_path: Optional[str] = None,
+                 xml_error: Optional[str] = None, **kwargs):
+        super().__init__(message, file_path, **kwargs)
+        self.xml_error = xml_error
+    
+    def __str__(self) -> str:
+        base = super().__str__()
+        if self.xml_error:
+            base += f" (XML error: {self.xml_error})"
+        return base
+
+class FileFormatError(BadUAFileError):
+    """Exception for file format errors."""
+    
+    def __init__(self, message: str, file_path: Optional[str] = None,
+                 expected_format: Optional[str] = None, actual_format: Optional[str] = None, **kwargs):
+        super().__init__(message, file_path, **kwargs)
+        self.expected_format = expected_format
+        self.actual_format = actual_format
+    
+    def __str__(self) -> str:
+        base = super().__str__()
+        if self.expected_format and self.actual_format:
+            base += f" (expected: {self.expected_format}, actual: {self.actual_format})"
+        return base
+
 # Error mapping utilities
 def handle_rust_error(rust_error: Exception, context: Optional[Dict[str, Any]] = None) -> None:
     """Map Rust errors to appropriate Python exceptions and raise them.
@@ -255,6 +348,76 @@ def handle_rust_error(rust_error: Exception, context: Optional[Dict[str, Any]] =
     else:
         # Default mapping
         raise UACalcError(error_str)
+
+def map_xml_error(xml_error: Exception, file_path: Optional[str] = None, context: Optional[Dict[str, Any]] = None) -> XMLParsingError:
+    """Map XML parsing errors to UACalc XMLParsingError.
+    
+    Args:
+        xml_error: The XML parsing error to map
+        file_path: Optional file path for context
+        context: Optional additional context
+        
+    Returns:
+        XMLParsingError with mapped information
+    """
+    context = context or {}
+    context['file_path'] = file_path
+    
+    if hasattr(xml_error, 'position'):
+        line, column = xml_error.position
+        return XMLParsingError(
+            f"XML parsing error: {xml_error}",
+            file_path=file_path,
+            xml_error=str(xml_error),
+            line_number=line,
+            column_number=column
+        )
+    else:
+        return XMLParsingError(
+            f"XML parsing error: {xml_error}",
+            file_path=file_path,
+            xml_error=str(xml_error)
+        )
+
+def map_io_error(io_error: Exception, file_path: Optional[str] = None, context: Optional[Dict[str, Any]] = None) -> BadUAFileError:
+    """Map I/O errors to UACalc BadUAFileError.
+    
+    Args:
+        io_error: The I/O error to map
+        file_path: Optional file path for context
+        context: Optional additional context
+        
+    Returns:
+        BadUAFileError with mapped information
+    """
+    context = context or {}
+    context['file_path'] = file_path
+    
+    if isinstance(io_error, FileNotFoundError):
+        return BadUAFileError(
+            f"File not found: {file_path}",
+            file_path=file_path,
+            **context
+        )
+    elif isinstance(io_error, PermissionError):
+        return BadUAFileError(
+            f"Permission denied accessing file: {file_path}",
+            file_path=file_path,
+            **context
+        )
+    elif isinstance(io_error, UnicodeDecodeError):
+        return BadUAFileError(
+            f"Unicode decode error in file: {file_path}",
+            file_path=file_path,
+            line_number=getattr(io_error, 'start', None),
+            **context
+        )
+    else:
+        return BadUAFileError(
+            f"I/O error: {io_error}",
+            file_path=file_path,
+            **context
+        )
 
 def validate_inputs(*validators: Callable) -> Callable:
     """Decorator for input validation.
@@ -617,4 +780,3 @@ def handle_errors_gracefully(func: Callable) -> Callable:
 
 # Import time for context manager
 import time
-from contextlib import contextmanager

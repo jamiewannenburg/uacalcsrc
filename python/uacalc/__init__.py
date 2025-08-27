@@ -3,6 +3,10 @@ Universal Algebra Calculator - Python Package
 
 This package provides Python bindings for the UACalc Rust core library,
 enabling efficient universal algebra computations in Python.
+
+The package includes comprehensive I/O functionality for .ua files with
+full compatibility with Java UACalc, including XML parsing, validation,
+and round-trip file operations.
 """
 
 __version__ = "0.2.0"
@@ -69,6 +73,7 @@ except ImportError:
 # Import pure Python modules
 try:
     from . import io
+    from . import errors
 except ImportError:
     # I/O module not available, create fallback stubs
     class _IOStub:
@@ -77,10 +82,86 @@ except ImportError:
         
         def save_algebra(self, algebra, file_path: str):
             raise NotImplementedError("I/O module not available. Install required dependencies.")
+        
+        def validate_ua_file(self, file_path: str):
+            raise NotImplementedError("I/O module not available. Install required dependencies.")
+        
+        def list_ua_files(self, directory: str):
+            raise NotImplementedError("I/O module not available. Install required dependencies.")
+        
+        def get_algebra_info(self, file_path: str):
+            raise NotImplementedError("I/O module not available. Install required dependencies.")
     
     io = _IOStub()
+    errors = None
 
 from . import algebra as algebra_utils
+
+# Import I/O functions and error classes
+try:
+    from .io import (
+        load_algebra,
+        save_algebra,
+        validate_ua_file,
+        list_ua_files,
+        get_algebra_info,
+        convert_format,
+        repair_ua_file,
+    )
+    
+    from .errors import (
+        BadUAFileError,
+        InvalidOperationTableError,
+        UnsupportedAlgebraTypeError,
+        XMLParsingError,
+        FileFormatError,
+        map_xml_error,
+        map_io_error,
+    )
+except ImportError:
+    # Create fallback functions if I/O module is not available
+    def load_algebra(file_path: str):
+        raise NotImplementedError("I/O module not available. Install required dependencies.")
+    
+    def save_algebra(algebra, file_path: str):
+        raise NotImplementedError("I/O module not available. Install required dependencies.")
+    
+    def validate_ua_file(file_path: str):
+        raise NotImplementedError("I/O module not available. Install required dependencies.")
+    
+    def list_ua_files(directory: str):
+        raise NotImplementedError("I/O module not available. Install required dependencies.")
+    
+    def get_algebra_info(file_path: str):
+        raise NotImplementedError("I/O module not available. Install required dependencies.")
+    
+    def convert_format(input_file: str, output_file: str, target_format: str = "ua"):
+        raise NotImplementedError("I/O module not available. Install required dependencies.")
+    
+    def repair_ua_file(file_path: str, backup: bool = True):
+        raise NotImplementedError("I/O module not available. Install required dependencies.")
+    
+    # Create fallback error classes
+    class BadUAFileError(Exception):
+        pass
+    
+    class InvalidOperationTableError(Exception):
+        pass
+    
+    class UnsupportedAlgebraTypeError(Exception):
+        pass
+    
+    class XMLParsingError(Exception):
+        pass
+    
+    class FileFormatError(Exception):
+        pass
+    
+    def map_xml_error(xml_error, file_path=None, context=None):
+        raise NotImplementedError("I/O module not available. Install required dependencies.")
+    
+    def map_io_error(io_error, file_path=None, context=None):
+        raise NotImplementedError("I/O module not available. Install required dependencies.")
 
 # Re-export main classes and functions
 __all__ = [
@@ -97,6 +178,11 @@ __all__ = [
     # Error classes
     "UACalcError",
     "CancellationError",
+    "BadUAFileError",
+    "InvalidOperationTableError",
+    "UnsupportedAlgebraTypeError",
+    "XMLParsingError",
+    "FileFormatError",
     
     # Factory functions
     "create_algebra",
@@ -108,6 +194,19 @@ __all__ = [
     "create_term_arena",
     "create_progress_reporter",
     
+    # I/O functions
+    "load_algebra",
+    "save_algebra",
+    "validate_ua_file",
+    "list_ua_files",
+    "get_algebra_info",
+    "convert_format",
+    "repair_ua_file",
+    
+    # Error mapping functions
+    "map_xml_error",
+    "map_io_error",
+    
     # Utility functions
     "parse_term",
     "eval_term",
@@ -118,32 +217,91 @@ __all__ = [
 ]
 
 # Enhanced convenience functions
-def load_algebra(file_path: str) -> "Algebra":
-    """Load an algebra from a .ua file.
+def load_algebra_safe(file_path: str) -> Tuple[Optional["Algebra"], List[str]]:
+    """Load an algebra from a .ua file with error reporting.
     
     Args:
         file_path: Path to the .ua file
         
     Returns:
-        Algebra object loaded from the file
+        Tuple of (algebra, errors) where algebra is None if loading failed
         
-    Raises:
-        IOError: If the file cannot be read
-        ValueError: If the file format is invalid
+    Example:
+        algebra, errors = load_algebra_safe("test.ua")
+        if algebra is None:
+            print(f"Failed to load: {errors}")
+        else:
+            print(f"Loaded algebra: {algebra.name}")
     """
-    return io.load_algebra(file_path)
+    try:
+        algebra = load_algebra(file_path)
+        return algebra, []
+    except Exception as e:
+        return None, [str(e)]
 
-def save_algebra(algebra: "Algebra", file_path: str) -> None:
-    """Save an algebra to a .ua file.
+def save_algebra_validated(algebra: "Algebra", file_path: str) -> Tuple[bool, List[str]]:
+    """Save an algebra to a .ua file with validation.
     
     Args:
         algebra: Algebra object to save
         file_path: Path where to save the file
         
-    Raises:
-        IOError: If the file cannot be written
+    Returns:
+        Tuple of (success, errors) where success is True if saving succeeded
+        
+    Example:
+        success, errors = save_algebra_validated(algebra, "output.ua")
+        if not success:
+            print(f"Failed to save: {errors}")
     """
-    io.save_algebra(algebra, file_path)
+    try:
+        save_algebra(algebra, file_path)
+        # Validate the saved file
+        is_valid, validation_errors = validate_ua_file(file_path)
+        if not is_valid:
+            return False, validation_errors
+        return True, []
+    except Exception as e:
+        return False, [str(e)]
+
+def batch_load_algebras(file_paths: List[str]) -> Dict[str, Tuple[Optional["Algebra"], List[str]]]:
+    """Load multiple algebras from .ua files.
+    
+    Args:
+        file_paths: List of file paths to load
+        
+    Returns:
+        Dictionary mapping file paths to (algebra, errors) tuples
+        
+    Example:
+        results = batch_load_algebras(["alg1.ua", "alg2.ua", "alg3.ua"])
+        for file_path, (algebra, errors) in results.items():
+            if algebra is None:
+                print(f"Failed to load {file_path}: {errors}")
+            else:
+                print(f"Loaded {file_path}: {algebra.name}")
+    """
+    results = {}
+    for file_path in file_paths:
+        results[file_path] = load_algebra_safe(file_path)
+    return results
+
+def quick_algebra_info(file_path: str) -> Dict[str, Any]:
+    """Get quick information about an algebra without full parsing.
+    
+    Args:
+        file_path: Path to the .ua file
+        
+    Returns:
+        Dictionary with basic algebra information
+        
+    Example:
+        info = quick_algebra_info("test.ua")
+        print(f"Name: {info.get('name', 'Unknown')}")
+        print(f"Cardinality: {info.get('cardinality', 'Unknown')}")
+        print(f"Valid: {info.get('valid', False)}")
+    """
+    return get_algebra_info(file_path)
 
 def create_group_operation(name: str, size: int, operation_table: list) -> "Operation":
     """Create a group operation from a multiplication table.
@@ -236,8 +394,10 @@ def create_term_from_string(expr: str, arena: Optional["TermArena"] = None) -> "
 
 # Add convenience functions to __all__
 __all__.extend([
-    "load_algebra",
-    "save_algebra", 
+    "load_algebra_safe",
+    "save_algebra_validated", 
+    "batch_load_algebras",
+    "quick_algebra_info",
     "create_group_operation",
     "create_lattice_operations",
     "create_congruence_lattice_with_progress",
@@ -259,4 +419,61 @@ __all__.extend([
     "HAS_NETWORKX", 
     "HAS_MATPLOTLIB"
 ])
+
+# I/O module documentation
+def _get_io_documentation():
+    """Get I/O module documentation."""
+    return """
+I/O Module Features:
+
+1. .ua File Format Support:
+   - Full compatibility with Java UACalc .ua files
+   - XML-based format with nested structure
+   - Support for basic algebras (product, quotient algebras planned)
+
+2. File Operations:
+   - load_algebra(): Load algebra from .ua file
+   - save_algebra(): Save algebra to .ua file
+   - validate_ua_file(): Validate .ua file without loading
+   - list_ua_files(): List .ua files in directory
+   - get_algebra_info(): Get basic info without full parsing
+
+3. Error Handling:
+   - BadUAFileError: General .ua file errors
+   - InvalidOperationTableError: Operation table validation errors
+   - UnsupportedAlgebraTypeError: Unsupported algebra types
+   - XMLParsingError: XML parsing errors
+   - FileFormatError: File format errors
+
+4. Convenience Functions:
+   - load_algebra_safe(): Load with error reporting
+   - save_algebra_validated(): Save with validation
+   - batch_load_algebras(): Load multiple files
+   - quick_algebra_info(): Fast metadata extraction
+
+5. Validation Features:
+   - XML structure validation
+   - Algebra metadata validation
+   - Operation table validation
+   - Universe constraint validation
+   - Comprehensive error reporting
+
+Example Usage:
+    # Load and save algebras
+    algebra = load_algebra("test.ua")
+    save_algebra(algebra, "output.ua")
+    
+    # Validate files
+    is_valid, errors = validate_ua_file("test.ua")
+    if not is_valid:
+        print(f"Validation errors: {errors}")
+    
+    # Batch operations
+    results = batch_load_algebras(["alg1.ua", "alg2.ua"])
+    for file_path, (algebra, errors) in results.items():
+        if algebra is None:
+            print(f"Failed to load {file_path}: {errors}")
+        else:
+            print(f"Loaded {file_path}: {algebra.name}")
+"""
 
