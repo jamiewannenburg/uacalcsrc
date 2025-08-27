@@ -46,6 +46,7 @@ class AlgebraProperties:
     operation_count: int
     operation_symbols: List[str]
     operation_arities: List[int]
+    java_memory_mb: Optional[float] = None
 
 class JavaUACalcRunner:
     """Handles execution of Java UACalc operations"""
@@ -83,7 +84,7 @@ class JavaUACalcRunner:
             
         try:
             result = subprocess.run([
-                "java", "-cp", f"{self.java_jar_path};scripts",
+                "java", "-cp", f"{self.java_jar_path};scripts/scripts",
                 "scripts.JavaWrapper", "properties", ua_file
             ], capture_output=True, text=True, timeout=30)
             
@@ -98,14 +99,14 @@ class JavaUACalcRunner:
             logger.error(f"Error getting Java properties: {e}")
             return None
     
-    def compute_cg(self, ua_file: str, a: int, b: int) -> Optional[List[List[int]]]:
+    def compute_cg(self, ua_file: str, a: int, b: int) -> Optional[Tuple[List[List[int]], float]]:
         """Compute Cg(a,b) using Java UACalc"""
         if not self._compile_wrapper():
             return None
             
         try:
             result = subprocess.run([
-                "java", "-cp", f"{self.java_jar_path};scripts",
+                "java", "-cp", f"{self.java_jar_path};scripts/scripts",
                 "scripts.JavaWrapper", "cg", ua_file, str(a), str(b)
             ], capture_output=True, text=True, timeout=60)
             
@@ -114,20 +115,22 @@ class JavaUACalcRunner:
                 return None
                 
             data = json.loads(result.stdout)
-            return data.get("partition")
+            partition = data.get("partition")
+            memory_mb = data.get("java_memory_mb", 0.0)
+            return (partition, memory_mb) if partition else None
             
         except Exception as e:
             logger.error(f"Error computing Java Cg: {e}")
             return None
     
-    def compute_congruence_lattice(self, ua_file: str) -> Optional[Dict[str, Any]]:
+    def compute_congruence_lattice(self, ua_file: str) -> Optional[Tuple[Dict[str, Any], float]]:
         """Compute full congruence lattice using Java UACalc"""
         if not self._compile_wrapper():
             return None
             
         try:
             result = subprocess.run([
-                "java", "-cp", f"{self.java_jar_path};scripts",
+                "java", "-cp", f"{self.java_jar_path};scripts/scripts",
                 "scripts.JavaWrapper", "lattice", ua_file
             ], capture_output=True, text=True, timeout=300)
             
@@ -136,7 +139,8 @@ class JavaUACalcRunner:
                 return None
                 
             data = json.loads(result.stdout)
-            return data
+            memory_mb = data.pop("java_memory_mb", 0.0)
+            return (data, memory_mb)
             
         except Exception as e:
             logger.error(f"Error computing Java lattice: {e}")
@@ -260,9 +264,14 @@ def compare_cg_operations(ua_file: str, java_runner: JavaUACalcRunner,
             logger.info(f"Comparing Cg({a},{b}) for {ua_file}")
             
             # Time Java operation
-            java_time, java_memory, java_result = time_operation(
+            java_time, _, java_result = time_operation(
                 java_runner.compute_cg, ua_file, a, b
             )
+            
+            # Extract memory usage from Java result
+            java_memory = None
+            if java_result is not None:
+                java_result, java_memory = java_result
             
             # Time Rust operation
             rust_time, rust_memory, rust_result = time_operation(
@@ -318,9 +327,14 @@ def compare_lattice_operations(ua_file: str, java_runner: JavaUACalcRunner,
     logger.info(f"Comparing congruence lattice for {ua_file}")
     
     # Time Java operation
-    java_time, java_memory, java_result = time_operation(
+    java_time, _, java_result = time_operation(
         java_runner.compute_congruence_lattice, ua_file
     )
+    
+    # Extract memory usage from Java result
+    java_memory = None
+    if java_result is not None:
+        java_result, java_memory = java_result
     
     # Time Rust operation
     rust_time, rust_memory, rust_result = time_operation(
