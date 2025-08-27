@@ -1,0 +1,4 @@
+recursive-include ../python/uacalc *.py
+recursive-include ../python/uacalc *.pyi
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]

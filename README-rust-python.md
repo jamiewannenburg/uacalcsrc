@@ -55,6 +55,25 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 .\scripts\build.ps1
 ```
 
+### Manual Build Process
+
+If you prefer to build manually or encounter issues with the scripts:
+
+```bash
+# 1. Install dependencies
+cd uacalc-py
+pip install -e .
+
+# 2. Build the Rust extension (from uacalc-py directory)
+maturin develop
+
+# 3. Run tests
+cd ..
+python -m pytest tests/python/
+```
+
+**Important**: Always run `maturin` commands from the `uacalc-py` directory, not the root directory!
+
 ### Usage
 
 ```python

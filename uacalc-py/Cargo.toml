@@ -1,10 +1,12 @@
 [package]
 name = "uacalc-py"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
-description = "Python bindings for UACalc core library"
+description = "Python bindings for UACalc core library with comprehensive universal algebra support"
 license = "MIT"
 repository = "https://github.com/uacalc/uacalc-rust"
+keywords = ["universal-algebra", "congruence-lattice", "term-evaluation", "progress-reporting", "mathematics"]
+authors = ["UACalc Team <uacalc@example.com>"]
 
 [lib]
 name = "uacalc"
@@ -12,10 +14,31 @@ crate-type = ["cdylib"]
 
 [dependencies]
 pyo3 = { version = "0.19", features = ["extension-module"] }
-uacalc-core = { path = "../uacalc-core" }
+uacalc-core = { path = "../uacalc-core", features = ["conlat", "term-eval"] }
 serde = { workspace = true }
 serde_json = { workspace = true }
+once_cell = "1.18"
+parking_lot = "0.12"
 
 [build-dependencies]
 pyo3 = { version = "0.19", features = ["extension-module"] }
+
+[features]
+default = ["conlat", "term-eval"]
+conlat = ["uacalc-core/conlat"]
+term-eval = ["uacalc-core/term-eval"]
+taylor = ["uacalc-core/taylor"]
+parallel = ["uacalc-core/parallel"]
+full = ["conlat", "term-eval", "taylor", "parallel"]
+minimal = []
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+
+[profile.dev]
+opt-level = 0
+debug = true
 
