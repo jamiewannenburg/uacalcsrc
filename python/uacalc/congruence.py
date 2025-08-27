@@ -11,7 +11,7 @@ import warnings
 
 from . import (
     CongruenceLattice, Algebra, Partition, 
-    create_congruence_lattice, HAS_NETWORKX, HAS_MATPLOTLIB
+    create_congruence_lattice, create_partition_from_blocks, HAS_NETWORKX, HAS_MATPLOTLIB
 )
 
 class ProgressCallback(Protocol):
@@ -375,13 +375,18 @@ def congruence_closure(algebra: Algebra, pairs: List[Tuple[int, int]]) -> Partit
     """
     if not pairs:
         # Return the identity relation
-        size = algebra.cardinality()
-        return Partition(size)
+        size = algebra.cardinality
+        # Alternative approach using explicit blocks:
+        # identity = create_partition_from_blocks(size, [[i] for i in range(size)])
+        # return identity
+        return Partition.discrete(size)
     
     lattice = create_congruence_lattice(algebra)
     
     # Start with the identity relation
-    result = Partition(algebra.cardinality())
+    # Alternative approach using explicit blocks:
+    # result = create_partition_from_blocks(algebra.cardinality, [[i] for i in range(algebra.cardinality)])
+    result = Partition.discrete(algebra.cardinality)
     
     # Join with each principal congruence
     for a, b in pairs:

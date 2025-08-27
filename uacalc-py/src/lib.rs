@@ -30,6 +30,7 @@ fn uacalc_rust(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(create_algebra, m)?)?;
     m.add_function(wrap_pyfunction!(create_operation, m)?)?;
     m.add_function(wrap_pyfunction!(create_partition, m)?)?;
+    m.add_function(wrap_pyfunction!(create_partition_from_blocks, m)?)?;
     m.add_function(wrap_pyfunction!(create_binary_relation, m)?)?;
     m.add_function(wrap_pyfunction!(create_congruence_lattice, m)?)?;
     m.add_function(wrap_pyfunction!(create_term_arena, m)?)?;
@@ -884,6 +885,14 @@ impl PyPartition {
             .is_coarser_than(&other.inner)
             .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))
     }
+
+    /// Create a discrete partition (identity relation) where each element is in its own block
+    #[staticmethod]
+    fn discrete(size: usize) -> PyResult<PyPartition> {
+        Ok(PyPartition {
+            inner: BasicPartition::new(size),
+        })
+    }
 }
 
 /// Python wrapper for BasicBinaryRelation
@@ -1097,6 +1106,14 @@ fn create_operation(name: String, arity: usize, table: PyObject) -> PyResult<PyO
 #[pyfunction]
 fn create_partition(size: usize) -> PyResult<PyPartition> {
     Ok(PyPartition::new(size))
+}
+
+/// Helper function to create a partition from blocks
+#[pyfunction]
+fn create_partition_from_blocks(size: usize, blocks: Vec<Vec<usize>>) -> PyResult<PyPartition> {
+    let partition = BasicPartition::from_blocks(size, blocks)
+        .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
+    Ok(PyPartition { inner: partition })
 }
 
 /// Helper function to create a binary relation
