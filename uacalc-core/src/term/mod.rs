@@ -11,7 +11,7 @@ pub mod arena;
 pub use term::{Term, TermId};
 pub use variable::{Variable, VariableAssignment, VariableScope};
 pub use arena::TermArena;
-pub use evaluation::{EvaluationContext, eval_term, eval_term_int};
+pub use evaluation::{EvaluationContext, eval_term, eval_term_int, term_to_table};
 
 /// Maximum depth for term evaluation to prevent stack overflow
 pub const MAX_DEPTH: usize = 1000;

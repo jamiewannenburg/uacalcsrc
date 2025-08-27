@@ -11,7 +11,7 @@ pub mod taylor;
 pub use canonical::{canonical_form, make_union_find, UnionFind};
 pub use int_array::IntArray;
 pub use search::{find_markovic_mckenzie, find_siggers, SearchConfig, SearchResult};
-pub use taylor::{markovic_mckenzie_term, siggers_term, CanonicalForm, Taylor, TaylorSpec};
+pub use taylor::{markovic_mckenzie_term, siggers_term, Taylor, TaylorSpec};
 
 /// Re-export commonly used Taylor types
 pub mod prelude {

@@ -44,7 +44,7 @@ pub use conlat::{
 #[cfg(feature = "taylor")]
 pub use taylor::{IntArray, Taylor, TaylorSpec};
 #[cfg(feature = "term-eval")]
-pub use term::{eval_term, eval_term_int, EvaluationContext, Term, TermArena};
+pub use term::{eval_term, eval_term_int, term_to_table, EvaluationContext, Term, TermArena};
 
 /// Re-export commonly used types
 pub mod prelude {
@@ -72,10 +72,10 @@ pub mod prelude {
     };
 
     #[cfg(feature = "term-eval")]
-    pub use crate::{eval_term, eval_term_int, EvaluationContext, Term, TermArena};
+    pub use crate::{eval_term, eval_term_int, term_to_table, EvaluationContext, Term, TermArena};
 
     #[cfg(feature = "taylor")]
-    pub use crate::{markovic_mckenzie_term, siggers_term, IntArray, Taylor, TaylorSpec};
+    pub use crate::taylor::{markovic_mckenzie_term, siggers_term, IntArray, Taylor, TaylorSpec};
 }
 
 /// Common type aliases for better ergonomics

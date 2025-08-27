@@ -39,8 +39,8 @@ impl TaylorSpec {
         }
     }
 
-    /// Check if an array assignment satisfies the equations
-    pub fn satisfies_equations(&self, assignment: &IntArray) -> bool {
+    /// Check if the equations are satisfied (no assignment parameter needed)
+    pub fn satisfies_equations(&self) -> bool {
         // Create a local mutable clone of union_find for canonical form computation
         let mut uf = self.union_find.clone();
 
@@ -96,9 +96,54 @@ impl Taylor {
         &self.spec.union_find
     }
 
-    /// Check if an array assignment satisfies the equations
-    pub fn satisfies_equations(&self, assignment: &IntArray) -> bool {
-        self.spec.satisfies_equations(assignment)
+    /// Check if the equations are satisfied (no assignment parameter needed)
+    pub fn satisfies_equations(&self) -> bool {
+        // Create a local mutable clone of union_find for canonical form computation
+        let mut uf = self.spec.union_find.clone();
+
+        for (left, right) in &self.spec.equations {
+            // Compute canonical forms for both sides
+            let left_canonical = canonical_form(left, &mut uf);
+            let right_canonical = canonical_form(right, &mut uf);
+
+            // Check if canonical forms are equal
+            if left_canonical != right_canonical {
+                return false;
+            }
+        }
+        true
+    }
+
+    /// Check if the equations are satisfied with a specific assignment
+    pub fn satisfies_equations_with_assignment(&self, assignment: &IntArray) -> bool {
+        // Create a fresh UnionFind seeded from self.spec.equations
+        let mut uf = make_union_find(&self.spec.equations);
+
+        // Additionally union entries implied by the assignment
+        for i in 0..assignment.len() {
+            let value = assignment.get(i).unwrap();
+            // Create IntArray representations for union
+            let pos_array = IntArray::from_vec(vec![i as u8]);
+            let val_array = IntArray::from_vec(vec![value as u8]);
+            uf.union(&pos_array, &val_array);
+        }
+
+        for (left, right) in &self.spec.equations {
+            // Compute canonical forms for both sides
+            let left_canonical = canonical_form(left, &mut uf);
+            let right_canonical = canonical_form(right, &mut uf);
+
+            // Check if canonical forms are equal
+            if left_canonical != right_canonical {
+                return false;
+            }
+        }
+        true
+    }
+
+    /// Get mutable access to the union-find structure
+    pub fn union_find_mut(&mut self) -> &mut UnionFind {
+        &mut self.spec.union_find
     }
 
     /// Find an interpretation at the given level
@@ -107,7 +152,7 @@ impl Taylor {
         let assignments = self.generate_assignments(level);
 
         for assignment in assignments {
-            if self.satisfies_equations(&assignment) {
+            if self.satisfies_equations_with_assignment(&assignment) {
                 // Convert the assignment to a term
                 return Some(self.assignment_to_term(&assignment, arena));
             }
@@ -122,8 +167,8 @@ impl Taylor {
         let size = 2usize.pow(level as u32); // Binary assignments
 
         for i in 0..size {
-            let mut assignment = IntArray::new(self.arity);
-            for j in 0..self.arity {
+            let mut assignment = IntArray::new(self.arity());
+            for j in 0..self.arity() {
                 let bit = (i >> j) & 1;
                 assignment.set(j, bit).unwrap();
             }
@@ -177,17 +222,16 @@ pub fn markovic_mckenzie_term() -> Taylor {
     let arity = 4;
     let symbol = OperationSymbol::new("MM".to_string(), arity);
 
-    // Define the MM equations
+    // Define the canonical MM equations from Java Taylor.java
     let equations = vec![
         (
-            IntArray::from_vec(vec![0, 0, 0, 0]),
-            IntArray::from_vec(vec![0, 0, 0, 0]),
+            IntArray::from_vec(vec![1, 0, 0, 0]),
+            IntArray::from_vec(vec![0, 0, 1, 1]),
         ),
         (
-            IntArray::from_vec(vec![1, 1, 1, 1]),
-            IntArray::from_vec(vec![1, 1, 1, 1]),
+            IntArray::from_vec(vec![0, 0, 1, 0]),
+            IntArray::from_vec(vec![0, 1, 0, 0]),
         ),
-        // Add more equations as needed
     ];
 
     let spec = TaylorSpec::new(arity, equations, symbol);
@@ -196,20 +240,19 @@ pub fn markovic_mckenzie_term() -> Taylor {
 
 /// Create the Siggers term
 pub fn siggers_term() -> Taylor {
-    let arity = 4;
+    let arity = 6;
     let symbol = OperationSymbol::new("Siggers".to_string(), arity);
 
-    // Define the Siggers equations
+    // Define the canonical Siggers equations from Java Taylor.java
     let equations = vec![
         (
-            IntArray::from_vec(vec![0, 0, 0, 0]),
-            IntArray::from_vec(vec![0, 0, 0, 0]),
+            IntArray::from_vec(vec![1, 1, 0, 0, 0, 0]),
+            IntArray::from_vec(vec![0, 0, 1, 0, 1, 0]),
         ),
         (
-            IntArray::from_vec(vec![1, 1, 1, 1]),
-            IntArray::from_vec(vec![1, 1, 1, 1]),
+            IntArray::from_vec(vec![0, 0, 0, 0, 1, 1]),
+            IntArray::from_vec(vec![0, 1, 0, 1, 0, 0]),
         ),
-        // Add more equations as needed
     ];
 
     let spec = TaylorSpec::new(arity, equations, symbol);
@@ -228,8 +271,13 @@ pub fn term_from_array(
     } else {
         // Split the array and create a balanced tree
         let mid = assignment.len() / 2;
-        let left_array = IntArray::from_slice(&assignment.as_slice()[..mid]);
-        let right_array = IntArray::from_slice(&assignment.as_slice()[mid..]);
+        let left_slice: Vec<usize> = assignment.as_slice().iter().map(|&x| x as usize).collect();
+        let right_slice: Vec<usize> = assignment.as_slice()[mid..]
+            .iter()
+            .map(|&x| x as usize)
+            .collect();
+        let left_array = IntArray::from_slice(&left_slice[..mid]);
+        let right_array = IntArray::from_slice(&right_slice);
 
         let left_id = term_from_array(&left_array, arena, symbol);
         let right_id = term_from_array(&right_array, arena, symbol);

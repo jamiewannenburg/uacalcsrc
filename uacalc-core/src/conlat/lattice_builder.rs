@@ -12,82 +12,7 @@ use std::collections::{HashMap, HashSet};
 #[cfg(feature = "parallel")]
 use rayon::prelude::*;
 
-/// Bitset for tracking join-irreducible inclusion
-#[derive(Debug, Clone)]
-pub struct JIBitset {
-    /// Bitset data - each bit represents inclusion of a join-irreducible
-    bits: Vec<u64>,
-    /// Number of join-irreducibles
-    ji_count: usize,
-}
 
-impl JIBitset {
-    /// Create a new bitset for the given number of join-irreducibles
-    pub fn new(ji_count: usize) -> Self {
-        let bits_len = (ji_count + 63) / 64; // Ceiling division
-        Self {
-            bits: vec![0; bits_len],
-            ji_count,
-        }
-    }
-
-    /// Set a bit (include a join-irreducible)
-    pub fn set(&mut self, ji_index: usize) {
-        if ji_index < self.ji_count {
-            let word_index = ji_index / 64;
-            let bit_index = ji_index % 64;
-            self.bits[word_index] |= 1 << bit_index;
-        }
-    }
-
-    /// Clear a bit (exclude a join-irreducible)
-    pub fn clear(&mut self, ji_index: usize) {
-        if ji_index < self.ji_count {
-            let word_index = ji_index / 64;
-            let bit_index = ji_index % 64;
-            self.bits[word_index] &= !(1 << bit_index);
-        }
-    }
-
-    /// Check if a bit is set
-    pub fn test(&self, ji_index: usize) -> bool {
-        if ji_index < self.ji_count {
-            let word_index = ji_index / 64;
-            let bit_index = ji_index % 64;
-            (self.bits[word_index] & (1 << bit_index)) != 0
-        } else {
-            false
-        }
-    }
-
-    /// Count the number of set bits
-    pub fn count_ones(&self) -> usize {
-        self.bits
-            .iter()
-            .map(|&word| word.count_ones() as usize)
-            .sum()
-    }
-
-    /// Union with another bitset
-    pub fn union_with(&mut self, other: &JIBitset) {
-        for (i, &other_word) in other.bits.iter().enumerate() {
-            if i < self.bits.len() {
-                self.bits[i] |= other_word;
-            }
-        }
-    }
-
-    /// Intersection with another bitset
-    pub fn intersect_with(&mut self, other: &JIBitset) {
-        for (i, &other_word) in other.bits.iter().enumerate() {
-            if i < self.bits.len() {
-                self.bits[i] &= other_word;
-            } else {
-                break;
-            }
-        }
-    }
-}
 
 /// Iterator for generating combinations without materializing the entire list
 struct CombinationIterator {
@@ -128,20 +53,20 @@ impl Iterator for CombinationIterator {
 
         let result = self.current.clone()?;
 
-        // Generate next combination
-        let mut i = self.k - 1;
-        while i < self.k && result[i] == self.n - self.k + i {
-            i = i.wrapping_sub(1);
+        // Standard combination generation algorithm
+        let mut i = self.k;
+        while i > 0 && result[i - 1] == self.n - self.k + i - 1 {
+            i -= 1;
         }
 
-        if i >= self.k {
+        if i == 0 {
             self.done = true;
             return Some(result);
         }
 
         let mut next = result.clone();
-        next[i] += 1;
-        for j in (i + 1)..self.k {
+        next[i - 1] += 1;
+        for j in i..self.k {
             next[j] = next[j - 1] + 1;
         }
 
@@ -161,8 +86,6 @@ pub struct LatticeBuilder<'a> {
     current_level: usize,
     max_level: usize,
     progress_callback: Option<Box<dyn super::ProgressCallback>>,
-    /// Bitset tracking for each congruence in the universe
-    ji_bitsets: Vec<JIBitset>,
     /// Whether to use parallel processing
     parallel: bool,
 }
@@ -180,7 +103,6 @@ impl<'a> LatticeBuilder<'a> {
             current_level: 0,
             max_level: size * (size - 1) / 2, // Maximum possible JI's
             progress_callback: None,
-            ji_bitsets: Vec::new(),
             parallel: false,
         }
     }
@@ -237,6 +159,7 @@ impl<'a> LatticeBuilder<'a> {
         self.principal_congruence_cache.precompute_all()?;
 
         // Generate all principal congruences θ(a,b) for a < b
+        let mut principal_pairs = Vec::new();
         for a in 0..size {
             for b in (a + 1)..size {
                 let principal = self
@@ -247,8 +170,7 @@ impl<'a> LatticeBuilder<'a> {
                 // Check if this principal congruence is join-irreducible
                 if self.is_join_irreducible(&principal)? {
                     self.join_irreducibles.push(principal);
-                    self.principal_cache
-                        .insert((a, b), self.join_irreducibles.len() - 1);
+                    principal_pairs.push((a, b));
                 }
             }
         }
@@ -257,10 +179,29 @@ impl<'a> LatticeBuilder<'a> {
         self.join_irreducibles
             .sort_by(|a, b| a.num_blocks().cmp(&b.num_blocks()));
 
+        // Now populate the cache with correct indices after sorting
+        for (a, b) in principal_pairs {
+            // Find the index of this principal congruence in the sorted list
+            let principal = self
+                .principal_congruence_cache
+                .get_principal_congruence(a, b)?;
+            if let Some(index) = self.join_irreducibles.iter().position(|ji| ji == principal) {
+                self.principal_cache.insert((a, b), index);
+            }
+        }
+
+
+
         Ok(())
     }
 
     /// Check if a congruence is join-irreducible
+    /// 
+    /// Note: This implementation relies primarily on principal congruences for efficiency.
+    /// It may misclassify non-principal lower covers in some cases. For a complete
+    /// verification, one would need to check all congruences in the lattice, not just
+    /// principal ones. This approximation is sufficient for most practical purposes
+    /// where principal congruences are the primary source of join-irreducibles.
     fn is_join_irreducible(&mut self, congruence: &BasicPartition) -> UACalcResult<bool> {
         // A congruence is join-irreducible if it cannot be expressed as
         // the join of strictly smaller congruences
@@ -629,6 +570,44 @@ mod tests {
     use super::*;
     use crate::algebra::BasicAlgebra;
     use crate::operation::{OperationSymbol, TableOperation};
+
+    #[test]
+    fn test_combination_iterator() {
+        // Test (3,2) combinations
+        let iter = CombinationIterator::new(3, 2);
+        let combinations: Vec<Vec<usize>> = iter.collect();
+        assert_eq!(combinations, vec![
+            vec![0, 1],
+            vec![0, 2],
+            vec![1, 2],
+        ]);
+
+        // Test (4,2) combinations
+        let iter = CombinationIterator::new(4, 2);
+        let combinations: Vec<Vec<usize>> = iter.collect();
+        assert_eq!(combinations, vec![
+            vec![0, 1],
+            vec![0, 2],
+            vec![0, 3],
+            vec![1, 2],
+            vec![1, 3],
+            vec![2, 3],
+        ]);
+
+        // Test (3,3) combinations
+        let iter = CombinationIterator::new(3, 3);
+        let combinations: Vec<Vec<usize>> = iter.collect();
+        assert_eq!(combinations, vec![vec![0, 1, 2]]);
+
+        // Test invalid combinations
+        let iter = CombinationIterator::new(2, 3); // k > n
+        let combinations: Vec<Vec<usize>> = iter.collect();
+        assert_eq!(combinations, Vec::<Vec<usize>>::new());
+
+        let iter = CombinationIterator::new(3, 0); // k = 0
+        let combinations: Vec<Vec<usize>> = iter.collect();
+        assert_eq!(combinations, Vec::<Vec<usize>>::new());
+    }
 
     #[test]
     fn test_build_universe_trivial() {

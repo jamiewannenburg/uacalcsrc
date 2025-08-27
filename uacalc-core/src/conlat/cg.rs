@@ -6,9 +6,16 @@
 use crate::algebra::SmallAlgebra;
 use crate::operation::Operation;
 use crate::partition::{BasicPartition, Partition};
-use crate::utils::{horner_decode, power_checked};
+use crate::utils::{power_checked, MAX_OPERATION_ARITY};
 use crate::{UACalcError, UACalcResult};
 use std::collections::{HashSet, VecDeque};
+use arrayvec::ArrayVec;
+
+/// Lightweight operation info for efficient propagation
+struct OperationInfo<'a> {
+    arity: usize,
+    table_opt: Option<&'a crate::operation::FlatOperationTable>,
+}
 
 /// Congruence generator for efficient congruence computation
 pub struct CongruenceGenerator<'a> {
@@ -117,21 +124,52 @@ impl<'a> CongruenceGenerator<'a> {
                 .map_err(|_| UACalcError::InvalidOperation {
                     message: "Failed to lock operation".to_string(),
                 })?;
-            self.propagate_operation(&*op_guard, a, b, op_idx)?;
+            
+            // Create lightweight operation info
+            let op_info = OperationInfo {
+                arity: op_guard.arity(),
+                table_opt: op_guard.get_table(),
+            };
+            
+            self.propagate_operation(&*op_guard, &op_info, a, b, op_idx)?;
         }
         Ok(())
+    }
+
+    /// Check if operation has a flat table available and cache the result
+    fn check_operation_table(&mut self, operation: &dyn Operation, op_idx: usize) -> bool {
+        // Check if we've already determined this operation has a flat table
+        if !self.flat_table_ops.contains(&op_idx) {
+            // Check if this operation has a flat table available
+            if operation.get_table().is_some() {
+                self.flat_table_ops.insert(op_idx);
+                return true;
+            }
+            return false;
+        }
+        true
     }
 
     /// Propagate a pair through a specific operation
     fn propagate_operation(
         &mut self,
         operation: &dyn Operation,
+        op_info: &OperationInfo<'_>,
         a: usize,
         b: usize,
         op_idx: usize,
     ) -> UACalcResult<()> {
-        let arity = operation.arity();
+        let arity = op_info.arity;
         let size = self.algebra.cardinality();
+
+        // Predeclare other_indices once and reuse
+        let mut other_indices: ArrayVec<usize, MAX_OPERATION_ARITY> = ArrayVec::new();
+        for _ in 0..arity - 1 {
+            other_indices.push(0);
+        }
+
+        // Use the pre-captured table_opt
+        let table_opt = op_info.table_opt;
 
         // For each position where a~b can differ
         for pos in 0..arity {
@@ -143,41 +181,34 @@ impl<'a> CongruenceGenerator<'a> {
                 }
             })?;
 
-            // Reuse a single buffer for efficiency
-            let mut args = vec![0; arity];
+            // Reset other_indices for this position
+            other_indices.fill(0);
 
-            for other_tuple_idx in 0..total_other_tuples {
-                let other_args = horner_decode(other_tuple_idx, size, other_arity);
-
+            for _ in 0..total_other_tuples {
                 // Fill args with other arguments, skipping pos
                 let mut other_idx = 0;
+                let mut args = vec![0; arity];
                 for i in 0..arity {
                     if i != pos {
-                        args[i] = other_args[other_idx];
+                        args[i] = other_indices[other_idx];
                         other_idx += 1;
                     }
                 }
 
                 // Set args[pos] = a and evaluate
                 args[pos] = a;
-                let result_a = {
-                    let table = operation.get_table();
-                    if let Some(table) = table {
-                        table.value_at(&args)?
-                    } else {
-                        operation.value(&args)?
-                    }
+                let result_a = if let Some(table) = table_opt {
+                    table.value_at(&args)?
+                } else {
+                    operation.value(&args)?
                 };
 
                 // Set args[pos] = b and evaluate
                 args[pos] = b;
-                let result_b = {
-                    let table = operation.get_table();
-                    if let Some(table) = table {
-                        table.value_at(&args)?
-                    } else {
-                        operation.value(&args)?
-                    }
+                let result_b = if let Some(table) = table_opt {
+                    table.value_at(&args)?
+                } else {
+                    operation.value(&args)?
                 };
 
                 // If results are in different blocks, union them
@@ -188,6 +219,17 @@ impl<'a> CongruenceGenerator<'a> {
                     if self.partition.num_blocks() == 1 {
                         return Ok(());
                     }
+                }
+
+                // Increment other_indices for next iteration
+                let mut i = 0;
+                while i < other_arity {
+                    other_indices[i] += 1;
+                    if other_indices[i] < size {
+                        break;
+                    }
+                    other_indices[i] = 0;
+                    i += 1;
                 }
             }
         }
@@ -237,6 +279,9 @@ pub fn is_compatible_with_operation(
     let arity = operation.arity();
     let size = partition.size();
 
+    // Allocate args buffer once
+    let mut args = vec![0; arity];
+
     // For each pair of elements in the same block
     for block in partition.blocks()? {
         for i in 0..block.len() {
@@ -245,25 +290,43 @@ pub fn is_compatible_with_operation(
                 let b = block[j];
 
                 // Check all possible argument tuples
-                let total_tuples = size.pow(arity as u32);
+                let total_tuples = power_checked(size, arity).ok_or_else(|| {
+                    UACalcError::ArithmeticOverflow {
+                        operation: format!("size^{} for tuple enumeration", arity),
+                    }
+                })?;
 
-                for tuple_idx in 0..total_tuples {
-                    let args = horner_decode(tuple_idx, size, arity);
-
-                    // Create tuples with a and b in each position
+                for _ in 0..total_tuples {
+                    // For each position, test a and b
                     for pos in 0..arity {
-                        let mut args_a = args.clone();
-                        let mut args_b = args.clone();
-                        args_a[pos] = a;
-                        args_b[pos] = b;
-
-                        let result_a = operation.value(&args_a)?;
-                        let result_b = operation.value(&args_b)?;
+                        let old = args[pos];
+                        
+                        // Test with a
+                        args[pos] = a;
+                        let result_a = operation.value(&args)?;
+                        
+                        // Test with b
+                        args[pos] = b;
+                        let result_b = operation.value(&args)?;
+                        
+                        // Restore original value
+                        args[pos] = old;
 
                         // If results are in different blocks, partition is not compatible
                         if !partition.same_block(result_a, result_b)? {
                             return Ok(false);
                         }
+                    }
+
+                    // Increment args for next iteration
+                    let mut i = 0;
+                    while i < arity {
+                        args[i] += 1;
+                        if args[i] < size {
+                            break;
+                        }
+                        args[i] = 0;
+                        i += 1;
                     }
                 }
             }

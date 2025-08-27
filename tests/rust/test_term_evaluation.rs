@@ -297,7 +297,7 @@ fn test_evaluation_with_safe_resolver() {
     let mut arena = TermArena::new();
     let x0 = arena.make_variable(0);
     let x1 = arena.make_variable(1);
-    let symbol = arena.make_symbol("f".to_string(), 2);
+    let symbol = OperationSymbol::new("f".to_string(), 2);
     let term_id = arena.make_term(&symbol, &[x0, x1]);
     
     // Test evaluation with different variable assignments
@@ -334,7 +334,7 @@ fn test_evaluation_context_caching() {
     // Create a term: g(x0)
     let mut arena = TermArena::new();
     let x0 = arena.make_variable(0);
-    let symbol = arena.make_symbol("g".to_string(), 1);
+    let symbol = OperationSymbol::new("g".to_string(), 1);
     let term_id = arena.make_term(&symbol, &[x0]);
     
     // Test that the evaluation context properly caches operation table availability

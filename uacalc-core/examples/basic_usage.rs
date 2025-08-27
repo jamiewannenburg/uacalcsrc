@@ -30,14 +30,12 @@ fn main() -> UACalcResult<()> {
     println!("Cardinality: {}", algebra.cardinality());
     println!("Number of operations: {}", algebra.operations().len());
     
-    // Test the operation using the new with_operation method
-    algebra.with_operation_by_symbol("add", |op| {
-        println!("Testing operation: {}", op.symbol().name);
-        println!("0 + 1 = {}", op.value(&[0, 1])?);
-        println!("1 + 2 = {}", op.value(&[1, 2])?);
-        println!("2 + 2 = {}", op.value(&[2, 2])?);
-        Ok(())
-    })?;
+    // Test the operation
+    let op = algebra.operation_by_symbol("add")?;
+    println!("Testing operation: {}", op.symbol().name());
+    println!("0 + 1 = {}", op.value(&[0, 1])?);
+    println!("1 + 2 = {}", op.value(&[1, 2])?);
+    println!("2 + 2 = {}", op.value(&[2, 2])?);
     
     Ok(())
 }

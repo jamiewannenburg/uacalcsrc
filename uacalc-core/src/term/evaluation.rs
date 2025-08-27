@@ -10,8 +10,7 @@ use crate::term::{Term, TermArena, TermId, MAX_DEPTH};
 use crate::utils::MAX_OPERATION_ARITY;
 use crate::{UACalcError, UACalcResult};
 use arrayvec::ArrayVec;
-use smallvec::SmallVec;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 /// Compact stack frame for evaluation
 #[derive(Debug, Clone, Copy)]
@@ -40,7 +39,7 @@ pub struct EvaluationContext<'a> {
     /// Operation cache for fast lookup - tracks which operations have flat tables
     flat_table_ops: HashSet<usize>,
     /// Symbol name to operation index mapping
-    symbol_to_op: SmallVec<[Option<usize>; 32]>, // Most algebras have ≤32 operations
+    name_to_op: HashMap<String, usize>,
     /// Evaluation stack for iterative evaluation using compact frames
     stack: ArrayVec<StackFrame, MAX_DEPTH>,
     /// Results cache for evaluated terms - indexed by TermId
@@ -55,15 +54,12 @@ impl<'a> EvaluationContext<'a> {
     /// Create a new evaluation context
     pub fn new(algebra: &'a dyn SmallAlgebra, variables: &'a VariableAssignment) -> Self {
         let operations = algebra.operations();
-        let num_ops = operations.len();
-
+        
         // Build symbol name to operation index mapping
-        let mut symbol_to_op = SmallVec::with_capacity(num_ops);
+        let mut name_to_op = HashMap::new();
         for (idx, operation) in operations.iter().enumerate() {
-            if let Ok(_op_guard) = operation.lock() {
-                symbol_to_op.push(Some(idx));
-            } else {
-                symbol_to_op.push(None);
+            if let Ok(op_guard) = operation.lock() {
+                name_to_op.insert(op_guard.symbol().name().to_string(), idx);
             }
         }
 
@@ -71,7 +67,7 @@ impl<'a> EvaluationContext<'a> {
             algebra,
             variables,
             flat_table_ops: HashSet::new(),
-            symbol_to_op,
+            name_to_op,
             stack: ArrayVec::new(),
             results: Vec::new(),
             strict: false,
@@ -189,6 +185,12 @@ impl<'a> EvaluationContext<'a> {
                             // Push children onto stack first (in reverse order for correct evaluation)
                             for &child_id in children.iter().rev() {
                                 if self.results[child_id].is_none() {
+                                    // Check for stack overflow
+                                    if self.stack.len() >= MAX_DEPTH {
+                                        return Err(UACalcError::InvalidOperation {
+                                            message: format!("Evaluation stack overflow: term depth exceeds MAX_DEPTH ({})", MAX_DEPTH),
+                                        });
+                                    }
                                     self.stack.push(StackFrame::new(child_id));
                                 }
                             }
@@ -212,16 +214,9 @@ impl<'a> EvaluationContext<'a> {
     ) -> UACalcResult<usize> {
         // Resolve symbol_id to operation index via symbol name
         let symbol = arena.get_symbol(symbol_id)?;
-        let symbol_name = symbol.name();
-
-        // Find operation index - use direct indexing if possible
-        let op_idx = if symbol_id < self.symbol_to_op.len() as u16 {
-            self.symbol_to_op[symbol_id as usize]
-        } else {
-            None
-        }
-        .ok_or_else(|| UACalcError::InvalidOperation {
-            message: format!("Operation '{}' not found in algebra", symbol_name),
+        let name = symbol.name();
+        let op_idx = self.name_to_op.get(name).copied().ok_or_else(|| UACalcError::InvalidOperation {
+            message: format!("Operation '{}' not found in algebra", name),
         })?;
 
         let operations = self.algebra.operations();
@@ -482,4 +477,59 @@ mod tests {
         assert!(stats.cache_size > 0);
         assert!(stats.max_arity > 0);
     }
+}
+
+/// Generate an operation table from a term
+pub fn term_to_table(
+    term_id: TermId,
+    arena: &TermArena,
+    algebra: &dyn SmallAlgebra,
+) -> UACalcResult<crate::operation::FlatOperationTable> {
+    let size = algebra.cardinality();
+    let term = arena.get_term(term_id)?;
+    
+    // Determine arity from the term structure
+    let arity = match term {
+        Term::Variable(_) => 0, // Constants have arity 0
+        Term::Operation { children, .. } => children.len(),
+    };
+    
+    // For constants, create a 0-ary table
+    if arity == 0 {
+        let value = eval_term(term_id, arena, algebra, &VariableAssignment::new())?;
+        let mut flat_table = crate::operation::FlatOperationTable::new(0, size)?;
+        flat_table.set(0, value)?;
+        return Ok(flat_table);
+    }
+    
+    // For operations, evaluate all possible input tuples
+    let total_tuples = size.pow(arity as u32);
+    let mut table = vec![0; total_tuples];
+    
+    // Generate all possible input tuples using mixed-radix increment
+    let mut args = vec![0; arity];
+    
+    for tuple_idx in 0..total_tuples {
+        // Convert tuple index to argument values
+        let mut temp_idx = tuple_idx;
+        for i in 0..arity {
+            args[i] = temp_idx % size;
+            temp_idx /= size;
+        }
+        
+        // Evaluate the term with these arguments
+        let variables = VariableAssignment::from_values(args.clone());
+        let result = eval_term(term_id, arena, algebra, &variables)?;
+        table[tuple_idx] = result;
+    }
+    
+    // Create the operation table
+    let mut flat_table = crate::operation::FlatOperationTable::new(arity, size)?;
+    
+    // Copy the computed values into the table
+    for (i, &value) in table.iter().enumerate() {
+        flat_table.set(i, value)?;
+    }
+    
+    Ok(flat_table)
 }

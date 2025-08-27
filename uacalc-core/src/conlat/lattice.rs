@@ -1,7 +1,7 @@
 use crate::algebra::{Algebra, SmallAlgebra};
 use crate::binary_relation::{BasicBinaryRelation, BinaryRelation};
 use crate::conlat::{cg, lattice_builder};
-use crate::partition::{BasicPartition, Partition};
+use crate::partition::{BasicPartition, Partition, coarsest_partition};
 use crate::{UACalcError, UACalcResult};
 use serde::{Deserialize, Serialize};
 use std::any::Any;
@@ -474,13 +474,4 @@ where
     }
 }
 
-/// Create the coarsest partition (all elements in one block)
-fn coarsest_partition(size: usize) -> UACalcResult<BasicPartition> {
-    let mut partition = BasicPartition::new(size);
-    if size > 1 {
-        for i in 1..size {
-            partition.union(0, i)?;
-        }
-    }
-    Ok(partition)
-}
+

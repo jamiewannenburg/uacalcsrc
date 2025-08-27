@@ -192,7 +192,7 @@ pub fn find_interpretation(taylor: &Taylor, config: SearchConfig) -> SearchResul
             let assignment = incrementor.current();
             
             // Check if this assignment satisfies the equations
-            if taylor.satisfies_equations(assignment) {
+            if taylor.satisfies_equations_with_assignment(assignment) {
                 // Convert to term
                 let mut arena = TermArena::new();
                 let term_id = crate::taylor::taylor::term_from_array(assignment, &mut arena, &taylor.spec().symbol);
@@ -247,7 +247,7 @@ pub fn find_interpretation_early_termination(
             }
             
             // Check if this assignment satisfies the equations
-            if taylor.satisfies_equations(assignment) {
+            if taylor.satisfies_equations_with_assignment(assignment) {
                 // Convert to term
                 let mut arena = TermArena::new();
                 let term_id = crate::taylor::taylor::term_from_array(assignment, &mut arena, &taylor.spec().symbol);
@@ -298,7 +298,7 @@ pub fn find_multiple_interpretations(
             let assignment = incrementor.current();
             
             // Check if this assignment satisfies the equations
-            if taylor.satisfies_equations(assignment) {
+            if taylor.satisfies_equations_with_assignment(assignment) {
                 // Convert to term
                 let mut arena = TermArena::new();
                 let term_id = crate::taylor::taylor::term_from_array(assignment, &mut arena, &taylor.spec().symbol);
