@@ -74,9 +74,6 @@ public class JavaWrapper {
                 .append(",");
         result.append("\"operation_count\":")
                 .append(algebra.operations().size()).append(",");
-        result.append("\"java_memory_mb\":")
-                .append((endMemory - startMemory) / 1024.0 / 1024.0)
-                .append(",");
 
         // Operation symbols
         result.append("\"operation_symbols\":[");

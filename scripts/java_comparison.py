@@ -83,8 +83,8 @@ class JavaUACalcRunner:
             
         try:
             result = subprocess.run([
-                "java", "-cp", f"{self.java_jar_path}:scripts",
-                "JavaWrapper", "properties", ua_file
+                "java", "-cp", f"{self.java_jar_path};scripts",
+                "scripts.JavaWrapper", "properties", ua_file
             ], capture_output=True, text=True, timeout=30)
             
             if result.returncode != 0:
@@ -105,8 +105,8 @@ class JavaUACalcRunner:
             
         try:
             result = subprocess.run([
-                "java", "-cp", f"{self.java_jar_path}:scripts",
-                "JavaWrapper", "cg", ua_file, str(a), str(b)
+                "java", "-cp", f"{self.java_jar_path};scripts",
+                "scripts.JavaWrapper", "cg", ua_file, str(a), str(b)
             ], capture_output=True, text=True, timeout=60)
             
             if result.returncode != 0:
@@ -127,8 +127,8 @@ class JavaUACalcRunner:
             
         try:
             result = subprocess.run([
-                "java", "-cp", f"{self.java_jar_path}:scripts",
-                "JavaWrapper", "lattice", ua_file
+                "java", "-cp", f"{self.java_jar_path};scripts",
+                "scripts.JavaWrapper", "lattice", ua_file
             ], capture_output=True, text=True, timeout=300)
             
             if result.returncode != 0:
@@ -157,9 +157,9 @@ class RustUACalcRunner:
             return AlgebraProperties(
                 name=algebra.name,
                 cardinality=algebra.cardinality,
-                operation_count=len(algebra.operations),
-                operation_symbols=[op.symbol for op in algebra.operations],
-                operation_arities=[op.arity for op in algebra.operations]
+                operation_count=len(list(algebra.operations())),
+                operation_symbols=[op.symbol for op in algebra.operations()],
+                operation_arities=[op.arity for op in algebra.operations()]
             )
             
         except Exception as e:
@@ -171,7 +171,8 @@ class RustUACalcRunner:
         try:
             import uacalc
             algebra = uacalc.load_algebra(ua_file)
-            partition = algebra.cg(a, b)
+            lattice = uacalc.create_congruence_lattice(algebra)
+            partition = lattice.principal_congruence(a, b)
             
             # Convert partition to list of blocks
             blocks = []
@@ -188,10 +189,10 @@ class RustUACalcRunner:
         try:
             import uacalc
             algebra = uacalc.load_algebra(ua_file)
-            lattice = algebra.congruence_lattice()
+            lattice = uacalc.create_congruence_lattice(algebra)
             
             return {
-                "size": len(lattice),
+                "size": lattice.size(),
                 "join_irreducibles": len(lattice.join_irreducibles()),
                 "height": lattice.height(),
                 "width": lattice.width()
@@ -282,7 +283,7 @@ def compare_cg_operations(ua_file: str, java_runner: JavaUACalcRunner,
             # Calculate speedup and memory improvement
             speedup = java_time / rust_time if rust_time > 0 else float('inf')
             memory_improvement = None
-            if java_memory is not None and rust_memory is not None:
+            if java_memory is not None and rust_memory is not None and java_memory > 0:
                 memory_improvement = (java_memory - rust_memory) / java_memory * 100
             
             result = ComparisonResult(
