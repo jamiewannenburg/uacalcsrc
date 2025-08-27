@@ -7,12 +7,12 @@ use crate::algebra::SmallAlgebra;
 use crate::conlat::principal::PrincipalCongruenceCache;
 use crate::partition::{BasicPartition, Partition};
 use crate::{UACalcError, UACalcResult};
+use ahash::AHashMap;
 use std::collections::{HashMap, HashSet};
+use std::sync::Arc;
 
 #[cfg(feature = "parallel")]
 use rayon::prelude::*;
-
-
 
 /// Iterator for generating combinations without materializing the entire list
 struct CombinationIterator {
@@ -80,7 +80,7 @@ pub struct LatticeBuilder<'a> {
     algebra: &'a dyn SmallAlgebra,
     join_irreducibles: Vec<BasicPartition>,
     universe: Vec<BasicPartition>,
-    principal_cache: HashMap<(usize, usize), usize>,
+    principal_cache: AHashMap<(usize, usize), usize>, // Use AHashMap for better performance
     /// Cache for principal congruences to avoid recomputation
     principal_congruence_cache: PrincipalCongruenceCache<'a>,
     current_level: usize,
@@ -88,6 +88,8 @@ pub struct LatticeBuilder<'a> {
     progress_callback: Option<Box<dyn super::ProgressCallback>>,
     /// Whether to use parallel processing
     parallel: bool,
+    /// Canonical form cache for deduplication
+    canonical_cache: AHashMap<u64, BasicPartition>,
 }
 
 impl<'a> LatticeBuilder<'a> {
@@ -98,12 +100,13 @@ impl<'a> LatticeBuilder<'a> {
             algebra,
             join_irreducibles: Vec::new(),
             universe: Vec::new(),
-            principal_cache: HashMap::new(),
+            principal_cache: AHashMap::new(),
             principal_congruence_cache: PrincipalCongruenceCache::new(algebra),
             current_level: 0,
             max_level: size * (size - 1) / 2, // Maximum possible JI's
             progress_callback: None,
             parallel: false,
+            canonical_cache: AHashMap::new(),
         }
     }
 
@@ -190,13 +193,11 @@ impl<'a> LatticeBuilder<'a> {
             }
         }
 
-
-
         Ok(())
     }
 
     /// Check if a congruence is join-irreducible
-    /// 
+    ///
     /// Note: This implementation relies primarily on principal congruences for efficiency.
     /// It may misclassify non-principal lower covers in some cases. For a complete
     /// verification, one would need to check all congruences in the lattice, not just
@@ -403,10 +404,11 @@ impl<'a> LatticeBuilder<'a> {
                 continue;
             }
 
-            // Compute join of this combination
+            // Compute join of this combination (optimized to reduce cloning)
             let mut join = self.join_irreducibles[combination[0]].clone();
             for &ji_idx in &combination[1..] {
-                join = join.join(&self.join_irreducibles[ji_idx])?;
+                // Use in-place join operation to avoid cloning
+                join.join_into(&self.join_irreducibles[ji_idx])?;
             }
 
             // Deduplicate per level using canonical form
@@ -576,23 +578,22 @@ mod tests {
         // Test (3,2) combinations
         let iter = CombinationIterator::new(3, 2);
         let combinations: Vec<Vec<usize>> = iter.collect();
-        assert_eq!(combinations, vec![
-            vec![0, 1],
-            vec![0, 2],
-            vec![1, 2],
-        ]);
+        assert_eq!(combinations, vec![vec![0, 1], vec![0, 2], vec![1, 2],]);
 
         // Test (4,2) combinations
         let iter = CombinationIterator::new(4, 2);
         let combinations: Vec<Vec<usize>> = iter.collect();
-        assert_eq!(combinations, vec![
-            vec![0, 1],
-            vec![0, 2],
-            vec![0, 3],
-            vec![1, 2],
-            vec![1, 3],
-            vec![2, 3],
-        ]);
+        assert_eq!(
+            combinations,
+            vec![
+                vec![0, 1],
+                vec![0, 2],
+                vec![0, 3],
+                vec![1, 2],
+                vec![1, 3],
+                vec![2, 3],
+            ]
+        );
 
         // Test (3,3) combinations
         let iter = CombinationIterator::new(3, 3);

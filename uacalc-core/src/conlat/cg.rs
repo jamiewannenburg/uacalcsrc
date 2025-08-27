@@ -10,6 +10,7 @@ use crate::utils::{power_checked, MAX_OPERATION_ARITY};
 use crate::{UACalcError, UACalcResult};
 use std::collections::{HashSet, VecDeque};
 use arrayvec::ArrayVec;
+use std::sync::Arc;
 
 /// Lightweight operation info for efficient propagation
 struct OperationInfo<'a> {
@@ -24,6 +25,8 @@ pub struct CongruenceGenerator<'a> {
     dirty_pairs: VecDeque<(usize, usize)>,
     flat_table_ops: HashSet<usize>,
     progress_callback: Option<Box<dyn super::ProgressCallback>>,
+    // Pre-allocated argument buffer for reuse
+    args_buffer: ArrayVec<usize, MAX_OPERATION_ARITY>,
 }
 
 impl<'a> CongruenceGenerator<'a> {
@@ -33,9 +36,10 @@ impl<'a> CongruenceGenerator<'a> {
         Self {
             algebra,
             partition: BasicPartition::new(size),
-            dirty_pairs: VecDeque::new(),
+            dirty_pairs: VecDeque::with_capacity(size * size), // Pre-allocate based on universe size
             flat_table_ops: HashSet::new(),
             progress_callback: None,
+            args_buffer: ArrayVec::new(),
         }
     }
 
@@ -167,6 +171,12 @@ impl<'a> CongruenceGenerator<'a> {
         for _ in 0..arity - 1 {
             other_indices.push(0);
         }
+        
+        // Pre-allocate args buffer if needed
+        if self.args_buffer.len() < arity {
+            self.args_buffer.clear();
+            self.args_buffer.extend(std::iter::repeat(0).take(arity));
+        }
 
         // Use the pre-captured table_opt
         let table_opt = op_info.table_opt;
@@ -185,30 +195,29 @@ impl<'a> CongruenceGenerator<'a> {
             other_indices.fill(0);
 
             for _ in 0..total_other_tuples {
-                // Fill args with other arguments, skipping pos
+                // Fill args with other arguments, skipping pos (reuse buffer)
                 let mut other_idx = 0;
-                let mut args = vec![0; arity];
                 for i in 0..arity {
                     if i != pos {
-                        args[i] = other_indices[other_idx];
+                        self.args_buffer[i] = other_indices[other_idx];
                         other_idx += 1;
                     }
                 }
 
                 // Set args[pos] = a and evaluate
-                args[pos] = a;
+                self.args_buffer[pos] = a;
                 let result_a = if let Some(table) = table_opt {
-                    table.value_at(&args)?
+                    table.value_at(&self.args_buffer)?
                 } else {
-                    operation.value(&args)?
+                    operation.value(&self.args_buffer)?
                 };
 
                 // Set args[pos] = b and evaluate
-                args[pos] = b;
+                self.args_buffer[pos] = b;
                 let result_b = if let Some(table) = table_opt {
-                    table.value_at(&args)?
+                    table.value_at(&self.args_buffer)?
                 } else {
-                    operation.value(&args)?
+                    operation.value(&self.args_buffer)?
                 };
 
                 // If results are in different blocks, union them

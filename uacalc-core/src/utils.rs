@@ -1,4 +1,8 @@
 use crate::{UACalcError, UACalcResult};
+use std::collections::VecDeque;
+use std::sync::{Arc, Mutex};
+use std::time::Instant;
+use smallvec::SmallVec;
 
 /// Mixed-radix encoding utilities for operation tables
 
@@ -80,6 +84,389 @@ pub fn horner_table_size(arity: usize, base: usize) -> Option<usize> {
         size = size.checked_mul(base)?;
     }
     Some(size)
+}
+
+/// Memory Pool Implementation for reusable allocations
+pub struct MemoryPool<T> {
+    pool: Arc<Mutex<VecDeque<T>>>,
+    max_size: usize,
+}
+
+impl<T> MemoryPool<T> {
+    /// Create a new memory pool with the specified maximum size
+    pub fn new(max_size: usize) -> Self {
+        Self {
+            pool: Arc::new(Mutex::new(VecDeque::new())),
+            max_size,
+        }
+    }
+
+    /// Get an item from the pool, or create a new one if pool is empty
+    pub fn get<F>(&self, create_fn: F) -> T
+    where
+        F: FnOnce() -> T,
+    {
+        if let Ok(mut pool) = self.pool.lock() {
+            if let Some(item) = pool.pop_front() {
+                return item;
+            }
+        }
+        create_fn()
+    }
+
+    /// Return an item to the pool for reuse
+    pub fn return_to_pool(&self, item: T) {
+        if let Ok(mut pool) = self.pool.lock() {
+            if pool.len() < self.max_size {
+                pool.push_back(item);
+            }
+        }
+    }
+
+    /// Get current pool size
+    pub fn size(&self) -> usize {
+        self.pool.lock().map(|p| p.len()).unwrap_or(0)
+    }
+
+    /// Clear the pool
+    pub fn clear(&self) {
+        if let Ok(mut pool) = self.pool.lock() {
+            pool.clear();
+        }
+    }
+}
+
+/// Thread-local memory pool for multi-threaded scenarios
+pub struct ThreadLocalPool<T> {
+    pools: Vec<Arc<MemoryPool<T>>>,
+}
+
+impl<T> ThreadLocalPool<T> {
+    /// Create a new thread-local pool with the specified number of threads
+    pub fn new(thread_count: usize, max_size_per_thread: usize) -> Self {
+        let pools = (0..thread_count)
+            .map(|_| Arc::new(MemoryPool::new(max_size_per_thread)))
+            .collect();
+        Self { pools }
+    }
+
+    /// Get a pool for the specified thread ID
+    pub fn get_pool(&self, thread_id: usize) -> &Arc<MemoryPool<T>> {
+        &self.pools[thread_id % self.pools.len()]
+    }
+}
+
+/// SIMD Utilities for bulk operations
+#[cfg(target_arch = "x86_64")]
+pub mod simd {
+    use std::arch::x86_64::*;
+
+    /// Compare two arrays for equality using SIMD
+    #[target_feature(enable = "avx2")]
+    pub unsafe fn simd_compare_arrays(a: &[usize], b: &[usize]) -> bool {
+        if a.len() != b.len() {
+            return false;
+        }
+
+        let mut i = 0;
+        let len = a.len();
+
+        // Process 8 elements at a time with AVX2
+        while i + 8 <= len {
+            let va = _mm256_loadu_si256(a.as_ptr().add(i) as *const __m256i);
+            let vb = _mm256_loadu_si256(b.as_ptr().add(i) as *const __m256i);
+            let cmp = _mm256_cmpeq_epi32(va, vb);
+            let mask = _mm256_movemask_ps(_mm256_castsi256_ps(cmp));
+            if mask != 0b11111111 {
+                return false;
+            }
+            i += 8;
+        }
+
+        // Handle remaining elements
+        while i < len {
+            if a[i] != b[i] {
+                return false;
+            }
+            i += 1;
+        }
+
+        true
+    }
+
+    /// Find first difference between two arrays using SIMD
+    #[target_feature(enable = "avx2")]
+    pub unsafe fn simd_find_first_difference(a: &[usize], b: &[usize]) -> Option<usize> {
+        let min_len = a.len().min(b.len());
+        let mut i = 0;
+
+        // Process 8 elements at a time with AVX2
+        while i + 8 <= min_len {
+            let va = _mm256_loadu_si256(a.as_ptr().add(i) as *const __m256i);
+            let vb = _mm256_loadu_si256(b.as_ptr().add(i) as *const __m256i);
+            let cmp = _mm256_cmpeq_epi32(va, vb);
+            let mask = _mm256_movemask_ps(_mm256_castsi256_ps(cmp));
+            
+            if mask != 0b11111111 {
+                // Find the first difference in this block
+                for j in 0..8 {
+                    if a[i + j] != b[i + j] {
+                        return Some(i + j);
+                    }
+                }
+            }
+            i += 8;
+        }
+
+        // Handle remaining elements
+        while i < min_len {
+            if a[i] != b[i] {
+                return Some(i);
+            }
+            i += 1;
+        }
+
+        if a.len() != b.len() {
+            Some(min_len)
+        } else {
+            None
+        }
+    }
+}
+
+#[cfg(not(target_arch = "x86_64"))]
+pub mod simd {
+    /// Fallback implementation for non-x86_64 architectures
+    pub fn simd_compare_arrays(a: &[usize], b: &[usize]) -> bool {
+        a == b
+    }
+
+    /// Fallback implementation for non-x86_64 architectures
+    pub fn simd_find_first_difference(a: &[usize], b: &[usize]) -> Option<usize> {
+        a.iter().zip(b.iter()).position(|(x, y)| x != y)
+    }
+}
+
+/// Cache-friendly data structures
+
+/// Compact vector that stores small vectors inline
+pub struct CompactVec<T> {
+    data: SmallVec<[T; 8]>,
+}
+
+impl<T> CompactVec<T> {
+    pub fn new() -> Self {
+        Self {
+            data: SmallVec::new(),
+        }
+    }
+
+    pub fn with_capacity(capacity: usize) -> Self {
+        Self {
+            data: SmallVec::with_capacity(capacity),
+        }
+    }
+
+    pub fn push(&mut self, item: T) {
+        self.data.push(item);
+    }
+
+    pub fn len(&self) -> usize {
+        self.data.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.data.is_empty()
+    }
+
+    pub fn clear(&mut self) {
+        self.data.clear();
+    }
+}
+
+impl<T> std::ops::Deref for CompactVec<T> {
+    type Target = [T];
+
+    fn deref(&self) -> &Self::Target {
+        &self.data
+    }
+}
+
+impl<T> std::ops::DerefMut for CompactVec<T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.data
+    }
+}
+
+/// Efficient bit set for small universes
+pub struct BitSet {
+    bits: u64,
+    size: usize,
+}
+
+impl BitSet {
+    pub fn new(size: usize) -> Self {
+        assert!(size <= 64, "BitSet only supports universes up to size 64");
+        Self { bits: 0, size }
+    }
+
+    pub fn insert(&mut self, element: usize) {
+        if element < self.size {
+            self.bits |= 1 << element;
+        }
+    }
+
+    pub fn remove(&mut self, element: usize) {
+        if element < self.size {
+            self.bits &= !(1 << element);
+        }
+    }
+
+    pub fn contains(&self, element: usize) -> bool {
+        element < self.size && (self.bits & (1 << element)) != 0
+    }
+
+    pub fn clear(&mut self) {
+        self.bits = 0;
+    }
+
+    pub fn len(&self) -> usize {
+        self.bits.count_ones() as usize
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.bits == 0
+    }
+}
+
+/// Sparse set for efficient set operations on small universes
+pub struct SparseSet {
+    dense: Vec<usize>,
+    sparse: Vec<usize>,
+    size: usize,
+}
+
+impl SparseSet {
+    pub fn new(size: usize) -> Self {
+        Self {
+            dense: Vec::new(),
+            sparse: vec![usize::MAX; size],
+            size,
+        }
+    }
+
+    pub fn insert(&mut self, element: usize) {
+        if element < self.size && !self.contains(element) {
+            self.sparse[element] = self.dense.len();
+            self.dense.push(element);
+        }
+    }
+
+    pub fn remove(&mut self, element: usize) {
+        if element < self.size && self.contains(element) {
+            let dense_index = self.sparse[element];
+            let last_element = self.dense[self.dense.len() - 1];
+            self.dense[dense_index] = last_element;
+            self.sparse[last_element] = dense_index;
+            self.dense.pop();
+            self.sparse[element] = usize::MAX;
+        }
+    }
+
+    pub fn contains(&self, element: usize) -> bool {
+        element < self.size && self.sparse[element] < self.dense.len()
+    }
+
+    pub fn clear(&mut self) {
+        self.dense.clear();
+        for i in 0..self.size {
+            self.sparse[i] = usize::MAX;
+        }
+    }
+
+    pub fn len(&self) -> usize {
+        self.dense.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.dense.is_empty()
+    }
+
+    pub fn iter(&self) -> impl Iterator<Item = &usize> {
+        self.dense.iter()
+    }
+}
+
+/// Performance profiling utilities
+
+/// Global allocation counter for debugging memory usage
+static ALLOCATION_COUNTER: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+
+/// Increment allocation counter
+pub fn increment_allocation_counter() {
+    ALLOCATION_COUNTER.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+}
+
+/// Get current allocation count
+pub fn get_allocation_count() -> usize {
+    ALLOCATION_COUNTER.load(std::sync::atomic::Ordering::Relaxed)
+}
+
+/// Reset allocation counter
+pub fn reset_allocation_counter() {
+    ALLOCATION_COUNTER.store(0, std::sync::atomic::Ordering::Relaxed);
+}
+
+/// Performance scope for automatic timing
+pub struct PerformanceScope {
+    name: String,
+    start: Instant,
+}
+
+impl PerformanceScope {
+    pub fn new(name: &str) -> Self {
+        Self {
+            name: name.to_string(),
+            start: Instant::now(),
+        }
+    }
+}
+
+impl Drop for PerformanceScope {
+    fn drop(&mut self) {
+        let duration = self.start.elapsed();
+        println!("{}: {:?}", self.name, duration);
+    }
+}
+
+/// Macro for automatic performance scoping
+#[macro_export]
+macro_rules! profile_scope {
+    ($name:expr) => {
+        let _scope = $crate::utils::PerformanceScope::new($name);
+    };
+}
+
+/// Macro for memory usage tracking
+#[macro_export]
+macro_rules! memory_usage {
+    () => {{
+        let usage = $crate::utils::get_allocation_count();
+        println!("Memory allocations: {}", usage);
+        usage
+    }};
+}
+
+/// Macro for function benchmarking
+#[macro_export]
+macro_rules! benchmark_function {
+    ($name:expr, $func:expr) => {{
+        let start = std::time::Instant::now();
+        let result = $func;
+        let duration = start.elapsed();
+        println!("{}: {:?}", $name, duration);
+        result
+    }};
 }
 
 /// Validation utilities

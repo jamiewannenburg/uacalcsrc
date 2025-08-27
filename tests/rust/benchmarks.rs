@@ -1,4 +1,6 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use std::path::Path;
+use std::time::Instant;
 use uacalc_core::prelude::*;
 
 #[cfg(feature = "conlat")]
@@ -118,6 +120,135 @@ fn benchmark_join_irreducible_detection(c: &mut Criterion) {
     group.finish();
 }
 
+/// Java comparison benchmarks
+#[cfg(feature = "conlat")]
+fn benchmark_cg_vs_java(c: &mut Criterion) {
+    let mut group = c.benchmark_group("java_comparison");
+
+    // Test with real algebra files from resources
+    let algebra_files = [
+        "resources/algebras/ba2.ua",
+        "resources/algebras/cyclic3.ua",
+        "resources/algebras/m3.ua",
+        "resources/algebras/n5.ua",
+    ];
+
+    for file in &algebra_files {
+        if Path::new(file).exists() {
+            if let Ok(algebra) = load_algebra_from_file(file) {
+                let file_name = Path::new(file).file_name().unwrap().to_str().unwrap();
+
+                group.bench_function(&format!("cg_{}", file_name), |b| {
+                    b.iter(|| {
+                        let size = algebra.cardinality();
+                        for a in 0..size {
+                            for b in (a + 1)..size {
+                                black_box(cg(&algebra, &[(a, b)]).unwrap());
+                            }
+                        }
+                    });
+                });
+            }
+        }
+    }
+
+    group.finish();
+}
+
+/// Memory usage benchmarks
+#[cfg(feature = "conlat")]
+fn benchmark_memory_usage(c: &mut Criterion) {
+    let mut group = c.benchmark_group("memory_usage");
+
+    for size in [3, 5, 7, 10] {
+        let algebra = BasicAlgebra::with_cardinality(format!("size_{}", size), size).unwrap();
+
+        group.bench_function(&format!("cg_memory_size_{}", size), |b| {
+            b.iter(|| {
+                let start_memory = get_memory_usage();
+                let pairs = vec![(0, 1)];
+                let _result = cg(&algebra, &pairs).unwrap();
+                let end_memory = get_memory_usage();
+
+                if let (Some(start), Some(end)) = (start_memory, end_memory) {
+                    let memory_used = end - start;
+                    black_box(memory_used);
+                }
+            });
+        });
+    }
+
+    group.finish();
+}
+
+/// Scalability testing
+#[cfg(feature = "conlat")]
+fn benchmark_scalability(c: &mut Criterion) {
+    let mut group = c.benchmark_group("scalability");
+
+    // Test performance scaling with algebra size
+    for size in [3, 5, 7, 10, 15] {
+        let algebra = BasicAlgebra::with_cardinality(format!("size_{}", size), size).unwrap();
+
+        group.bench_function(&format!("cg_scaling_size_{}", size), |b| {
+            b.iter(|| {
+                let size = algebra.cardinality();
+                for a in 0..size {
+                    for b in (a + 1)..size {
+                        black_box(cg(&algebra, &[(a, b)]).unwrap());
+                    }
+                }
+            });
+        });
+    }
+
+    group.finish();
+}
+
+/// I/O performance benchmarks
+fn benchmark_io_performance(c: &mut Criterion) {
+    let mut group = c.benchmark_group("io_performance");
+
+    let algebra_files = [
+        "resources/algebras/ba2.ua",
+        "resources/algebras/cyclic3.ua",
+        "resources/algebras/m3.ua",
+    ];
+
+    for file in &algebra_files {
+        if Path::new(file).exists() {
+            let file_name = Path::new(file).file_name().unwrap().to_str().unwrap();
+
+            group.bench_function(&format!("load_{}", file_name), |b| {
+                b.iter(|| {
+                    black_box(load_algebra_from_file(file).unwrap());
+                });
+            });
+        }
+    }
+
+    group.finish();
+}
+
+/// Helper function to get memory usage
+fn get_memory_usage() -> Option<f64> {
+    #[cfg(target_os = "linux")]
+    {
+        if let Ok(contents) = std::fs::read_to_string("/proc/self/status") {
+            for line in contents.lines() {
+                if line.starts_with("VmRSS:") {
+                    if let Some(kb_str) = line.split_whitespace().nth(1) {
+                        if let Ok(kb) = kb_str.parse::<f64>() {
+                            return Some(kb / 1024.0); // Convert KB to MB
+                        }
+                    }
+                }
+            }
+        }
+    }
+    None
+}
+
 // Configure criterion groups
 #[cfg(feature = "conlat")]
 criterion_group!(
@@ -125,7 +256,10 @@ criterion_group!(
     benchmark_congruence_generation,
     benchmark_lattice_construction,
     benchmark_principal_congruence,
-    benchmark_join_irreducible_detection
+    benchmark_join_irreducible_detection,
+    benchmark_cg_vs_java,
+    benchmark_memory_usage,
+    benchmark_scalability
 );
 
 #[cfg(feature = "term-eval")]

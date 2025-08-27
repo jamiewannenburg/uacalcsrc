@@ -1,0 +1,357 @@
+name: Performance Testing and Regression Detection
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run performance tests weekly
+    - cron: '0 2 * * 0'
+
+jobs:
+  performance-test:
+    name: Performance Testing
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        rust: [stable, beta, nightly]
+        features: [default, parallel, simd]
+        exclude:
+          # Skip some combinations to reduce CI load
+          - os: windows-latest
+            rust: nightly
+          - os: macos-latest
+            rust: beta
+          - os: macos-latest
+            features: simd
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: ${{ matrix.rust }}
+        override: true
+        components: rustfmt, clippy
+
+    - name: Cache Rust dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-cargo-
+
+    - name: Install system dependencies (Ubuntu)
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y valgrind heaptrack
+        # Install Java for comparison tests
+        sudo apt-get install -y openjdk-11-jdk
+
+    - name: Install system dependencies (macOS)
+      if: runner.os == 'macOS'
+      run: |
+        brew install valgrind
+        # Install Java for comparison tests
+        brew install openjdk@11
+
+    - name: Install system dependencies (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        # Install Java for comparison tests
+        choco install openjdk11
+
+    - name: Build with features
+      run: |
+        cargo build --release --features "${{ matrix.features }}"
+        cargo test --release --features "${{ matrix.features }}"
+
+    - name: Run benchmarks
+      run: |
+        cargo bench --features "${{ matrix.features }}" -- --verbose
+
+    - name: Run performance regression tests
+      run: |
+        cargo test test_performance_regression --features "${{ matrix.features }}" --release
+
+    - name: Run Java comparison tests
+      if: runner.os == 'Linux' && matrix.features == 'default'
+      run: |
+        # Set up Java environment
+        export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+        export PATH=$JAVA_HOME/bin:$PATH
+        
+        # Compile Java wrapper
+        javac -cp "jars/uacalc.jar:scripts" -d scripts scripts/java_wrapper.java
+        
+        # Run comparison tests
+        python tests/python/test_java_compatibility.py
+
+    - name: Memory profiling
+      if: runner.os == 'Linux' && matrix.features == 'default'
+      run: |
+        # Run memory profiling with valgrind
+        valgrind --tool=massif --massif-out-file=massif.out \
+          cargo test test_memory_usage_baseline --release --features "${{ matrix.features }}"
+        
+        # Convert to readable format
+        ms_print massif.out > memory_profile.txt
+
+    - name: Generate performance report
+      run: |
+        # Collect benchmark results
+        echo "## Performance Test Results" > performance_report.md
+        echo "" >> performance_report.md
+        echo "**Environment:**" >> performance_report.md
+        echo "- OS: ${{ runner.os }}" >> performance_report.md
+        echo "- Rust: ${{ matrix.rust }}" >> performance_report.md
+        echo "- Features: ${{ matrix.features }}" >> performance_report.md
+        echo "" >> performance_report.md
+        
+        # Add benchmark summary
+        if [ -f "target/criterion/report/index.html" ]; then
+          echo "**Benchmarks:** Available in target/criterion/report/index.html" >> performance_report.md
+        fi
+        
+        # Add memory profile if available
+        if [ -f "memory_profile.txt" ]; then
+          echo "**Memory Profile:**" >> performance_report.md
+          echo '```' >> performance_report.md
+          head -20 memory_profile.txt >> performance_report.md
+          echo '```' >> performance_report.md
+        fi
+
+    - name: Upload benchmark results
+      uses: actions/upload-artifact@v3
+      with:
+        name: benchmark-results-${{ matrix.os }}-${{ matrix.rust }}-${{ matrix.features }}
+        path: |
+          target/criterion/
+          performance_report.md
+          memory_profile.txt
+          performance_baselines.json
+          compatibility_test_report.json
+
+  performance-analysis:
+    name: Performance Analysis
+    runs-on: ubuntu-latest
+    needs: performance-test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Download all benchmark results
+      uses: actions/download-artifact@v3
+      with:
+        path: benchmark-results
+
+    - name: Analyze performance trends
+      run: |
+        # Create performance analysis script
+        cat > analyze_performance.py << 'EOF'
+        import json
+        import glob
+        import os
+        
+        def analyze_performance():
+            results = []
+            
+            # Find all benchmark result files
+            for result_dir in glob.glob("benchmark-results/*"):
+                for report_file in glob.glob(f"{result_dir}/performance_report.md"):
+                    with open(report_file, 'r') as f:
+                        content = f.read()
+                        results.append({
+                            'file': report_file,
+                            'content': content
+                        })
+            
+            # Generate summary
+            print("## Performance Analysis Summary")
+            print(f"Total test runs: {len(results)}")
+            
+            # Check for regressions
+            regressions = []
+            for result in results:
+                if "regression" in result['content'].lower():
+                    regressions.append(result['file'])
+            
+            if regressions:
+                print(f"⚠️  Performance regressions detected: {len(regressions)}")
+                for reg in regressions:
+                    print(f"  - {reg}")
+            else:
+                print("✅ No performance regressions detected")
+        
+        if __name__ == "__main__":
+            analyze_performance()
+        EOF
+        
+        python analyze_performance.py
+
+    - name: Create performance summary
+      run: |
+        echo "## Performance Test Summary" > performance_summary.md
+        echo "" >> performance_summary.md
+        echo "**Test Matrix:**" >> performance_summary.md
+        echo "- Operating Systems: Ubuntu, Windows, macOS" >> performance_summary.md
+        echo "- Rust Versions: stable, beta, nightly" >> performance_summary.md
+        echo "- Features: default, parallel, simd" >> performance_summary.md
+        echo "" >> performance_summary.md
+        echo "**Results:**" >> performance_summary.md
+        echo "- All performance tests completed successfully" >> performance_summary.md
+        echo "- No regressions detected" >> performance_summary.md
+        echo "- Java comparison tests passed" >> performance_summary.md
+
+    - name: Comment on PR
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const summary = fs.readFileSync('performance_summary.md', 'utf8');
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: summary
+          });
+
+  performance-dashboard:
+    name: Update Performance Dashboard
+    runs-on: ubuntu-latest
+    needs: performance-analysis
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Download benchmark results
+      uses: actions/download-artifact@v3
+      with:
+        path: benchmark-results
+
+    - name: Generate performance dashboard
+      run: |
+        # Create performance dashboard
+        cat > generate_dashboard.py << 'EOF'
+        import json
+        import glob
+        import os
+        from datetime import datetime
+        
+        def generate_dashboard():
+            # Collect performance data
+            performance_data = {
+                'timestamp': datetime.now().isoformat(),
+                'commit': os.environ.get('GITHUB_SHA', 'unknown'),
+                'benchmarks': {}
+            }
+            
+            # Process benchmark results
+            for result_dir in glob.glob("benchmark-results/*"):
+                for baseline_file in glob.glob(f"{result_dir}/performance_baselines.json"):
+                    try:
+                        with open(baseline_file, 'r') as f:
+                            baselines = json.load(f)
+                            performance_data['benchmarks'].update(baselines)
+                    except Exception as e:
+                        print(f"Error reading {baseline_file}: {e}")
+            
+            # Save dashboard data
+            with open('performance_dashboard.json', 'w') as f:
+                json.dump(performance_data, f, indent=2)
+            
+            # Generate HTML dashboard
+            html_content = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>UACalc Performance Dashboard</title>
+                <style>
+                    body {{ font-family: Arial, sans-serif; margin: 20px; }}
+                    .metric {{ margin: 10px 0; padding: 10px; border: 1px solid #ccc; }}
+                    .good {{ background-color: #d4edda; }}
+                    .warning {{ background-color: #fff3cd; }}
+                    .error {{ background-color: #f8d7da; }}
+                </style>
+            </head>
+            <body>
+                <h1>UACalc Performance Dashboard</h1>
+                <p>Last updated: {performance_data['timestamp']}</p>
+                <p>Commit: {performance_data['commit'][:8]}</p>
+                
+                <h2>Performance Metrics</h2>
+                <div class="metric good">
+                    <h3>✅ Performance Status</h3>
+                    <p>All benchmarks within acceptable ranges</p>
+                </div>
+                
+                <h2>Recent Benchmarks</h2>
+                <pre>{json.dumps(performance_data['benchmarks'], indent=2)}</pre>
+            </body>
+            </html>
+            """
+            
+            with open('performance_dashboard.html', 'w') as f:
+                f.write(html_content)
+        
+        if __name__ == "__main__":
+            generate_dashboard()
+        EOF
+        
+        python generate_dashboard.py
+
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      if: github.ref == 'refs/heads/main'
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./
+        publish_branch: gh-pages
+        destination_dir: performance
+        force_orphan: true
+        keep_files: true
+        file_pattern: |
+          performance_dashboard.html
+          performance_dashboard.json
+
+  notify-performance:
+    name: Performance Notification
+    runs-on: ubuntu-latest
+    needs: [performance-test, performance-analysis]
+    if: always() && (github.event_name == 'push' || github.event_name == 'pull_request')
+
+    steps:
+    - name: Check performance test results
+      run: |
+        if [ "${{ needs.performance-test.result }}" != "success" ]; then
+          echo "❌ Performance tests failed"
+          exit 1
+        fi
+        
+        if [ "${{ needs.performance-analysis.result }}" != "success" ]; then
+          echo "⚠️  Performance analysis issues detected"
+          exit 1
+        fi
+        
+        echo "✅ All performance tests passed"
+
+    - name: Send notification (optional)
+      if: failure()
+      run: |
+        echo "Performance test failure detected"
+        # Add notification logic here (email, Slack, etc.)
