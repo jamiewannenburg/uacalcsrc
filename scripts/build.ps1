@@ -3,11 +3,6 @@
 # Stop on first error
 $ErrorActionPreference = "Stop"
 
-# Parse command line arguments
-param(
-    [switch]$Release
-)
-
 Write-Host "Building UACalc..." -ForegroundColor Green
 
 # Check if maturin is available
@@ -37,12 +32,7 @@ Push-Location uacalc-py
 
 # Build the Rust extension
 Write-Host "Building Rust extension..." -ForegroundColor Yellow
-if ($Release) {
-    maturin build --release
-}
-else {
-    maturin build
-}
+maturin build
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Failed to build Rust extension." -ForegroundColor Red
@@ -60,6 +50,17 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 # Return to root directory
+Pop-Location
+
+# Install the pure Python package
+Write-Host "Installing pure Python package..." -ForegroundColor Yellow
+Push-Location python
+pip install -e .
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Failed to install pure Python package." -ForegroundColor Red
+    Pop-Location
+    exit 1
+}
 Pop-Location
 
 # Run tests

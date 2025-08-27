@@ -57,7 +57,7 @@ pyo3::create_exception!(
 fn map_uacalc_error(error: UACalcError) -> PyErr {
     match error {
         UACalcError::IndexOutOfBounds { index, size } => {
-            PyErr::new::<pyo3::exceptions::PyIndexError, _>(format!(
+            PyErr::new::<pyo3::exceptions::PyValueError, _>(format!(
                 "Index {} out of bounds for size {}",
                 index, size
             ))
@@ -69,7 +69,10 @@ fn map_uacalc_error(error: UACalcError) -> PyErr {
             ))
         }
         UACalcError::OperationNotFound { symbol } => {
-            PyErr::new::<pyo3::exceptions::PyKeyError, _>(symbol)
+            PyErr::new::<pyo3::exceptions::PyValueError, _>(format!(
+                "Operation '{}' not found",
+                symbol
+            ))
         }
         UACalcError::Cancelled { message } => PyErr::new::<PyCancellationError, _>(message),
         UACalcError::ParseError { message } => {
@@ -238,37 +241,37 @@ pub struct PyTerm {
 
 #[pymethods]
 impl PyTerm {
-    fn is_variable(&self, py: Python) -> PyResult<bool> {
+    fn is_variable(&self, _py: Python) -> PyResult<bool> {
         let arena_guard = self.arena.inner.lock().unwrap();
         let term = arena_guard.get_term(self.id).map_err(map_uacalc_error)?;
         Ok(term.is_variable())
     }
 
-    fn is_operation(&self, py: Python) -> PyResult<bool> {
+    fn is_operation(&self, _py: Python) -> PyResult<bool> {
         let arena_guard = self.arena.inner.lock().unwrap();
         let term = arena_guard.get_term(self.id).map_err(map_uacalc_error)?;
         Ok(term.is_operation())
     }
 
-    fn arity(&self, py: Python) -> PyResult<usize> {
+    fn arity(&self, _py: Python) -> PyResult<usize> {
         let arena_guard = self.arena.inner.lock().unwrap();
         let term = arena_guard.get_term(self.id).map_err(map_uacalc_error)?;
         Ok(term.arity())
     }
 
-    fn depth(&self, py: Python) -> PyResult<usize> {
+    fn depth(&self, _py: Python) -> PyResult<usize> {
         let arena_guard = self.arena.inner.lock().unwrap();
         let term = arena_guard.get_term(self.id).map_err(map_uacalc_error)?;
         term.depth(&arena_guard).map_err(map_uacalc_error)
     }
 
-    fn variables(&self, py: Python) -> PyResult<Vec<u8>> {
+    fn variables(&self, _py: Python) -> PyResult<Vec<u8>> {
         let arena_guard = self.arena.inner.lock().unwrap();
         let term = arena_guard.get_term(self.id).map_err(map_uacalc_error)?;
         term.variables(&arena_guard).map_err(map_uacalc_error)
     }
 
-    fn to_string(&self, py: Python) -> PyResult<String> {
+    fn to_string(&self, _py: Python) -> PyResult<String> {
         let arena_guard = self.arena.inner.lock().unwrap();
         let term = arena_guard.get_term(self.id).map_err(map_uacalc_error)?;
         Ok(format!("{:?}", term))
@@ -327,8 +330,32 @@ impl PyTermArena {
     }
 
     fn parse_term(&self, expr: String) -> PyResult<PyTerm> {
-        // For now, just create a simple variable term
-        // TODO: Implement proper parsing
+        // Simple parsing for basic expressions
+        let expr = expr.trim();
+
+        // Handle variable terms like "x0", "x1", etc.
+        if expr.starts_with('x') {
+            if let Ok(index) = expr[1..].parse::<u8>() {
+                return self.make_variable(index);
+            }
+        }
+
+        // Handle constant terms (just the symbol)
+        if !expr.contains('(') && !expr.contains(')') {
+            // Create a constant term
+            let mut arena_guard = self.inner.lock().unwrap();
+            let symbol = OperationSymbol::new(expr.to_string(), 0);
+            let id = arena_guard.make_term(&symbol, &[]);
+            return Ok(PyTerm {
+                id,
+                arena: PyTermArena {
+                    inner: Arc::clone(&self.inner),
+                },
+            });
+        }
+
+        // For now, fall back to creating a variable term
+        // TODO: Implement proper parsing for complex expressions
         let mut arena_guard = self.inner.lock().unwrap();
         let id = arena_guard.make_variable(0);
         Ok(PyTerm {
@@ -468,21 +495,44 @@ impl PyAlgebra {
     }
 
     fn is_idempotent(&self, op_index: usize) -> PyResult<bool> {
-        self.inner
-            .is_idempotent()
+        let op = self
+            .inner
+            .operation_arc(op_index)
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
+        let op_guard = op.lock().unwrap();
+        op_guard
+            .is_idempotent_on_set(self.inner.cardinality())
             .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))
     }
 
     fn is_associative(&self, op_index: usize) -> PyResult<bool> {
-        self.inner
-            .is_associative()
-            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))
+        let op = self
+            .inner
+            .operation_arc(op_index)
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
+        let op_guard = op.lock().unwrap();
+        if op_guard.arity() == 2 {
+            op_guard
+                .is_associative_on_set(self.inner.cardinality())
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))
+        } else {
+            Ok(false)
+        }
     }
 
     fn is_commutative(&self, op_index: usize) -> PyResult<bool> {
-        self.inner
-            .is_commutative()
-            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))
+        let op = self
+            .inner
+            .operation_arc(op_index)
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
+        let op_guard = op.lock().unwrap();
+        if op_guard.arity() == 2 {
+            op_guard
+                .is_commutative_on_set(self.inner.cardinality())
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))
+        } else {
+            Ok(false)
+        }
     }
 
     fn subalgebra(&self, generators: Vec<usize>) -> PyResult<PyAlgebra> {
@@ -724,14 +774,35 @@ fn create_algebra(name: String, universe: Vec<usize>) -> PyResult<PyAlgebra> {
 
 /// Helper function to create an operation
 #[pyfunction]
-fn create_operation(name: String, arity: usize, table: Vec<Vec<usize>>) -> PyResult<PyOperation> {
+fn create_operation(name: String, arity: usize, table: PyObject) -> PyResult<PyOperation> {
     let symbol = uacalc_core::operation::OperationSymbol::new(name, arity);
+
+    // Convert PyObject to Vec<Vec<usize>> based on the input type
+    let table_vec: Vec<Vec<usize>> = Python::with_gil(|py| {
+        if let Ok(list) = table.extract::<Vec<usize>>(py) {
+            // Single list of values (for unary operations)
+            if arity == 1 {
+                Ok(list.into_iter().map(|val| vec![val]).collect())
+            } else {
+                Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+                    "Single list format only supported for unary operations".to_string(),
+                ))
+            }
+        } else if let Ok(nested_list) = table.extract::<Vec<Vec<usize>>>(py) {
+            // Nested list format
+            Ok(nested_list)
+        } else {
+            Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+                "Table must be a list of integers or list of lists of integers".to_string(),
+            ))
+        }
+    })?;
 
     // Normalize table format to [args..., result]
     let normalized_table = if arity == 0 {
         // Constant operation: expect [[value]]
-        if table.len() == 1 && table[0].len() == 1 {
-            table
+        if table_vec.len() == 1 && table_vec[0].len() == 1 {
+            table_vec
         } else {
             return Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
                 "Constant operation should have table [[value]]".to_string(),
@@ -739,39 +810,64 @@ fn create_operation(name: String, arity: usize, table: Vec<Vec<usize>>) -> PyRes
         }
     } else if arity == 1 {
         // Unary operation: handle both [value] and [input, value] formats
-        if table.len() > 0 && table[0].len() == 1 {
+        if table_vec.len() > 0 && table_vec[0].len() == 1 {
             // Transform [value] format to [input, value]
-            let mut normalized = Vec::with_capacity(table.len());
-            for (i, row) in table.iter().enumerate() {
+            let mut normalized = Vec::with_capacity(table_vec.len());
+            for (i, row) in table_vec.iter().enumerate() {
                 normalized.push(vec![i, row[0]]);
             }
             normalized
         } else {
             // Already in [input, value] format
-            table
+            table_vec
         }
     } else if arity == 2 {
         // Binary operation: handle NxN matrix format
-        let n = table.len();
-        if n > 0 && table[0].len() == n {
+        let n = table_vec.len();
+        if n > 0 && table_vec[0].len() == n {
             // Transform NxN matrix to [i, j, result] format
             let mut normalized = Vec::with_capacity(n * n);
             for i in 0..n {
                 for j in 0..n {
-                    normalized.push(vec![i, j, table[i][j]]);
+                    normalized.push(vec![i, j, table_vec[i][j]]);
                 }
             }
             normalized
         } else {
             // Already in [i, j, result] format
-            table
+            table_vec
         }
     } else {
         // Higher arity: expect [args..., result] format
-        table
+        table_vec
     };
 
-    let operation = TableOperation::new(symbol, normalized_table, 0)
+    // Determine the universe size from the table
+    let universe_size = if arity == 0 {
+        1 // For constant operations, we need at least 1 element
+    } else if arity == 1 {
+        normalized_table.len()
+    } else if arity == 2 {
+        // For binary operations, determine size from the table
+        let max_element = normalized_table
+            .iter()
+            .flat_map(|row| row.iter())
+            .max()
+            .copied()
+            .unwrap_or(0);
+        max_element + 1
+    } else {
+        // For higher arity, determine size from the table
+        let max_element = normalized_table
+            .iter()
+            .flat_map(|row| row.iter())
+            .max()
+            .copied()
+            .unwrap_or(0);
+        max_element + 1
+    };
+
+    let operation = TableOperation::new(symbol, normalized_table, universe_size)
         .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
     Ok(PyOperation {
         inner: Arc::new(Mutex::new(operation)),

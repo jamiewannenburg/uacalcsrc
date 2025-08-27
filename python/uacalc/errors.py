@@ -9,7 +9,9 @@ from typing import Optional, Dict, Any, Union, Type, Callable, List
 import traceback
 import logging
 import warnings
+import time
 from functools import wraps
+from contextlib import contextmanager
 
 from . import UACalcError, CancellationError
 
@@ -17,7 +19,7 @@ class AlgebraError(UACalcError):
     """Base exception for algebra-specific errors."""
     
     def __init__(self, message: str, algebra_name: Optional[str] = None, **kwargs):
-        super().__init__(message, "AlgebraError")
+        super().__init__(message)
         self.algebra_name = algebra_name
         self.details = kwargs
     
@@ -31,7 +33,7 @@ class TermError(UACalcError):
     """Base exception for term-related errors."""
     
     def __init__(self, message: str, term_expr: Optional[str] = None, **kwargs):
-        super().__init__(message, "TermError")
+        super().__init__(message)
         self.term_expr = term_expr
         self.details = kwargs
     
@@ -45,7 +47,7 @@ class CongruenceError(UACalcError):
     """Base exception for congruence lattice errors."""
     
     def __init__(self, message: str, algebra_name: Optional[str] = None, **kwargs):
-        super().__init__(message, "CongruenceError")
+        super().__init__(message)
         self.algebra_name = algebra_name
         self.details = kwargs
     
@@ -59,7 +61,7 @@ class IndexOutOfBoundsError(UACalcError, IndexError):
     """Exception for index out of bounds errors."""
     
     def __init__(self, message: str, index: Optional[int] = None, size: Optional[int] = None):
-        super().__init__(message, "IndexOutOfBoundsError")
+        super().__init__(message)
         self.index = index
         self.size = size
     
@@ -73,7 +75,7 @@ class InvalidArityError(UACalcError, ValueError):
     """Exception for arity mismatch errors."""
     
     def __init__(self, message: str, expected: Optional[int] = None, actual: Optional[int] = None):
-        super().__init__(message, "InvalidArityError")
+        super().__init__(message)
         self.expected = expected
         self.actual = actual
     
@@ -210,7 +212,7 @@ def handle_rust_error(rust_error: Exception, context: Optional[Dict[str, Any]] =
     
     else:
         # Default mapping
-        return UACalcError(error_str, "UACalcError")
+        return UACalcError(error_str)
 
 def validate_inputs(*validators: Callable) -> Callable:
     """Decorator for input validation.
@@ -247,41 +249,55 @@ def with_error_context(context: Dict[str, Any]):
             pass
     """
     try:
-        yield
+        yield context
     except Exception as e:
         # Add context to the error if it's a UACalcError
         if isinstance(e, UACalcError):
             e.details.update(context)
         raise
 
-def safe_operation(func: Callable, *args, **kwargs) -> Any:
-    """Wrapper for safe operation execution with error handling.
+@contextmanager
+def safe_operation(operation_name: str, default_value: Any = None):
+    """Context manager for safe operation execution with error handling.
     
     Args:
-        func: Function to execute
-        *args: Function arguments
-        **kwargs: Function keyword arguments
+        operation_name: Name of the operation for error reporting
+        default_value: Default value to return if operation fails
         
-    Returns:
-        Function result
+    Yields:
+        Context manager for the operation
         
-    Raises:
-        UACalcError: If the operation fails
+    Example:
+        with safe_operation("Test operation", default_value=42) as result:
+            # Perform operation
+            result.value = some_function()
     """
+    class OperationResult:
+        def __init__(self):
+            self.value = None
+            self.success = False
+    
+    result = OperationResult()
+    
     try:
-        return func(*args, **kwargs)
+        yield result
+        result.success = True
     except Exception as e:
         if isinstance(e, UACalcError):
             raise
         else:
-            # Map to UACalcError
-            raise UACalcError(f"Operation failed: {e}", "UACalcError")
+            if default_value is not None:
+                result.value = default_value
+                result.success = False
+            else:
+                raise UACalcError(f"Operation failed: {e}")
 
 # Logging integration
 class UACalcLogger:
     """Logger for UACalc operations with error tracking."""
     
     def __init__(self, name: str = "uacalc", level: str = "INFO"):
+        self.name = name
         self.logger = logging.getLogger(name)
         self.logger.setLevel(getattr(logging, level.upper()))
         
@@ -329,6 +345,39 @@ class UACalcLogger:
         """
         self.logger.info(f"Performance: {operation} took {duration:.3f}s", 
                         extra={'duration': duration, 'metrics': kwargs})
+    
+    def info(self, message: str, **kwargs):
+        """Log info message."""
+        self.logger.info(message, extra=kwargs)
+    
+    def warning(self, message: str, **kwargs):
+        """Log warning message."""
+        self.logger.warning(message, extra=kwargs)
+    
+    def error(self, message: str, **kwargs):
+        """Log error message."""
+        self.logger.error(message, extra=kwargs)
+    
+    def debug(self, message: str, **kwargs):
+        """Log debug message."""
+        self.logger.debug(message, extra=kwargs)
+    
+    def operation_start(self, operation: str, **kwargs):
+        """Log operation start."""
+        self.logger.info(f"Operation started: {operation}", extra=kwargs)
+    
+    def operation_end(self, operation: str, **kwargs):
+        """Log operation end."""
+        self.logger.info(f"Operation completed: {operation}", extra=kwargs)
+    
+    def performance_start(self, operation: str, **kwargs):
+        """Log performance measurement start."""
+        self.logger.debug(f"Performance measurement started: {operation}", extra=kwargs)
+    
+    def performance_end(self, operation: str, duration: float, **kwargs):
+        """Log performance measurement end."""
+        self.logger.info(f"Performance measurement completed: {operation} took {duration:.3f}s", 
+                        extra={'duration': duration, **kwargs})
 
 # Global logger instance
 _logger = UACalcLogger()
@@ -356,6 +405,9 @@ class ErrorReporter:
     def __init__(self):
         self.errors: List[Dict[str, Any]] = []
         self.max_errors = 100
+        self.total_operations = 0
+        self.successful_operations = 0
+        self.failed_operations = 0
     
     def report_error(self, error: Exception, context: Optional[Dict[str, Any]] = None):
         """Report an error.
@@ -380,7 +432,30 @@ class ErrorReporter:
             error_info['details'] = error.details
         
         self.errors.append(error_info)
+        self.failed_operations += 1
         _logger.log_error(error, context)
+    
+    def add_error(self, error: Exception, context: Optional[Dict[str, Any]] = None):
+        """Add an error to the reporter."""
+        self.report_error(error, context)
+    
+    def add_success(self, operation: str, context: Optional[Dict[str, Any]] = None):
+        """Add a successful operation."""
+        self.successful_operations += 1
+        self.total_operations += 1
+    
+    def add_operation(self, operation: str, success: bool, context: Optional[Dict[str, Any]] = None):
+        """Add an operation result."""
+        if success:
+            self.add_success(operation, context)
+        else:
+            self.total_operations += 1
+    
+    def success_rate(self) -> float:
+        """Get the success rate."""
+        if self.total_operations == 0:
+            return 1.0
+        return self.successful_operations / self.total_operations
     
     def get_errors(self) -> List[Dict[str, Any]]:
         """Get all reported errors.
@@ -405,6 +480,43 @@ class ErrorReporter:
             error_type = error['error_type']
             summary[error_type] = summary.get(error_type, 0) + 1
         return summary
+    
+    def error_summary(self) -> Dict[str, Any]:
+        """Get a comprehensive error summary."""
+        return {
+            'total_operations': self.total_operations,
+            'successful_operations': self.successful_operations,
+            'failed_operations': self.failed_operations,
+            'success_rate': self.success_rate(),
+            'error_types': self.get_error_summary(),
+            'total_errors': len(self.errors)
+        }
+    
+    def operation_summary(self) -> Dict[str, Any]:
+        """Get an operation summary."""
+        return {
+            'total_operations': self.total_operations,
+            'successful_operations': self.successful_operations,
+            'failed_operations': self.failed_operations,
+            'success_rate': self.success_rate()
+        }
+    
+    def clear(self):
+        """Clear all data."""
+        self.errors.clear()
+        self.total_operations = 0
+        self.successful_operations = 0
+        self.failed_operations = 0
+    
+    def get_errors_by_operation(self, operation: str) -> List[Dict[str, Any]]:
+        """Get errors for a specific operation."""
+        return [error for error in self.errors 
+                if error.get('context', {}).get('operation') == operation]
+    
+    def get_errors_by_type(self, error_type: str) -> List[Dict[str, Any]]:
+        """Get errors of a specific type."""
+        return [error for error in self.errors 
+                if error.get('error_type') == error_type]
 
 # Global error reporter instance
 _error_reporter = ErrorReporter()

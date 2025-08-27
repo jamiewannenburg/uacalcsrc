@@ -315,41 +315,57 @@ def terms_equal(term1: Term, term2: Term, algebra: Algebra) -> bool:
     return term1.to_string() == term2.to_string()
 
 # Factory functions for term construction
-def variable(arena: TermArena, index: int) -> Term:
+def variable(index: Union[int, str], arena: Optional[TermArena] = None) -> Term:
     """Create a variable term.
     
     Args:
-        arena: Term arena to create the term in
-        index: Variable index
+        index: Variable index (int) or variable name (str like "x0")
+        arena: Term arena to create the term in (creates new one if not provided)
         
     Returns:
         Variable term
     """
+    if arena is None:
+        arena = create_term_arena()
+    
+    if isinstance(index, str):
+        if index.startswith('x'):
+            try:
+                index = int(index[1:])
+            except ValueError:
+                raise ValueError(f"Invalid variable name: {index}")
+        else:
+            raise ValueError(f"Invalid variable name: {index}")
+    
     return arena.make_variable(index)
 
-def constant(arena: TermArena, symbol: str) -> Term:
+def constant(symbol: str, arena: Optional[TermArena] = None) -> Term:
     """Create a constant term.
     
     Args:
-        arena: Term arena to create the term in
         symbol: Operation symbol for the constant
+        arena: Term arena to create the term in (creates new one if not provided)
         
     Returns:
         Constant term
     """
+    if arena is None:
+        arena = create_term_arena()
     return arena.make_term(symbol, [])
 
-def operation(arena: TermArena, symbol: str, *args: Term) -> Term:
+def operation(symbol: str, *args: Term, arena: Optional[TermArena] = None) -> Term:
     """Create an operation term.
     
     Args:
-        arena: Term arena to create the term in
         symbol: Operation symbol
         *args: Child terms
+        arena: Term arena to create the term in (creates new one if not provided)
         
     Returns:
         Operation term
     """
+    if arena is None:
+        arena = create_term_arena()
     return arena.make_term(symbol, list(args))
 
 def from_operation_table(table: List[List[int]], var_names: Optional[List[str]] = None) -> Term:

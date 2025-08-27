@@ -409,6 +409,8 @@ class ProgressBar:
     """Progress bar wrapper using tqdm."""
     
     def __init__(self, total: int = 100, desc: str = "Progress"):
+        self._total = total
+        self._desc = desc
         try:
             from tqdm import tqdm
             self._tqdm = tqdm(total=total, desc=desc)
@@ -417,8 +419,6 @@ class ProgressBar:
             warnings.warn("tqdm not available, falling back to print progress")
             self._available = False
             self._last_progress = 0
-            self._total = total
-            self._desc = desc
     
     def __call__(self, progress: float, message: str = ""):
         if self._available:

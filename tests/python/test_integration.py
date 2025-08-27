@@ -770,7 +770,7 @@ class TestNumPyIntegration:
         results = []
         
         for assignment in assignments:
-            result = eval_term(arena, term, assignment)
+            result = eval_term(term, algebra, assignment)
             results.append(result)
         
         results_array = np.array(results)

@@ -23,8 +23,8 @@ try:
         PyTerm as Term,
         PyTermArena as TermArena,
         PyProgressReporter as ProgressReporter,
-        PyUACalcError as UACalcError,
-        PyCancellationError as CancellationError,
+        UACalcError,
+        CancellationError,
         create_algebra,
         create_operation,
         create_partition,
@@ -40,6 +40,30 @@ except ImportError as e:
         "Failed to import UACalc Rust extension. "
         "Make sure the Rust code has been compiled with 'maturin develop' or 'maturin build'."
     ) from e
+
+# Feature detection (moved to top to avoid circular imports)
+try:
+    import numpy as np
+    HAS_NUMPY = True
+except ImportError:
+    HAS_NUMPY = False
+    import warnings
+    warnings.warn(
+        "NumPy not found. Some advanced features may not be available.",
+        UserWarning
+    )
+
+try:
+    import networkx as nx
+    HAS_NETWORKX = True
+except ImportError:
+    HAS_NETWORKX = False
+
+try:
+    import matplotlib.pyplot as plt
+    HAS_MATPLOTLIB = True
+except ImportError:
+    HAS_MATPLOTLIB = False
 
 # Import pure Python modules
 try:
@@ -226,29 +250,6 @@ if sys.version_info < (3, 7):
         "UACalc requires Python 3.7 or higher. Some features may not work correctly.",
         UserWarning
     )
-
-# Feature detection
-try:
-    import numpy as np
-    HAS_NUMPY = True
-except ImportError:
-    HAS_NUMPY = False
-    warnings.warn(
-        "NumPy not found. Some advanced features may not be available.",
-        UserWarning
-    )
-
-try:
-    import networkx as nx
-    HAS_NETWORKX = True
-except ImportError:
-    HAS_NETWORKX = False
-
-try:
-    import matplotlib.pyplot as plt
-    HAS_MATPLOTLIB = True
-except ImportError:
-    HAS_MATPLOTLIB = False
 
 # Export feature flags
 __all__.extend([
