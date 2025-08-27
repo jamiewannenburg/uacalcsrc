@@ -24,7 +24,7 @@ class JavaCompatibilityTest(unittest.TestCase):
     def setUpClass(cls):
         """Set up test environment"""
         cls.java_jar_path = "jars/uacalc.jar"
-        cls.java_wrapper_path = "scripts/java_wrapper.java"
+        cls.java_wrapper_path = "scripts/JavaWrapper.java"
         cls.algebra_files = []
         
         # Find all .ua files in resources

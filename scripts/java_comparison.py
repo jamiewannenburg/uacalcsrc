@@ -52,7 +52,7 @@ class JavaUACalcRunner:
     
     def __init__(self, java_jar_path: str = "jars/uacalc.jar"):
         self.java_jar_path = java_jar_path
-        self.java_wrapper_path = "scripts/java_wrapper.java"
+        self.java_wrapper_path = "scripts/JavaWrapper.java"
         
     def _compile_wrapper(self) -> bool:
         """Compile the Java wrapper if needed"""
