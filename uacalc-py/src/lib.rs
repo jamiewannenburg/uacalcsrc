@@ -1,7 +1,6 @@
 use pyo3::prelude::*;
 use pyo3::types::PyDict;
 use pyo3::wrap_pyfunction;
-use std::any::Any;
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
@@ -41,6 +40,10 @@ fn uacalc_rust(_py: Python, m: &PyModule) -> PyResult<()> {
     // Add custom exception classes
     m.add("UACalcError", _py.get_type::<PyUACalcError>())?;
     m.add("CancellationError", _py.get_type::<PyCancellationError>())?;
+    m.add(
+        "OperationNotFoundError",
+        _py.get_type::<PyOperationNotFoundError>(),
+    )?;
 
     Ok(())
 }
@@ -52,12 +55,17 @@ pyo3::create_exception!(
     PyCancellationError,
     pyo3::exceptions::PyException
 );
+pyo3::create_exception!(
+    uacalc_rust,
+    PyOperationNotFoundError,
+    pyo3::exceptions::PyException
+);
 
 /// Map UACalcError to appropriate Python exception
 fn map_uacalc_error(error: UACalcError) -> PyErr {
     match error {
         UACalcError::IndexOutOfBounds { index, size } => {
-            PyErr::new::<pyo3::exceptions::PyValueError, _>(format!(
+            PyErr::new::<pyo3::exceptions::PyIndexError, _>(format!(
                 "Index {} out of bounds for size {}",
                 index, size
             ))
@@ -69,10 +77,7 @@ fn map_uacalc_error(error: UACalcError) -> PyErr {
             ))
         }
         UACalcError::OperationNotFound { symbol } => {
-            PyErr::new::<pyo3::exceptions::PyValueError, _>(format!(
-                "Operation '{}' not found",
-                symbol
-            ))
+            PyErr::new::<PyOperationNotFoundError, _>(format!("Operation '{}' not found", symbol))
         }
         UACalcError::Cancelled { message } => PyErr::new::<PyCancellationError, _>(message),
         UACalcError::ParseError { message } => {
@@ -87,6 +92,8 @@ fn map_uacalc_error(error: UACalcError) -> PyErr {
 pub struct PyCongruenceLattice {
     inner: Arc<Mutex<Option<BasicCongruenceLattice>>>,
     algebra: PyAlgebra,
+    progress_callback: Arc<Mutex<Option<PyObject>>>,
+    cancelled: Arc<AtomicBool>,
 }
 
 #[pymethods]
@@ -96,6 +103,8 @@ impl PyCongruenceLattice {
         Self {
             inner: Arc::new(Mutex::new(None)),
             algebra,
+            progress_callback: Arc::new(Mutex::new(None)),
+            cancelled: Arc::new(AtomicBool::new(false)),
         }
     }
 
@@ -110,17 +119,67 @@ impl PyCongruenceLattice {
                 .map_err(map_uacalc_error)?;
 
             if let Some(callback) = progress_callback {
-                let progress_reporter = PyProgressReporter::new(callback);
-                lattice = lattice
-                    .with_progress_callback(move |progress| {
+                let cancelled = Arc::clone(&self.cancelled);
+                let progress_reporter =
+                    PyProgressReporter::new_with_cancellation(callback, Arc::clone(&cancelled));
+                // Use catch_unwind to handle panics from the progress callback
+                let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                    lattice.with_progress_callback(move |progress| {
+                        // Check for cancellation first
+                        if cancelled.load(Ordering::Relaxed) {
+                            // We can't return an error from this closure, so we'll panic
+                            // This will be caught and converted to a UACalcError::Cancelled
+                            panic!("Operation cancelled by user");
+                        }
+
                         Python::with_gil(|py| {
                             let _ = progress_reporter.report_progress(py, progress, None);
                         });
                     })
-                    .map_err(map_uacalc_error)?;
+                }));
+
+                match result {
+                    Ok(lattice_result) => {
+                        lattice = lattice_result.map_err(map_uacalc_error)?;
+                    }
+                    Err(panic_info) => {
+                        // Convert panic to UACalcError::Cancelled
+                        let panic_message = if let Some(s) = panic_info.downcast_ref::<&str>() {
+                            s.to_string()
+                        } else if let Some(s) = panic_info.downcast_ref::<String>() {
+                            s.clone()
+                        } else {
+                            "Unknown panic".to_string()
+                        };
+
+                        if panic_message.contains("cancelled") {
+                            return Err(map_uacalc_error(UACalcError::Cancelled {
+                                message: "Operation cancelled by user".to_string(),
+                            }));
+                        } else {
+                            return Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(
+                                format!("Panic during lattice construction: {}", panic_message),
+                            ));
+                        }
+                    }
+                }
             }
 
             *inner_guard = Some(lattice);
+        } else {
+            // If lattice is already built and we have a progress callback, try to set it
+            if let Some(callback) = progress_callback {
+                if let Some(ref mut lattice) = *inner_guard {
+                    let progress_reporter = PyProgressReporter::new(callback);
+                    lattice
+                        .set_progress_callback(move |progress| {
+                            Python::with_gil(|py| {
+                                let _ = progress_reporter.report_progress(py, progress, None);
+                            });
+                        })
+                        .map_err(map_uacalc_error)?;
+                }
+            }
         }
         Ok(())
     }
@@ -138,17 +197,11 @@ impl PyCongruenceLattice {
         self.ensure_universe_built(py, None)?;
         let inner_guard = self.inner.lock().unwrap();
         if let Some(ref lattice) = *inner_guard {
-            let congruences = lattice.congruences();
-            let mut result = Vec::new();
-            for p in congruences {
-                if let Some(basic_partition) =
-                    (p.as_ref() as &dyn std::any::Any).downcast_ref::<BasicPartition>()
-                {
-                    result.push(PyPartition {
-                        inner: basic_partition.clone(),
-                    });
-                }
-            }
+            let congruences = lattice.congruences_basic();
+            let result = congruences
+                .into_iter()
+                .map(|p| PyPartition { inner: p })
+                .collect();
             Ok(result)
         } else {
             Ok(Vec::new())
@@ -172,23 +225,41 @@ impl PyCongruenceLattice {
         }
     }
 
-    // TODO: Implement join and meet methods that work with indices
+    fn join(&self, py: Python, i: usize, j: usize) -> PyResult<PyPartition> {
+        self.ensure_universe_built(py, None)?;
+        let inner_guard = self.inner.lock().unwrap();
+        if let Some(ref lattice) = *inner_guard {
+            let result = lattice.join_by_index(i, j).map_err(map_uacalc_error)?;
+            Ok(PyPartition { inner: result })
+        } else {
+            Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(
+                "Lattice not built".to_string(),
+            ))
+        }
+    }
+
+    fn meet(&self, py: Python, i: usize, j: usize) -> PyResult<PyPartition> {
+        self.ensure_universe_built(py, None)?;
+        let inner_guard = self.inner.lock().unwrap();
+        if let Some(ref lattice) = *inner_guard {
+            let result = lattice.meet_by_index(i, j).map_err(map_uacalc_error)?;
+            Ok(PyPartition { inner: result })
+        } else {
+            Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(
+                "Lattice not built".to_string(),
+            ))
+        }
+    }
 
     fn atoms(&self, py: Python) -> PyResult<Vec<PyPartition>> {
         self.ensure_universe_built(py, None)?;
         let inner_guard = self.inner.lock().unwrap();
         if let Some(ref lattice) = *inner_guard {
-            let atoms = lattice.atoms().map_err(map_uacalc_error)?;
-            let mut result = Vec::new();
-            for p in atoms {
-                if let Some(basic_partition) =
-                    (p.as_ref() as &dyn std::any::Any).downcast_ref::<BasicPartition>()
-                {
-                    result.push(PyPartition {
-                        inner: basic_partition.clone(),
-                    });
-                }
-            }
+            let atoms = lattice.atoms_basic().map_err(map_uacalc_error)?;
+            let result = atoms
+                .into_iter()
+                .map(|p| PyPartition { inner: p })
+                .collect();
             Ok(result)
         } else {
             Ok(Vec::new())
@@ -199,17 +270,11 @@ impl PyCongruenceLattice {
         self.ensure_universe_built(py, None)?;
         let inner_guard = self.inner.lock().unwrap();
         if let Some(ref lattice) = *inner_guard {
-            let coatoms = lattice.coatoms().map_err(map_uacalc_error)?;
-            let mut result = Vec::new();
-            for p in coatoms {
-                if let Some(basic_partition) =
-                    (p.as_ref() as &dyn std::any::Any).downcast_ref::<BasicPartition>()
-                {
-                    result.push(PyPartition {
-                        inner: basic_partition.clone(),
-                    });
-                }
-            }
+            let coatoms = lattice.coatoms_basic().map_err(map_uacalc_error)?;
+            let result = coatoms
+                .into_iter()
+                .map(|p| PyPartition { inner: p })
+                .collect();
             Ok(result)
         } else {
             Ok(Vec::new())
@@ -227,7 +292,22 @@ impl PyCongruenceLattice {
     }
 
     fn with_progress_callback(&self, py: Python, callback: PyObject) -> PyResult<()> {
+        // Store the callback for future use
+        {
+            let mut callback_guard = self.progress_callback.lock().unwrap();
+            *callback_guard = Some(callback.clone_ref(py));
+        }
+
+        // Try to attach the callback to the existing lattice if it's already built
         self.ensure_universe_built(py, Some(callback))
+    }
+
+    fn set_cancelled(&self) {
+        self.cancelled.store(true, Ordering::Relaxed);
+    }
+
+    fn is_cancelled(&self) -> bool {
+        self.cancelled.load(Ordering::Relaxed)
     }
 }
 
@@ -274,7 +354,7 @@ impl PyTerm {
     fn to_string(&self, _py: Python) -> PyResult<String> {
         let arena_guard = self.arena.inner.lock().unwrap();
         let term = arena_guard.get_term(self.id).map_err(map_uacalc_error)?;
-        Ok(format!("{:?}", term))
+        term.to_string(&arena_guard).map_err(map_uacalc_error)
     }
 }
 
@@ -330,40 +410,172 @@ impl PyTermArena {
     }
 
     fn parse_term(&self, expr: String) -> PyResult<PyTerm> {
-        // Simple parsing for basic expressions
         let expr = expr.trim();
 
-        // Handle variable terms like "x0", "x1", etc.
-        if expr.starts_with('x') {
-            if let Ok(index) = expr[1..].parse::<u8>() {
-                return self.make_variable(index);
+        if expr.is_empty() {
+            return Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+                "Empty expression".to_string(),
+            ));
+        }
+
+        // Adjust parentheses (add missing closing parentheses)
+        let adjusted_expr = self.adjust_parentheses(&expr);
+
+        // Split on first '(' to separate symbol from arguments
+        if let Some(open_paren_pos) = adjusted_expr.find('(') {
+            let symbol = adjusted_expr[..open_paren_pos].trim();
+
+            // Validate symbol name
+            if !self.is_valid_symbol(&symbol) {
+                return Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(format!(
+                    "Invalid operation symbol: {}",
+                    symbol
+                )));
+            }
+
+            // Extract arguments string
+            let args_start = open_paren_pos + 1;
+            let args_end = adjusted_expr.len() - 1; // Remove closing parenthesis
+            let args_string = adjusted_expr[args_start..args_end].trim();
+
+            // Parse arguments
+            let arg_strings = self.parse_argument_list(&args_string)?;
+            let mut child_terms = Vec::new();
+
+            for arg_str in arg_strings {
+                let child_term = self.parse_term(arg_str.to_string())?;
+                child_terms.push(child_term);
+            }
+
+            // Create operation term
+            return self.make_term(symbol.to_string(), child_terms);
+        } else {
+            // No parentheses - could be variable or constant
+            // Handle variable terms like "x0", "x1", etc.
+            if expr.starts_with('x') {
+                if let Ok(index) = expr[1..].parse::<u8>() {
+                    return self.make_variable(index);
+                }
+            }
+
+            // If it's a valid symbol but not a variable, treat as constant
+            if self.is_valid_symbol(&expr) {
+                // Create a constant term
+                let mut arena_guard = self.inner.lock().unwrap();
+                let symbol = OperationSymbol::new(expr.to_string(), 0);
+                let id = arena_guard.make_term(&symbol, &[]);
+                return Ok(PyTerm {
+                    id,
+                    arena: PyTermArena {
+                        inner: Arc::clone(&self.inner),
+                    },
+                });
+            } else {
+                // Invalid symbol - treat as variable 0
+                return self.make_variable(0);
+            }
+        }
+    }
+
+    fn adjust_parentheses(&self, expr: &str) -> String {
+        let mut depth = 0;
+        for ch in expr.chars() {
+            match ch {
+                '(' => depth += 1,
+                ')' => depth -= 1,
+                _ => {}
             }
         }
 
-        // Handle constant terms (just the symbol)
-        if !expr.contains('(') && !expr.contains(')') {
-            // Create a constant term
-            let mut arena_guard = self.inner.lock().unwrap();
-            let symbol = OperationSymbol::new(expr.to_string(), 0);
-            let id = arena_guard.make_term(&symbol, &[]);
-            return Ok(PyTerm {
-                id,
-                arena: PyTermArena {
-                    inner: Arc::clone(&self.inner),
-                },
-            });
+        let mut result = expr.to_string();
+        if depth > 0 {
+            // Add missing closing parentheses
+            for _ in 0..depth {
+                result.push(')');
+            }
+        } else if depth < 0 {
+            // Remove excess closing parentheses
+            result.truncate(result.len() + depth);
+        }
+        result
+    }
+
+    fn parse_argument_list(&self, args_string: &str) -> PyResult<Vec<String>> {
+        if args_string.is_empty() {
+            return Ok(Vec::new());
         }
 
-        // For now, fall back to creating a variable term
-        // TODO: Implement proper parsing for complex expressions
-        let mut arena_guard = self.inner.lock().unwrap();
-        let id = arena_guard.make_variable(0);
-        Ok(PyTerm {
-            id,
-            arena: PyTermArena {
-                inner: Arc::clone(&self.inner),
-            },
-        })
+        let mut arguments = Vec::new();
+        let mut start = 0;
+        let mut depth = 0;
+        let mut i = 0;
+
+        while i < args_string.len() {
+            let ch = args_string.chars().nth(i).unwrap();
+            match ch {
+                '(' => depth += 1,
+                ')' => depth -= 1,
+                ',' => {
+                    if depth == 0 {
+                        let arg = args_string[start..i].trim();
+                        if !arg.is_empty() {
+                            arguments.push(arg.to_string());
+                        }
+                        start = i + 1;
+                    }
+                }
+                _ => {}
+            }
+            i += 1;
+        }
+
+        // Add the last argument
+        let last_arg = args_string[start..].trim();
+        if !last_arg.is_empty() {
+            arguments.push(last_arg.to_string());
+        }
+
+        Ok(arguments)
+    }
+
+    fn is_valid_symbol(&self, symbol: &str) -> bool {
+        if symbol.is_empty() {
+            return false;
+        }
+
+        // First character must be a letter
+        if !symbol.chars().next().unwrap().is_alphabetic() {
+            return false;
+        }
+
+        // Check for invalid characters
+        for ch in symbol.chars() {
+            if ch.is_whitespace() || ch == ',' || ch == '(' || ch == ')' {
+                return false;
+            }
+        }
+
+        true
+    }
+
+    fn is_valid_variable(&self, var: &str) -> bool {
+        if var.is_empty() {
+            return false;
+        }
+
+        // First character must be a letter
+        if !var.chars().next().unwrap().is_alphabetic() {
+            return false;
+        }
+
+        // Check for invalid characters
+        for ch in var.chars() {
+            if ch.is_whitespace() || ch == ',' || ch == '(' || ch == ')' {
+                return false;
+            }
+        }
+
+        true
     }
 }
 
@@ -391,6 +603,16 @@ impl PyProgressReporter {
         Self {
             callback: None,
             cancelled: Arc::new(AtomicBool::new(false)),
+            current_progress: Arc::new(Mutex::new(0.0)),
+        }
+    }
+}
+
+impl PyProgressReporter {
+    fn new_with_cancellation(callback: PyObject, cancelled: Arc<AtomicBool>) -> Self {
+        Self {
+            callback: Some(callback),
+            cancelled,
             current_progress: Arc::new(Mutex::new(0.0)),
         }
     }
@@ -471,10 +693,7 @@ impl PyAlgebra {
     }
 
     fn operation(&self, index: usize) -> PyResult<PyOperation> {
-        let op = self
-            .inner
-            .operation_arc(index)
-            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
+        let op = self.inner.operation_arc(index).map_err(map_uacalc_error)?;
         Ok(PyOperation { inner: op })
     }
 
@@ -482,7 +701,7 @@ impl PyAlgebra {
         let op = self
             .inner
             .operation_arc_by_symbol(symbol)
-            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
+            .map_err(map_uacalc_error)?;
         Ok(PyOperation { inner: op })
     }
 

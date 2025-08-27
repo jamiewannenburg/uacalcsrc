@@ -35,6 +35,7 @@ class TermParser:
         Raises:
             ValueError: If the expression is malformed
         """
+        # Use the improved Rust parser
         return parse_term(self.arena, expr)
     
     def parse_with_variables(self, expr: str, var_names: Dict[str, int]) -> Term:

@@ -9,7 +9,7 @@ keywords = ["universal-algebra", "congruence-lattice", "term-evaluation", "progr
 authors = ["UACalc Team <uacalc@example.com>"]
 
 [lib]
-name = "uacalc"
+name = "uacalc_rust"
 crate-type = ["cdylib"]
 
 [dependencies]

@@ -428,7 +428,7 @@ class ProgressConfig:
         """Set the default update interval for progress reporters."""
         self.default_update_interval = interval
     
-    def enable_logging(self, enabled: bool) -> None:
+    def set_enable_logging(self, enabled: bool) -> None:
         """Enable or disable progress logging."""
         self.enable_logging = enabled
     
@@ -504,7 +504,7 @@ def batch_evaluate_with_progress(terms, algebra, variable_sets,
             if progress_reporter.should_cancel():
                 break
             
-            result = eval_term(term, variables)
+            result = eval_term(term, algebra, variables)
             results.append(result)
             
             progress = (i + 1) / total

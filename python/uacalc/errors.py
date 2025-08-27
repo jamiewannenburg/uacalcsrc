@@ -154,28 +154,70 @@ class ConfigurationError(UACalcError, ValueError):
         return base
 
 # Error mapping utilities
-def handle_rust_error(rust_error: Exception, context: Optional[Dict[str, Any]] = None) -> Exception:
-    """Map Rust errors to appropriate Python exceptions.
+def handle_rust_error(rust_error: Exception, context: Optional[Dict[str, Any]] = None) -> None:
+    """Map Rust errors to appropriate Python exceptions and raise them.
     
     Args:
         rust_error: The Rust error to map
         context: Optional context information
         
-    Returns:
+    Raises:
         Mapped Python exception
     """
     error_str = str(rust_error)
     context = context or {}
     
-    # Map common error patterns
+    # Check if this is a UACalcError with a specific error type
+    if isinstance(rust_error, UACalcError):
+        # Try to extract error type from the string representation
+        # The format appears to be ('message', 'ErrorType')
+        import re
+        match = re.search(r"\('([^']+)', '([^']+)'\)", error_str)
+        if match:
+            message, error_type = match.group(1), match.group(2)
+            
+            if error_type == "AlgebraError":
+                raise AlgebraError(message, context.get('algebra_name'))
+            elif error_type == "TermError":
+                raise TermError(message, context.get('term_expr'))
+            elif error_type == "CongruenceError":
+                raise CongruenceError(message, context.get('algebra_name'))
+            elif error_type == "IndexOutOfBoundsError":
+                # Try to extract index and size from message
+                index_match = re.search(r'index (\d+), size (\d+)', message)
+                if index_match:
+                    index, size = int(index_match.group(1)), int(index_match.group(2))
+                    raise IndexOutOfBoundsError(message, index, size)
+                raise IndexOutOfBoundsError(message)
+            elif error_type == "InvalidArityError":
+                # Try to extract expected and actual from message
+                arity_match = re.search(r'expected (\d+), got (\d+)', message)
+                if arity_match:
+                    expected, actual = int(arity_match.group(1)), int(arity_match.group(2))
+                    raise InvalidArityError(message, expected, actual)
+                raise InvalidArityError(message)
+            elif error_type == "ParseError":
+                raise ParseError(message, context.get('term_expr'))
+            elif error_type == "OperationNotFoundError":
+                # Try to extract operation name from message
+                op_match = re.search(r"'([^']+)'", message)
+                if op_match:
+                    op_name = op_match.group(1)
+                    raise OperationNotFoundError(message, op_name, context.get('algebra_name'))
+                raise OperationNotFoundError(message)
+            else:
+                # Unknown error type, raise as generic UACalcError
+                raise UACalcError(message)
+    
+    # Map common error patterns from string content
     if "Index out of bounds" in error_str:
         # Extract index and size if possible
         import re
         match = re.search(r'index (\d+), size (\d+)', error_str)
         if match:
             index, size = int(match.group(1)), int(match.group(2))
-            return IndexOutOfBoundsError(error_str, index, size)
-        return IndexOutOfBoundsError(error_str)
+            raise IndexOutOfBoundsError(error_str, index, size)
+        raise IndexOutOfBoundsError(error_str)
     
     elif "Invalid arity" in error_str:
         # Extract expected and actual arity if possible
@@ -183,8 +225,8 @@ def handle_rust_error(rust_error: Exception, context: Optional[Dict[str, Any]] =
         match = re.search(r'expected (\d+), got (\d+)', error_str)
         if match:
             expected, actual = int(match.group(1)), int(match.group(2))
-            return InvalidArityError(error_str, expected, actual)
-        return InvalidArityError(error_str)
+            raise InvalidArityError(error_str, expected, actual)
+        raise InvalidArityError(error_str)
     
     elif "Operation not found" in error_str:
         # Extract operation name if possible
@@ -192,14 +234,14 @@ def handle_rust_error(rust_error: Exception, context: Optional[Dict[str, Any]] =
         match = re.search(r"'([^']+)'", error_str)
         if match:
             op_name = match.group(1)
-            return OperationNotFoundError(error_str, op_name, context.get('algebra_name'))
-        return OperationNotFoundError(error_str)
+            raise OperationNotFoundError(error_str, op_name, context.get('algebra_name'))
+        raise OperationNotFoundError(error_str)
     
     elif "Parse error" in error_str:
-        return ParseError(error_str, context.get('term_expr'))
+        raise ParseError(error_str, context.get('term_expr'))
     
     elif "Operation cancelled" in error_str:
-        return CancellationError(error_str)
+        raise CancellationError(error_str)
     
     elif "Algebra not found" in error_str:
         # Extract algebra name if possible
@@ -207,12 +249,12 @@ def handle_rust_error(rust_error: Exception, context: Optional[Dict[str, Any]] =
         match = re.search(r"'([^']+)'", error_str)
         if match:
             algebra_name = match.group(1)
-            return AlgebraError(error_str, algebra_name)
-        return AlgebraError(error_str)
+            raise AlgebraError(error_str, algebra_name)
+        raise AlgebraError(error_str)
     
     else:
         # Default mapping
-        return UACalcError(error_str)
+        raise UACalcError(error_str)
 
 def validate_inputs(*validators: Callable) -> Callable:
     """Decorator for input validation.
@@ -557,14 +599,20 @@ def handle_errors_gracefully(func: Callable) -> Callable:
             # Re-raise UACalc errors
             raise
         except Exception as e:
-            # Map other errors to UACalcError
-            mapped_error = handle_rust_error(e)
-            report_error(mapped_error, {
-                'function': func.__name__,
-                'args': str(args),
-                'kwargs': str(kwargs)
-            })
-            raise mapped_error
+            # Map other errors to UACalcError and report them
+            try:
+                handle_rust_error(e, {
+                    'function': func.__name__,
+                    'args': str(args),
+                    'kwargs': str(kwargs)
+                })
+            except Exception as mapped_error:
+                report_error(mapped_error, {
+                    'function': func.__name__,
+                    'args': str(args),
+                    'kwargs': str(kwargs)
+                })
+                raise mapped_error
     return wrapper
 
 # Import time for context manager

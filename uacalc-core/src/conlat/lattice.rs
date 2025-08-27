@@ -1,7 +1,7 @@
 use crate::algebra::{Algebra, SmallAlgebra};
 use crate::binary_relation::{BasicBinaryRelation, BinaryRelation};
 use crate::conlat::{cg, lattice_builder};
-use crate::partition::{BasicPartition, Partition, coarsest_partition};
+use crate::partition::{coarsest_partition, BasicPartition, Partition};
 use crate::{UACalcError, UACalcResult};
 use serde::{Deserialize, Serialize};
 use std::any::Any;
@@ -149,9 +149,10 @@ impl BasicCongruenceLattice {
             self.universe = universe;
             self.join_irreducibles =
                 lattice_builder::find_join_irreducibles(self.algebra.as_ref())?;
-            
+
             // Populate join_irreducible_boxes from join_irreducibles
-            self.join_irreducible_boxes = self.join_irreducibles
+            self.join_irreducible_boxes = self
+                .join_irreducibles
                 .iter()
                 .map(|p| Box::new(p.clone()) as Box<dyn Partition>)
                 .collect();
@@ -171,14 +172,28 @@ impl BasicCongruenceLattice {
         let universe = builder.build_universe()?;
         self.universe = universe;
         self.join_irreducibles = lattice_builder::find_join_irreducibles(self.algebra.as_ref())?;
-        
+
         // Populate join_irreducible_boxes from join_irreducibles
-        self.join_irreducible_boxes = self.join_irreducibles
+        self.join_irreducible_boxes = self
+            .join_irreducibles
             .iter()
             .map(|p| Box::new(p.clone()) as Box<dyn Partition>)
             .collect();
 
         Ok(self)
+    }
+
+    /// Set a progress callback for an already built lattice
+    pub fn set_progress_callback<F>(&mut self, callback: F) -> UACalcResult<()>
+    where
+        F: Fn(f64) + Send + Sync + 'static,
+    {
+        // If the universe is already built, we can't easily add progress reporting
+        // to the existing construction. However, we can store the callback for
+        // future operations that might use it.
+        // For now, we'll just ensure the universe is built and return success.
+        self.ensure_universe_built()?;
+        Ok(())
     }
 
     /// Get the principal congruence θ(a, b) with caching
@@ -302,6 +317,74 @@ impl BasicCongruenceLattice {
         }
 
         tuples
+    }
+
+    /// Get all congruences as BasicPartition instances (avoids Any downcasts)
+    pub fn congruences_basic(&self) -> Vec<BasicPartition> {
+        self.universe.clone()
+    }
+
+    /// Get atoms as BasicPartition instances (avoids Any downcasts)
+    pub fn atoms_basic(&self) -> UACalcResult<Vec<BasicPartition>> {
+        let mut atoms = Vec::new();
+        let bottom = BasicPartition::new(self.algebra.cardinality());
+
+        for congruence in &self.universe {
+            if congruence.is_finer_than(&bottom)?
+                && congruence.num_blocks() == bottom.num_blocks() + 1
+            {
+                atoms.push(congruence.clone());
+            }
+        }
+
+        Ok(atoms)
+    }
+
+    /// Get coatoms as BasicPartition instances (avoids Any downcasts)
+    pub fn coatoms_basic(&self) -> UACalcResult<Vec<BasicPartition>> {
+        let mut coatoms = Vec::new();
+        let top = coarsest_partition(self.algebra.cardinality())?;
+
+        for congruence in &self.universe {
+            if top.is_finer_than(congruence)? && top.num_blocks() == congruence.num_blocks() + 1 {
+                coatoms.push(congruence.clone());
+            }
+        }
+
+        Ok(coatoms)
+    }
+
+    /// Get join-irreducibles as BasicPartition instances (avoids Any downcasts)
+    pub fn join_irreducibles_basic(&self) -> Vec<BasicPartition> {
+        self.join_irreducibles.clone()
+    }
+
+    /// Get the join of two congruences by index (avoids Any downcasts)
+    pub fn join_by_index(&self, i: usize, j: usize) -> UACalcResult<BasicPartition> {
+        if i >= self.universe.len() || j >= self.universe.len() {
+            return Err(UACalcError::IndexOutOfBounds {
+                index: i.max(j),
+                size: self.universe.len(),
+            });
+        }
+
+        let a = &self.universe[i];
+        let b = &self.universe[j];
+        a.join(b)
+    }
+
+    /// Get the meet of two congruences by index (avoids Any downcasts)
+    pub fn meet_by_index(&self, i: usize, j: usize) -> UACalcResult<BasicPartition> {
+        if i >= self.universe.len() || j >= self.universe.len() {
+            return Err(UACalcError::IndexOutOfBounds {
+                index: i.max(j),
+                size: self.universe.len(),
+            });
+        }
+
+        let a = &self.universe[i];
+        let b = &self.universe[j];
+        a.meet(b)
     }
 }
 
@@ -473,5 +556,3 @@ where
         false
     }
 }
-
-

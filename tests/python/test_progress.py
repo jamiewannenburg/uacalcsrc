@@ -407,7 +407,7 @@ class TestProgressConfig:
         config.set_update_interval(0.5)
         assert config.default_update_interval == 0.5
         
-        config.enable_logging(False)
+        config.set_enable_logging(False)
         assert config.enable_logging is False
         
         config.set_log_level("DEBUG")
