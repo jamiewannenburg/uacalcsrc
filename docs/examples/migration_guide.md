@@ -28,7 +28,7 @@ This guide provides comprehensive instructions for migrating from Java UACalc to
 | Java UACalc | Python UACalc | Notes |
 |-------------|---------------|-------|
 | `CongruenceLattice.Cg(a, b)` | `algebra.cg(a, b)` | Direct equivalent |
-| `CongruenceLattice(algebra)` | `algebra.congruence_lattice()` | Returns lattice object |
+| `CongruenceLattice(algebra)` | `uacalc.create_congruence_lattice(algebra)` | Returns lattice object |
 | `conLat.size()` | `len(lattice)` | Python idiom |
 | `conLat.getJoinIrreducibles()` | `lattice.join_irreducibles` | Property access |
 
@@ -37,7 +37,7 @@ This guide provides comprehensive instructions for migrating from Java UACalc to
 | Java UACalc | Python UACalc | Notes |
 |-------------|---------------|-------|
 | `TermParser.parse(term)` | `uacalc.parse_term(term, algebra)` | Direct equivalent |
-| `term.evaluate(algebra, assignment)` | `term.evaluate(assignment)` | Simplified API |
+| `term.evaluate(algebra, assignment)` | `term.value(assignment)` | Simplified API |
 
 ## Installation and Setup
 
@@ -99,7 +99,7 @@ print(f"Operations: {len(algebra.operations)}")
 
 # Basic operation evaluation
 op = algebra.operations[0]
-result = op.evaluate([0, 1])
+result = op.value([0, 1])
 print(f"Result: {result}")
 ```
 
@@ -154,12 +154,13 @@ for (int i = 0; i < conLat.size(); i++) {
 def progress_callback(progress, message):
     print(f"Progress: {progress:.1%} - {message}")
 
-lattice = algebra.congruence_lattice(progress_callback=progress_callback)
-print(f"Lattice size: {len(lattice)}")
-print(f"Join-irreducibles: {len(lattice.join_irreducibles)}")
+lattice = uacalc.create_congruence_lattice_with_progress(algebra, progress_callback)
+print(f"Lattice size: {lattice.size()}")
+print(f"Atoms: {len(lattice.atoms())}")
 
 # Iterate through all congruences
-for i, congruence in enumerate(lattice):
+congruences = lattice.congruences()
+for i, congruence in enumerate(congruences):
     print(f"Congruence {i}: {congruence.num_blocks} blocks")
 ```
 
@@ -189,7 +190,7 @@ term = uacalc.parse_term("x0 ∧ (x1 ∨ x2)", algebra)
 
 # Evaluate with variable assignment
 assignment = [1, 0, 1]  # x0=1, x1=0, x2=1
-result = term.evaluate(assignment)
+result = term.value(assignment)
 print(f"Term result: {result}")
 ```
 
@@ -276,7 +277,7 @@ def get_memory_usage():
 
 # Monitor memory during lattice construction
 start_memory = get_memory_usage()
-lattice = algebra.congruence_lattice()
+lattice = uacalc.create_congruence_lattice(algebra)
 end_memory = get_memory_usage()
 
 memory_used = end_memory - start_memory
@@ -354,16 +355,15 @@ def analyze_algebra(file_path):
     algebra = uacalc.load_algebra(file_path)
     
     # Compute congruence lattice
-    lattice = algebra.congruence_lattice()
+    lattice = uacalc.create_congruence_lattice(algebra)
     
     return {
         'file': file_path,
         'name': algebra.name,
         'cardinality': algebra.cardinality,
-        'lattice_size': len(lattice),
-        'join_irreducibles': len(lattice.join_irreducibles),
-        'height': lattice.height,
-        'width': lattice.width
+        'lattice_size': lattice.size(),
+        'atoms': len(lattice.atoms()),
+        'coatoms': len(lattice.coatoms())
     }
 
 # Process multiple algebras in parallel

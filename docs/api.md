@@ -142,6 +142,11 @@ class Algebra:
     def is_associative(self, op_index: int) -> bool
     def is_commutative(self, op_index: int) -> bool
     def subalgebra(self, generators: List[int]) -> Algebra
+    
+    # Properties
+    name: str
+    universe: List[int]
+    operations: List[Operation]
 ```
 
 #### `Operation`
@@ -164,6 +169,10 @@ class Partition:
     def meet(self, other: Partition) -> Partition
     def is_finer_than(self, other: Partition) -> bool
     def is_coarser_than(self, other: Partition) -> bool
+    
+    # Properties
+    size: int
+    num_blocks: int
 ```
 
 #### `BinaryRelation`
@@ -211,7 +220,7 @@ def algebra_to_numpy(algebra: Algebra) -> Dict[str, np.ndarray]
 | Java | Rust | Python |
 |------|------|--------|
 | `Algebra.getUniverse()` | `algebra.universe()` | `algebra.universe` |
-| `Algebra.getCardinality()` | `algebra.cardinality()` | `algebra.cardinality()` |
+| `Algebra.getCardinality()` | `algebra.cardinality()` | `algebra.cardinality` |
 | `Algebra.getOperation(int)` | `algebra.operation(index)` | `algebra.operation(index)` |
 | `Operation.getValue(int[])` | `operation.value(&args)` | `operation.value(args)` |
 | `Operation.getArity()` | `operation.arity()` | `operation.arity()` |
@@ -340,7 +349,7 @@ partition.union(0, 1)
 partition.union(2, 3)
 
 # Check properties
-assert partition.num_blocks() == 2
+assert partition.num_blocks == 2
 assert partition.same_block(0, 1)
 assert not partition.same_block(0, 2)
 ```

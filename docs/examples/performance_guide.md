@@ -192,7 +192,7 @@ print(f"Algebra size: {algebra.cardinality}")
 def progress_callback(progress, message):
     print(f"Progress: {progress:.1%} - {message}")
 
-lattice = algebra.congruence_lattice(progress_callback=progress_callback)
+lattice = uacalc.create_congruence_lattice_with_progress(algebra, progress_callback)
 print(f"Lattice size: {len(lattice)}")
 ```
 
@@ -203,12 +203,12 @@ import concurrent.futures
 
 def analyze_algebra(file_path):
     algebra = uacalc.load_algebra(file_path)
-    lattice = algebra.congruence_lattice()
+    lattice = uacalc.create_congruence_lattice(algebra)
     return {
         'file': file_path,
-        'size': len(lattice),
-        'height': lattice.height,
-        'width': lattice.width
+        'size': lattice.size(),
+        'atoms': len(lattice.atoms()),
+        'coatoms': len(lattice.coatoms())
     }
 
 # Process in parallel
@@ -229,7 +229,7 @@ def monitor_memory():
 
 # Monitor memory during computation
 start_memory = monitor_memory()
-lattice = algebra.congruence_lattice()
+lattice = uacalc.create_congruence_lattice(algebra)
 end_memory = monitor_memory()
 
 print(f"Memory used: {end_memory - start_memory:.1f} MB")
@@ -245,7 +245,7 @@ profiler = cProfile.Profile()
 profiler.enable()
 
 # Run operation
-lattice = algebra.congruence_lattice()
+lattice = uacalc.create_congruence_lattice(algebra)
 
 profiler.disable()
 stats = pstats.Stats(profiler)

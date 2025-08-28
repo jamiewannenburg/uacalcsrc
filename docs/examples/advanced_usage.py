@@ -62,22 +62,23 @@ def large_scale_congruence_analysis():
     print("Computing congruence lattice...")
     lattice, duration, memory = benchmark_operation(
         "Lattice construction",
-        algebra.congruence_lattice,
-        progress_callback=progress_callback
+        uacalc.create_congruence_lattice_with_progress,
+        algebra,
+        progress_callback
     )
     
-    print(f"Lattice computed: {len(lattice)} congruences")
-    print(f"Join-irreducibles: {len(lattice.join_irreducibles)}")
-    print(f"Height: {lattice.height}")
-    print(f"Width: {lattice.width}")
+    print(f"Lattice computed: {lattice.size()} congruences")
+    print(f"Atoms: {len(lattice.atoms())}")
+    print(f"Coatoms: {len(lattice.coatoms())}")
     
     # Analyze lattice properties
     print("\nLattice analysis:")
-    block_counts = [congruence.num_blocks for congruence in lattice]
+    congruences = lattice.congruences()
+    block_counts = [congruence.num_blocks for congruence in congruences]
     print(f"Block count distribution: {sorted(set(block_counts))}")
     
     # Find congruences with specific properties
-    minimal_congruences = [c for c in lattice if c.num_blocks == algebra.cardinality - 1]
+    minimal_congruences = [c for c in congruences if c.num_blocks == algebra.cardinality - 1]
     print(f"Minimal congruences: {len(minimal_congruences)}")
     
     return lattice
@@ -112,10 +113,10 @@ def memory_optimized_computation():
         # Only compute lattice for smaller algebras
         if algebra.cardinality <= 6:
             try:
-                lattice = algebra.congruence_lattice()
+                lattice = uacalc.create_congruence_lattice(algebra)
                 properties.update({
-                    'lattice_size': len(lattice),
-                    'join_irreducibles': len(lattice.join_irreducibles)
+                    'lattice_size': lattice.size(),
+                    'atoms': len(lattice.atoms())
                 })
             except Exception as e:
                 print(f"Lattice computation failed: {e}")
@@ -201,7 +202,7 @@ def validate_algebra_properties():
                 is_commutative = True
                 for a in range(algebra.cardinality):
                     for b in range(algebra.cardinality):
-                        if op.evaluate([a, b]) != op.evaluate([b, a]):
+                        if op.value([a, b]) != op.value([b, a]):
                             is_commutative = False
                             break
                     if not is_commutative:
@@ -213,8 +214,8 @@ def validate_algebra_properties():
                 for a in range(algebra.cardinality):
                     for b in range(algebra.cardinality):
                         for c in range(algebra.cardinality):
-                            left = op.evaluate([op.evaluate([a, b]), c])
-                            right = op.evaluate([a, op.evaluate([b, c])])
+                            left = op.value([op.value([a, b]), c])
+                            right = op.value([a, op.value([b, c])])
                             if left != right:
                                 is_associative = False
                                 break
@@ -253,12 +254,11 @@ def batch_algebra_analysis():
             # Try to compute congruence lattice for smaller algebras
             if algebra.cardinality <= 8:
                 try:
-                    lattice = algebra.congruence_lattice()
+                    lattice = uacalc.create_congruence_lattice(algebra)
                     result.update({
-                        'lattice_size': len(lattice),
-                        'join_irreducibles': len(lattice.join_irreducibles),
-                        'height': lattice.height,
-                        'width': lattice.width
+                        'lattice_size': lattice.size(),
+                        'atoms': len(lattice.atoms()),
+                        'coatoms': len(lattice.coatoms())
                     })
                 except Exception as e:
                     result['lattice_error'] = str(e)
@@ -554,7 +554,7 @@ def jupyter_integration_example():
             table = np.zeros((algebra.cardinality, algebra.cardinality), dtype=int)
             for i in range(algebra.cardinality):
                 for j in range(algebra.cardinality):
-                    table[i, j] = op.evaluate([i, j])
+                    table[i, j] = op.value([i, j])
             
             im = axes[0, 1].imshow(table, cmap='viridis')
             axes[0, 1].set_title(f"Operation Table: {op.symbol}")
@@ -601,13 +601,12 @@ def pandas_integration():
     for size in [3, 4, 5, 6]:
         algebra = uacalc.create_cyclic_group(size)
         try:
-            lattice = algebra.congruence_lattice()
+            lattice = uacalc.create_congruence_lattice(algebra)
             data.append({
                 'size': size,
-                'lattice_size': len(lattice),
-                'join_irreducibles': len(lattice.join_irreducibles),
-                'height': lattice.height,
-                'width': lattice.width
+                'lattice_size': lattice.size(),
+                'atoms': len(lattice.atoms()),
+                'coatoms': len(lattice.coatoms())
             })
         except Exception as e:
             data.append({
