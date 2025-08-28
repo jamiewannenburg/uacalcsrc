@@ -460,24 +460,34 @@ def _generate_operation_table_xml(operation: Operation, universe: List[int]) -> 
         row.text = str(result)
         rows.append(row)
     elif arity == 1:
-        # Unary operation
+        # Unary operation - single row with all values
+        row = ET.Element('row')
+        values = []
         for i in range(cardinality):
             result = operation.value([i])
-            row = ET.Element('row')
-            row.set('r', f'[{i}]')
-            row.text = str(result)
-            rows.append(row)
+            values.append(str(result))
+        row.text = ','.join(values)
+        rows.append(row)
     else:
-        # Multi-ary operation
-        for i in range(cardinality):
+        # Multi-ary operation - use Horner encoding
+        expected_rows = cardinality ** (arity - 1)
+        for row_index in range(expected_rows):
             row = ET.Element('row')
-            row.set('r', f'[{i}]')
+            row.set('r', f'[{row_index}]')
             
             # Generate values for this row
             values = []
-            for args in _generate_combinations(universe, arity - 1):
-                full_args = [i] + args
-                result = operation.value(full_args)
+            for col_index in range(cardinality):
+                # Reconstruct the full argument tuple from row and column indices
+                args = []
+                temp_row = row_index
+                for pos in range(arity - 1):
+                    args.append(temp_row % cardinality)
+                    temp_row //= cardinality
+                args.reverse()
+                args.append(col_index)
+                
+                result = operation.value(args)
                 values.append(str(result))
             
             row.text = ','.join(values)
@@ -718,8 +728,8 @@ def _validate_operation_table(op_elem: ET.Element, cardinality: int, file_path: 
     # Parse and validate rows
     rows = list(int_array.findall('row'))
     
-    # Check row count
-    expected_row_count = 1 if arity == 0 else cardinality
+    # Check row count - use 1 if arity <= 1 else cardinality^(arity-1)
+    expected_row_count = 1 if arity <= 1 else (cardinality ** (arity - 1))
     if len(rows) != expected_row_count:
         errors.append(f"Operation '{op_name}' has wrong number of rows: expected {expected_row_count}, got {len(rows)}")
         return errors
@@ -734,7 +744,14 @@ def _validate_operation_table(op_elem: ET.Element, cardinality: int, file_path: 
             errors.append(f"Operation '{op_name}' row {i} contains invalid values")
             continue
         
-        expected_row_size = 1 if arity == 0 else (cardinality ** (arity - 1))
+        # For unary operations, expect cardinality values in the single row
+        if arity == 0:
+            expected_row_size = 1
+        elif arity == 1:
+            expected_row_size = cardinality
+        else:
+            expected_row_size = cardinality ** (arity - 1)
+        
         if len(row_values) != expected_row_size:
             errors.append(f"Operation '{op_name}' row {i} has wrong size: expected {expected_row_size}, got {len(row_values)}")
     

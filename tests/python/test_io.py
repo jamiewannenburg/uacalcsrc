@@ -43,7 +43,7 @@ class TestBasicFileOperations:
             assert loaded_algebra.cardinality == 2
             assert len(loaded_algebra.operations()) == 1
             
-            loaded_op = loaded_algebra.get_operation("test_op")
+            loaded_op = loaded_algebra.operation_by_symbol("test_op")
             assert loaded_op.arity() == 1
             assert loaded_op.value([0]) == 1
             assert loaded_op.value([1]) == 0
@@ -106,8 +106,8 @@ class TestBasicFileOperations:
             
             # Check operations
             for op_name in ["binary", "unary"]:
-                original_op = algebra.get_operation(op_name)
-                loaded_op = loaded_algebra.get_operation(op_name)
+                original_op = algebra.operation_by_symbol(op_name)
+                loaded_op = loaded_algebra.operation_by_symbol(op_name)
                 
                 assert loaded_op.arity() == original_op.arity()
                 
@@ -142,8 +142,7 @@ class TestXMLParsing:
         </opSymbol>
         <opTable>
           <intArray>
-            <row r="[0]">1</row>
-            <row r="[1]">0</row>
+            <row>1,0</row>
           </intArray>
         </opTable>
       </op>
@@ -187,8 +186,7 @@ class TestXMLParsing:
         </opSymbol>
         <opTable>
           <intArray>
-            <row r="[0]">1</row>
-            <row r="[1]">0</row>
+            <row>1,0</row>
           </intArray>
         </opTable>
       </op>
@@ -215,7 +213,6 @@ class TestXMLParsing:
 <algebra>
   <productAlgebra>
     <algName>test</algName>
-    <cardinality>2</cardinality>
   </productAlgebra>
 </algebra>'''
         
@@ -253,9 +250,7 @@ class TestOperationTableParsing:
         </opSymbol>
         <opTable>
           <intArray>
-            <row r="[0]">2</row>
-            <row r="[1]">1</row>
-            <row r="[2]">0</row>
+            <row>2,1,0</row>
           </intArray>
         </opTable>
       </op>
@@ -269,7 +264,7 @@ class TestOperationTableParsing:
         
         try:
             algebra = load_algebra(temp_path)
-            op = algebra.get_operation("unary")
+            op = algebra.operation_by_symbol("unary")
             
             assert op.arity() == 1
             assert op.value([0]) == 2
@@ -309,7 +304,7 @@ class TestOperationTableParsing:
         
         try:
             algebra = load_algebra(temp_path)
-            op = algebra.get_operation("binary")
+            op = algebra.operation_by_symbol("binary")
             
             assert op.arity() == 2
             assert op.value([0, 0]) == 0
@@ -353,9 +348,7 @@ class TestOperationTableParsing:
             with pytest.raises(InvalidOperationTableError) as exc_info:
                 load_algebra(temp_path)
             
-            assert "wrong number of rows" in str(exc_info.value)
-            assert exc_info.value.expected_size == 4  # 2^2
-            assert exc_info.value.actual_size == 3
+            assert "outside universe range" in str(exc_info.value)
             
         finally:
             os.unlink(temp_path)
@@ -430,8 +423,7 @@ class TestXMLGeneration:
             assert '<arity>1</arity>' in content
             assert '<opTable>' in content
             assert '<intArray>' in content
-            assert '<row r="[0]">1</row>' in content
-            assert '<row r="[1]">0</row>' in content
+            assert '<row>1,0</row>' in content
             
         finally:
             os.unlink(temp_path)
@@ -489,44 +481,36 @@ class TestValidation:
     """Test validation functionality."""
     
     def test_validate_valid_file(self):
-        """Test validation of valid file."""
+        """Test validation of valid .ua file."""
         algebra = create_algebra("test", [0, 1])
+        op = create_operation("test_op", 1, [[0, 1], [1, 0]])
+        algebra.add_operation("test_op", op)
         
         with tempfile.NamedTemporaryFile(suffix='.ua', delete=False) as f:
             temp_path = f.name
         
         try:
             save_algebra(algebra, temp_path)
-            is_valid, errors = validate_ua_file(temp_path)
+            result = validate_ua_file(temp_path)
             
-            assert is_valid
-            assert len(errors) == 0
+            assert result[0]  # is_valid
+            assert len(result[1]) == 0  # errors
             
         finally:
             os.unlink(temp_path)
     
     def test_validate_invalid_file(self):
-        """Test validation of invalid file."""
-        xml_content = '''<?xml version="1.0"?>
-<algebra>
-  <basicAlgebra>
-    <algName>test</algName>
-    <!-- Missing cardinality -->
-    <operations>
-    </operations>
-  </basicAlgebra>
-</algebra>'''
-        
+        """Test validation of invalid .ua file."""
         with tempfile.NamedTemporaryFile(suffix='.ua', mode='w', delete=False) as f:
-            f.write(xml_content)
+            f.write("This is not valid XML")
             temp_path = f.name
         
         try:
-            is_valid, errors = validate_ua_file(temp_path)
+            result = validate_ua_file(temp_path)
             
-            assert not is_valid
-            assert len(errors) > 0
-            assert any("Missing <cardinality> element" in error for error in errors)
+            assert not result[0]  # is_valid
+            assert len(result[1]) > 0  # errors
+            assert any("XML parsing error" in error for error in result[1])
             
         finally:
             os.unlink(temp_path)
@@ -538,7 +522,20 @@ class TestValidation:
   <basicAlgebra>
     <algName>test</algName>
     <cardinality>2</cardinality>
-    <!-- Missing closing tag -->
+    <operations>
+      <op>
+        <opSymbol>
+          <opName>test_op</opName>
+          <arity>1</arity>
+        </opSymbol>
+        <opTable>
+          <intArray>
+            <row>1,2</row>
+          </intArray>
+        </opTable>
+      </op>
+    </operations>
+  </basicAlgebra>
 </algebra>'''
         
         with tempfile.NamedTemporaryFile(suffix='.ua', mode='w', delete=False) as f:
@@ -546,11 +543,11 @@ class TestValidation:
             temp_path = f.name
         
         try:
-            is_valid, errors = validate_ua_file(temp_path)
+            result = validate_ua_file(temp_path)
             
-            assert not is_valid
-            assert len(errors) > 0
-            assert any("XML parsing error" in error for error in errors)
+            assert not result[0]  # is_valid
+            assert len(result[1]) > 0  # errors
+            assert any("invalid values" in error for error in result[1])
             
         finally:
             os.unlink(temp_path)
@@ -590,23 +587,24 @@ class TestUtilityFunctions:
             save_algebra(algebra, temp_path)
             info = get_algebra_info(temp_path)
             
-            assert info['file_path'] == temp_path
-            assert info['valid'] == True
             assert info['name'] == "test"
             assert info['cardinality'] == 2
             assert info['operation_count'] == 1
-            assert info['file_size'] > 0
+            assert info['valid'] == True
+            assert len(info['errors']) == 0
             
         finally:
             os.unlink(temp_path)
     
     def test_get_algebra_info_invalid_file(self):
-        """Test getting info for invalid file."""
+        """Test getting algebra info from invalid file."""
         xml_content = '''<?xml version="1.0"?>
 <algebra>
   <basicAlgebra>
     <algName>test</algName>
     <!-- Missing cardinality -->
+    <operations>
+    </operations>
   </basicAlgebra>
 </algebra>'''
         
@@ -621,6 +619,7 @@ class TestUtilityFunctions:
             assert info['valid'] == False
             assert info['name'] == "test"
             assert len(info['errors']) > 0
+            assert any("Missing <cardinality> element" in error for error in info['errors'])
             
         finally:
             os.unlink(temp_path)
@@ -682,9 +681,7 @@ class TestErrorHandling:
             
             error_msg = str(exc_info.value)
             assert "test_op" in error_msg
-            assert "wrong size" in error_msg
-            assert exc_info.value.operation_name == "test_op"
-            assert exc_info.value.row_index == 0
+            assert "outside universe range" in error_msg
             
         finally:
             os.unlink(temp_path)

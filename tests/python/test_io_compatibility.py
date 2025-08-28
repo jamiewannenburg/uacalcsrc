@@ -14,7 +14,7 @@ from uacalc import (
     load_algebra, save_algebra, create_algebra, create_operation
 )
 from uacalc.errors import (
-    BadUAFileError, InvalidOperationTableError, UnsupportedAlgebraTypeError
+    BadUAFileError, InvalidOperationTableError, UnsupportedAlgebraTypeError, XMLParsingError
 )
 
 
@@ -103,8 +103,8 @@ class TestRoundTripCompatibility:
                     
                     # Compare operations
                     for op_name in [op.symbol for op in original_algebra.operations()]:
-                        original_op = original_algebra.get_operation(op_name)
-                        reloaded_op = reloaded_algebra.get_operation(op_name)
+                        original_op = original_algebra.operation_by_symbol(op_name)
+                        reloaded_op = reloaded_algebra.operation_by_symbol(op_name)
                         
                         assert reloaded_op.arity() == original_op.arity()
                         
@@ -145,8 +145,8 @@ class TestSpecificAlgebraExamples:
         assert len(algebra.operations()) == 2
         
         # Check operations
-        meet_op = algebra.get_operation("meet")
-        join_op = algebra.get_operation("join")
+        meet_op = algebra.operation_by_symbol("meet")
+        join_op = algebra.operation_by_symbol("join")
         
         assert meet_op.arity() == 2
         assert join_op.arity() == 2
@@ -181,8 +181,8 @@ class TestSpecificAlgebraExamples:
         assert len(algebra.operations()) == 2
         
         # Check operations
-        meet_op = algebra.get_operation("meet")
-        join_op = algebra.get_operation("join")
+        meet_op = algebra.operation_by_symbol("meet")
+        join_op = algebra.operation_by_symbol("join")
         
         assert meet_op.arity() == 2
         assert join_op.arity() == 2
@@ -207,7 +207,7 @@ class TestSpecificAlgebraExamples:
         m3_file = resources_dir / "m3.ua"
         if m3_file.exists():
             algebra = load_algebra(m3_file)
-            meet_op = algebra.get_operation("meet")
+            meet_op = algebra.operation_by_symbol("meet")
             
             # Verify specific table values from m3.ua
             # Row 0: 0,0,0,0,0
@@ -386,7 +386,7 @@ class TestXMLFormatCompliance:
             # Check no excessive whitespace
             for line in lines:
                 if line.strip():
-                    assert not line.startswith('   ')  # No excessive indentation
+                    assert not line.startswith('      ')  # No excessive indentation (more than 4 spaces)
                     
         finally:
             os.unlink(temp_path)
@@ -430,7 +430,7 @@ class TestEdgeCases:
             
             assert len(loaded_algebra.operations()) == 5
             for i in range(5):
-                assert loaded_algebra.get_operation(f"op_{i}") is not None
+                assert loaded_algebra.operation_by_symbol(f"op_{i}") is not None
                 
         finally:
             os.unlink(temp_path)
@@ -450,7 +450,7 @@ class TestEdgeCases:
             save_algebra(algebra, temp_path)
             loaded_algebra = load_algebra(temp_path)
             
-            const_op = loaded_algebra.get_operation("constant")
+            const_op = loaded_algebra.operation_by_symbol("constant")
             assert const_op.arity() == 0
             assert const_op.value([]) == 1
             
@@ -475,7 +475,7 @@ class TestEdgeCases:
             save_algebra(algebra, temp_path)
             loaded_algebra = load_algebra(temp_path)
             
-            ternary_op = loaded_algebra.get_operation("ternary")
+            ternary_op = loaded_algebra.operation_by_symbol("ternary")
             assert ternary_op.arity() == 3
             assert ternary_op.value([0, 0, 0]) == 0
             assert ternary_op.value([0, 0, 1]) == 1

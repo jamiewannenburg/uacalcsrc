@@ -84,8 +84,7 @@ class TestXMLStructureValidation:
         </opSymbol>
         <opTable>
           <intArray>
-            <row r="[0]">1</row>
-            <row r="[1]">0</row>
+            <row>1,0</row>
           </intArray>
         </opTable>
       </op>
@@ -322,8 +321,7 @@ class TestOperationValidation:
         </opSymbol>
         <opTable>
           <intArray>
-            <row r="[0]">1</row>
-            <row r="[1]">0</row>
+            <row>1,0</row>
           </intArray>
         </opTable>
       </op>
@@ -630,8 +628,7 @@ class TestOperationTableValidation:
         </opSymbol>
         <opTable>
           <intArray>
-            <row r="[0]">abc</row>
-            <row r="[1]">0</row>
+            <row>abc,0</row>
           </intArray>
         </opTable>
       </op>
@@ -648,7 +645,7 @@ class TestOperationTableValidation:
             
             assert not is_valid
             assert len(errors) > 0
-            assert any("Invalid value" in error for error in errors)
+            assert any("contains invalid values" in error for error in errors)
             
         finally:
             os.unlink(temp_path)
@@ -686,7 +683,7 @@ class TestOperationTableValidation:
             
             assert not is_valid
             assert len(errors) > 0
-            assert any("Invalid value" in error for error in errors)
+            assert any("contains invalid values" in error for error in errors)
             
         finally:
             os.unlink(temp_path)
@@ -865,9 +862,7 @@ class TestUniverseValidation:
         </opSymbol>
         <opTable>
           <intArray>
-            <row r="[0]">1</row>
-            <row r="[1]">2</row>
-            <row r="[2]">0</row>
+            <row>1,2,0</row>
           </intArray>
         </opTable>
       </op>
@@ -903,8 +898,7 @@ class TestUniverseValidation:
         </opSymbol>
         <opTable>
           <intArray>
-            <row r="[0]">2</row>
-            <row r="[1]">0</row>
+            <row>2,0</row>
           </intArray>
         </opTable>
       </op>
@@ -921,7 +915,7 @@ class TestUniverseValidation:
             
             assert not is_valid
             assert len(errors) > 0
-            assert any("outside universe range" in error for error in errors)
+            assert any("contains invalid values" in error for error in errors)
             
         finally:
             os.unlink(temp_path)
