@@ -28,8 +28,6 @@ pub trait Algebra {
     /// Get an operation as an Arc<Mutex<dyn Operation>> by symbol name
     fn operation_arc_by_symbol(&self, symbol: &str) -> UACalcResult<Arc<Mutex<dyn Operation>>>;
 
-
-
     /// Convert element to index (mirrors Java's elementIndex)
     fn element_to_index(&self, element: usize) -> UACalcResult<usize> {
         if element >= self.cardinality() {
@@ -186,22 +184,28 @@ impl BasicAlgebra {
                 message: "Failed to lock operation for validation".to_string(),
             })?;
         if op_guard.set_size() != self.cardinality() {
-            return Err(UACalcError::InvalidOperation {
-                message: format!(
-                    "Operation set size {} does not match algebra cardinality {}",
-                    op_guard.set_size(),
-                    self.cardinality()
-                ),
-            });
+            // Okay for constants
+            if op_guard.arity() != 0 {
+                return Err(UACalcError::InvalidOperation {
+                    message: format!(
+                        "Operation set size {} does not match algebra cardinality {}",
+                        op_guard.set_size(),
+                        self.cardinality()
+                    ),
+                });
+            }
         }
-        
+
         // Use the operation's symbol name instead of the provided symbol
         let name = op_guard.symbol().name.clone();
         drop(op_guard); // Release the lock
 
         // Validate that the provided symbol matches the operation's symbol (optional warning)
         if symbol != name {
-            eprintln!("Warning: Provided symbol '{}' does not match operation symbol '{}'", symbol, name);
+            eprintln!(
+                "Warning: Provided symbol '{}' does not match operation symbol '{}'",
+                symbol, name
+            );
         }
 
         let index = self.operations.len();
@@ -475,10 +479,7 @@ impl SmallAlgebra for BasicAlgebra {
 
         // Create subalgebra with contiguous universe [0..m)
         let new_universe: Vec<usize> = (0..universe.len()).collect();
-        let mut subalgebra = BasicAlgebra::new(
-            format!("{}_sub", self.name),
-            new_universe.clone(),
-        )?;
+        let mut subalgebra = BasicAlgebra::new(format!("{}_sub", self.name), new_universe.clone())?;
 
         // Build mapping from original universe to new universe [0..m)
         let mut map = HashMap::new();

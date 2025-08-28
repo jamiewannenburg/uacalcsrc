@@ -35,11 +35,11 @@ class TestRoundTripCompatibility:
                 
                 # Basic validation
                 assert algebra.name is not None
-                assert algebra.cardinality() > 0
-                assert len(algebra.universe) == algebra.cardinality()
+                assert algebra.cardinality > 0
+                assert len(algebra.universe) == algebra.cardinality
                 
                 # Check that universe is contiguous
-                expected_universe = list(range(algebra.cardinality()))
+                expected_universe = list(range(algebra.cardinality))
                 assert algebra.universe == expected_universe
                 
                 # Check operations
@@ -51,18 +51,18 @@ class TestRoundTripCompatibility:
                     if operation.arity() == 0:
                         # Constant operation
                         result = operation.value([])
-                        assert 0 <= result < algebra.cardinality()
+                        assert 0 <= result < algebra.cardinality
                     elif operation.arity() == 1:
                         # Unary operation
-                        for i in range(algebra.cardinality()):
+                        for i in range(algebra.cardinality):
                             result = operation.value([i])
-                            assert 0 <= result < algebra.cardinality()
+                            assert 0 <= result < algebra.cardinality
                     elif operation.arity() == 2:
                         # Binary operation - test a few combinations
-                        for i in range(min(3, algebra.cardinality())):
-                            for j in range(min(3, algebra.cardinality())):
+                        for i in range(min(3, algebra.cardinality)):
+                            for j in range(min(3, algebra.cardinality)):
                                 result = operation.value([i, j])
-                                assert 0 <= result < algebra.cardinality()
+                                assert 0 <= result < algebra.cardinality
                 
             except Exception as e:
                 pytest.fail(f"Failed to load {ua_file}: {e}")
@@ -98,7 +98,7 @@ class TestRoundTripCompatibility:
                     
                     # Compare basic properties
                     assert reloaded_algebra.name == original_algebra.name
-                    assert reloaded_algebra.cardinality() == original_algebra.cardinality()
+                    assert reloaded_algebra.cardinality == original_algebra.cardinality
                     assert len(reloaded_algebra.operations()) == len(original_algebra.operations())
                     
                     # Compare operations
@@ -112,11 +112,11 @@ class TestRoundTripCompatibility:
                         if original_op.arity() == 0:
                             assert reloaded_op.value([]) == original_op.value([])
                         elif original_op.arity() == 1:
-                            for i in range(original_algebra.cardinality()):
+                            for i in range(original_algebra.cardinality):
                                 assert reloaded_op.value([i]) == original_op.value([i])
                         elif original_op.arity() == 2:
-                            for i in range(original_algebra.cardinality()):
-                                for j in range(original_algebra.cardinality()):
+                            for i in range(original_algebra.cardinality):
+                                for j in range(original_algebra.cardinality):
                                     assert reloaded_op.value([i, j]) == original_op.value([i, j])
                 
                 finally:
@@ -141,7 +141,7 @@ class TestSpecificAlgebraExamples:
         
         # Check basic properties
         assert algebra.name == "m3"
-        assert algebra.cardinality() == 5
+        assert algebra.cardinality == 5
         assert len(algebra.operations()) == 2
         
         # Check operations
@@ -177,7 +177,7 @@ class TestSpecificAlgebraExamples:
         
         # Check basic properties
         assert algebra.name == "lat2"
-        assert algebra.cardinality() == 2
+        assert algebra.cardinality == 2
         assert len(algebra.operations()) == 2
         
         # Check operations
@@ -406,7 +406,7 @@ class TestEdgeCases:
             save_algebra(algebra, temp_path)
             loaded_algebra = load_algebra(temp_path)
             
-            assert loaded_algebra.cardinality() == 1
+            assert loaded_algebra.cardinality == 1
             assert loaded_algebra.universe == [0]
             
         finally:

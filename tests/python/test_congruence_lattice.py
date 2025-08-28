@@ -50,7 +50,7 @@ class TestCongruenceLatticeBasic:
         size = lattice.size()
         
         assert size >= 2  # At least bottom and top
-        assert size <= 2**algebra.cardinality()  # At most 2^n congruences
+        assert size <= 2**algebra.cardinality  # At most 2^n congruences
     
     def test_congruences_list(self):
         """Test that congruences() returns a list of partitions."""
@@ -96,8 +96,8 @@ class TestPrincipalCongruences:
         assert isinstance(congruence, Partition)
         
         # Check that it's the identity relation
-        for i in range(algebra.cardinality()):
-            for j in range(algebra.cardinality()):
+        for i in range(algebra.cardinality):
+            for j in range(algebra.cardinality):
                 if i == j:
                     assert congruence.same_block(i, j)
                 else:
@@ -421,7 +421,7 @@ class TestPrincipalCongruencesTable:
         
         assert isinstance(table, list)
         # Should have n*(n-1)/2 entries for n elements
-        n = algebra.cardinality()
+        n = algebra.cardinality
         expected_count = n * (n - 1) // 2
         assert len(table) == expected_count
         
@@ -445,8 +445,8 @@ class TestCongruenceClosure:
         
         assert isinstance(closure, Partition)
         # Should be the identity relation
-        for i in range(algebra.cardinality()):
-            for j in range(algebra.cardinality()):
+        for i in range(algebra.cardinality):
+            for j in range(algebra.cardinality):
                 if i == j:
                     assert closure.same_block(i, j)
                 else:

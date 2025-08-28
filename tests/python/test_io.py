@@ -40,7 +40,7 @@ class TestBasicFileOperations:
             loaded_algebra = load_algebra(temp_path)
             
             assert loaded_algebra.name == "test"
-            assert loaded_algebra.cardinality() == 2
+            assert loaded_algebra.cardinality == 2
             assert len(loaded_algebra.operations()) == 1
             
             loaded_op = loaded_algebra.get_operation("test_op")
@@ -101,7 +101,7 @@ class TestBasicFileOperations:
             
             # Check basic properties
             assert loaded_algebra.name == algebra.name
-            assert loaded_algebra.cardinality() == algebra.cardinality()
+            assert loaded_algebra.cardinality == algebra.cardinality
             assert len(loaded_algebra.operations()) == len(algebra.operations())
             
             # Check operations
@@ -709,7 +709,7 @@ class TestErrorHandling:
         try:
             algebra = load_algebra(temp_path)
             assert algebra.name == "test"
-            assert algebra.cardinality() == 2
+            assert algebra.cardinality == 2
             assert len(algebra.operations()) == 0
             
         finally:

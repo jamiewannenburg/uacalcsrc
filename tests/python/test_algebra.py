@@ -36,7 +36,7 @@ class TestAlgebra:
         algebra = create_algebra("TestAlgebra", [0, 1, 2])
         
         assert algebra.name == "TestAlgebra"
-        assert algebra.cardinality() == 3
+        assert algebra.cardinality == 3
         assert list(algebra.universe) == [0, 1, 2]
         assert len(algebra.operations()) == 0
     
@@ -162,7 +162,7 @@ class TestBinaryRelation:
         """Test creating a binary relation."""
         relation = create_binary_relation(3)
         
-        assert relation.size() == 3
+        assert relation.size == 3
         assert len(relation.pairs()) == 0  # Initially empty
     
     def test_relation_operations(self):
@@ -238,7 +238,7 @@ class TestAlgebraBuilder:
         algebra = builder.build()
         
         assert algebra.name == "TestAlgebra"
-        assert algebra.cardinality() == 3
+        assert algebra.cardinality == 3
         assert len(algebra.operations()) == 3
 
 class TestPredefinedAlgebras:
@@ -248,7 +248,7 @@ class TestPredefinedAlgebras:
         """Test creating a Boolean algebra."""
         algebra = create_boolean_algebra(2)
         
-        assert algebra.cardinality() == 2
+        assert algebra.cardinality == 2
         assert len(algebra.operations()) == 3  # meet, join, complement
         
         # Test meet operation (AND)
@@ -262,7 +262,7 @@ class TestPredefinedAlgebras:
         """Test creating a cyclic group."""
         algebra = create_cyclic_group(3)
         
-        assert algebra.cardinality() == 3
+        assert algebra.cardinality == 3
         assert len(algebra.operations()) == 1  # multiply
         
         # Test multiplication
@@ -275,7 +275,7 @@ class TestPredefinedAlgebras:
         """Test creating a symmetric group."""
         algebra = create_symmetric_group(2)
         
-        assert algebra.cardinality() == 2  # S_2 has 2 elements
+        assert algebra.cardinality == 2  # S_2 has 2 elements
         assert len(algebra.operations()) == 1  # compose
 
 class TestIO:
@@ -303,7 +303,7 @@ class TestIO:
         loaded_algebra = load_algebra(file_path)
         
         assert loaded_algebra.name == algebra.name
-        assert loaded_algebra.cardinality() == algebra.cardinality()
+        assert loaded_algebra.cardinality == algebra.cardinality
         assert len(loaded_algebra.operations()) == len(algebra.operations())
 
 class TestNumPyIntegration:
@@ -354,7 +354,7 @@ class TestCompatibility:
             try:
                 algebra = load_algebra(ua_file)
                 assert algebra is not None
-                assert algebra.cardinality() > 0
+                assert algebra.cardinality > 0
                 print(f"Successfully loaded {ua_file.name}")
             except Exception as e:
                 pytest.fail(f"Failed to load {ua_file.name}: {e}")

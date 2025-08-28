@@ -1008,8 +1008,15 @@ fn create_operation(name: String, arity: usize, table: PyObject) -> PyResult<PyO
     // Convert PyObject to Vec<Vec<usize>> based on the input type
     let table_vec: Vec<Vec<usize>> = Python::with_gil(|py| {
         if let Ok(list) = table.extract::<Vec<usize>>(py) {
-            // Single list of values (for unary operations)
-            if arity == 1 {
+            if arity == 0 {
+                // Constant operation: expect [[value]]
+                Ok(vec![vec![list[0]]])
+            } else if arity == 1 {
+                // Unary operation: expect [value1, value2, ...]
+                Ok(list.into_iter().map(|val| vec![val]).collect())
+            } else if arity == 2 {
+                // Binary operation: handle NxN matrix format
+                let n = list.len();
                 Ok(list.into_iter().map(|val| vec![val]).collect())
             } else {
                 Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
@@ -1072,7 +1079,9 @@ fn create_operation(name: String, arity: usize, table: PyObject) -> PyResult<PyO
 
     // Determine the universe size from the table
     let universe_size = if arity == 0 {
-        1 // For constant operations, we need at least 1 element
+        // For constants, infer universe size from the constant value
+        let constant_value = normalized_table[0][0];
+        constant_value + 1
     } else if arity == 1 {
         normalized_table.len()
     } else if arity == 2 {

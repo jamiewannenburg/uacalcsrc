@@ -258,7 +258,7 @@ class TestTermEvaluator:
         result = evaluator.eval(term, variables)
         
         assert isinstance(result, int)
-        assert 0 <= result < algebra.cardinality()
+        assert 0 <= result < algebra.cardinality
     
     def test_eval_string_term(self):
         """Test evaluating a term from string."""
@@ -272,7 +272,7 @@ class TestTermEvaluator:
         result = evaluator.eval("f(x0, x1)", variables)
         
         assert isinstance(result, int)
-        assert 0 <= result < algebra.cardinality()
+        assert 0 <= result < algebra.cardinality
     
     def test_eval_batch(self):
         """Test batch evaluation."""
@@ -295,7 +295,7 @@ class TestTermEvaluator:
         assert len(results) == 3
         for result in results:
             assert isinstance(result, int)
-            assert 0 <= result < algebra.cardinality()
+            assert 0 <= result < algebra.cardinality
     
     def test_to_operation_table(self):
         """Test converting term to operation table."""
@@ -310,12 +310,12 @@ class TestTermEvaluator:
         table = evaluator.to_operation_table(term, 2)
         
         assert isinstance(table, list)
-        assert len(table) == algebra.cardinality()
+        assert len(table) == algebra.cardinality
         for row in table:
-            assert len(row) == algebra.cardinality()
+            assert len(row) == algebra.cardinality
             for value in row:
                 assert isinstance(value, int)
-                assert 0 <= value < algebra.cardinality()
+                assert 0 <= value < algebra.cardinality
     
     def test_caching(self):
         """Test that evaluation results are cached."""
@@ -635,7 +635,7 @@ class TestIntegration:
         assert depth == 1
         assert sorted(variables) == [0, 1]
         assert isinstance(result, int)
-        assert 0 <= result < algebra.cardinality()
+        assert 0 <= result < algebra.cardinality
         assert is_valid
         assert error is None
     
