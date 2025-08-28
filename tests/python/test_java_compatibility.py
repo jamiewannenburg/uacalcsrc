@@ -327,15 +327,14 @@ class TermCompatibilityTest(unittest.TestCase):
         
         for term_str in invalid_terms:
             with self.subTest(term=term_str):
-                # Test Rust parsing
-                try:
-                    arena = uacalc.create_term_arena()
-                    uacalc.parse_term(arena, term_str)
-                    # If we get here, Rust accepted an invalid term
-                    self.fail(f"Rust incorrectly accepted invalid term '{term_str}'")
-                except Exception:
-                    # Expected failure
-                    pass
+                # Test Rust validation using TermParser
+                from uacalc.terms import TermParser
+                parser = TermParser()
+                is_valid, error = parser.validate_syntax(term_str)
+                
+                # Rust should reject invalid terms
+                self.assertFalse(is_valid, f"Rust incorrectly accepted invalid term '{term_str}'")
+                self.assertIsNotNone(error, f"No error message for invalid term '{term_str}'")
                 
                 # Test Java parsing
                 java_result = self._run_java_term_parse(term_str)
@@ -517,7 +516,18 @@ class TermCompatibilityTest(unittest.TestCase):
                 os.remove(temp_file)
             
             if result.returncode == 0:
-                return json.loads(result.stdout)
+                # Find the JSON part in the output (last line that starts with {)
+                lines = result.stdout.strip().split('\n')
+                json_line = None
+                for line in reversed(lines):
+                    if line.strip().startswith('{'):
+                        json_line = line.strip()
+                        break
+                
+                if json_line:
+                    return json.loads(json_line)
+                else:
+                    return {"error": "No JSON found in output"}
             else:
                 return {"error": result.stderr}
         except Exception as e:

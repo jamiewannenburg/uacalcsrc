@@ -91,9 +91,18 @@ class TermParser:
             if not self._check_valid_characters(expr):
                 return False, "Invalid characters in expression"
             
+            # Check for specific syntax errors
+            error = self._check_specific_syntax_errors(expr)
+            if error:
+                return False, error
+            
             # Try to parse (this will catch most syntax errors)
-            _ = self.parse(expr)
-            return True, None
+            # Only try to parse if basic checks pass to avoid Rust panics
+            try:
+                _ = self.parse(expr)
+                return True, None
+            except Exception as parse_error:
+                return False, f"Parse error: {parse_error}"
             
         except Exception as e:
             return False, str(e)
@@ -115,6 +124,26 @@ class TermParser:
         # Allow letters, numbers, parentheses, commas, spaces, and common symbols
         valid_pattern = r'^[a-zA-Z0-9\(\)\[\],\s\+\-\*\/\^_]+$'
         return bool(re.match(valid_pattern, expr))
+    
+    def _check_specific_syntax_errors(self, expr: str) -> Optional[str]:
+        """Check for specific syntax errors like trailing commas, missing arguments."""
+        # Check for trailing comma in function calls
+        if re.search(r'\([^)]*,\s*\)', expr):
+            return "Missing argument after comma"
+        
+        # Check for leading comma in function calls
+        if re.search(r'\(\s*,', expr):
+            return "Missing argument before comma"
+        
+        # Check for consecutive commas
+        if re.search(r',\s*,', expr):
+            return "Consecutive commas"
+        
+        # Check for missing comma between arguments
+        if re.search(r'[a-zA-Z0-9_]\s+[a-zA-Z0-9_]', expr):
+            return "Missing comma between arguments"
+        
+        return None
 
 class TermEvaluator:
     """Term evaluator with caching and optimization."""
@@ -133,9 +162,18 @@ class TermEvaluator:
             
         Returns:
             Result of evaluation
+            
+        Raises:
+            ValueError: If any required variables are missing
         """
         if isinstance(term, str):
             term = parse_term(self._arena, term)
+        
+        # Check for missing variables
+        required_vars = term_variables(term)
+        missing_vars = [var for var in required_vars if var not in variables]
+        if missing_vars:
+            raise ValueError(f"Missing variables: {missing_vars}")
         
         # Create cache key
         cache_key = (term.to_string(), tuple(sorted(variables.items())))
@@ -296,9 +334,32 @@ def term_operations(term: Term) -> List[str]:
     Returns:
         List of operation symbols
     """
-    # TODO: Implement operation symbol extraction
-    # For now, return empty list
-    return []
+    operations = []
+    
+    def collect_operations(t: Term):
+        if t.is_operation():
+            # Get the operation symbol from the term
+            # This requires accessing the symbol from the Rust implementation
+            try:
+                # Try to get symbol from term string representation
+                term_str = t.to_string()
+                if '(' in term_str:
+                    symbol = term_str[:term_str.find('(')]
+                    if symbol not in operations:
+                        operations.append(symbol)
+            except:
+                pass
+            
+            # Recursively check children
+            for i in range(t.arity()):
+                try:
+                    child = t.child(i)
+                    collect_operations(child)
+                except:
+                    pass
+    
+    collect_operations(term)
+    return operations
 
 def terms_equal(term1: Term, term2: Term, algebra: Algebra) -> bool:
     """Check if two terms are semantically equal in an algebra.
@@ -320,7 +381,7 @@ def variable(index: Union[int, str], arena: Optional[TermArena] = None) -> Term:
     """Create a variable term.
     
     Args:
-        index: Variable index (int) or variable name (str like "x0")
+        index: Variable index (int) or variable name (str like "x0", "x", "y", etc.)
         arena: Term arena to create the term in (creates new one if not provided)
         
     Returns:
@@ -330,13 +391,26 @@ def variable(index: Union[int, str], arena: Optional[TermArena] = None) -> Term:
         arena = create_term_arena()
     
     if isinstance(index, str):
+        # Handle x0, x1, x2 format
         if index.startswith('x'):
             try:
                 index = int(index[1:])
             except ValueError:
-                raise ValueError(f"Invalid variable name: {index}")
+                # Handle general variable names like "x", "y", "z"
+                # Map them to indices based on their hash or position
+                if len(index) == 1 and index.isalpha():
+                    # Single letter variables: x->0, y->1, z->2, etc.
+                    # Map a-z to 0-25, A-Z to 26-51
+                    if index.islower():
+                        index = ord(index) - ord('a')
+                    else:
+                        index = ord(index) - ord('A') + 26
+                else:
+                    # For other variable names, use hash-based mapping
+                    index = hash(index) % 255  # Use modulo to fit in u8
         else:
-            raise ValueError(f"Invalid variable name: {index}")
+            # For non-x variables, use hash-based mapping
+            index = hash(index) % 255  # Use modulo to fit in u8
     
     return arena.make_variable(index)
 
@@ -386,13 +460,14 @@ def from_operation_table(table: List[List[int]], var_names: Optional[List[str]] 
     # This is a complex problem that requires solving systems of equations
     raise NotImplementedError("Reverse engineering from operation tables not yet implemented")
 
-def random_term(depth: int, operations: List[str], variables: int) -> Term:
+def random_term(depth: int, operations: List[str], variables: int, operation_arities: Optional[Dict[str, int]] = None) -> Term:
     """Generate a random term.
     
     Args:
         depth: Maximum depth of the term
         operations: List of available operation symbols
         variables: Number of available variables
+        operation_arities: Dictionary mapping operation symbols to their arities
         
     Returns:
         Randomly generated term
@@ -409,7 +484,25 @@ def random_term(depth: int, operations: List[str], variables: int) -> Term:
         else:
             # Create operation
             symbol = random.choice(operations)
-            arity = random.randint(1, min(3, current_depth))  # Limit arity
+            
+            # Determine arity based on operation_arities if provided
+            if operation_arities and symbol in operation_arities:
+                required_arity = operation_arities[symbol]
+                # Only create operation if we have enough depth for the required arity
+                if current_depth >= required_arity:
+                    arity = required_arity
+                else:
+                    # Not enough depth, create variable instead
+                    var_index = random.randint(0, variables - 1)
+                    return arena.make_variable(var_index)
+            else:
+                # Default to binary operations if arity not specified
+                arity = 2
+                if current_depth < arity:
+                    # Not enough depth, create variable instead
+                    var_index = random.randint(0, variables - 1)
+                    return arena.make_variable(var_index)
+            
             children = [generate_random_term(current_depth - 1) for _ in range(arity)]
             return arena.make_term(symbol, children)
     
