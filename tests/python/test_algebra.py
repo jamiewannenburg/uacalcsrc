@@ -111,8 +111,8 @@ class TestPartition:
         """Test creating a partition."""
         partition = create_partition(4)
         
-        assert partition.size() == 4
-        assert partition.num_blocks() == 4  # Initially all elements in separate blocks
+        assert partition.size == 4
+        assert partition.num_blocks == 4  # Initially all elements in separate blocks
     
     def test_partition_union(self):
         """Test union operations on partitions."""
@@ -121,7 +121,7 @@ class TestPartition:
         # Union elements 0 and 1
         partition.union(0, 1)
         
-        assert partition.num_blocks() == 3
+        assert partition.num_blocks == 3
         assert partition.same_block(0, 1) == True
         assert partition.same_block(0, 2) == False
     
@@ -149,11 +149,11 @@ class TestPartition:
         
         # Test join
         join = p1.join(p2)
-        assert join.num_blocks() == 1  # All elements should be in one block
+        assert join.num_blocks == 1  # All elements should be in one block
         
         # Test meet
         meet = p1.meet(p2)
-        assert meet.num_blocks() == 3  # Only element 1 should be separate
+        assert meet.num_blocks == 3  # Only element 1 should be separate
 
 class TestBinaryRelation:
     """Test binary relation functionality."""
