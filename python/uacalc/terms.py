@@ -185,7 +185,7 @@ class TermEvaluator:
             term = parse_term(self._arena, term)
         
         # Determine universe size
-        universe_size = self.algebra.cardinality()
+        universe_size = self.algebra.cardinality
         
         # Generate all possible input combinations
         if arity == 0:
@@ -462,8 +462,8 @@ def validate_term_against_algebra(term: Term, algebra: Algebra) -> Tuple[bool, O
         variables = term_variables(term)
         if variables:
             max_var = max(variables)
-            if max_var >= algebra.cardinality():
-                return False, f"Variable index {max_var} exceeds algebra cardinality {algebra.cardinality()}"
+            if max_var >= algebra.cardinality:
+                return False, f"Variable index {max_var} exceeds algebra cardinality {algebra.cardinality}"
         
         return True, None
         

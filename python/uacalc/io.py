@@ -219,8 +219,9 @@ def _parse_operation(op_elem: ET.Element, cardinality: int, file_path: str) -> O
         
         table = _parse_operation_table(op_table_elem, arity, cardinality, op_name, file_path)
         
-        # Create operation
-        return create_operation(op_name, arity, table)
+        # Create operation with explicit cardinality
+        from . import create_operation_with_size
+        return create_operation_with_size(op_name, arity, table, cardinality)
         
     except (BadUAFileError, InvalidOperationTableError):
         raise
@@ -250,8 +251,8 @@ def _parse_operation_table(op_table_elem: ET.Element, arity: int, cardinality: i
             row_values = _parse_row_values(row_text, cardinality, op_name, file_path)
             rows.append(row_values)
         
-        # Validate table size - use 1 if arity == 0 else cardinality
-        expected_row_count = 1 if arity == 0 else cardinality
+        # Validate table size - use 1 if arity <= 1 else cardinality^(arity-1)
+        expected_row_count = 1 if arity <= 1 else (cardinality ** (arity - 1))
         if len(rows) != expected_row_count:
             raise InvalidOperationTableError(
                 f"Operation table has wrong number of rows: expected {expected_row_count}, got {len(rows)}", 
@@ -261,9 +262,13 @@ def _parse_operation_table(op_table_elem: ET.Element, arity: int, cardinality: i
                 actual_size=len(rows)
             )
         
-        # Validate each row - use 1 if arity == 0 else (cardinality ** (arity - 1))
+        # Validate each row - use 1 if arity == 0, else cardinality
         for i, row in enumerate(rows):
-            expected_row_size = 1 if arity == 0 else (cardinality ** (arity - 1))
+            if arity == 0:
+                expected_row_size = 1
+            else:
+                expected_row_size = cardinality
+            
             if len(row) != expected_row_size:
                 raise InvalidOperationTableError(
                     f"Row {i} has wrong size: expected {expected_row_size}, got {len(row)}", 
@@ -279,8 +284,8 @@ def _parse_operation_table(op_table_elem: ET.Element, arity: int, cardinality: i
             # Constant operation
             return [[rows[0][0]]]
         elif arity == 1:
-            # Unary operation
-            return [[i, rows[i][0]] for i in range(cardinality)]
+            # Unary operation - single row contains all function values
+            return [[i, rows[0][i]] for i in range(cardinality)]
         else:
             # Multi-ary operation - flatten the table
             flat_table = []
@@ -342,13 +347,14 @@ def _get_table_value(rows: List[List[int]], args: List[int], cardinality: int, a
     if arity == 0:
         return rows[0][0]
     elif arity == 1:
-        return rows[args[0]][0]
+        # For unary operations, we have 1 row with all values
+        return rows[0][args[0]]
     else:
         # For multi-ary operations, use Horner encoding
-        row_index = args[0]
-        col_index = 0
-        for i in range(1, arity):
-            col_index = col_index * cardinality + args[i]
+        row_index = 0
+        for i in range(arity - 1):
+            row_index = row_index * cardinality + args[i]
+        col_index = args[arity - 1]
         return rows[row_index][col_index]
 
 def _generate_combinations(elements: List[int], length: int) -> List[List[int]]:
@@ -409,7 +415,7 @@ def _generate_basic_algebra_xml(algebra: Algebra) -> ET.Element:
     
     # Add cardinality
     cardinality = ET.SubElement(basic_algebra, 'cardinality')
-    cardinality.text = str(algebra.cardinality())
+    cardinality.text = str(algebra.cardinality)
     
     # Add operations
     operations = ET.SubElement(basic_algebra, 'operations')

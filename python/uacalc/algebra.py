@@ -506,8 +506,8 @@ def create_product_algebra(algebra1: Algebra, algebra2: Algebra) -> Algebra:
     Returns:
         Direct product algebra
     """
-    size1 = algebra1.cardinality()
-    size2 = algebra2.cardinality()
+    size1 = algebra1.cardinality
+    size2 = algebra2.cardinality
     product_size = size1 * size2
     
     # Create mapping from product elements to pairs
@@ -603,20 +603,20 @@ def algebra_to_numpy(algebra: Algebra) -> Dict[str, 'np.ndarray']:
         
         elif operation.arity() == 1:  # Unary
             values = []
-            for i in range(algebra.cardinality()):
+            for i in range(algebra.cardinality):
                 values.append(operation.value([i]))
             result[operation.symbol] = np.array(values)
         
         elif operation.arity() == 2:  # Binary
-            table = np.zeros((algebra.cardinality(), algebra.cardinality()), dtype=int)
-            for i in range(algebra.cardinality()):
-                for j in range(algebra.cardinality()):
+            table = np.zeros((algebra.cardinality, algebra.cardinality), dtype=int)
+            for i in range(algebra.cardinality):
+                for j in range(algebra.cardinality):
                     table[i, j] = operation.value([i, j])
             result[operation.symbol] = table
         
         else:  # Higher arity - store as sparse format for efficiency
             entries = []
-            for args in _generate_combinations(list(range(algebra.cardinality())), operation.arity()):
+            for args in _generate_combinations(list(range(algebra.cardinality)), operation.arity()):
                 result_val = operation.value(args)
                 entries.append((*args, result_val))
             result[operation.symbol] = np.array(entries)
@@ -717,7 +717,7 @@ def validate_algebra(algebra: Algebra) -> Tuple[bool, List[str]]:
     errors = []
     
     # Check universe size consistency
-    universe_size = algebra.cardinality()
+    universe_size = algebra.cardinality
     if universe_size == 0:
         errors.append("Algebra has empty universe")
     

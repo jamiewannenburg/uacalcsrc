@@ -29,6 +29,7 @@ fn uacalc_rust(_py: Python, m: &PyModule) -> PyResult<()> {
 
     m.add_function(wrap_pyfunction!(create_algebra, m)?)?;
     m.add_function(wrap_pyfunction!(create_operation, m)?)?;
+    m.add_function(wrap_pyfunction!(create_operation_with_size, m)?)?;
     m.add_function(wrap_pyfunction!(create_partition, m)?)?;
     m.add_function(wrap_pyfunction!(create_partition_from_blocks, m)?)?;
     m.add_function(wrap_pyfunction!(create_binary_relation, m)?)?;
@@ -1104,6 +1105,96 @@ fn create_operation(name: String, arity: usize, table: PyObject) -> PyResult<PyO
         max_element + 1
     };
 
+    let operation = TableOperation::new(symbol, normalized_table, universe_size)
+        .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
+    Ok(PyOperation {
+        inner: Arc::new(Mutex::new(operation)),
+    })
+}
+
+/// Helper function to create an operation with explicit universe size
+#[pyfunction]
+fn create_operation_with_size(
+    name: String,
+    arity: usize,
+    table: PyObject,
+    universe_size: usize,
+) -> PyResult<PyOperation> {
+    let symbol = uacalc_core::operation::OperationSymbol::new(name, arity);
+
+    // Convert PyObject to Vec<Vec<usize>> based on the input type
+    let table_vec: Vec<Vec<usize>> = Python::with_gil(|py| {
+        if let Ok(list) = table.extract::<Vec<usize>>(py) {
+            if arity == 0 {
+                // Constant operation: expect [[value]]
+                Ok(vec![vec![list[0]]])
+            } else if arity == 1 {
+                // Unary operation: expect [value1, value2, ...]
+                Ok(list.into_iter().map(|val| vec![val]).collect())
+            } else if arity == 2 {
+                // Binary operation: handle NxN matrix format
+                let n = list.len();
+                Ok(list.into_iter().map(|val| vec![val]).collect())
+            } else {
+                Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+                    "Single list format only supported for unary operations".to_string(),
+                ))
+            }
+        } else if let Ok(nested_list) = table.extract::<Vec<Vec<usize>>>(py) {
+            // Nested list format
+            Ok(nested_list)
+        } else {
+            Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+                "Table must be a list of integers or list of lists of integers".to_string(),
+            ))
+        }
+    })?;
+
+    // Normalize table format to [args..., result]
+    let normalized_table = if arity == 0 {
+        // Constant operation: expect [[value]]
+        if table_vec.len() == 1 && table_vec[0].len() == 1 {
+            table_vec
+        } else {
+            return Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+                "Constant operation should have table [[value]]".to_string(),
+            ));
+        }
+    } else if arity == 1 {
+        // Unary operation: handle both [value] and [input, value] formats
+        if table_vec.len() > 0 && table_vec[0].len() == 1 {
+            // Transform [value] format to [input, value]
+            let mut normalized = Vec::with_capacity(table_vec.len());
+            for (i, row) in table_vec.iter().enumerate() {
+                normalized.push(vec![i, row[0]]);
+            }
+            normalized
+        } else {
+            // Already in [input, value] format
+            table_vec
+        }
+    } else if arity == 2 {
+        // Binary operation: handle NxN matrix format
+        let n = table_vec.len();
+        if n > 0 && table_vec[0].len() == n {
+            // Transform NxN matrix to [i, j, result] format
+            let mut normalized = Vec::with_capacity(n * n);
+            for i in 0..n {
+                for j in 0..n {
+                    normalized.push(vec![i, j, table_vec[i][j]]);
+                }
+            }
+            normalized
+        } else {
+            // Already in [i, j, result] format
+            table_vec
+        }
+    } else {
+        // Higher arity: expect [args..., result] format
+        table_vec
+    };
+
+    // Use the provided universe size instead of inferring it
     let operation = TableOperation::new(symbol, normalized_table, universe_size)
         .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
     Ok(PyOperation {

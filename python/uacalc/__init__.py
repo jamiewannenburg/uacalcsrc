@@ -31,6 +31,7 @@ try:
         CancellationError,
         create_algebra,
         create_operation,
+        create_operation_with_size,
         create_partition,
         create_partition_from_blocks,
         create_binary_relation,

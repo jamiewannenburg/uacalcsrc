@@ -353,7 +353,7 @@ def principal_congruences_table(algebra: Algebra) -> List[Tuple[int, int, Partit
         List of (a, b, congruence) tuples for all pairs a, b
     """
     lattice = create_congruence_lattice(algebra)
-    size = algebra.cardinality()
+    size = algebra.cardinality
     
     principal_congruences = []
     for a in range(size):
