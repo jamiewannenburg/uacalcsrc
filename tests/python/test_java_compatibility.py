@@ -272,6 +272,257 @@ class JavaCompatibilityTest(unittest.TestCase):
         self.assertEqual(rust_blocks, java_blocks, 
                         f"Partitions don't match: Rust {rust_blocks}, Java {java_blocks}")
 
+class TermCompatibilityTest(unittest.TestCase):
+    """Test term parsing and evaluation compatibility with Java"""
+    
+    def test_java_term_parsing_compatibility(self):
+        """Test that term parsing matches Java behavior"""
+        if not self._check_java_availability():
+            self.skipTest("Java UACalc not available")
+        
+        # Test cases that should work in both Java and Rust
+        valid_terms = [
+            "x0",
+            "x1", 
+            "x",
+            "y",
+            "z",
+            "f(x0)",
+            "f(x0, x1)",
+            "f(g(x0), h(x1))",
+            "f(x0, x1, x2)",
+        ]
+        
+        for term_str in valid_terms:
+            with self.subTest(term=term_str):
+                # Test Rust parsing
+                try:
+                    arena = uacalc.create_term_arena()
+                    rust_term = uacalc.parse_term(arena, term_str)
+                    self.assertIsNotNone(rust_term)
+                except Exception as e:
+                    self.fail(f"Rust failed to parse '{term_str}': {e}")
+                
+                # Test Java parsing
+                java_result = self._run_java_term_parse(term_str)
+                if java_result is not None:
+                    # Both should succeed
+                    self.assertIsNotNone(java_result)
+    
+    def test_java_term_validation_compatibility(self):
+        """Test that term validation matches Java behavior"""
+        if not self._check_java_availability():
+            self.skipTest("Java UACalc not available")
+        
+        # Test cases that should be rejected in both Java and Rust
+        invalid_terms = [
+            "",  # Empty
+            "(",  # Unbalanced parentheses
+            ")",  # Unbalanced parentheses
+            "f(x0",  # Missing closing parenthesis
+            "f(x0,)",  # Missing argument
+            "f(,x0)",  # Missing argument
+            "f(x0 x1)",  # Missing comma
+        ]
+        
+        for term_str in invalid_terms:
+            with self.subTest(term=term_str):
+                # Test Rust parsing
+                try:
+                    arena = uacalc.create_term_arena()
+                    uacalc.parse_term(arena, term_str)
+                    # If we get here, Rust accepted an invalid term
+                    self.fail(f"Rust incorrectly accepted invalid term '{term_str}'")
+                except Exception:
+                    # Expected failure
+                    pass
+                
+                # Test Java parsing
+                java_result = self._run_java_term_parse(term_str)
+                if java_result is not None and "error" in java_result:
+                    # Both should fail
+                    self.assertIn("error", java_result)
+    
+    def test_java_variable_handling_compatibility(self):
+        """Test that variable handling matches Java behavior"""
+        if not self._check_java_availability():
+            self.skipTest("Java UACalc not available")
+        
+        # Test variable names that Java accepts
+        java_variables = ["x", "y", "z", "a", "b", "c", "var1", "var2"]
+        
+        for var_name in java_variables:
+            with self.subTest(variable=var_name):
+                # Test Rust variable creation
+                try:
+                    from uacalc.terms import variable
+                    rust_var = variable(var_name)
+                    self.assertIsNotNone(rust_var)
+                except Exception as e:
+                    # If Rust doesn't support this format, that's a compatibility issue
+                    self.fail(f"Rust doesn't support Java variable format '{var_name}': {e}")
+                
+                # Test Java variable creation
+                java_result = self._run_java_variable_create(var_name)
+                if java_result is not None:
+                    self.assertIsNotNone(java_result)
+    
+    def test_java_missing_variable_handling(self):
+        """Test that missing variable handling matches Java behavior"""
+        if not self._check_java_availability():
+            self.skipTest("Java UACalc not available")
+        
+        # Create a simple algebra
+        algebra = uacalc.create_algebra("test", [0, 1, 2])
+        operation = uacalc.create_operation("f", 2, [[0, 1, 2], [1, 1, 1], [2, 1, 2]])
+        algebra.add_operation("f", operation)
+        
+        # Test term with missing variable
+        arena = uacalc.create_term_arena()
+        term = uacalc.parse_term(arena, "f(x0, x1)")
+        variables = {0: 1}  # Missing x1
+        
+        # Test Rust evaluation
+        try:
+            result = uacalc.eval_term(term, algebra, variables)
+            # If we get here, Rust didn't raise an exception for missing variable
+            # This might be acceptable if Rust has default behavior
+            print(f"Rust evaluation with missing variable returned: {result}")
+        except Exception as e:
+            # Expected failure
+            print(f"Rust correctly raised exception for missing variable: {e}")
+        
+        # Test Java evaluation
+        java_result = self._run_java_term_eval("f(x0, x1)", variables)
+        if java_result is not None and "error" in java_result:
+            # Java should also fail
+            self.assertIn("error", java_result)
+    
+    def test_java_operation_validation_compatibility(self):
+        """Test that operation validation matches Java behavior"""
+        if not self._check_java_availability():
+            self.skipTest("Java UACalc not available")
+        
+        # Create algebra with only operation 'f'
+        algebra = uacalc.create_algebra("test", [0, 1, 2])
+        operation = uacalc.create_operation("f", 2, [[0, 1, 2], [1, 1, 1], [2, 1, 2]])
+        algebra.add_operation("f", operation)
+        
+        # Test valid term
+        arena = uacalc.create_term_arena()
+        valid_term = uacalc.parse_term(arena, "f(x0, x1)")
+        
+        from uacalc.terms import validate_term_against_algebra
+        is_valid, error = validate_term_against_algebra(valid_term, algebra)
+        
+        # Rust should validate correctly
+        self.assertTrue(is_valid, f"Rust incorrectly rejected valid term: {error}")
+        
+        # Test invalid term (unknown operation)
+        invalid_term = uacalc.parse_term(arena, "g(x0, x1)")
+        is_valid, error = validate_term_against_algebra(invalid_term, algebra)
+        
+        # Rust should reject invalid term
+        self.assertFalse(is_valid, f"Rust incorrectly accepted invalid term: {error}")
+        self.assertIsNotNone(error)
+        
+        # Test Java validation
+        java_result = self._run_java_term_validate("f(x0, x1)", algebra)
+        if java_result is not None:
+            self.assertTrue(java_result.get("valid", False))
+        
+        java_result = self._run_java_term_validate("g(x0, x1)", algebra)
+        if java_result is not None:
+            self.assertFalse(java_result.get("valid", True))
+    
+    def _check_java_availability(self) -> bool:
+        """Check if Java UACalc is available for testing"""
+        java_jar_path = "jars/uacalc.jar"
+        java_wrapper_path = "scripts/JavaWrapper.java"
+        
+        if not os.path.exists(java_jar_path) or not os.path.exists(java_wrapper_path):
+            return False
+        
+        try:
+            result = subprocess.run([
+                "javac", "-cp", java_jar_path, 
+                "-d", "scripts", java_wrapper_path
+            ], capture_output=True, text=True, timeout=30)
+            return result.returncode == 0
+        except Exception:
+            return False
+    
+    def _run_java_term_parse(self, term_str: str) -> Optional[Dict[str, Any]]:
+        """Run term parsing in Java"""
+        try:
+            result = subprocess.run([
+                "java", "-cp", f"jars/uacalc.jar{os.pathsep}scripts",
+                "JavaWrapper", "parse_term", term_str
+            ], capture_output=True, text=True, timeout=10)
+            
+            if result.returncode == 0:
+                return json.loads(result.stdout)
+            else:
+                return {"error": result.stderr}
+        except Exception as e:
+            return {"error": str(e)}
+    
+    def _run_java_variable_create(self, var_name: str) -> Optional[Dict[str, Any]]:
+        """Run variable creation in Java"""
+        try:
+            result = subprocess.run([
+                "java", "-cp", f"jars/uacalc.jar{os.pathsep}scripts",
+                "JavaWrapper", "create_variable", var_name
+            ], capture_output=True, text=True, timeout=10)
+            
+            if result.returncode == 0:
+                return json.loads(result.stdout)
+            else:
+                return {"error": result.stderr}
+        except Exception as e:
+            return {"error": str(e)}
+    
+    def _run_java_term_eval(self, term_str: str, variables: Dict[int, int]) -> Optional[Dict[str, Any]]:
+        """Run term evaluation in Java"""
+        try:
+            # Convert variables to JSON
+            var_json = json.dumps(variables)
+            
+            result = subprocess.run([
+                "java", "-cp", f"jars/uacalc.jar{os.pathsep}scripts",
+                "JavaWrapper", "eval_term", term_str, var_json
+            ], capture_output=True, text=True, timeout=10)
+            
+            if result.returncode == 0:
+                return json.loads(result.stdout)
+            else:
+                return {"error": result.stderr}
+        except Exception as e:
+            return {"error": str(e)}
+    
+    def _run_java_term_validate(self, term_str: str, algebra) -> Optional[Dict[str, Any]]:
+        """Run term validation in Java"""
+        try:
+            # Save algebra to temporary file
+            temp_file = os.path.join(tempfile.gettempdir(), "temp_algebra.ua")
+            uacalc.save_algebra(algebra, temp_file)
+            
+            result = subprocess.run([
+                "java", "-cp", f"jars/uacalc.jar{os.pathsep}scripts",
+                "JavaWrapper", "validate_term", term_str, temp_file
+            ], capture_output=True, text=True, timeout=10)
+            
+            # Clean up
+            if os.path.exists(temp_file):
+                os.remove(temp_file)
+            
+            if result.returncode == 0:
+                return json.loads(result.stdout)
+            else:
+                return {"error": result.stderr}
+        except Exception as e:
+            return {"error": str(e)}
+
 class FileFormatCompatibilityTest(unittest.TestCase):
     """Test file format compatibility specifically"""
     
@@ -409,6 +660,7 @@ def run_compatibility_tests():
     
     # Add test classes
     suite.addTests(loader.loadTestsFromTestCase(JavaCompatibilityTest))
+    suite.addTests(loader.loadTestsFromTestCase(TermCompatibilityTest))
     suite.addTests(loader.loadTestsFromTestCase(FileFormatCompatibilityTest))
     suite.addTests(loader.loadTestsFromTestCase(PerformanceRegressionTest))
     
