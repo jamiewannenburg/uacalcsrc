@@ -127,7 +127,7 @@ class ValidationError(UACalcError, ValueError):
     """Exception for validation errors."""
     
     def __init__(self, message: str, field: Optional[str] = None, value: Optional[Any] = None):
-        super().__init__(message, "ValidationError")
+        super().__init__(message)
         self.field = field
         self.value = value
     
@@ -143,7 +143,7 @@ class ConfigurationError(UACalcError, ValueError):
     """Exception for configuration errors."""
     
     def __init__(self, message: str, config_key: Optional[str] = None):
-        super().__init__(message, "ConfigurationError")
+        super().__init__(message)
         self.config_key = config_key
     
     def __str__(self) -> str:
@@ -643,6 +643,7 @@ class ErrorReporter:
     def add_error(self, error: Exception, context: Optional[Dict[str, Any]] = None):
         """Add an error to the reporter."""
         self.report_error(error, context)
+        self.total_operations += 1
     
     def add_success(self, operation: str, context: Optional[Dict[str, Any]] = None):
         """Add a successful operation."""

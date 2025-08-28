@@ -147,13 +147,19 @@ class TestPartition:
         p2 = create_partition(4)
         p2.union(1, 2)
         
-        # Test join
         join = p1.join(p2)
-        assert join.num_blocks == 1  # All elements should be in one block
-        
+        assert join.num_blocks == 2  # Elements 0,1,2 in one block, element 3 in another
+        assert join.same_block(0, 1) == True
+        assert join.same_block(0, 2) == True
+        assert join.same_block(1, 2) == True
+        assert join.same_block(0, 3) == False
         # Test meet
         meet = p1.meet(p2)
-        assert meet.num_blocks == 3  # Only element 1 should be separate
+        assert meet.num_blocks == 4  # All elements should be in separate blocks
+        assert meet.same_block(0, 1) == False
+        assert meet.same_block(0, 2) == False
+        assert meet.same_block(1, 2) == False
+        assert meet.same_block(0, 3) == False
 
 class TestBinaryRelation:
     """Test binary relation functionality."""

@@ -186,7 +186,8 @@ impl PyCongruenceLattice {
         Ok(())
     }
 
-    fn size(&self) -> PyResult<usize> {
+    fn size(&self, py: Python) -> PyResult<usize> {
+        self.ensure_universe_built(py, None)?;
         let inner_guard = self.inner.lock().unwrap();
         if let Some(ref lattice) = *inner_guard {
             Ok(lattice.num_congruences())
@@ -608,16 +609,6 @@ impl PyProgressReporter {
             current_progress: Arc::new(Mutex::new(0.0)),
         }
     }
-}
-
-impl PyProgressReporter {
-    fn new_with_cancellation(callback: PyObject, cancelled: Arc<AtomicBool>) -> Self {
-        Self {
-            callback: Some(callback),
-            cancelled,
-            current_progress: Arc::new(Mutex::new(0.0)),
-        }
-    }
 
     fn report_progress(&self, py: Python, progress: f64, message: Option<String>) -> PyResult<()> {
         *self.current_progress.lock().unwrap() = progress;
@@ -643,6 +634,16 @@ impl PyProgressReporter {
 
     fn current_progress(&self) -> f64 {
         *self.current_progress.lock().unwrap()
+    }
+}
+
+impl PyProgressReporter {
+    fn new_with_cancellation(callback: PyObject, cancelled: Arc<AtomicBool>) -> Self {
+        Self {
+            callback: Some(callback),
+            cancelled,
+            current_progress: Arc::new(Mutex::new(0.0)),
+        }
     }
 }
 
