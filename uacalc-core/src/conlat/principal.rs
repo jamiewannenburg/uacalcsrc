@@ -5,8 +5,8 @@
 
 use crate::algebra::SmallAlgebra;
 use crate::conlat::cg::principal_congruence;
-use crate::partition::{BasicPartition, Partition};
-use crate::{UACalcError, UACalcResult};
+use crate::partition::BasicPartition;
+use crate::UACalcResult;
 use std::collections::HashMap;
 
 /// Cache for principal congruences to avoid recomputation

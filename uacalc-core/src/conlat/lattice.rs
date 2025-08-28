@@ -1,12 +1,9 @@
-use crate::algebra::{Algebra, SmallAlgebra};
-use crate::binary_relation::{BasicBinaryRelation, BinaryRelation};
+use crate::algebra::SmallAlgebra;
 use crate::conlat::{cg, lattice_builder};
 use crate::partition::{coarsest_partition, BasicPartition, Partition};
 use crate::{UACalcError, UACalcResult};
-use serde::{Deserialize, Serialize};
 use std::any::Any;
-use std::collections::{HashMap, HashSet};
-use std::sync::Arc;
+use std::collections::HashMap;
 
 /// Trait for congruence lattice structures
 pub trait CongruenceLattice: Send + Sync {
@@ -184,7 +181,7 @@ impl BasicCongruenceLattice {
     }
 
     /// Set a progress callback for an already built lattice
-    pub fn set_progress_callback<F>(&mut self, callback: F) -> UACalcResult<()>
+    pub fn set_progress_callback<F>(&mut self, _callback: F) -> UACalcResult<()>
     where
         F: Fn(f64) + Send + Sync + 'static,
     {
@@ -228,7 +225,7 @@ impl BasicCongruenceLattice {
         let size = self.algebra.cardinality();
 
         // Start with the finest and coarsest partitions
-        let mut all_partitions = vec![BasicPartition::new(size), coarsest_partition(size)?];
+        let _all_partitions = vec![BasicPartition::new(size), coarsest_partition(size)?];
 
         // Generate all possible partitions and check which are congruences
         // This is a very simplified approach - in practice, you'd use

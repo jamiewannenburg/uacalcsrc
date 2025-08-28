@@ -10,7 +10,6 @@ use crate::utils::{power_checked, MemoryPool, MAX_OPERATION_ARITY};
 use crate::{UACalcError, UACalcResult};
 use arrayvec::ArrayVec;
 use std::collections::{HashSet, VecDeque};
-use std::sync::Arc;
 
 /// Lightweight operation info for efficient propagation
 struct OperationInfo<'a> {
@@ -171,7 +170,7 @@ impl<'a> CongruenceGenerator<'a> {
         op_info: &OperationInfo<'_>,
         a: usize,
         b: usize,
-        op_idx: usize,
+        _op_idx: usize,
     ) -> UACalcResult<()> {
         let arity = op_info.arity;
         let size = self.algebra.cardinality();

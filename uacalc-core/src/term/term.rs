@@ -4,9 +4,7 @@
 //! memory layout and zero-allocation evaluation.
 
 use crate::{UACalcError, UACalcResult};
-use crate::operation::{Operation, OperationSymbol};
 use crate::term::arena::TermArena;
-use crate::term::MAX_DEPTH;
 use smallvec::SmallVec;
 use std::fmt;
 

@@ -325,7 +325,7 @@ impl Algebra for BasicAlgebra {
         &self.operations
     }
 
-    fn operation(&self, index: usize) -> UACalcResult<&dyn Operation> {
+    fn operation(&self, _index: usize) -> UACalcResult<&dyn Operation> {
         // This method is deprecated in favor of with_operation
         // For backward compatibility, we'll use the new approach internally
         Err(UACalcError::UnsupportedOperation {
@@ -333,7 +333,7 @@ impl Algebra for BasicAlgebra {
         })
     }
 
-    fn operation_by_symbol(&self, symbol: &str) -> UACalcResult<&dyn Operation> {
+    fn operation_by_symbol(&self, _symbol: &str) -> UACalcResult<&dyn Operation> {
         // This method is deprecated in favor of with_operation_by_symbol
         // For backward compatibility, we'll use the new approach internally
         Err(UACalcError::UnsupportedOperation {

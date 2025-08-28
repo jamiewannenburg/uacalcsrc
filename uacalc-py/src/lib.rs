@@ -9,11 +9,11 @@ use uacalc_core::algebra::{Algebra, BasicAlgebra, SmallAlgebra};
 use uacalc_core::binary_relation::{BasicBinaryRelation, BinaryRelation};
 use uacalc_core::conlat::{BasicCongruenceLattice, CongruenceLattice as CongruenceLatticeTrait};
 use uacalc_core::error::UACalcError;
-use uacalc_core::operation::{FunctionOperation, Operation, OperationSymbol, TableOperation};
+use uacalc_core::operation::{Operation, OperationSymbol, TableOperation};
 use uacalc_core::partition::{BasicPartition, Partition};
 use uacalc_core::term::evaluation::EvaluationContext;
 use uacalc_core::term::variable::VariableAssignment;
-use uacalc_core::term::{Term, TermArena, TermId};
+use uacalc_core::term::{TermArena, TermId};
 
 /// Python module for UACalc
 #[pymodule]
@@ -112,7 +112,7 @@ impl PyCongruenceLattice {
 
     fn ensure_universe_built(
         &self,
-        py: Python,
+        _py: Python,
         progress_callback: Option<PyObject>,
     ) -> PyResult<()> {
         let mut inner_guard = self.inner.lock().unwrap();
@@ -496,9 +496,9 @@ impl PyTermArena {
             for _ in 0..depth {
                 result.push(')');
             }
-        } else if depth < 0 {
-            // Remove excess closing parentheses
-            result.truncate(result.len() + depth);
+        } else if depth > 0 {
+            // Remove excess closing parentheses (depth is usize, so we handle this differently)
+            // This case shouldn't occur with proper parenthesis counting
         }
         result
     }
@@ -1018,7 +1018,7 @@ fn create_operation(name: String, arity: usize, table: PyObject) -> PyResult<PyO
                 Ok(list.into_iter().map(|val| vec![val]).collect())
             } else if arity == 2 {
                 // Binary operation: handle NxN matrix format
-                let n = list.len();
+                let _n = list.len();
                 Ok(list.into_iter().map(|val| vec![val]).collect())
             } else {
                 Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
@@ -1134,7 +1134,7 @@ fn create_operation_with_size(
                 Ok(list.into_iter().map(|val| vec![val]).collect())
             } else if arity == 2 {
                 // Binary operation: handle NxN matrix format
-                let n = list.len();
+                let _n = list.len();
                 Ok(list.into_iter().map(|val| vec![val]).collect())
             } else {
                 Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(

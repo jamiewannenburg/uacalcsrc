@@ -1,9 +1,8 @@
 use crate::utils::validate_partition_elements;
 use crate::{UACalcError, UACalcResult};
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::sync::RwLock;
 use std::hash::{Hash, Hasher};
+use std::sync::RwLock;
 
 /// Trait for partition data structures
 pub trait Partition: Send + Sync + std::any::Any {
@@ -47,7 +46,7 @@ pub trait Partition: Send + Sync + std::any::Any {
         Self: Sized;
 
     /// Check if this partition is coarser than another
-    fn is_coarser_than(&self, other: &dyn Partition) -> UACalcResult<bool>
+    fn is_coarser_than(&self, _other: &dyn Partition) -> UACalcResult<bool>
     where
         Self: Sized,
     {
@@ -115,7 +114,7 @@ impl BasicPartition {
 
     /// Create a partition from a list of blocks
     pub fn from_blocks(size: usize, blocks: Vec<Vec<usize>>) -> UACalcResult<Self> {
-        let mut partition = Self::new(size);
+        let partition = Self::new(size);
 
         for block in blocks {
             if block.is_empty() {
@@ -137,7 +136,7 @@ impl BasicPartition {
     /// Create a partition from a representative array
     pub fn from_array(array: &[usize]) -> UACalcResult<Self> {
         let size = array.len();
-        let mut partition = Self::new(size);
+        let partition = Self::new(size);
 
         for (element, &representative) in array.iter().enumerate() {
             if representative >= size {
@@ -374,7 +373,7 @@ impl Partition for BasicPartition {
             });
         }
 
-        let mut result = self.clone();
+        let result = self.clone();
 
         // For each pair of elements that are in the same block in other,
         // union them in result
@@ -399,7 +398,7 @@ impl Partition for BasicPartition {
 
         // The meet is more complex - we need to find the finest partition
         // that is coarser than both self and other
-        let mut result = BasicPartition::new(self.size());
+        let result = BasicPartition::new(self.size());
 
         // For each element, find the intersection of its blocks in both partitions
         for element in 0..self.size() {
@@ -478,8 +477,6 @@ impl Hash for BasicPartition {
     }
 }
 
-
-
 /// Create the finest partition (all elements in separate blocks)
 pub fn finest_partition(size: usize) -> BasicPartition {
     BasicPartition::new(size)
@@ -487,7 +484,7 @@ pub fn finest_partition(size: usize) -> BasicPartition {
 
 /// Create the coarsest partition (all elements in one block)
 pub fn coarsest_partition(size: usize) -> UACalcResult<BasicPartition> {
-    let mut partition = BasicPartition::new(size);
+    let partition = BasicPartition::new(size);
     if size > 1 {
         for i in 1..size {
             partition.union_elements(0, i)?;

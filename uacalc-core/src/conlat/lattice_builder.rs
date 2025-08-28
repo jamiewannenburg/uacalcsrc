@@ -8,8 +8,7 @@ use crate::conlat::principal::PrincipalCongruenceCache;
 use crate::partition::{BasicPartition, Partition};
 use crate::{UACalcError, UACalcResult};
 use ahash::AHashMap;
-use std::collections::{HashMap, HashSet};
-use std::sync::Arc;
+use std::collections::HashSet;
 
 #[cfg(feature = "parallel")]
 use rayon::prelude::*;

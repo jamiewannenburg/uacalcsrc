@@ -227,7 +227,7 @@ impl BasicBinaryRelation {
             // For each row i with bit (i,k) set, perform row_i |= row_k
             for i in 0..self.size {
                 let row_i_start = i * self.size;
-                let row_i_end = row_i_start + self.size;
+                let _row_i_end = row_i_start + self.size;
 
                 if closure.matrix[row_i_start + k] {
                     // Use bitvec slice operations for efficiency
@@ -298,7 +298,7 @@ impl BasicBinaryRelation {
             });
         }
 
-        let mut partition = crate::partition::BasicPartition::new(self.size);
+        let partition = crate::partition::BasicPartition::new(self.size);
 
         // Use the relation to build the partition
         for i in 0..self.size {

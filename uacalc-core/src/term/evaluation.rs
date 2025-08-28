@@ -3,8 +3,8 @@
 //! This module provides efficient term evaluation using stack-based
 //! iterative algorithms to avoid function call overhead.
 
-use crate::algebra::{BasicAlgebra, SmallAlgebra};
-use crate::operation::{Operation, TableOperation};
+use crate::algebra::SmallAlgebra;
+use crate::operation::Operation;
 use crate::term::variable::VariableAssignment;
 use crate::term::{Term, TermArena, TermId, MAX_DEPTH};
 use crate::utils::MAX_OPERATION_ARITY;
@@ -407,7 +407,7 @@ pub fn get_constant_value(
 mod tests {
     use super::*;
     use crate::algebra::BasicAlgebra;
-    use crate::operation::OperationSymbol;
+    use crate::operation::{OperationSymbol, TableOperation};
 
     #[test]
     fn test_eval_variable() {
