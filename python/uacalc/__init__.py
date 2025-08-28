@@ -40,6 +40,7 @@ try:
         create_progress_reporter,
         parse_term,
         eval_term,
+        rust_create_product_algebra,
     )
 except ImportError as e:
     raise ImportError(
@@ -97,6 +98,7 @@ except ImportError:
     errors = None
 
 from . import algebra as algebra_utils
+from .algebra import create_product_algebra
 
 # Import I/O functions and error classes
 try:
@@ -194,6 +196,8 @@ __all__ = [
     "create_congruence_lattice",
     "create_term_arena",
     "create_progress_reporter",
+    "create_product_algebra",
+    "rust_create_product_algebra",
     
     # I/O functions
     "load_algebra",

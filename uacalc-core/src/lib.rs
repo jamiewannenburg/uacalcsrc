@@ -10,6 +10,7 @@ pub mod conlat;
 pub mod error;
 pub mod operation;
 pub mod partition;
+pub mod product;
 #[cfg(feature = "taylor")]
 pub mod taylor;
 #[cfg(feature = "term-eval")]
@@ -27,6 +28,7 @@ pub use operation::{
     TableOperation,
 };
 pub use partition::{coarsest_partition, finest_partition, BasicPartition, Partition};
+pub use product::ProductAlgebra;
 pub use utils::{
     binomial_coefficient, estimate_table_memory, factorial, horner_decode, horner_encode,
     horner_table_size, power_checked, validate_operation_args, validate_partition_elements,

@@ -495,91 +495,27 @@ def create_symmetric_group(size: int) -> Algebra:
     
     return builder.build()
 
-def create_product_algebra(algebra1: Algebra, algebra2: Algebra) -> Algebra:
+def create_product_algebra(algebra1: Algebra, algebra2: Algebra, name: Optional[str] = None) -> Algebra:
     """
-    Create the direct product of two algebras.
+    Create the direct product of two algebras using optimized Rust implementation.
     
     Args:
         algebra1: First algebra
         algebra2: Second algebra
+        name: Optional name for the product algebra
         
     Returns:
         Direct product algebra
     """
-    size1 = algebra1.cardinality
-    size2 = algebra2.cardinality
-    product_size = size1 * size2
+    from . import rust_create_product_algebra
     
-    # Create mapping from product elements to pairs
-    def to_pair(element: int) -> Tuple[int, int]:
-        return (element // size2, element % size2)
+    # Generate default name if not provided
+    if name is None:
+        name = f"{algebra1.name}_x_{algebra2.name}"
     
-    def from_pair(pair: Tuple[int, int]) -> int:
-        return pair[0] * size2 + pair[1]
-    
-    # Build the product algebra
-    builder = AlgebraBuilder(f"{algebra1.name}_x_{algebra2.name}", product_size)
-    
-    # For each operation in algebra1, create corresponding operation in product
-    for i, op1 in enumerate(algebra1.operations()):
-        if op1.arity() == 0:  # Constant
-            # Map constant to product
-            value1 = op1.value([])
-            for j, op2 in enumerate(algebra2.operations()):
-                if op2.arity() == 0:
-                    value2 = op2.value([])
-                    product_value = from_pair((value1, value2))
-                    builder.add_constant(f"{op1.symbol}_{op2.symbol}", product_value)
-        
-        elif op1.arity() == 1:  # Unary
-            # Create unary operation that applies to first component
-            values = []
-            for element in range(product_size):
-                a, b = to_pair(element)
-                result_a = op1.value([a])
-                values.append(from_pair((result_a, b)))
-            builder.add_unary_operation(f"{op1.symbol}_1", values)
-        
-        elif op1.arity() == 2:  # Binary
-            # Create binary operation that applies to first component
-            table = [[0] * product_size for _ in range(product_size)]
-            for element1 in range(product_size):
-                for element2 in range(product_size):
-                    a1, b1 = to_pair(element1)
-                    a2, b2 = to_pair(element2)
-                    result_a = op1.value([a1, a2])
-                    table[element1][element2] = from_pair((result_a, b1))
-            builder.add_binary_operation(f"{op1.symbol}_1", table)
-    
-    # Similarly for operations in algebra2
-    for i, op2 in enumerate(algebra2.operations()):
-        if op2.arity() == 0:  # Constant
-            value2 = op2.value([])
-            for j, op1 in enumerate(algebra1.operations()):
-                if op1.arity() == 0:
-                    value1 = op1.value([])
-                    product_value = from_pair((value1, value2))
-                    builder.add_constant(f"{op1.symbol}_{op2.symbol}", product_value)
-        
-        elif op2.arity() == 1:  # Unary
-            values = []
-            for element in range(product_size):
-                a, b = to_pair(element)
-                result_b = op2.value([b])
-                values.append(from_pair((a, result_b)))
-            builder.add_unary_operation(f"{op2.symbol}_2", values)
-        
-        elif op2.arity() == 2:  # Binary
-            table = [[0] * product_size for _ in range(product_size)]
-            for element1 in range(product_size):
-                for element2 in range(product_size):
-                    a1, b1 = to_pair(element1)
-                    a2, b2 = to_pair(element2)
-                    result_b = op2.value([b1, b2])
-                    table[element1][element2] = from_pair((a1, result_b))
-            builder.add_binary_operation(f"{op2.symbol}_2", table)
-    
-    return builder.build()
+    # Create list of factors and call Rust implementation
+    factors = [algebra1, algebra2]
+    return rust_create_product_algebra(name, factors)
 
 def algebra_to_numpy(algebra: Algebra) -> Dict[str, 'np.ndarray']:
     """

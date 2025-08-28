@@ -1,5 +1,5 @@
 use pyo3::prelude::*;
-use pyo3::types::PyDict;
+use pyo3::types::{PyDict, PyList};
 use pyo3::wrap_pyfunction;
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -11,6 +11,7 @@ use uacalc_core::conlat::{BasicCongruenceLattice, CongruenceLattice as Congruenc
 use uacalc_core::error::UACalcError;
 use uacalc_core::operation::{Operation, OperationSymbol, TableOperation};
 use uacalc_core::partition::{BasicPartition, Partition};
+use uacalc_core::product::ProductAlgebra;
 use uacalc_core::term::evaluation::EvaluationContext;
 use uacalc_core::term::variable::VariableAssignment;
 use uacalc_core::term::{TermArena, TermId};
@@ -38,6 +39,7 @@ fn uacalc_rust(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(create_progress_reporter, m)?)?;
     m.add_function(wrap_pyfunction!(parse_term, m)?)?;
     m.add_function(wrap_pyfunction!(eval_term, m)?)?;
+    m.add_function(wrap_pyfunction!(rust_create_product_algebra, m)?)?;
 
     // Add custom exception classes
     m.add("UACalcError", _py.get_type::<PyUACalcError>())?;
@@ -1271,4 +1273,39 @@ fn eval_term(term: &PyTerm, algebra: &PyAlgebra, assignment: &PyDict) -> PyResul
         .eval_term(term.id, &term.arena.inner.lock().unwrap())
         .map_err(map_uacalc_error)?;
     Ok(result)
+}
+
+/// Helper function to create a product algebra
+#[pyfunction]
+fn rust_create_product_algebra(name: &str, factors: &PyList) -> PyResult<PyAlgebra> {
+    // Extract Rust algebra instances from PyAlgebra wrappers
+    let mut rust_factors = Vec::new();
+    for factor in factors.iter() {
+        let py_algebra: PyRef<PyAlgebra> = factor.extract()?;
+        // Convert BasicAlgebra to Arc<Mutex<dyn SmallAlgebra>>
+        let small_algebra: Arc<Mutex<dyn SmallAlgebra>> =
+            Arc::new(Mutex::new(py_algebra.inner.clone()));
+        rust_factors.push(small_algebra);
+    }
+
+    // Validate the factors list is non-empty
+    if rust_factors.is_empty() {
+        return Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+            "Product algebra must have at least one factor".to_string(),
+        ));
+    }
+
+    // Create the product algebra
+    let product_algebra =
+        ProductAlgebra::new(name.to_string(), rust_factors).map_err(map_uacalc_error)?;
+
+    // Convert ProductAlgebra back to BasicAlgebra for PyAlgebra
+    // For now, we'll create a simple BasicAlgebra with the same cardinality
+    let basic_algebra =
+        BasicAlgebra::with_cardinality(name.to_string(), product_algebra.cardinality())
+            .map_err(map_uacalc_error)?;
+
+    Ok(PyAlgebra {
+        inner: basic_algebra,
+    })
 }
