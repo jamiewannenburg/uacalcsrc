@@ -17,9 +17,17 @@ pub trait Algebra {
     fn operations(&self) -> &[Arc<Mutex<dyn Operation>>];
 
     /// Get an operation by index
+    ///
+    /// Note: This method may be unsupported for some algebra implementations
+    /// (e.g., ProductAlgebra) due to trait object reference limitations.
+    /// Use operation_arc() when possible for better compatibility.
     fn operation(&self, index: usize) -> UACalcResult<&dyn Operation>;
 
     /// Get an operation by symbol name
+    ///
+    /// Note: This method may be unsupported for some algebra implementations
+    /// (e.g., ProductAlgebra) due to trait object reference limitations.
+    /// Use operation_arc_by_symbol() when possible for better compatibility.
     fn operation_by_symbol(&self, symbol: &str) -> UACalcResult<&dyn Operation>;
 
     /// Get an operation as an Arc<Mutex<dyn Operation>> by index

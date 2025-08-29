@@ -495,27 +495,43 @@ def create_symmetric_group(size: int) -> Algebra:
     
     return builder.build()
 
-def create_product_algebra(algebra1: Algebra, algebra2: Algebra, name: Optional[str] = None) -> Algebra:
+def create_product_algebra(*factors, name: Optional[str] = None) -> 'ProductAlgebra':
     """
-    Create the direct product of two algebras using optimized Rust implementation.
+    Create the direct product of algebras using optimized Rust implementation.
     
     Args:
-        algebra1: First algebra
-        algebra2: Second algebra
+        *factors: Variable number of algebras to take the product of
         name: Optional name for the product algebra
         
+    Alternative usage:
+        create_product_algebra(factors=[alg1, alg2, alg3], name="ProductAlg")
+        
     Returns:
-        Direct product algebra
+        Direct product algebra with ProductAlgebra-specific methods
     """
     from . import rust_create_product_algebra
     
+    # Handle different calling conventions
+    if len(factors) == 1 and hasattr(factors[0], '__iter__') and not hasattr(factors[0], 'name'):
+        # Called with create_product_algebra(factors=[...])
+        factor_list = list(factors[0])
+    else:
+        # Called with create_product_algebra(alg1, alg2, ...)
+        factor_list = list(factors)
+    
+    # Validate input
+    if len(factor_list) < 1:
+        raise ValueError("Product algebra must have at least one factor")
+    
     # Generate default name if not provided
     if name is None:
-        name = f"{algebra1.name}_x_{algebra2.name}"
+        if len(factor_list) <= 3:
+            name = "_x_".join(alg.name for alg in factor_list)
+        else:
+            name = f"Product_{len(factor_list)}_factors"
     
-    # Create list of factors and call Rust implementation
-    factors = [algebra1, algebra2]
-    result = rust_create_product_algebra(name, factors)
+    # Call Rust implementation
+    result = rust_create_product_algebra(name, factor_list)
     return result
 
 def algebra_to_numpy(algebra: Algebra) -> Dict[str, 'np.ndarray']:

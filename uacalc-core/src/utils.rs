@@ -101,6 +101,92 @@ pub fn horner_table_size(arity: usize, base: usize) -> Option<usize> {
     Some(size)
 }
 
+/// Mixed-radix encoding using little-endian order
+///
+/// # Arguments
+/// * `coords` - The coordinates to encode
+/// * `radices` - The radices (sizes) for each coordinate
+///
+/// # Returns
+/// * `Some(encoded)` if encoding succeeds without overflow
+/// * `None` if overflow would occur or invalid coordinates
+pub fn mixed_radix_encode(coords: &[usize], radices: &[usize]) -> Option<usize> {
+    if coords.len() != radices.len() {
+        return None;
+    }
+
+    let mut result: usize = 0;
+    let mut multiplier: usize = 1;
+
+    for (i, (&coord, &radix)) in coords.iter().zip(radices.iter()).enumerate() {
+        if radix == 0 || coord >= radix {
+            return None;
+        }
+
+        // Add coordinate * multiplier to result
+        let term = coord.checked_mul(multiplier)?;
+        result = result.checked_add(term)?;
+
+        // Update multiplier for next coordinate (except for the last one)
+        if i < coords.len() - 1 {
+            multiplier = multiplier.checked_mul(radix)?;
+        }
+    }
+
+    Some(result)
+}
+
+/// Mixed-radix decoding using little-endian order
+///
+/// # Arguments
+/// * `value` - The encoded value
+/// * `radices` - The radices (sizes) for each coordinate
+///
+/// # Returns
+/// * Vector of decoded coordinates
+pub fn mixed_radix_decode(value: usize, radices: &[usize]) -> Vec<usize> {
+    if radices.is_empty() {
+        return vec![];
+    }
+
+    let mut coords = Vec::with_capacity(radices.len());
+    let mut remaining = value;
+
+    for &radix in radices {
+        if radix == 0 {
+            coords.push(0);
+        } else {
+            coords.push(remaining % radix);
+            remaining /= radix;
+        }
+    }
+
+    coords
+}
+
+/// Calculate the total size for a mixed-radix system
+///
+/// # Arguments
+/// * `radices` - The radices (sizes) for each position
+///
+/// # Returns
+/// * `Some(size)` if calculation succeeds without overflow
+/// * `None` if overflow would occur
+pub fn mixed_radix_size(radices: &[usize]) -> Option<usize> {
+    if radices.is_empty() {
+        return Some(1);
+    }
+
+    let mut size: usize = 1;
+    for &radix in radices {
+        if radix == 0 {
+            return Some(0);
+        }
+        size = size.checked_mul(radix)?;
+    }
+    Some(size)
+}
+
 /// Memory Pool Implementation for reusable allocations
 pub struct MemoryPool<T> {
     pool: Arc<Mutex<VecDeque<T>>>,
@@ -743,5 +829,50 @@ mod tests {
     fn test_memory_estimation() {
         assert_eq!(estimate_table_memory(2, 5), Some(200)); // 25 * 8 bytes
         assert_eq!(estimate_table_memory(64, 2), None); // Overflow
+    }
+
+    #[test]
+    fn test_mixed_radix_encode_decode() {
+        // Test basic encoding/decoding
+        let coords = vec![1, 2, 0];
+        let radices = vec![2, 3, 4];
+        let encoded = mixed_radix_encode(&coords, &radices).unwrap();
+        let decoded = mixed_radix_decode(encoded, &radices);
+        assert_eq!(decoded, coords);
+
+        // Test round-trip for all valid coordinates with 3 factors
+        let radices = vec![2, 3, 2];
+        for a in 0..2 {
+            for b in 0..3 {
+                for c in 0..2 {
+                    let coords = vec![a, b, c];
+                    let encoded = mixed_radix_encode(&coords, &radices).unwrap();
+                    let decoded = mixed_radix_decode(encoded, &radices);
+                    assert_eq!(decoded, coords, "Round-trip failed for coords {:?}", coords);
+                }
+            }
+        }
+
+        // Test edge cases
+        assert_eq!(mixed_radix_encode(&[], &[]), Some(0));
+        assert_eq!(mixed_radix_decode(0, &[]), Vec::<usize>::new());
+
+        // Test error cases
+        assert_eq!(mixed_radix_encode(&[0, 1], &[2]), None); // Length mismatch
+        assert_eq!(mixed_radix_encode(&[2], &[2]), None); // Coordinate out of bounds
+        assert_eq!(mixed_radix_encode(&[0], &[0]), None); // Zero radix
+    }
+
+    #[test]
+    fn test_mixed_radix_size() {
+        assert_eq!(mixed_radix_size(&[]), Some(1));
+        assert_eq!(mixed_radix_size(&[2]), Some(2));
+        assert_eq!(mixed_radix_size(&[2, 3]), Some(6));
+        assert_eq!(mixed_radix_size(&[2, 3, 4]), Some(24));
+        assert_eq!(mixed_radix_size(&[0]), Some(0));
+        
+        // Test overflow detection
+        let large_radices = vec![usize::MAX, 2];
+        assert_eq!(mixed_radix_size(&large_radices), None);
     }
 }

@@ -22,6 +22,7 @@ use uacalc_core::term::{TermArena, TermId};
 #[pymodule]
 fn uacalc_rust(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyAlgebra>()?;
+    m.add_class::<PyProductAlgebra>()?;
     m.add_class::<PyOperation>()?;
     m.add_class::<PyPartition>()?;
     m.add_class::<PyBinaryRelation>()?;
@@ -658,6 +659,109 @@ pub struct PyAlgebra {
     inner: BasicAlgebra,
 }
 
+/// Python wrapper for ProductAlgebra
+#[pyclass]
+pub struct PyProductAlgebra {
+    inner: ProductAlgebra,
+}
+
+#[pymethods]
+impl PyProductAlgebra {
+    #[getter]
+    fn name(&self) -> String {
+        self.inner.name().to_string()
+    }
+
+    #[getter]
+    fn cardinality(&self) -> usize {
+        self.inner.cardinality()
+    }
+
+    fn operations(&self) -> Vec<PyOperation> {
+        self.inner
+            .operations()
+            .iter()
+            .map(|op| PyOperation {
+                inner: Arc::clone(op),
+            })
+            .collect()
+    }
+
+    fn operation_by_symbol(&self, symbol: &str) -> PyResult<PyOperation> {
+        let op = self
+            .inner
+            .operation_arc_by_symbol(symbol)
+            .map_err(map_uacalc_error)?;
+        Ok(PyOperation { inner: op })
+    }
+
+    /// Get the k-th factor algebra (returns PyAlgebra for compatibility)
+    fn projection(&self, k: usize) -> PyResult<PyAlgebra> {
+        let factor = self.inner.projection(k).map_err(map_uacalc_error)?;
+        let factor_guard = factor.lock().map_err(|_| {
+            PyErr::new::<pyo3::exceptions::PyValueError, _>(
+                "Failed to lock factor algebra".to_string(),
+            )
+        })?;
+
+        // Convert the SmallAlgebra to BasicAlgebra for Python compatibility
+        // This is a simplified conversion that preserves basic functionality
+        let basic = BasicAlgebra::with_cardinality(
+            factor_guard.name().to_string(),
+            factor_guard.cardinality(),
+        )
+        .map_err(map_uacalc_error)?;
+
+        Ok(PyAlgebra { inner: basic })
+    }
+
+    /// Extract the k-th coordinate from a product element
+    fn coordinate_projection(&self, element: usize, k: usize) -> PyResult<usize> {
+        self.inner
+            .coordinate_projection(element, k)
+            .map_err(map_uacalc_error)
+    }
+
+    /// Create a product element from coordinates
+    fn coordinate_embedding(&self, coords: Vec<usize>) -> PyResult<usize> {
+        self.inner
+            .coordinate_embedding(&coords)
+            .map_err(map_uacalc_error)
+    }
+
+    /// Get the projection kernel for the k-th factor
+    fn projection_kernel(&self, k: usize) -> PyResult<PyPartition> {
+        let kernel = self.inner.projection_kernel(k).map_err(map_uacalc_error)?;
+        Ok(PyPartition { inner: kernel })
+    }
+
+    /// Decode a product element into its coordinates
+    fn decode_coords(&self, element: usize) -> Vec<usize> {
+        self.inner.decode_coords(element)
+    }
+
+    /// Encode coordinates back to a product element
+    fn encode_coords(&self, coords: Vec<usize>) -> PyResult<usize> {
+        self.inner.encode_coords(&coords).map_err(map_uacalc_error)
+    }
+
+    /// Get the factor sizes
+    #[getter]
+    fn factor_sizes(&self) -> Vec<usize> {
+        self.inner
+            .factors()
+            .iter()
+            .map(|factor| factor.lock().unwrap().cardinality())
+            .collect()
+    }
+
+    /// Get the number of factors
+    #[getter]
+    fn num_factors(&self) -> usize {
+        self.inner.factors().len()
+    }
+}
+
 #[pymethods]
 impl PyAlgebra {
     #[new]
@@ -1279,7 +1383,7 @@ fn eval_term(term: &PyTerm, algebra: &PyAlgebra, assignment: &PyDict) -> PyResul
 
 /// Helper function to create a product algebra
 #[pyfunction]
-fn rust_create_product_algebra(name: &str, factors: &PyList) -> PyResult<PyAlgebra> {
+fn rust_create_product_algebra(name: &str, factors: &PyList) -> PyResult<PyProductAlgebra> {
     // Extract Rust algebra instances from PyAlgebra wrappers
     let mut rust_factors = Vec::new();
     for (_i, factor) in factors.iter().enumerate() {
@@ -1316,31 +1420,8 @@ fn rust_create_product_algebra(name: &str, factors: &PyList) -> PyResult<PyAlgeb
     let product_algebra =
         ProductAlgebra::new(name.to_string(), rust_factors).map_err(map_uacalc_error)?;
 
-    // Convert ProductAlgebra back to BasicAlgebra for PyAlgebra
-    let mut basic_algebra =
-        BasicAlgebra::with_cardinality(name.to_string(), product_algebra.cardinality())
-            .map_err(map_uacalc_error)?;
-
-    // Transfer operations from product algebra to basic algebra
-    for (_i, operation) in product_algebra.operations().iter().enumerate() {
-        let symbol_name = {
-            let op_guard = operation.lock().map_err(|_| {
-                PyErr::new::<pyo3::exceptions::PyValueError, _>(
-                    "Failed to lock operation".to_string(),
-                )
-            })?;
-
-            let name = op_guard.symbol().name.clone();
-            name
-        }; // op_guard is dropped here, releasing the lock
-
-        // Add the componentwise operation directly to the basic algebra
-        basic_algebra
-            .add_operation(symbol_name, Arc::clone(operation))
-            .map_err(map_uacalc_error)?;
-    }
-
-    Ok(PyAlgebra {
-        inner: basic_algebra,
+    // Return PyProductAlgebra directly, preserving ProductAlgebra-specific methods
+    Ok(PyProductAlgebra {
+        inner: product_algebra,
     })
 }

@@ -13,22 +13,22 @@ fn create_test_algebra(name: &str, size: usize) -> UACalcResult<Arc<Mutex<dyn Sm
     let const_op = TableOperation::new(const_symbol, vec![vec![0]], size)?;
     algebra.add_operation("const".to_string(), Arc::new(Mutex::new(const_op)))?;
     
-    // Add a unary operation (identity)
-    let unary_symbol = OperationSymbol::new("id".to_string(), 1);
-    let unary_table = (0..size).map(|i| vec![i, i]).collect();
+    // Add a unary operation (successor mod size)
+    let unary_symbol = OperationSymbol::new("succ".to_string(), 1);
+    let unary_table = (0..size).map(|i| vec![i, (i + 1) % size]).collect();
     let unary_op = TableOperation::new(unary_symbol, unary_table, size)?;
-    algebra.add_operation("id".to_string(), Arc::new(Mutex::new(unary_op)))?;
+    algebra.add_operation("succ".to_string(), Arc::new(Mutex::new(unary_op)))?;
     
-    // Add a binary operation (projection to first argument)
-    let binary_symbol = OperationSymbol::new("proj1".to_string(), 2);
+    // Add a binary operation (addition mod size)
+    let binary_symbol = OperationSymbol::new("add".to_string(), 2);
     let mut binary_table = Vec::new();
     for i in 0..size {
         for j in 0..size {
-            binary_table.push(vec![i, j, i]);
+            binary_table.push(vec![i, j, (i + j) % size]);
         }
     }
     let binary_op = TableOperation::new(binary_symbol, binary_table, size)?;
-    algebra.add_operation("proj1".to_string(), Arc::new(Mutex::new(binary_op)))?;
+    algebra.add_operation("add".to_string(), Arc::new(Mutex::new(binary_op)))?;
     
     Ok(Arc::new(Mutex::new(algebra)))
 }
@@ -36,8 +36,8 @@ fn create_test_algebra(name: &str, size: usize) -> UACalcResult<Arc<Mutex<dyn Sm
 #[test]
 fn test_product_algebra_construction() -> UACalcResult<()> {
     // Create simple algebras without operations for basic testing
-    let mut alg1 = BasicAlgebra::with_cardinality("A".to_string(), 2)?;
-    let mut alg2 = BasicAlgebra::with_cardinality("B".to_string(), 3)?;
+    let alg1 = BasicAlgebra::with_cardinality("A".to_string(), 2)?;
+    let alg2 = BasicAlgebra::with_cardinality("B".to_string(), 3)?;
     
     let product = ProductAlgebra::new("A_x_B".to_string(), vec![Arc::new(Mutex::new(alg1)), Arc::new(Mutex::new(alg2))])?;
     
@@ -87,20 +87,27 @@ fn test_coordinate_projection_and_embedding() -> UACalcResult<()> {
     
     let product = ProductAlgebra::new("A_x_B".to_string(), vec![alg1.clone(), alg2.clone()])?;
     
-    // Test coordinate projection
-    assert_eq!(product.coordinate_projection(0, 0)?, 0);
-    assert_eq!(product.coordinate_projection(0, 1)?, 0);
-    assert_eq!(product.coordinate_projection(1, 0)?, 0);
-    assert_eq!(product.coordinate_projection(1, 1)?, 1);
-    assert_eq!(product.coordinate_projection(2, 0)?, 1);
-    assert_eq!(product.coordinate_projection(2, 1)?, 0);
+    // Test coordinate projection (little-endian mixed-radix encoding)
+    // Product of sizes [2, 3] gives: [0,0]→0, [1,0]→1, [0,1]→2, [1,1]→3, [0,2]→4, [1,2]→5
+    assert_eq!(product.coordinate_projection(0, 0)?, 0); // element 0 = [0,0], first coord = 0
+    assert_eq!(product.coordinate_projection(0, 1)?, 0); // element 0 = [0,0], second coord = 0
+    assert_eq!(product.coordinate_projection(1, 0)?, 1); // element 1 = [1,0], first coord = 1
+    assert_eq!(product.coordinate_projection(1, 1)?, 0); // element 1 = [1,0], second coord = 0
+    assert_eq!(product.coordinate_projection(2, 0)?, 0); // element 2 = [0,1], first coord = 0
+    assert_eq!(product.coordinate_projection(2, 1)?, 1); // element 2 = [0,1], second coord = 1
+    assert_eq!(product.coordinate_projection(3, 0)?, 1); // element 3 = [1,1], first coord = 1
+    assert_eq!(product.coordinate_projection(3, 1)?, 1); // element 3 = [1,1], second coord = 1
+    assert_eq!(product.coordinate_projection(4, 0)?, 0); // element 4 = [0,2], first coord = 0
+    assert_eq!(product.coordinate_projection(4, 1)?, 2); // element 4 = [0,2], second coord = 2
+    assert_eq!(product.coordinate_projection(5, 0)?, 1); // element 5 = [1,2], first coord = 1
+    assert_eq!(product.coordinate_projection(5, 1)?, 2); // element 5 = [1,2], second coord = 2
     
-    // Test coordinate embedding
+    // Test coordinate embedding (little-endian mixed-radix encoding)
     assert_eq!(product.coordinate_embedding(&[0, 0])?, 0);
-    assert_eq!(product.coordinate_embedding(&[0, 1])?, 1);
-    assert_eq!(product.coordinate_embedding(&[0, 2])?, 2);
-    assert_eq!(product.coordinate_embedding(&[1, 0])?, 3);
-    assert_eq!(product.coordinate_embedding(&[1, 1])?, 4);
+    assert_eq!(product.coordinate_embedding(&[1, 0])?, 1);
+    assert_eq!(product.coordinate_embedding(&[0, 1])?, 2);
+    assert_eq!(product.coordinate_embedding(&[1, 1])?, 3);
+    assert_eq!(product.coordinate_embedding(&[0, 2])?, 4);
     assert_eq!(product.coordinate_embedding(&[1, 2])?, 5);
     
     // Test error cases
@@ -135,17 +142,75 @@ fn test_projection_kernel() -> UACalcResult<()> {
 
 #[test]
 fn test_operation_evaluation() -> UACalcResult<()> {
-    // Skip this test for now since operations are not fully implemented
-    // let alg1 = create_test_algebra("A", 2)?;
-    // let alg2 = create_test_algebra("B", 3)?;
-    // let product = ProductAlgebra::new("A_x_B".to_string(), vec![alg1.clone(), alg2.clone()])?;
+    // Create test algebras with actual operations
+    let alg1 = create_test_algebra("A", 2)?;  // {0, 1} with mod 2 operations
+    let alg2 = create_test_algebra("B", 3)?;  // {0, 1, 2} with mod 3 operations
     
-    // For now, just test that we can create a product algebra
-    let alg1 = Arc::new(Mutex::new(BasicAlgebra::with_cardinality("A".to_string(), 2)?));
-    let alg2 = Arc::new(Mutex::new(BasicAlgebra::with_cardinality("B".to_string(), 3)?));
     let product = ProductAlgebra::new("A_x_B".to_string(), vec![alg1.clone(), alg2.clone()])?;
     
-    assert_eq!(product.cardinality(), 6);
+    assert_eq!(product.cardinality(), 6); // 2 * 3
+    assert_eq!(product.operations().len(), 3); // const, succ, add
+    
+    // Test constant operation
+    let const_op = product.operation_arc_by_symbol("const")?;
+    let const_guard = const_op.lock().unwrap();
+    let const_result = const_guard.value(&[])?;
+    assert_eq!(const_result, product.coordinate_embedding(&[0, 0])?); // (0,0) since const returns 0 in both factors
+    
+    // Test unary operation (successor)
+    let succ_op = product.operation_arc_by_symbol("succ")?;
+    let succ_guard = succ_op.lock().unwrap();
+    
+    // Test succ on element (0,0) = 0
+    let elem_00 = product.coordinate_embedding(&[0, 0])?;
+    let succ_00 = succ_guard.value(&[elem_00])?;
+    let expected_00 = product.coordinate_embedding(&[1, 1])?; // succ(0,0) = (1,1)
+    assert_eq!(succ_00, expected_00);
+    
+    // Test succ on element (1,2) = 5
+    let elem_12 = product.coordinate_embedding(&[1, 2])?;
+    let succ_12 = succ_guard.value(&[elem_12])?;
+    let expected_12 = product.coordinate_embedding(&[0, 0])?; // succ(1,2) = (0,0) due to mod operations
+    assert_eq!(succ_12, expected_12);
+    
+    // Test binary operation (addition)
+    let add_op = product.operation_arc_by_symbol("add")?;
+    let add_guard = add_op.lock().unwrap();
+    
+    // Test add((0,1), (1,0)) = (1,1)
+    let elem_01 = product.coordinate_embedding(&[0, 1])?;
+    let elem_10 = product.coordinate_embedding(&[1, 0])?;
+    let add_result = add_guard.value(&[elem_01, elem_10])?;
+    let expected_add = product.coordinate_embedding(&[1, 1])?; // (0+1, 1+0) = (1,1)
+    assert_eq!(add_result, expected_add);
+    
+    // Test add((1,2), (1,1)) = (0,0)
+    let elem_11 = product.coordinate_embedding(&[1, 1])?;
+    let add_result2 = add_guard.value(&[elem_12, elem_11])?;
+    let expected_add2 = product.coordinate_embedding(&[0, 0])?; // (1+1, 2+1) = (0,0) mod (2,3)
+    assert_eq!(add_result2, expected_add2);
+    
+    // Verify componentwise computation manually
+    for element1 in 0..product.cardinality() {
+        for element2 in 0..product.cardinality() {
+            let coords1 = product.decode_coords(element1);
+            let coords2 = product.decode_coords(element2);
+            
+            // Manual componentwise addition
+            let manual_result_coords = vec![
+                (coords1[0] + coords2[0]) % 2,  // First factor mod 2
+                (coords1[1] + coords2[1]) % 3,  // Second factor mod 3
+            ];
+            let manual_result = product.coordinate_embedding(&manual_result_coords)?;
+            
+            // Product algebra addition
+            let product_result = add_guard.value(&[element1, element2])?;
+            
+            assert_eq!(product_result, manual_result, 
+                "Componentwise addition mismatch for ({:?}, {:?})", coords1, coords2);
+        }
+    }
+    
     Ok(())
 }
 
@@ -194,11 +259,120 @@ fn test_single_factor_product() -> UACalcResult<()> {
 
 #[test]
 fn test_arithmetic_overflow_protection() {
-    // Create algebras with sizes that would cause overflow
-    let alg1 = Arc::new(Mutex::new(BasicAlgebra::with_cardinality("A".to_string(), usize::MAX / 2 + 1).unwrap()));
-    let alg2 = Arc::new(Mutex::new(BasicAlgebra::with_cardinality("B".to_string(), 2).unwrap()));
+    // Create many factors with moderate sizes that when multiplied together would cause overflow
+    // Use size 256 with enough factors: 256^8 = 2^64 would overflow on 64-bit systems
+    let factor_size = 256;
+    let num_factors = 8;
     
-    let result = ProductAlgebra::new("overflow".to_string(), vec![alg1, alg2]);
+    let mut factors: Vec<Arc<Mutex<dyn SmallAlgebra>>> = Vec::new();
+    for i in 0..num_factors {
+        factors.push(Arc::new(Mutex::new(
+            BasicAlgebra::with_cardinality(format!("Factor{}", i), factor_size).unwrap()
+        )));
+    }
+    
+    let result = ProductAlgebra::new("overflow".to_string(), factors);
     assert!(result.is_err());
     assert!(result.unwrap_err().to_string().contains("overflow"));
+}
+
+#[test]
+fn test_mixed_radix_helpers() -> UACalcResult<()> {
+    let alg1 = Arc::new(Mutex::new(BasicAlgebra::with_cardinality("A".to_string(), 2)?));
+    let alg2 = Arc::new(Mutex::new(BasicAlgebra::with_cardinality("B".to_string(), 3)?));
+    let alg3 = Arc::new(Mutex::new(BasicAlgebra::with_cardinality("C".to_string(), 4)?));
+    
+    let product = ProductAlgebra::new(
+        "A_x_B_x_C".to_string(),
+        vec![alg1.clone(), alg2.clone(), alg3.clone()],
+    )?;
+    
+    // Test that decode_coords and encode_coords are consistent with coordinate_projection and coordinate_embedding
+    for element in 0..product.cardinality() {
+        let coords = product.decode_coords(element);
+        let reconstructed = product.encode_coords(&coords)?;
+        assert_eq!(reconstructed, element, "Round-trip failed for element {}", element);
+        
+        // Verify that the coordinates match coordinate_projection
+        for k in 0..coords.len() {
+            let projected = product.coordinate_projection(element, k)?;
+            assert_eq!(coords[k], projected, "Coordinate {} mismatch for element {}", k, element);
+        }
+        
+        // Verify that coordinate_embedding matches encode_coords
+        let embedded = product.coordinate_embedding(&coords)?;
+        assert_eq!(embedded, element, "Embedding mismatch for coords {:?}", coords);
+    }
+    
+    Ok(())
+}
+
+#[test]
+fn test_round_trip_validation_three_factors() -> UACalcResult<()> {
+    let alg1 = Arc::new(Mutex::new(BasicAlgebra::with_cardinality("A".to_string(), 3)?));
+    let alg2 = Arc::new(Mutex::new(BasicAlgebra::with_cardinality("B".to_string(), 4)?));
+    let alg3 = Arc::new(Mutex::new(BasicAlgebra::with_cardinality("C".to_string(), 2)?));
+    
+    let product = ProductAlgebra::new(
+        "A_x_B_x_C".to_string(),
+        vec![alg1.clone(), alg2.clone(), alg3.clone()],
+    )?;
+    
+    assert_eq!(product.cardinality(), 24); // 3 * 4 * 2
+    
+    // Test round-trip for all possible coordinates
+    for a in 0..3 {
+        for b in 0..4 {
+            for c in 0..2 {
+                let coords = vec![a, b, c];
+                let element = product.coordinate_embedding(&coords)?;
+                let decoded = product.decode_coords(element);
+                assert_eq!(decoded, coords, "Round-trip failed for coords {:?}", coords);
+                
+                // Also test individual projections
+                assert_eq!(product.coordinate_projection(element, 0)?, a);
+                assert_eq!(product.coordinate_projection(element, 1)?, b);
+                assert_eq!(product.coordinate_projection(element, 2)?, c);
+            }
+        }
+    }
+    
+    Ok(())
+}
+
+#[test]
+fn test_projection_kernel_all_coords() -> UACalcResult<()> {
+    let alg1 = Arc::new(Mutex::new(BasicAlgebra::with_cardinality("A".to_string(), 2)?));
+    let alg2 = Arc::new(Mutex::new(BasicAlgebra::with_cardinality("B".to_string(), 3)?));
+    let alg3 = Arc::new(Mutex::new(BasicAlgebra::with_cardinality("C".to_string(), 2)?));
+    
+    let product = ProductAlgebra::new(
+        "A_x_B_x_C".to_string(),
+        vec![alg1.clone(), alg2.clone(), alg3.clone()],
+    )?;
+    
+    // Test projection kernel for each factor
+    for k in 0..3 {
+        let kernel = product.projection_kernel(k)?;
+        
+        // Verify that elements with the same k-th coordinate are in the same equivalence class
+        for element1 in 0..product.cardinality() {
+            for element2 in 0..product.cardinality() {
+                let coord1 = product.coordinate_projection(element1, k)?;
+                let coord2 = product.coordinate_projection(element2, k)?;
+                
+                let same_equivalence_class = kernel.representative(element1)? == kernel.representative(element2)?;
+                let same_coordinate = coord1 == coord2;
+                
+                assert_eq!(
+                    same_equivalence_class, 
+                    same_coordinate,
+                    "Elements {} and {} should be in same equivalence class iff they have same {}-th coordinate ({} vs {})",
+                    element1, element2, k, coord1, coord2
+                );
+            }
+        }
+    }
+    
+    Ok(())
 }
