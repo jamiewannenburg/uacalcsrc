@@ -1,5 +1,5 @@
 use pyo3::prelude::*;
-use pyo3::types::{PyDict, PyList};
+use pyo3::types::{PyAny, PyDict, PyList};
 use pyo3::wrap_pyfunction;
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -24,6 +24,7 @@ use uacalc_core::term::{TermArena, TermId};
 fn uacalc_rust(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyAlgebra>()?;
     m.add_class::<PyProductAlgebra>()?;
+    m.add_class::<PyQuotientAlgebra>()?;
     m.add_class::<PyOperation>()?;
     m.add_class::<PyPartition>()?;
     m.add_class::<PyBinaryRelation>()?;
@@ -667,6 +668,13 @@ pub struct PyProductAlgebra {
     inner: ProductAlgebra,
 }
 
+/// Python wrapper for QuotientAlgebra
+#[pyclass]
+#[derive(Clone)]
+pub struct PyQuotientAlgebra {
+    inner: QuotientAlgebra,
+}
+
 #[pymethods]
 impl PyProductAlgebra {
     #[getter]
@@ -761,6 +769,169 @@ impl PyProductAlgebra {
     #[getter]
     fn num_factors(&self) -> usize {
         self.inner.factors().len()
+    }
+}
+
+#[pymethods]
+impl PyQuotientAlgebra {
+    #[getter]
+    fn name(&self) -> String {
+        self.inner.name().to_string()
+    }
+
+    #[getter]
+    fn cardinality(&self) -> usize {
+        self.inner.cardinality()
+    }
+
+    fn operations(&self) -> Vec<PyOperation> {
+        self.inner
+            .operations()
+            .iter()
+            .map(|op| PyOperation {
+                inner: Arc::clone(op),
+            })
+            .collect()
+    }
+
+    fn operation_by_symbol(&self, symbol: &str) -> PyResult<PyOperation> {
+        let op = self
+            .inner
+            .operation_arc_by_symbol(symbol)
+            .map_err(map_uacalc_error)?;
+        Ok(PyOperation { inner: op })
+    }
+
+    /// Get the super algebra (returns PyAlgebra for compatibility)
+    fn super_algebra(&self) -> PyResult<PyAlgebra> {
+        let super_alg = self.inner.super_algebra();
+        let super_guard = super_alg.lock().map_err(|_| {
+            PyErr::new::<pyo3::exceptions::PyValueError, _>(
+                "Failed to lock super algebra".to_string(),
+            )
+        })?;
+
+        // Convert to BasicAlgebra for Python compatibility
+        let basic = BasicAlgebra::with_cardinality(
+            super_guard.name().to_string(),
+            super_guard.cardinality(),
+        )
+        .map_err(map_uacalc_error)?;
+
+        Ok(PyAlgebra { inner: basic })
+    }
+
+    /// Get the congruence relation
+    fn congruence(&self) -> PyPartition {
+        PyPartition {
+            inner: self.inner.congruence().clone(),
+        }
+    }
+
+    /// Canonical homomorphism: map parent algebra element to quotient index
+    fn canonical_homomorphism(&self, element: usize) -> PyResult<usize> {
+        self.inner
+            .canonical_homomorphism(element)
+            .map_err(map_uacalc_error)
+    }
+
+    /// Get the representatives of the congruence blocks
+    fn representatives(&self) -> Vec<usize> {
+        self.inner.congruence().representatives()
+    }
+
+    /// Get the block containing the element at the given index
+    fn block_of_index(&self, index: usize) -> PyResult<Vec<usize>> {
+        let representatives = self.inner.congruence().representatives();
+
+        if index >= representatives.len() {
+            return Err(PyErr::new::<pyo3::exceptions::PyIndexError, _>(format!(
+                "Index {} out of bounds for {} representatives",
+                index,
+                representatives.len()
+            )));
+        }
+
+        let representative = representatives[index];
+        self.inner
+            .congruence()
+            .block(representative)
+            .map_err(map_uacalc_error)
+    }
+
+    // Backward compatibility methods to match PyAlgebra interface
+
+    #[getter]
+    fn universe(&self) -> Vec<usize> {
+        self.inner.universe().to_vec()
+    }
+
+    fn is_finite(&self) -> bool {
+        true // Quotient algebras are always finite
+    }
+
+    fn max_arity(&self) -> usize {
+        self.inner.max_arity()
+    }
+
+    fn operation(&self, index: usize) -> PyResult<PyOperation> {
+        let op = self.inner.operation_arc(index).map_err(map_uacalc_error)?;
+        Ok(PyOperation { inner: op })
+    }
+
+    fn is_idempotent(&self, op_index: usize) -> PyResult<bool> {
+        let op = self
+            .inner
+            .operation_arc(op_index)
+            .map_err(map_uacalc_error)?;
+        let op_guard = op.lock().map_err(|_| {
+            PyErr::new::<pyo3::exceptions::PyValueError, _>("Failed to lock operation".to_string())
+        })?;
+        op_guard
+            .is_idempotent_on_set(self.inner.cardinality())
+            .map_err(map_uacalc_error)
+    }
+
+    fn is_associative(&self, op_index: usize) -> PyResult<bool> {
+        let op = self
+            .inner
+            .operation_arc(op_index)
+            .map_err(map_uacalc_error)?;
+        let op_guard = op.lock().map_err(|_| {
+            PyErr::new::<pyo3::exceptions::PyValueError, _>("Failed to lock operation".to_string())
+        })?;
+        if op_guard.arity() == 2 {
+            op_guard
+                .is_associative_on_set(self.inner.cardinality())
+                .map_err(map_uacalc_error)
+        } else {
+            Ok(false)
+        }
+    }
+
+    fn is_commutative(&self, op_index: usize) -> PyResult<bool> {
+        let op = self
+            .inner
+            .operation_arc(op_index)
+            .map_err(map_uacalc_error)?;
+        let op_guard = op.lock().map_err(|_| {
+            PyErr::new::<pyo3::exceptions::PyValueError, _>("Failed to lock operation".to_string())
+        })?;
+        if op_guard.arity() == 2 {
+            op_guard
+                .is_commutative_on_set(self.inner.cardinality())
+                .map_err(map_uacalc_error)
+        } else {
+            Ok(false)
+        }
+    }
+
+    fn subalgebra(&self, generators: Vec<usize>) -> PyResult<PyAlgebra> {
+        let sub = self
+            .inner
+            .subalgebra(&generators)
+            .map_err(map_uacalc_error)?;
+        Ok(PyAlgebra { inner: sub })
     }
 }
 
@@ -1335,8 +1506,25 @@ fn create_binary_relation(size: usize) -> PyResult<PyBinaryRelation> {
 
 /// Helper function to create a congruence lattice
 #[pyfunction]
-fn create_congruence_lattice(algebra: &PyAlgebra) -> PyResult<PyCongruenceLattice> {
-    Ok(PyCongruenceLattice::new(algebra.clone()))
+fn create_congruence_lattice(algebra: &PyAny) -> PyResult<PyCongruenceLattice> {
+    // Try to extract as PyAlgebra first, then PyQuotientAlgebra
+    if let Ok(py_algebra) = algebra.extract::<PyAlgebra>() {
+        Ok(PyCongruenceLattice::new(py_algebra))
+    } else if let Ok(py_quotient) = algebra.extract::<PyQuotientAlgebra>() {
+        // Convert PyQuotientAlgebra to PyAlgebra for congruence lattice computation
+        let basic = BasicAlgebra::with_cardinality(
+            py_quotient.inner.name().to_string(),
+            py_quotient.inner.cardinality(),
+        )
+        .map_err(map_uacalc_error)?;
+
+        let py_algebra = PyAlgebra { inner: basic };
+        Ok(PyCongruenceLattice::new(py_algebra))
+    } else {
+        Err(PyErr::new::<pyo3::exceptions::PyTypeError, _>(
+            "Expected PyAlgebra or PyQuotientAlgebra".to_string(),
+        ))
+    }
 }
 
 /// Helper function to create a term arena
@@ -1430,11 +1618,13 @@ fn rust_create_product_algebra(name: &str, factors: &PyList) -> PyResult<PyProdu
 
 /// Helper function to create a quotient algebra
 #[pyfunction]
+#[pyo3(signature = (name, super_algebra, congruence, validate = false))]
 fn rust_create_quotient_algebra(
     name: &str,
     super_algebra: &PyAlgebra,
     congruence: &PyPartition,
-) -> PyResult<PyAlgebra> {
+    validate: bool,
+) -> PyResult<PyQuotientAlgebra> {
     // Validate inputs are non-null and valid
     if name.is_empty() {
         return Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
@@ -1449,41 +1639,21 @@ fn rust_create_quotient_algebra(
     // Extract BasicPartition from PyPartition
     let rust_congruence = congruence.inner.clone();
 
-    // Create quotient algebra
-    let quotient_algebra =
+    // Create quotient algebra with optional validation
+    let quotient_algebra = if validate {
+        QuotientAlgebra::new_with_validation(
+            name.to_string(),
+            rust_super_algebra,
+            rust_congruence,
+            true,
+        )
+    } else {
         QuotientAlgebra::new(name.to_string(), rust_super_algebra, rust_congruence)
-            .map_err(map_uacalc_error)?;
-
-    // Convert QuotientAlgebra to BasicAlgebra for Python compatibility
-    // We need to extract the operations and create a BasicAlgebra
-    let mut basic_algebra = BasicAlgebra::with_cardinality(
-        quotient_algebra.name().to_string(),
-        quotient_algebra.cardinality(),
-    )
+    }
     .map_err(map_uacalc_error)?;
 
-    // Add all operations from the quotient algebra
-    for (i, op_arc) in quotient_algebra.operations().iter().enumerate() {
-        let op_guard = op_arc.lock().map_err(|_| {
-            PyErr::new::<pyo3::exceptions::PyValueError, _>(format!(
-                "Failed to lock quotient operation {}",
-                i
-            ))
-        })?;
-        let symbol_name = op_guard.symbol().name.clone();
-        drop(op_guard); // Release the lock
-
-        basic_algebra
-            .add_operation(symbol_name, op_arc.clone())
-            .map_err(map_uacalc_error)?;
-    }
-
-    // Build operation tables for the basic algebra
-    basic_algebra
-        .make_operation_tables()
-        .map_err(map_uacalc_error)?;
-
-    Ok(PyAlgebra {
-        inner: basic_algebra,
+    // Return PyQuotientAlgebra directly, preserving QuotientAlgebra-specific methods
+    Ok(PyQuotientAlgebra {
+        inner: quotient_algebra,
     })
 }

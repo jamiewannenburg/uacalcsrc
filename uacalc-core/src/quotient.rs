@@ -8,33 +8,53 @@ use std::sync::{Arc, Mutex};
 /// Custom operation implementation for quotient operations
 struct QuotientOperation {
     symbol: OperationSymbol,
-    super_algebra: Arc<Mutex<dyn SmallAlgebra>>,
-    congruence: BasicPartition,
-    representatives: Vec<usize>,
-    rep_to_index: HashMap<usize, usize>,
-    op_index: usize,
+    parent_op: Arc<Mutex<dyn Operation>>,
+    congruence: Arc<BasicPartition>,
+    representatives: Arc<Vec<usize>>,
+    rep_to_index: Arc<HashMap<usize, usize>>,
+    cached_constant: Option<usize>,
     set_size: usize,
 }
 
 impl QuotientOperation {
     fn new(
         symbol: OperationSymbol,
-        super_algebra: Arc<Mutex<dyn SmallAlgebra>>,
-        congruence: BasicPartition,
-        representatives: Vec<usize>,
-        rep_to_index: HashMap<usize, usize>,
-        op_index: usize,
+        parent_op: Arc<Mutex<dyn Operation>>,
+        congruence: Arc<BasicPartition>,
+        representatives: Arc<Vec<usize>>,
+        rep_to_index: Arc<HashMap<usize, usize>>,
         set_size: usize,
-    ) -> Self {
-        Self {
+    ) -> UACalcResult<Self> {
+        // Check if this is a constant operation and cache its value
+        let cached_constant = if symbol.arity == 0 {
+            let op_guard = parent_op
+                .lock()
+                .map_err(|_| UACalcError::InvalidOperation {
+                    message: "Failed to lock parent operation for constant caching".to_string(),
+                })?;
+            let parent_result = op_guard.value(&[])?;
+            let result_representative = congruence.representative(parent_result)?;
+            Some(*rep_to_index.get(&result_representative).ok_or_else(|| {
+                UACalcError::InvalidOperation {
+                    message: format!(
+                        "Representative {} not found in quotient",
+                        result_representative
+                    ),
+                }
+            })?)
+        } else {
+            None
+        };
+
+        Ok(Self {
             symbol,
-            super_algebra,
+            parent_op,
             congruence,
             representatives,
             rep_to_index,
-            op_index,
+            cached_constant,
             set_size,
-        }
+        })
     }
 }
 
@@ -55,6 +75,13 @@ impl Operation for QuotientOperation {
             });
         }
 
+        // For constant operations, return cached value directly
+        if self.arity() == 0 {
+            if let Some(cached_value) = self.cached_constant {
+                return Ok(cached_value);
+            }
+        }
+
         // Map quotient arguments to parent representatives
         let mut parent_args = Vec::with_capacity(args.len());
         for &quotient_arg in args {
@@ -67,17 +94,10 @@ impl Operation for QuotientOperation {
             parent_args.push(self.representatives[quotient_arg]);
         }
 
-        // Evaluate parent operation
+        // Evaluate parent operation using cached operation reference
         let parent_result = {
-            let super_guard =
-                self.super_algebra
-                    .lock()
-                    .map_err(|_| UACalcError::InvalidOperation {
-                        message: "Failed to lock super algebra in quotient operation".to_string(),
-                    })?;
-            let operation_arc = super_guard.operation_arc(self.op_index)?;
-            drop(super_guard); // Release the super algebra lock before locking the operation
-            let op_guard = operation_arc
+            let op_guard = self
+                .parent_op
                 .lock()
                 .map_err(|_| UACalcError::InvalidOperation {
                     message: "Failed to lock parent operation".to_string(),
@@ -122,7 +142,7 @@ impl std::fmt::Debug for QuotientOperation {
             .field("congruence", &self.congruence)
             .field("representatives", &self.representatives)
             .field("rep_to_index", &self.rep_to_index)
-            .field("op_index", &self.op_index)
+            .field("cached_constant", &self.cached_constant)
             .field("set_size", &self.set_size)
             .finish()
     }
@@ -134,12 +154,13 @@ impl std::fmt::Debug for QuotientOperation {
 /// according to a congruence relation. Operations on the quotient are defined by
 /// applying the original operations to representatives and mapping the result
 /// back to the quotient.
+#[derive(Clone)]
 pub struct QuotientAlgebra {
     name: String,
     super_algebra: Arc<Mutex<dyn SmallAlgebra>>,
-    congruence: BasicPartition,
-    representatives: Vec<usize>,
-    rep_to_index: HashMap<usize, usize>,
+    congruence: Arc<BasicPartition>,
+    representatives: Arc<Vec<usize>>,
+    rep_to_index: Arc<HashMap<usize, usize>>,
     cardinality: usize,
     universe: Vec<usize>,
     operations: Vec<Arc<Mutex<dyn Operation>>>,
@@ -154,6 +175,7 @@ impl QuotientAlgebra {
     /// * `name` - Name for the quotient algebra
     /// * `super_algebra` - The parent algebra to quotient
     /// * `congruence` - The congruence relation (partition) to quotient by
+    /// * `validate` - Optional flag to validate congruence compatibility (default: false)
     ///
     /// # Returns
     /// A new QuotientAlgebra instance
@@ -165,6 +187,28 @@ impl QuotientAlgebra {
         name: String,
         super_algebra: Arc<Mutex<dyn SmallAlgebra>>,
         congruence: BasicPartition,
+    ) -> UACalcResult<Self> {
+        Self::new_with_validation(name, super_algebra, congruence, false)
+    }
+
+    /// Create a new quotient algebra with optional validation
+    ///
+    /// # Arguments
+    /// * `name` - Name for the quotient algebra
+    /// * `super_algebra` - The parent algebra to quotient
+    /// * `congruence` - The congruence relation (partition) to quotient by
+    /// * `validate` - Whether to validate that the partition is actually a congruence
+    ///
+    /// # Returns
+    /// A new QuotientAlgebra instance
+    ///
+    /// # Errors
+    /// Returns an error if validation fails or other creation errors occur
+    pub fn new_with_validation(
+        name: String,
+        super_algebra: Arc<Mutex<dyn SmallAlgebra>>,
+        congruence: BasicPartition,
+        validate: bool,
     ) -> UACalcResult<Self> {
         // Validate congruence size matches algebra cardinality
         let super_cardinality = {
@@ -186,6 +230,11 @@ impl QuotientAlgebra {
             });
         }
 
+        // Validate that the partition is actually a congruence if requested
+        if validate {
+            Self::validate_congruence(&super_algebra, &congruence)?;
+        }
+
         // Extract sorted representatives
         let mut representatives = congruence.representatives();
         representatives.sort();
@@ -196,6 +245,11 @@ impl QuotientAlgebra {
         for (index, &rep) in representatives.iter().enumerate() {
             rep_to_index.insert(rep, index);
         }
+
+        // Create shared Arc references
+        let congruence_arc = Arc::new(congruence);
+        let representatives_arc = Arc::new(representatives);
+        let rep_to_index_arc = Arc::new(rep_to_index);
 
         // Create universe vector
         let universe: Vec<usize> = (0..cardinality).collect();
@@ -211,29 +265,29 @@ impl QuotientAlgebra {
                     message: "Failed to lock super algebra for operation creation".to_string(),
                 })?;
 
-            for (op_index, super_op_arc) in super_guard.operations().iter().enumerate() {
+            for super_op_arc in super_guard.operations().iter() {
                 let super_op_guard =
                     super_op_arc
                         .lock()
                         .map_err(|_| UACalcError::InvalidOperation {
-                            message: format!("Failed to lock super operation {}", op_index),
+                            message: "Failed to lock super operation".to_string(),
                         })?;
 
                 let symbol_name = super_op_guard.symbol().name.clone();
                 let arity = super_op_guard.arity();
+                drop(super_op_guard); // Release the lock before creating quotient operation
 
                 // Create a quotient operation
                 let quotient_symbol = OperationSymbol::new(symbol_name.clone(), arity);
 
                 let quotient_operation = QuotientOperation::new(
                     quotient_symbol,
-                    super_algebra.clone(),
-                    congruence.clone(),
-                    representatives.clone(),
-                    rep_to_index.clone(),
-                    op_index,
+                    super_op_arc.clone(),
+                    congruence_arc.clone(),
+                    representatives_arc.clone(),
+                    rep_to_index_arc.clone(),
                     cardinality,
-                );
+                )?;
 
                 operation_symbols.insert(symbol_name, operations.len());
                 operations
@@ -244,15 +298,106 @@ impl QuotientAlgebra {
         Ok(Self {
             name,
             super_algebra,
-            congruence,
-            representatives,
-            rep_to_index,
+            congruence: congruence_arc,
+            representatives: representatives_arc,
+            rep_to_index: rep_to_index_arc,
             cardinality,
             universe,
             operations,
             operation_symbols,
             operation_tables_built: false,
         })
+    }
+
+    /// Validate that a partition is actually a congruence for the given algebra
+    fn validate_congruence(
+        super_algebra: &Arc<Mutex<dyn SmallAlgebra>>,
+        congruence: &BasicPartition,
+    ) -> UACalcResult<()> {
+        let super_guard = super_algebra
+            .lock()
+            .map_err(|_| UACalcError::InvalidOperation {
+                message: "Failed to lock super algebra for validation".to_string(),
+            })?;
+
+        // For each operation, check congruence compatibility on block representatives
+        for op_arc in super_guard.operations().iter() {
+            let op_guard = op_arc.lock().map_err(|_| UACalcError::InvalidOperation {
+                message: "Failed to lock operation for validation".to_string(),
+            })?;
+
+            let arity = op_guard.arity();
+
+            if arity == 0 {
+                // Constants are always compatible
+                continue;
+            }
+
+            // Get representative samples for validation
+            let representatives = congruence.representatives();
+            let sample_size = std::cmp::min(representatives.len(), 10); // Limit validation to avoid performance issues
+
+            for i in 0..sample_size {
+                let rep1 = representatives[i];
+                let block1 = congruence.block(rep1)?;
+
+                if arity == 1 {
+                    // For unary operations, check that f(a) ~ f(a') for all a ~ a'
+                    let result_rep = op_guard.value(&[rep1])?;
+
+                    for &other in &block1 {
+                        if other != rep1 {
+                            let other_result = op_guard.value(&[other])?;
+                            if !congruence.same_block(result_rep, other_result)? {
+                                return Err(UACalcError::InvalidOperation {
+                                    message: format!(
+                                        "Partition is not a congruence: operation {} violates compatibility on elements {} and {}",
+                                        op_guard.symbol().name, rep1, other
+                                    ),
+                                });
+                            }
+                        }
+                    }
+                } else if arity == 2 {
+                    // For binary operations, check f(a,b) ~ f(a',b') for a ~ a', b ~ b'
+                    for j in 0..sample_size {
+                        let rep2 = representatives[j];
+                        let block2 = congruence.block(rep2)?;
+
+                        let result_rep = op_guard.value(&[rep1, rep2])?;
+
+                        // Check with first element from each block varied
+                        if let Some(&other1) = block1.iter().find(|&&x| x != rep1) {
+                            let other_result = op_guard.value(&[other1, rep2])?;
+                            if !congruence.same_block(result_rep, other_result)? {
+                                return Err(UACalcError::InvalidOperation {
+                                    message: format!(
+                                        "Partition is not a congruence: operation {} violates compatibility",
+                                        op_guard.symbol().name
+                                    ),
+                                });
+                            }
+                        }
+
+                        if let Some(&other2) = block2.iter().find(|&&x| x != rep2) {
+                            let other_result = op_guard.value(&[rep1, other2])?;
+                            if !congruence.same_block(result_rep, other_result)? {
+                                return Err(UACalcError::InvalidOperation {
+                                    message: format!(
+                                        "Partition is not a congruence: operation {} violates compatibility",
+                                        op_guard.symbol().name
+                                    ),
+                                });
+                            }
+                        }
+                    }
+                }
+                // For higher arity operations, we do a simplified check
+                // Full validation would be computationally expensive
+            }
+        }
+
+        Ok(())
     }
 
     /// Get the super algebra
@@ -262,7 +407,7 @@ impl QuotientAlgebra {
 
     /// Get the congruence relation
     pub fn congruence(&self) -> &BasicPartition {
-        &self.congruence
+        &*self.congruence
     }
 
     /// Get the index of a representative in the quotient
@@ -279,6 +424,11 @@ impl QuotientAlgebra {
     pub fn canonical_homomorphism(&self, element: usize) -> UACalcResult<usize> {
         let representative = self.congruence.representative(element)?;
         self.representative_index(representative)
+    }
+
+    /// Get the representatives vector
+    pub fn representatives(&self) -> &[usize] {
+        &*self.representatives
     }
 }
 

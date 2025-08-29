@@ -749,13 +749,14 @@ def create_free_algebra(generators: List[str], operations: List[str],
     
     return builder.build()
 
-def create_quotient_algebra(algebra: Algebra, congruence: 'Partition', name: Optional[str] = None) -> Algebra:
+def create_quotient_algebra(algebra: Algebra, congruence: 'Partition', name: Optional[str] = None, validate: bool = False) -> Algebra:
     """Create a quotient algebra by a congruence using optimized Rust implementation.
     
     Args:
         algebra: Original algebra
         congruence: Congruence partition
         name: Optional name for the quotient algebra (defaults to "{algebra.name}_quotient")
+        validate: Whether to validate that the partition is actually a congruence (default: False)
         
     Returns:
         Quotient algebra with efficient operations
@@ -772,8 +773,8 @@ def create_quotient_algebra(algebra: Algebra, congruence: 'Partition', name: Opt
     if name is None:
         name = f"{algebra.name}_quotient"
     
-    # Call optimized Rust implementation
-    result = rust_create_quotient_algebra(name, algebra, congruence)
+    # Call optimized Rust implementation with validation parameter
+    result = rust_create_quotient_algebra(name, algebra, congruence, validate)
     return result
 
 def _compute_subalgebra_closure(algebra: Algebra, generators: List[int], 
