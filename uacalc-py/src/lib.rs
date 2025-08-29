@@ -14,6 +14,7 @@ use uacalc_core::error::UACalcError;
 use uacalc_core::operation::{Operation, OperationSymbol, TableOperation};
 use uacalc_core::partition::{BasicPartition, Partition};
 use uacalc_core::product::ProductAlgebra;
+use uacalc_core::quotient::QuotientAlgebra;
 use uacalc_core::term::evaluation::EvaluationContext;
 use uacalc_core::term::variable::VariableAssignment;
 use uacalc_core::term::{TermArena, TermId};
@@ -43,6 +44,7 @@ fn uacalc_rust(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(parse_term, m)?)?;
     m.add_function(wrap_pyfunction!(eval_term, m)?)?;
     m.add_function(wrap_pyfunction!(rust_create_product_algebra, m)?)?;
+    m.add_function(wrap_pyfunction!(rust_create_quotient_algebra, m)?)?;
 
     // Add custom exception classes
     m.add("UACalcError", _py.get_type::<PyUACalcError>())?;
@@ -1423,5 +1425,65 @@ fn rust_create_product_algebra(name: &str, factors: &PyList) -> PyResult<PyProdu
     // Return PyProductAlgebra directly, preserving ProductAlgebra-specific methods
     Ok(PyProductAlgebra {
         inner: product_algebra,
+    })
+}
+
+/// Helper function to create a quotient algebra
+#[pyfunction]
+fn rust_create_quotient_algebra(
+    name: &str,
+    super_algebra: &PyAlgebra,
+    congruence: &PyPartition,
+) -> PyResult<PyAlgebra> {
+    // Validate inputs are non-null and valid
+    if name.is_empty() {
+        return Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+            "Quotient algebra name cannot be empty".to_string(),
+        ));
+    }
+
+    // Extract Rust algebra instance from PyAlgebra wrapper
+    let rust_super_algebra: Arc<Mutex<dyn SmallAlgebra>> =
+        Arc::new(Mutex::new(super_algebra.inner.clone()));
+
+    // Extract BasicPartition from PyPartition
+    let rust_congruence = congruence.inner.clone();
+
+    // Create quotient algebra
+    let quotient_algebra =
+        QuotientAlgebra::new(name.to_string(), rust_super_algebra, rust_congruence)
+            .map_err(map_uacalc_error)?;
+
+    // Convert QuotientAlgebra to BasicAlgebra for Python compatibility
+    // We need to extract the operations and create a BasicAlgebra
+    let mut basic_algebra = BasicAlgebra::with_cardinality(
+        quotient_algebra.name().to_string(),
+        quotient_algebra.cardinality(),
+    )
+    .map_err(map_uacalc_error)?;
+
+    // Add all operations from the quotient algebra
+    for (i, op_arc) in quotient_algebra.operations().iter().enumerate() {
+        let op_guard = op_arc.lock().map_err(|_| {
+            PyErr::new::<pyo3::exceptions::PyValueError, _>(format!(
+                "Failed to lock quotient operation {}",
+                i
+            ))
+        })?;
+        let symbol_name = op_guard.symbol().name.clone();
+        drop(op_guard); // Release the lock
+
+        basic_algebra
+            .add_operation(symbol_name, op_arc.clone())
+            .map_err(map_uacalc_error)?;
+    }
+
+    // Build operation tables for the basic algebra
+    basic_algebra
+        .make_operation_tables()
+        .map_err(map_uacalc_error)?;
+
+    Ok(PyAlgebra {
+        inner: basic_algebra,
     })
 }

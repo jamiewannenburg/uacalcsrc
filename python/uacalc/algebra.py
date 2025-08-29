@@ -749,59 +749,32 @@ def create_free_algebra(generators: List[str], operations: List[str],
     
     return builder.build()
 
-def create_quotient_algebra(algebra: Algebra, congruence: 'Partition') -> Algebra:
-    """Create a quotient algebra by a congruence.
+def create_quotient_algebra(algebra: Algebra, congruence: 'Partition', name: Optional[str] = None) -> Algebra:
+    """Create a quotient algebra by a congruence using optimized Rust implementation.
     
     Args:
         algebra: Original algebra
         congruence: Congruence partition
+        name: Optional name for the quotient algebra (defaults to "{algebra.name}_quotient")
         
     Returns:
-        Quotient algebra
+        Quotient algebra with efficient operations
     """
-    # Get congruence classes
-    blocks = congruence.blocks()
-    num_classes = len(blocks)
+    from . import rust_create_quotient_algebra
     
-    # Create mapping from elements to their congruence class
-    element_to_class = {}
-    for i, block in enumerate(blocks):
-        for element in block:
-            element_to_class[element] = i
+    # Validate input parameters
+    if algebra is None:
+        raise ValueError("Algebra cannot be None")
+    if congruence is None:
+        raise ValueError("Congruence cannot be None")
     
-    # Build quotient algebra
-    builder = AlgebraBuilder(f"{algebra.name}_quotient", num_classes)
+    # Generate default name if not provided
+    if name is None:
+        name = f"{algebra.name}_quotient"
     
-    # Define operations on quotient
-    for operation in algebra.operations():
-        if operation.arity() == 0:  # Constant
-            value = operation.value([])
-            class_value = element_to_class[value]
-            builder.add_constant(operation.symbol, class_value)
-        
-        elif operation.arity() == 1:  # Unary
-            values = []
-            for i in range(num_classes):
-                # Take representative from class i
-                representative = blocks[i][0]
-                result = operation.value([representative])
-                result_class = element_to_class[result]
-                values.append(result_class)
-            builder.add_unary_operation(operation.symbol, values)
-        
-        elif operation.arity() == 2:  # Binary
-            table = [[0] * num_classes for _ in range(num_classes)]
-            for i in range(num_classes):
-                for j in range(num_classes):
-                    # Take representatives from classes i and j
-                    rep1 = blocks[i][0]
-                    rep2 = blocks[j][0]
-                    result = operation.value([rep1, rep2])
-                    result_class = element_to_class[result]
-                    table[i][j] = result_class
-            builder.add_binary_operation(operation.symbol, table)
-    
-    return builder.build()
+    # Call optimized Rust implementation
+    result = rust_create_quotient_algebra(name, algebra, congruence)
+    return result
 
 def _compute_subalgebra_closure(algebra: Algebra, generators: List[int], 
                                with_progress: Optional[Callable[[float, str], None]] = None) -> List[int]:

@@ -41,6 +41,7 @@ try:
         parse_term,
         eval_term,
         rust_create_product_algebra,
+        rust_create_quotient_algebra,
     )
 except ImportError as e:
     raise ImportError(
@@ -198,6 +199,7 @@ __all__ = [
     "create_progress_reporter",
     "create_product_algebra",
     "rust_create_product_algebra",
+    "rust_create_quotient_algebra",
     
     # I/O functions
     "load_algebra",
