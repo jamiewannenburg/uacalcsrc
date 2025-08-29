@@ -515,7 +515,8 @@ def create_product_algebra(algebra1: Algebra, algebra2: Algebra, name: Optional[
     
     # Create list of factors and call Rust implementation
     factors = [algebra1, algebra2]
-    return rust_create_product_algebra(name, factors)
+    result = rust_create_product_algebra(name, factors)
+    return result
 
 def algebra_to_numpy(algebra: Algebra) -> Dict[str, 'np.ndarray']:
     """

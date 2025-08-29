@@ -1,9 +1,149 @@
 use crate::algebra::{Algebra, BasicAlgebra, SmallAlgebra};
 use crate::error::{UACalcError, UACalcResult};
-use crate::operation::{Operation, TableOperation};
+use crate::operation::{FlatOperationTable, Operation, OperationSymbol};
 use crate::partition::BasicPartition;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
+
+/// Componentwise table operation that computes results on-demand
+/// This avoids pre-computing the full table which can be enormous for large product algebras
+#[derive(Debug)]
+struct ComponentwiseTableOperation {
+    symbol: OperationSymbol,
+    factor_operations: Vec<Arc<Mutex<dyn Operation>>>,
+    factor_sizes: Vec<usize>,
+    cardinality: usize,
+}
+
+impl ComponentwiseTableOperation {
+    fn new(
+        symbol: OperationSymbol,
+        factor_operations: Vec<Arc<Mutex<dyn Operation>>>,
+        factor_sizes: Vec<usize>,
+        cardinality: usize,
+    ) -> UACalcResult<Self> {
+        Ok(Self {
+            symbol,
+            factor_operations,
+            factor_sizes,
+            cardinality,
+        })
+    }
+
+    /// Decode a product element into its coordinates
+    fn decode_element(&self, element: usize) -> Vec<usize> {
+        let mut coordinates = Vec::with_capacity(self.factor_sizes.len());
+        let mut remaining = element;
+        for &factor_size in &self.factor_sizes {
+            coordinates.push(remaining % factor_size);
+            remaining /= factor_size;
+        }
+        coordinates
+    }
+
+    /// Encode coordinates back to a product element
+    fn encode_coordinates(&self, coordinates: &[usize]) -> UACalcResult<usize> {
+        let mut result: usize = 0;
+        let mut multiplier: usize = 1;
+
+        for (i, &coord) in coordinates.iter().enumerate() {
+            if coord >= self.factor_sizes[i] {
+                return Err(UACalcError::IndexOutOfBounds {
+                    index: coord,
+                    size: self.factor_sizes[i],
+                });
+            }
+
+            // Add coordinate * multiplier to result
+            let term =
+                coord
+                    .checked_mul(multiplier)
+                    .ok_or_else(|| UACalcError::ArithmeticOverflow {
+                        operation: "encoding coordinates".to_string(),
+                    })?;
+            result = result
+                .checked_add(term)
+                .ok_or_else(|| UACalcError::ArithmeticOverflow {
+                    operation: "encoding coordinates".to_string(),
+                })?;
+
+            // Update multiplier for next coordinate
+            multiplier = multiplier
+                .checked_mul(self.factor_sizes[i])
+                .ok_or_else(|| UACalcError::ArithmeticOverflow {
+                    operation: "encoding coordinates".to_string(),
+                })?;
+        }
+        Ok(result)
+    }
+}
+
+impl Operation for ComponentwiseTableOperation {
+    fn symbol(&self) -> &OperationSymbol {
+        &self.symbol
+    }
+
+    fn arity(&self) -> usize {
+        self.symbol.arity
+    }
+
+    fn value(&self, args: &[usize]) -> UACalcResult<usize> {
+        if args.len() != self.arity() {
+            return Err(UACalcError::InvalidArity {
+                expected: self.arity(),
+                actual: args.len(),
+            });
+        }
+
+        // Decode all arguments to get their coordinates
+        let mut arg_coordinates = Vec::with_capacity(args.len());
+        for &arg in args {
+            arg_coordinates.push(self.decode_element(arg));
+        }
+
+        // Apply each factor operation to the corresponding coordinates
+        let mut result_coordinates = Vec::with_capacity(self.factor_operations.len());
+        for (i, factor_op) in self.factor_operations.iter().enumerate() {
+            let op_guard = factor_op
+                .lock()
+                .map_err(|_| UACalcError::InvalidOperation {
+                    message: format!("Failed to lock factor operation {}", i),
+                })?;
+
+            // Extract the i-th coordinate from each argument
+            let mut factor_args = Vec::with_capacity(args.len());
+            for arg_coords in &arg_coordinates {
+                if i < arg_coords.len() {
+                    factor_args.push(arg_coords[i]);
+                } else {
+                    return Err(UACalcError::InvalidOperation {
+                        message: format!("Missing coordinate {} in argument", i),
+                    });
+                }
+            }
+
+            // Apply the factor operation
+            let factor_result = op_guard.value(&factor_args)?;
+            result_coordinates.push(factor_result);
+        }
+
+        // Encode the result coordinates back to a product element
+        self.encode_coordinates(&result_coordinates)
+    }
+
+    fn get_table(&self) -> Option<&FlatOperationTable> {
+        None // No pre-computed table for componentwise operations
+    }
+
+    fn set_size(&self) -> usize {
+        self.cardinality
+    }
+
+    fn make_table(&mut self, _set_size: usize) -> UACalcResult<()> {
+        // Componentwise operations don't use pre-computed tables
+        Ok(())
+    }
+}
 
 /// Product algebra implementation that creates the direct product of multiple algebras
 pub struct ProductAlgebra {
@@ -12,7 +152,7 @@ pub struct ProductAlgebra {
     cardinality: usize,
     factor_sizes: Vec<usize>,
     universe: Vec<usize>,
-    operations: Vec<Arc<Mutex<TableOperation>>>,
+    operations: Vec<Arc<Mutex<dyn Operation>>>,
     operation_symbols: HashMap<String, usize>,
     operation_tables_built: bool,
 }
@@ -47,13 +187,18 @@ impl ProductAlgebra {
         }
 
         // Validate operation compatibility across factors
-        let first_factor = &factors[0];
-        let first_guard = first_factor
-            .lock()
-            .map_err(|_| UACalcError::InvalidOperation {
-                message: "Failed to lock first factor algebra".to_string(),
-            })?;
-        let num_operations = first_guard.operations().len();
+        // Get number of operations without holding locks to avoid deadlocks
+        let num_operations = {
+            let first_factor = &factors[0];
+            let first_guard = first_factor
+                .lock()
+                .map_err(|_| UACalcError::InvalidOperation {
+                    message: "Failed to lock first factor algebra".to_string(),
+                })?;
+            let count = first_guard.operations().len();
+            drop(first_guard); // Explicitly drop the guard
+            count
+        };
 
         // Clone factors to avoid borrow checker issues
         let factors_clone = factors.clone();
@@ -79,7 +224,19 @@ impl ProductAlgebra {
                 let op_guard = op.lock().map_err(|_| UACalcError::InvalidOperation {
                     message: format!("Failed to lock operation {} in factor {}", j, i),
                 })?;
-                let first_op_arc = first_guard.operation_arc(j)?;
+                // Get operation from first factor for compatibility check
+                let first_op_arc = {
+                    let first_factor = &factors[0];
+                    let temp_guard =
+                        first_factor
+                            .lock()
+                            .map_err(|_| UACalcError::InvalidOperation {
+                                message: "Failed to lock first factor algebra".to_string(),
+                            })?;
+                    let op_arc = temp_guard.operation_arc(j)?;
+                    drop(temp_guard);
+                    op_arc
+                };
                 let first_op_guard =
                     first_op_arc
                         .lock()
@@ -113,14 +270,61 @@ impl ProductAlgebra {
             }
         }
 
-        // For now, create empty operations to avoid the table completion issue
-        // TODO: Implement proper componentwise operations
+        // Create componentwise operations from factor operations
         let mut operations = Vec::new();
         let mut operation_symbols = HashMap::new();
 
+        if num_operations > 0 {
+            for op_idx in 0..num_operations {
+                // Get operation symbol and arity without keeping locks
+                let (symbol_name, arity) = {
+                    let first_factor = &factors[0];
+                    let first_guard =
+                        first_factor
+                            .lock()
+                            .map_err(|_| UACalcError::InvalidOperation {
+                                message: "Failed to lock first factor algebra".to_string(),
+                            })?;
+                    let first_op = first_guard.operation_arc(op_idx)?;
+                    let first_op_guard =
+                        first_op.lock().map_err(|_| UACalcError::InvalidOperation {
+                            message: format!("Failed to lock first operation {}", op_idx),
+                        })?;
+                    let name = first_op_guard.symbol().name.clone();
+                    let arity = first_op_guard.arity();
+                    drop(first_op_guard);
+                    drop(first_guard);
+                    (name, arity)
+                };
+
+                // Collect operations from all factors with the same symbol and arity
+                let mut factor_ops = Vec::new();
+                for factor in &factors {
+                    let factor_guard =
+                        factor.lock().map_err(|_| UACalcError::InvalidOperation {
+                            message: "Failed to lock factor algebra".to_string(),
+                        })?;
+                    let factor_op = factor_guard.operation_arc(op_idx)?;
+                    factor_ops.push(factor_op);
+                }
+
+                // Create a componentwise operation that computes results on-demand
+                let componentwise_op = ComponentwiseTableOperation::new(
+                    OperationSymbol::new(symbol_name.clone(), arity),
+                    factor_ops,
+                    factor_sizes.clone(),
+                    cardinality,
+                )?;
+
+                // Add to operations list
+                let op_arc: Arc<Mutex<dyn Operation>> = Arc::new(Mutex::new(componentwise_op));
+                operations.push(op_arc);
+                operation_symbols.insert(symbol_name.clone(), operations.len() - 1);
+            }
+        }
+
         // Create universe vector
         let universe: Vec<usize> = (0..cardinality).collect();
-
         Ok(Self {
             name,
             factors: factors_clone,
@@ -230,24 +434,27 @@ impl ProductAlgebra {
             }
         }
 
-        // Encode coordinates using mixed-radix encoding
+        // Encode coordinates using mixed-radix encoding (little-endian)
         let mut result: usize = 0;
-        for (i, &coord) in coordinates.iter().enumerate() {
-            if coord >= self.factor_sizes[i] {
-                return Err(UACalcError::IndexOutOfBounds {
-                    index: coord,
-                    size: self.factor_sizes[i],
-                });
-            }
+        let mut multiplier: usize = 1;
 
-            // Multiply by the size of the current factor and add the coordinate
-            result = result.checked_mul(self.factor_sizes[i]).ok_or_else(|| {
-                UACalcError::ArithmeticOverflow {
-                    operation: "encoding coordinates".to_string(),
-                }
-            })?;
+        for (i, &coord) in coordinates.iter().enumerate() {
+            // Add coordinate * multiplier to result
+            let term =
+                coord
+                    .checked_mul(multiplier)
+                    .ok_or_else(|| UACalcError::ArithmeticOverflow {
+                        operation: "encoding coordinates".to_string(),
+                    })?;
             result = result
-                .checked_add(coord)
+                .checked_add(term)
+                .ok_or_else(|| UACalcError::ArithmeticOverflow {
+                    operation: "encoding coordinates".to_string(),
+                })?;
+
+            // Update multiplier for next coordinate
+            multiplier = multiplier
+                .checked_mul(self.factor_sizes[i])
                 .ok_or_else(|| UACalcError::ArithmeticOverflow {
                     operation: "encoding coordinates".to_string(),
                 })?;
@@ -266,12 +473,7 @@ impl Algebra for ProductAlgebra {
     }
 
     fn operations(&self) -> &[Arc<Mutex<dyn Operation>>] {
-        // Cast the slice to the expected type
-        unsafe {
-            std::mem::transmute::<&[Arc<Mutex<TableOperation>>], &[Arc<Mutex<dyn Operation>>]>(
-                &self.operations,
-            )
-        }
+        &self.operations
     }
 
     fn operation(&self, _index: usize) -> UACalcResult<&dyn Operation> {

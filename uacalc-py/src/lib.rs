@@ -3,8 +3,10 @@ use pyo3::types::{PyDict, PyList};
 use pyo3::wrap_pyfunction;
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicBool, Ordering};
+
 use std::sync::Arc;
 use std::sync::Mutex;
+
 use uacalc_core::algebra::{Algebra, BasicAlgebra, SmallAlgebra};
 use uacalc_core::binary_relation::{BasicBinaryRelation, BinaryRelation};
 use uacalc_core::conlat::{BasicCongruenceLattice, CongruenceLattice as CongruenceLatticeTrait};
@@ -1280,8 +1282,9 @@ fn eval_term(term: &PyTerm, algebra: &PyAlgebra, assignment: &PyDict) -> PyResul
 fn rust_create_product_algebra(name: &str, factors: &PyList) -> PyResult<PyAlgebra> {
     // Extract Rust algebra instances from PyAlgebra wrappers
     let mut rust_factors = Vec::new();
-    for factor in factors.iter() {
+    for (_i, factor) in factors.iter().enumerate() {
         let py_algebra: PyRef<PyAlgebra> = factor.extract()?;
+
         // Convert BasicAlgebra to Arc<Mutex<dyn SmallAlgebra>>
         let small_algebra: Arc<Mutex<dyn SmallAlgebra>> =
             Arc::new(Mutex::new(py_algebra.inner.clone()));
@@ -1295,15 +1298,47 @@ fn rust_create_product_algebra(name: &str, factors: &PyList) -> PyResult<PyAlgeb
         ));
     }
 
-    // Create the product algebra
+    // Calculate total cardinality to estimate computation time
+    let mut total_cardinality: usize = 1;
+    for factor in &rust_factors {
+        let factor_guard = factor.lock().map_err(|_| {
+            PyErr::new::<pyo3::exceptions::PyValueError, _>(
+                "Failed to lock factor algebra".to_string(),
+            )
+        })?;
+        let size = factor_guard.cardinality();
+        total_cardinality = total_cardinality.checked_mul(size).ok_or_else(|| {
+            PyErr::new::<pyo3::exceptions::PyValueError, _>("Cardinality overflow".to_string())
+        })?;
+    }
+
+    // Create product algebra
     let product_algebra =
         ProductAlgebra::new(name.to_string(), rust_factors).map_err(map_uacalc_error)?;
 
     // Convert ProductAlgebra back to BasicAlgebra for PyAlgebra
-    // For now, we'll create a simple BasicAlgebra with the same cardinality
-    let basic_algebra =
+    let mut basic_algebra =
         BasicAlgebra::with_cardinality(name.to_string(), product_algebra.cardinality())
             .map_err(map_uacalc_error)?;
+
+    // Transfer operations from product algebra to basic algebra
+    for (_i, operation) in product_algebra.operations().iter().enumerate() {
+        let symbol_name = {
+            let op_guard = operation.lock().map_err(|_| {
+                PyErr::new::<pyo3::exceptions::PyValueError, _>(
+                    "Failed to lock operation".to_string(),
+                )
+            })?;
+
+            let name = op_guard.symbol().name.clone();
+            name
+        }; // op_guard is dropped here, releasing the lock
+
+        // Add the componentwise operation directly to the basic algebra
+        basic_algebra
+            .add_operation(symbol_name, Arc::clone(operation))
+            .map_err(map_uacalc_error)?;
+    }
 
     Ok(PyAlgebra {
         inner: basic_algebra,

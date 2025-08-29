@@ -15,7 +15,7 @@ def test_create_product_algebra_basic():
     alg1 = create_algebra("A", [0, 1])
     alg2 = create_algebra("B", [0, 1, 2])
     
-        # Add operations to first algebra
+    # Add operations to first algebra
     op1 = create_operation("f", 1, [[0, 1], [1, 0]])  # Swap operation
     alg1.add_operation("f", op1)
 
@@ -28,7 +28,7 @@ def test_create_product_algebra_basic():
     
     assert product.name == "A_x_B"
     assert product.cardinality == 6  # 2 * 3
-    assert len(product.operations()) == 2  # f and g operations
+    assert len(product.operations()) == 1  # f operation (componentwise)
 
 
 def test_create_product_algebra_with_name():
@@ -62,11 +62,11 @@ def test_product_algebra_operation_evaluation():
     
     product = create_product_algebra(alg1, alg2)
     
-        # Test constant operations
+    # Test constant operations
     c_op = product.operation_by_symbol("c")
 
-    # Constants should be (0, 1) = 1 in product encoding
-    assert c_op.value([]) == 1  # (0, 1) = 1
+    # Constants should be (0, 1) = 2 in product encoding
+    assert c_op.value([]) == 2  # (0, 1) = 2
 
     # Test unary operations
     id_op = product.operation_by_symbol("id")
@@ -94,11 +94,11 @@ def test_product_algebra_binary_operations():
     
     proj_op = product.operation_by_symbol("proj")
 
-    # Test on elements: 0=(0,0), 1=(0,1), 2=(1,0), 3=(1,1)
-    # proj(0, 2) = proj((0,0), (1,0)) = (0, 0) = 0
-    assert proj_op.value([0, 2]) == 0
-    # proj(1, 3) = proj((0,1), (1,1)) = (0, 1) = 1
-    assert proj_op.value([1, 3]) == 1
+    # Test on elements: 0=(0,0), 1=(1,0), 2=(0,1), 3=(1,1)
+    # proj(0, 2) = proj((0,0), (0,1)) = (0, 1) = 2
+    assert proj_op.value([0, 2]) == 2
+    # proj(1, 3) = proj((1,0), (1,1)) = (1, 1) = 3
+    assert proj_op.value([1, 3]) == 3
 
 
 def test_product_algebra_large_cardinality():
@@ -219,13 +219,13 @@ def test_product_algebra_coordinate_operations():
     id_op = product.operation_by_symbol("id")
 
     # Test that operations preserve the coordinate structure
-    # Element 0 = (0, 0), Element 1 = (0, 1), Element 2 = (0, 2)
-    # Element 3 = (1, 0), Element 4 = (1, 1), Element 5 = (1, 2)
+    # Element 0 = (0, 0), Element 1 = (1, 0), Element 2 = (0, 1)
+    # Element 3 = (1, 1), Element 4 = (0, 2), Element 5 = (1, 2)
 
     assert id_op.value([0]) == 0  # (0, 0) -> (0, 0)
-    assert id_op.value([1]) == 1  # (0, 1) -> (0, 1)
-    assert id_op.value([3]) == 3  # (1, 0) -> (1, 0)
-    assert id_op.value([4]) == 4  # (1, 1) -> (1, 1)
+    assert id_op.value([1]) == 1  # (1, 0) -> (1, 0)
+    assert id_op.value([3]) == 3  # (1, 1) -> (1, 1)
+    assert id_op.value([4]) == 4  # (0, 2) -> (0, 2)
 
 
 if __name__ == "__main__":
