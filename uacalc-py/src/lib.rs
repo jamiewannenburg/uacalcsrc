@@ -15,6 +15,7 @@ use uacalc_core::operation::{Operation, OperationSymbol, TableOperation};
 use uacalc_core::partition::{BasicPartition, Partition};
 use uacalc_core::product::ProductAlgebra;
 use uacalc_core::quotient::QuotientAlgebra;
+use uacalc_core::subalgebra::Subalgebra;
 use uacalc_core::term::evaluation::EvaluationContext;
 use uacalc_core::term::variable::VariableAssignment;
 use uacalc_core::term::{TermArena, TermId};
@@ -25,6 +26,7 @@ fn uacalc_rust(_py: Python, m: &Bound<PyModule>) -> PyResult<()> {
     m.add_class::<PyAlgebra>()?;
     m.add_class::<PyProductAlgebra>()?;
     m.add_class::<PyQuotientAlgebra>()?;
+    m.add_class::<PySubalgebra>()?;
     m.add_class::<PyOperation>()?;
     m.add_class::<PyPartition>()?;
     m.add_class::<PyBinaryRelation>()?;
@@ -46,6 +48,7 @@ fn uacalc_rust(_py: Python, m: &Bound<PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(eval_term, m)?)?;
     m.add_function(wrap_pyfunction!(rust_create_product_algebra, m)?)?;
     m.add_function(wrap_pyfunction!(rust_create_quotient_algebra, m)?)?;
+    m.add_function(wrap_pyfunction!(rust_create_subalgebra, m)?)?;
 
     // Add custom exception classes
     m.add("UACalcError", _py.get_type_bound::<PyUACalcError>())?;
@@ -678,6 +681,13 @@ pub struct PyQuotientAlgebra {
     inner: QuotientAlgebra,
 }
 
+/// Python wrapper for Subalgebra
+#[pyclass]
+#[derive(Clone)]
+pub struct PySubalgebra {
+    inner: Subalgebra,
+}
+
 #[pymethods]
 impl PyProductAlgebra {
     #[getter]
@@ -927,6 +937,163 @@ impl PyQuotientAlgebra {
         } else {
             Ok(false)
         }
+    }
+
+    fn subalgebra(&self, generators: Vec<usize>) -> PyResult<PyAlgebra> {
+        let sub = self
+            .inner
+            .subalgebra(&generators)
+            .map_err(map_uacalc_error)?;
+        Ok(PyAlgebra { inner: sub })
+    }
+}
+
+#[pymethods]
+impl PySubalgebra {
+    #[getter]
+    fn name(&self) -> String {
+        self.inner.name().to_string()
+    }
+
+    #[getter]
+    fn cardinality(&self) -> usize {
+        self.inner.cardinality()
+    }
+
+    fn operations(&self) -> Vec<PyOperation> {
+        self.inner
+            .operations()
+            .iter()
+            .map(|op| PyOperation {
+                inner: Arc::clone(op),
+            })
+            .collect()
+    }
+
+    fn operation_by_symbol(&self, symbol: &str) -> PyResult<PyOperation> {
+        let op = self
+            .inner
+            .operation_arc_by_symbol(symbol)
+            .map_err(map_uacalc_error)?;
+        Ok(PyOperation { inner: op })
+    }
+
+    /// Get the parent algebra (returns PyAlgebra for compatibility)
+    fn parent_algebra(&self) -> PyResult<PyAlgebra> {
+        let parent_alg = self.inner.parent_algebra();
+        let parent_guard = parent_alg.lock().map_err(|_| {
+            PyErr::new::<pyo3::exceptions::PyValueError, _>(
+                "Failed to lock parent algebra".to_string(),
+            )
+        })?;
+
+        // Convert to BasicAlgebra for Python compatibility
+        let basic = BasicAlgebra::with_cardinality(
+            parent_guard.name().to_string(),
+            parent_guard.cardinality(),
+        )
+        .map_err(map_uacalc_error)?;
+
+        Ok(PyAlgebra { inner: basic })
+    }
+
+    /// Get the subuniverse array (sorted parent indices)
+    fn subuniverse_array(&self) -> Vec<usize> {
+        self.inner.subuniverse_array().to_vec()
+    }
+
+    /// Map a parent element to its subalgebra index
+    fn index_in_subalgebra(&self, parent_element: usize) -> Option<usize> {
+        self.inner.index_in_subalgebra(parent_element)
+    }
+
+    /// Map a subalgebra index to its parent element
+    fn element_in_parent(&self, sub_index: usize) -> PyResult<usize> {
+        self.inner
+            .element_in_parent(sub_index)
+            .map_err(map_uacalc_error)
+    }
+
+    /// Restrict a partition to the subalgebra elements
+    fn restrict_partition(&self, partition: &PyPartition) -> PyResult<PyPartition> {
+        let restricted = self
+            .inner
+            .restrict_partition(&partition.inner)
+            .map_err(map_uacalc_error)?;
+        Ok(PyPartition { inner: restricted })
+    }
+
+    // Backward compatibility methods to match PyAlgebra interface
+
+    #[getter]
+    fn universe(&self) -> Vec<usize> {
+        self.inner.universe().to_vec()
+    }
+
+    fn is_finite(&self) -> bool {
+        true // Subalgebras are always finite
+    }
+
+    fn max_arity(&self) -> usize {
+        self.inner.max_arity()
+    }
+
+    fn operation(&self, index: usize) -> PyResult<PyOperation> {
+        let op = self.inner.operation_arc(index).map_err(map_uacalc_error)?;
+        Ok(PyOperation { inner: op })
+    }
+
+    fn is_idempotent(&self, op_index: usize) -> PyResult<bool> {
+        let op = self
+            .inner
+            .operation_arc(op_index)
+            .map_err(map_uacalc_error)?;
+        let op_guard = op.lock().map_err(|_| {
+            PyErr::new::<pyo3::exceptions::PyValueError, _>("Failed to lock operation".to_string())
+        })?;
+        op_guard
+            .is_idempotent_on_set(self.inner.cardinality())
+            .map_err(map_uacalc_error)
+    }
+
+    fn is_associative(&self, op_index: usize) -> PyResult<bool> {
+        let op = self
+            .inner
+            .operation_arc(op_index)
+            .map_err(map_uacalc_error)?;
+        let op_guard = op.lock().map_err(|_| {
+            PyErr::new::<pyo3::exceptions::PyValueError, _>("Failed to lock operation".to_string())
+        })?;
+        if op_guard.arity() == 2 {
+            op_guard
+                .is_associative_on_set(self.inner.cardinality())
+                .map_err(map_uacalc_error)
+        } else {
+            Ok(false)
+        }
+    }
+
+    fn is_commutative(&self, op_index: usize) -> PyResult<bool> {
+        let op = self
+            .inner
+            .operation_arc(op_index)
+            .map_err(map_uacalc_error)?;
+        let op_guard = op.lock().map_err(|_| {
+            PyErr::new::<pyo3::exceptions::PyValueError, _>("Failed to lock operation".to_string())
+        })?;
+        if op_guard.arity() == 2 {
+            op_guard
+                .is_commutative_on_set(self.inner.cardinality())
+                .map_err(map_uacalc_error)
+        } else {
+            Ok(false)
+        }
+    }
+
+    fn add_operation(&mut self, name: String, operation: PyOperation) -> PyResult<()> {
+        Err(PyErr::new::<pyo3::exceptions::PyNotImplementedError, _>(
+            "Cannot add operations to subalgebra".to_string(),
+        ))
     }
 
     fn subalgebra(&self, generators: Vec<usize>) -> PyResult<PyAlgebra> {
@@ -1659,4 +1826,47 @@ fn rust_create_quotient_algebra(
     Ok(PyQuotientAlgebra {
         inner: quotient_algebra,
     })
+}
+
+/// Helper function to create a subalgebra
+#[pyfunction]
+fn rust_create_subalgebra(
+    name: &str,
+    parent_algebra: &PyAlgebra,
+    generators: Vec<usize>,
+) -> PyResult<PySubalgebra> {
+    // Validate inputs are non-null and valid
+    if name.is_empty() {
+        return Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+            "Subalgebra name cannot be empty".to_string(),
+        ));
+    }
+
+    if generators.is_empty() {
+        return Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+            "Generators list cannot be empty".to_string(),
+        ));
+    }
+
+    // Extract Rust algebra instance from PyAlgebra wrapper
+    let rust_parent_algebra: Arc<Mutex<dyn SmallAlgebra>> =
+        Arc::new(Mutex::new(parent_algebra.inner.clone()));
+
+    // Validate generators are within parent bounds
+    let parent_cardinality = parent_algebra.inner.cardinality();
+    for &generator in &generators {
+        if generator >= parent_cardinality {
+            return Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(format!(
+                "Generator {} is out of bounds for algebra with cardinality {}",
+                generator, parent_cardinality
+            )));
+        }
+    }
+
+    // Create subalgebra
+    let subalgebra = Subalgebra::new(name.to_string(), rust_parent_algebra, &generators)
+        .map_err(map_uacalc_error)?;
+
+    // Return PySubalgebra directly, preserving Subalgebra-specific methods
+    Ok(PySubalgebra { inner: subalgebra })
 }

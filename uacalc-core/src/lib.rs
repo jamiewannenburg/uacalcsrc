@@ -12,6 +12,7 @@ pub mod operation;
 pub mod partition;
 pub mod product;
 pub mod quotient;
+pub mod subalgebra;
 #[cfg(feature = "taylor")]
 pub mod taylor;
 #[cfg(feature = "term-eval")]
@@ -31,6 +32,7 @@ pub use operation::{
 pub use partition::{coarsest_partition, finest_partition, BasicPartition, Partition};
 pub use product::ProductAlgebra;
 pub use quotient::QuotientAlgebra;
+pub use subalgebra::Subalgebra;
 pub use utils::{
     binomial_coefficient, estimate_table_memory, factorial, horner_decode, horner_encode,
     horner_table_size, power_checked, validate_operation_args, validate_partition_elements,
@@ -56,8 +58,8 @@ pub mod prelude {
         coarsest_partition, empty_relation, equivalence_from_partition, finest_partition,
         identity_relation, universal_relation, Algebra, BasicAlgebra, BasicBinaryRelation,
         BasicPartition, BinaryRelation, FlatOperationTable, FunctionOperation, Operation,
-        OperationSymbol, OperationType, Partition, QuotientAlgebra, SmallAlgebra, TableOperation,
-        UACalcError, UACalcResult,
+        OperationSymbol, OperationType, Partition, QuotientAlgebra, SmallAlgebra, Subalgebra,
+        TableOperation, UACalcError, UACalcResult,
     };
 
     // Utility functions
