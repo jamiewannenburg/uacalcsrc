@@ -21,7 +21,7 @@ use uacalc_core::term::{TermArena, TermId};
 
 /// Python module for UACalc
 #[pymodule]
-fn uacalc_rust(_py: Python, m: &PyModule) -> PyResult<()> {
+fn uacalc_rust(_py: Python, m: &Bound<PyModule>) -> PyResult<()> {
     m.add_class::<PyAlgebra>()?;
     m.add_class::<PyProductAlgebra>()?;
     m.add_class::<PyQuotientAlgebra>()?;
@@ -48,11 +48,14 @@ fn uacalc_rust(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(rust_create_quotient_algebra, m)?)?;
 
     // Add custom exception classes
-    m.add("UACalcError", _py.get_type::<PyUACalcError>())?;
-    m.add("CancellationError", _py.get_type::<PyCancellationError>())?;
+    m.add("UACalcError", _py.get_type_bound::<PyUACalcError>())?;
+    m.add(
+        "CancellationError",
+        _py.get_type_bound::<PyCancellationError>(),
+    )?;
     m.add(
         "OperationNotFoundError",
-        _py.get_type::<PyOperationNotFoundError>(),
+        _py.get_type_bound::<PyOperationNotFoundError>(),
     )?;
 
     Ok(())
@@ -1506,7 +1509,7 @@ fn create_binary_relation(size: usize) -> PyResult<PyBinaryRelation> {
 
 /// Helper function to create a congruence lattice
 #[pyfunction]
-fn create_congruence_lattice(algebra: &PyAny) -> PyResult<PyCongruenceLattice> {
+fn create_congruence_lattice(algebra: &Bound<PyAny>) -> PyResult<PyCongruenceLattice> {
     // Try to extract as PyAlgebra first, then PyQuotientAlgebra
     if let Ok(py_algebra) = algebra.extract::<PyAlgebra>() {
         Ok(PyCongruenceLattice::new(py_algebra))
@@ -1547,7 +1550,7 @@ fn parse_term(arena: &PyTermArena, expr: String) -> PyResult<PyTerm> {
 
 /// Helper function to evaluate a term
 #[pyfunction]
-fn eval_term(term: &PyTerm, algebra: &PyAlgebra, assignment: &PyDict) -> PyResult<usize> {
+fn eval_term(term: &PyTerm, algebra: &PyAlgebra, assignment: &Bound<PyDict>) -> PyResult<usize> {
     let mut assignment_map = HashMap::new();
     for (key, value) in assignment.iter() {
         if let Ok(key_u8) = key.extract::<u8>() {
@@ -1573,7 +1576,7 @@ fn eval_term(term: &PyTerm, algebra: &PyAlgebra, assignment: &PyDict) -> PyResul
 
 /// Helper function to create a product algebra
 #[pyfunction]
-fn rust_create_product_algebra(name: &str, factors: &PyList) -> PyResult<PyProductAlgebra> {
+fn rust_create_product_algebra(name: &str, factors: &Bound<PyList>) -> PyResult<PyProductAlgebra> {
     // Extract Rust algebra instances from PyAlgebra wrappers
     let mut rust_factors = Vec::new();
     for (_i, factor) in factors.iter().enumerate() {
