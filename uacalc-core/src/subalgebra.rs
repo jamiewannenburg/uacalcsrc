@@ -42,13 +42,32 @@ impl Operation for SubalgebraOperation {
     }
 
     fn arity(&self) -> usize {
-        self.symbol.arity
+        let op_guard = self
+            .parent_operation
+            .lock()
+            .map_err(|_| UACalcError::InvalidOperation {
+                message: "Failed to lock parent operation".to_string(),
+            })
+            .unwrap();
+        op_guard.arity()
+    }
+
+    fn operation_type(&self) -> crate::operation::OperationType {
+        let op_guard = self
+            .parent_operation
+            .lock()
+            .map_err(|_| UACalcError::InvalidOperation {
+                message: "Failed to lock parent operation".to_string(),
+            })
+            .unwrap();
+        op_guard.operation_type()
     }
 
     fn value(&self, args: &[usize]) -> UACalcResult<usize> {
-        if args.len() != self.arity() {
+        let arity = self.arity();
+        if args.len() != arity {
             return Err(UACalcError::InvalidArity {
-                expected: self.arity(),
+                expected: arity,
                 actual: args.len(),
             });
         }
@@ -120,9 +139,29 @@ pub struct Subalgebra {
     operations: Vec<Arc<Mutex<dyn Operation>>>,
     operation_symbols: HashMap<String, usize>,
     operation_tables_built: bool,
+    generators: Vec<usize>, // Parent indices of generators
 }
 
 impl Subalgebra {
+    /// Get the parent indices of the generators
+    pub fn generators_in_parent(&self) -> &[usize] {
+        &self.generators
+    }
+
+    /// Get the subalgebra indices of the generators
+    pub fn generators(&self) -> UACalcResult<Vec<usize>> {
+        self.generators
+            .iter()
+            .map(|&parent_idx| {
+                self.parent_to_sub.get(&parent_idx).copied().ok_or_else(|| {
+                    UACalcError::InvalidOperation {
+                        message: format!("Generator {} not found in subalgebra", parent_idx),
+                    }
+                })
+            })
+            .collect()
+    }
+
     /// Create a new subalgebra from a parent algebra and generators
     ///
     /// # Arguments
@@ -146,73 +185,126 @@ impl Subalgebra {
             });
         }
 
-        // Extract parent information in one lock to avoid double locking
-        let (_parent_cardinality, parent_operations, subuniverse_elements) = {
+        // Get parent cardinality and validate generators in a minimal lock scope
+        let parent_cardinality = {
             let parent_guard =
                 parent_algebra
                     .lock()
                     .map_err(|_| UACalcError::InvalidOperation {
                         message: "Failed to lock parent algebra".to_string(),
                     })?;
+            parent_guard.cardinality()
+        };
 
-            let cardinality = parent_guard.cardinality();
-
-            // Validate generators are within parent bounds
-            for &generator in generators {
-                if generator >= cardinality {
-                    return Err(UACalcError::IndexOutOfBounds {
-                        index: generator,
-                        size: cardinality,
-                    });
-                }
+        // Validate generators are within parent bounds
+        for &generator in generators {
+            if generator >= parent_cardinality {
+                return Err(UACalcError::IndexOutOfBounds {
+                    index: generator,
+                    size: parent_cardinality,
+                });
             }
+        }
 
-            // Extract operation references for later use
-            let operations: Vec<Arc<Mutex<dyn Operation>>> =
-                parent_guard.operations().iter().cloned().collect();
+        // Extract operation references in a separate lock scope
+        let parent_operations = {
+            let parent_guard =
+                parent_algebra
+                    .lock()
+                    .map_err(|_| UACalcError::InvalidOperation {
+                        message: "Failed to lock parent algebra".to_string(),
+                    })?;
+            parent_guard
+                .operations()
+                .iter()
+                .cloned()
+                .collect::<Vec<_>>()
+        };
 
-            // Compute closure manually to avoid double locking
-            let mut universe = generators.to_vec();
-            universe.sort();
-            universe.dedup();
+        // Pre-compute operation arities to avoid repeated locking
+        let op_arities: Vec<_> = parent_operations
+            .iter()
+            .map(|op| {
+                let op_guard = op.lock().map_err(|_| UACalcError::InvalidOperation {
+                    message: "Failed to lock operation".to_string(),
+                })?;
+                Ok(op_guard.arity())
+            })
+            .collect::<UACalcResult<_>>()?;
 
-            let mut changed = true;
-            while changed {
-                changed = false;
-                let current_universe = universe.clone();
+        // Compute closure using HashSet and work queue for better performance
+        let mut universe = std::collections::HashSet::new();
+        let mut work_queue = std::collections::VecDeque::new();
 
-                // Apply all operations to all combinations of elements
-                for operation in &operations {
-                    let op_guard = operation.lock().unwrap();
-                    let arity = op_guard.arity();
+        // Initialize with generators
+        for &gen in generators {
+            universe.insert(gen);
+            work_queue.push_back(gen);
+        }
 
-                    if arity == 0 {
-                        // Constant operation - add result to universe
-                        let result = op_guard.value(&[])?;
-                        if !universe.contains(&result) {
-                            universe.push(result);
-                            changed = true;
-                        }
-                    } else {
-                        // Generate all combinations of arity elements from current universe
-                        let combinations = generate_combinations(&current_universe, arity);
+        // Process work queue
+        while let Some(element) = work_queue.pop_front() {
+            // Apply each operation to combinations including the new element
+            for (op_idx, operation) in parent_operations.iter().enumerate() {
+                let arity = op_arities[op_idx];
 
-                        for args in combinations {
-                            let result = op_guard.value(&args)?;
-                            if !universe.contains(&result) {
-                                universe.push(result);
-                                changed = true;
+                if arity == 0 {
+                    // Constant operation - evaluate once
+                    let result = {
+                        let op_guard =
+                            operation
+                                .lock()
+                                .map_err(|_| UACalcError::InvalidOperation {
+                                    message: "Failed to lock operation".to_string(),
+                                })?;
+                        op_guard.value(&[])?
+                    };
+                    if universe.insert(result) {
+                        work_queue.push_back(result);
+                    }
+                } else {
+                    // For each position in the operation's arguments
+                    for pos in 0..arity {
+                        // Create argument combinations with the new element at pos
+                        let mut args = vec![0; arity];
+                        args[pos] = element;
+
+                        // Fill other positions with existing elements
+                        let mut stack = vec![(1, pos + 1)]; // (depth, next_pos)
+                        while let Some((depth, next_pos)) = stack.pop() {
+                            if depth == arity {
+                                // We have a complete argument list - evaluate
+                                let result = {
+                                    let op_guard = operation.lock().map_err(|_| {
+                                        UACalcError::InvalidOperation {
+                                            message: "Failed to lock operation".to_string(),
+                                        }
+                                    })?;
+                                    op_guard.value(&args)?
+                                };
+                                if universe.insert(result) {
+                                    work_queue.push_back(result);
+                                }
+                            } else {
+                                // Need to fill more positions
+                                for &existing in &universe {
+                                    let pos = if next_pos >= arity { 0 } else { next_pos };
+                                    if pos != pos {
+                                        // Skip the fixed position
+                                        args[pos] = existing;
+                                        stack.push((depth + 1, next_pos + 1));
+                                    }
+                                }
                             }
                         }
                     }
-                    drop(op_guard); // Explicitly drop to avoid holding locks too long
                 }
             }
+        }
 
-            universe.sort();
-            universe.dedup();
-            (cardinality, operations, universe)
-        };
+        // Convert HashSet to sorted Vec
+        let mut subuniverse_elements: Vec<_> = universe.into_iter().collect();
+        subuniverse_elements.sort();
 
         let cardinality = subuniverse_elements.len();
 
@@ -262,6 +354,11 @@ impl Subalgebra {
                 .push(Arc::new(Mutex::new(subalgebra_operation)) as Arc<Mutex<dyn Operation>>);
         }
 
+        // Store sorted copy of generators
+        let mut sorted_generators = generators.to_vec();
+        sorted_generators.sort();
+        sorted_generators.dedup();
+
         Ok(Self {
             name,
             parent_algebra,
@@ -272,6 +369,7 @@ impl Subalgebra {
             operations,
             operation_symbols,
             operation_tables_built: false,
+            generators: sorted_generators,
         })
     }
 
@@ -323,7 +421,7 @@ impl Subalgebra {
             });
         }
 
-        let restricted_partition = BasicPartition::new(self.cardinality);
+        let mut restricted_partition = BasicPartition::new(self.cardinality);
 
         // For each pair of subalgebra elements, check if they're in the same block
         // in the original partition, and if so, union them in the restricted partition
@@ -333,7 +431,7 @@ impl Subalgebra {
                 let parent_j = self.univ_array[j];
 
                 if partition.same_block(parent_i, parent_j)? {
-                    restricted_partition.union_elements(i, j)?;
+                    restricted_partition.union(i, j)?;
                 }
             }
         }
@@ -433,10 +531,6 @@ impl SmallAlgebra for Subalgebra {
     }
 
     fn subalgebra(&self, generators: &[usize]) -> UACalcResult<BasicAlgebra> {
-        // Simplified implementation to avoid deadlock issues with nested SubalgebraOperations
-        // This avoids the complexity of creating subalgebras of subalgebras which can lead
-        // to complex lock chains and potential deadlocks
-
         // First validate generators
         for &generator in generators {
             if generator >= self.cardinality {
@@ -447,10 +541,31 @@ impl SmallAlgebra for Subalgebra {
             }
         }
 
-        // For now, return a simplified subalgebra with just the generators
-        // This avoids the deadlock issues while still providing basic functionality
-        let sub_cardinality = generators.len().max(1);
-        BasicAlgebra::with_cardinality(format!("{}_sub", self.name), sub_cardinality)
+        // Map subalgebra generators to parent algebra elements
+        let parent_generators: Vec<usize> = generators
+            .iter()
+            .map(|&g| self.element_in_parent(g))
+            .collect::<UACalcResult<Vec<usize>>>()?;
+
+        // Create a new Subalgebra using the parent algebra
+        let name = format!("{}_sub", self.name);
+        let parent_algebra = self.parent_algebra.clone();
+        let subalgebra = Subalgebra::new(name.clone(), parent_algebra, &parent_generators)?;
+
+        // Convert the Subalgebra to a BasicAlgebra
+        let mut basic = BasicAlgebra::with_cardinality(name, subalgebra.cardinality())?;
+
+        // Add operations from the subalgebra
+        for op in subalgebra.operations().iter() {
+            let op_guard = op.lock().map_err(|_| UACalcError::InvalidOperation {
+                message: "Failed to lock operation".to_string(),
+            })?;
+            let symbol = op_guard.symbol().name.clone();
+            drop(op_guard); // Release lock before adding operation
+            basic.add_operation(symbol, op.clone())?;
+        }
+
+        Ok(basic)
     }
 }
 
@@ -461,6 +576,7 @@ impl std::fmt::Debug for Subalgebra {
             .field("cardinality", &self.cardinality)
             .field("univ_array", &self.univ_array)
             .field("universe", &self.universe)
+            .field("generators", &self.generators)
             .field(
                 "operations",
                 &format!("{} operations", self.operations.len()),
@@ -471,91 +587,11 @@ impl std::fmt::Debug for Subalgebra {
     }
 }
 
-/// Helper function to generate all combinations of elements for a given arity
-fn generate_combinations(elements: &[usize], arity: usize) -> Vec<Vec<usize>> {
-    if arity == 0 {
-        return vec![vec![]];
-    }
-
-    let mut combinations = Vec::new();
-    let mut args = vec![0; arity];
-    let mut indices = vec![0; arity];
-
-    loop {
-        // Set arguments for current combination
-        let mut valid_combination = true;
-        for (i, &idx) in indices.iter().enumerate() {
-            if idx >= elements.len() {
-                valid_combination = false;
-                break;
-            }
-            args[i] = elements[idx];
-        }
-
-        if !valid_combination {
-            // Try to increment indices
-            let mut i = arity - 1;
-            loop {
-                indices[i] += 1;
-                if indices[i] < elements.len() {
-                    break;
-                }
-                if i == 0 {
-                    return combinations; // We're done
-                }
-                indices[i] = 0;
-                i -= 1;
-            }
-            continue;
-        }
-
-        combinations.push(args.clone());
-
-        // Move to next combination
-        indices[arity - 1] += 1;
-        if indices[arity - 1] >= elements.len() {
-            // Try to increment indices
-            let mut i = arity - 1;
-            loop {
-                indices[i] += 1;
-                if indices[i] < elements.len() {
-                    break;
-                }
-                if i == 0 {
-                    return combinations; // We're done
-                }
-                indices[i] = 0;
-                i -= 1;
-            }
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::algebra::BasicAlgebra;
     use crate::operation::TableOperation;
-
-    #[test]
-    fn test_generate_combinations() {
-        let elements = vec![0, 1, 2];
-
-        // Test unary
-        let unary_combos = generate_combinations(&elements, 1);
-        assert_eq!(unary_combos, vec![vec![0], vec![1], vec![2]]);
-
-        // Test binary
-        let binary_combos = generate_combinations(&elements, 2);
-        assert_eq!(binary_combos.len(), 9);
-        assert!(binary_combos.contains(&vec![0, 0]));
-        assert!(binary_combos.contains(&vec![1, 2]));
-        assert!(binary_combos.contains(&vec![2, 2]));
-
-        // Test arity 0
-        let nullary_combos = generate_combinations(&elements, 0);
-        assert_eq!(nullary_combos, vec![vec![] as Vec<usize>]);
-    }
 
     #[test]
     fn test_subalgebra_creation() -> Result<(), Box<dyn std::error::Error>> {

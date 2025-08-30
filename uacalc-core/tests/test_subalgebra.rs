@@ -393,14 +393,20 @@ fn test_subalgebra_algebra_trait_methods() -> UACalcResult<()> {
     assert!(subalgebra.is_finite());
 
     // Test operation access
-    let op = subalgebra.operation_arc(0)?;
-    let op_guard = op.lock().unwrap();
-    assert_eq!(op_guard.arity(), 1);
+    {
+        let op = subalgebra.operation_arc(0)?;
+        let op_guard = op.lock().unwrap();
+        assert_eq!(op_guard.arity(), 1);
+        // Lock is dropped here at end of scope
+    }
 
     // Test operation by symbol
-    let op_by_symbol = subalgebra.operation_arc_by_symbol("id")?;
-    let op_by_symbol_guard = op_by_symbol.lock().unwrap();
-    assert_eq!(op_by_symbol_guard.arity(), 1);
+    {
+        let op_by_symbol = subalgebra.operation_arc_by_symbol("id")?;
+        let op_by_symbol_guard = op_by_symbol.lock().unwrap();
+        assert_eq!(op_by_symbol_guard.arity(), 1);
+        // Lock is dropped here at end of scope
+    }
 
     Ok(())
 }

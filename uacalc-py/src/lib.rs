@@ -1013,6 +1013,16 @@ impl PySubalgebra {
             .map_err(map_uacalc_error)
     }
 
+    /// Get the parent indices of the generators
+    fn generators_in_parent(&self) -> Vec<usize> {
+        self.inner.generators_in_parent().to_vec()
+    }
+
+    /// Get the subalgebra indices of the generators
+    fn generators(&self) -> PyResult<Vec<usize>> {
+        self.inner.generators().map_err(map_uacalc_error)
+    }
+
     /// Restrict a partition to the subalgebra elements
     fn restrict_partition(&self, partition: &PyPartition) -> PyResult<PyPartition> {
         let restricted = self
@@ -1089,18 +1099,18 @@ impl PySubalgebra {
         }
     }
 
+    #[allow(unused_variables)]
     fn add_operation(&mut self, name: String, operation: PyOperation) -> PyResult<()> {
         Err(PyErr::new::<pyo3::exceptions::PyNotImplementedError, _>(
             "Cannot add operations to subalgebra".to_string(),
         ))
     }
 
-    fn subalgebra(&self, generators: Vec<usize>) -> PyResult<PyAlgebra> {
-        let sub = self
-            .inner
-            .subalgebra(&generators)
-            .map_err(map_uacalc_error)?;
-        Ok(PyAlgebra { inner: sub })
+    fn subalgebra(&self, generators: Vec<usize>) -> PyResult<PySubalgebra> {
+        let name = format!("{}_sub", self.inner.name());
+        let parent: Arc<Mutex<dyn SmallAlgebra>> = Arc::new(Mutex::new(self.inner.clone()));
+        let inner = Subalgebra::new(name, parent, &generators).map_err(map_uacalc_error)?;
+        Ok(PySubalgebra { inner })
     }
 }
 
@@ -1207,12 +1217,12 @@ impl PyAlgebra {
         }
     }
 
-    fn subalgebra(&self, generators: Vec<usize>) -> PyResult<PyAlgebra> {
-        let sub = self
-            .inner
-            .subalgebra(&generators)
+    fn subalgebra(&self, generators: Vec<usize>) -> PyResult<PySubalgebra> {
+        let name = format!("{}_sub", self.inner.name());
+        let parent: Arc<Mutex<dyn SmallAlgebra>> = Arc::new(Mutex::new(self.inner.clone()));
+        let inner = Subalgebra::new(name, parent, &generators)
             .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
-        Ok(PyAlgebra { inner: sub })
+        Ok(PySubalgebra { inner })
     }
 }
 
