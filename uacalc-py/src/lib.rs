@@ -939,12 +939,11 @@ impl PyQuotientAlgebra {
         }
     }
 
-    fn subalgebra(&self, generators: Vec<usize>) -> PyResult<PyAlgebra> {
-        let sub = self
-            .inner
-            .subalgebra(&generators)
-            .map_err(map_uacalc_error)?;
-        Ok(PyAlgebra { inner: sub })
+    fn subalgebra(&self, generators: Vec<usize>) -> PyResult<PySubalgebra> {
+        let name = format!("{}_sub", self.inner.name());
+        let parent: Arc<Mutex<dyn SmallAlgebra>> = Arc::new(Mutex::new(self.inner.clone()));
+        let inner = Subalgebra::new(name, parent, &generators).map_err(map_uacalc_error)?;
+        Ok(PySubalgebra { inner })
     }
 }
 

@@ -850,6 +850,11 @@ def create_subalgebra(algebra: Algebra, generators: List[int],
     Returns:
         Subalgebra with parent algebra links and efficient operations
     """
+    if hasattr(algebra, 'subalgebra'):
+        try:
+            return algebra.subalgebra(generators)
+        except Exception as e:
+            warnings.warn(f"Native subalgebra method failed: {e}. Falling back to general implementation.")
     if not generators:
         raise ValueError("Generators list cannot be empty")
     
