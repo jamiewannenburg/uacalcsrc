@@ -40,8 +40,19 @@ source .venv/bin/activate
 # Install Python dependencies
 echo "Installing Python dependencies..."
 pip install --upgrade pip
+
+# Install from uacalc-py directory
+echo "Installing Python package from uacalc-py..."
+cd uacalc-py
 pip install -e .
 pip install -e ".[dev]"
+cd ..
+
+# Install the pure Python package
+echo "Installing pure Python package..."
+cd python
+pip install -e .
+cd ..
 
 # Check Rust
 echo "Checking Rust installation..."
@@ -57,13 +68,15 @@ echo "Found: $rust_version"
 # Install maturin if not present
 if ! command -v maturin &> /dev/null; then
     echo "Installing maturin..."
-    cargo install maturin
+    pip install maturin
 fi
 
 echo "Setup complete!"
 echo ""
 echo "Next steps:"
 echo "1. Activate virtual environment: source .venv/bin/activate"
-echo "2. Build Rust extension: maturin develop"
+echo "2. Build Rust extension: cd uacalc-py && maturin develop"
 echo "3. Run tests: python -m pytest tests/python/"
+echo ""
+echo "Note: Always run maturin commands from the uacalc-py directory!"
 

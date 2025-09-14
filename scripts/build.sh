@@ -28,9 +28,13 @@ fi
 
 # Check if maturin is available
 if ! command -v maturin &> /dev/null; then
-    echo "maturin not found. Installing..."
-    cargo install maturin
+    echo "maturin not found. Installing via pip..."
+    pip install maturin
 fi
+
+# Change to uacalc-py directory where the Python package is located
+echo "Changing to uacalc-py directory..."
+cd uacalc-py
 
 # Build the Rust extension
 echo "Building Rust extension..."
@@ -42,7 +46,18 @@ fi
 
 # Install the extension in development mode
 echo "Installing extension in development mode..."
+# Temporarily unset CONDA_PREFIX to avoid conflicts with virtual environment
+unset CONDA_PREFIX
 maturin develop
+
+# Return to root directory
+cd ..
+
+# Install the pure Python package
+echo "Installing pure Python package..."
+cd python
+pip install -e .
+cd ..
 
 # Run tests
 echo "Running tests..."

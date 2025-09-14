@@ -93,20 +93,27 @@ print(f"Speedup: {680 / rust_time:.1f}x")
 
 ## 🔧 Installation Options
 
-### Rust Core (for maximum performance)
+### Development Setup (Recommended for Contributors)
 
 ```bash
-# Install Rust
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+# Clone the repository
+git clone https://github.com/UACalc/uacalcsrc.git
+cd uacalcsrc
 
-# Build with optimizations
-cargo build --release --features "parallel,simd"
+# Run the setup script (Linux/macOS)
+./scripts/setup.sh
 
-# Run benchmarks
-cargo bench
+# Or on Windows
+.\scripts\setup.ps1
+
+# Build all components (Java, Rust, Python)
+./scripts/build_all.sh
+
+# Verify everything works
+python scripts/test_setup.py
 ```
 
-### Python Package (recommended)
+### Python Package (End Users)
 
 ```bash
 # Install with all features
@@ -115,6 +122,13 @@ pip install uacalc[all]
 # Or install specific features
 pip install uacalc[parallel,simd]
 ```
+
+### Prerequisites
+
+- **Python 3.8+** - Required for Python bindings
+- **Rust 1.89+** - Required for core library compilation
+- **Java 8+** - Required for Java compatibility layer
+- **Apache Ant** - Required for Java builds
 
 ## 🏗️ Architecture
 
@@ -150,7 +164,7 @@ export JAVA_HOME=/path/to/java
 export CLASSPATH="jars/uacalc.jar:scripts"
 
 # Compile Java wrapper
-javac -cp $CLASSPATH -d scripts scripts/java_wrapper.java
+javac -cp $CLASSPATH -d scripts scripts/JavaWrapper.java
 
 # Run compatibility tests
 python scripts/java_comparison.py
@@ -179,13 +193,77 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 git clone https://github.com/UACalc/uacalcsrc.git
 cd uacalcsrc
 
-# Install development dependencies
-pip install -e ".[dev]"
-cargo install cargo-watch
+# Run automated setup
+./scripts/setup.sh
 
-# Run tests in watch mode
-cargo watch -x test
-python -m pytest tests/python/ --watch
+# Build all components
+./scripts/build.sh
+
+# Run tests
+python -m pytest tests/python/ -v
+cargo test
+ant dist  # Build Java components
+```
+
+#### Manual Setup (if scripts fail)
+
+```bash
+# 1. Install system dependencies
+# Ubuntu/Debian:
+sudo apt update
+sudo apt install python3 python3-venv rust-all openjdk-11-jdk ant
+
+# 2. Create Python virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
+
+# 3. Install Python packages
+cd uacalc-py && pip install -e ".[dev]" && cd ..
+cd python && pip install -e . && cd ..
+
+# 4. Install maturin and build Rust extension
+pip install maturin
+cd uacalc-py && maturin develop && cd ..
+
+# 5. Build Java components
+ant dist
+```
+
+## �  Troubleshooting
+
+### Common Setup Issues
+
+**Virtual Environment Conflicts**
+```bash
+# If you have conda installed, it may conflict with venv
+unset CONDA_PREFIX
+source .venv/bin/activate
+```
+
+**Maturin Installation Issues**
+```bash
+# Use pip instead of cargo to avoid cargo-xwin issues on Linux
+pip install maturin
+```
+
+**Missing System Dependencies**
+```bash
+# Ubuntu/Debian
+sudo apt update
+sudo apt install python3-dev rust-all openjdk-11-jdk ant
+
+# macOS
+brew install rust openjdk ant
+```
+
+**Java Compilation Warnings**
+The Java code may show deprecation warnings when compiled with newer JDK versions. These are harmless and don't affect functionality.
+
+### Verification
+
+Run the comprehensive test to verify your setup:
+```bash
+python scripts/test_setup.py
 ```
 
 ## 📈 Migration from Java UACalc
