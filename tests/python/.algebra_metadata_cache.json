@@ -1,0 +1,289 @@
+{
+  "resources\\algebras\\ba2.ua": {
+    "file_path": "resources\\algebras\\ba2.ua",
+    "name": "ba2",
+    "cardinality": 2,
+    "operation_count": 5,
+    "operation_symbols": [
+      "meet",
+      "join",
+      "comp",
+      "zero",
+      "one"
+    ],
+    "operation_arities": [
+      2,
+      2,
+      1,
+      0,
+      0
+    ],
+    "complexity": "trivial",
+    "file_size_bytes": 1511,
+    "load_time_ms": 4.194021224975586
+  },
+  "resources\\algebras\\baker2.ua": {
+    "file_path": "resources\\algebras\\baker2.ua",
+    "name": "Baker2",
+    "cardinality": 2,
+    "operation_count": 1,
+    "operation_symbols": [
+      "bak"
+    ],
+    "operation_arities": [
+      3
+    ],
+    "complexity": "trivial",
+    "file_size_bytes": 654,
+    "load_time_ms": 1.012563705444336
+  },
+  "resources\\algebras\\baker2withtop.ua": {
+    "file_path": "resources\\algebras\\baker2withtop.ua",
+    "name": "baker2withtop",
+    "cardinality": 2,
+    "operation_count": 2,
+    "operation_symbols": [
+      "bak",
+      "c"
+    ],
+    "operation_arities": [
+      3,
+      0
+    ],
+    "complexity": "trivial",
+    "file_size_bytes": 906,
+    "load_time_ms": 1.0042190551757812
+  },
+  "resources\\algebras\\cyclic2.ua": {
+    "file_path": "resources\\algebras\\cyclic2.ua",
+    "name": "C2",
+    "cardinality": 2,
+    "operation_count": 1,
+    "operation_symbols": [
+      "+"
+    ],
+    "operation_arities": [
+      2
+    ],
+    "complexity": "trivial",
+    "file_size_bytes": 502,
+    "load_time_ms": 0.9908676147460938
+  },
+  "resources\\algebras\\cyclic3.ua": {
+    "file_path": "resources\\algebras\\cyclic3.ua",
+    "name": "C3",
+    "cardinality": 3,
+    "operation_count": 1,
+    "operation_symbols": [
+      "+"
+    ],
+    "operation_arities": [
+      2
+    ],
+    "complexity": "small",
+    "file_size_bytes": 543,
+    "load_time_ms": 0.0
+  },
+  "resources\\algebras\\d16.ua": {
+    "file_path": "resources\\algebras\\d16.ua",
+    "name": "UnaryTerms(D16)",
+    "cardinality": 16,
+    "operation_count": 1,
+    "operation_symbols": [
+      "prod"
+    ],
+    "operation_arities": [
+      2
+    ],
+    "complexity": "large",
+    "file_size_bytes": 2104,
+    "load_time_ms": 10.352611541748047
+  },
+  "resources\\algebras\\diffi.ua": {
+    "file_path": "resources\\algebras\\diffi.ua",
+    "name": "diffi",
+    "cardinality": 6,
+    "operation_count": 1,
+    "operation_symbols": [
+      "Q"
+    ],
+    "operation_arities": [
+      2
+    ],
+    "complexity": "medium",
+    "file_size_bytes": 754,
+    "load_time_ms": 0.8916854858398438
+  },
+  "resources\\algebras\\hajilarov.ua": {
+    "file_path": "resources\\algebras\\hajilarov.ua",
+    "name": "hajilarov",
+    "cardinality": 6,
+    "operation_count": 1,
+    "operation_symbols": [
+      "Q"
+    ],
+    "operation_arities": [
+      2
+    ],
+    "complexity": "medium",
+    "file_size_bytes": 660,
+    "load_time_ms": 0.7796287536621094
+  },
+  "resources\\algebras\\lat2-01.ua": {
+    "file_path": "resources\\algebras\\lat2-01.ua",
+    "name": "lat2-01",
+    "cardinality": 2,
+    "operation_count": 4,
+    "operation_symbols": [
+      "join",
+      "meet",
+      "zero",
+      "one"
+    ],
+    "operation_arities": [
+      2,
+      2,
+      0,
+      0
+    ],
+    "complexity": "trivial",
+    "file_size_bytes": 1289,
+    "load_time_ms": 0.6585121154785156
+  },
+  "resources\\algebras\\lat2.ua": {
+    "file_path": "resources\\algebras\\lat2.ua",
+    "name": "lat2",
+    "cardinality": 2,
+    "operation_count": 2,
+    "operation_symbols": [
+      "join",
+      "meet"
+    ],
+    "operation_arities": [
+      2,
+      2
+    ],
+    "complexity": "trivial",
+    "file_size_bytes": 790,
+    "load_time_ms": 0.6730556488037109
+  },
+  "resources\\algebras\\lyndon.ua": {
+    "file_path": "resources\\algebras\\lyndon.ua",
+    "name": "lyndon",
+    "cardinality": 7,
+    "operation_count": 1,
+    "operation_symbols": [
+      "b"
+    ],
+    "operation_arities": [
+      2
+    ],
+    "complexity": "medium",
+    "file_size_bytes": 780,
+    "load_time_ms": 0.6558895111083984
+  },
+  "resources\\algebras\\m3.ua": {
+    "file_path": "resources\\algebras\\m3.ua",
+    "name": "m3",
+    "cardinality": 5,
+    "operation_count": 2,
+    "operation_symbols": [
+      "meet",
+      "join"
+    ],
+    "operation_arities": [
+      2,
+      2
+    ],
+    "complexity": "small",
+    "file_size_bytes": 1053,
+    "load_time_ms": 1.0025501251220703
+  },
+  "resources\\algebras\\m4.ua": {
+    "file_path": "resources\\algebras\\m4.ua",
+    "name": "m4",
+    "cardinality": 6,
+    "operation_count": 2,
+    "operation_symbols": [
+      "join",
+      "meet"
+    ],
+    "operation_arities": [
+      2,
+      2
+    ],
+    "complexity": "medium",
+    "file_size_bytes": 1185,
+    "load_time_ms": 0.9944438934326172
+  },
+  "resources\\algebras\\n5.ua": {
+    "file_path": "resources\\algebras\\n5.ua",
+    "name": "n5",
+    "cardinality": 5,
+    "operation_count": 2,
+    "operation_symbols": [
+      "join",
+      "meet"
+    ],
+    "operation_arities": [
+      2,
+      2
+    ],
+    "complexity": "small",
+    "file_size_bytes": 1054,
+    "load_time_ms": 1.0323524475097656
+  },
+  "resources\\algebras\\polin.ua": {
+    "file_path": "resources\\algebras\\polin.ua",
+    "name": "polin",
+    "cardinality": 4,
+    "operation_count": 5,
+    "operation_symbols": [
+      "b",
+      "u",
+      "v",
+      "c_0",
+      "c_1"
+    ],
+    "operation_arities": [
+      2,
+      1,
+      1,
+      0,
+      0
+    ],
+    "complexity": "small",
+    "file_size_bytes": 1709,
+    "load_time_ms": 0.9593963623046875
+  },
+  "resources\\algebras\\sym3.ua": {
+    "file_path": "resources\\algebras\\sym3.ua",
+    "name": "Sym3",
+    "cardinality": 6,
+    "operation_count": 1,
+    "operation_symbols": [
+      "p"
+    ],
+    "operation_arities": [
+      2
+    ],
+    "complexity": "medium",
+    "file_size_bytes": 738,
+    "load_time_ms": 9.421348571777344
+  },
+  "resources\\algebras\\z3.ua": {
+    "file_path": "resources\\algebras\\z3.ua",
+    "name": "z3",
+    "cardinality": 3,
+    "operation_count": 1,
+    "operation_symbols": [
+      "b_0"
+    ],
+    "operation_arities": [
+      2
+    ],
+    "complexity": "small",
+    "file_size_bytes": 580,
+    "load_time_ms": 0.0
+  }
+}

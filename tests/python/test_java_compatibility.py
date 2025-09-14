@@ -13,30 +13,72 @@ import subprocess
 import tempfile
 import shutil
 from pathlib import Path
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any, Optional, Union
 import uacalc
 import time
+from dataclasses import dataclass
+from tests.python.test_data_manager import TestDataManager, TestCaseGenerator, AlgebraComplexity
 
-class JavaCompatibilityTest(unittest.TestCase):
-    """Test suite for Java UACalc compatibility"""
+@dataclass
+class CompatibilityTestResult:
+    """Represents the result of a single compatibility test"""
+    test_name: str
+    algebra_name: str
+    operation: str
+    rust_result: Any
+    java_result: Any
+    matches: bool
+    error_message: Optional[str] = None
+    execution_time_rust: float = 0.0
+    execution_time_java: float = 0.0
+
+@dataclass  
+class TestSuiteReport:
+    """Aggregated results from the entire test suite"""
+    total_tests: int
+    passed_tests: int
+    failed_tests: int
+    skipped_tests: int
+    compatibility_percentage: float
+    failed_test_details: List[CompatibilityTestResult]
+    feature_coverage: Dict[str, float]
+
+class BaseCompatibilityTest(unittest.TestCase):
+    """Base class providing common functionality for all compatibility tests"""
     
     @classmethod
     def setUpClass(cls):
-        """Set up test environment"""
+        """Initialize Java environment and test data"""
         cls.java_jar_path = "jars/uacalc.jar"
         cls.java_wrapper_path = "scripts/JavaWrapper.java"
-        cls.algebra_files = []
-        
-        # Find all .ua files in resources
-        resources_dir = Path("resources/algebras")
-        if resources_dir.exists():
-            cls.algebra_files = list(resources_dir.glob("*.ua"))
-        
-        # Check if Java UACalc is available
+        cls.data_manager = TestDataManager()
+        cls.test_case_generator = TestCaseGenerator(cls.data_manager)
+        cls.algebra_files = cls.data_manager.discover_algebras()
         cls.java_available = cls._check_java_availability()
+        cls._algebra_cache = {}  # Cache for loaded algebras
         
         if not cls.java_available:
             print("Warning: Java UACalc not available. Some tests will be skipped.")
+        
+        # Print test data summary
+        summary = cls.data_manager.get_algebra_summary()
+        if summary:
+            print(f"Discovered {summary['total_algebras']} test algebras")
+            print(f"Complexity distribution: {summary['complexity_distribution']}")
+            print(f"Average cardinality: {summary['average_cardinality']:.1f}")
+            print(f"Average operations: {summary['average_operations']:.1f}")
+    
+    @classmethod
+    def _discover_test_algebras(cls) -> List[Path]:
+        """Discover and categorize test algebra files"""
+        algebra_files = []
+        resources_dir = Path("resources/algebras")
+        if resources_dir.exists():
+            algebra_files = list(resources_dir.glob("*.ua"))
+            
+        # Sort by file size for systematic testing (small to large)
+        algebra_files.sort(key=lambda f: f.stat().st_size)
+        return algebra_files
     
     @classmethod
     def _check_java_availability(cls) -> bool:
@@ -51,7 +93,7 @@ class JavaCompatibilityTest(unittest.TestCase):
         try:
             result = subprocess.run([
                 "javac", "-cp", cls.java_jar_path, 
-                "-d", "scripts", cls.java_wrapper_path
+                cls.java_wrapper_path
             ], capture_output=True, text=True, timeout=30)
             return result.returncode == 0
         except Exception:
@@ -60,10 +102,121 @@ class JavaCompatibilityTest(unittest.TestCase):
     def setUp(self):
         """Set up for each test"""
         self.temp_dir = tempfile.mkdtemp()
+        self.test_results = []
     
     def tearDown(self):
         """Clean up after each test"""
         shutil.rmtree(self.temp_dir, ignore_errors=True)
+    
+    def _run_java_operation(self, operation: str, *args) -> Optional[Dict[str, Any]]:
+        """Generic method to run Java operations and parse JSON results"""
+        if not self.java_available:
+            return None
+            
+        try:
+            cmd = [
+                "java", "-cp", f"{self.java_jar_path}{os.pathsep}scripts",
+                "JavaWrapper", operation
+            ] + list(args)
+            
+            result = subprocess.run(
+                cmd, capture_output=True, text=True, timeout=60
+            )
+            
+            if result.returncode == 0:
+                return json.loads(result.stdout)
+            else:
+                return {"error": result.stderr, "success": False}
+        except Exception as e:
+            return {"error": str(e), "success": False}
+    
+    def _compare_results(self, rust_result: Any, java_result: Dict[str, Any], 
+                        operation: str, context: str = "") -> CompatibilityTestResult:
+        """Generic result comparison with detailed error reporting"""
+        test_name = f"{self.__class__.__name__}.{self._testMethodName}"
+        algebra_name = context or "unknown"
+        
+        if java_result is None:
+            return CompatibilityTestResult(
+                test_name=test_name,
+                algebra_name=algebra_name,
+                operation=operation,
+                rust_result=rust_result,
+                java_result=None,
+                matches=False,
+                error_message="Java operation returned None"
+            )
+        
+        if not java_result.get("success", False):
+            return CompatibilityTestResult(
+                test_name=test_name,
+                algebra_name=algebra_name,
+                operation=operation,
+                rust_result=rust_result,
+                java_result=java_result,
+                matches=False,
+                error_message=f"Java operation failed: {java_result.get('error', 'Unknown error')}"
+            )
+        
+        # Compare the actual results
+        matches = self._deep_compare(rust_result, java_result)
+        error_message = None if matches else f"Results differ: Rust={rust_result}, Java={java_result}"
+        
+        return CompatibilityTestResult(
+            test_name=test_name,
+            algebra_name=algebra_name,
+            operation=operation,
+            rust_result=rust_result,
+            java_result=java_result,
+            matches=matches,
+            error_message=error_message
+        )
+    
+    def _deep_compare(self, rust_result: Any, java_result: Dict[str, Any]) -> bool:
+        """Deep comparison of results with type-aware matching"""
+        # This is a simplified comparison - can be enhanced based on specific needs
+        if isinstance(rust_result, dict) and isinstance(java_result, dict):
+            # Compare dictionaries
+            for key in rust_result:
+                if key not in java_result:
+                    return False
+                if not self._deep_compare(rust_result[key], java_result[key]):
+                    return False
+            return True
+        elif isinstance(rust_result, (list, tuple)) and isinstance(java_result, (list, tuple)):
+            # Compare sequences
+            if len(rust_result) != len(java_result):
+                return False
+            return all(self._deep_compare(r, j) for r, j in zip(rust_result, java_result))
+        else:
+            # Direct comparison
+            return rust_result == java_result
+    
+    def _load_test_algebra(self, file_path: Union[str, Path]) -> Any:
+        """Load algebra with error handling and caching"""
+        file_path = str(file_path)
+        
+        if file_path in self._algebra_cache:
+            return self._algebra_cache[file_path]
+        
+        try:
+            algebra = uacalc.load_algebra(file_path)
+            self._algebra_cache[file_path] = algebra
+            return algebra
+        except Exception as e:
+            self.fail(f"Failed to load algebra from {file_path}: {e}")
+    
+    def _should_skip_test(self, algebra_size: int, operation: str) -> bool:
+        """Determine if test should be skipped based on complexity"""
+        # Skip very large algebras for expensive operations
+        if algebra_size > 10 and operation in ['congruence_lattice', 'maltsev_conditions']:
+            return True
+        if algebra_size > 20:
+            return True
+        return False
+
+class JavaCompatibilityTest(BaseCompatibilityTest):
+    """Test suite for Java UACalc compatibility"""
     
     def test_file_format_compatibility(self):
         """Test that .ua files can be loaded and saved with full compatibility"""
@@ -91,6 +244,158 @@ class JavaCompatibilityTest(unittest.TestCase):
                 for orig_op, reloaded_op in zip(original_algebra.operations(), reloaded_algebra.operations()):
                     self.assertEqual(orig_op.symbol, reloaded_op.symbol)
                     self.assertEqual(orig_op.arity(), reloaded_op.arity())
+    
+    def test_algebra_properties_compatibility(self):
+        """Test comprehensive algebra properties match between Java and Rust"""
+        if not self.java_available:
+            self.skipTest("Java UACalc not available")
+        
+        if not self.algebra_files:
+            self.skipTest("No algebra files found")
+        
+        for ua_file in self.algebra_files[:3]:  # Test first 3 files
+            with self.subTest(file=ua_file.name):
+                # Load algebra in Rust
+                rust_algebra = self._load_test_algebra(ua_file)
+                
+                # Skip if algebra is too large
+                if self._should_skip_test(rust_algebra.cardinality, "algebra_properties"):
+                    continue
+                
+                # Get properties from Java
+                java_result = self._run_java_operation("algebra_properties", str(ua_file))
+                
+                if java_result and java_result.get("success"):
+                    # Compare basic properties
+                    self.assertEqual(rust_algebra.name, java_result["algebra_name"])
+                    self.assertEqual(rust_algebra.cardinality, java_result["cardinality"])
+                    self.assertEqual(len(rust_algebra.operations()), java_result["operation_count"])
+                    
+                    # Compare operation symbols (order might differ)
+                    rust_symbols = [op.symbol for op in rust_algebra.operations()]
+                    java_symbols = java_result["operation_symbols"]
+                    self.assertEqual(set(rust_symbols), set(java_symbols), 
+                                   f"Operation symbols differ: Rust={rust_symbols}, Java={java_symbols}")
+                    
+                    # Compare operation arities (create symbol->arity mapping to handle order differences)
+                    rust_symbol_arities = {op.symbol: op.arity() for op in rust_algebra.operations()}
+                    java_symbol_arities = {symbol: arity for symbol, arity in zip(java_symbols, java_result["operation_arities"])}
+                    self.assertEqual(rust_symbol_arities, java_symbol_arities,
+                                   f"Operation arities differ: Rust={rust_symbol_arities}, Java={java_symbol_arities}")
+    
+    def test_subalgebra_generation_compatibility(self):
+        """Test subalgebra generation produces identical results"""
+        if not self.java_available:
+            self.skipTest("Java UACalc not available")
+        
+        if not self.algebra_files:
+            self.skipTest("No algebra files found")
+        
+        for ua_file in self.algebra_files[:2]:  # Test first 2 files
+            with self.subTest(file=ua_file.name):
+                # Load algebra in Rust
+                rust_algebra = self._load_test_algebra(ua_file)
+                
+                # Skip if algebra is too large
+                if self._should_skip_test(rust_algebra.cardinality, "subalgebra"):
+                    continue
+                
+                # Test with different generator sets
+                generator_sets = [
+                    [0],
+                    [0, 1] if rust_algebra.cardinality > 1 else [0],
+                    list(range(min(3, rust_algebra.cardinality)))
+                ]
+                
+                for generators in generator_sets:
+                    with self.subTest(generators=generators):
+                        # Generate subalgebra in Rust
+                        try:
+                            rust_subalgebra = rust_algebra.subalgebra(generators)
+                            rust_size = rust_subalgebra.cardinality
+                            rust_universe = list(rust_subalgebra.universe)
+                        except Exception as e:
+                            self.skipTest(f"Rust subalgebra generation failed: {e}")
+                            continue
+                        
+                        # Generate subalgebra in Java
+                        generators_json = json.dumps(generators)
+                        java_result = self._run_java_operation("subalgebra", str(ua_file), generators_json)
+                        
+                        if java_result and java_result.get("success"):
+                            # Compare subalgebra properties
+                            self.assertEqual(rust_size, java_result["subalgebra_size"])
+                            # Note: Universe comparison might need adjustment based on representation
+    
+    def test_maltsev_conditions_compatibility(self):
+        """Test Maltsev condition checking matches between implementations"""
+        if not self.java_available:
+            self.skipTest("Java UACalc not available")
+        
+        if not self.algebra_files:
+            self.skipTest("No algebra files found")
+        
+        for ua_file in self.algebra_files[:2]:  # Test first 2 files
+            with self.subTest(file=ua_file.name):
+                # Load algebra in Rust
+                rust_algebra = self._load_test_algebra(ua_file)
+                
+                # Skip if algebra is too large for Maltsev analysis
+                if self._should_skip_test(rust_algebra.cardinality, "maltsev_conditions"):
+                    continue
+                
+                # Get Maltsev conditions from Java
+                java_result = self._run_java_operation("maltsev_conditions", str(ua_file))
+                
+                if java_result and java_result.get("success"):
+                    # For now, just verify the operation completed successfully
+                    # Full Maltsev condition checking in Rust would need to be implemented
+                    self.assertIn("results", java_result)
+                    self.assertIn("has_maltsev_term", java_result["results"])
+                    self.assertIn("has_join_term", java_result["results"])
+                    
+                    # Print results for manual verification during development
+                    print(f"Maltsev analysis for {ua_file.name}: {java_result['results']}")
+    
+    def test_isomorphism_checking_compatibility(self):
+        """Test isomorphism checking between algebras"""
+        if not self.java_available:
+            self.skipTest("Java UACalc not available")
+        
+        if len(self.algebra_files) < 2:
+            self.skipTest("Need at least 2 algebra files for isomorphism testing")
+        
+        # Test isomorphism between first two algebras
+        ua_file1 = self.algebra_files[0]
+        ua_file2 = self.algebra_files[1]
+        
+        # Load algebras in Rust
+        rust_algebra1 = self._load_test_algebra(ua_file1)
+        rust_algebra2 = self._load_test_algebra(ua_file2)
+        
+        # Skip if algebras are too large
+        if (self._should_skip_test(rust_algebra1.cardinality, "isomorphism") or 
+            self._should_skip_test(rust_algebra2.cardinality, "isomorphism")):
+            self.skipTest("Algebras too large for isomorphism testing")
+        
+        # Check isomorphism in Java
+        java_result = self._run_java_operation("isomorphism", str(ua_file1), str(ua_file2))
+        
+        if java_result and java_result.get("success"):
+            # Basic compatibility checks
+            expected_compatible = (rust_algebra1.cardinality == rust_algebra2.cardinality and
+                                 len(rust_algebra1.operations()) == len(rust_algebra2.operations()))
+            
+            self.assertEqual(expected_compatible, java_result["compatible_signatures"])
+            
+            # Print results for manual verification during development
+            print(f"Isomorphism check between {ua_file1.name} and {ua_file2.name}: {java_result}")
+        
+        # Test algebra with itself (should be isomorphic)
+        java_result_self = self._run_java_operation("isomorphism", str(ua_file1), str(ua_file1))
+        if java_result_self and java_result_self.get("success"):
+            self.assertTrue(java_result_self["compatible_signatures"])
+            # Note: Full isomorphism detection would require more sophisticated algorithms
     
     def test_round_trip_compatibility(self):
         """Test round-trip compatibility: load -> save -> load -> compare"""

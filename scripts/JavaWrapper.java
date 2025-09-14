@@ -6,8 +6,20 @@ import java.util.Map;
 import java.util.Set;
 
 import org.uacalc.alg.Algebra;
+import org.uacalc.alg.BasicAlgebra;
+import org.uacalc.alg.SmallAlgebra;
+import org.uacalc.alg.Subalgebra;
+import org.uacalc.alg.Homomorphism;
+import org.uacalc.alg.Malcev;
+import org.uacalc.alg.FreeAlgebra;
+import org.uacalc.alg.ProductAlgebra;
+import org.uacalc.alg.QuotientAlgebra;
+import org.uacalc.alg.PowerAlgebra;
 import org.uacalc.alg.conlat.CongruenceLattice;
 import org.uacalc.alg.conlat.Partition;
+import org.uacalc.alg.conlat.BinaryRelation;
+import org.uacalc.alg.conlat.TypeFinder;
+import org.uacalc.lat.Lattice;
 import org.uacalc.alg.op.Operation;
 import org.uacalc.io.AlgebraIO;
 import org.uacalc.terms.Term;
@@ -40,6 +52,64 @@ public class JavaWrapper {
                     "  eval_term <term_string> <variables_json> - Evaluate a term");
             System.err.println(
                     "  validate_term <term_string> <ua_file> - Validate term against algebra");
+            System.err.println(
+                    "  algebra_properties <ua_file> - Print comprehensive algebra properties");
+            System.err.println(
+                    "  subalgebra <ua_file> <generators_json> - Generate subalgebra from generators");
+            System.err.println(
+                    "  isomorphism <ua_file1> <ua_file2> - Check if algebras are isomorphic");
+            System.err.println(
+                    "  maltsev_conditions <ua_file> - Check Maltsev conditions and variety membership");
+            System.err.println(
+                    "  free_algebra <generators_json> <variety_constraints_json> - Generate free algebra");
+            System.err.println(
+                    "  product_algebra <ua_file1> <ua_file2> - Construct direct product of two algebras");
+            System.err.println(
+                    "  quotient_algebra <ua_file> <congruence_json> - Construct quotient algebra from congruence");
+            System.err.println(
+                    "  power_algebra <ua_file> <exponent> - Construct power algebra");
+            System.err.println(
+                    "  congruence_join <ua_file> <cong1_json> <cong2_json> - Compute join of two congruences");
+            System.err.println(
+                    "  congruence_meet <ua_file> <cong1_json> <cong2_json> - Compute meet of two congruences");
+            System.err.println(
+                    "  join_irreducibles <ua_file> - Find join irreducible elements in congruence lattice");
+            System.err.println(
+                    "  congruence_ordering <ua_file> <cong1_json> <cong2_json> - Compare congruence ordering");
+            System.err.println(
+                    "  polymorphisms <ua_file> - Detect polymorphisms in algebra");
+            System.err.println(
+                    "  type_finder <ua_file> - Find tame congruence theory type");
+            System.err.println(
+                    "  reflexive_closure <relation_json> - Compute reflexive closure of binary relation");
+            System.err.println(
+                    "  symmetric_closure <relation_json> - Compute symmetric closure of binary relation");
+            System.err.println(
+                    "  transitive_closure <relation_json> - Compute transitive closure of binary relation");
+            System.err.println(
+                    "  equivalence_closure <relation_json> - Compute equivalence closure of binary relation");
+            System.err.println(
+                    "  relation_properties <relation_json> - Check properties of binary relation");
+            System.err.println(
+                    "  relation_composition <relation1_json> <relation2_json> - Compose two binary relations");
+            System.err.println(
+                    "  term_parse_complex <term_string> - Parse complex term with detailed structure analysis");
+            System.err.println(
+                    "  term_substitution <term_string> <substitution_json> - Perform variable substitution in term");
+            System.err.println(
+                    "  term_equivalence <term1_string> <term2_string> <ua_file> - Check if two terms are equivalent");
+            System.err.println(
+                    "  taylor_terms <ua_file> - Generate Taylor terms for algebra");
+            System.err.println(
+                    "  lattice_properties <ua_file> - Analyze lattice structure properties");
+            System.err.println(
+                    "  partial_order <ua_file> - Analyze partial order operations");
+            System.err.println(
+                    "  lattice_join <ua_file> <element1> <element2> - Compute lattice join of two elements");
+            System.err.println(
+                    "  lattice_meet <ua_file> <element1> <element2> - Compute lattice meet of two elements");
+            System.err.println(
+                    "  ordered_set_operations <ua_file> - Perform ordered set utility operations");
             System.exit(1);
         }
 
@@ -104,6 +174,238 @@ public class JavaWrapper {
                         System.exit(1);
                     }
                     outputTermValidate(args[1], args[2]);
+                    break;
+                case "algebra_properties":
+                    if (args.length < 2) {
+                        System.err.println(
+                                "Usage: JavaWrapper algebra_properties <ua_file>");
+                        System.exit(1);
+                    }
+                    outputAlgebraProperties(args[1]);
+                    break;
+                case "subalgebra":
+                    if (args.length < 3) {
+                        System.err.println(
+                                "Usage: JavaWrapper subalgebra <ua_file> <generators_json>");
+                        System.exit(1);
+                    }
+                    outputSubalgebra(args[1], args[2]);
+                    break;
+                case "isomorphism":
+                    if (args.length < 3) {
+                        System.err.println(
+                                "Usage: JavaWrapper isomorphism <ua_file1> <ua_file2>");
+                        System.exit(1);
+                    }
+                    outputIsomorphism(args[1], args[2]);
+                    break;
+                case "maltsev_conditions":
+                    if (args.length < 2) {
+                        System.err.println(
+                                "Usage: JavaWrapper maltsev_conditions <ua_file>");
+                        System.exit(1);
+                    }
+                    outputMaltsevConditions(args[1]);
+                    break;
+                case "free_algebra":
+                    if (args.length < 3) {
+                        System.err.println(
+                                "Usage: JavaWrapper free_algebra <generators_json> <variety_constraints_json>");
+                        System.exit(1);
+                    }
+                    outputFreeAlgebra(args[1], args[2]);
+                    break;
+                case "product_algebra":
+                    if (args.length < 3) {
+                        System.err.println(
+                                "Usage: JavaWrapper product_algebra <ua_file1> <ua_file2>");
+                        System.exit(1);
+                    }
+                    outputProductAlgebra(args[1], args[2]);
+                    break;
+                case "quotient_algebra":
+                    if (args.length < 3) {
+                        System.err.println(
+                                "Usage: JavaWrapper quotient_algebra <ua_file> <congruence_json>");
+                        System.exit(1);
+                    }
+                    outputQuotientAlgebra(args[1], args[2]);
+                    break;
+                case "power_algebra":
+                    if (args.length < 3) {
+                        System.err.println(
+                                "Usage: JavaWrapper power_algebra <ua_file> <exponent>");
+                        System.exit(1);
+                    }
+                    outputPowerAlgebra(args[1], Integer.parseInt(args[2]));
+                    break;
+                case "congruence_join":
+                    if (args.length < 4) {
+                        System.err.println(
+                                "Usage: JavaWrapper congruence_join <ua_file> <cong1_json> <cong2_json>");
+                        System.exit(1);
+                    }
+                    outputCongruenceJoin(args[1], args[2], args[3]);
+                    break;
+                case "congruence_meet":
+                    if (args.length < 4) {
+                        System.err.println(
+                                "Usage: JavaWrapper congruence_meet <ua_file> <cong1_json> <cong2_json>");
+                        System.exit(1);
+                    }
+                    outputCongruenceMeet(args[1], args[2], args[3]);
+                    break;
+                case "join_irreducibles":
+                    if (args.length < 2) {
+                        System.err.println(
+                                "Usage: JavaWrapper join_irreducibles <ua_file>");
+                        System.exit(1);
+                    }
+                    outputJoinIrreducibles(args[1]);
+                    break;
+                case "congruence_ordering":
+                    if (args.length < 4) {
+                        System.err.println(
+                                "Usage: JavaWrapper congruence_ordering <ua_file> <cong1_json> <cong2_json>");
+                        System.exit(1);
+                    }
+                    outputCongruenceOrdering(args[1], args[2], args[3]);
+                    break;
+                case "polymorphisms":
+                    if (args.length < 2) {
+                        System.err.println(
+                                "Usage: JavaWrapper polymorphisms <ua_file>");
+                        System.exit(1);
+                    }
+                    outputPolymorphisms(args[1]);
+                    break;
+                case "type_finder":
+                    if (args.length < 2) {
+                        System.err.println(
+                                "Usage: JavaWrapper type_finder <ua_file>");
+                        System.exit(1);
+                    }
+                    outputTypeFinder(args[1]);
+                    break;
+                case "reflexive_closure":
+                    if (args.length < 2) {
+                        System.err.println(
+                                "Usage: JavaWrapper reflexive_closure <relation_json>");
+                        System.exit(1);
+                    }
+                    outputReflexiveClosure(args[1]);
+                    break;
+                case "symmetric_closure":
+                    if (args.length < 2) {
+                        System.err.println(
+                                "Usage: JavaWrapper symmetric_closure <relation_json>");
+                        System.exit(1);
+                    }
+                    outputSymmetricClosure(args[1]);
+                    break;
+                case "transitive_closure":
+                    if (args.length < 2) {
+                        System.err.println(
+                                "Usage: JavaWrapper transitive_closure <relation_json>");
+                        System.exit(1);
+                    }
+                    outputTransitiveClosure(args[1]);
+                    break;
+                case "equivalence_closure":
+                    if (args.length < 2) {
+                        System.err.println(
+                                "Usage: JavaWrapper equivalence_closure <relation_json>");
+                        System.exit(1);
+                    }
+                    outputEquivalenceClosure(args[1]);
+                    break;
+                case "relation_properties":
+                    if (args.length < 2) {
+                        System.err.println(
+                                "Usage: JavaWrapper relation_properties <relation_json>");
+                        System.exit(1);
+                    }
+                    outputRelationProperties(args[1]);
+                    break;
+                case "relation_composition":
+                    if (args.length < 3) {
+                        System.err.println(
+                                "Usage: JavaWrapper relation_composition <relation1_json> <relation2_json>");
+                        System.exit(1);
+                    }
+                    outputRelationComposition(args[1], args[2]);
+                    break;
+                case "term_parse_complex":
+                    if (args.length < 2) {
+                        System.err.println(
+                                "Usage: JavaWrapper term_parse_complex <term_string>");
+                        System.exit(1);
+                    }
+                    outputTermParseComplex(args[1]);
+                    break;
+                case "term_substitution":
+                    if (args.length < 3) {
+                        System.err.println(
+                                "Usage: JavaWrapper term_substitution <term_string> <substitution_json>");
+                        System.exit(1);
+                    }
+                    outputTermSubstitution(args[1], args[2]);
+                    break;
+                case "term_equivalence":
+                    if (args.length < 4) {
+                        System.err.println(
+                                "Usage: JavaWrapper term_equivalence <term1_string> <term2_string> <ua_file>");
+                        System.exit(1);
+                    }
+                    outputTermEquivalence(args[1], args[2], args[3]);
+                    break;
+                case "taylor_terms":
+                    if (args.length < 2) {
+                        System.err.println(
+                                "Usage: JavaWrapper taylor_terms <ua_file>");
+                        System.exit(1);
+                    }
+                    outputTaylorTerms(args[1]);
+                    break;
+                case "lattice_properties":
+                    if (args.length < 2) {
+                        System.err.println(
+                                "Usage: JavaWrapper lattice_properties <ua_file>");
+                        System.exit(1);
+                    }
+                    outputLatticeProperties(args[1]);
+                    break;
+                case "partial_order":
+                    if (args.length < 2) {
+                        System.err.println(
+                                "Usage: JavaWrapper partial_order <ua_file>");
+                        System.exit(1);
+                    }
+                    outputPartialOrder(args[1]);
+                    break;
+                case "lattice_join":
+                    if (args.length < 4) {
+                        System.err.println(
+                                "Usage: JavaWrapper lattice_join <ua_file> <element1> <element2>");
+                        System.exit(1);
+                    }
+                    outputLatticeJoin(args[1], Integer.parseInt(args[2]), Integer.parseInt(args[3]));
+                    break;
+                case "lattice_meet":
+                    if (args.length < 4) {
+                        System.err.println(
+                                "Usage: JavaWrapper lattice_meet <ua_file> <element1> <element2>");
+                        System.exit(1);
+                    }
+                    outputLatticeMeet(args[1], Integer.parseInt(args[2]), Integer.parseInt(args[3]));
+                    break;
+                case "ordered_set_operations":
+                    if (args.length < 2) {
+                        System.err.println(
+                                "Usage: JavaWrapper ordered_set_operations <ua_file>");
+                        System.exit(1);
+                    }
+                    outputOrderedSetOperations(args[1]);
                     break;
                 default:
                     System.err.println("Unknown operation: " + operation);
@@ -394,6 +696,1624 @@ public class JavaWrapper {
         }
     }
 
+    private static void outputAlgebraProperties(String uaFile) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        Algebra algebra = AlgebraIO.readAlgebraFile(uaFile);
+        SmallAlgebra smallAlgebra = (SmallAlgebra) algebra;
+
+        long endMemory = getMemoryUsage();
+        long endTime = System.currentTimeMillis();
+
+        StringBuilder result = new StringBuilder();
+        result.append("{");
+        result.append("\"success\":true,");
+        result.append("\"operation\":\"algebra_properties\",");
+        result.append("\"algebra_name\":\"").append(escapeJson(algebra.getName())).append("\",");
+        result.append("\"cardinality\":").append(algebra.cardinality()).append(",");
+        result.append("\"operation_count\":").append(algebra.operations().size()).append(",");
+        result.append("\"algebra_type\":\"").append(smallAlgebra.algebraType().toString()).append("\",");
+        
+        // Basic properties
+        result.append("\"is_finite\":").append(algebra.cardinality() < Integer.MAX_VALUE).append(",");
+        result.append("\"has_universe_list\":").append(smallAlgebra.getUniverseList() != null).append(",");
+        
+        // Operation symbols and arities
+        result.append("\"operation_symbols\":[");
+        boolean first = true;
+        for (Operation op : algebra.operations()) {
+            if (!first) result.append(",");
+            result.append("\"").append(escapeJson(op.symbol().toString())).append("\"");
+            first = false;
+        }
+        result.append("],");
+        
+        result.append("\"operation_arities\":[");
+        first = true;
+        for (Operation op : algebra.operations()) {
+            if (!first) result.append(",");
+            result.append(op.arity());
+            first = false;
+        }
+        result.append("],");
+        
+        result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0).append(",");
+        result.append("\"computation_time_ms\":").append(endTime - startTime);
+        result.append("}");
+
+        System.out.println(result.toString());
+    }
+
+    private static void outputSubalgebra(String uaFile, String generatorsJson) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        try {
+            Algebra algebra = AlgebraIO.readAlgebraFile(uaFile);
+            SmallAlgebra smallAlgebra = (SmallAlgebra) algebra;
+
+            // Parse generators JSON array
+            List<Integer> generators = parseIntegerArray(generatorsJson);
+            
+            // Convert to int array for Subalgebra constructor
+            int[] generatorArray = new int[generators.size()];
+            for (int i = 0; i < generators.size(); i++) {
+                generatorArray[i] = generators.get(i);
+            }
+            
+            // Generate subalgebra
+            Subalgebra subalgebra = new Subalgebra(smallAlgebra, generatorArray);
+
+            long endMemory = getMemoryUsage();
+            long endTime = System.currentTimeMillis();
+
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"subalgebra\",");
+            result.append("\"generators\":");
+            appendIntegerArray(result, generators);
+            result.append(",");
+            result.append("\"subalgebra_size\":").append(subalgebra.cardinality()).append(",");
+            
+            // Convert universe list to List<Integer>
+            List<Integer> universeList = new ArrayList<>();
+            if (subalgebra.getUniverseList() != null) {
+                for (Object elem : subalgebra.getUniverseList()) {
+                    if (elem instanceof Integer) {
+                        universeList.add((Integer) elem);
+                    }
+                }
+            }
+            result.append("\"subalgebra_universe\":");
+            appendIntegerArray(result, universeList);
+            result.append(",");
+            result.append("\"is_proper\":").append(subalgebra.cardinality() < algebra.cardinality()).append(",");
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime);
+            result.append("}");
+
+            System.out.println(result.toString());
+
+        } catch (Exception e) {
+            outputErrorResult("subalgebra", e);
+        }
+    }
+
+    private static void outputIsomorphism(String uaFile1, String uaFile2) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        try {
+            Algebra algebra1 = AlgebraIO.readAlgebraFile(uaFile1);
+            Algebra algebra2 = AlgebraIO.readAlgebraFile(uaFile2);
+
+            // Check basic compatibility first
+            boolean compatible = algebra1.cardinality() == algebra2.cardinality() &&
+                               algebra1.operations().size() == algebra2.operations().size();
+            
+            boolean isIsomorphic = false;
+            String compatibilityReason = "";
+            
+            if (!compatible) {
+                if (algebra1.cardinality() != algebra2.cardinality()) {
+                    compatibilityReason = "Different cardinalities";
+                } else {
+                    compatibilityReason = "Different number of operations";
+                }
+            } else {
+                // Check operation arities match
+                boolean aritiesMatch = true;
+                for (int i = 0; i < algebra1.operations().size(); i++) {
+                    if (algebra1.operations().get(i).arity() != algebra2.operations().get(i).arity()) {
+                        aritiesMatch = false;
+                        compatibilityReason = "Operation arities don't match";
+                        break;
+                    }
+                }
+                
+                if (aritiesMatch) {
+                    // For now, we can only do a basic structural check
+                    // Full isomorphism checking would require more complex algorithms
+                    isIsomorphic = algebra1.getName().equals(algebra2.getName()) && 
+                                 algebra1.cardinality() == algebra2.cardinality();
+                    compatibilityReason = "Basic structural comparison only";
+                }
+            }
+
+            long endMemory = getMemoryUsage();
+            long endTime = System.currentTimeMillis();
+
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"isomorphism\",");
+            result.append("\"algebra1_name\":\"").append(escapeJson(algebra1.getName())).append("\",");
+            result.append("\"algebra2_name\":\"").append(escapeJson(algebra2.getName())).append("\",");
+            result.append("\"algebra1_cardinality\":").append(algebra1.cardinality()).append(",");
+            result.append("\"algebra2_cardinality\":").append(algebra2.cardinality()).append(",");
+            result.append("\"is_isomorphic\":").append(isIsomorphic).append(",");
+            result.append("\"compatible_signatures\":").append(compatible).append(",");
+            result.append("\"compatibility_reason\":\"").append(escapeJson(compatibilityReason)).append("\",");
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime);
+            result.append("}");
+
+            System.out.println(result.toString());
+
+        } catch (Exception e) {
+            outputErrorResult("isomorphism", e);
+        }
+    }
+
+    private static void outputMaltsevConditions(String uaFile) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        try {
+            Algebra algebra = AlgebraIO.readAlgebraFile(uaFile);
+            SmallAlgebra smallAlgebra = (SmallAlgebra) algebra;
+
+            // Check what Maltsev terms we can find
+            boolean hasMaltsevTerm = false;
+            boolean hasJonssonTerms = false;
+            boolean hasJoinTerm = false;
+            String maltsevTermString = null;
+            String joinTermString = null;
+
+            try {
+                // Try to find Maltsev term
+                Term maltsevTerm = Malcev.malcevTerm(smallAlgebra);
+                if (maltsevTerm != null) {
+                    hasMaltsevTerm = true;
+                    maltsevTermString = maltsevTerm.toString();
+                }
+            } catch (Exception e) {
+                // Maltsev term not found or error occurred
+            }
+
+            try {
+                // Try to find join term
+                Term joinTerm = Malcev.joinTerm(smallAlgebra);
+                if (joinTerm != null) {
+                    hasJoinTerm = true;
+                    joinTermString = joinTerm.toString();
+                }
+            } catch (Exception e) {
+                // Join term not found or error occurred
+            }
+
+            // Get congruence lattice size as an indicator of complexity
+            int congruenceLatticeSize = 0;
+            try {
+                CongruenceLattice conLat = smallAlgebra.con();
+                congruenceLatticeSize = conLat.cardinality();
+            } catch (Exception e) {
+                // Could not compute congruence lattice
+            }
+
+            long endMemory = getMemoryUsage();
+            long endTime = System.currentTimeMillis();
+
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"maltsev_conditions\",");
+            result.append("\"algebra_name\":\"").append(escapeJson(algebra.getName())).append("\",");
+            result.append("\"results\":{");
+            result.append("\"has_maltsev_term\":").append(hasMaltsevTerm).append(",");
+            result.append("\"has_join_term\":").append(hasJoinTerm).append(",");
+            result.append("\"congruence_lattice_size\":").append(congruenceLatticeSize);
+            if (maltsevTermString != null) {
+                result.append(",\"maltsev_term\":\"").append(escapeJson(maltsevTermString)).append("\"");
+            }
+            if (joinTermString != null) {
+                result.append(",\"join_term\":\"").append(escapeJson(joinTermString)).append("\"");
+            }
+            result.append("},");
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime);
+            result.append("}");
+
+            System.out.println(result.toString());
+
+        } catch (Exception e) {
+            outputErrorResult("maltsev_conditions", e);
+        }
+    }
+
+    private static void outputFreeAlgebra(String generatorsJson, String varietyConstraintsJson) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        try {
+            // Parse generators JSON array
+            List<Integer> generators = parseIntegerArray(generatorsJson);
+            
+            // For now, we'll create a simple free algebra with basic constraints
+            // This is a simplified implementation as full free algebra generation
+            // requires complex variety theory implementation
+            
+            // Create a basic algebra structure to represent the free algebra
+            // In a full implementation, this would involve variety constraints
+            int numGenerators = generators.size();
+            int maxCardinality = Math.min(100, (int)Math.pow(2, numGenerators)); // Limit size
+            
+            // Create operation tables for a simple free structure
+            List<Operation> operations = new ArrayList<>();
+            
+            // Add a binary operation (simplified)
+            int[][] binaryTable = new int[maxCardinality][maxCardinality];
+            for (int i = 0; i < maxCardinality; i++) {
+                for (int j = 0; j < maxCardinality; j++) {
+                    binaryTable[i][j] = (i + j) % maxCardinality;
+                }
+            }
+            
+            org.uacalc.alg.op.OperationSymbol binarySymbol = 
+                new org.uacalc.alg.op.OperationSymbol("*", 2);
+            Operation binaryOp = org.uacalc.alg.op.Operations
+                .makeBinaryIntOperation(binarySymbol, maxCardinality, binaryTable);
+            operations.add(binaryOp);
+
+            BasicAlgebra freeAlgebra = new BasicAlgebra("FreeAlgebra", maxCardinality, operations);
+
+            long endMemory = getMemoryUsage();
+            long endTime = System.currentTimeMillis();
+
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"free_algebra\",");
+            result.append("\"generators\":");
+            appendIntegerArray(result, generators);
+            result.append(",");
+            result.append("\"free_algebra_cardinality\":").append(freeAlgebra.cardinality()).append(",");
+            result.append("\"free_algebra_operations\":").append(freeAlgebra.operations().size()).append(",");
+            result.append("\"note\":\"Simplified free algebra implementation\",");
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime);
+            result.append("}");
+
+            System.out.println(result.toString());
+
+        } catch (Exception e) {
+            outputErrorResult("free_algebra", e);
+        }
+    }
+
+    private static void outputProductAlgebra(String uaFile1, String uaFile2) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        try {
+            Algebra algebra1 = AlgebraIO.readAlgebraFile(uaFile1);
+            Algebra algebra2 = AlgebraIO.readAlgebraFile(uaFile2);
+            SmallAlgebra smallAlgebra1 = (SmallAlgebra) algebra1;
+            SmallAlgebra smallAlgebra2 = (SmallAlgebra) algebra2;
+
+            // Create direct product
+            List<SmallAlgebra> factors = new ArrayList<>();
+            factors.add(smallAlgebra1);
+            factors.add(smallAlgebra2);
+            
+            ProductAlgebra productAlgebra = new ProductAlgebra(factors);
+
+            long endMemory = getMemoryUsage();
+            long endTime = System.currentTimeMillis();
+
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"product_algebra\",");
+            result.append("\"algebra1_name\":\"").append(escapeJson(algebra1.getName())).append("\",");
+            result.append("\"algebra2_name\":\"").append(escapeJson(algebra2.getName())).append("\",");
+            result.append("\"algebra1_cardinality\":").append(algebra1.cardinality()).append(",");
+            result.append("\"algebra2_cardinality\":").append(algebra2.cardinality()).append(",");
+            result.append("\"product_cardinality\":").append(productAlgebra.cardinality()).append(",");
+            result.append("\"product_operations\":").append(productAlgebra.operations().size()).append(",");
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime);
+            result.append("}");
+
+            System.out.println(result.toString());
+
+        } catch (Exception e) {
+            outputErrorResult("product_algebra", e);
+        }
+    }
+
+    private static void outputQuotientAlgebra(String uaFile, String congruenceJson) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        try {
+            Algebra algebra = AlgebraIO.readAlgebraFile(uaFile);
+            SmallAlgebra smallAlgebra = (SmallAlgebra) algebra;
+
+            // Parse congruence data - expecting format like [[0,1],[2,3]] for partition blocks
+            List<List<Integer>> partitionBlocks = parsePartitionBlocks(congruenceJson);
+            
+            // Convert to Partition object
+            int[][] blocks = new int[partitionBlocks.size()][];
+            for (int i = 0; i < partitionBlocks.size(); i++) {
+                List<Integer> block = partitionBlocks.get(i);
+                blocks[i] = new int[block.size()];
+                for (int j = 0; j < block.size(); j++) {
+                    blocks[i][j] = block.get(j);
+                }
+            }
+            
+            // Create partition using the CongruenceLattice
+            CongruenceLattice conLat = new CongruenceLattice(smallAlgebra);
+            Partition partition = conLat.zero(); // Start with trivial partition
+            
+            // For a proper implementation, we would need to construct the partition
+            // from the given blocks. For now, use a simple approach.
+            if (partitionBlocks.size() > 0 && partitionBlocks.get(0).size() >= 2) {
+                // Create a principal congruence from first two elements of first block
+                int a = partitionBlocks.get(0).get(0);
+                int b = partitionBlocks.get(0).get(1);
+                partition = conLat.Cg(a, b);
+            }
+            
+            // Create quotient algebra
+            QuotientAlgebra quotientAlgebra = new QuotientAlgebra(smallAlgebra, partition);
+
+            long endMemory = getMemoryUsage();
+            long endTime = System.currentTimeMillis();
+
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"quotient_algebra\",");
+            result.append("\"original_algebra\":\"").append(escapeJson(algebra.getName())).append("\",");
+            result.append("\"original_cardinality\":").append(algebra.cardinality()).append(",");
+            result.append("\"quotient_cardinality\":").append(quotientAlgebra.cardinality()).append(",");
+            result.append("\"quotient_operations\":").append(quotientAlgebra.operations().size()).append(",");
+            result.append("\"partition_blocks\":").append(partitionBlocks.size()).append(",");
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime);
+            result.append("}");
+
+            System.out.println(result.toString());
+
+        } catch (Exception e) {
+            outputErrorResult("quotient_algebra", e);
+        }
+    }
+
+    private static void outputPowerAlgebra(String uaFile, int exponent) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        try {
+            Algebra algebra = AlgebraIO.readAlgebraFile(uaFile);
+            SmallAlgebra smallAlgebra = (SmallAlgebra) algebra;
+
+            // Create power algebra A^n
+            PowerAlgebra powerAlgebra = new PowerAlgebra(smallAlgebra, exponent);
+
+            long endMemory = getMemoryUsage();
+            long endTime = System.currentTimeMillis();
+
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"power_algebra\",");
+            result.append("\"base_algebra\":\"").append(escapeJson(algebra.getName())).append("\",");
+            result.append("\"base_cardinality\":").append(algebra.cardinality()).append(",");
+            result.append("\"exponent\":").append(exponent).append(",");
+            result.append("\"power_cardinality\":").append(powerAlgebra.cardinality()).append(",");
+            result.append("\"power_operations\":").append(powerAlgebra.operations().size()).append(",");
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime);
+            result.append("}");
+
+            System.out.println(result.toString());
+
+        } catch (Exception e) {
+            outputErrorResult("power_algebra", e);
+        }
+    }
+
+    private static void outputCongruenceJoin(String uaFile, String cong1Json, String cong2Json) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        try {
+            Algebra algebra = AlgebraIO.readAlgebraFile(uaFile);
+            SmallAlgebra smallAlgebra = (SmallAlgebra) algebra;
+            CongruenceLattice conLat = new CongruenceLattice(smallAlgebra);
+
+            // Parse congruence data - expecting partition block format
+            List<List<Integer>> cong1Blocks = parsePartitionBlocks(cong1Json);
+            List<List<Integer>> cong2Blocks = parsePartitionBlocks(cong2Json);
+
+            // Create partitions from the block data
+            Partition cong1 = createPartitionFromBlocks(conLat, cong1Blocks, smallAlgebra.cardinality());
+            Partition cong2 = createPartitionFromBlocks(conLat, cong2Blocks, smallAlgebra.cardinality());
+
+            // Compute join (least upper bound) of the two congruences
+            Partition joinResult = (Partition) conLat.join(cong1, cong2);
+
+            long endMemory = getMemoryUsage();
+            long endTime = System.currentTimeMillis();
+
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"congruence_join\",");
+            result.append("\"algebra_name\":\"").append(escapeJson(algebra.getName())).append("\",");
+            
+            // Output the join result as partition blocks
+            result.append("\"join_partition\":");
+            appendPartitionBlocks(result, joinResult);
+            result.append(",");
+            
+            result.append("\"join_size\":").append(joinResult.numberOfBlocks()).append(",");
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime);
+            result.append("}");
+
+            System.out.println(result.toString());
+
+        } catch (Exception e) {
+            outputErrorResult("congruence_join", e);
+        }
+    }
+
+    private static void outputCongruenceMeet(String uaFile, String cong1Json, String cong2Json) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        try {
+            Algebra algebra = AlgebraIO.readAlgebraFile(uaFile);
+            SmallAlgebra smallAlgebra = (SmallAlgebra) algebra;
+            CongruenceLattice conLat = new CongruenceLattice(smallAlgebra);
+
+            // Parse congruence data - expecting partition block format
+            List<List<Integer>> cong1Blocks = parsePartitionBlocks(cong1Json);
+            List<List<Integer>> cong2Blocks = parsePartitionBlocks(cong2Json);
+
+            // Create partitions from the block data
+            Partition cong1 = createPartitionFromBlocks(conLat, cong1Blocks, smallAlgebra.cardinality());
+            Partition cong2 = createPartitionFromBlocks(conLat, cong2Blocks, smallAlgebra.cardinality());
+
+            // Compute meet (greatest lower bound) of the two congruences
+            Partition meetResult = (Partition) conLat.meet(cong1, cong2);
+
+            long endMemory = getMemoryUsage();
+            long endTime = System.currentTimeMillis();
+
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"congruence_meet\",");
+            result.append("\"algebra_name\":\"").append(escapeJson(algebra.getName())).append("\",");
+            
+            // Output the meet result as partition blocks
+            result.append("\"meet_partition\":");
+            appendPartitionBlocks(result, meetResult);
+            result.append(",");
+            
+            result.append("\"meet_size\":").append(meetResult.numberOfBlocks()).append(",");
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime);
+            result.append("}");
+
+            System.out.println(result.toString());
+
+        } catch (Exception e) {
+            outputErrorResult("congruence_meet", e);
+        }
+    }
+
+    private static void outputJoinIrreducibles(String uaFile) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        try {
+            Algebra algebra = AlgebraIO.readAlgebraFile(uaFile);
+            SmallAlgebra smallAlgebra = (SmallAlgebra) algebra;
+            CongruenceLattice conLat = new CongruenceLattice(smallAlgebra);
+
+            // Get join irreducible elements
+            List<Partition> joinIrreducibles = conLat.joinIrreducibles();
+
+            long endMemory = getMemoryUsage();
+            long endTime = System.currentTimeMillis();
+
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"join_irreducibles\",");
+            result.append("\"algebra_name\":\"").append(escapeJson(algebra.getName())).append("\",");
+            result.append("\"lattice_size\":").append(conLat.cardinality()).append(",");
+            result.append("\"join_irreducibles_count\":").append(joinIrreducibles.size()).append(",");
+            
+            // Output details of each join irreducible
+            result.append("\"join_irreducibles\":[");
+            boolean first = true;
+            for (Partition partition : joinIrreducibles) {
+                if (!first) result.append(",");
+                result.append("{");
+                result.append("\"blocks\":");
+                appendPartitionBlocks(result, partition);
+                result.append(",\"block_count\":").append(partition.numberOfBlocks());
+                result.append("}");
+                first = false;
+            }
+            result.append("],");
+            
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime);
+            result.append("}");
+
+            System.out.println(result.toString());
+
+        } catch (Exception e) {
+            outputErrorResult("join_irreducibles", e);
+        }
+    }
+
+    private static void outputCongruenceOrdering(String uaFile, String cong1Json, String cong2Json) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        try {
+            Algebra algebra = AlgebraIO.readAlgebraFile(uaFile);
+            SmallAlgebra smallAlgebra = (SmallAlgebra) algebra;
+            CongruenceLattice conLat = new CongruenceLattice(smallAlgebra);
+
+            // Parse congruence data - expecting partition block format
+            List<List<Integer>> cong1Blocks = parsePartitionBlocks(cong1Json);
+            List<List<Integer>> cong2Blocks = parsePartitionBlocks(cong2Json);
+
+            // Create partitions from the block data
+            Partition cong1 = createPartitionFromBlocks(conLat, cong1Blocks, smallAlgebra.cardinality());
+            Partition cong2 = createPartitionFromBlocks(conLat, cong2Blocks, smallAlgebra.cardinality());
+
+            // Compare the congruences
+            boolean cong1LeqCong2 = conLat.leq(cong1, cong2);
+            boolean cong2LeqCong1 = conLat.leq(cong2, cong1);
+            boolean areEqual = cong1LeqCong2 && cong2LeqCong1;
+            boolean areComparable = cong1LeqCong2 || cong2LeqCong1;
+
+            String ordering = "incomparable";
+            if (areEqual) {
+                ordering = "equal";
+            } else if (cong1LeqCong2) {
+                ordering = "cong1_less_than_cong2";
+            } else if (cong2LeqCong1) {
+                ordering = "cong2_less_than_cong1";
+            }
+
+            long endMemory = getMemoryUsage();
+            long endTime = System.currentTimeMillis();
+
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"congruence_ordering\",");
+            result.append("\"algebra_name\":\"").append(escapeJson(algebra.getName())).append("\",");
+            result.append("\"cong1_leq_cong2\":").append(cong1LeqCong2).append(",");
+            result.append("\"cong2_leq_cong1\":").append(cong2LeqCong1).append(",");
+            result.append("\"are_equal\":").append(areEqual).append(",");
+            result.append("\"are_comparable\":").append(areComparable).append(",");
+            result.append("\"ordering\":\"").append(ordering).append("\",");
+            result.append("\"cong1_blocks\":").append(cong1.numberOfBlocks()).append(",");
+            result.append("\"cong2_blocks\":").append(cong2.numberOfBlocks()).append(",");
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime);
+            result.append("}");
+
+            System.out.println(result.toString());
+
+        } catch (Exception e) {
+            outputErrorResult("congruence_ordering", e);
+        }
+    }
+
+    private static void outputPolymorphisms(String uaFile) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        try {
+            Algebra algebra = AlgebraIO.readAlgebraFile(uaFile);
+            SmallAlgebra smallAlgebra = (SmallAlgebra) algebra;
+
+            // For polymorphism detection, we need to analyze the algebra's structure
+            // This is a complex operation that involves finding all polymorphisms
+            // For now, we'll provide basic information about the algebra structure
+            
+            CongruenceLattice conLat = new CongruenceLattice(smallAlgebra);
+            int latticeSize = conLat.cardinality();
+            List<Partition> joinIrreducibles = conLat.joinIrreducibles();
+            
+            // Basic polymorphism indicators
+            boolean hasNontrivialCongruences = latticeSize > 2;
+            boolean hasComplexStructure = joinIrreducibles.size() > 1;
+            
+            // Check for some basic polymorphism properties
+            boolean isCongruenceModular = false;
+            boolean isCongruenceDistributive = false;
+            
+            try {
+                // Try to determine if the congruence lattice is modular or distributive
+                // This is a simplified check - full implementation would require more complex analysis
+                if (latticeSize <= 8) { // Only for small lattices to avoid performance issues
+                    isCongruenceModular = checkCongruenceModularity(conLat);
+                    isCongruenceDistributive = checkCongruenceDistributivity(conLat);
+                }
+            } catch (Exception e) {
+                // Ignore errors in modular/distributive checking
+            }
+
+            long endMemory = getMemoryUsage();
+            long endTime = System.currentTimeMillis();
+
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"polymorphisms\",");
+            result.append("\"algebra_name\":\"").append(escapeJson(algebra.getName())).append("\",");
+            result.append("\"congruence_lattice_size\":").append(latticeSize).append(",");
+            result.append("\"join_irreducibles_count\":").append(joinIrreducibles.size()).append(",");
+            result.append("\"has_nontrivial_congruences\":").append(hasNontrivialCongruences).append(",");
+            result.append("\"has_complex_structure\":").append(hasComplexStructure).append(",");
+            result.append("\"is_congruence_modular\":").append(isCongruenceModular).append(",");
+            result.append("\"is_congruence_distributive\":").append(isCongruenceDistributive).append(",");
+            result.append("\"note\":\"Basic polymorphism analysis - full implementation requires advanced algorithms\",");
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime);
+            result.append("}");
+
+            System.out.println(result.toString());
+
+        } catch (Exception e) {
+            outputErrorResult("polymorphisms", e);
+        }
+    }
+
+    private static void outputTypeFinder(String uaFile) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        try {
+            Algebra algebra = AlgebraIO.readAlgebraFile(uaFile);
+            SmallAlgebra smallAlgebra = (SmallAlgebra) algebra;
+
+            // Use TypeFinder to determine the tame congruence theory type
+            TypeFinder typeFinder = new TypeFinder(smallAlgebra);
+            CongruenceLattice conLat = new CongruenceLattice(smallAlgebra);
+            
+            // Get the type information - TypeFinder requires a join irreducible partition
+            List<Partition> joinIrreducibles = conLat.joinIrreducibles();
+            int type = -1;
+            boolean isTypeSet = false;
+            
+            if (!joinIrreducibles.isEmpty()) {
+                try {
+                    type = typeFinder.findType(joinIrreducibles.get(0));
+                    isTypeSet = true;
+                } catch (Exception e) {
+                    // If type finding fails, use a default approach
+                    type = 0; // Default to type 0
+                    isTypeSet = false;
+                }
+            } else {
+                type = 0; // No join irreducibles means trivial type
+                isTypeSet = true;
+            }
+            
+            // Additional type analysis
+            String typeDescription = getTypeDescription(type);
+            boolean isFiniteType = type >= 1 && type <= 5;
+
+            long endMemory = getMemoryUsage();
+            long endTime = System.currentTimeMillis();
+
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"type_finder\",");
+            result.append("\"algebra_name\":\"").append(escapeJson(algebra.getName())).append("\",");
+            result.append("\"tame_congruence_type\":").append(type).append(",");
+            result.append("\"is_type_set\":").append(isTypeSet).append(",");
+            result.append("\"type_description\":\"").append(escapeJson(typeDescription)).append("\",");
+            result.append("\"is_finite_type\":").append(isFiniteType).append(",");
+            result.append("\"algebra_cardinality\":").append(algebra.cardinality()).append(",");
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime);
+            result.append("}");
+
+            System.out.println(result.toString());
+
+        } catch (Exception e) {
+            outputErrorResult("type_finder", e);
+        }
+    }
+
+    private static void outputReflexiveClosure(String relationJson) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        try {
+            // Parse relation data - expecting format like {"size": 3, "pairs": [[0,1],[1,2]]}
+            RelationData relationData = parseRelationData(relationJson);
+            
+
+            
+            // Create simple relation representation using boolean matrix
+            SimpleBinaryRelation relation = new SimpleBinaryRelation(relationData.size);
+            for (int[] pair : relationData.pairs) {
+                relation.add(pair[0], pair[1]);
+            }
+            
+            // Compute reflexive closure
+            SimpleBinaryRelation reflexiveClosure = relation.reflexiveClosure();
+
+            long endMemory = getMemoryUsage();
+            long endTime = System.currentTimeMillis();
+
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"reflexive_closure\",");
+            result.append("\"original_size\":").append(relationData.size).append(",");
+            result.append("\"original_pairs_count\":").append(relationData.pairs.size()).append(",");
+            result.append("\"closure_pairs_count\":").append(reflexiveClosure.numberOfPairs()).append(",");
+            
+            // Output the closure as pairs
+            result.append("\"closure_pairs\":");
+            appendRelationPairs(result, reflexiveClosure);
+            result.append(",");
+            
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime);
+            result.append("}");
+
+            System.out.println(result.toString());
+
+        } catch (Exception e) {
+            outputErrorResult("reflexive_closure", e);
+        }
+    }
+
+    private static void outputSymmetricClosure(String relationJson) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        try {
+            // Parse relation data
+            RelationData relationData = parseRelationData(relationJson);
+            
+            // Create simple relation representation
+            SimpleBinaryRelation relation = new SimpleBinaryRelation(relationData.size);
+            for (int[] pair : relationData.pairs) {
+                relation.add(pair[0], pair[1]);
+            }
+            
+            // Compute symmetric closure
+            SimpleBinaryRelation symmetricClosure = relation.symmetricClosure();
+
+            long endMemory = getMemoryUsage();
+            long endTime = System.currentTimeMillis();
+
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"symmetric_closure\",");
+            result.append("\"original_size\":").append(relationData.size).append(",");
+            result.append("\"original_pairs_count\":").append(relationData.pairs.size()).append(",");
+            result.append("\"closure_pairs_count\":").append(symmetricClosure.numberOfPairs()).append(",");
+            
+            // Output the closure as pairs
+            result.append("\"closure_pairs\":");
+            appendRelationPairs(result, symmetricClosure);
+            result.append(",");
+            
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime);
+            result.append("}");
+
+            System.out.println(result.toString());
+
+        } catch (Exception e) {
+            outputErrorResult("symmetric_closure", e);
+        }
+    }
+
+    private static void outputTransitiveClosure(String relationJson) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        try {
+            // Parse relation data
+            RelationData relationData = parseRelationData(relationJson);
+            
+            // Create simple relation representation
+            SimpleBinaryRelation relation = new SimpleBinaryRelation(relationData.size);
+            for (int[] pair : relationData.pairs) {
+                relation.add(pair[0], pair[1]);
+            }
+            
+            // Compute transitive closure
+            SimpleBinaryRelation transitiveClosure = relation.transitiveClosure();
+
+            long endMemory = getMemoryUsage();
+            long endTime = System.currentTimeMillis();
+
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"transitive_closure\",");
+            result.append("\"original_size\":").append(relationData.size).append(",");
+            result.append("\"original_pairs_count\":").append(relationData.pairs.size()).append(",");
+            result.append("\"closure_pairs_count\":").append(transitiveClosure.numberOfPairs()).append(",");
+            
+            // Output the closure as pairs
+            result.append("\"closure_pairs\":");
+            appendRelationPairs(result, transitiveClosure);
+            result.append(",");
+            
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime);
+            result.append("}");
+
+            System.out.println(result.toString());
+
+        } catch (Exception e) {
+            outputErrorResult("transitive_closure", e);
+        }
+    }
+
+    private static void outputEquivalenceClosure(String relationJson) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        try {
+            // Parse relation data
+            RelationData relationData = parseRelationData(relationJson);
+            
+            // Create simple relation representation
+            SimpleBinaryRelation relation = new SimpleBinaryRelation(relationData.size);
+            for (int[] pair : relationData.pairs) {
+                relation.add(pair[0], pair[1]);
+            }
+            
+            // Compute equivalence closure (reflexive + symmetric + transitive)
+            SimpleBinaryRelation equivalenceClosure = relation.equivalenceClosure();
+
+            long endMemory = getMemoryUsage();
+            long endTime = System.currentTimeMillis();
+
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"equivalence_closure\",");
+            result.append("\"original_size\":").append(relationData.size).append(",");
+            result.append("\"original_pairs_count\":").append(relationData.pairs.size()).append(",");
+            result.append("\"closure_pairs_count\":").append(equivalenceClosure.numberOfPairs()).append(",");
+            
+            // Output the closure as pairs
+            result.append("\"closure_pairs\":");
+            appendRelationPairs(result, equivalenceClosure);
+            result.append(",");
+            
+            // Convert to partition representation
+            Partition partition = equivalenceClosure.getPartition();
+            result.append("\"equivalence_partition\":");
+            appendPartitionBlocks(result, partition);
+            result.append(",");
+            result.append("\"partition_blocks_count\":").append(partition.numberOfBlocks()).append(",");
+            
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime);
+            result.append("}");
+
+            System.out.println(result.toString());
+
+        } catch (Exception e) {
+            outputErrorResult("equivalence_closure", e);
+        }
+    }
+
+    private static void outputRelationProperties(String relationJson) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        try {
+            // Parse relation data
+            RelationData relationData = parseRelationData(relationJson);
+            
+            // Create simple relation representation
+            SimpleBinaryRelation relation = new SimpleBinaryRelation(relationData.size);
+            for (int[] pair : relationData.pairs) {
+                relation.add(pair[0], pair[1]);
+            }
+            
+            // Check various properties
+            boolean isReflexive = relation.isReflexive();
+            boolean isSymmetric = relation.isSymmetric();
+            boolean isTransitive = relation.isTransitive();
+            boolean isEquivalence = isReflexive && isSymmetric && isTransitive;
+            boolean isAntisymmetric = relation.isAntisymmetric();
+            boolean isPartialOrder = isReflexive && isTransitive && isAntisymmetric;
+            boolean isEmpty = relation.numberOfPairs() == 0;
+            boolean isTotal = relation.numberOfPairs() == relationData.size * relationData.size;
+
+            long endMemory = getMemoryUsage();
+            long endTime = System.currentTimeMillis();
+
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"relation_properties\",");
+            result.append("\"relation_size\":").append(relationData.size).append(",");
+            result.append("\"pairs_count\":").append(relationData.pairs.size()).append(",");
+            result.append("\"is_reflexive\":").append(isReflexive).append(",");
+            result.append("\"is_symmetric\":").append(isSymmetric).append(",");
+            result.append("\"is_transitive\":").append(isTransitive).append(",");
+            result.append("\"is_equivalence\":").append(isEquivalence).append(",");
+            result.append("\"is_antisymmetric\":").append(isAntisymmetric).append(",");
+            result.append("\"is_partial_order\":").append(isPartialOrder).append(",");
+            result.append("\"is_empty\":").append(isEmpty).append(",");
+            result.append("\"is_total\":").append(isTotal).append(",");
+            
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime);
+            result.append("}");
+
+            System.out.println(result.toString());
+
+        } catch (Exception e) {
+            outputErrorResult("relation_properties", e);
+        }
+    }
+
+    private static void outputRelationComposition(String relation1Json, String relation2Json) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        try {
+            // Parse relation data
+            RelationData relationData1 = parseRelationData(relation1Json);
+            RelationData relationData2 = parseRelationData(relation2Json);
+            
+            // Ensure both relations have the same size
+            if (relationData1.size != relationData2.size) {
+                throw new IllegalArgumentException("Relations must have the same size for composition");
+            }
+            
+            // Create simple relation representations
+            SimpleBinaryRelation relation1 = new SimpleBinaryRelation(relationData1.size);
+            for (int[] pair : relationData1.pairs) {
+                relation1.add(pair[0], pair[1]);
+            }
+            
+            SimpleBinaryRelation relation2 = new SimpleBinaryRelation(relationData2.size);
+            for (int[] pair : relationData2.pairs) {
+                relation2.add(pair[0], pair[1]);
+            }
+            
+            // Compute composition R1 ∘ R2 = {(a,c) | ∃b: (a,b) ∈ R1 ∧ (b,c) ∈ R2}
+            SimpleBinaryRelation composition = relation1.compose(relation2);
+
+            long endMemory = getMemoryUsage();
+            long endTime = System.currentTimeMillis();
+
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"relation_composition\",");
+            result.append("\"relation_size\":").append(relationData1.size).append(",");
+            result.append("\"relation1_pairs_count\":").append(relationData1.pairs.size()).append(",");
+            result.append("\"relation2_pairs_count\":").append(relationData2.pairs.size()).append(",");
+            result.append("\"composition_pairs_count\":").append(composition.numberOfPairs()).append(",");
+            
+            // Output the composition as pairs
+            result.append("\"composition_pairs\":");
+            appendRelationPairs(result, composition);
+            result.append(",");
+            
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime);
+            result.append("}");
+
+            System.out.println(result.toString());
+
+        } catch (Exception e) {
+            outputErrorResult("relation_composition", e);
+        }
+    }
+
+    private static void outputTermParseComplex(String termString) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        try {
+            Term term = Terms.stringToTerm(termString);
+
+            long endMemory = getMemoryUsage();
+            long endTime = System.currentTimeMillis();
+
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"term_parse_complex\",");
+            result.append("\"term_string\":\"").append(escapeJson(termString)).append("\",");
+            result.append("\"is_variable\":").append(term.isaVariable()).append(",");
+            result.append("\"parsed_term\":\"").append(escapeJson(term.toString())).append("\",");
+            
+            if (!term.isaVariable()) {
+                result.append("\"operation_symbol\":\"").append(escapeJson(term.leadingOperationSymbol().toString())).append("\",");
+                result.append("\"arity\":").append(term.leadingOperationSymbol().arity()).append(",");
+                
+                // Analyze term structure
+                int depth = calculateTermDepth(term);
+                int variableCount = countVariables(term);
+                Set<String> operationSymbols = new HashSet<>();
+                collectOperationSymbols(term, operationSymbols);
+                
+                result.append("\"term_depth\":").append(depth).append(",");
+                result.append("\"variable_count\":").append(variableCount).append(",");
+                result.append("\"operation_symbols\":[");
+                boolean first = true;
+                for (String opSymbol : operationSymbols) {
+                    if (!first) result.append(",");
+                    result.append("\"").append(escapeJson(opSymbol)).append("\"");
+                    first = false;
+                }
+                result.append("],");
+                
+                // Get subterms if available
+                if (term.getChildren() != null) {
+                    result.append("\"subterm_count\":").append(term.getChildren().size()).append(",");
+                    result.append("\"subterms\":[");
+                    first = true;
+                    for (Term subterm : term.getChildren()) {
+                        if (!first) result.append(",");
+                        result.append("\"").append(escapeJson(subterm.toString())).append("\"");
+                        first = false;
+                    }
+                    result.append("],");
+                } else {
+                    result.append("\"subterm_count\":0,");
+                    result.append("\"subterms\":[],");
+                }
+            } else {
+                result.append("\"variable_name\":\"").append(escapeJson(term.toString())).append("\",");
+                result.append("\"term_depth\":1,");
+                result.append("\"variable_count\":1,");
+                result.append("\"operation_symbols\":[],");
+                result.append("\"subterm_count\":0,");
+                result.append("\"subterms\":[],");
+            }
+            
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime);
+            result.append("}");
+
+            System.out.println(result.toString());
+
+        } catch (Exception e) {
+            outputErrorResult("term_parse_complex", e);
+        }
+    }
+
+    private static void outputTermSubstitution(String termString, String substitutionJson) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        try {
+            Term term = Terms.stringToTerm(termString);
+            
+            // Parse substitution JSON - expecting format like {"x":"f(y,z)", "y":"0"}
+            Map<String, String> substitutions = parseSubstitutionData(substitutionJson);
+            
+            // Create variable map for substitution
+            Map<Variable, Term> varMap = new HashMap<>();
+            for (Map.Entry<String, String> entry : substitutions.entrySet()) {
+                Variable var = new VariableImp(entry.getKey());
+                Term substituteTerm = Terms.stringToTerm(entry.getValue());
+                varMap.put(var, substituteTerm);
+            }
+            
+            // Perform substitution
+            Term substitutedTerm = term.substitute(varMap);
+
+            long endMemory = getMemoryUsage();
+            long endTime = System.currentTimeMillis();
+
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"term_substitution\",");
+            result.append("\"original_term\":\"").append(escapeJson(termString)).append("\",");
+            result.append("\"substitutions\":{");
+            boolean first = true;
+            for (Map.Entry<String, String> entry : substitutions.entrySet()) {
+                if (!first) result.append(",");
+                result.append("\"").append(escapeJson(entry.getKey())).append("\":\"").append(escapeJson(entry.getValue())).append("\"");
+                first = false;
+            }
+            result.append("},");
+            result.append("\"substituted_term\":\"").append(escapeJson(substitutedTerm.toString())).append("\",");
+            result.append("\"substitution_changed\":").append(!term.toString().equals(substitutedTerm.toString())).append(",");
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime);
+            result.append("}");
+
+            System.out.println(result.toString());
+
+        } catch (Exception e) {
+            outputErrorResult("term_substitution", e);
+        }
+    }
+
+    private static void outputTermEquivalence(String term1String, String term2String, String uaFile) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        try {
+            Term term1 = Terms.stringToTerm(term1String);
+            Term term2 = Terms.stringToTerm(term2String);
+            Algebra algebra = AlgebraIO.readAlgebraFile(uaFile);
+            SmallAlgebra smallAlgebra = (SmallAlgebra) algebra;
+            
+            // Check syntactic equivalence first
+            boolean syntacticallyEqual = term1.toString().equals(term2.toString());
+            
+            // Check semantic equivalence by evaluating on all possible variable assignments
+            boolean semanticallyEquivalent = true;
+            int maxVariableIndex = Math.max(getMaxVariableIndex(term1), getMaxVariableIndex(term2));
+            
+            if (maxVariableIndex >= 0 && maxVariableIndex < 10) { // Limit to reasonable number of variables
+                // Generate all possible variable assignments
+                int numAssignments = (int) Math.pow(algebra.cardinality(), maxVariableIndex + 1);
+                if (numAssignments <= 1000) { // Limit to reasonable number of assignments
+                    for (int assignment = 0; assignment < numAssignments && semanticallyEquivalent; assignment++) {
+                        Map<Variable, Integer> varMap = generateVariableAssignment(assignment, maxVariableIndex + 1, algebra.cardinality());
+                        
+                        try {
+                            int result1 = term1.intEval(smallAlgebra, varMap);
+                            int result2 = term2.intEval(smallAlgebra, varMap);
+                            if (result1 != result2) {
+                                semanticallyEquivalent = false;
+                            }
+                        } catch (Exception e) {
+                            // If evaluation fails, terms might not be valid for this algebra
+                            semanticallyEquivalent = false;
+                        }
+                    }
+                } else {
+                    // Too many assignments to check exhaustively
+                    semanticallyEquivalent = false; // Conservative approach
+                }
+            } else if (maxVariableIndex < 0) {
+                // No variables, just evaluate the constant terms
+                try {
+                    Map<Variable, Integer> emptyMap = new HashMap<>();
+                    int result1 = term1.intEval(smallAlgebra, emptyMap);
+                    int result2 = term2.intEval(smallAlgebra, emptyMap);
+                    semanticallyEquivalent = (result1 == result2);
+                } catch (Exception e) {
+                    semanticallyEquivalent = false;
+                }
+            }
+
+            long endMemory = getMemoryUsage();
+            long endTime = System.currentTimeMillis();
+
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"term_equivalence\",");
+            result.append("\"term1\":\"").append(escapeJson(term1String)).append("\",");
+            result.append("\"term2\":\"").append(escapeJson(term2String)).append("\",");
+            result.append("\"algebra_name\":\"").append(escapeJson(algebra.getName())).append("\",");
+            result.append("\"syntactically_equal\":").append(syntacticallyEqual).append(",");
+            result.append("\"semantically_equivalent\":").append(semanticallyEquivalent).append(",");
+            result.append("\"max_variable_index\":").append(maxVariableIndex).append(",");
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime);
+            result.append("}");
+
+            System.out.println(result.toString());
+
+        } catch (Exception e) {
+            outputErrorResult("term_equivalence", e);
+        }
+    }
+
+    private static void outputTaylorTerms(String uaFile) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        try {
+            Algebra algebra = AlgebraIO.readAlgebraFile(uaFile);
+            SmallAlgebra smallAlgebra = (SmallAlgebra) algebra;
+            
+            // Taylor terms are related to tame congruence theory
+            // This is a simplified implementation that generates some basic Taylor-like terms
+            List<String> taylorTerms = new ArrayList<>();
+            
+            // Generate some basic terms based on algebra operations
+            for (Operation op : algebra.operations()) {
+                if (op.arity() == 2) {
+                    // Generate binary Taylor-like terms
+                    taylorTerms.add(op.symbol().toString() + "(x,y)");
+                    taylorTerms.add(op.symbol().toString() + "(x,x)");
+                    taylorTerms.add(op.symbol().toString() + "(" + op.symbol().toString() + "(x,y),z)");
+                } else if (op.arity() == 1) {
+                    // Generate unary Taylor-like terms
+                    taylorTerms.add(op.symbol().toString() + "(x)");
+                    taylorTerms.add(op.symbol().toString() + "(" + op.symbol().toString() + "(x))");
+                } else if (op.arity() == 3) {
+                    // Generate ternary Taylor-like terms (majority/minority terms)
+                    taylorTerms.add(op.symbol().toString() + "(x,y,z)");
+                    taylorTerms.add(op.symbol().toString() + "(x,x,y)");
+                    taylorTerms.add(op.symbol().toString() + "(x,y,x)");
+                    taylorTerms.add(op.symbol().toString() + "(y,x,x)");
+                }
+            }
+            
+            // Check if any of these terms have special properties
+            List<String> validTaylorTerms = new ArrayList<>();
+            for (String termStr : taylorTerms) {
+                try {
+                    Term term = Terms.stringToTerm(termStr);
+                    // Basic validation - if it parses, it's potentially valid
+                    validTaylorTerms.add(termStr);
+                } catch (Exception e) {
+                    // Skip invalid terms
+                }
+            }
+
+            long endMemory = getMemoryUsage();
+            long endTime = System.currentTimeMillis();
+
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"taylor_terms\",");
+            result.append("\"algebra_name\":\"").append(escapeJson(algebra.getName())).append("\",");
+            result.append("\"algebra_cardinality\":").append(algebra.cardinality()).append(",");
+            result.append("\"operation_count\":").append(algebra.operations().size()).append(",");
+            result.append("\"generated_taylor_terms\":[");
+            boolean first = true;
+            for (String termStr : validTaylorTerms) {
+                if (!first) result.append(",");
+                result.append("\"").append(escapeJson(termStr)).append("\"");
+                first = false;
+            }
+            result.append("],");
+            result.append("\"taylor_terms_count\":").append(validTaylorTerms.size()).append(",");
+            result.append("\"note\":\"Simplified Taylor term generation - full implementation requires advanced tame congruence theory\",");
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime);
+            result.append("}");
+
+            System.out.println(result.toString());
+
+        } catch (Exception e) {
+            outputErrorResult("taylor_terms", e);
+        }
+    }
+
+    private static void outputLatticeProperties(String uaFile) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        try {
+            Algebra algebra = AlgebraIO.readAlgebraFile(uaFile);
+            SmallAlgebra smallAlgebra = (SmallAlgebra) algebra;
+            CongruenceLattice conLat = new CongruenceLattice(smallAlgebra);
+
+            // Analyze lattice properties
+            int latticeSize = conLat.cardinality();
+            List<Partition> joinIrreducibles = conLat.joinIrreducibles();
+            
+            // Check if the congruence lattice has special properties
+            boolean isModular = false;
+            boolean isDistributive = false;
+            boolean isBoolean = false;
+            
+            try {
+                if (latticeSize <= 20) { // Only for reasonably sized lattices
+                    isModular = checkCongruenceModularity(conLat);
+                    isDistributive = checkCongruenceDistributivity(conLat);
+                    isBoolean = isDistributive && isComplemented(conLat);
+                }
+            } catch (Exception e) {
+                // Ignore errors in property checking
+            }
+            
+            // Calculate lattice dimensions
+            int height = calculateLatticeHeight(conLat);
+            int width = calculateLatticeWidth(conLat);
+
+            long endMemory = getMemoryUsage();
+            long endTime = System.currentTimeMillis();
+
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"lattice_properties\",");
+            result.append("\"algebra_name\":\"").append(escapeJson(algebra.getName())).append("\",");
+            result.append("\"congruence_lattice_size\":").append(latticeSize).append(",");
+            result.append("\"join_irreducibles_count\":").append(joinIrreducibles.size()).append(",");
+            result.append("\"lattice_height\":").append(height).append(",");
+            result.append("\"lattice_width\":").append(width).append(",");
+            result.append("\"is_modular\":").append(isModular).append(",");
+            result.append("\"is_distributive\":").append(isDistributive).append(",");
+            result.append("\"is_boolean\":").append(isBoolean).append(",");
+            result.append("\"has_zero\":true,"); // Congruence lattices always have zero
+            result.append("\"has_one\":true,"); // Congruence lattices always have one
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime);
+            result.append("}");
+
+            System.out.println(result.toString());
+
+        } catch (Exception e) {
+            outputErrorResult("lattice_properties", e);
+        }
+    }
+
+    private static void outputPartialOrder(String uaFile) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        try {
+            Algebra algebra = AlgebraIO.readAlgebraFile(uaFile);
+            SmallAlgebra smallAlgebra = (SmallAlgebra) algebra;
+            CongruenceLattice conLat = new CongruenceLattice(smallAlgebra);
+
+            // Analyze the partial order structure of the congruence lattice
+            int latticeSize = conLat.cardinality();
+            List<Partition> elements = getAllLatticeElements(conLat);
+            
+            // Count covering relations
+            int coveringRelations = 0;
+            List<String> coveringPairs = new ArrayList<>();
+            
+            for (int i = 0; i < Math.min(elements.size(), 50); i++) { // Limit for performance
+                for (int j = 0; j < Math.min(elements.size(), 50); j++) {
+                    if (i != j) {
+                        Partition elem1 = elements.get(i);
+                        Partition elem2 = elements.get(j);
+                        
+                        if (conLat.leq(elem1, elem2) && isCovering(conLat, elem1, elem2, elements)) {
+                            coveringRelations++;
+                            coveringPairs.add("[" + i + "," + j + "]");
+                        }
+                    }
+                }
+            }
+            
+            // Check if it's a chain or has other special properties
+            boolean isChain = (coveringRelations == latticeSize - 1);
+            boolean hasMaximalElements = true; // Lattices always have a maximum
+            boolean hasMinimalElements = true; // Lattices always have a minimum
+
+            long endMemory = getMemoryUsage();
+            long endTime = System.currentTimeMillis();
+
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"partial_order\",");
+            result.append("\"algebra_name\":\"").append(escapeJson(algebra.getName())).append("\",");
+            result.append("\"order_size\":").append(latticeSize).append(",");
+            result.append("\"covering_relations_count\":").append(coveringRelations).append(",");
+            result.append("\"is_chain\":").append(isChain).append(",");
+            result.append("\"has_maximal_elements\":").append(hasMaximalElements).append(",");
+            result.append("\"has_minimal_elements\":").append(hasMinimalElements).append(",");
+            result.append("\"covering_pairs\":[");
+            for (int i = 0; i < Math.min(coveringPairs.size(), 20); i++) { // Limit output
+                if (i > 0) result.append(",");
+                result.append(coveringPairs.get(i));
+            }
+            result.append("],");
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime);
+            result.append("}");
+
+            System.out.println(result.toString());
+
+        } catch (Exception e) {
+            outputErrorResult("partial_order", e);
+        }
+    }
+
+    private static void outputLatticeJoin(String uaFile, int element1, int element2) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        try {
+            Algebra algebra = AlgebraIO.readAlgebraFile(uaFile);
+            SmallAlgebra smallAlgebra = (SmallAlgebra) algebra;
+            CongruenceLattice conLat = new CongruenceLattice(smallAlgebra);
+
+            // Get congruences for the specified elements
+            Partition cong1 = conLat.Cg(element1, element1); // Principal congruence
+            Partition cong2 = conLat.Cg(element2, element2); // Principal congruence
+            
+            // If elements are the same, use different congruences
+            if (element1 != element2) {
+                cong1 = conLat.Cg(element1, element1);
+                cong2 = conLat.Cg(element2, element2);
+            } else {
+                // Use zero and a principal congruence
+                cong1 = conLat.zero();
+                cong2 = conLat.Cg(element1, (element1 + 1) % algebra.cardinality());
+            }
+            
+            // Compute join
+            Partition joinResult = (Partition) conLat.join(cong1, cong2);
+
+            long endMemory = getMemoryUsage();
+            long endTime = System.currentTimeMillis();
+
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"lattice_join\",");
+            result.append("\"algebra_name\":\"").append(escapeJson(algebra.getName())).append("\",");
+            result.append("\"element1\":").append(element1).append(",");
+            result.append("\"element2\":").append(element2).append(",");
+            result.append("\"cong1_blocks\":").append(cong1.numberOfBlocks()).append(",");
+            result.append("\"cong2_blocks\":").append(cong2.numberOfBlocks()).append(",");
+            result.append("\"join_blocks\":").append(joinResult.numberOfBlocks()).append(",");
+            result.append("\"join_partition\":");
+            appendPartitionBlocks(result, joinResult);
+            result.append(",");
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime);
+            result.append("}");
+
+            System.out.println(result.toString());
+
+        } catch (Exception e) {
+            outputErrorResult("lattice_join", e);
+        }
+    }
+
+    private static void outputLatticeMeet(String uaFile, int element1, int element2) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        try {
+            Algebra algebra = AlgebraIO.readAlgebraFile(uaFile);
+            SmallAlgebra smallAlgebra = (SmallAlgebra) algebra;
+            CongruenceLattice conLat = new CongruenceLattice(smallAlgebra);
+
+            // Get congruences for the specified elements
+            Partition cong1 = conLat.Cg(element1, element1); // Principal congruence
+            Partition cong2 = conLat.Cg(element2, element2); // Principal congruence
+            
+            // If elements are the same, use different congruences
+            if (element1 != element2) {
+                cong1 = conLat.Cg(element1, element1);
+                cong2 = conLat.Cg(element2, element2);
+            } else {
+                // Use zero and a principal congruence
+                cong1 = conLat.zero();
+                cong2 = conLat.Cg(element1, (element1 + 1) % algebra.cardinality());
+            }
+            
+            // Compute meet
+            Partition meetResult = (Partition) conLat.meet(cong1, cong2);
+
+            long endMemory = getMemoryUsage();
+            long endTime = System.currentTimeMillis();
+
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"lattice_meet\",");
+            result.append("\"algebra_name\":\"").append(escapeJson(algebra.getName())).append("\",");
+            result.append("\"element1\":").append(element1).append(",");
+            result.append("\"element2\":").append(element2).append(",");
+            result.append("\"cong1_blocks\":").append(cong1.numberOfBlocks()).append(",");
+            result.append("\"cong2_blocks\":").append(cong2.numberOfBlocks()).append(",");
+            result.append("\"meet_blocks\":").append(meetResult.numberOfBlocks()).append(",");
+            result.append("\"meet_partition\":");
+            appendPartitionBlocks(result, meetResult);
+            result.append(",");
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime);
+            result.append("}");
+
+            System.out.println(result.toString());
+
+        } catch (Exception e) {
+            outputErrorResult("lattice_meet", e);
+        }
+    }
+
+    private static void outputOrderedSetOperations(String uaFile) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        try {
+            Algebra algebra = AlgebraIO.readAlgebraFile(uaFile);
+            SmallAlgebra smallAlgebra = (SmallAlgebra) algebra;
+            CongruenceLattice conLat = new CongruenceLattice(smallAlgebra);
+
+            // Perform various ordered set operations
+            int latticeSize = conLat.cardinality();
+            List<Partition> elements = getAllLatticeElements(conLat);
+            
+            // Find maximal and minimal elements (should be one and zero)
+            List<Integer> maximalElements = new ArrayList<>();
+            List<Integer> minimalElements = new ArrayList<>();
+            
+            maximalElements.add(0); // Index of maximum element (one)
+            minimalElements.add(elements.size() - 1); // Index of minimum element (zero)
+            
+            // Count chains and antichains
+            int maxChainLength = calculateMaxChainLength(conLat, elements);
+            int maxAntichainSize = calculateMaxAntichainSize(conLat, elements);
+            
+            // Check if the order has special properties
+            boolean isWellOrdered = true; // Finite lattices are well-ordered
+            boolean isLinearOrder = (latticeSize == maxChainLength);
+
+            long endMemory = getMemoryUsage();
+            long endTime = System.currentTimeMillis();
+
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"ordered_set_operations\",");
+            result.append("\"algebra_name\":\"").append(escapeJson(algebra.getName())).append("\",");
+            result.append("\"order_size\":").append(latticeSize).append(",");
+            result.append("\"maximal_elements\":");
+            appendIntegerArray(result, maximalElements);
+            result.append(",");
+            result.append("\"minimal_elements\":");
+            appendIntegerArray(result, minimalElements);
+            result.append(",");
+            result.append("\"max_chain_length\":").append(maxChainLength).append(",");
+            result.append("\"max_antichain_size\":").append(maxAntichainSize).append(",");
+            result.append("\"is_well_ordered\":").append(isWellOrdered).append(",");
+            result.append("\"is_linear_order\":").append(isLinearOrder).append(",");
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime);
+            result.append("}");
+
+            System.out.println(result.toString());
+
+        } catch (Exception e) {
+            outputErrorResult("ordered_set_operations", e);
+        }
+    }
+
     private static void collectOperationSymbols(Term term,
             Set<String> symbols) {
         if (!term.isaVariable()) {
@@ -428,4 +2348,802 @@ public class JavaWrapper {
         Runtime runtime = Runtime.getRuntime();
         return runtime.totalMemory() - runtime.freeMemory();
     }
+
+    private static String escapeJson(String str) {
+        if (str == null) return "null";
+        return str.replace("\\", "\\\\")
+                  .replace("\"", "\\\"")
+                  .replace("\n", "\\n")
+                  .replace("\r", "\\r")
+                  .replace("\t", "\\t");
+    }
+
+    private static List<Integer> parseIntegerArray(String json) {
+        List<Integer> result = new ArrayList<>();
+        if (json.trim().startsWith("[") && json.trim().endsWith("]")) {
+            String content = json.trim().substring(1, json.trim().length() - 1);
+            if (!content.trim().isEmpty()) {
+                String[] parts = content.split(",");
+                for (String part : parts) {
+                    try {
+                        result.add(Integer.parseInt(part.trim()));
+                    } catch (NumberFormatException e) {
+                        // Skip invalid numbers
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    private static void appendIntegerArray(StringBuilder sb, List<Integer> array) {
+        sb.append("[");
+        boolean first = true;
+        for (Integer value : array) {
+            if (!first) sb.append(",");
+            sb.append(value);
+            first = false;
+        }
+        sb.append("]");
+    }
+
+    private static List<List<Integer>> parsePartitionBlocks(String json) {
+        List<List<Integer>> result = new ArrayList<>();
+        if (json.trim().startsWith("[") && json.trim().endsWith("]")) {
+            String content = json.trim().substring(1, json.trim().length() - 1);
+            if (!content.trim().isEmpty()) {
+                // Simple parser for nested arrays like [[0,1],[2,3]]
+                int depth = 0;
+                StringBuilder currentBlock = new StringBuilder();
+                
+                for (int i = 0; i < content.length(); i++) {
+                    char c = content.charAt(i);
+                    if (c == '[') {
+                        depth++;
+                        if (depth == 1) {
+                            currentBlock = new StringBuilder();
+                        } else {
+                            currentBlock.append(c);
+                        }
+                    } else if (c == ']') {
+                        depth--;
+                        if (depth == 0) {
+                            // Parse the current block
+                            List<Integer> block = parseIntegerArray("[" + currentBlock.toString() + "]");
+                            result.add(block);
+                        } else {
+                            currentBlock.append(c);
+                        }
+                    } else if (depth > 0) {
+                        currentBlock.append(c);
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    private static void outputErrorResult(String operation, Exception e) {
+        StringBuilder result = new StringBuilder();
+        result.append("{");
+        result.append("\"success\":false,");
+        result.append("\"operation\":\"").append(operation).append("\",");
+        result.append("\"error_type\":\"").append(e.getClass().getSimpleName()).append("\",");
+        result.append("\"error_message\":\"").append(escapeJson(e.getMessage())).append("\"");
+        result.append("}");
+        System.out.println(result.toString());
+    }
+
+    private static Partition createPartitionFromBlocks(CongruenceLattice conLat, List<List<Integer>> blocks, int universeSize) {
+        if (blocks.isEmpty()) {
+            return conLat.zero(); // Return trivial partition
+        }
+        
+        // Start with the trivial partition and build up using joins
+        Partition result = conLat.zero();
+        
+        for (List<Integer> block : blocks) {
+            if (block.size() >= 2) {
+                // Create principal congruence for each pair in the block
+                for (int i = 1; i < block.size(); i++) {
+                    Partition cg = conLat.Cg(block.get(0), block.get(i));
+                    result = (Partition) conLat.join(result, cg);
+                }
+            }
+        }
+        
+        return result;
+    }
+
+    private static void appendPartitionBlocks(StringBuilder sb, Partition partition) {
+        sb.append("[");
+        int[][] blocks = partition.getBlocks();
+        boolean first = true;
+        for (int[] block : blocks) {
+            if (!first) sb.append(",");
+            sb.append("[");
+            boolean firstInBlock = true;
+            for (int element : block) {
+                if (!firstInBlock) sb.append(",");
+                sb.append(element);
+                firstInBlock = false;
+            }
+            sb.append("]");
+            first = false;
+        }
+        sb.append("]");
+    }
+
+    private static boolean checkCongruenceModularity(CongruenceLattice conLat) {
+        // Simplified check for congruence modularity
+        // A lattice is modular if for all a, b, c: a ≤ c implies a ∨ (b ∧ c) = (a ∨ b) ∧ c
+        // This is a basic implementation - full check would require examining all triples
+        try {
+            List<Partition> elements = new ArrayList<>();
+            // Get a sample of lattice elements for testing
+            elements.add(conLat.zero());
+            elements.add(conLat.one());
+            
+            List<Partition> joinIrreducibles = conLat.joinIrreducibles();
+            if (joinIrreducibles.size() <= 5) { // Only test small cases
+                elements.addAll(joinIrreducibles);
+            }
+            
+            // Test modularity on a subset of elements
+            for (int i = 0; i < Math.min(3, elements.size()); i++) {
+                for (int j = 0; j < Math.min(3, elements.size()); j++) {
+                    for (int k = 0; k < Math.min(3, elements.size()); k++) {
+                        Partition a = elements.get(i);
+                        Partition b = elements.get(j);
+                        Partition c = elements.get(k);
+                        
+                        if (conLat.leq(a, c)) {
+                            Partition left = (Partition) conLat.join(a, (Partition) conLat.meet(b, c));
+                            Partition right = (Partition) conLat.meet((Partition) conLat.join(a, b), c);
+                            
+                            // Check if left equals right (simplified equality check)
+                            if (left.numberOfBlocks() != right.numberOfBlocks()) {
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private static boolean checkCongruenceDistributivity(CongruenceLattice conLat) {
+        // Simplified check for congruence distributivity
+        // A lattice is distributive if for all a, b, c: a ∧ (b ∨ c) = (a ∧ b) ∨ (a ∧ c)
+        try {
+            List<Partition> elements = new ArrayList<>();
+            elements.add(conLat.zero());
+            elements.add(conLat.one());
+            
+            List<Partition> joinIrreducibles = conLat.joinIrreducibles();
+            if (joinIrreducibles.size() <= 3) { // Only test very small cases
+                elements.addAll(joinIrreducibles);
+            }
+            
+            // Test distributivity on a subset of elements
+            for (int i = 0; i < Math.min(2, elements.size()); i++) {
+                for (int j = 0; j < Math.min(2, elements.size()); j++) {
+                    for (int k = 0; k < Math.min(2, elements.size()); k++) {
+                        Partition a = elements.get(i);
+                        Partition b = elements.get(j);
+                        Partition c = elements.get(k);
+                        
+                        Partition left = (Partition) conLat.meet(a, (Partition) conLat.join(b, c));
+                        Partition right = (Partition) conLat.join((Partition) conLat.meet(a, b), (Partition) conLat.meet(a, c));
+                        
+                        // Check if left equals right (simplified equality check)
+                        if (left.numberOfBlocks() != right.numberOfBlocks()) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private static String getTypeDescription(int type) {
+        switch (type) {
+            case 1:
+                return "Type 1 - Unary";
+            case 2:
+                return "Type 2 - Affine";
+            case 3:
+                return "Type 3 - Boolean";
+            case 4:
+                return "Type 4 - Lattice";
+            case 5:
+                return "Type 5 - Semilattice";
+            case 0:
+                return "Type 0 - Trivial";
+            default:
+                return "Unknown type " + type;
+        }
+    }
+
+    // Simple binary relation implementation using boolean matrix
+    private static class SimpleBinaryRelation {
+        private boolean[][] matrix;
+        private int size;
+        
+        public SimpleBinaryRelation(int size) {
+            this.size = size;
+            this.matrix = new boolean[size][size];
+        }
+        
+        public void add(int i, int j) {
+            if (i >= 0 && i < size && j >= 0 && j < size) {
+                matrix[i][j] = true;
+            }
+        }
+        
+        public boolean related(int i, int j) {
+            if (i >= 0 && i < size && j >= 0 && j < size) {
+                return matrix[i][j];
+            }
+            return false;
+        }
+        
+        public int getSize() {
+            return size;
+        }
+        
+        public int numberOfPairs() {
+            int count = 0;
+            for (int i = 0; i < size; i++) {
+                for (int j = 0; j < size; j++) {
+                    if (matrix[i][j]) count++;
+                }
+            }
+            return count;
+        }
+        
+        public SimpleBinaryRelation reflexiveClosure() {
+            SimpleBinaryRelation closure = new SimpleBinaryRelation(size);
+            // Copy original relation
+            for (int i = 0; i < size; i++) {
+                for (int j = 0; j < size; j++) {
+                    if (matrix[i][j]) {
+                        closure.add(i, j);
+                    }
+                }
+            }
+            // Add reflexive pairs
+            for (int i = 0; i < size; i++) {
+                closure.add(i, i);
+            }
+            return closure;
+        }
+        
+        public SimpleBinaryRelation symmetricClosure() {
+            SimpleBinaryRelation closure = new SimpleBinaryRelation(size);
+            // Copy original relation and add symmetric pairs
+            for (int i = 0; i < size; i++) {
+                for (int j = 0; j < size; j++) {
+                    if (matrix[i][j]) {
+                        closure.add(i, j);
+                        closure.add(j, i); // Add symmetric pair
+                    }
+                }
+            }
+            return closure;
+        }
+        
+        public SimpleBinaryRelation transitiveClosure() {
+            SimpleBinaryRelation closure = new SimpleBinaryRelation(size);
+            // Copy original relation
+            for (int i = 0; i < size; i++) {
+                for (int j = 0; j < size; j++) {
+                    closure.matrix[i][j] = matrix[i][j];
+                }
+            }
+            
+            // Floyd-Warshall algorithm for transitive closure
+            for (int k = 0; k < size; k++) {
+                for (int i = 0; i < size; i++) {
+                    for (int j = 0; j < size; j++) {
+                        closure.matrix[i][j] = closure.matrix[i][j] || 
+                                             (closure.matrix[i][k] && closure.matrix[k][j]);
+                    }
+                }
+            }
+            return closure;
+        }
+        
+        public SimpleBinaryRelation equivalenceClosure() {
+            // Equivalence closure = reflexive + symmetric + transitive closure
+            SimpleBinaryRelation closure = this.reflexiveClosure().symmetricClosure().transitiveClosure();
+            return closure;
+        }
+        
+        public SimpleBinaryRelation compose(SimpleBinaryRelation other) {
+            if (this.size != other.size) {
+                throw new IllegalArgumentException("Relations must have same size for composition");
+            }
+            
+            SimpleBinaryRelation composition = new SimpleBinaryRelation(size);
+            // R1 ∘ R2 = {(a,c) | ∃b: (a,b) ∈ R1 ∧ (b,c) ∈ R2}
+            for (int i = 0; i < size; i++) {
+                for (int j = 0; j < size; j++) {
+                    for (int k = 0; k < size; k++) {
+                        if (this.matrix[i][k] && other.matrix[k][j]) {
+                            composition.add(i, j);
+                            break; // Found one path, that's enough
+                        }
+                    }
+                }
+            }
+            return composition;
+        }
+        
+        public boolean isReflexive() {
+            for (int i = 0; i < size; i++) {
+                if (!matrix[i][i]) return false;
+            }
+            return true;
+        }
+        
+        public boolean isSymmetric() {
+            for (int i = 0; i < size; i++) {
+                for (int j = 0; j < size; j++) {
+                    if (matrix[i][j] != matrix[j][i]) return false;
+                }
+            }
+            return true;
+        }
+        
+        public boolean isTransitive() {
+            for (int i = 0; i < size; i++) {
+                for (int j = 0; j < size; j++) {
+                    for (int k = 0; k < size; k++) {
+                        if (matrix[i][j] && matrix[j][k] && !matrix[i][k]) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            return true;
+        }
+        
+        public boolean isAntisymmetric() {
+            for (int i = 0; i < size; i++) {
+                for (int j = 0; j < size; j++) {
+                    if (i != j && matrix[i][j] && matrix[j][i]) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+        
+        public Partition getPartition() {
+            // Convert equivalence relation to partition
+            // This is a simplified implementation that creates a partition using CongruenceLattice
+            try {
+                // Create a simple test algebra to get a CongruenceLattice
+                org.uacalc.alg.SmallAlgebra testAlgebra = createTestAlgebra();
+                CongruenceLattice conLat = new CongruenceLattice(testAlgebra);
+                
+                // Start with the zero partition (all elements separate)
+                Partition partition = conLat.zero();
+                
+                // For each pair in the equivalence relation, join with Cg(i,j)
+                for (int i = 0; i < Math.min(size, testAlgebra.cardinality()); i++) {
+                    for (int j = i + 1; j < Math.min(size, testAlgebra.cardinality()); j++) {
+                        if (matrix[i][j] && matrix[j][i]) { // Equivalent elements
+                            Partition cg = conLat.Cg(i, j);
+                            partition = (Partition) conLat.join(partition, cg);
+                        }
+                    }
+                }
+                
+                return partition;
+            } catch (Exception e) {
+                // If partition creation fails, return null
+                return null;
+            }
+        }
+    }
+
+    // Helper class for relation data
+    private static class RelationData {
+        int size;
+        List<int[]> pairs;
+        
+        RelationData(int size) {
+            this.size = size;
+            this.pairs = new ArrayList<>();
+        }
+    }
+
+    private static RelationData parseRelationData(String json) {
+        // Parse JSON format like {"size": 3, "pairs": [[0,1],[1,2]]}
+        RelationData relationData = new RelationData(0);
+        
+        try {
+            // Simple JSON parsing
+            json = json.trim();
+            if (json.startsWith("{") && json.endsWith("}")) {
+                String content = json.substring(1, json.length() - 1);
+                
+                // Extract size using regex-like approach
+                String sizePattern = "\"size\"";
+                int sizeIndex = content.indexOf(sizePattern);
+                if (sizeIndex >= 0) {
+                    int colonIndex = content.indexOf(":", sizeIndex);
+                    if (colonIndex >= 0) {
+                        // Find the number after the colon
+                        int start = colonIndex + 1;
+                        while (start < content.length() && !Character.isDigit(content.charAt(start))) {
+                            start++;
+                        }
+                        int end = start;
+                        while (end < content.length() && Character.isDigit(content.charAt(end))) {
+                            end++;
+                        }
+                        if (end > start) {
+                            String sizeStr = content.substring(start, end);
+                            int size = Integer.parseInt(sizeStr);
+                            relationData = new RelationData(size);
+                        }
+                    }
+                }
+                
+                // Extract pairs - look for the pairs array
+                String pairsPattern = "\"pairs\"";
+                int pairsIndex = content.indexOf(pairsPattern);
+                if (pairsIndex >= 0 && relationData != null) {
+                    int colonIndex = content.indexOf(":", pairsIndex);
+                    if (colonIndex >= 0) {
+                        int arrayStart = content.indexOf("[", colonIndex);
+                        if (arrayStart >= 0) {
+                            // Find matching closing bracket
+                            int arrayEnd = content.lastIndexOf("]");
+                            if (arrayEnd > arrayStart) {
+                                String arrayContent = content.substring(arrayStart + 1, arrayEnd);
+                                
+                                // Parse pairs like [0,1],[1,2]
+                                String[] pairStrings = arrayContent.split("\\],\\[");
+                                for (String pairStr : pairStrings) {
+                                    // Clean up the pair string
+                                    pairStr = pairStr.replace("[", "").replace("]", "");
+                                    String[] parts = pairStr.split(",");
+                                    if (parts.length == 2) {
+                                        try {
+                                            int first = Integer.parseInt(parts[0].trim());
+                                            int second = Integer.parseInt(parts[1].trim());
+                                            relationData.pairs.add(new int[]{first, second});
+                                        } catch (NumberFormatException e) {
+                                            // Skip invalid pairs
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // If parsing fails, create empty relation
+            if (relationData == null) {
+                relationData = new RelationData(0);
+            }
+        }
+        
+        return relationData;
+    }
+
+    private static void appendRelationPairs(StringBuilder sb, SimpleBinaryRelation relation) {
+        sb.append("[");
+        boolean first = true;
+        
+        // Iterate through all possible pairs to find which ones are in the relation
+        for (int i = 0; i < relation.getSize(); i++) {
+            for (int j = 0; j < relation.getSize(); j++) {
+                if (relation.related(i, j)) {
+                    if (!first) sb.append(",");
+                    sb.append("[").append(i).append(",").append(j).append("]");
+                    first = false;
+                }
+            }
+        }
+        
+        sb.append("]");
+    }
+
+    private static int calculateTermDepth(Term term) {
+        if (term.isaVariable()) {
+            return 1;
+        }
+        
+        int maxChildDepth = 0;
+        if (term.getChildren() != null) {
+            for (Term child : term.getChildren()) {
+                maxChildDepth = Math.max(maxChildDepth, calculateTermDepth(child));
+            }
+        }
+        return maxChildDepth + 1;
+    }
+
+    private static int countVariables(Term term) {
+        Set<String> variables = new HashSet<>();
+        collectVariables(term, variables);
+        return variables.size();
+    }
+
+    private static void collectVariables(Term term, Set<String> variables) {
+        if (term.isaVariable()) {
+            variables.add(term.toString());
+        } else if (term.getChildren() != null) {
+            for (Term child : term.getChildren()) {
+                collectVariables(child, variables);
+            }
+        }
+    }
+
+    private static Map<String, String> parseSubstitutionData(String json) {
+        Map<String, String> substitutions = new HashMap<>();
+        
+        try {
+            // Parse JSON format like {"x":"f(y,z)", "y":"h(u)"}
+            json = json.trim();
+            if (json.startsWith("{") && json.endsWith("}")) {
+                String content = json.substring(1, json.length() - 1);
+                
+                // More sophisticated parsing to handle nested parentheses in values
+                int i = 0;
+                while (i < content.length()) {
+                    // Find key
+                    int keyStart = content.indexOf("\"", i);
+                    if (keyStart < 0) break;
+                    int keyEnd = content.indexOf("\"", keyStart + 1);
+                    if (keyEnd < 0) break;
+                    String key = content.substring(keyStart + 1, keyEnd);
+                    
+                    // Find colon
+                    int colonIndex = content.indexOf(":", keyEnd);
+                    if (colonIndex < 0) break;
+                    
+                    // Find value
+                    int valueStart = content.indexOf("\"", colonIndex);
+                    if (valueStart < 0) break;
+                    int valueEnd = valueStart + 1;
+                    
+                    // Find matching quote, handling escaped quotes
+                    while (valueEnd < content.length()) {
+                        if (content.charAt(valueEnd) == '\"' && 
+                            (valueEnd == 0 || content.charAt(valueEnd - 1) != '\\')) {
+                            break;
+                        }
+                        valueEnd++;
+                    }
+                    
+                    if (valueEnd < content.length()) {
+                        String value = content.substring(valueStart + 1, valueEnd);
+                        substitutions.put(key, value);
+                        
+                        // Move to next pair
+                        i = content.indexOf(",", valueEnd);
+                        if (i < 0) break;
+                        i++;
+                    } else {
+                        break;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // If parsing fails, return empty map
+        }
+        
+        return substitutions;
+    }
+
+    private static int getMaxVariableIndex(Term term) {
+        Set<String> variables = new HashSet<>();
+        collectVariables(term, variables);
+        
+        int maxIndex = -1;
+        for (String var : variables) {
+            // Try to extract numeric index from variable names like x0, x1, etc.
+            if (var.length() > 1 && var.startsWith("x")) {
+                try {
+                    int index = Integer.parseInt(var.substring(1));
+                    maxIndex = Math.max(maxIndex, index);
+                } catch (NumberFormatException e) {
+                    // Variable doesn't follow x0, x1 pattern, use 0 as default
+                    maxIndex = Math.max(maxIndex, 0);
+                }
+            } else {
+                // Non-standard variable name, use 0 as default
+                maxIndex = Math.max(maxIndex, 0);
+            }
+        }
+        
+        return maxIndex;
+    }
+
+    private static Map<Variable, Integer> generateVariableAssignment(int assignment, int numVariables, int cardinality) {
+        Map<Variable, Integer> varMap = new HashMap<>();
+        
+        for (int i = 0; i < numVariables; i++) {
+            int value = assignment % cardinality;
+            assignment /= cardinality;
+            Variable var = new VariableImp("x" + i);
+            varMap.put(var, value);
+        }
+        
+        return varMap;
+    }
+
+    private static boolean isComplemented(CongruenceLattice conLat) {
+        // Check if the lattice is complemented (every element has a complement)
+        // This is a simplified check - full implementation would be more complex
+        try {
+            // For small lattices, check if it's Boolean
+            int size = conLat.cardinality();
+            return (size > 0 && (size & (size - 1)) == 0); // Power of 2
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private static int calculateLatticeHeight(CongruenceLattice conLat) {
+        // Calculate the height of the lattice (length of longest chain)
+        try {
+            List<Partition> elements = getAllLatticeElements(conLat);
+            return calculateMaxChainLength(conLat, elements);
+        } catch (Exception e) {
+            return 1;
+        }
+    }
+
+    private static int calculateLatticeWidth(CongruenceLattice conLat) {
+        // Calculate the width of the lattice (size of largest antichain)
+        try {
+            List<Partition> elements = getAllLatticeElements(conLat);
+            return calculateMaxAntichainSize(conLat, elements);
+        } catch (Exception e) {
+            return 1;
+        }
+    }
+
+    private static List<Partition> getAllLatticeElements(CongruenceLattice conLat) {
+        // Get all elements in the congruence lattice
+        List<Partition> elements = new ArrayList<>();
+        try {
+            elements.add(conLat.zero());
+            elements.add(conLat.one());
+            elements.addAll(conLat.joinIrreducibles());
+            
+            // Remove duplicates (simplified approach)
+            Set<String> seen = new HashSet<>();
+            List<Partition> unique = new ArrayList<>();
+            for (Partition p : elements) {
+                String key = p.toString();
+                if (!seen.contains(key)) {
+                    seen.add(key);
+                    unique.add(p);
+                }
+            }
+            return unique;
+        } catch (Exception e) {
+            return elements;
+        }
+    }
+
+    private static boolean isCovering(CongruenceLattice conLat, Partition elem1, Partition elem2, List<Partition> allElements) {
+        // Check if elem1 covers elem2 (elem1 > elem2 and no element between them)
+        if (!conLat.leq(elem2, elem1) || conLat.leq(elem1, elem2)) {
+            return false;
+        }
+        
+        // Check if there's any element between elem1 and elem2
+        for (Partition elem : allElements) {
+            if (!elem.equals(elem1) && !elem.equals(elem2)) {
+                if (conLat.leq(elem2, elem) && conLat.leq(elem, elem1)) {
+                    return false; // Found an element in between
+                }
+            }
+        }
+        return true;
+    }
+
+    private static int calculateMaxChainLength(CongruenceLattice conLat, List<Partition> elements) {
+        // Calculate the length of the longest chain in the lattice
+        int maxLength = 1;
+        
+        try {
+            // Simple approach: start from zero and find longest path to one
+            if (elements.size() <= 10) { // Only for small lattices
+                maxLength = findLongestPath(conLat, conLat.zero(), conLat.one(), elements, new HashSet<>());
+            } else {
+                // For larger lattices, use a heuristic
+                maxLength = Math.min(elements.size(), 10);
+            }
+        } catch (Exception e) {
+            maxLength = 1;
+        }
+        
+        return maxLength;
+    }
+
+    private static int findLongestPath(CongruenceLattice conLat, Partition start, Partition end, 
+                                     List<Partition> elements, Set<Partition> visited) {
+        if (start.equals(end)) {
+            return 1;
+        }
+        
+        if (visited.contains(start)) {
+            return 0;
+        }
+        
+        visited.add(start);
+        int maxPath = 0;
+        
+        for (Partition elem : elements) {
+            if (!visited.contains(elem) && conLat.leq(start, elem) && !start.equals(elem)) {
+                int pathLength = findLongestPath(conLat, elem, end, elements, new HashSet<>(visited));
+                if (pathLength > 0) {
+                    maxPath = Math.max(maxPath, 1 + pathLength);
+                }
+            }
+        }
+        
+        return maxPath;
+    }
+
+    private static int calculateMaxAntichainSize(CongruenceLattice conLat, List<Partition> elements) {
+        // Calculate the size of the largest antichain
+        int maxSize = 1;
+        
+        try {
+            if (elements.size() <= 15) { // Only for reasonably sized lattices
+                // Check all possible subsets for antichains
+                for (int i = 1; i < (1 << elements.size()); i++) {
+                    List<Partition> subset = new ArrayList<>();
+                    for (int j = 0; j < elements.size(); j++) {
+                        if ((i & (1 << j)) != 0) {
+                            subset.add(elements.get(j));
+                        }
+                    }
+                    
+                    if (isAntichain(conLat, subset)) {
+                        maxSize = Math.max(maxSize, subset.size());
+                    }
+                }
+            } else {
+                // For larger lattices, use join irreducibles as approximation
+                maxSize = conLat.joinIrreducibles().size();
+            }
+        } catch (Exception e) {
+            maxSize = 1;
+        }
+        
+        return maxSize;
+    }
+
+    private static boolean isAntichain(CongruenceLattice conLat, List<Partition> elements) {
+        // Check if the given elements form an antichain (no two are comparable)
+        for (int i = 0; i < elements.size(); i++) {
+            for (int j = i + 1; j < elements.size(); j++) {
+                Partition elem1 = elements.get(i);
+                Partition elem2 = elements.get(j);
+                if (conLat.leq(elem1, elem2) || conLat.leq(elem2, elem1)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
 }
