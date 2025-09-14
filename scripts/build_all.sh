@@ -28,6 +28,16 @@ echo "1. Building Java components..."
 echo "------------------------------"
 if command -v ant &> /dev/null; then
     ant dist
+    # Copy uacalc.jar to jars/ directory for compatibility tests
+    if [[ -f "../dist/lib/uacalc.jar" ]]; then
+        cp ../dist/lib/uacalc.jar jars/uacalc.jar
+        echo "✓ Copied uacalc.jar to jars/ directory"
+    fi
+    # Compile JavaWrapper for compatibility tests
+    if command -v javac &> /dev/null; then
+        javac -cp "jars/*" scripts/JavaWrapper.java
+        echo "✓ JavaWrapper compiled successfully"
+    fi
     echo "✓ Java components built successfully"
 else
     echo "⚠ Apache Ant not found. Skipping Java build."
@@ -88,6 +98,10 @@ echo "Running setup verification..."
 python scripts/test_setup.py
 
 echo ""
+echo "Running Java compatibility verification..."
+python scripts/test_java_compatibility.py
+
+echo ""
 echo "=================================="
 echo "🎉 All components built successfully!"
 echo ""
@@ -95,8 +109,10 @@ echo "You can now:"
 echo "  - Use the Python API: import uacalc"
 echo "  - Use the Rust library: cargo run --example <example>"
 echo "  - Use the Java JAR: java -jar ../dist/lib/uacalc.jar"
+echo "  - Run Java compatibility tests: python -m pytest tests/python/test_java_compatibility.py"
 echo ""
 echo "For development:"
 echo "  - Run Python tests: python -m pytest tests/python/"
 echo "  - Run Rust tests: cargo test"
+echo "  - Run Java compatibility tests: python -m pytest tests/python/test_java_compatibility.py"
 echo "  - Build Java: ant dist"
