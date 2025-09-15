@@ -376,7 +376,7 @@
   - Test file generation with various algebra types and complexities
   - _Requirements: 6.2, 6.4_
 
-- [ ] 11. Implement Utility Tests (org.uacalc.util)
+- [x] 11. Implement Utility Tests (org.uacalc.util)
   - Create tests for utility classes and helper functions
   - Implement integer array and sequence generation testing
   - Add Horner encoding and mathematical utility testing
@@ -388,13 +388,13 @@
   - Test array serialization and deserialization
   - _Requirements: 7.4_
 
-- [ ] 11.2 Implement HornerCompatibilityTest Class
+- [x] 11.2 Implement HornerCompatibilityTest Class
   - Test Horner encoding and decoding operations
   - Verify mathematical correctness of Horner computations
   - Test edge cases and boundary conditions
   - _Requirements: 7.4_
 
-- [ ] 11.3 Implement SequenceGeneratorCompatibilityTest Class
+- [x] 11.3 Implement SequenceGeneratorCompatibilityTest Class
   - Test sequence generation utilities and algorithms
   - Verify sequence properties and mathematical correctness
   - Test performance and memory usage of sequence operations
