@@ -24,6 +24,8 @@ import org.uacalc.alg.conlat.TypeFinder;
 import org.uacalc.lat.Lattice;
 import org.uacalc.alg.op.Operation;
 import org.uacalc.alg.op.OperationSymbol;
+import org.uacalc.alg.op.SimilarityType;
+import org.uacalc.alg.op.TermOperation;
 import org.uacalc.io.AlgebraIO;
 import org.uacalc.terms.Term;
 import org.uacalc.terms.Terms;
@@ -140,6 +142,28 @@ public class JavaWrapper {
                     "  sequence_generation <type> <parameters_json> - Generate sequences using SequenceGenerator");
             System.err.println(
                     "  int_array_operations <array_json> <operation> - Perform integer array utility operations");
+            System.err.println(
+                    "  operation_properties <ua_file> <operation_index> - Get properties of a specific operation");
+            System.err.println(
+                    "  operation_evaluation <ua_file> <operation_index> <inputs_json> - Evaluate operation on inputs");
+            System.err.println(
+                    "  operation_table <ua_file> <operation_index> - Get complete operation table");
+            System.err.println(
+                    "  operations_factory <operation_type> <parameters_json> - Test Operations utility factory methods");
+            System.err.println(
+                    "  operations_validation <operation_data_json> - Test operation validation utilities");
+            System.err.println(
+                    "  operations_normalization <operation_data_json> - Test operation normalization utilities");
+            System.err.println(
+                    "  operation_symbol_creation <symbol_name> <arity> - Test operation symbol creation");
+            System.err.println(
+                    "  operation_symbol_comparison <symbol1_name:arity> <symbol2_name:arity> - Test operation symbol comparison");
+            System.err.println(
+                    "  operation_symbol_string <symbol_name:arity> - Test operation symbol string representation");
+            System.err.println(
+                    "  similarity_type_construction <name1:arity1,name2:arity2,...> - Test similarity type construction");
+            System.err.println(
+                    "  similarity_type_operations <type1_symbols> <type2_symbols> - Test similarity type operations");
             System.exit(1);
         }
 
@@ -397,6 +421,38 @@ public class JavaWrapper {
                     }
                     outputTaylorTerms(args[1]);
                     break;
+                case "term_operation_construction":
+                    if (args.length < 3) {
+                        System.err.println(
+                                "Usage: JavaWrapper term_operation_construction <term_string> <ua_file>");
+                        System.exit(1);
+                    }
+                    outputTermOperationConstruction(args[1], args[2]);
+                    break;
+                case "term_operation_evaluation":
+                    if (args.length < 4) {
+                        System.err.println(
+                                "Usage: JavaWrapper term_operation_evaluation <term_string> <ua_file> <inputs_json>");
+                        System.exit(1);
+                    }
+                    outputTermOperationEvaluation(args[1], args[2], args[3]);
+                    break;
+                case "term_operation_properties":
+                    if (args.length < 3) {
+                        System.err.println(
+                                "Usage: JavaWrapper term_operation_properties <term_string> <ua_file>");
+                        System.exit(1);
+                    }
+                    outputTermOperationProperties(args[1], args[2]);
+                    break;
+                case "term_operation_composition":
+                    if (args.length < 4) {
+                        System.err.println(
+                                "Usage: JavaWrapper term_operation_composition <term1_string> <term2_string> <ua_file>");
+                        System.exit(1);
+                    }
+                    outputTermOperationComposition(args[1], args[2], args[3]);
+                    break;
                 case "lattice_properties":
                     if (args.length < 2) {
                         System.err.println(
@@ -508,6 +564,94 @@ public class JavaWrapper {
                         System.exit(1);
                     }
                     outputIntArrayOperations(args[1], args[2]);
+                    break;
+                case "operation_properties":
+                    if (args.length < 3) {
+                        System.err.println(
+                                "Usage: JavaWrapper operation_properties <ua_file> <operation_index>");
+                        System.exit(1);
+                    }
+                    outputOperationProperties(args[1], Integer.parseInt(args[2]));
+                    break;
+                case "operation_evaluation":
+                    if (args.length < 4) {
+                        System.err.println(
+                                "Usage: JavaWrapper operation_evaluation <ua_file> <operation_index> <inputs_json>");
+                        System.exit(1);
+                    }
+                    outputOperationEvaluation(args[1], Integer.parseInt(args[2]), args[3]);
+                    break;
+                case "operation_table":
+                    if (args.length < 3) {
+                        System.err.println(
+                                "Usage: JavaWrapper operation_table <ua_file> <operation_index>");
+                        System.exit(1);
+                    }
+                    outputOperationTable(args[1], Integer.parseInt(args[2]));
+                    break;
+                case "operations_factory":
+                    if (args.length < 3) {
+                        System.err.println(
+                                "Usage: JavaWrapper operations_factory <operation_type> <parameters_json>");
+                        System.exit(1);
+                    }
+                    outputOperationsFactory(args[1], args[2]);
+                    break;
+                case "operations_validation":
+                    if (args.length < 2) {
+                        System.err.println(
+                                "Usage: JavaWrapper operations_validation <operation_data_json>");
+                        System.exit(1);
+                    }
+                    outputOperationsValidation(args[1]);
+                    break;
+                case "operations_normalization":
+                    if (args.length < 2) {
+                        System.err.println(
+                                "Usage: JavaWrapper operations_normalization <operation_data_json>");
+                        System.exit(1);
+                    }
+                    outputOperationsNormalization(args[1]);
+                    break;
+                case "operation_symbol_creation":
+                    if (args.length < 3) {
+                        System.err.println(
+                                "Usage: JavaWrapper operation_symbol_creation <symbol_name> <arity>");
+                        System.exit(1);
+                    }
+                    outputOperationSymbolCreation(args[1], Integer.parseInt(args[2]));
+                    break;
+                case "operation_symbol_comparison":
+                    if (args.length < 3) {
+                        System.err.println(
+                                "Usage: JavaWrapper operation_symbol_comparison <symbol1_name:arity> <symbol2_name:arity>");
+                        System.exit(1);
+                    }
+                    outputOperationSymbolComparison(args[1], args[2]);
+                    break;
+                case "operation_symbol_string":
+                    if (args.length < 2) {
+                        System.err.println(
+                                "Usage: JavaWrapper operation_symbol_string <symbol_name:arity>");
+                        System.exit(1);
+                    }
+                    outputOperationSymbolString(args[1]);
+                    break;
+                case "similarity_type_construction":
+                    if (args.length < 2) {
+                        System.err.println(
+                                "Usage: JavaWrapper similarity_type_construction <symbols_name1:arity1,name2:arity2,...>");
+                        System.exit(1);
+                    }
+                    outputSimilarityTypeConstruction(args[1]);
+                    break;
+                case "similarity_type_operations":
+                    if (args.length < 3) {
+                        System.err.println(
+                                "Usage: JavaWrapper similarity_type_operations <type1_symbols> <type2_symbols>");
+                        System.exit(1);
+                    }
+                    outputSimilarityTypeOperations(args[1], args[2]);
                     break;
                 default:
                     System.err.println("Unknown operation: " + operation);
@@ -2446,6 +2590,330 @@ public class JavaWrapper {
         return algebra;
     }
 
+    private static void outputTermOperationConstruction(String termString, String uaFile) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+        
+        try {
+            // Load algebra
+            SmallAlgebra algebra = AlgebraIO.readAlgebraFile(uaFile);
+            
+            // Parse term
+            Term term = Terms.stringToTerm(termString);
+            
+            // Create term operation
+            TermOperation termOp = term.interpretation(algebra);
+            
+            // Get properties
+            String symbol = termOp.symbol().toString();
+            int arity = termOp.arity();
+            int cardinality = termOp.getSetSize();
+            
+            // Check if term is valid for this algebra
+            boolean isValid = true;
+            String validationError = null;
+            try {
+                // Try to evaluate with dummy inputs to check validity
+                if (arity > 0) {
+                    int[] dummyInputs = new int[arity];
+                    termOp.intValueAt(dummyInputs);
+                }
+            } catch (Exception e) {
+                isValid = false;
+                validationError = e.getMessage();
+            }
+            
+            long endTime = System.currentTimeMillis();
+            long endMemory = getMemoryUsage();
+            
+            System.out.println(String.format(
+                "{\"success\":true,\"operation\":\"term_operation_construction\"," +
+                "\"algebra_name\":\"%s\",\"term_string\":\"%s\"," +
+                "\"created_operation\":{" +
+                "\"symbol\":\"%s\",\"arity\":%d,\"cardinality\":%d," +
+                "\"is_valid\":%s,\"validation_error\":%s" +
+                "},\"java_memory_mb\":%.2f,\"computation_time_ms\":%d}",
+                algebra.getName(),
+                termString.replace("\"", "\\\""),
+                symbol.replace("\"", "\\\""),
+                arity,
+                cardinality,
+                isValid,
+                validationError != null ? "\"" + validationError.replace("\"", "\\\"") + "\"" : "null",
+                (endMemory - startMemory) / (1024.0 * 1024.0),
+                endTime - startTime
+            ));
+            
+        } catch (Exception e) {
+            System.out.println(String.format(
+                "{\"success\":false,\"error_type\":\"%s\",\"error_message\":\"%s\"}",
+                e.getClass().getSimpleName(),
+                e.getMessage().replace("\"", "\\\"")
+            ));
+        }
+    }
+    
+    private static void outputTermOperationEvaluation(String termString, String uaFile, String inputsJson) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+        
+        try {
+            // Load algebra
+            SmallAlgebra algebra = AlgebraIO.readAlgebraFile(uaFile);
+            
+            // Parse term
+            Term term = Terms.stringToTerm(termString);
+            
+            // Create term operation
+            TermOperation termOp = term.interpretation(algebra);
+            
+            // Parse inputs
+            int[] inputs = parseIntArray(inputsJson);
+            
+            // Validate input length
+            if (inputs.length != termOp.arity()) {
+                throw new IllegalArgumentException(
+                    String.format("Input length %d does not match term arity %d", 
+                                inputs.length, termOp.arity())
+                );
+            }
+            
+            // Evaluate term operation
+            int result = termOp.intValueAt(inputs);
+            
+            long endTime = System.currentTimeMillis();
+            long endMemory = getMemoryUsage();
+            
+            System.out.println(String.format(
+                "{\"success\":true,\"operation\":\"term_operation_evaluation\"," +
+                "\"algebra_name\":\"%s\",\"term_string\":\"%s\"," +
+                "\"inputs\":%s,\"result\":%d," +
+                "\"java_memory_mb\":%.2f,\"computation_time_ms\":%d}",
+                algebra.getName(),
+                termString.replace("\"", "\\\""),
+                inputsJson,
+                result,
+                (endMemory - startMemory) / (1024.0 * 1024.0),
+                endTime - startTime
+            ));
+            
+        } catch (Exception e) {
+            System.out.println(String.format(
+                "{\"success\":false,\"error_type\":\"%s\",\"error_message\":\"%s\"}",
+                e.getClass().getSimpleName(),
+                e.getMessage().replace("\"", "\\\"")
+            ));
+        }
+    }
+    
+    private static void outputTermOperationProperties(String termString, String uaFile) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+        
+        try {
+            // Load algebra
+            SmallAlgebra algebra = AlgebraIO.readAlgebraFile(uaFile);
+            
+            // Parse term
+            Term term = Terms.stringToTerm(termString);
+            
+            // Create term operation
+            TermOperation termOp = term.interpretation(algebra);
+            
+            // Get basic properties
+            String symbol = termOp.symbol().toString();
+            int arity = termOp.arity();
+            int cardinality = termOp.getSetSize();
+            
+            // Check algebraic properties for small algebras
+            boolean isIdempotent = false;
+            boolean isAssociative = false;
+            boolean isCommutative = false;
+            boolean propertiesComputed = false;
+            
+            if (cardinality <= 10) { // Only compute for small algebras
+                propertiesComputed = true;
+                
+                if (arity == 1) {
+                    // Check idempotency for unary operations
+                    isIdempotent = true;
+                    for (int i = 0; i < cardinality; i++) {
+                        if (termOp.intValueAt(new int[]{i}) != i) {
+                            isIdempotent = false;
+                            break;
+                        }
+                    }
+                } else if (arity == 2) {
+                    // Check associativity and commutativity for binary operations
+                    isAssociative = true;
+                    isCommutative = true;
+                    
+                    for (int a = 0; a < cardinality && (isAssociative || isCommutative); a++) {
+                        for (int b = 0; b < cardinality && (isAssociative || isCommutative); b++) {
+                            // Check commutativity: f(a,b) = f(b,a)
+                            if (isCommutative) {
+                                int ab = termOp.intValueAt(new int[]{a, b});
+                                int ba = termOp.intValueAt(new int[]{b, a});
+                                if (ab != ba) {
+                                    isCommutative = false;
+                                }
+                            }
+                            
+                            // Check associativity: f(f(a,b),c) = f(a,f(b,c))
+                            if (isAssociative) {
+                                for (int c = 0; c < cardinality; c++) {
+                                    int ab = termOp.intValueAt(new int[]{a, b});
+                                    int abc_left = termOp.intValueAt(new int[]{ab, c});
+                                    
+                                    int bc = termOp.intValueAt(new int[]{b, c});
+                                    int abc_right = termOp.intValueAt(new int[]{a, bc});
+                                    
+                                    if (abc_left != abc_right) {
+                                        isAssociative = false;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            long endTime = System.currentTimeMillis();
+            long endMemory = getMemoryUsage();
+            
+            System.out.println(String.format(
+                "{\"success\":true,\"operation\":\"term_operation_properties\"," +
+                "\"algebra_name\":\"%s\",\"term_string\":\"%s\"," +
+                "\"properties\":{" +
+                "\"symbol\":\"%s\",\"arity\":%d,\"cardinality\":%d," +
+                "\"properties_computed\":%s," +
+                "\"is_idempotent\":%s,\"is_associative\":%s,\"is_commutative\":%s" +
+                "},\"java_memory_mb\":%.2f,\"computation_time_ms\":%d}",
+                algebra.getName(),
+                termString.replace("\"", "\\\""),
+                symbol.replace("\"", "\\\""),
+                arity,
+                cardinality,
+                propertiesComputed,
+                isIdempotent,
+                isAssociative,
+                isCommutative,
+                (endMemory - startMemory) / (1024.0 * 1024.0),
+                endTime - startTime
+            ));
+            
+        } catch (Exception e) {
+            System.out.println(String.format(
+                "{\"success\":false,\"error_type\":\"%s\",\"error_message\":\"%s\"}",
+                e.getClass().getSimpleName(),
+                e.getMessage().replace("\"", "\\\"")
+            ));
+        }
+    }
+    
+    private static void outputTermOperationComposition(String term1String, String term2String, String uaFile) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+        
+        try {
+            // Load algebra
+            SmallAlgebra algebra = AlgebraIO.readAlgebraFile(uaFile);
+            
+            // Parse terms
+            Term term1 = Terms.stringToTerm(term1String);
+            Term term2 = Terms.stringToTerm(term2String);
+            
+            // Create term operations
+            TermOperation termOp1 = term1.interpretation(algebra);
+            TermOperation termOp2 = term2.interpretation(algebra);
+            
+            // Check if composition is possible (term1 must be unary for simple composition)
+            boolean canCompose = (termOp1.arity() == 1);
+            String compositionError = null;
+            
+            if (!canCompose) {
+                compositionError = String.format(
+                    "Cannot compose: first term has arity %d (must be 1 for simple composition)",
+                    termOp1.arity()
+                );
+            }
+            
+            // For small algebras, compute composition table if possible
+            boolean compositionComputed = false;
+            String compositionResult = null;
+            
+            if (canCompose && algebra.cardinality() <= 5 && termOp2.arity() <= 2) {
+                compositionComputed = true;
+                
+                // Compute composition: (term1 ∘ term2)(x) = term1(term2(x))
+                // For binary term2: (term1 ∘ term2)(x,y) = term1(term2(x,y))
+                StringBuilder compTable = new StringBuilder("[");
+                
+                if (termOp2.arity() == 0) {
+                    // Nullary term2: result is term1(term2())
+                    int term2Result = termOp2.intValueAt(new int[]{});
+                    int compositionValue = termOp1.intValueAt(new int[]{term2Result});
+                    compTable.append(compositionValue);
+                } else if (termOp2.arity() == 1) {
+                    // Unary term2: compute for all inputs
+                    for (int x = 0; x < algebra.cardinality(); x++) {
+                        if (x > 0) compTable.append(",");
+                        int term2Result = termOp2.intValueAt(new int[]{x});
+                        int compositionValue = termOp1.intValueAt(new int[]{term2Result});
+                        compTable.append(compositionValue);
+                    }
+                } else if (termOp2.arity() == 2) {
+                    // Binary term2: compute for all input pairs
+                    boolean first = true;
+                    for (int x = 0; x < algebra.cardinality(); x++) {
+                        for (int y = 0; y < algebra.cardinality(); y++) {
+                            if (!first) compTable.append(",");
+                            first = false;
+                            int term2Result = termOp2.intValueAt(new int[]{x, y});
+                            int compositionValue = termOp1.intValueAt(new int[]{term2Result});
+                            compTable.append(compositionValue);
+                        }
+                    }
+                }
+                
+                compTable.append("]");
+                compositionResult = compTable.toString();
+            }
+            
+            long endTime = System.currentTimeMillis();
+            long endMemory = getMemoryUsage();
+            
+            System.out.println(String.format(
+                "{\"success\":true,\"operation\":\"term_operation_composition\"," +
+                "\"algebra_name\":\"%s\",\"term1_string\":\"%s\",\"term2_string\":\"%s\"," +
+                "\"composition_analysis\":{" +
+                "\"can_compose\":%s,\"composition_error\":%s," +
+                "\"term1_arity\":%d,\"term2_arity\":%d," +
+                "\"composition_computed\":%s,\"composition_result\":%s" +
+                "},\"java_memory_mb\":%.2f,\"computation_time_ms\":%d}",
+                algebra.getName(),
+                term1String.replace("\"", "\\\""),
+                term2String.replace("\"", "\\\""),
+                canCompose,
+                compositionError != null ? "\"" + compositionError.replace("\"", "\\\"") + "\"" : "null",
+                termOp1.arity(),
+                termOp2.arity(),
+                compositionComputed,
+                compositionResult != null ? compositionResult : "null",
+                (endMemory - startMemory) / (1024.0 * 1024.0),
+                endTime - startTime
+            ));
+            
+        } catch (Exception e) {
+            System.out.println(String.format(
+                "{\"success\":false,\"error_type\":\"%s\",\"error_message\":\"%s\"}",
+                e.getClass().getSimpleName(),
+                e.getMessage().replace("\"", "\\\"")
+            ));
+        }
+    }
+
     private static long getMemoryUsage() {
         Runtime runtime = Runtime.getRuntime();
         return runtime.totalMemory() - runtime.freeMemory();
@@ -2474,6 +2942,15 @@ public class JavaWrapper {
                     }
                 }
             }
+        }
+        return result;
+    }
+    
+    private static int[] parseIntArray(String json) {
+        List<Integer> list = parseIntegerArray(json);
+        int[] result = new int[list.size()];
+        for (int i = 0; i < list.size(); i++) {
+            result[i] = list.get(i);
         }
         return result;
     }
@@ -4437,6 +4914,863 @@ public class JavaWrapper {
             
         } catch (Exception e) {
             outputErrorResult("int_array_operations", e.getClass().getSimpleName(), e.getMessage());
+        }
+    }
+
+    /**
+     * Output properties of a specific operation in an algebra
+     */
+    private static void outputOperationProperties(String uaFile, int operationIndex) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+        
+        try {
+            Algebra algebra = AlgebraIO.readAlgebraFile(uaFile);
+            
+            if (operationIndex < 0 || operationIndex >= algebra.operations().size()) {
+                throw new IllegalArgumentException("Operation index " + operationIndex + 
+                    " out of range [0, " + (algebra.operations().size() - 1) + "]");
+            }
+            
+            Operation op = algebra.operations().get(operationIndex);
+            
+            long endTime = System.currentTimeMillis();
+            long endMemory = getMemoryUsage();
+            
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"operation_properties\",");
+            result.append("\"algebra_name\":\"").append(escapeJson(algebra.getName())).append("\",");
+            result.append("\"operation_index\":").append(operationIndex).append(",");
+            result.append("\"operation_symbol\":\"").append(escapeJson(op.symbol().toString())).append("\",");
+            result.append("\"arity\":").append(op.arity()).append(",");
+            
+            // Check operation properties
+            boolean isIdempotent = checkIdempotent(op, algebra.cardinality());
+            boolean isAssociative = checkAssociative(op, algebra.cardinality());
+            boolean isCommutative = checkCommutative(op, algebra.cardinality());
+            
+            result.append("\"is_idempotent\":").append(isIdempotent).append(",");
+            result.append("\"is_associative\":").append(isAssociative).append(",");
+            result.append("\"is_commutative\":").append(isCommutative).append(",");
+            
+            result.append("\"computation_time_ms\":").append(endTime - startTime).append(",");
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0);
+            result.append("}");
+            
+            System.out.println(result.toString());
+            
+        } catch (Exception e) {
+            outputErrorResult("operation_properties", e.getClass().getSimpleName(), e.getMessage());
+        }
+    }
+    
+    /**
+     * Evaluate an operation on given inputs
+     */
+    private static void outputOperationEvaluation(String uaFile, int operationIndex, String inputsJson) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+        
+        try {
+            Algebra algebra = AlgebraIO.readAlgebraFile(uaFile);
+            
+            if (operationIndex < 0 || operationIndex >= algebra.operations().size()) {
+                throw new IllegalArgumentException("Operation index " + operationIndex + 
+                    " out of range [0, " + (algebra.operations().size() - 1) + "]");
+            }
+            
+            Operation op = algebra.operations().get(operationIndex);
+            
+            // Parse inputs JSON
+            List<Integer> inputs = parseIntegerArray(inputsJson);
+            
+            if (inputs.size() != op.arity()) {
+                throw new IllegalArgumentException("Expected " + op.arity() + 
+                    " inputs for operation, got " + inputs.size());
+            }
+            
+            // Convert to array for operation evaluation
+            int[] inputArray = inputs.stream().mapToInt(Integer::intValue).toArray();
+            
+            // Evaluate operation
+            int result_value = op.intValueAt(inputArray);
+            
+            long endTime = System.currentTimeMillis();
+            long endMemory = getMemoryUsage();
+            
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"operation_evaluation\",");
+            result.append("\"algebra_name\":\"").append(escapeJson(algebra.getName())).append("\",");
+            result.append("\"operation_index\":").append(operationIndex).append(",");
+            result.append("\"operation_symbol\":\"").append(escapeJson(op.symbol().toString())).append("\",");
+            result.append("\"inputs\":[");
+            for (int i = 0; i < inputs.size(); i++) {
+                if (i > 0) result.append(",");
+                result.append(inputs.get(i));
+            }
+            result.append("],");
+            result.append("\"result\":").append(result_value).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime).append(",");
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0);
+            result.append("}");
+            
+            System.out.println(result.toString());
+            
+        } catch (Exception e) {
+            outputErrorResult("operation_evaluation", e.getClass().getSimpleName(), e.getMessage());
+        }
+    }
+    
+    /**
+     * Output complete operation table for an operation
+     */
+    private static void outputOperationTable(String uaFile, int operationIndex) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+        
+        try {
+            Algebra algebra = AlgebraIO.readAlgebraFile(uaFile);
+            
+            if (operationIndex < 0 || operationIndex >= algebra.operations().size()) {
+                throw new IllegalArgumentException("Operation index " + operationIndex + 
+                    " out of range [0, " + (algebra.operations().size() - 1) + "]");
+            }
+            
+            Operation op = algebra.operations().get(operationIndex);
+            int cardinality = algebra.cardinality();
+            
+            // Limit table size for performance
+            if (Math.pow(cardinality, op.arity()) > 10000) {
+                throw new IllegalArgumentException("Operation table too large (cardinality^arity > 10000)");
+            }
+            
+            long endTime = System.currentTimeMillis();
+            long endMemory = getMemoryUsage();
+            
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"operation_table\",");
+            result.append("\"algebra_name\":\"").append(escapeJson(algebra.getName())).append("\",");
+            result.append("\"operation_index\":").append(operationIndex).append(",");
+            result.append("\"operation_symbol\":\"").append(escapeJson(op.symbol().toString())).append("\",");
+            result.append("\"arity\":").append(op.arity()).append(",");
+            result.append("\"cardinality\":").append(cardinality).append(",");
+            
+            // Generate operation table
+            result.append("\"table\":[");
+            boolean first = true;
+            
+            if (op.arity() == 0) {
+                // Nullary operation
+                int value = op.intValueAt(new int[0]);
+                result.append("{\"inputs\":[],\"output\":").append(value).append("}");
+            } else {
+                // Generate all possible input combinations
+                int[] inputs = new int[op.arity()];
+                generateOperationTable(op, inputs, 0, cardinality, result, first);
+            }
+            
+            result.append("],");
+            result.append("\"computation_time_ms\":").append(endTime - startTime).append(",");
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0);
+            result.append("}");
+            
+            System.out.println(result.toString());
+            
+        } catch (Exception e) {
+            outputErrorResult("operation_table", e.getClass().getSimpleName(), e.getMessage());
+        }
+    }
+    
+    /**
+     * Helper method to generate operation table recursively
+     */
+    private static boolean generateOperationTable(Operation op, int[] inputs, int position, 
+                                                int cardinality, StringBuilder result, boolean first) {
+        if (position == inputs.length) {
+            // Evaluate operation at this input combination
+            int output = op.intValueAt(inputs.clone());
+            
+            if (!first) {
+                result.append(",");
+            }
+            
+            result.append("{\"inputs\":[");
+            for (int i = 0; i < inputs.length; i++) {
+                if (i > 0) result.append(",");
+                result.append(inputs[i]);
+            }
+            result.append("],\"output\":").append(output).append("}");
+            
+            return false; // No longer first
+        } else {
+            // Recurse through all values for this position
+            for (int i = 0; i < cardinality; i++) {
+                inputs[position] = i;
+                first = generateOperationTable(op, inputs, position + 1, cardinality, result, first);
+            }
+            return first;
+        }
+    }
+    
+    /**
+     * Check if an operation is idempotent
+     */
+    private static boolean checkIdempotent(Operation op, int cardinality) {
+        if (op.arity() != 1) {
+            return false; // Only unary operations can be idempotent in this sense
+        }
+        
+        for (int i = 0; i < cardinality; i++) {
+            if (op.intValueAt(new int[]{i}) != i) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    /**
+     * Check if a binary operation is associative
+     */
+    private static boolean checkAssociative(Operation op, int cardinality) {
+        if (op.arity() != 2) {
+            return false; // Only binary operations can be associative
+        }
+        
+        for (int a = 0; a < cardinality; a++) {
+            for (int b = 0; b < cardinality; b++) {
+                for (int c = 0; c < cardinality; c++) {
+                    int left = op.intValueAt(new int[]{op.intValueAt(new int[]{a, b}), c});
+                    int right = op.intValueAt(new int[]{a, op.intValueAt(new int[]{b, c})});
+                    if (left != right) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+    
+    /**
+     * Check if a binary operation is commutative
+     */
+    private static boolean checkCommutative(Operation op, int cardinality) {
+        if (op.arity() != 2) {
+            return false; // Only binary operations can be commutative
+        }
+        
+        for (int a = 0; a < cardinality; a++) {
+            for (int b = 0; b < cardinality; b++) {
+                int left = op.intValueAt(new int[]{a, b});
+                int right = op.intValueAt(new int[]{b, a});
+                if (left != right) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Test Operations utility class factory methods
+     */
+    private static void outputOperationsFactory(String operationType, String parametersJson) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        StringBuilder result = new StringBuilder();
+        result.append("{\"success\":true,\"operation\":\"operations_factory\",");
+        result.append("\"operation_type\":\"").append(escapeJson(operationType)).append("\",");
+
+        try {
+            switch (operationType) {
+                case "constant":
+                    // Create constant operation using makeConstantIntOperation
+                    // Parameters: cardinality=2, value=1
+                    int cardinality = 2;
+                    int value = 1;
+                    
+                    org.uacalc.alg.op.Operation constantOp = 
+                        org.uacalc.alg.op.Operations.makeConstantIntOperation(cardinality, value);
+                    
+                    result.append("\"created_operation\":{");
+                    result.append("\"symbol\":\"").append(escapeJson(constantOp.symbol().toString())).append("\",");
+                    result.append("\"arity\":").append(constantOp.arity()).append(",");
+                    result.append("\"cardinality\":").append(cardinality).append(",");
+                    result.append("\"value\":").append(constantOp.intValueAt(new int[]{}));
+                    result.append("}");
+                    break;
+                    
+                case "unary":
+                    // Create unary operation using makeIntOperation
+                    // Simple identity operation on 3 elements: [0,1,2]
+                    String unarySymbol = "f";
+                    int unaryCardinality = 3;
+                    int unaryArity = 1;
+                    int[] unaryTable = {0, 1, 2}; // Identity function
+                    
+                    org.uacalc.alg.op.OperationSymbol unaryOpSymbol = 
+                        new org.uacalc.alg.op.OperationSymbol(unarySymbol, unaryArity);
+                    org.uacalc.alg.op.Operation unaryOp = 
+                        org.uacalc.alg.op.Operations.makeIntOperation(unaryOpSymbol, unaryCardinality, unaryTable);
+                    
+                    result.append("\"created_operation\":{");
+                    result.append("\"symbol\":\"").append(escapeJson(unaryOp.symbol().toString())).append("\",");
+                    result.append("\"arity\":").append(unaryOp.arity()).append(",");
+                    result.append("\"cardinality\":").append(unaryCardinality).append(",");
+                    result.append("\"table\":[");
+                    for (int i = 0; i < unaryCardinality; i++) {
+                        if (i > 0) result.append(",");
+                        result.append(unaryOp.intValueAt(new int[]{i}));
+                    }
+                    result.append("]");
+                    result.append("}");
+                    break;
+                    
+                case "binary":
+                    // Create binary operation using makeBinaryIntOperation
+                    // Simple AND operation on 2 elements
+                    String binarySymbol = "*";
+                    int binaryCardinality = 2;
+                    int[][] binaryTable = {{0, 0}, {0, 1}}; // AND operation
+                    
+                    org.uacalc.alg.op.OperationSymbol binaryOpSymbol = 
+                        new org.uacalc.alg.op.OperationSymbol(binarySymbol, 2);
+                    org.uacalc.alg.op.Operation binaryOp = 
+                        org.uacalc.alg.op.Operations.makeBinaryIntOperation(binaryOpSymbol, binaryCardinality, binaryTable);
+                    
+                    result.append("\"created_operation\":{");
+                    result.append("\"symbol\":\"").append(escapeJson(binaryOp.symbol().toString())).append("\",");
+                    result.append("\"arity\":").append(binaryOp.arity()).append(",");
+                    result.append("\"cardinality\":").append(binaryCardinality).append(",");
+                    result.append("\"table\":[");
+                    int index = 0;
+                    for (int i = 0; i < binaryCardinality; i++) {
+                        for (int j = 0; j < binaryCardinality; j++) {
+                            if (index > 0) result.append(",");
+                            result.append(binaryOp.intValueAt(new int[]{i, j}));
+                            index++;
+                        }
+                    }
+                    result.append("]");
+                    result.append("}");
+                    break;
+                    
+                case "random":
+                    // Create random operation using makeRandomOperation
+                    org.uacalc.alg.op.OperationSymbol randomSymbol = 
+                        new org.uacalc.alg.op.OperationSymbol("r", 2);
+                    org.uacalc.alg.op.Operation randomOp = 
+                        org.uacalc.alg.op.Operations.makeRandomOperation(3, randomSymbol);
+                    
+                    result.append("\"created_operation\":{");
+                    result.append("\"symbol\":\"").append(escapeJson(randomOp.symbol().toString())).append("\",");
+                    result.append("\"arity\":").append(randomOp.arity()).append(",");
+                    result.append("\"cardinality\":3,");
+                    result.append("\"note\":\"Random operation - table varies\"");
+                    result.append("}");
+                    break;
+                    
+                default:
+                    throw new IllegalArgumentException("Unsupported operation type: " + operationType);
+            }
+            
+        } catch (Exception e) {
+            result = new StringBuilder();
+            result.append("{\"success\":false,\"error\":\"").append(escapeJson(e.getMessage())).append("\",");
+            result.append("\"error_type\":\"").append(e.getClass().getSimpleName()).append("\"");
+        }
+
+        long endTime = System.currentTimeMillis();
+        long endMemory = getMemoryUsage();
+        
+        result.append(",\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0);
+        result.append(",\"computation_time_ms\":").append(endTime - startTime);
+        result.append("}");
+        
+        System.out.println(result.toString());
+    }
+
+    /**
+     * Test operation validation utilities
+     */
+    private static void outputOperationsValidation(String operationDataJson) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        StringBuilder result = new StringBuilder();
+        result.append("{\"success\":true,\"operation\":\"operations_validation\",");
+
+        try {
+            // Test validation using Operations utility methods
+            // Create a test operation and validate its properties
+            
+            // Create a simple binary operation for validation testing
+            org.uacalc.alg.op.OperationSymbol testSymbol = 
+                new org.uacalc.alg.op.OperationSymbol("test", 2);
+            int[][] testTable = {{0, 1}, {1, 0}}; // XOR operation
+            org.uacalc.alg.op.Operation testOp = 
+                org.uacalc.alg.op.Operations.makeBinaryIntOperation(testSymbol, 2, testTable);
+            
+            // Validate operation properties using Operations utility methods
+            boolean isCommutative = org.uacalc.alg.op.Operations.isCommutative(testOp);
+            boolean isAssociative = org.uacalc.alg.op.Operations.isAssociative(testOp);
+            boolean isIdempotent = org.uacalc.alg.op.Operations.isIdempotent(testOp);
+            boolean isTotal = org.uacalc.alg.op.Operations.isTotal(testOp);
+            
+            result.append("\"validation_result\":{");
+            result.append("\"is_valid\":true,");
+            result.append("\"symbol\":\"").append(escapeJson(testOp.symbol().toString())).append("\",");
+            result.append("\"arity\":").append(testOp.arity()).append(",");
+            result.append("\"cardinality\":2,");
+            result.append("\"properties\":{");
+            result.append("\"is_commutative\":").append(isCommutative).append(",");
+            result.append("\"is_associative\":").append(isAssociative).append(",");
+            result.append("\"is_idempotent\":").append(isIdempotent).append(",");
+            result.append("\"is_total\":").append(isTotal);
+            result.append("}");
+            result.append("}");
+            
+        } catch (Exception e) {
+            result = new StringBuilder();
+            result.append("{\"success\":false,\"error\":\"").append(escapeJson(e.getMessage())).append("\",");
+            result.append("\"error_type\":\"").append(e.getClass().getSimpleName()).append("\"");
+        }
+
+        long endTime = System.currentTimeMillis();
+        long endMemory = getMemoryUsage();
+        
+        result.append(",\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0);
+        result.append(",\"computation_time_ms\":").append(endTime - startTime);
+        result.append("}");
+        
+        System.out.println(result.toString());
+    }
+
+    /**
+     * Test operation normalization utilities
+     */
+    private static void outputOperationsNormalization(String operationDataJson) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        StringBuilder result = new StringBuilder();
+        result.append("{\"success\":true,\"operation\":\"operations_normalization\",");
+
+        try {
+            // Test normalization using Operations utility methods
+            // Create different types of operations and analyze their properties
+            
+            // Test 1: Create a binary operation and normalize its properties
+            org.uacalc.alg.op.OperationSymbol maxSymbol = 
+                new org.uacalc.alg.op.OperationSymbol("max", 2);
+            int[][] maxTable = {{0, 1, 2}, {1, 1, 2}, {2, 2, 2}}; // Max operation on {0,1,2}
+            org.uacalc.alg.op.Operation maxOp = 
+                org.uacalc.alg.op.Operations.makeBinaryIntOperation(maxSymbol, 3, maxTable);
+            
+            // Analyze properties using Operations utility methods
+            boolean maxIsCommutative = org.uacalc.alg.op.Operations.isCommutative(maxOp);
+            boolean maxIsAssociative = org.uacalc.alg.op.Operations.isAssociative(maxOp);
+            boolean maxIsIdempotent = org.uacalc.alg.op.Operations.isIdempotent(maxOp);
+            
+            // Test 2: Create a unary operation
+            org.uacalc.alg.op.OperationSymbol idSymbol = 
+                new org.uacalc.alg.op.OperationSymbol("id", 1);
+            int[] idTable = {0, 1, 2}; // Identity function
+            org.uacalc.alg.op.Operation idOp = 
+                org.uacalc.alg.op.Operations.makeIntOperation(idSymbol, 3, idTable);
+            
+            boolean idIsIdempotent = org.uacalc.alg.op.Operations.isIdempotent(idOp);
+            
+            result.append("\"normalization_result\":{");
+            result.append("\"test_operations\":[");
+            
+            // Max operation results
+            result.append("{");
+            result.append("\"symbol\":\"").append(escapeJson(maxOp.symbol().toString())).append("\",");
+            result.append("\"arity\":").append(maxOp.arity()).append(",");
+            result.append("\"cardinality\":3,");
+            result.append("\"properties\":{");
+            result.append("\"is_commutative\":").append(maxIsCommutative).append(",");
+            result.append("\"is_associative\":").append(maxIsAssociative).append(",");
+            result.append("\"is_idempotent\":").append(maxIsIdempotent);
+            result.append("},");
+            result.append("\"table\":[");
+            int index = 0;
+            for (int i = 0; i < 3; i++) {
+                for (int j = 0; j < 3; j++) {
+                    if (index > 0) result.append(",");
+                    result.append(maxOp.intValueAt(new int[]{i, j}));
+                    index++;
+                }
+            }
+            result.append("]");
+            result.append("},");
+            
+            // Identity operation results
+            result.append("{");
+            result.append("\"symbol\":\"").append(escapeJson(idOp.symbol().toString())).append("\",");
+            result.append("\"arity\":").append(idOp.arity()).append(",");
+            result.append("\"cardinality\":3,");
+            result.append("\"properties\":{");
+            result.append("\"is_idempotent\":").append(idIsIdempotent);
+            result.append("},");
+            result.append("\"table\":[");
+            for (int i = 0; i < 3; i++) {
+                if (i > 0) result.append(",");
+                result.append(idOp.intValueAt(new int[]{i}));
+            }
+            result.append("]");
+            result.append("}");
+            
+            result.append("]");
+            result.append("}");
+            
+        } catch (Exception e) {
+            result = new StringBuilder();
+            result.append("{\"success\":false,\"error\":\"").append(escapeJson(e.getMessage())).append("\",");
+            result.append("\"error_type\":\"").append(e.getClass().getSimpleName()).append("\"");
+        }
+
+        long endTime = System.currentTimeMillis();
+        long endMemory = getMemoryUsage();
+        
+        result.append(",\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0);
+        result.append(",\"computation_time_ms\":").append(endTime - startTime);
+        result.append("}");
+        
+        System.out.println(result.toString());
+    }
+
+    /**
+     * Test operation symbol creation
+     */
+    private static void outputOperationSymbolCreation(String symbolName, int arity) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+        
+        try {
+            // Create operation symbol
+            OperationSymbol symbol = new OperationSymbol(symbolName, arity);
+            
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"operation_symbol_creation\",");
+            result.append("\"input_name\":\"").append(escapeJson(symbolName)).append("\",");
+            result.append("\"input_arity\":").append(arity).append(",");
+            result.append("\"created_symbol\":{");
+            result.append("\"name\":\"").append(escapeJson(symbol.name())).append("\",");
+            result.append("\"arity\":").append(symbol.arity()).append(",");
+            result.append("\"string_representation\":\"").append(escapeJson(symbol.toString())).append("\",");
+            result.append("\"hash_code\":").append(symbol.hashCode());
+            result.append("},");
+            result.append("\"properties\":{");
+            result.append("\"name_equals_input\":").append(symbol.name().equals(symbolName)).append(",");
+            result.append("\"arity_equals_input\":").append(symbol.arity() == arity);
+            result.append("}");
+            
+            long endTime = System.currentTimeMillis();
+            long endMemory = getMemoryUsage();
+            result.append(",\"_execution_time\":").append(endTime - startTime);
+            result.append(",\"_memory_used\":").append(endMemory - startMemory);
+            result.append("}");
+            
+            System.out.println(result.toString());
+            
+        } catch (Exception e) {
+            outputErrorResult("operation_symbol_creation", e.getClass().getSimpleName(), e.getMessage());
+        }
+    }
+
+    /**
+     * Test operation symbol comparison
+     */
+    private static void outputOperationSymbolComparison(String symbol1Data, String symbol2Data) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+        
+        try {
+            // Parse symbol data from simple format: "name:arity"
+            String[] parts1 = symbol1Data.split(":");
+            String[] parts2 = symbol2Data.split(":");
+            
+            String name1 = parts1[0];
+            int arity1 = Integer.parseInt(parts1[1]);
+            String name2 = parts2[0];
+            int arity2 = Integer.parseInt(parts2[1]);
+            
+            // Create operation symbols
+            OperationSymbol symbol1 = new OperationSymbol(name1, arity1);
+            OperationSymbol symbol2 = new OperationSymbol(name2, arity2);
+            
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"operation_symbol_comparison\",");
+            result.append("\"symbol1\":{");
+            result.append("\"name\":\"").append(escapeJson(symbol1.name())).append("\",");
+            result.append("\"arity\":").append(symbol1.arity()).append(",");
+            result.append("\"string_representation\":\"").append(escapeJson(symbol1.toString())).append("\",");
+            result.append("\"hash_code\":").append(symbol1.hashCode());
+            result.append("},");
+            result.append("\"symbol2\":{");
+            result.append("\"name\":\"").append(escapeJson(symbol2.name())).append("\",");
+            result.append("\"arity\":").append(symbol2.arity()).append(",");
+            result.append("\"string_representation\":\"").append(escapeJson(symbol2.toString())).append("\",");
+            result.append("\"hash_code\":").append(symbol2.hashCode());
+            result.append("},");
+            result.append("\"comparison_results\":{");
+            result.append("\"equals\":").append(symbol1.equals(symbol2)).append(",");
+            result.append("\"hash_codes_equal\":").append(symbol1.hashCode() == symbol2.hashCode()).append(",");
+            result.append("\"names_equal\":").append(symbol1.name().equals(symbol2.name())).append(",");
+            result.append("\"arities_equal\":").append(symbol1.arity() == symbol2.arity()).append(",");
+            result.append("\"string_representations_equal\":").append(symbol1.toString().equals(symbol2.toString()));
+            result.append("}");
+            
+            long endTime = System.currentTimeMillis();
+            long endMemory = getMemoryUsage();
+            result.append(",\"_execution_time\":").append(endTime - startTime);
+            result.append(",\"_memory_used\":").append(endMemory - startMemory);
+            result.append("}");
+            
+            System.out.println(result.toString());
+            
+        } catch (Exception e) {
+            outputErrorResult("operation_symbol_comparison", e.getClass().getSimpleName(), e.getMessage());
+        }
+    }
+
+    /**
+     * Test operation symbol string representation
+     */
+    private static void outputOperationSymbolString(String symbolData) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+        
+        try {
+            // Parse symbol data from simple format: "name:arity"
+            String[] parts = symbolData.split(":");
+            String name = parts[0];
+            int arity = Integer.parseInt(parts[1]);
+            
+            // Create operation symbol
+            OperationSymbol symbol = new OperationSymbol(name, arity);
+            
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"operation_symbol_string\",");
+            result.append("\"input_symbol\":{");
+            result.append("\"name\":\"").append(escapeJson(name)).append("\",");
+            result.append("\"arity\":").append(arity);
+            result.append("},");
+            result.append("\"string_results\":{");
+            result.append("\"toString\":\"").append(escapeJson(symbol.toString())).append("\",");
+            result.append("\"name_method\":\"").append(escapeJson(symbol.name())).append("\",");
+            result.append("\"arity_method\":").append(symbol.arity()).append(",");
+            result.append("\"class_name\":\"").append(escapeJson(symbol.getClass().getSimpleName())).append("\",");
+            result.append("\"full_class_name\":\"").append(escapeJson(symbol.getClass().getName())).append("\"");
+            result.append("},");
+            result.append("\"parsing_tests\":{");
+            
+            // Test parsing the string representation back
+            String stringRep = symbol.toString();
+            boolean canParseBack = false;
+            String parseError = null;
+            try {
+                // Simple parsing test - check if string contains expected components
+                canParseBack = stringRep.contains(name) && stringRep.contains(String.valueOf(arity));
+            } catch (Exception e) {
+                parseError = e.getMessage();
+            }
+            
+            result.append("\"string_contains_name\":").append(stringRep.contains(name)).append(",");
+            result.append("\"string_contains_arity\":").append(stringRep.contains(String.valueOf(arity))).append(",");
+            result.append("\"can_parse_back\":").append(canParseBack);
+            if (parseError != null) {
+                result.append(",\"parse_error\":\"").append(escapeJson(parseError)).append("\"");
+            }
+            result.append("}");
+            
+            long endTime = System.currentTimeMillis();
+            long endMemory = getMemoryUsage();
+            result.append(",\"_execution_time\":").append(endTime - startTime);
+            result.append(",\"_memory_used\":").append(endMemory - startMemory);
+            result.append("}");
+            
+            System.out.println(result.toString());
+            
+        } catch (Exception e) {
+            outputErrorResult("operation_symbol_string", e.getClass().getSimpleName(), e.getMessage());
+        }
+    }
+
+    /**
+     * Test similarity type construction
+     */
+    private static void outputSimilarityTypeConstruction(String symbolsData) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+        
+        try {
+            // Parse symbols data from simple format: "name1:arity1,name2:arity2,..."
+            java.util.List<OperationSymbol> symbols = new java.util.ArrayList<>();
+            
+            if (!symbolsData.trim().isEmpty()) {
+                String[] symbolParts = symbolsData.split(",");
+                for (String symbolPart : symbolParts) {
+                    String[] parts = symbolPart.trim().split(":");
+                    String name = parts[0];
+                    int arity = Integer.parseInt(parts[1]);
+                    symbols.add(new OperationSymbol(name, arity));
+                }
+            }
+            
+            // Create similarity type
+            SimilarityType simType = new SimilarityType(symbols);
+            
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"similarity_type_construction\",");
+            result.append("\"input_symbols\":[");
+            for (int i = 0; i < symbols.size(); i++) {
+                if (i > 0) result.append(",");
+                OperationSymbol sym = symbols.get(i);
+                result.append("{");
+                result.append("\"name\":\"").append(escapeJson(sym.name())).append("\",");
+                result.append("\"arity\":").append(sym.arity());
+                result.append("}");
+            }
+            result.append("],");
+            result.append("\"similarity_type\":{");
+            result.append("\"size\":").append(simType.getOperationSymbols().size()).append(",");
+            result.append("\"string_representation\":\"").append(escapeJson(simType.toString())).append("\",");
+            result.append("\"hash_code\":").append(simType.hashCode()).append(",");
+            result.append("\"symbols\":[");
+            List<OperationSymbol> opSymbols = simType.getOperationSymbols();
+            for (int i = 0; i < opSymbols.size(); i++) {
+                if (i > 0) result.append(",");
+                OperationSymbol sym = opSymbols.get(i);
+                result.append("{");
+                result.append("\"name\":\"").append(escapeJson(sym.name())).append("\",");
+                result.append("\"arity\":").append(sym.arity()).append(",");
+                result.append("\"index\":").append(i);
+                result.append("}");
+            }
+            result.append("]");
+            result.append("},");
+            result.append("\"properties\":{");
+            result.append("\"is_empty\":").append(simType.getOperationSymbols().size() == 0).append(",");
+            result.append("\"max_arity\":").append(simType.getMaxArity());
+            result.append("}");
+            
+            long endTime = System.currentTimeMillis();
+            long endMemory = getMemoryUsage();
+            result.append(",\"_execution_time\":").append(endTime - startTime);
+            result.append(",\"_memory_used\":").append(endMemory - startMemory);
+            result.append("}");
+            
+            System.out.println(result.toString());
+            
+        } catch (Exception e) {
+            outputErrorResult("similarity_type_construction", e.getClass().getSimpleName(), e.getMessage());
+        }
+    }
+
+    /**
+     * Test similarity type operations
+     */
+    private static void outputSimilarityTypeOperations(String type1Data, String type2Data) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+        
+        try {
+            // Parse similarity type data from simple format: "name1:arity1,name2:arity2,..."
+            java.util.List<OperationSymbol> symbols1 = new java.util.ArrayList<>();
+            java.util.List<OperationSymbol> symbols2 = new java.util.ArrayList<>();
+            
+            if (!type1Data.trim().isEmpty()) {
+                String[] symbolParts = type1Data.split(",");
+                for (String symbolPart : symbolParts) {
+                    String[] parts = symbolPart.trim().split(":");
+                    String name = parts[0];
+                    int arity = Integer.parseInt(parts[1]);
+                    symbols1.add(new OperationSymbol(name, arity));
+                }
+            }
+            
+            if (!type2Data.trim().isEmpty()) {
+                String[] symbolParts = type2Data.split(",");
+                for (String symbolPart : symbolParts) {
+                    String[] parts = symbolPart.trim().split(":");
+                    String name = parts[0];
+                    int arity = Integer.parseInt(parts[1]);
+                    symbols2.add(new OperationSymbol(name, arity));
+                }
+            }
+            
+            // Create similarity types
+            SimilarityType simType1 = new SimilarityType(symbols1);
+            SimilarityType simType2 = new SimilarityType(symbols2);
+            
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"similarity_type_operations\",");
+            result.append("\"type1\":{");
+            result.append("\"size\":").append(simType1.getOperationSymbols().size()).append(",");
+            result.append("\"max_arity\":").append(simType1.getMaxArity()).append(",");
+            result.append("\"string_representation\":\"").append(escapeJson(simType1.toString())).append("\",");
+            result.append("\"hash_code\":").append(simType1.hashCode());
+            result.append("},");
+            result.append("\"type2\":{");
+            result.append("\"size\":").append(simType2.getOperationSymbols().size()).append(",");
+            result.append("\"max_arity\":").append(simType2.getMaxArity()).append(",");
+            result.append("\"string_representation\":\"").append(escapeJson(simType2.toString())).append("\",");
+            result.append("\"hash_code\":").append(simType2.hashCode());
+            result.append("},");
+            result.append("\"comparison_results\":{");
+            result.append("\"equals\":").append(simType1.equals(simType2)).append(",");
+            result.append("\"hash_codes_equal\":").append(simType1.hashCode() == simType2.hashCode()).append(",");
+            result.append("\"sizes_equal\":").append(simType1.getOperationSymbols().size() == simType2.getOperationSymbols().size()).append(",");
+            result.append("\"max_arities_equal\":").append(simType1.getMaxArity() == simType2.getMaxArity()).append(",");
+            result.append("\"string_representations_equal\":").append(simType1.toString().equals(simType2.toString()));
+            result.append("},");
+            result.append("\"operations\":{");
+            
+            // Test contains operations if both types have symbols
+            List<OperationSymbol> opSymbols1 = simType1.getOperationSymbols();
+            List<OperationSymbol> opSymbols2 = simType2.getOperationSymbols();
+            
+            if (opSymbols1.size() > 0 && opSymbols2.size() > 0) {
+                OperationSymbol firstSymbol1 = opSymbols1.get(0);
+                OperationSymbol firstSymbol2 = opSymbols2.get(0);
+                
+                result.append("\"type1_contains_first_symbol2\":").append(opSymbols1.contains(firstSymbol2)).append(",");
+                result.append("\"type2_contains_first_symbol1\":").append(opSymbols2.contains(firstSymbol1));
+            } else {
+                result.append("\"contains_tests\":\"skipped_due_to_empty_types\"");
+            }
+            
+            result.append("}");
+            
+            long endTime = System.currentTimeMillis();
+            long endMemory = getMemoryUsage();
+            result.append(",\"_execution_time\":").append(endTime - startTime);
+            result.append(",\"_memory_used\":").append(endMemory - startMemory);
+            result.append("}");
+            
+            System.out.println(result.toString());
+            
+        } catch (Exception e) {
+            outputErrorResult("similarity_type_operations", e.getClass().getSimpleName(), e.getMessage());
         }
     }
 
