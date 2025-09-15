@@ -48,7 +48,7 @@ import org.uacalc.util.PermutationGenerator;
 public class JavaWrapper {
 
     public static void main(String[] args) {
-        if (args.length < 2) {
+        if (args.length < 1) {
             System.err.println(
                     "Usage: JavaWrapper <operation> <ua_file> [args...]");
             System.err.println("Operations:");
@@ -62,6 +62,12 @@ public class JavaWrapper {
                     "  parse_term <term_string> - Parse a term string");
             System.err.println(
                     "  create_variable <var_name> - Create a variable");
+            System.err.println(
+                    "  variable_comparison <var1_name> <var2_name> - Compare two variables");
+            System.err.println(
+                    "  variable_substitution <term_string> <var_name> <substitute_term> - Substitute variable in term");
+            System.err.println(
+                    "  variable_scope <term_string> - Analyze variable scope in term");
             System.err.println(
                     "  eval_term <term_string> <variables_json> - Evaluate a term");
             System.err.println(
@@ -114,6 +120,14 @@ public class JavaWrapper {
                     "  term_equivalence <term1_string> <term2_string> <ua_file> - Check if two terms are equivalent");
             System.err.println(
                     "  taylor_terms <ua_file> - Generate Taylor terms for algebra");
+            System.err.println(
+                    "  terms_factory_methods - Test Terms utility class factory methods");
+            System.err.println(
+                    "  terms_construction_utilities <term_string> - Test Terms construction utilities");
+            System.err.println(
+                    "  terms_manipulation <term_string> <operation> - Test Terms manipulation operations");
+            System.err.println(
+                    "  terms_transformation <term_string> <transformation_type> - Test Terms transformation operations");
             System.err.println(
                     "  lattice_properties <ua_file> - Analyze lattice structure properties");
             System.err.println(
@@ -212,6 +226,30 @@ public class JavaWrapper {
                         System.exit(1);
                     }
                     outputVariableCreate(args[1]);
+                    break;
+                case "variable_comparison":
+                    if (args.length < 3) {
+                        System.err.println(
+                                "Usage: JavaWrapper variable_comparison <var1_name> <var2_name>");
+                        System.exit(1);
+                    }
+                    outputVariableComparison(args[1], args[2]);
+                    break;
+                case "variable_substitution":
+                    if (args.length < 4) {
+                        System.err.println(
+                                "Usage: JavaWrapper variable_substitution <term_string> <var_name> <substitute_term>");
+                        System.exit(1);
+                    }
+                    outputVariableSubstitution(args[1], args[2], args[3]);
+                    break;
+                case "variable_scope":
+                    if (args.length < 2) {
+                        System.err.println(
+                                "Usage: JavaWrapper variable_scope <term_string>");
+                        System.exit(1);
+                    }
+                    outputVariableScope(args[1]);
                     break;
                 case "eval_term":
                     if (args.length < 3) {
@@ -420,6 +458,33 @@ public class JavaWrapper {
                         System.exit(1);
                     }
                     outputTaylorTerms(args[1]);
+                    break;
+                case "terms_factory_methods":
+                    outputTermsFactoryMethods();
+                    break;
+                case "terms_construction_utilities":
+                    if (args.length < 2) {
+                        System.err.println(
+                                "Usage: JavaWrapper terms_construction_utilities <term_string>");
+                        System.exit(1);
+                    }
+                    outputTermsConstructionUtilities(args[1]);
+                    break;
+                case "terms_manipulation":
+                    if (args.length < 3) {
+                        System.err.println(
+                                "Usage: JavaWrapper terms_manipulation <term_string> <operation>");
+                        System.exit(1);
+                    }
+                    outputTermsManipulation(args[1], args[2]);
+                    break;
+                case "terms_transformation":
+                    if (args.length < 3) {
+                        System.err.println(
+                                "Usage: JavaWrapper terms_transformation <term_string> <transformation_type>");
+                        System.exit(1);
+                    }
+                    outputTermsTransformation(args[1], args[2]);
                     break;
                 case "term_operation_construction":
                     if (args.length < 3) {
@@ -821,8 +886,12 @@ public class JavaWrapper {
             StringBuilder result = new StringBuilder();
             result.append("{");
             result.append("\"success\":true,");
+            result.append("\"operation\":\"create_variable\",");
             result.append("\"variable_name\":\"").append(variable.getName())
-                    .append("\"");
+                    .append("\",");
+            result.append("\"variable_string\":\"").append(variable.toString())
+                    .append("\",");
+            result.append("\"variable_hash\":").append(variable.hashCode());
             result.append("}");
             System.out.println(result.toString());
         }
@@ -830,6 +899,127 @@ public class JavaWrapper {
             StringBuilder result = new StringBuilder();
             result.append("{");
             result.append("\"success\":false,");
+            result.append("\"operation\":\"create_variable\",");
+            result.append("\"error\":\"")
+                    .append(e.getMessage().replace("\"", "\\\"")).append("\"");
+            result.append("}");
+            System.out.println(result.toString());
+        }
+    }
+
+    private static void outputVariableComparison(String var1Name, String var2Name) throws Exception {
+        try {
+            Variable var1 = new VariableImp(var1Name);
+            Variable var2 = new VariableImp(var2Name);
+
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"variable_comparison\",");
+            result.append("\"var1_name\":\"").append(var1.getName()).append("\",");
+            result.append("\"var2_name\":\"").append(var2.getName()).append("\",");
+            result.append("\"are_equal\":").append(var1.equals(var2)).append(",");
+            result.append("\"same_name\":").append(var1.getName().equals(var2.getName())).append(",");
+            result.append("\"var1_hash\":").append(var1.hashCode()).append(",");
+            result.append("\"var2_hash\":").append(var2.hashCode()).append(",");
+            // Simple comparison based on string representation
+            int comparisonResult = var1.toString().compareTo(var2.toString());
+            result.append("\"comparison_result\":").append(comparisonResult);
+            result.append("}");
+            System.out.println(result.toString());
+        }
+        catch (Exception e) {
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":false,");
+            result.append("\"operation\":\"variable_comparison\",");
+            result.append("\"error\":\"")
+                    .append(e.getMessage().replace("\"", "\\\"")).append("\"");
+            result.append("}");
+            System.out.println(result.toString());
+        }
+    }
+
+    private static void outputVariableSubstitution(String termString, String varName, String substituteTermString) throws Exception {
+        try {
+            Term originalTerm = Terms.stringToTerm(termString);
+            Variable variable = new VariableImp(varName);
+            Term substituteTerm = Terms.stringToTerm(substituteTermString);
+
+            // Create substitution map
+            Map<Variable, Term> substitutionMap = new HashMap<>();
+            substitutionMap.put(variable, substituteTerm);
+
+            // Perform substitution
+            Term resultTerm = originalTerm.substitute(substitutionMap);
+
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"variable_substitution\",");
+            result.append("\"original_term\":\"").append(escapeJson(originalTerm.toString())).append("\",");
+            result.append("\"variable_name\":\"").append(varName).append("\",");
+            result.append("\"substitute_term\":\"").append(escapeJson(substituteTerm.toString())).append("\",");
+            result.append("\"result_term\":\"").append(escapeJson(resultTerm.toString())).append("\",");
+            result.append("\"substitution_occurred\":").append(!originalTerm.toString().equals(resultTerm.toString()));
+            result.append("}");
+            System.out.println(result.toString());
+        }
+        catch (Exception e) {
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":false,");
+            result.append("\"operation\":\"variable_substitution\",");
+            result.append("\"error\":\"")
+                    .append(e.getMessage().replace("\"", "\\\"")).append("\"");
+            result.append("}");
+            System.out.println(result.toString());
+        }
+    }
+
+    private static void outputVariableScope(String termString) throws Exception {
+        try {
+            Term term = Terms.stringToTerm(termString);
+
+            // Collect all variables in the term
+            Set<String> variables = new HashSet<>();
+            collectVariables(term, variables);
+
+            // Analyze variable scope and binding
+            Map<String, Integer> variableOccurrences = new HashMap<>();
+            Map<String, Integer> variableDepths = new HashMap<>();
+            
+            analyzeVariableScope(term, variables, variableOccurrences, variableDepths, 0);
+
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"variable_scope\",");
+            result.append("\"term_string\":\"").append(escapeJson(termString)).append("\",");
+            result.append("\"variables\":[");
+            
+            boolean first = true;
+            for (String var : variables) {
+                if (!first) result.append(",");
+                result.append("{");
+                result.append("\"name\":\"").append(var).append("\",");
+                result.append("\"occurrences\":").append(variableOccurrences.getOrDefault(var, 0)).append(",");
+                result.append("\"max_depth\":").append(variableDepths.getOrDefault(var, 0));
+                result.append("}");
+                first = false;
+            }
+            
+            result.append("],");
+            result.append("\"total_variables\":").append(variables.size()).append(",");
+            result.append("\"term_depth\":").append(calculateTermDepth(term));
+            result.append("}");
+            System.out.println(result.toString());
+        }
+        catch (Exception e) {
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":false,");
+            result.append("\"operation\":\"variable_scope\",");
             result.append("\"error\":\"")
                     .append(e.getMessage().replace("\"", "\\\"")).append("\"");
             result.append("}");
@@ -3564,6 +3754,20 @@ public class JavaWrapper {
         return varMap;
     }
 
+    private static void analyzeVariableScope(Term term, Set<String> allVariables, 
+                                           Map<String, Integer> occurrences, 
+                                           Map<String, Integer> depths, int currentDepth) {
+        if (term.isaVariable()) {
+            String varName = term.toString();
+            occurrences.put(varName, occurrences.getOrDefault(varName, 0) + 1);
+            depths.put(varName, Math.max(depths.getOrDefault(varName, 0), currentDepth));
+        } else if (term.getChildren() != null) {
+            for (Term child : term.getChildren()) {
+                analyzeVariableScope(child, allVariables, occurrences, depths, currentDepth + 1);
+            }
+        }
+    }
+
     private static boolean isComplemented(CongruenceLattice conLat) {
         // Check if the lattice is complemented (every element has a complement)
         // This is a simplified check - full implementation would be more complex
@@ -5772,6 +5976,304 @@ public class JavaWrapper {
         } catch (Exception e) {
             outputErrorResult("similarity_type_operations", e.getClass().getSimpleName(), e.getMessage());
         }
+    }
+
+    private static void outputTermsFactoryMethods() throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        try {
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"terms_factory_methods\",");
+            result.append("\"results\":{");
+
+            // Test Terms.stringToTerm factory method
+            List<String> testTerms = Arrays.asList("x", "f(x)", "g(x,y)", "h(f(x),g(y,z))");
+            List<String> parsedTerms = new ArrayList<>();
+            List<String> failedTerms = new ArrayList<>();
+
+            for (String termStr : testTerms) {
+                try {
+                    Term term = Terms.stringToTerm(termStr);
+                    parsedTerms.add(termStr);
+                } catch (Exception e) {
+                    failedTerms.add(termStr);
+                }
+            }
+
+            result.append("\"string_to_term_tests\":{");
+            result.append("\"test_terms\":[");
+            for (int i = 0; i < testTerms.size(); i++) {
+                result.append("\"").append(escapeJson(testTerms.get(i))).append("\"");
+                if (i < testTerms.size() - 1) result.append(",");
+            }
+            result.append("],");
+            result.append("\"parsed_successfully\":[");
+            for (int i = 0; i < parsedTerms.size(); i++) {
+                result.append("\"").append(escapeJson(parsedTerms.get(i))).append("\"");
+                if (i < parsedTerms.size() - 1) result.append(",");
+            }
+            result.append("],");
+            result.append("\"failed_to_parse\":[");
+            for (int i = 0; i < failedTerms.size(); i++) {
+                result.append("\"").append(escapeJson(failedTerms.get(i))).append("\"");
+                if (i < failedTerms.size() - 1) result.append(",");
+            }
+            result.append("],");
+            result.append("\"success_rate\":").append((double) parsedTerms.size() / testTerms.size());
+            result.append("},");
+
+            // Test variable creation utilities
+            result.append("\"variable_creation\":{");
+            try {
+                Variable var1 = new VariableImp("x");
+                Variable var2 = new VariableImp("y");
+                result.append("\"variable_creation_successful\":true,");
+                result.append("\"variable_names\":[\"").append(var1.getName()).append("\",\"").append(var2.getName()).append("\"],");
+                result.append("\"variables_equal\":").append(var1.equals(var2));
+            } catch (Exception e) {
+                result.append("\"variable_creation_successful\":false,");
+                result.append("\"error\":\"").append(escapeJson(e.getMessage())).append("\"");
+            }
+            result.append("}");
+
+            long endTime = System.currentTimeMillis();
+            long endMemory = getMemoryUsage();
+
+            result.append("},");
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime);
+            result.append("}");
+
+            System.out.println(result.toString());
+
+        } catch (Exception e) {
+            outputErrorResult("terms_factory_methods", e);
+        }
+    }
+
+    private static void outputTermsConstructionUtilities(String termString) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        try {
+            Term term = Terms.stringToTerm(termString);
+
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"terms_construction_utilities\",");
+            result.append("\"term_string\":\"").append(escapeJson(termString)).append("\",");
+            result.append("\"results\":{");
+
+            // Test term construction utilities
+            result.append("\"term_constructed\":true,");
+            result.append("\"term_type\":\"").append(term.isaVariable() ? "variable" : "operation").append("\",");
+            result.append("\"term_string_representation\":\"").append(escapeJson(term.toString())).append("\",");
+            // Calculate arity from children if not a variable
+            int arity = 0;
+            if (!term.isaVariable() && term.getChildren() != null) {
+                arity = term.getChildren().size();
+            }
+            result.append("\"term_arity\":").append(arity).append(",");
+
+            // Test term properties
+            result.append("\"is_variable\":").append(term.isaVariable()).append(",");
+            result.append("\"is_operation\":").append(!term.isaVariable()).append(",");
+
+            // Get variables in term by collecting them
+            Set<String> variableNames = new HashSet<>();
+            collectVariables(term, variableNames);
+            result.append("\"variables_in_term\":[");
+            int varIndex = 0;
+            for (String varName : variableNames) {
+                result.append("\"").append(escapeJson(varName)).append("\"");
+                if (varIndex < variableNames.size() - 1) result.append(",");
+                varIndex++;
+            }
+            result.append("],");
+            result.append("\"variable_count\":").append(variableNames.size());
+
+            long endTime = System.currentTimeMillis();
+            long endMemory = getMemoryUsage();
+
+            result.append("},");
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime);
+            result.append("}");
+
+            System.out.println(result.toString());
+
+        } catch (Exception e) {
+            outputErrorResult("terms_construction_utilities", e);
+        }
+    }
+
+    private static void outputTermsManipulation(String termString, String operation) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        try {
+            Term term = Terms.stringToTerm(termString);
+
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"terms_manipulation\",");
+            result.append("\"term_string\":\"").append(escapeJson(termString)).append("\",");
+            result.append("\"manipulation_operation\":\"").append(escapeJson(operation)).append("\",");
+            result.append("\"results\":{");
+
+            switch (operation.toLowerCase()) {
+                case "clone":
+                    // Test term cloning/copying
+                    Term clonedTerm = Terms.stringToTerm(termString); // Re-parse as clone
+                    result.append("\"cloned_term\":\"").append(escapeJson(clonedTerm.toString())).append("\",");
+                    result.append("\"clone_equals_original\":").append(term.toString().equals(clonedTerm.toString()));
+                    break;
+
+                case "variables":
+                    // Extract variables from term
+                    Set<String> vars = new HashSet<>();
+                    collectVariables(term, vars);
+                    result.append("\"extracted_variables\":[");
+                    int i = 0;
+                    for (String varName : vars) {
+                        result.append("\"").append(escapeJson(varName)).append("\"");
+                        if (i < vars.size() - 1) result.append(",");
+                        i++;
+                    }
+                    result.append("],");
+                    result.append("\"variable_count\":").append(vars.size());
+                    break;
+
+                case "depth":
+                    // Calculate term depth
+                    int depth = calculateTermDepth(term);
+                    result.append("\"term_depth\":").append(depth);
+                    break;
+
+                case "subterms":
+                    // Extract subterms
+                    List<String> subterms = new ArrayList<>();
+                    extractSubterms(term, subterms);
+                    result.append("\"subterms\":[");
+                    for (int j = 0; j < subterms.size(); j++) {
+                        result.append("\"").append(escapeJson(subterms.get(j))).append("\"");
+                        if (j < subterms.size() - 1) result.append(",");
+                    }
+                    result.append("],");
+                    result.append("\"subterm_count\":").append(subterms.size());
+                    break;
+
+                default:
+                    result.append("\"error\":\"Unknown manipulation operation: ").append(escapeJson(operation)).append("\"");
+                    break;
+            }
+
+            long endTime = System.currentTimeMillis();
+            long endMemory = getMemoryUsage();
+
+            result.append("},");
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime);
+            result.append("}");
+
+            System.out.println(result.toString());
+
+        } catch (Exception e) {
+            outputErrorResult("terms_manipulation", e);
+        }
+    }
+
+    private static void outputTermsTransformation(String termString, String transformationType) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        try {
+            Term term = Terms.stringToTerm(termString);
+
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"terms_transformation\",");
+            result.append("\"term_string\":\"").append(escapeJson(termString)).append("\",");
+            result.append("\"transformation_type\":\"").append(escapeJson(transformationType)).append("\",");
+            result.append("\"results\":{");
+
+            switch (transformationType.toLowerCase()) {
+                case "normalize":
+                    // Normalize term representation
+                    String normalizedTerm = term.toString();
+                    result.append("\"normalized_term\":\"").append(escapeJson(normalizedTerm)).append("\",");
+                    result.append("\"normalization_changed\":").append(!termString.equals(normalizedTerm));
+                    break;
+
+                case "flatten":
+                    // Flatten nested operations (simplified)
+                    String flattenedTerm = flattenTerm(term);
+                    result.append("\"flattened_term\":\"").append(escapeJson(flattenedTerm)).append("\",");
+                    result.append("\"flattening_changed\":").append(!termString.equals(flattenedTerm));
+                    break;
+
+                case "expand":
+                    // Expand term (for now, just return the same term)
+                    String expandedTerm = term.toString();
+                    result.append("\"expanded_term\":\"").append(escapeJson(expandedTerm)).append("\",");
+                    result.append("\"expansion_changed\":false,");
+                    result.append("\"note\":\"Full term expansion requires algebra context\"");
+                    break;
+
+                case "simplify":
+                    // Simplify term (basic simplification)
+                    String simplifiedTerm = simplifyTerm(term);
+                    result.append("\"simplified_term\":\"").append(escapeJson(simplifiedTerm)).append("\",");
+                    result.append("\"simplification_changed\":").append(!termString.equals(simplifiedTerm));
+                    break;
+
+                default:
+                    result.append("\"error\":\"Unknown transformation type: ").append(escapeJson(transformationType)).append("\"");
+                    break;
+            }
+
+            long endTime = System.currentTimeMillis();
+            long endMemory = getMemoryUsage();
+
+            result.append("},");
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime);
+            result.append("}");
+
+            System.out.println(result.toString());
+
+        } catch (Exception e) {
+            outputErrorResult("terms_transformation", e);
+        }
+    }
+
+
+
+    private static void extractSubterms(Term term, List<String> subterms) {
+        subterms.add(term.toString());
+        if (term.getChildren() != null) {
+            for (Term child : term.getChildren()) {
+                extractSubterms(child, subterms);
+            }
+        }
+    }
+
+    private static String flattenTerm(Term term) {
+        // Basic flattening - just return string representation
+        // Full flattening would require more complex logic
+        return term.toString();
+    }
+
+    private static String simplifyTerm(Term term) {
+        // Basic simplification - just return string representation
+        // Full simplification would require algebra context and rules
+        return term.toString();
     }
 
 }
