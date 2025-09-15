@@ -39,6 +39,9 @@ import org.uacalc.alg.op.OperationSymbol;
 import org.uacalc.alg.op.SimilarityType;
 import org.uacalc.alg.op.TermOperation;
 import org.uacalc.io.AlgebraIO;
+import org.uacalc.io.AlgebraReader;
+import org.uacalc.io.AlgebraWriter;
+import java.io.FileInputStream;
 import org.uacalc.terms.Term;
 import org.uacalc.terms.Terms;
 import org.uacalc.terms.Variable;
@@ -210,6 +213,20 @@ public class JavaWrapper {
                     "  lattices_analysis <ua_file> - Test lattice analysis utilities");
             System.err.println(
                     "  lattices_property_detection <ua_file> - Test lattice property detection utilities");
+            System.err.println(
+                    "  algebra_io_read <ua_file> - Test AlgebraIO.readAlgebraFile");
+            System.err.println(
+                    "  algebra_io_write <ua_file> <output_file> - Test AlgebraIO.writeAlgebraFile");
+            System.err.println(
+                    "  algebra_io_roundtrip <ua_file> <temp_file> - Test round-trip file operations");
+            System.err.println(
+                    "  algebra_io_validation <ua_file> - Test file format validation");
+            System.err.println(
+                    "  algebra_reader_parse <ua_file> - Test AlgebraReader parsing");
+            System.err.println(
+                    "  algebra_reader_stream_parse <ua_file> - Test AlgebraReader stream parsing");
+            System.err.println(
+                    "  algebra_writer <ua_file> <output_file> - Test AlgebraWriter file generation");
             System.exit(1);
         }
 
@@ -824,6 +841,62 @@ public class JavaWrapper {
                         System.exit(1);
                     }
                     outputLatticesPropertyDetection(args[1]);
+                    break;
+                case "algebra_io_read":
+                    if (args.length < 2) {
+                        System.err.println(
+                                "Usage: JavaWrapper algebra_io_read <ua_file>");
+                        System.exit(1);
+                    }
+                    outputAlgebraIORead(args[1]);
+                    break;
+                case "algebra_io_write":
+                    if (args.length < 3) {
+                        System.err.println(
+                                "Usage: JavaWrapper algebra_io_write <ua_file> <output_file>");
+                        System.exit(1);
+                    }
+                    outputAlgebraIOWrite(args[1], args[2]);
+                    break;
+                case "algebra_io_roundtrip":
+                    if (args.length < 3) {
+                        System.err.println(
+                                "Usage: JavaWrapper algebra_io_roundtrip <ua_file> <temp_file>");
+                        System.exit(1);
+                    }
+                    outputAlgebraIORoundtrip(args[1], args[2]);
+                    break;
+                case "algebra_io_validation":
+                    if (args.length < 2) {
+                        System.err.println(
+                                "Usage: JavaWrapper algebra_io_validation <ua_file>");
+                        System.exit(1);
+                    }
+                    outputAlgebraIOValidation(args[1]);
+                    break;
+                case "algebra_reader_parse":
+                    if (args.length < 2) {
+                        System.err.println(
+                                "Usage: JavaWrapper algebra_reader_parse <ua_file>");
+                        System.exit(1);
+                    }
+                    outputAlgebraReaderParse(args[1]);
+                    break;
+                case "algebra_reader_stream_parse":
+                    if (args.length < 2) {
+                        System.err.println(
+                                "Usage: JavaWrapper algebra_reader_stream_parse <ua_file>");
+                        System.exit(1);
+                    }
+                    outputAlgebraReaderStreamParse(args[1]);
+                    break;
+                case "algebra_writer":
+                    if (args.length < 3) {
+                        System.err.println(
+                                "Usage: JavaWrapper algebra_writer <ua_file> <output_file>");
+                        System.exit(1);
+                    }
+                    outputAlgebraWriter(args[1], args[2]);
                     break;
                 default:
                     System.err.println("Unknown operation: " + operation);
@@ -7593,6 +7666,342 @@ public class JavaWrapper {
         }
         
         return count;
+    }
+
+    private static void outputAlgebraIORead(String uaFile) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        try {
+            // Read algebra using AlgebraIO
+            SmallAlgebra algebra = AlgebraIO.readAlgebraFile(uaFile);
+            
+            long endTime = System.currentTimeMillis();
+            long endMemory = getMemoryUsage();
+
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"algebra_io_read\",");
+            result.append("\"input_file\":\"").append(escapeJson(uaFile)).append("\",");
+            result.append("\"algebra_name\":\"").append(escapeJson(algebra.getName())).append("\",");
+            result.append("\"cardinality\":").append(algebra.cardinality()).append(",");
+            result.append("\"operation_count\":").append(algebra.operations().size()).append(",");
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / (1024.0 * 1024.0)).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime);
+            result.append("}");
+            System.out.println(result.toString());
+
+        } catch (Exception e) {
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":false,");
+            result.append("\"operation\":\"algebra_io_read\",");
+            result.append("\"input_file\":\"").append(escapeJson(uaFile)).append("\",");
+            result.append("\"error\":\"").append(escapeJson(e.getMessage())).append("\"");
+            result.append("}");
+            System.out.println(result.toString());
+        }
+    }
+
+    private static void outputAlgebraIOWrite(String uaFile, String outputFile) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        try {
+            // Read algebra using AlgebraIO
+            SmallAlgebra algebra = AlgebraIO.readAlgebraFile(uaFile);
+            
+            // Write algebra using AlgebraIO
+            AlgebraIO.writeAlgebraFile(algebra, outputFile);
+            
+            long endTime = System.currentTimeMillis();
+            long endMemory = getMemoryUsage();
+
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"algebra_io_write\",");
+            result.append("\"input_file\":\"").append(escapeJson(uaFile)).append("\",");
+            result.append("\"output_file\":\"").append(escapeJson(outputFile)).append("\",");
+            result.append("\"algebra_name\":\"").append(escapeJson(algebra.getName())).append("\",");
+            result.append("\"cardinality\":").append(algebra.cardinality()).append(",");
+            result.append("\"operation_count\":").append(algebra.operations().size()).append(",");
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / (1024.0 * 1024.0)).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime);
+            result.append("}");
+            System.out.println(result.toString());
+
+        } catch (Exception e) {
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":false,");
+            result.append("\"operation\":\"algebra_io_write\",");
+            result.append("\"input_file\":\"").append(escapeJson(uaFile)).append("\",");
+            result.append("\"output_file\":\"").append(escapeJson(outputFile)).append("\",");
+            result.append("\"error\":\"").append(escapeJson(e.getMessage())).append("\"");
+            result.append("}");
+            System.out.println(result.toString());
+        }
+    }
+
+    private static void outputAlgebraIORoundtrip(String uaFile, String tempFile) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        try {
+            // Read original algebra
+            SmallAlgebra originalAlgebra = AlgebraIO.readAlgebraFile(uaFile);
+            
+            // Write to temporary file
+            AlgebraIO.writeAlgebraFile(originalAlgebra, tempFile);
+            
+            // Read back from temporary file
+            SmallAlgebra reloadedAlgebra = AlgebraIO.readAlgebraFile(tempFile);
+            
+            long endTime = System.currentTimeMillis();
+            long endMemory = getMemoryUsage();
+
+            // Compare properties
+            boolean nameMatches = originalAlgebra.getName().equals(reloadedAlgebra.getName());
+            boolean cardinalityMatches = originalAlgebra.cardinality() == reloadedAlgebra.cardinality();
+            boolean operationCountMatches = originalAlgebra.operations().size() == reloadedAlgebra.operations().size();
+            
+            // Compare operation symbols
+            List<String> originalSymbols = new ArrayList<>();
+            List<String> reloadedSymbols = new ArrayList<>();
+            for (Operation op : originalAlgebra.operations()) {
+                originalSymbols.add(op.symbol().toString());
+            }
+            for (Operation op : reloadedAlgebra.operations()) {
+                reloadedSymbols.add(op.symbol().toString());
+            }
+            boolean symbolsMatch = originalSymbols.equals(reloadedSymbols);
+
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"algebra_io_roundtrip\",");
+            result.append("\"input_file\":\"").append(escapeJson(uaFile)).append("\",");
+            result.append("\"temp_file\":\"").append(escapeJson(tempFile)).append("\",");
+            result.append("\"algebra_name\":\"").append(escapeJson(originalAlgebra.getName())).append("\",");
+            result.append("\"cardinality\":").append(originalAlgebra.cardinality()).append(",");
+            result.append("\"operation_count\":").append(originalAlgebra.operations().size()).append(",");
+            result.append("\"roundtrip_success\":").append(nameMatches && cardinalityMatches && operationCountMatches && symbolsMatch).append(",");
+            result.append("\"name_matches\":").append(nameMatches).append(",");
+            result.append("\"cardinality_matches\":").append(cardinalityMatches).append(",");
+            result.append("\"operation_count_matches\":").append(operationCountMatches).append(",");
+            result.append("\"symbols_match\":").append(symbolsMatch).append(",");
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / (1024.0 * 1024.0)).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime);
+            result.append("}");
+            System.out.println(result.toString());
+
+        } catch (Exception e) {
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":false,");
+            result.append("\"operation\":\"algebra_io_roundtrip\",");
+            result.append("\"input_file\":\"").append(escapeJson(uaFile)).append("\",");
+            result.append("\"temp_file\":\"").append(escapeJson(tempFile)).append("\",");
+            result.append("\"error\":\"").append(escapeJson(e.getMessage())).append("\"");
+            result.append("}");
+            System.out.println(result.toString());
+        }
+    }
+
+    private static void outputAlgebraIOValidation(String uaFile) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        try {
+            // Attempt to read algebra and validate
+            SmallAlgebra algebra = AlgebraIO.readAlgebraFile(uaFile);
+            
+            long endTime = System.currentTimeMillis();
+            long endMemory = getMemoryUsage();
+
+            // Basic validation checks
+            boolean hasValidName = algebra.getName() != null && !algebra.getName().trim().isEmpty();
+            boolean hasValidCardinality = algebra.cardinality() > 0;
+            boolean hasValidOperations = algebra.operations() != null && !algebra.operations().isEmpty();
+            
+            // Check operation validity
+            boolean allOperationsValid = true;
+            List<String> operationErrors = new ArrayList<>();
+            for (Operation op : algebra.operations()) {
+                if (op.symbol() == null) {
+                    allOperationsValid = false;
+                    operationErrors.add("Operation with null symbol");
+                }
+                if (op.arity() < 0) {
+                    allOperationsValid = false;
+                    operationErrors.add("Operation with negative arity");
+                }
+            }
+
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"algebra_io_validation\",");
+            result.append("\"input_file\":\"").append(escapeJson(uaFile)).append("\",");
+            result.append("\"algebra_name\":\"").append(escapeJson(algebra.getName())).append("\",");
+            result.append("\"cardinality\":").append(algebra.cardinality()).append(",");
+            result.append("\"operation_count\":").append(algebra.operations().size()).append(",");
+            result.append("\"validation_passed\":").append(hasValidName && hasValidCardinality && hasValidOperations && allOperationsValid).append(",");
+            result.append("\"has_valid_name\":").append(hasValidName).append(",");
+            result.append("\"has_valid_cardinality\":").append(hasValidCardinality).append(",");
+            result.append("\"has_valid_operations\":").append(hasValidOperations).append(",");
+            result.append("\"all_operations_valid\":").append(allOperationsValid).append(",");
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / (1024.0 * 1024.0)).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime);
+            result.append("}");
+            System.out.println(result.toString());
+
+        } catch (Exception e) {
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":false,");
+            result.append("\"operation\":\"algebra_io_validation\",");
+            result.append("\"input_file\":\"").append(escapeJson(uaFile)).append("\",");
+            result.append("\"validation_passed\":false,");
+            result.append("\"error\":\"").append(escapeJson(e.getMessage())).append("\"");
+            result.append("}");
+            System.out.println(result.toString());
+        }
+    }
+
+    private static void outputAlgebraReaderParse(String uaFile) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+        
+        try {
+            // Use AlgebraReader directly for parsing
+            AlgebraReader reader = new AlgebraReader(uaFile);
+            SmallAlgebra algebra = reader.readAlgebraFile();
+            
+            long endTime = System.currentTimeMillis();
+            long endMemory = getMemoryUsage();
+            
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"algebra_reader_parse\",");
+            result.append("\"input_file\":\"").append(escapeJson(uaFile)).append("\",");
+            result.append("\"algebra_name\":\"").append(escapeJson(algebra.getName())).append("\",");
+            result.append("\"cardinality\":").append(algebra.cardinality()).append(",");
+            result.append("\"operation_count\":").append(algebra.operations().size()).append(",");
+            result.append("\"operations\":[");
+            
+            // Add operation details
+            List<Operation> operations = algebra.operations();
+            for (int i = 0; i < operations.size(); i++) {
+                if (i > 0) result.append(",");
+                Operation op = operations.get(i);
+                result.append("{");
+                result.append("\"symbol\":\"").append(escapeJson(op.symbol().toString())).append("\",");
+                result.append("\"arity\":").append(op.arity()).append(",");
+                result.append("\"description\":\"").append(escapeJson("")).append("\"");
+                result.append("}");
+            }
+            
+            result.append("],");
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / (1024.0 * 1024.0)).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime);
+            result.append("}");
+            System.out.println(result.toString());
+            
+        } catch (Exception e) {
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":false,");
+            result.append("\"operation\":\"algebra_reader_parse\",");
+            result.append("\"input_file\":\"").append(escapeJson(uaFile)).append("\",");
+            result.append("\"error\":\"").append(escapeJson(e.getMessage())).append("\"");
+            result.append("}");
+            System.out.println(result.toString());
+        }
+    }
+    
+    private static void outputAlgebraReaderStreamParse(String uaFile) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+        
+        try {
+            // Use AlgebraReader with stream for parsing
+            FileInputStream inputStream = new FileInputStream(uaFile);
+            AlgebraReader reader = new AlgebraReader(inputStream);
+            SmallAlgebra algebra = reader.readAlgebraFromStream();
+            inputStream.close();
+            
+            long endTime = System.currentTimeMillis();
+            long endMemory = getMemoryUsage();
+            
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"algebra_reader_stream_parse\",");
+            result.append("\"input_file\":\"").append(escapeJson(uaFile)).append("\",");
+            result.append("\"algebra_name\":\"").append(escapeJson(algebra.getName())).append("\",");
+            result.append("\"cardinality\":").append(algebra.cardinality()).append(",");
+            result.append("\"operation_count\":").append(algebra.operations().size()).append(",");
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / (1024.0 * 1024.0)).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime);
+            result.append("}");
+            System.out.println(result.toString());
+            
+        } catch (Exception e) {
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":false,");
+            result.append("\"operation\":\"algebra_reader_stream_parse\",");
+            result.append("\"input_file\":\"").append(escapeJson(uaFile)).append("\",");
+            result.append("\"error\":\"").append(escapeJson(e.getMessage())).append("\"");
+            result.append("}");
+            System.out.println(result.toString());
+        }
+    }
+
+    private static void outputAlgebraWriter(String uaFile, String outputFile) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+        
+        try {
+            // Read algebra using AlgebraIO
+            SmallAlgebra algebra = AlgebraIO.readAlgebraFile(uaFile);
+            
+            // Write algebra using AlgebraWriter
+            AlgebraWriter writer = new AlgebraWriter(algebra, outputFile);
+            writer.writeAlgebraXML();
+            
+            long endTime = System.currentTimeMillis();
+            long endMemory = getMemoryUsage();
+            
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"algebra_writer\",");
+            result.append("\"input_file\":\"").append(escapeJson(uaFile)).append("\",");
+            result.append("\"output_file\":\"").append(escapeJson(outputFile)).append("\",");
+            result.append("\"algebra_name\":\"").append(escapeJson(algebra.getName())).append("\",");
+            result.append("\"cardinality\":").append(algebra.cardinality()).append(",");
+            result.append("\"operation_count\":").append(algebra.operations().size()).append(",");
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / (1024.0 * 1024.0)).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime);
+            result.append("}");
+            System.out.println(result.toString());
+            
+        } catch (Exception e) {
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":false,");
+            result.append("\"operation\":\"algebra_writer\",");
+            result.append("\"input_file\":\"").append(escapeJson(uaFile)).append("\",");
+            result.append("\"output_file\":\"").append(escapeJson(outputFile)).append("\",");
+            result.append("\"error\":\"").append(escapeJson(e.getMessage())).append("\"");
+            result.append("}");
+            System.out.println(result.toString());
+        }
     }
 
 }
