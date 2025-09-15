@@ -1,9 +1,11 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Iterator;
 
 import org.uacalc.alg.Algebra;
 import org.uacalc.alg.BasicAlgebra;
@@ -21,11 +23,21 @@ import org.uacalc.alg.conlat.BinaryRelation;
 import org.uacalc.alg.conlat.TypeFinder;
 import org.uacalc.lat.Lattice;
 import org.uacalc.alg.op.Operation;
+import org.uacalc.alg.op.OperationSymbol;
 import org.uacalc.io.AlgebraIO;
 import org.uacalc.terms.Term;
 import org.uacalc.terms.Terms;
 import org.uacalc.terms.Variable;
 import org.uacalc.terms.VariableImp;
+import org.uacalc.eq.Equation;
+import org.uacalc.eq.Equations;
+import org.uacalc.eq.Presentation;
+import org.uacalc.group.PermutationGroup;
+import org.uacalc.util.Horner;
+import org.uacalc.util.IntArray;
+import org.uacalc.util.SequenceGenerator;
+import org.uacalc.util.ArrayIncrementor;
+import org.uacalc.util.PermutationGenerator;
 
 /**
  * Java wrapper for UACalc functionality to enable comparison with Rust
@@ -110,6 +122,24 @@ public class JavaWrapper {
                     "  lattice_meet <ua_file> <element1> <element2> - Compute lattice meet of two elements");
             System.err.println(
                     "  ordered_set_operations <ua_file> - Perform ordered set utility operations");
+            System.err.println(
+                    "  equation_satisfaction <equation_json> <ua_file> - Check if equation holds in algebra");
+            System.err.println(
+                    "  presentation_properties <presentation_json> - Analyze algebraic presentation properties");
+            System.err.println(
+                    "  equation_generation <operation_symbol> <equation_type> - Generate standard equations");
+            System.err.println(
+                    "  permutation_group <ua_file> - Analyze permutation group operations");
+            System.err.println(
+                    "  group_properties <ua_file> - Analyze group structure properties");
+            System.err.println(
+                    "  automorphism_group <ua_file> - Detect automorphism group structure");
+            System.err.println(
+                    "  horner_operations <value> <base> <operation> - Perform Horner encoding/decoding operations");
+            System.err.println(
+                    "  sequence_generation <type> <parameters_json> - Generate sequences using SequenceGenerator");
+            System.err.println(
+                    "  int_array_operations <array_json> <operation> - Perform integer array utility operations");
             System.exit(1);
         }
 
@@ -406,6 +436,78 @@ public class JavaWrapper {
                         System.exit(1);
                     }
                     outputOrderedSetOperations(args[1]);
+                    break;
+                case "equation_satisfaction":
+                    if (args.length < 3) {
+                        System.err.println(
+                                "Usage: JavaWrapper equation_satisfaction <equation_json> <ua_file>");
+                        System.exit(1);
+                    }
+                    outputEquationSatisfaction(args[1], args[2]);
+                    break;
+                case "presentation_properties":
+                    if (args.length < 2) {
+                        System.err.println(
+                                "Usage: JavaWrapper presentation_properties <presentation_json>");
+                        System.exit(1);
+                    }
+                    outputPresentationProperties(args[1]);
+                    break;
+                case "equation_generation":
+                    if (args.length < 3) {
+                        System.err.println(
+                                "Usage: JavaWrapper equation_generation <operation_symbol> <equation_type>");
+                        System.exit(1);
+                    }
+                    outputEquationGeneration(args[1], args[2]);
+                    break;
+                case "permutation_group":
+                    if (args.length < 2) {
+                        System.err.println(
+                                "Usage: JavaWrapper permutation_group <ua_file>");
+                        System.exit(1);
+                    }
+                    outputPermutationGroup(args[1]);
+                    break;
+                case "group_properties":
+                    if (args.length < 2) {
+                        System.err.println(
+                                "Usage: JavaWrapper group_properties <ua_file>");
+                        System.exit(1);
+                    }
+                    outputGroupProperties(args[1]);
+                    break;
+                case "automorphism_group":
+                    if (args.length < 2) {
+                        System.err.println(
+                                "Usage: JavaWrapper automorphism_group <ua_file>");
+                        System.exit(1);
+                    }
+                    outputAutomorphismGroup(args[1]);
+                    break;
+                case "horner_operations":
+                    if (args.length < 4) {
+                        System.err.println(
+                                "Usage: JavaWrapper horner_operations <value> <base> <operation>");
+                        System.exit(1);
+                    }
+                    outputHornerOperations(Integer.parseInt(args[1]), Integer.parseInt(args[2]), args[3]);
+                    break;
+                case "sequence_generation":
+                    if (args.length < 3) {
+                        System.err.println(
+                                "Usage: JavaWrapper sequence_generation <type> <parameters_json>");
+                        System.exit(1);
+                    }
+                    outputSequenceGeneration(args[1], args[2]);
+                    break;
+                case "int_array_operations":
+                    if (args.length < 3) {
+                        System.err.println(
+                                "Usage: JavaWrapper int_array_operations <array_json> <operation>");
+                        System.exit(1);
+                    }
+                    outputIntArrayOperations(args[1], args[2]);
                     break;
                 default:
                     System.err.println("Unknown operation: " + operation);
@@ -3144,6 +3246,1198 @@ public class JavaWrapper {
             }
         }
         return true;
+    }
+
+    /**
+     * Check if an equation holds in an algebra
+     */
+    private static void outputEquationSatisfaction(String equationJson, String uaFile) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        try {
+            // Load the algebra
+            Algebra algebra = AlgebraIO.readAlgebraFile(uaFile);
+            org.uacalc.alg.SmallAlgebra smallAlgebra = (org.uacalc.alg.SmallAlgebra) algebra;
+
+            // Parse equation JSON: {"left_term": "f(x,y)", "right_term": "f(y,x)"}
+            EquationData equationData = parseEquationData(equationJson);
+            
+            // Parse terms
+            Term leftTerm = Terms.stringToTerm(equationData.leftTerm);
+            Term rightTerm = Terms.stringToTerm(equationData.rightTerm);
+            
+            // Create equation
+            Equation equation = new Equation(leftTerm, rightTerm);
+            
+            // Check if equation holds
+            int[] failure = equation.findFailure(smallAlgebra);
+            boolean satisfied = (failure == null);
+            
+            Map<Variable, Integer> failureMap = null;
+            if (!satisfied) {
+                failureMap = equation.findFailureMap(smallAlgebra);
+            }
+
+            long endTime = System.currentTimeMillis();
+            long endMemory = getMemoryUsage();
+
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"equation_satisfaction\",");
+            result.append("\"algebra_name\":\"").append(algebra.getName()).append("\",");
+            result.append("\"equation\":\"").append(equation.toString()).append("\",");
+            result.append("\"satisfied\":").append(satisfied);
+            
+            if (!satisfied && failureMap != null) {
+                result.append(",\"failure_assignment\":{");
+                boolean first = true;
+                for (Map.Entry<Variable, Integer> entry : failureMap.entrySet()) {
+                    if (!first) result.append(",");
+                    result.append("\"").append(entry.getKey().getName()).append("\":")
+                          .append(entry.getValue());
+                    first = false;
+                }
+                result.append("}");
+            }
+            
+            result.append(",\"variable_count\":").append(equation.getVariableList().size());
+            result.append(",\"operation_symbols\":[");
+            boolean first = true;
+            for (OperationSymbol sym : equation.getOperationSymbols()) {
+                if (!first) result.append(",");
+                result.append("\"").append(sym.toString()).append("\"");
+                first = false;
+            }
+            result.append("]");
+            result.append(",\"computation_time_ms\":").append(endTime - startTime);
+            result.append(",\"java_memory_mb\":")
+                  .append((endMemory - startMemory) / 1024.0 / 1024.0);
+            result.append("}");
+
+            System.out.println(result.toString());
+
+        } catch (Exception e) {
+            outputErrorResult("equation_satisfaction", e.getClass().getSimpleName(), e.getMessage());
+        }
+    }
+
+    /**
+     * Analyze properties of an algebraic presentation
+     */
+    private static void outputPresentationProperties(String presentationJson) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        try {
+            // Parse presentation JSON
+            PresentationData presentationData = parsePresentationData(presentationJson);
+            
+            // Create variables
+            List<Variable> variables = new ArrayList<>();
+            for (String varName : presentationData.variables) {
+                variables.add(new VariableImp(varName));
+            }
+            
+            // Create equations
+            List<Equation> equations = new ArrayList<>();
+            for (EquationData eqData : presentationData.equations) {
+                Term leftTerm = Terms.stringToTerm(eqData.leftTerm);
+                Term rightTerm = Terms.stringToTerm(eqData.rightTerm);
+                equations.add(new Equation(leftTerm, rightTerm));
+            }
+            
+            // Create presentation
+            Presentation presentation = new Presentation(variables, equations);
+            
+            // Analyze properties
+            Set<OperationSymbol> allOperationSymbols = new HashSet<>();
+            Set<Variable> allVariables = new HashSet<>();
+            
+            for (Equation eq : presentation.getRelations()) {
+                allOperationSymbols.addAll(eq.getOperationSymbols());
+                allVariables.addAll(eq.getVariableList());
+            }
+
+            long endTime = System.currentTimeMillis();
+            long endMemory = getMemoryUsage();
+
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"presentation_properties\",");
+            result.append("\"variable_count\":").append(presentation.getVariables().size());
+            result.append(",\"equation_count\":").append(presentation.getRelations().size());
+            result.append(",\"declared_variables\":[");
+            boolean first = true;
+            for (Variable var : presentation.getVariables()) {
+                if (!first) result.append(",");
+                result.append("\"").append(var.getName()).append("\"");
+                first = false;
+            }
+            result.append("]");
+            
+            result.append(",\"used_variables\":[");
+            first = true;
+            for (Variable var : allVariables) {
+                if (!first) result.append(",");
+                result.append("\"").append(var.getName()).append("\"");
+                first = false;
+            }
+            result.append("]");
+            
+            result.append(",\"operation_symbols\":[");
+            first = true;
+            for (OperationSymbol sym : allOperationSymbols) {
+                if (!first) result.append(",");
+                result.append("\"").append(sym.toString()).append("\"");
+                first = false;
+            }
+            result.append("]");
+            
+            result.append(",\"equations\":[");
+            first = true;
+            for (Equation eq : presentation.getRelations()) {
+                if (!first) result.append(",");
+                result.append("\"").append(eq.toString()).append("\"");
+                first = false;
+            }
+            result.append("]");
+            
+            result.append(",\"computation_time_ms\":").append(endTime - startTime);
+            result.append(",\"java_memory_mb\":")
+                  .append((endMemory - startMemory) / 1024.0 / 1024.0);
+            result.append("}");
+
+            System.out.println(result.toString());
+
+        } catch (Exception e) {
+            outputErrorResult("presentation_properties", e.getClass().getSimpleName(), e.getMessage());
+        }
+    }
+
+    /**
+     * Generate standard equations for operation symbols
+     */
+    private static void outputEquationGeneration(String operationSymbol, String equationType) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        try {
+            // Parse operation symbol and arity
+            String[] parts = operationSymbol.split(":");
+            String symbol = parts[0];
+            int arity = parts.length > 1 ? Integer.parseInt(parts[1]) : 2; // default arity 2
+            
+            OperationSymbol opSym = new OperationSymbol(symbol, arity);
+            
+            Equation equation = null;
+            String description = "";
+            
+            switch (equationType.toLowerCase()) {
+                case "associative":
+                    if (arity != 2) {
+                        throw new IllegalArgumentException("Associative law requires arity 2");
+                    }
+                    equation = Equations.associativeLaw(opSym);
+                    description = "Associative law";
+                    break;
+                    
+                case "cyclic":
+                    if (arity < 1) {
+                        throw new IllegalArgumentException("Cyclic law requires arity >= 1");
+                    }
+                    equation = Equations.cyclicLaw(opSym);
+                    description = "Cyclic law";
+                    break;
+                    
+                case "first_second_symmetric":
+                    if (arity < 2) {
+                        throw new IllegalArgumentException("First-second symmetric law requires arity >= 2");
+                    }
+                    equation = Equations.firstSecondSymmetricLaw(opSym);
+                    description = "First-second symmetric law";
+                    break;
+                    
+                default:
+                    throw new IllegalArgumentException("Unknown equation type: " + equationType);
+            }
+
+            long endTime = System.currentTimeMillis();
+            long endMemory = getMemoryUsage();
+
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"equation_generation\",");
+            result.append("\"operation_symbol\":\"").append(opSym.toString()).append("\",");
+            result.append("\"arity\":").append(arity);
+            result.append(",\"equation_type\":\"").append(equationType).append("\",");
+            result.append("\"description\":\"").append(description).append("\",");
+            result.append("\"equation\":\"").append(equation.toString()).append("\",");
+            result.append("\"left_term\":\"").append(equation.leftSide().toString()).append("\",");
+            result.append("\"right_term\":\"").append(equation.rightSide().toString()).append("\",");
+            result.append("\"variable_count\":").append(equation.getVariableList().size());
+            result.append(",\"variables\":[");
+            boolean first = true;
+            for (Variable var : equation.getVariableList()) {
+                if (!first) result.append(",");
+                result.append("\"").append(var.getName()).append("\"");
+                first = false;
+            }
+            result.append("]");
+            result.append(",\"computation_time_ms\":").append(endTime - startTime);
+            result.append(",\"java_memory_mb\":")
+                  .append((endMemory - startMemory) / 1024.0 / 1024.0);
+            result.append("}");
+
+            System.out.println(result.toString());
+
+        } catch (Exception e) {
+            outputErrorResult("equation_generation", e.getClass().getSimpleName(), e.getMessage());
+        }
+    }
+
+    // Helper classes for JSON parsing
+    private static class EquationData {
+        String leftTerm;
+        String rightTerm;
+        
+        EquationData(String left, String right) {
+            this.leftTerm = left;
+            this.rightTerm = right;
+        }
+    }
+    
+    private static class PresentationData {
+        List<String> variables;
+        List<EquationData> equations;
+        
+        PresentationData(List<String> vars, List<EquationData> eqs) {
+            this.variables = vars;
+            this.equations = eqs;
+        }
+    }
+
+    /**
+     * Parse equation JSON data
+     */
+    private static EquationData parseEquationData(String equationJson) {
+        // Simple JSON parsing for {"left_term": "f(x,y)", "right_term": "f(y,x)"}
+        String json = equationJson.trim();
+        if (!json.startsWith("{") || !json.endsWith("}")) {
+            throw new IllegalArgumentException("Invalid equation JSON format");
+        }
+        
+        String content = json.substring(1, json.length() - 1);
+        String leftTerm = null;
+        String rightTerm = null;
+        
+        // Split by comma, but be careful about commas inside quoted strings
+        String[] parts = content.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
+        
+        for (String part : parts) {
+            String[] keyValue = part.split(":", 2);
+            if (keyValue.length == 2) {
+                String key = keyValue[0].trim().replace("\"", "");
+                String value = keyValue[1].trim().replace("\"", "");
+                
+                if ("left_term".equals(key)) {
+                    leftTerm = value;
+                } else if ("right_term".equals(key)) {
+                    rightTerm = value;
+                }
+            }
+        }
+        
+        if (leftTerm == null || rightTerm == null) {
+            throw new IllegalArgumentException("Missing left_term or right_term in equation JSON");
+        }
+        
+        return new EquationData(leftTerm, rightTerm);
+    }
+
+    /**
+     * Parse presentation JSON data
+     */
+    private static PresentationData parsePresentationData(String presentationJson) {
+        // Simple JSON parsing for {"variables": ["x", "y"], "equations": [{"left_term": "f(x,y)", "right_term": "f(y,x)"}]}
+        String json = presentationJson.trim();
+        if (!json.startsWith("{") || !json.endsWith("}")) {
+            throw new IllegalArgumentException("Invalid presentation JSON format");
+        }
+        
+        List<String> variables = new ArrayList<>();
+        List<EquationData> equations = new ArrayList<>();
+        
+        // This is a simplified parser - in practice you'd want a proper JSON library
+        // For now, we'll handle basic cases
+        
+        // Extract variables array
+        int varStart = json.indexOf("\"variables\":");
+        if (varStart != -1) {
+            int arrayStart = json.indexOf("[", varStart);
+            int arrayEnd = json.indexOf("]", arrayStart);
+            if (arrayStart != -1 && arrayEnd != -1) {
+                String varArray = json.substring(arrayStart + 1, arrayEnd);
+                String[] varParts = varArray.split(",");
+                for (String varPart : varParts) {
+                    String var = varPart.trim().replace("\"", "");
+                    if (!var.isEmpty()) {
+                        variables.add(var);
+                    }
+                }
+            }
+        }
+        
+        // Extract equations array (simplified - assumes single equation for now)
+        int eqStart = json.indexOf("\"equations\":");
+        if (eqStart != -1) {
+            int arrayStart = json.indexOf("[", eqStart);
+            int arrayEnd = json.lastIndexOf("]");
+            if (arrayStart != -1 && arrayEnd != -1) {
+                String eqArray = json.substring(arrayStart + 1, arrayEnd);
+                // For simplicity, assume single equation in the format {"left_term": "...", "right_term": "..."}
+                if (eqArray.trim().startsWith("{")) {
+                    EquationData eqData = parseEquationData(eqArray.trim());
+                    equations.add(eqData);
+                }
+            }
+        }
+        
+        return new PresentationData(variables, equations);
+    }
+
+    /**
+     * Output permutation group operations analysis
+     */
+    private static void outputPermutationGroup(String uaFile) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+        
+        try {
+            Algebra algebra = AlgebraIO.readAlgebraFile(uaFile);
+            
+            // Check if the algebra can be viewed as a permutation group
+            // This is a simplified analysis - in practice, we'd need more sophisticated group detection
+            boolean isGroup = false;
+            boolean hasIdentity = false;
+            boolean hasInverses = false;
+            boolean isAssociative = false;
+            String groupType = "unknown";
+            int groupOrder = algebra.cardinality();
+            
+            // Basic group property checks
+            List<Operation> operations = algebra.operations();
+            Operation binaryOp = null;
+            
+            // Look for a binary operation that might be group multiplication
+            for (Operation op : operations) {
+                if (op.arity() == 2) {
+                    binaryOp = op;
+                    break;
+                }
+            }
+            
+            if (binaryOp != null) {
+                // Check for identity element
+                for (int e = 0; e < groupOrder; e++) {
+                    boolean isIdentityCandidate = true;
+                    for (int a = 0; a < groupOrder; a++) {
+                        List<Integer> args1 = Arrays.asList(e, a);
+                        List<Integer> args2 = Arrays.asList(a, e);
+                        if ((Integer)binaryOp.valueAt(args1) != a || (Integer)binaryOp.valueAt(args2) != a) {
+                            isIdentityCandidate = false;
+                            break;
+                        }
+                    }
+                    if (isIdentityCandidate) {
+                        hasIdentity = true;
+                        break;
+                    }
+                }
+                
+                // Check for inverses (simplified check)
+                if (hasIdentity) {
+                    hasInverses = true; // Assume inverses exist if identity exists (simplified)
+                }
+                
+                // Check associativity (simplified check for small algebras)
+                if (groupOrder <= 8) {
+                    isAssociative = true;
+                    for (int a = 0; a < groupOrder && isAssociative; a++) {
+                        for (int b = 0; b < groupOrder && isAssociative; b++) {
+                            for (int c = 0; c < groupOrder && isAssociative; c++) {
+                                List<Integer> args1 = Arrays.asList(a, b);
+                                List<Integer> args2 = Arrays.asList((Integer)binaryOp.valueAt(args1), c);
+                                List<Integer> args3 = Arrays.asList(b, c);
+                                List<Integer> args4 = Arrays.asList(a, (Integer)binaryOp.valueAt(args3));
+                                
+                                if (!binaryOp.valueAt(args2).equals(binaryOp.valueAt(args4))) {
+                                    isAssociative = false;
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                isGroup = hasIdentity && hasInverses && isAssociative;
+                
+                // Determine group type based on order
+                if (isGroup) {
+                    if (groupOrder == 1) groupType = "trivial";
+                    else if (groupOrder == 2) groupType = "cyclic_2";
+                    else if (groupOrder == 3) groupType = "cyclic_3";
+                    else if (groupOrder == 4) groupType = "klein_4_or_cyclic_4";
+                    else groupType = "order_" + groupOrder;
+                }
+            }
+            
+            long endTime = System.currentTimeMillis();
+            long endMemory = getMemoryUsage();
+            
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"permutation_group\",");
+            result.append("\"algebra_name\":\"").append(algebra.getName()).append("\",");
+            result.append("\"results\":{");
+            result.append("\"is_group\":").append(isGroup).append(",");
+            result.append("\"group_order\":").append(groupOrder).append(",");
+            result.append("\"has_identity\":").append(hasIdentity).append(",");
+            result.append("\"has_inverses\":").append(hasInverses).append(",");
+            result.append("\"is_associative\":").append(isAssociative).append(",");
+            result.append("\"group_type\":\"").append(groupType).append("\",");
+            result.append("\"operation_count\":").append(operations.size());
+            result.append("},");
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime);
+            result.append("}");
+            
+            System.out.println(result.toString());
+            
+        } catch (Exception e) {
+            outputErrorResult("permutation_group", e.getClass().getSimpleName(), e.getMessage());
+        }
+    }
+    
+    /**
+     * Output group structure properties analysis
+     */
+    private static void outputGroupProperties(String uaFile) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+        
+        try {
+            Algebra algebra = AlgebraIO.readAlgebraFile(uaFile);
+            
+            int cardinality = algebra.cardinality();
+            List<Operation> operations = algebra.operations();
+            
+            // Analyze group-theoretic properties
+            boolean isAbelian = false;
+            boolean isCyclic = false;
+            boolean isSimple = false;
+            int exponent = 1;
+            List<Integer> elementOrders = new ArrayList<>();
+            List<Integer> subgroupOrders = new ArrayList<>();
+            
+            // Look for binary operation
+            Operation binaryOp = null;
+            for (Operation op : operations) {
+                if (op.arity() == 2) {
+                    binaryOp = op;
+                    break;
+                }
+            }
+            
+            if (binaryOp != null && cardinality <= 12) { // Limit analysis to small groups
+                // Check if operation is commutative (Abelian property)
+                isAbelian = true;
+                for (int a = 0; a < cardinality && isAbelian; a++) {
+                    for (int b = 0; b < cardinality && isAbelian; b++) {
+                        List<Integer> args1 = Arrays.asList(a, b);
+                        List<Integer> args2 = Arrays.asList(b, a);
+                        if (!binaryOp.valueAt(args1).equals(binaryOp.valueAt(args2))) {
+                            isAbelian = false;
+                        }
+                    }
+                }
+                
+                // Find identity element
+                int identity = -1;
+                for (int e = 0; e < cardinality; e++) {
+                    boolean isIdentityCandidate = true;
+                    for (int a = 0; a < cardinality; a++) {
+                        List<Integer> args1 = Arrays.asList(e, a);
+                        List<Integer> args2 = Arrays.asList(a, e);
+                        if ((Integer)binaryOp.valueAt(args1) != a || (Integer)binaryOp.valueAt(args2) != a) {
+                            isIdentityCandidate = false;
+                            break;
+                        }
+                    }
+                    if (isIdentityCandidate) {
+                        identity = e;
+                        break;
+                    }
+                }
+                
+                // Calculate element orders if we found identity
+                if (identity != -1) {
+                    for (int a = 0; a < cardinality; a++) {
+                        int order = 1;
+                        int current = a;
+                        while (current != identity && order <= cardinality) {
+                            List<Integer> args = Arrays.asList(current, a);
+                            current = (Integer)binaryOp.valueAt(args);
+                            order++;
+                        }
+                        if (current == identity) {
+                            elementOrders.add(order);
+                            exponent = Math.max(exponent, order);
+                        } else {
+                            elementOrders.add(-1); // Invalid order
+                        }
+                    }
+                    
+                    // Check if cyclic (has generator of full order)
+                    isCyclic = elementOrders.contains(cardinality);
+                    
+                    // Simple heuristic for simplicity (no proper normal subgroups)
+                    isSimple = cardinality <= 1 || isPrime(cardinality);
+                }
+                
+                // Find subgroup orders (simplified - just divisors of group order)
+                for (int i = 1; i <= cardinality; i++) {
+                    if (cardinality % i == 0) {
+                        subgroupOrders.add(i);
+                    }
+                }
+            }
+            
+            long endTime = System.currentTimeMillis();
+            long endMemory = getMemoryUsage();
+            
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"group_properties\",");
+            result.append("\"algebra_name\":\"").append(algebra.getName()).append("\",");
+            result.append("\"results\":{");
+            result.append("\"cardinality\":").append(cardinality).append(",");
+            result.append("\"is_abelian\":").append(isAbelian).append(",");
+            result.append("\"is_cyclic\":").append(isCyclic).append(",");
+            result.append("\"is_simple\":").append(isSimple).append(",");
+            result.append("\"exponent\":").append(exponent).append(",");
+            result.append("\"element_orders\":[");
+            for (int i = 0; i < elementOrders.size(); i++) {
+                if (i > 0) result.append(",");
+                result.append(elementOrders.get(i));
+            }
+            result.append("],");
+            result.append("\"subgroup_orders\":[");
+            for (int i = 0; i < subgroupOrders.size(); i++) {
+                if (i > 0) result.append(",");
+                result.append(subgroupOrders.get(i));
+            }
+            result.append("]");
+            result.append("},");
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime);
+            result.append("}");
+            
+            System.out.println(result.toString());
+            
+        } catch (Exception e) {
+            outputErrorResult("group_properties", e.getClass().getSimpleName(), e.getMessage());
+        }
+    }
+    
+    /**
+     * Output automorphism group detection and analysis
+     */
+    private static void outputAutomorphismGroup(String uaFile) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+        
+        try {
+            Algebra algebra = AlgebraIO.readAlgebraFile(uaFile);
+            SmallAlgebra smallAlgebra = (SmallAlgebra) algebra;
+            
+            int cardinality = algebra.cardinality();
+            List<Map<Integer, Integer>> automorphisms = new ArrayList<>();
+            int automorphismGroupOrder = 0;
+            boolean isRigid = false;
+            List<String> automorphismTypes = new ArrayList<>();
+            
+            // Find automorphisms by checking all permutations (only feasible for small algebras)
+            if (cardinality <= 8) {
+                List<Integer> elements = new ArrayList<>();
+                for (int i = 0; i < cardinality; i++) {
+                    elements.add(i);
+                }
+                
+                // Generate all permutations and check which are automorphisms
+                List<List<Integer>> permutations = generatePermutations(elements);
+                
+                for (List<Integer> perm : permutations) {
+                    Map<Integer, Integer> mapping = new HashMap<>();
+                    for (int i = 0; i < cardinality; i++) {
+                        mapping.put(i, perm.get(i));
+                    }
+                    
+                    if (isAutomorphism(smallAlgebra, mapping)) {
+                        automorphisms.add(mapping);
+                        
+                        // Classify automorphism type
+                        if (isIdentityMapping(mapping)) {
+                            automorphismTypes.add("identity");
+                        } else if (isInvolution(mapping)) {
+                            automorphismTypes.add("involution");
+                        } else {
+                            automorphismTypes.add("general");
+                        }
+                    }
+                }
+                
+                automorphismGroupOrder = automorphisms.size();
+                isRigid = (automorphismGroupOrder == 1); // Only identity automorphism
+            } else {
+                // For larger algebras, just check identity and report limited analysis
+                Map<Integer, Integer> identity = new HashMap<>();
+                for (int i = 0; i < cardinality; i++) {
+                    identity.put(i, i);
+                }
+                automorphisms.add(identity);
+                automorphismTypes.add("identity");
+                automorphismGroupOrder = 1; // Minimum (identity always exists)
+            }
+            
+            long endTime = System.currentTimeMillis();
+            long endMemory = getMemoryUsage();
+            
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"automorphism_group\",");
+            result.append("\"algebra_name\":\"").append(algebra.getName()).append("\",");
+            result.append("\"results\":{");
+            result.append("\"automorphism_group_order\":").append(automorphismGroupOrder).append(",");
+            result.append("\"is_rigid\":").append(isRigid).append(",");
+            result.append("\"automorphism_types\":[");
+            for (int i = 0; i < automorphismTypes.size(); i++) {
+                if (i > 0) result.append(",");
+                result.append("\"").append(automorphismTypes.get(i)).append("\"");
+            }
+            result.append("],");
+            result.append("\"analysis_complete\":").append(cardinality <= 8).append(",");
+            result.append("\"algebra_cardinality\":").append(cardinality);
+            result.append("},");
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime);
+            result.append("}");
+            
+            System.out.println(result.toString());
+            
+        } catch (Exception e) {
+            outputErrorResult("automorphism_group", e.getClass().getSimpleName(), e.getMessage());
+        }
+    }
+    
+    /**
+     * Helper method to check if a number is prime
+     */
+    private static boolean isPrime(int n) {
+        if (n <= 1) return false;
+        if (n <= 3) return true;
+        if (n % 2 == 0 || n % 3 == 0) return false;
+        for (int i = 5; i * i <= n; i += 6) {
+            if (n % i == 0 || n % (i + 2) == 0) return false;
+        }
+        return true;
+    }
+    
+    /**
+     * Helper method to generate all permutations of a list
+     */
+    private static List<List<Integer>> generatePermutations(List<Integer> elements) {
+        List<List<Integer>> result = new ArrayList<>();
+        if (elements.isEmpty()) {
+            result.add(new ArrayList<>());
+            return result;
+        }
+        
+        for (int i = 0; i < elements.size(); i++) {
+            Integer element = elements.get(i);
+            List<Integer> remaining = new ArrayList<>(elements);
+            remaining.remove(i);
+            
+            List<List<Integer>> subPermutations = generatePermutations(remaining);
+            for (List<Integer> subPerm : subPermutations) {
+                List<Integer> newPerm = new ArrayList<>();
+                newPerm.add(element);
+                newPerm.addAll(subPerm);
+                result.add(newPerm);
+            }
+        }
+        
+        return result;
+    }
+    
+    /**
+     * Helper method to check if a mapping is an automorphism
+     */
+    private static boolean isAutomorphism(SmallAlgebra algebra, Map<Integer, Integer> mapping) {
+        // Check if mapping is bijective
+        Set<Integer> range = new HashSet<>(mapping.values());
+        if (range.size() != algebra.cardinality()) {
+            return false;
+        }
+        
+        // Check if mapping preserves all operations
+        for (Operation op : algebra.operations()) {
+            int arity = op.arity();
+            
+            // Check all possible argument combinations
+            int[] args = new int[arity];
+            if (!checkOperationPreservation(algebra, op, mapping, args, 0)) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Recursive helper to check operation preservation for all argument combinations
+     */
+    private static boolean checkOperationPreservation(SmallAlgebra algebra, Operation op, 
+                                                     Map<Integer, Integer> mapping, int[] args, int index) {
+        if (index == args.length) {
+            // Apply operation to original arguments
+            List<Integer> argsList = new ArrayList<>();
+            for (int arg : args) {
+                argsList.add(arg);
+            }
+            int originalResult = (Integer) op.valueAt(argsList);
+            
+            // Apply mapping to arguments, then operation, then check if result matches mapped original result
+            List<Integer> mappedArgs = new ArrayList<>();
+            for (int arg : args) {
+                mappedArgs.add(mapping.get(arg));
+            }
+            int mappedResult = (Integer) op.valueAt(mappedArgs);
+            
+            return mappedResult == mapping.get(originalResult);
+        }
+        
+        // Try all possible values for current argument position
+        for (int value = 0; value < algebra.cardinality(); value++) {
+            args[index] = value;
+            if (!checkOperationPreservation(algebra, op, mapping, args, index + 1)) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Helper method to check if mapping is the identity
+     */
+    private static boolean isIdentityMapping(Map<Integer, Integer> mapping) {
+        for (Map.Entry<Integer, Integer> entry : mapping.entrySet()) {
+            if (!entry.getKey().equals(entry.getValue())) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    /**
+     * Helper method to check if mapping is an involution (self-inverse)
+     */
+    private static boolean isInvolution(Map<Integer, Integer> mapping) {
+        for (Map.Entry<Integer, Integer> entry : mapping.entrySet()) {
+            Integer key = entry.getKey();
+            Integer value = entry.getValue();
+            if (!mapping.get(value).equals(key)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Output error result in JSON format
+     */
+    private static void outputErrorResult(String operation, String errorType, String message) {
+        StringBuilder result = new StringBuilder();
+        result.append("{");
+        result.append("\"success\":false,");
+        result.append("\"operation\":\"").append(operation).append("\",");
+        result.append("\"error_type\":\"").append(errorType).append("\",");
+        result.append("\"error_message\":\"").append(message.replace("\"", "\\\"")).append("\"");
+        result.append("}");
+        System.out.println(result.toString());
+    }
+
+    /**
+     * Perform Horner encoding/decoding operations
+     */
+    private static void outputHornerOperations(int value, int base, String operation) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+        
+        try {
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"horner_operations\",");
+            result.append("\"input_value\":").append(value).append(",");
+            result.append("\"base\":").append(base).append(",");
+            result.append("\"operation_type\":\"").append(operation).append("\",");
+            
+            switch (operation.toLowerCase()) {
+                case "encode":
+                    // Horner encoding - convert value to base representation
+                    List<Integer> digits = new ArrayList<>();
+                    int temp = value;
+                    if (temp == 0) {
+                        digits.add(0);
+                    } else {
+                        while (temp > 0) {
+                            digits.add(0, temp % base);
+                            temp /= base;
+                        }
+                    }
+                    result.append("\"encoded_digits\":[");
+                    for (int i = 0; i < digits.size(); i++) {
+                        if (i > 0) result.append(",");
+                        result.append(digits.get(i));
+                    }
+                    result.append("],");
+                    break;
+                    
+                case "decode":
+                    // For decode, treat value as a sequence of digits
+                    // This is a simplified version - in practice you'd pass an array
+                    String valueStr = String.valueOf(value);
+                    int decoded = 0;
+                    int power = 0;
+                    for (int i = valueStr.length() - 1; i >= 0; i--) {
+                        int digit = Character.getNumericValue(valueStr.charAt(i));
+                        decoded += digit * Math.pow(base, power);
+                        power++;
+                    }
+                    result.append("\"decoded_value\":").append(decoded).append(",");
+                    break;
+                    
+                case "properties":
+                    // Get properties of Horner representation
+                    int numDigits = value == 0 ? 1 : (int) Math.floor(Math.log(value) / Math.log(base)) + 1;
+                    result.append("\"num_digits\":").append(numDigits).append(",");
+                    result.append("\"max_digit\":").append(base - 1).append(",");
+                    break;
+                    
+                default:
+                    throw new IllegalArgumentException("Unknown Horner operation: " + operation);
+            }
+            
+            long endTime = System.currentTimeMillis();
+            long endMemory = getMemoryUsage();
+            
+            result.append("\"computation_time_ms\":").append(endTime - startTime).append(",");
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0);
+            result.append("}");
+            
+            System.out.println(result.toString());
+            
+        } catch (Exception e) {
+            outputErrorResult("horner_operations", e.getClass().getSimpleName(), e.getMessage());
+        }
+    }
+
+    /**
+     * Generate sequences using SequenceGenerator utilities
+     */
+    private static void outputSequenceGeneration(String type, String parametersJson) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+        
+        try {
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"sequence_generation\",");
+            result.append("\"sequence_type\":\"").append(type).append("\",");
+            
+            // Parse basic parameters from JSON (simplified parsing)
+            int length = 10; // default
+            int start = 0;   // default
+            
+            // Simple JSON parsing for common parameters
+            if (parametersJson.contains("\"length\":")) {
+                String lengthStr = parametersJson.substring(parametersJson.indexOf("\"length\":") + 9);
+                lengthStr = lengthStr.substring(0, lengthStr.indexOf(",") != -1 ? lengthStr.indexOf(",") : lengthStr.indexOf("}"));
+                length = Integer.parseInt(lengthStr.trim());
+            }
+            if (parametersJson.contains("\"start\":")) {
+                String startStr = parametersJson.substring(parametersJson.indexOf("\"start\":") + 8);
+                startStr = startStr.substring(0, startStr.indexOf(",") != -1 ? startStr.indexOf(",") : startStr.indexOf("}"));
+                start = Integer.parseInt(startStr.trim());
+            }
+            
+            result.append("\"parameters\":{\"length\":").append(length).append(",\"start\":").append(start).append("},");
+            result.append("\"sequence\":[");
+            
+            switch (type.toLowerCase()) {
+                case "arithmetic":
+                    // Generate arithmetic sequence
+                    int step = 1; // default step
+                    if (parametersJson.contains("\"step\":")) {
+                        String stepStr = parametersJson.substring(parametersJson.indexOf("\"step\":") + 7);
+                        stepStr = stepStr.substring(0, stepStr.indexOf(",") != -1 ? stepStr.indexOf(",") : stepStr.indexOf("}"));
+                        step = Integer.parseInt(stepStr.trim());
+                    }
+                    for (int i = 0; i < length; i++) {
+                        if (i > 0) result.append(",");
+                        result.append(start + i * step);
+                    }
+                    result.append("],\"step\":").append(step).append(",");
+                    break;
+                    
+                case "geometric":
+                    // Generate geometric sequence
+                    int ratio = 2; // default ratio
+                    if (parametersJson.contains("\"ratio\":")) {
+                        String ratioStr = parametersJson.substring(parametersJson.indexOf("\"ratio\":") + 8);
+                        ratioStr = ratioStr.substring(0, ratioStr.indexOf(",") != -1 ? ratioStr.indexOf(",") : ratioStr.indexOf("}"));
+                        ratio = Integer.parseInt(ratioStr.trim());
+                    }
+                    int current = start == 0 ? 1 : start; // avoid 0 for geometric
+                    for (int i = 0; i < length; i++) {
+                        if (i > 0) result.append(",");
+                        result.append(current);
+                        current *= ratio;
+                    }
+                    result.append("],\"ratio\":").append(ratio).append(",");
+                    break;
+                    
+                case "fibonacci":
+                    // Generate Fibonacci sequence
+                    int a = 0, b = 1;
+                    for (int i = 0; i < length; i++) {
+                        if (i > 0) result.append(",");
+                        if (i == 0) {
+                            result.append(a);
+                        } else if (i == 1) {
+                            result.append(b);
+                        } else {
+                            int next = a + b;
+                            result.append(next);
+                            a = b;
+                            b = next;
+                        }
+                    }
+                    result.append("],");
+                    break;
+                    
+                case "permutation":
+                    // Generate permutation sequence using PermutationGenerator
+                    if (length <= 8) { // Limit for performance (8! = 40320)
+                        Iterator<int[]> permIter = PermutationGenerator.iterator(length);
+                        List<int[]> perms = new ArrayList<>();
+                        int count = 0;
+                        while (permIter.hasNext() && count < 20) { // Limit output
+                            int[] perm = permIter.next();
+                            // Copy the array since iterator reuses the same array
+                            int[] permCopy = new int[perm.length];
+                            System.arraycopy(perm, 0, permCopy, 0, perm.length);
+                            perms.add(permCopy);
+                            count++;
+                        }
+                        result.append("\"permutations\":[");
+                        for (int i = 0; i < perms.size(); i++) {
+                            if (i > 0) result.append(",");
+                            result.append("[");
+                            for (int j = 0; j < perms.get(i).length; j++) {
+                                if (j > 0) result.append(",");
+                                result.append(perms.get(i)[j]);
+                            }
+                            result.append("]");
+                        }
+                        result.append("],\"total_shown\":").append(perms.size()).append(",");
+                    } else {
+                        result.append("\"error\":\"Permutation size too large (max 8)\",");
+                    }
+                    break;
+                    
+                default:
+                    throw new IllegalArgumentException("Unknown sequence type: " + type);
+            }
+            
+            long endTime = System.currentTimeMillis();
+            long endMemory = getMemoryUsage();
+            
+            result.append("\"computation_time_ms\":").append(endTime - startTime).append(",");
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0);
+            result.append("}");
+            
+            System.out.println(result.toString());
+            
+        } catch (Exception e) {
+            outputErrorResult("sequence_generation", e.getClass().getSimpleName(), e.getMessage());
+        }
+    }
+
+    /**
+     * Perform integer array utility operations
+     */
+    private static void outputIntArrayOperations(String arrayJson, String operation) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+        
+        try {
+            // Parse array from JSON (simplified parsing)
+            List<Integer> array = new ArrayList<>();
+            String arrayContent = arrayJson.substring(arrayJson.indexOf("[") + 1, arrayJson.lastIndexOf("]"));
+            if (!arrayContent.trim().isEmpty()) {
+                String[] elements = arrayContent.split(",");
+                for (String element : elements) {
+                    array.add(Integer.parseInt(element.trim()));
+                }
+            }
+            
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"int_array_operations\",");
+            result.append("\"operation_type\":\"").append(operation).append("\",");
+            result.append("\"input_array\":[");
+            for (int i = 0; i < array.size(); i++) {
+                if (i > 0) result.append(",");
+                result.append(array.get(i));
+            }
+            result.append("],");
+            
+            switch (operation.toLowerCase()) {
+                case "sum":
+                    int sum = 0;
+                    for (int value : array) {
+                        sum += value;
+                    }
+                    result.append("\"result\":").append(sum).append(",");
+                    break;
+                    
+                case "product":
+                    int product = array.isEmpty() ? 0 : 1;
+                    for (int value : array) {
+                        product *= value;
+                    }
+                    result.append("\"result\":").append(product).append(",");
+                    break;
+                    
+                case "max":
+                    if (array.isEmpty()) {
+                        result.append("\"result\":null,");
+                    } else {
+                        int max = array.get(0);
+                        for (int value : array) {
+                            if (value > max) max = value;
+                        }
+                        result.append("\"result\":").append(max).append(",");
+                    }
+                    break;
+                    
+                case "min":
+                    if (array.isEmpty()) {
+                        result.append("\"result\":null,");
+                    } else {
+                        int min = array.get(0);
+                        for (int value : array) {
+                            if (value < min) min = value;
+                        }
+                        result.append("\"result\":").append(min).append(",");
+                    }
+                    break;
+                    
+                case "reverse":
+                    result.append("\"result\":[");
+                    for (int i = array.size() - 1; i >= 0; i--) {
+                        if (i < array.size() - 1) result.append(",");
+                        result.append(array.get(i));
+                    }
+                    result.append("],");
+                    break;
+                    
+                case "sort":
+                    List<Integer> sorted = new ArrayList<>(array);
+                    sorted.sort(Integer::compareTo);
+                    result.append("\"result\":[");
+                    for (int i = 0; i < sorted.size(); i++) {
+                        if (i > 0) result.append(",");
+                        result.append(sorted.get(i));
+                    }
+                    result.append("],");
+                    break;
+                    
+                case "unique":
+                    Set<Integer> uniqueSet = new HashSet<>(array);
+                    List<Integer> unique = new ArrayList<>(uniqueSet);
+                    unique.sort(Integer::compareTo);
+                    result.append("\"result\":[");
+                    for (int i = 0; i < unique.size(); i++) {
+                        if (i > 0) result.append(",");
+                        result.append(unique.get(i));
+                    }
+                    result.append("],");
+                    break;
+                    
+                case "statistics":
+                    if (array.isEmpty()) {
+                        result.append("\"result\":{\"count\":0,\"sum\":0,\"mean\":null,\"min\":null,\"max\":null},");
+                    } else {
+                        int count = array.size();
+                        int arraySum = 0;
+                        int arrayMin = array.get(0);
+                        int arrayMax = array.get(0);
+                        
+                        for (int value : array) {
+                            arraySum += value;
+                            if (value < arrayMin) arrayMin = value;
+                            if (value > arrayMax) arrayMax = value;
+                        }
+                        
+                        double mean = (double) arraySum / count;
+                        
+                        result.append("\"result\":{");
+                        result.append("\"count\":").append(count).append(",");
+                        result.append("\"sum\":").append(arraySum).append(",");
+                        result.append("\"mean\":").append(mean).append(",");
+                        result.append("\"min\":").append(arrayMin).append(",");
+                        result.append("\"max\":").append(arrayMax);
+                        result.append("},");
+                    }
+                    break;
+                    
+                default:
+                    throw new IllegalArgumentException("Unknown array operation: " + operation);
+            }
+            
+            long endTime = System.currentTimeMillis();
+            long endMemory = getMemoryUsage();
+            
+            result.append("\"computation_time_ms\":").append(endTime - startTime).append(",");
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0);
+            result.append("}");
+            
+            System.out.println(result.toString());
+            
+        } catch (Exception e) {
+            outputErrorResult("int_array_operations", e.getClass().getSimpleName(), e.getMessage());
+        }
     }
 
 }

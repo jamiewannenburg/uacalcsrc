@@ -50,7 +50,7 @@
     <javac srcdir="${src.dir}" 
            debug="${dist-debug}"
            destdir="${class.dir}"
-           excludes="board/geom/BSpline.java">
+           excludes="board/geom/BSpline.java,scripts/JavaWrapper.java">
       <classpath refid="dist-classpath"/>
       <!-- <compilerarg value="-Xlint:unchecked" compiler="javac1.5"/> -->
     </javac>
@@ -144,6 +144,12 @@
     <jar jarfile="${dist.dir}/lib/uacalc.jar" 
          manifest="${manifest.file}"
          basedir="${class.dir}"/>
+  </target>
+
+  <target name="copy-to-jars" depends="dist-jar">
+    <copy file="${dist.dir}/lib/uacalc.jar" 
+          todir="${jar.dir}" 
+          overwrite="yes"/>
   </target>
 
   <target name="javadoc" depends="compile-dist">

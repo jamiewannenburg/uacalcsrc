@@ -98,6 +98,9 @@ hs_err_pid*
 # Ant
 build/
 ant-build/
+classes/
+local/
+build.properties
 
 # Maven
 target/

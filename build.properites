@@ -1,0 +1,3 @@
+dist.dir=./dist
+work.dir=./local
+class.dir=./classes
