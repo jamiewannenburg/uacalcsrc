@@ -21,16 +21,29 @@ The compatibility test suite addresses the requirements from Task 13 of the comp
    - Handles comprehensive result comparison and error reporting
 
 2. **ComprehensiveTestSuite** (`comprehensive_test_suite.py`)
-   - Unified test execution framework
+   - Unified test execution framework with advanced features
    - Integrates all compatibility test classes
    - Manages test dependencies and execution order
    - Provides filtering and selective execution capabilities
+   - **NEW**: Resource monitoring and parallel execution support
+   - **NEW**: Enhanced timeout management and conflict detection
 
 3. **CoverageValidator** (`coverage_validator.py`)
    - Validates comprehensive coverage of Java UACalc functionality
    - Maps Java packages to test classes
    - Identifies gaps in test coverage
    - Generates coverage reports and recommendations
+
+4. **Enhanced Test Runner** (`scripts/run_comprehensive_tests.py`)
+   - **NEW**: Unified interface for both pytest and comprehensive suite
+   - **NEW**: Advanced parallel execution with resource management
+   - **NEW**: Combined reporting and result aggregation
+   - **NEW**: CI/CD integration support
+
+5. **Resource Manager** (integrated in ComprehensiveTestSuite)
+   - **NEW**: Real-time memory and CPU monitoring
+   - **NEW**: Automatic resource limit enforcement
+   - **NEW**: Performance statistics collection
 
 ### Test Categories
 
@@ -100,7 +113,7 @@ The test suite is organized by Java UACalc packages:
    # Activate virtual environment
    source .venv/bin/activate
    
-   # Verify Python version (3.12+ recommended)
+   # Verify Python version (3.8+ recommended)
    python --version
    ```
 
@@ -111,9 +124,19 @@ The test suite is organized by Java UACalc packages:
 
 3. **Dependencies**
    ```bash
-   # Install required packages
-   pip install pytest pytest-cov pytest-benchmark
+   # Install required packages with enhanced testing support
+   pip install -e uacalc-py[dev,test]
+   pip install psutil  # For resource monitoring
    ```
+
+4. **Enhanced pytest Plugins**
+   The test suite now includes advanced pytest plugins:
+   - `pytest-html` - HTML report generation
+   - `pytest-json-report` - Structured JSON reporting
+   - `pytest-timeout` - Individual test timeouts
+   - `pytest-xdist` - Parallel test execution
+   - `pytest-mock` - Enhanced mocking capabilities
+   - `pytest-clarity` - Improved assertion reporting
 
 ### Test Data
 
@@ -137,6 +160,23 @@ PYTHONPATH=/home/jamie/Documents/uacalcsrc python -m pytest tests/python/test_al
 
 ### Running the Comprehensive Test Suite
 
+#### Enhanced Test Runner (Recommended)
+```bash
+# Run both pytest and comprehensive suite with enhanced features
+source .venv/bin/activate
+python scripts/run_comprehensive_tests.py
+
+# Run with parallel execution and resource monitoring
+python scripts/run_comprehensive_tests.py --parallel --max-workers 4 --memory-limit 2048
+
+# Run only specific test categories
+python scripts/run_comprehensive_tests.py --comprehensive-only --no-lattice --no-equation
+
+# Run with custom timeout and resource limits
+python scripts/run_comprehensive_tests.py --timeout 600 --memory-limit 4096 --cpu-limit 90
+```
+
+#### Direct Comprehensive Suite
 ```bash
 # Run all compatibility tests
 source .venv/bin/activate
@@ -148,6 +188,10 @@ PYTHONPATH=/home/jamie/Documents/uacalcsrc python tests/python/comprehensive_tes
     --max-algebra-size 10 \
     --timeout 600 \
     --output-file my_test_results.json
+
+# Run with parallel execution and resource monitoring
+PYTHONPATH=/home/jamie/Documents/uacalcsrc python tests/python/comprehensive_test_suite.py \
+    --parallel --max-parallel 4 --memory-limit 2048 --cpu-limit 80
 ```
 
 ### Available Command Line Options
@@ -315,12 +359,36 @@ Different operations have different timeout requirements:
 - Large algebras (> 20 elements) may require significant memory
 - Consider using smaller test sets for CI/CD environments
 - Monitor memory usage during long test runs
+- **NEW**: Automatic memory monitoring with configurable limits
+- **NEW**: Resource usage statistics in test reports
 
 ### Parallel Execution
 
 - Use `--parallel` for faster execution on multi-core systems
 - Limit parallel tests with `--max-parallel` to avoid resource exhaustion
 - Some tests may not be suitable for parallel execution
+- **NEW**: Intelligent resource checking before parallel execution
+- **NEW**: Automatic fallback to sequential execution if resources are insufficient
+
+### Enhanced Features
+
+#### Resource Monitoring
+- **Real-time monitoring**: Memory and CPU usage tracked during test execution
+- **Configurable limits**: Set memory and CPU limits to prevent system overload
+- **Performance statistics**: Peak and average resource usage in reports
+- **Automatic enforcement**: Tests automatically adjust behavior based on resource availability
+
+#### Advanced Reporting
+- **HTML reports**: Self-contained HTML reports with detailed test results
+- **JSON reports**: Structured JSON output for programmatic analysis
+- **Combined reports**: Integration of pytest and comprehensive suite results
+- **CI/CD integration**: GitHub Actions workflow with automated result publishing
+
+#### Parallel Execution Improvements
+- **Test isolation**: Tests grouped by class to maintain proper isolation
+- **Resource-aware execution**: Automatic detection of system capacity
+- **Graceful degradation**: Fallback to sequential execution when needed
+- **Progress tracking**: Real-time progress updates for long-running test suites
 
 ## Troubleshooting
 

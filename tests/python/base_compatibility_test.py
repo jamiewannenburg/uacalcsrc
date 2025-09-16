@@ -38,7 +38,7 @@ class CompatibilityTestResult:
     execution_time_java: float = 0.0
     context: Optional[str] = None
 
-@dataclass  
+@dataclass
 class TestSuiteReport:
     """Aggregated results from the entire test suite"""
     total_tests: int
@@ -48,7 +48,8 @@ class TestSuiteReport:
     compatibility_percentage: float
     failed_test_details: List[CompatibilityTestResult]
     feature_coverage: Dict[str, float]
-    execution_time_total: float = 0.0
+    execution_time_total: float
+    resource_statistics: Optional[Dict[str, Any]] = None
 
 class JavaEnvironmentError(Exception):
     """Raised when Java environment is not properly configured"""

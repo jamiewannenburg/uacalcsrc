@@ -1,0 +1,191 @@
+name: Comprehensive Java Compatibility Testing
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run nightly at 2 AM UTC
+    - cron: '0 2 * * *'
+
+jobs:
+  comprehensive-testing:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.8, 3.9, 3.10, 3.11, 3.12]
+        test-config: [quick, full, parallel]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Set up Java
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '11'
+    
+    - name: Cache Python dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+    
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential
+    
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e uacalc-py[dev,test]
+        pip install psutil  # For resource monitoring
+    
+    - name: Build Rust extension
+      run: |
+        cd uacalc-py
+        maturin develop --release
+    
+    - name: Download UACalc JAR
+      run: |
+        mkdir -p jars
+        wget -O jars/uacalc.jar https://github.com/uacalc/uacalc/releases/latest/download/uacalc.jar
+    
+    - name: Compile Java Wrapper
+      run: |
+        javac -cp jars/uacalc.jar scripts/JavaWrapper.java
+    
+    - name: Create test data directory
+      run: |
+        mkdir -p resources/algebras
+        # Add some test algebras if they don't exist
+        if [ ! -f resources/algebras/ba2.ua ]; then
+          echo "Creating sample test algebra"
+          cat > resources/algebras/ba2.ua << 'EOF'
+          # Boolean algebra with 2 elements
+          # Universe: {0, 1}
+          # Operations: meet (∧), join (∨), complement (¬)
+          universe 0 1
+          operation meet 2
+          0 0 0
+          0 1 0
+          1 0 0
+          1 1 1
+          operation join 2
+          0 0 0
+          0 1 1
+          1 0 1
+          1 1 1
+          operation complement 1
+          0 1
+          1 0
+          EOF
+        fi
+    
+    - name: Run Quick Tests (Python 3.12 only)
+      if: matrix.python-version == '3.12' && matrix.test-config == 'quick'
+      run: |
+        PYTHONPATH=/home/runner/work/uacalcsrc/uacalcsrc python tests/python/comprehensive_test_suite.py \
+          --no-lattice --no-equation --no-group --no-utility \
+          --timeout 60 --output-file reports/quick_test_results.json
+    
+    - name: Run Full Tests (Python 3.12 only)
+      if: matrix.python-version == '3.12' && matrix.test-config == 'full'
+      run: |
+        PYTHONPATH=/home/runner/work/uacalcsrc/uacalcsrc python tests/python/comprehensive_test_suite.py \
+          --timeout 300 --output-file reports/full_test_results.json
+    
+    - name: Run Parallel Tests (Python 3.12 only)
+      if: matrix.python-version == '3.12' && matrix.test-config == 'parallel'
+      run: |
+        PYTHONPATH=/home/runner/work/uacalcsrc/uacalcsrc python tests/python/comprehensive_test_suite.py \
+          --parallel --max-parallel 2 --memory-limit 1024 \
+          --timeout 300 --output-file reports/parallel_test_results.json
+    
+    - name: Run pytest with enhanced reporting
+      if: matrix.python-version == '3.12'
+      run: |
+        PYTHONPATH=/home/runner/work/uacalcsrc/uacalcsrc pytest tests/python/ \
+          --html=reports/pytest_report.html \
+          --self-contained-html \
+          --json-report \
+          --json-report-file=reports/pytest_report.json \
+          --timeout=300 \
+          --durations=10 \
+          --maxfail=5 \
+          -v
+    
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results-${{ matrix.python-version }}-${{ matrix.test-config }}
+        path: |
+          reports/
+          comprehensive_test_suite.log
+        retention-days: 30
+    
+    - name: Publish test results to GitHub Pages
+      if: matrix.python-version == '3.12' && matrix.test-config == 'full' && github.ref == 'refs/heads/main'
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./reports
+        destination_dir: test-results/${{ github.run_number }}
+    
+    - name: Comment PR with test results
+      if: github.event_name == 'pull_request' && matrix.python-version == '3.12' && matrix.test-config == 'full'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const path = require('path');
+          
+          try {
+            const resultsPath = 'reports/full_test_results.json';
+            if (fs.existsSync(resultsPath)) {
+              const results = JSON.parse(fs.readFileSync(resultsPath, 'utf8'));
+              
+              const comment = `## 🧪 Comprehensive Test Results
+              
+              **Test Summary:**
+              - Total Tests: ${results.total_tests}
+              - Passed: ${results.passed_tests} ✅
+              - Failed: ${results.failed_tests} ❌
+              - Skipped: ${results.skipped_tests} ⏭️
+              - Compatibility: ${results.compatibility_percentage.toFixed(1)}%
+              - Execution Time: ${results.execution_time_total.toFixed(2)}s
+              
+              **Resource Usage:**
+              ${results.resource_statistics ? `
+              - Peak Memory: ${results.resource_statistics.peak_memory_mb.toFixed(1)}MB
+              - Peak CPU: ${results.resource_statistics.peak_cpu_percent.toFixed(1)}%
+              ` : 'Resource monitoring not available'}
+              
+              **Feature Coverage:**
+              ${Object.entries(results.feature_coverage || {})
+                .map(([feature, percentage]) => `- ${feature}: ${percentage.toFixed(1)}%`)
+                .join('\n')}
+              
+              [📊 View detailed HTML report](https://uacalc.github.io/uacalc-rust/test-results/${context.runNumber}/pytest_report.html)
+              `;
+              
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              });
+            }
+          } catch (error) {
+            console.error('Error creating comment:', error);
+          }
