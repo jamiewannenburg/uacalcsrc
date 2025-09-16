@@ -48,85 +48,59 @@ class BasicLatticeCompatibilityTest(BaseCompatibilityTest):
         try:
             import uacalc
             con_lattice = uacalc.create_congruence_lattice(algebra)
+            basic_lattice = uacalc.create_basic_lattice_from_congruence_lattice(f"{algebra.name}_basic_lattice", con_lattice)
             
             rust_result = {
                 'algebra_name': algebra.name,
                 'algebra_cardinality': algebra.cardinality,
-                'lattice_cardinality': len(con_lattice) if hasattr(con_lattice, '__len__') else None,
+                'lattice_cardinality': basic_lattice.cardinality,
             }
             
-            # Try to get lattice cardinality
-            if hasattr(con_lattice, 'size'):
-                rust_result['lattice_cardinality'] = con_lattice.size()
-            
             # Get zero and one elements (indices)
-            if hasattr(con_lattice, 'zero') and hasattr(con_lattice, 'one'):
-                zero = con_lattice.zero()
-                one = con_lattice.one()
-                
-                # Try to get element indices if available
-                if hasattr(con_lattice, 'element_index'):
-                    rust_result['zero_index'] = con_lattice.element_index(zero)
-                    rust_result['one_index'] = con_lattice.element_index(one)
-                else:
-                    rust_result['zero_index'] = 0  # Assume zero is first element
-                    rust_result['one_index'] = rust_result['lattice_cardinality'] - 1 if rust_result['lattice_cardinality'] else 1
+            rust_result['zero_index'] = basic_lattice.zero()
+            rust_result['one_index'] = basic_lattice.one()
             
             # Get atoms and coatoms counts
-            if hasattr(con_lattice, 'atoms'):
-                atoms = con_lattice.atoms()
-                rust_result['atoms_count'] = len(atoms) if hasattr(atoms, '__len__') else len(list(atoms))
-            else:
-                rust_result['atoms_count'] = 0
+            atoms = basic_lattice.atoms()
+            rust_result['atoms_count'] = len(atoms)
             
-            if hasattr(con_lattice, 'coatoms'):
-                coatoms = con_lattice.coatoms()
-                rust_result['coatoms_count'] = len(coatoms) if hasattr(coatoms, '__len__') else len(list(coatoms))
-            else:
-                rust_result['coatoms_count'] = 0
+            coatoms = basic_lattice.coatoms()
+            rust_result['coatoms_count'] = len(coatoms)
             
             # Get join and meet irreducibles counts
-            if hasattr(con_lattice, 'join_irreducibles'):
-                ji = con_lattice.join_irreducibles()
-                rust_result['join_irreducibles_count'] = len(ji) if hasattr(ji, '__len__') else len(list(ji))
-            else:
-                rust_result['join_irreducibles_count'] = 0
+            ji = basic_lattice.join_irreducibles()
+            rust_result['join_irreducibles_count'] = len(ji)
             
-            if hasattr(con_lattice, 'meet_irreducibles'):
-                mi = con_lattice.meet_irreducibles()
-                rust_result['meet_irreducibles_count'] = len(mi) if hasattr(mi, '__len__') else len(list(mi))
-            else:
-                rust_result['meet_irreducibles_count'] = 0
+            mi = basic_lattice.meet_irreducibles()
+            rust_result['meet_irreducibles_count'] = len(mi)
             
-            # Test join and meet operations if available
+            # Test join and meet operations
             rust_result['join_tests'] = []
             rust_result['meet_tests'] = []
             
             if rust_result['lattice_cardinality'] and rust_result['lattice_cardinality'] > 1:
-                if hasattr(con_lattice, 'join') and hasattr(con_lattice, 'meet'):
-                    try:
-                        # Test join and meet on first two elements
-                        elem0 = con_lattice.zero() if hasattr(con_lattice, 'zero') else None
-                        elem1 = con_lattice.one() if hasattr(con_lattice, 'one') else None
-                        
-                        if elem0 is not None and elem1 is not None:
-                            join_result = con_lattice.join(elem0, elem1)
-                            meet_result = con_lattice.meet(elem0, elem1)
-                            
-                            rust_result['join_tests'].append({
-                                'element1_index': 0,
-                                'element2_index': rust_result['one_index'],
-                                'join_index': rust_result['one_index']  # join(0, 1) = 1
-                            })
-                            
-                            rust_result['meet_tests'].append({
-                                'element1_index': 0,
-                                'element2_index': rust_result['one_index'],
-                                'meet_index': 0  # meet(0, 1) = 0
-                            })
-                    except Exception as e:
-                        # Join/meet operations failed
-                        pass
+                try:
+                    # Test join and meet on first two elements
+                    elem0 = basic_lattice.zero()
+                    elem1 = basic_lattice.one()
+                    
+                    join_result = basic_lattice.join(elem0, elem1)
+                    meet_result = basic_lattice.meet(elem0, elem1)
+                    
+                    rust_result['join_tests'].append({
+                        'element1_index': elem0,
+                        'element2_index': elem1,
+                        'join_index': join_result
+                    })
+                    
+                    rust_result['meet_tests'].append({
+                        'element1_index': elem0,
+                        'element2_index': elem1,
+                        'meet_index': meet_result
+                    })
+                except Exception as e:
+                    # Join/meet operations failed
+                    pass
             
         except Exception as e:
             self.fail(f"Rust BasicLattice construction failed for {algebra.name}: {e}")
@@ -175,14 +149,13 @@ class BasicLatticeCompatibilityTest(BaseCompatibilityTest):
         try:
             import uacalc
             con_lattice = uacalc.create_congruence_lattice(algebra)
+            basic_lattice = uacalc.create_basic_lattice_from_congruence_lattice(f"{algebra.name}_basic_lattice", con_lattice)
             
             # Get lattice size for validation
-            lattice_size = len(con_lattice) if hasattr(con_lattice, '__len__') else None
-            if hasattr(con_lattice, 'size'):
-                lattice_size = con_lattice.size()
+            lattice_size = basic_lattice.cardinality
             
             # Validate element indices
-            if lattice_size and (element1 >= lattice_size or element2 >= lattice_size):
+            if element1 >= lattice_size or element2 >= lattice_size:
                 rust_result = {
                     'algebra_name': algebra.name,
                     'lattice_cardinality': lattice_size,
@@ -191,61 +164,44 @@ class BasicLatticeCompatibilityTest(BaseCompatibilityTest):
                     'error': 'Element indices out of range'
                 }
             else:
-                # Get elements (simplified approach using principal congruences)
-                if hasattr(con_lattice, 'principal_congruence'):
-                    # Use principal congruences as lattice elements
-                    elem1 = con_lattice.principal_congruence(element1 % algebra.cardinality, element1 % algebra.cardinality)
-                    elem2 = con_lattice.principal_congruence(element2 % algebra.cardinality, element2 % algebra.cardinality)
-                    
-                    rust_result = {
-                        'algebra_name': algebra.name,
-                        'lattice_cardinality': lattice_size,
-                        'element1': element1,
-                        'element2': element2,
-                    }
-                    
-                    # Test ordering relations if available
-                    if hasattr(elem1, 'leq') and hasattr(elem2, 'leq'):
-                        rust_result['elem1_leq_elem2'] = elem1.leq(elem2)
-                        rust_result['elem2_leq_elem1'] = elem2.leq(elem1)
-                        rust_result['are_equal'] = rust_result['elem1_leq_elem2'] and rust_result['elem2_leq_elem1']
-                        rust_result['are_comparable'] = rust_result['elem1_leq_elem2'] or rust_result['elem2_leq_elem1']
-                    else:
-                        # Use simplified comparison based on element indices
-                        rust_result['elem1_leq_elem2'] = element1 <= element2
-                        rust_result['elem2_leq_elem1'] = element2 <= element1
-                        rust_result['are_equal'] = element1 == element2
-                        rust_result['are_comparable'] = True
-                    
-                    # Test covering relations (simplified)
-                    rust_result['elem1_covers_elem2'] = False
-                    rust_result['elem2_covers_elem1'] = False
-                    
-                    # Get covering relation counts (simplified)
-                    rust_result['elem1_upper_covers_count'] = 0
-                    rust_result['elem1_lower_covers_count'] = 0
-                    rust_result['elem2_upper_covers_count'] = 0
-                    rust_result['elem2_lower_covers_count'] = 0
-                    
-                    # Get ideal and filter sizes (simplified)
-                    rust_result['elem1_ideal_size'] = element1 + 1  # Simplified
-                    rust_result['elem1_filter_size'] = lattice_size - element1 if lattice_size else 1
-                    
-                    # Empty lists for indices (would need more complex implementation)
-                    rust_result['elem1_upper_cover_indices'] = []
-                    rust_result['elem1_lower_cover_indices'] = []
-                    rust_result['elem2_upper_cover_indices'] = []
-                    rust_result['elem2_lower_cover_indices'] = []
-                    rust_result['elem1_ideal_indices'] = []
-                    rust_result['elem1_filter_indices'] = []
-                else:
-                    rust_result = {
-                        'algebra_name': algebra.name,
-                        'lattice_cardinality': lattice_size,
-                        'element1': element1,
-                        'element2': element2,
-                        'error': 'Principal congruence operation not available in Rust implementation'
-                    }
+                rust_result = {
+                    'algebra_name': algebra.name,
+                    'lattice_cardinality': lattice_size,
+                    'element1': element1,
+                    'element2': element2,
+                }
+                
+                # Test ordering relations using join and meet
+                # In a lattice, a <= b if and only if a meet b = a (or equivalently a join b = b)
+                meet_result = basic_lattice.meet(element1, element2)
+                join_result = basic_lattice.join(element1, element2)
+                
+                rust_result['elem1_leq_elem2'] = (meet_result == element1)
+                rust_result['elem2_leq_elem1'] = (meet_result == element2)
+                rust_result['are_equal'] = (element1 == element2)
+                rust_result['are_comparable'] = rust_result['elem1_leq_elem2'] or rust_result['elem2_leq_elem1']
+                
+                # Test covering relations (simplified)
+                rust_result['elem1_covers_elem2'] = False
+                rust_result['elem2_covers_elem1'] = False
+                
+                # Get covering relation counts (simplified)
+                rust_result['elem1_upper_covers_count'] = 0
+                rust_result['elem1_lower_covers_count'] = 0
+                rust_result['elem2_upper_covers_count'] = 0
+                rust_result['elem2_lower_covers_count'] = 0
+                
+                # Get ideal and filter sizes (simplified)
+                rust_result['elem1_ideal_size'] = element1 + 1  # Simplified
+                rust_result['elem1_filter_size'] = lattice_size - element1
+                
+                # Empty lists for indices (would need more complex implementation)
+                rust_result['elem1_upper_cover_indices'] = []
+                rust_result['elem1_lower_cover_indices'] = []
+                rust_result['elem2_upper_cover_indices'] = []
+                rust_result['elem2_lower_cover_indices'] = []
+                rust_result['elem1_ideal_indices'] = []
+                rust_result['elem1_filter_indices'] = []
             
         except Exception as e:
             self.fail(f"Rust BasicLattice ordering computation failed for {algebra.name} elements ({element1},{element2}): {e}")
@@ -285,15 +241,12 @@ class BasicLatticeCompatibilityTest(BaseCompatibilityTest):
         try:
             import uacalc
             con_lattice = uacalc.create_congruence_lattice(algebra)
+            basic_lattice = uacalc.create_basic_lattice_from_congruence_lattice(f"{algebra.name}_basic_lattice", con_lattice)
             
             rust_result = {
                 'algebra_name': algebra.name,
-                'lattice_cardinality': len(con_lattice) if hasattr(con_lattice, '__len__') else None,
+                'lattice_cardinality': basic_lattice.cardinality,
             }
-            
-            # Try to get lattice cardinality
-            if hasattr(con_lattice, 'size'):
-                rust_result['lattice_cardinality'] = con_lattice.size()
             
             # Test dual lattice (simplified - assume same cardinality)
             rust_result['dual_lattice_cardinality'] = rust_result['lattice_cardinality']
@@ -304,21 +257,15 @@ class BasicLatticeCompatibilityTest(BaseCompatibilityTest):
             
             # Get element representations (simplified)
             rust_result['element_representations'] = []
-            for i in range(min(rust_result['lattice_cardinality'] or 0, 20)):
+            for i in range(min(rust_result['lattice_cardinality'], 20)):
                 rust_result['element_representations'].append(f"element_{i}")
             
             # Get join and meet irreducibles counts
-            if hasattr(con_lattice, 'join_irreducibles'):
-                ji = con_lattice.join_irreducibles()
-                rust_result['join_irreducibles_count'] = len(ji) if hasattr(ji, '__len__') else len(list(ji))
-            else:
-                rust_result['join_irreducibles_count'] = 0
+            ji = basic_lattice.join_irreducibles()
+            rust_result['join_irreducibles_count'] = len(ji)
             
-            if hasattr(con_lattice, 'meet_irreducibles'):
-                mi = con_lattice.meet_irreducibles()
-                rust_result['meet_irreducibles_count'] = len(mi) if hasattr(mi, '__len__') else len(list(mi))
-            else:
-                rust_result['meet_irreducibles_count'] = 0
+            mi = basic_lattice.meet_irreducibles()
+            rust_result['meet_irreducibles_count'] = len(mi)
             
             # Test diagram and poset availability (simplified)
             rust_result['has_diagram'] = True  # Assume available
@@ -326,7 +273,7 @@ class BasicLatticeCompatibilityTest(BaseCompatibilityTest):
             
             # Test irredundant decompositions (simplified)
             rust_result['decomposition_tests'] = []
-            for i in range(min(rust_result['lattice_cardinality'] or 0, 5)):
+            for i in range(min(rust_result['lattice_cardinality'], 5)):
                 rust_result['decomposition_tests'].append({
                     'element_index': i,
                     'join_decomposition_indices': [i],  # Simplified

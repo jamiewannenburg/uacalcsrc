@@ -9,7 +9,7 @@ use std::sync::Mutex;
 
 use uacalc_core::algebra::{Algebra, BasicAlgebra, SmallAlgebra};
 use uacalc_core::binary_relation::{BasicBinaryRelation, BinaryRelation};
-use uacalc_core::conlat::{BasicCongruenceLattice, CongruenceLattice as CongruenceLatticeTrait};
+use uacalc_core::conlat::{BasicCongruenceLattice, BasicLattice, CongruenceLattice as CongruenceLatticeTrait};
 use uacalc_core::error::UACalcError;
 use uacalc_core::equation::{Equation, EquationComplexity, EquationProperties, ComplexityLevel};
 use uacalc_core::operation::{Operation, Operations, OperationSymbol, TableOperation, SimilarityType};
@@ -35,6 +35,7 @@ fn uacalc_rust(_py: Python, m: &Bound<PyModule>) -> PyResult<()> {
     m.add_class::<PyPartition>()?;
     m.add_class::<PyBinaryRelation>()?;
     m.add_class::<PyCongruenceLattice>()?;
+    m.add_class::<PyBasicLattice>()?;
     m.add_class::<PyTerm>()?;
     m.add_class::<PyTermArena>()?;
     m.add_class::<PyEquation>()?;
@@ -49,6 +50,8 @@ fn uacalc_rust(_py: Python, m: &Bound<PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(create_partition_from_blocks, m)?)?;
     m.add_function(wrap_pyfunction!(create_binary_relation, m)?)?;
     m.add_function(wrap_pyfunction!(create_congruence_lattice, m)?)?;
+    m.add_function(wrap_pyfunction!(create_basic_lattice, m)?)?;
+    m.add_function(wrap_pyfunction!(create_basic_lattice_from_congruence_lattice, m)?)?;
     m.add_function(wrap_pyfunction!(create_term_arena, m)?)?;
     m.add_function(wrap_pyfunction!(create_progress_reporter, m)?)?;
     m.add_function(wrap_pyfunction!(parse_term, m)?)?;
@@ -822,6 +825,96 @@ impl PyCongruenceLattice {
         } else {
             Ok(None)
         }
+    }
+}
+
+/// Python wrapper for BasicLattice
+#[pyclass]
+pub struct PyBasicLattice {
+    inner: BasicLattice,
+}
+
+#[pymethods]
+impl PyBasicLattice {
+    #[new]
+    fn new(name: String, size: usize) -> PyResult<Self> {
+        let inner = BasicLattice::from_poset(name, size).map_err(map_uacalc_error)?;
+        Ok(Self { inner })
+    }
+    
+    /// Create a BasicLattice from a congruence lattice
+    #[staticmethod]
+    fn from_congruence_lattice(py: Python, name: String, con_lattice: &PyCongruenceLattice) -> PyResult<Self> {
+        // Ensure the congruence lattice is built
+        con_lattice.ensure_universe_built(py, None)?;
+        
+        let con_guard = con_lattice.inner.lock().unwrap();
+        if let Some(ref lattice) = *con_guard {
+            let inner = BasicLattice::from_congruence_lattice(name, lattice).map_err(map_uacalc_error)?;
+            Ok(Self { inner })
+        } else {
+            Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(
+                "Congruence lattice not built".to_string(),
+            ))
+        }
+    }
+    
+    #[getter]
+    fn name(&self) -> &str {
+        self.inner.name()
+    }
+    
+    #[getter]
+    fn cardinality(&self) -> usize {
+        self.inner.cardinality()
+    }
+    
+    fn join(&self, a: usize, b: usize) -> PyResult<usize> {
+        self.inner.join(a, b).map_err(map_uacalc_error)
+    }
+    
+    fn meet(&self, a: usize, b: usize) -> PyResult<usize> {
+        self.inner.meet(a, b).map_err(map_uacalc_error)
+    }
+    
+    fn zero(&self) -> usize {
+        self.inner.zero()
+    }
+    
+    fn one(&self) -> usize {
+        self.inner.one()
+    }
+    
+    fn atoms(&self) -> Vec<usize> {
+        self.inner.atoms()
+    }
+    
+    fn coatoms(&self) -> Vec<usize> {
+        self.inner.coatoms()
+    }
+    
+    fn join_irreducibles(&self) -> Vec<usize> {
+        self.inner.join_irreducibles()
+    }
+    
+    fn meet_irreducibles(&self) -> Vec<usize> {
+        self.inner.meet_irreducibles()
+    }
+    
+    fn size(&self) -> usize {
+        self.inner.cardinality()
+    }
+    
+    fn __len__(&self) -> usize {
+        self.inner.cardinality()
+    }
+    
+    fn __str__(&self) -> String {
+        format!("BasicLattice({}, size={})", self.inner.name(), self.inner.cardinality())
+    }
+    
+    fn __repr__(&self) -> String {
+        self.__str__()
     }
 }
 
@@ -2437,6 +2530,18 @@ fn create_congruence_lattice(algebra: &Bound<PyAny>) -> PyResult<PyCongruenceLat
             "Expected PyAlgebra or PyQuotientAlgebra".to_string(),
         ))
     }
+}
+
+/// Helper function to create a basic lattice
+#[pyfunction]
+fn create_basic_lattice(name: String, size: usize) -> PyResult<PyBasicLattice> {
+    Ok(PyBasicLattice::new(name, size)?)
+}
+
+/// Helper function to create a basic lattice from a congruence lattice
+#[pyfunction]
+fn create_basic_lattice_from_congruence_lattice(py: Python, name: String, con_lattice: &PyCongruenceLattice) -> PyResult<PyBasicLattice> {
+    PyBasicLattice::from_congruence_lattice(py, name, con_lattice)
 }
 
 /// Helper function to create a term arena

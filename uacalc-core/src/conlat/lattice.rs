@@ -1,9 +1,11 @@
-use crate::algebra::SmallAlgebra;
+use crate::algebra::{SmallAlgebra, Algebra};
 use crate::conlat::{cg, lattice_builder};
 use crate::partition::{coarsest_partition, BasicPartition, Partition};
+use crate::operation::{Operation, OperationSymbol, TableOperation};
 use crate::{UACalcError, UACalcResult};
 use std::any::Any;
 use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
 
 /// Trait for congruence lattice structures
 pub trait CongruenceLattice: Send + Sync {
@@ -899,5 +901,345 @@ where
 
     fn should_cancel(&self) -> bool {
         false
+    }
+}
+
+/// Basic lattice implementation that represents a lattice as an algebra
+/// with join and meet operations, similar to Java's BasicLattice class
+pub struct BasicLattice {
+    name: String,
+    universe: Vec<usize>,
+    join_table: Vec<Vec<usize>>,
+    meet_table: Vec<Vec<usize>>,
+    join_operation: TableOperation,
+    meet_operation: TableOperation,
+    operations: Vec<Arc<Mutex<dyn Operation>>>,
+}
+
+impl BasicLattice {
+    /// Create a new BasicLattice from a congruence lattice
+    pub fn from_congruence_lattice(name: String, con_lattice: &dyn CongruenceLattice) -> UACalcResult<Self> {
+        let size = con_lattice.num_congruences();
+        let mut universe = Vec::with_capacity(size);
+        let mut join_table = vec![vec![0; size]; size];
+        let mut meet_table = vec![vec![0; size]; size];
+        
+        // Create universe as indices
+        for i in 0..size {
+            universe.push(i);
+        }
+        
+        // Build join and meet tables
+        for i in 0..size {
+            for j in 0..size {
+                // Get the join and meet of elements i and j
+                let congruences = con_lattice.congruences();
+                if i < congruences.len() && j < congruences.len() {
+                    let join_result = con_lattice.join(&*congruences[i], &*congruences[j])?;
+                    let meet_result = con_lattice.meet(&*congruences[i], &*congruences[j])?;
+                    
+                    // Find the indices of the join and meet results
+                    let mut join_idx = 0;
+                    let mut meet_idx = 0;
+                    
+                    for k in 0..congruences.len() {
+                        if congruences[k].to_array() == join_result.to_array() {
+                            join_idx = k;
+                        }
+                        if congruences[k].to_array() == meet_result.to_array() {
+                            meet_idx = k;
+                        }
+                    }
+                    
+                    join_table[i][j] = join_idx;
+                    meet_table[i][j] = meet_idx;
+                }
+            }
+        }
+        
+        // Create join and meet operations using binary method
+        let join_operation = TableOperation::binary("join".to_string(), size, |i, j| join_table[i][j])?;
+        let meet_operation = TableOperation::binary("meet".to_string(), size, |i, j| meet_table[i][j])?;
+        
+        let mut operations: Vec<Arc<Mutex<dyn Operation>>> = Vec::new();
+        operations.push(Arc::new(Mutex::new(join_operation.clone())));
+        operations.push(Arc::new(Mutex::new(meet_operation.clone())));
+        
+        Ok(Self {
+            name,
+            universe,
+            join_table,
+            meet_table,
+            join_operation,
+            meet_operation,
+            operations,
+        })
+    }
+    
+    /// Create a BasicLattice from a poset (simplified implementation)
+    pub fn from_poset(name: String, size: usize) -> UACalcResult<Self> {
+        let mut universe = Vec::with_capacity(size);
+        let mut join_table = vec![vec![0; size]; size];
+        let mut meet_table = vec![vec![0; size]; size];
+        
+        // Create universe as indices
+        for i in 0..size {
+            universe.push(i);
+        }
+        
+        // For a simple chain lattice: join(i,j) = max(i,j), meet(i,j) = min(i,j)
+        for i in 0..size {
+            for j in 0..size {
+                join_table[i][j] = i.max(j);
+                meet_table[i][j] = i.min(j);
+            }
+        }
+        
+        // Create join and meet operations using binary method
+        let join_operation = TableOperation::binary("join".to_string(), size, |i, j| join_table[i][j])?;
+        let meet_operation = TableOperation::binary("meet".to_string(), size, |i, j| meet_table[i][j])?;
+        
+        let mut operations: Vec<Arc<Mutex<dyn Operation>>> = Vec::new();
+        operations.push(Arc::new(Mutex::new(join_operation.clone())));
+        operations.push(Arc::new(Mutex::new(meet_operation.clone())));
+        
+        Ok(Self {
+            name,
+            universe,
+            join_table,
+            meet_table,
+            join_operation,
+            meet_operation,
+            operations,
+        })
+    }
+    
+    /// Get the join of two elements
+    pub fn join(&self, a: usize, b: usize) -> UACalcResult<usize> {
+        if a >= self.universe.len() || b >= self.universe.len() {
+            return Err(UACalcError::IndexOutOfBounds {
+                index: a.max(b),
+                size: self.universe.len(),
+            });
+        }
+        Ok(self.join_table[a][b])
+    }
+    
+    /// Get the meet of two elements
+    pub fn meet(&self, a: usize, b: usize) -> UACalcResult<usize> {
+        if a >= self.universe.len() || b >= self.universe.len() {
+            return Err(UACalcError::IndexOutOfBounds {
+                index: a.max(b),
+                size: self.universe.len(),
+            });
+        }
+        Ok(self.meet_table[a][b])
+    }
+    
+    /// Get the zero element (bottom)
+    pub fn zero(&self) -> usize {
+        0 // Assume 0 is the bottom element
+    }
+    
+    /// Get the one element (top)
+    pub fn one(&self) -> usize {
+        self.universe.len() - 1 // Assume the last element is the top
+    }
+    
+    /// Get atoms (elements that cover the zero)
+    pub fn atoms(&self) -> Vec<usize> {
+        let mut atoms = Vec::new();
+        let zero = self.zero();
+        
+        for i in 0..self.universe.len() {
+            if i != zero {
+                // Check if i covers zero (simplified check)
+                if self.meet_table[i][zero] == zero && self.join_table[i][zero] == i {
+                    atoms.push(i);
+                }
+            }
+        }
+        
+        atoms
+    }
+    
+    /// Get coatoms (elements covered by the one)
+    pub fn coatoms(&self) -> Vec<usize> {
+        let mut coatoms = Vec::new();
+        let one = self.one();
+        
+        for i in 0..self.universe.len() {
+            if i != one {
+                // Check if one covers i (simplified check)
+                if self.join_table[i][one] == one && self.meet_table[i][one] == i {
+                    coatoms.push(i);
+                }
+            }
+        }
+        
+        coatoms
+    }
+    
+    /// Get join irreducibles
+    pub fn join_irreducibles(&self) -> Vec<usize> {
+        let mut ji = Vec::new();
+        
+        for i in 0..self.universe.len() {
+            if i != self.zero() {
+                // Check if i is join irreducible (simplified check)
+                let mut is_ji = true;
+                for j in 0..self.universe.len() {
+                    for k in 0..self.universe.len() {
+                        if j != i && k != i && self.join_table[j][k] == i {
+                            is_ji = false;
+                            break;
+                        }
+                    }
+                    if !is_ji {
+                        break;
+                    }
+                }
+                if is_ji {
+                    ji.push(i);
+                }
+            }
+        }
+        
+        ji
+    }
+    
+    /// Get meet irreducibles
+    pub fn meet_irreducibles(&self) -> Vec<usize> {
+        let mut mi = Vec::new();
+        
+        for i in 0..self.universe.len() {
+            if i != self.one() {
+                // Check if i is meet irreducible (simplified check)
+                let mut is_mi = true;
+                for j in 0..self.universe.len() {
+                    for k in 0..self.universe.len() {
+                        if j != i && k != i && self.meet_table[j][k] == i {
+                            is_mi = false;
+                            break;
+                        }
+                    }
+                    if !is_mi {
+                        break;
+                    }
+                }
+                if is_mi {
+                    mi.push(i);
+                }
+            }
+        }
+        
+        mi
+    }
+}
+
+impl Algebra for BasicLattice {
+    fn name(&self) -> &str {
+        &self.name
+    }
+    
+    fn universe(&self) -> &[usize] {
+        &self.universe
+    }
+    
+    fn cardinality(&self) -> usize {
+        self.universe.len()
+    }
+    
+    fn operations(&self) -> &[Arc<Mutex<dyn Operation>>] {
+        &self.operations
+    }
+    
+    fn operation(&self, index: usize) -> UACalcResult<&dyn Operation> {
+        if index < self.operations.len() {
+            // This is unsafe but necessary due to trait object limitations
+            // In practice, we should use operation_arc instead
+            Err(UACalcError::InvalidOperation {
+                message: "Direct operation access not supported, use operation_arc".to_string(),
+            })
+        } else {
+            Err(UACalcError::IndexOutOfBounds {
+                index,
+                size: self.operations.len(),
+            })
+        }
+    }
+    
+    fn operation_by_symbol(&self, symbol: &str) -> UACalcResult<&dyn Operation> {
+        Err(UACalcError::InvalidOperation {
+            message: "Direct operation access not supported, use operation_arc_by_symbol".to_string(),
+        })
+    }
+    
+    fn operation_arc(&self, index: usize) -> UACalcResult<Arc<Mutex<dyn Operation>>> {
+        if index < self.operations.len() {
+            Ok(self.operations[index].clone())
+        } else {
+            Err(UACalcError::IndexOutOfBounds {
+                index,
+                size: self.operations.len(),
+            })
+        }
+    }
+    
+    fn operation_arc_by_symbol(&self, symbol: &str) -> UACalcResult<Arc<Mutex<dyn Operation>>> {
+        match symbol {
+            "join" => self.operation_arc(0),
+            "meet" => self.operation_arc(1),
+            _ => Err(UACalcError::InvalidOperation {
+                message: format!("Unknown operation symbol: {}", symbol),
+            }),
+        }
+    }
+    
+    fn make_operation_tables(&mut self) -> UACalcResult<()> {
+        // Operation tables are already built in the constructor
+        Ok(())
+    }
+}
+
+impl SmallAlgebra for BasicLattice {
+    fn max_arity(&self) -> usize {
+        2 // Both join and meet are binary operations
+    }
+    
+    fn subalgebra(&self, generators: &[usize]) -> UACalcResult<crate::algebra::BasicAlgebra> {
+        // Create a subalgebra with the given generators
+        // This is a simplified implementation
+        let name = format!("{}_sub", self.name);
+        let universe = generators.to_vec();
+        
+        // Create the subalgebra
+        let mut subalgebra = crate::algebra::BasicAlgebra::new(name, universe.clone())?;
+        
+        // Add operations for the subalgebra
+        for op_arc in &self.operations {
+            let op_guard = op_arc.lock().unwrap();
+            let symbol = op_guard.symbol().clone();
+            let arity = op_guard.arity();
+            
+            // Create a new operation table for the subalgebra
+            let mut sub_table = vec![vec![0; universe.len()]; universe.len()];
+            for i in 0..universe.len() {
+                for j in 0..universe.len() {
+                    if arity == 2 {
+                        let result = op_guard.int_value_at(&[universe[i], universe[j]])?;
+                        // Find the index of the result in the subalgebra universe
+                        let result_idx = universe.iter().position(|&x| x == result).unwrap_or(0);
+                        sub_table[i][j] = result_idx;
+                    }
+                }
+            }
+            
+            let sub_op = TableOperation::new(symbol.clone(), sub_table, universe.len())?;
+            let sub_op_arc = Arc::new(Mutex::new(sub_op));
+            subalgebra.add_operation(symbol.name().to_string(), sub_op_arc)?;
+        }
+        
+        Ok(subalgebra)
     }
 }
