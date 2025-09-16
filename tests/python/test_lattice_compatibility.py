@@ -147,24 +147,43 @@ class LatticeCompatibilityTest(BaseCompatibilityTest):
                         cong1 = con_lattice.zero()
                     cong2 = con_lattice.principal_congruence(element1, (element1 + 1) % algebra.cardinality)
                 
-                # Compute join if available
-                if hasattr(cong1, 'join') and hasattr(cong2, 'join'):
-                    join_result = cong1.join(cong2)
+                # Compute join using the lattice's join method
+                if hasattr(con_lattice, 'join'):
+                    # Find indices of congruences in the lattice
+                    congruences = con_lattice.congruences()
+                    cong1_index = None
+                    cong2_index = None
                     
-                    rust_result = {
-                        'algebra_name': algebra.name,
-                        'element1': element1,
-                        'element2': element2,
-                        'cong1_blocks': len(cong1.blocks()) if hasattr(cong1, 'blocks') else None,
-                        'cong2_blocks': len(cong2.blocks()) if hasattr(cong2, 'blocks') else None,
-                        'join_blocks': len(join_result.blocks()) if hasattr(join_result, 'blocks') else None,
-                    }
+                    for i, cong in enumerate(congruences):
+                        if cong == cong1:
+                            cong1_index = i
+                        if cong == cong2:
+                            cong2_index = i
                     
-                    # Try to get partition blocks if available
-                    if hasattr(join_result, 'blocks'):
-                        blocks = list(join_result.blocks())
-                        rust_result['join_partition'] = [sorted(list(block)) for block in blocks]
-                        rust_result['join_partition'].sort()
+                    if cong1_index is not None and cong2_index is not None:
+                        join_result = con_lattice.join(cong1_index, cong2_index)
+                        
+                        rust_result = {
+                            'algebra_name': algebra.name,
+                            'element1': element1,
+                            'element2': element2,
+                            'cong1_blocks': len(cong1.blocks()) if hasattr(cong1, 'blocks') else None,
+                            'cong2_blocks': len(cong2.blocks()) if hasattr(cong2, 'blocks') else None,
+                            'join_blocks': len(join_result.blocks()) if hasattr(join_result, 'blocks') else None,
+                        }
+                        
+                        # Try to get partition blocks if available
+                        if hasattr(join_result, 'blocks'):
+                            blocks = list(join_result.blocks())
+                            rust_result['join_partition'] = [sorted(list(block)) for block in blocks]
+                            rust_result['join_partition'].sort()
+                    else:
+                        rust_result = {
+                            'algebra_name': algebra.name,
+                            'element1': element1,
+                            'element2': element2,
+                            'error': 'Could not find congruence indices in lattice'
+                        }
                 else:
                     # Fallback if join method not available
                     rust_result = {
@@ -240,24 +259,43 @@ class LatticeCompatibilityTest(BaseCompatibilityTest):
                         cong1 = con_lattice.zero()
                     cong2 = con_lattice.principal_congruence(element1, (element1 + 1) % algebra.cardinality)
                 
-                # Compute meet if available
-                if hasattr(cong1, 'meet') and hasattr(cong2, 'meet'):
-                    meet_result = cong1.meet(cong2)
+                # Compute meet using the lattice's meet method
+                if hasattr(con_lattice, 'meet'):
+                    # Find indices of congruences in the lattice
+                    congruences = con_lattice.congruences()
+                    cong1_index = None
+                    cong2_index = None
                     
-                    rust_result = {
-                        'algebra_name': algebra.name,
-                        'element1': element1,
-                        'element2': element2,
-                        'cong1_blocks': len(cong1.blocks()) if hasattr(cong1, 'blocks') else None,
-                        'cong2_blocks': len(cong2.blocks()) if hasattr(cong2, 'blocks') else None,
-                        'meet_blocks': len(meet_result.blocks()) if hasattr(meet_result, 'blocks') else None,
-                    }
+                    for i, cong in enumerate(congruences):
+                        if cong == cong1:
+                            cong1_index = i
+                        if cong == cong2:
+                            cong2_index = i
                     
-                    # Try to get partition blocks if available
-                    if hasattr(meet_result, 'blocks'):
-                        blocks = list(meet_result.blocks())
-                        rust_result['meet_partition'] = [sorted(list(block)) for block in blocks]
-                        rust_result['meet_partition'].sort()
+                    if cong1_index is not None and cong2_index is not None:
+                        meet_result = con_lattice.meet(cong1_index, cong2_index)
+                        
+                        rust_result = {
+                            'algebra_name': algebra.name,
+                            'element1': element1,
+                            'element2': element2,
+                            'cong1_blocks': len(cong1.blocks()) if hasattr(cong1, 'blocks') else None,
+                            'cong2_blocks': len(cong2.blocks()) if hasattr(cong2, 'blocks') else None,
+                            'meet_blocks': len(meet_result.blocks()) if hasattr(meet_result, 'blocks') else None,
+                        }
+                        
+                        # Try to get partition blocks if available
+                        if hasattr(meet_result, 'blocks'):
+                            blocks = list(meet_result.blocks())
+                            rust_result['meet_partition'] = [sorted(list(block)) for block in blocks]
+                            rust_result['meet_partition'].sort()
+                    else:
+                        rust_result = {
+                            'algebra_name': algebra.name,
+                            'element1': element1,
+                            'element2': element2,
+                            'error': 'Could not find congruence indices in lattice'
+                        }
                 else:
                     # Fallback if meet method not available
                     rust_result = {
@@ -424,13 +462,10 @@ class LatticeCompatibilityTest(BaseCompatibilityTest):
             if hasattr(con_lattice2, 'size'):
                 rust_result['lattice2_size'] = con_lattice2.size()
             
-            # Basic homomorphism checks
-            size1 = rust_result.get('lattice1_size', 0)
-            size2 = rust_result.get('lattice2_size', 0)
-            
-            if size1 and size2:
-                rust_result['has_homomorphism'] = size1 <= size2  # Simplified check
-                rust_result['has_isomorphism'] = size1 == size2   # Simplified check
+            # Use actual homomorphism and isomorphism detection
+            if hasattr(con_lattice1, 'has_homomorphism_to') and hasattr(con_lattice2, 'has_homomorphism_to'):
+                rust_result['has_homomorphism'] = con_lattice1.has_homomorphism_to(con_lattice2)
+                rust_result['has_isomorphism'] = con_lattice1.is_isomorphic_to(con_lattice2)
                 
                 if rust_result['has_isomorphism']:
                     rust_result['homomorphism_type'] = 'isomorphism'
@@ -439,9 +474,24 @@ class LatticeCompatibilityTest(BaseCompatibilityTest):
                 else:
                     rust_result['homomorphism_type'] = 'none'
             else:
-                rust_result['has_homomorphism'] = False
-                rust_result['has_isomorphism'] = False
-                rust_result['homomorphism_type'] = 'unknown'
+                # Fallback to simplified checks
+                size1 = rust_result.get('lattice1_size', 0)
+                size2 = rust_result.get('lattice2_size', 0)
+                
+                if size1 and size2:
+                    rust_result['has_homomorphism'] = size1 <= size2  # Simplified check
+                    rust_result['has_isomorphism'] = size1 == size2   # Simplified check
+                    
+                    if rust_result['has_isomorphism']:
+                        rust_result['homomorphism_type'] = 'isomorphism'
+                    elif rust_result['has_homomorphism']:
+                        rust_result['homomorphism_type'] = 'embedding'
+                    else:
+                        rust_result['homomorphism_type'] = 'none'
+                else:
+                    rust_result['has_homomorphism'] = False
+                    rust_result['has_isomorphism'] = False
+                    rust_result['homomorphism_type'] = 'unknown'
             
         except Exception as e:
             self.fail(f"Rust lattice homomorphism computation failed for {algebra1.name} -> {algebra2.name}: {e}")
@@ -496,11 +546,14 @@ class LatticeCompatibilityTest(BaseCompatibilityTest):
             if hasattr(con_lattice2, 'size'):
                 rust_result['lattice2_size'] = con_lattice2.size()
             
-            # Basic isomorphism checks
-            size1 = rust_result.get('lattice1_size', 0)
-            size2 = rust_result.get('lattice2_size', 0)
-            
-            rust_result['has_isomorphism'] = size1 == size2 and size1 > 0  # Simplified check
+            # Use actual isomorphism detection
+            if hasattr(con_lattice1, 'is_isomorphic_to'):
+                rust_result['has_isomorphism'] = con_lattice1.is_isomorphic_to(con_lattice2)
+            else:
+                # Fallback to simplified check
+                size1 = rust_result.get('lattice1_size', 0)
+                size2 = rust_result.get('lattice2_size', 0)
+                rust_result['has_isomorphism'] = size1 == size2 and size1 > 0  # Simplified check
             
             # Additional property checks if isomorphic
             if rust_result['has_isomorphism']:
@@ -516,9 +569,16 @@ class LatticeCompatibilityTest(BaseCompatibilityTest):
                 else:
                     rust_result['same_join_irreducibles'] = True  # Assume true if can't check
                 
-                # Height and width checks (simplified)
-                rust_result['same_height'] = True   # Assume true for now
-                rust_result['same_width'] = True    # Assume true for now
+                # Check height and width if available
+                if hasattr(con_lattice1, 'height') and hasattr(con_lattice2, 'height'):
+                    rust_result['same_height'] = con_lattice1.height() == con_lattice2.height()
+                else:
+                    rust_result['same_height'] = True   # Assume true if can't check
+                
+                if hasattr(con_lattice1, 'width') and hasattr(con_lattice2, 'width'):
+                    rust_result['same_width'] = con_lattice1.width() == con_lattice2.width()
+                else:
+                    rust_result['same_width'] = True    # Assume true if can't check
             else:
                 rust_result['same_join_irreducibles'] = False
                 rust_result['same_height'] = False

@@ -635,6 +635,194 @@ impl PyCongruenceLattice {
     fn is_cancelled(&self) -> bool {
         self.cancelled.load(Ordering::Relaxed)
     }
+
+    fn join_irreducibles(&self, py: Python) -> PyResult<Vec<PyPartition>> {
+        self.ensure_universe_built(py, None)?;
+        let inner_guard = self.inner.lock().unwrap();
+        if let Some(ref lattice) = *inner_guard {
+            let join_irreducibles = lattice.join_irreducibles_basic();
+            let result = join_irreducibles
+                .into_iter()
+                .map(|p| PyPartition { inner: p })
+                .collect();
+            Ok(result)
+        } else {
+            Ok(Vec::new())
+        }
+    }
+
+    fn meet_irreducibles(&self, py: Python) -> PyResult<Vec<PyPartition>> {
+        self.ensure_universe_built(py, None)?;
+        let inner_guard = self.inner.lock().unwrap();
+        if let Some(ref lattice) = *inner_guard {
+            let meet_irreducibles = lattice.meet_irreducibles_basic().map_err(map_uacalc_error)?;
+            let result = meet_irreducibles
+                .into_iter()
+                .map(|p| PyPartition { inner: p })
+                .collect();
+            Ok(result)
+        } else {
+            Ok(Vec::new())
+        }
+    }
+
+    fn zero(&self, py: Python) -> PyResult<PyPartition> {
+        self.ensure_universe_built(py, None)?;
+        let inner_guard = self.inner.lock().unwrap();
+        if let Some(ref lattice) = *inner_guard {
+            Ok(PyPartition {
+                inner: lattice.zero(),
+            })
+        } else {
+            Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(
+                "Lattice not built".to_string(),
+            ))
+        }
+    }
+
+    fn one(&self, py: Python) -> PyResult<PyPartition> {
+        self.ensure_universe_built(py, None)?;
+        let inner_guard = self.inner.lock().unwrap();
+        if let Some(ref lattice) = *inner_guard {
+            let one = lattice.one().map_err(map_uacalc_error)?;
+            Ok(PyPartition { inner: one })
+        } else {
+            Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(
+                "Lattice not built".to_string(),
+            ))
+        }
+    }
+
+    fn is_distributive(&self, py: Python) -> PyResult<bool> {
+        self.ensure_universe_built(py, None)?;
+        let inner_guard = self.inner.lock().unwrap();
+        if let Some(ref lattice) = *inner_guard {
+            lattice.is_distributive().map_err(map_uacalc_error)
+        } else {
+            Ok(false)
+        }
+    }
+
+    fn is_modular(&self, py: Python) -> PyResult<bool> {
+        self.ensure_universe_built(py, None)?;
+        let inner_guard = self.inner.lock().unwrap();
+        if let Some(ref lattice) = *inner_guard {
+            lattice.is_modular().map_err(map_uacalc_error)
+        } else {
+            Ok(false)
+        }
+    }
+
+    fn is_boolean(&self, py: Python) -> PyResult<bool> {
+        self.ensure_universe_built(py, None)?;
+        let inner_guard = self.inner.lock().unwrap();
+        if let Some(ref lattice) = *inner_guard {
+            lattice.is_boolean().map_err(map_uacalc_error)
+        } else {
+            Ok(false)
+        }
+    }
+
+    fn height(&self, py: Python) -> PyResult<usize> {
+        self.ensure_universe_built(py, None)?;
+        let inner_guard = self.inner.lock().unwrap();
+        if let Some(ref lattice) = *inner_guard {
+            lattice.height().map_err(map_uacalc_error)
+        } else {
+            Ok(0)
+        }
+    }
+
+    fn width(&self, py: Python) -> PyResult<usize> {
+        self.ensure_universe_built(py, None)?;
+        let inner_guard = self.inner.lock().unwrap();
+        if let Some(ref lattice) = *inner_guard {
+            lattice.width().map_err(map_uacalc_error)
+        } else {
+            Ok(0)
+        }
+    }
+
+    fn has_complement(&self, py: Python, congruence: &PyPartition) -> PyResult<bool> {
+        self.ensure_universe_built(py, None)?;
+        let inner_guard = self.inner.lock().unwrap();
+        if let Some(ref lattice) = *inner_guard {
+            lattice.has_complement(&congruence.inner).map_err(map_uacalc_error)
+        } else {
+            Ok(false)
+        }
+    }
+
+    fn complements(&self, py: Python, congruence: &PyPartition) -> PyResult<Vec<PyPartition>> {
+        self.ensure_universe_built(py, None)?;
+        let inner_guard = self.inner.lock().unwrap();
+        if let Some(ref lattice) = *inner_guard {
+            let complements = lattice.complements(&congruence.inner).map_err(map_uacalc_error)?;
+            let result = complements
+                .into_iter()
+                .map(|p| PyPartition { inner: p })
+                .collect();
+            Ok(result)
+        } else {
+            Ok(Vec::new())
+        }
+    }
+
+    fn has_homomorphism_to(&self, py: Python, other: &PyCongruenceLattice) -> PyResult<bool> {
+        self.ensure_universe_built(py, None)?;
+        other.ensure_universe_built(py, None)?;
+        
+        let self_guard = self.inner.lock().unwrap();
+        let other_guard = other.inner.lock().unwrap();
+        
+        if let (Some(ref self_lattice), Some(ref other_lattice)) = (&*self_guard, &*other_guard) {
+            self_lattice.has_homomorphism_to(other_lattice).map_err(map_uacalc_error)
+        } else {
+            Ok(false)
+        }
+    }
+
+    fn is_isomorphic_to(&self, py: Python, other: &PyCongruenceLattice) -> PyResult<bool> {
+        self.ensure_universe_built(py, None)?;
+        other.ensure_universe_built(py, None)?;
+        
+        let self_guard = self.inner.lock().unwrap();
+        let other_guard = other.inner.lock().unwrap();
+        
+        if let (Some(ref self_lattice), Some(ref other_lattice)) = (&*self_guard, &*other_guard) {
+            self_lattice.is_isomorphic_to(other_lattice).map_err(map_uacalc_error)
+        } else {
+            Ok(false)
+        }
+    }
+
+    fn find_homomorphism_to(&self, py: Python, other: &PyCongruenceLattice) -> PyResult<Option<Vec<usize>>> {
+        self.ensure_universe_built(py, None)?;
+        other.ensure_universe_built(py, None)?;
+        
+        let self_guard = self.inner.lock().unwrap();
+        let other_guard = other.inner.lock().unwrap();
+        
+        if let (Some(ref self_lattice), Some(ref other_lattice)) = (&*self_guard, &*other_guard) {
+            self_lattice.find_homomorphism_to(other_lattice).map_err(map_uacalc_error)
+        } else {
+            Ok(None)
+        }
+    }
+
+    fn find_isomorphism_to(&self, py: Python, other: &PyCongruenceLattice) -> PyResult<Option<Vec<usize>>> {
+        self.ensure_universe_built(py, None)?;
+        other.ensure_universe_built(py, None)?;
+        
+        let self_guard = self.inner.lock().unwrap();
+        let other_guard = other.inner.lock().unwrap();
+        
+        if let (Some(ref self_lattice), Some(ref other_lattice)) = (&*self_guard, &*other_guard) {
+            self_lattice.find_isomorphism_to(other_lattice).map_err(map_uacalc_error)
+        } else {
+            Ok(None)
+        }
+    }
 }
 
 /// Python wrapper for Term

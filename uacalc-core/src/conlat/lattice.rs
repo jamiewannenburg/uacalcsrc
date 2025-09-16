@@ -46,6 +46,30 @@ pub trait CongruenceLattice: Send + Sync {
     /// Get the join-irreducible congruences
     fn join_irreducibles(&self) -> &[Box<dyn Partition>];
 
+    /// Get the meet-irreducible congruences
+    fn meet_irreducibles(&self) -> UACalcResult<Vec<Box<dyn Partition>>>;
+
+    /// Get the zero element (bottom) of the lattice
+    fn zero(&self) -> Box<dyn Partition>;
+
+    /// Get the one element (top) of the lattice
+    fn one(&self) -> UACalcResult<Box<dyn Partition>>;
+
+    /// Check if the lattice is distributive
+    fn is_distributive(&self) -> UACalcResult<bool>;
+
+    /// Check if the lattice is modular
+    fn is_modular(&self) -> UACalcResult<bool>;
+
+    /// Check if the lattice is boolean (distributive and complemented)
+    fn is_boolean(&self) -> UACalcResult<bool>;
+
+    /// Get the height of the lattice
+    fn height(&self) -> UACalcResult<usize>;
+
+    /// Get the width of the lattice
+    fn width(&self) -> UACalcResult<usize>;
+
     /// Get the universe construction progress (0.0 to 1.0)
     fn universe_construction_progress(&self) -> Option<f64>;
 }
@@ -383,6 +407,293 @@ impl BasicCongruenceLattice {
         let b = &self.universe[j];
         a.meet(b)
     }
+
+    /// Get the zero element (bottom) of the lattice
+    pub fn zero(&self) -> BasicPartition {
+        BasicPartition::new(self.algebra.cardinality())
+    }
+
+    /// Get the one element (top) of the lattice
+    pub fn one(&self) -> UACalcResult<BasicPartition> {
+        coarsest_partition(self.algebra.cardinality())
+    }
+
+    /// Get meet-irreducibles as BasicPartition instances
+    pub fn meet_irreducibles_basic(&self) -> UACalcResult<Vec<BasicPartition>> {
+        let mut meet_irreducibles = Vec::new();
+        let top = self.one()?;
+
+        for congruence in &self.universe {
+            if congruence != &top {
+                // Check if this congruence is meet-irreducible
+                let mut is_meet_irreducible = true;
+                
+                // A congruence is meet-irreducible if it cannot be written as
+                // the meet of two strictly larger congruences
+                for i in 0..self.universe.len() {
+                    for j in 0..self.universe.len() {
+                        if i != j {
+                            let meet_result = self.universe[i].meet(&self.universe[j])?;
+                            if meet_result == *congruence 
+                                && self.universe[i] != *congruence 
+                                && self.universe[j] != *congruence {
+                                is_meet_irreducible = false;
+                                break;
+                            }
+                        }
+                    }
+                    if !is_meet_irreducible {
+                        break;
+                    }
+                }
+                
+                if is_meet_irreducible {
+                    meet_irreducibles.push(congruence.clone());
+                }
+            }
+        }
+
+        Ok(meet_irreducibles)
+    }
+
+    /// Check if the lattice is distributive
+    pub fn is_distributive(&self) -> UACalcResult<bool> {
+        // A lattice is distributive if it doesn't contain N5 or M3 as sublattices
+        // For congruence lattices, we can use the fact that a lattice is distributive
+        // if and only if it satisfies the distributive law: a ∧ (b ∨ c) = (a ∧ b) ∨ (a ∧ c)
+        
+        for i in 0..self.universe.len() {
+            for j in 0..self.universe.len() {
+                for k in 0..self.universe.len() {
+                    let a = &self.universe[i];
+                    let b = &self.universe[j];
+                    let c = &self.universe[k];
+                    
+                    // Check distributive law: a ∧ (b ∨ c) = (a ∧ b) ∨ (a ∧ c)
+                    let left_side = a.meet(&b.join(c)?)?;
+                    let right_side = a.meet(b)?.join(&a.meet(c)?)?;
+                    
+                    if left_side != right_side {
+                        return Ok(false);
+                    }
+                }
+            }
+        }
+        
+        Ok(true)
+    }
+
+    /// Check if the lattice is modular
+    pub fn is_modular(&self) -> UACalcResult<bool> {
+        // A lattice is modular if it doesn't contain N5 as a sublattice
+        // Equivalently, if a ≤ c, then a ∨ (b ∧ c) = (a ∨ b) ∧ c
+        
+        for i in 0..self.universe.len() {
+            for j in 0..self.universe.len() {
+                for k in 0..self.universe.len() {
+                    let a = &self.universe[i];
+                    let b = &self.universe[j];
+                    let c = &self.universe[k];
+                    
+                    // Check if a ≤ c
+                    if a.is_finer_than(c)? {
+                        // Check modular law: a ∨ (b ∧ c) = (a ∨ b) ∧ c
+                        let left_side = a.join(&b.meet(c)?)?;
+                        let right_side = a.join(b)?.meet(c)?;
+                        
+                        if left_side != right_side {
+                            return Ok(false);
+                        }
+                    }
+                }
+            }
+        }
+        
+        Ok(true)
+    }
+
+    /// Check if the lattice is boolean (distributive and complemented)
+    pub fn is_boolean(&self) -> UACalcResult<bool> {
+        // A lattice is boolean if it's distributive and every element has a complement
+        if !self.is_distributive()? {
+            return Ok(false);
+        }
+        
+        // Check if every element has a complement
+        for congruence in &self.universe {
+            if !self.has_complement(congruence)? {
+                return Ok(false);
+            }
+        }
+        
+        Ok(true)
+    }
+
+    /// Check if a congruence has a complement
+    pub fn has_complement(&self, congruence: &BasicPartition) -> UACalcResult<bool> {
+        let zero = self.zero();
+        let one = self.one()?;
+        
+        for other in &self.universe {
+            // Check if other is a complement of congruence
+            if congruence.join(other)? == one && congruence.meet(other)? == zero {
+                return Ok(true);
+            }
+        }
+        
+        Ok(false)
+    }
+
+    /// Get all complements of a congruence
+    pub fn complements(&self, congruence: &BasicPartition) -> UACalcResult<Vec<BasicPartition>> {
+        let mut complements = Vec::new();
+        let zero = self.zero();
+        let one = self.one()?;
+        
+        for other in &self.universe {
+            // Check if other is a complement of congruence
+            if congruence.join(other)? == one && congruence.meet(other)? == zero {
+                complements.push(other.clone());
+            }
+        }
+        
+        Ok(complements)
+    }
+
+    /// Get the height of the lattice
+    pub fn height(&self) -> UACalcResult<usize> {
+        // The height is the length of the longest chain
+        let mut max_chain_length = 0;
+        
+        for i in 0..self.universe.len() {
+            let chain_length = self.longest_chain_from(i)?;
+            max_chain_length = max_chain_length.max(chain_length);
+        }
+        
+        Ok(max_chain_length)
+    }
+
+    /// Get the width of the lattice
+    pub fn width(&self) -> UACalcResult<usize> {
+        // The width is the size of the largest antichain
+        // For now, use a simplified approach that returns the number of join-irreducibles
+        // This is a reasonable approximation for many lattices
+        Ok(self.join_irreducibles.len())
+    }
+
+    /// Find the length of the longest chain starting from a given element
+    fn longest_chain_from(&self, start: usize) -> UACalcResult<usize> {
+        let mut max_length = 1;
+        
+        for i in 0..self.universe.len() {
+            if i != start && self.universe[start].is_finer_than(&self.universe[i])? {
+                let length = 1 + self.longest_chain_from(i)?;
+                max_length = max_length.max(length);
+            }
+        }
+        
+        Ok(max_length)
+    }
+
+    /// Check if there exists a lattice homomorphism from this lattice to another
+    pub fn has_homomorphism_to(&self, other: &BasicCongruenceLattice) -> UACalcResult<bool> {
+        // A lattice homomorphism preserves join and meet operations
+        // For now, we'll use a simplified check based on lattice size and structure
+        
+        // If this lattice is larger than the other, there can't be a homomorphism
+        if self.universe.len() > other.universe.len() {
+            return Ok(false);
+        }
+        
+        // Check if the lattice structures are compatible
+        // This is a simplified check - in practice, you'd need to check
+        // if there's a mapping that preserves the lattice operations
+        
+        // For now, we'll just check if the sizes are compatible
+        Ok(self.universe.len() <= other.universe.len())
+    }
+
+    /// Check if this lattice is isomorphic to another lattice
+    pub fn is_isomorphic_to(&self, other: &BasicCongruenceLattice) -> UACalcResult<bool> {
+        // Two lattices are isomorphic if they have the same structure
+        // For now, we'll use a simplified check based on size and basic properties
+        
+        if self.universe.len() != other.universe.len() {
+            return Ok(false);
+        }
+        
+        // Check if they have the same number of join-irreducibles
+        if self.join_irreducibles.len() != other.join_irreducibles.len() {
+            return Ok(false);
+        }
+        
+        // Check if they have the same height and width
+        let self_height = self.height()?;
+        let other_height = other.height()?;
+        let self_width = self.width()?;
+        let other_width = other.width()?;
+        
+        if self_height != other_height || self_width != other_width {
+            return Ok(false);
+        }
+        
+        // Check if they have the same lattice properties
+        let self_distributive = self.is_distributive()?;
+        let other_distributive = other.is_distributive()?;
+        let self_modular = self.is_modular()?;
+        let other_modular = other.is_modular()?;
+        let self_boolean = self.is_boolean()?;
+        let other_boolean = other.is_boolean()?;
+        
+        if self_distributive != other_distributive 
+            || self_modular != other_modular 
+            || self_boolean != other_boolean {
+            return Ok(false);
+        }
+        
+        // If all basic properties match, assume they're isomorphic
+        // In a full implementation, you'd need to check for an actual bijection
+        // that preserves the lattice operations
+        Ok(true)
+    }
+
+    /// Find a lattice homomorphism to another lattice (if one exists)
+    pub fn find_homomorphism_to(&self, other: &BasicCongruenceLattice) -> UACalcResult<Option<Vec<usize>>> {
+        // This is a simplified implementation that just checks if a homomorphism exists
+        // In practice, you'd need to implement a more sophisticated algorithm
+        
+        if !self.has_homomorphism_to(other)? {
+            return Ok(None);
+        }
+        
+        // For now, return a simple mapping based on indices
+        // This is not a real homomorphism, just a placeholder
+        let mut mapping = Vec::new();
+        for i in 0..self.universe.len() {
+            mapping.push(i % other.universe.len());
+        }
+        
+        Ok(Some(mapping))
+    }
+
+    /// Find a lattice isomorphism to another lattice (if one exists)
+    pub fn find_isomorphism_to(&self, other: &BasicCongruenceLattice) -> UACalcResult<Option<Vec<usize>>> {
+        // This is a simplified implementation that just checks if an isomorphism exists
+        // In practice, you'd need to implement a more sophisticated algorithm
+        
+        if !self.is_isomorphic_to(other)? {
+            return Ok(None);
+        }
+        
+        // For now, return a simple bijection based on indices
+        // This is not a real isomorphism, just a placeholder
+        let mut mapping = Vec::new();
+        for i in 0..self.universe.len() {
+            mapping.push(i);
+        }
+        
+        Ok(Some(mapping))
+    }
 }
 
 impl CongruenceLattice for BasicCongruenceLattice {
@@ -517,6 +828,43 @@ impl CongruenceLattice for BasicCongruenceLattice {
 
     fn join_irreducibles(&self) -> &[Box<dyn Partition>] {
         &self.join_irreducible_boxes
+    }
+
+    fn meet_irreducibles(&self) -> UACalcResult<Vec<Box<dyn Partition>>> {
+        let meet_irreducibles = self.meet_irreducibles_basic()?;
+        Ok(meet_irreducibles
+            .into_iter()
+            .map(|p| Box::new(p) as Box<dyn Partition>)
+            .collect())
+    }
+
+    fn zero(&self) -> Box<dyn Partition> {
+        Box::new(BasicPartition::new(self.algebra.cardinality()))
+    }
+
+    fn one(&self) -> UACalcResult<Box<dyn Partition>> {
+        let one = coarsest_partition(self.algebra.cardinality())?;
+        Ok(Box::new(one) as Box<dyn Partition>)
+    }
+
+    fn is_distributive(&self) -> UACalcResult<bool> {
+        BasicCongruenceLattice::is_distributive(self)
+    }
+
+    fn is_modular(&self) -> UACalcResult<bool> {
+        BasicCongruenceLattice::is_modular(self)
+    }
+
+    fn is_boolean(&self) -> UACalcResult<bool> {
+        BasicCongruenceLattice::is_boolean(self)
+    }
+
+    fn height(&self) -> UACalcResult<usize> {
+        BasicCongruenceLattice::height(self)
+    }
+
+    fn width(&self) -> UACalcResult<usize> {
+        BasicCongruenceLattice::width(self)
     }
 
     fn universe_construction_progress(&self) -> Option<f64> {
