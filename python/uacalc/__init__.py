@@ -21,6 +21,8 @@ try:
     from uacalc_rust import (
         PyAlgebra as Algebra,
         PyOperation as Operation,
+        Operations,
+        OperationSymbol,
         PyPartition as Partition,
         PyBinaryRelation as BinaryRelation,
         PyCongruenceLattice as CongruenceLattice,

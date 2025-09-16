@@ -11,7 +11,7 @@ use uacalc_core::algebra::{Algebra, BasicAlgebra, SmallAlgebra};
 use uacalc_core::binary_relation::{BasicBinaryRelation, BinaryRelation};
 use uacalc_core::conlat::{BasicCongruenceLattice, CongruenceLattice as CongruenceLatticeTrait};
 use uacalc_core::error::UACalcError;
-use uacalc_core::operation::{Operation, OperationSymbol, TableOperation, SimilarityType};
+use uacalc_core::operation::{Operation, Operations, OperationSymbol, TableOperation, SimilarityType};
 use uacalc_core::partition::{BasicPartition, Partition};
 use uacalc_core::product::ProductAlgebra;
 use uacalc_core::quotient::QuotientAlgebra;
@@ -30,6 +30,7 @@ fn uacalc_rust(_py: Python, m: &Bound<PyModule>) -> PyResult<()> {
     m.add_class::<PyOperation>()?;
     m.add_class::<PyOperationSymbol>()?;
     m.add_class::<PySimilarityType>()?;
+    m.add_class::<PyOperations>()?;
     m.add_class::<PyPartition>()?;
     m.add_class::<PyBinaryRelation>()?;
     m.add_class::<PyCongruenceLattice>()?;
@@ -222,6 +223,140 @@ impl PySimilarityType {
 
     fn __hash__(&self) -> i32 {
         self.inner.hash_code()
+    }
+}
+
+/// Python wrapper for Operations utility class
+#[pyclass(name = "Operations")]
+pub struct PyOperations;
+
+#[pymethods]
+impl PyOperations {
+    /// Create a constant operation that always returns the same value
+    #[staticmethod]
+    fn make_constant_int_operation(alg_size: usize, elt: usize) -> PyResult<PyOperation> {
+        let operation = Operations::make_constant_int_operation(alg_size, elt)
+            .map_err(map_uacalc_error)?;
+        Ok(PyOperation {
+            inner: Arc::new(Mutex::new(operation)),
+        })
+    }
+
+    /// Create a constant operation with a custom symbol prefix
+    #[staticmethod]
+    fn make_constant_int_operation_with_prefix(
+        symbol_prefix: &str,
+        alg_size: usize,
+        elt: usize,
+    ) -> PyResult<PyOperation> {
+        let operation = Operations::make_constant_int_operation_with_prefix(symbol_prefix, alg_size, elt)
+            .map_err(map_uacalc_error)?;
+        Ok(PyOperation {
+            inner: Arc::new(Mutex::new(operation)),
+        })
+    }
+
+    /// Create a unary operation from a table
+    #[staticmethod]
+    fn make_int_operation(
+        symbol: &PyOperationSymbol,
+        alg_size: usize,
+        table: Vec<usize>,
+    ) -> PyResult<PyOperation> {
+        let operation = Operations::make_int_operation(symbol.inner.clone(), alg_size, table)
+            .map_err(map_uacalc_error)?;
+        Ok(PyOperation {
+            inner: Arc::new(Mutex::new(operation)),
+        })
+    }
+
+    /// Create a binary operation from a 2D table
+    #[staticmethod]
+    fn make_binary_int_operation(
+        symbol: &PyOperationSymbol,
+        alg_size: usize,
+        table: Vec<Vec<usize>>,
+    ) -> PyResult<PyOperation> {
+        let operation = Operations::make_binary_int_operation(symbol.inner.clone(), alg_size, table)
+            .map_err(map_uacalc_error)?;
+        Ok(PyOperation {
+            inner: Arc::new(Mutex::new(operation)),
+        })
+    }
+
+    /// Create a random operation with the given symbol and set size
+    #[staticmethod]
+    fn make_random_operation(
+        n: usize,
+        op_sym: &PyOperationSymbol,
+    ) -> PyResult<PyOperation> {
+        let operation = Operations::make_random_operation(n, op_sym.inner.clone())
+            .map_err(map_uacalc_error)?;
+        Ok(PyOperation {
+            inner: Arc::new(Mutex::new(operation)),
+        })
+    }
+
+    /// Create a random operation with the given symbol, set size, and seed
+    #[staticmethod]
+    fn make_random_operation_with_seed(
+        n: usize,
+        op_sym: &PyOperationSymbol,
+        seed: Option<u64>,
+    ) -> PyResult<PyOperation> {
+        let operation = Operations::make_random_operation_with_seed(n, op_sym.inner.clone(), seed)
+            .map_err(map_uacalc_error)?;
+        Ok(PyOperation {
+            inner: Arc::new(Mutex::new(operation)),
+        })
+    }
+
+    /// Test if an operation is idempotent
+    #[staticmethod]
+    fn is_idempotent(op: &PyOperation) -> PyResult<bool> {
+        let op_guard = op.inner.lock().unwrap();
+        Operations::is_idempotent(&*op_guard).map_err(map_uacalc_error)
+    }
+
+    /// Test if an operation is commutative (binary operations only)
+    #[staticmethod]
+    fn is_commutative(op: &PyOperation) -> PyResult<bool> {
+        let op_guard = op.inner.lock().unwrap();
+        Operations::is_commutative(&*op_guard).map_err(map_uacalc_error)
+    }
+
+    /// Test if an operation is associative (binary operations only)
+    #[staticmethod]
+    fn is_associative(op: &PyOperation) -> PyResult<bool> {
+        let op_guard = op.inner.lock().unwrap();
+        Operations::is_associative(&*op_guard).map_err(map_uacalc_error)
+    }
+
+    /// Test if an operation is total (always defined)
+    #[staticmethod]
+    fn is_total(op: &PyOperation) -> bool {
+        let op_guard = op.inner.lock().unwrap();
+        Operations::is_total(&*op_guard)
+    }
+
+    /// Test if an operation is totally symmetric (invariant under all permutations)
+    #[staticmethod]
+    fn is_totally_symmetric(op: &PyOperation) -> PyResult<bool> {
+        let op_guard = op.inner.lock().unwrap();
+        Operations::is_totally_symmetric(&*op_guard).map_err(map_uacalc_error)
+    }
+
+    /// Create a list of constant operations for all elements in the algebra
+    #[staticmethod]
+    fn make_constant_int_operations(alg_size: usize) -> PyResult<Vec<PyOperation>> {
+        let operations = Operations::make_constant_int_operations(alg_size)
+            .map_err(map_uacalc_error)?;
+        Ok(operations
+            .into_iter()
+            .map(|op| PyOperation {
+                inner: Arc::new(Mutex::new(op)),
+            })
+            .collect())
     }
 }
 

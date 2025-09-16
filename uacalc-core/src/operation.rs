@@ -991,3 +991,395 @@ impl std::fmt::Display for SimilarityType {
         write!(f, ")")
     }
 }
+
+/// Operations utility class with static factory methods
+/// 
+/// This class provides factory methods for creating operations, similar to the Java
+/// org.uacalc.alg.op.Operations class. It includes methods for creating constant,
+/// unary, binary, and random operations, as well as validation utilities.
+pub struct Operations;
+
+impl Operations {
+    /// Create a constant operation that always returns the same value
+    /// 
+    /// # Arguments
+    /// * `alg_size` - The size of the algebra (universe size)
+    /// * `elt` - The constant value to return
+    /// 
+    /// # Returns
+    /// A `TableOperation` that always returns `elt`
+    pub fn make_constant_int_operation(alg_size: usize, elt: usize) -> UACalcResult<TableOperation> {
+        TableOperation::constant(format!("c{}", elt), elt, alg_size)
+    }
+
+    /// Create a constant operation with a custom symbol prefix
+    /// 
+    /// # Arguments
+    /// * `symbol_prefix` - The prefix for the operation symbol
+    /// * `alg_size` - The size of the algebra (universe size)
+    /// * `elt` - The constant value to return
+    /// 
+    /// # Returns
+    /// A `TableOperation` that always returns `elt`
+    pub fn make_constant_int_operation_with_prefix(
+        symbol_prefix: &str,
+        alg_size: usize,
+        elt: usize,
+    ) -> UACalcResult<TableOperation> {
+        TableOperation::constant(format!("{}{}", symbol_prefix, elt), elt, alg_size)
+    }
+
+    /// Create a unary operation from a table
+    /// 
+    /// # Arguments
+    /// * `symbol` - The operation symbol
+    /// * `alg_size` - The size of the algebra (universe size)
+    /// * `table` - The operation table as a flat array
+    /// 
+    /// # Returns
+    /// A `TableOperation` implementing the unary operation
+    pub fn make_int_operation(
+        symbol: OperationSymbol,
+        alg_size: usize,
+        table: Vec<usize>,
+    ) -> UACalcResult<TableOperation> {
+        // Validate table size
+        let expected_size = alg_size.pow(symbol.arity() as u32);
+        if table.len() != expected_size {
+            return Err(UACalcError::InvalidOperation {
+                message: format!(
+                    "Table size mismatch: expected {}, got {}",
+                    expected_size,
+                    table.len()
+                ),
+            });
+        }
+
+        // Validate all values are within bounds
+        for &value in &table {
+            if value >= alg_size {
+                return Err(UACalcError::IndexOutOfBounds {
+                    index: value,
+                    size: alg_size,
+                });
+            }
+        }
+
+        let mut operation = TableOperation {
+            symbol,
+            table: None,
+            set_size: alg_size,
+        };
+
+        // Build flat table
+        operation.make_table(alg_size)?;
+
+        // Populate the table
+        if let Some(ref mut flat_table) = operation.table {
+            for (i, &value) in table.iter().enumerate() {
+                flat_table.set(i, value)?;
+            }
+        }
+
+        Ok(operation)
+    }
+
+    /// Create a binary operation from a 2D table
+    /// 
+    /// # Arguments
+    /// * `symbol` - The operation symbol
+    /// * `alg_size` - The size of the algebra (universe size)
+    /// * `table` - The operation table as a 2D array
+    /// 
+    /// # Returns
+    /// A `TableOperation` implementing the binary operation
+    pub fn make_binary_int_operation(
+        symbol: OperationSymbol,
+        alg_size: usize,
+        table: Vec<Vec<usize>>,
+    ) -> UACalcResult<TableOperation> {
+        if symbol.arity() != 2 {
+            return Err(UACalcError::InvalidOperation {
+                message: format!("Expected binary operation, got arity {}", symbol.arity()),
+            });
+        }
+
+        // Validate table dimensions
+        if table.len() != alg_size {
+            return Err(UACalcError::InvalidOperation {
+                message: format!(
+                    "Table height mismatch: expected {}, got {}",
+                    alg_size,
+                    table.len()
+                ),
+            });
+        }
+
+        // Flatten the 2D table
+        let mut flat_table = Vec::new();
+        for row in table {
+            if row.len() != alg_size {
+                return Err(UACalcError::InvalidOperation {
+                    message: format!(
+                        "Table width mismatch: expected {}, got {}",
+                        alg_size,
+                        row.len()
+                    ),
+                });
+            }
+            flat_table.extend(row);
+        }
+
+        Self::make_int_operation(symbol, alg_size, flat_table)
+    }
+
+    /// Create a random operation with the given symbol and set size
+    /// 
+    /// # Arguments
+    /// * `n` - The set size
+    /// * `op_sym` - The operation symbol
+    /// 
+    /// # Returns
+    /// A `TableOperation` with random values
+    pub fn make_random_operation(
+        n: usize,
+        op_sym: OperationSymbol,
+    ) -> UACalcResult<TableOperation> {
+        Self::make_random_operation_with_seed(n, op_sym, None)
+    }
+
+    /// Create a random operation with the given symbol, set size, and seed
+    /// 
+    /// # Arguments
+    /// * `n` - The set size
+    /// * `op_sym` - The operation symbol
+    /// * `seed` - Optional seed for reproducible randomness
+    /// 
+    /// # Returns
+    /// A `TableOperation` with random values
+    pub fn make_random_operation_with_seed(
+        n: usize,
+        op_sym: OperationSymbol,
+        seed: Option<u64>,
+    ) -> UACalcResult<TableOperation> {
+        use std::collections::hash_map::DefaultHasher;
+        use std::hash::{Hash, Hasher};
+
+        let arity = op_sym.arity();
+        let table_size = n.pow(arity as u32);
+        let mut values = Vec::with_capacity(table_size);
+
+        // Create a simple pseudo-random number generator
+        let mut rng_state = if let Some(s) = seed {
+            s
+        } else {
+            // Use current time as seed
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap_or_default()
+                .as_nanos() as u64
+        };
+
+        for _ in 0..table_size {
+            // Simple linear congruential generator
+            rng_state = rng_state.wrapping_mul(1103515245).wrapping_add(12345);
+            values.push((rng_state % n as u64) as usize);
+        }
+
+        Self::make_int_operation(op_sym, n, values)
+    }
+
+    /// Test if an operation is idempotent
+    /// 
+    /// # Arguments
+    /// * `op` - The operation to test
+    /// 
+    /// # Returns
+    /// `true` if the operation is idempotent, `false` otherwise
+    pub fn is_idempotent(op: &dyn Operation) -> UACalcResult<bool> {
+        let set_size = op.set_size();
+        let arity = op.arity();
+        
+        if arity == 0 {
+            return Ok(true); // Constant operations are idempotent
+        }
+
+        // For each element, check if f(x, x, ..., x) = x
+        for i in 0..set_size {
+            let args = vec![i; arity];
+            if op.value(&args)? != i {
+                return Ok(false);
+            }
+        }
+        Ok(true)
+    }
+
+    /// Test if an operation is commutative (binary operations only)
+    /// 
+    /// # Arguments
+    /// * `op` - The operation to test
+    /// 
+    /// # Returns
+    /// `true` if the operation is commutative, `false` otherwise
+    pub fn is_commutative(op: &dyn Operation) -> UACalcResult<bool> {
+        if op.arity() != 2 {
+            return Ok(false); // Only binary operations can be commutative
+        }
+
+        let set_size = op.set_size();
+        for i in 0..set_size {
+            for j in 0..set_size {
+                if op.value(&[i, j])? != op.value(&[j, i])? {
+                    return Ok(false);
+                }
+            }
+        }
+        Ok(true)
+    }
+
+    /// Test if an operation is associative (binary operations only)
+    /// 
+    /// # Arguments
+    /// * `op` - The operation to test
+    /// 
+    /// # Returns
+    /// `true` if the operation is associative, `false` otherwise
+    pub fn is_associative(op: &dyn Operation) -> UACalcResult<bool> {
+        if op.arity() != 2 {
+            return Ok(false); // Only binary operations can be associative
+        }
+
+        let set_size = op.set_size();
+        for i in 0..set_size {
+            for j in 0..set_size {
+                for k in 0..set_size {
+                    let left = op.value(&[op.value(&[i, j])?, k])?;
+                    let right = op.value(&[i, op.value(&[j, k])?])?;
+                    if left != right {
+                        return Ok(false);
+                    }
+                }
+            }
+        }
+        Ok(true)
+    }
+
+    /// Test if an operation is total (always defined)
+    /// 
+    /// # Arguments
+    /// * `op` - The operation to test
+    /// 
+    /// # Returns
+    /// `true` if the operation is total, `false` otherwise
+    pub fn is_total(op: &dyn Operation) -> bool {
+        // For table-based operations, they are always total
+        // This method exists for compatibility with Java interface
+        true
+    }
+
+    /// Test if an operation is totally symmetric (invariant under all permutations)
+    /// 
+    /// # Arguments
+    /// * `op` - The operation to test
+    /// 
+    /// # Returns
+    /// `true` if the operation is totally symmetric, `false` otherwise
+    pub fn is_totally_symmetric(op: &dyn Operation) -> UACalcResult<bool> {
+        let arity = op.arity();
+        if arity <= 1 {
+            return Ok(true); // Unary and constant operations are symmetric
+        }
+
+        let set_size = op.set_size();
+        
+        // Generate all non-decreasing sequences of length arity
+        let mut args = vec![0; arity];
+        loop {
+            // Check if this sequence is symmetric under all permutations
+            let value = op.value(&args)?;
+            
+            // Generate all permutations of args and check they give the same result
+            if !Self::check_permutations_symmetric(op, &args, value)? {
+                return Ok(false);
+            }
+            
+            // Move to next non-decreasing sequence
+            if !Self::increment_non_decreasing(&mut args, set_size - 1) {
+                break;
+            }
+        }
+        
+        Ok(true)
+    }
+
+    /// Helper function to check if all permutations of args give the same result
+    fn check_permutations_symmetric(
+        op: &dyn Operation,
+        args: &[usize],
+        expected_value: usize,
+    ) -> UACalcResult<bool> {
+        let mut perm_args = args.to_vec();
+        
+        // Generate all permutations using Heap's algorithm
+        if !Self::heap_permute(op, &mut perm_args, args.len(), expected_value)? {
+            return Ok(false);
+        }
+        
+        Ok(true)
+    }
+
+    /// Heap's algorithm for generating permutations
+    fn heap_permute(
+        op: &dyn Operation,
+        arr: &mut [usize],
+        size: usize,
+        expected_value: usize,
+    ) -> UACalcResult<bool> {
+        if size == 1 {
+            return Ok(op.value(arr)? == expected_value);
+        }
+
+        for i in 0..size {
+            if !Self::heap_permute(op, arr, size - 1, expected_value)? {
+                return Ok(false);
+            }
+
+            if size % 2 == 1 {
+                arr.swap(0, size - 1);
+            } else {
+                arr.swap(i, size - 1);
+            }
+        }
+        Ok(true)
+    }
+
+    /// Helper function to increment a non-decreasing sequence
+    fn increment_non_decreasing(seq: &mut [usize], max_val: usize) -> bool {
+        for i in (0..seq.len()).rev() {
+            if seq[i] < max_val {
+                seq[i] += 1;
+                // Reset all following elements to the same value
+                for j in i + 1..seq.len() {
+                    seq[j] = seq[i];
+                }
+                return true;
+            }
+        }
+        false
+    }
+
+    /// Create a list of constant operations for all elements in the algebra
+    /// 
+    /// # Arguments
+    /// * `alg_size` - The size of the algebra
+    /// 
+    /// # Returns
+    /// A vector of constant operations, one for each element
+    pub fn make_constant_int_operations(alg_size: usize) -> UACalcResult<Vec<TableOperation>> {
+        let mut operations = Vec::with_capacity(alg_size);
+        for i in 0..alg_size {
+            operations.push(Self::make_constant_int_operation(alg_size, i)?);
+        }
+        Ok(operations)
+    }
+}

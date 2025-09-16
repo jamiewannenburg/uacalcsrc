@@ -23,11 +23,11 @@ This document outlines the tasks needed to implement full compatibility between 
 - [x] Test various symbol naming schemes and arities
 
 #### Subtask 1.1.3: `test_operations_compatibility.py`
-- [ ] Remove mock functions and implement `Operations` utility class in Rust/Python
-- [ ] Implement factory methods for operation construction (constant, unary, binary, random)
-- [ ] Implement operation validation and normalization utilities
-- [ ] Implement error handling for unsupported operation types
-- [ ] Test complex factory scenarios and edge cases
+- [x] Remove mock functions and implement `Operations` utility class in Rust/Python
+- [x] Implement factory methods for operation construction (constant, unary, binary, random)
+- [x] Implement operation validation and normalization utilities
+- [x] Implement error handling for unsupported operation types
+- [x] Test complex factory scenarios and edge cases
 
 ## Tier 2: Basic Algebra Structure
 

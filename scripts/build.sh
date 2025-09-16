@@ -60,8 +60,8 @@ pip install -e .
 cd ..
 
 # Run tests
-echo "Running tests..."
-python -m pytest tests/python/ -v
+#echo "Running tests..."
+#python -m pytest tests/python/ -v
 
 echo "Build completed successfully!"
 

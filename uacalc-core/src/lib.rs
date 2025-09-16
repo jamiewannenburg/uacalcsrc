@@ -26,7 +26,7 @@ pub use binary_relation::{
 };
 pub use error::{UACalcError, UACalcResult};
 pub use operation::{
-    FlatOperationTable, FunctionOperation, Operation, OperationSymbol, OperationType,
+    FlatOperationTable, FunctionOperation, Operation, Operations, OperationSymbol, OperationType,
     TableOperation,
 };
 pub use partition::{coarsest_partition, finest_partition, BasicPartition, Partition};
