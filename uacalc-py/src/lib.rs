@@ -721,6 +721,17 @@ impl PyTermArena {
         let arena_guard = self.inner.lock().unwrap();
         arena_guard.num_symbols()
     }
+    
+    fn substitute_term(&self, term_id: TermId, substitutions: std::collections::HashMap<u8, TermId>) -> PyResult<TermId> {
+        let mut arena_guard = self.inner.lock().unwrap();
+        let term = arena_guard.get_term(term_id)
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(format!("Invalid term ID: {}", e)))?;
+        
+        let substituted_id = term.substitute(&mut arena_guard, &substitutions)
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(format!("Substitution failed: {}", e)))?;
+        
+        Ok(substituted_id)
+    }
 
     fn parse_term(&self, expr: String) -> PyResult<PyTerm> {
         let expr = expr.trim();

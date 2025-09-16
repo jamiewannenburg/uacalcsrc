@@ -285,9 +285,25 @@ def substitute_variables(term: Term, substitutions: Dict[int, Union[int, Term]])
     Returns:
         Term with substitutions applied
     """
-    # TODO: Implement variable substitution
-    # For now, return the original term
-    return term
+    # Convert substitutions to the format expected by Rust
+    rust_substitutions = {}
+    for var_index, substitute in substitutions.items():
+        if isinstance(substitute, int):
+            # If substitute is an int, treat it as a variable index
+            substitute_term = term.arena.make_variable(substitute)
+        elif isinstance(substitute, Term):
+            # If substitute is a Term, use its term_id
+            substitute_term = substitute.term_id
+        else:
+            raise ValueError(f"Invalid substitution type: {type(substitute)}")
+        
+        rust_substitutions[var_index] = substitute_term
+    
+    # Call the Rust substitution method
+    substituted_term_id = term.arena.substitute_term(term.term_id, rust_substitutions)
+    
+    # Return a new Term object with the substituted term_id
+    return Term(substituted_term_id, term.arena)
 
 def simplify_term(term: Term, algebra: Algebra) -> Term:
     """Simplify a term using algebra properties.

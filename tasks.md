@@ -56,12 +56,12 @@ This document outlines the tasks needed to implement full compatibility between 
 **Priority: HIGH** - Essential for algebraic expressions and equations
 
 #### Subtask 3.1.1: `test_variable_compatibility.py`
-- [ ] Remove mock functions and implement `Variable` class in Rust/Python
-- [ ] Implement variable creation, naming, and comparison
-- [ ] Implement variable substitution in complex terms
-- [ ] Implement variable scope and binding operations
-- [ ] Implement variable index mapping and conversion
-- [ ] Test various variable naming schemes and substitution scenarios
+- [x] Remove mock functions and implement `Variable` class in Rust/Python
+- [x] Implement variable creation, naming, and comparison
+- [x] Implement variable substitution in complex terms
+- [x] Implement variable scope and binding operations
+- [x] Implement variable index mapping and conversion
+- [x] Test various variable naming schemes and substitution scenarios
 
 #### Subtask 3.1.2: `test_term_compatibility.py`
 - [ ] Remove mock functions and implement `Term` interface in Rust/Python

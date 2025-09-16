@@ -242,6 +242,11 @@ impl TermArena {
         let symbol_id = self.add_symbol(symbol.clone());
         self.make_operation(symbol_id, children)
     }
+    
+    /// Create a term from an existing symbol ID and child terms
+    pub fn make_term_by_id(&mut self, symbol_id: u16, children: &[TermId]) -> TermId {
+        self.make_operation(symbol_id, children)
+    }
 }
 
 impl Default for TermArena {

@@ -99,6 +99,30 @@ impl Term {
         Ok(())
     }
     
+    /// Substitute variables in this term
+    pub fn substitute(&self, arena: &mut TermArena, substitutions: &std::collections::HashMap<u8, TermId>) -> UACalcResult<TermId> {
+        match self {
+            Term::Variable(index) => {
+                if let Some(&substitute_id) = substitutions.get(index) {
+                    Ok(substitute_id)
+                } else {
+                    // Create a new variable term with the same index
+                    Ok(arena.make_variable(*index))
+                }
+            }
+            Term::Operation { symbol_id, children } => {
+                let mut substituted_children = Vec::new();
+                for &child_id in children {
+                    // Clone the child term to avoid borrowing issues
+                    let child = arena.get_term(child_id)?.clone();
+                    let substituted_child = child.substitute(arena, substitutions)?;
+                    substituted_children.push(substituted_child);
+                }
+                Ok(arena.make_term_by_id(*symbol_id, &substituted_children))
+            }
+        }
+    }
+    
     /// Convert to string representation
     pub fn to_string(&self, arena: &TermArena) -> UACalcResult<String> {
         match self {
@@ -274,5 +298,32 @@ mod tests {
         let op_term = arena.get_term(op).unwrap();
         let vars = op_term.variables(&arena).unwrap();
         assert_eq!(vars, vec![0, 1]);
+    }
+    
+    #[test]
+    fn test_term_substitution() {
+        use std::collections::HashMap;
+        
+        let mut arena = TermArena::new();
+        
+        // Create f(x0, x1)
+        let x0 = arena.make_variable(0);
+        let x1 = arena.make_variable(1);
+        let symbol = OperationSymbol::new("f".to_string(), 2);
+        let op = arena.make_term(&symbol, &[x0, x1]);
+        
+        // Create substitution map: x0 -> x2
+        let x2 = arena.make_variable(2);
+        let mut substitutions = HashMap::new();
+        substitutions.insert(0, x2);
+        
+        // Perform substitution
+        let op_term = arena.get_term(op).unwrap().clone();
+        let substituted = op_term.substitute(&mut arena, &substitutions).unwrap();
+        
+        // Check that substitution worked
+        let substituted_term = arena.get_term(substituted).unwrap();
+        let vars = substituted_term.variables(&arena).unwrap();
+        assert_eq!(vars, vec![1, 2]); // x1 and x2
     }
 }

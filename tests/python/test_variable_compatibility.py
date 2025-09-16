@@ -413,18 +413,18 @@ class VariableCompatibilityTest(BaseCompatibilityTest):
             original = parse_term(self.term_arena, original_term)
             substitute = parse_term(self.term_arena, substitute_term)
             
-            # For now, use a simple substitution approach since substitute_variables is not fully implemented
-            # TODO: Implement proper variable substitution when available
-            
-            # Check if the variable to substitute exists in the original term
-            original_variables = term_variables(original)
-            
-            # Convert variable name to index for checking
+            # Convert variable name to index
             var_index = self._variable_name_to_index(var_to_substitute)
-            substitution_occurred = var_index in original_variables
             
-            # For now, return the original term since substitution is not fully implemented
-            result_term_str = original.to_string()
+            # Create substitution map
+            substitutions = {var_index: substitute.term_id}
+            
+            # Perform substitution
+            result_term = substitute_variables(original, substitutions)
+            result_term_str = result_term.to_string()
+            
+            # Check if substitution occurred
+            substitution_occurred = result_term_str != original.to_string()
             
             execution_time = time.time() - start_time
             
@@ -435,7 +435,7 @@ class VariableCompatibilityTest(BaseCompatibilityTest):
                 "variable_name": var_to_substitute,
                 "substitute_term": substitute_term,
                 "result_term": result_term_str,
-                "substitution_occurred": False,  # Not implemented yet
+                "substitution_occurred": substitution_occurred,
                 "execution_time_ms": execution_time * 1000
             }
             
@@ -461,17 +461,24 @@ class VariableCompatibilityTest(BaseCompatibilityTest):
             # Get variables from the term
             variable_indices = term_variables(term)
             
-            # Convert indices back to names (approximate)
+            # Analyze variable occurrences and depths
             variables_info = []
             for var_index in variable_indices:
                 var_name = f"x{var_index}"  # Standard naming
                 
-                # Count occurrences and analyze depth (simplified)
-                # TODO: Implement proper scope analysis when available
+                # Count occurrences by analyzing the term string
+                # This is a simplified approach - in a real implementation,
+                # we would traverse the term tree structure
+                occurrences = term_str.count(var_name)
+                
+                # Estimate max depth by counting parentheses depth around variable
+                # This is also simplified - real implementation would use term tree
+                max_depth = self._estimate_variable_depth(term_str, var_name)
+                
                 variables_info.append({
                     "name": var_name,
-                    "occurrences": 1,  # Simplified - would need proper counting
-                    "max_depth": 1     # Simplified - would need proper depth analysis
+                    "occurrences": occurrences,
+                    "max_depth": max_depth
                 })
             
             execution_time = time.time() - start_time
@@ -494,6 +501,34 @@ class VariableCompatibilityTest(BaseCompatibilityTest):
                 "error": str(e),
                 "error_type": type(e).__name__
             }
+    
+    def _estimate_variable_depth(self, term_str: str, var_name: str) -> int:
+        """Estimate the maximum depth at which a variable appears in a term string"""
+        # Find all occurrences of the variable
+        var_positions = []
+        start = 0
+        while True:
+            pos = term_str.find(var_name, start)
+            if pos == -1:
+                break
+            var_positions.append(pos)
+            start = pos + 1
+        
+        if not var_positions:
+            return 0
+        
+        # For each occurrence, count the depth by counting parentheses
+        max_depth = 0
+        for pos in var_positions:
+            depth = 0
+            for i in range(pos):
+                if term_str[i] == '(':
+                    depth += 1
+                elif term_str[i] == ')':
+                    depth -= 1
+            max_depth = max(max_depth, depth)
+        
+        return max_depth
     
     def _variable_name_to_index(self, var_name: str) -> int:
         """Convert variable name to index (approximate mapping)"""
