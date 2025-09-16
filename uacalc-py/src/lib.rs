@@ -699,6 +699,26 @@ impl PyCongruenceLattice {
         }
     }
 
+    fn height(&self, py: Python) -> PyResult<usize> {
+        self.ensure_universe_built(py, None)?;
+        let inner_guard = self.inner.lock().unwrap();
+        if let Some(ref lattice) = *inner_guard {
+            lattice.height().map_err(map_uacalc_error)
+        } else {
+            Ok(0)
+        }
+    }
+
+    fn width(&self, py: Python) -> PyResult<usize> {
+        self.ensure_universe_built(py, None)?;
+        let inner_guard = self.inner.lock().unwrap();
+        if let Some(ref lattice) = *inner_guard {
+            lattice.width().map_err(map_uacalc_error)
+        } else {
+            Ok(0)
+        }
+    }
+
     fn is_distributive(&self, py: Python) -> PyResult<bool> {
         self.ensure_universe_built(py, None)?;
         let inner_guard = self.inner.lock().unwrap();
@@ -719,6 +739,14 @@ impl PyCongruenceLattice {
         }
     }
 
+    fn elements(&self, py: Python) -> PyResult<Vec<PyPartition>> {
+        self.congruences(py)
+    }
+
+    fn __len__(&self, py: Python) -> PyResult<usize> {
+        self.size(py)
+    }
+
     fn is_boolean(&self, py: Python) -> PyResult<bool> {
         self.ensure_universe_built(py, None)?;
         let inner_guard = self.inner.lock().unwrap();
@@ -726,26 +754,6 @@ impl PyCongruenceLattice {
             lattice.is_boolean().map_err(map_uacalc_error)
         } else {
             Ok(false)
-        }
-    }
-
-    fn height(&self, py: Python) -> PyResult<usize> {
-        self.ensure_universe_built(py, None)?;
-        let inner_guard = self.inner.lock().unwrap();
-        if let Some(ref lattice) = *inner_guard {
-            lattice.height().map_err(map_uacalc_error)
-        } else {
-            Ok(0)
-        }
-    }
-
-    fn width(&self, py: Python) -> PyResult<usize> {
-        self.ensure_universe_built(py, None)?;
-        let inner_guard = self.inner.lock().unwrap();
-        if let Some(ref lattice) = *inner_guard {
-            lattice.width().map_err(map_uacalc_error)
-        } else {
-            Ok(0)
         }
     }
 
@@ -2052,6 +2060,15 @@ impl PyAlgebra {
         let inner = Subalgebra::new(name, parent, &generators)
             .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
         Ok(PySubalgebra { inner })
+    }
+
+    fn congruence_lattice(&self) -> PyResult<PyCongruenceLattice> {
+        Ok(PyCongruenceLattice::new(self.clone()))
+    }
+
+    fn cg(&self, py: Python, a: usize, b: usize) -> PyResult<PyPartition> {
+        let con_lattice = PyCongruenceLattice::new(self.clone());
+        con_lattice.principal_congruence(py, a, b)
     }
 }
 
