@@ -1,0 +1,290 @@
+{
+  "summary": {
+    "total_java_classes": 128,
+    "covered_java_classes": 37,
+    "total_test_classes": 38,
+    "coverage_percentage": 28.90625,
+    "timestamp": "/home/jamie/Documents/uacalcsrc"
+  },
+  "package_coverage": {
+    "org.uacalc.alg": 83.33333333333334,
+    "org.uacalc.alg.conlat": 62.5,
+    "org.uacalc.alg.op": 50.0,
+    "org.uacalc.terms": 66.66666666666666,
+    "org.uacalc.lat": 66.66666666666666,
+    "org.uacalc.eq": 100.0,
+    "org.uacalc.group": 100.0,
+    "org.uacalc.io": 42.857142857142854,
+    "org.uacalc.util": 50.0
+  },
+  "missing_tests": [
+    "org.uacalc.alg: Core algebra classes and interfaces",
+    "org.uacalc.alg.conlat: Congruence lattice and related structures",
+    "org.uacalc.alg.op: Operation interfaces and implementations",
+    "org.uacalc.terms: Term parsing and evaluation",
+    "org.uacalc.io: Input/output operations"
+  ],
+  "redundant_tests": [
+    "Test targets unknown package: unknown"
+  ],
+  "recommendations": [
+    "Improve coverage for org.uacalc.alg.conlat: Congruence lattice and related structures",
+    "Improve coverage for org.uacalc.alg.op: Operation interfaces and implementations",
+    "Improve coverage for org.uacalc.terms: Term parsing and evaluation",
+    "Improve coverage for org.uacalc.lat: Lattice structures and operations",
+    "Improve coverage for org.uacalc.io: Input/output operations",
+    "Improve coverage for org.uacalc.util: Utility classes and helper functions",
+    "Overall coverage is below 90%. Consider adding more test classes.",
+    "Address 5 missing test areas for critical functionality."
+  ],
+  "detailed_mapping": {
+    "org.uacalc.alg": {
+      "description": "Core algebra classes and interfaces",
+      "priority": "high",
+      "java_classes_found": 12,
+      "test_classes_found": 10,
+      "coverage_percentage": 83.33333333333334,
+      "java_classes": [
+        "represents",
+        "Algebra",
+        "to",
+        "AlgebraFromMinimalSets",
+        "Homomorphism",
+        "with",
+        "PowerAglebra",
+        "MaltsevDecompositionIterator",
+        "AlgebraWithGeneratingVector",
+        "for",
+        "PolinLikeAlgebra",
+        "SmallAlgebra"
+      ],
+      "test_classes": [
+        "SmallAlgebraCompatibilityTest",
+        "HomomorphismCompatibilityTest",
+        "AlgebraCompatibilityTest",
+        "AlgebrasCompatibilityTest",
+        "FreeAlgebraCompatibilityTest",
+        "ProductAlgebraCompatibilityTest",
+        "BasicAlgebraCompatibilityTest",
+        "QuotientAlgebraCompatibilityTest",
+        "SubalgebraCompatibilityTest",
+        "MalcevCompatibilityTest"
+      ],
+      "critical_classes": [
+        "Algebra",
+        "BasicAlgebra",
+        "SmallAlgebra",
+        "Algebras",
+        "FreeAlgebra",
+        "Homomorphism",
+        "Malcev",
+        "ProductAlgebra",
+        "QuotientAlgebra",
+        "Subalgebra"
+      ]
+    },
+    "org.uacalc.alg.conlat": {
+      "description": "Congruence lattice and related structures",
+      "priority": "high",
+      "java_classes_found": 8,
+      "test_classes_found": 5,
+      "coverage_percentage": 62.5,
+      "java_classes": [
+        "BinaryRelation",
+        "CentralityData",
+        "Polymorphisms",
+        "contains",
+        "implement",
+        "BasicBinaryRelation",
+        "specifies",
+        "to"
+      ],
+      "test_classes": [
+        "CongruenceLatticeCompatibilityTest",
+        "BinaryRelationCompatibilityTest",
+        "PolymorphismsCompatibilityTest",
+        "PartitionCompatibilityTest",
+        "TypeFinderCompatibilityTest"
+      ],
+      "critical_classes": [
+        "CongruenceLattice",
+        "Partition",
+        "BinaryRelation",
+        "Polymorphisms",
+        "TypeFinder"
+      ]
+    },
+    "org.uacalc.alg.op": {
+      "description": "Operation interfaces and implementations",
+      "priority": "high",
+      "java_classes_found": 8,
+      "test_classes_found": 4,
+      "coverage_percentage": 50.0,
+      "java_classes": [
+        "SimilarityType",
+        "specifies",
+        "is",
+        "represents",
+        "implements",
+        "with",
+        "for",
+        "OperationSymbol"
+      ],
+      "test_classes": [
+        "TermOperationCompatibilityTest",
+        "OperationSymbolCompatibilityTest",
+        "OperationsCompatibilityTest",
+        "OperationCompatibilityTest"
+      ],
+      "critical_classes": [
+        "Operation",
+        "Operations",
+        "OperationSymbol",
+        "TermOperation"
+      ]
+    },
+    "org.uacalc.terms": {
+      "description": "Term parsing and evaluation",
+      "priority": "high",
+      "java_classes_found": 6,
+      "test_classes_found": 4,
+      "coverage_percentage": 66.66666666666666,
+      "java_classes": [
+        "Variable",
+        "VariableImp",
+        "Taylor",
+        "of",
+        "NonVariableTerm",
+        "Term"
+      ],
+      "test_classes": [
+        "TaylorCompatibilityTest",
+        "TermsCompatibilityTest",
+        "TermCompatibilityTest",
+        "VariableCompatibilityTest"
+      ],
+      "critical_classes": [
+        "Term",
+        "Terms",
+        "Variable",
+        "Taylor"
+      ]
+    },
+    "org.uacalc.lat": {
+      "description": "Lattice structures and operations",
+      "priority": "medium",
+      "java_classes_found": 6,
+      "test_classes_found": 4,
+      "coverage_percentage": 66.66666666666666,
+      "java_classes": [
+        "Order",
+        "BasicLattice",
+        "Lattices",
+        "SmallLattice",
+        "Lattice",
+        "OrderedSets"
+      ],
+      "test_classes": [
+        "LatticesCompatibilityTest",
+        "BasicLatticeCompatibilityTest",
+        "LatticeCompatibilityTest",
+        "OrderCompatibilityTest"
+      ],
+      "critical_classes": [
+        "Lattice",
+        "BasicLattice",
+        "Order",
+        "Lattices"
+      ]
+    },
+    "org.uacalc.eq": {
+      "description": "Equation representation and operations",
+      "priority": "medium",
+      "java_classes_found": 3,
+      "test_classes_found": 3,
+      "coverage_percentage": 100.0,
+      "java_classes": [
+        "of",
+        "Presentation",
+        "to"
+      ],
+      "test_classes": [
+        "EquationCompatibilityTest",
+        "PresentationCompatibilityTest",
+        "EquationsCompatibilityTest"
+      ],
+      "critical_classes": [
+        "Equation",
+        "Equations",
+        "Presentation"
+      ]
+    },
+    "org.uacalc.group": {
+      "description": "Group theory operations",
+      "priority": "medium",
+      "java_classes_found": 1,
+      "test_classes_found": 1,
+      "coverage_percentage": 100.0,
+      "java_classes": [
+        "represents"
+      ],
+      "test_classes": [
+        "PermutationGroupCompatibilityTest"
+      ],
+      "critical_classes": [
+        "PermutationGroup"
+      ]
+    },
+    "org.uacalc.io": {
+      "description": "Input/output operations",
+      "priority": "high",
+      "java_classes_found": 7,
+      "test_classes_found": 3,
+      "coverage_percentage": 42.857142857142854,
+      "java_classes": [
+        "AlgebraReader",
+        "BadAlgebraFileException",
+        "JSONChannel",
+        "Mace4Reader",
+        "ExtFileFilter",
+        "AlgebraWriter",
+        "AlgebraIO"
+      ],
+      "test_classes": [
+        "AlgebraIOCompatibilityTest",
+        "AlgebraReaderCompatibilityTest",
+        "AlgebraWriterCompatibilityTest"
+      ],
+      "critical_classes": [
+        "AlgebraIO",
+        "AlgebraReader",
+        "AlgebraWriter"
+      ]
+    },
+    "org.uacalc.util": {
+      "description": "Utility classes and helper functions",
+      "priority": "low",
+      "java_classes_found": 6,
+      "test_classes_found": 3,
+      "coverage_percentage": 50.0,
+      "java_classes": [
+        "ArrayString",
+        "is",
+        "SequenceGenerator",
+        "ArrayIncrementor",
+        "implements",
+        "Horner"
+      ],
+      "test_classes": [
+        "HornerCompatibilityTest",
+        "IntArrayCompatibilityTest",
+        "SequenceGeneratorCompatibilityTest"
+      ],
+      "critical_classes": [
+        "IntArray",
+        "Horner",
+        "SequenceGenerator"
+      ]
+    }
+  }
+}
