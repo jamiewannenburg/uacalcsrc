@@ -35,9 +35,9 @@ This document outlines the tasks needed to implement full compatibility between 
 **Priority: HIGH** - Core algebra implementations
 
 #### Subtask 2.1.1: `test_basic_algebra_compatibility.py`
-- [ ] Remove mock functions and implement `BasicAlgebra` class in Rust/Python
-- [ ] Implement algebra construction from operations and universe
-- [ ] Implement operation addition and removal functionality
+- [x] Remove mock functions and implement `BasicAlgebra` class in Rust/Python
+- [x] Implement algebra construction from operations and universe
+- [x] Implement operation addition and removal functionality
 - [ ] Implement algebra cloning and copying operations
 - [ ] Implement universe consistency checking
 - [ ] Test operation table structure and similarity type computation

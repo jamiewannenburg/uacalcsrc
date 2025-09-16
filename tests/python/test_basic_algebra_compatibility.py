@@ -42,7 +42,7 @@ class BasicAlgebraCompatibilityTest(BaseCompatibilityTest):
                 # Extract construction properties
                 rust_construction = {
                     "cardinality": algebra.cardinality,
-                    "operation_count": len(algebra.operations),
+                    "operation_count": len(algebra.operations()),
                     "universe_size": len(list(algebra.universe)),
                     "is_basic_algebra": True  # Assuming our implementation uses BasicAlgebra
                 }
@@ -85,13 +85,13 @@ class BasicAlgebraCompatibilityTest(BaseCompatibilityTest):
                 
                 # Extract operation properties
                 rust_op_properties = []
-                for i, operation in enumerate(algebra.operations):
+                for i, operation in enumerate(algebra.operations()):
                     op_props = {
                         "index": i,
-                        "arity": operation.arity,
+                        "arity": operation.arity(),
                         "symbol": str(operation.symbol),
                         "is_idempotent": self._check_idempotent(operation, algebra.cardinality),
-                        "is_commutative": self._check_commutative(operation, algebra.cardinality) if operation.arity == 2 else None
+                        "is_commutative": self._check_commutative_safe(operation, algebra.cardinality) if operation.arity() == 2 else None
                     }
                     rust_op_properties.append(op_props)
                 
@@ -117,14 +117,17 @@ class BasicAlgebraCompatibilityTest(BaseCompatibilityTest):
                         "arity": arity,
                         "symbol": symbol,
                         "is_idempotent": idempotent_flags.get(symbol, False),
-                        "is_commutative": commutative_flags.get(symbol) if arity == 2 else None
+                        "is_commutative": commutative_flags.get(symbol, None) if arity == 2 else None
                     }
                     java_op_properties.append(op_props)
                 
-                # Compare results
+                # Compare results - structure as dictionaries for comparison
+                rust_ops_dict = {f"op_{i}": props for i, props in enumerate(rust_op_properties)}
+                java_ops_dict = {f"op_{i}": props for i, props in enumerate(java_op_properties)}
+                
                 result = self._compare_results(
-                    rust_op_properties,
-                    java_op_properties,
+                    rust_ops_dict,
+                    java_ops_dict,
                     "operation_properties",
                     algebra_file.name
                 )
@@ -190,25 +193,25 @@ class BasicAlgebraCompatibilityTest(BaseCompatibilityTest):
                 # Load algebra in Rust/Python
                 algebra = self._load_test_algebra(algebra_file)
                 
-                if len(algebra.operations) == 0:
+                if len(algebra.operations()) == 0:
                     self.skipTest(f"No operations in {algebra_file.name}")
                 
                 # Test first operation's table structure
-                operation = algebra.operations[0]
+                operation = algebra.operations()[0]
                 
                 # Extract operation table properties
                 rust_table_props = {
-                    "arity": operation.arity,
+                    "arity": operation.arity(),
                     "domain_size": algebra.cardinality,
-                    "table_size": algebra.cardinality ** operation.arity if operation.arity > 0 else 1,
+                    "table_size": algebra.cardinality ** operation.arity() if operation.arity() > 0 else 1,
                     "codomain_valid": True  # All outputs should be in universe
                 }
                 
                 # Verify codomain validity for small operations
-                if operation.arity <= 2 and algebra.cardinality <= 4:
+                if operation.arity() <= 2 and algebra.cardinality <= 4:
                     try:
                         import itertools
-                        for inputs in itertools.product(range(algebra.cardinality), repeat=operation.arity):
+                        for inputs in itertools.product(range(algebra.cardinality), repeat=operation.arity()):
                             result = operation.value(list(inputs))
                             if result not in range(algebra.cardinality):
                                 rust_table_props["codomain_valid"] = False
@@ -261,7 +264,7 @@ class BasicAlgebraCompatibilityTest(BaseCompatibilityTest):
                 algebra = self._load_test_algebra(algebra_file)
                 
                 # Compute similarity type
-                arities = [op.arity for op in algebra.operations]
+                arities = [op.arity() for op in algebra.operations()]
                 rust_similarity_type = {
                     "arity_signature": sorted(arities),
                     "operation_count": len(arities),
@@ -316,7 +319,7 @@ class BasicAlgebraCompatibilityTest(BaseCompatibilityTest):
                 rust_repr = {
                     "name": getattr(algebra, 'name', algebra_file.stem),
                     "cardinality_str": str(algebra.cardinality),
-                    "operation_count_str": str(len(algebra.operations)),
+                    "operation_count_str": str(len(algebra.operations())),
                     "has_name": hasattr(algebra, 'name') and algebra.name is not None
                 }
                 
@@ -365,7 +368,7 @@ class BasicAlgebraCompatibilityTest(BaseCompatibilityTest):
     
     def _check_idempotent(self, operation, cardinality: int) -> bool:
         """Check if operation is idempotent (for small algebras only)"""
-        if operation.arity != 1 or cardinality > 6:
+        if operation.arity() != 1 or cardinality > 6:
             return False  # Only check unary operations on small algebras
         
         try:
@@ -378,7 +381,7 @@ class BasicAlgebraCompatibilityTest(BaseCompatibilityTest):
     
     def _check_commutative(self, operation, cardinality: int) -> bool:
         """Check if binary operation is commutative (for small algebras only)"""
-        if operation.arity != 2 or cardinality > 4:
+        if operation.arity() != 2 or cardinality > 4:
             return False  # Only check binary operations on very small algebras
         
         try:
@@ -389,6 +392,20 @@ class BasicAlgebraCompatibilityTest(BaseCompatibilityTest):
             return True
         except Exception:
             return False
+    
+    def _check_commutative_safe(self, operation, cardinality: int) -> bool:
+        """Check if binary operation is commutative, returning None if unable to determine"""
+        if operation.arity() != 2 or cardinality > 4:
+            return None  # Return None for non-binary operations or large algebras
+        
+        try:
+            for i in range(cardinality):
+                for j in range(cardinality):
+                    if operation.value([i, j]) != operation.value([j, i]):
+                        return False
+            return True
+        except Exception:
+            return None  # Return None if we can't determine
 
 
 if __name__ == '__main__':
