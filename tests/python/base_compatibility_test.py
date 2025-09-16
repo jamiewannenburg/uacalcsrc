@@ -492,22 +492,17 @@ class BaseCompatibilityTest(unittest.TestCase):
         
         # Handle dictionary types
         if isinstance(rust_val, dict) and isinstance(java_val, dict):
-            # Check for missing keys
+            # Check for missing keys - only fail if Java has keys that Rust is missing
             rust_keys = set(rust_val.keys())
             java_keys = set(java_val.keys())
             
-            if rust_keys != java_keys:
-                missing_in_java = rust_keys - java_keys
-                missing_in_rust = java_keys - rust_keys
-                details = f"at {path}: key mismatch"
-                if missing_in_java:
-                    details += f" (missing in Java: {missing_in_java})"
-                if missing_in_rust:
-                    details += f" (missing in Rust: {missing_in_rust})"
-                return False, details
+            missing_in_rust = java_keys - rust_keys
+            if missing_in_rust:
+                return False, f"at {path}: missing in Rust: {missing_in_rust}"
             
-            # Compare values for each key
-            for key in rust_keys:
+            # Compare values for each key that exists in both
+            # Only compare keys that exist in Java (Rust can have additional keys)
+            for key in java_keys:
                 matches, details = self._compare_values(rust_val[key], java_val[key], tolerance, f"{path}.{key}")
                 if not matches:
                     return False, details

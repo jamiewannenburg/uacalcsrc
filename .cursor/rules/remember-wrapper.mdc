@@ -1,0 +1,5 @@
+---
+description: Remember that there are two uacalc python files. The one is called uacalc_rust, the other just uacalc.
+globs: *.py
+alwaysApply: true
+---

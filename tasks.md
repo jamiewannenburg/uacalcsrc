@@ -137,9 +137,9 @@ This document outlines the tasks needed to implement full compatibility between 
 - [x] Test congruence lattice properties
 
 #### Subtask 6.1.2: `test_subalgebra_compatibility.py`
-- [ ] Remove mock functions and implement subalgebra operations
-- [ ] Implement subalgebra detection and construction
-- [ ] Test subalgebra properties and relationships
+- [x] Remove mock functions and implement subalgebra operations
+- [x] Implement subalgebra detection and construction
+- [x] Test subalgebra properties and relationships
 
 #### Subtask 6.1.3: `test_quotient_algebra_compatibility.py`
 - [ ] Remove mock functions and implement quotient algebra construction
