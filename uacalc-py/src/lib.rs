@@ -49,6 +49,12 @@ fn uacalc_rust(_py: Python, m: &Bound<PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(create_progress_reporter, m)?)?;
     m.add_function(wrap_pyfunction!(parse_term, m)?)?;
     m.add_function(wrap_pyfunction!(eval_term, m)?)?;
+    m.add_function(wrap_pyfunction!(term_variables, m)?)?;
+    m.add_function(wrap_pyfunction!(term_operations, m)?)?;
+    m.add_function(wrap_pyfunction!(validate_term_against_algebra, m)?)?;
+    m.add_function(wrap_pyfunction!(variable, m)?)?;
+    m.add_function(wrap_pyfunction!(constant, m)?)?;
+    m.add_function(wrap_pyfunction!(operation, m)?)?;
     m.add_function(wrap_pyfunction!(rust_create_product_algebra, m)?)?;
     m.add_function(wrap_pyfunction!(rust_create_quotient_algebra, m)?)?;
     m.add_function(wrap_pyfunction!(rust_create_subalgebra, m)?)?;
@@ -724,11 +730,47 @@ impl PyTermArena {
     
     fn substitute_term(&self, term_id: TermId, substitutions: std::collections::HashMap<u8, TermId>) -> PyResult<TermId> {
         let mut arena_guard = self.inner.lock().unwrap();
+        
+        // Get the term and clone necessary data to avoid borrowing issues
         let term = arena_guard.get_term(term_id)
             .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(format!("Invalid term ID: {}", e)))?;
         
-        let substituted_id = term.substitute(&mut arena_guard, &substitutions)
-            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(format!("Substitution failed: {}", e)))?;
+        // Clone the term data to avoid borrowing conflicts
+        let term_data = if let uacalc_core::term::Term::Operation { symbol_id, children } = term {
+            let symbol = arena_guard.get_symbol(*symbol_id)
+                .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(format!("Symbol error: {}", e)))?
+                .name().to_string();
+            let children_vec: Vec<TermId> = children.iter().cloned().collect();
+            Some((symbol, children_vec))
+        } else {
+            None
+        };
+        
+        // Now we can drop the reference to term and use the arena mutably
+        drop(term);
+        
+        // Perform substitution
+        let substituted_id = if let Some((symbol, children)) = term_data {
+            // For operation terms, we need to substitute in children first
+            let mut substituted_children = Vec::new();
+            for child_id in children {
+                if let Some(&var_index) = substitutions.get(&(child_id as u8)) {
+                    substituted_children.push(var_index as usize);
+                } else {
+                    substituted_children.push(child_id);
+                }
+            }
+            // Create a simple operation symbol and use the core arena method
+            let symbol_obj = OperationSymbol::new(symbol, substituted_children.len());
+            arena_guard.make_term(&symbol_obj, &substituted_children)
+        } else {
+            // For variable terms, check if we need to substitute
+            if let Some(&substituted_id) = substitutions.get(&(term_id as u8)) {
+                substituted_id as usize
+            } else {
+                term_id
+            }
+        };
         
         Ok(substituted_id)
     }
@@ -2055,6 +2097,118 @@ fn eval_term(term: &PyTerm, algebra: &PyAlgebra, assignment: &Bound<PyDict>) -> 
         .eval_term(term.id, &term.arena.inner.lock().unwrap())
         .map_err(map_uacalc_error)?;
     Ok(result)
+}
+
+/// Helper function to get variables from a term
+#[pyfunction]
+fn term_variables(term: &PyTerm) -> PyResult<Vec<u8>> {
+    Python::with_gil(|py| term.variables(py))
+}
+
+/// Helper function to get operation symbols from a term
+#[pyfunction]
+fn term_operations(term: &PyTerm) -> PyResult<Vec<String>> {
+    let arena_guard = term.arena.inner.lock().unwrap();
+    let mut operations = Vec::new();
+    
+    // Recursively collect operation symbols from the term
+    fn collect_operations(term_id: TermId, arena: &TermArena, operations: &mut Vec<String>) {
+        if let Ok(term) = arena.get_term(term_id) {
+            if let uacalc_core::term::Term::Operation { symbol_id, children } = term {
+                // Get symbol from arena using symbol_id
+                if let Ok(symbol) = arena.get_symbol(*symbol_id) {
+                    let symbol_str = symbol.name().to_string();
+                    if !operations.contains(&symbol_str) {
+                        operations.push(symbol_str);
+                    }
+                }
+                
+                // Recursively check children
+                for &child_id in children {
+                    collect_operations(child_id, arena, operations);
+                }
+            }
+        }
+    }
+    
+    collect_operations(term.id, &arena_guard, &mut operations);
+    Ok(operations)
+}
+
+/// Helper function to validate a term against an algebra
+#[pyfunction]
+fn validate_term_against_algebra(term: &PyTerm, algebra: &PyAlgebra) -> PyResult<(bool, Option<String>)> {
+    // Get variables first to avoid deadlock
+    let variables = Python::with_gil(|py| term.variables(py))?;
+    
+    // Check variable bounds first
+    if let Some(&max_var) = variables.iter().max() {
+        if max_var as usize >= algebra.cardinality() {
+            return Ok((false, Some(format!(
+                "Variable index {} exceeds algebra cardinality {}", 
+                max_var, 
+                algebra.cardinality()
+            ))));
+        }
+    }
+    
+    // Now check operations
+    let arena_guard = term.arena.inner.lock().unwrap();
+    
+    // Check that all operation symbols exist in the algebra
+    let mut operations = Vec::new();
+    fn collect_operations(term_id: TermId, arena: &TermArena, operations: &mut Vec<String>) {
+        if let Ok(term) = arena.get_term(term_id) {
+            if let uacalc_core::term::Term::Operation { symbol_id, children } = term {
+                // Get symbol from arena using symbol_id
+                if let Ok(symbol) = arena.get_symbol(*symbol_id) {
+                    let symbol_str = symbol.name().to_string();
+                    if !operations.contains(&symbol_str) {
+                        operations.push(symbol_str);
+                    }
+                }
+                
+                // Recursively check children
+                for &child_id in children {
+                    collect_operations(child_id, arena, operations);
+                }
+            }
+        }
+    }
+    
+    collect_operations(term.id, &arena_guard, &mut operations);
+    
+    // Check if all operations exist in the algebra
+    for op_symbol in &operations {
+        if !algebra.operations().iter().any(|op| op.symbol().unwrap_or_default() == *op_symbol) {
+            return Ok((false, Some(format!("Operation '{}' not found in algebra", op_symbol))));
+        }
+    }
+    
+    Ok((true, None))
+}
+
+/// Helper function to create a variable term
+#[pyfunction]
+fn variable(index: u8, arena: &PyTermArena) -> PyResult<PyTerm> {
+    arena.make_variable(index)
+}
+
+/// Helper function to create a constant term
+#[pyfunction]
+fn constant(symbol: String, arena: &PyTermArena) -> PyResult<PyTerm> {
+    arena.make_term(symbol, vec![])
+}
+
+/// Helper function to create an operation term
+#[pyfunction]
+fn operation(symbol: String, args: &Bound<PyList>, arena: &PyTermArena) -> PyResult<PyTerm> {
+    let mut term_args = Vec::new();
+    for arg in args.iter() {
+        let py_term: PyRef<PyTerm> = arg.extract()?;
+        term_args.push(py_term.clone());
+    }
+    arena.make_term(symbol, term_args)
 }
 
 /// Helper function to create a product algebra

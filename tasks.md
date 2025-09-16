@@ -64,12 +64,12 @@ This document outlines the tasks needed to implement full compatibility between 
 - [x] Test various variable naming schemes and substitution scenarios
 
 #### Subtask 3.1.2: `test_term_compatibility.py`
-- [ ] Remove mock functions and implement `Term` interface in Rust/Python
-- [ ] Implement term parsing from strings with complex nested structures
-- [ ] Implement term evaluation with variable assignments
-- [ ] Implement term validation against algebra operation signatures
-- [ ] Implement term substitution and equivalence checking
-- [ ] Test parsing error handling and complex nested structures
+- [x] Remove mock functions and implement `Term` interface in Rust/Python
+- [x] Implement term parsing from strings with complex nested structures
+- [x] Implement term evaluation with variable assignments
+- [x] Implement term validation against algebra operation signatures
+- [x] Implement term substitution and equivalence checking
+- [x] Test parsing error handling and complex nested structures
 
 #### Subtask 3.1.3: `test_equation_compatibility.py`
 - [ ] Remove mock functions and implement `Equation` class in Rust/Python

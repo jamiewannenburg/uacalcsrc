@@ -24,7 +24,7 @@ try:
     from uacalc.terms import (
         TermParser, TermEvaluator, parse_term, eval_term, 
         create_term_arena, term_variables, term_operations,
-        validate_term_against_algebra, variable, constant, operation
+        validate_term_against_algebra, create_variable, create_constant, create_operation
     )
     UACALC_AVAILABLE = True
 except ImportError:

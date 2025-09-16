@@ -42,6 +42,12 @@ try:
         create_progress_reporter,
         parse_term,
         eval_term,
+        term_variables,
+        term_operations,
+        validate_term_against_algebra,
+        variable,
+        constant,
+        operation,
         rust_create_product_algebra,
         rust_create_quotient_algebra,
     )

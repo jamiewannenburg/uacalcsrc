@@ -12,7 +12,8 @@ import warnings
 
 from . import (
     Term, TermArena, Algebra, Operation, 
-    create_term_arena, parse_term, eval_term, HAS_NUMPY
+    create_term_arena, parse_term, eval_term, term_variables, term_operations,
+    validate_term_against_algebra, variable, constant, operation, HAS_NUMPY
 )
 
 class TermParser:
@@ -330,52 +331,9 @@ def term_depth(term: Term) -> int:
     """
     return term.depth()
 
-def term_variables(term: Term) -> List[int]:
-    """Get all variables used in a term.
-    
-    Args:
-        term: Term to analyze
-        
-    Returns:
-        List of variable indices
-    """
-    return term.variables()
+# term_variables is now imported from the Rust module
 
-def term_operations(term: Term) -> List[str]:
-    """Get all operation symbols used in a term.
-    
-    Args:
-        term: Term to analyze
-        
-    Returns:
-        List of operation symbols
-    """
-    operations = []
-    
-    def collect_operations(t: Term):
-        if t.is_operation():
-            # Get the operation symbol from the term
-            # This requires accessing the symbol from the Rust implementation
-            try:
-                # Try to get symbol from term string representation
-                term_str = t.to_string()
-                if '(' in term_str:
-                    symbol = term_str[:term_str.find('(')]
-                    if symbol not in operations:
-                        operations.append(symbol)
-            except:
-                pass
-            
-            # Recursively check children
-            for i in range(t.arity()):
-                try:
-                    child = t.child(i)
-                    collect_operations(child)
-                except:
-                    pass
-    
-    collect_operations(term)
-    return operations
+# term_operations is now imported from the Rust module
 
 def terms_equal(term1: Term, term2: Term, algebra: Algebra) -> bool:
     """Check if two terms are semantically equal in an algebra.
@@ -393,7 +351,7 @@ def terms_equal(term1: Term, term2: Term, algebra: Algebra) -> bool:
     return term1.to_string() == term2.to_string()
 
 # Factory functions for term construction
-def variable(index: Union[int, str], arena: Optional[TermArena] = None) -> Term:
+def create_variable(index: Union[int, str], arena: Optional[TermArena] = None) -> Term:
     """Create a variable term.
     
     Args:
@@ -428,9 +386,9 @@ def variable(index: Union[int, str], arena: Optional[TermArena] = None) -> Term:
             # For non-x variables, use hash-based mapping
             index = hash(index) % 255  # Use modulo to fit in u8
     
-    return arena.make_variable(index)
+    return variable(index, arena)
 
-def constant(symbol: str, arena: Optional[TermArena] = None) -> Term:
+def create_constant(symbol: str, arena: Optional[TermArena] = None) -> Term:
     """Create a constant term.
     
     Args:
@@ -442,9 +400,9 @@ def constant(symbol: str, arena: Optional[TermArena] = None) -> Term:
     """
     if arena is None:
         arena = create_term_arena()
-    return arena.make_term(symbol, [])
+    return constant(symbol, arena)
 
-def operation(symbol: str, *args: Term, arena: Optional[TermArena] = None) -> Term:
+def create_operation(symbol: str, *args: Term, arena: Optional[TermArena] = None) -> Term:
     """Create an operation term.
     
     Args:
@@ -457,7 +415,7 @@ def operation(symbol: str, *args: Term, arena: Optional[TermArena] = None) -> Te
     """
     if arena is None:
         arena = create_term_arena()
-    return arena.make_term(symbol, list(args))
+    return operation(symbol, list(args), arena)
 
 def from_operation_table(table: List[List[int]], var_names: Optional[List[str]] = None) -> Term:
     """Create a term from an operation table (reverse engineering).
@@ -548,36 +506,7 @@ def term_to_operation(term: Term, symbol: str, algebra: Algebra) -> Operation:
     from . import create_operation
     return create_operation(symbol, arity, table)
 
-def validate_term_against_algebra(term: Term, algebra: Algebra) -> Tuple[bool, Optional[str]]:
-    """Validate that a term is compatible with an algebra.
-    
-    Args:
-        term: Term to validate
-        algebra: Algebra to validate against
-        
-    Returns:
-        Tuple of (is_valid, error_message)
-    """
-    try:
-        # Check that all operation symbols exist in the algebra
-        operations = term_operations(term)
-        algebra_operations = [op.symbol for op in algebra.operations()]
-        
-        for op_symbol in operations:
-            if op_symbol not in algebra_operations:
-                return False, f"Operation '{op_symbol}' not found in algebra"
-        
-        # Check variable bounds
-        variables = term_variables(term)
-        if variables:
-            max_var = max(variables)
-            if max_var >= algebra.cardinality:
-                return False, f"Variable index {max_var} exceeds algebra cardinality {algebra.cardinality}"
-        
-        return True, None
-        
-    except Exception as e:
-        return False, str(e)
+# validate_term_against_algebra is now imported from the Rust module
 
 # NumPy integration for efficient batch evaluation
 if HAS_NUMPY:
