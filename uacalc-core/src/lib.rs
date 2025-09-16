@@ -8,6 +8,8 @@ pub mod binary_relation;
 #[cfg(feature = "conlat")]
 pub mod conlat;
 pub mod error;
+#[cfg(feature = "term-eval")]
+pub mod equation;
 pub mod operation;
 pub mod partition;
 pub mod product;
@@ -51,6 +53,8 @@ pub use conlat::{
 pub use taylor::{IntArray, Taylor, TaylorSpec};
 #[cfg(feature = "term-eval")]
 pub use term::{eval_term, eval_term_int, term_to_table, EvaluationContext, Term, TermArena};
+#[cfg(feature = "term-eval")]
+pub use equation::{Equation, EquationComplexity, EquationProperties, ComplexityLevel};
 
 /// Re-export commonly used types
 pub mod prelude {
@@ -78,7 +82,7 @@ pub mod prelude {
     };
 
     #[cfg(feature = "term-eval")]
-    pub use crate::{eval_term, eval_term_int, term_to_table, EvaluationContext, Term, TermArena};
+    pub use crate::{eval_term, eval_term_int, term_to_table, EvaluationContext, Term, TermArena, Equation, EquationComplexity, EquationProperties, ComplexityLevel};
 
     #[cfg(feature = "taylor")]
     pub use crate::taylor::{markovic_mckenzie_term, siggers_term, IntArray, Taylor, TaylorSpec};

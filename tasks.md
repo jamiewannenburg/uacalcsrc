@@ -72,12 +72,12 @@ This document outlines the tasks needed to implement full compatibility between 
 - [x] Test parsing error handling and complex nested structures
 
 #### Subtask 3.1.3: `test_equation_compatibility.py`
-- [ ] Remove mock functions and implement `Equation` class in Rust/Python
-- [ ] Implement equation construction from terms
-- [ ] Implement equation satisfaction checking in algebras
-- [ ] Implement equation manipulation and transformation operations
-- [ ] Implement equation properties analysis and complexity analysis
-- [ ] Test standard algebraic laws and equation generation
+- [x] Remove mock functions and implement `Equation` class in Rust/Python
+- [x] Implement equation construction from terms
+- [x] Implement equation satisfaction checking in algebras
+- [x] Implement equation manipulation and transformation operations
+- [x] Implement equation properties analysis and complexity analysis
+- [x] Test standard algebraic laws and equation generation
 
 ## Tier 4: Algebraic Structures
 

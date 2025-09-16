@@ -83,6 +83,15 @@ impl Term {
         Ok(vars)
     }
     
+    /// Get all operation symbols used in this term
+    pub fn operation_symbols(&self, arena: &TermArena) -> UACalcResult<Vec<crate::operation::OperationSymbol>> {
+        let mut symbols = Vec::new();
+        self.collect_operation_symbols(arena, &mut symbols)?;
+        symbols.sort_by(|a, b| a.name().cmp(b.name()));
+        symbols.dedup();
+        Ok(symbols)
+    }
+    
     /// Collect variables recursively
     fn collect_variables(&self, arena: &TermArena, vars: &mut Vec<u8>) -> UACalcResult<()> {
         match self {
@@ -93,6 +102,25 @@ impl Term {
                 for &child_id in children {
                     let child = arena.get_term(child_id)?;
                     child.collect_variables(arena, vars)?;
+                }
+            }
+        }
+        Ok(())
+    }
+    
+    /// Collect operation symbols recursively
+    fn collect_operation_symbols(&self, arena: &TermArena, symbols: &mut Vec<crate::operation::OperationSymbol>) -> UACalcResult<()> {
+        match self {
+            Term::Variable(_) => {
+                // Variables don't contain operation symbols
+            }
+            Term::Operation { symbol_id, children } => {
+                let symbol = arena.get_symbol(*symbol_id)?;
+                symbols.push(symbol.clone());
+                
+                for &child_id in children {
+                    let child = arena.get_term(child_id)?;
+                    child.collect_operation_symbols(arena, symbols)?;
                 }
             }
         }

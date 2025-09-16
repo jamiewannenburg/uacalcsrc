@@ -11,6 +11,7 @@ use uacalc_core::algebra::{Algebra, BasicAlgebra, SmallAlgebra};
 use uacalc_core::binary_relation::{BasicBinaryRelation, BinaryRelation};
 use uacalc_core::conlat::{BasicCongruenceLattice, CongruenceLattice as CongruenceLatticeTrait};
 use uacalc_core::error::UACalcError;
+use uacalc_core::equation::{Equation, EquationComplexity, EquationProperties, ComplexityLevel};
 use uacalc_core::operation::{Operation, Operations, OperationSymbol, TableOperation, SimilarityType};
 use uacalc_core::partition::{BasicPartition, Partition};
 use uacalc_core::product::ProductAlgebra;
@@ -36,6 +37,9 @@ fn uacalc_rust(_py: Python, m: &Bound<PyModule>) -> PyResult<()> {
     m.add_class::<PyCongruenceLattice>()?;
     m.add_class::<PyTerm>()?;
     m.add_class::<PyTermArena>()?;
+    m.add_class::<PyEquation>()?;
+    m.add_class::<PyEquationComplexity>()?;
+    m.add_class::<PyEquationProperties>()?;
     m.add_class::<PyProgressReporter>()?;
 
     m.add_function(wrap_pyfunction!(create_algebra, m)?)?;
@@ -58,6 +62,9 @@ fn uacalc_rust(_py: Python, m: &Bound<PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(rust_create_product_algebra, m)?)?;
     m.add_function(wrap_pyfunction!(rust_create_quotient_algebra, m)?)?;
     m.add_function(wrap_pyfunction!(rust_create_subalgebra, m)?)?;
+    m.add_function(wrap_pyfunction!(create_associative_law, m)?)?;
+    m.add_function(wrap_pyfunction!(create_cyclic_law, m)?)?;
+    m.add_function(wrap_pyfunction!(create_first_second_symmetric_law, m)?)?;
 
     // Add custom exception classes
     m.add("UACalcError", _py.get_type_bound::<PyUACalcError>())?;
@@ -942,6 +949,195 @@ impl PyTermArena {
         }
 
         true
+    }
+}
+
+/// Python wrapper for Equation
+#[pyclass]
+#[derive(Clone)]
+pub struct PyEquation {
+    inner: Arc<Mutex<Equation>>,
+}
+
+#[pymethods]
+impl PyEquation {
+    #[new]
+    fn new(left: String, right: String) -> PyResult<Self> {
+        let mut arena = TermArena::new();
+        let equation = Equation::from_strings(&mut arena, &left, &right)
+            .map_err(map_uacalc_error)?;
+        Ok(Self {
+            inner: Arc::new(Mutex::new(equation)),
+        })
+    }
+
+    // fn from_terms(left_term: Bound<PyTerm>, right_term: Bound<PyTerm>) -> PyResult<Self> {
+    //     // Create a new arena and copy the terms
+    //     let mut arena = TermArena::new();
+    //     
+    //     // For simplicity, we'll create new terms in the new arena
+    //     // In a more sophisticated implementation, we'd need to handle arena merging
+    //     let left_str = Python::with_gil(|py| left_term.to_string(py))?;
+    //     let right_str = Python::with_gil(|py| right_term.to_string(py))?;
+    //     
+    //     let equation = Equation::from_strings(&mut arena, &left_str, &right_str)
+    //         .map_err(map_uacalc_error)?;
+    //     
+    //     Ok(Self {
+    //         inner: Arc::new(Mutex::new(equation)),
+    //     })
+    // }
+
+    fn left_side(&self) -> PyResult<String> {
+        let equation_guard = self.inner.lock().unwrap();
+        let left_term = equation_guard.left();
+        left_term.to_string(equation_guard.arena())
+            .map_err(map_uacalc_error)
+    }
+
+    fn right_side(&self) -> PyResult<String> {
+        let equation_guard = self.inner.lock().unwrap();
+        let right_term = equation_guard.right();
+        right_term.to_string(equation_guard.arena())
+            .map_err(map_uacalc_error)
+    }
+
+    fn variables(&self) -> PyResult<Vec<u8>> {
+        let equation_guard = self.inner.lock().unwrap();
+        equation_guard.variables().map_err(map_uacalc_error)
+    }
+
+    fn operation_symbols(&self) -> PyResult<Vec<String>> {
+        let equation_guard = self.inner.lock().unwrap();
+        let symbols = equation_guard.operation_symbols().map_err(map_uacalc_error)?;
+        Ok(symbols.iter().map(|s| s.name().to_string()).collect())
+    }
+
+    fn is_satisfied_in(&self, algebra: &PyAlgebra) -> PyResult<bool> {
+        let equation_guard = self.inner.lock().unwrap();
+        let small_algebra = &algebra.inner;
+        equation_guard.is_satisfied_in(&small_algebra).map_err(map_uacalc_error)
+    }
+
+    fn find_counterexample(&self, algebra: &PyAlgebra) -> PyResult<Option<std::collections::HashMap<String, usize>>> {
+        let equation_guard = self.inner.lock().unwrap();
+        let small_algebra = &algebra.inner;
+        
+        match equation_guard.find_counterexample(&small_algebra).map_err(map_uacalc_error)? {
+            Some(counterexample) => {
+                let mut result = std::collections::HashMap::new();
+                for (var, value) in counterexample {
+                    result.insert(format!("x{}", var), value);
+                }
+                Ok(Some(result))
+            }
+            None => Ok(None),
+        }
+    }
+
+    fn is_identity(&self) -> PyResult<bool> {
+        let equation_guard = self.inner.lock().unwrap();
+        equation_guard.is_identity().map_err(map_uacalc_error)
+    }
+
+    fn complexity(&self) -> PyResult<PyEquationComplexity> {
+        let equation_guard = self.inner.lock().unwrap();
+        let complexity = equation_guard.complexity().map_err(map_uacalc_error)?;
+        Ok(PyEquationComplexity {
+            variable_count: complexity.variable_count,
+            operation_count: complexity.operation_count,
+            max_depth: complexity.max_depth,
+            complexity_level: match complexity.complexity_level {
+                ComplexityLevel::Low => "low".to_string(),
+                ComplexityLevel::Medium => "medium".to_string(),
+                ComplexityLevel::High => "high".to_string(),
+            },
+        })
+    }
+
+    fn analyze_properties(&self) -> PyResult<PyEquationProperties> {
+        let equation_guard = self.inner.lock().unwrap();
+        let properties = equation_guard.analyze_properties().map_err(map_uacalc_error)?;
+        Ok(PyEquationProperties {
+            properties: properties.properties,
+            is_identity: properties.is_identity,
+            is_tautology: properties.is_tautology,
+        })
+    }
+
+    fn substitute(&mut self, substitutions: std::collections::HashMap<String, String>) -> PyResult<()> {
+        let mut equation_guard = self.inner.lock().unwrap();
+        
+        // Convert string substitutions to term substitutions
+        let mut term_substitutions = std::collections::HashMap::new();
+        for (var_str, term_str) in substitutions {
+            // Parse variable name (e.g., "x0" -> 0)
+            if var_str.starts_with('x') {
+                if let Ok(var_index) = var_str[1..].parse::<u8>() {
+                    // Parse the substitution term
+                    let mut arena = TermArena::new();
+                    let term_id = uacalc_core::term::term::utils::from_string(&mut arena, &term_str)
+                        .map_err(map_uacalc_error)?;
+                    term_substitutions.insert(var_index, term_id);
+                }
+            }
+        }
+        
+        equation_guard.substitute(&term_substitutions).map_err(map_uacalc_error)
+    }
+
+    fn __str__(&self) -> PyResult<String> {
+        let equation_guard = self.inner.lock().unwrap();
+        Ok(equation_guard.to_string())
+    }
+
+    fn __repr__(&self) -> PyResult<String> {
+        self.__str__()
+    }
+}
+
+/// Python wrapper for EquationComplexity
+#[pyclass]
+pub struct PyEquationComplexity {
+    pub variable_count: usize,
+    pub operation_count: usize,
+    pub max_depth: usize,
+    pub complexity_level: String,
+}
+
+#[pymethods]
+impl PyEquationComplexity {
+    fn __str__(&self) -> String {
+        format!(
+            "EquationComplexity(variables={}, operations={}, depth={}, level={})",
+            self.variable_count, self.operation_count, self.max_depth, self.complexity_level
+        )
+    }
+
+    fn __repr__(&self) -> String {
+        self.__str__()
+    }
+}
+
+/// Python wrapper for EquationProperties
+#[pyclass]
+pub struct PyEquationProperties {
+    pub properties: Vec<String>,
+    pub is_identity: bool,
+    pub is_tautology: bool,
+}
+
+#[pymethods]
+impl PyEquationProperties {
+    fn __str__(&self) -> String {
+        format!(
+            "EquationProperties(properties={:?}, is_identity={}, is_tautology={})",
+            self.properties, self.is_identity, self.is_tautology
+        )
+    }
+
+    fn __repr__(&self) -> String {
+        self.__str__()
     }
 }
 
@@ -2339,4 +2535,40 @@ fn rust_create_subalgebra(
 
     // Return PySubalgebra directly, preserving Subalgebra-specific methods
     Ok(PySubalgebra { inner: subalgebra })
+}
+
+/// Create an associative law equation: f(f(x,y),z) = f(x,f(y,z))
+#[pyfunction]
+fn create_associative_law(symbol_name: String) -> PyResult<PyEquation> {
+    let mut arena = TermArena::new();
+    let symbol = OperationSymbol::new(symbol_name, 2);
+    let equation = uacalc_core::equation::standard::associative_law(&mut arena, &symbol)
+        .map_err(map_uacalc_error)?;
+    Ok(PyEquation {
+        inner: Arc::new(Mutex::new(equation)),
+    })
+}
+
+/// Create a cyclic law equation: f(x0,x1,...,x{k-1}) = f(x{k-1},x0,...,x{k-2})
+#[pyfunction]
+fn create_cyclic_law(symbol_name: String, arity: usize) -> PyResult<PyEquation> {
+    let mut arena = TermArena::new();
+    let symbol = OperationSymbol::new(symbol_name, arity);
+    let equation = uacalc_core::equation::standard::cyclic_law(&mut arena, &symbol)
+        .map_err(map_uacalc_error)?;
+    Ok(PyEquation {
+        inner: Arc::new(Mutex::new(equation)),
+    })
+}
+
+/// Create a first-second symmetric law equation: f(x,y) = f(y,x)
+#[pyfunction]
+fn create_first_second_symmetric_law(symbol_name: String) -> PyResult<PyEquation> {
+    let mut arena = TermArena::new();
+    let symbol = OperationSymbol::new(symbol_name, 2);
+    let equation = uacalc_core::equation::standard::first_second_symmetric_law(&mut arena, &symbol)
+        .map_err(map_uacalc_error)?;
+    Ok(PyEquation {
+        inner: Arc::new(Mutex::new(equation)),
+    })
 }
