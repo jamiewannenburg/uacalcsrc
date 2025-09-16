@@ -362,7 +362,7 @@ class BaseCompatibilityTest(unittest.TestCase):
             return result
         
         # Handle case where Java operation failed
-        if not java_result.get("success", True):  # Default to True for backward compatibility
+        if isinstance(java_result, dict) and not java_result.get("success", True):  # Default to True for backward compatibility
             error_msg = java_result.get("error", "Unknown Java error")
             result = CompatibilityTestResult(
                 test_name=test_name,
@@ -391,7 +391,7 @@ class BaseCompatibilityTest(unittest.TestCase):
                 java_result=java_result,
                 matches=matches,
                 error_message=error_message,
-                execution_time_java=java_result.get('_execution_time', 0.0),
+                execution_time_java=java_result.get('_execution_time', 0.0) if isinstance(java_result, dict) else 0.0,
                 context=context
             )
             
@@ -414,7 +414,7 @@ class BaseCompatibilityTest(unittest.TestCase):
                 java_result=java_result,
                 matches=False,
                 error_message=error_msg,
-                execution_time_java=java_result.get('_execution_time', 0.0),
+                execution_time_java=java_result.get('_execution_time', 0.0) if isinstance(java_result, dict) else 0.0,
                 context=context
             )
             self.current_test_results.append(result)

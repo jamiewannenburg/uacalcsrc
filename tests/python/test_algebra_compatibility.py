@@ -41,7 +41,7 @@ class AlgebraCompatibilityTest(BaseCompatibilityTest):
                 rust_cardinality = algebra.cardinality
                 
                 # Get cardinality from Java
-                java_result = self._run_java_operation("properties", str(algebra_file))
+                java_result = self._run_java_operation("algebra_properties", str(algebra_file))
                 
                 if java_result is None:
                     self.skipTest("Java UACalc not available")
@@ -67,10 +67,13 @@ class AlgebraCompatibilityTest(BaseCompatibilityTest):
                 algebra = self._load_test_algebra(algebra_file)
                 
                 # Extract operation information from Rust
+                ops = algebra.operations()
+                # Sort operations by symbol name for consistent comparison
+                sorted_ops = sorted(ops, key=lambda op: str(op.symbol))
                 rust_operations = {
-                    "count": len(algebra.operations),
-                    "symbols": [str(op.symbol) for op in algebra.operations],
-                    "arities": [op.arity for op in algebra.operations]
+                    "count": len(sorted_ops),
+                    "symbols": [str(op.symbol) for op in sorted_ops],
+                    "arities": [op.arity() for op in sorted_ops]
                 }
                 
                 # Get operation information from Java
@@ -140,7 +143,7 @@ class AlgebraCompatibilityTest(BaseCompatibilityTest):
             with self.subTest(algebra=algebra_file.name):
                 # Load algebra in Rust/Python
                 algebra = self._load_test_algebra(algebra_file)
-                rust_is_finite = hasattr(algebra, 'is_finite') and algebra.is_finite
+                rust_is_finite = algebra.is_finite()
                 
                 # Get finite property from Java
                 java_result = self._run_java_operation("algebra_properties", str(algebra_file))
@@ -174,9 +177,12 @@ class AlgebraCompatibilityTest(BaseCompatibilityTest):
                 algebra = self._load_test_algebra(algebra_file)
                 
                 # Extract similarity type information
+                ops = algebra.operations()
+                # Sort operations by symbol name for consistent comparison
+                sorted_ops = sorted(ops, key=lambda op: str(op.symbol))
                 rust_similarity_type = {
-                    "operation_count": len(algebra.operations),
-                    "arities": sorted([op.arity for op in algebra.operations])
+                    "operation_count": len(sorted_ops),
+                    "arities": sorted([op.arity() for op in sorted_ops])
                 }
                 
                 # Get similarity type from Java
@@ -215,9 +221,9 @@ class AlgebraCompatibilityTest(BaseCompatibilityTest):
                 
                 # Extract metadata
                 rust_metadata = {
-                    "name": getattr(algebra, 'name', algebra_file.stem),
+                    "name": algebra.name.lower(),  # Normalize to lowercase for comparison
                     "cardinality": algebra.cardinality,
-                    "operation_count": len(algebra.operations)
+                    "operation_count": len(algebra.operations())
                 }
                 
                 # Get metadata from Java
@@ -230,7 +236,7 @@ class AlgebraCompatibilityTest(BaseCompatibilityTest):
                     self.skipTest(f"Java operation failed: {java_result.get('error')}")
                 
                 java_metadata = {
-                    "name": java_result.get("name", algebra_file.stem),
+                    "name": java_result.get("algebra_name", algebra_file.stem).lower(),  # Normalize to lowercase for comparison
                     "cardinality": java_result.get("cardinality", 0),
                     "operation_count": java_result.get("operation_count", 0)
                 }
@@ -259,10 +265,10 @@ class AlgebraCompatibilityTest(BaseCompatibilityTest):
                 algebra = self._load_test_algebra(algebra_file)
                 
                 # Test first operation with a few input combinations
-                if len(algebra.operations) == 0:
+                if len(algebra.operations()) == 0:
                     self.skipTest(f"No operations in {algebra_file.name}")
                 
-                operation = algebra.operations[0]
+                operation = algebra.operations()[0]
                 
                 # Generate test cases for the operation
                 test_cases = self._generate_operation_test_cases(operation, algebra.cardinality, max_cases=10)
@@ -276,7 +282,7 @@ class AlgebraCompatibilityTest(BaseCompatibilityTest):
                     
                     # Get evaluation from Java (this would need a specific Java operation)
                     # For now, we'll use the properties operation as a placeholder
-                    java_result = self._run_java_operation("properties", str(algebra_file))
+                    java_result = self._run_java_operation("algebra_properties", str(algebra_file))
                     
                     if java_result is None:
                         self.skipTest("Java UACalc not available")
@@ -306,7 +312,7 @@ class AlgebraCompatibilityTest(BaseCompatibilityTest):
         """Generate test cases for operation evaluation"""
         import itertools
         
-        arity = operation.arity
+        arity = operation.arity()
         if arity == 0:
             return [[]]  # Nullary operation
         

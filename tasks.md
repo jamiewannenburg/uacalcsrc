@@ -43,12 +43,12 @@ This document outlines the tasks needed to implement full compatibility between 
 - [ ] Test operation table structure and similarity type computation
 
 #### Subtask 2.1.2: `test_algebra_compatibility.py`
-- [ ] Remove mock functions and implement `Algebra` interface in Rust/Python
-- [ ] Implement cardinality, universe, and operations access
-- [ ] Implement basic algebra properties (finite, similarity type)
-- [ ] Implement algebra metadata and description handling
-- [ ] Implement operation evaluation compatibility
-- [ ] Test with multiple algebra types and sizes
+- [x] Remove mock functions and implement `Algebra` interface in Rust/Python
+- [x] Implement cardinality, universe, and operations access
+- [x] Implement basic algebra properties (finite, similarity type)
+- [x] Implement algebra metadata and description handling
+- [x] Implement operation evaluation compatibility
+- [x] Test with multiple algebra types and sizes
 
 ## Tier 3: Term and Expression System
 

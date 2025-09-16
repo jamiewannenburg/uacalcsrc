@@ -1335,10 +1335,13 @@ public class JavaWrapper {
         result.append("\"is_finite\":").append(algebra.cardinality() < Integer.MAX_VALUE).append(",");
         result.append("\"has_universe_list\":").append(smallAlgebra.getUniverseList() != null).append(",");
         
-        // Operation symbols and arities
+        // Operation symbols and arities (sorted by symbol name for consistency)
+        List<Operation> sortedOps = new ArrayList<>(algebra.operations());
+        sortedOps.sort((a, b) -> a.symbol().toString().compareTo(b.symbol().toString()));
+        
         result.append("\"operation_symbols\":[");
         boolean first = true;
-        for (Operation op : algebra.operations()) {
+        for (Operation op : sortedOps) {
             if (!first) result.append(",");
             result.append("\"").append(escapeJson(op.symbol().toString())).append("\"");
             first = false;
@@ -1347,9 +1350,23 @@ public class JavaWrapper {
         
         result.append("\"operation_arities\":[");
         first = true;
-        for (Operation op : algebra.operations()) {
+        for (Operation op : sortedOps) {
             if (!first) result.append(",");
             result.append(op.arity());
+            first = false;
+        }
+        result.append("],");
+        
+        // Add universe
+        result.append("\"universe\":[");
+        first = true;
+        for (Object elem : algebra.universe()) {
+            if (!first) result.append(",");
+            if (elem instanceof Integer) {
+                result.append((Integer) elem);
+            } else {
+                result.append("\"").append(escapeJson(elem.toString())).append("\"");
+            }
             first = false;
         }
         result.append("],");
