@@ -1,0 +1,5 @@
+---
+description: When working on a rust file, check for possible deadlocks. Before testing the python bindings make a rust test introducing a similar situation as what is expected from python, so that it would fail (or hang) before running the python code. This is becuase a deadlock cannot be stopped with CTRL-C from python and the terminal needs to be restarted.
+globs: *.rs
+alwaysApply: false
+---

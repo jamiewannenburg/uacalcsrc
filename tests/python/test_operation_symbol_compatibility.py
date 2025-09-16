@@ -16,6 +16,14 @@ from typing import Dict, Any, List, Optional, Tuple
 
 from tests.python.base_compatibility_test import BaseCompatibilityTest
 
+# Import the real implementations
+try:
+    import uacalc_rust
+    from uacalc_rust import OperationSymbol, SimilarityType
+    REAL_IMPLEMENTATIONS_AVAILABLE = True
+except ImportError:
+    REAL_IMPLEMENTATIONS_AVAILABLE = False
+
 logger = logging.getLogger(__name__)
 
 
@@ -50,7 +58,7 @@ class OperationSymbolCompatibilityTest(BaseCompatibilityTest):
         
         for symbol_name, arity in test_cases:
             with self.subTest(symbol=symbol_name, arity=arity):
-                # Create symbol in Rust/Python (simulated)
+                # Create symbol in Rust/Python
                 rust_symbol = self._create_rust_operation_symbol(symbol_name, arity)
                 
                 # Get symbol creation from Java
@@ -94,10 +102,17 @@ class OperationSymbolCompatibilityTest(BaseCompatibilityTest):
         
         for name1, arity1, name2, arity2, expected_equal in test_cases:
             with self.subTest(name1=name1, arity1=arity1, name2=name2, arity2=arity2):
-                # Create symbols in Rust/Python (simulated)
+                # Create symbols in Rust/Python
                 rust_symbol1 = self._create_rust_operation_symbol(name1, arity1)
                 rust_symbol2 = self._create_rust_operation_symbol(name2, arity2)
-                rust_equal = rust_symbol1 == rust_symbol2
+                
+                # Handle both real objects and mock dictionaries
+                if REAL_IMPLEMENTATIONS_AVAILABLE and isinstance(rust_symbol1, OperationSymbol) and isinstance(rust_symbol2, OperationSymbol):
+                    rust_equal = rust_symbol1 == rust_symbol2
+                else:
+                    # Fallback to mock comparison
+                    rust_equal = (rust_symbol1["name"] == rust_symbol2["name"] and 
+                                rust_symbol1["arity"] == rust_symbol2["arity"])
                 
                 # Prepare data for Java in simple format
                 symbol1_data = f"{name1}:{arity1}"
@@ -150,9 +165,14 @@ class OperationSymbolCompatibilityTest(BaseCompatibilityTest):
         
         for symbol_name, arity in test_cases:
             with self.subTest(symbol=symbol_name, arity=arity):
-                # Create symbol in Rust/Python (simulated)
+                # Create symbol in Rust/Python
                 rust_symbol = self._create_rust_operation_symbol(symbol_name, arity)
-                rust_string = str(rust_symbol)
+                
+                # Handle both real objects and mock dictionaries
+                if REAL_IMPLEMENTATIONS_AVAILABLE and isinstance(rust_symbol, OperationSymbol):
+                    rust_string = str(rust_symbol)
+                else:
+                    rust_string = rust_symbol["string_representation"]
                 
                 # Prepare data for Java in simple format
                 symbol_data = f"{symbol_name}:{arity}"
@@ -198,7 +218,7 @@ class OperationSymbolCompatibilityTest(BaseCompatibilityTest):
         
         for symbols_data in test_cases:
             with self.subTest(symbols=symbols_data):
-                # Create similarity type in Rust/Python (simulated)
+                # Create similarity type in Rust/Python
                 rust_symbols = [self._create_rust_operation_symbol(name, arity) 
                                for name, arity in symbols_data]
                 rust_sim_type = self._create_rust_similarity_type(rust_symbols)
@@ -248,7 +268,7 @@ class OperationSymbolCompatibilityTest(BaseCompatibilityTest):
         
         for type1_symbols, type2_symbols in test_cases:
             with self.subTest(type1=type1_symbols, type2=type2_symbols):
-                # Create similarity types in Rust/Python (simulated)
+                # Create similarity types in Rust/Python
                 rust_symbols1 = [self._create_rust_operation_symbol(name, arity) 
                                 for name, arity in type1_symbols]
                 rust_symbols2 = [self._create_rust_operation_symbol(name, arity) 
@@ -286,40 +306,60 @@ class OperationSymbolCompatibilityTest(BaseCompatibilityTest):
     
     # Helper methods for simulating Rust/Python operation symbols
     
-    def _create_rust_operation_symbol(self, name: str, arity: int) -> Dict[str, Any]:
-        """Create a simulated Rust operation symbol for comparison"""
-        return {
-            "name": name,
-            "arity": arity,
-            "string_representation": f"{name}({arity})",  # Simplified representation
-            "hash_code": hash((name, arity)) & 0x7FFFFFFF,  # Simulate hash code
-        }
+    def _create_rust_operation_symbol(self, name: str, arity: int) -> Any:
+        """Create a Rust operation symbol for comparison"""
+        if REAL_IMPLEMENTATIONS_AVAILABLE:
+            return OperationSymbol(name, arity)
+        else:
+            # Fallback to mock implementation
+            return {
+                "name": name,
+                "arity": arity,
+                "string_representation": f"{name}({arity})",  # Simplified representation
+                "hash_code": hash((name, arity)) & 0x7FFFFFFF,  # Simulate hash code
+            }
     
-    def _create_rust_similarity_type(self, symbols: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """Create a simulated Rust similarity type for comparison"""
-        max_arity = max((sym["arity"] for sym in symbols), default=-1)
-        return {
-            "size": len(symbols),
-            "max_arity": max_arity,
-            "symbols": symbols,
-            "string_representation": f"SimilarityType({len(symbols)} symbols)",
-            "hash_code": hash(tuple((sym["name"], sym["arity"]) for sym in symbols)) & 0x7FFFFFFF,
-        }
+    def _create_rust_similarity_type(self, symbols: List[Any]) -> Any:
+        """Create a Rust similarity type for comparison"""
+        if REAL_IMPLEMENTATIONS_AVAILABLE:
+            # Convert symbols to OperationSymbol objects if they aren't already
+            operation_symbols = []
+            for sym in symbols:
+                if isinstance(sym, OperationSymbol):
+                    operation_symbols.append(sym)
+                else:
+                    # Assume it's a dict from mock implementation
+                    operation_symbols.append(OperationSymbol(sym["name"], sym["arity"]))
+            return SimilarityType(operation_symbols)
+        else:
+            # Fallback to mock implementation
+            max_arity = max((sym["arity"] for sym in symbols), default=-1)
+            return {
+                "size": len(symbols),
+                "max_arity": max_arity,
+                "symbols": symbols,
+                "string_representation": f"SimilarityType({len(symbols)} symbols)",
+                "hash_code": hash(tuple((sym["name"], sym["arity"]) for sym in symbols)) & 0x7FFFFFFF,
+            }
     
-    def _similarity_types_equal(self, type1: Dict[str, Any], type2: Dict[str, Any]) -> bool:
+    def _similarity_types_equal(self, type1: Any, type2: Any) -> bool:
         """Check if two similarity types are equal (same symbols, order doesn't matter)"""
-        if type1["size"] != type2["size"]:
-            return False
-        
-        # Convert to sets of (name, arity) tuples for comparison
-        symbols1 = set((sym["name"], sym["arity"]) for sym in type1["symbols"])
-        symbols2 = set((sym["name"], sym["arity"]) for sym in type2["symbols"])
-        
-        return symbols1 == symbols2
+        if REAL_IMPLEMENTATIONS_AVAILABLE and isinstance(type1, SimilarityType) and isinstance(type2, SimilarityType):
+            return type1 == type2
+        else:
+            # Fallback to mock implementation
+            if type1["size"] != type2["size"]:
+                return False
+            
+            # Convert to sets of (name, arity) tuples for comparison
+            symbols1 = set((sym["name"], sym["arity"]) for sym in type1["symbols"])
+            symbols2 = set((sym["name"], sym["arity"]) for sym in type2["symbols"])
+            
+            return symbols1 == symbols2
     
     # Comparison helper methods
     
-    def _compare_operation_symbol_creation(self, rust_symbol: Dict[str, Any], 
+    def _compare_operation_symbol_creation(self, rust_symbol: Any, 
                                          java_result: Dict[str, Any], 
                                          operation: str, context: str) -> Any:
         """Compare operation symbol creation results"""
@@ -349,13 +389,21 @@ class OperationSymbolCompatibilityTest(BaseCompatibilityTest):
         matches = True
         error_messages = []
         
-        if rust_symbol["name"] != java_symbol.get("name"):
-            matches = False
-            error_messages.append(f"Name mismatch: Rust={rust_symbol['name']}, Java={java_symbol.get('name')}")
+        # Handle both real objects and mock dictionaries
+        if REAL_IMPLEMENTATIONS_AVAILABLE and isinstance(rust_symbol, OperationSymbol):
+            rust_name = rust_symbol.name
+            rust_arity = rust_symbol.arity
+        else:
+            rust_name = rust_symbol["name"]
+            rust_arity = rust_symbol["arity"]
         
-        if rust_symbol["arity"] != java_symbol.get("arity"):
+        if rust_name != java_symbol.get("name"):
             matches = False
-            error_messages.append(f"Arity mismatch: Rust={rust_symbol['arity']}, Java={java_symbol.get('arity')}")
+            error_messages.append(f"Name mismatch: Rust={rust_name}, Java={java_symbol.get('name')}")
+        
+        if rust_arity != java_symbol.get("arity"):
+            matches = False
+            error_messages.append(f"Arity mismatch: Rust={rust_arity}, Java={java_symbol.get('arity')}")
         
         error_message = "; ".join(error_messages) if error_messages else None
         
@@ -418,7 +466,7 @@ class OperationSymbolCompatibilityTest(BaseCompatibilityTest):
         self.current_test_results.append(result)
         return result
     
-    def _compare_operation_symbol_string(self, rust_string: str, 
+    def _compare_operation_symbol_string(self, rust_string: Any, 
                                        java_result: Dict[str, Any], 
                                        operation: str, context: str) -> Any:
         """Compare operation symbol string representation results"""
@@ -444,21 +492,27 @@ class OperationSymbolCompatibilityTest(BaseCompatibilityTest):
         
         java_string = java_result.get("string_results", {}).get("toString", "")
         
+        # Handle both real objects and mock strings
+        if REAL_IMPLEMENTATIONS_AVAILABLE and hasattr(rust_string, '__str__'):
+            rust_str = str(rust_string)
+        else:
+            rust_str = rust_string
+        
         # For now, we'll accept that string representations might differ slightly
         # but should contain the same essential information
         matches = True  # We'll be lenient on exact string matching
         error_message = None
         
         # Could add more sophisticated string comparison here if needed
-        if rust_string != java_string:
+        if rust_str != java_string:
             # Log the difference but don't fail the test for now
-            logger.info(f"String representation difference: Rust='{rust_string}', Java='{java_string}'")
+            logger.info(f"String representation difference: Rust='{rust_str}', Java='{java_string}'")
         
         result = CompatibilityTestResult(
             test_name=test_name,
             algebra_name="operation_symbol",
             operation=operation,
-            rust_result=rust_string,
+            rust_result=rust_str,
             java_result=java_result,
             matches=matches,
             error_message=error_message,
@@ -469,7 +523,7 @@ class OperationSymbolCompatibilityTest(BaseCompatibilityTest):
         self.current_test_results.append(result)
         return result
     
-    def _compare_similarity_type_construction(self, rust_sim_type: Dict[str, Any], 
+    def _compare_similarity_type_construction(self, rust_sim_type: Any, 
                                             java_result: Dict[str, Any], 
                                             operation: str, context: str) -> Any:
         """Compare similarity type construction results"""
@@ -499,13 +553,20 @@ class OperationSymbolCompatibilityTest(BaseCompatibilityTest):
         matches = True
         error_messages = []
         
-        if rust_sim_type["size"] != java_sim_type.get("size"):
+        # Handle both real objects and mock dictionaries
+        if REAL_IMPLEMENTATIONS_AVAILABLE and isinstance(rust_sim_type, SimilarityType):
+            rust_size = len(rust_sim_type.get_operation_symbols())
+            rust_max_arity = rust_sim_type.get_max_arity()
+        else:
+            rust_size = rust_sim_type["size"]
+            rust_max_arity = rust_sim_type["max_arity"]
+        
+        if rust_size != java_sim_type.get("size"):
             matches = False
-            error_messages.append(f"Size mismatch: Rust={rust_sim_type['size']}, Java={java_sim_type.get('size')}")
+            error_messages.append(f"Size mismatch: Rust={rust_size}, Java={java_sim_type.get('size')}")
         
         # For similarity type, we compare max_arity from properties section
         java_max_arity = java_result.get("properties", {}).get("max_arity")
-        rust_max_arity = rust_sim_type["max_arity"]
         
         if rust_max_arity != java_max_arity:
             matches = False

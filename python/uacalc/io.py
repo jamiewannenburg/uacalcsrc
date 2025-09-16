@@ -170,9 +170,18 @@ def _parse_basic_algebra(algebra_elem: ET.Element, file_path: str) -> Algebra:
         # Parse operations
         operations_elem = algebra_elem.find('operations')
         if operations_elem is not None:
+            # Collect all operations first
+            operations = []
             for op_elem in operations_elem.findall('op'):
                 operation = _parse_operation(op_elem, cardinality, file_path)
-                algebra.add_operation(operation.symbol, operation)
+                operations.append((operation.symbol, operation))
+            
+            # Sort operations by symbol name to match Java ordering
+            operations.sort(key=lambda x: x[0])
+            
+            # Add operations to algebra in sorted order
+            for symbol, operation in operations:
+                algebra.add_operation(symbol, operation)
         
         return algebra
         

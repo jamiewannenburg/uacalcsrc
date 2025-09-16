@@ -1,0 +1,5 @@
+---
+description: As a first command activate the virtual environment in .venv
+globs:
+alwaysApply: true
+---

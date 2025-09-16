@@ -2,6 +2,7 @@ use crate::utils::{horner_decode, horner_encode, horner_table_size, validate_ope
 use crate::{UACalcError, UACalcResult};
 use serde::{Deserialize, Serialize};
 use std::fmt;
+use std::collections::BTreeMap;
 
 /// Symbol for an operation
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -25,6 +26,48 @@ impl OperationSymbol {
 
     pub fn set_arity(&mut self, arity: usize) {
         self.arity = arity;
+    }
+
+    /// Create a string representation with optional arity display
+    pub fn to_string_with_arity(&self, show_arity: bool) -> String {
+        if show_arity {
+            format!("{}({})", self.name, self.arity)
+        } else {
+            self.name.clone()
+        }
+    }
+
+    /// Get hash code similar to Java implementation
+    pub fn hash_code(&self) -> i32 {
+        use std::collections::hash_map::DefaultHasher;
+        use std::hash::{Hash, Hasher};
+        
+        let mut hasher = DefaultHasher::new();
+        self.name.hash(&mut hasher);
+        let name_hash = hasher.finish() as i32;
+        (name_hash + self.arity as i32) & 0x7FFFFFFF
+    }
+}
+
+impl std::fmt::Display for OperationSymbol {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.name)
+    }
+}
+
+impl std::cmp::Ord for OperationSymbol {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        // Java compareTo: high arity operations first, then by name
+        match other.arity.cmp(&self.arity) {
+            std::cmp::Ordering::Equal => self.name.cmp(&other.name),
+            other => other,
+        }
+    }
+}
+
+impl std::cmp::PartialOrd for OperationSymbol {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
     }
 }
 
@@ -784,5 +827,167 @@ impl Operation for SerializableOperation {
         match self {
             Self::Table(op) => op.is_commutative_on_set(set_size),
         }
+    }
+}
+
+/// Similarity type - a set of operation symbols
+#[derive(Debug, Clone, Hash, Serialize, Deserialize)]
+pub struct SimilarityType {
+    operation_symbols: Vec<OperationSymbol>,
+    arities_map: Option<BTreeMap<usize, usize>>,
+    max_arity: Option<usize>,
+}
+
+impl SimilarityType {
+    /// Create a new similarity type from a list of operation symbols
+    pub fn new(operation_symbols: Vec<OperationSymbol>) -> Self {
+        Self {
+            operation_symbols,
+            arities_map: None,
+            max_arity: None,
+        }
+    }
+
+    /// Create a new similarity type with optional sorting
+    pub fn new_sorted(operation_symbols: Vec<OperationSymbol>, sort: bool) -> Self {
+        let mut symbols = operation_symbols;
+        if sort {
+            symbols.sort();
+        }
+        Self {
+            operation_symbols: symbols,
+            arities_map: None,
+            max_arity: None,
+        }
+    }
+
+    /// Get the operation symbols
+    pub fn get_operation_symbols(&self) -> &[OperationSymbol] {
+        &self.operation_symbols
+    }
+
+    /// Get sorted operation symbols (by arity descending, then by name)
+    pub fn get_sorted_operation_symbols(&self) -> Vec<OperationSymbol> {
+        let mut symbols = self.operation_symbols.clone();
+        symbols.sort();
+        symbols
+    }
+
+    /// Calculate input size for a given algebra size
+    pub fn input_size(&self, alg_size: usize) -> Option<usize> {
+        if self.operation_symbols.is_empty() {
+            return Some(alg_size);
+        }
+
+        let mut input_size = 0u64;
+        let algebra_size = alg_size as u64;
+        let max_int = i32::MAX as u64;
+
+        for symbol in &self.operation_symbols {
+            let term_size = algebra_size.pow(symbol.arity() as u32);
+            input_size = input_size.saturating_add(term_size);
+            if input_size > max_int {
+                return None; // Would overflow
+            }
+        }
+
+        Some(input_size as usize)
+    }
+
+    /// Get a map from arity to number of operations of that arity
+    pub fn get_arities_map(&mut self) -> &BTreeMap<usize, usize> {
+        if self.arities_map.is_none() {
+            let mut map = BTreeMap::new();
+            let mut max_arity = 0usize;
+
+            for symbol in &self.operation_symbols {
+                let arity = symbol.arity();
+                max_arity = max_arity.max(arity);
+                *map.entry(arity).or_insert(0) += 1;
+            }
+
+            self.arities_map = Some(map);
+            self.max_arity = Some(max_arity);
+        }
+
+        self.arities_map.as_ref().unwrap()
+    }
+
+    /// Get the maximum arity
+    pub fn get_max_arity(&mut self) -> i32 {
+        if self.max_arity.is_none() {
+            self.get_arities_map(); // This will set max_arity
+        }
+        if self.operation_symbols.is_empty() {
+            -1  // Match Java behavior for empty similarity types
+        } else {
+            self.max_arity.unwrap_or(0) as i32
+        }
+    }
+
+    /// Get arities string representation
+    pub fn arities_string(&mut self) -> String {
+        let max_arity = self.get_max_arity();
+        if max_arity == -1 {
+            return String::new(); // Empty similarity type
+        }
+        
+        let arities_map = self.get_arities_map();
+        let max_arity_usize = max_arity as usize;
+        
+        let mut parts = Vec::new();
+        for arity in (0..=max_arity_usize).rev() {
+            if let Some(&count) = arities_map.get(&arity) {
+                let arity_string = match arity {
+                    1 => format!("unary ({})", count),
+                    2 => format!("binary: ({})", count),
+                    n => format!("{}-ary ({})", n, count),
+                };
+                parts.push(arity_string);
+            }
+        }
+        
+        parts.join(", ")
+    }
+
+    /// Get hash code
+    pub fn hash_code(&self) -> i32 {
+        use std::collections::hash_map::DefaultHasher;
+        use std::hash::{Hash, Hasher};
+        
+        let mut hasher = DefaultHasher::new();
+        self.operation_symbols.hash(&mut hasher);
+        (hasher.finish() as i32) & 0x7FFFFFFF
+    }
+}
+
+impl PartialEq for SimilarityType {
+    fn eq(&self, other: &Self) -> bool {
+        if self.operation_symbols.len() != other.operation_symbols.len() {
+            return false;
+        }
+        
+        // Check if each symbol in self is contained in other
+        for symbol in &self.operation_symbols {
+            if !other.operation_symbols.contains(symbol) {
+                return false;
+            }
+        }
+        true
+    }
+}
+
+impl Eq for SimilarityType {}
+
+impl std::fmt::Display for SimilarityType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "(")?;
+        for (i, symbol) in self.operation_symbols.iter().enumerate() {
+            if i > 0 {
+                write!(f, ", ")?;
+            }
+            write!(f, "{}", symbol)?;
+        }
+        write!(f, ")")
     }
 }

@@ -11,7 +11,7 @@ use uacalc_core::algebra::{Algebra, BasicAlgebra, SmallAlgebra};
 use uacalc_core::binary_relation::{BasicBinaryRelation, BinaryRelation};
 use uacalc_core::conlat::{BasicCongruenceLattice, CongruenceLattice as CongruenceLatticeTrait};
 use uacalc_core::error::UACalcError;
-use uacalc_core::operation::{Operation, OperationSymbol, TableOperation};
+use uacalc_core::operation::{Operation, OperationSymbol, TableOperation, SimilarityType};
 use uacalc_core::partition::{BasicPartition, Partition};
 use uacalc_core::product::ProductAlgebra;
 use uacalc_core::quotient::QuotientAlgebra;
@@ -28,6 +28,8 @@ fn uacalc_rust(_py: Python, m: &Bound<PyModule>) -> PyResult<()> {
     m.add_class::<PyQuotientAlgebra>()?;
     m.add_class::<PySubalgebra>()?;
     m.add_class::<PyOperation>()?;
+    m.add_class::<PyOperationSymbol>()?;
+    m.add_class::<PySimilarityType>()?;
     m.add_class::<PyPartition>()?;
     m.add_class::<PyBinaryRelation>()?;
     m.add_class::<PyCongruenceLattice>()?;
@@ -62,6 +64,165 @@ fn uacalc_rust(_py: Python, m: &Bound<PyModule>) -> PyResult<()> {
     )?;
 
     Ok(())
+}
+
+/// Python wrapper for OperationSymbol
+#[pyclass(name = "OperationSymbol")]
+#[derive(Clone)]
+pub struct PyOperationSymbol {
+    inner: OperationSymbol,
+}
+
+#[pymethods]
+impl PyOperationSymbol {
+    #[new]
+    fn new(name: String, arity: usize) -> Self {
+        Self {
+            inner: OperationSymbol::new(name, arity),
+        }
+    }
+
+    #[getter]
+    fn name(&self) -> &str {
+        self.inner.name()
+    }
+
+    #[getter]
+    fn arity(&self) -> usize {
+        self.inner.arity()
+    }
+
+    fn to_string_with_arity(&self, show_arity: bool) -> String {
+        self.inner.to_string_with_arity(show_arity)
+    }
+
+    fn hash_code(&self) -> i32 {
+        self.inner.hash_code()
+    }
+
+    fn __str__(&self) -> String {
+        self.inner.to_string()
+    }
+
+    fn __repr__(&self) -> String {
+        format!("OperationSymbol(name='{}', arity={})", self.inner.name(), self.inner.arity())
+    }
+
+    fn __eq__(&self, other: &PyOperationSymbol) -> bool {
+        self.inner == other.inner
+    }
+
+    fn __hash__(&self) -> i32 {
+        self.inner.hash_code()
+    }
+
+    fn __lt__(&self, other: &PyOperationSymbol) -> bool {
+        self.inner < other.inner
+    }
+
+    fn __le__(&self, other: &PyOperationSymbol) -> bool {
+        self.inner <= other.inner
+    }
+
+    fn __gt__(&self, other: &PyOperationSymbol) -> bool {
+        self.inner > other.inner
+    }
+
+    fn __ge__(&self, other: &PyOperationSymbol) -> bool {
+        self.inner >= other.inner
+    }
+}
+
+
+/// Python wrapper for SimilarityType
+#[pyclass(name = "SimilarityType")]
+pub struct PySimilarityType {
+    inner: SimilarityType,
+}
+
+#[pymethods]
+impl PySimilarityType {
+    #[new]
+    fn new(operation_symbols: Vec<PyOperationSymbol>) -> Self {
+        let symbols: Vec<OperationSymbol> = operation_symbols
+            .into_iter()
+            .map(|py_sym| py_sym.inner)
+            .collect();
+        Self {
+            inner: SimilarityType::new(symbols),
+        }
+    }
+
+    #[staticmethod]
+    fn new_sorted(operation_symbols: Vec<PyOperationSymbol>, sort: bool) -> Self {
+        let symbols: Vec<OperationSymbol> = operation_symbols
+            .into_iter()
+            .map(|py_sym| py_sym.inner)
+            .collect();
+        Self {
+            inner: SimilarityType::new_sorted(symbols, sort),
+        }
+    }
+
+    fn get_operation_symbols(&self) -> Vec<PyOperationSymbol> {
+        self.inner
+            .get_operation_symbols()
+            .iter()
+            .map(|sym| PyOperationSymbol {
+                inner: sym.clone(),
+            })
+            .collect()
+    }
+
+    fn get_sorted_operation_symbols(&self) -> Vec<PyOperationSymbol> {
+        self.inner
+            .get_sorted_operation_symbols()
+            .into_iter()
+            .map(|sym| PyOperationSymbol { inner: sym })
+            .collect()
+    }
+
+    fn input_size(&self, alg_size: usize) -> Option<usize> {
+        self.inner.input_size(alg_size)
+    }
+
+    fn get_arities_map(&mut self) -> std::collections::HashMap<usize, usize> {
+        self.inner.get_arities_map().clone().into_iter().collect()
+    }
+
+    fn get_max_arity(&mut self) -> i32 {
+        self.inner.get_max_arity()
+    }
+
+    fn arities_string(&mut self) -> String {
+        self.inner.arities_string()
+    }
+
+    fn hash_code(&self) -> i32 {
+        self.inner.hash_code()
+    }
+
+    fn __str__(&self) -> String {
+        self.inner.to_string()
+    }
+
+    fn __repr__(&self) -> String {
+        let symbols_str = self.inner
+            .get_operation_symbols()
+            .iter()
+            .map(|s| format!("{}", s))
+            .collect::<Vec<_>>()
+            .join(", ");
+        format!("SimilarityType([{}])", symbols_str)
+    }
+
+    fn __eq__(&self, other: &PySimilarityType) -> bool {
+        self.inner == other.inner
+    }
+
+    fn __hash__(&self) -> i32 {
+        self.inner.hash_code()
+    }
 }
 
 // Create custom exceptions using pyo3::create_exception!
