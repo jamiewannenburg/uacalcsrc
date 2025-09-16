@@ -659,3 +659,421 @@ mod tests {
         Ok(())
     }
 }
+
+/// A homomorphism from one algebra to another
+/// 
+/// This represents a structure-preserving map between algebras.
+/// A homomorphism f: A -> B satisfies f(op_A(a1, ..., an)) = op_B(f(a1), ..., f(an))
+/// for all operations op and all elements a1, ..., an in the domain.
+#[derive(Clone)]
+pub struct Homomorphism {
+    domain: Arc<dyn SmallAlgebra>,
+    range: Arc<dyn SmallAlgebra>,
+    map: Vec<usize>, // map[i] is the image of element i in the domain
+}
+
+impl std::fmt::Debug for Homomorphism {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Homomorphism")
+            .field("domain_name", &self.domain.name())
+            .field("range_name", &self.range.name())
+            .field("map", &self.map)
+            .finish()
+    }
+}
+
+impl Homomorphism {
+    /// Create a new homomorphism
+    /// 
+    /// # Arguments
+    /// * `domain` - The source algebra
+    /// * `range` - The target algebra  
+    /// * `map` - The mapping from domain elements to range elements
+    /// 
+    /// # Errors
+    /// Returns an error if the map is invalid (wrong size, out of bounds, etc.)
+    pub fn new(
+        domain: Arc<dyn SmallAlgebra>,
+        range: Arc<dyn SmallAlgebra>,
+        map: Vec<usize>,
+    ) -> UACalcResult<Self> {
+        // Validate map size
+        if map.len() != domain.cardinality() {
+            return Err(UACalcError::InvalidOperation {
+                message: format!(
+                    "Map size {} does not match domain cardinality {}",
+                    map.len(),
+                    domain.cardinality()
+                ),
+            });
+        }
+
+        // Validate that all mapped values are in the range
+        for &mapped_value in map.iter() {
+            if mapped_value >= range.cardinality() {
+                return Err(UACalcError::IndexOutOfBounds {
+                    index: mapped_value,
+                    size: range.cardinality(),
+                });
+            }
+        }
+
+        // Validate that the map preserves operations
+        Self::validate_homomorphism(&domain, &range, &map)?;
+
+        Ok(Self {
+            domain,
+            range,
+            map,
+        })
+    }
+
+    /// Get the domain algebra
+    pub fn domain(&self) -> &Arc<dyn SmallAlgebra> {
+        &self.domain
+    }
+
+    /// Get the range algebra
+    pub fn range(&self) -> &Arc<dyn SmallAlgebra> {
+        &self.range
+    }
+
+    /// Get the mapping as a slice
+    pub fn map(&self) -> &[usize] {
+        &self.map
+    }
+
+    /// Get the image of an element under this homomorphism
+    pub fn image(&self, element: usize) -> UACalcResult<usize> {
+        if element >= self.domain.cardinality() {
+            return Err(UACalcError::IndexOutOfBounds {
+                index: element,
+                size: self.domain.cardinality(),
+            });
+        }
+        Ok(self.map[element])
+    }
+
+    /// Check if this homomorphism is injective (one-to-one)
+    pub fn is_injective(&self) -> bool {
+        let mut seen = std::collections::HashSet::new();
+        for &value in &self.map {
+            if !seen.insert(value) {
+                return false; // Found a duplicate, not injective
+            }
+        }
+        true
+    }
+
+    /// Check if this homomorphism is surjective (onto)
+    pub fn is_surjective(&self) -> bool {
+        let mut range_elements = std::collections::HashSet::new();
+        for &value in &self.map {
+            range_elements.insert(value);
+        }
+        range_elements.len() == self.range.cardinality()
+    }
+
+    /// Check if this homomorphism is bijective (both injective and surjective)
+    pub fn is_bijective(&self) -> bool {
+        self.is_injective() && self.is_surjective()
+    }
+
+    /// Get the kernel of this homomorphism as a partition
+    /// The kernel partitions the domain into equivalence classes of elements
+    /// that map to the same element in the range
+    pub fn kernel(&self) -> UACalcResult<crate::BasicPartition> {
+        use crate::{BasicPartition, Partition};
+        
+        let size = self.domain.cardinality();
+        let mut partition = BasicPartition::new(size);
+        
+        // Group elements by their image
+        for i in 0..size {
+            let r = partition.representative(i)?;
+            for j in (i + 1)..size {
+                if self.map[i] == self.map[j] {
+                    let s = partition.representative(j)?;
+                    if r != s {
+                        partition.join_blocks(r, s)?;
+                    }
+                }
+            }
+        }
+        
+        Ok(partition)
+    }
+
+    /// Compose this homomorphism with another
+    /// Returns a homomorphism from the domain of the first to the range of the second
+    pub fn compose(&self, other: &Homomorphism) -> UACalcResult<Homomorphism> {
+        // Check that the range of self matches the domain of other
+        if self.range.cardinality() != other.domain.cardinality() {
+            return Err(UACalcError::InvalidOperation {
+                message: "Cannot compose homomorphisms: range of first does not match domain of second".to_string(),
+            });
+        }
+
+        // Create the composed map
+        let composed_map: Vec<usize> = self.map
+            .iter()
+            .map(|&x| other.map[x])
+            .collect();
+
+        Homomorphism::new(
+            self.domain.clone(),
+            other.range.clone(),
+            composed_map,
+        )
+    }
+
+    /// Validate that a map is actually a homomorphism
+    fn validate_homomorphism(
+        domain: &Arc<dyn SmallAlgebra>,
+        range: &Arc<dyn SmallAlgebra>,
+        map: &[usize],
+    ) -> UACalcResult<()> {
+        // Check that both algebras have the same number of operations
+        if domain.operations().len() != range.operations().len() {
+            return Err(UACalcError::InvalidOperation {
+                message: "Domain and range must have the same number of operations".to_string(),
+            });
+        }
+
+        // Check that operations have matching arities
+        for i in 0..domain.operations().len() {
+            let domain_op_arc = domain.operation_arc(i)?;
+            let range_op_arc = range.operation_arc(i)?;
+            
+            let domain_op = domain_op_arc.try_lock().map_err(|_| UACalcError::InvalidOperation {
+                message: "Failed to acquire domain operation lock (possible deadlock)".to_string(),
+            })?;
+            let range_op = range_op_arc.try_lock().map_err(|_| UACalcError::InvalidOperation {
+                message: "Failed to acquire range operation lock (possible deadlock)".to_string(),
+            })?;
+            
+            if domain_op.arity() != range_op.arity() {
+                return Err(UACalcError::InvalidOperation {
+                    message: format!(
+                        "Operation {} has different arities: domain={}, range={}",
+                        i, domain_op.arity(), range_op.arity()
+                    ),
+                });
+            }
+        }
+
+        // Check homomorphism property for all operations
+        for op_index in 0..domain.operations().len() {
+            let domain_op_arc = domain.operation_arc(op_index)?;
+            let range_op_arc = range.operation_arc(op_index)?;
+            
+            // Get arity first without holding locks
+            let arity = {
+                let domain_op = domain_op_arc.try_lock().map_err(|_| UACalcError::InvalidOperation {
+                    message: "Failed to acquire domain operation lock for arity check".to_string(),
+                })?;
+                domain_op.arity()
+            };
+
+            // For each possible input tuple
+            for args in Self::generate_argument_tuples(domain.cardinality(), arity) {
+                // Compute operation in domain
+                let domain_result = {
+                    let domain_op = domain_op_arc.try_lock().map_err(|_| UACalcError::InvalidOperation {
+                        message: "Failed to acquire domain operation lock for computation".to_string(),
+                    })?;
+                    domain_op.int_value_at(&args)?
+                };
+                
+                // Apply homomorphism to arguments
+                let mapped_args: Vec<usize> = args.iter().map(|&x| map[x]).collect();
+                
+                // Compute operation in range on mapped arguments
+                let range_result = {
+                    let range_op = range_op_arc.try_lock().map_err(|_| UACalcError::InvalidOperation {
+                        message: "Failed to acquire range operation lock for computation".to_string(),
+                    })?;
+                    range_op.int_value_at(&mapped_args)?
+                };
+                
+                // Apply homomorphism to domain result
+                let mapped_domain_result = map[domain_result];
+                
+                // Check homomorphism property
+                if mapped_domain_result != range_result {
+                    return Err(UACalcError::InvalidOperation {
+                        message: format!(
+                            "Homomorphism property violated for operation {}: f(op({:?})) = {} != op(f({:?})) = {}",
+                            op_index, args, mapped_domain_result, mapped_args, range_result
+                        ),
+                    });
+                }
+            }
+        }
+
+        Ok(())
+    }
+
+    /// Generate all possible argument tuples of given arity for a given set size
+    fn generate_argument_tuples(set_size: usize, arity: usize) -> Vec<Vec<usize>> {
+        if arity == 0 {
+            return vec![vec![]];
+        }
+
+        let mut tuples = Vec::new();
+        let mut current = vec![0; arity];
+        
+        loop {
+            tuples.push(current.clone());
+            
+            // Increment the tuple
+            let mut i = arity;
+            while i > 0 {
+                i -= 1;
+                current[i] += 1;
+                if current[i] < set_size {
+                    break;
+                }
+                current[i] = 0;
+            }
+            
+            // If we've wrapped around, we're done
+            if i == 0 && current[0] == 0 {
+                break;
+            }
+        }
+        
+        tuples
+    }
+}
+
+/// Find a homomorphism from one algebra to another
+/// 
+/// This is a brute-force search that tries all possible mappings.
+/// For large algebras, this will be very slow.
+pub fn find_homomorphism(
+    domain: Arc<dyn SmallAlgebra>,
+    range: Arc<dyn SmallAlgebra>,
+) -> UACalcResult<Option<Homomorphism>> {
+    // Check basic compatibility
+    if domain.operations().len() != range.operations().len() {
+        return Ok(None);
+    }
+
+    // Check operation arities match
+    for i in 0..domain.operations().len() {
+        let domain_op_arc = domain.operation_arc(i)?;
+        let range_op_arc = range.operation_arc(i)?;
+        
+        // Get arities without holding both locks simultaneously
+        let domain_arity = {
+            let domain_op = domain_op_arc.try_lock().map_err(|_| UACalcError::InvalidOperation {
+                message: "Failed to acquire domain operation lock (possible deadlock)".to_string(),
+            })?;
+            domain_op.arity()
+        };
+        
+        let range_arity = {
+            let range_op = range_op_arc.try_lock().map_err(|_| UACalcError::InvalidOperation {
+                message: "Failed to acquire range operation lock (possible deadlock)".to_string(),
+            })?;
+            range_op.arity()
+        };
+        
+        if domain_arity != range_arity {
+            return Ok(None);
+        }
+    }
+
+    // Try all possible mappings
+    let domain_size = domain.cardinality();
+    let range_size = range.cardinality();
+    
+    // Generate all possible mappings
+    for mapping in generate_all_mappings(domain_size, range_size) {
+        if let Ok(homomorphism) = Homomorphism::new(domain.clone(), range.clone(), mapping) {
+            return Ok(Some(homomorphism));
+        }
+    }
+
+    Ok(None)
+}
+
+/// Generate all possible mappings from a set of size n to a set of size m
+fn generate_all_mappings(n: usize, m: usize) -> Vec<Vec<usize>> {
+    if n == 0 {
+        return vec![vec![]];
+    }
+
+    let mut mappings = Vec::new();
+    let mut current = vec![0; n];
+    
+    loop {
+        mappings.push(current.clone());
+        
+        // Increment the mapping
+        let mut i = n;
+        while i > 0 {
+            i -= 1;
+            current[i] += 1;
+            if current[i] < m {
+                break;
+            }
+            current[i] = 0;
+        }
+        
+        // If we've wrapped around, we're done
+        if i == 0 && current[0] == 0 {
+            break;
+        }
+    }
+    
+    mappings
+}
+
+/// Check if two algebras are isomorphic
+pub fn are_isomorphic(
+    algebra1: Arc<dyn SmallAlgebra>,
+    algebra2: Arc<dyn SmallAlgebra>,
+) -> UACalcResult<bool> {
+    // Basic checks
+    if algebra1.cardinality() != algebra2.cardinality() {
+        return Ok(false);
+    }
+
+    if algebra1.operations().len() != algebra2.operations().len() {
+        return Ok(false);
+    }
+
+    // Check operation arities
+    for i in 0..algebra1.operations().len() {
+        let op1_arc = algebra1.operation_arc(i)?;
+        let op2_arc = algebra2.operation_arc(i)?;
+        
+        // Get arities without holding both locks simultaneously
+        let op1_arity = {
+            let op1 = op1_arc.try_lock().map_err(|_| UACalcError::InvalidOperation {
+                message: "Failed to acquire operation 1 lock (possible deadlock)".to_string(),
+            })?;
+            op1.arity()
+        };
+        
+        let op2_arity = {
+            let op2 = op2_arc.try_lock().map_err(|_| UACalcError::InvalidOperation {
+                message: "Failed to acquire operation 2 lock (possible deadlock)".to_string(),
+            })?;
+            op2.arity()
+        };
+        
+        if op1_arity != op2_arity {
+            return Ok(false);
+        }
+    }
+
+    // Try to find an isomorphism
+    if let Some(homomorphism) = find_homomorphism(algebra1.clone(), algebra2.clone())? {
+        Ok(homomorphism.is_bijective())
+    } else {
+        Ok(false)
+    }
+}

@@ -21,7 +21,7 @@ pub mod taylor;
 pub mod term;
 pub mod utils;
 
-pub use algebra::{Algebra, BasicAlgebra, SmallAlgebra};
+pub use algebra::{Algebra, BasicAlgebra, SmallAlgebra, Homomorphism, find_homomorphism, are_isomorphic};
 pub use binary_relation::{
     empty_relation, equivalence_from_partition, identity_relation, universal_relation,
     BasicBinaryRelation, BinaryRelation,
@@ -61,9 +61,9 @@ pub mod prelude {
     pub use crate::{
         coarsest_partition, empty_relation, equivalence_from_partition, finest_partition,
         identity_relation, universal_relation, Algebra, BasicAlgebra, BasicBinaryRelation,
-        BasicPartition, BinaryRelation, FlatOperationTable, FunctionOperation, Operation,
-        OperationSymbol, OperationType, Partition, QuotientAlgebra, SmallAlgebra, Subalgebra,
-        TableOperation, UACalcError, UACalcResult,
+        BasicPartition, BinaryRelation, FlatOperationTable, FunctionOperation, Homomorphism,
+        Operation, OperationSymbol, OperationType, Partition, QuotientAlgebra, SmallAlgebra, 
+        Subalgebra, TableOperation, UACalcError, UACalcResult, are_isomorphic, find_homomorphism,
     };
 
     // Utility functions

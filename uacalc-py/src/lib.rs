@@ -7,7 +7,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::sync::Mutex;
 
-use uacalc_core::algebra::{Algebra, BasicAlgebra, SmallAlgebra};
+use uacalc_core::algebra::{Algebra, BasicAlgebra, SmallAlgebra, Homomorphism, find_homomorphism as rust_find_homomorphism, are_isomorphic as rust_are_isomorphic};
 use uacalc_core::binary_relation::{BasicBinaryRelation, BinaryRelation};
 use uacalc_core::conlat::{BasicCongruenceLattice, BasicLattice, CongruenceLattice as CongruenceLatticeTrait};
 use uacalc_core::error::UACalcError;
@@ -28,6 +28,7 @@ fn uacalc_rust(_py: Python, m: &Bound<PyModule>) -> PyResult<()> {
     m.add_class::<PyProductAlgebra>()?;
     m.add_class::<PyQuotientAlgebra>()?;
     m.add_class::<PySubalgebra>()?;
+    m.add_class::<PyHomomorphism>()?;
     m.add_class::<PyOperation>()?;
     m.add_class::<PyOperationSymbol>()?;
     m.add_class::<PySimilarityType>()?;
@@ -68,6 +69,8 @@ fn uacalc_rust(_py: Python, m: &Bound<PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(create_associative_law, m)?)?;
     m.add_function(wrap_pyfunction!(create_cyclic_law, m)?)?;
     m.add_function(wrap_pyfunction!(create_first_second_symmetric_law, m)?)?;
+    m.add_function(wrap_pyfunction!(find_homomorphism, m)?)?;
+    m.add_function(wrap_pyfunction!(are_isomorphic, m)?)?;
 
     // Add custom exception classes
     m.add("UACalcError", _py.get_type_bound::<PyUACalcError>())?;
@@ -2864,4 +2867,123 @@ fn create_first_second_symmetric_law(symbol_name: String) -> PyResult<PyEquation
     Ok(PyEquation {
         inner: Arc::new(Mutex::new(equation)),
     })
+}
+
+/// Python wrapper for Homomorphism
+#[pyclass]
+pub struct PyHomomorphism {
+    inner: Homomorphism,
+}
+
+#[pymethods]
+impl PyHomomorphism {
+    #[new]
+    fn new(domain: PyAlgebra, range: PyAlgebra, map: Vec<usize>) -> PyResult<Self> {
+        let domain_arc: Arc<dyn SmallAlgebra> = Arc::new(domain.inner.clone());
+        let range_arc: Arc<dyn SmallAlgebra> = Arc::new(range.inner.clone());
+        
+        let homomorphism = Homomorphism::new(domain_arc, range_arc, map)
+            .map_err(map_uacalc_error)?;
+        
+        Ok(Self { inner: homomorphism })
+    }
+
+    /// Get the domain algebra
+    #[getter]
+    fn domain(&self) -> PyAlgebra {
+        // We need to extract the BasicAlgebra from the Arc<dyn SmallAlgebra>
+        // This is a bit tricky since we can't downcast trait objects easily
+        // For now, we'll create a new PyAlgebra with the same name and cardinality
+        let domain = self.inner.domain();
+        PyAlgebra {
+            inner: BasicAlgebra::with_cardinality(
+                format!("{}_domain", domain.name()),
+                domain.cardinality()
+            ).unwrap_or_else(|_| BasicAlgebra::new("unknown".to_string(), vec![0]).unwrap())
+        }
+    }
+
+    /// Get the range algebra
+    #[getter]
+    fn range(&self) -> PyAlgebra {
+        let range = self.inner.range();
+        PyAlgebra {
+            inner: BasicAlgebra::with_cardinality(
+                format!("{}_range", range.name()),
+                range.cardinality()
+            ).unwrap_or_else(|_| BasicAlgebra::new("unknown".to_string(), vec![0]).unwrap())
+        }
+    }
+
+    /// Get the mapping as a list
+    #[getter]
+    fn map(&self) -> Vec<usize> {
+        self.inner.map().to_vec()
+    }
+
+    /// Get the image of an element under this homomorphism
+    fn image(&self, element: usize) -> PyResult<usize> {
+        self.inner.image(element).map_err(map_uacalc_error)
+    }
+
+    /// Check if this homomorphism is injective (one-to-one)
+    fn is_injective(&self) -> bool {
+        self.inner.is_injective()
+    }
+
+    /// Check if this homomorphism is surjective (onto)
+    fn is_surjective(&self) -> bool {
+        self.inner.is_surjective()
+    }
+
+    /// Check if this homomorphism is bijective (both injective and surjective)
+    fn is_bijective(&self) -> bool {
+        self.inner.is_bijective()
+    }
+
+    /// Get the kernel of this homomorphism as a partition
+    fn kernel(&self) -> PyResult<PyPartition> {
+        let partition = self.inner.kernel().map_err(map_uacalc_error)?;
+        Ok(PyPartition { inner: partition })
+    }
+
+    /// Compose this homomorphism with another
+    fn compose(&self, other: &PyHomomorphism) -> PyResult<PyHomomorphism> {
+        let composed = self.inner.compose(&other.inner).map_err(map_uacalc_error)?;
+        Ok(PyHomomorphism { inner: composed })
+    }
+
+    fn __str__(&self) -> String {
+        format!(
+            "Homomorphism: {} -> {} : {:?}",
+            self.inner.domain().name(),
+            self.inner.range().name(),
+            self.inner.map()
+        )
+    }
+
+    fn __repr__(&self) -> String {
+        self.__str__()
+    }
+}
+
+/// Find a homomorphism from one algebra to another
+#[pyfunction]
+fn find_homomorphism(domain: PyAlgebra, range: PyAlgebra) -> PyResult<Option<PyHomomorphism>> {
+    let domain_arc: Arc<dyn SmallAlgebra> = Arc::new(domain.inner.clone());
+    let range_arc: Arc<dyn SmallAlgebra> = Arc::new(range.inner.clone());
+    
+    match rust_find_homomorphism(domain_arc, range_arc).map_err(map_uacalc_error)? {
+        Some(homomorphism) => Ok(Some(PyHomomorphism { inner: homomorphism })),
+        None => Ok(None),
+    }
+}
+
+/// Check if two algebras are isomorphic
+#[pyfunction]
+fn are_isomorphic(algebra1: PyAlgebra, algebra2: PyAlgebra) -> PyResult<bool> {
+    let algebra1_arc: Arc<dyn SmallAlgebra> = Arc::new(algebra1.inner.clone());
+    let algebra2_arc: Arc<dyn SmallAlgebra> = Arc::new(algebra2.inner.clone());
+    
+    rust_are_isomorphic(algebra1_arc, algebra2_arc).map_err(map_uacalc_error)
 }
