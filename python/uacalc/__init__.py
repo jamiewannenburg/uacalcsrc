@@ -120,6 +120,14 @@ except ImportError:
 from . import algebra as algebra_utils
 from .algebra import create_product_algebra
 
+# Import Taylor module
+try:
+    from . import taylor
+    TAYLOR_AVAILABLE = True
+except ImportError:
+    TAYLOR_AVAILABLE = False
+    taylor = None
+
 # Import I/O functions and error classes
 try:
     from .io import (
@@ -251,6 +259,7 @@ __all__ = [
     # Utility modules
     "io",
     "algebra_utils",
+    "taylor",
 ]
 
 # Enhanced convenience functions
@@ -454,7 +463,8 @@ if sys.version_info < (3, 7):
 __all__.extend([
     "HAS_NUMPY",
     "HAS_NETWORKX", 
-    "HAS_MATPLOTLIB"
+    "HAS_MATPLOTLIB",
+    "TAYLOR_AVAILABLE"
 ])
 
 # I/O module documentation

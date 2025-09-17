@@ -31,7 +31,8 @@ try:
     try:
         from uacalc.taylor import (
             Taylor, TaylorSpec, markovic_mckenzie_term, siggers_term,
-            IntArray, find_markovic_mckenzie, find_siggers
+            IntArray, Polynomial, PolynomialCoefficient, TaylorSeries,
+            TaylorExpansion, PolynomialUtils
         )
         TAYLOR_AVAILABLE = True
     except ImportError:
@@ -213,6 +214,34 @@ class TaylorCompatibilityTest(BaseCompatibilityTest):
             with self.subTest(algebra=algebra_file.name, taylor_term=test_case["name"]):
                 self._test_taylor_identity_checking_compatibility(algebra, algebra_file.name, test_case)
     
+    def test_taylor_polynomial_expansion_compatibility(self):
+        """Test Taylor polynomial expansion compatibility"""
+        if not TAYLOR_AVAILABLE:
+            self.skipTest("Taylor functionality not available")
+        
+        # Test polynomial expansion for different Taylor terms
+        test_terms = [
+            ("markovic_mckenzie", markovic_mckenzie_term()),
+            ("siggers", siggers_term()),
+        ]
+        
+        for term_name, taylor_term in test_terms:
+            with self.subTest(taylor_term=term_name):
+                self._test_taylor_polynomial_expansion_compatibility(taylor_term, term_name)
+    
+    def test_taylor_series_computation_compatibility(self):
+        """Test Taylor series computation compatibility"""
+        if not TAYLOR_AVAILABLE:
+            self.skipTest("Taylor functionality not available")
+        
+        # Test Taylor series computation
+        taylor_term = markovic_mckenzie_term()
+        expansion_point = [0.0, 0.0, 0.0, 0.0]
+        max_degree = 2
+        
+        with self.subTest(taylor_term="markovic_mckenzie"):
+            self._test_taylor_series_computation_compatibility(taylor_term, expansion_point, max_degree)
+    
     def _test_taylor_term_construction_compatibility(self, test_case: Dict[str, Any]):
         """Test Taylor term construction compatibility for a specific term type"""
         # Get Java result
@@ -374,6 +403,18 @@ class TaylorCompatibilityTest(BaseCompatibilityTest):
                     taylor_term = markovic_mckenzie_term()
                 elif term_name == "siggers":
                     taylor_term = siggers_term()
+                elif term_name == "majority":
+                    taylor_term = TaylorExpansion.create_custom_taylor_term(
+                        3, 
+                        [([1, 0, 0], [0, 0, 1]), ([0, 1, 0], [0, 0, 1]), ([0, 0, 1], [1, 0, 0])], 
+                        "maj"
+                    )
+                elif term_name == "minority":
+                    taylor_term = TaylorExpansion.create_custom_taylor_term(
+                        3, 
+                        [([1, 0, 0], [0, 0, 1]), ([0, 1, 0], [0, 0, 1]), ([0, 0, 1], [1, 0, 0])], 
+                        "min"
+                    )
                 else:
                     # For other terms, create a basic TaylorSpec
                     from uacalc.operation import OperationSymbol
@@ -389,9 +430,9 @@ class TaylorCompatibilityTest(BaseCompatibilityTest):
                     "term_name": term_name,
                     "results": {
                         "constructed_successfully": True,
-                        "arity": taylor_term.spec().arity,
-                        "symbol": str(taylor_term.spec().symbol),
-                        "equations_count": len(taylor_term.spec().equations),
+                        "arity": taylor_term.arity(),
+                        "symbol": str(taylor_term.spec().symbol()),
+                        "equations_count": len(taylor_term.equations()),
                         "term_type": "taylor"
                     },
                     "execution_time_ms": execution_time * 1000
@@ -840,6 +881,58 @@ class TaylorCompatibilityTest(BaseCompatibilityTest):
                 {f"x{i}": 1 for i in range(arity)},
                 {f"x{i}": i % 2 for i in range(arity)}
             ]
+    
+    def _test_taylor_polynomial_expansion_compatibility(self, taylor_term, term_name: str):
+        """Test Taylor polynomial expansion compatibility"""
+        try:
+            # Test polynomial expansion
+            polynomial = TaylorExpansion.expand_as_polynomial(taylor_term, max_degree=2)
+            
+            # Test polynomial properties
+            assert polynomial.variable_count() == taylor_term.arity()
+            assert polynomial.max_degree() <= 2
+            
+            # Test polynomial evaluation
+            test_values = [0.0] * taylor_term.arity()
+            result = polynomial.evaluate(test_values)
+            assert isinstance(result, float)
+            
+            # Test polynomial derivative
+            if polynomial.variable_count() > 0:
+                derivative = polynomial.derivative(0)
+                assert derivative.variable_count() == polynomial.variable_count()
+            
+            self.test_logger.info(f"Taylor polynomial expansion test passed for {term_name}")
+            
+        except Exception as e:
+            self.test_logger.error(f"Taylor polynomial expansion test failed for {term_name}: {e}")
+            raise
+    
+    def _test_taylor_series_computation_compatibility(self, taylor_term, expansion_point: List[float], max_degree: int):
+        """Test Taylor series computation compatibility"""
+        try:
+            # Create Taylor series
+            taylor_series = TaylorExpansion.create_taylor_series(taylor_term, expansion_point, max_degree)
+            
+            # Test series properties
+            assert taylor_series.max_degree() == max_degree
+            assert len(taylor_series.expansion_point()) == len(expansion_point)
+            assert taylor_series.polynomial().variable_count() == taylor_term.arity()
+            
+            # Test series evaluation
+            test_point = [0.5] * taylor_term.arity()
+            result = taylor_series.evaluate(test_point)
+            assert isinstance(result, float)
+            
+            # Test polynomial access
+            polynomial = taylor_series.polynomial()
+            assert polynomial.variable_count() == taylor_term.arity()
+            
+            self.test_logger.info(f"Taylor series computation test passed")
+            
+        except Exception as e:
+            self.test_logger.error(f"Taylor series computation test failed: {e}")
+            raise
 
 
 if __name__ == "__main__":

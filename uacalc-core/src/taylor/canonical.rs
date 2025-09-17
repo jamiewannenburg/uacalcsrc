@@ -97,8 +97,11 @@ impl UnionFind {
     pub fn count_classes(&mut self) -> usize {
         let mut roots = std::collections::HashSet::new();
         
-        for array in self.parent.keys() {
-            let root = self.find(array);
+        // Collect all arrays first to avoid borrowing issues
+        let arrays: Vec<IntArray> = self.parent.keys().cloned().collect();
+        
+        for array in arrays {
+            let root = self.find(&array);
             roots.insert(root);
         }
         
@@ -107,7 +110,7 @@ impl UnionFind {
 }
 
 /// Canonical form representation
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone)]
 pub struct CanonicalForm {
     /// The canonical representative
     representative: IntArray,

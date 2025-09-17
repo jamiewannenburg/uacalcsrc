@@ -4,12 +4,10 @@
 //! term interpretations using array-based canonicalization.
 
 use crate::{UACalcError, UACalcResult};
-use crate::taylor::{Taylor, TaylorSpec, IntArray};
+use crate::taylor::{Taylor, IntArray};
 use crate::term::{Term, TermId, TermArena};
-use std::collections::HashMap;
 
 /// Search configuration
-#[derive(Debug, Clone)]
 pub struct SearchConfig {
     /// Maximum search level
     pub max_level: usize,
@@ -17,6 +15,16 @@ pub struct SearchConfig {
     pub max_iterations: usize,
     /// Progress callback
     pub progress_callback: Option<Box<dyn Fn(f64) + Send + Sync>>,
+}
+
+impl std::fmt::Debug for SearchConfig {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("SearchConfig")
+            .field("max_level", &self.max_level)
+            .field("max_iterations", &self.max_iterations)
+            .field("progress_callback", &self.progress_callback.is_some())
+            .finish()
+    }
 }
 
 impl Default for SearchConfig {

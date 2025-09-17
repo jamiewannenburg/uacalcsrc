@@ -23,6 +23,12 @@ use uacalc_core::term::evaluation::EvaluationContext;
 use uacalc_core::term::variable::VariableAssignment;
 use uacalc_core::term::{TermArena, TermId};
 
+#[cfg(feature = "taylor")]
+use uacalc_core::taylor::{
+    IntArray, Polynomial, PolynomialCoefficient, PolynomialExpansion, 
+    Taylor, TaylorSeries, TaylorSpec
+};
+
 /// Python module for UACalc
 #[pymodule]
 fn uacalc_rust(_py: Python, m: &Bound<PyModule>) -> PyResult<()> {
@@ -49,6 +55,16 @@ fn uacalc_rust(_py: Python, m: &Bound<PyModule>) -> PyResult<()> {
     m.add_class::<PyPresentation>()?;
     m.add_class::<PyPresentationProperties>()?;
     m.add_class::<PyProgressReporter>()?;
+    
+    #[cfg(feature = "taylor")]
+    {
+        m.add_class::<taylor_bindings::PyIntArray>()?;
+        m.add_class::<taylor_bindings::PyPolynomialCoefficient>()?;
+        m.add_class::<taylor_bindings::PyPolynomial>()?;
+        m.add_class::<taylor_bindings::PyTaylorSpec>()?;
+        m.add_class::<taylor_bindings::PyTaylor>()?;
+        m.add_class::<taylor_bindings::PyTaylorSeries>()?;
+    }
 
     m.add_function(wrap_pyfunction!(create_algebra, m)?)?;
     m.add_function(wrap_pyfunction!(create_operation, m)?)?;
@@ -79,6 +95,19 @@ fn uacalc_rust(_py: Python, m: &Bound<PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(create_first_second_symmetric_law, m)?)?;
     m.add_function(wrap_pyfunction!(find_homomorphism, m)?)?;
     m.add_function(wrap_pyfunction!(are_isomorphic, m)?)?;
+    
+    #[cfg(feature = "taylor")]
+    {
+        m.add_function(wrap_pyfunction!(taylor_bindings::create_int_array, m)?)?;
+        m.add_function(wrap_pyfunction!(taylor_bindings::create_polynomial, m)?)?;
+        m.add_function(wrap_pyfunction!(taylor_bindings::create_taylor_spec, m)?)?;
+        m.add_function(wrap_pyfunction!(taylor_bindings::create_taylor, m)?)?;
+        m.add_function(wrap_pyfunction!(taylor_bindings::create_taylor_series, m)?)?;
+        m.add_function(wrap_pyfunction!(taylor_bindings::markovic_mckenzie_term, m)?)?;
+        m.add_function(wrap_pyfunction!(taylor_bindings::siggers_term, m)?)?;
+        m.add_function(wrap_pyfunction!(taylor_bindings::expand_taylor_term, m)?)?;
+        m.add_function(wrap_pyfunction!(taylor_bindings::expand_taylor_term_around_point, m)?)?;
+    }
 
     // Add custom exception classes
     m.add("UACalcError", _py.get_type_bound::<PyUACalcError>())?;
@@ -3366,4 +3395,379 @@ fn are_isomorphic(algebra1: PyAlgebra, algebra2: PyAlgebra) -> PyResult<bool> {
     let algebra2_arc: Arc<dyn SmallAlgebra> = Arc::new(algebra2.inner.clone());
     
     rust_are_isomorphic(algebra1_arc, algebra2_arc).map_err(map_uacalc_error)
+}
+
+// Taylor module Python bindings
+#[cfg(feature = "taylor")]
+mod taylor_bindings {
+    use super::*;
+    use pyo3::types::PyList;
+
+    /// Python wrapper for IntArray
+    #[pyclass(name = "IntArray")]
+    #[derive(Clone)]
+    pub struct PyIntArray {
+        pub inner: IntArray,
+    }
+
+    #[pymethods]
+    impl PyIntArray {
+        #[new]
+        fn new(length: usize) -> PyResult<Self> {
+            Ok(Self {
+                inner: IntArray::new(length),
+            })
+        }
+
+        #[staticmethod]
+        fn from_vec(data: Vec<usize>) -> PyResult<Self> {
+            Ok(Self {
+                inner: IntArray::from_vec(data),
+            })
+        }
+
+        fn get(&self, index: usize) -> PyResult<usize> {
+            self.inner.get(index).map_err(map_uacalc_error)
+        }
+
+        fn set(&mut self, index: usize, value: usize) -> PyResult<()> {
+            self.inner.set(index, value).map_err(map_uacalc_error)
+        }
+
+        fn len(&self) -> usize {
+            self.inner.len()
+        }
+
+        fn to_vec(&self) -> Vec<usize> {
+            self.inner.to_vec()
+        }
+
+        fn complement(&self) -> Self {
+            Self {
+                inner: self.inner.complement(),
+            }
+        }
+
+        fn count_ones(&self) -> usize {
+            self.inner.count_ones()
+        }
+
+        fn count_zeros(&self) -> usize {
+            self.inner.count_zeros()
+        }
+
+        fn __str__(&self) -> String {
+            format!("{}", self.inner)
+        }
+
+        fn __repr__(&self) -> String {
+            self.__str__()
+        }
+    }
+
+    /// Python wrapper for PolynomialCoefficient
+    #[pyclass(name = "PolynomialCoefficient")]
+    #[derive(Clone)]
+    pub struct PyPolynomialCoefficient {
+        pub inner: PolynomialCoefficient,
+    }
+
+    #[pymethods]
+    impl PyPolynomialCoefficient {
+        #[new]
+        fn new(value: f64, variable_indices: Vec<usize>, powers: Vec<usize>) -> PyResult<Self> {
+            Ok(Self {
+                inner: PolynomialCoefficient::new(value, variable_indices, powers).map_err(map_uacalc_error)?,
+            })
+        }
+
+        fn value(&self) -> f64 {
+            self.inner.value
+        }
+
+        fn variable_indices(&self) -> Vec<usize> {
+            self.inner.variable_indices.clone()
+        }
+
+        fn powers(&self) -> Vec<usize> {
+            self.inner.powers.clone()
+        }
+
+        fn degree(&self) -> usize {
+            self.inner.degree()
+        }
+
+        fn is_constant(&self) -> bool {
+            self.inner.is_constant()
+        }
+
+        fn variable_count(&self) -> usize {
+            self.inner.variable_count()
+        }
+
+        fn __str__(&self) -> String {
+            format!("PolynomialCoefficient(value={}, variables={:?}, powers={:?})", 
+                   self.inner.value, self.inner.variable_indices, self.inner.powers)
+        }
+
+        fn __repr__(&self) -> String {
+            self.__str__()
+        }
+    }
+
+    /// Python wrapper for Polynomial
+    #[pyclass(name = "Polynomial")]
+    #[derive(Clone)]
+    pub struct PyPolynomial {
+        pub inner: Polynomial,
+    }
+
+    #[pymethods]
+    impl PyPolynomial {
+        #[new]
+        fn new(variable_count: usize) -> Self {
+            Self {
+                inner: Polynomial::new(variable_count),
+            }
+        }
+
+        fn add_coefficient(&mut self, coeff: PyPolynomialCoefficient) -> PyResult<()> {
+            self.inner.add_coefficient(coeff.inner).map_err(map_uacalc_error)
+        }
+
+        fn get_coefficient(&self, variable_indices: Vec<usize>, powers: Vec<usize>) -> f64 {
+            self.inner.get_coefficient(&variable_indices, &powers)
+        }
+
+        fn evaluate(&self, values: Vec<f64>) -> PyResult<f64> {
+            self.inner.evaluate(&values).map_err(map_uacalc_error)
+        }
+
+        fn derivative(&self, variable_index: usize) -> PyResult<Self> {
+            Ok(Self {
+                inner: self.inner.derivative(variable_index).map_err(map_uacalc_error)?,
+            })
+        }
+
+        fn integral(&self, variable_index: usize) -> PyResult<Self> {
+            Ok(Self {
+                inner: self.inner.integral(variable_index).map_err(map_uacalc_error)?,
+            })
+        }
+
+        fn variable_count(&self) -> usize {
+            self.inner.variable_count
+        }
+
+        fn max_degree(&self) -> usize {
+            self.inner.max_degree
+        }
+
+        fn coefficients(&self) -> Vec<PyPolynomialCoefficient> {
+            self.inner.coefficients.iter().map(|c| PyPolynomialCoefficient { inner: c.clone() }).collect()
+        }
+
+        fn __str__(&self) -> String {
+            format!("Polynomial(variables={}, degree={}, coefficients={})", 
+                   self.inner.variable_count, self.inner.max_degree, self.inner.coefficients.len())
+        }
+
+        fn __repr__(&self) -> String {
+            self.__str__()
+        }
+    }
+
+    /// Python wrapper for TaylorSpec
+    #[pyclass(name = "TaylorSpec")]
+    #[derive(Clone)]
+    pub struct PyTaylorSpec {
+        pub inner: TaylorSpec,
+    }
+
+    #[pymethods]
+    impl PyTaylorSpec {
+        #[new]
+        fn new(arity: usize, equations: Vec<(PyIntArray, PyIntArray)>, symbol: PyOperationSymbol) -> PyResult<Self> {
+            let equation_pairs: Vec<(IntArray, IntArray)> = equations.into_iter()
+                .map(|(left, right)| (left.inner, right.inner))
+                .collect();
+            
+            Ok(Self {
+                inner: TaylorSpec::new(arity, equation_pairs, symbol.inner),
+            })
+        }
+
+        fn arity(&self) -> usize {
+            self.inner.arity
+        }
+
+        fn equations(&self) -> Vec<(PyIntArray, PyIntArray)> {
+            self.inner.equations.iter()
+                .map(|(left, right)| (PyIntArray { inner: left.clone() }, PyIntArray { inner: right.clone() }))
+                .collect()
+        }
+
+        fn symbol(&self) -> PyOperationSymbol {
+            PyOperationSymbol { inner: self.inner.symbol.clone() }
+        }
+
+        fn satisfies_equations(&self) -> bool {
+            self.inner.satisfies_equations()
+        }
+
+        fn __str__(&self) -> String {
+            format!("TaylorSpec(arity={}, equations={})", self.inner.arity, self.inner.equations.len())
+        }
+
+        fn __repr__(&self) -> String {
+            self.__str__()
+        }
+    }
+
+    /// Python wrapper for Taylor
+    #[pyclass(name = "Taylor")]
+    #[derive(Clone)]
+    pub struct PyTaylor {
+        pub inner: Taylor,
+    }
+
+    #[pymethods]
+    impl PyTaylor {
+        #[new]
+        fn new(spec: PyTaylorSpec) -> Self {
+            Self {
+                inner: Taylor::new(spec.inner),
+            }
+        }
+
+        fn spec(&self) -> PyTaylorSpec {
+            PyTaylorSpec { inner: self.inner.spec().clone() }
+        }
+
+        fn arity(&self) -> usize {
+            self.inner.arity()
+        }
+
+        fn equations(&self) -> Vec<(PyIntArray, PyIntArray)> {
+            self.inner.equations().iter()
+                .map(|(left, right)| (PyIntArray { inner: left.clone() }, PyIntArray { inner: right.clone() }))
+                .collect()
+        }
+
+        fn satisfies_equations(&self) -> bool {
+            self.inner.satisfies_equations()
+        }
+
+        fn satisfies_equations_with_assignment(&self, assignment: PyIntArray) -> bool {
+            self.inner.satisfies_equations_with_assignment(&assignment.inner)
+        }
+
+        fn __str__(&self) -> String {
+            format!("Taylor(arity={}, equations={})", self.arity(), self.equations().len())
+        }
+
+        fn __repr__(&self) -> String {
+            self.__str__()
+        }
+    }
+
+    /// Python wrapper for TaylorSeries
+    #[pyclass(name = "TaylorSeries")]
+    #[derive(Clone)]
+    pub struct PyTaylorSeries {
+        pub inner: TaylorSeries,
+    }
+
+    #[pymethods]
+    impl PyTaylorSeries {
+        #[new]
+        fn new(taylor_term: PyTaylor, expansion_point: Vec<f64>, max_degree: usize) -> PyResult<Self> {
+            Ok(Self {
+                inner: TaylorSeries::new(taylor_term.inner, expansion_point, max_degree).map_err(map_uacalc_error)?,
+            })
+        }
+
+        fn polynomial(&self) -> PyPolynomial {
+            PyPolynomial { inner: self.inner.polynomial().clone() }
+        }
+
+        fn expansion_point(&self) -> Vec<f64> {
+            self.inner.expansion_point().to_vec()
+        }
+
+        fn max_degree(&self) -> usize {
+            self.inner.max_degree()
+        }
+
+        fn evaluate(&self, point: Vec<f64>) -> PyResult<f64> {
+            self.inner.evaluate(&point).map_err(map_uacalc_error)
+        }
+
+        fn __str__(&self) -> String {
+            format!("TaylorSeries(degree={}, variables={})", 
+                   self.max_degree(), self.expansion_point().len())
+        }
+
+        fn __repr__(&self) -> String {
+            self.__str__()
+        }
+    }
+
+    // Factory functions
+    #[pyfunction]
+    pub fn create_int_array(length: usize) -> PyResult<PyIntArray> {
+        Ok(PyIntArray {
+            inner: IntArray::new(length),
+        })
+    }
+
+    #[pyfunction]
+    pub fn create_polynomial(variable_count: usize) -> PyPolynomial {
+        PyPolynomial {
+            inner: Polynomial::new(variable_count),
+        }
+    }
+
+    #[pyfunction]
+    pub fn create_taylor_spec(arity: usize, equations: Vec<(PyIntArray, PyIntArray)>, symbol: PyOperationSymbol) -> PyResult<PyTaylorSpec> {
+        PyTaylorSpec::new(arity, equations, symbol)
+    }
+
+    #[pyfunction]
+    pub fn create_taylor(spec: PyTaylorSpec) -> PyTaylor {
+        PyTaylor::new(spec)
+    }
+
+    #[pyfunction]
+    pub fn create_taylor_series(taylor_term: PyTaylor, expansion_point: Vec<f64>, max_degree: usize) -> PyResult<PyTaylorSeries> {
+        PyTaylorSeries::new(taylor_term, expansion_point, max_degree)
+    }
+
+    #[pyfunction]
+    pub fn markovic_mckenzie_term() -> PyTaylor {
+        PyTaylor {
+            inner: uacalc_core::taylor::markovic_mckenzie_term(),
+        }
+    }
+
+    #[pyfunction]
+    pub fn siggers_term() -> PyTaylor {
+        PyTaylor {
+            inner: uacalc_core::taylor::siggers_term(),
+        }
+    }
+
+    #[pyfunction]
+    pub fn expand_taylor_term(taylor_term: PyTaylor, max_degree: usize) -> PyResult<PyPolynomial> {
+        Ok(PyPolynomial {
+            inner: PolynomialExpansion::expand_taylor_term(&taylor_term.inner, max_degree).map_err(map_uacalc_error)?,
+        })
+    }
+
+    #[pyfunction]
+    pub fn expand_taylor_term_around_point(taylor_term: PyTaylor, expansion_point: Vec<f64>, max_degree: usize) -> PyResult<PyPolynomial> {
+        Ok(PyPolynomial {
+            inner: PolynomialExpansion::expand_taylor_term_around_point(&taylor_term.inner, expansion_point, max_degree).map_err(map_uacalc_error)?,
+        })
+    }
 }

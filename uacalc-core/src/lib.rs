@@ -54,7 +54,7 @@ pub use conlat::{
 };
 
 #[cfg(feature = "taylor")]
-pub use taylor::{IntArray, Taylor, TaylorSpec};
+pub use taylor::{IntArray, Polynomial, PolynomialCoefficient, PolynomialExpansion, Taylor, TaylorSeries, TaylorSpec};
 #[cfg(feature = "term-eval")]
 pub use term::{eval_term, eval_term_int, term_to_table, EvaluationContext, Term, TermArena};
 #[cfg(feature = "term-eval")]
@@ -93,7 +93,7 @@ pub mod prelude {
     pub use crate::{eval_term, eval_term_int, term_to_table, EvaluationContext, Term, TermArena, Equation, EquationComplexity, EquationProperties, ComplexityLevel, Presentation, PresentationProperties};
 
     #[cfg(feature = "taylor")]
-    pub use crate::taylor::{markovic_mckenzie_term, siggers_term, IntArray, Taylor, TaylorSpec};
+    pub use crate::taylor::{markovic_mckenzie_term, siggers_term, IntArray, Polynomial, PolynomialCoefficient, PolynomialExpansion, Taylor, TaylorSeries, TaylorSpec};
 }
 
 /// Common type aliases for better ergonomics

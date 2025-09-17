@@ -14,7 +14,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 pyo3 = { version = "0.21", features = ["extension-module"] }
-uacalc-core = { path = "../uacalc-core", features = ["conlat", "term-eval"] }
+uacalc-core = { path = "../uacalc-core", features = ["conlat", "term-eval", "taylor"] }
 serde = { workspace = true }
 serde_json = { workspace = true }
 once_cell = "1.18"

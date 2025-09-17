@@ -6,8 +6,7 @@
 use crate::operation::OperationSymbol;
 use crate::taylor::canonical::{canonical_form, make_union_find, UnionFind};
 use crate::taylor::int_array::IntArray;
-use crate::term::{Term, TermArena, TermId};
-use crate::{UACalcError, UACalcResult};
+use crate::term::{TermArena, TermId};
 use std::collections::HashMap;
 
 /// Taylor term specification
@@ -123,8 +122,8 @@ impl Taylor {
         for i in 0..assignment.len() {
             let value = assignment.get(i).unwrap();
             // Create IntArray representations for union
-            let pos_array = IntArray::from_vec(vec![i as u8]);
-            let val_array = IntArray::from_vec(vec![value as u8]);
+            let pos_array = IntArray::from_vec(vec![i]);
+            let val_array = IntArray::from_vec(vec![value]);
             uf.union(&pos_array, &val_array);
         }
 
