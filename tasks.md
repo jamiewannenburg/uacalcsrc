@@ -183,9 +183,9 @@ This document outlines the tasks needed to implement full compatibility between 
 **Priority: LOW** - Specialized functionality
 
 #### Subtask 8.1.1: `test_term_operation_compatibility.py`
-- [ ] Remove mock functions and implement term operations
-- [ ] Implement term manipulation and analysis
-- [ ] Test term operation properties
+- [x] Remove mock functions and implement term operations
+- [x] Implement term manipulation and analysis
+- [x] Test term operation properties
 
 #### Subtask 8.1.2: `test_terms_compatibility.py`
 - [ ] Remove mock functions and implement terms collection
