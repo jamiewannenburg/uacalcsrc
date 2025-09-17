@@ -48,7 +48,7 @@ fi
 echo "Installing extension in development mode..."
 # Temporarily unset CONDA_PREFIX to avoid conflicts with virtual environment
 unset CONDA_PREFIX
-maturin develop
+maturin develop --features taylor
 
 # Return to root directory
 cd ..

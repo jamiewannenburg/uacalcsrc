@@ -61,6 +61,13 @@ try:
         operation,
         rust_create_product_algebra,
         rust_create_quotient_algebra,
+        # Horner utility functions
+        py_horner_encode,
+        py_horner_decode,
+        py_horner_table_size,
+        py_mixed_radix_encode,
+        py_mixed_radix_decode,
+        py_mixed_radix_size,
     )
 except ImportError as e:
     raise ImportError(
@@ -238,6 +245,14 @@ __all__ = [
     "create_product_algebra",
     "rust_create_product_algebra",
     "rust_create_quotient_algebra",
+    
+    # Horner utility functions
+    "py_horner_encode",
+    "py_horner_decode", 
+    "py_horner_table_size",
+    "py_mixed_radix_encode",
+    "py_mixed_radix_decode",
+    "py_mixed_radix_size",
     
     # I/O functions
     "load_algebra",

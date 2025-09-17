@@ -213,14 +213,14 @@ This document outlines the tasks needed to implement full compatibility between 
 **Priority: LOW** - Advanced computational methods
 
 #### Subtask 9.1.1: `test_taylor_compatibility.py`
-- [ ] Remove mock functions and implement Taylor expansion
-- [ ] Implement polynomial expansion algorithms
-- [ ] Test Taylor series computation
+- [x] Remove mock functions and implement Taylor expansion
+- [x] Implement polynomial expansion algorithms
+- [x] Test Taylor series computation
 
 #### Subtask 9.1.2: `test_horner_compatibility.py`
-- [ ] Remove mock functions and implement Horner's method
-- [ ] Implement polynomial evaluation algorithms
-- [ ] Test Horner's method efficiency
+- [x] Remove mock functions and implement Horner's method
+- [x] Implement polynomial evaluation algorithms
+- [x] Test Horner's method efficiency
 
 #### Subtask 9.1.3: `test_malcev_compatibility.py`
 - [ ] Remove mock functions and implement Malcev conditions

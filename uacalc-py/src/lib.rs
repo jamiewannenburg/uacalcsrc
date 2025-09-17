@@ -22,6 +22,7 @@ use uacalc_core::subalgebra::Subalgebra;
 use uacalc_core::term::evaluation::EvaluationContext;
 use uacalc_core::term::variable::VariableAssignment;
 use uacalc_core::term::{TermArena, TermId};
+use uacalc_core::utils::{horner_encode, horner_decode, horner_table_size, mixed_radix_encode, mixed_radix_decode, mixed_radix_size};
 
 #[cfg(feature = "taylor")]
 use uacalc_core::taylor::{
@@ -95,6 +96,14 @@ fn uacalc_rust(_py: Python, m: &Bound<PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(create_first_second_symmetric_law, m)?)?;
     m.add_function(wrap_pyfunction!(find_homomorphism, m)?)?;
     m.add_function(wrap_pyfunction!(are_isomorphic, m)?)?;
+    
+    // Add Horner utility functions
+    m.add_function(wrap_pyfunction!(py_horner_encode, m)?)?;
+    m.add_function(wrap_pyfunction!(py_horner_decode, m)?)?;
+    m.add_function(wrap_pyfunction!(py_horner_table_size, m)?)?;
+    m.add_function(wrap_pyfunction!(py_mixed_radix_encode, m)?)?;
+    m.add_function(wrap_pyfunction!(py_mixed_radix_decode, m)?)?;
+    m.add_function(wrap_pyfunction!(py_mixed_radix_size, m)?)?;
     
     #[cfg(feature = "taylor")]
     {
@@ -3395,6 +3404,42 @@ fn are_isomorphic(algebra1: PyAlgebra, algebra2: PyAlgebra) -> PyResult<bool> {
     let algebra2_arc: Arc<dyn SmallAlgebra> = Arc::new(algebra2.inner.clone());
     
     rust_are_isomorphic(algebra1_arc, algebra2_arc).map_err(map_uacalc_error)
+}
+
+/// Python wrapper for horner_encode
+#[pyfunction]
+fn py_horner_encode(args: Vec<usize>, base: usize) -> PyResult<Option<usize>> {
+    Ok(horner_encode(&args, base))
+}
+
+/// Python wrapper for horner_decode
+#[pyfunction]
+fn py_horner_decode(index: usize, arity: usize, base: usize) -> PyResult<Vec<usize>> {
+    Ok(horner_decode(index, arity, base))
+}
+
+/// Python wrapper for horner_table_size
+#[pyfunction]
+fn py_horner_table_size(arity: usize, base: usize) -> PyResult<Option<usize>> {
+    Ok(horner_table_size(arity, base))
+}
+
+/// Python wrapper for mixed_radix_encode
+#[pyfunction]
+fn py_mixed_radix_encode(coords: Vec<usize>, radices: Vec<usize>) -> PyResult<Option<usize>> {
+    Ok(mixed_radix_encode(&coords, &radices))
+}
+
+/// Python wrapper for mixed_radix_decode
+#[pyfunction]
+fn py_mixed_radix_decode(value: usize, radices: Vec<usize>) -> PyResult<Vec<usize>> {
+    Ok(mixed_radix_decode(value, &radices))
+}
+
+/// Python wrapper for mixed_radix_size
+#[pyfunction]
+fn py_mixed_radix_size(radices: Vec<usize>) -> PyResult<Option<usize>> {
+    Ok(mixed_radix_size(&radices))
 }
 
 // Taylor module Python bindings
