@@ -40,11 +40,12 @@ class AlgebrasCompatibilityTest(BaseCompatibilityTest):
                 algebra = self._load_test_algebra(algebra_file)
                 
                 # Extract factory-related properties
+                operations = algebra.operations()
                 rust_factory_props = {
                     "cardinality": algebra.cardinality,
-                    "operation_count": len(algebra.operations),
+                    "operation_count": len(operations),
                     "can_be_reconstructed": True,  # Assume we can reconstruct from operations
-                    "has_valid_operations": all(hasattr(op, 'arity') for op in algebra.operations),
+                    "has_valid_operations": all(hasattr(op, 'arity') for op in operations),
                     "universe_is_standard": list(algebra.universe) == list(range(algebra.cardinality))
                 }
                 
@@ -86,24 +87,25 @@ class AlgebrasCompatibilityTest(BaseCompatibilityTest):
                 algebra = self._load_test_algebra(algebra_file)
                 
                 # Perform validation checks
+                operations = algebra.operations()
                 rust_validation = {
                     "is_valid_algebra": True,  # Assume loaded algebras are valid
                     "cardinality_positive": algebra.cardinality > 0,
-                    "operations_well_defined": len(algebra.operations) >= 0,
+                    "operations_well_defined": len(operations) >= 0,
                     "universe_consistent": len(list(algebra.universe)) == algebra.cardinality,
-                    "operations_have_symbols": all(hasattr(op, 'symbol') for op in algebra.operations),
-                    "operations_have_arities": all(hasattr(op, 'arity') for op in algebra.operations)
+                    "operations_have_symbols": all(hasattr(op, 'symbol') for op in operations),
+                    "operations_have_arities": all(hasattr(op, 'arity') for op in operations)
                 }
                 
                 # Check operation table validity for small algebras
-                if algebra.cardinality <= 4 and len(algebra.operations) > 0:
+                if algebra.cardinality <= 4 and len(operations) > 0:
                     try:
-                        first_op = algebra.operations[0]
-                        if first_op.arity <= 2:
+                        first_op = operations[0]
+                        if first_op.arity() <= 2:
                             # Test a few operation evaluations
-                            test_inputs = [[0]] if first_op.arity == 1 else [[0, 0], [0, 1]] if algebra.cardinality > 1 else [[0, 0]]
+                            test_inputs = [[0]] if first_op.arity() == 1 else [[0, 0], [0, 1]] if algebra.cardinality > 1 else [[0, 0]]
                             for inputs in test_inputs[:2]:  # Test first 2 cases
-                                if len(inputs) == first_op.arity:
+                                if len(inputs) == first_op.arity():
                                     result = first_op.value(inputs)
                                     if result not in range(algebra.cardinality):
                                         rust_validation["operations_well_defined"] = False
@@ -151,12 +153,13 @@ class AlgebrasCompatibilityTest(BaseCompatibilityTest):
                 
                 # Check normalization properties
                 universe_list = list(algebra.universe)
+                operations = algebra.operations()
                 rust_normalization = {
                     "universe_sorted": universe_list == sorted(universe_list),
                     "universe_starts_at_zero": min(universe_list) == 0 if universe_list else True,
                     "universe_contiguous": universe_list == list(range(len(universe_list))),
                     "operations_ordered": True,  # Assume operations are in some consistent order
-                    "symbols_normalized": all(str(op.symbol) for op in algebra.operations)
+                    "symbols_normalized": all(str(op.symbol) for op in operations)
                 }
                 
                 # Get normalization from Java
@@ -206,16 +209,18 @@ class AlgebrasCompatibilityTest(BaseCompatibilityTest):
                     algebra2 = self._load_test_algebra(algebra_file2)
                     
                     # Compare algebras
+                    operations1 = algebra1.operations()
+                    operations2 = algebra2.operations()
                     rust_comparison = {
                         "same_cardinality": algebra1.cardinality == algebra2.cardinality,
-                        "same_operation_count": len(algebra1.operations) == len(algebra2.operations),
+                        "same_operation_count": len(operations1) == len(operations2),
                         "same_similarity_type": (
-                            sorted([op.arity for op in algebra1.operations]) == 
-                            sorted([op.arity for op in algebra2.operations])
+                            sorted([op.arity() for op in operations1]) == 
+                            sorted([op.arity() for op in operations2])
                         ),
                         "potentially_isomorphic": (
                             algebra1.cardinality == algebra2.cardinality and
-                            len(algebra1.operations) == len(algebra2.operations)
+                            len(operations1) == len(operations2)
                         )
                     }
                     
@@ -263,10 +268,11 @@ class AlgebrasCompatibilityTest(BaseCompatibilityTest):
                 algebra = self._load_test_algebra(algebra_file)
                 
                 # Perform analysis
-                operation_arities = [op.arity for op in algebra.operations]
+                operations = algebra.operations()
+                operation_arities = [op.arity() for op in operations]
                 rust_analysis = {
                     "cardinality": algebra.cardinality,
-                    "operation_count": len(algebra.operations),
+                    "operation_count": len(operations),
                     "arity_distribution": {
                         "nullary": operation_arities.count(0),
                         "unary": operation_arities.count(1),
@@ -277,7 +283,7 @@ class AlgebrasCompatibilityTest(BaseCompatibilityTest):
                     "min_arity": min(operation_arities) if operation_arities else 0,
                     "total_operation_table_size": sum(algebra.cardinality ** arity for arity in operation_arities),
                     "is_finite": True,  # All test algebras are finite
-                    "complexity_estimate": algebra.cardinality * len(algebra.operations)
+                    "complexity_estimate": algebra.cardinality * len(operations)
                 }
                 
                 # Get analysis from Java
@@ -329,11 +335,12 @@ class AlgebrasCompatibilityTest(BaseCompatibilityTest):
                 algebra = self._load_test_algebra(algebra_file)
                 
                 # Test utility method results
+                operations = algebra.operations()
                 rust_utilities = {
-                    "has_operations": len(algebra.operations) > 0,
+                    "has_operations": len(operations) > 0,
                     "is_empty": algebra.cardinality == 0,
                     "is_singleton": algebra.cardinality == 1,
-                    "operation_symbols_unique": len(set(str(op.symbol) for op in algebra.operations)) == len(algebra.operations),
+                    "operation_symbols_unique": len(set(str(op.symbol) for op in operations)) == len(operations),
                     "universe_is_finite": True,  # All test algebras are finite
                     "supports_enumeration": algebra.cardinality <= 100
                 }
@@ -341,7 +348,7 @@ class AlgebrasCompatibilityTest(BaseCompatibilityTest):
                 # Check if operations are well-formed
                 operations_well_formed = True
                 try:
-                    for op in algebra.operations:
+                    for op in operations:
                         if not hasattr(op, 'arity') or not hasattr(op, 'symbol'):
                             operations_well_formed = False
                             break

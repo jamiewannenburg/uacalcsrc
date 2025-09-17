@@ -188,24 +188,24 @@ This document outlines the tasks needed to implement full compatibility between 
 - [x] Test term operation properties
 
 #### Subtask 8.1.2: `test_terms_compatibility.py`
-- [ ] Remove mock functions and implement terms collection
-- [ ] Implement term collection operations
-- [ ] Test term collection properties
+- [x] Remove mock functions and implement terms collection
+- [x] Implement term collection operations
+- [x] Test term collection properties
 
 #### Subtask 8.1.3: `test_equations_compatibility.py`
-- [ ] Remove mock functions and implement equations collection
-- [ ] Implement equation collection operations
-- [ ] Test equation collection properties
+- [x] Remove mock functions and implement equations collection
+- [x] Implement equation collection operations
+- [x] Test equation collection properties
 
 #### Subtask 8.1.4: `test_algebras_compatibility.py`
-- [ ] Remove mock functions and implement algebras collection
-- [ ] Implement algebra collection operations
-- [ ] Test algebra collection properties
+- [x] Remove mock functions and implement algebras collection
+- [x] Implement algebra collection operations
+- [x] Test algebra collection properties
 
 #### Subtask 8.1.5: `test_lattices_compatibility.py`
-- [ ] Remove mock functions and implement lattices collection
-- [ ] Implement lattice collection operations
-- [ ] Test lattice collection properties
+- [x] Remove mock functions and implement lattices collection
+- [x] Implement lattice collection operations
+- [x] Test lattice collection properties
 
 ## Tier 9: Advanced Algorithms
 
