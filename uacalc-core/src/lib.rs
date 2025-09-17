@@ -10,6 +10,7 @@ pub mod conlat;
 pub mod error;
 #[cfg(feature = "term-eval")]
 pub mod equation;
+pub mod free_algebra;
 pub mod operation;
 pub mod partition;
 pub mod product;
@@ -27,6 +28,7 @@ pub use binary_relation::{
     BasicBinaryRelation, BinaryRelation,
 };
 pub use error::{UACalcError, UACalcResult};
+pub use free_algebra::{FreeAlgebra, VarietyConstraint, create_free_algebra, create_free_algebra_with_common_operations};
 pub use operation::{
     FlatOperationTable, FunctionOperation, Operation, Operations, OperationSymbol, OperationType,
     TableOperation,
@@ -61,9 +63,11 @@ pub mod prelude {
     pub use crate::{
         coarsest_partition, empty_relation, equivalence_from_partition, finest_partition,
         identity_relation, universal_relation, Algebra, BasicAlgebra, BasicBinaryRelation,
-        BasicPartition, BinaryRelation, FlatOperationTable, FunctionOperation, Homomorphism,
-        Operation, OperationSymbol, OperationType, Partition, QuotientAlgebra, SmallAlgebra, 
-        Subalgebra, TableOperation, UACalcError, UACalcResult, are_isomorphic, find_homomorphism,
+        BasicPartition, BinaryRelation, FlatOperationTable, FreeAlgebra, FunctionOperation, 
+        Homomorphism, Operation, OperationSymbol, OperationType, Partition, QuotientAlgebra, 
+        SmallAlgebra, Subalgebra, TableOperation, UACalcError, UACalcResult, VarietyConstraint,
+        are_isomorphic, create_free_algebra, create_free_algebra_with_common_operations, 
+        find_homomorphism,
     };
 
     // Utility functions

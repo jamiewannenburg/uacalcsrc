@@ -12,6 +12,7 @@ use uacalc_core::binary_relation::{BasicBinaryRelation, BinaryRelation};
 use uacalc_core::conlat::{BasicCongruenceLattice, BasicLattice, CongruenceLattice as CongruenceLatticeTrait};
 use uacalc_core::error::UACalcError;
 use uacalc_core::equation::{Equation, EquationComplexity, EquationProperties, ComplexityLevel};
+use uacalc_core::free_algebra::{FreeAlgebra, VarietyConstraint, create_free_algebra, create_free_algebra_with_common_operations};
 use uacalc_core::operation::{Operation, Operations, OperationSymbol, TableOperation, SimilarityType};
 use uacalc_core::partition::{BasicPartition, Partition};
 use uacalc_core::product::ProductAlgebra;
@@ -28,6 +29,8 @@ fn uacalc_rust(_py: Python, m: &Bound<PyModule>) -> PyResult<()> {
     m.add_class::<PyProductAlgebra>()?;
     m.add_class::<PyQuotientAlgebra>()?;
     m.add_class::<PySubalgebra>()?;
+    m.add_class::<PyFreeAlgebra>()?;
+    m.add_class::<PyVarietyConstraint>()?;
     m.add_class::<PyHomomorphism>()?;
     m.add_class::<PyOperation>()?;
     m.add_class::<PyOperationSymbol>()?;
@@ -66,6 +69,8 @@ fn uacalc_rust(_py: Python, m: &Bound<PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(rust_create_product_algebra, m)?)?;
     m.add_function(wrap_pyfunction!(rust_create_quotient_algebra, m)?)?;
     m.add_function(wrap_pyfunction!(rust_create_subalgebra, m)?)?;
+    m.add_function(wrap_pyfunction!(rust_create_free_algebra, m)?)?;
+    m.add_function(wrap_pyfunction!(rust_create_free_algebra_with_common_operations, m)?)?;
     m.add_function(wrap_pyfunction!(create_associative_law, m)?)?;
     m.add_function(wrap_pyfunction!(create_cyclic_law, m)?)?;
     m.add_function(wrap_pyfunction!(create_first_second_symmetric_law, m)?)?;
@@ -1951,6 +1956,162 @@ impl PySubalgebra {
     }
 }
 
+/// Python wrapper for VarietyConstraint
+#[pyclass]
+#[derive(Clone)]
+pub struct PyVarietyConstraint {
+    inner: VarietyConstraint,
+}
+
+#[pymethods]
+impl PyVarietyConstraint {
+    #[new]
+    fn new(constraint_type: String) -> PyResult<Self> {
+        let inner = VarietyConstraint::from_string(&constraint_type)
+            .map_err(map_uacalc_error)?;
+        Ok(Self { inner })
+    }
+
+    #[staticmethod]
+    fn trivial() -> Self {
+        Self {
+            inner: VarietyConstraint::Trivial,
+        }
+    }
+
+    #[staticmethod]
+    fn idempotent() -> Self {
+        Self {
+            inner: VarietyConstraint::Idempotent,
+        }
+    }
+
+    #[staticmethod]
+    fn associative() -> Self {
+        Self {
+            inner: VarietyConstraint::Associative,
+        }
+    }
+
+    #[staticmethod]
+    fn commutative() -> Self {
+        Self {
+            inner: VarietyConstraint::Commutative,
+        }
+    }
+
+    fn __str__(&self) -> String {
+        match &self.inner {
+            VarietyConstraint::Trivial => "trivial".to_string(),
+            VarietyConstraint::Idempotent => "idempotent".to_string(),
+            VarietyConstraint::Associative => "associative".to_string(),
+            VarietyConstraint::Commutative => "commutative".to_string(),
+            VarietyConstraint::Custom(_) => "custom".to_string(),
+        }
+    }
+
+    fn __repr__(&self) -> String {
+        self.__str__()
+    }
+}
+
+/// Python wrapper for FreeAlgebra
+#[pyclass]
+#[derive(Clone)]
+pub struct PyFreeAlgebra {
+    inner: FreeAlgebra,
+}
+
+#[pymethods]
+impl PyFreeAlgebra {
+    #[new]
+    fn new(
+        name: String,
+        generators: Vec<String>,
+        variety_constraints: PyVarietyConstraint,
+        operation_symbols: Vec<PyOperationSymbol>,
+        max_depth: usize,
+    ) -> PyResult<Self> {
+        let rust_operation_symbols: Vec<OperationSymbol> = operation_symbols
+            .into_iter()
+            .map(|py_sym| py_sym.inner)
+            .collect();
+
+        let inner = FreeAlgebra::new(
+            name,
+            generators,
+            variety_constraints.inner,
+            rust_operation_symbols,
+            max_depth,
+        )
+        .map_err(map_uacalc_error)?;
+
+        Ok(Self { inner })
+    }
+
+    #[getter]
+    fn name(&self) -> String {
+        self.inner.name().to_string()
+    }
+
+    #[getter]
+    fn cardinality(&self) -> usize {
+        self.inner.cardinality()
+    }
+
+    #[getter]
+    fn generators(&self) -> Vec<String> {
+        self.inner.generators().to_vec()
+    }
+
+    #[getter]
+    fn variety_constraints(&self) -> PyVarietyConstraint {
+        PyVarietyConstraint {
+            inner: self.inner.variety_constraints().clone(),
+        }
+    }
+
+    fn operations(&self) -> Vec<PyOperation> {
+        self.inner
+            .operations()
+            .iter()
+            .map(|op| PyOperation {
+                inner: Arc::clone(op),
+            })
+            .collect()
+    }
+
+    fn operation_by_symbol(&self, symbol: &str) -> PyResult<PyOperation> {
+        let op = self
+            .inner
+            .operation_arc_by_symbol(symbol)
+            .map_err(map_uacalc_error)?;
+        Ok(PyOperation { inner: op })
+    }
+
+    fn satisfies_universal_property(&self) -> bool {
+        self.inner.satisfies_universal_property()
+    }
+
+    fn is_freely_generated(&self) -> bool {
+        self.inner.is_freely_generated()
+    }
+
+    fn __str__(&self) -> String {
+        format!(
+            "FreeAlgebra(name='{}', generators={:?}, variety={}, cardinality={})",
+            self.name(),
+            self.generators(),
+            self.variety_constraints().__str__(),
+            self.cardinality()
+        )
+    }
+
+    fn __repr__(&self) -> String {
+        self.__str__()
+    }
+}
+
 #[pymethods]
 impl PyAlgebra {
     #[new]
@@ -2848,6 +3009,92 @@ fn rust_create_subalgebra(
 
     // Return PySubalgebra directly, preserving Subalgebra-specific methods
     Ok(PySubalgebra { inner: subalgebra })
+}
+
+/// Create a free algebra with custom operation symbols
+#[pyfunction]
+fn rust_create_free_algebra(
+    name: String,
+    generators: Vec<String>,
+    variety_constraints: PyVarietyConstraint,
+    operation_symbols: Vec<PyOperationSymbol>,
+    max_depth: usize,
+) -> PyResult<PyFreeAlgebra> {
+    // Validate inputs
+    if name.is_empty() {
+        return Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+            "Free algebra name cannot be empty".to_string(),
+        ));
+    }
+
+    if generators.is_empty() {
+        return Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+            "Generators list cannot be empty".to_string(),
+        ));
+    }
+
+    if max_depth == 0 {
+        return Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+            "Max depth must be at least 1".to_string(),
+        ));
+    }
+
+    // Convert Python operation symbols to Rust operation symbols
+    let rust_operation_symbols: Vec<OperationSymbol> = operation_symbols
+        .into_iter()
+        .map(|py_sym| py_sym.inner)
+        .collect();
+
+    // Create free algebra
+    let free_algebra = FreeAlgebra::new(
+        name,
+        generators,
+        variety_constraints.inner,
+        rust_operation_symbols,
+        max_depth,
+    )
+    .map_err(map_uacalc_error)?;
+
+    Ok(PyFreeAlgebra { inner: free_algebra })
+}
+
+/// Create a free algebra with common operation symbols (+, *, 0, 1)
+#[pyfunction]
+fn rust_create_free_algebra_with_common_operations(
+    name: String,
+    generators: Vec<String>,
+    variety_constraints: PyVarietyConstraint,
+    max_depth: usize,
+) -> PyResult<PyFreeAlgebra> {
+    // Validate inputs
+    if name.is_empty() {
+        return Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+            "Free algebra name cannot be empty".to_string(),
+        ));
+    }
+
+    if generators.is_empty() {
+        return Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+            "Generators list cannot be empty".to_string(),
+        ));
+    }
+
+    if max_depth == 0 {
+        return Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+            "Max depth must be at least 1".to_string(),
+        ));
+    }
+
+    // Create free algebra with common operations
+    let free_algebra = create_free_algebra_with_common_operations(
+        name,
+        generators,
+        variety_constraints.inner,
+        max_depth,
+    )
+    .map_err(map_uacalc_error)?;
+
+    Ok(PyFreeAlgebra { inner: free_algebra })
 }
 
 /// Create an associative law equation: f(f(x,y),z) = f(x,f(y,z))
