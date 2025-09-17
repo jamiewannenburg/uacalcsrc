@@ -10,6 +10,8 @@ pub mod conlat;
 pub mod error;
 #[cfg(feature = "term-eval")]
 pub mod equation;
+#[cfg(feature = "term-eval")]
+pub mod presentation;
 pub mod free_algebra;
 pub mod operation;
 pub mod partition;
@@ -57,6 +59,8 @@ pub use taylor::{IntArray, Taylor, TaylorSpec};
 pub use term::{eval_term, eval_term_int, term_to_table, EvaluationContext, Term, TermArena};
 #[cfg(feature = "term-eval")]
 pub use equation::{Equation, EquationComplexity, EquationProperties, ComplexityLevel};
+#[cfg(feature = "term-eval")]
+pub use presentation::{Presentation, PresentationProperties};
 
 /// Re-export commonly used types
 pub mod prelude {
@@ -86,7 +90,7 @@ pub mod prelude {
     };
 
     #[cfg(feature = "term-eval")]
-    pub use crate::{eval_term, eval_term_int, term_to_table, EvaluationContext, Term, TermArena, Equation, EquationComplexity, EquationProperties, ComplexityLevel};
+    pub use crate::{eval_term, eval_term_int, term_to_table, EvaluationContext, Term, TermArena, Equation, EquationComplexity, EquationProperties, ComplexityLevel, Presentation, PresentationProperties};
 
     #[cfg(feature = "taylor")]
     pub use crate::taylor::{markovic_mckenzie_term, siggers_term, IntArray, Taylor, TaylorSpec};

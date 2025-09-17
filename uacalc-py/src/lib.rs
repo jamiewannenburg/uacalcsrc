@@ -12,6 +12,7 @@ use uacalc_core::binary_relation::{BasicBinaryRelation, BinaryRelation};
 use uacalc_core::conlat::{BasicCongruenceLattice, BasicLattice, CongruenceLattice as CongruenceLatticeTrait};
 use uacalc_core::error::UACalcError;
 use uacalc_core::equation::{Equation, EquationComplexity, EquationProperties, ComplexityLevel};
+use uacalc_core::presentation::{Presentation, PresentationProperties};
 use uacalc_core::free_algebra::{FreeAlgebra, VarietyConstraint, create_free_algebra, create_free_algebra_with_common_operations};
 use uacalc_core::operation::{Operation, Operations, OperationSymbol, TableOperation, SimilarityType};
 use uacalc_core::partition::{BasicPartition, Partition};
@@ -45,6 +46,8 @@ fn uacalc_rust(_py: Python, m: &Bound<PyModule>) -> PyResult<()> {
     m.add_class::<PyEquation>()?;
     m.add_class::<PyEquationComplexity>()?;
     m.add_class::<PyEquationProperties>()?;
+    m.add_class::<PyPresentation>()?;
+    m.add_class::<PyPresentationProperties>()?;
     m.add_class::<PyProgressReporter>()?;
 
     m.add_function(wrap_pyfunction!(create_algebra, m)?)?;
@@ -1430,6 +1433,119 @@ impl PyEquationProperties {
         format!(
             "EquationProperties(properties={:?}, is_identity={}, is_tautology={})",
             self.properties, self.is_identity, self.is_tautology
+        )
+    }
+
+    fn __repr__(&self) -> String {
+        self.__str__()
+    }
+}
+
+/// Python wrapper for Presentation
+#[pyclass]
+pub struct PyPresentation {
+    inner: Presentation,
+}
+
+#[pymethods]
+impl PyPresentation {
+    #[new]
+    fn new(variables: Vec<String>, equation_strings: Vec<(String, String)>) -> PyResult<Self> {
+        let presentation = Presentation::from_strings(variables, equation_strings)
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
+        Ok(Self { inner: presentation })
+    }
+
+    fn variables(&self) -> Vec<String> {
+        self.inner.variables().to_vec()
+    }
+
+    fn equations(&self) -> PyResult<Vec<PyEquation>> {
+        let mut py_equations = Vec::new();
+        for equation in self.inner.equations() {
+            py_equations.push(PyEquation {
+                inner: Arc::new(Mutex::new(equation.clone())),
+            });
+        }
+        Ok(py_equations)
+    }
+
+    fn used_variables(&self) -> PyResult<Vec<String>> {
+        let used_vars = self.inner.used_variables()
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
+        Ok(used_vars.into_iter().collect())
+    }
+
+    fn operation_symbols(&self) -> PyResult<Vec<PyOperationSymbol>> {
+        let symbols = self.inner.operation_symbols()
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
+        Ok(symbols.into_iter().map(|s| PyOperationSymbol { inner: s }).collect())
+    }
+
+    fn is_consistent(&self) -> PyResult<bool> {
+        self.inner.is_consistent()
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))
+    }
+
+    fn is_valid(&self) -> bool {
+        self.inner.is_valid()
+    }
+
+    fn analyze_properties(&self) -> PyResult<PyPresentationProperties> {
+        let properties = self.inner.analyze_properties()
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
+        Ok(PyPresentationProperties {
+            properties: properties.properties,
+            variable_count: properties.variable_count,
+            equation_count: properties.equation_count,
+            operation_count: properties.operation_count,
+            is_consistent: properties.is_consistent,
+            is_valid: properties.is_valid,
+        })
+    }
+
+    fn is_equivalent_to(&self, other: &PyPresentation) -> PyResult<bool> {
+        self.inner.is_equivalent_to(&other.inner)
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))
+    }
+
+    fn normalize(&self) -> PyResult<PyPresentation> {
+        let normalized = self.inner.normalize()
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
+        Ok(PyPresentation { inner: normalized })
+    }
+
+    fn is_satisfied_by(&self, algebra: &PyAlgebra) -> PyResult<bool> {
+        self.inner.is_satisfied_by(&algebra.inner)
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))
+    }
+
+    fn __str__(&self) -> String {
+        format!("{}", self.inner)
+    }
+
+    fn __repr__(&self) -> String {
+        self.__str__()
+    }
+}
+
+/// Python wrapper for PresentationProperties
+#[pyclass]
+pub struct PyPresentationProperties {
+    pub properties: Vec<String>,
+    pub variable_count: usize,
+    pub equation_count: usize,
+    pub operation_count: usize,
+    pub is_consistent: bool,
+    pub is_valid: bool,
+}
+
+#[pymethods]
+impl PyPresentationProperties {
+    fn __str__(&self) -> String {
+        format!(
+            "PresentationProperties(properties={:?}, variables={}, equations={}, operations={}, consistent={}, valid={})",
+            self.properties, self.variable_count, self.equation_count, self.operation_count, self.is_consistent, self.is_valid
         )
     }
 

@@ -32,6 +32,8 @@ try:
         PyEquation as Equation,
         PyEquationComplexity as EquationComplexity,
         PyEquationProperties as EquationProperties,
+        PyPresentation as Presentation,
+        PyPresentationProperties as PresentationProperties,
         PyProgressReporter as ProgressReporter,
         UACalcError,
         CancellationError,
@@ -198,6 +200,8 @@ __all__ = [
     "Equation",
     "EquationComplexity",
     "EquationProperties",
+    "Presentation",
+    "PresentationProperties",
     "ProgressReporter",
     
     # Error classes

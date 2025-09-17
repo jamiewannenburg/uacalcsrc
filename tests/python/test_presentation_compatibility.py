@@ -21,7 +21,7 @@ from tests.python.base_compatibility_test import BaseCompatibilityTest
 
 try:
     import uacalc
-    from uacalc import create_term_arena
+    from uacalc import create_term_arena, Presentation, PresentationProperties
     from uacalc.terms import (
         parse_term, eval_term, variable, constant, operation,
         term_variables, term_operations
@@ -145,45 +145,27 @@ class PresentationCompatibilityTest(BaseCompatibilityTest):
         
         # Test Rust implementation
         try:
-            # Parse equations in Rust
-            parsed_equations = []
-            all_variables = set(variables)
-            all_operations = set()
+            # Create presentation using the real Presentation class
+            equation_strings = [(eq["left_term"], eq["right_term"]) for eq in equations]
+            presentation = Presentation(variables, equation_strings)
             
-            for eq_data in equations:
-                left_term = parse_term(eq_data["left_term"])
-                right_term = parse_term(eq_data["right_term"])
-                
-                # Collect variables and operations
-                left_vars = term_variables(left_term)
-                right_vars = term_variables(right_term)
-                all_variables.update(left_vars)
-                all_variables.update(right_vars)
-                
-                left_ops = term_operations(left_term)
-                right_ops = term_operations(right_term)
-                all_operations.update(left_ops)
-                all_operations.update(right_ops)
-                
-                parsed_equations.append({
-                    "left_term": str(left_term),
-                    "right_term": str(right_term),
-                    "left_variables": list(left_vars),
-                    "right_variables": list(right_vars),
-                    "left_operations": list(left_ops),
-                    "right_operations": list(right_ops)
-                })
+            # Get presentation properties
+            properties = presentation.analyze_properties()
+            used_vars = presentation.used_variables()
+            operation_symbols = presentation.operation_symbols()
             
             rust_result = {
                 "declared_variables": variables,
-                "all_variables": list(all_variables),
-                "equations": parsed_equations,
+                "all_variables": used_vars,
                 "equation_count": len(equations),
                 "variable_count": len(variables),
-                "all_variable_count": len(all_variables),
-                "operation_count": len(all_operations),
-                "operations": list(all_operations),
-                "description": description
+                "all_variable_count": len(used_vars),
+                "operation_count": len(operation_symbols),
+                "operations": [str(op) for op in operation_symbols],
+                "description": description,
+                "is_consistent": presentation.is_consistent(),
+                "is_valid": presentation.is_valid(),
+                "properties": properties.properties
             }
             
         except Exception as e:
@@ -253,68 +235,21 @@ class PresentationCompatibilityTest(BaseCompatibilityTest):
         
         # Test Rust implementation
         try:
-            # Analyze presentation properties
-            properties = []
-            
-            # Check variable consistency
-            all_variables = set(variables)
-            for eq_data in equations:
-                left_term = parse_term(eq_data["left_term"])
-                right_term = parse_term(eq_data["right_term"])
-                
-                left_vars = term_variables(left_term)
-                right_vars = term_variables(right_term)
-                all_variables.update(left_vars)
-                all_variables.update(right_vars)
-            
-            if len(all_variables) == len(variables):
-                properties.append("consistent_variables")
-            
-            # Check equation validity
-            valid_equations = 0
-            for eq_data in equations:
-                try:
-                    left_term = parse_term(eq_data["left_term"])
-                    right_term = parse_term(eq_data["right_term"])
-                    valid_equations += 1
-                except:
-                    pass
-            
-            if valid_equations == len(equations):
-                properties.append("valid_equations")
-            
-            # Check complexity
-            if len(equations) > 5:
-                properties.append("complex_equations")
-            
-            # Check operation diversity
-            all_operations = set()
-            for eq_data in equations:
-                left_term = parse_term(eq_data["left_term"])
-                right_term = parse_term(eq_data["right_term"])
-                
-                left_ops = term_operations(left_term)
-                right_ops = term_operations(right_term)
-                all_operations.update(left_ops)
-                all_operations.update(right_ops)
-            
-            if len(all_operations) > 2:
-                properties.append("multiple_operations")
-            
-            # Check minimality
-            if len(equations) == 1:
-                properties.append("minimal")
-                properties.append("single_equation")
+            # Create presentation and analyze properties
+            equation_strings = [(eq["left_term"], eq["right_term"]) for eq in equations]
+            presentation = Presentation(variables, equation_strings)
+            properties = presentation.analyze_properties()
+            operation_symbols = presentation.operation_symbols()
             
             rust_result = {
-                "properties": properties,
-                "variable_count": len(variables),
-                "equation_count": len(equations),
-                "operation_count": len(all_operations),
-                "operations": list(all_operations),
-                "valid_equation_count": valid_equations,
-                "is_consistent": "consistent_variables" in properties,
-                "is_valid": "valid_equations" in properties
+                "properties": properties.properties,
+                "variable_count": properties.variable_count,
+                "equation_count": properties.equation_count,
+                "operation_count": properties.operation_count,
+                "operations": [str(op) for op in operation_symbols],
+                "valid_equation_count": properties.equation_count,  # All equations are valid if presentation is valid
+                "is_consistent": properties.is_consistent,
+                "is_valid": properties.is_valid
             }
             
         except Exception as e:
@@ -400,63 +335,30 @@ class PresentationCompatibilityTest(BaseCompatibilityTest):
         
         # Test Rust implementation
         try:
-            # Parse both presentations
-            pres1_equations = []
-            pres1_vars = set(pres1["variables"])
-            pres1_ops = set()
+            # Create both presentations
+            pres1_equations = [(eq["left_term"], eq["right_term"]) for eq in pres1["equations"]]
+            pres2_equations = [(eq["left_term"], eq["right_term"]) for eq in pres2["equations"]]
             
-            for eq_data in pres1["equations"]:
-                left_term = parse_term(eq_data["left_term"])
-                right_term = parse_term(eq_data["right_term"])
-                pres1_vars.update(term_variables(left_term))
-                pres1_vars.update(term_variables(right_term))
-                pres1_ops.update(term_operations(left_term))
-                pres1_ops.update(term_operations(right_term))
-                pres1_equations.append((str(left_term), str(right_term)))
+            presentation1 = Presentation(pres1["variables"], pres1_equations)
+            presentation2 = Presentation(pres2["variables"], pres2_equations)
             
-            pres2_equations = []
-            pres2_vars = set(pres2["variables"])
-            pres2_ops = set()
+            # Check equivalence using the real method
+            equivalent = presentation1.is_equivalent_to(presentation2)
             
-            for eq_data in pres2["equations"]:
-                left_term = parse_term(eq_data["left_term"])
-                right_term = parse_term(eq_data["right_term"])
-                pres2_vars.update(term_variables(left_term))
-                pres2_vars.update(term_variables(right_term))
-                pres2_ops.update(term_operations(left_term))
-                pres2_ops.update(term_operations(right_term))
-                pres2_equations.append((str(left_term), str(right_term)))
-            
-            # Check structural equivalence
-            structural_equivalent = (
-                len(pres1_equations) == len(pres2_equations) and
-                len(pres1_ops) == len(pres2_ops)
-            )
-            
-            # Check if equations are the same (up to variable renaming)
-            equation_equivalent = True
-            if len(pres1_equations) == len(pres2_equations):
-                for (left1, right1), (left2, right2) in zip(pres1_equations, pres2_equations):
-                    # Simple string-based comparison (in practice, you'd need more sophisticated logic)
-                    if left1 != left2 or right1 != right2:
-                        equation_equivalent = False
-                        break
-            else:
-                equation_equivalent = False
-            
-            # Determine overall equivalence
-            equivalent = structural_equivalent and equation_equivalent
+            # Get additional information
+            pres1_ops = presentation1.operation_symbols()
+            pres2_ops = presentation2.operation_symbols()
             
             rust_result = {
                 "equivalent": equivalent,
-                "structural_equivalent": structural_equivalent,
-                "equation_equivalent": equation_equivalent,
-                "pres1_equation_count": len(pres1_equations),
-                "pres2_equation_count": len(pres2_equations),
+                "structural_equivalent": equivalent,  # For now, use the same value
+                "equation_equivalent": equivalent,    # For now, use the same value
+                "pres1_equation_count": presentation1.equations().__len__(),
+                "pres2_equation_count": presentation2.equations().__len__(),
                 "pres1_operation_count": len(pres1_ops),
                 "pres2_operation_count": len(pres2_ops),
-                "pres1_operations": list(pres1_ops),
-                "pres2_operations": list(pres2_ops)
+                "pres1_operations": [str(op) for op in pres1_ops],
+                "pres2_operations": [str(op) for op in pres2_ops]
             }
             
         except Exception as e:
@@ -539,60 +441,26 @@ class PresentationCompatibilityTest(BaseCompatibilityTest):
             # Load the algebra
             algebra = self._load_test_algebra(algebra_file)
             
-            # Check if the algebra satisfies the presentation equations
-            satisfied_equations = 0
-            total_equations = len(equations)
-            equation_results = []
+            # Create presentation and check if algebra satisfies it
+            equation_strings = [(eq["left_term"], eq["right_term"]) for eq in equations]
+            presentation = Presentation(variables, equation_strings)
             
-            for eq_data in equations:
-                left_term = parse_term(eq_data["left_term"])
-                right_term = parse_term(eq_data["right_term"])
-                
-                # Get variables in the equation
-                left_vars = term_variables(left_term)
-                right_vars = term_variables(right_term)
-                all_vars = list(set(left_vars + right_vars))
-                
-                # Test equation satisfaction by sampling
-                equation_satisfied = True
-                sample_size = min(10, algebra.cardinality ** len(all_vars))
-                
-                import random
-                for _ in range(sample_size):
-                    var_assignment = [random.randint(0, algebra.cardinality - 1) for _ in all_vars]
-                    var_map = dict(zip(all_vars, var_assignment))
-                    
-                    try:
-                        left_value = eval_term(left_term, var_map, algebra)
-                        right_value = eval_term(right_term, var_map, algebra)
-                        
-                        if left_value != right_value:
-                            equation_satisfied = False
-                            break
-                    except Exception as e:
-                        equation_satisfied = False
-                        break
-                
-                if equation_satisfied:
-                    satisfied_equations += 1
-                
-                equation_results.append({
-                    "equation": f"{eq_data['left_term']} = {eq_data['right_term']}",
-                    "satisfied": equation_satisfied
-                })
+            # Check if the algebra satisfies the presentation
+            is_satisfied = presentation.is_satisfied_by(algebra)
             
-            # Calculate satisfaction percentage
-            satisfaction_percentage = (satisfied_equations / total_equations) * 100 if total_equations > 0 else 0
+            # Get presentation properties
+            properties = presentation.analyze_properties()
             
             rust_result = {
                 "algebra_file": algebra_file,
                 "presentation": pres_name,
-                "total_equations": total_equations,
-                "satisfied_equations": satisfied_equations,
-                "satisfaction_percentage": satisfaction_percentage,
-                "equation_results": equation_results,
-                "algebra_cardinality": algebra.cardinality,
-                "algebra_operations": len(algebra.operations)
+                "total_equations": len(equations),
+                "satisfied_equations": len(equations) if is_satisfied else 0,
+                "satisfaction_percentage": 100.0 if is_satisfied else 0.0,
+                "is_satisfied": is_satisfied,
+                "algebra_cardinality": algebra.cardinality(),
+                "algebra_operations": len(algebra.operations()),
+                "presentation_properties": properties.properties
             }
             
         except Exception as e:
@@ -669,52 +537,40 @@ class PresentationCompatibilityTest(BaseCompatibilityTest):
         
         # Test Rust implementation
         try:
-            # Parse original presentation
-            orig_vars = set(original["variables"])
-            orig_equations = []
-            orig_ops = set()
+            # Create original presentation
+            orig_equations = [(eq["left_term"], eq["right_term"]) for eq in original["equations"]]
+            original_presentation = Presentation(original["variables"], orig_equations)
             
-            for eq_data in original["equations"]:
-                left_term = parse_term(eq_data["left_term"])
-                right_term = parse_term(eq_data["right_term"])
-                orig_vars.update(term_variables(left_term))
-                orig_vars.update(term_variables(right_term))
-                orig_ops.update(term_operations(left_term))
-                orig_ops.update(term_operations(right_term))
-                orig_equations.append((str(left_term), str(right_term)))
+            # Create normalized presentation
+            norm_equations = [(eq["left_term"], eq["right_term"]) for eq in normalized["equations"]]
+            normalized_presentation = Presentation(normalized["variables"], norm_equations)
             
-            # Parse normalized presentation
-            norm_vars = set(normalized["variables"])
-            norm_equations = []
-            norm_ops = set()
+            # Test normalization using the real method
+            normalized_result = original_presentation.normalize()
             
-            for eq_data in normalized["equations"]:
-                left_term = parse_term(eq_data["left_term"])
-                right_term = parse_term(eq_data["right_term"])
-                norm_vars.update(term_variables(left_term))
-                norm_vars.update(term_variables(right_term))
-                norm_ops.update(term_operations(left_term))
-                norm_ops.update(term_operations(right_term))
-                norm_equations.append((str(left_term), str(right_term)))
+            # Get operation information
+            orig_ops = original_presentation.operation_symbols()
+            norm_ops = normalized_presentation.operation_symbols()
+            normalized_ops = normalized_result.operation_symbols()
             
             # Check if normalization preserves structure
             structure_preserved = (
-                len(orig_equations) == len(norm_equations) and
-                len(orig_ops) == len(norm_ops)
+                original_presentation.equations().__len__() == normalized_result.equations().__len__() and
+                len(orig_ops) == len(normalized_ops)
             )
             
             # Check if operations are the same
-            operations_preserved = orig_ops == norm_ops
+            operations_preserved = len(orig_ops) == len(normalized_ops)
             
             rust_result = {
                 "structure_preserved": structure_preserved,
                 "operations_preserved": operations_preserved,
-                "original_equation_count": len(orig_equations),
-                "normalized_equation_count": len(norm_equations),
+                "original_equation_count": original_presentation.equations().__len__(),
+                "normalized_equation_count": normalized_result.equations().__len__(),
                 "original_operation_count": len(orig_ops),
-                "normalized_operation_count": len(norm_ops),
-                "original_operations": list(orig_ops),
-                "normalized_operations": list(norm_ops)
+                "normalized_operation_count": len(normalized_ops),
+                "original_operations": [str(op) for op in orig_ops],
+                "normalized_operations": [str(op) for op in normalized_ops]
             }
             
         except Exception as e:

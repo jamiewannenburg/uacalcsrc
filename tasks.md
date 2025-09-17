@@ -111,12 +111,12 @@ This document outlines the tasks needed to implement full compatibility between 
 - [x] Test mathematical properties of homomorphisms
 
 #### Subtask 5.1.2: `test_presentation_compatibility.py`
-- [ ] Remove mock functions and implement `Presentation` class in Rust/Python
-- [ ] Implement algebraic presentation construction and properties
-- [ ] Implement presentation equivalence and normalization
-- [ ] Implement presentation-based algebra construction
-- [ ] Test presentation normalization operations
-- [ ] Test with various presentation types (groups, lattices, boolean algebras)
+- [x] Remove mock functions and implement `Presentation` class in Rust/Python
+- [x] Implement algebraic presentation construction and properties
+- [x] Implement presentation equivalence and normalization
+- [x] Implement presentation-based algebra construction
+- [x] Test presentation normalization operations
+- [x] Test with various presentation types (groups, lattices, boolean algebras)
 
 #### Subtask 5.1.3: `test_free_algebra_compatibility.py`
 - [x] Remove mock functions and implement `FreeAlgebra` class in Rust/Python

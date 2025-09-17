@@ -151,6 +151,32 @@ impl Term {
         }
     }
     
+    /// Check if the term is well-formed
+    pub fn is_well_formed(&self, arena: &TermArena) -> bool {
+        match self {
+            Term::Variable(_) => true,
+            Term::Operation { symbol_id, children } => {
+                // Check if symbol exists in arena
+                if arena.get_symbol(*symbol_id).is_err() {
+                    return false;
+                }
+                
+                // Check if all children exist and are well-formed
+                for &child_id in children {
+                    if let Ok(child) = arena.get_term(child_id) {
+                        if !child.is_well_formed(arena) {
+                            return false;
+                        }
+                    } else {
+                        return false;
+                    }
+                }
+                
+                true
+            }
+        }
+    }
+
     /// Convert to string representation
     pub fn to_string(&self, arena: &TermArena) -> UACalcResult<String> {
         match self {
