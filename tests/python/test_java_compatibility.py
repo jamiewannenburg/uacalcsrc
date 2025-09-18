@@ -659,8 +659,9 @@ class TermCompatibilityTest(unittest.TestCase):
             with self.subTest(variable=var_name):
                 # Test Rust variable creation
                 try:
+                    arena = uacalc.create_term_arena()
                     from uacalc.terms import variable
-                    rust_var = variable(var_name)
+                    rust_var = variable(var_name,arena)
                     self.assertIsNotNone(rust_var)
                 except Exception as e:
                     # If Rust doesn't support this format, that's a compatibility issue

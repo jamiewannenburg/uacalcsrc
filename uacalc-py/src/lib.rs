@@ -3676,6 +3676,7 @@ mod taylor_bindings {
             })
         }
 
+        #[getter]
         fn arity(&self) -> usize {
             self.inner.arity
         }
@@ -3723,6 +3724,7 @@ mod taylor_bindings {
             PyTaylorSpec { inner: self.inner.spec().clone() }
         }
 
+        #[getter]
         fn arity(&self) -> usize {
             self.inner.arity()
         }

@@ -1,5 +1,5 @@
 ---
-description: Remember that there are two uacalc python files. The one is called uacalc_rust, the other just uacalc.
-globs: *.py
+description: Remember that there are two uacalc python files. The one is called uacalc_rust, the other is in uacalc/__init__.py.
+globs: 
 alwaysApply: true
 ---
