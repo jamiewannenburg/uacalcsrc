@@ -97,5 +97,5 @@ Repository = "https://github.com/uacalc/uacalc-rust"
 "Bug Tracker" = "https://github.com/uacalc/uacalc-rust/issues"
 
 [tool.maturin]
-features = ["pyo3/extension-module", "conlat", "term-eval"]
+features = ["pyo3/extension-module", "conlat", "term-eval", "taylor", "memory-limit"]
 module-name = "uacalc_rust"

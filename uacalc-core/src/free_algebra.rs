@@ -10,6 +10,9 @@ use crate::operation::{Operation, OperationSymbol, OperationType, TableOperation
 use crate::term::{Term, TermArena, TermId};
 use crate::error::{UACalcError, UACalcResult};
 
+#[cfg(feature = "memory-limit")]
+use crate::memory::check_free_algebra_memory_limit;
+
 use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, Mutex};
 
@@ -69,6 +72,28 @@ impl FreeAlgebra {
             return Err(UACalcError::ParseError {
                 message: "Free algebra must have at least one generator".to_string(),
             });
+        }
+
+        // Check memory limit before proceeding
+        #[cfg(feature = "memory-limit")]
+        {
+            let operation_arities: Vec<usize> = operation_symbols.iter().map(|s| s.arity()).collect();
+            // Only check memory limit if estimation is possible
+            if let Err(e) = check_free_algebra_memory_limit(
+                generators.len(),
+                operation_symbols.len(),
+                max_depth,
+                &operation_arities,
+            ) {
+                // If the error is about estimation being too large, log a warning but continue
+                if e.to_string().contains("too large to estimate") {
+                    // Log warning but don't fail - let the operation proceed
+                    eprintln!("Warning: Memory estimation failed for free algebra generation, proceeding without limit check");
+                } else {
+                    // For other memory limit errors, fail
+                    return Err(e);
+                }
+            }
         }
 
         // Create term arena for managing terms

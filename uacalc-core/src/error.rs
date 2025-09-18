@@ -35,6 +35,9 @@ pub enum UACalcError {
 
     #[error("Operation cancelled: {message}")]
     Cancelled { message: String },
+
+    #[error("Memory limit exceeded: {message}")]
+    MemoryLimitExceeded { message: String },
 }
 
 /// Result type for UACalc operations

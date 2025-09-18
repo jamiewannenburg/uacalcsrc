@@ -8,6 +8,9 @@ pub mod binary_relation;
 #[cfg(feature = "conlat")]
 pub mod conlat;
 pub mod error;
+pub mod malcev;
+#[cfg(feature = "memory-limit")]
+pub mod memory;
 #[cfg(feature = "term-eval")]
 pub mod equation;
 #[cfg(feature = "term-eval")]
@@ -30,6 +33,10 @@ pub use binary_relation::{
     BasicBinaryRelation, BinaryRelation,
 };
 pub use error::{UACalcError, UACalcResult};
+pub use malcev::{
+    MalcevAnalyzer, MalcevAnalysis, VarietyAnalysis, TctAnalysis, AdvancedProperties,
+    analyze_malcev_conditions, analyze_variety_membership, analyze_tct_type, analyze_advanced_properties
+};
 pub use free_algebra::{FreeAlgebra, VarietyConstraint, create_free_algebra, create_free_algebra_with_common_operations};
 pub use operation::{
     FlatOperationTable, FunctionOperation, Operation, Operations, OperationSymbol, OperationType,
@@ -45,6 +52,12 @@ pub use utils::{
     validate_universe_contiguous, DEFAULT_CACHE_SIZE, ERR_INVALID_ARITY, ERR_INVALID_UNIVERSE,
     ERR_OVERFLOW, ERR_TABLE_TOO_LARGE, MAX_OPERATION_ARITY, MAX_TABLE_SIZE, MAX_UNIVERSE_SIZE,
     PERFORMANCE_THRESHOLD,
+};
+
+#[cfg(feature = "memory-limit")]
+pub use memory::{
+    set_memory_limit, get_memory_limit, get_allocated_memory, get_peak_allocated_memory,
+    would_exceed_limit, estimate_free_algebra_memory, check_free_algebra_memory_limit,
 };
 
 #[cfg(feature = "conlat")]
@@ -71,7 +84,8 @@ pub mod prelude {
         Homomorphism, Operation, OperationSymbol, OperationType, Partition, QuotientAlgebra, 
         SmallAlgebra, Subalgebra, TableOperation, UACalcError, UACalcResult, VarietyConstraint,
         are_isomorphic, create_free_algebra, create_free_algebra_with_common_operations, 
-        find_homomorphism,
+        find_homomorphism, MalcevAnalyzer, MalcevAnalysis, VarietyAnalysis, TctAnalysis, AdvancedProperties,
+        analyze_malcev_conditions, analyze_variety_membership, analyze_tct_type, analyze_advanced_properties,
     };
 
     // Utility functions

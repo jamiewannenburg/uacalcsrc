@@ -225,7 +225,11 @@ class BaseCompatibilityTest(unittest.TestCase):
             ], capture_output=True, text=True, timeout=30)
             
             if result.returncode == 0:
-                data = json.loads(result.stdout)
+                # Extract the last line which should contain the JSON result
+                output_lines = result.stdout.strip().split('\n')
+                json_line = output_lines[-1] if output_lines else ""
+                
+                data = json.loads(json_line)
                 if "name" in data and "cardinality" in data:
                     logger.debug(f"Basic Java operation test passed with {test_file.name}")
                     return True
@@ -309,7 +313,11 @@ class BaseCompatibilityTest(unittest.TestCase):
             
             if result.returncode == 0:
                 try:
-                    json_result = json.loads(result.stdout)
+                    # Extract the last line which should contain the JSON result
+                    output_lines = result.stdout.strip().split('\n')
+                    json_line = output_lines[-1] if output_lines else ""
+                    
+                    json_result = json.loads(json_line)
                     json_result['_execution_time'] = execution_time
                     self.test_logger.debug(f"Java operation '{operation}' completed in {execution_time:.3f}s")
                     return json_result

@@ -11,6 +11,10 @@ use uacalc_core::algebra::{Algebra, BasicAlgebra, SmallAlgebra, Homomorphism, fi
 use uacalc_core::binary_relation::{BasicBinaryRelation, BinaryRelation};
 use uacalc_core::conlat::{BasicCongruenceLattice, BasicLattice, CongruenceLattice as CongruenceLatticeTrait};
 use uacalc_core::error::UACalcError;
+use uacalc_core::malcev::{
+    MalcevAnalyzer, MalcevAnalysis, VarietyAnalysis, TctAnalysis, AdvancedProperties,
+    analyze_malcev_conditions, analyze_variety_membership, analyze_tct_type, analyze_advanced_properties
+};
 use uacalc_core::equation::{Equation, EquationComplexity, EquationProperties, ComplexityLevel};
 use uacalc_core::presentation::{Presentation, PresentationProperties};
 use uacalc_core::free_algebra::{FreeAlgebra, VarietyConstraint, create_free_algebra, create_free_algebra_with_common_operations};
@@ -48,6 +52,11 @@ fn uacalc_rust(_py: Python, m: &Bound<PyModule>) -> PyResult<()> {
     m.add_class::<PyBinaryRelation>()?;
     m.add_class::<PyCongruenceLattice>()?;
     m.add_class::<PyBasicLattice>()?;
+    m.add_class::<PyMalcevAnalysis>()?;
+    m.add_class::<PyVarietyAnalysis>()?;
+    m.add_class::<PyTctAnalysis>()?;
+    m.add_class::<PyAdvancedProperties>()?;
+    m.add_class::<PyMalcevAnalyzer>()?;
     m.add_class::<PyTerm>()?;
     m.add_class::<PyTermArena>()?;
     m.add_class::<PyEquation>()?;
@@ -116,6 +125,24 @@ fn uacalc_rust(_py: Python, m: &Bound<PyModule>) -> PyResult<()> {
         m.add_function(wrap_pyfunction!(taylor_bindings::siggers_term, m)?)?;
         m.add_function(wrap_pyfunction!(taylor_bindings::expand_taylor_term, m)?)?;
         m.add_function(wrap_pyfunction!(taylor_bindings::expand_taylor_term_around_point, m)?)?;
+    }
+
+    // Malcev function registrations
+    m.add_function(wrap_pyfunction!(py_analyze_malcev_conditions, m)?)?;
+    m.add_function(wrap_pyfunction!(py_analyze_variety_membership, m)?)?;
+    m.add_function(wrap_pyfunction!(py_analyze_tct_type, m)?)?;
+    m.add_function(wrap_pyfunction!(py_analyze_advanced_properties, m)?)?;
+
+    // Memory limit function registrations
+    #[cfg(feature = "memory-limit")]
+    {
+        m.add_function(wrap_pyfunction!(py_set_memory_limit, m)?)?;
+        m.add_function(wrap_pyfunction!(py_get_memory_limit, m)?)?;
+        m.add_function(wrap_pyfunction!(py_get_allocated_memory, m)?)?;
+        m.add_function(wrap_pyfunction!(py_get_peak_allocated_memory, m)?)?;
+        m.add_function(wrap_pyfunction!(py_would_exceed_limit, m)?)?;
+        m.add_function(wrap_pyfunction!(py_estimate_free_algebra_memory, m)?)?;
+        m.add_function(wrap_pyfunction!(py_check_free_algebra_memory_limit, m)?)?;
     }
 
     // Add custom exception classes
@@ -3815,4 +3842,375 @@ mod taylor_bindings {
             inner: PolynomialExpansion::expand_taylor_term_around_point(&taylor_term.inner, expansion_point, max_degree).map_err(map_uacalc_error)?,
         })
     }
+
 }
+
+// Malcev Analysis Classes
+
+/// Python wrapper for MalcevAnalysis
+#[pyclass(name = "MalcevAnalysis")]
+#[derive(Clone)]
+pub struct PyMalcevAnalysis {
+    pub inner: MalcevAnalysis,
+}
+
+#[pymethods]
+impl PyMalcevAnalysis {
+    #[getter]
+    fn has_malcev_term(&self) -> bool {
+        self.inner.has_malcev_term
+    }
+
+    #[getter]
+    fn has_join_term(&self) -> bool {
+        self.inner.has_join_term
+    }
+
+    #[getter]
+    fn has_majority_term(&self) -> bool {
+        self.inner.has_majority_term
+    }
+
+    #[getter]
+    fn has_minority_term(&self) -> bool {
+        self.inner.has_minority_term
+    }
+
+    #[getter]
+    fn has_near_unanimity_term(&self) -> bool {
+        self.inner.has_near_unanimity_term
+    }
+
+    #[getter]
+    fn congruence_modular(&self) -> bool {
+        self.inner.congruence_modular
+    }
+
+    #[getter]
+    fn congruence_distributive(&self) -> bool {
+        self.inner.congruence_distributive
+    }
+
+    #[getter]
+    fn malcev_type(&self) -> i32 {
+        self.inner.malcev_type
+    }
+
+    #[getter]
+    fn malcev_term(&self) -> Option<String> {
+        self.inner.malcev_term.clone()
+    }
+
+    #[getter]
+    fn join_term(&self) -> Option<String> {
+        self.inner.join_term.clone()
+    }
+
+    #[getter]
+    fn analysis_completed(&self) -> bool {
+        self.inner.analysis_completed
+    }
+
+    fn __str__(&self) -> String {
+        format!("MalcevAnalysis(has_malcev_term={}, has_join_term={}, malcev_type={})", 
+               self.inner.has_malcev_term, self.inner.has_join_term, self.inner.malcev_type)
+    }
+
+    fn __repr__(&self) -> String {
+        self.__str__()
+    }
+}
+
+/// Python wrapper for VarietyAnalysis
+#[pyclass(name = "VarietyAnalysis")]
+#[derive(Clone)]
+pub struct PyVarietyAnalysis {
+    pub inner: VarietyAnalysis,
+}
+
+#[pymethods]
+impl PyVarietyAnalysis {
+    #[getter]
+    fn is_group(&self) -> bool {
+        self.inner.is_group
+    }
+
+    #[getter]
+    fn is_lattice(&self) -> bool {
+        self.inner.is_lattice
+    }
+
+    #[getter]
+    fn is_boolean_algebra(&self) -> bool {
+        self.inner.is_boolean_algebra
+    }
+
+    #[getter]
+    fn is_semilattice(&self) -> bool {
+        self.inner.is_semilattice
+    }
+
+    #[getter]
+    fn is_quasigroup(&self) -> bool {
+        self.inner.is_quasigroup
+    }
+
+    #[getter]
+    fn variety_count(&self) -> usize {
+        self.inner.variety_count
+    }
+
+    fn __str__(&self) -> String {
+        format!("VarietyAnalysis(variety_count={})", self.inner.variety_count)
+    }
+
+    fn __repr__(&self) -> String {
+        self.__str__()
+    }
+}
+
+/// Python wrapper for TctAnalysis
+#[pyclass(name = "TctAnalysis")]
+#[derive(Clone)]
+pub struct PyTctAnalysis {
+    pub inner: TctAnalysis,
+}
+
+#[pymethods]
+impl PyTctAnalysis {
+    #[getter]
+    fn tct_type(&self) -> i32 {
+        self.inner.tct_type
+    }
+
+    #[getter]
+    fn type_determined(&self) -> bool {
+        self.inner.type_determined
+    }
+
+    #[getter]
+    fn has_type_1(&self) -> bool {
+        self.inner.has_type_1
+    }
+
+    #[getter]
+    fn has_type_2(&self) -> bool {
+        self.inner.has_type_2
+    }
+
+    #[getter]
+    fn has_type_3(&self) -> bool {
+        self.inner.has_type_3
+    }
+
+    #[getter]
+    fn has_type_4(&self) -> bool {
+        self.inner.has_type_4
+    }
+
+    #[getter]
+    fn has_type_5(&self) -> bool {
+        self.inner.has_type_5
+    }
+
+    #[getter]
+    fn type_analysis_complete(&self) -> bool {
+        self.inner.type_analysis_complete
+    }
+
+    fn __str__(&self) -> String {
+        format!("TctAnalysis(tct_type={}, type_determined={})", 
+               self.inner.tct_type, self.inner.type_determined)
+    }
+
+    fn __repr__(&self) -> String {
+        self.__str__()
+    }
+}
+
+/// Python wrapper for AdvancedProperties
+#[pyclass(name = "AdvancedProperties")]
+#[derive(Clone)]
+pub struct PyAdvancedProperties {
+    pub inner: AdvancedProperties,
+}
+
+#[pymethods]
+impl PyAdvancedProperties {
+    #[getter]
+    fn has_permuting_congruences(&self) -> bool {
+        self.inner.has_permuting_congruences
+    }
+
+    #[getter]
+    fn congruence_lattice_size(&self) -> usize {
+        self.inner.congruence_lattice_size
+    }
+
+    #[getter]
+    fn join_irreducible_count(&self) -> usize {
+        self.inner.join_irreducible_count
+    }
+
+    #[getter]
+    fn atoms_count(&self) -> usize {
+        self.inner.atoms_count
+    }
+
+    #[getter]
+    fn height(&self) -> usize {
+        self.inner.height
+    }
+
+    #[getter]
+    fn width(&self) -> usize {
+        self.inner.width
+    }
+
+    #[getter]
+    fn is_simple(&self) -> bool {
+        self.inner.is_simple
+    }
+
+    #[getter]
+    fn analysis_depth(&self) -> String {
+        self.inner.analysis_depth.clone()
+    }
+
+    fn __str__(&self) -> String {
+        format!("AdvancedProperties(congruence_lattice_size={}, is_simple={})", 
+               self.inner.congruence_lattice_size, self.inner.is_simple)
+    }
+
+    fn __repr__(&self) -> String {
+        self.__str__()
+    }
+}
+
+/// Python wrapper for MalcevAnalyzer
+#[pyclass(name = "MalcevAnalyzer")]
+pub struct PyMalcevAnalyzer {
+    inner: MalcevAnalyzer,
+}
+
+#[pymethods]
+impl PyMalcevAnalyzer {
+    #[new]
+    fn new() -> Self {
+        Self {
+            inner: MalcevAnalyzer::new(),
+        }
+    }
+
+    fn analyze_malcev_conditions(&mut self, algebra: &PyAlgebra) -> PyResult<PyMalcevAnalysis> {
+        let analysis = self.inner.analyze_malcev_conditions(&algebra.inner).map_err(map_uacalc_error)?;
+        Ok(PyMalcevAnalysis { inner: analysis })
+    }
+
+    fn analyze_variety_membership(&self, algebra: &PyAlgebra) -> PyResult<PyVarietyAnalysis> {
+        let analysis = self.inner.analyze_variety_membership(&algebra.inner).map_err(map_uacalc_error)?;
+        Ok(PyVarietyAnalysis { inner: analysis })
+    }
+
+    fn analyze_tct_type(&self, algebra: &PyAlgebra) -> PyResult<PyTctAnalysis> {
+        let analysis = self.inner.analyze_tct_type(&algebra.inner).map_err(map_uacalc_error)?;
+        Ok(PyTctAnalysis { inner: analysis })
+    }
+
+    fn analyze_advanced_properties(&self, algebra: &PyAlgebra) -> PyResult<PyAdvancedProperties> {
+        let analysis = self.inner.analyze_advanced_properties(&algebra.inner).map_err(map_uacalc_error)?;
+        Ok(PyAdvancedProperties { inner: analysis })
+    }
+}
+
+// Convenience functions for direct analysis
+#[pyfunction]
+pub fn py_analyze_malcev_conditions(algebra: &PyAlgebra) -> PyResult<PyMalcevAnalysis> {
+    let analysis = analyze_malcev_conditions(&algebra.inner).map_err(map_uacalc_error)?;
+    Ok(PyMalcevAnalysis { inner: analysis })
+}
+
+#[pyfunction]
+pub fn py_analyze_variety_membership(algebra: &PyAlgebra) -> PyResult<PyVarietyAnalysis> {
+    let analysis = analyze_variety_membership(&algebra.inner).map_err(map_uacalc_error)?;
+    Ok(PyVarietyAnalysis { inner: analysis })
+}
+
+#[pyfunction]
+pub fn py_analyze_tct_type(algebra: &PyAlgebra) -> PyResult<PyTctAnalysis> {
+    let analysis = analyze_tct_type(&algebra.inner).map_err(map_uacalc_error)?;
+    Ok(PyTctAnalysis { inner: analysis })
+}
+
+#[pyfunction]
+pub fn py_analyze_advanced_properties(algebra: &PyAlgebra) -> PyResult<PyAdvancedProperties> {
+    let analysis = analyze_advanced_properties(&algebra.inner).map_err(map_uacalc_error)?;
+    Ok(PyAdvancedProperties { inner: analysis })
+}
+
+// Memory limit functions
+#[cfg(feature = "memory-limit")]
+mod memory_bindings {
+    use super::*;
+    use uacalc_core::memory::{
+        set_memory_limit, get_memory_limit, get_allocated_memory, get_peak_allocated_memory,
+        would_exceed_limit, estimate_free_algebra_memory, check_free_algebra_memory_limit,
+    };
+
+    /// Set the global memory limit in bytes
+    #[pyfunction]
+    pub fn py_set_memory_limit(limit_bytes: usize) -> PyResult<()> {
+        set_memory_limit(limit_bytes).map_err(map_uacalc_error)
+    }
+
+    /// Get the current memory limit in bytes
+    #[pyfunction]
+    pub fn py_get_memory_limit() -> usize {
+        get_memory_limit()
+    }
+
+    /// Get the currently allocated memory in bytes
+    #[pyfunction]
+    pub fn py_get_allocated_memory() -> usize {
+        get_allocated_memory()
+    }
+
+    /// Get the peak allocated memory in bytes
+    #[pyfunction]
+    pub fn py_get_peak_allocated_memory() -> usize {
+        get_peak_allocated_memory()
+    }
+
+    /// Check if an additional allocation would exceed the memory limit
+    #[pyfunction]
+    pub fn py_would_exceed_limit(additional_bytes: usize) -> bool {
+        would_exceed_limit(additional_bytes)
+    }
+
+    /// Estimate memory usage for free algebra generation
+    #[pyfunction]
+    pub fn py_estimate_free_algebra_memory(
+        num_generators: usize,
+        num_operations: usize,
+        max_depth: usize,
+        operation_arities: Vec<usize>,
+    ) -> usize {
+        estimate_free_algebra_memory(num_generators, num_operations, max_depth, &operation_arities)
+    }
+
+    /// Check if free algebra generation would exceed memory limit
+    #[pyfunction]
+    pub fn py_check_free_algebra_memory_limit(
+        num_generators: usize,
+        num_operations: usize,
+        max_depth: usize,
+        operation_arities: Vec<usize>,
+    ) -> PyResult<()> {
+        check_free_algebra_memory_limit(num_generators, num_operations, max_depth, &operation_arities)
+            .map_err(map_uacalc_error)
+    }
+}
+
+// Re-export memory functions
+#[cfg(feature = "memory-limit")]
+pub use memory_bindings::*;

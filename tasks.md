@@ -223,9 +223,9 @@ This document outlines the tasks needed to implement full compatibility between 
 - [x] Test Horner's method efficiency
 
 #### Subtask 9.1.3: `test_malcev_compatibility.py`
-- [ ] Remove mock functions and implement Malcev conditions
-- [ ] Implement Malcev condition checking
-- [ ] Test Malcev condition properties
+- [x] Remove mock functions and implement Malcev conditions
+- [x] Implement Malcev condition checking
+- [x] Test Malcev condition properties
 
 #### Subtask 9.1.4: `test_polymorphisms_compatibility.py`
 - [ ] Remove mock functions and implement polymorphism operations

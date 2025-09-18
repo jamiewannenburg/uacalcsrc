@@ -19,56 +19,75 @@ import warnings
 # Import the Rust extension module
 try:
     from uacalc_rust import (
-        PyAlgebra as Algebra,
-        PyOperation as Operation,
-        Operations,
-        OperationSymbol,
-        PyPartition as Partition,
-        PyBinaryRelation as BinaryRelation,
-        PyCongruenceLattice as CongruenceLattice,
-        PyBasicLattice as BasicLattice,
-        PyTerm as Term,
-        PyTermArena as TermArena,
-        PyEquation as Equation,
-        PyEquationComplexity as EquationComplexity,
-        PyEquationProperties as EquationProperties,
-        PyPresentation as Presentation,
-        PyPresentationProperties as PresentationProperties,
-        PyProgressReporter as ProgressReporter,
-        UACalcError,
-        CancellationError,
-        create_algebra,
-        create_operation,
-        create_operation_with_size,
-        create_partition,
-        create_partition_from_blocks,
-        create_binary_relation,
-        create_congruence_lattice,
-        create_basic_lattice,
-        create_basic_lattice_from_congruence_lattice,
-        create_term_arena,
-        create_progress_reporter,
-        create_associative_law,
-        create_cyclic_law,
-        create_first_second_symmetric_law,
-        parse_term,
-        eval_term,
-        term_variables,
-        term_operations,
-        validate_term_against_algebra,
-        variable,
-        constant,
-        operation,
-        rust_create_product_algebra,
-        rust_create_quotient_algebra,
-        # Horner utility functions
-        py_horner_encode,
-        py_horner_decode,
-        py_horner_table_size,
-        py_mixed_radix_encode,
-        py_mixed_radix_decode,
-        py_mixed_radix_size,
-    )
+    PyAlgebra as Algebra,
+    PyOperation as Operation,
+    Operations,
+    OperationSymbol,
+    PyPartition as Partition,
+    PyBinaryRelation as BinaryRelation,
+    PyCongruenceLattice as CongruenceLattice,
+    PyBasicLattice as BasicLattice,
+    PyTerm as Term,
+    PyTermArena as TermArena,
+    PyEquation as Equation,
+    PyEquationComplexity as EquationComplexity,
+    PyEquationProperties as EquationProperties,
+    PyPresentation as Presentation,
+    PyPresentationProperties as PresentationProperties,
+    PyProgressReporter as ProgressReporter,
+    UACalcError,
+    CancellationError,
+    create_algebra,
+    create_operation,
+    create_operation_with_size,
+    create_partition,
+    create_partition_from_blocks,
+    create_binary_relation,
+    create_congruence_lattice,
+    create_basic_lattice,
+    create_basic_lattice_from_congruence_lattice,
+    create_term_arena,
+    create_progress_reporter,
+    create_associative_law,
+    create_cyclic_law,
+    create_first_second_symmetric_law,
+    parse_term,
+    eval_term,
+    term_variables,
+    term_operations,
+    validate_term_against_algebra,
+    variable,
+    constant,
+    operation,
+    rust_create_product_algebra,
+    rust_create_quotient_algebra,
+    # Horner utility functions
+    py_horner_encode,
+    py_horner_decode,
+    py_horner_table_size,
+    py_mixed_radix_encode,
+    py_mixed_radix_decode,
+    py_mixed_radix_size,
+    # Malcev analysis classes
+    MalcevAnalysis,
+    VarietyAnalysis,
+    TctAnalysis,
+    AdvancedProperties,
+    MalcevAnalyzer,
+    # Malcev analysis functions
+    py_analyze_malcev_conditions,
+    py_analyze_variety_membership,
+    py_analyze_tct_type,
+    py_analyze_advanced_properties,
+    # Memory limit functions
+    py_set_memory_limit,
+    py_get_memory_limit,
+    py_get_allocated_memory,
+    py_get_peak_allocated_memory,
+    py_would_exceed_limit,
+    py_estimate_free_algebra_memory,
+    py_check_free_algebra_memory_limit,
+)
 except ImportError as e:
     raise ImportError(
         "Failed to import UACalc Rust extension. "
@@ -219,6 +238,13 @@ __all__ = [
     "PresentationProperties",
     "ProgressReporter",
     
+    # Malcev analysis classes
+    "MalcevAnalysis",
+    "VarietyAnalysis",
+    "TctAnalysis",
+    "AdvancedProperties",
+    "MalcevAnalyzer",
+    
     # Error classes
     "UACalcError",
     "CancellationError",
@@ -253,6 +279,21 @@ __all__ = [
     "py_mixed_radix_encode",
     "py_mixed_radix_decode",
     "py_mixed_radix_size",
+    
+    # Malcev analysis functions
+    "py_analyze_malcev_conditions",
+    "py_analyze_variety_membership",
+    "py_analyze_tct_type",
+    "py_analyze_advanced_properties",
+    
+    # Memory limit functions
+    "py_set_memory_limit",
+    "py_get_memory_limit",
+    "py_get_allocated_memory",
+    "py_get_peak_allocated_memory",
+    "py_would_exceed_limit",
+    "py_estimate_free_algebra_memory",
+    "py_check_free_algebra_memory_limit",
     
     # I/O functions
     "load_algebra",
@@ -453,6 +494,41 @@ def create_term_from_string(expr: str, arena: Optional["TermArena"] = None) -> "
         arena = create_term_arena()
     return parse_term(arena, expr)
 
+def set_memory_limit_mb(mb: int) -> None:
+    """Set memory limit in megabytes.
+    
+    Args:
+        mb: Memory limit in megabytes
+        
+    Example:
+        set_memory_limit_mb(1024)  # Set 1GB limit
+    """
+    py_set_memory_limit(mb * 1024 * 1024)
+
+def get_memory_limit_mb() -> int:
+    """Get current memory limit in megabytes.
+    
+    Returns:
+        Memory limit in megabytes
+        
+    Example:
+        limit = get_memory_limit_mb()
+        print(f"Current limit: {limit}MB")
+    """
+    return py_get_memory_limit() // (1024 * 1024)
+
+def get_allocated_memory_mb() -> int:
+    """Get currently allocated memory in megabytes.
+    
+    Returns:
+        Allocated memory in megabytes
+        
+    Example:
+        used = get_allocated_memory_mb()
+        print(f"Currently using: {used}MB")
+    """
+    return py_get_allocated_memory() // (1024 * 1024)
+
 # Add convenience functions to __all__
 __all__.extend([
     "load_algebra_safe",
@@ -464,7 +540,23 @@ __all__.extend([
     "create_congruence_lattice_with_progress",
     "parse_and_eval_term",
     "create_term_from_string",
+    "set_memory_limit_mb",
+    "get_memory_limit_mb",
+    "get_allocated_memory_mb",
 ])
+
+# Set default memory limit to 512MB
+try:
+    # Set a reasonable default memory limit of 512MB
+    DEFAULT_MEMORY_LIMIT = 512 * 1024 * 1024  # 512MB in bytes
+    py_set_memory_limit(DEFAULT_MEMORY_LIMIT)
+except Exception as e:
+    # If memory limit setting fails, warn but don't crash
+    warnings.warn(
+        f"Failed to set default memory limit: {e}. "
+        "Memory-intensive operations may consume all available RAM.",
+        UserWarning
+    )
 
 # Version compatibility check
 import sys
