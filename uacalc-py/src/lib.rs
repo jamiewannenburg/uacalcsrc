@@ -1024,6 +1024,7 @@ impl PyTerm {
         Ok(term.is_operation())
     }
 
+    #[getter]
     fn arity(&self, _py: Python) -> PyResult<usize> {
         let arena_guard = self.arena.inner.lock().unwrap();
         let term = arena_guard.get_term(self.id).map_err(map_uacalc_error)?;
