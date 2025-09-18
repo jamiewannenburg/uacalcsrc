@@ -112,6 +112,8 @@ public class JavaWrapper {
             System.err.println(
                     "  congruence_ordering <ua_file> <cong1_json> <cong2_json> - Compare congruence ordering");
             System.err.println(
+                    "  partition_construction <ua_file> <blocks_json> - Construct partition from blocks");
+            System.err.println(
                     "  polymorphisms <ua_file> - Detect polymorphisms in algebra");
             System.err.println(
                     "  type_finder <ua_file> - Find tame congruence theory type");
@@ -411,6 +413,14 @@ public class JavaWrapper {
                         System.exit(1);
                     }
                     outputCongruenceOrdering(args[1], args[2], args[3]);
+                    break;
+                case "partition_construction":
+                    if (args.length < 3) {
+                        System.err.println(
+                                "Usage: JavaWrapper partition_construction <ua_file> <blocks_json>");
+                        System.exit(1);
+                    }
+                    outputPartitionConstruction(args[1], args[2]);
                     break;
                 case "polymorphisms":
                     if (args.length < 2) {
@@ -1749,24 +1759,17 @@ public class JavaWrapper {
      * Create a simple base algebra for free algebra construction
      */
     private static SmallAlgebra createSimpleBaseAlgebra() {
-        // Create a simple 2-element algebra with a binary operation
+        // Create a simple 2-element algebra with a single binary operation
+        // to match the Rust implementation which only creates specified operations
         List<Operation> operations = new ArrayList<>();
         
-        // Add a binary operation (addition mod 2)
-        int[][] binaryTable = {{0, 1}, {1, 0}};
+        // Add only a binary operation (multiplication) to match Rust's "*" operation
+        int[][] binaryTable = {{0, 0}, {0, 1}};  // Simple multiplication table
         org.uacalc.alg.op.OperationSymbol binarySymbol = 
-            new org.uacalc.alg.op.OperationSymbol("+", 2);
+            new org.uacalc.alg.op.OperationSymbol("*", 2);
         Operation binaryOp = org.uacalc.alg.op.Operations
             .makeBinaryIntOperation(binarySymbol, 2, binaryTable);
         operations.add(binaryOp);
-        
-        // Add a unary operation (identity)
-        int[] unaryTable = {0, 1};
-        org.uacalc.alg.op.OperationSymbol unarySymbol = 
-            new org.uacalc.alg.op.OperationSymbol("id", 1);
-        Operation unaryOp = org.uacalc.alg.op.Operations
-            .makeIntOperation(unarySymbol, 2, unaryTable);
-        operations.add(unaryOp);
 
         return new BasicAlgebra("BaseAlgebra", 2, operations);
     }
@@ -2043,6 +2046,48 @@ public class JavaWrapper {
 
         } catch (Exception e) {
             outputErrorResult("join_irreducibles", e);
+        }
+    }
+
+    private static void outputPartitionConstruction(String uaFile, String blocksJson) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        try {
+            Algebra algebra = AlgebraIO.readAlgebraFile(uaFile);
+            SmallAlgebra smallAlgebra = (SmallAlgebra) algebra;
+
+            // Parse partition blocks
+            List<List<Integer>> partitionBlocks = parsePartitionBlocks(blocksJson);
+            
+            // Create partition using the CongruenceLattice
+            CongruenceLattice conLat = new CongruenceLattice(smallAlgebra);
+            Partition partition = createPartitionFromBlocks(conLat, partitionBlocks, smallAlgebra.cardinality());
+
+            long endMemory = getMemoryUsage();
+            long endTime = System.currentTimeMillis();
+
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"partition_construction\",");
+            result.append("\"algebra_name\":\"").append(escapeJson(algebra.getName())).append("\",");
+            
+            // Output the partition as blocks
+            result.append("\"partition_blocks\":");
+            appendPartitionBlocks(result, partition);
+            result.append(",");
+            
+            result.append("\"blocks_count\":").append(partition.numberOfBlocks()).append(",");
+            result.append("\"universe_size\":").append(smallAlgebra.cardinality()).append(",");
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime);
+            result.append("}");
+
+            System.out.println(result.toString());
+
+        } catch (Exception e) {
+            outputErrorResult("partition_construction", e);
         }
     }
 

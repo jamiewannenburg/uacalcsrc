@@ -4136,6 +4136,11 @@ impl PyMalcevAnalyzer {
         let analysis = self.inner.analyze_advanced_properties(&algebra.inner).map_err(map_uacalc_error)?;
         Ok(PyAdvancedProperties { inner: analysis })
     }
+
+    fn is_join_term(&mut self, algebra: &PyAlgebra) -> PyResult<bool> {
+        let result = self.inner.is_join_term(&algebra.inner).map_err(map_uacalc_error)?;
+        Ok(result)
+    }
 }
 
 // Convenience functions for direct analysis

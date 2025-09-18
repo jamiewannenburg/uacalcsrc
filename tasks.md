@@ -271,9 +271,9 @@ This document outlines the tasks needed to implement full compatibility between 
 - [ ] Test binary relation functionality
 
 #### Subtask 10.1.4: `test_partition_compatibility.py`
-- [ ] Remove mock functions and implement partition operations
-- [ ] Implement partition manipulation and analysis
-- [ ] Test partition properties
+- [x] Remove mock functions and implement partition operations
+- [x] Implement partition manipulation and analysis
+- [x] Test partition properties
 
 #### Subtask 10.1.5: `test_order_compatibility.py`
 - [ ] Remove mock functions and implement order relations
