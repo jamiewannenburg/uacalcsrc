@@ -660,8 +660,8 @@ class TermCompatibilityTest(unittest.TestCase):
                 # Test Rust variable creation
                 try:
                     arena = uacalc.create_term_arena()
-                    from uacalc.terms import variable
-                    rust_var = variable(var_name,arena)
+                    from uacalc.terms import create_variable
+                    rust_var = create_variable(var_name, arena)
                     self.assertIsNotNone(rust_var)
                 except Exception as e:
                     # If Rust doesn't support this format, that's a compatibility issue

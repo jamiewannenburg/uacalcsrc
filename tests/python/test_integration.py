@@ -324,7 +324,7 @@ class TestTermEvaluationIntegration:
         const_term = constant("f", arena)
         assert const_term is not None
         
-        op_term = operation("f", var_term, const_term, arena=arena)
+        op_term = operation("f", [var_term, const_term], arena)
         assert op_term is not None
         
         # Test random term generation
