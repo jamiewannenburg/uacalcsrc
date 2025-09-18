@@ -338,8 +338,8 @@ class TypeFinderCompatibilityTest(BaseCompatibilityTest):
                     rust_result[condition] = getattr(algebra, condition)()
             
             # Test for idempotency
-            if hasattr(algebra, 'is_idempotent'):
-                rust_result['is_idempotent'] = algebra.is_idempotent()
+            if hasattr(algebra, 'is_idempotent_algebra'):
+                rust_result['is_idempotent'] = algebra.is_idempotent_algebra()
             
         except Exception as e:
             self.fail(f"Rust type properties analysis failed for {algebra.name}: {e}")

@@ -2372,6 +2372,12 @@ impl PyAlgebra {
             .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))
     }
 
+    fn is_idempotent_algebra(&self) -> PyResult<bool> {
+        self.inner
+            .is_idempotent()
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))
+    }
+
     fn is_associative(&self, op_index: usize) -> PyResult<bool> {
         let op = self
             .inner
