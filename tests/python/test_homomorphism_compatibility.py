@@ -489,23 +489,23 @@ class HomomorphismCompatibilityTest(BaseCompatibilityTest):
     def _can_have_homomorphism(self, algebra1, algebra2) -> bool:
         """Check if algebras can potentially have a homomorphism between them"""
         # Basic necessary condition: compatible similarity types
-        arities1 = sorted([op.arity() for op in algebra1.operations()])
-        arities2 = sorted([op.arity() for op in algebra2.operations()])
+        arities1 = sorted([op.arity for op in algebra1.operations])
+        arities2 = sorted([op.arity for op in algebra2.operations])
         return arities1 == arities2
     
     def _compatible_similarity_types(self, algebra1, algebra2) -> bool:
         """Check if algebras have compatible similarity types"""
-        arities1 = sorted([op.arity() for op in algebra1.operations()])
-        arities2 = sorted([op.arity() for op in algebra2.operations()])
+        arities1 = sorted([op.arity for op in algebra1.operations])
+        arities2 = sorted([op.arity for op in algebra2.operations])
         return arities1 == arities2
     
     def _check_arity_compatibility(self, algebra1, algebra2) -> bool:
         """Check if operation arities are compatible"""
-        if len(algebra1.operations()) != len(algebra2.operations()):
+        if len(algebra1.operations) != len(algebra2.operations):
             return False
         
-        arities1 = sorted([op.arity() for op in algebra1.operations()])
-        arities2 = sorted([op.arity() for op in algebra2.operations()])
+        arities1 = sorted([op.arity for op in algebra1.operations])
+        arities2 = sorted([op.arity for op in algebra2.operations])
         return arities1 == arities2
 
 

@@ -55,7 +55,7 @@ class OperationsCompatibilityTest(BaseCompatibilityTest):
             rust_operation = uacalc.Operations.make_constant_int_operation(2, 1)
             
             # Compare properties
-            self.assertEqual(rust_operation.arity(), java_operation.get("arity"))
+            self.assertEqual(rust_operation.arity, java_operation.get("arity"))
             self.assertEqual(rust_operation.value([]), java_operation.get("value"))
             
             logger.info("Constant operation test passed")
@@ -88,7 +88,7 @@ class OperationsCompatibilityTest(BaseCompatibilityTest):
             
             # Compare properties
             self.assertEqual(rust_operation.symbol, java_operation.get("symbol"))
-            self.assertEqual(rust_operation.arity(), java_operation.get("arity"))
+            self.assertEqual(rust_operation.arity, java_operation.get("arity"))
             
             # Test operation values
             for i in range(3):
@@ -126,7 +126,7 @@ class OperationsCompatibilityTest(BaseCompatibilityTest):
             
             # Compare properties
             self.assertEqual(rust_operation.symbol, java_operation.get("symbol"))
-            self.assertEqual(rust_operation.arity(), java_operation.get("arity"))
+            self.assertEqual(rust_operation.arity, java_operation.get("arity"))
             
             # Test operation values
             java_table = java_operation.get("table", [])
@@ -167,7 +167,7 @@ class OperationsCompatibilityTest(BaseCompatibilityTest):
             
             # Compare properties
             self.assertEqual(rust_operation.symbol, java_operation.get("symbol"))
-            self.assertEqual(rust_operation.arity(), java_operation.get("arity"))
+            self.assertEqual(rust_operation.arity, java_operation.get("arity"))
             
             # Test that the operation is valid (returns values in range)
             for i in range(3):
@@ -345,26 +345,26 @@ class OperationsCompatibilityTest(BaseCompatibilityTest):
             
             # Test constant operation
             constant_op = uacalc.Operations.make_constant_int_operation(2, 1)
-            self.assertEqual(constant_op.arity(), 0)
+            self.assertEqual(constant_op.arity, 0)
             self.assertEqual(constant_op.value([]), 1)
             
             # Test unary operation
             unary_symbol = uacalc.OperationSymbol("f", 1)
             unary_op = uacalc.Operations.make_int_operation(unary_symbol, 3, [0, 1, 2])
-            self.assertEqual(unary_op.arity(), 1)
+            self.assertEqual(unary_op.arity, 1)
             self.assertEqual(unary_op.symbol, "f")
             
             # Test binary operation
             binary_symbol = uacalc.OperationSymbol("*", 2)
             binary_table = [[0, 0], [0, 1]]
             binary_op = uacalc.Operations.make_binary_int_operation(binary_symbol, 2, binary_table)
-            self.assertEqual(binary_op.arity(), 2)
+            self.assertEqual(binary_op.arity, 2)
             self.assertEqual(binary_op.symbol, "*")
             
             # Test random operation
             random_symbol = uacalc.OperationSymbol("r", 2)
             random_op = uacalc.Operations.make_random_operation_with_seed(3, random_symbol, 123)
-            self.assertEqual(random_op.arity(), 2)
+            self.assertEqual(random_op.arity, 2)
             self.assertEqual(random_op.symbol, "r")
             
             # Test validation utilities on all operations

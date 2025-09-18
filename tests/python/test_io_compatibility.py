@@ -43,21 +43,21 @@ class TestRoundTripCompatibility:
                 assert algebra.universe == expected_universe
                 
                 # Check operations
-                for operation in algebra.operations():
+                for operation in algebra.operations:
                     assert operation.symbol is not None
-                    assert operation.arity() >= 0
+                    assert operation.arity >= 0
                     
                     # Test operation evaluation for some inputs
-                    if operation.arity() == 0:
+                    if operation.arity == 0:
                         # Constant operation
                         result = operation.value([])
                         assert 0 <= result < algebra.cardinality
-                    elif operation.arity() == 1:
+                    elif operation.arity == 1:
                         # Unary operation
                         for i in range(algebra.cardinality):
                             result = operation.value([i])
                             assert 0 <= result < algebra.cardinality
-                    elif operation.arity() == 2:
+                    elif operation.arity == 2:
                         # Binary operation - test a few combinations
                         for i in range(min(3, algebra.cardinality)):
                             for j in range(min(3, algebra.cardinality)):
@@ -99,22 +99,22 @@ class TestRoundTripCompatibility:
                     # Compare basic properties
                     assert reloaded_algebra.name == original_algebra.name
                     assert reloaded_algebra.cardinality == original_algebra.cardinality
-                    assert len(reloaded_algebra.operations()) == len(original_algebra.operations())
+                    assert len(reloaded_algebra.operations) == len(original_algebra.operations)
                     
                     # Compare operations
-                    for op_name in [op.symbol for op in original_algebra.operations()]:
+                    for op_name in [op.symbol for op in original_algebra.operations]:
                         original_op = original_algebra.operation_by_symbol(op_name)
                         reloaded_op = reloaded_algebra.operation_by_symbol(op_name)
                         
-                        assert reloaded_op.arity() == original_op.arity()
+                        assert reloaded_op.arity == original_op.arity
                         
                         # Test operation values
-                        if original_op.arity() == 0:
+                        if original_op.arity == 0:
                             assert reloaded_op.value([]) == original_op.value([])
-                        elif original_op.arity() == 1:
+                        elif original_op.arity == 1:
                             for i in range(original_algebra.cardinality):
                                 assert reloaded_op.value([i]) == original_op.value([i])
-                        elif original_op.arity() == 2:
+                        elif original_op.arity == 2:
                             for i in range(original_algebra.cardinality):
                                 for j in range(original_algebra.cardinality):
                                     assert reloaded_op.value([i, j]) == original_op.value([i, j])
@@ -142,14 +142,14 @@ class TestSpecificAlgebraExamples:
         # Check basic properties
         assert algebra.name == "m3"
         assert algebra.cardinality == 5
-        assert len(algebra.operations()) == 2
+        assert len(algebra.operations) == 2
         
         # Check operations
         meet_op = algebra.operation_by_symbol("meet")
         join_op = algebra.operation_by_symbol("join")
         
-        assert meet_op.arity() == 2
-        assert join_op.arity() == 2
+        assert meet_op.arity == 2
+        assert join_op.arity == 2
         
         # Test some meet operation values (diamond lattice)
         assert meet_op.value([0, 0]) == 0  # bottom meet bottom = bottom
@@ -178,14 +178,14 @@ class TestSpecificAlgebraExamples:
         # Check basic properties
         assert algebra.name == "lat2"
         assert algebra.cardinality == 2
-        assert len(algebra.operations()) == 2
+        assert len(algebra.operations) == 2
         
         # Check operations
         meet_op = algebra.operation_by_symbol("meet")
         join_op = algebra.operation_by_symbol("join")
         
-        assert meet_op.arity() == 2
-        assert join_op.arity() == 2
+        assert meet_op.arity == 2
+        assert join_op.arity == 2
         
         # Test meet operation (2-element lattice)
         assert meet_op.value([0, 0]) == 0  # 0 ∧ 0 = 0
@@ -273,7 +273,7 @@ class TestMetadataPreservation:
         for ua_file in resources_dir.glob("*.ua"):
             try:
                 original_algebra = load_algebra(ua_file)
-                original_symbols = [op.symbol for op in original_algebra.operations()]
+                original_symbols = [op.symbol for op in original_algebra.operations]
                 
                 # Save and reload
                 with tempfile.NamedTemporaryFile(suffix='.ua', delete=False) as f:
@@ -282,7 +282,7 @@ class TestMetadataPreservation:
                 try:
                     save_algebra(original_algebra, temp_path)
                     reloaded_algebra = load_algebra(temp_path)
-                    reloaded_symbols = [op.symbol for op in reloaded_algebra.operations()]
+                    reloaded_symbols = [op.symbol for op in reloaded_algebra.operations]
                     
                     assert reloaded_symbols == original_symbols
                     
@@ -428,7 +428,7 @@ class TestEdgeCases:
             save_algebra(algebra, temp_path)
             loaded_algebra = load_algebra(temp_path)
             
-            assert len(loaded_algebra.operations()) == 5
+            assert len(loaded_algebra.operations) == 5
             for i in range(5):
                 assert loaded_algebra.operation_by_symbol(f"op_{i}") is not None
                 
@@ -451,7 +451,7 @@ class TestEdgeCases:
             loaded_algebra = load_algebra(temp_path)
             
             const_op = loaded_algebra.operation_by_symbol("constant")
-            assert const_op.arity() == 0
+            assert const_op.arity == 0
             assert const_op.value([]) == 1
             
         finally:
@@ -476,7 +476,7 @@ class TestEdgeCases:
             loaded_algebra = load_algebra(temp_path)
             
             ternary_op = loaded_algebra.operation_by_symbol("ternary")
-            assert ternary_op.arity() == 3
+            assert ternary_op.arity == 3
             assert ternary_op.value([0, 0, 0]) == 0
             assert ternary_op.value([0, 0, 1]) == 1
             assert ternary_op.value([1, 1, 1]) == 1

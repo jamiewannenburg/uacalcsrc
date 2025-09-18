@@ -85,7 +85,7 @@ class FreeAlgebraCompatibilityTest(BaseCompatibilityTest):
                         "is_free": free_algebra.is_freely_generated(),
                         "satisfies_universal_property": free_algebra.satisfies_universal_property(),
                         "cardinality": free_algebra.cardinality,
-                        "operations_count": len(free_algebra.operations())
+                        "operations_count": len(free_algebra.operations)
                     }
                 except Exception as e:
                     self.skipTest(f"Rust free algebra generation failed: {e}")

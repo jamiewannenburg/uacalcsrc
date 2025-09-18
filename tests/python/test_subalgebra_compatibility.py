@@ -88,7 +88,7 @@ class SubalgebraCompatibilityTest(BaseCompatibilityTest):
                                 "contains_generators": True,  # By definition, subalgebras contain generators
                                 "minimal_generating_set": len(generators) <= 3,  # Heuristic
                                 "subalgebra_name": subalgebra.name,
-                                "operations_count": len(subalgebra.operations()),
+                                "operations_count": len(subalgebra.operations),
                                 "universe_size": len(subalgebra.universe)
                             }
                         except Exception as e:
@@ -169,13 +169,13 @@ class SubalgebraCompatibilityTest(BaseCompatibilityTest):
                     is_closed_under_operations = True
                     try:
                         # Test that all operations work on the subalgebra
-                        for operation in subalgebra.operations():
-                            if operation.arity() == 0:  # Constant
+                        for operation in subalgebra.operations:
+                            if operation.arity == 0:  # Constant
                                 result = operation.value([])
                                 if result >= subalgebra.cardinality:
                                     is_closed_under_operations = False
                                     break
-                            elif operation.arity() == 1:  # Unary
+                            elif operation.arity == 1:  # Unary
                                 for i in range(subalgebra.cardinality):
                                     result = operation.value([i])
                                     if result >= subalgebra.cardinality:
@@ -183,7 +183,7 @@ class SubalgebraCompatibilityTest(BaseCompatibilityTest):
                                         break
                                 if not is_closed_under_operations:
                                     break
-                            elif operation.arity() == 2:  # Binary
+                            elif operation.arity == 2:  # Binary
                                 for i in range(subalgebra.cardinality):
                                     for j in range(subalgebra.cardinality):
                                         result = operation.value([i, j])
@@ -563,7 +563,7 @@ class SubalgebraCompatibilityTest(BaseCompatibilityTest):
                     
                     # Test basic subalgebra properties
                     is_subalgebra = True  # By definition, create_subalgebra creates a subalgebra
-                    inherits_operations = len(subalgebra.operations()) == len(algebra.operations())
+                    inherits_operations = len(subalgebra.operations) == len(algebra.operations)
                     
                     # Test that universe is a subset
                     universe_subset = all(elem in algebra.universe for elem in subalgebra.universe)
@@ -571,19 +571,19 @@ class SubalgebraCompatibilityTest(BaseCompatibilityTest):
                     # Test that operations are restricted correctly
                     operations_restricted = True
                     try:
-                        for sub_op in subalgebra.operations():
+                        for sub_op in subalgebra.operations:
                             # Find corresponding operation in parent algebra
                             parent_op = None
-                            for parent_op_candidate in algebra.operations():
+                            for parent_op_candidate in algebra.operations:
                                 if parent_op_candidate.symbol == sub_op.symbol:
                                     parent_op = parent_op_candidate
                                     break
                             
                             if parent_op is not None:
                                 # Test that subalgebra operation is restriction of parent operation
-                                if sub_op.arity() == parent_op.arity():
+                                if sub_op.arity == parent_op.arity:
                                     # For unary operations, test a few values
-                                    if sub_op.arity() == 1:
+                                    if sub_op.arity == 1:
                                         for i in range(min(3, subalgebra.cardinality)):
                                             sub_result = sub_op.value([i])
                                             # Map subalgebra index to parent element
@@ -595,7 +595,7 @@ class SubalgebraCompatibilityTest(BaseCompatibilityTest):
                                                 if sub_result != parent_result_index:
                                                     operations_restricted = False
                                                     break
-                                    elif sub_op.arity() == 2:
+                                    elif sub_op.arity == 2:
                                         # Test a few binary operations
                                         for i in range(min(2, subalgebra.cardinality)):
                                             for j in range(min(2, subalgebra.cardinality)):
@@ -623,13 +623,13 @@ class SubalgebraCompatibilityTest(BaseCompatibilityTest):
                     # Test closure under operations
                     closed_under_operations = True
                     try:
-                        for operation in subalgebra.operations():
-                            if operation.arity() == 0:  # Constant
+                        for operation in subalgebra.operations:
+                            if operation.arity == 0:  # Constant
                                 result = operation.value([])
                                 if result >= subalgebra.cardinality:
                                     closed_under_operations = False
                                     break
-                            elif operation.arity() == 1:  # Unary
+                            elif operation.arity == 1:  # Unary
                                 for i in range(subalgebra.cardinality):
                                     result = operation.value([i])
                                     if result >= subalgebra.cardinality:
@@ -637,7 +637,7 @@ class SubalgebraCompatibilityTest(BaseCompatibilityTest):
                                         break
                                 if not closed_under_operations:
                                     break
-                            elif operation.arity() == 2:  # Binary
+                            elif operation.arity == 2:  # Binary
                                 for i in range(subalgebra.cardinality):
                                     for j in range(subalgebra.cardinality):
                                         result = operation.value([i, j])

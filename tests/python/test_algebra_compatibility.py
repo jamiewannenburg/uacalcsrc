@@ -58,7 +58,7 @@ class AlgebraCompatibilityTest(BaseCompatibilityTest):
                     f"Cardinality mismatch for {algebra_file.name}: {result.error_message}")
     
     def test_algebra_operations_compatibility(self):
-        """Test Algebra.operations() returns identical operation lists"""
+        """Test Algebra.operations returns identical operation lists"""
         logger.info("Testing algebra operations compatibility")
         
         for algebra_file in self.algebra_files[:10]:  # Test first 10 algebras
@@ -67,13 +67,13 @@ class AlgebraCompatibilityTest(BaseCompatibilityTest):
                 algebra = self._load_test_algebra(algebra_file)
                 
                 # Extract operation information from Rust
-                ops = algebra.operations()
+                ops = algebra.operations
                 # Sort operations by symbol name for consistent comparison
                 sorted_ops = sorted(ops, key=lambda op: str(op.symbol))
                 rust_operations = {
                     "count": len(sorted_ops),
                     "symbols": [str(op.symbol) for op in sorted_ops],
-                    "arities": [op.arity() for op in sorted_ops]
+                    "arities": [op.arity for op in sorted_ops]
                 }
                 
                 # Get operation information from Java
@@ -177,12 +177,12 @@ class AlgebraCompatibilityTest(BaseCompatibilityTest):
                 algebra = self._load_test_algebra(algebra_file)
                 
                 # Extract similarity type information
-                ops = algebra.operations()
+                ops = algebra.operations
                 # Sort operations by symbol name for consistent comparison
                 sorted_ops = sorted(ops, key=lambda op: str(op.symbol))
                 rust_similarity_type = {
                     "operation_count": len(sorted_ops),
-                    "arities": sorted([op.arity() for op in sorted_ops])
+                    "arities": sorted([op.arity for op in sorted_ops])
                 }
                 
                 # Get similarity type from Java
@@ -223,7 +223,7 @@ class AlgebraCompatibilityTest(BaseCompatibilityTest):
                 rust_metadata = {
                     "name": algebra.name.lower(),  # Normalize to lowercase for comparison
                     "cardinality": algebra.cardinality,
-                    "operation_count": len(algebra.operations())
+                    "operation_count": len(algebra.operations)
                 }
                 
                 # Get metadata from Java
@@ -265,10 +265,10 @@ class AlgebraCompatibilityTest(BaseCompatibilityTest):
                 algebra = self._load_test_algebra(algebra_file)
                 
                 # Test first operation with a few input combinations
-                if len(algebra.operations()) == 0:
+                if len(algebra.operations) == 0:
                     self.skipTest(f"No operations in {algebra_file.name}")
                 
-                operation = algebra.operations()[0]
+                operation = algebra.operations[0]
                 
                 # Generate test cases for the operation
                 test_cases = self._generate_operation_test_cases(operation, algebra.cardinality, max_cases=10)
@@ -312,7 +312,7 @@ class AlgebraCompatibilityTest(BaseCompatibilityTest):
         """Generate test cases for operation evaluation"""
         import itertools
         
-        arity = operation.arity()
+        arity = operation.arity
         if arity == 0:
             return [[]]  # Nullary operation
         

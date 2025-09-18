@@ -323,7 +323,7 @@ class TermsCompatibilityTest(BaseCompatibilityTest):
             # Calculate arity (number of children for operations)
             arity = 0
             if hasattr(term, 'arity'):
-                arity = term.arity()
+                arity = term.arity
             elif hasattr(term, 'children') and not is_variable:
                 children = term.children()
                 arity = len(children) if children else 0

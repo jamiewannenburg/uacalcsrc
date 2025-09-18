@@ -202,14 +202,14 @@ class AlgebraBuilder:
         
         properties = {
             'name': op_name,
-            'arity': operation.arity(),
+            'arity': operation.arity,
             'type': operation.operation_type(),
         }
         
         # Check algebraic properties
         # Find operation index by symbol
         op_index = None
-        for i, op in enumerate(algebra.operations()):
+        for i, op in enumerate(algebra.operations):
             if op.symbol == operation.symbol:
                 op_index = i
                 break
@@ -224,13 +224,13 @@ class AlgebraBuilder:
             properties['is_commutative'] = False
         
         # Analyze operation table
-        if operation.arity() == 1:
+        if operation.arity == 1:
             values = [operation.value([i]) for i in range(self.size)]
             properties['values'] = values
             properties['is_bijective'] = len(set(values)) == self.size
             properties['fixed_points'] = [i for i, v in enumerate(values) if i == v]
         
-        elif operation.arity() == 2:
+        elif operation.arity == 2:
             table = [[operation.value([i, j]) for j in range(self.size)] 
                     for i in range(self.size)]
             properties['table'] = table
@@ -260,7 +260,7 @@ class AlgebraBuilder:
     def is_idempotent_algebra(self) -> bool:
         """Check if all operations in the algebra are idempotent."""
         algebra = self.build()
-        for i, _op in enumerate(algebra.operations()):
+        for i, _op in enumerate(algebra.operations):
             if not algebra.is_idempotent(i):
                 return False
         return True
@@ -268,8 +268,8 @@ class AlgebraBuilder:
     def is_associative_algebra(self) -> bool:
         """Check if all binary operations in the algebra are associative."""
         algebra = self.build()
-        for i, _op in enumerate(algebra.operations()):
-            if _op.arity() == 2 and not algebra.is_associative(i):
+        for i, _op in enumerate(algebra.operations):
+            if _op.arity == 2 and not algebra.is_associative(i):
                 return False
         return True
     
@@ -299,19 +299,19 @@ class AlgebraBuilder:
             previous = current.copy()
             
             # Apply all operations to current elements
-            for operation in algebra.operations():
-                if operation.arity() == 0:  # Constant
+            for operation in algebra.operations:
+                if operation.arity == 0:  # Constant
                     current.add(operation.value([]))
-                elif operation.arity() == 1:  # Unary
+                elif operation.arity == 1:  # Unary
                     for element in list(current):
                         current.add(operation.value([element]))
-                elif operation.arity() == 2:  # Binary
+                elif operation.arity == 2:  # Binary
                     for a in list(current):
                         for b in list(current):
                             current.add(operation.value([a, b]))
                 else:  # Higher arity
                     # Generate all combinations of current elements
-                    for args in self._generate_combinations(list(current), operation.arity()):
+                    for args in self._generate_combinations(list(current), operation.arity):
                         current.add(operation.value(args))
             
             step += 1
@@ -555,18 +555,18 @@ def algebra_to_numpy(algebra: Algebra) -> Dict[str, 'np.ndarray']:
     
     result = {}
     
-    for operation in algebra.operations():
-        if operation.arity() == 0:  # Constant
+    for operation in algebra.operations:
+        if operation.arity == 0:  # Constant
             value = operation.value([])
             result[operation.symbol] = np.array(value)
         
-        elif operation.arity() == 1:  # Unary
+        elif operation.arity == 1:  # Unary
             values = []
             for i in range(algebra.cardinality):
                 values.append(operation.value([i]))
             result[operation.symbol] = np.array(values)
         
-        elif operation.arity() == 2:  # Binary
+        elif operation.arity == 2:  # Binary
             table = np.zeros((algebra.cardinality, algebra.cardinality), dtype=int)
             for i in range(algebra.cardinality):
                 for j in range(algebra.cardinality):
@@ -575,7 +575,7 @@ def algebra_to_numpy(algebra: Algebra) -> Dict[str, 'np.ndarray']:
         
         else:  # Higher arity - store as sparse format for efficiency
             entries = []
-            for args in _generate_combinations(list(range(algebra.cardinality)), operation.arity()):
+            for args in _generate_combinations(list(range(algebra.cardinality)), operation.arity):
                 result_val = operation.value(args)
                 entries.append((*args, result_val))
             result[operation.symbol] = np.array(entries)
@@ -656,7 +656,7 @@ def batch_evaluate_operations(algebra: Algebra, operations: List[str],
     
     for i, op_name in enumerate(operations):
         operation = algebra.operation_by_symbol(op_name)
-        arity = operation.arity()
+        arity = operation.arity
         
         for j in range(batch_size):
             args = inputs[j, :arity].tolist()
@@ -681,14 +681,14 @@ def validate_algebra(algebra: Algebra) -> Tuple[bool, List[str]]:
         errors.append("Algebra has empty universe")
     
     # Check operation consistency
-    for operation in algebra.operations():
+    for operation in algebra.operations:
         # Check that operation values are in universe
-        if operation.arity() == 0:  # Constant
+        if operation.arity == 0:  # Constant
             value = operation.value([])
             if not 0 <= value < universe_size:
                 errors.append(f"Constant operation {operation.symbol} has value {value} outside universe")
         
-        elif operation.arity() == 1:  # Unary
+        elif operation.arity == 1:  # Unary
             for i in range(universe_size):
                 try:
                     value = operation.value([i])
@@ -697,7 +697,7 @@ def validate_algebra(algebra: Algebra) -> Tuple[bool, List[str]]:
                 except Exception as e:
                     errors.append(f"Unary operation {operation.symbol} fails on input {i}: {e}")
         
-        elif operation.arity() == 2:  # Binary
+        elif operation.arity == 2:  # Binary
             for i in range(universe_size):
                 for j in range(universe_size):
                     try:
@@ -808,19 +808,19 @@ def _compute_subalgebra_closure(algebra: Algebra, generators: List[int],
         previous = current.copy()
         
         # Apply all operations to current elements
-        for operation in algebra.operations():
-            if operation.arity() == 0:  # Constant
+        for operation in algebra.operations:
+            if operation.arity == 0:  # Constant
                 current.add(operation.value([]))
-            elif operation.arity() == 1:  # Unary
+            elif operation.arity == 1:  # Unary
                 for element in list(current):
                     current.add(operation.value([element]))
-            elif operation.arity() == 2:  # Binary
+            elif operation.arity == 2:  # Binary
                 for a in list(current):
                     for b in list(current):
                         current.add(operation.value([a, b]))
             else:  # Higher arity
                 # Generate all combinations of current elements
-                for args in _generate_combinations(list(current), operation.arity()):
+                for args in _generate_combinations(list(current), operation.arity):
                     current.add(operation.value(args))
         
         step += 1
@@ -893,13 +893,13 @@ def _create_subalgebra_python_fallback(algebra: Algebra, generators: List[int],
     sub_builder = AlgebraBuilder(f"{algebra.name}_sub", sub_size)
     
     # Define operations on subalgebra
-    for operation in algebra.operations():
-        if operation.arity() == 0:  # Constant
+    for operation in algebra.operations:
+        if operation.arity == 0:  # Constant
             value = operation.value([])
             if value in element_to_index:
                 sub_builder.add_constant(operation.symbol, element_to_index[value])
         
-        elif operation.arity() == 1:  # Unary
+        elif operation.arity == 1:  # Unary
             values = []
             for i in range(sub_size):
                 element = sub_elements[i]
@@ -911,7 +911,7 @@ def _create_subalgebra_python_fallback(algebra: Algebra, generators: List[int],
                     values.append(i)
             sub_builder.add_unary_operation(operation.symbol, values)
         
-        elif operation.arity() == 2:  # Binary
+        elif operation.arity == 2:  # Binary
             table = [[0] * sub_size for _ in range(sub_size)]
             for i in range(sub_size):
                 for j in range(sub_size):

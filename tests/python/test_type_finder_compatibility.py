@@ -47,7 +47,7 @@ class TypeFinderCompatibilityTest(BaseCompatibilityTest):
             rust_result = {
                 'algebra_name': algebra.name,
                 'algebra_cardinality': algebra.cardinality,
-                'operation_count': len(algebra.operations()) if hasattr(algebra, 'operations') else None,
+                'operation_count': len(algebra.operations) if hasattr(algebra, 'operations') else None,
             }
             
             # Try to detect tame congruence theory type
@@ -411,15 +411,15 @@ class TypeFinderCompatibilityTest(BaseCompatibilityTest):
             
             # Test for specific structural properties
             if hasattr(algebra, 'operations'):
-                ops = algebra.operations()
+                ops = algebra.operations
                 rust_result['operation_count'] = len(ops)
                 
                 # Check for nullary operations (constants)
-                nullary_count = sum(1 for op in ops if hasattr(op, 'arity') and op.arity() == 0)
+                nullary_count = sum(1 for op in ops if hasattr(op, 'arity') and op.arity == 0)
                 rust_result['nullary_operations'] = nullary_count
                 
                 # Check for unary operations
-                unary_count = sum(1 for op in ops if hasattr(op, 'arity') and op.arity() == 1)
+                unary_count = sum(1 for op in ops if hasattr(op, 'arity') and op.arity == 1)
                 rust_result['unary_operations'] = unary_count
             
         except Exception as e:

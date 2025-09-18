@@ -29,7 +29,7 @@ class TestTermParsing:
         assert isinstance(term, Term)
         assert term.is_variable()
         assert not term.is_operation()
-        assert term.arity() == 0
+        assert term.arity == 0
     
     def test_parse_constant(self):
         """Test parsing a constant term."""
@@ -39,7 +39,7 @@ class TestTermParsing:
         assert isinstance(term, Term)
         assert not term.is_variable()
         assert term.is_operation()
-        assert term.arity() == 0
+        assert term.arity == 0
     
     def test_parse_unary_operation(self):
         """Test parsing a unary operation."""
@@ -49,7 +49,7 @@ class TestTermParsing:
         assert isinstance(term, Term)
         assert not term.is_variable()
         assert term.is_operation()
-        assert term.arity() == 1
+        assert term.arity == 1
     
     def test_parse_binary_operation(self):
         """Test parsing a binary operation."""
@@ -59,7 +59,7 @@ class TestTermParsing:
         assert isinstance(term, Term)
         assert not term.is_variable()
         assert term.is_operation()
-        assert term.arity() == 2
+        assert term.arity == 2
     
     def test_parse_nested_operation(self):
         """Test parsing a nested operation."""
@@ -69,7 +69,7 @@ class TestTermParsing:
         assert isinstance(term, Term)
         assert not term.is_variable()
         assert term.is_operation()
-        assert term.arity() == 2
+        assert term.arity == 2
     
     def test_parse_complex_expression(self):
         """Test parsing a complex expression."""
@@ -79,7 +79,7 @@ class TestTermParsing:
         assert isinstance(term, Term)
         assert not term.is_variable()
         assert term.is_operation()
-        assert term.arity() == 3
+        assert term.arity == 3
     
     def test_parse_with_variable_names(self):
         """Test parsing with named variables."""
@@ -91,7 +91,7 @@ class TestTermParsing:
         assert isinstance(term, Term)
         assert not term.is_variable()
         assert term.is_operation()
-        assert term.arity() == 2
+        assert term.arity == 2
     
     def test_validate_syntax_valid(self):
         """Test syntax validation with valid expressions."""
@@ -427,7 +427,7 @@ class TestTermConstruction:
         const = constant("c")
         assert isinstance(const, Term)
         assert const.is_operation()
-        assert const.arity() == 0
+        assert const.arity == 0
     
     def test_operation_construction(self):
         """Test creating operation terms."""
@@ -437,7 +437,7 @@ class TestTermConstruction:
         op = operation("f", var1, var2)
         assert isinstance(op, Term)
         assert op.is_operation()
-        assert op.arity() == 2
+        assert op.arity == 2
     
     def test_random_term_generation(self):
         """Test random term generation."""
@@ -463,7 +463,7 @@ class TestTermIntegration:
         
         new_op = term_to_operation(term, "g", algebra)
         assert isinstance(new_op, type(operation))
-        assert new_op.arity() == 2
+        assert new_op.arity == 2
     
     def test_validate_term_against_algebra(self):
         """Test term validation against algebra."""

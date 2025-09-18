@@ -459,7 +459,7 @@ class PresentationCompatibilityTest(BaseCompatibilityTest):
                 "satisfaction_percentage": 100.0 if is_satisfied else 0.0,
                 "is_satisfied": is_satisfied,
                 "algebra_cardinality": algebra.cardinality(),
-                "algebra_operations": len(algebra.operations()),
+                "algebra_operations": len(algebra.operations),
                 "presentation_properties": properties.properties
             }
             

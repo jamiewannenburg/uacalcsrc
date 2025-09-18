@@ -160,7 +160,7 @@ def create_free_algebra_safely(generators, operations, max_depth, memory_limit_m
     ua.set_memory_limit(memory_limit_bytes)
     
     # Get operation arities
-    operation_arities = [op.arity() for op in operations]
+    operation_arities = [op.arity for op in operations]
     
     # Check memory limit before generation
     try:

@@ -62,7 +62,7 @@ class AlgebraIOCompatibilityTest(BaseCompatibilityTest):
                         "input_file": str(ua_file),
                         "algebra_name": rust_algebra.name,
                         "cardinality": rust_algebra.cardinality,
-                        "operation_count": len(rust_algebra.operations())
+                        "operation_count": len(rust_algebra.operations)
                     }
                 except Exception as e:
                     rust_result = {
@@ -120,7 +120,7 @@ class AlgebraIOCompatibilityTest(BaseCompatibilityTest):
                             "output_file": rust_output,
                             "algebra_name": rust_algebra.name,
                             "cardinality": rust_algebra.cardinality,
-                            "operation_count": len(rust_algebra.operations())
+                            "operation_count": len(rust_algebra.operations)
                         }
                     except Exception as e:
                         rust_result = {
@@ -189,11 +189,11 @@ class AlgebraIOCompatibilityTest(BaseCompatibilityTest):
                         # Compare properties
                         name_matches = original_algebra.name == reloaded_algebra.name
                         cardinality_matches = original_algebra.cardinality == reloaded_algebra.cardinality
-                        operation_count_matches = len(original_algebra.operations()) == len(reloaded_algebra.operations())
+                        operation_count_matches = len(original_algebra.operations) == len(reloaded_algebra.operations)
                         
                         # Compare operation symbols
-                        original_symbols = [op.symbol for op in original_algebra.operations()]
-                        reloaded_symbols = [op.symbol for op in reloaded_algebra.operations()]
+                        original_symbols = [op.symbol for op in original_algebra.operations]
+                        reloaded_symbols = [op.symbol for op in reloaded_algebra.operations]
                         symbols_match = original_symbols == reloaded_symbols
                         
                         rust_result = {
@@ -203,7 +203,7 @@ class AlgebraIOCompatibilityTest(BaseCompatibilityTest):
                             "temp_file": rust_temp_file,
                             "algebra_name": original_algebra.name,
                             "cardinality": original_algebra.cardinality,
-                            "operation_count": len(original_algebra.operations()),
+                            "operation_count": len(original_algebra.operations),
                             "roundtrip_success": name_matches and cardinality_matches and operation_count_matches and symbols_match,
                             "name_matches": name_matches,
                             "cardinality_matches": cardinality_matches,
@@ -260,15 +260,15 @@ class AlgebraIOCompatibilityTest(BaseCompatibilityTest):
                     # Basic validation checks
                     has_valid_name = algebra.name is not None and algebra.name.strip() != ""
                     has_valid_cardinality = algebra.cardinality > 0
-                    has_valid_operations = algebra.operations() is not None and len(algebra.operations()) > 0
+                    has_valid_operations = algebra.operations is not None and len(algebra.operations) > 0
                     
                     # Check operation validity
                     all_operations_valid = True
-                    for op in algebra.operations():
+                    for op in algebra.operations:
                         if op.symbol is None:
                             all_operations_valid = False
                             break
-                        if op.arity() < 0:
+                        if op.arity < 0:
                             all_operations_valid = False
                             break
                     
@@ -278,7 +278,7 @@ class AlgebraIOCompatibilityTest(BaseCompatibilityTest):
                         "input_file": str(ua_file),
                         "algebra_name": algebra.name,
                         "cardinality": algebra.cardinality,
-                        "operation_count": len(algebra.operations()),
+                        "operation_count": len(algebra.operations),
                         "validation_passed": has_valid_name and has_valid_cardinality and has_valid_operations and all_operations_valid,
                         "has_valid_name": has_valid_name,
                         "has_valid_cardinality": has_valid_cardinality,

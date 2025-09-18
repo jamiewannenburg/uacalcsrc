@@ -35,7 +35,7 @@ class TestSubalgebraCreation:
         # Test basic properties
         assert subalgebra.cardinality == 4  # Should generate full Z4
         assert subalgebra.universe == [0, 1, 2, 3]
-        assert len(subalgebra.operations()) == 1
+        assert len(subalgebra.operations) == 1
         assert hasattr(subalgebra, 'name')
 
     def test_create_subalgebra_single_element(self):
@@ -126,8 +126,8 @@ class TestSubalgebraOperations:
         add_op = subalgebra.operation_by_symbol("add")
         neg_op = subalgebra.operation_by_symbol("neg")
         
-        assert add_op.arity() == 2
-        assert neg_op.arity() == 1
+        assert add_op.arity == 2
+        assert neg_op.arity == 1
         
         # Test operation results
         assert neg_op.value([1]) == 2  # neg(1) = 2 in Z3
@@ -270,7 +270,7 @@ class TestSubalgebraAPICompatibility:
         # Test that methods work
         assert isinstance(subalgebra.cardinality, int)
         assert isinstance(subalgebra.universe, list)
-        assert isinstance(subalgebra.operations(), list)
+        assert isinstance(subalgebra.operations, list)
 
     def test_existing_code_compatibility(self):
         """Test that existing code using create_subalgebra still works."""
@@ -310,7 +310,7 @@ class TestSubalgebraPerformance:
         
         # Should complete without issues
         assert subalgebra.cardinality <= size
-        assert len(subalgebra.operations()) == 1
+        assert len(subalgebra.operations) == 1
 
     def test_closure_computation_correctness(self):
         """Test that closure computation is correct."""

@@ -112,7 +112,7 @@ class TermOperationCompatibilityTest(BaseCompatibilityTest):
                 # Load algebra to check available operations
                 try:
                     algebra = self._load_test_algebra(algebra_file)
-                    operations = algebra.operations()
+                    operations = algebra.operations
                     if len(operations) == 0:
                         self.skipTest(f"No operations in {algebra_file.name}")
                 except:

@@ -56,7 +56,7 @@ class TestQuotientAlgebra:
         # Test basic properties
         assert quotient.cardinality == 2
         assert quotient.universe == [0, 1]
-        assert len(quotient.operations()) == 1
+        assert len(quotient.operations) == 1
         assert quotient.name == "Z4_quotient"
     
     def test_quotient_operation_evaluation(self):
@@ -265,7 +265,7 @@ class TestQuotientAlgebra:
         
         # Test properties
         assert quotient.cardinality == 3
-        assert len(quotient.operations()) == 1
+        assert len(quotient.operations) == 1
         
         # Test that operations work
         mult_op = quotient.operation_by_symbol("multiply")
@@ -328,13 +328,13 @@ class TestQuotientAlgebra:
         assert quotient.max_arity() >= 2  # Should have binary operations
         
         # Test that operations are accessible
-        operations = quotient.operations()
+        operations = quotient.operations
         assert len(operations) >= 1
         
         # Test operation symbols
         try:
             meet_op = quotient.operation_by_symbol("bool_meet")
-            assert meet_op.arity() == 2
+            assert meet_op.arity == 2
         except:
             # If bool_meet doesn't exist, that's OK for this test
             pass
@@ -361,7 +361,7 @@ class TestQuotientAlgebra:
         
         # Test subalgebra properties
         assert subalgebra.cardinality <= quotient.cardinality
-        assert len(subalgebra.operations()) == len(quotient.operations())
+        assert len(subalgebra.operations) == len(quotient.operations)
     
     def test_quotient_performance_comparison(self):
         """Test that new implementation performs better than naive approach."""
@@ -457,7 +457,7 @@ class TestQuotientIntegration:
             name = quotient.name
             cardinality = quotient.cardinality
             universe = quotient.universe
-            operations = quotient.operations()
+            operations = quotient.operations
             
             assert name is not None
             assert cardinality > 0
@@ -467,7 +467,7 @@ class TestQuotientIntegration:
             
             # Test that operations work
             op = operations[0]
-            if op.arity() == 2:
+            if op.arity == 2:
                 result = op.value([0, 0])
                 assert 0 <= result < cardinality
                 

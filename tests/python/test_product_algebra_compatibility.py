@@ -46,10 +46,10 @@ class ProductAlgebraCompatibilityTest(BaseCompatibilityTest):
                 try:
                     alg1 = self._load_test_algebra(alg1_file)
                     alg2 = self._load_test_algebra(alg2_file)
-                    ops1 = sorted([op.symbol for op in alg1.operations()])
-                    ops2 = sorted([op.symbol for op in alg2.operations()])
-                    arities1 = sorted([op.arity() for op in alg1.operations()])
-                    arities2 = sorted([op.arity() for op in alg2.operations()])
+                    ops1 = sorted([op.symbol for op in alg1.operations])
+                    ops2 = sorted([op.symbol for op in alg2.operations])
+                    arities1 = sorted([op.arity for op in alg1.operations])
+                    arities2 = sorted([op.arity for op in alg2.operations])
                     if ops1 == ops2 and arities1 == arities2:  # Same operation symbols and arities
                         # Check if product would be small enough
                         product_size = alg1.cardinality * alg2.cardinality
@@ -87,19 +87,19 @@ class ProductAlgebraCompatibilityTest(BaseCompatibilityTest):
                         "factor_count": product_algebra.num_factors,
                         "factor1_cardinality": product_algebra.factor_sizes[0],
                         "factor2_cardinality": product_algebra.factor_sizes[1],
-                        "operation_count": len(product_algebra.operations()),
+                        "operation_count": len(product_algebra.operations),
                         "construction_successful": True,
                         "is_product": True
                     }
                     
                     # Check if algebras have compatible signatures
-                    arities1 = sorted([op.arity() for op in algebra1.operations()])
-                    arities2 = sorted([op.arity() for op in algebra2.operations()])
+                    arities1 = sorted([op.arity for op in algebra1.operations])
+                    arities2 = sorted([op.arity for op in algebra2.operations])
                     rust_product["compatible_signatures"] = arities1 == arities2
                     
                     # Also check operation symbols match (since we already filtered for this)
-                    symbols1 = sorted([op.symbol for op in algebra1.operations()])
-                    symbols2 = sorted([op.symbol for op in algebra2.operations()])
+                    symbols1 = sorted([op.symbol for op in algebra1.operations])
+                    symbols2 = sorted([op.symbol for op in algebra2.operations])
                     rust_product["compatible_symbols"] = symbols1 == symbols2
                     
                 except Exception as e:
@@ -155,10 +155,10 @@ class ProductAlgebraCompatibilityTest(BaseCompatibilityTest):
                 try:
                     alg1 = self._load_test_algebra(alg1_file)
                     alg2 = self._load_test_algebra(alg2_file)
-                    ops1 = sorted([op.symbol for op in alg1.operations()])
-                    ops2 = sorted([op.symbol for op in alg2.operations()])
-                    arities1 = sorted([op.arity() for op in alg1.operations()])
-                    arities2 = sorted([op.arity() for op in alg2.operations()])
+                    ops1 = sorted([op.symbol for op in alg1.operations])
+                    ops2 = sorted([op.symbol for op in alg2.operations])
+                    arities1 = sorted([op.arity for op in alg1.operations])
+                    arities2 = sorted([op.arity for op in alg2.operations])
                     if ops1 == ops2 and arities1 == arities2:  # Same operation symbols and arities
                         compatible_pairs.append((alg1_file, alg2_file))
                         break  # Just need one pair
@@ -185,7 +185,7 @@ class ProductAlgebraCompatibilityTest(BaseCompatibilityTest):
                 rust_operations = {
                     "coordinate_wise_evaluation": True,
                     "preserves_factor_operations": True,
-                    "operation_count": len(product_algebra.operations()),
+                    "operation_count": len(product_algebra.operations),
                     "operations_well_defined": True,
                     "projection_maps_exist": True,
                     "factor1_projection_valid": True,
@@ -193,10 +193,10 @@ class ProductAlgebraCompatibilityTest(BaseCompatibilityTest):
                 }
                 
                 # Test a simple operation evaluation if possible
-                if len(algebra1.operations()) > 0 and len(algebra2.operations()) > 0:
-                    op1 = algebra1.operations()[0]
-                    op2 = algebra2.operations()[0]
-                    if op1.arity() == op2.arity() and op1.arity() <= 2:
+                if len(algebra1.operations) > 0 and len(algebra2.operations) > 0:
+                    op1 = algebra1.operations[0]
+                    op2 = algebra2.operations[0]
+                    if op1.arity == op2.arity and op1.arity <= 2:
                         rust_operations["sample_evaluation_possible"] = True
                         rust_operations["operation_arity"] = 0  # Match Java (not provided)
                         
@@ -268,10 +268,10 @@ class ProductAlgebraCompatibilityTest(BaseCompatibilityTest):
                 try:
                     alg1 = self._load_test_algebra(alg1_file)
                     alg2 = self._load_test_algebra(alg2_file)
-                    ops1 = sorted([op.symbol for op in alg1.operations()])
-                    ops2 = sorted([op.symbol for op in alg2.operations()])
-                    arities1 = sorted([op.arity() for op in alg1.operations()])
-                    arities2 = sorted([op.arity() for op in alg2.operations()])
+                    ops1 = sorted([op.symbol for op in alg1.operations])
+                    ops2 = sorted([op.symbol for op in alg2.operations])
+                    arities1 = sorted([op.arity for op in alg1.operations])
+                    arities2 = sorted([op.arity for op in alg2.operations])
                     if ops1 == ops2 and arities1 == arities2:  # Same operation symbols and arities
                         compatible_pairs.append((alg1_file, alg2_file))
                         break  # Just need one pair
@@ -390,10 +390,10 @@ class ProductAlgebraCompatibilityTest(BaseCompatibilityTest):
                 try:
                     alg1 = self._load_test_algebra(alg1_file)
                     alg2 = self._load_test_algebra(alg2_file)
-                    ops1 = sorted([op.symbol for op in alg1.operations()])
-                    ops2 = sorted([op.symbol for op in alg2.operations()])
-                    arities1 = sorted([op.arity() for op in alg1.operations()])
-                    arities2 = sorted([op.arity() for op in alg2.operations()])
+                    ops1 = sorted([op.symbol for op in alg1.operations])
+                    ops2 = sorted([op.symbol for op in alg2.operations])
+                    arities1 = sorted([op.arity for op in alg1.operations])
+                    arities2 = sorted([op.arity for op in alg2.operations])
                     if ops1 == ops2 and arities1 == arities2:  # Same operation symbols and arities
                         compatible_pairs.append((alg1_file, alg2_file))
                         break  # Just need one pair
@@ -453,10 +453,10 @@ class ProductAlgebraCompatibilityTest(BaseCompatibilityTest):
                     rust_properties["coordinate_roundtrip_works"] = False
                 
                 # Check if factors have same similarity type
-                arities1 = sorted([op.arity() for op in algebra1.operations()])
-                arities2 = sorted([op.arity() for op in algebra2.operations()])
-                symbols1 = sorted([op.symbol for op in algebra1.operations()])
-                symbols2 = sorted([op.symbol for op in algebra2.operations()])
+                arities1 = sorted([op.arity for op in algebra1.operations])
+                arities2 = sorted([op.arity for op in algebra2.operations])
+                symbols1 = sorted([op.symbol for op in algebra1.operations])
+                symbols2 = sorted([op.symbol for op in algebra2.operations])
                 rust_properties["factors_same_type"] = (arities1 == arities2) and (symbols1 == symbols2)
                 
             except Exception as e:
@@ -513,10 +513,10 @@ class ProductAlgebraCompatibilityTest(BaseCompatibilityTest):
                 try:
                     alg1 = self._load_test_algebra(alg1_file)
                     alg2 = self._load_test_algebra(alg2_file)
-                    ops1 = sorted([op.symbol for op in alg1.operations()])
-                    ops2 = sorted([op.symbol for op in alg2.operations()])
-                    arities1 = sorted([op.arity() for op in alg1.operations()])
-                    arities2 = sorted([op.arity() for op in alg2.operations()])
+                    ops1 = sorted([op.symbol for op in alg1.operations])
+                    ops2 = sorted([op.symbol for op in alg2.operations])
+                    arities1 = sorted([op.arity for op in alg1.operations])
+                    arities2 = sorted([op.arity for op in alg2.operations])
                     if ops1 == ops2 and arities1 == arities2:  # Same operation symbols and arities
                         compatible_pairs.append((alg1_file, alg2_file))
                         break  # Just need one pair

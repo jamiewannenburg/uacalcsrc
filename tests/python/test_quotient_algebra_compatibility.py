@@ -91,7 +91,7 @@ class QuotientAlgebraCompatibilityTest(BaseCompatibilityTest):
                                 "congruence_type": cong_test["type"],
                                 "natural_homomorphism_exists": True,
                                 "quotient_well_defined": True,
-                                "operation_count": len(quotient_algebra.operations())
+                                "operation_count": len(quotient_algebra.operations)
                             }
                         except Exception as e:
                             self.skipTest(f"Rust quotient construction failed: {e}")
@@ -181,13 +181,13 @@ class QuotientAlgebraCompatibilityTest(BaseCompatibilityTest):
                     
                     # Test a few operation evaluations to ensure they work
                     try:
-                        for op in quotient_algebra.operations():
-                            if op.arity() == 0:  # Constant
+                        for op in quotient_algebra.operations:
+                            if op.arity == 0:  # Constant
                                 _ = op.value([])
-                            elif op.arity() == 1:  # Unary
+                            elif op.arity == 1:  # Unary
                                 for i in range(quotient_algebra.cardinality):
                                     _ = op.value([i])
-                            elif op.arity() == 2:  # Binary
+                            elif op.arity == 2:  # Binary
                                 for i in range(min(3, quotient_algebra.cardinality)):
                                     for j in range(min(3, quotient_algebra.cardinality)):
                                         _ = op.value([i, j])
@@ -197,7 +197,7 @@ class QuotientAlgebraCompatibilityTest(BaseCompatibilityTest):
                     
                     rust_operations = {
                         "operations_well_defined": operations_well_defined,
-                        "operation_count": len(quotient_algebra.operations()),
+                        "operation_count": len(quotient_algebra.operations),
                         "operations_preserve_structure": operations_preserve_structure,
                         "natural_map_homomorphism": natural_map_homomorphism,
                         "quotient_operations_valid": quotient_operations_valid,
@@ -205,7 +205,7 @@ class QuotientAlgebraCompatibilityTest(BaseCompatibilityTest):
                     }
                     
                     # Add operation arity information (Java wrapper doesn't provide this)
-                    if len(quotient_algebra.operations()) > 0:
+                    if len(quotient_algebra.operations) > 0:
                         rust_operations["first_operation_arity"] = 0  # Match Java behavior
                         rust_operations["operation_arities"] = []  # Match Java behavior
                     
@@ -511,12 +511,12 @@ class QuotientAlgebraCompatibilityTest(BaseCompatibilityTest):
                     
                     # Test operation-specific compatibility
                     first_operation_compatible = True
-                    operation_count = len(quotient_algebra.operations())
+                    operation_count = len(quotient_algebra.operations)
                     
                     # Test that operations respect the congruence
                     try:
-                        for op in quotient_algebra.operations():
-                            if op.arity() == 2:  # Test binary operations
+                        for op in quotient_algebra.operations:
+                            if op.arity == 2:  # Test binary operations
                                 # Test substitution property: if a ≡ b and c ≡ d, then f(a,c) ≡ f(b,d)
                                 for i in range(min(2, quotient_algebra.cardinality)):
                                     for j in range(min(2, quotient_algebra.cardinality)):

@@ -12,7 +12,7 @@
     ],
     "complexity": "trivial",
     "file_size_bytes": 630,
-    "load_time_ms": 22.136926651000977
+    "load_time_ms": 29.88457679748535
   },
   "resources/algebras/m4.ua": {
     "file_path": "resources/algebras/m4.ua",
@@ -29,7 +29,7 @@
     ],
     "complexity": "medium",
     "file_size_bytes": 1143,
-    "load_time_ms": 0.9388923645019531
+    "load_time_ms": 0.9849071502685547
   },
   "resources/algebras/sym3.ua": {
     "file_path": "resources/algebras/sym3.ua",
@@ -44,7 +44,7 @@
     ],
     "complexity": "medium",
     "file_size_bytes": 712,
-    "load_time_ms": 7.993221282958984
+    "load_time_ms": 0.6175041198730469
   },
   "resources/algebras/m3.ua": {
     "file_path": "resources/algebras/m3.ua",
@@ -61,7 +61,7 @@
     ],
     "complexity": "small",
     "file_size_bytes": 1013,
-    "load_time_ms": 22.68242835998535
+    "load_time_ms": 18.888473510742188
   },
   "resources/algebras/d16.ua": {
     "file_path": "resources/algebras/d16.ua",
@@ -76,7 +76,7 @@
     ],
     "complexity": "large",
     "file_size_bytes": 2050,
-    "load_time_ms": 1.9023418426513672
+    "load_time_ms": 16.938209533691406
   },
   "resources/algebras/z3.ua": {
     "file_path": "resources/algebras/z3.ua",
@@ -91,7 +91,7 @@
     ],
     "complexity": "small",
     "file_size_bytes": 557,
-    "load_time_ms": 26.59130096435547
+    "load_time_ms": 13.523340225219727
   },
   "resources/algebras/lat2-01.ua": {
     "file_path": "resources/algebras/lat2-01.ua",
@@ -112,7 +112,7 @@
     ],
     "complexity": "trivial",
     "file_size_bytes": 1233,
-    "load_time_ms": 0.6463527679443359
+    "load_time_ms": 18.450021743774414
   },
   "resources/algebras/lat2.ua": {
     "file_path": "resources/algebras/lat2.ua",
@@ -129,7 +129,7 @@
     ],
     "complexity": "trivial",
     "file_size_bytes": 756,
-    "load_time_ms": 0.47206878662109375
+    "load_time_ms": 0.5042552947998047
   },
   "resources/algebras/ba2.ua": {
     "file_path": "resources/algebras/ba2.ua",
@@ -152,7 +152,7 @@
     ],
     "complexity": "trivial",
     "file_size_bytes": 1444,
-    "load_time_ms": 8.82577896118164
+    "load_time_ms": 0.6616115570068359
   },
   "resources/algebras/diffi.ua": {
     "file_path": "resources/algebras/diffi.ua",
@@ -167,7 +167,7 @@
     ],
     "complexity": "medium",
     "file_size_bytes": 728,
-    "load_time_ms": 18.60189437866211
+    "load_time_ms": 0.4928112030029297
   },
   "resources/algebras/cyclic2.ua": {
     "file_path": "resources/algebras/cyclic2.ua",
@@ -182,7 +182,7 @@
     ],
     "complexity": "trivial",
     "file_size_bytes": 480,
-    "load_time_ms": 0.3788471221923828
+    "load_time_ms": 0.4870891571044922
   },
   "resources/algebras/cyclic3.ua": {
     "file_path": "resources/algebras/cyclic3.ua",
@@ -197,7 +197,7 @@
     ],
     "complexity": "small",
     "file_size_bytes": 520,
-    "load_time_ms": 3.423929214477539
+    "load_time_ms": 0.3914833068847656
   },
   "resources/algebras/baker2withtop.ua": {
     "file_path": "resources/algebras/baker2withtop.ua",
@@ -214,7 +214,7 @@
     ],
     "complexity": "trivial",
     "file_size_bytes": 871,
-    "load_time_ms": 0.5061626434326172
+    "load_time_ms": 0.42128562927246094
   },
   "resources/algebras/hajilarov.ua": {
     "file_path": "resources/algebras/hajilarov.ua",
@@ -229,7 +229,7 @@
     ],
     "complexity": "medium",
     "file_size_bytes": 635,
-    "load_time_ms": 42.21081733703613
+    "load_time_ms": 6.919622421264648
   },
   "resources/algebras/polin.ua": {
     "file_path": "resources/algebras/polin.ua",
@@ -252,7 +252,7 @@
     ],
     "complexity": "small",
     "file_size_bytes": 1641,
-    "load_time_ms": 0.7836818695068359
+    "load_time_ms": 17.94743537902832
   },
   "resources/algebras/n5.ua": {
     "file_path": "resources/algebras/n5.ua",
@@ -269,7 +269,7 @@
     ],
     "complexity": "small",
     "file_size_bytes": 1014,
-    "load_time_ms": 0.614166259765625
+    "load_time_ms": 0.743865966796875
   },
   "resources/algebras/lyndon.ua": {
     "file_path": "resources/algebras/lyndon.ua",
@@ -284,6 +284,6 @@
     ],
     "complexity": "medium",
     "file_size_bytes": 753,
-    "load_time_ms": 0.5383491516113281
+    "load_time_ms": 0.5924701690673828
   }
 }

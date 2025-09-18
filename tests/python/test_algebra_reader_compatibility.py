@@ -96,15 +96,15 @@ class AlgebraReaderCompatibilityTest(BaseCompatibilityTest):
                         "input_file": str(ua_file),
                         "algebra_name": rust_algebra.name,
                         "cardinality": rust_algebra.cardinality,
-                        "operation_count": len(rust_algebra.operations()),
+                        "operation_count": len(rust_algebra.operations),
                         "operations": []
                     }
                     
                     # Add operation details
-                    for op in rust_algebra.operations():
+                    for op in rust_algebra.operations:
                         rust_result["operations"].append({
                             "symbol": op.symbol,
-                            "arity": op.arity(),
+                            "arity": op.arity,
                             "description": getattr(op, 'description', '')
                         })
                     
@@ -381,15 +381,15 @@ class AlgebraReaderCompatibilityTest(BaseCompatibilityTest):
                         "input_file": temp_file,
                         "algebra_name": rust_algebra.name,
                         "cardinality": rust_algebra.cardinality,
-                        "operation_count": len(rust_algebra.operations()),
+                        "operation_count": len(rust_algebra.operations),
                         "operations": []
                     }
                     
                     # Add operation details
-                    for op in rust_algebra.operations():
+                    for op in rust_algebra.operations:
                         rust_result["operations"].append({
                             "symbol": op.symbol,
-                            "arity": op.arity(),
+                            "arity": op.arity,
                             "description": getattr(op, 'description', '')
                         })
                     
@@ -495,7 +495,7 @@ class AlgebraReaderCompatibilityTest(BaseCompatibilityTest):
                         "input_file": str(test_file),
                         "algebra_name": rust_algebra.name,
                         "cardinality": rust_algebra.cardinality,
-                        "operation_count": len(rust_algebra.operations())
+                        "operation_count": len(rust_algebra.operations)
                     }
                     
                 except Exception as e:
@@ -546,7 +546,7 @@ class AlgebraReaderCompatibilityTest(BaseCompatibilityTest):
                         "input_file": str(ua_file),
                         "algebra_name": rust_algebra.name,
                         "cardinality": rust_algebra.cardinality,
-                        "operation_count": len(rust_algebra.operations())
+                        "operation_count": len(rust_algebra.operations)
                     }
                     
                 except Exception as e:

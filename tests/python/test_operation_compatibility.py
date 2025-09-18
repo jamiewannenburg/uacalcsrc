@@ -39,13 +39,13 @@ class OperationCompatibilityTest(BaseCompatibilityTest):
                 # Load algebra in Rust/Python
                 algebra = self._load_test_algebra(algebra_file)
                 
-                operations = algebra.operations()
+                operations = algebra.operations
                 if len(operations) == 0:
                     self.skipTest(f"No operations in {algebra_file.name}")
                 
                 # Test each operation's arity
                 for op_index, operation in enumerate(operations):
-                    rust_arity = operation.arity()
+                    rust_arity = operation.arity
                     
                     # Get arity from Java
                     java_result = self._run_java_operation(
@@ -81,7 +81,7 @@ class OperationCompatibilityTest(BaseCompatibilityTest):
                 # Load algebra in Rust/Python
                 algebra = self._load_test_algebra(algebra_file)
                 
-                operations = algebra.operations()
+                operations = algebra.operations
                 if len(operations) == 0:
                     self.skipTest(f"No operations in {algebra_file.name}")
                 
@@ -126,18 +126,18 @@ class OperationCompatibilityTest(BaseCompatibilityTest):
                 # Load algebra in Rust/Python
                 algebra = self._load_test_algebra(algebra_file)
                 
-                operations = algebra.operations()
+                operations = algebra.operations
                 if len(operations) == 0:
                     self.skipTest(f"No operations in {algebra_file.name}")
                 
                 # Test each operation
                 for op_index, operation in enumerate(operations):
                     # Skip operations with too many input combinations
-                    if self._should_skip_operation_test(operation.arity(), algebra.cardinality):
+                    if self._should_skip_operation_test(operation.arity, algebra.cardinality):
                         continue
                     
                     # Generate all possible input combinations for small operations
-                    test_cases = self._generate_all_operation_inputs(operation.arity(), algebra.cardinality)
+                    test_cases = self._generate_all_operation_inputs(operation.arity, algebra.cardinality)
                     
                     for inputs in test_cases:
                         # Evaluate in Rust/Python
@@ -180,13 +180,13 @@ class OperationCompatibilityTest(BaseCompatibilityTest):
                 # Load algebra in Rust/Python
                 algebra = self._load_test_algebra(algebra_file)
                 
-                operations = algebra.operations()
+                operations = algebra.operations
                 if len(operations) == 0:
                     self.skipTest(f"No operations in {algebra_file.name}")
                 
                 # Test each unary operation for idempotency
                 for op_index, operation in enumerate(operations):
-                    if operation.arity() != 1:
+                    if operation.arity != 1:
                         continue  # Only test unary operations for idempotency
                     
                     # Check idempotency in Rust/Python
@@ -229,13 +229,13 @@ class OperationCompatibilityTest(BaseCompatibilityTest):
                 # Load algebra in Rust/Python
                 algebra = self._load_test_algebra(algebra_file)
                 
-                operations = algebra.operations()
+                operations = algebra.operations
                 if len(operations) == 0:
                     self.skipTest(f"No operations in {algebra_file.name}")
                 
                 # Test each binary operation for associativity
                 for op_index, operation in enumerate(operations):
-                    if operation.arity() != 2:
+                    if operation.arity != 2:
                         continue  # Only test binary operations for associativity
                     
                     # Check associativity in Rust/Python
@@ -278,13 +278,13 @@ class OperationCompatibilityTest(BaseCompatibilityTest):
                 # Load algebra in Rust/Python
                 algebra = self._load_test_algebra(algebra_file)
                 
-                operations = algebra.operations()
+                operations = algebra.operations
                 if len(operations) == 0:
                     self.skipTest(f"No operations in {algebra_file.name}")
                 
                 # Test each binary operation for commutativity
                 for op_index, operation in enumerate(operations):
-                    if operation.arity() != 2:
+                    if operation.arity != 2:
                         continue  # Only test binary operations for commutativity
                     
                     # Check commutativity in Rust/Python
@@ -327,7 +327,7 @@ class OperationCompatibilityTest(BaseCompatibilityTest):
                 # Load algebra in Rust/Python
                 algebra = self._load_test_algebra(algebra_file)
                 
-                operations = algebra.operations()
+                operations = algebra.operations
                 if len(operations) == 0:
                     self.skipTest(f"No operations in {algebra_file.name}")
                 
@@ -336,7 +336,7 @@ class OperationCompatibilityTest(BaseCompatibilityTest):
                 op_index = 0
                 
                 # Skip operations with too many entries
-                if self._should_skip_operation_test(operation.arity(), algebra.cardinality):
+                if self._should_skip_operation_test(operation.arity, algebra.cardinality):
                     self.skipTest(f"Operation table too large for {algebra_file.name}")
                 
                 # Generate complete operation table in Rust/Python
@@ -464,7 +464,7 @@ class OperationCompatibilityTest(BaseCompatibilityTest):
     
     def _check_idempotent_rust(self, operation, cardinality: int) -> bool:
         """Check if a unary operation is idempotent in Rust/Python"""
-        if operation.arity() != 1:
+        if operation.arity != 1:
             return False
         
         for i in range(cardinality):
@@ -474,7 +474,7 @@ class OperationCompatibilityTest(BaseCompatibilityTest):
     
     def _check_associative_rust(self, operation, cardinality: int) -> bool:
         """Check if a binary operation is associative in Rust/Python"""
-        if operation.arity() != 2:
+        if operation.arity != 2:
             return False
         
         for a in range(cardinality):
@@ -488,7 +488,7 @@ class OperationCompatibilityTest(BaseCompatibilityTest):
     
     def _check_commutative_rust(self, operation, cardinality: int) -> bool:
         """Check if a binary operation is commutative in Rust/Python"""
-        if operation.arity() != 2:
+        if operation.arity != 2:
             return False
         
         for a in range(cardinality):
@@ -503,12 +503,12 @@ class OperationCompatibilityTest(BaseCompatibilityTest):
         """Generate complete operation table in Rust/Python"""
         table = {}
         
-        if operation.arity() == 0:
+        if operation.arity == 0:
             # Nullary operation
             table[()] = operation.value([])
         else:
             # Generate all input combinations
-            for inputs in itertools.product(range(cardinality), repeat=operation.arity()):
+            for inputs in itertools.product(range(cardinality), repeat=operation.arity):
                 inputs_list = list(inputs)
                 output = operation.value(inputs_list)
                 table[inputs] = output

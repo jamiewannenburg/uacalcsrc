@@ -430,7 +430,7 @@ class TaylorCompatibilityTest(BaseCompatibilityTest):
                     "term_name": term_name,
                     "results": {
                         "constructed_successfully": True,
-                        "arity": taylor_term.arity(),
+                        "arity": taylor_term.arity,
                         "symbol": str(taylor_term.spec().symbol()),
                         "equations_count": len(taylor_term.equations()),
                         "term_type": "taylor"
@@ -714,9 +714,9 @@ class TaylorCompatibilityTest(BaseCompatibilityTest):
             # This mirrors the Java implementation in JavaWrapper.outputTaylorTerms
             taylor_terms = []
             
-            for operation in algebra.operations():
+            for operation in algebra.operations:
                 op_symbol = operation.symbol
-                arity = operation.arity()
+                arity = operation.arity
                 
                 if arity == 2:
                     # Generate binary Taylor-like terms
@@ -758,7 +758,7 @@ class TaylorCompatibilityTest(BaseCompatibilityTest):
                 "operation": "taylor_terms",
                 "algebra_name": algebra.name,
                 "algebra_cardinality": algebra.cardinality,
-                "operation_count": len(algebra.operations()),
+                "operation_count": len(algebra.operations),
                 "results": {
                     "generated_taylor_terms": valid_taylor_terms,
                     "taylor_terms_count": len(valid_taylor_terms),
@@ -889,11 +889,11 @@ class TaylorCompatibilityTest(BaseCompatibilityTest):
             polynomial = TaylorExpansion.expand_as_polynomial(taylor_term, max_degree=2)
             
             # Test polynomial properties
-            assert polynomial.variable_count() == taylor_term.arity()
+            assert polynomial.variable_count() == taylor_term.arity
             assert polynomial.max_degree() <= 2
             
             # Test polynomial evaluation
-            test_values = [0.0] * taylor_term.arity()
+            test_values = [0.0] * taylor_term.arity
             result = polynomial.evaluate(test_values)
             assert isinstance(result, float)
             
@@ -917,16 +917,16 @@ class TaylorCompatibilityTest(BaseCompatibilityTest):
             # Test series properties
             assert taylor_series.max_degree() == max_degree
             assert len(taylor_series.expansion_point()) == len(expansion_point)
-            assert taylor_series.polynomial().variable_count() == taylor_term.arity()
+            assert taylor_series.polynomial().variable_count() == taylor_term.arity
             
             # Test series evaluation
-            test_point = [0.5] * taylor_term.arity()
+            test_point = [0.5] * taylor_term.arity
             result = taylor_series.evaluate(test_point)
             assert isinstance(result, float)
             
             # Test polynomial access
             polynomial = taylor_series.polynomial()
-            assert polynomial.variable_count() == taylor_term.arity()
+            assert polynomial.variable_count() == taylor_term.arity
             
             self.test_logger.info(f"Taylor series computation test passed")
             

@@ -238,12 +238,12 @@ class JavaCompatibilityTest(BaseCompatibilityTest):
                 # Verify properties match
                 self.assertEqual(original_algebra.name, reloaded_algebra.name)
                 self.assertEqual(original_algebra.cardinality, reloaded_algebra.cardinality)
-                self.assertEqual(len(original_algebra.operations()), len(reloaded_algebra.operations()))
+                self.assertEqual(len(original_algebra.operations), len(reloaded_algebra.operations))
                 
                 # Verify operation properties
-                for orig_op, reloaded_op in zip(original_algebra.operations(), reloaded_algebra.operations()):
+                for orig_op, reloaded_op in zip(original_algebra.operations, reloaded_algebra.operations):
                     self.assertEqual(orig_op.symbol, reloaded_op.symbol)
-                    self.assertEqual(orig_op.arity(), reloaded_op.arity())
+                    self.assertEqual(orig_op.arity, reloaded_op.arity)
     
     def test_algebra_properties_compatibility(self):
         """Test comprehensive algebra properties match between Java and Rust"""
@@ -269,16 +269,16 @@ class JavaCompatibilityTest(BaseCompatibilityTest):
                     # Compare basic properties
                     self.assertEqual(rust_algebra.name, java_result["algebra_name"])
                     self.assertEqual(rust_algebra.cardinality, java_result["cardinality"])
-                    self.assertEqual(len(rust_algebra.operations()), java_result["operation_count"])
+                    self.assertEqual(len(rust_algebra.operations), java_result["operation_count"])
                     
                     # Compare operation symbols (order might differ)
-                    rust_symbols = [op.symbol for op in rust_algebra.operations()]
+                    rust_symbols = [op.symbol for op in rust_algebra.operations]
                     java_symbols = java_result["operation_symbols"]
                     self.assertEqual(set(rust_symbols), set(java_symbols), 
                                    f"Operation symbols differ: Rust={rust_symbols}, Java={java_symbols}")
                     
                     # Compare operation arities (create symbol->arity mapping to handle order differences)
-                    rust_symbol_arities = {op.symbol: op.arity() for op in rust_algebra.operations()}
+                    rust_symbol_arities = {op.symbol: op.arity for op in rust_algebra.operations}
                     java_symbol_arities = {symbol: arity for symbol, arity in zip(java_symbols, java_result["operation_arities"])}
                     self.assertEqual(rust_symbol_arities, java_symbol_arities,
                                    f"Operation arities differ: Rust={rust_symbol_arities}, Java={java_symbol_arities}")
@@ -384,7 +384,7 @@ class JavaCompatibilityTest(BaseCompatibilityTest):
         if java_result and java_result.get("success"):
             # Basic compatibility checks
             expected_compatible = (rust_algebra1.cardinality == rust_algebra2.cardinality and
-                                 len(rust_algebra1.operations()) == len(rust_algebra2.operations()))
+                                 len(rust_algebra1.operations) == len(rust_algebra2.operations))
             
             self.assertEqual(expected_compatible, java_result["compatible_signatures"])
             
@@ -871,7 +871,7 @@ class FileFormatCompatibilityTest(unittest.TestCase):
             self.assertIn(algebra.name, content)
             
             # Should contain operation definitions
-            for op in algebra.operations():
+            for op in algebra.operations:
                 self.assertIn(op.symbol, content)
             
         finally:

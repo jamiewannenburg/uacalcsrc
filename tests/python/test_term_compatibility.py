@@ -168,17 +168,17 @@ class TermCompatibilityTest(BaseCompatibilityTest):
             algebra = self._load_test_algebra(algebra_file)
             
             # Get operation symbols from the algebra
-            operation_symbols = [op.symbol for op in algebra.operations()]
+            operation_symbols = [op.symbol for op in algebra.operations]
             
             # Test evaluation with actual operations from the algebra
             for op_symbol in operation_symbols[:3]:  # Test first 3 operations
-                operation = next(op for op in algebra.operations() if op.symbol == op_symbol)
+                operation = next(op for op in algebra.operations if op.symbol == op_symbol)
                 
-                if operation.arity() == 1:
+                if operation.arity == 1:
                     term_str = f"{op_symbol}(x0)"
-                elif operation.arity() == 2:
+                elif operation.arity == 2:
                     term_str = f"{op_symbol}(x0, x1)"
-                elif operation.arity() == 3:
+                elif operation.arity == 3:
                     term_str = f"{op_symbol}(x0, x1, x2)"
                 else:
                     continue  # Skip higher arity for now
@@ -198,7 +198,7 @@ class TermCompatibilityTest(BaseCompatibilityTest):
         algebra = self._load_test_algebra(algebra_file)
         
         # Get binary operations for nesting
-        binary_ops = [op for op in algebra.operations() if op.arity() == 2]
+        binary_ops = [op for op in algebra.operations if op.arity == 2]
         
         if len(binary_ops) >= 1:
             op_symbol = binary_ops[0].symbol
@@ -220,16 +220,16 @@ class TermCompatibilityTest(BaseCompatibilityTest):
             algebra = self._load_test_algebra(algebra_file)
             
             # Test valid terms (using actual operations from algebra)
-            operation_symbols = [op.symbol for op in algebra.operations()]
+            operation_symbols = [op.symbol for op in algebra.operations]
             
             for op_symbol in operation_symbols[:3]:  # Test first 3 operations
-                operation = next(op for op in algebra.operations() if op.symbol == op_symbol)
+                operation = next(op for op in algebra.operations if op.symbol == op_symbol)
                 
-                if operation.arity() == 0:
+                if operation.arity == 0:
                     term_str = op_symbol
-                elif operation.arity() == 1:
+                elif operation.arity == 1:
                     term_str = f"{op_symbol}(x0)"
-                elif operation.arity() == 2:
+                elif operation.arity == 2:
                     term_str = f"{op_symbol}(x0, x1)"
                 else:
                     continue
@@ -434,7 +434,7 @@ class TermCompatibilityTest(BaseCompatibilityTest):
                 "results": {
                     "parsed_successfully": True,
                     "term_type": "operation" if term.is_operation() else "variable",
-                    "arity": term.arity(),
+                    "arity": term.arity,
                     "depth": term.depth(),
                     "variables": term.variables(),
                     "string_representation": term.to_string()
@@ -522,7 +522,7 @@ class TermCompatibilityTest(BaseCompatibilityTest):
                         "term_variables": term.variables(),
                         "term_operations": term_operations(term),
                         "algebra_cardinality": algebra.cardinality,
-                        "algebra_operations": [op.symbol for op in algebra.operations()]
+                        "algebra_operations": [op.symbol for op in algebra.operations]
                     }
                 },
                 "execution_time_ms": execution_time * 1000

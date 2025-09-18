@@ -223,7 +223,7 @@ def algebra_to_numpy(algebra: Algebra) -> Dict[str, np.ndarray]
 | `Algebra.getCardinality()` | `algebra.cardinality()` | `algebra.cardinality` |
 | `Algebra.getOperation(int)` | `algebra.operation(index)` | `algebra.operation(index)` |
 | `Operation.getValue(int[])` | `operation.value(&args)` | `operation.value(args)` |
-| `Operation.getArity()` | `operation.arity()` | `operation.arity()` |
+| `Operation.getArity()` | `operation.arity` | `operation.arity` |
 | `Partition.getBlocks()` | `partition.blocks()` | `partition.blocks()` |
 
 ### Key Differences

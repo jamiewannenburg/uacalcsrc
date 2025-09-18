@@ -40,7 +40,7 @@ class AlgebrasCompatibilityTest(BaseCompatibilityTest):
                 algebra = self._load_test_algebra(algebra_file)
                 
                 # Extract factory-related properties
-                operations = algebra.operations()
+                operations = algebra.operations
                 rust_factory_props = {
                     "cardinality": algebra.cardinality,
                     "operation_count": len(operations),
@@ -87,7 +87,7 @@ class AlgebrasCompatibilityTest(BaseCompatibilityTest):
                 algebra = self._load_test_algebra(algebra_file)
                 
                 # Perform validation checks
-                operations = algebra.operations()
+                operations = algebra.operations
                 rust_validation = {
                     "is_valid_algebra": True,  # Assume loaded algebras are valid
                     "cardinality_positive": algebra.cardinality > 0,
@@ -101,11 +101,11 @@ class AlgebrasCompatibilityTest(BaseCompatibilityTest):
                 if algebra.cardinality <= 4 and len(operations) > 0:
                     try:
                         first_op = operations[0]
-                        if first_op.arity() <= 2:
+                        if first_op.arity <= 2:
                             # Test a few operation evaluations
-                            test_inputs = [[0]] if first_op.arity() == 1 else [[0, 0], [0, 1]] if algebra.cardinality > 1 else [[0, 0]]
+                            test_inputs = [[0]] if first_op.arity == 1 else [[0, 0], [0, 1]] if algebra.cardinality > 1 else [[0, 0]]
                             for inputs in test_inputs[:2]:  # Test first 2 cases
-                                if len(inputs) == first_op.arity():
+                                if len(inputs) == first_op.arity:
                                     result = first_op.value(inputs)
                                     if result not in range(algebra.cardinality):
                                         rust_validation["operations_well_defined"] = False
@@ -153,7 +153,7 @@ class AlgebrasCompatibilityTest(BaseCompatibilityTest):
                 
                 # Check normalization properties
                 universe_list = list(algebra.universe)
-                operations = algebra.operations()
+                operations = algebra.operations
                 rust_normalization = {
                     "universe_sorted": universe_list == sorted(universe_list),
                     "universe_starts_at_zero": min(universe_list) == 0 if universe_list else True,
@@ -209,14 +209,14 @@ class AlgebrasCompatibilityTest(BaseCompatibilityTest):
                     algebra2 = self._load_test_algebra(algebra_file2)
                     
                     # Compare algebras
-                    operations1 = algebra1.operations()
-                    operations2 = algebra2.operations()
+                    operations1 = algebra1.operations
+                    operations2 = algebra2.operations
                     rust_comparison = {
                         "same_cardinality": algebra1.cardinality == algebra2.cardinality,
                         "same_operation_count": len(operations1) == len(operations2),
                         "same_similarity_type": (
-                            sorted([op.arity() for op in operations1]) == 
-                            sorted([op.arity() for op in operations2])
+                            sorted([op.arity for op in operations1]) == 
+                            sorted([op.arity for op in operations2])
                         ),
                         "potentially_isomorphic": (
                             algebra1.cardinality == algebra2.cardinality and
@@ -268,8 +268,8 @@ class AlgebrasCompatibilityTest(BaseCompatibilityTest):
                 algebra = self._load_test_algebra(algebra_file)
                 
                 # Perform analysis
-                operations = algebra.operations()
-                operation_arities = [op.arity() for op in operations]
+                operations = algebra.operations
+                operation_arities = [op.arity for op in operations]
                 rust_analysis = {
                     "cardinality": algebra.cardinality,
                     "operation_count": len(operations),
@@ -335,7 +335,7 @@ class AlgebrasCompatibilityTest(BaseCompatibilityTest):
                 algebra = self._load_test_algebra(algebra_file)
                 
                 # Test utility method results
-                operations = algebra.operations()
+                operations = algebra.operations
                 rust_utilities = {
                     "has_operations": len(operations) > 0,
                     "is_empty": algebra.cardinality == 0,

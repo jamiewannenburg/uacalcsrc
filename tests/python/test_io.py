@@ -41,10 +41,10 @@ class TestBasicFileOperations:
             
             assert loaded_algebra.name == "test"
             assert loaded_algebra.cardinality == 2
-            assert len(loaded_algebra.operations()) == 1
+            assert len(loaded_algebra.operations) == 1
             
             loaded_op = loaded_algebra.operation_by_symbol("test_op")
-            assert loaded_op.arity() == 1
+            assert loaded_op.arity == 1
             assert loaded_op.value([0]) == 1
             assert loaded_op.value([1]) == 0
             
@@ -102,14 +102,14 @@ class TestBasicFileOperations:
             # Check basic properties
             assert loaded_algebra.name == algebra.name
             assert loaded_algebra.cardinality == algebra.cardinality
-            assert len(loaded_algebra.operations()) == len(algebra.operations())
+            assert len(loaded_algebra.operations) == len(algebra.operations)
             
             # Check operations
             for op_name in ["binary", "unary"]:
                 original_op = algebra.operation_by_symbol(op_name)
                 loaded_op = loaded_algebra.operation_by_symbol(op_name)
                 
-                assert loaded_op.arity() == original_op.arity()
+                assert loaded_op.arity == original_op.arity
                 
                 # Test some values
                 if op_name == "binary":
@@ -161,10 +161,10 @@ class TestXMLParsing:
             assert algebra.cardinality == 2
             
             # Get the first operation
-            operations = list(algebra.operations())
+            operations = list(algebra.operations)
             assert len(operations) == 1
             op = operations[0]
-            assert op.arity() == 1
+            assert op.arity == 1
             assert op.value([0]) == 1
             assert op.value([1]) == 0
             
@@ -266,7 +266,7 @@ class TestOperationTableParsing:
             algebra = load_algebra(temp_path)
             op = algebra.operation_by_symbol("unary")
             
-            assert op.arity() == 1
+            assert op.arity == 1
             assert op.value([0]) == 2
             assert op.value([1]) == 1
             assert op.value([2]) == 0
@@ -306,7 +306,7 @@ class TestOperationTableParsing:
             algebra = load_algebra(temp_path)
             op = algebra.operation_by_symbol("binary")
             
-            assert op.arity() == 2
+            assert op.arity == 2
             assert op.value([0, 0]) == 0
             assert op.value([0, 1]) == 1
             assert op.value([1, 0]) == 1
@@ -707,7 +707,7 @@ class TestErrorHandling:
             algebra = load_algebra(temp_path)
             assert algebra.name == "test"
             assert algebra.cardinality == 2
-            assert len(algebra.operations()) == 0
+            assert len(algebra.operations) == 0
             
         finally:
             os.unlink(temp_path)

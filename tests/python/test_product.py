@@ -28,7 +28,7 @@ def test_create_product_algebra_basic():
     
     assert product.name == "A_x_B"
     assert product.cardinality == 6  # 2 * 3
-    assert len(product.operations()) == 1  # f operation (componentwise)
+    assert len(product.operations) == 1  # f operation (componentwise)
 
 
 def test_create_product_algebra_with_name():
@@ -109,7 +109,7 @@ def test_product_algebra_large_cardinality():
     product = create_product_algebra(alg1, alg2)
     
     assert product.cardinality == 100
-    assert len(product.operations()) == 0  # No operations added
+    assert len(product.operations) == 0  # No operations added
 
 
 def test_product_algebra_error_handling():
@@ -156,7 +156,7 @@ def test_product_algebra_backward_compatibility():
     product = create_product_algebra(alg1, alg2)
     
     assert product.cardinality == 12  # 4 * 3
-    assert len(product.operations()) == 1  # op
+    assert len(product.operations) == 1  # op
 
 
 def test_product_algebra_performance_comparison():

@@ -102,7 +102,7 @@ from uacalc import load_algebra
 algebra = load_algebra("path/to/algebra.ua")
 print(f"Loaded algebra: {algebra.name}")
 print(f"Cardinality: {algebra.cardinality()}")
-print(f"Operations: {[op.symbol for op in algebra.operations()]}")
+print(f"Operations: {[op.symbol for op in algebra.operations]}")
 ```
 
 #### Saving Algebras

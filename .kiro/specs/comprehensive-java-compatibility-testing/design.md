@@ -200,7 +200,7 @@ class AlgebraCompatibilityTest(BaseCompatibilityTest):
         """Test Algebra.cardinality() matches between Java and Rust"""
         
     def test_algebra_operations_compatibility(self):
-        """Test Algebra.operations() returns identical operation lists"""
+        """Test Algebra.operations returns identical operation lists"""
         
     def test_algebra_universe_compatibility(self):
         """Test Algebra.universe() returns identical universes"""

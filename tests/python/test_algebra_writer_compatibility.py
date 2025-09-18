@@ -95,7 +95,7 @@ class AlgebraWriterCompatibilityTest(BaseCompatibilityTest):
                             "output_file": rust_output,
                             "algebra_name": rust_algebra.name,
                             "cardinality": rust_algebra.cardinality,
-                            "operation_count": len(rust_algebra.operations())
+                            "operation_count": len(rust_algebra.operations)
                         }
                     except Exception as e:
                         rust_result = {
@@ -240,7 +240,7 @@ class AlgebraWriterCompatibilityTest(BaseCompatibilityTest):
                                 "output_file": rust_output,
                                 "algebra_name": rust_algebra.name,
                                 "cardinality": rust_algebra.cardinality,
-                                "operation_count": len(rust_algebra.operations()),
+                                "operation_count": len(rust_algebra.operations),
                                 "test_type": test_type
                             }
                         except Exception as e:
@@ -304,11 +304,11 @@ class AlgebraWriterCompatibilityTest(BaseCompatibilityTest):
                         # Compare properties
                         name_matches = original_algebra.name == reloaded_algebra.name
                         cardinality_matches = original_algebra.cardinality == reloaded_algebra.cardinality
-                        operation_count_matches = len(original_algebra.operations()) == len(reloaded_algebra.operations())
+                        operation_count_matches = len(original_algebra.operations) == len(reloaded_algebra.operations)
                         
                         # Compare operation symbols
-                        original_symbols = [op.symbol for op in original_algebra.operations()]
-                        reloaded_symbols = [op.symbol for op in reloaded_algebra.operations()]
+                        original_symbols = [op.symbol for op in original_algebra.operations]
+                        reloaded_symbols = [op.symbol for op in reloaded_algebra.operations]
                         symbols_match = original_symbols == reloaded_symbols
                         
                         rust_result = {
@@ -318,7 +318,7 @@ class AlgebraWriterCompatibilityTest(BaseCompatibilityTest):
                             "temp_file": rust_temp,
                             "algebra_name": original_algebra.name,
                             "cardinality": original_algebra.cardinality,
-                            "operation_count": len(original_algebra.operations()),
+                            "operation_count": len(original_algebra.operations),
                             "roundtrip_success": name_matches and cardinality_matches and operation_count_matches and symbols_match,
                             "name_matches": name_matches,
                             "cardinality_matches": cardinality_matches,

@@ -17,7 +17,7 @@ Added three new methods to `scripts/JavaWrapper.java`:
 #### 2. OperationCompatibilityTest Class
 Created `tests/python/test_operation_compatibility.py` with comprehensive test methods:
 
-- **`test_operation_arity_compatibility`**: Tests Operation.arity() matches between Java and Rust
+- **`test_operation_arity_compatibility`**: Tests Operation.arity matches between Java and Rust
 - **`test_operation_symbol_compatibility`**: Tests Operation.symbol() matches between Java and Rust  
 - **`test_operation_evaluation_compatibility`**: Tests operation evaluation for all possible input combinations
 - **`test_operation_idempotent_property_compatibility`**: Tests idempotent property checking for unary operations

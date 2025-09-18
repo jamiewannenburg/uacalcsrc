@@ -38,7 +38,7 @@ class TestAlgebra:
         assert algebra.name == "TestAlgebra"
         assert algebra.cardinality == 3
         assert list(algebra.universe) == [0, 1, 2]
-        assert len(algebra.operations()) == 0
+        assert len(algebra.operations) == 0
     
     def test_add_operation(self):
         """Test adding operations to an algebra."""
@@ -54,7 +54,7 @@ class TestAlgebra:
         
         algebra.add_operation("multiply", operation)
         
-        assert len(algebra.operations()) == 1
+        assert len(algebra.operations) == 1
         assert algebra.operation(0).symbol == "multiply"
         assert algebra.operation_by_symbol("multiply").symbol == "multiply"
     
@@ -84,7 +84,7 @@ class TestAlgebra:
         table = [[0], [1], [2]]
         identity_op = create_operation("identity", 1, table)
         
-        assert identity_op.arity() == 1
+        assert identity_op.arity == 1
         assert identity_op.symbol == "identity"
         assert identity_op.operation_type() == "unary"
     
@@ -245,7 +245,7 @@ class TestAlgebraBuilder:
         
         assert algebra.name == "TestAlgebra"
         assert algebra.cardinality == 3
-        assert len(algebra.operations()) == 3
+        assert len(algebra.operations) == 3
 
 class TestPredefinedAlgebras:
     """Test predefined algebra constructors."""
@@ -255,7 +255,7 @@ class TestPredefinedAlgebras:
         algebra = create_boolean_algebra(2)
         
         assert algebra.cardinality == 2
-        assert len(algebra.operations()) == 3  # meet, join, complement
+        assert len(algebra.operations) == 3  # meet, join, complement
         
         # Test meet operation (AND)
         meet_op = algebra.operation_by_symbol("bool_meet")
@@ -269,7 +269,7 @@ class TestPredefinedAlgebras:
         algebra = create_cyclic_group(3)
         
         assert algebra.cardinality == 3
-        assert len(algebra.operations()) == 1  # multiply
+        assert len(algebra.operations) == 1  # multiply
         
         # Test multiplication
         mult_op = algebra.operation_by_symbol("multiply")
@@ -282,7 +282,7 @@ class TestPredefinedAlgebras:
         algebra = create_symmetric_group(2)
         
         assert algebra.cardinality == 2  # S_2 has 2 elements
-        assert len(algebra.operations()) == 1  # compose
+        assert len(algebra.operations) == 1  # compose
 
 class TestIO:
     """Test I/O functionality."""
@@ -310,7 +310,7 @@ class TestIO:
         
         assert loaded_algebra.name == algebra.name
         assert loaded_algebra.cardinality == algebra.cardinality
-        assert len(loaded_algebra.operations()) == len(algebra.operations())
+        assert len(loaded_algebra.operations) == len(algebra.operations)
 
 class TestNumPyIntegration:
     """Test NumPy integration."""

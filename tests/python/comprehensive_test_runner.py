@@ -301,7 +301,7 @@ class ComprehensiveTestRunner:
                     rust_result = {
                         "name": algebra.name if hasattr(algebra, 'name') else "test_algebra",
                         "cardinality": algebra.cardinality if hasattr(algebra, 'cardinality') else 2,
-                        "operation_count": len(algebra.operations()) if hasattr(algebra, 'operations') else 1
+                        "operation_count": len(algebra.operations) if hasattr(algebra, 'operations') else 1
                     }
                     
                     # Get Java result (if available)

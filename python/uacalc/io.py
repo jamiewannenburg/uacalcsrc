@@ -428,7 +428,7 @@ def _generate_basic_algebra_xml(algebra: Algebra) -> ET.Element:
     
     # Add operations
     operations = ET.SubElement(basic_algebra, 'operations')
-    for operation in algebra.operations():
+    for operation in algebra.operations:
         op_elem = _generate_operation_xml(operation, algebra.universe)
         operations.append(op_elem)
     
@@ -443,7 +443,7 @@ def _generate_operation_xml(operation: Operation, universe: List[int]) -> ET.Ele
     op_name = ET.SubElement(op_symbol, 'opName')
     op_name.text = operation.symbol
     arity = ET.SubElement(op_symbol, 'arity')
-    arity.text = str(operation.arity())
+    arity.text = str(operation.arity)
     
     # Add operation table
     op_table = ET.SubElement(op, 'opTable')
@@ -460,7 +460,7 @@ def _generate_operation_table_xml(operation: Operation, universe: List[int]) -> 
     """Generate operation table XML rows."""
     rows = []
     cardinality = len(universe)
-    arity = operation.arity()
+    arity = operation.arity
     
     if arity == 0:
         # Constant operation

@@ -47,7 +47,7 @@ class PolymorphismsCompatibilityTest(BaseCompatibilityTest):
             rust_result = {
                 'algebra_name': algebra.name,
                 'algebra_cardinality': algebra.cardinality,
-                'operation_count': len(algebra.operations()) if hasattr(algebra, 'operations') else None,
+                'operation_count': len(algebra.operations) if hasattr(algebra, 'operations') else None,
             }
             
             # Try to detect polymorphisms if the functionality exists
@@ -68,7 +68,7 @@ class PolymorphismsCompatibilityTest(BaseCompatibilityTest):
                         rust_result['polymorphism_arities'] = []
                         for poly in poly_list[:10]:  # Limit to first 10 for performance
                             if hasattr(poly, 'arity'):
-                                rust_result['polymorphism_arities'].append(poly.arity())
+                                rust_result['polymorphism_arities'].append(poly.arity)
                         
                         rust_result['polymorphism_arities'].sort()
                         
@@ -130,7 +130,7 @@ class PolymorphismsCompatibilityTest(BaseCompatibilityTest):
                     try:
                         for poly in polymorphisms:
                             if hasattr(poly, 'arity'):
-                                arity = poly.arity()
+                                arity = poly.arity
                                 arity_counts[arity] = arity_counts.get(arity, 0) + 1
                         
                         rust_result['arity_distribution'] = dict(sorted(arity_counts.items()))
@@ -231,7 +231,7 @@ class PolymorphismsCompatibilityTest(BaseCompatibilityTest):
                             # Check commutativity for binary operations
                             if hasattr(poly, 'is_commutative') and hasattr(poly, 'arity'):
                                 try:
-                                    if poly.arity() == 2 and poly.is_commutative():
+                                    if poly.arity == 2 and poly.is_commutative():
                                         commutative_count += 1
                                 except:
                                     pass
@@ -239,7 +239,7 @@ class PolymorphismsCompatibilityTest(BaseCompatibilityTest):
                             # Check associativity for binary operations
                             if hasattr(poly, 'is_associative') and hasattr(poly, 'arity'):
                                 try:
-                                    if poly.arity() == 2 and poly.is_associative():
+                                    if poly.arity == 2 and poly.is_associative():
                                         associative_count += 1
                                 except:
                                     pass

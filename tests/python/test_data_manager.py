@@ -192,10 +192,10 @@ class TestDataManager:
         load_time_ms = (time.time() - start_time) * 1000
         
         cardinality = algebra.cardinality
-        operations = algebra.operations()
+        operations = algebra.operations
         operation_count = len(operations)
         operation_symbols = [op.symbol for op in operations]
-        operation_arities = [op.arity() for op in operations]
+        operation_arities = [op.arity for op in operations]
         
         # Determine complexity
         if cardinality <= 2:

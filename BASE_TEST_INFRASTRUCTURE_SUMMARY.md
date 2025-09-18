@@ -176,7 +176,7 @@ class MyCompatibilityTest(BaseCompatibilityTest):
                 rust_properties = {
                     "name": rust_algebra.name,
                     "cardinality": rust_algebra.cardinality,
-                    "operation_count": len(rust_algebra.operations())
+                    "operation_count": len(rust_algebra.operations)
                 }
                 
                 # Compare results
