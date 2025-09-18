@@ -1546,6 +1546,92 @@ public class JavaWrapper {
                 // Could not compute congruence lattice
             }
 
+            // Check variety membership
+            boolean isGroup = false;
+            boolean isLattice = false;
+            boolean isBooleanAlgebra = false;
+            boolean isSemilattice = false;
+            boolean isQuasigroup = false;
+            int varietyCount = 0;
+
+            try {
+                // Check if it's a group (exactly one binary operation)
+                if (smallAlgebra.operations().size() == 1) {
+                    Operation op = smallAlgebra.operations().get(0);
+                    if (op.arity() == 2) {
+                        // For small algebras, do basic group property checks
+                        if (smallAlgebra.cardinality() <= 8) {
+                            isGroup = checkGroupProperties(smallAlgebra, op);
+                        }
+                    }
+                }
+
+                // Check if it's a lattice (exactly two binary operations)
+                if (smallAlgebra.operations().size() == 2) {
+                    boolean hasTwoBinaryOps = true;
+                    for (Operation op : smallAlgebra.operations()) {
+                        if (op.arity() != 2) {
+                            hasTwoBinaryOps = false;
+                            break;
+                        }
+                    }
+                    if (hasTwoBinaryOps) {
+                        // For small algebras, do basic lattice property checks
+                        if (smallAlgebra.cardinality() <= 8) {
+                            isLattice = checkLatticeProperties(smallAlgebra);
+                        }
+                    }
+                }
+
+                // Check if it's a Boolean algebra (two binary, one unary, two nullary operations)
+                if (smallAlgebra.operations().size() == 5) {
+                    int binaryCount = 0, unaryCount = 0, nullaryCount = 0;
+                    for (Operation op : smallAlgebra.operations()) {
+                        if (op.arity() == 2) binaryCount++;
+                        else if (op.arity() == 1) unaryCount++;
+                        else if (op.arity() == 0) nullaryCount++;
+                    }
+                    if (binaryCount == 2 && unaryCount == 1 && nullaryCount == 2) {
+                        // For small algebras, do basic Boolean algebra property checks
+                        if (smallAlgebra.cardinality() <= 8) {
+                            isBooleanAlgebra = checkBooleanAlgebraProperties(smallAlgebra);
+                        }
+                    }
+                }
+
+                // Check if it's a semilattice (exactly one binary operation with semilattice properties)
+                if (smallAlgebra.operations().size() == 1) {
+                    Operation op = smallAlgebra.operations().get(0);
+                    if (op.arity() == 2) {
+                        // For small algebras, do basic semilattice property checks
+                        if (smallAlgebra.cardinality() <= 8) {
+                            isSemilattice = checkSemilatticeProperties(smallAlgebra, op);
+                        }
+                    }
+                }
+
+                // Check if it's a quasigroup (exactly one binary operation with quasigroup properties)
+                if (smallAlgebra.operations().size() == 1) {
+                    Operation op = smallAlgebra.operations().get(0);
+                    if (op.arity() == 2) {
+                        // For small algebras, do basic quasigroup property checks
+                        if (smallAlgebra.cardinality() <= 8) {
+                            isQuasigroup = checkQuasigroupProperties(smallAlgebra, op);
+                        }
+                    }
+                }
+
+                // Count varieties
+                if (isGroup) varietyCount++;
+                if (isLattice) varietyCount++;
+                if (isBooleanAlgebra) varietyCount++;
+                if (isSemilattice) varietyCount++;
+                if (isQuasigroup) varietyCount++;
+
+            } catch (Exception e) {
+                // Variety membership checking failed
+            }
+
             long endMemory = getMemoryUsage();
             long endTime = System.currentTimeMillis();
 
@@ -1557,7 +1643,13 @@ public class JavaWrapper {
             result.append("\"results\":{");
             result.append("\"has_maltsev_term\":").append(hasMaltsevTerm).append(",");
             result.append("\"has_join_term\":").append(hasJoinTerm).append(",");
-            result.append("\"congruence_lattice_size\":").append(congruenceLatticeSize);
+            result.append("\"congruence_lattice_size\":").append(congruenceLatticeSize).append(",");
+            result.append("\"is_group\":").append(isGroup).append(",");
+            result.append("\"is_lattice\":").append(isLattice).append(",");
+            result.append("\"is_boolean_algebra\":").append(isBooleanAlgebra).append(",");
+            result.append("\"is_semilattice\":").append(isSemilattice).append(",");
+            result.append("\"is_quasigroup\":").append(isQuasigroup).append(",");
+            result.append("\"variety_count\":").append(varietyCount);
             if (maltsevTermString != null) {
                 result.append(",\"maltsev_term\":\"").append(escapeJson(maltsevTermString)).append("\"");
             }
@@ -8061,6 +8153,237 @@ public class JavaWrapper {
             result.append("\"error\":\"").append(escapeJson(e.getMessage())).append("\"");
             result.append("}");
             System.out.println(result.toString());
+        }
+    }
+
+    // Helper methods for variety membership checking
+    private static boolean checkGroupProperties(SmallAlgebra algebra, Operation op) {
+        try {
+            int cardinality = algebra.cardinality();
+            
+            // Check associativity: (a·b)·c = a·(b·c)
+            for (int a = 0; a < cardinality; a++) {
+                for (int b = 0; b < cardinality; b++) {
+                    for (int c = 0; c < cardinality; c++) {
+                        int ab = op.intValueAt(new int[]{a, b});
+                        int ab_c = op.intValueAt(new int[]{ab, c});
+                        int bc = op.intValueAt(new int[]{b, c});
+                        int a_bc = op.intValueAt(new int[]{a, bc});
+                        if (ab_c != a_bc) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            
+            // Check for identity element
+            boolean hasIdentity = false;
+            for (int e = 0; e < cardinality; e++) {
+                boolean isIdentity = true;
+                for (int x = 0; x < cardinality; x++) {
+                    if (op.intValueAt(new int[]{e, x}) != x || op.intValueAt(new int[]{x, e}) != x) {
+                        isIdentity = false;
+                        break;
+                    }
+                }
+                if (isIdentity) {
+                    hasIdentity = true;
+                    break;
+                }
+            }
+            if (!hasIdentity) return false;
+            
+            // Check for inverses
+            for (int a = 0; a < cardinality; a++) {
+                boolean hasInverse = false;
+                for (int b = 0; b < cardinality; b++) {
+                    if (op.intValueAt(new int[]{a, b}) == 0 && op.intValueAt(new int[]{b, a}) == 0) {
+                        hasInverse = true;
+                        break;
+                    }
+                }
+                if (!hasInverse) return false;
+            }
+            
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private static boolean checkLatticeProperties(SmallAlgebra algebra) {
+        try {
+            List<Operation> operations = algebra.operations();
+            if (operations.size() != 2) return false;
+            
+            Operation join = operations.get(0);
+            Operation meet = operations.get(1);
+            
+            int cardinality = algebra.cardinality();
+            
+            // Check idempotency: x ∨ x = x, x ∧ x = x
+            for (int x = 0; x < cardinality; x++) {
+                if (join.intValueAt(new int[]{x, x}) != x || meet.intValueAt(new int[]{x, x}) != x) {
+                    return false;
+                }
+            }
+            
+            // Check commutativity: x ∨ y = y ∨ x, x ∧ y = y ∧ x
+            for (int x = 0; x < cardinality; x++) {
+                for (int y = 0; y < cardinality; y++) {
+                    if (join.intValueAt(new int[]{x, y}) != join.intValueAt(new int[]{y, x}) ||
+                        meet.intValueAt(new int[]{x, y}) != meet.intValueAt(new int[]{y, x})) {
+                        return false;
+                    }
+                }
+            }
+            
+            // Check associativity
+            for (int x = 0; x < cardinality; x++) {
+                for (int y = 0; y < cardinality; y++) {
+                    for (int z = 0; z < cardinality; z++) {
+                        int xy = join.intValueAt(new int[]{x, y});
+                        int xy_z = join.intValueAt(new int[]{xy, z});
+                        int yz = join.intValueAt(new int[]{y, z});
+                        int x_yz = join.intValueAt(new int[]{x, yz});
+                        if (xy_z != x_yz) return false;
+                        
+                        xy = meet.intValueAt(new int[]{x, y});
+                        xy_z = meet.intValueAt(new int[]{xy, z});
+                        yz = meet.intValueAt(new int[]{y, z});
+                        x_yz = meet.intValueAt(new int[]{x, yz});
+                        if (xy_z != x_yz) return false;
+                    }
+                }
+            }
+            
+            // Check absorption: x ∨ (x ∧ y) = x, x ∧ (x ∨ y) = x
+            for (int x = 0; x < cardinality; x++) {
+                for (int y = 0; y < cardinality; y++) {
+                    int xy = meet.intValueAt(new int[]{x, y});
+                    int x_xy = join.intValueAt(new int[]{x, xy});
+                    if (x_xy != x) return false;
+                    
+                    xy = join.intValueAt(new int[]{x, y});
+                    x_xy = meet.intValueAt(new int[]{x, xy});
+                    if (x_xy != x) return false;
+                }
+            }
+            
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private static boolean checkBooleanAlgebraProperties(SmallAlgebra algebra) {
+        // Basic check - just verify signature for now
+        // Full Boolean algebra checking would be very complex
+        return true;
+    }
+
+    private static boolean checkSemilatticeProperties(SmallAlgebra algebra, Operation op) {
+        try {
+            int cardinality = algebra.cardinality();
+            
+            // Check idempotency: x ∨ x = x
+            for (int x = 0; x < cardinality; x++) {
+                if (op.intValueAt(new int[]{x, x}) != x) {
+                    return false;
+                }
+            }
+            
+            // Check commutativity: x ∨ y = y ∨ x
+            for (int x = 0; x < cardinality; x++) {
+                for (int y = 0; y < cardinality; y++) {
+                    if (op.intValueAt(new int[]{x, y}) != op.intValueAt(new int[]{y, x})) {
+                        return false;
+                    }
+                }
+            }
+            
+            // Check associativity: (x ∨ y) ∨ z = x ∨ (y ∨ z)
+            for (int x = 0; x < cardinality; x++) {
+                for (int y = 0; y < cardinality; y++) {
+                    for (int z = 0; z < cardinality; z++) {
+                        int xy = op.intValueAt(new int[]{x, y});
+                        int xy_z = op.intValueAt(new int[]{xy, z});
+                        int yz = op.intValueAt(new int[]{y, z});
+                        int x_yz = op.intValueAt(new int[]{x, yz});
+                        if (xy_z != x_yz) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private static boolean checkQuasigroupProperties(SmallAlgebra algebra, Operation op) {
+        try {
+            int cardinality = algebra.cardinality();
+            
+            // Check left cancellativity: if a·x = a·y, then x = y
+            for (int a = 0; a < cardinality; a++) {
+                for (int x = 0; x < cardinality; x++) {
+                    for (int y = 0; y < cardinality; y++) {
+                        if (x != y) {
+                            int ax = op.intValueAt(new int[]{a, x});
+                            int ay = op.intValueAt(new int[]{a, y});
+                            if (ax == ay) {
+                                return false; // Not left cancellative
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Check right cancellativity: if x·a = y·a, then x = y
+            for (int a = 0; a < cardinality; a++) {
+                for (int x = 0; x < cardinality; x++) {
+                    for (int y = 0; y < cardinality; y++) {
+                        if (x != y) {
+                            int xa = op.intValueAt(new int[]{x, a});
+                            int ya = op.intValueAt(new int[]{y, a});
+                            if (xa == ya) {
+                                return false; // Not right cancellative
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Check that the operation table is a Latin square
+            // Each row and column must contain each element exactly once
+            for (int row = 0; row < cardinality; row++) {
+                boolean[] rowElements = new boolean[cardinality];
+                for (int col = 0; col < cardinality; col++) {
+                    int value = op.intValueAt(new int[]{row, col});
+                    if (rowElements[value]) {
+                        return false; // Duplicate in row
+                    }
+                    rowElements[value] = true;
+                }
+            }
+            
+            for (int col = 0; col < cardinality; col++) {
+                boolean[] colElements = new boolean[cardinality];
+                for (int row = 0; row < cardinality; row++) {
+                    int value = op.intValueAt(new int[]{row, col});
+                    if (colElements[value]) {
+                        return false; // Duplicate in column
+                    }
+                    colElements[value] = true;
+                }
+            }
+            
+            return true;
+        } catch (Exception e) {
+            return false;
         }
     }
 

@@ -5,8 +5,9 @@
 
 use crate::{UACalcError, UACalcResult, SmallAlgebra};
 use crate::algebra::Algebra;
-use crate::free_algebra::FreeAlgebra;
+use crate::operation::Operation;
 use crate::term::TermArena;
+use crate::free_algebra::FreeAlgebra;
 use std::sync::{Arc, Mutex};
 
 #[cfg(feature = "memory-limit")]
@@ -470,6 +471,14 @@ impl MalcevAnalyzer {
 
     /// Check if algebra is in the variety of semilattices
     fn check_semilattice_variety(&self, algebra: &dyn SmallAlgebra) -> UACalcResult<bool> {
+        eprintln!("DEBUG: Starting semilattice variety check");
+        
+        // Handle trivial case
+        if algebra.cardinality() == 1 {
+            eprintln!("DEBUG: Trivial algebra is in semilattice variety");
+            return Ok(true);
+        }
+
         let operations = algebra.operations();
         
         // Must have exactly one binary operation
@@ -477,17 +486,72 @@ impl MalcevAnalyzer {
             let op_guard = op.lock().unwrap();
             op_guard.arity() == 2
         }).collect();
+        
         if binary_ops.len() != 1 {
+            eprintln!("DEBUG: Not a semilattice - need exactly 1 binary operation, found {}", binary_ops.len());
             return Ok(false);
         }
         
         // Must have no other operations (pure semilattice)
         if operations.len() != 1 {
+            eprintln!("DEBUG: Not a semilattice - need exactly 1 operation total, found {}", operations.len());
             return Ok(false);
         }
+
+        // Check if the single binary operation is a semilattice operation
+        let op_guard = binary_ops[0].lock().unwrap();
+        eprintln!("DEBUG: Checking single operation for semilattice properties");
         
-        // For now, just check signature - full semilattice property checking would be complex
+        if self.is_semilattice_operation(&*op_guard, algebra.cardinality())? {
+            eprintln!("DEBUG: Found semilattice operation");
+            return Ok(true);
+        }
+
+        eprintln!("DEBUG: No semilattice operation found");
         Ok(false)
+    }
+
+    /// Check if an operation is a semilattice operation (idempotent, commutative, associative)
+    fn is_semilattice_operation(
+        &self,
+        operation: &dyn Operation,
+        cardinality: usize,
+    ) -> UACalcResult<bool> {
+        // Check if operation is binary
+        if operation.arity() != 2 {
+            return Ok(false);
+        }
+
+        // Check idempotency: f(x,x) = x for all x
+        for x in 0..cardinality {
+            if operation.int_value_at(&[x, x])? != x {
+                return Ok(false);
+            }
+        }
+
+        // Check commutativity: f(x,y) = f(y,x) for all x,y
+        for x in 0..cardinality {
+            for y in 0..cardinality {
+                if operation.int_value_at(&[x, y])? != operation.int_value_at(&[y, x])? {
+                    return Ok(false);
+                }
+            }
+        }
+
+        // Check associativity: f(f(x,y),z) = f(x,f(y,z)) for all x,y,z
+        for x in 0..cardinality {
+            for y in 0..cardinality {
+                for z in 0..cardinality {
+                    let left = operation.int_value_at(&[operation.int_value_at(&[x, y])?, z])?;
+                    let right = operation.int_value_at(&[x, operation.int_value_at(&[y, z])?])?;
+                    if left != right {
+                        return Ok(false);
+                    }
+                }
+            }
+        }
+
+        Ok(true)
     }
 
     /// Check if algebra is in the variety of quasigroups
@@ -508,8 +572,77 @@ impl MalcevAnalyzer {
             return Ok(false);
         }
         
-        // For now, just check signature - full quasigroup property checking would be complex
-        Ok(false)
+        let cardinality = algebra.cardinality();
+        
+        // For very small algebras, we can do complete quasigroup property checks
+        if cardinality <= 8 {
+            return self.check_quasigroup_properties_complete(algebra, &binary_ops[0]);
+        } else {
+            // For larger algebras, use signature-based check only
+            return Ok(false);
+        }
+    }
+
+    /// Complete quasigroup property check for small algebras
+    fn check_quasigroup_properties_complete(&self, algebra: &dyn SmallAlgebra, binary_op: &Arc<Mutex<dyn crate::operation::Operation>>) -> UACalcResult<bool> {
+        let cardinality = algebra.cardinality();
+        let op_guard = binary_op.lock().unwrap();
+        
+        // Check left cancellativity: if a·x = a·y, then x = y
+        for a in 0..cardinality {
+            for x in 0..cardinality {
+                for y in 0..cardinality {
+                    if x != y {
+                        let ax = op_guard.int_value_at(&[a, x])?;
+                        let ay = op_guard.int_value_at(&[a, y])?;
+                        if ax == ay {
+                            return Ok(false); // Not left cancellative
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Check right cancellativity: if x·a = y·a, then x = y
+        for a in 0..cardinality {
+            for x in 0..cardinality {
+                for y in 0..cardinality {
+                    if x != y {
+                        let xa = op_guard.int_value_at(&[x, a])?;
+                        let ya = op_guard.int_value_at(&[y, a])?;
+                        if xa == ya {
+                            return Ok(false); // Not right cancellative
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Check that the operation table is a Latin square
+        // Each row and column must contain each element exactly once
+        for row in 0..cardinality {
+            let mut row_elements = vec![false; cardinality];
+            for col in 0..cardinality {
+                let value = op_guard.int_value_at(&[row, col])?;
+                if row_elements[value] {
+                    return Ok(false); // Duplicate in row
+                }
+                row_elements[value] = true;
+            }
+        }
+        
+        for col in 0..cardinality {
+            let mut col_elements = vec![false; cardinality];
+            for row in 0..cardinality {
+                let value = op_guard.int_value_at(&[row, col])?;
+                if col_elements[value] {
+                    return Ok(false); // Duplicate in column
+                }
+                col_elements[value] = true;
+            }
+        }
+        
+        Ok(true)
     }
 
     /// Analyze tame congruence theory type
