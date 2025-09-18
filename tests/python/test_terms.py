@@ -8,13 +8,12 @@ from typing import List, Dict, Any
 
 from uacalc import (
     Algebra, create_algebra, create_operation, create_term_arena,
-    Term, TermArena, parse_term, eval_term, HAS_NUMPY
+    Term, TermArena, parse_term, eval_term, term_variables, term_operations,
+    validate_term_against_algebra, HAS_NUMPY
 )
 from uacalc.terms import (
     TermParser, TermEvaluator, substitute_variables, simplify_term,
-    term_depth, term_variables, term_operations, terms_equal,
-    variable, constant, operation, random_term, term_to_operation,
-    validate_term_against_algebra
+    term_depth, terms_equal, random_term, term_to_operation
 )
 
 
@@ -83,7 +82,8 @@ class TestTermParsing:
     
     def test_parse_with_variable_names(self):
         """Test parsing with named variables."""
-        parser = TermParser()
+        arena = create_term_arena()
+        parser = TermParser(arena)
         var_names = {"a": 0, "b": 1, "c": 2}
         
         term = parser.parse_with_variables("f(a, g(b, c))", var_names)
@@ -95,7 +95,8 @@ class TestTermParsing:
     
     def test_validate_syntax_valid(self):
         """Test syntax validation with valid expressions."""
-        parser = TermParser()
+        arena = create_term_arena()
+        parser = TermParser(arena)
         
         valid_expressions = [
             "x0",
@@ -112,7 +113,8 @@ class TestTermParsing:
     
     def test_validate_syntax_invalid(self):
         """Test syntax validation with invalid expressions."""
-        parser = TermParser()
+        arena = create_term_arena()
+        parser = TermParser(arena)
         
         invalid_expressions = [
             "",  # Empty
@@ -352,15 +354,15 @@ class TestTermManipulation:
         
         # Variable has depth 0
         var_term = parse_term(arena, "x0")
-        assert term_depth(var_term) == 0
+        assert var_term.depth() == 0
         
         # Simple operation has depth 1
         op_term = parse_term(arena, "f(x0)")
-        assert term_depth(op_term) == 1
+        assert op_term.depth() == 1
         
         # Nested operation has depth 2
         nested_term = parse_term(arena, "f(g(x0))")
-        assert term_depth(nested_term) == 2
+        assert nested_term.depth() == 2
     
     def test_term_variables(self):
         """Test extracting variables from term."""
@@ -368,17 +370,17 @@ class TestTermManipulation:
         
         # Single variable
         var_term = parse_term(arena, "x0")
-        vars = term_variables(var_term)
+        vars = var_term.variables()
         assert vars == [0]
         
         # Multiple variables
         multi_term = parse_term(arena, "f(x0, x1, x2)")
-        vars = term_variables(multi_term)
+        vars = multi_term.variables()
         assert sorted(vars) == [0, 1, 2]
         
         # Nested variables
         nested_term = parse_term(arena, "f(g(x0, x1), h(x2))")
-        vars = term_variables(nested_term)
+        vars = nested_term.variables()
         assert sorted(vars) == [0, 1, 2]
     
     def test_term_operations(self):
@@ -412,29 +414,33 @@ class TestTermConstruction:
     
     def test_variable_construction(self):
         """Test creating variable terms."""
+        arena = create_term_arena()
+        
         # Test with index
-        var1 = variable(0)
+        var1 = arena.make_variable(0)
         assert isinstance(var1, Term)
         assert var1.is_variable()
         
-        # Test with name
-        var2 = variable("x")
+        # Test with different index
+        var2 = arena.make_variable(1)
         assert isinstance(var2, Term)
         assert var2.is_variable()
     
     def test_constant_construction(self):
         """Test creating constant terms."""
-        const = constant("c")
+        arena = create_term_arena()
+        const = arena.make_term("c", [])
         assert isinstance(const, Term)
         assert const.is_operation()
         assert const.arity == 0
     
     def test_operation_construction(self):
         """Test creating operation terms."""
-        var1 = variable(0)
-        var2 = variable(1)
+        arena = create_term_arena()
+        var1 = arena.make_variable(0)
+        var2 = arena.make_variable(1)
         
-        op = operation("f", var1, var2)
+        op = arena.make_term("f", [var1, var2])
         assert isinstance(op, Term)
         assert op.is_operation()
         assert op.arity == 2
@@ -446,7 +452,7 @@ class TestTermConstruction:
         
         term = random_term(depth=2, operations=operations, variables=variables)
         assert isinstance(term, Term)
-        assert term_depth(term) <= 2
+        assert term.depth() <= 2
 
 
 class TestTermIntegration:
@@ -530,7 +536,8 @@ class TestTermParserAdvanced:
     
     def test_parser_with_complex_expressions(self):
         """Test parser with complex expressions."""
-        parser = TermParser()
+        arena = create_term_arena()
+        parser = TermParser(arena)
         
         complex_expressions = [
             "f(x0, g(x1, h(x2)))",
@@ -545,7 +552,8 @@ class TestTermParserAdvanced:
     
     def test_parser_error_handling(self):
         """Test parser error handling."""
-        parser = TermParser()
+        arena = create_term_arena()
+        parser = TermParser(arena)
 
         invalid_expressions = [
             "f(x0,",  # Missing closing parenthesis
@@ -620,8 +628,8 @@ class TestIntegration:
         term = parse_term(arena, "f(x0, x1)")
         
         # Analyze term
-        depth = term_depth(term)
-        variables = term_variables(term)
+        depth = term.depth()
+        variables = term.variables()
         operations = term_operations(term)
         
         # Evaluate term

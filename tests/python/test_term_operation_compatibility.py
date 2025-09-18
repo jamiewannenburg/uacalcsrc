@@ -518,9 +518,12 @@ class TermOperationCompatibilityTest(BaseCompatibilityTest):
             algebra = self._load_test_algebra(algebra_file)
             
             # Create term arena and parse the term
-            from uacalc_rust import create_term_arena, parse_term
+            from uacalc_rust import create_term_arena, parse_term, validate_term_against_algebra
             arena = create_term_arena()
             term = parse_term(arena, term_string)
+            
+            # Validate the term against the algebra
+            is_valid, validation_error = validate_term_against_algebra(term, algebra)
             
             # Get term properties
             from uacalc_rust import term_variables, term_operations
@@ -534,7 +537,8 @@ class TermOperationCompatibilityTest(BaseCompatibilityTest):
                 "algebra_file": str(algebra_file),
                 "symbol": f"term_{hash(term_string) & 0xFFFF}",
                 "arity": arity,
-                "is_valid": True,
+                "is_valid": is_valid,
+                "validation_error": validation_error,
                 "variables": variables,
                 "operations": operations,
                 "depth": term.depth(),
@@ -820,7 +824,9 @@ class TermOperationCompatibilityTest(BaseCompatibilityTest):
         # Compare validity
         if rust_term_op["is_valid"] != java_term_op.get("is_valid", True):
             matches = False
-            error_messages.append(f"Validity mismatch: Rust={rust_term_op['is_valid']}, Java={java_term_op.get('is_valid')}")
+            rust_error = rust_term_op.get("validation_error", "None")
+            java_error = java_term_op.get("validation_error", "None")
+            error_messages.append(f"Validity mismatch: Rust={rust_term_op['is_valid']} (error: {rust_error}), Java={java_term_op.get('is_valid')} (error: {java_error})")
         
         # Compare additional properties if available
         if "variables" in rust_term_op and "variables" in java_term_op:

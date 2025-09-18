@@ -866,25 +866,43 @@ impl Homomorphism {
             });
         }
 
+        // Check if domain and range are the same algebra to avoid deadlock
+        // We need to check by name and cardinality since Arc::ptr_eq won't work
+        // when the algebras come from different Arc instances (e.g., from Python bindings)
+        let is_same_algebra = domain.name() == range.name() && 
+                             domain.cardinality() == range.cardinality() &&
+                             domain.operations().len() == range.operations().len();
+
         // Check that operations have matching arities
         for i in 0..domain.operations().len() {
             let domain_op_arc = domain.operation_arc(i)?;
             let range_op_arc = range.operation_arc(i)?;
             
-            let domain_op = domain_op_arc.try_lock().map_err(|_| UACalcError::InvalidOperation {
-                message: "Failed to acquire domain operation lock (possible deadlock)".to_string(),
-            })?;
-            let range_op = range_op_arc.try_lock().map_err(|_| UACalcError::InvalidOperation {
-                message: "Failed to acquire range operation lock (possible deadlock)".to_string(),
-            })?;
-            
-            if domain_op.arity() != range_op.arity() {
-                return Err(UACalcError::InvalidOperation {
-                    message: format!(
-                        "Operation {} has different arities: domain={}, range={}",
-                        i, domain_op.arity(), range_op.arity()
-                    ),
-                });
+            if is_same_algebra {
+                // Same algebra - only need to lock once
+                let domain_op = domain_op_arc.try_lock().map_err(|_| UACalcError::InvalidOperation {
+                    message: "Failed to acquire operation lock (possible deadlock)".to_string(),
+                })?;
+                let arity = domain_op.arity();
+                // For same algebra, arities are obviously the same
+                drop(domain_op);
+            } else {
+                // Different algebras - can lock both safely
+                let domain_op = domain_op_arc.try_lock().map_err(|_| UACalcError::InvalidOperation {
+                    message: "Failed to acquire domain operation lock (possible deadlock)".to_string(),
+                })?;
+                let range_op = range_op_arc.try_lock().map_err(|_| UACalcError::InvalidOperation {
+                    message: "Failed to acquire range operation lock (possible deadlock)".to_string(),
+                })?;
+                
+                if domain_op.arity() != range_op.arity() {
+                    return Err(UACalcError::InvalidOperation {
+                        message: format!(
+                            "Operation {} has different arities: domain={}, range={}",
+                            i, domain_op.arity(), range_op.arity()
+                        ),
+                    });
+                }
             }
         }
 
@@ -903,36 +921,70 @@ impl Homomorphism {
 
             // For each possible input tuple
             for args in Self::generate_argument_tuples(domain.cardinality(), arity) {
-                // Compute operation in domain
-                let domain_result = {
-                    let domain_op = domain_op_arc.try_lock().map_err(|_| UACalcError::InvalidOperation {
-                        message: "Failed to acquire domain operation lock for computation".to_string(),
-                    })?;
-                    domain_op.int_value_at(&args)?
-                };
-                
-                // Apply homomorphism to arguments
-                let mapped_args: Vec<usize> = args.iter().map(|&x| map[x]).collect();
-                
-                // Compute operation in range on mapped arguments
-                let range_result = {
-                    let range_op = range_op_arc.try_lock().map_err(|_| UACalcError::InvalidOperation {
-                        message: "Failed to acquire range operation lock for computation".to_string(),
-                    })?;
-                    range_op.int_value_at(&mapped_args)?
-                };
-                
-                // Apply homomorphism to domain result
-                let mapped_domain_result = map[domain_result];
-                
-                // Check homomorphism property
-                if mapped_domain_result != range_result {
-                    return Err(UACalcError::InvalidOperation {
-                        message: format!(
-                            "Homomorphism property violated for operation {}: f(op({:?})) = {} != op(f({:?})) = {}",
-                            op_index, args, mapped_domain_result, mapped_args, range_result
-                        ),
-                    });
+                if is_same_algebra {
+                    // Same algebra - only need to lock once
+                    let domain_result = {
+                        let domain_op = domain_op_arc.try_lock().map_err(|_| UACalcError::InvalidOperation {
+                            message: "Failed to acquire operation lock for computation".to_string(),
+                        })?;
+                        domain_op.int_value_at(&args)?
+                    };
+                    
+                    // Apply homomorphism to arguments
+                    let mapped_args: Vec<usize> = args.iter().map(|&x| map[x]).collect();
+                    
+                    // Compute operation in range on mapped arguments (same operation)
+                    let range_result = {
+                        let range_op = range_op_arc.try_lock().map_err(|_| UACalcError::InvalidOperation {
+                            message: "Failed to acquire operation lock for computation".to_string(),
+                        })?;
+                        range_op.int_value_at(&mapped_args)?
+                    };
+                    
+                    // Apply homomorphism to domain result
+                    let mapped_domain_result = map[domain_result];
+                    
+                    // Check homomorphism property
+                    if mapped_domain_result != range_result {
+                        return Err(UACalcError::InvalidOperation {
+                            message: format!(
+                                "Homomorphism property violated for operation {}: f(op({:?})) = {} != op(f({:?})) = {}",
+                                op_index, args, mapped_domain_result, mapped_args, range_result
+                            ),
+                        });
+                    }
+                } else {
+                    // Different algebras - can lock both safely
+                    let domain_result = {
+                        let domain_op = domain_op_arc.try_lock().map_err(|_| UACalcError::InvalidOperation {
+                            message: "Failed to acquire domain operation lock for computation".to_string(),
+                        })?;
+                        domain_op.int_value_at(&args)?
+                    };
+                    
+                    // Apply homomorphism to arguments
+                    let mapped_args: Vec<usize> = args.iter().map(|&x| map[x]).collect();
+                    
+                    // Compute operation in range on mapped arguments
+                    let range_result = {
+                        let range_op = range_op_arc.try_lock().map_err(|_| UACalcError::InvalidOperation {
+                            message: "Failed to acquire range operation lock for computation".to_string(),
+                        })?;
+                        range_op.int_value_at(&mapped_args)?
+                    };
+                    
+                    // Apply homomorphism to domain result
+                    let mapped_domain_result = map[domain_result];
+                    
+                    // Check homomorphism property
+                    if mapped_domain_result != range_result {
+                        return Err(UACalcError::InvalidOperation {
+                            message: format!(
+                                "Homomorphism property violated for operation {}: f(op({:?})) = {} != op(f({:?})) = {}",
+                                op_index, args, mapped_domain_result, mapped_args, range_result
+                            ),
+                        });
+                    }
                 }
             }
         }
@@ -986,28 +1038,46 @@ pub fn find_homomorphism(
         return Ok(None);
     }
 
+    // Check if domain and range are the same algebra to avoid deadlock
+    // We need to check by name and cardinality since Arc::ptr_eq won't work
+    // when the algebras come from different Arc instances (e.g., from Python bindings)
+    let is_same_algebra = domain.name() == range.name() && 
+                         domain.cardinality() == range.cardinality() &&
+                         domain.operations().len() == range.operations().len();
+
     // Check operation arities match
     for i in 0..domain.operations().len() {
         let domain_op_arc = domain.operation_arc(i)?;
         let range_op_arc = range.operation_arc(i)?;
         
-        // Get arities without holding both locks simultaneously
-        let domain_arity = {
-            let domain_op = domain_op_arc.try_lock().map_err(|_| UACalcError::InvalidOperation {
-                message: "Failed to acquire domain operation lock (possible deadlock)".to_string(),
-            })?;
-            domain_op.arity()
-        };
-        
-        let range_arity = {
-            let range_op = range_op_arc.try_lock().map_err(|_| UACalcError::InvalidOperation {
-                message: "Failed to acquire range operation lock (possible deadlock)".to_string(),
-            })?;
-            range_op.arity()
-        };
-        
-        if domain_arity != range_arity {
-            return Ok(None);
+        if is_same_algebra {
+            // Same algebra - only need to lock once
+            let domain_arity = {
+                let domain_op = domain_op_arc.try_lock().map_err(|_| UACalcError::InvalidOperation {
+                    message: "Failed to acquire operation lock (possible deadlock)".to_string(),
+                })?;
+                domain_op.arity()
+            };
+            // For same algebra, arities are obviously the same
+        } else {
+            // Different algebras - can lock both safely
+            let domain_arity = {
+                let domain_op = domain_op_arc.try_lock().map_err(|_| UACalcError::InvalidOperation {
+                    message: "Failed to acquire domain operation lock (possible deadlock)".to_string(),
+                })?;
+                domain_op.arity()
+            };
+            
+            let range_arity = {
+                let range_op = range_op_arc.try_lock().map_err(|_| UACalcError::InvalidOperation {
+                    message: "Failed to acquire range operation lock (possible deadlock)".to_string(),
+                })?;
+                range_op.arity()
+            };
+            
+            if domain_arity != range_arity {
+                return Ok(None);
+            }
         }
     }
 
@@ -1096,10 +1166,19 @@ pub fn are_isomorphic(
         }
     }
 
-    // Try to find an isomorphism
-    if let Some(homomorphism) = find_homomorphism(algebra1.clone(), algebra2.clone())? {
-        Ok(homomorphism.is_bijective())
-    } else {
-        Ok(false)
+    // Try to find a bijective homomorphism (isomorphism)
+    // We need to check all possible mappings to find a bijective one
+    let domain_size = algebra1.cardinality();
+    let range_size = algebra2.cardinality();
+    
+    // Generate all possible mappings
+    for mapping in generate_all_mappings(domain_size, range_size) {
+        if let Ok(homomorphism) = Homomorphism::new(algebra1.clone(), algebra2.clone(), mapping) {
+            if homomorphism.is_bijective() {
+                return Ok(true);
+            }
+        }
     }
+    
+    Ok(false)
 }
