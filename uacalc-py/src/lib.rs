@@ -1723,6 +1723,7 @@ impl PyProductAlgebra {
         self.inner.cardinality()
     }
 
+    #[getter]
     fn operations(&self) -> Vec<PyOperation> {
         self.inner
             .operations()
@@ -1820,6 +1821,7 @@ impl PyQuotientAlgebra {
         self.inner.cardinality()
     }
 
+    #[getter]
     fn operations(&self) -> Vec<PyOperation> {
         self.inner
             .operations()
@@ -1982,6 +1984,7 @@ impl PySubalgebra {
         self.inner.cardinality()
     }
 
+    #[getter]
     fn operations(&self) -> Vec<PyOperation> {
         self.inner
             .operations()
@@ -2252,6 +2255,7 @@ impl PyFreeAlgebra {
         }
     }
 
+    #[getter]
     fn operations(&self) -> Vec<PyOperation> {
         self.inner
             .operations()
@@ -2324,6 +2328,7 @@ impl PyAlgebra {
         self.inner.cardinality()
     }
 
+    #[getter]
     fn operations(&self) -> Vec<PyOperation> {
         self.inner
             .operations()
@@ -2423,6 +2428,7 @@ pub struct PyOperation {
 
 #[pymethods]
 impl PyOperation {
+    #[getter]
     fn arity(&self) -> usize {
         let op_guard = self.inner.lock().unwrap();
         op_guard.arity()
