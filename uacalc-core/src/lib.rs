@@ -36,8 +36,8 @@ pub use binary_relation::{
 };
 pub use error::{UACalcError, UACalcResult};
 pub use malcev::{
-    MalcevAnalyzer, MalcevAnalysis, VarietyAnalysis, TctAnalysis, AdvancedProperties,
-    analyze_malcev_conditions, analyze_variety_membership, analyze_tct_type, analyze_advanced_properties
+    MalcevAnalyzer, MalcevAnalysis, VarietyAnalysis, TctAnalysis, AdvancedProperties, LatticeProperties,
+    analyze_malcev_conditions, analyze_variety_membership, analyze_tct_type, analyze_advanced_properties, analyze_lattice_properties
 };
 pub use free_algebra::{FreeAlgebra, VarietyConstraint, create_free_algebra, create_free_algebra_with_common_operations};
 pub use operation::{
@@ -103,7 +103,7 @@ pub mod prelude {
         SmallAlgebra, Subalgebra, TableOperation, UACalcError, UACalcResult, VarietyConstraint,
         are_isomorphic, create_free_algebra, create_free_algebra_with_common_operations, 
         find_homomorphism, MalcevAnalyzer, MalcevAnalysis, VarietyAnalysis, TctAnalysis, AdvancedProperties,
-        analyze_malcev_conditions, analyze_variety_membership, analyze_tct_type, analyze_advanced_properties,
+        analyze_malcev_conditions, analyze_variety_membership, analyze_tct_type, analyze_advanced_properties, analyze_lattice_properties,
     };
 
     // Utility functions

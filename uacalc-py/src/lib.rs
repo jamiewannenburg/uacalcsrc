@@ -13,8 +13,8 @@ use uacalc_core::binary_relation::{BasicBinaryRelation, BinaryRelation};
 use uacalc_core::conlat::{BasicCongruenceLattice, BasicLattice, CongruenceLattice as CongruenceLatticeTrait};
 use uacalc_core::error::UACalcError;
 use uacalc_core::malcev::{
-    MalcevAnalyzer, MalcevAnalysis, VarietyAnalysis, TctAnalysis, AdvancedProperties,
-    analyze_malcev_conditions, analyze_variety_membership, analyze_tct_type, analyze_advanced_properties
+    MalcevAnalyzer, MalcevAnalysis, VarietyAnalysis, TctAnalysis, AdvancedProperties, LatticeProperties,
+    analyze_malcev_conditions, analyze_variety_membership, analyze_tct_type, analyze_advanced_properties, analyze_lattice_properties
 };
 use uacalc_core::equation::{Equation, EquationComplexity, EquationProperties, ComplexityLevel};
 use uacalc_core::presentation::{Presentation, PresentationProperties};
@@ -70,6 +70,7 @@ fn uacalc_rust(_py: Python, m: &Bound<PyModule>) -> PyResult<()> {
     m.add_class::<PyVarietyAnalysis>()?;
     m.add_class::<PyTctAnalysis>()?;
     m.add_class::<PyAdvancedProperties>()?;
+    m.add_class::<PyLatticeProperties>()?;
     m.add_class::<PyMalcevAnalyzer>()?;
     m.add_class::<PyTerm>()?;
     m.add_class::<PyTermArena>()?;
@@ -173,6 +174,7 @@ fn uacalc_rust(_py: Python, m: &Bound<PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(py_analyze_variety_membership, m)?)?;
     m.add_function(wrap_pyfunction!(py_analyze_tct_type, m)?)?;
     m.add_function(wrap_pyfunction!(py_analyze_advanced_properties, m)?)?;
+    m.add_function(wrap_pyfunction!(py_analyze_lattice_properties, m)?)?;
 
     // Memory limit function registrations
     #[cfg(feature = "memory-limit")]
@@ -4506,6 +4508,70 @@ impl PyAdvancedProperties {
     }
 }
 
+#[pyclass(name = "LatticeProperties")]
+#[derive(Clone)]
+pub struct PyLatticeProperties {
+    pub inner: LatticeProperties,
+}
+
+#[pymethods]
+impl PyLatticeProperties {
+    #[getter]
+    fn congruence_lattice_size(&self) -> usize {
+        self.inner.congruence_lattice_size
+    }
+
+    #[getter]
+    fn join_irreducibles_count(&self) -> usize {
+        self.inner.join_irreducibles_count
+    }
+
+    #[getter]
+    fn lattice_height(&self) -> usize {
+        self.inner.lattice_height
+    }
+
+    #[getter]
+    fn lattice_width(&self) -> usize {
+        self.inner.lattice_width
+    }
+
+    #[getter]
+    fn is_modular(&self) -> bool {
+        self.inner.is_modular
+    }
+
+    #[getter]
+    fn is_distributive(&self) -> bool {
+        self.inner.is_distributive
+    }
+
+    #[getter]
+    fn is_boolean(&self) -> bool {
+        self.inner.is_boolean
+    }
+
+    #[getter]
+    fn has_zero(&self) -> bool {
+        self.inner.has_zero
+    }
+
+    #[getter]
+    fn has_one(&self) -> bool {
+        self.inner.has_one
+    }
+
+    fn __str__(&self) -> String {
+        format!("LatticeProperties(size={}, height={}, width={}, modular={}, distributive={}, boolean={})", 
+               self.inner.congruence_lattice_size, self.inner.lattice_height, self.inner.lattice_width,
+               self.inner.is_modular, self.inner.is_distributive, self.inner.is_boolean)
+    }
+
+    fn __repr__(&self) -> String {
+        self.__str__()
+    }
+}
+
 /// Python wrapper for MalcevAnalyzer
 #[pyclass(name = "MalcevAnalyzer")]
 pub struct PyMalcevAnalyzer {
@@ -4570,6 +4636,12 @@ pub fn py_analyze_tct_type(algebra: &PyAlgebra) -> PyResult<PyTctAnalysis> {
 pub fn py_analyze_advanced_properties(algebra: &PyAlgebra) -> PyResult<PyAdvancedProperties> {
     let analysis = analyze_advanced_properties(&algebra.inner).map_err(map_uacalc_error)?;
     Ok(PyAdvancedProperties { inner: analysis })
+}
+
+#[pyfunction]
+pub fn py_analyze_lattice_properties(algebra: &PyAlgebra) -> PyResult<PyLatticeProperties> {
+    let analysis = analyze_lattice_properties(&algebra.inner).map_err(map_uacalc_error)?;
+    Ok(PyLatticeProperties { inner: analysis })
 }
 
 // Memory limit functions

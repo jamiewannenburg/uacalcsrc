@@ -91,6 +91,7 @@ try:
     py_analyze_variety_membership,
     py_analyze_tct_type,
     py_analyze_advanced_properties,
+    py_analyze_lattice_properties,
     # Permutation group analysis functions
     py_analyze_permutation_group,
     py_analyze_group_element_operations,
@@ -326,6 +327,7 @@ __all__ = [
     "py_analyze_variety_membership",
     "py_analyze_tct_type",
     "py_analyze_advanced_properties",
+    "py_analyze_lattice_properties",
     
     # Permutation group analysis functions
     "py_analyze_permutation_group",
