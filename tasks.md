@@ -246,9 +246,9 @@ This document outlines the tasks needed to implement full compatibility between 
 - [x] Test Malcev condition properties
 
 #### Subtask 9.1.4: `test_polymorphisms_compatibility.py`
-- [ ] Remove mock functions and implement polymorphism operations
-- [ ] Implement polymorphism detection and analysis
-- [ ] Test polymorphism properties
+- [x] Remove mock functions and implement polymorphism operations
+- [x] Implement polymorphism detection and analysis
+- [x] Test polymorphism properties
 
 ## Tier 10: Specialized Types
 
