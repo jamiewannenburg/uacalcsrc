@@ -1556,91 +1556,6 @@ public class JavaWrapper {
                 // Could not compute congruence lattice
             }
 
-            // Check variety membership
-            boolean isGroup = false;
-            boolean isLattice = false;
-            boolean isBooleanAlgebra = false;
-            boolean isSemilattice = false;
-            boolean isQuasigroup = false;
-            int varietyCount = 0;
-
-            try {
-                // Check if it's a group (exactly one binary operation)
-                if (smallAlgebra.operations().size() == 1) {
-                    Operation op = smallAlgebra.operations().get(0);
-                    if (op.arity() == 2) {
-                        // For small algebras, do basic group property checks
-                        if (smallAlgebra.cardinality() <= 8) {
-                            isGroup = checkGroupProperties(smallAlgebra, op);
-                        }
-                    }
-                }
-
-                // Check if it's a lattice (exactly two binary operations)
-                if (smallAlgebra.operations().size() == 2) {
-                    boolean hasTwoBinaryOps = true;
-                    for (Operation op : smallAlgebra.operations()) {
-                        if (op.arity() != 2) {
-                            hasTwoBinaryOps = false;
-                            break;
-                        }
-                    }
-                    if (hasTwoBinaryOps) {
-                        // For small algebras, do basic lattice property checks
-                        if (smallAlgebra.cardinality() <= 8) {
-                            isLattice = checkLatticeProperties(smallAlgebra);
-                        }
-                    }
-                }
-
-                // Check if it's a Boolean algebra (two binary, one unary, two nullary operations)
-                if (smallAlgebra.operations().size() == 5) {
-                    int binaryCount = 0, unaryCount = 0, nullaryCount = 0;
-                    for (Operation op : smallAlgebra.operations()) {
-                        if (op.arity() == 2) binaryCount++;
-                        else if (op.arity() == 1) unaryCount++;
-                        else if (op.arity() == 0) nullaryCount++;
-                    }
-                    if (binaryCount == 2 && unaryCount == 1 && nullaryCount == 2) {
-                        // For small algebras, do basic Boolean algebra property checks
-                        if (smallAlgebra.cardinality() <= 8) {
-                            isBooleanAlgebra = checkBooleanAlgebraProperties(smallAlgebra);
-                        }
-                    }
-                }
-
-                // Check if it's a semilattice (exactly one binary operation with semilattice properties)
-                if (smallAlgebra.operations().size() == 1) {
-                    Operation op = smallAlgebra.operations().get(0);
-                    if (op.arity() == 2) {
-                        // For small algebras, do basic semilattice property checks
-                        if (smallAlgebra.cardinality() <= 8) {
-                            isSemilattice = checkSemilatticeProperties(smallAlgebra, op);
-                        }
-                    }
-                }
-
-                // Check if it's a quasigroup (exactly one binary operation with quasigroup properties)
-                if (smallAlgebra.operations().size() == 1) {
-                    Operation op = smallAlgebra.operations().get(0);
-                    if (op.arity() == 2) {
-                        // For small algebras, do basic quasigroup property checks
-                        if (smallAlgebra.cardinality() <= 8) {
-                            isQuasigroup = checkQuasigroupProperties(smallAlgebra, op);
-                        }
-                    }
-                }
-
-                // Count varieties
-                if (isGroup) varietyCount++;
-                if (isLattice) varietyCount++;
-                if (isBooleanAlgebra) varietyCount++;
-                if (isSemilattice) varietyCount++;
-                if (isQuasigroup) varietyCount++;
-
-            } catch (Exception e) {
-                // Variety membership checking failed
-            }
 
             long endMemory = getMemoryUsage();
             long endTime = System.currentTimeMillis();
@@ -1654,12 +1569,6 @@ public class JavaWrapper {
             result.append("\"has_maltsev_term\":").append(hasMaltsevTerm).append(",");
             result.append("\"has_join_term\":").append(hasJoinTerm).append(",");
             result.append("\"congruence_lattice_size\":").append(congruenceLatticeSize).append(",");
-            result.append("\"is_group\":").append(isGroup).append(",");
-            result.append("\"is_lattice\":").append(isLattice).append(",");
-            result.append("\"is_boolean_algebra\":").append(isBooleanAlgebra).append(",");
-            result.append("\"is_semilattice\":").append(isSemilattice).append(",");
-            result.append("\"is_quasigroup\":").append(isQuasigroup).append(",");
-            result.append("\"variety_count\":").append(varietyCount);
             if (maltsevTermString != null) {
                 result.append(",\"maltsev_term\":\"").append(escapeJson(maltsevTermString)).append("\"");
             }

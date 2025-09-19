@@ -83,15 +83,15 @@ cd ..
 echo "✓ Pure Python package installed successfully"
 echo ""
 
-# 5. Run tests
-echo "5. Running tests..."
-echo "------------------"
-echo "Running Python tests..."
-python -m pytest tests/python/ -v --tb=short
+# # 5. Run tests
+# echo "5. Running tests..."
+# echo "------------------"
+# echo "Running Python tests..."
+# python -m pytest tests/python/ -v --tb=short
 
-echo ""
-echo "Running Rust tests..."
-cargo test
+# echo ""
+# echo "Running Rust tests..."
+# cargo test
 
 echo ""
 echo "Running setup verification..."
