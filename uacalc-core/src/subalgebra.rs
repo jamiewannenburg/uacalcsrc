@@ -120,6 +120,10 @@ impl Operation for SubalgebraOperation {
         // Subalgebra operations don't use flat tables
         None
     }
+    
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
 }
 
 /// Subalgebra implementation

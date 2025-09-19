@@ -133,6 +133,10 @@ impl Operation for QuotientOperation {
         // Quotient operations don't use flat tables
         None
     }
+    
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
 }
 
 impl std::fmt::Debug for QuotientOperation {

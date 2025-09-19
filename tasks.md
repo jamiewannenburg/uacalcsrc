@@ -261,9 +261,9 @@ This document outlines the tasks needed to implement full compatibility between 
 - [ ] Test small algebra properties
 
 #### Subtask 10.1.2: `test_permutation_group_compatibility.py`
-- [ ] Remove mock functions and implement permutation groups
-- [ ] Implement permutation group operations
-- [ ] Test permutation group properties
+- [x] Remove mock functions and implement permutation groups
+- [x] Implement permutation group operations
+- [x] Test permutation group properties
 
 #### Subtask 10.1.3: `test_binary_relation_compatibility.py`
 - [ ] Remove mock functions and implement binary relations

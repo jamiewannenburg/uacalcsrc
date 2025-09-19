@@ -74,11 +74,24 @@ try:
     TctAnalysis,
     AdvancedProperties,
     MalcevAnalyzer,
+    # Permutation group classes
+    Permutation,
+    PermutationGroupAnalysis,
+    GroupElementOperations,
+    SubgroupAnalysis,
+    GroupHomomorphismAnalysis,
+    PermutationGroupOperations,
     # Malcev analysis functions
     py_analyze_malcev_conditions,
     py_analyze_variety_membership,
     py_analyze_tct_type,
     py_analyze_advanced_properties,
+    # Permutation group analysis functions
+    py_analyze_permutation_group,
+    py_analyze_group_element_operations,
+    py_analyze_subgroups,
+    py_analyze_group_homomorphisms,
+    py_analyze_permutation_group_operations,
     # Memory limit functions
     py_set_memory_limit,
     py_get_memory_limit,
@@ -245,6 +258,14 @@ __all__ = [
     "AdvancedProperties",
     "MalcevAnalyzer",
     
+    # Permutation group classes
+    "Permutation",
+    "PermutationGroupAnalysis",
+    "GroupElementOperations",
+    "SubgroupAnalysis",
+    "GroupHomomorphismAnalysis",
+    "PermutationGroupOperations",
+    
     # Error classes
     "UACalcError",
     "CancellationError",
@@ -285,6 +306,13 @@ __all__ = [
     "py_analyze_variety_membership",
     "py_analyze_tct_type",
     "py_analyze_advanced_properties",
+    
+    # Permutation group analysis functions
+    "py_analyze_permutation_group",
+    "py_analyze_group_element_operations",
+    "py_analyze_subgroups",
+    "py_analyze_group_homomorphisms",
+    "py_analyze_permutation_group_operations",
     
     # Memory limit functions
     "py_set_memory_limit",

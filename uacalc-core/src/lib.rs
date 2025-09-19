@@ -18,6 +18,7 @@ pub mod presentation;
 pub mod free_algebra;
 pub mod operation;
 pub mod partition;
+pub mod permutation_group;
 pub mod product;
 pub mod quotient;
 pub mod subalgebra;
@@ -43,6 +44,15 @@ pub use operation::{
     TableOperation,
 };
 pub use partition::{coarsest_partition, finest_partition, BasicPartition, Partition};
+pub use permutation_group::{
+    Permutation, PermutationGroupAnalysis, GroupElementOperations, SubgroupAnalysis,
+    GroupHomomorphismAnalysis, PermutationGroupOperations,
+    analyze_permutation_group, analyze_group_element_operations, analyze_subgroups,
+    analyze_group_homomorphisms, analyze_permutation_group_operations,
+    analyze_permutation_group_from_algebra, analyze_group_element_operations_from_algebra,
+    analyze_subgroups_from_algebra, analyze_group_homomorphisms_from_algebras,
+    analyze_permutation_group_operations_from_algebra,
+};
 pub use product::ProductAlgebra;
 pub use quotient::QuotientAlgebra;
 pub use subalgebra::Subalgebra;

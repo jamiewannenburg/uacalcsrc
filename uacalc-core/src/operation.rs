@@ -215,6 +215,9 @@ pub trait Operation: fmt::Debug + Send + Sync + std::any::Any {
 
     /// Get the set size (universe size) for this operation
     fn set_size(&self) -> usize;
+    
+    /// Get a reference to the Any trait for downcasting
+    fn as_any(&self) -> &dyn std::any::Any;
 
     /// Generate operation tables for efficient lookup
     fn make_table(&mut self, set_size: usize) -> UACalcResult<()>;
@@ -582,6 +585,10 @@ impl Operation for TableOperation {
     fn get_table(&self) -> Option<&FlatOperationTable> {
         self.table.as_ref()
     }
+    
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
 }
 
 /// Function-based operation implementation
@@ -667,6 +674,10 @@ where
 
     fn get_table(&self) -> Option<&FlatOperationTable> {
         self.table.as_ref()
+    }
+    
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
     }
 }
 
@@ -827,6 +838,10 @@ impl Operation for SerializableOperation {
         match self {
             Self::Table(op) => op.is_commutative_on_set(set_size),
         }
+    }
+    
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
     }
 }
 

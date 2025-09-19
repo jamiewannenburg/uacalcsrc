@@ -27,6 +27,13 @@ use uacalc_core::term::evaluation::EvaluationContext;
 use uacalc_core::term::variable::VariableAssignment;
 use uacalc_core::term::{TermArena, TermId};
 use uacalc_core::utils::{horner_encode, horner_decode, horner_table_size, mixed_radix_encode, mixed_radix_decode, mixed_radix_size};
+use uacalc_core::permutation_group::{
+    Permutation, PermutationGroupAnalysis, GroupElementOperations, SubgroupAnalysis,
+    GroupHomomorphismAnalysis, PermutationGroupOperations,
+    analyze_permutation_group_from_algebra, analyze_group_element_operations_from_algebra,
+    analyze_subgroups_from_algebra, analyze_group_homomorphisms_from_algebras,
+    analyze_permutation_group_operations_from_algebra,
+};
 
 #[cfg(feature = "taylor")]
 use uacalc_core::taylor::{
@@ -65,6 +72,12 @@ fn uacalc_rust(_py: Python, m: &Bound<PyModule>) -> PyResult<()> {
     m.add_class::<PyPresentation>()?;
     m.add_class::<PyPresentationProperties>()?;
     m.add_class::<PyProgressReporter>()?;
+    m.add_class::<PyPermutation>()?;
+    m.add_class::<PyPermutationGroupAnalysis>()?;
+    m.add_class::<PyGroupElementOperations>()?;
+    m.add_class::<PySubgroupAnalysis>()?;
+    m.add_class::<PyGroupHomomorphismAnalysis>()?;
+    m.add_class::<PyPermutationGroupOperations>()?;
     
     #[cfg(feature = "taylor")]
     {
@@ -105,6 +118,13 @@ fn uacalc_rust(_py: Python, m: &Bound<PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(create_first_second_symmetric_law, m)?)?;
     m.add_function(wrap_pyfunction!(find_homomorphism, m)?)?;
     m.add_function(wrap_pyfunction!(are_isomorphic, m)?)?;
+    
+    // Permutation group function registrations
+    m.add_function(wrap_pyfunction!(py_analyze_permutation_group, m)?)?;
+    m.add_function(wrap_pyfunction!(py_analyze_group_element_operations, m)?)?;
+    m.add_function(wrap_pyfunction!(py_analyze_subgroups, m)?)?;
+    m.add_function(wrap_pyfunction!(py_analyze_group_homomorphisms, m)?)?;
+    m.add_function(wrap_pyfunction!(py_analyze_permutation_group_operations, m)?)?;
     
     // Add Horner utility functions
     m.add_function(wrap_pyfunction!(py_horner_encode, m)?)?;
@@ -4229,6 +4249,271 @@ mod memory_bindings {
         check_free_algebra_memory_limit(num_generators, num_operations, max_depth, &operation_arities)
             .map_err(map_uacalc_error)
     }
+}
+
+// Permutation Group Python Bindings
+
+/// Python wrapper for Permutation
+#[pyclass(name = "Permutation")]
+pub struct PyPermutation {
+    inner: Permutation,
+}
+
+#[pymethods]
+impl PyPermutation {
+    #[new]
+    fn new(arr: Vec<usize>) -> PyResult<Self> {
+        let inner = Permutation::new(arr).map_err(map_uacalc_error)?;
+        Ok(PyPermutation { inner })
+    }
+    
+    #[staticmethod]
+    fn identity(size: usize) -> Self {
+        PyPermutation {
+            inner: Permutation::identity(size),
+        }
+    }
+    
+    fn size(&self) -> usize {
+        self.inner.size()
+    }
+    
+    fn apply(&self, element: usize) -> PyResult<usize> {
+        self.inner.apply(element).map_err(map_uacalc_error)
+    }
+    
+    fn compose(&self, other: &PyPermutation) -> PyResult<PyPermutation> {
+        let inner = self.inner.compose(&other.inner).map_err(map_uacalc_error)?;
+        Ok(PyPermutation { inner })
+    }
+    
+    fn inverse(&self) -> PyPermutation {
+        PyPermutation {
+            inner: self.inner.inverse(),
+        }
+    }
+    
+    fn is_identity(&self) -> bool {
+        self.inner.is_identity()
+    }
+    
+    fn order(&self) -> usize {
+        self.inner.order()
+    }
+    
+    fn cycles(&self) -> Vec<Vec<usize>> {
+        self.inner.cycles()
+    }
+}
+
+/// Python wrapper for PermutationGroupAnalysis
+#[pyclass(name = "PermutationGroupAnalysis")]
+pub struct PyPermutationGroupAnalysis {
+    inner: PermutationGroupAnalysis,
+}
+
+#[pymethods]
+impl PyPermutationGroupAnalysis {
+    #[getter]
+    fn is_group(&self) -> bool {
+        self.inner.is_group
+    }
+    
+    #[getter]
+    fn group_order(&self) -> usize {
+        self.inner.group_order
+    }
+    
+    #[getter]
+    fn has_identity(&self) -> bool {
+        self.inner.has_identity
+    }
+    
+    #[getter]
+    fn has_inverses(&self) -> bool {
+        self.inner.has_inverses
+    }
+    
+    #[getter]
+    fn is_associative(&self) -> bool {
+        self.inner.is_associative
+    }
+    
+    #[getter]
+    fn group_type(&self) -> String {
+        self.inner.group_type.clone()
+    }
+    
+    #[getter]
+    fn operation_count(&self) -> usize {
+        self.inner.operation_count
+    }
+}
+
+/// Python wrapper for GroupElementOperations
+#[pyclass(name = "GroupElementOperations")]
+pub struct PyGroupElementOperations {
+    inner: GroupElementOperations,
+}
+
+#[pymethods]
+impl PyGroupElementOperations {
+    #[getter]
+    fn has_binary_operation(&self) -> bool {
+        self.inner.has_binary_operation
+    }
+    
+    #[getter]
+    fn is_commutative(&self) -> bool {
+        self.inner.is_commutative
+    }
+    
+    #[getter]
+    fn has_identity_element(&self) -> bool {
+        self.inner.has_identity_element
+    }
+    
+    #[getter]
+    fn element_orders(&self) -> Vec<i32> {
+        self.inner.element_orders.clone()
+    }
+    
+    #[getter]
+    fn exponent(&self) -> i32 {
+        self.inner.exponent
+    }
+}
+
+/// Python wrapper for SubgroupAnalysis
+#[pyclass(name = "SubgroupAnalysis")]
+pub struct PySubgroupAnalysis {
+    inner: SubgroupAnalysis,
+}
+
+#[pymethods]
+impl PySubgroupAnalysis {
+    #[getter]
+    fn subgroup_count(&self) -> usize {
+        self.inner.subgroup_count
+    }
+    
+    #[getter]
+    fn subgroup_orders(&self) -> Vec<usize> {
+        self.inner.subgroup_orders.clone()
+    }
+    
+    #[getter]
+    fn is_simple(&self) -> bool {
+        self.inner.is_simple
+    }
+    
+    #[getter]
+    fn has_normal_subgroups(&self) -> bool {
+        self.inner.has_normal_subgroups
+    }
+}
+
+/// Python wrapper for GroupHomomorphismAnalysis
+#[pyclass(name = "GroupHomomorphismAnalysis")]
+pub struct PyGroupHomomorphismAnalysis {
+    inner: GroupHomomorphismAnalysis,
+}
+
+#[pymethods]
+impl PyGroupHomomorphismAnalysis {
+    #[getter]
+    fn homomorphism_exists(&self) -> bool {
+        self.inner.homomorphism_exists
+    }
+    
+    #[getter]
+    fn isomorphism_exists(&self) -> bool {
+        self.inner.isomorphism_exists
+    }
+    
+    #[getter]
+    fn source_group_order(&self) -> usize {
+        self.inner.source_group_order
+    }
+    
+    #[getter]
+    fn target_group_order(&self) -> usize {
+        self.inner.target_group_order
+    }
+    
+    #[getter]
+    fn kernel_size(&self) -> usize {
+        self.inner.kernel_size
+    }
+    
+    #[getter]
+    fn image_size(&self) -> usize {
+        self.inner.image_size
+    }
+}
+
+/// Python wrapper for PermutationGroupOperations
+#[pyclass(name = "PermutationGroupOperations")]
+pub struct PyPermutationGroupOperations {
+    inner: PermutationGroupOperations,
+}
+
+#[pymethods]
+impl PyPermutationGroupOperations {
+    #[getter]
+    fn can_compose_permutations(&self) -> bool {
+        self.inner.can_compose_permutations
+    }
+    
+    #[getter]
+    fn can_invert_permutations(&self) -> bool {
+        self.inner.can_invert_permutations
+    }
+    
+    #[getter]
+    fn has_identity_permutation(&self) -> bool {
+        self.inner.has_identity_permutation
+    }
+    
+    #[getter]
+    fn permutation_cycles(&self) -> Vec<Vec<usize>> {
+        self.inner.permutation_cycles.clone()
+    }
+}
+
+/// Analyze if an algebra can be viewed as a permutation group
+#[pyfunction]
+pub fn py_analyze_permutation_group(algebra: &PyAlgebra) -> PyResult<PyPermutationGroupAnalysis> {
+    let analysis = analyze_permutation_group_from_algebra(&algebra.inner).map_err(map_uacalc_error)?;
+    Ok(PyPermutationGroupAnalysis { inner: analysis })
+}
+
+/// Analyze group element operations
+#[pyfunction]
+pub fn py_analyze_group_element_operations(algebra: &PyAlgebra) -> PyResult<PyGroupElementOperations> {
+    let analysis = analyze_group_element_operations_from_algebra(&algebra.inner).map_err(map_uacalc_error)?;
+    Ok(PyGroupElementOperations { inner: analysis })
+}
+
+/// Analyze subgroups of the algebra
+#[pyfunction]
+pub fn py_analyze_subgroups(algebra: &PyAlgebra) -> PyResult<PySubgroupAnalysis> {
+    let analysis = analyze_subgroups_from_algebra(&algebra.inner).map_err(map_uacalc_error)?;
+    Ok(PySubgroupAnalysis { inner: analysis })
+}
+
+/// Analyze group homomorphisms between two algebras
+#[pyfunction]
+pub fn py_analyze_group_homomorphisms(algebra1: &PyAlgebra, algebra2: &PyAlgebra) -> PyResult<PyGroupHomomorphismAnalysis> {
+    let analysis = analyze_group_homomorphisms_from_algebras(&algebra1.inner, &algebra2.inner).map_err(map_uacalc_error)?;
+    Ok(PyGroupHomomorphismAnalysis { inner: analysis })
+}
+
+/// Analyze permutation group specific operations
+#[pyfunction]
+pub fn py_analyze_permutation_group_operations(algebra: &PyAlgebra) -> PyResult<PyPermutationGroupOperations> {
+    let analysis = analyze_permutation_group_operations_from_algebra(&algebra.inner).map_err(map_uacalc_error)?;
+    Ok(PyPermutationGroupOperations { inner: analysis })
 }
 
 // Re-export memory functions

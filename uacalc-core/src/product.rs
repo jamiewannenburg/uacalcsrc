@@ -166,6 +166,10 @@ impl Operation for ComponentwiseTableOperation {
         self.table = Some(flat_table);
         Ok(())
     }
+    
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
 }
 
 /// Product algebra implementation that creates the direct product of multiple algebras
