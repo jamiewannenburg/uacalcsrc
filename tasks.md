@@ -104,10 +104,10 @@ This document outlines the tasks needed to implement full compatibility between 
 - [x] Test lattice-specific functionality
 
 #### Subtask 4.1.4: `test_lattices_analysis_compatibility.py`
-- [ ] Add 'lattices_analysis' from Java in JavaWrapper exposing its output
-- [ ] Make `test_lattices_analysis_compatibility.py` with the same format as other compatibility tests
-- [ ] Implement a Rust/Python analogue (most of it should already be in analyze_advanced_properties)
-- [ ] Test lattice-specific functionality
+- [x] Add 'lattices_analysis' from Java in JavaWrapper exposing its output
+- [x] Make `test_lattices_analysis_compatibility.py` with the same format as other compatibility tests
+- [x] Implement a Rust/Python analogue (most of it should already be in analyze_advanced_properties)
+- [x] Test lattice-specific functionality
 
 #### Subtask 4.1.5: `test_lattices_property_detection_compatibility.py`
 - [ ] Add 'lattices_property_detection' from Java in JavaWrapper exposing its output

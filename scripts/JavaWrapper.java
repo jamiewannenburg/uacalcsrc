@@ -4496,6 +4496,7 @@ public class JavaWrapper {
                 }
             } else {
                 // For larger lattices, use join irreducibles as approximation
+                // This is a reasonable heuristic since join irreducibles often form an antichain
                 maxSize = conLat.joinIrreducibles().size();
             }
         } catch (Exception e) {
@@ -7481,15 +7482,20 @@ public class JavaWrapper {
                 result.append("\"basic_lattice_error\":\"").append(escapeJson(basicLatticeError)).append("\",");
             }
 
-            // Analyze lattice properties that Lattices utility class would handle
+            // Analyze lattice properties using actual Java UACalc methods where available
             boolean isDistributive = false;
             boolean isModular = false;
             boolean isBoolean = false;
 
             try {
                 if (latticeSize <= 20) { // Only for reasonably sized lattices
-                    isModular = checkCongruenceModularity(conLat);
-                    isDistributive = checkCongruenceDistributivity(conLat);
+                    // Use actual Java UACalc method for distributivity
+                    isDistributive = conLat.isDistributive();
+                    
+                    // For modularity, use a simple heuristic (distributive implies modular)
+                    isModular = isDistributive || checkCongruenceModularity(conLat);
+                    
+                    // For Boolean property, use the power-of-2 heuristic
                     isBoolean = checkCongruenceBoolean(conLat);
                 }
             } catch (Exception e) {

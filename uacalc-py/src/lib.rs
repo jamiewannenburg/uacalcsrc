@@ -13,7 +13,7 @@ use uacalc_core::binary_relation::{BasicBinaryRelation, BinaryRelation};
 use uacalc_core::conlat::{BasicCongruenceLattice, BasicLattice, CongruenceLattice as CongruenceLatticeTrait};
 use uacalc_core::error::UACalcError;
 use uacalc_core::malcev::{
-    MalcevAnalyzer, MalcevAnalysis, VarietyAnalysis, TctAnalysis, AdvancedProperties, LatticeProperties,
+    MalcevAnalyzer, MalcevAnalysis, VarietyAnalysis, TctAnalysis, AdvancedProperties, LatticeProperties, DualLatticeAnalysis,
     analyze_malcev_conditions, analyze_variety_membership, analyze_tct_type, analyze_advanced_properties, analyze_lattice_properties
 };
 use uacalc_core::equation::{Equation, EquationComplexity, EquationProperties, ComplexityLevel};
@@ -71,6 +71,7 @@ fn uacalc_rust(_py: Python, m: &Bound<PyModule>) -> PyResult<()> {
     m.add_class::<PyTctAnalysis>()?;
     m.add_class::<PyAdvancedProperties>()?;
     m.add_class::<PyLatticeProperties>()?;
+    m.add_class::<PyDualLatticeAnalysis>()?;
     m.add_class::<PyMalcevAnalyzer>()?;
     m.add_class::<PyTerm>()?;
     m.add_class::<PyTermArena>()?;
@@ -4527,6 +4528,11 @@ impl PyLatticeProperties {
     }
 
     #[getter]
+    fn meet_irreducibles_count(&self) -> usize {
+        self.inner.meet_irreducibles_count
+    }
+
+    #[getter]
     fn lattice_height(&self) -> usize {
         self.inner.lattice_height
     }
@@ -4561,10 +4567,64 @@ impl PyLatticeProperties {
         self.inner.has_one
     }
 
+    #[getter]
+    fn can_construct_basic_lattice(&self) -> bool {
+        self.inner.can_construct_basic_lattice
+    }
+
+    #[getter]
+    fn basic_lattice_error(&self) -> Option<String> {
+        self.inner.basic_lattice_error.clone()
+    }
+
+    #[getter]
+    fn dual_analysis(&self) -> PyDualLatticeAnalysis {
+        PyDualLatticeAnalysis { inner: self.inner.dual_analysis.clone() }
+    }
+
     fn __str__(&self) -> String {
         format!("LatticeProperties(size={}, height={}, width={}, modular={}, distributive={}, boolean={})", 
                self.inner.congruence_lattice_size, self.inner.lattice_height, self.inner.lattice_width,
                self.inner.is_modular, self.inner.is_distributive, self.inner.is_boolean)
+    }
+
+    fn __repr__(&self) -> String {
+        self.__str__()
+    }
+}
+
+#[pyclass(name = "DualLatticeAnalysis")]
+#[derive(Clone)]
+pub struct PyDualLatticeAnalysis {
+    pub inner: DualLatticeAnalysis,
+}
+
+#[pymethods]
+impl PyDualLatticeAnalysis {
+    #[getter]
+    fn can_construct_dual(&self) -> bool {
+        self.inner.can_construct_dual
+    }
+
+    #[getter]
+    fn dual_size(&self) -> usize {
+        self.inner.dual_size
+    }
+
+    #[getter]
+    fn dual_join_irreducibles_count(&self) -> usize {
+        self.inner.dual_join_irreducibles_count
+    }
+
+    #[getter]
+    fn dual_meet_irreducibles_count(&self) -> usize {
+        self.inner.dual_meet_irreducibles_count
+    }
+
+    fn __str__(&self) -> String {
+        format!("DualLatticeAnalysis(size={}, join_irr={}, meet_irr={})", 
+               self.inner.dual_size, self.inner.dual_join_irreducibles_count, 
+               self.inner.dual_meet_irreducibles_count)
     }
 
     fn __repr__(&self) -> String {
