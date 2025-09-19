@@ -647,7 +647,7 @@ class TestIntegration:
         assert is_valid
         assert error is None
     
-    @pytest.mark.slow
+    #@pytest.mark.slow
     def test_large_scale_evaluation(self):
         """Test large-scale term evaluation."""
         # Create larger algebra

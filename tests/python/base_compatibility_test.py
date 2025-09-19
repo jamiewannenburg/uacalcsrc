@@ -19,6 +19,12 @@ from typing import Dict, List, Any, Optional, Union, Tuple
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
 import logging
+import sys
+
+python_path = Path(__file__).parent.parent.parent/"python"
+sys.path.append(python_path)
+
+import uacalc
 
 # Configure logging for detailed test reporting
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')

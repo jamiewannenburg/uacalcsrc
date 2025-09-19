@@ -510,6 +510,49 @@ impl SmallAlgebra for FreeAlgebra {
             .unwrap_or(0)
     }
 
+    fn algebra_type(&self) -> crate::algebra::AlgebraType {
+        crate::algebra::AlgebraType::Free
+    }
+
+    fn get_element(&self, k: usize) -> UACalcResult<usize> {
+        if k >= self.universe.len() {
+            return Err(UACalcError::IndexOutOfBounds {
+                index: k,
+                size: self.universe.len(),
+            });
+        }
+        Ok(self.universe[k])
+    }
+
+    fn get_universe_list(&self) -> Vec<usize> {
+        self.universe.clone()
+    }
+
+    fn get_universe_order(&self) -> std::collections::HashMap<usize, usize> {
+        let mut order = std::collections::HashMap::new();
+        for (index, &element) in self.universe.iter().enumerate() {
+            order.insert(element, index);
+        }
+        order
+    }
+
+    fn parent(&self) -> Option<Arc<Mutex<dyn SmallAlgebra>>> {
+        None // FreeAlgebra has no parent
+    }
+
+    fn parents(&self) -> Vec<Arc<Mutex<dyn SmallAlgebra>>> {
+        vec![] // FreeAlgebra has no parents
+    }
+
+    fn reset_con_and_sub(&mut self) {
+        // FreeAlgebra doesn't cache lattices, so nothing to reset
+    }
+
+    fn convert_to_default_value_ops(&mut self) -> UACalcResult<()> {
+        // For FreeAlgebra, this is a no-op
+        Ok(())
+    }
+
     fn subalgebra(&self, generators: &[usize]) -> UACalcResult<BasicAlgebra> {
         // For a free algebra, generating a subalgebra is complex
         // This would require proper term generation and constraint application

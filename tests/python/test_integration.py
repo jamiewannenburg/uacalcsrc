@@ -673,7 +673,7 @@ class TestAdvancedIntegration:
         assert summary["total_operations"] == len(algebras)
         assert summary["successful_operations"] > 0
     
-    @pytest.mark.slow
+    #@pytest.mark.slow
     def test_large_scale_integration(self):
         """Test large-scale integration scenario."""
         # Create a larger algebra

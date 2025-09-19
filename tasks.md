@@ -256,9 +256,9 @@ This document outlines the tasks needed to implement full compatibility between 
 **Priority: LOW** - Specialized data types and operations
 
 #### Subtask 10.1.1: `test_small_algebra_compatibility.py`
-- [ ] Remove mock functions and implement small algebra operations
-- [ ] Implement small algebra optimizations
-- [ ] Test small algebra properties
+- [x] Remove mock functions and implement small algebra operations
+- [x] Implement small algebra optimizations
+- [x] Test small algebra properties
 
 #### Subtask 10.1.2: `test_permutation_group_compatibility.py`
 - [x] Remove mock functions and implement permutation groups

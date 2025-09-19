@@ -1,5 +1,5 @@
 ---
-description: As a first command activate the virtual environment in .venv
+description: As a first command activate the virtual environment in .venv and set the maximum memory for your terminal to 1Gb using ulimit.
 globs:
 alwaysApply: true
 ---

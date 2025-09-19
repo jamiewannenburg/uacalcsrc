@@ -503,7 +503,7 @@ class TestIntegration:
         assert isinstance(principal, Partition)
         assert len(progress_calls) > 0
     
-    @pytest.mark.slow
+    #@pytest.mark.slow
     def test_large_algebra_performance(self):
         """Test performance with larger algebra."""
         # Create a larger algebra

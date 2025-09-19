@@ -103,6 +103,24 @@ pub trait Algebra {
     fn name(&self) -> &str;
 }
 
+/// Algebra type enumeration (mirrors Java's SmallAlgebra.AlgebraType)
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum AlgebraType {
+    Basic,
+    BasicLattice,
+    Quotient,
+    Subalgebra,
+    Product,
+    Power,
+    MatrixPower,
+    Reduct,
+    Subproduct,
+    Free,
+    PolinLike,
+    UnaryTermsMonoid,
+    FiniteField,
+}
+
 /// Trait for finite algebras with efficient operations
 pub trait SmallAlgebra: Algebra + Send + Sync {
     /// Get the maximum arity of operations
@@ -150,6 +168,57 @@ pub trait SmallAlgebra: Algebra + Send + Sync {
     /// Get the index of an element in the algebra
     fn element_index(&self, element: usize) -> UACalcResult<usize> {
         self.element_to_index(element)
+    }
+
+    /// Get the type of algebra (mirrors Java's algebraType())
+    fn algebra_type(&self) -> AlgebraType {
+        AlgebraType::Basic // Default for BasicAlgebra
+    }
+
+    /// Get the k-th element (mirrors Java's getElement(k))
+    fn get_element(&self, k: usize) -> UACalcResult<usize> {
+        self.index_to_element(k)
+    }
+
+    /// Get the universe as a list (mirrors Java's getUniverseList())
+    fn get_universe_list(&self) -> Vec<usize> {
+        self.universe().to_vec()
+    }
+
+    /// Get the universe order map (mirrors Java's getUniverseOrder())
+    fn get_universe_order(&self) -> std::collections::HashMap<usize, usize> {
+        let mut order = std::collections::HashMap::new();
+        for (index, &element) in self.universe().iter().enumerate() {
+            order.insert(element, index);
+        }
+        order
+    }
+
+    /// Get the parent algebra (mirrors Java's parent())
+    fn parent(&self) -> Option<Arc<Mutex<dyn SmallAlgebra>>> {
+        None // Default for BasicAlgebra
+    }
+
+    /// Get the list of parent algebras (mirrors Java's parents())
+    fn parents(&self) -> Vec<Arc<Mutex<dyn SmallAlgebra>>> {
+        if let Some(parent) = self.parent() {
+            vec![parent]
+        } else {
+            vec![]
+        }
+    }
+
+    /// Reset congruence and subalgebra lattices (mirrors Java's resetConAndSub())
+    fn reset_con_and_sub(&mut self) {
+        // Default implementation does nothing
+        // Subclasses can override this to reset cached lattices
+    }
+
+    /// Convert to default value operations (mirrors Java's convertToDefaultValueOps())
+    fn convert_to_default_value_ops(&mut self) -> UACalcResult<()> {
+        // Default implementation does nothing
+        // This is primarily for UI compatibility
+        Ok(())
     }
 
     /// Get the congruence lattice of the algebra
@@ -418,6 +487,49 @@ impl SmallAlgebra for BasicAlgebra {
             })
             .max()
             .unwrap_or(0)
+    }
+
+    fn algebra_type(&self) -> AlgebraType {
+        AlgebraType::Basic
+    }
+
+    fn get_element(&self, k: usize) -> UACalcResult<usize> {
+        if k >= self.universe.len() {
+            return Err(UACalcError::IndexOutOfBounds {
+                index: k,
+                size: self.universe.len(),
+            });
+        }
+        Ok(self.universe[k])
+    }
+
+    fn get_universe_list(&self) -> Vec<usize> {
+        self.universe.clone()
+    }
+
+    fn get_universe_order(&self) -> std::collections::HashMap<usize, usize> {
+        let mut order = std::collections::HashMap::new();
+        for (index, &element) in self.universe.iter().enumerate() {
+            order.insert(element, index);
+        }
+        order
+    }
+
+    fn parent(&self) -> Option<Arc<Mutex<dyn SmallAlgebra>>> {
+        None // BasicAlgebra has no parent
+    }
+
+    fn parents(&self) -> Vec<Arc<Mutex<dyn SmallAlgebra>>> {
+        vec![] // BasicAlgebra has no parents
+    }
+
+    fn reset_con_and_sub(&mut self) {
+        // BasicAlgebra doesn't cache lattices, so nothing to reset
+    }
+
+    fn convert_to_default_value_ops(&mut self) -> UACalcResult<()> {
+        // For BasicAlgebra, this is a no-op
+        Ok(())
     }
 
     fn subalgebra(&self, generators: &[usize]) -> UACalcResult<BasicAlgebra> {

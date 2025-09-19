@@ -1828,6 +1828,48 @@ impl PyProductAlgebra {
     fn num_factors(&self) -> usize {
         self.inner.factors().len()
     }
+
+    /// Get the algebra type (mirrors Java's algebraType())
+    fn algebra_type(&self) -> String {
+        "Product".to_string()
+    }
+
+    /// Get the k-th element (mirrors Java's getElement(k))
+    fn get_element(&self, k: usize) -> PyResult<usize> {
+        self.inner.get_element(k).map_err(map_uacalc_error)
+    }
+
+    /// Get the universe as a list (mirrors Java's getUniverseList())
+    fn get_universe_list(&self) -> Vec<usize> {
+        self.inner.get_universe_list()
+    }
+
+    /// Get the universe order map (mirrors Java's getUniverseOrder())
+    fn get_universe_order(&self) -> std::collections::HashMap<usize, usize> {
+        self.inner.get_universe_order()
+    }
+
+    /// Get the parent algebra (mirrors Java's parent())
+    fn parent(&self) -> Option<PyAlgebra> {
+        // For now, return None as we can't easily convert Arc<Mutex<dyn SmallAlgebra>> to PyAlgebra
+        None
+    }
+
+    /// Get the list of parent algebras (mirrors Java's parents())
+    fn parents(&self) -> Vec<PyAlgebra> {
+        // For now, return empty list as we can't easily convert Arc<Mutex<dyn SmallAlgebra>> to PyAlgebra
+        vec![]
+    }
+
+    /// Reset congruence and subalgebra lattices (mirrors Java's resetConAndSub())
+    fn reset_con_and_sub(&mut self) {
+        self.inner.reset_con_and_sub();
+    }
+
+    /// Convert to default value operations (mirrors Java's convertToDefaultValueOps())
+    fn convert_to_default_value_ops(&mut self) -> PyResult<()> {
+        self.inner.convert_to_default_value_ops().map_err(map_uacalc_error)
+    }
 }
 
 #[pymethods]
@@ -1927,6 +1969,48 @@ impl PyQuotientAlgebra {
 
     fn is_finite(&self) -> bool {
         true // Quotient algebras are always finite
+    }
+
+    /// Get the algebra type (mirrors Java's algebraType())
+    fn algebra_type(&self) -> String {
+        "Quotient".to_string()
+    }
+
+    /// Get the k-th element (mirrors Java's getElement(k))
+    fn get_element(&self, k: usize) -> PyResult<usize> {
+        self.inner.get_element(k).map_err(map_uacalc_error)
+    }
+
+    /// Get the universe as a list (mirrors Java's getUniverseList())
+    fn get_universe_list(&self) -> Vec<usize> {
+        self.inner.get_universe_list()
+    }
+
+    /// Get the universe order map (mirrors Java's getUniverseOrder())
+    fn get_universe_order(&self) -> std::collections::HashMap<usize, usize> {
+        self.inner.get_universe_order()
+    }
+
+    /// Get the parent algebra (mirrors Java's parent())
+    fn parent(&self) -> Option<PyAlgebra> {
+        // For now, return None as we can't easily convert Arc<Mutex<dyn SmallAlgebra>> to PyAlgebra
+        None
+    }
+
+    /// Get the list of parent algebras (mirrors Java's parents())
+    fn parents(&self) -> Vec<PyAlgebra> {
+        // For now, return empty list as we can't easily convert Arc<Mutex<dyn SmallAlgebra>> to PyAlgebra
+        vec![]
+    }
+
+    /// Reset congruence and subalgebra lattices (mirrors Java's resetConAndSub())
+    fn reset_con_and_sub(&mut self) {
+        self.inner.reset_con_and_sub();
+    }
+
+    /// Convert to default value operations (mirrors Java's convertToDefaultValueOps())
+    fn convert_to_default_value_ops(&mut self) -> PyResult<()> {
+        self.inner.convert_to_default_value_ops().map_err(map_uacalc_error)
     }
 
     fn max_arity(&self) -> usize {
@@ -2088,6 +2172,48 @@ impl PySubalgebra {
 
     fn is_finite(&self) -> bool {
         true // Subalgebras are always finite
+    }
+
+    /// Get the algebra type (mirrors Java's algebraType())
+    fn algebra_type(&self) -> String {
+        "Subalgebra".to_string()
+    }
+
+    /// Get the k-th element (mirrors Java's getElement(k))
+    fn get_element(&self, k: usize) -> PyResult<usize> {
+        self.inner.get_element(k).map_err(map_uacalc_error)
+    }
+
+    /// Get the universe as a list (mirrors Java's getUniverseList())
+    fn get_universe_list(&self) -> Vec<usize> {
+        self.inner.get_universe_list()
+    }
+
+    /// Get the universe order map (mirrors Java's getUniverseOrder())
+    fn get_universe_order(&self) -> std::collections::HashMap<usize, usize> {
+        self.inner.get_universe_order()
+    }
+
+    /// Get the parent algebra (mirrors Java's parent())
+    fn parent(&self) -> Option<PyAlgebra> {
+        // For now, return None as we can't easily convert Arc<Mutex<dyn SmallAlgebra>> to PyAlgebra
+        None
+    }
+
+    /// Get the list of parent algebras (mirrors Java's parents())
+    fn parents(&self) -> Vec<PyAlgebra> {
+        // For now, return empty list as we can't easily convert Arc<Mutex<dyn SmallAlgebra>> to PyAlgebra
+        vec![]
+    }
+
+    /// Reset congruence and subalgebra lattices (mirrors Java's resetConAndSub())
+    fn reset_con_and_sub(&mut self) {
+        self.inner.reset_con_and_sub();
+    }
+
+    /// Convert to default value operations (mirrors Java's convertToDefaultValueOps())
+    fn convert_to_default_value_ops(&mut self) -> PyResult<()> {
+        self.inner.convert_to_default_value_ops().map_err(map_uacalc_error)
     }
 
     fn max_arity(&self) -> usize {
@@ -2316,6 +2442,48 @@ impl PyFreeAlgebra {
     fn __repr__(&self) -> String {
         self.__str__()
     }
+
+    /// Get the algebra type (mirrors Java's algebraType())
+    fn algebra_type(&self) -> String {
+        "Free".to_string()
+    }
+
+    /// Get the k-th element (mirrors Java's getElement(k))
+    fn get_element(&self, k: usize) -> PyResult<usize> {
+        self.inner.get_element(k).map_err(map_uacalc_error)
+    }
+
+    /// Get the universe as a list (mirrors Java's getUniverseList())
+    fn get_universe_list(&self) -> Vec<usize> {
+        self.inner.get_universe_list()
+    }
+
+    /// Get the universe order map (mirrors Java's getUniverseOrder())
+    fn get_universe_order(&self) -> std::collections::HashMap<usize, usize> {
+        self.inner.get_universe_order()
+    }
+
+    /// Get the parent algebra (mirrors Java's parent())
+    fn parent(&self) -> Option<PyAlgebra> {
+        // For now, return None as we can't easily convert Arc<Mutex<dyn SmallAlgebra>> to PyAlgebra
+        None
+    }
+
+    /// Get the list of parent algebras (mirrors Java's parents())
+    fn parents(&self) -> Vec<PyAlgebra> {
+        // For now, return empty list as we can't easily convert Arc<Mutex<dyn SmallAlgebra>> to PyAlgebra
+        vec![]
+    }
+
+    /// Reset congruence and subalgebra lattices (mirrors Java's resetConAndSub())
+    fn reset_con_and_sub(&mut self) {
+        self.inner.reset_con_and_sub();
+    }
+
+    /// Convert to default value operations (mirrors Java's convertToDefaultValueOps())
+    fn convert_to_default_value_ops(&mut self) -> PyResult<()> {
+        self.inner.convert_to_default_value_ops().map_err(map_uacalc_error)
+    }
 }
 
 #[pymethods]
@@ -2379,6 +2547,64 @@ impl PyAlgebra {
 
     fn max_arity(&self) -> usize {
         self.inner.max_arity()
+    }
+
+    /// Get the algebra type (mirrors Java's algebraType())
+    fn algebra_type(&self) -> String {
+        match self.inner.algebra_type() {
+            uacalc_core::algebra::AlgebraType::Basic => "Basic".to_string(),
+            uacalc_core::algebra::AlgebraType::BasicLattice => "BasicLattice".to_string(),
+            uacalc_core::algebra::AlgebraType::Quotient => "Quotient".to_string(),
+            uacalc_core::algebra::AlgebraType::Subalgebra => "Subalgebra".to_string(),
+            uacalc_core::algebra::AlgebraType::Product => "Product".to_string(),
+            uacalc_core::algebra::AlgebraType::Power => "Power".to_string(),
+            uacalc_core::algebra::AlgebraType::MatrixPower => "MatrixPower".to_string(),
+            uacalc_core::algebra::AlgebraType::Reduct => "Reduct".to_string(),
+            uacalc_core::algebra::AlgebraType::Subproduct => "Subproduct".to_string(),
+            uacalc_core::algebra::AlgebraType::Free => "Free".to_string(),
+            uacalc_core::algebra::AlgebraType::PolinLike => "PolinLike".to_string(),
+            uacalc_core::algebra::AlgebraType::UnaryTermsMonoid => "UnaryTermsMonoid".to_string(),
+            uacalc_core::algebra::AlgebraType::FiniteField => "FiniteField".to_string(),
+        }
+    }
+
+    /// Get the k-th element (mirrors Java's getElement(k))
+    fn get_element(&self, k: usize) -> PyResult<usize> {
+        self.inner.get_element(k).map_err(map_uacalc_error)
+    }
+
+    /// Get the universe as a list (mirrors Java's getUniverseList())
+    fn get_universe_list(&self) -> Vec<usize> {
+        self.inner.get_universe_list()
+    }
+
+    /// Get the universe order map (mirrors Java's getUniverseOrder())
+    fn get_universe_order(&self) -> std::collections::HashMap<usize, usize> {
+        self.inner.get_universe_order()
+    }
+
+    /// Get the parent algebra (mirrors Java's parent())
+    fn parent(&self) -> Option<PyAlgebra> {
+        // For now, return None as we can't easily convert Arc<Mutex<dyn SmallAlgebra>> to PyAlgebra
+        // This would require a more complex type system to handle different algebra types
+        None
+    }
+
+    /// Get the list of parent algebras (mirrors Java's parents())
+    fn parents(&self) -> Vec<PyAlgebra> {
+        // For now, return empty list as we can't easily convert Arc<Mutex<dyn SmallAlgebra>> to PyAlgebra
+        // This would require a more complex type system to handle different algebra types
+        vec![]
+    }
+
+    /// Reset congruence and subalgebra lattices (mirrors Java's resetConAndSub())
+    fn reset_con_and_sub(&mut self) {
+        self.inner.reset_con_and_sub();
+    }
+
+    /// Convert to default value operations (mirrors Java's convertToDefaultValueOps())
+    fn convert_to_default_value_ops(&mut self) -> PyResult<()> {
+        self.inner.convert_to_default_value_ops().map_err(map_uacalc_error)
     }
 
     fn is_idempotent(&self, op_index: usize) -> PyResult<bool> {

@@ -547,6 +547,49 @@ impl SmallAlgebra for ProductAlgebra {
             .unwrap_or(0)
     }
 
+    fn algebra_type(&self) -> crate::algebra::AlgebraType {
+        crate::algebra::AlgebraType::Product
+    }
+
+    fn get_element(&self, k: usize) -> UACalcResult<usize> {
+        if k >= self.universe.len() {
+            return Err(UACalcError::IndexOutOfBounds {
+                index: k,
+                size: self.universe.len(),
+            });
+        }
+        Ok(self.universe[k])
+    }
+
+    fn get_universe_list(&self) -> Vec<usize> {
+        self.universe.clone()
+    }
+
+    fn get_universe_order(&self) -> std::collections::HashMap<usize, usize> {
+        let mut order = std::collections::HashMap::new();
+        for (index, &element) in self.universe.iter().enumerate() {
+            order.insert(element, index);
+        }
+        order
+    }
+
+    fn parent(&self) -> Option<Arc<Mutex<dyn SmallAlgebra>>> {
+        None // ProductAlgebra has no single parent, but has factors
+    }
+
+    fn parents(&self) -> Vec<Arc<Mutex<dyn SmallAlgebra>>> {
+        self.factors.clone()
+    }
+
+    fn reset_con_and_sub(&mut self) {
+        // ProductAlgebra doesn't cache lattices, so nothing to reset
+    }
+
+    fn convert_to_default_value_ops(&mut self) -> UACalcResult<()> {
+        // For ProductAlgebra, this is a no-op
+        Ok(())
+    }
+
     /// Override operation_int_value to work with ProductAlgebra's Arc-based operations
     fn operation_int_value(&self, op_index: usize, args: &[usize]) -> UACalcResult<usize> {
         let operation_arc = self.operation_arc(op_index)?;

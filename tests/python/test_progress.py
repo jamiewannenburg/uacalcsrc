@@ -678,7 +678,7 @@ class TestIntegration:
         assert len(calls) > 0
         assert calls[-1][0] == 1.0  # Should reach 100%
     
-    @pytest.mark.slow
+    #@pytest.mark.slow
     def test_large_scale_progress_reporting(self):
         """Test large-scale progress reporting."""
         calls = []
