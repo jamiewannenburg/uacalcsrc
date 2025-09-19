@@ -208,6 +208,33 @@ pub trait SmallAlgebra: Algebra + Send + Sync {
         }
     }
 
+    /// Get polymorphisms of this algebra
+    fn polymorphisms(&self) -> UACalcResult<Vec<crate::polymorphisms::Polymorphism>> {
+        // Default implementation returns empty list
+        // Subclasses can override this to provide actual polymorphism detection
+        Ok(Vec::new())
+    }
+
+    /// Check if this algebra has a majority polymorphism
+    fn has_majority_polymorphism(&self) -> UACalcResult<bool> where Self: Sized {
+        crate::polymorphisms::has_majority_polymorphism(self)
+    }
+
+    /// Check if this algebra has a minority polymorphism
+    fn has_minority_polymorphism(&self) -> UACalcResult<bool> where Self: Sized {
+        crate::polymorphisms::has_minority_polymorphism(self)
+    }
+
+    /// Check if this algebra has a semilattice polymorphism
+    fn has_semilattice_polymorphism(&self) -> UACalcResult<bool> where Self: Sized {
+        crate::polymorphisms::has_semilattice_polymorphism(self)
+    }
+
+    /// Check if this algebra has a Maltsev polymorphism
+    fn has_maltsev_polymorphism(&self) -> UACalcResult<bool> where Self: Sized {
+        crate::polymorphisms::has_maltsev_polymorphism(self)
+    }
+
     /// Reset congruence and subalgebra lattices (mirrors Java's resetConAndSub())
     fn reset_con_and_sub(&mut self) {
         // Default implementation does nothing

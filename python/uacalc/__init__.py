@@ -81,6 +81,11 @@ try:
     SubgroupAnalysis,
     GroupHomomorphismAnalysis,
     PermutationGroupOperations,
+    # Polymorphism classes
+    Polymorphism,
+    PolymorphismType,
+    PolymorphismAnalysis,
+    PolymorphismDetector,
     # Malcev analysis functions
     py_analyze_malcev_conditions,
     py_analyze_variety_membership,
@@ -92,6 +97,15 @@ try:
     py_analyze_subgroups,
     py_analyze_group_homomorphisms,
     py_analyze_permutation_group_operations,
+    # Polymorphism analysis functions
+    py_find_unary_polymorphisms,
+    py_find_binary_polymorphisms,
+    py_analyze_polymorphisms,
+    py_create_polymorphism_algebra,
+    py_has_majority_polymorphism,
+    py_has_minority_polymorphism,
+    py_has_semilattice_polymorphism,
+    py_has_maltsev_polymorphism,
     # Memory limit functions
     py_set_memory_limit,
     py_get_memory_limit,
@@ -266,6 +280,12 @@ __all__ = [
     "GroupHomomorphismAnalysis",
     "PermutationGroupOperations",
     
+    # Polymorphism classes
+    "Polymorphism",
+    "PolymorphismType",
+    "PolymorphismAnalysis",
+    "PolymorphismDetector",
+    
     # Error classes
     "UACalcError",
     "CancellationError",
@@ -313,6 +333,16 @@ __all__ = [
     "py_analyze_subgroups",
     "py_analyze_group_homomorphisms",
     "py_analyze_permutation_group_operations",
+    
+    # Polymorphism analysis functions
+    "py_find_unary_polymorphisms",
+    "py_find_binary_polymorphisms",
+    "py_analyze_polymorphisms",
+    "py_create_polymorphism_algebra",
+    "py_has_majority_polymorphism",
+    "py_has_minority_polymorphism",
+    "py_has_semilattice_polymorphism",
+    "py_has_maltsev_polymorphism",
     
     # Memory limit functions
     "py_set_memory_limit",

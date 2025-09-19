@@ -176,6 +176,26 @@ impl BasicPartition {
         Ok(root)
     }
 
+    fn find_readonly(&self, x: usize) -> UACalcResult<usize> {
+        if x >= self.size {
+            return Err(UACalcError::IndexOutOfBounds {
+                index: x,
+                size: self.size,
+            });
+        }
+        
+        let parent = self.parent.read().map_err(|_| UACalcError::InvalidOperation {
+            message: "Failed to acquire read lock on partition".to_string(),
+        })?;
+        
+        let mut v = x;
+        // Find root without path compression
+        while parent[v] != v {
+            v = parent[v];
+        }
+        Ok(v)
+    }
+
     /// Union two elements (with union by rank)
     pub fn union_elements(&self, x: usize, y: usize) -> UACalcResult<bool> {
         let root_x = self.find_mut(x)?;
@@ -345,12 +365,12 @@ impl Partition for BasicPartition {
     }
 
     fn representative(&self, element: usize) -> UACalcResult<usize> {
-        self.find_mut(element)
+        self.find_readonly(element)
     }
 
     fn same_block(&self, a: usize, b: usize) -> UACalcResult<bool> {
-        let rep_a = self.find_mut(a)?;
-        let rep_b = self.find_mut(b)?;
+        let rep_a = self.find_readonly(a)?;
+        let rep_b = self.find_readonly(b)?;
         Ok(rep_a == rep_b)
     }
 

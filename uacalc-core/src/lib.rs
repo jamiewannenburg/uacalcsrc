@@ -19,6 +19,7 @@ pub mod free_algebra;
 pub mod operation;
 pub mod partition;
 pub mod permutation_group;
+pub mod polymorphisms;
 pub mod product;
 pub mod quotient;
 pub mod subalgebra;
@@ -44,6 +45,12 @@ pub use operation::{
     TableOperation,
 };
 pub use partition::{coarsest_partition, finest_partition, BasicPartition, Partition};
+pub use polymorphisms::{
+    Polymorphism, PolymorphismType, PolymorphismAnalysis, PolymorphismDetector,
+    find_unary_polymorphisms, find_binary_polymorphisms, analyze_polymorphisms,
+    create_polymorphism_algebra, has_majority_polymorphism, has_minority_polymorphism,
+    has_semilattice_polymorphism, has_maltsev_polymorphism
+};
 pub use permutation_group::{
     Permutation, PermutationGroupAnalysis, GroupElementOperations, SubgroupAnalysis,
     GroupHomomorphismAnalysis, PermutationGroupOperations,
@@ -91,7 +98,8 @@ pub mod prelude {
         coarsest_partition, empty_relation, equivalence_from_partition, finest_partition,
         identity_relation, universal_relation, Algebra, BasicAlgebra, BasicBinaryRelation,
         BasicPartition, BinaryRelation, FlatOperationTable, FreeAlgebra, FunctionOperation, 
-        Homomorphism, Operation, OperationSymbol, OperationType, Partition, QuotientAlgebra, 
+        Homomorphism, Operation, OperationSymbol, OperationType, Partition, Polymorphism, 
+        PolymorphismType, PolymorphismAnalysis, PolymorphismDetector, QuotientAlgebra, 
         SmallAlgebra, Subalgebra, TableOperation, UACalcError, UACalcResult, VarietyConstraint,
         are_isomorphic, create_free_algebra, create_free_algebra_with_common_operations, 
         find_homomorphism, MalcevAnalyzer, MalcevAnalysis, VarietyAnalysis, TctAnalysis, AdvancedProperties,

@@ -38,6 +38,9 @@ pub enum UACalcError {
 
     #[error("Memory limit exceeded: {message}")]
     MemoryLimitExceeded { message: String },
+
+    #[error("Invalid input: {message}")]
+    InvalidInput { message: String },
 }
 
 /// Result type for UACalc operations

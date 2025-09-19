@@ -1,6 +1,7 @@
 use pyo3::prelude::*;
 use pyo3::types::{PyAny, PyDict, PyList};
 use pyo3::wrap_pyfunction;
+use pyo3::exceptions::PyValueError;
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicBool, Ordering};
 
@@ -33,6 +34,12 @@ use uacalc_core::permutation_group::{
     analyze_permutation_group_from_algebra, analyze_group_element_operations_from_algebra,
     analyze_subgroups_from_algebra, analyze_group_homomorphisms_from_algebras,
     analyze_permutation_group_operations_from_algebra,
+};
+use uacalc_core::polymorphisms::{
+    Polymorphism, PolymorphismType, PolymorphismAnalysis, PolymorphismDetector,
+    find_unary_polymorphisms, find_binary_polymorphisms, analyze_polymorphisms,
+    create_polymorphism_algebra, has_majority_polymorphism, has_minority_polymorphism,
+    has_semilattice_polymorphism, has_maltsev_polymorphism
 };
 
 #[cfg(feature = "taylor")]
@@ -78,6 +85,10 @@ fn uacalc_rust(_py: Python, m: &Bound<PyModule>) -> PyResult<()> {
     m.add_class::<PySubgroupAnalysis>()?;
     m.add_class::<PyGroupHomomorphismAnalysis>()?;
     m.add_class::<PyPermutationGroupOperations>()?;
+    m.add_class::<PyPolymorphism>()?;
+    m.add_class::<PyPolymorphismType>()?;
+    m.add_class::<PyPolymorphismAnalysis>()?;
+    m.add_class::<PyPolymorphismDetector>()?;
     
     #[cfg(feature = "taylor")]
     {
@@ -125,6 +136,16 @@ fn uacalc_rust(_py: Python, m: &Bound<PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(py_analyze_subgroups, m)?)?;
     m.add_function(wrap_pyfunction!(py_analyze_group_homomorphisms, m)?)?;
     m.add_function(wrap_pyfunction!(py_analyze_permutation_group_operations, m)?)?;
+    
+    // Polymorphism function registrations
+    m.add_function(wrap_pyfunction!(py_find_unary_polymorphisms, m)?)?;
+    m.add_function(wrap_pyfunction!(py_find_binary_polymorphisms, m)?)?;
+    m.add_function(wrap_pyfunction!(py_analyze_polymorphisms, m)?)?;
+    m.add_function(wrap_pyfunction!(py_create_polymorphism_algebra, m)?)?;
+    m.add_function(wrap_pyfunction!(py_has_majority_polymorphism, m)?)?;
+    m.add_function(wrap_pyfunction!(py_has_minority_polymorphism, m)?)?;
+    m.add_function(wrap_pyfunction!(py_has_semilattice_polymorphism, m)?)?;
+    m.add_function(wrap_pyfunction!(py_has_maltsev_polymorphism, m)?)?;
     
     // Add Horner utility functions
     m.add_function(wrap_pyfunction!(py_horner_encode, m)?)?;
@@ -2670,6 +2691,32 @@ impl PyAlgebra {
         let con_lattice = PyCongruenceLattice::new(self.clone());
         con_lattice.principal_congruence(py, a, b)
     }
+
+    /// Get polymorphisms of this algebra
+    fn polymorphisms(&self) -> PyResult<Vec<PyPolymorphism>> {
+        let polymorphisms = self.inner.polymorphisms().map_err(map_uacalc_error)?;
+        Ok(polymorphisms.into_iter().map(|p| PyPolymorphism { inner: p }).collect())
+    }
+
+    /// Check if this algebra has a majority polymorphism
+    fn has_majority_polymorphism(&self) -> PyResult<bool> {
+        self.inner.has_majority_polymorphism().map_err(map_uacalc_error)
+    }
+
+    /// Check if this algebra has a minority polymorphism
+    fn has_minority_polymorphism(&self) -> PyResult<bool> {
+        self.inner.has_minority_polymorphism().map_err(map_uacalc_error)
+    }
+
+    /// Check if this algebra has a semilattice polymorphism
+    fn has_semilattice_polymorphism(&self) -> PyResult<bool> {
+        self.inner.has_semilattice_polymorphism().map_err(map_uacalc_error)
+    }
+
+    /// Check if this algebra has a Maltsev polymorphism
+    fn has_maltsev_polymorphism(&self) -> PyResult<bool> {
+        self.inner.has_maltsev_polymorphism().map_err(map_uacalc_error)
+    }
 }
 
 /// Python wrapper for Operation
@@ -2716,6 +2763,17 @@ impl PyOperation {
 #[pyclass]
 pub struct PyPartition {
     inner: BasicPartition,
+}
+
+impl<'py> FromPyObject<'py> for PyPartition {
+    fn extract(ob: &'py PyAny) -> PyResult<Self> {
+        // Try to extract as a PyPartition object by getting the inner field
+        let py_partition = ob.downcast::<PyCell<PyPartition>>()?;
+        let py_partition_ref = py_partition.borrow();
+        Ok(PyPartition {
+            inner: py_partition_ref.inner.clone()
+        })
+    }
 }
 
 #[pymethods]
@@ -4840,6 +4898,288 @@ pub fn py_analyze_group_homomorphisms(algebra1: &PyAlgebra, algebra2: &PyAlgebra
 pub fn py_analyze_permutation_group_operations(algebra: &PyAlgebra) -> PyResult<PyPermutationGroupOperations> {
     let analysis = analyze_permutation_group_operations_from_algebra(&algebra.inner).map_err(map_uacalc_error)?;
     Ok(PyPermutationGroupOperations { inner: analysis })
+}
+
+// ============================================================================
+// Polymorphism Bindings
+// ============================================================================
+
+/// Python wrapper for Polymorphism
+#[pyclass(name = "Polymorphism")]
+pub struct PyPolymorphism {
+    inner: Polymorphism,
+}
+
+impl<'py> FromPyObject<'py> for PyPolymorphism {
+    fn extract(ob: &'py PyAny) -> PyResult<Self> {
+        // This is a simplified implementation - in practice, you'd need to handle
+        // the actual conversion from Python objects
+        Err(PyValueError::new_err("Cannot extract PyPolymorphism from arbitrary Python object"))
+    }
+}
+
+#[pymethods]
+impl PyPolymorphism {
+    #[new]
+    fn new(function_table: Vec<usize>, arity: usize, set_size: usize) -> PyResult<Self> {
+        let polymorphism = Polymorphism::new(function_table, arity, set_size).map_err(map_uacalc_error)?;
+        Ok(Self { inner: polymorphism })
+    }
+
+    #[getter]
+    fn function_table(&self) -> Vec<usize> {
+        self.inner.function_table.clone()
+    }
+
+    #[getter]
+    fn arity(&self) -> usize {
+        self.inner.arity
+    }
+
+    #[getter]
+    fn set_size(&self) -> usize {
+        self.inner.set_size
+    }
+
+    fn value(&self, args: Vec<usize>) -> PyResult<usize> {
+        self.inner.value(&args).map_err(map_uacalc_error)
+    }
+
+    fn is_idempotent(&self) -> bool {
+        self.inner.is_idempotent()
+    }
+
+    fn is_commutative(&self) -> bool {
+        self.inner.is_commutative()
+    }
+
+    fn is_associative(&self) -> bool {
+        self.inner.is_associative()
+    }
+
+    fn to_operation(&self, symbol: &str) -> PyResult<PyOperation> {
+        let operation = self.inner.to_operation(symbol).map_err(map_uacalc_error)?;
+        Ok(PyOperation { inner: Arc::new(Mutex::new(operation)) })
+    }
+
+    fn __repr__(&self) -> String {
+        format!("Polymorphism(arity={}, set_size={})", self.inner.arity, self.inner.set_size)
+    }
+}
+
+/// Python wrapper for PolymorphismType
+#[pyclass(name = "PolymorphismType")]
+pub struct PyPolymorphismType {
+    inner: PolymorphismType,
+}
+
+#[pymethods]
+impl PyPolymorphismType {
+    #[new]
+    fn new(poly_type: &str) -> PyResult<Self> {
+        let inner = match poly_type.to_lowercase().as_str() {
+            "majority" => PolymorphismType::Majority,
+            "minority" => PolymorphismType::Minority,
+            "semilattice" => PolymorphismType::Semilattice,
+            "maltsev" => PolymorphismType::Maltsev,
+            "general" => PolymorphismType::General,
+            _ => return Err(PyValueError::new_err(format!("Unknown polymorphism type: {}", poly_type))),
+        };
+        Ok(Self { inner })
+    }
+
+    fn __repr__(&self) -> String {
+        match &self.inner {
+            PolymorphismType::Majority => "PolymorphismType.MAJORITY",
+            PolymorphismType::Minority => "PolymorphismType.MINORITY",
+            PolymorphismType::Semilattice => "PolymorphismType.SEMILATTICE",
+            PolymorphismType::Maltsev => "PolymorphismType.MALTSEV",
+            PolymorphismType::General => "PolymorphismType.GENERAL",
+        }.to_string()
+    }
+}
+
+/// Python wrapper for PolymorphismAnalysis
+#[pyclass(name = "PolymorphismAnalysis")]
+pub struct PyPolymorphismAnalysis {
+    inner: PolymorphismAnalysis,
+}
+
+#[pymethods]
+impl PyPolymorphismAnalysis {
+    #[getter]
+    fn unary_polymorphisms(&self) -> Vec<PyPolymorphism> {
+        self.inner.unary_polymorphisms.iter()
+            .map(|p| PyPolymorphism { inner: p.clone() })
+            .collect()
+    }
+
+    #[getter]
+    fn binary_polymorphisms(&self) -> Vec<PyPolymorphism> {
+        self.inner.binary_polymorphisms.iter()
+            .map(|p| PyPolymorphism { inner: p.clone() })
+            .collect()
+    }
+
+    #[getter]
+    fn arity_counts(&self) -> std::collections::HashMap<usize, usize> {
+        self.inner.arity_counts.clone()
+    }
+
+    #[getter]
+    fn special_types(&self) -> std::collections::HashMap<String, bool> {
+        self.inner.special_types.iter()
+            .map(|(k, v)| (format!("{:?}", k), *v))
+            .collect()
+    }
+
+    #[getter]
+    fn properties(&self) -> PyPolymorphismProperties {
+        PyPolymorphismProperties { inner: self.inner.properties.clone() }
+    }
+
+    fn __repr__(&self) -> String {
+        format!("PolymorphismAnalysis(unary={}, binary={})", 
+                self.inner.unary_polymorphisms.len(), 
+                self.inner.binary_polymorphisms.len())
+    }
+}
+
+/// Python wrapper for PolymorphismProperties
+#[pyclass(name = "PolymorphismProperties")]
+pub struct PyPolymorphismProperties {
+    inner: uacalc_core::polymorphisms::PolymorphismProperties,
+}
+
+#[pymethods]
+impl PyPolymorphismProperties {
+    #[getter]
+    fn idempotent_count(&self) -> usize {
+        self.inner.idempotent_count
+    }
+
+    #[getter]
+    fn commutative_count(&self) -> usize {
+        self.inner.commutative_count
+    }
+
+    #[getter]
+    fn associative_count(&self) -> usize {
+        self.inner.associative_count
+    }
+
+    #[getter]
+    fn max_arity(&self) -> usize {
+        self.inner.max_arity
+    }
+
+    #[getter]
+    fn min_arity(&self) -> usize {
+        self.inner.min_arity
+    }
+
+    fn __repr__(&self) -> String {
+        format!("PolymorphismProperties(idempotent={}, commutative={}, associative={})", 
+                self.inner.idempotent_count, 
+                self.inner.commutative_count, 
+                self.inner.associative_count)
+    }
+}
+
+/// Python wrapper for PolymorphismDetector
+#[pyclass(name = "PolymorphismDetector")]
+pub struct PyPolymorphismDetector {
+    inner: PolymorphismDetector,
+}
+
+#[pymethods]
+impl PyPolymorphismDetector {
+    #[new]
+    fn new(partitions: Vec<PyPartition>) -> PyResult<Self> {
+        let rust_partitions: Vec<Arc<dyn uacalc_core::partition::Partition>> = 
+            partitions.into_iter().map(|p| Arc::new(p.inner) as Arc<dyn uacalc_core::partition::Partition>).collect();
+        let detector = PolymorphismDetector::new(rust_partitions).map_err(map_uacalc_error)?;
+        Ok(Self { inner: detector })
+    }
+
+    fn find_unary_polymorphisms(&self) -> PyResult<Vec<PyPolymorphism>> {
+        let polymorphisms = self.inner.find_unary_polymorphisms().map_err(map_uacalc_error)?;
+        Ok(polymorphisms.into_iter().map(|p| PyPolymorphism { inner: p }).collect())
+    }
+
+    fn find_binary_polymorphisms(&self) -> PyResult<Vec<PyPolymorphism>> {
+        let polymorphisms = self.inner.find_binary_polymorphisms().map_err(map_uacalc_error)?;
+        Ok(polymorphisms.into_iter().map(|p| PyPolymorphism { inner: p }).collect())
+    }
+
+    fn __repr__(&self) -> String {
+        format!("PolymorphismDetector")
+    }
+}
+
+/// Find unary polymorphisms that respect given partitions
+#[pyfunction]
+pub fn py_find_unary_polymorphisms(partitions: &PyAny) -> PyResult<Vec<PyPolymorphism>> {
+    // Extract partitions from Python list
+    let py_list = partitions.downcast::<PyList>()?;
+    
+    let mut rust_partitions = Vec::new();
+    for item in py_list.iter() {
+        let py_partition = item.extract::<PyPartition>()?;
+        rust_partitions.push(Arc::new(py_partition.inner) as Arc<dyn uacalc_core::partition::Partition>);
+    }
+    
+    let polymorphisms = find_unary_polymorphisms(&rust_partitions).map_err(map_uacalc_error)?;
+    Ok(polymorphisms.into_iter().map(|p| PyPolymorphism { inner: p }).collect())
+}
+
+/// Find binary polymorphisms that respect given partitions
+#[pyfunction]
+pub fn py_find_binary_polymorphisms(partitions: Vec<PyPartition>) -> PyResult<Vec<PyPolymorphism>> {
+    let rust_partitions: Vec<Arc<dyn uacalc_core::partition::Partition>> = 
+        partitions.into_iter().map(|p| Arc::new(p.inner) as Arc<dyn uacalc_core::partition::Partition>).collect();
+    let polymorphisms = find_binary_polymorphisms(&rust_partitions).map_err(map_uacalc_error)?;
+    Ok(polymorphisms.into_iter().map(|p| PyPolymorphism { inner: p }).collect())
+}
+
+/// Analyze polymorphisms for an algebra
+#[pyfunction]
+pub fn py_analyze_polymorphisms(algebra: &PyAlgebra) -> PyResult<PyPolymorphismAnalysis> {
+    let analysis = analyze_polymorphisms(&algebra.inner).map_err(map_uacalc_error)?;
+    Ok(PyPolymorphismAnalysis { inner: analysis })
+}
+
+/// Create an algebra from polymorphisms
+#[pyfunction]
+pub fn py_create_polymorphism_algebra(polymorphisms: Vec<PyPolymorphism>, name: &str) -> PyResult<PyAlgebra> {
+    let rust_polymorphisms: Vec<Polymorphism> = 
+        polymorphisms.into_iter().map(|p| p.inner).collect();
+    let algebra = create_polymorphism_algebra(&rust_polymorphisms, name).map_err(map_uacalc_error)?;
+    Ok(PyAlgebra { inner: algebra })
+}
+
+/// Check if an algebra has a majority polymorphism
+#[pyfunction]
+pub fn py_has_majority_polymorphism(algebra: &PyAlgebra) -> PyResult<bool> {
+    has_majority_polymorphism(&algebra.inner).map_err(map_uacalc_error)
+}
+
+/// Check if an algebra has a minority polymorphism
+#[pyfunction]
+pub fn py_has_minority_polymorphism(algebra: &PyAlgebra) -> PyResult<bool> {
+    has_minority_polymorphism(&algebra.inner).map_err(map_uacalc_error)
+}
+
+/// Check if an algebra has a semilattice polymorphism
+#[pyfunction]
+pub fn py_has_semilattice_polymorphism(algebra: &PyAlgebra) -> PyResult<bool> {
+    has_semilattice_polymorphism(&algebra.inner).map_err(map_uacalc_error)
+}
+
+/// Check if an algebra has a Maltsev polymorphism
+#[pyfunction]
+pub fn py_has_maltsev_polymorphism(algebra: &PyAlgebra) -> PyResult<bool> {
+    has_maltsev_polymorphism(&algebra.inner).map_err(map_uacalc_error)
 }
 
 // Re-export memory functions
