@@ -2901,6 +2901,106 @@ impl PyBinaryRelation {
             .is_equivalence()
             .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))
     }
+
+    /// Check if the relation contains a pair (alias for contains to mirror Java)
+    fn is_related(&self, a: usize, b: usize) -> PyResult<bool> {
+        self.contains(a, b)
+    }
+
+    /// Get all pairs in the relation (mirrors Java getPairs)
+    fn get_pairs(&self) -> Vec<(usize, usize)> {
+        self.pairs()
+    }
+
+    /// Union with another relation
+    fn union(&self, other: &PyBinaryRelation) -> PyResult<PyBinaryRelation> {
+        let result = self.inner
+            .union(&other.inner)
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
+        // Convert Box<dyn BinaryRelation> to BasicBinaryRelation by extracting pairs
+        let pairs = result.pairs();
+        let size = result.size();
+        let basic_relation = BasicBinaryRelation::from_pairs(size, pairs)
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
+        Ok(PyBinaryRelation { inner: basic_relation })
+    }
+
+    /// Intersection with another relation
+    fn intersection(&self, other: &PyBinaryRelation) -> PyResult<PyBinaryRelation> {
+        let result = self.inner
+            .intersection(&other.inner)
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
+        // Convert Box<dyn BinaryRelation> to BasicBinaryRelation by extracting pairs
+        let pairs = result.pairs();
+        let size = result.size();
+        let basic_relation = BasicBinaryRelation::from_pairs(size, pairs)
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
+        Ok(PyBinaryRelation { inner: basic_relation })
+    }
+
+    /// Composition with another relation (mirrors Java compose)
+    fn compose(&self, other: &PyBinaryRelation) -> PyResult<PyBinaryRelation> {
+        let result = self.inner
+            .compose(&other.inner)
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
+        // Convert Box<dyn BinaryRelation> to BasicBinaryRelation by extracting pairs
+        let pairs = result.pairs();
+        let size = result.size();
+        let basic_relation = BasicBinaryRelation::from_pairs(size, pairs)
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
+        Ok(PyBinaryRelation { inner: basic_relation })
+    }
+
+    /// Composition with another relation
+    fn composition(&self, other: &PyBinaryRelation) -> PyResult<PyBinaryRelation> {
+        self.compose(other)
+    }
+
+    /// Check if relation contains all given pairs
+    fn contains_all(&self, pairs: Vec<(usize, usize)>) -> PyResult<bool> {
+        self.inner
+            .contains_all(&pairs)
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))
+    }
+
+    /// Add all given pairs to the relation
+    fn add_all(&mut self, pairs: Vec<(usize, usize)>) -> PyResult<()> {
+        self.inner
+            .add_all(&pairs)
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))
+    }
+
+    /// Create the identity relation
+    #[staticmethod]
+    fn identity(size: usize) -> PyResult<PyBinaryRelation> {
+        Ok(PyBinaryRelation {
+            inner: BasicBinaryRelation::identity(size),
+        })
+    }
+
+    /// Create the universal relation
+    #[staticmethod]
+    fn universal(size: usize) -> PyResult<PyBinaryRelation> {
+        Ok(PyBinaryRelation {
+            inner: BasicBinaryRelation::universal(size),
+        })
+    }
+
+    /// Create an empty relation
+    #[staticmethod]
+    fn empty(size: usize) -> PyResult<PyBinaryRelation> {
+        Ok(PyBinaryRelation {
+            inner: BasicBinaryRelation::empty(size),
+        })
+    }
+
+    /// Create a binary relation from a list of pairs
+    #[staticmethod]
+    fn from_pairs(size: usize, pairs: Vec<(usize, usize)>) -> PyResult<PyBinaryRelation> {
+        let relation = BasicBinaryRelation::from_pairs(size, pairs)
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
+        Ok(PyBinaryRelation { inner: relation })
+    }
 }
 
 /// Helper function to create an algebra

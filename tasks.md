@@ -266,9 +266,9 @@ This document outlines the tasks needed to implement full compatibility between 
 - [x] Test permutation group properties
 
 #### Subtask 10.1.3: `test_binary_relation_compatibility.py`
-- [ ] Remove mock functions and implement binary relations
-- [ ] Implement relation operations and properties
-- [ ] Test binary relation functionality
+- [x] Remove mock functions and implement binary relations
+- [x] Implement relation operations and properties
+- [x] Test binary relation functionality
 
 #### Subtask 10.1.4: `test_partition_compatibility.py`
 - [x] Remove mock functions and implement partition operations
