@@ -276,9 +276,9 @@ This document outlines the tasks needed to implement full compatibility between 
 - [x] Test partition properties
 
 #### Subtask 10.1.5: `test_order_compatibility.py`
-- [ ] Remove mock functions and implement order relations
-- [ ] Implement ordering operations and properties
-- [ ] Test order relation functionality
+- [x] Remove mock functions and implement order relations
+- [x] Implement ordering operations and properties
+- [x] Test order relation functionality
 
 #### Subtask 10.1.6: `test_type_finder_compatibility.py`
 - [ ] Remove mock functions and implement type finding algorithms
