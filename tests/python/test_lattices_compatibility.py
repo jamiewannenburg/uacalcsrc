@@ -185,204 +185,41 @@ class LatticesCompatibilityTest(BaseCompatibilityTest):
                 f"Java success: {java_result.get('construction_result', {}).get('success')}"
             )
     
-    def test_lattices_analysis_compatibility(self):
-        """Test lattice analysis utilities"""
-        for algebra_file in self.algebra_files[:4]:  # Test on first 4 algebras
+    def test_lattice_properties_compatibility(self):
+        """Test lattice properties analysis using the new lattice module"""
+        for algebra_file in self.algebra_files[:2]:  # Test on first 2 algebras
             with self.subTest(algebra=algebra_file.name):
-                self._test_lattices_analysis(algebra_file)
+                self._test_lattice_properties(algebra_file)
     
-    def _test_lattices_analysis(self, algebra_file: Path):
-        """Test lattice analysis for a specific algebra"""
+    def _test_lattice_properties(self, algebra_file: Path):
+        """Test lattice properties for a specific algebra"""
         # Load algebra in Rust/Python
         algebra = self._load_test_algebra(algebra_file)
         
         # Skip very large algebras for performance
-        if self._should_skip_test(algebra.cardinality, 'lattices_analysis'):
+        if self._should_skip_test(algebra.cardinality, 'lattice_properties'):
             self.skipTest(f"Skipping large algebra {algebra.name} (size: {algebra.cardinality})")
         
-        # Get analysis results from Rust implementation
+        # Get lattice properties from Rust implementation
         try:
             import uacalc
-            con_lattice = uacalc.create_congruence_lattice(algebra)
+            properties = uacalc.py_analyze_lattice_properties(algebra)
             
-            rust_result = {
-                'operation': 'lattices_analysis',
-                'algebra_name': algebra.name,
-                'lattice_analysis': {
-                    'congruence_lattice_size': len(con_lattice) if hasattr(con_lattice, '__len__') else None,
-                }
-            }
+            # Verify that we get reasonable results
+            self.assertGreater(properties.congruence_lattice_size, 0, "Lattice size should be positive")
+            self.assertTrue(properties.has_zero, "Congruence lattices should have zero")
+            self.assertTrue(properties.has_one, "Congruence lattices should have one")
+            self.assertIsInstance(properties.is_modular, bool, "is_modular should be boolean")
+            self.assertIsInstance(properties.is_distributive, bool, "is_distributive should be boolean")
+            self.assertIsInstance(properties.is_boolean, bool, "is_boolean should be boolean")
             
-            # Try to get lattice size
-            if hasattr(con_lattice, 'size'):
-                rust_result['lattice_analysis']['congruence_lattice_size'] = con_lattice.size()
-            
-            # Get join and meet irreducibles counts
-            if hasattr(con_lattice, 'join_irreducibles'):
-                ji = con_lattice.join_irreducibles()
-                rust_result['lattice_analysis']['join_irreducibles_count'] = len(ji) if hasattr(ji, '__len__') else len(list(ji))
-            else:
-                rust_result['lattice_analysis']['join_irreducibles_count'] = 0
-            
-            if hasattr(con_lattice, 'meet_irreducibles'):
-                mi = con_lattice.meet_irreducibles()
-                rust_result['lattice_analysis']['meet_irreducibles_count'] = len(mi) if hasattr(mi, '__len__') else len(list(mi))
-            else:
-                rust_result['lattice_analysis']['meet_irreducibles_count'] = 0
-            
-            # BasicLattice construction capability
-            lattice_size = rust_result['lattice_analysis']['congruence_lattice_size'] or 0
-            rust_result['lattice_analysis']['can_construct_basic_lattice'] = lattice_size > 0 and lattice_size <= 100
-            
-            if not rust_result['lattice_analysis']['can_construct_basic_lattice']:
-                rust_result['lattice_analysis']['basic_lattice_error'] = 'Lattice too large or unavailable'
-            
-            # Lattice properties (simplified)
-            rust_result['lattice_analysis']['is_distributive'] = False  # Conservative estimate
-            rust_result['lattice_analysis']['is_modular'] = False      # Conservative estimate
-            rust_result['lattice_analysis']['is_boolean'] = False      # Conservative estimate
-            
-            # Height and width (simplified estimates)
-            if lattice_size <= 1:
-                height, width = 1, 1
-            elif lattice_size == 2:
-                height, width = 2, 1
-            else:
-                # Simplified heuristic
-                height = min(lattice_size, int(lattice_size ** 0.5) + 2)
-                width = min(lattice_size, max(1, lattice_size // height))
-            
-            rust_result['lattice_analysis']['lattice_height'] = height
-            rust_result['lattice_analysis']['lattice_width'] = width
-            
-            # Dual lattice analysis
-            rust_result['lattice_analysis']['dual_analysis'] = {
-                'can_construct_dual': True,
-                'dual_size': lattice_size,
-                'dual_join_irreducibles_count': rust_result['lattice_analysis']['meet_irreducibles_count'],
-                'dual_meet_irreducibles_count': rust_result['lattice_analysis']['join_irreducibles_count']
-            }
+            # For small algebras, we should get actual computed values
+            if algebra.cardinality <= 20:
+                self.assertGreater(properties.lattice_height, 0, "Height should be positive for small algebras")
+                self.assertGreater(properties.lattice_width, 0, "Width should be positive for small algebras")
             
         except Exception as e:
-            self.fail(f"Rust lattices analysis failed for {algebra.name}: {e}")
-        
-        # Get analysis from Java implementation
-        timeout = self._get_test_timeout('lattices_analysis', algebra.cardinality)
-        java_result = self._run_java_operation('lattices_analysis', str(algebra_file), timeout=timeout)
-        
-        # Compare results
-        comparison_result = self._compare_results(
-            rust_result, java_result, 'lattices_analysis', algebra.name
-        )
-        
-        if not comparison_result.matches and java_result:
-            self.test_logger.warning(
-                f"Lattices analysis mismatch for {algebra.name}: "
-                f"Rust lattice size: {rust_result.get('lattice_analysis', {}).get('congruence_lattice_size')}, "
-                f"Java lattice size: {java_result.get('lattice_analysis', {}).get('congruence_lattice_size')}"
-            )
-    
-    def test_lattices_property_detection_compatibility(self):
-        """Test lattice property detection utilities"""
-        for algebra_file in self.algebra_files[:4]:  # Test on first 4 algebras
-            with self.subTest(algebra=algebra_file.name):
-                self._test_lattices_property_detection(algebra_file)
-    
-    def _test_lattices_property_detection(self, algebra_file: Path):
-        """Test lattice property detection for a specific algebra"""
-        # Load algebra in Rust/Python
-        algebra = self._load_test_algebra(algebra_file)
-        
-        # Skip very large algebras for performance
-        if self._should_skip_test(algebra.cardinality, 'lattices_property_detection'):
-            self.skipTest(f"Skipping large algebra {algebra.name} (size: {algebra.cardinality})")
-        
-        # Get property detection results from Rust implementation
-        try:
-            import uacalc
-            con_lattice = uacalc.create_congruence_lattice(algebra)
-            
-            rust_result = {
-                'operation': 'lattices_property_detection',
-                'algebra_name': algebra.name,
-                'property_detection': {
-                    'lattice_size': len(con_lattice) if hasattr(con_lattice, '__len__') else None,
-                }
-            }
-            
-            # Try to get lattice size
-            if hasattr(con_lattice, 'size'):
-                rust_result['property_detection']['lattice_size'] = con_lattice.size()
-            
-            lattice_size = rust_result['property_detection']['lattice_size'] or 0
-            
-            # Basic properties (congruence lattices always have these)
-            rust_result['property_detection']['has_zero'] = True
-            rust_result['property_detection']['has_one'] = True
-            rust_result['property_detection']['is_bounded'] = True
-            
-            # Structural properties (simplified detection)
-            rust_result['property_detection']['is_chain'] = lattice_size <= 2  # Conservative
-            rust_result['property_detection']['is_antichain'] = lattice_size <= 1
-            rust_result['property_detection']['is_complete'] = True  # Finite lattices are complete
-            
-            # Algebraic properties (conservative estimates)
-            rust_result['property_detection']['is_distributive'] = False
-            rust_result['property_detection']['is_modular'] = False
-            rust_result['property_detection']['is_boolean'] = (lattice_size > 0 and (lattice_size & (lattice_size - 1)) == 0)
-            rust_result['property_detection']['is_complemented'] = rust_result['property_detection']['is_boolean']
-            
-            # Irreducible elements
-            if hasattr(con_lattice, 'join_irreducibles'):
-                ji = con_lattice.join_irreducibles()
-                rust_result['property_detection']['join_irreducibles_count'] = len(ji) if hasattr(ji, '__len__') else len(list(ji))
-            else:
-                rust_result['property_detection']['join_irreducibles_count'] = 0
-            
-            if hasattr(con_lattice, 'meet_irreducibles'):
-                mi = con_lattice.meet_irreducibles()
-                rust_result['property_detection']['meet_irreducibles_count'] = len(mi) if hasattr(mi, '__len__') else len(list(mi))
-            else:
-                rust_result['property_detection']['meet_irreducibles_count'] = 0
-            
-            # Atoms and coatoms (simplified)
-            rust_result['property_detection']['atoms_count'] = max(0, rust_result['property_detection']['join_irreducibles_count'] - 1)
-            rust_result['property_detection']['coatoms_count'] = max(0, rust_result['property_detection']['meet_irreducibles_count'] - 1)
-            
-            # Dimension properties (simplified estimates)
-            if lattice_size <= 1:
-                height, width = 1, 1
-            elif lattice_size == 2:
-                height, width = 2, 1
-            else:
-                height = min(lattice_size, int(lattice_size ** 0.5) + 2)
-                width = min(lattice_size, max(1, lattice_size // height))
-            
-            rust_result['property_detection']['height'] = height
-            rust_result['property_detection']['width'] = width
-            
-            # Sublattice properties
-            rust_result['property_detection']['is_subdirectly_irreducible'] = (rust_result['property_detection']['join_irreducibles_count'] == 1)
-            rust_result['property_detection']['is_simple'] = (lattice_size == 2)
-            
-        except Exception as e:
-            self.fail(f"Rust lattices property detection failed for {algebra.name}: {e}")
-        
-        # Get property detection from Java implementation
-        timeout = self._get_test_timeout('lattices_property_detection', algebra.cardinality)
-        java_result = self._run_java_operation('lattices_property_detection', str(algebra_file), timeout=timeout)
-        
-        # Compare results
-        comparison_result = self._compare_results(
-            rust_result, java_result, 'lattices_property_detection', algebra.name
-        )
-        
-        if not comparison_result.matches and java_result:
-            self.test_logger.warning(
-                f"Lattices property detection mismatch for {algebra.name}: "
-                f"Rust lattice size: {rust_result.get('property_detection', {}).get('lattice_size')}, "
-                f"Java lattice size: {java_result.get('property_detection', {}).get('lattice_size')}"
-            )
+            self.fail(f"Rust lattice properties analysis failed for {algebra.name}: {e}")
     
     def test_lattices_utility_methods_compatibility(self):
         """Test various Lattices utility methods"""

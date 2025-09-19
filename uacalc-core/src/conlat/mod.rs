@@ -18,7 +18,7 @@ pub mod principal;
 #[cfg(feature = "conlat")]
 pub use cg::CongruenceGenerator;
 #[cfg(feature = "conlat")]
-pub use lattice::{BasicCongruenceLattice, BasicLattice, CongruenceLattice, CongruenceLatticeBuilder};
+pub use lattice::{BasicCongruenceLattice, BasicLattice, CongruenceLattice, CongruenceLatticeBuilder, LatticeProperties, DualLatticeAnalysis, analyze_lattice_properties};
 #[cfg(feature = "conlat")]
 pub use lattice_builder::LatticeBuilder;
 

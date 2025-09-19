@@ -9,7 +9,7 @@ use crate::operation::Operation;
 use crate::term::TermArena;
 use crate::free_algebra::FreeAlgebra;
 use crate::partition::{BasicPartition, Partition};
-use crate::conlat::cg;
+use crate::conlat::{cg, LatticeProperties};
 use std::sync::{Arc, Mutex};
 use std::collections::HashSet;
 use std::ops::Deref;
@@ -103,49 +103,6 @@ pub struct AdvancedProperties {
     pub analysis_depth: String,
 }
 
-/// Lattice properties analysis matching Java implementation
-#[derive(Debug, Clone)]
-pub struct LatticeProperties {
-    /// Size of the congruence lattice
-    pub congruence_lattice_size: usize,
-    /// Number of join irreducible congruences
-    pub join_irreducibles_count: usize,
-    /// Number of meet irreducible congruences
-    pub meet_irreducibles_count: usize,
-    /// Height of the lattice
-    pub lattice_height: usize,
-    /// Width of the lattice
-    pub lattice_width: usize,
-    /// Whether the lattice is modular
-    pub is_modular: bool,
-    /// Whether the lattice is distributive
-    pub is_distributive: bool,
-    /// Whether the lattice is Boolean
-    pub is_boolean: bool,
-    /// Whether the lattice has a zero element
-    pub has_zero: bool,
-    /// Whether the lattice has a one element
-    pub has_one: bool,
-    /// Whether we can construct a BasicLattice from the congruence lattice
-    pub can_construct_basic_lattice: bool,
-    /// Error message if basic lattice construction fails
-    pub basic_lattice_error: Option<String>,
-    /// Dual lattice analysis
-    pub dual_analysis: DualLatticeAnalysis,
-}
-
-/// Dual lattice analysis matching Java implementation
-#[derive(Debug, Clone)]
-pub struct DualLatticeAnalysis {
-    /// Whether we can construct the dual lattice
-    pub can_construct_dual: bool,
-    /// Size of the dual lattice (same as original)
-    pub dual_size: usize,
-    /// Number of join irreducibles in dual (equals meet irreducibles in original)
-    pub dual_join_irreducibles_count: usize,
-    /// Number of meet irreducibles in dual (equals join irreducibles in original)
-    pub dual_meet_irreducibles_count: usize,
-}
 
 /// Main Malcev analyzer
 pub struct MalcevAnalyzer {
@@ -3211,6 +3168,30 @@ impl MalcevAnalyzer {
         Ok(atoms)
     }
 
+    /// Find coatoms (congruences covered by the universal congruence)
+    fn find_coatoms(&self, congruences: &[BasicPartition]) -> UACalcResult<Vec<BasicPartition>> {
+        let mut coatoms = Vec::new();
+        
+        // Find the universal congruence (the one with the fewest blocks)
+        let universal = congruences.iter()
+            .min_by_key(|c| c.num_blocks())
+            .ok_or_else(|| UACalcError::InvalidOperation {
+                message: "No universal congruence found".to_string(),
+            })?;
+        
+        // Find congruences that are covered by the universal
+        for congruence in congruences {
+            if congruence.num_blocks() == universal.num_blocks() + 1 {
+                // Check if the universal covers this congruence
+                if self.covers(universal, congruence)? {
+                    coatoms.push(congruence.clone());
+                }
+            }
+        }
+        
+        Ok(coatoms)
+    }
+
     /// Check if congruence a covers congruence b (a is immediately above b in the lattice)
     fn covers(&self, a: &BasicPartition, b: &BasicPartition) -> UACalcResult<bool> {
         // a covers b if a > b and there's no congruence strictly between them
@@ -3463,220 +3444,6 @@ impl MalcevAnalyzer {
         Ok(properties)
     }
 
-    /// Analyze lattice properties matching Java implementation
-    pub fn analyze_lattice_properties(&self, algebra: &dyn SmallAlgebra) -> UACalcResult<LatticeProperties> {
-        let mut properties = LatticeProperties {
-            congruence_lattice_size: 0,
-            join_irreducibles_count: 0,
-            meet_irreducibles_count: 0,
-            lattice_height: 0,
-            lattice_width: 0,
-            is_modular: false,
-            is_distributive: false,
-            is_boolean: false,
-            has_zero: true,  // Congruence lattices always have zero
-            has_one: true,   // Congruence lattices always have one
-            can_construct_basic_lattice: false,
-            basic_lattice_error: None,
-            dual_analysis: DualLatticeAnalysis {
-                can_construct_dual: true,
-                dual_size: 0,
-                dual_join_irreducibles_count: 0,
-                dual_meet_irreducibles_count: 0,
-            },
-        };
-
-        // For trivial algebra
-        if algebra.cardinality() == 1 {
-            properties.congruence_lattice_size = 1;
-            properties.join_irreducibles_count = 0;
-            properties.meet_irreducibles_count = 0;
-            properties.lattice_height = 1;
-            properties.lattice_width = 1;
-            properties.is_modular = true;
-            properties.is_distributive = true;
-            properties.is_boolean = true;
-            properties.can_construct_basic_lattice = true;
-            properties.dual_analysis = DualLatticeAnalysis {
-                can_construct_dual: true,
-                dual_size: 1,
-                dual_join_irreducibles_count: 0,
-                dual_meet_irreducibles_count: 0,
-            };
-            return Ok(properties);
-        }
-
-        // For small algebras, compute actual lattice properties
-        if algebra.cardinality() <= 20 {
-            match self.build_congruence_lattice(algebra) {
-                Ok(congruences) => {
-                    properties.congruence_lattice_size = congruences.len();
-                    
-                    // Find join irreducibles
-                    match self.find_join_irreducibles(&congruences) {
-                        Ok(join_irreducibles) => {
-                            properties.join_irreducibles_count = join_irreducibles.len();
-                        }
-                        Err(_) => {
-                            properties.join_irreducibles_count = 0;
-                        }
-                    }
-                    
-                    // Find meet irreducibles
-                    match self.find_meet_irreducibles(&congruences) {
-                        Ok(meet_irreducibles) => {
-                            properties.meet_irreducibles_count = meet_irreducibles.len();
-                        }
-                        Err(_) => {
-                            properties.meet_irreducibles_count = 0;
-                        }
-                    }
-                    
-                    // Compute height (length of longest chain)
-                    match self.compute_height(&congruences) {
-                        Ok(height) => {
-                            properties.lattice_height = height;
-                        }
-                        Err(_) => {
-                            properties.lattice_height = 0;
-                        }
-                    }
-                    
-                    // Compute width (size of largest antichain)
-                    match self.compute_width(&congruences) {
-                        Ok(width) => {
-                            properties.lattice_width = width;
-                        }
-                        Err(_) => {
-                            properties.lattice_width = 0;
-                        }
-                    }
-                    
-                    // Check lattice properties using the congruence lattice
-                    match self.check_lattice_properties(&congruences) {
-                        Ok((is_modular, is_distributive, is_boolean)) => {
-                            properties.is_modular = is_modular;
-                            properties.is_distributive = is_distributive;
-                            properties.is_boolean = is_boolean;
-                        }
-                        Err(_) => {
-                            // Fallback to conservative estimates
-                            properties.is_modular = false;
-                            properties.is_distributive = false;
-                            properties.is_boolean = false;
-                        }
-                    }
-                    
-                    // Check if we can construct a BasicLattice (matching Java logic)
-                    if properties.congruence_lattice_size > 0 && properties.congruence_lattice_size <= 100 {
-                        properties.can_construct_basic_lattice = true;
-                    } else {
-                        properties.can_construct_basic_lattice = false;
-                        properties.basic_lattice_error = Some("Lattice too large for BasicLattice construction".to_string());
-                    }
-                    
-                    // Set up dual lattice analysis
-                    properties.dual_analysis = DualLatticeAnalysis {
-                        can_construct_dual: true,
-                        dual_size: properties.congruence_lattice_size,
-                        dual_join_irreducibles_count: properties.meet_irreducibles_count,
-                        dual_meet_irreducibles_count: properties.join_irreducibles_count,
-                    };
-                }
-                Err(_) => {
-                    // Fallback to estimates if congruence lattice computation fails
-                    properties.congruence_lattice_size = 2; // At least identity and universal
-                    properties.join_irreducibles_count = 1;
-                    properties.meet_irreducibles_count = 1;
-                    properties.lattice_height = 2;
-                    properties.lattice_width = 1;
-                    properties.is_modular = true;
-                    properties.is_distributive = true;
-                    properties.is_boolean = true;
-                    properties.can_construct_basic_lattice = true;
-                    properties.dual_analysis = DualLatticeAnalysis {
-                        can_construct_dual: true,
-                        dual_size: 2,
-                        dual_join_irreducibles_count: 1,
-                        dual_meet_irreducibles_count: 1,
-                    };
-                }
-            }
-        } else {
-            // For large algebras, use conservative estimates
-            properties.congruence_lattice_size = 2; // At least identity and universal
-            properties.join_irreducibles_count = 1;
-            properties.meet_irreducibles_count = 1;
-            properties.lattice_height = 2;
-            properties.lattice_width = 1;
-            properties.is_modular = false;
-            properties.is_distributive = false;
-            properties.is_boolean = false;
-            properties.can_construct_basic_lattice = false;
-            properties.basic_lattice_error = Some("Lattice too large for BasicLattice construction".to_string());
-            properties.dual_analysis = DualLatticeAnalysis {
-                can_construct_dual: true,
-                dual_size: 2,
-                dual_join_irreducibles_count: 1,
-                dual_meet_irreducibles_count: 1,
-            };
-        }
-
-        Ok(properties)
-    }
-
-    /// Check lattice properties (modularity, distributivity, Boolean)
-    fn check_lattice_properties(&self, congruences: &[BasicPartition]) -> UACalcResult<(bool, bool, bool)> {
-        // Check lattice properties matching Java implementation
-        let size = congruences.len();
-        
-        if size <= 20 {
-            // For small lattices, use more sophisticated checks
-            let is_distributive = self.check_distributivity(congruences)?;
-            let is_modular = is_distributive || self.check_modularity(congruences)?;
-            // Boolean if size is a power of 2 (matching Java checkCongruenceBoolean)
-            let is_boolean = size > 0 && (size & (size - 1)) == 0;
-            return Ok((is_modular, is_distributive, is_boolean));
-        }
-        
-        // For larger lattices, use conservative estimates
-        let is_modular = false;
-        let is_distributive = false;
-        let is_boolean = false;
-        
-        Ok((is_modular, is_distributive, is_boolean))
-    }
-
-    /// Check if the lattice is distributive
-    fn check_distributivity(&self, congruences: &[BasicPartition]) -> UACalcResult<bool> {
-        // A lattice is distributive if it doesn't contain M3 or N5 as sublattices
-        // For small lattices, we can check this more directly
-        let size = congruences.len();
-        
-        if size <= 2 {
-            return Ok(true); // Small lattices are distributive
-        }
-        
-        // For larger lattices, use a simplified check
-        // This is a heuristic - a full implementation would check for M3 and N5 sublattices
-        Ok(true) // Assume distributive for small lattices
-    }
-
-    /// Check if the lattice is modular
-    fn check_modularity(&self, congruences: &[BasicPartition]) -> UACalcResult<bool> {
-        // A lattice is modular if it doesn't contain N5 as a sublattice
-        // For small lattices, we can check this more directly
-        let size = congruences.len();
-        
-        if size <= 3 {
-            return Ok(true); // Small lattices are modular
-        }
-        
-        // For larger lattices, use a simplified check
-        // This is a heuristic - a full implementation would check for N5 sublattices
-        Ok(true) // Assume modular for small lattices
-    }
-
     /// Check if the algebra has a near unanimity term of given arity
     /// 
     /// A near unanimity term of arity n is a term t(x1, x2, ..., xn) such that:
@@ -3812,8 +3579,7 @@ pub fn analyze_advanced_properties(algebra: &dyn SmallAlgebra) -> UACalcResult<A
 
 /// Analyze lattice properties matching Java implementation
 pub fn analyze_lattice_properties(algebra: &dyn SmallAlgebra) -> UACalcResult<LatticeProperties> {
-    let analyzer = MalcevAnalyzer::new();
-    analyzer.analyze_lattice_properties(algebra)
+    crate::conlat::analyze_lattice_properties(algebra)
 }
 
 #[cfg(test)]

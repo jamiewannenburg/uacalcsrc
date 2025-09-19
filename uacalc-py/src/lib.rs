@@ -10,11 +10,11 @@ use std::sync::Mutex;
 
 use uacalc_core::algebra::{Algebra, BasicAlgebra, SmallAlgebra, Homomorphism, find_homomorphism as rust_find_homomorphism, are_isomorphic as rust_are_isomorphic};
 use uacalc_core::binary_relation::{BasicBinaryRelation, BinaryRelation};
-use uacalc_core::conlat::{BasicCongruenceLattice, BasicLattice, CongruenceLattice as CongruenceLatticeTrait};
+use uacalc_core::conlat::{BasicCongruenceLattice, BasicLattice, CongruenceLattice as CongruenceLatticeTrait, LatticeProperties, DualLatticeAnalysis, analyze_lattice_properties};
 use uacalc_core::error::UACalcError;
 use uacalc_core::malcev::{
-    MalcevAnalyzer, MalcevAnalysis, VarietyAnalysis, TctAnalysis, AdvancedProperties, LatticeProperties, DualLatticeAnalysis,
-    analyze_malcev_conditions, analyze_variety_membership, analyze_tct_type, analyze_advanced_properties, analyze_lattice_properties
+    MalcevAnalyzer, MalcevAnalysis, VarietyAnalysis, TctAnalysis, AdvancedProperties,
+    analyze_malcev_conditions, analyze_variety_membership, analyze_tct_type, analyze_advanced_properties
 };
 use uacalc_core::equation::{Equation, EquationComplexity, EquationProperties, ComplexityLevel};
 use uacalc_core::presentation::{Presentation, PresentationProperties};
@@ -4530,6 +4530,16 @@ impl PyLatticeProperties {
     #[getter]
     fn meet_irreducibles_count(&self) -> usize {
         self.inner.meet_irreducibles_count
+    }
+
+    #[getter]
+    fn atoms_count(&self) -> usize {
+        self.inner.atoms_count
+    }
+
+    #[getter]
+    fn coatoms_count(&self) -> usize {
+        self.inner.coatoms_count
     }
 
     #[getter]
