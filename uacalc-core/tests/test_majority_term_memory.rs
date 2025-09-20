@@ -6,6 +6,11 @@ use std::sync::{Arc, Mutex};
 
 #[test]
 fn test_baker2_majority_term() -> Result<(), Box<dyn std::error::Error>> {
+    use uacalc_core::memory::set_memory_limit;
+    
+    // Set a reasonable memory limit for this test (100MB)
+    set_memory_limit(100 * 1024 * 1024).unwrap();
+    
     println!("Testing Baker2 algebra majority term...");
     
     // Create the Baker2 algebra manually
@@ -76,6 +81,10 @@ fn test_baker2_majority_term() -> Result<(), Box<dyn std::error::Error>> {
     assert_eq!(analysis.has_majority_term, false, "Baker2 should not have a majority term");
     
     println!("\n✓ Correct result: No majority term found (matches Java)");
+    
+    // Reset memory limit to default to avoid affecting other tests
+    use uacalc_core::memory::reset_memory_limit;
+    reset_memory_limit().unwrap();
     
     Ok(())
 }

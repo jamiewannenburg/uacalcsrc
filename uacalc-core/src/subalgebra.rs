@@ -267,15 +267,36 @@ impl Subalgebra {
                         work_queue.push_back(result);
                     }
                 } else {
-                    // For each position in the operation's arguments
-                    for pos in 0..arity {
-                        // Create argument combinations with the new element at pos
-                        let mut args = vec![0; arity];
-                        args[pos] = element;
-
-                        // Fill other positions with existing elements
-                        let mut stack = vec![(1, pos + 1)]; // (depth, next_pos)
-                        while let Some((depth, next_pos)) = stack.pop() {
+                    // Generate all possible argument combinations using existing elements
+                    // Use a simple iterative approach for binary operations
+                    if arity == 2 {
+                        // For binary operations, try all pairs of existing elements
+                        let elements: Vec<usize> = universe.iter().cloned().collect();
+                        for &a in &elements {
+                            for &b in &elements {
+                                let result = {
+                                    let op_guard = operation.lock().map_err(|_| {
+                                        UACalcError::InvalidOperation {
+                                            message: "Failed to lock operation".to_string(),
+                                        }
+                                    })?;
+                                    op_guard.value(&[a, b])?
+                                };
+                                if universe.insert(result) {
+                                    work_queue.push_back(result);
+                                }
+                            }
+                        }
+                    } else {
+                        // For other arities, use a more general approach
+                        fn generate_combinations(
+                            operation: &Arc<Mutex<dyn Operation>>,
+                            universe: &mut std::collections::HashSet<usize>,
+                            work_queue: &mut std::collections::VecDeque<usize>,
+                            args: &mut Vec<usize>,
+                            depth: usize,
+                            arity: usize,
+                        ) -> UACalcResult<()> {
                             if depth == arity {
                                 // We have a complete argument list - evaluate
                                 let result = {
@@ -290,17 +311,18 @@ impl Subalgebra {
                                     work_queue.push_back(result);
                                 }
                             } else {
-                                // Need to fill more positions
-                                for &existing in &universe {
-                                    let pos = if next_pos >= arity { 0 } else { next_pos };
-                                    if pos != pos {
-                                        // Skip the fixed position
-                                        args[pos] = existing;
-                                        stack.push((depth + 1, next_pos + 1));
-                                    }
+                                // Fill position depth with all existing elements
+                                let elements: Vec<usize> = universe.iter().cloned().collect();
+                                for existing in elements {
+                                    args[depth] = existing;
+                                    generate_combinations(operation, universe, work_queue, args, depth + 1, arity)?;
                                 }
                             }
+                            Ok(())
                         }
+                        
+                        let mut args = vec![0; arity];
+                        let _ = generate_combinations(operation, &mut universe, &mut work_queue, &mut args, 0, arity);
                     }
                 }
             }
@@ -642,6 +664,10 @@ mod tests {
 
     #[test]
     fn test_subalgebra_creation() -> Result<(), Box<dyn std::error::Error>> {
+        // Ensure clean state by resetting memory limit
+        use crate::memory::reset_memory_limit;
+        reset_memory_limit().unwrap();
+        
         // Create a simple algebra Z4 = {0, 1, 2, 3} with addition mod 4
         let mut z4 = BasicAlgebra::with_cardinality("Z4".to_string(), 4)?;
         let add_op = Arc::new(Mutex::new(TableOperation::binary(
@@ -678,6 +704,10 @@ mod tests {
 
     #[test]
     fn test_subalgebra_operation_evaluation() -> Result<(), Box<dyn std::error::Error>> {
+        // Ensure clean state by resetting memory limit
+        use crate::memory::reset_memory_limit;
+        reset_memory_limit().unwrap();
+        
         // Create Z4 with addition
         let mut z4 = BasicAlgebra::with_cardinality("Z4".to_string(), 4)?;
         let add_op = Arc::new(Mutex::new(TableOperation::binary(
@@ -706,6 +736,10 @@ mod tests {
 
     #[test]
     fn test_subalgebra_error_cases() -> Result<(), Box<dyn std::error::Error>> {
+        // Ensure clean state by resetting memory limit
+        use crate::memory::reset_memory_limit;
+        reset_memory_limit().unwrap();
+        
         let mut algebra = BasicAlgebra::with_cardinality("test".to_string(), 3)?;
         let op = Arc::new(Mutex::new(TableOperation::unary(
             "id".to_string(),

@@ -596,6 +596,11 @@ mod tests {
 
     #[test]
     fn test_free_algebra_creation() {
+        use crate::memory::set_memory_limit;
+        
+        // Set a reasonable memory limit for this test (50MB)
+        set_memory_limit(50 * 1024 * 1024).unwrap();
+        
         let generators = vec!["x".to_string(), "y".to_string()];
         let variety = VarietyConstraint::Trivial;
         let operation_symbols = vec![
@@ -629,6 +634,11 @@ mod tests {
 
     #[test]
     fn test_free_algebra_with_no_generators() {
+        use crate::memory::set_memory_limit;
+        
+        // Set a reasonable memory limit for this test (50MB)
+        set_memory_limit(50 * 1024 * 1024).unwrap();
+        
         let result = FreeAlgebra::new(
             "Empty".to_string(),
             vec![],

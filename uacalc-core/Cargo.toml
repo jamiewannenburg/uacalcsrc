@@ -53,4 +53,3 @@ lto = "fat"
 codegen-units = 1
 panic = "abort"
 debug = 1
-

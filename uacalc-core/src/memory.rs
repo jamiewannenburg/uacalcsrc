@@ -54,6 +54,11 @@ pub fn get_memory_limit() -> usize {
     MEMORY_LIMIT.load(Ordering::SeqCst)
 }
 
+/// Reset the memory limit to the default (unlimited)
+pub fn reset_memory_limit() -> UACalcResult<()> {
+    set_memory_limit(usize::MAX)
+}
+
 /// Get the currently allocated memory in bytes
 ///
 /// # Returns

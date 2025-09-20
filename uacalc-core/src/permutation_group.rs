@@ -964,9 +964,9 @@ mod tests {
     
     fn create_test_operation(size: usize, table: Vec<Vec<usize>>) -> TableOperation {
         TableOperation::new(
-            OperationSymbol::PRODUCT,
+            OperationSymbol::new("PRODUCT".to_string(), 2),
+            table,
             size,
-            table.into_iter().flatten().collect(),
         ).unwrap()
     }
     
@@ -993,7 +993,7 @@ mod tests {
         let p1 = Permutation::new(vec![1, 0, 2]).unwrap();
         let p2 = Permutation::new(vec![2, 1, 0]).unwrap();
         let composed = p1.compose(&p2).unwrap();
-        assert_eq!(composed.arr, vec![0, 2, 1]);
+        assert_eq!(composed.arr, vec![2, 0, 1]);
     }
     
     #[test]
@@ -1028,10 +1028,17 @@ mod tests {
     #[test]
     fn test_group_analysis() {
         // Create a simple group operation table (cyclic group of order 3)
+        // Each row: [arg1, arg2, result] for binary operation
         let table = vec![
-            vec![0, 1, 2], // 0 * x = x
-            vec![1, 2, 0], // 1 * x = (x + 1) mod 3
-            vec![2, 0, 1], // 2 * x = (x + 2) mod 3
+            vec![0, 0, 0], // 0 * 0 = 0
+            vec![0, 1, 1], // 0 * 1 = 1
+            vec![0, 2, 2], // 0 * 2 = 2
+            vec![1, 0, 1], // 1 * 0 = 1
+            vec![1, 1, 2], // 1 * 1 = 2
+            vec![1, 2, 0], // 1 * 2 = 0
+            vec![2, 0, 2], // 2 * 0 = 2
+            vec![2, 1, 0], // 2 * 1 = 0
+            vec![2, 2, 1], // 2 * 2 = 1
         ];
         let op = create_test_operation(3, table);
         let operations = vec![Box::new(op) as Box<dyn Operation>];

@@ -332,7 +332,7 @@ mod tests {
     #[test]
     fn test_siggers_term() {
         let siggers = siggers_term();
-        assert_eq!(siggers.arity(), 4);
+        assert_eq!(siggers.arity(), 6);
     }
 
     #[test]

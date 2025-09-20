@@ -57,12 +57,27 @@ impl Presentation {
         let mut arena = TermArena::new();
         let mut equations = Vec::new();
 
+        // Create variable mapping from names to indices
+        let mut var_mapping = std::collections::HashMap::new();
+        for (i, var_name) in variables.iter().enumerate() {
+            var_mapping.insert(var_name.clone(), i as u8);
+        }
+
         for (left_str, right_str) in equation_strings {
-            let equation = Equation::from_strings(&mut arena, &left_str, &right_str)?;
+            // Replace variable names with x0, x1, etc. in the strings
+            let normalized_left = Self::_replace_variables(&left_str, &var_mapping);
+            let normalized_right = Self::_replace_variables(&right_str, &var_mapping);
+            
+            let equation = Equation::from_strings(&mut arena, &normalized_left, &normalized_right)?;
             equations.push(equation);
         }
 
-        Self::new(variables, equations)
+        // Create presentation with the shared arena
+        Ok(Self {
+            variables,
+            equations,
+            arena,
+        })
     }
 
     /// Get the variables
@@ -88,12 +103,16 @@ impl Presentation {
             let left_vars = equation.left().variables(&self.arena)?;
             let right_vars = equation.right().variables(&self.arena)?;
             
-            // Convert variable indices to names (assuming x0, x1, x2, ...)
+            // Convert variable indices to original variable names
             for var_idx in left_vars {
-                used_vars.insert(format!("x{}", var_idx));
+                if let Some(var_name) = self.variables.get(var_idx as usize) {
+                    used_vars.insert(var_name.clone());
+                }
             }
             for var_idx in right_vars {
-                used_vars.insert(format!("x{}", var_idx));
+                if let Some(var_name) = self.variables.get(var_idx as usize) {
+                    used_vars.insert(var_name.clone());
+                }
             }
         }
         
@@ -251,7 +270,23 @@ impl Presentation {
             .map(|i| format!("x{}", i))
             .collect();
         
-        Presentation::new(normalized_variables, equations)
+        Ok(Presentation {
+            variables: normalized_variables,
+            equations,
+            arena,
+        })
+    }
+
+    /// Replace variable names in a term string with normalized names
+    fn _replace_variables(term_str: &str, var_mapping: &std::collections::HashMap<String, u8>) -> String {
+        let mut result = term_str.to_string();
+
+        for (var_name, var_idx) in var_mapping {
+            let normalized_name = format!("x{}", var_idx);
+            result = result.replace(var_name, &normalized_name);
+        }
+
+        result
     }
 
     /// Apply variable mapping to a term string
