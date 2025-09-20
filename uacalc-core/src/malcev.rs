@@ -45,22 +45,6 @@ pub struct MalcevAnalysis {
     pub analysis_completed: bool,
 }
 
-/// Results from variety membership analysis
-#[derive(Debug, Clone)]
-pub struct VarietyAnalysis {
-    /// Whether the algebra is in the variety of groups
-    pub is_group: bool,
-    /// Whether the algebra is in the variety of lattices
-    pub is_lattice: bool,
-    /// Whether the algebra is in the variety of Boolean algebras
-    pub is_boolean_algebra: bool,
-    /// Whether the algebra is in the variety of semilattices
-    pub is_semilattice: bool,
-    /// Whether the algebra is in the variety of quasigroups
-    pub is_quasigroup: bool,
-    /// Total number of varieties the algebra belongs to
-    pub variety_count: usize,
-}
 
 
 /// Advanced algebraic properties analysis
@@ -133,510 +117,7 @@ impl MalcevAnalyzer {
         Ok(false)
     }
 
-    /// Analyze variety membership for an algebra
-    pub fn analyze_variety_membership(&self, algebra: &dyn SmallAlgebra) -> UACalcResult<VarietyAnalysis> {
-        eprintln!("DEBUG: Starting variety membership analysis");
-        
-        let mut analysis = VarietyAnalysis {
-            is_group: false,
-            is_lattice: false,
-            is_boolean_algebra: false,
-            is_semilattice: false,
-            is_quasigroup: false,
-            variety_count: 0,
-        };
 
-        // Check group variety: exactly one binary operation with group properties
-        eprintln!("DEBUG: Checking group variety");
-        analysis.is_group = self.check_group_variety(algebra)?;
-        eprintln!("DEBUG: Group variety result: {}", analysis.is_group);
-
-        // Check lattice variety: exactly two binary operations
-        eprintln!("DEBUG: Checking lattice variety");
-        analysis.is_lattice = self.check_lattice_variety(algebra)?;
-        eprintln!("DEBUG: Lattice variety result: {}", analysis.is_lattice);
-
-        // Check Boolean algebra variety: two binary, one unary, two nullary operations
-        eprintln!("DEBUG: Checking Boolean algebra variety");
-        analysis.is_boolean_algebra = self.check_boolean_algebra_variety(algebra)?;
-        eprintln!("DEBUG: Boolean algebra variety result: {}", analysis.is_boolean_algebra);
-
-        // Check semilattice variety: exactly one binary operation
-        eprintln!("DEBUG: Checking semilattice variety");
-        analysis.is_semilattice = self.check_semilattice_variety(algebra)?;
-        eprintln!("DEBUG: Semilattice variety result: {}", analysis.is_semilattice);
-
-        // Check quasigroup variety: exactly one binary operation
-        eprintln!("DEBUG: Checking quasigroup variety");
-        analysis.is_quasigroup = self.check_quasigroup_variety(algebra)?;
-        eprintln!("DEBUG: Quasigroup variety result: {}", analysis.is_quasigroup);
-
-        // Count varieties
-        analysis.variety_count = [
-            analysis.is_group,
-            analysis.is_lattice,
-            analysis.is_boolean_algebra,
-            analysis.is_semilattice,
-            analysis.is_quasigroup,
-        ].iter().filter(|&&x| x).count();
-
-        eprintln!("DEBUG: Variety analysis complete, count: {}", analysis.variety_count);
-        Ok(analysis)
-    }
-
-    /// Check if algebra is in the variety of groups
-    fn check_group_variety(&self, algebra: &dyn SmallAlgebra) -> UACalcResult<bool> {
-        let operations = algebra.operations();
-        
-        // Must have exactly one binary operation
-        let binary_ops: Vec<_> = operations.iter().filter(|op| {
-            let op_guard = op.lock().unwrap();
-            op_guard.arity() == 2
-        }).collect();
-        if binary_ops.len() != 1 {
-            return Ok(false);
-        }
-        
-        // Must have no other operations (pure group)
-        if operations.len() != 1 {
-            return Ok(false);
-        }
-        
-        let cardinality = algebra.cardinality();
-        
-        // For very small algebras, we can do complete group property checks
-        if cardinality <= 8 {
-            return self.check_group_properties_complete(algebra, &binary_ops[0]);
-        } else {
-            // For larger algebras, use signature-based check only
-            return Ok(false);
-        }
-    }
-
-    /// Complete group property check for small algebras
-    fn check_group_properties_complete(&self, algebra: &dyn SmallAlgebra, binary_op: &Arc<Mutex<dyn crate::operation::Operation>>) -> UACalcResult<bool> {
-        let cardinality = algebra.cardinality();
-        
-        // Check for identity element
-        let mut has_identity = false;
-        for e in 0..cardinality {
-            let mut is_identity = true;
-            for a in 0..cardinality {
-                let args1 = vec![e, a];
-                let args2 = vec![a, e];
-                let op_guard = binary_op.lock().unwrap();
-                if op_guard.value(&args1)? != a || op_guard.value(&args2)? != a {
-                    is_identity = false;
-                    break;
-                }
-            }
-            if is_identity {
-                has_identity = true;
-                break;
-            }
-        }
-        
-        if !has_identity {
-            return Ok(false);
-        }
-        
-        // Check for inverses (simplified - assume they exist if identity exists for small algebras)
-        let has_inverses = true;
-        
-        // Check associativity
-        let mut is_associative = true;
-        for a in 0..cardinality {
-            for b in 0..cardinality {
-                for c in 0..cardinality {
-                    let args1 = vec![a, b];
-                    let op_guard = binary_op.lock().unwrap();
-                    let ab = op_guard.value(&args1)?;
-                    let args2 = vec![ab, c];
-                    let left_result = op_guard.value(&args2)?;
-                    
-                    let args3 = vec![b, c];
-                    let bc = op_guard.value(&args3)?;
-                    let args4 = vec![a, bc];
-                    let right_result = op_guard.value(&args4)?;
-                    
-                    if left_result != right_result {
-                        is_associative = false;
-                        break;
-                    }
-                }
-                if !is_associative {
-                    break;
-                }
-            }
-            if !is_associative {
-                break;
-            }
-        }
-        
-        Ok(has_identity && has_inverses && is_associative)
-    }
-
-    /// Check if algebra is in the variety of lattices
-    fn check_lattice_variety(&self, algebra: &dyn SmallAlgebra) -> UACalcResult<bool> {
-        let operations = algebra.operations();
-        
-        // Debug: Print operation details
-        eprintln!("DEBUG: Checking lattice variety for algebra with {} operations", operations.len());
-        for (i, op) in operations.iter().enumerate() {
-            let op_guard = op.lock().unwrap();
-            eprintln!("DEBUG: Operation {}: arity = {}", i, op_guard.arity());
-        }
-        
-        // Must have exactly two binary operations
-        let binary_ops: Vec<_> = operations.iter().filter(|op| {
-            let op_guard = op.lock().unwrap();
-            op_guard.arity() == 2
-        }).collect();
-        
-        eprintln!("DEBUG: Found {} binary operations", binary_ops.len());
-        
-        if binary_ops.len() != 2 {
-            eprintln!("DEBUG: Not a lattice - need exactly 2 binary operations, found {}", binary_ops.len());
-            return Ok(false);
-        }
-        
-        // Must have no other operations (pure lattice)
-        if operations.len() != 2 {
-            eprintln!("DEBUG: Not a lattice - need exactly 2 operations total, found {}", operations.len());
-            return Ok(false);
-        }
-        
-        let cardinality = algebra.cardinality();
-        eprintln!("DEBUG: Algebra cardinality: {}", cardinality);
-        
-        // For small algebras, we can do complete lattice property checks
-        if cardinality <= 8 {
-            eprintln!("DEBUG: Performing complete lattice property checks");
-            let result = self.check_lattice_properties_complete(algebra, &binary_ops[0], &binary_ops[1]);
-            eprintln!("DEBUG: Lattice property check result: {:?}", result);
-            return result;
-        } else {
-            // For larger algebras, use signature-based check only
-            eprintln!("DEBUG: Algebra too large for complete checks");
-            return Ok(false);
-        }
-    }
-
-    /// Complete lattice property check for small algebras
-    fn check_lattice_properties_complete(&self, algebra: &dyn SmallAlgebra, meet_op: &Arc<Mutex<dyn crate::operation::Operation>>, join_op: &Arc<Mutex<dyn crate::operation::Operation>>) -> UACalcResult<bool> {
-        let cardinality = algebra.cardinality();
-        
-        // Check commutativity for both operations
-        if !self.check_commutativity(meet_op, cardinality)? || !self.check_commutativity(join_op, cardinality)? {
-            return Ok(false);
-        }
-        
-        // Check associativity for both operations
-        if !self.check_associativity(meet_op, cardinality)? || !self.check_associativity(join_op, cardinality)? {
-            return Ok(false);
-        }
-        
-        // Check idempotency for both operations
-        if !self.check_idempotency(meet_op, cardinality)? || !self.check_idempotency(join_op, cardinality)? {
-            return Ok(false);
-        }
-        
-        // Check absorption laws
-        if !self.check_absorption_laws(meet_op, join_op, cardinality)? {
-            return Ok(false);
-        }
-        
-        Ok(true)
-    }
-
-    /// Check commutativity: a * b = b * a
-    fn check_commutativity(&self, op: &Arc<Mutex<dyn crate::operation::Operation>>, cardinality: usize) -> UACalcResult<bool> {
-        for a in 0..cardinality {
-            for b in 0..cardinality {
-                let args1 = vec![a, b];
-                let args2 = vec![b, a];
-                let op_guard = op.lock().unwrap();
-                if op_guard.value(&args1)? != op_guard.value(&args2)? {
-                    return Ok(false);
-                }
-            }
-        }
-        Ok(true)
-    }
-
-    /// Check associativity: (a * b) * c = a * (b * c)
-    fn check_associativity(&self, op: &Arc<Mutex<dyn crate::operation::Operation>>, cardinality: usize) -> UACalcResult<bool> {
-        for a in 0..cardinality {
-            for b in 0..cardinality {
-                for c in 0..cardinality {
-                    let args1 = vec![a, b];
-                    let op_guard = op.lock().unwrap();
-                    let ab = op_guard.value(&args1)?;
-                    let args2 = vec![ab, c];
-                    let left_result = op_guard.value(&args2)?;
-                    
-                    let args3 = vec![b, c];
-                    let bc = op_guard.value(&args3)?;
-                    let args4 = vec![a, bc];
-                    let right_result = op_guard.value(&args4)?;
-                    
-                    if left_result != right_result {
-                        return Ok(false);
-                    }
-                }
-            }
-        }
-        Ok(true)
-    }
-
-    /// Check idempotency: a * a = a
-    fn check_idempotency(&self, op: &Arc<Mutex<dyn crate::operation::Operation>>, cardinality: usize) -> UACalcResult<bool> {
-        for a in 0..cardinality {
-            let args = vec![a, a];
-            let op_guard = op.lock().unwrap();
-            if op_guard.value(&args)? != a {
-                return Ok(false);
-            }
-        }
-        Ok(true)
-    }
-
-    /// Check absorption laws: a ∧ (a ∨ b) = a and a ∨ (a ∧ b) = a
-    fn check_absorption_laws(&self, meet_op: &Arc<Mutex<dyn crate::operation::Operation>>, join_op: &Arc<Mutex<dyn crate::operation::Operation>>, cardinality: usize) -> UACalcResult<bool> {
-        for a in 0..cardinality {
-            for b in 0..cardinality {
-                // Check first absorption law: a ∧ (a ∨ b) = a
-                let join_args = vec![a, b];
-                let join_guard = join_op.lock().unwrap();
-                let a_join_b = join_guard.value(&join_args)?;
-                let meet_args1 = vec![a, a_join_b];
-                let meet_guard = meet_op.lock().unwrap();
-                let a_meet_a_join_b = meet_guard.value(&meet_args1)?;
-                
-                if a_meet_a_join_b != a {
-                    return Ok(false);
-                }
-                
-                // Check second absorption law: a ∨ (a ∧ b) = a
-                let meet_args2 = vec![a, b];
-                let a_meet_b = meet_guard.value(&meet_args2)?;
-                let join_args2 = vec![a, a_meet_b];
-                let a_join_a_meet_b = join_guard.value(&join_args2)?;
-                
-                if a_join_a_meet_b != a {
-                    return Ok(false);
-                }
-            }
-        }
-        Ok(true)
-    }
-
-    /// Check if algebra is in the variety of Boolean algebras
-    fn check_boolean_algebra_variety(&self, algebra: &dyn SmallAlgebra) -> UACalcResult<bool> {
-        let operations = algebra.operations();
-        
-        // Must have exactly: two binary, one unary, two nullary operations
-        let binary_ops: Vec<_> = operations.iter().filter(|op| {
-            let op_guard = op.lock().unwrap();
-            op_guard.arity() == 2
-        }).collect();
-        let unary_ops: Vec<_> = operations.iter().filter(|op| {
-            let op_guard = op.lock().unwrap();
-            op_guard.arity() == 1
-        }).collect();
-        let nullary_ops: Vec<_> = operations.iter().filter(|op| {
-            let op_guard = op.lock().unwrap();
-            op_guard.arity() == 0
-        }).collect();
-        
-        if binary_ops.len() != 2 || unary_ops.len() != 1 || nullary_ops.len() != 2 {
-            return Ok(false);
-        }
-        
-        // Must have exactly 5 operations total
-        if operations.len() != 5 {
-            return Ok(false);
-        }
-        
-        // For now, just check signature - full Boolean algebra property checking would be complex
-        Ok(false)
-    }
-
-    /// Check if algebra is in the variety of semilattices
-    fn check_semilattice_variety(&self, algebra: &dyn SmallAlgebra) -> UACalcResult<bool> {
-        eprintln!("DEBUG: Starting semilattice variety check");
-        
-        // Handle trivial case
-        if algebra.cardinality() == 1 {
-            eprintln!("DEBUG: Trivial algebra is in semilattice variety");
-            return Ok(true);
-        }
-
-        let operations = algebra.operations();
-        
-        // Must have exactly one binary operation
-        let binary_ops: Vec<_> = operations.iter().filter(|op| {
-            let op_guard = op.lock().unwrap();
-            op_guard.arity() == 2
-        }).collect();
-        
-        if binary_ops.len() != 1 {
-            eprintln!("DEBUG: Not a semilattice - need exactly 1 binary operation, found {}", binary_ops.len());
-            return Ok(false);
-        }
-        
-        // Must have no other operations (pure semilattice)
-        if operations.len() != 1 {
-            eprintln!("DEBUG: Not a semilattice - need exactly 1 operation total, found {}", operations.len());
-            return Ok(false);
-        }
-
-        // Check if the single binary operation is a semilattice operation
-        let op_guard = binary_ops[0].lock().unwrap();
-        eprintln!("DEBUG: Checking single operation for semilattice properties");
-        
-        if self.is_semilattice_operation(&*op_guard, algebra.cardinality())? {
-            eprintln!("DEBUG: Found semilattice operation");
-            return Ok(true);
-        }
-
-        eprintln!("DEBUG: No semilattice operation found");
-        Ok(false)
-    }
-
-    /// Check if an operation is a semilattice operation (idempotent, commutative, associative)
-    fn is_semilattice_operation(
-        &self,
-        operation: &dyn Operation,
-        cardinality: usize,
-    ) -> UACalcResult<bool> {
-        // Check if operation is binary
-        if operation.arity() != 2 {
-            return Ok(false);
-        }
-
-        // Check idempotency: f(x,x) = x for all x
-        for x in 0..cardinality {
-            if operation.int_value_at(&[x, x])? != x {
-                return Ok(false);
-            }
-        }
-
-        // Check commutativity: f(x,y) = f(y,x) for all x,y
-        for x in 0..cardinality {
-            for y in 0..cardinality {
-                if operation.int_value_at(&[x, y])? != operation.int_value_at(&[y, x])? {
-                    return Ok(false);
-                }
-            }
-        }
-
-        // Check associativity: f(f(x,y),z) = f(x,f(y,z)) for all x,y,z
-        for x in 0..cardinality {
-            for y in 0..cardinality {
-                for z in 0..cardinality {
-                    let left = operation.int_value_at(&[operation.int_value_at(&[x, y])?, z])?;
-                    let right = operation.int_value_at(&[x, operation.int_value_at(&[y, z])?])?;
-                    if left != right {
-                        return Ok(false);
-                    }
-                }
-            }
-        }
-
-        Ok(true)
-    }
-
-    /// Check if algebra is in the variety of quasigroups
-    fn check_quasigroup_variety(&self, algebra: &dyn SmallAlgebra) -> UACalcResult<bool> {
-        let operations = algebra.operations();
-        
-        // Must have exactly one binary operation
-        let binary_ops: Vec<_> = operations.iter().filter(|op| {
-            let op_guard = op.lock().unwrap();
-            op_guard.arity() == 2
-        }).collect();
-        if binary_ops.len() != 1 {
-            return Ok(false);
-        }
-        
-        // Must have no other operations (pure quasigroup)
-        if operations.len() != 1 {
-            return Ok(false);
-        }
-        
-        let cardinality = algebra.cardinality();
-        
-        // For very small algebras, we can do complete quasigroup property checks
-        if cardinality <= 8 {
-            return self.check_quasigroup_properties_complete(algebra, &binary_ops[0]);
-        } else {
-            // For larger algebras, use signature-based check only
-            return Ok(false);
-        }
-    }
-
-    /// Complete quasigroup property check for small algebras
-    fn check_quasigroup_properties_complete(&self, algebra: &dyn SmallAlgebra, binary_op: &Arc<Mutex<dyn crate::operation::Operation>>) -> UACalcResult<bool> {
-        let cardinality = algebra.cardinality();
-        let op_guard = binary_op.lock().unwrap();
-        
-        // Check left cancellativity: if a·x = a·y, then x = y
-        for a in 0..cardinality {
-            for x in 0..cardinality {
-                for y in 0..cardinality {
-                    if x != y {
-                        let ax = op_guard.int_value_at(&[a, x])?;
-                        let ay = op_guard.int_value_at(&[a, y])?;
-                        if ax == ay {
-                            return Ok(false); // Not left cancellative
-                        }
-                    }
-                }
-            }
-        }
-        
-        // Check right cancellativity: if x·a = y·a, then x = y
-        for a in 0..cardinality {
-            for x in 0..cardinality {
-                for y in 0..cardinality {
-                    if x != y {
-                        let xa = op_guard.int_value_at(&[x, a])?;
-                        let ya = op_guard.int_value_at(&[y, a])?;
-                        if xa == ya {
-                            return Ok(false); // Not right cancellative
-                        }
-                    }
-                }
-            }
-        }
-        
-        // Check that the operation table is a Latin square
-        // Each row and column must contain each element exactly once
-        for row in 0..cardinality {
-            let mut row_elements = vec![false; cardinality];
-            for col in 0..cardinality {
-                let value = op_guard.int_value_at(&[row, col])?;
-                if row_elements[value] {
-                    return Ok(false); // Duplicate in row
-                }
-                row_elements[value] = true;
-            }
-        }
-        
-        for col in 0..cardinality {
-            let mut col_elements = vec![false; cardinality];
-            for row in 0..cardinality {
-                let value = op_guard.int_value_at(&[row, col])?;
-                if col_elements[value] {
-                    return Ok(false); // Duplicate in column
-                }
-                col_elements[value] = true;
-            }
-        }
-        
-        Ok(true)
-    }
 
 
     /// Analyze advanced algebraic properties
@@ -731,7 +212,10 @@ impl MalcevAnalyzer {
         }
 
         // Try to find Malcev term using free algebra approach
-        if let Ok(malcev_term) = self.find_malcev_term(algebra) {
+        if let Ok(malcev_term) = {
+            let mut term_finder = crate::term_finder::TermFinder::new();
+            term_finder.find_malcev_term(algebra)
+        } {
             analysis.has_malcev_term = true;
             analysis.malcev_term = Some(malcev_term);
         }
@@ -804,236 +288,7 @@ impl MalcevAnalyzer {
     /// 3. Generate subalgebra with generators (0,0), (0,1), (1,1)
     /// 4. Check if (1,0) is in the generated subalgebra
     /// 5. If yes, return the term that generates (1,0)
-    fn find_malcev_term(&mut self, algebra: &dyn SmallAlgebra) -> UACalcResult<String> {
-        if algebra.cardinality() == 1 {
-            return Ok("x".to_string());
-        }
 
-        // For small algebras, use direct verification
-        if algebra.cardinality() <= 4 {
-            return self.find_malcev_term_small(algebra);
-        }
-
-        // For larger algebras, use the free algebra approach
-        self.find_malcev_term_free_algebra(algebra)
-    }
-
-    /// Find Malcev term for small algebras using direct verification
-    fn find_malcev_term_small(&self, algebra: &dyn SmallAlgebra) -> UACalcResult<String> {
-        let n = algebra.cardinality();
-        let operations = algebra.operations();
-        
-        // Check each operation to see if it can serve as a Malcev term
-        for op_arc in operations {
-            let op_guard = op_arc.lock().map_err(|_| UACalcError::InvalidOperation {
-                message: "Failed to lock operation".to_string(),
-            })?;
-            
-            let arity = op_guard.arity();
-            
-            // A Malcev term must be ternary (arity 3)
-            if arity == 3 {
-                // Check if this operation satisfies the Malcev term conditions:
-                // t(x,x,y) = y and t(x,y,y) = x
-                let mut is_malcev = true;
-                
-                for x in 0..n {
-                    for y in 0..n {
-                        // Check t(x,x,y) = y
-                        if op_guard.value(&[x, x, y]).unwrap_or(n) != y {
-                            is_malcev = false;
-                            break;
-                        }
-                        // Check t(x,y,y) = x  
-                        if op_guard.value(&[x, y, y]).unwrap_or(n) != x {
-                            is_malcev = false;
-                            break;
-                        }
-                    }
-                    if !is_malcev {
-                        break;
-                    }
-                }
-                
-                if is_malcev {
-                    return Ok(format!("{}(x,y,z)", op_guard.symbol()));
-                }
-            }
-        }
-        
-        // If no operation can serve as a Malcev term, return error
-        Err(UACalcError::UnsupportedOperation { operation: "Malcev term not found".to_string() })
-    }
-
-    /// Find Malcev term using free algebra approach
-    fn find_malcev_term_free_algebra(&mut self, algebra: &dyn SmallAlgebra) -> UACalcResult<String> {
-        // Check memory limits before attempting free algebra construction
-        #[cfg(feature = "memory-limit")]
-        {
-            use crate::memory::{get_allocated_memory, get_memory_limit};
-            let current_memory = get_allocated_memory();
-            let limit = get_memory_limit();
-            
-            // If we're already using more than 80% of memory, be conservative
-            if current_memory > limit * 80 / 100 {
-                return Err(UACalcError::UnsupportedOperation { operation: "Malcev term not found (memory limit)".to_string() });
-            }
-        }
-        
-        // For algebras with many operations or high arity, be conservative
-        let operations = algebra.operations();
-        let total_arity: usize = operations.iter().map(|op| {
-            op.lock().map(|guard| guard.arity()).unwrap_or(0)
-        }).sum();
-        
-        // If total arity is high, the free algebra will be very large
-        if total_arity > 10 {
-            return Err(UACalcError::UnsupportedOperation { operation: "Malcev term not found (complexity limit)".to_string() });
-        }
-        
-        // For algebras with many operations, be conservative
-        if operations.len() > 5 {
-            return Err(UACalcError::UnsupportedOperation { operation: "Malcev term not found (operation limit)".to_string() });
-        }
-        
-        // Try to create a very small free algebra with minimal depth
-        use crate::free_algebra::{FreeAlgebra, VarietyConstraint};
-        use crate::operation::OperationSymbol;
-        
-        let generators = vec!["x".to_string(), "y".to_string()];
-        let variety_constraints = VarietyConstraint::Trivial;
-        
-        // Limit to only the first few operations to reduce memory usage
-        let max_operations = 3;
-        let mut operation_symbols = Vec::new();
-        for (i, op_arc) in operations.iter().enumerate() {
-            if i >= max_operations {
-                break;
-            }
-            
-            let op_guard = op_arc.lock().map_err(|_| UACalcError::InvalidOperation {
-                message: "Failed to lock operation".to_string(),
-            })?;
-            
-            let symbol = op_guard.symbol();
-            operation_symbols.push(symbol.clone());
-        }
-        
-        // Use very conservative depth limit
-        let max_depth = 3; // Conservative to avoid memory issues
-        
-        // Try to create the free algebra, but catch memory errors
-        let f2 = match FreeAlgebra::new(
-            "F2".to_string(),
-            generators,
-            variety_constraints,
-            operation_symbols,
-            max_depth,
-        ) {
-            Ok(f2) => f2,
-            Err(e) => {
-                // If we can't create the free algebra due to memory issues, be conservative
-                if e.to_string().contains("MemoryLimitExceeded") || 
-                   e.to_string().contains("too large") {
-                    return Err(UACalcError::UnsupportedOperation { operation: "Malcev term not found (free algebra too large)".to_string() });
-                }
-                return Err(e);
-            }
-        };
-        
-        // Check if the free algebra is too large to work with
-        let f2_size = f2.cardinality();
-        if f2_size > 1000 { // Conservative limit
-            return Err(UACalcError::UnsupportedOperation { operation: "Malcev term not found (free algebra too large)".to_string() });
-        }
-        
-        // For very small free algebras, we can try the full algorithm
-        if f2_size <= 100 {
-            return self.find_malcev_term_small_free_algebra(f2);
-        }
-        
-        // For medium-sized free algebras, use heuristics
-        Err(UACalcError::UnsupportedOperation { operation: "Malcev term not found (medium complexity)".to_string() })
-    }
-    
-    /// Find Malcev term using a small free algebra
-    fn find_malcev_term_small_free_algebra(&self, f2: FreeAlgebra) -> UACalcResult<String> {
-        use crate::product::ProductAlgebra;
-        use crate::subalgebra::Subalgebra;
-        use std::sync::{Arc, Mutex};
-        
-        // Create product algebra F(2)^2
-        let f2_arc = Arc::new(Mutex::new(f2));
-        let f2_squared = match ProductAlgebra::new(
-            "F2_squared".to_string(),
-            vec![f2_arc.clone(), f2_arc.clone()],
-        ) {
-            Ok(prod) => prod,
-            Err(e) => {
-                // If product algebra creation fails, be conservative
-                if e.to_string().contains("MemoryLimitExceeded") || 
-                   e.to_string().contains("too large") {
-                    return Err(UACalcError::UnsupportedOperation { operation: "Malcev term not found (product algebra too large)".to_string() });
-                }
-                return Err(e);
-            }
-        };
-        
-        // Get F(2) cardinality
-        let f2_cardinality = {
-            let f2_guard = f2_arc.lock().map_err(|_| UACalcError::InvalidOperation {
-                message: "Failed to lock F2".to_string(),
-            })?;
-            f2_guard.cardinality()
-        };
-        
-        // Check if the product algebra would be too large
-        let product_size = f2_cardinality * f2_cardinality;
-        if product_size > 1_000_000 { // 1 million elements limit
-            return Err(UACalcError::UnsupportedOperation { operation: "Malcev term not found (product too large)".to_string() });
-        }
-        
-        // Create generators for the subalgebra: (0,0), (0,1), (1,1)
-        let n = f2_cardinality;
-        let gen1 = 0 * n + 0; // (0,0)
-        let gen2 = 0 * n + 1; // (0,1)  
-        let gen3 = 1 * n + 1; // (1,1)
-        
-        let generators = vec![gen1, gen2, gen3];
-        
-        // Create subalgebra generated by these elements
-        let f2_squared_arc = Arc::new(Mutex::new(f2_squared));
-        let subalgebra = match Subalgebra::new(
-            "malcev_sub".to_string(),
-            f2_squared_arc,
-            &generators,
-        ) {
-            Ok(sub) => sub,
-            Err(e) => {
-                // If subalgebra creation fails, be conservative
-                if e.to_string().contains("MemoryLimitExceeded") || 
-                   e.to_string().contains("too large") {
-                    return Err(UACalcError::UnsupportedOperation { operation: "Malcev term not found (subalgebra too large)".to_string() });
-                }
-                return Err(e);
-            }
-        };
-        
-        // Check if (1,0) is in the subalgebra
-        let target = 1 * n + 0; // (1,0)
-        
-        // Check if target is in the subalgebra universe
-        let subuniverse = subalgebra.subuniverse_array();
-        let has_malcev = subuniverse.contains(&target);
-        
-        if has_malcev {
-            // Return a placeholder term - in a full implementation we would
-            // track the actual term that generates (1,0)
-            Ok("malcev_term(x,y,z)".to_string())
-        } else {
-            Err(UACalcError::UnsupportedOperation { operation: "Malcev term not found".to_string() })
-        }
-    }
 
     /// Check if four elements form a Day quadruple
     /// A Day quadruple is a configuration that witnesses non-modularity
@@ -1185,7 +440,7 @@ impl MalcevAnalyzer {
                 }
                 
                 // Generate all possible argument combinations
-                for args in self.generate_argument_combinations(&universe, arity) {
+                for args in crate::utils::generate_argument_combinations(&universe, arity) {
                     if let Ok(result) = op_guard.value(&args) {
                         if !universe.contains(&result) {
                             universe.push(result);
@@ -1206,30 +461,6 @@ impl MalcevAnalyzer {
         Ok(Arc::new(Mutex::new(basic_algebra)))
     }
 
-    /// Generate all possible argument combinations of given arity from a universe
-    fn generate_argument_combinations(&self, universe: &[usize], arity: usize) -> Vec<Vec<usize>> {
-        if arity == 0 {
-            return vec![vec![]];
-        }
-        
-        let mut combinations = Vec::new();
-        self.generate_combinations_recursive(universe, arity, &mut Vec::new(), &mut combinations);
-        combinations
-    }
-
-    /// Recursive helper for generating combinations
-    fn generate_combinations_recursive(&self, universe: &[usize], remaining_arity: usize, current: &mut Vec<usize>, combinations: &mut Vec<Vec<usize>>) {
-        if remaining_arity == 0 {
-            combinations.push(current.clone());
-            return;
-        }
-        
-        for &element in universe {
-            current.push(element);
-            self.generate_combinations_recursive(universe, remaining_arity - 1, current, combinations);
-            current.pop();
-        }
-    }
 
     /// Test if an idempotent algebra generates a congruence modular variety
     fn congruence_modular_for_idempotent(&self, algebra: &dyn SmallAlgebra) -> UACalcResult<bool> {
@@ -1329,9 +560,9 @@ impl MalcevAnalyzer {
         let f2 = self.create_free_algebra_f2(algebra)?;
         
         // Create the three generators g0 = (0,0,1), g1 = (0,1,0), g2 = (1,0,0)
-        let g0 = self.create_int_array(&[0, 0, 1])?;
-        let g1 = self.create_int_array(&[0, 1, 0])?;
-        let g2 = self.create_int_array(&[1, 0, 0])?;
+        let g0 = crate::utils::create_int_array(&[0, 0, 1])?;
+        let g1 = crate::utils::create_int_array(&[0, 1, 0])?;
+        let g2 = crate::utils::create_int_array(&[1, 0, 0])?;
         
         // Create the product algebra F2^3
         let f2_cubed = self.create_product_algebra_f2_cubed(&f2)?;
@@ -1340,7 +571,7 @@ impl MalcevAnalyzer {
         let subalgebra = self.generate_subalgebra(&f2_cubed, &[g0.clone(), g1, g2.clone()])?;
         
         // Check if (0,0,0) is in the subalgebra
-        let zero = self.create_int_array(&[0, 0, 0])?;
+        let zero = crate::utils::create_int_array(&[0, 0, 0])?;
         if self.subalgebra_contains(&subalgebra, &zero)? {
             return Ok(2); // Has ternary majority function
         }
@@ -1350,7 +581,7 @@ impl MalcevAnalyzer {
         
         // Sort middle_zero elements
         let mut sorted_middle_zero = middle_zero;
-        sorted_middle_zero.sort_by(|a, b| self.compare_int_arrays(a, b));
+        sorted_middle_zero.sort_by(|a, b| crate::utils::compare_int_arrays(a, b));
         
         // Use auxiliary algorithm to find Jonsson level
         self.jonsson_level_aux(&sorted_middle_zero, &g0, &g2)
@@ -1443,10 +674,6 @@ impl MalcevAnalyzer {
         Ok(Arc::new(Mutex::new(product_algebra)))
     }
 
-    /// Create an IntArray-like structure
-    fn create_int_array(&self, values: &[usize]) -> UACalcResult<Vec<usize>> {
-        Ok(values.to_vec())
-    }
 
     /// Generate subalgebra from generators
     fn generate_subalgebra(&self, algebra: &Arc<Mutex<dyn SmallAlgebra>>, generators: &[Vec<usize>]) -> UACalcResult<Vec<Vec<usize>>> {
@@ -1506,7 +733,7 @@ impl MalcevAnalyzer {
                 let max_combinations = 100;
                 let mut combination_count = 0;
                 
-                for args in self.generate_argument_combinations(&universe_coords, arity) {
+                for args in crate::utils::generate_argument_combinations(&universe_coords, arity) {
                     if combination_count >= max_combinations {
                         break;
                     }
@@ -1557,17 +784,6 @@ impl MalcevAnalyzer {
         Ok(middle_zero)
     }
 
-    /// Compare two IntArray-like structures
-    fn compare_int_arrays(&self, a: &[usize], b: &[usize]) -> std::cmp::Ordering {
-        for (i, (ai, bi)) in a.iter().zip(b.iter()).enumerate() {
-            if ai < bi {
-                return std::cmp::Ordering::Less;
-            } else if ai > bi {
-                return std::cmp::Ordering::Greater;
-            }
-        }
-        std::cmp::Ordering::Equal
-    }
 
     /// Auxiliary algorithm for Jonsson level computation
     fn jonsson_level_aux(&self, middle_zero: &[Vec<usize>], g0: &[usize], g2: &[usize]) -> UACalcResult<i32> {
@@ -2552,13 +1768,6 @@ pub fn analyze_malcev_conditions(algebra: &dyn SmallAlgebra) -> UACalcResult<Mal
     let mut analyzer = MalcevAnalyzer::new();
     analyzer.analyze_malcev_conditions(algebra)
 }
-
-/// Analyze variety membership for an algebra
-pub fn analyze_variety_membership(algebra: &dyn SmallAlgebra) -> UACalcResult<VarietyAnalysis> {
-    let mut analyzer = MalcevAnalyzer::new();
-    analyzer.analyze_variety_membership(algebra)
-}
-
 
 /// Analyze advanced properties for an algebra
 pub fn analyze_advanced_properties(algebra: &dyn SmallAlgebra) -> UACalcResult<AdvancedProperties> {

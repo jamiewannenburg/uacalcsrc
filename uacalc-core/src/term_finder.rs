@@ -59,6 +59,74 @@ impl TermFinder {
         }
     }
 
+    /// Find Malcev term for an algebra
+    pub fn find_malcev_term(&mut self, algebra: &dyn SmallAlgebra) -> UACalcResult<String> {
+        if algebra.cardinality() == 1 {
+            return Ok("x".to_string());
+        }
+
+        // For small algebras, use direct verification
+        if algebra.cardinality() <= 4 {
+            return self.find_malcev_term_small(algebra);
+        }
+
+        // For larger algebras, use the free algebra approach
+        self.find_malcev_term_free_algebra(algebra)
+    }
+
+    /// Find Malcev term for small algebras using direct verification
+    fn find_malcev_term_small(&self, algebra: &dyn SmallAlgebra) -> UACalcResult<String> {
+        let n = algebra.cardinality();
+        let operations = algebra.operations();
+        
+        // Check each operation to see if it can serve as a Malcev term
+        for op_arc in operations {
+            let op_guard = op_arc.lock().map_err(|_| UACalcError::InvalidOperation {
+                message: "Failed to lock operation".to_string(),
+            })?;
+            
+            let arity = op_guard.arity();
+            
+            // A Malcev term must be ternary (arity 3)
+            if arity == 3 {
+                // Check if this operation satisfies the Malcev term conditions:
+                // t(x,x,y) = y and t(x,y,y) = x
+                let mut is_malcev = true;
+                
+                for x in 0..n {
+                    for y in 0..n {
+                        // Check t(x,x,y) = y
+                        if op_guard.value(&[x, x, y]).unwrap_or(n) != y {
+                            is_malcev = false;
+                            break;
+                        }
+                        // Check t(x,y,y) = x  
+                        if op_guard.value(&[x, y, y]).unwrap_or(n) != x {
+                            is_malcev = false;
+                            break;
+                        }
+                    }
+                    if !is_malcev {
+                        break;
+                    }
+                }
+                
+                if is_malcev {
+                    return Ok(format!("{}(x,y,z)", op_guard.symbol()));
+                }
+            }
+        }
+        
+        // If no operation can serve as a Malcev term, return error
+        Err(UACalcError::UnsupportedOperation { operation: "Malcev term not found".to_string() })
+    }
+
+    /// Find Malcev term using free algebra approach
+    fn find_malcev_term_free_algebra(&mut self, algebra: &dyn SmallAlgebra) -> UACalcResult<String> {
+        // For now, return a placeholder - full implementation would be complex
+        Err(UACalcError::UnsupportedOperation { operation: "Malcev term not found (free algebra approach not implemented)".to_string() })
+    }
+
     /// Find all basic terms for an algebra
     pub fn find_all_terms(&mut self, algebra: &dyn SmallAlgebra) -> UACalcResult<TermFindingAnalysis> {
         let mut analysis = TermFindingAnalysis {
@@ -177,20 +245,6 @@ impl TermFinder {
         Ok(analysis)
     }
 
-    /// Find Malcev term for an algebra
-    pub fn find_malcev_term(&mut self, algebra: &dyn SmallAlgebra) -> UACalcResult<String> {
-        if algebra.cardinality() == 1 {
-            return Ok("x".to_string());
-        }
-
-        // For small algebras, use free algebra approach
-        if algebra.cardinality() <= 4 {
-            return self.find_malcev_term_free_algebra(algebra);
-        } else {
-            // For larger algebras, return placeholder
-            return Ok("x".to_string());
-        }
-    }
 
     /// Find join term for an algebra
     pub fn find_join_term(&mut self, algebra: &dyn SmallAlgebra) -> UACalcResult<String> {
@@ -267,11 +321,6 @@ impl TermFinder {
         }
     }
 
-    /// Find Malcev term using free algebra approach
-    fn find_malcev_term_free_algebra(&mut self, algebra: &dyn SmallAlgebra) -> UACalcResult<String> {
-        // Implementation would go here - for now return placeholder
-        Ok("x".to_string())
-    }
 
     /// Find join term using free algebra approach
     fn find_join_term_free_algebra(&mut self, algebra: &dyn SmallAlgebra) -> UACalcResult<String> {

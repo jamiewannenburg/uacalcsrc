@@ -75,7 +75,7 @@ class MalcevCompatibilityTest(BaseCompatibilityTest):
                     
                     # Get term finding analysis
                     try:
-                        term_analysis = uacalc.find_all_terms(algebra)
+                        term_analysis = uacalc.py_find_all_terms(algebra)
                         rust_maltsev["has_majority_term"] = term_analysis.has_majority_term
                         rust_maltsev["has_minority_term"] = term_analysis.has_minority_term
                         rust_maltsev["has_near_unanimity_term"] = term_analysis.has_near_unanimity_term

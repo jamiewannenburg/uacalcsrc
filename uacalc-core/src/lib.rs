@@ -41,8 +41,8 @@ pub use binary_relation::{
 };
 pub use error::{UACalcError, UACalcResult};
 pub use malcev::{
-    MalcevAnalyzer, MalcevAnalysis, VarietyAnalysis, AdvancedProperties,
-    analyze_malcev_conditions, analyze_variety_membership, analyze_advanced_properties
+    MalcevAnalyzer, MalcevAnalysis, AdvancedProperties,
+    analyze_malcev_conditions, analyze_advanced_properties
 };
 pub use tct::{
     TctAnalyzer, TctAnalysis, analyze_tct_type
@@ -63,8 +63,8 @@ pub use term_finder::{
     find_minority_term, find_near_unanimity_term, find_taylor_term
 };
 pub use variety::{
-    VarietyAnalyzer, VarietyTermAnalysis, SpecializedTermAnalysis,
-    analyze_variety_terms, analyze_specialized_terms
+    VarietyAnalyzer, VarietyAnalysis, VarietyTermAnalysis, SpecializedTermAnalysis,
+    analyze_variety_membership, analyze_variety_terms, analyze_specialized_terms
 };
 pub use free_algebra::{FreeAlgebra, VarietyConstraint, create_free_algebra, create_free_algebra_with_common_operations};
 pub use operation::{
@@ -93,7 +93,8 @@ pub use subalgebra::Subalgebra;
 pub use utils::{
     binomial_coefficient, estimate_table_memory, factorial, horner_decode, horner_encode,
     horner_table_size, power_checked, validate_operation_args, validate_partition_elements,
-    validate_universe_contiguous, DEFAULT_CACHE_SIZE, ERR_INVALID_ARITY, ERR_INVALID_UNIVERSE,
+    validate_universe_contiguous, generate_argument_combinations, create_int_array, compare_int_arrays,
+    DEFAULT_CACHE_SIZE, ERR_INVALID_ARITY, ERR_INVALID_UNIVERSE,
     ERR_OVERFLOW, ERR_TABLE_TOO_LARGE, MAX_OPERATION_ARITY, MAX_TABLE_SIZE, MAX_UNIVERSE_SIZE,
     PERFORMANCE_THRESHOLD,
 };

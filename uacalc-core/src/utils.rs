@@ -876,3 +876,45 @@ mod tests {
         assert_eq!(mixed_radix_size(&large_radices), None);
     }
 }
+
+/// Generate all possible argument combinations of given arity from a universe
+pub fn generate_argument_combinations(universe: &[usize], arity: usize) -> Vec<Vec<usize>> {
+    if arity == 0 {
+        return vec![vec![]];
+    }
+    
+    let mut combinations = Vec::new();
+    generate_combinations_recursive(universe, arity, &mut Vec::new(), &mut combinations);
+    combinations
+}
+
+/// Recursive helper for generating combinations
+fn generate_combinations_recursive(universe: &[usize], remaining_arity: usize, current: &mut Vec<usize>, combinations: &mut Vec<Vec<usize>>) {
+    if remaining_arity == 0 {
+        combinations.push(current.clone());
+        return;
+    }
+    
+    for &element in universe {
+        current.push(element);
+        generate_combinations_recursive(universe, remaining_arity - 1, current, combinations);
+        current.pop();
+    }
+}
+
+/// Create an IntArray-like structure
+pub fn create_int_array(values: &[usize]) -> UACalcResult<Vec<usize>> {
+    Ok(values.to_vec())
+}
+
+/// Compare two IntArray-like structures
+pub fn compare_int_arrays(a: &[usize], b: &[usize]) -> std::cmp::Ordering {
+    for (i, (ai, bi)) in a.iter().zip(b.iter()).enumerate() {
+        if ai < bi {
+            return std::cmp::Ordering::Less;
+        } else if ai > bi {
+            return std::cmp::Ordering::Greater;
+        }
+    }
+    std::cmp::Ordering::Equal
+}

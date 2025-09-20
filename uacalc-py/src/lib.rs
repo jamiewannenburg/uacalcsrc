@@ -13,8 +13,8 @@ use uacalc_core::binary_relation::{BasicBinaryRelation, BinaryRelation};
 use uacalc_core::conlat::{BasicCongruenceLattice, BasicLattice, CongruenceLattice as CongruenceLatticeTrait, LatticeProperties, DualLatticeAnalysis, analyze_lattice_properties};
 use uacalc_core::error::UACalcError;
 use uacalc_core::malcev::{
-    MalcevAnalyzer, MalcevAnalysis, VarietyAnalysis, AdvancedProperties,
-    analyze_malcev_conditions, analyze_variety_membership, analyze_advanced_properties
+    MalcevAnalyzer, MalcevAnalysis, AdvancedProperties,
+    analyze_malcev_conditions, analyze_advanced_properties
 };
 use uacalc_core::tct::{
     TctAnalyzer, TctAnalysis, analyze_tct_type
@@ -28,8 +28,8 @@ use uacalc_core::term_finder::{
     find_minority_term, find_near_unanimity_term, find_taylor_term
 };
 use uacalc_core::variety::{
-    VarietyAnalyzer, VarietyTermAnalysis, SpecializedTermAnalysis,
-    analyze_variety_terms, analyze_specialized_terms
+    VarietyAnalyzer, VarietyAnalysis, VarietyTermAnalysis, SpecializedTermAnalysis,
+    analyze_variety_membership, analyze_variety_terms, analyze_specialized_terms
 };
 use uacalc_core::property_checker::{
     PropertyChecker, PropertyAnalysis,
@@ -201,6 +201,7 @@ fn uacalc_rust(_py: Python, m: &Bound<PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(py_analyze_tct_type, m)?)?;
     m.add_function(wrap_pyfunction!(py_analyze_advanced_properties, m)?)?;
     m.add_function(wrap_pyfunction!(py_analyze_lattice_properties, m)?)?;
+    m.add_function(wrap_pyfunction!(py_find_all_terms, m)?)?;
 
     // Memory limit function registrations
     #[cfg(feature = "memory-limit")]
@@ -4688,7 +4689,8 @@ impl PyMalcevAnalyzer {
     }
 
     fn analyze_variety_membership(&self, algebra: &PyAlgebra) -> PyResult<PyVarietyAnalysis> {
-        let analysis = self.inner.analyze_variety_membership(&algebra.inner).map_err(map_uacalc_error)?;
+        let variety_analyzer = VarietyAnalyzer::new();
+        let analysis = variety_analyzer.analyze_variety_membership(&algebra.inner).map_err(map_uacalc_error)?;
         Ok(PyVarietyAnalysis { inner: analysis })
     }
 
@@ -4737,6 +4739,12 @@ pub fn py_analyze_advanced_properties(algebra: &PyAlgebra) -> PyResult<PyAdvance
 pub fn py_analyze_lattice_properties(algebra: &PyAlgebra) -> PyResult<PyLatticeProperties> {
     let analysis = analyze_lattice_properties(&algebra.inner).map_err(map_uacalc_error)?;
     Ok(PyLatticeProperties { inner: analysis })
+}
+
+#[pyfunction]
+pub fn py_find_all_terms(algebra: &PyAlgebra) -> PyResult<PyTermFindingAnalysis> {
+    let analysis = find_all_terms(&algebra.inner).map_err(map_uacalc_error)?;
+    Ok(PyTermFindingAnalysis { inner: analysis })
 }
 
 // Memory limit functions
