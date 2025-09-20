@@ -1544,7 +1544,7 @@ public class JavaWrapper {
             result.append("\"results\":{");
             result.append("\"has_maltsev_term\":").append(hasMaltsevTerm).append(",");
             result.append("\"has_join_term\":").append(hasJoinTerm).append(",");
-            result.append("\"congruence_lattice_size\":").append(congruenceLatticeSize).append(",");
+            result.append("\"congruence_lattice_size\":").append(congruenceLatticeSize);
             if (maltsevTermString != null) {
                 result.append(",\"maltsev_term\":\"").append(escapeJson(maltsevTermString)).append("\"");
             }

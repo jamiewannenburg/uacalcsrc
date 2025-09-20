@@ -1346,14 +1346,14 @@ pub fn analyze_lattice_properties(algebra: &dyn SmallAlgebra) -> UACalcResult<La
                 properties.congruence_lattice_size = congruences.len();
                 
                 // Find join irreducibles
-                match lattice_builder::find_join_irreducibles(algebra) {
-                    Ok(join_irreducibles) => {
-                        properties.join_irreducibles_count = join_irreducibles.len();
-                    }
-                    Err(_) => {
-                        properties.join_irreducibles_count = 0;
-                    }
-                }
+                        match lattice_builder::find_join_irreducibles(algebra) {
+                            Ok(join_irreducibles) => {
+                                properties.join_irreducibles_count = join_irreducibles.len();
+                            }
+                            Err(_e) => {
+                                properties.join_irreducibles_count = 0;
+                            }
+                        }
                 
                 // Get meet irreducibles (simplified - use join irreducibles as approximation)
                 properties.meet_irreducibles_count = properties.join_irreducibles_count;
@@ -1397,7 +1397,7 @@ pub fn analyze_lattice_properties(algebra: &dyn SmallAlgebra) -> UACalcResult<La
                     dual_meet_irreducibles_count: properties.join_irreducibles_count,
                 };
             }
-            Err(_) => {
+            Err(e) => {
                 // Fallback to estimates if congruence lattice computation fails
                 properties.congruence_lattice_size = 2; // At least identity and universal
                 properties.join_irreducibles_count = 1;
