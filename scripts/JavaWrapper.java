@@ -1723,16 +1723,7 @@ public class JavaWrapper {
             
             // Create partition using the CongruenceLattice
             CongruenceLattice conLat = new CongruenceLattice(smallAlgebra);
-            Partition partition = conLat.zero(); // Start with trivial partition
-            
-            // For a proper implementation, we would need to construct the partition
-            // from the given blocks. For now, use a simple approach.
-            if (partitionBlocks.size() > 0 && partitionBlocks.get(0).size() >= 2) {
-                // Create a principal congruence from first two elements of first block
-                int a = partitionBlocks.get(0).get(0);
-                int b = partitionBlocks.get(0).get(1);
-                partition = conLat.Cg(a, b);
-            }
+            Partition partition = createPartitionFromBlocks(conLat, partitionBlocks, smallAlgebra.cardinality());
             
             // Create quotient algebra
             QuotientAlgebra quotientAlgebra = new QuotientAlgebra(smallAlgebra, partition);

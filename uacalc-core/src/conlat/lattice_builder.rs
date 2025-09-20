@@ -177,6 +177,9 @@ impl<'a> LatticeBuilder<'a> {
             }
         }
 
+        // Deduplicate join irreducibles (multiple principal congruences can generate the same congruence)
+        self.deduplicate_join_irreducibles()?;
+
         // Sort by rank (number of blocks) for efficient level-by-level construction
         self.join_irreducibles
             .sort_by(|a, b| a.num_blocks().cmp(&b.num_blocks()));
@@ -207,12 +210,7 @@ impl<'a> LatticeBuilder<'a> {
         // the join of strictly smaller congruences
 
         // Basic checks
-        if congruence.num_blocks() <= 1 {
-            return Ok(false);
-        }
-
-        // Special case: the bottom partition (identity partition) is never join-irreducible
-        // because it has no blocks to join (it's the minimal element)
+        // The identity congruence (each element in its own block) is never join-irreducible
         if congruence.num_blocks() == congruence.size() {
             return Ok(false);
         }
@@ -515,6 +513,22 @@ impl<'a> LatticeBuilder<'a> {
         }
 
         self.universe = unique;
+        Ok(())
+    }
+
+    /// Deduplicate join irreducibles by removing identical congruences
+    fn deduplicate_join_irreducibles(&mut self) -> UACalcResult<()> {
+        let mut seen = HashSet::new();
+        let mut unique = Vec::new();
+
+        for congruence in &self.join_irreducibles {
+            let canonical = self.canonical_form(congruence)?;
+            if seen.insert(canonical) {
+                unique.push(congruence.clone());
+            }
+        }
+
+        self.join_irreducibles = unique;
         Ok(())
     }
 

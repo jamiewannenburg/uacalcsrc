@@ -66,7 +66,7 @@ class QuotientAlgebraCompatibilityTest(BaseCompatibilityTest):
                         rust_quotient = None
                         try:
                             # Create actual quotient algebra using Rust implementation
-                            from uacalc import rust_create_quotient_algebra, create_partition_from_blocks_from_blocks
+                            from uacalc import rust_create_quotient_algebra, create_partition_from_blocks
                             
                             # Create appropriate congruence partition
                             if cong_test["type"] == "identity":
@@ -278,7 +278,7 @@ class QuotientAlgebraCompatibilityTest(BaseCompatibilityTest):
                         rust_properties = None
                         try:
                             # Create actual quotient algebra using Rust implementation
-                            from uacalc import rust_create_quotient_algebra, create_partition_from_blocks_from_blocks
+                            from uacalc import rust_create_quotient_algebra, create_partition_from_blocks
                             
                             # Create appropriate congruence partition
                             if cong_test["type"] == "identity":
