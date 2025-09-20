@@ -141,7 +141,7 @@ class PartitionCompatibilityTest(BaseCompatibilityTest):
             self.test_logger.warning(
                 f"Partition construction mismatch for {algebra.name}, case {partition_data['name']}: "
                 f"Rust blocks: {rust_result.get('blocks')}, "
-                f"Java blocks: {java_result.get('blocks')}"
+                f"Java blocks: {java_result.get('blocks') if java_result else 'None'}"
             )
     
     def _is_valid_partition(self, blocks: List[List[int]], cardinality: int) -> bool:
