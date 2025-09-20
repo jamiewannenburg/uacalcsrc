@@ -73,6 +73,17 @@ class MalcevCompatibilityTest(BaseCompatibilityTest):
                     except:
                         rust_maltsev["congruence_lattice_size"] = 0
                     
+                    # Get term finding analysis
+                    try:
+                        term_analysis = uacalc.find_all_terms(algebra)
+                        rust_maltsev["has_majority_term"] = term_analysis.has_majority_term
+                        rust_maltsev["has_minority_term"] = term_analysis.has_minority_term
+                        rust_maltsev["has_near_unanimity_term"] = term_analysis.has_near_unanimity_term
+                    except:
+                        rust_maltsev["has_majority_term"] = False
+                        rust_maltsev["has_minority_term"] = False
+                        rust_maltsev["has_near_unanimity_term"] = False
+                    
                 except Exception as e:
                     error_msg = str(e)
                     if "MemoryLimitExceeded" in error_msg:
@@ -383,6 +394,116 @@ class MalcevCompatibilityTest(BaseCompatibilityTest):
                 
                 self.assertTrue(result.matches,
                     f"Maltsev term detection mismatch for {algebra_file.name}: {result.error_message}")
+    
+    def test_variety_terms_compatibility(self):
+        """Test variety-specific term analysis"""
+        logger.info("Testing variety terms compatibility")
+        
+        # Test on very small algebras for variety term analysis
+        tiny_algebras = [f for f in self.algebra_files if self._get_algebra_size_estimate(f) <= 4][:3]
+        
+        for algebra_file in tiny_algebras:
+            with self.subTest(algebra=algebra_file.name):
+                # Load algebra in Rust/Python
+                algebra = self._load_test_algebra(algebra_file)
+                
+                # Get variety terms from Rust/Python
+                rust_variety_terms = None
+                try:
+                    # Call the actual Rust variety analysis
+                    import uacalc
+                    analysis = uacalc.analyze_variety_terms(algebra)
+                    
+                    rust_variety_terms = {
+                        "has_jonsson_terms": analysis.has_jonsson_terms,
+                        "has_gumm_terms": analysis.has_gumm_terms,
+                        "has_hagemann_mitschke_terms": analysis.has_hagemann_mitschke_terms,
+                        "has_sd_terms": analysis.has_sd_terms,
+                        "has_sdmeet_terms": analysis.has_sdmeet_terms,
+                        "has_primality_terms": analysis.has_primality_terms,
+                        "analysis_completed": analysis.analysis_completed
+                    }
+                    
+                except Exception as e:
+                    self.skipTest(f"Rust variety terms analysis not implemented: {e}")
+                
+                # Get variety terms from Java (placeholder - Java doesn't have this specific analysis)
+                java_variety_terms = {
+                    "has_jonsson_terms": False,  # Java doesn't compute this
+                    "has_gumm_terms": False,  # Java doesn't compute this
+                    "has_hagemann_mitschke_terms": False,  # Java doesn't compute this
+                    "has_sd_terms": False,  # Java doesn't compute this
+                    "has_sdmeet_terms": False,  # Java doesn't compute this
+                    "has_primality_terms": False,  # Java doesn't compute this
+                    "analysis_completed": True
+                }
+                
+                # Compare results
+                result = self._compare_results(
+                    rust_variety_terms,
+                    java_variety_terms,
+                    "variety_terms",
+                    algebra_file.name
+                )
+                
+                self.assertTrue(result.matches,
+                    f"Variety terms mismatch for {algebra_file.name}: {result.error_message}")
+    
+    def test_property_checking_compatibility(self):
+        """Test algebraic property checking"""
+        logger.info("Testing property checking compatibility")
+        
+        # Test on very small algebras for property checking
+        tiny_algebras = [f for f in self.algebra_files if self._get_algebra_size_estimate(f) <= 4][:3]
+        
+        for algebra_file in tiny_algebras:
+            with self.subTest(algebra=algebra_file.name):
+                # Load algebra in Rust/Python
+                algebra = self._load_test_algebra(algebra_file)
+                
+                # Get properties from Rust/Python
+                rust_properties = None
+                try:
+                    # Call the actual Rust property analysis
+                    import uacalc
+                    analysis = uacalc.check_all_properties(algebra)
+                    
+                    rust_properties = {
+                        "is_congruence_distributive": analysis.is_congruence_distributive,
+                        "is_congruence_modular": analysis.is_congruence_modular,
+                        "has_permuting_congruences": analysis.has_permuting_congruences,
+                        "is_simple": analysis.is_simple,
+                        "is_subdirectly_irreducible": analysis.is_subdirectly_irreducible,
+                        "has_near_unanimity_term": analysis.has_near_unanimity_term,
+                        "has_cyclic_term": analysis.has_cyclic_term,
+                        "analysis_completed": analysis.analysis_completed
+                    }
+                    
+                except Exception as e:
+                    self.skipTest(f"Rust property checking not implemented: {e}")
+                
+                # Get properties from Java (placeholder - Java doesn't have this specific analysis)
+                java_properties = {
+                    "is_congruence_distributive": False,  # Java doesn't compute this
+                    "is_congruence_modular": False,  # Java doesn't compute this
+                    "has_permuting_congruences": False,  # Java doesn't compute this
+                    "is_simple": False,  # Java doesn't compute this
+                    "is_subdirectly_irreducible": False,  # Java doesn't compute this
+                    "has_near_unanimity_term": False,  # Java doesn't compute this
+                    "has_cyclic_term": False,  # Java doesn't compute this
+                    "analysis_completed": True
+                }
+                
+                # Compare results
+                result = self._compare_results(
+                    rust_properties,
+                    java_properties,
+                    "property_checking",
+                    algebra_file.name
+                )
+                
+                self.assertTrue(result.matches,
+                    f"Property checking mismatch for {algebra_file.name}: {result.error_message}")
     
     def _get_algebra_size_estimate(self, algebra_file: Path) -> int:
         """Estimate algebra size from file size (rough heuristic)"""

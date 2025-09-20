@@ -21,13 +21,16 @@ pub mod partition;
 pub mod permutation_group;
 pub mod polymorphisms;
 pub mod product;
+pub mod property_checker;
 pub mod quotient;
 pub mod subalgebra;
 #[cfg(feature = "taylor")]
 pub mod taylor;
 #[cfg(feature = "term-eval")]
 pub mod term;
+pub mod term_finder;
 pub mod utils;
+pub mod variety;
 
 pub use algebra::{Algebra, BasicAlgebra, SmallAlgebra, Homomorphism, find_homomorphism, are_isomorphic};
 pub use binary_relation::{
@@ -38,6 +41,22 @@ pub use error::{UACalcError, UACalcResult};
 pub use malcev::{
     MalcevAnalyzer, MalcevAnalysis, VarietyAnalysis, TctAnalysis, AdvancedProperties,
     analyze_malcev_conditions, analyze_variety_membership, analyze_tct_type, analyze_advanced_properties
+};
+pub use property_checker::{
+    PropertyChecker, PropertyAnalysis,
+    check_all_properties, is_congruence_distributive, is_congruence_modular,
+    has_permuting_congruences, is_simple, is_subdirectly_irreducible,
+    has_near_unanimity_term, has_cyclic_term, has_fixed_kedge_term,
+    has_fixed_kperm_term, has_cube_term_blocker
+};
+pub use term_finder::{
+    TermFinder, TermFindingAnalysis,
+    find_all_terms, find_malcev_term, find_join_term, find_majority_term,
+    find_minority_term, find_near_unanimity_term, find_taylor_term
+};
+pub use variety::{
+    VarietyAnalyzer, VarietyTermAnalysis, SpecializedTermAnalysis,
+    analyze_variety_terms, analyze_specialized_terms
 };
 pub use free_algebra::{FreeAlgebra, VarietyConstraint, create_free_algebra, create_free_algebra_with_common_operations};
 pub use operation::{

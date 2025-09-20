@@ -74,6 +74,10 @@ try:
     TctAnalysis,
     AdvancedProperties,
     MalcevAnalyzer,
+    # New term finding and variety analysis classes
+    TermFinder,
+    VarietyAnalyzer,
+    PropertyChecker,
     # Permutation group classes
     Permutation,
     PermutationGroupAnalysis,
@@ -272,6 +276,11 @@ __all__ = [
     "TctAnalysis",
     "AdvancedProperties",
     "MalcevAnalyzer",
+    
+    # New term finding and variety analysis classes
+    "TermFinder",
+    "VarietyAnalyzer",
+    "PropertyChecker",
     
     # Permutation group classes
     "Permutation",

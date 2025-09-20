@@ -16,6 +16,22 @@ use uacalc_core::malcev::{
     MalcevAnalyzer, MalcevAnalysis, VarietyAnalysis, TctAnalysis, AdvancedProperties,
     analyze_malcev_conditions, analyze_variety_membership, analyze_tct_type, analyze_advanced_properties
 };
+use uacalc_core::term_finder::{
+    TermFinder, TermFindingAnalysis,
+    find_all_terms, find_malcev_term, find_join_term, find_majority_term,
+    find_minority_term, find_near_unanimity_term, find_taylor_term
+};
+use uacalc_core::variety::{
+    VarietyAnalyzer, VarietyTermAnalysis, SpecializedTermAnalysis,
+    analyze_variety_terms, analyze_specialized_terms
+};
+use uacalc_core::property_checker::{
+    PropertyChecker, PropertyAnalysis,
+    check_all_properties, is_congruence_distributive, is_congruence_modular,
+    has_permuting_congruences, is_simple, is_subdirectly_irreducible,
+    has_near_unanimity_term, has_cyclic_term, has_fixed_kedge_term,
+    has_fixed_kperm_term, has_cube_term_blocker
+};
 use uacalc_core::equation::{Equation, EquationComplexity, EquationProperties, ComplexityLevel};
 use uacalc_core::presentation::{Presentation, PresentationProperties};
 use uacalc_core::free_algebra::{FreeAlgebra, VarietyConstraint, create_free_algebra, create_free_algebra_with_common_operations};
@@ -73,6 +89,9 @@ fn uacalc_rust(_py: Python, m: &Bound<PyModule>) -> PyResult<()> {
     m.add_class::<PyLatticeProperties>()?;
     m.add_class::<PyDualLatticeAnalysis>()?;
     m.add_class::<PyMalcevAnalyzer>()?;
+    m.add_class::<PyTermFinder>()?;
+    m.add_class::<PyVarietyAnalyzer>()?;
+    m.add_class::<PyPropertyChecker>()?;
     m.add_class::<PyTerm>()?;
     m.add_class::<PyTermArena>()?;
     m.add_class::<PyEquation>()?;
@@ -5327,3 +5346,396 @@ pub fn py_has_maltsev_polymorphism(algebra: &PyAlgebra) -> PyResult<bool> {
 // Re-export memory functions
 #[cfg(feature = "memory-limit")]
 pub use memory_bindings::*;
+
+/// Python wrapper for TermFinder
+#[pyclass(name = "TermFinder")]
+pub struct PyTermFinder {
+    inner: TermFinder,
+}
+
+#[pymethods]
+impl PyTermFinder {
+    #[new]
+    fn new() -> Self {
+        Self {
+            inner: TermFinder::new(),
+        }
+    }
+
+    fn find_all_terms(&mut self, algebra: &PyAlgebra) -> PyResult<PyTermFindingAnalysis> {
+        let analysis = self.inner.find_all_terms(&algebra.inner).map_err(map_uacalc_error)?;
+        Ok(PyTermFindingAnalysis { inner: analysis })
+    }
+
+    fn find_malcev_term(&mut self, algebra: &PyAlgebra) -> PyResult<String> {
+        self.inner.find_malcev_term(&algebra.inner).map_err(map_uacalc_error)
+    }
+
+    fn find_join_term(&mut self, algebra: &PyAlgebra) -> PyResult<String> {
+        self.inner.find_join_term(&algebra.inner).map_err(map_uacalc_error)
+    }
+
+    fn find_majority_term(&mut self, algebra: &PyAlgebra) -> PyResult<String> {
+        self.inner.find_majority_term(&algebra.inner).map_err(map_uacalc_error)
+    }
+
+    fn find_minority_term(&mut self, algebra: &PyAlgebra) -> PyResult<String> {
+        self.inner.find_minority_term(&algebra.inner).map_err(map_uacalc_error)
+    }
+
+    fn find_near_unanimity_term(&mut self, algebra: &PyAlgebra) -> PyResult<String> {
+        self.inner.find_near_unanimity_term(&algebra.inner).map_err(map_uacalc_error)
+    }
+
+    fn find_taylor_term(&mut self, algebra: &PyAlgebra) -> PyResult<String> {
+        self.inner.find_taylor_term(&algebra.inner).map_err(map_uacalc_error)
+    }
+}
+
+/// Python wrapper for TermFindingAnalysis
+#[pyclass(name = "TermFindingAnalysis")]
+pub struct PyTermFindingAnalysis {
+    inner: TermFindingAnalysis,
+}
+
+#[pymethods]
+impl PyTermFindingAnalysis {
+    #[getter]
+    fn has_malcev_term(&self) -> bool {
+        self.inner.has_malcev_term
+    }
+
+    #[getter]
+    fn has_join_term(&self) -> bool {
+        self.inner.has_join_term
+    }
+
+    #[getter]
+    fn has_majority_term(&self) -> bool {
+        self.inner.has_majority_term
+    }
+
+    #[getter]
+    fn has_minority_term(&self) -> bool {
+        self.inner.has_minority_term
+    }
+
+    #[getter]
+    fn has_near_unanimity_term(&self) -> bool {
+        self.inner.has_near_unanimity_term
+    }
+
+    #[getter]
+    fn has_taylor_term(&self) -> bool {
+        self.inner.has_taylor_term
+    }
+
+    #[getter]
+    fn malcev_term(&self) -> Option<String> {
+        self.inner.malcev_term.clone()
+    }
+
+    #[getter]
+    fn join_term(&self) -> Option<String> {
+        self.inner.join_term.clone()
+    }
+
+    #[getter]
+    fn majority_term(&self) -> Option<String> {
+        self.inner.majority_term.clone()
+    }
+
+    #[getter]
+    fn minority_term(&self) -> Option<String> {
+        self.inner.minority_term.clone()
+    }
+
+    #[getter]
+    fn near_unanimity_term(&self) -> Option<String> {
+        self.inner.near_unanimity_term.clone()
+    }
+
+    #[getter]
+    fn taylor_term(&self) -> Option<String> {
+        self.inner.taylor_term.clone()
+    }
+
+    #[getter]
+    fn analysis_completed(&self) -> bool {
+        self.inner.analysis_completed
+    }
+}
+
+/// Python wrapper for VarietyAnalyzer
+#[pyclass(name = "VarietyAnalyzer")]
+pub struct PyVarietyAnalyzer {
+    inner: VarietyAnalyzer,
+}
+
+#[pymethods]
+impl PyVarietyAnalyzer {
+    #[new]
+    fn new() -> Self {
+        Self {
+            inner: VarietyAnalyzer::new(),
+        }
+    }
+
+    fn analyze_variety_terms(&mut self, algebra: &PyAlgebra) -> PyResult<PyVarietyTermAnalysis> {
+        let analysis = self.inner.analyze_variety_terms(&algebra.inner).map_err(map_uacalc_error)?;
+        Ok(PyVarietyTermAnalysis { inner: analysis })
+    }
+
+    fn analyze_specialized_terms(&mut self, algebra: &PyAlgebra) -> PyResult<PySpecializedTermAnalysis> {
+        let analysis = self.inner.analyze_specialized_terms(&algebra.inner).map_err(map_uacalc_error)?;
+        Ok(PySpecializedTermAnalysis { inner: analysis })
+    }
+}
+
+/// Python wrapper for VarietyTermAnalysis
+#[pyclass(name = "VarietyTermAnalysis")]
+pub struct PyVarietyTermAnalysis {
+    inner: VarietyTermAnalysis,
+}
+
+#[pymethods]
+impl PyVarietyTermAnalysis {
+    #[getter]
+    fn has_jonsson_terms(&self) -> bool {
+        self.inner.has_jonsson_terms
+    }
+
+    #[getter]
+    fn has_gumm_terms(&self) -> bool {
+        self.inner.has_gumm_terms
+    }
+
+    #[getter]
+    fn has_hagemann_mitschke_terms(&self) -> bool {
+        self.inner.has_hagemann_mitschke_terms
+    }
+
+    #[getter]
+    fn has_sd_terms(&self) -> bool {
+        self.inner.has_sd_terms
+    }
+
+    #[getter]
+    fn has_sdmeet_terms(&self) -> bool {
+        self.inner.has_sdmeet_terms
+    }
+
+    #[getter]
+    fn has_primality_terms(&self) -> bool {
+        self.inner.has_primality_terms
+    }
+
+    #[getter]
+    fn jonsson_terms(&self) -> Option<Vec<String>> {
+        self.inner.jonsson_terms.clone()
+    }
+
+    #[getter]
+    fn gumm_terms(&self) -> Option<Vec<String>> {
+        self.inner.gumm_terms.clone()
+    }
+
+    #[getter]
+    fn hagemann_mitschke_terms(&self) -> Option<Vec<String>> {
+        self.inner.hagemann_mitschke_terms.clone()
+    }
+
+    #[getter]
+    fn analysis_completed(&self) -> bool {
+        self.inner.analysis_completed
+    }
+}
+
+/// Python wrapper for SpecializedTermAnalysis
+#[pyclass(name = "SpecializedTermAnalysis")]
+pub struct PySpecializedTermAnalysis {
+    inner: SpecializedTermAnalysis,
+}
+
+#[pymethods]
+impl PySpecializedTermAnalysis {
+    #[getter]
+    fn has_semilattice_term(&self) -> bool {
+        self.inner.has_semilattice_term
+    }
+
+    #[getter]
+    fn has_difference_term(&self) -> bool {
+        self.inner.has_difference_term
+    }
+
+    #[getter]
+    fn has_pixley_term(&self) -> bool {
+        self.inner.has_pixley_term
+    }
+
+    #[getter]
+    fn has_weak_majority_term(&self) -> bool {
+        self.inner.has_weak_majority_term
+    }
+
+    #[getter]
+    fn has_weak_nu_term(&self) -> bool {
+        self.inner.has_weak_nu_term
+    }
+
+    #[getter]
+    fn has_weak_3edge_term(&self) -> bool {
+        self.inner.has_weak_3edge_term
+    }
+
+    #[getter]
+    fn has_fixed_kedge_term(&self) -> bool {
+        self.inner.has_fixed_kedge_term
+    }
+
+    #[getter]
+    fn semilattice_term(&self) -> Option<String> {
+        self.inner.semilattice_term.clone()
+    }
+
+    #[getter]
+    fn difference_term(&self) -> Option<String> {
+        self.inner.difference_term.clone()
+    }
+
+    #[getter]
+    fn pixley_term(&self) -> Option<String> {
+        self.inner.pixley_term.clone()
+    }
+
+    #[getter]
+    fn analysis_completed(&self) -> bool {
+        self.inner.analysis_completed
+    }
+}
+
+/// Python wrapper for PropertyChecker
+#[pyclass(name = "PropertyChecker")]
+pub struct PyPropertyChecker {
+    inner: PropertyChecker,
+}
+
+#[pymethods]
+impl PyPropertyChecker {
+    #[new]
+    fn new() -> Self {
+        Self {
+            inner: PropertyChecker::new(),
+        }
+    }
+
+    fn check_all_properties(&mut self, algebra: &PyAlgebra) -> PyResult<PyPropertyAnalysis> {
+        let analysis = self.inner.check_all_properties(&algebra.inner).map_err(map_uacalc_error)?;
+        Ok(PyPropertyAnalysis { inner: analysis })
+    }
+
+    fn is_congruence_distributive(&self, algebra: &PyAlgebra) -> PyResult<bool> {
+        self.inner.is_congruence_distributive(&algebra.inner).map_err(map_uacalc_error)
+    }
+
+    fn is_congruence_modular(&self, algebra: &PyAlgebra) -> PyResult<bool> {
+        self.inner.is_congruence_modular(&algebra.inner).map_err(map_uacalc_error)
+    }
+
+    fn has_permuting_congruences(&self, algebra: &PyAlgebra) -> PyResult<bool> {
+        self.inner.has_permuting_congruences(&algebra.inner).map_err(map_uacalc_error)
+    }
+
+    fn is_simple(&self, algebra: &PyAlgebra) -> PyResult<bool> {
+        self.inner.is_simple(&algebra.inner).map_err(map_uacalc_error)
+    }
+
+    fn is_subdirectly_irreducible(&self, algebra: &PyAlgebra) -> PyResult<bool> {
+        self.inner.is_subdirectly_irreducible(&algebra.inner).map_err(map_uacalc_error)
+    }
+
+    fn has_near_unanimity_term(&self, algebra: &PyAlgebra) -> PyResult<bool> {
+        self.inner.has_near_unanimity_term(&algebra.inner).map_err(map_uacalc_error)
+    }
+
+    fn has_cyclic_term(&self, algebra: &PyAlgebra) -> PyResult<bool> {
+        self.inner.has_cyclic_term(&algebra.inner).map_err(map_uacalc_error)
+    }
+
+    fn has_fixed_kedge_term(&self, algebra: &PyAlgebra) -> PyResult<bool> {
+        self.inner.has_fixed_kedge_term(&algebra.inner).map_err(map_uacalc_error)
+    }
+
+    fn has_fixed_kperm_term(&self, algebra: &PyAlgebra) -> PyResult<bool> {
+        self.inner.has_fixed_kperm_term(&algebra.inner).map_err(map_uacalc_error)
+    }
+
+    fn has_cube_term_blocker(&self, algebra: &PyAlgebra) -> PyResult<bool> {
+        self.inner.has_cube_term_blocker(&algebra.inner).map_err(map_uacalc_error)
+    }
+}
+
+/// Python wrapper for PropertyAnalysis
+#[pyclass(name = "PropertyAnalysis")]
+pub struct PyPropertyAnalysis {
+    inner: PropertyAnalysis,
+}
+
+#[pymethods]
+impl PyPropertyAnalysis {
+    #[getter]
+    fn is_congruence_distributive(&self) -> bool {
+        self.inner.is_congruence_distributive
+    }
+
+    #[getter]
+    fn is_congruence_modular(&self) -> bool {
+        self.inner.is_congruence_modular
+    }
+
+    #[getter]
+    fn has_permuting_congruences(&self) -> bool {
+        self.inner.has_permuting_congruences
+    }
+
+    #[getter]
+    fn is_simple(&self) -> bool {
+        self.inner.is_simple
+    }
+
+    #[getter]
+    fn is_subdirectly_irreducible(&self) -> bool {
+        self.inner.is_subdirectly_irreducible
+    }
+
+    #[getter]
+    fn has_near_unanimity_term(&self) -> bool {
+        self.inner.has_near_unanimity_term
+    }
+
+    #[getter]
+    fn has_cyclic_term(&self) -> bool {
+        self.inner.has_cyclic_term
+    }
+
+    #[getter]
+    fn has_fixed_kedge_term(&self) -> bool {
+        self.inner.has_fixed_kedge_term
+    }
+
+    #[getter]
+    fn has_fixed_kperm_term(&self) -> bool {
+        self.inner.has_fixed_kperm_term
+    }
+
+    #[getter]
+    fn has_cube_term_blocker(&self) -> bool {
+        self.inner.has_cube_term_blocker
+    }
+
+    #[getter]
+    fn analysis_completed(&self) -> bool {
+        self.inner.analysis_completed
+    }
+}
