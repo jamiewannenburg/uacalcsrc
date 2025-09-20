@@ -245,6 +245,22 @@ class MalcevCompatibilityTest(BaseCompatibilityTest):
                 self.assertTrue(result.matches,
                     f"Variety terms mismatch for {algebra_file.name}: {result.error_message}")
     
+    def _get_algebra_size_estimate(self, algebra_file: Path) -> int:
+        """Estimate algebra size from file size (rough heuristic)"""
+        try:
+            file_size = algebra_file.stat().st_size
+            # Very rough estimate: smaller files = smaller algebras
+            if file_size < 1000:
+                return 3
+            elif file_size < 5000:
+                return 6
+            elif file_size < 20000:
+                return 10
+            else:
+                return 20
+        except:
+            return 10  # Default estimate
+
 
 if __name__ == '__main__':
     unittest.main()

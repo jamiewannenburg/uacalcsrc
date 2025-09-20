@@ -664,7 +664,18 @@ impl MalcevAnalyzer {
 
         // For small algebras, try to compute more accurate properties
         if algebra.cardinality() <= 6 {
-            properties = self.analyze_advanced_properties(algebra)?;
+            // Use the proper lattice analysis function instead of recursive call
+            use crate::conlat::analyze_lattice_properties;
+            let lattice_props = analyze_lattice_properties(algebra)?;
+            
+            // Update properties with actual computed values
+            properties.congruence_lattice_size = lattice_props.congruence_lattice_size;
+            properties.join_irreducible_count = lattice_props.join_irreducibles_count;
+            properties.atoms_count = lattice_props.atoms_count;
+            properties.height = lattice_props.lattice_height;
+            properties.width = lattice_props.lattice_width;
+            properties.is_simple = lattice_props.congruence_lattice_size <= 2;
+            
             // Override analysis_depth to match Java behavior
             properties.analysis_depth = "basic".to_string();
             
@@ -673,11 +684,6 @@ impl MalcevAnalyzer {
             // Java maltsev_conditions only provides congruence_lattice_size
             // So we set other fields to default values to match Java behavior
             properties.has_permuting_congruences = false;
-            properties.join_irreducible_count = 0;
-            properties.atoms_count = 0;
-            properties.height = 0;
-            properties.width = 0;
-            properties.is_simple = false; // Java doesn't compute this in maltsev_conditions
         }
 
         Ok(properties)
