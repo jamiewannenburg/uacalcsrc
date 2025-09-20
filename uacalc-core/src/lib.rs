@@ -5,10 +5,12 @@
 
 pub mod algebra;
 pub mod binary_relation;
+pub mod clones;
 #[cfg(feature = "conlat")]
 pub mod conlat;
 pub mod error;
 pub mod malcev;
+pub mod tct;
 #[cfg(feature = "memory-limit")]
 pub mod memory;
 #[cfg(feature = "term-eval")]
@@ -39,8 +41,14 @@ pub use binary_relation::{
 };
 pub use error::{UACalcError, UACalcResult};
 pub use malcev::{
-    MalcevAnalyzer, MalcevAnalysis, VarietyAnalysis, TctAnalysis, AdvancedProperties,
-    analyze_malcev_conditions, analyze_variety_membership, analyze_tct_type, analyze_advanced_properties
+    MalcevAnalyzer, MalcevAnalysis, VarietyAnalysis, AdvancedProperties,
+    analyze_malcev_conditions, analyze_variety_membership, analyze_advanced_properties
+};
+pub use tct::{
+    TctAnalyzer, TctAnalysis, analyze_tct_type
+};
+pub use clones::{
+    CloneAnalyzer, CloneAnalysis, find_in_clone, unary_clone_from_partitions
 };
 pub use property_checker::{
     PropertyChecker, PropertyAnalysis,
@@ -121,8 +129,9 @@ pub mod prelude {
         PolymorphismType, PolymorphismAnalysis, PolymorphismDetector, QuotientAlgebra, 
         SmallAlgebra, Subalgebra, TableOperation, UACalcError, UACalcResult, VarietyConstraint,
         are_isomorphic, create_free_algebra, create_free_algebra_with_common_operations, 
-        find_homomorphism, MalcevAnalyzer, MalcevAnalysis, VarietyAnalysis, TctAnalysis, AdvancedProperties,
-        analyze_malcev_conditions, analyze_variety_membership, analyze_tct_type, analyze_advanced_properties, analyze_lattice_properties,
+        find_homomorphism, MalcevAnalyzer, MalcevAnalysis, VarietyAnalysis, AdvancedProperties,
+        analyze_malcev_conditions, analyze_variety_membership, analyze_advanced_properties, analyze_lattice_properties,
+        TctAnalyzer, TctAnalysis, analyze_tct_type, CloneAnalyzer, CloneAnalysis, find_in_clone, unary_clone_from_partitions,
     };
 
     // Utility functions

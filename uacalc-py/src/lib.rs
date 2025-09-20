@@ -13,8 +13,14 @@ use uacalc_core::binary_relation::{BasicBinaryRelation, BinaryRelation};
 use uacalc_core::conlat::{BasicCongruenceLattice, BasicLattice, CongruenceLattice as CongruenceLatticeTrait, LatticeProperties, DualLatticeAnalysis, analyze_lattice_properties};
 use uacalc_core::error::UACalcError;
 use uacalc_core::malcev::{
-    MalcevAnalyzer, MalcevAnalysis, VarietyAnalysis, TctAnalysis, AdvancedProperties,
-    analyze_malcev_conditions, analyze_variety_membership, analyze_tct_type, analyze_advanced_properties
+    MalcevAnalyzer, MalcevAnalysis, VarietyAnalysis, AdvancedProperties,
+    analyze_malcev_conditions, analyze_variety_membership, analyze_advanced_properties
+};
+use uacalc_core::tct::{
+    TctAnalyzer, TctAnalysis, analyze_tct_type
+};
+use uacalc_core::clones::{
+    CloneAnalyzer, CloneAnalysis, find_in_clone, unary_clone_from_partitions
 };
 use uacalc_core::term_finder::{
     TermFinder, TermFindingAnalysis,
@@ -4687,7 +4693,7 @@ impl PyMalcevAnalyzer {
     }
 
     fn analyze_tct_type(&self, algebra: &PyAlgebra) -> PyResult<PyTctAnalysis> {
-        let analysis = self.inner.analyze_tct_type(&algebra.inner).map_err(map_uacalc_error)?;
+        let analysis = analyze_tct_type(&algebra.inner).map_err(map_uacalc_error)?;
         Ok(PyTctAnalysis { inner: analysis })
     }
 
