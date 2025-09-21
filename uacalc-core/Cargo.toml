@@ -30,7 +30,7 @@ rand = { version = "0.8", optional = true }
 fastrand = "2.0"
 
 [features]
-default = ["conlat", "term-eval", "mimalloc", "taylor", "memory-limit"]
+default = ["conlat", "term-eval", "taylor", "memory-limit"]
 parallel = ["rayon"]
 conlat = ["dep:petgraph"]
 term-eval = ["dep:itertools", "dep:rand"]

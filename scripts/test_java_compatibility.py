@@ -1,8 +1,4 @@
 #!/usr/bin/env python3
-# make pytest ignore this file
-import pytest
-pytest.skip("This file is not a test")
-
 """
 Test script to verify Java compatibility setup is working correctly.
 """
@@ -12,6 +8,11 @@ import os
 import subprocess
 import json
 from pathlib import Path
+import os
+
+if "PYTEST_CURRENT_TEST" in os.environ:
+    import pytest
+    pytest.skip("This file is not a test")
 
 def test_java_wrapper_compilation():
     """Test that JavaWrapper compiles successfully."""

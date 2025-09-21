@@ -213,6 +213,29 @@ pub trait Operation: fmt::Debug + Send + Sync + std::any::Any {
         self.value(&args)
     }
 
+    /// Check if the operation is commutative (matches Java isCommutative())
+    fn is_commutative(&self) -> UACalcResult<bool> {
+        if self.arity() != 2 {
+            return Ok(false);
+        }
+
+        // For binary operations, check if f(x,y) = f(y,x) for all x,y
+        // We need to know the set size to check all combinations
+        // This is a simplified implementation - in practice, we'd need access to the algebra
+        Ok(false) // Default to false, implementations should override
+    }
+
+    /// Check if the operation is associative (matches Java isAssociative())
+    fn is_associative(&self) -> UACalcResult<bool> {
+        if self.arity() != 2 {
+            return Ok(false);
+        }
+
+        // For binary operations, check if f(x,f(y,z)) = f(f(x,y),z) for all x,y,z
+        // This is a simplified implementation - in practice, we'd need access to the algebra
+        Ok(false) // Default to false, implementations should override
+    }
+
     /// Get the set size (universe size) for this operation
     fn set_size(&self) -> usize;
     
@@ -302,15 +325,6 @@ pub trait Operation: fmt::Debug + Send + Sync + std::any::Any {
         self.is_idempotent_on_set(self.set_size())
     }
 
-    /// Check if the operation is associative (deprecated, use is_associative_on_set)
-    fn is_associative(&self) -> UACalcResult<bool> {
-        self.is_associative_on_set(self.set_size())
-    }
-
-    /// Check if the operation is commutative (deprecated, use is_commutative_on_set)
-    fn is_commutative(&self) -> UACalcResult<bool> {
-        self.is_commutative_on_set(self.set_size())
-    }
 }
 
 /// Table-based operation implementation with flat table optimization
@@ -588,6 +602,48 @@ impl Operation for TableOperation {
     
     fn as_any(&self) -> &dyn std::any::Any {
         self
+    }
+
+    fn is_commutative(&self) -> UACalcResult<bool> {
+        if self.arity() != 2 {
+            return Ok(false);
+        }
+
+        // Check if f(x,y) = f(y,x) for all x,y
+        let n = self.set_size;
+        for x in 0..n {
+            for y in 0..n {
+                let val1 = self.value(&[x, y])?;
+                let val2 = self.value(&[y, x])?;
+                if val1 != val2 {
+                    return Ok(false);
+                }
+            }
+        }
+        Ok(true)
+    }
+
+    fn is_associative(&self) -> UACalcResult<bool> {
+        if self.arity() != 2 {
+            return Ok(false);
+        }
+
+        // Check if f(x,f(y,z)) = f(f(x,y),z) for all x,y,z
+        let n = self.set_size;
+        for x in 0..n {
+            for y in 0..n {
+                for z in 0..n {
+                    let yz = self.value(&[y, z])?;
+                    let x_yz = self.value(&[x, yz])?;
+                    let xy = self.value(&[x, y])?;
+                    let xy_z = self.value(&[xy, z])?;
+                    if x_yz != xy_z {
+                        return Ok(false);
+                    }
+                }
+            }
+        }
+        Ok(true)
     }
 }
 

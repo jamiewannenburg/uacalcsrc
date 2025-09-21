@@ -4355,6 +4355,11 @@ impl PyMalcevAnalysis {
     }
 
     #[getter]
+    fn semilattice_term(&self) -> Option<String> {
+        self.inner.semilattice_term.clone()
+    }
+
+    #[getter]
     fn analysis_completed(&self) -> bool {
         self.inner.analysis_completed
     }
@@ -4707,6 +4712,11 @@ impl PyMalcevAnalyzer {
     fn is_join_term(&mut self, algebra: &PyAlgebra) -> PyResult<bool> {
         let result = self.inner.is_join_term(&algebra.inner).map_err(map_uacalc_error)?;
         Ok(result)
+    }
+
+    fn find_semilattice_term(&mut self, algebra: &PyAlgebra) -> PyResult<Option<String>> {
+        let result = self.inner.find_semilattice_term(&algebra.inner).map_err(map_uacalc_error)?;
+        Ok(Some(result))
     }
 }
 

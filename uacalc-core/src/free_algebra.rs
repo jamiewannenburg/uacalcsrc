@@ -49,17 +49,59 @@ impl VarietyConstraint {
 /// A free algebra generated from a set of generators and variety constraints
 #[derive(Debug, Clone)]
 pub struct FreeAlgebra {
-    name: String,
-    generators: Vec<String>,
-    variety_constraints: VarietyConstraint,
-    operations: Vec<Arc<Mutex<dyn Operation>>>,
-    operation_symbols: HashMap<String, usize>,
-    universe: Vec<usize>,
-    term_arena: TermArena,
-    generator_terms: Vec<TermId>,
+    pub name: String,
+    pub generators: Vec<String>,
+    pub variety_constraints: VarietyConstraint,
+    pub operations: Vec<Arc<Mutex<dyn Operation>>>,
+    pub operation_symbols: HashMap<String, usize>,
+    pub universe: Vec<usize>,
+    pub term_arena: TermArena,
+    pub generator_terms: Vec<TermId>,
 }
 
 impl FreeAlgebra {
+    /// Create a new free algebra from an existing algebra with given number of generators
+    /// This matches the Java constructor: new FreeAlgebra(alg, numGenerators, report)
+    pub fn from_algebra(
+        algebra: &dyn crate::algebra::SmallAlgebra,
+        num_generators: usize,
+        max_depth: usize,
+    ) -> UACalcResult<Self> {
+        if num_generators == 0 {
+            return Err(UACalcError::ParseError {
+                message: "Free algebra must have at least one generator".to_string(),
+            });
+        }
+
+        // Create generator names
+        let generators: Vec<String> = (0..num_generators)
+            .map(|i| format!("x{}", i))
+            .collect();
+
+        // Create operation symbols from the algebra's operations
+        let mut operation_symbols = Vec::new();
+        for op_arc in algebra.operations() {
+            let op_guard = op_arc.lock().map_err(|_| UACalcError::InvalidOperation {
+                message: "Failed to lock operation".to_string(),
+            })?;
+            
+            let symbol = OperationSymbol::new(
+                op_guard.symbol().to_string(),
+                op_guard.arity()
+            );
+            operation_symbols.push(symbol);
+        }
+
+        // Create the free algebra with idempotent variety constraint
+        Self::new(
+            format!("F{}", num_generators),
+            generators,
+            VarietyConstraint::Idempotent,
+            operation_symbols,
+            max_depth,
+        )
+    }
+
     /// Create a new free algebra with given generators and variety constraints
     pub fn new(
         name: String,
@@ -166,6 +208,11 @@ impl FreeAlgebra {
         for depth in 1..=max_depth {
             let mut next_level = Vec::new();
             
+            // Limit total terms to prevent memory explosion
+            if all_terms.len() > 1000 {
+                break;
+            }
+            
             for symbol in operation_symbols {
                 let arity = symbol.arity();
                 if arity == 0 {
@@ -181,6 +228,11 @@ impl FreeAlgebra {
                         &mut args_combinations,
                         Vec::new(),
                     );
+                    
+                    // Limit combinations to prevent exponential explosion
+                    if args_combinations.len() > 1000 {
+                        args_combinations.truncate(1000);
+                    }
 
                     for args in args_combinations {
                         let term = arena.make_term(symbol, &args);
@@ -203,6 +255,11 @@ impl FreeAlgebra {
         combinations: &mut Vec<Vec<TermId>>,
         current: Vec<TermId>,
     ) {
+        // Prevent exponential explosion by limiting combinations
+        if combinations.len() > 10000 {
+            return;
+        }
+        
         if current.len() == arity {
             combinations.push(current);
             return;
@@ -417,6 +474,171 @@ impl FreeAlgebra {
     /// Get the variety constraints
     pub fn variety_constraints(&self) -> &VarietyConstraint {
         &self.variety_constraints
+    }
+
+    /// Get all terms in the free algebra (matches Java getTerms())
+    pub fn get_terms(&self) -> Vec<TermId> {
+        // Return all terms from the term arena
+        let mut terms = Vec::new();
+        
+        // Add generator terms
+        terms.extend_from_slice(&self.generator_terms);
+        
+        // Add all other terms from the arena
+        // The term arena contains all generated terms
+        for term_id in 0..self.term_arena.num_terms() {
+            if !self.generator_terms.contains(&term_id) {
+                terms.push(term_id);
+            }
+        }
+        
+        terms
+    }
+
+    /// Get idempotent terms (matches Java getIdempotentTerms())
+    pub fn get_idempotent_terms(&self) -> UACalcResult<Vec<TermId>> {
+        let mut idempotent_terms = Vec::new();
+        let terms = self.get_terms();
+        
+        // Add generator terms (variables are always idempotent)
+        idempotent_terms.extend_from_slice(&self.generator_terms);
+        
+        // Check other terms for idempotency
+        for term_id in terms {
+            if !self.generator_terms.contains(&term_id) {
+                // For now, we'll use a simplified check
+                // In a full implementation, we'd evaluate the term and check if the resulting operation is idempotent
+                if self.is_term_idempotent(term_id)? {
+                    idempotent_terms.push(term_id);
+                }
+            }
+        }
+        
+        Ok(idempotent_terms)
+    }
+
+    /// Check if a term is idempotent by evaluating it
+    fn is_term_idempotent(&self, term_id: TermId) -> UACalcResult<bool> {
+        use crate::term::eval_term;
+        use crate::term::variable::VariableAssignment;
+        
+        let term = self.term_arena.get_term(term_id)?;
+        
+        // Variable terms are always idempotent
+        if matches!(term, crate::term::Term::Variable(_)) {
+            return Ok(true);
+        }
+        
+        // For operation terms, check if they are idempotent
+        // A term t(x) is idempotent if t(x,x,...,x) = x for all x
+        let n = self.universe.len();
+        
+        for x in 0..n {
+            // Create assignment where all variables are set to x
+            let mut assignment = VariableAssignment::new();
+            for i in 0..self.generators.len() {
+                assignment.assign(i as u8, x);
+            }
+            
+            // Evaluate the term with all variables set to x
+            let result = eval_term(term_id, &self.term_arena, self, &assignment)?;
+            
+            // If result is not x, the term is not idempotent
+            if result != x {
+                return Ok(false);
+            }
+        }
+        
+        Ok(true)
+    }
+
+    /// Create an operation from a term (matches Java term.interpretation())
+    pub fn term_interpretation(
+        &self,
+        term_id: TermId,
+        target_algebra: &dyn crate::algebra::SmallAlgebra,
+        use_all_variables: bool,
+    ) -> UACalcResult<Arc<Mutex<dyn crate::operation::Operation>>> {
+        use crate::term::eval_term;
+        use crate::term::variable::VariableAssignment;
+        use crate::operation::{OperationSymbol, TableOperation};
+        
+        let n = target_algebra.cardinality();
+        
+        // Determine the arity of the term
+        let arity = if use_all_variables {
+            self.generators.len()
+        } else {
+            // Count unique variables in the term
+            self.count_variables_in_term(term_id)?
+        };
+        
+        // Create operation table
+        let mut table = Vec::new();
+        
+        // Generate all possible argument combinations
+        for args in self.generate_argument_combinations_for_term(n, arity) {
+            let assignment = VariableAssignment::from_slice(&args);
+            let result = eval_term(term_id, &self.term_arena, target_algebra, &assignment)?;
+            
+            // Add row to table: [args..., result]
+            let mut row = args.to_vec();
+            row.push(result);
+            table.push(row);
+        }
+        
+        // Create operation symbol
+        let symbol = OperationSymbol::new("term_op".to_string(), arity);
+        
+        // Create table operation
+        let term_op = TableOperation::new(symbol, table, n)?;
+        
+        Ok(Arc::new(Mutex::new(term_op)))
+    }
+
+    /// Count the number of unique variables in a term
+    fn count_variables_in_term(&self, term_id: TermId) -> UACalcResult<usize> {
+        let term = self.term_arena.get_term(term_id)?;
+        match term {
+            crate::term::Term::Variable(idx) => Ok(1),
+            crate::term::Term::Operation { children, .. } => {
+                let mut max_var = 0;
+                for &child_id in children {
+                    let child_vars = self.count_variables_in_term(child_id)?;
+                    max_var = max_var.max(child_vars);
+                }
+                Ok(max_var)
+            }
+        }
+    }
+
+    /// Generate all possible argument combinations for an operation (for term interpretation)
+    fn generate_argument_combinations_for_term(&self, n: usize, arity: usize) -> Vec<Vec<usize>> {
+        let mut combinations = Vec::new();
+        let mut current = vec![0; arity];
+        
+        loop {
+            combinations.push(current.clone());
+            
+            // Increment the combination
+            let mut carry = 1;
+            for i in (0..arity).rev() {
+                current[i] += carry;
+                if current[i] >= n {
+                    current[i] = 0;
+                    carry = 1;
+                } else {
+                    carry = 0;
+                    break;
+                }
+            }
+            
+            if carry == 1 {
+                break; // All combinations generated
+            }
+        }
+        
+        combinations
     }
 
     /// Check if the algebra satisfies the universal property

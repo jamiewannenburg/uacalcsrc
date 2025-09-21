@@ -1,6 +1,6 @@
 use std::sync::{Arc, Mutex};
 use uacalc_core::prelude::*;
-use uacalc_core::malcev::MalcevAnalyzer;
+use uacalc_core::tct::TctAnalyzer;
 
 /// Test TCT type detection compatibility with Java implementation
 /// This test verifies that the Rust implementation produces consistent
@@ -12,7 +12,7 @@ fn test_tct_type_trivial_algebra() -> Result<(), Box<dyn std::error::Error>> {
     let universe = vec![0];
     let algebra = BasicAlgebra::new("trivial".to_string(), universe)?;
     
-    let analyzer = MalcevAnalyzer::new();
+    let analyzer = TctAnalyzer::new();
     let tct_analysis = analyzer.analyze_tct_type(&algebra)?;
     
     assert_eq!(tct_analysis.tct_type, 1);
@@ -45,7 +45,7 @@ fn test_tct_type_small_boolean_algebra() -> Result<(), Box<dyn std::error::Error
     algebra.add_operation("meet".to_string(), meet_op)?;
     algebra.add_operation("join".to_string(), join_op)?;
     
-    let analyzer = MalcevAnalyzer::new();
+    let analyzer = TctAnalyzer::new();
     let tct_analysis = analyzer.analyze_tct_type(&algebra)?;
     
     // Boolean algebras should have type 1 (distributive)
@@ -75,7 +75,7 @@ fn test_tct_type_small_group_algebra() -> Result<(), Box<dyn std::error::Error>>
     algebra.add_operation("add".to_string(), add_op)?;
     algebra.add_operation("inv".to_string(), inv_op)?;
     
-    let analyzer = MalcevAnalyzer::new();
+    let analyzer = TctAnalyzer::new();
     let tct_analysis = analyzer.analyze_tct_type(&algebra)?;
     
     // Groups should have type 1
@@ -117,7 +117,7 @@ fn test_tct_type_small_lattice_algebra() -> Result<(), Box<dyn std::error::Error
     algebra.add_operation("meet".to_string(), meet_op)?;
     algebra.add_operation("join".to_string(), join_op)?;
     
-    let analyzer = MalcevAnalyzer::new();
+    let analyzer = TctAnalyzer::new();
     let tct_analysis = analyzer.analyze_tct_type(&algebra)?;
     
     // Small lattices should have type 1
@@ -134,7 +134,7 @@ fn test_tct_type_memory_estimation() -> Result<(), Box<dyn std::error::Error>> {
     let universe = vec![0, 1, 2, 3, 4];
     let algebra = BasicAlgebra::new("test5".to_string(), universe)?;
     
-    let analyzer = MalcevAnalyzer::new();
+    let analyzer = TctAnalyzer::new();
     let tct_analysis = analyzer.analyze_tct_type(&algebra)?;
     
     // Should return a valid result
@@ -156,7 +156,7 @@ fn test_tct_type_consistency() -> Result<(), Box<dyn std::error::Error>> {
     })?));
     algebra.add_operation("op".to_string(), op)?;
     
-    let analyzer = MalcevAnalyzer::new();
+    let analyzer = TctAnalyzer::new();
     
     // Run analysis multiple times
     let result1 = analyzer.analyze_tct_type(&algebra)?;
@@ -180,7 +180,7 @@ fn test_tct_type_edge_cases() -> Result<(), Box<dyn std::error::Error>> {
     let universe = vec![0, 1];
     let algebra = BasicAlgebra::new("no_ops".to_string(), universe)?;
     
-    let analyzer = MalcevAnalyzer::new();
+    let analyzer = TctAnalyzer::new();
     let tct_analysis = analyzer.analyze_tct_type(&algebra)?;
     
     // Algebra with no operations should still have a type
@@ -208,7 +208,7 @@ fn test_tct_type_advanced_properties() -> Result<(), Box<dyn std::error::Error>>
     algebra.add_operation("meet".to_string(), meet_op)?;
     algebra.add_operation("join".to_string(), join_op)?;
     
-    let analyzer = MalcevAnalyzer::new();
+    let analyzer = TctAnalyzer::new();
     let tct_analysis = analyzer.analyze_tct_type(&algebra)?;
     
     // Verify that the analysis includes all expected fields
@@ -242,7 +242,7 @@ fn test_tct_type_memory_limit_handling() -> Result<(), Box<dyn std::error::Error
     algebra.add_operation("op1".to_string(), op1)?;
     algebra.add_operation("op2".to_string(), op2)?;
     
-    let analyzer = MalcevAnalyzer::new();
+    let analyzer = TctAnalyzer::new();
     
     // This should not panic or fail, even if memory limits are reached
     let tct_analysis = analyzer.analyze_tct_type(&algebra)?;

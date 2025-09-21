@@ -1494,15 +1494,50 @@ public class JavaWrapper {
             Algebra algebra = AlgebraIO.readAlgebraFile(uaFile);
             SmallAlgebra smallAlgebra = (SmallAlgebra) algebra;
 
-            // Check what Maltsev terms we can find
+            // Initialize all term detection results
             boolean hasMaltsevTerm = false;
-            boolean hasJonssonTerms = false;
             boolean hasJoinTerm = false;
+            boolean hasMajorityTerm = false;
+            boolean hasMinorityTerm = false;
+            boolean hasNearUnanimityTerm = false;
+            boolean hasSemilatticeTerm = false;
+            boolean hasDifferenceTerm = false;
+            boolean hasPixleyTerm = false;
+            boolean hasWeakMajorityTerm = false;
+            boolean hasWeakNUTerm = false;
+            boolean hasWeak3EdgeTerm = false;
+            boolean hasFixedKEdgeTerm = false;
+            boolean hasJonssonTerms = false;
+            boolean hasGummTerms = false;
+            boolean hasHagemannMitschkeTerms = false;
+            boolean hasSdTerms = false;
+            boolean hasSdmeetTerms = false;
+            boolean hasPrimalityTerms = false;
+
+            // Store term strings for successful detections
             String maltsevTermString = null;
             String joinTermString = null;
+            String majorityTermString = null;
+            String minorityTermString = null;
+            String nearUnanimityTermString = null;
+            String semilatticeTermString = null;
+            String differenceTermString = null;
+            String pixleyTermString = null;
+            String weakMajorityTermString = null;
+            String weakNUTermString = null;
+            String weak3EdgeTermString = null;
+            String fixedKEdgeTermString = null;
+            
+            // Store term collections for successful detections
+            List<Term> jonssonTermsList = null;
+            List<Term> gummTermsList = null;
+            List<Term> hagemannMitschkeTermsList = null;
+            List<Term> sdTermsList = null;
+            List<Term> sdmeetTermsList = null;
+            List<Term> primalityTermsList = null;
 
+            // Try to find individual terms
             try {
-                // Try to find Maltsev term
                 Term maltsevTerm = Malcev.malcevTerm(smallAlgebra);
                 if (maltsevTerm != null) {
                     hasMaltsevTerm = true;
@@ -1513,7 +1548,6 @@ public class JavaWrapper {
             }
 
             try {
-                // Try to find join term
                 Term joinTerm = Malcev.joinTerm(smallAlgebra);
                 if (joinTerm != null) {
                     hasJoinTerm = true;
@@ -1521,6 +1555,152 @@ public class JavaWrapper {
                 }
             } catch (Exception e) {
                 // Join term not found or error occurred
+            }
+
+            try {
+                Term majorityTerm = Malcev.majorityTerm(smallAlgebra);
+                if (majorityTerm != null) {
+                    hasMajorityTerm = true;
+                    majorityTermString = majorityTerm.toString();
+                }
+            } catch (Exception e) {
+                // Majority term not found or error occurred
+            }
+
+            try {
+                Term minorityTerm = Malcev.minorityTerm(smallAlgebra);
+                if (minorityTerm != null) {
+                    hasMinorityTerm = true;
+                    minorityTermString = minorityTerm.toString();
+                }
+            } catch (Exception e) {
+                // Minority term not found or error occurred
+            }
+
+            try {
+                // Try near unanimity term with arity 3
+                Term nuTerm = Malcev.nuTerm(smallAlgebra, 3);
+                if (nuTerm != null) {
+                    hasNearUnanimityTerm = true;
+                    nearUnanimityTermString = nuTerm.toString();
+                }
+            } catch (Exception e) {
+                // Near unanimity term not found or error occurred
+            }
+
+            try {
+                Term semilatticeTerm = Malcev.semilatticeTerm(smallAlgebra);
+                if (semilatticeTerm != null) {
+                    hasSemilatticeTerm = true;
+                    semilatticeTermString = semilatticeTerm.toString();
+                }
+            } catch (Exception e) {
+                // Semilattice term not found or error occurred
+            }
+
+            try {
+                Term differenceTerm = Malcev.differenceTerm(smallAlgebra);
+                if (differenceTerm != null) {
+                    hasDifferenceTerm = true;
+                    differenceTermString = differenceTerm.toString();
+                }
+            } catch (Exception e) {
+                // Difference term not found or error occurred
+            }
+
+            try {
+                Term pixleyTerm = Malcev.pixleyTerm(smallAlgebra);
+                if (pixleyTerm != null) {
+                    hasPixleyTerm = true;
+                    pixleyTermString = pixleyTerm.toString();
+                }
+            } catch (Exception e) {
+                // Pixley term not found or error occurred
+            }
+
+            try {
+                Term weakMajorityTerm = Malcev.weakMajorityTerm(smallAlgebra);
+                if (weakMajorityTerm != null) {
+                    hasWeakMajorityTerm = true;
+                    weakMajorityTermString = weakMajorityTerm.toString();
+                }
+            } catch (Exception e) {
+                // Weak majority term not found or error occurred
+            }
+
+            try {
+                // Try weak NU term with arity 3
+                Term weakNUTerm = Malcev.weakNUTerm(smallAlgebra, 3);
+                if (weakNUTerm != null) {
+                    hasWeakNUTerm = true;
+                    weakNUTermString = weakNUTerm.toString();
+                }
+            } catch (Exception e) {
+                // Weak NU term not found or error occurred
+            }
+
+            try {
+                Term weak3EdgeTerm = Malcev.weak3EdgeTerm(smallAlgebra, null);
+                if (weak3EdgeTerm != null) {
+                    hasWeak3EdgeTerm = true;
+                    weak3EdgeTermString = weak3EdgeTerm.toString();
+                }
+            } catch (Exception e) {
+                // Weak 3-edge term not found or error occurred
+            }
+
+            try {
+                // Try fixed k-edge term with k=3
+                Term fixedKEdgeTerm = Malcev.fixedKEdgeTerm(smallAlgebra, 3, null);
+                if (fixedKEdgeTerm != null) {
+                    hasFixedKEdgeTerm = true;
+                    fixedKEdgeTermString = fixedKEdgeTerm.toString();
+                }
+            } catch (Exception e) {
+                // Fixed k-edge term not found or error occurred
+            }
+
+            // Try to find term collections
+            try {
+                jonssonTermsList = Malcev.jonssonTerms(smallAlgebra);
+                hasJonssonTerms = (jonssonTermsList != null && !jonssonTermsList.isEmpty());
+            } catch (Exception e) {
+                // Jonsson terms not found or error occurred
+            }
+
+            try {
+                gummTermsList = Malcev.gummTerms(smallAlgebra);
+                hasGummTerms = (gummTermsList != null && !gummTermsList.isEmpty());
+            } catch (Exception e) {
+                // Gumm terms not found or error occurred
+            }
+
+            try {
+                hagemannMitschkeTermsList = Malcev.hagemannMitschkeTerms(smallAlgebra);
+                hasHagemannMitschkeTerms = (hagemannMitschkeTermsList != null && !hagemannMitschkeTermsList.isEmpty());
+            } catch (Exception e) {
+                // Hagemann-Mitschke terms not found or error occurred
+            }
+
+            try {
+                sdTermsList = Malcev.sdTerms(smallAlgebra, null);
+                hasSdTerms = (sdTermsList != null && !sdTermsList.isEmpty());
+            } catch (Exception e) {
+                // SD terms not found or error occurred
+            }
+
+            try {
+                sdmeetTermsList = Malcev.sdmeetTerms(smallAlgebra);
+                hasSdmeetTerms = (sdmeetTermsList != null && !sdmeetTermsList.isEmpty());
+            } catch (Exception e) {
+                // SD-meet terms not found or error occurred
+            }
+
+            try {
+                primalityTermsList = Malcev.primalityTerms(smallAlgebra, null);
+                hasPrimalityTerms = (primalityTermsList != null && !primalityTermsList.isEmpty());
+            } catch (Exception e) {
+                // Primality terms not found or error occurred
             }
 
             // Get congruence lattice size as an indicator of complexity
@@ -1532,7 +1712,6 @@ public class JavaWrapper {
                 // Could not compute congruence lattice
             }
 
-
             long endMemory = getMemoryUsage();
             long endTime = System.currentTimeMillis();
 
@@ -1542,15 +1721,124 @@ public class JavaWrapper {
             result.append("\"operation\":\"maltsev_conditions\",");
             result.append("\"algebra_name\":\"").append(escapeJson(algebra.getName())).append("\",");
             result.append("\"results\":{");
+            
+            // Core terms
             result.append("\"has_maltsev_term\":").append(hasMaltsevTerm).append(",");
             result.append("\"has_join_term\":").append(hasJoinTerm).append(",");
+            result.append("\"has_majority_term\":").append(hasMajorityTerm).append(",");
+            result.append("\"has_minority_term\":").append(hasMinorityTerm).append(",");
+            result.append("\"has_near_unanimity_term\":").append(hasNearUnanimityTerm).append(",");
+            result.append("\"has_semilattice_term\":").append(hasSemilatticeTerm).append(",");
+            result.append("\"has_difference_term\":").append(hasDifferenceTerm).append(",");
+            result.append("\"has_pixley_term\":").append(hasPixleyTerm).append(",");
+            result.append("\"has_weak_majority_term\":").append(hasWeakMajorityTerm).append(",");
+            result.append("\"has_weak_nu_term\":").append(hasWeakNUTerm).append(",");
+            result.append("\"has_weak_3edge_term\":").append(hasWeak3EdgeTerm).append(",");
+            result.append("\"has_fixed_kedge_term\":").append(hasFixedKEdgeTerm).append(",");
+            
+            // Term collections
+            result.append("\"has_jonsson_terms\":").append(hasJonssonTerms).append(",");
+            result.append("\"has_gumm_terms\":").append(hasGummTerms).append(",");
+            result.append("\"has_hagemann_mitschke_terms\":").append(hasHagemannMitschkeTerms).append(",");
+            result.append("\"has_sd_terms\":").append(hasSdTerms).append(",");
+            result.append("\"has_sdmeet_terms\":").append(hasSdmeetTerms).append(",");
+            result.append("\"has_primality_terms\":").append(hasPrimalityTerms).append(",");
+            
             result.append("\"congruence_lattice_size\":").append(congruenceLatticeSize);
+            
+            // Add term strings if found
             if (maltsevTermString != null) {
                 result.append(",\"maltsev_term\":\"").append(escapeJson(maltsevTermString)).append("\"");
             }
             if (joinTermString != null) {
                 result.append(",\"join_term\":\"").append(escapeJson(joinTermString)).append("\"");
             }
+            if (majorityTermString != null) {
+                result.append(",\"majority_term\":\"").append(escapeJson(majorityTermString)).append("\"");
+            }
+            if (minorityTermString != null) {
+                result.append(",\"minority_term\":\"").append(escapeJson(minorityTermString)).append("\"");
+            }
+            if (nearUnanimityTermString != null) {
+                result.append(",\"near_unanimity_term\":\"").append(escapeJson(nearUnanimityTermString)).append("\"");
+            }
+            if (semilatticeTermString != null) {
+                result.append(",\"semilattice_term\":\"").append(escapeJson(semilatticeTermString)).append("\"");
+            }
+            if (differenceTermString != null) {
+                result.append(",\"difference_term\":\"").append(escapeJson(differenceTermString)).append("\"");
+            }
+            if (pixleyTermString != null) {
+                result.append(",\"pixley_term\":\"").append(escapeJson(pixleyTermString)).append("\"");
+            }
+            if (weakMajorityTermString != null) {
+                result.append(",\"weak_majority_term\":\"").append(escapeJson(weakMajorityTermString)).append("\"");
+            }
+            if (weakNUTermString != null) {
+                result.append(",\"weak_nu_term\":\"").append(escapeJson(weakNUTermString)).append("\"");
+            }
+            if (weak3EdgeTermString != null) {
+                result.append(",\"weak_3edge_term\":\"").append(escapeJson(weak3EdgeTermString)).append("\"");
+            }
+            if (fixedKEdgeTermString != null) {
+                result.append(",\"fixed_kedge_term\":\"").append(escapeJson(fixedKEdgeTermString)).append("\"");
+            }
+            
+            // Add term collections if found
+            if (jonssonTermsList != null && !jonssonTermsList.isEmpty()) {
+                result.append(",\"jonsson_terms\":[");
+                for (int i = 0; i < jonssonTermsList.size(); i++) {
+                    if (i > 0) result.append(",");
+                    result.append("\"").append(escapeJson(jonssonTermsList.get(i).toString())).append("\"");
+                }
+                result.append("]");
+            }
+            
+            if (gummTermsList != null && !gummTermsList.isEmpty()) {
+                result.append(",\"gumm_terms\":[");
+                for (int i = 0; i < gummTermsList.size(); i++) {
+                    if (i > 0) result.append(",");
+                    result.append("\"").append(escapeJson(gummTermsList.get(i).toString())).append("\"");
+                }
+                result.append("]");
+            }
+            
+            if (hagemannMitschkeTermsList != null && !hagemannMitschkeTermsList.isEmpty()) {
+                result.append(",\"hagemann_mitschke_terms\":[");
+                for (int i = 0; i < hagemannMitschkeTermsList.size(); i++) {
+                    if (i > 0) result.append(",");
+                    result.append("\"").append(escapeJson(hagemannMitschkeTermsList.get(i).toString())).append("\"");
+                }
+                result.append("]");
+            }
+            
+            if (sdTermsList != null && !sdTermsList.isEmpty()) {
+                result.append(",\"sd_terms\":[");
+                for (int i = 0; i < sdTermsList.size(); i++) {
+                    if (i > 0) result.append(",");
+                    result.append("\"").append(escapeJson(sdTermsList.get(i).toString())).append("\"");
+                }
+                result.append("]");
+            }
+            
+            if (sdmeetTermsList != null && !sdmeetTermsList.isEmpty()) {
+                result.append(",\"sdmeet_terms\":[");
+                for (int i = 0; i < sdmeetTermsList.size(); i++) {
+                    if (i > 0) result.append(",");
+                    result.append("\"").append(escapeJson(sdmeetTermsList.get(i).toString())).append("\"");
+                }
+                result.append("]");
+            }
+            
+            if (primalityTermsList != null && !primalityTermsList.isEmpty()) {
+                result.append(",\"primality_terms\":[");
+                for (int i = 0; i < primalityTermsList.size(); i++) {
+                    if (i > 0) result.append(",");
+                    result.append("\"").append(escapeJson(primalityTermsList.get(i).toString())).append("\"");
+                }
+                result.append("]");
+            }
+            
             result.append("},");
             result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0).append(",");
             result.append("\"computation_time_ms\":").append(endTime - startTime);

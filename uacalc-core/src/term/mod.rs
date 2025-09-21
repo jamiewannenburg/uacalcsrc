@@ -7,11 +7,13 @@ pub mod term;
 pub mod variable;
 pub mod evaluation;
 pub mod arena;
+pub mod analysis;
 
 pub use term::{Term, TermId};
 pub use variable::{Variable, VariableAssignment, VariableScope};
 pub use arena::TermArena;
 pub use evaluation::{EvaluationContext, eval_term, eval_term_int, term_to_table};
+pub use analysis::{is_variable_term, term_uses_exactly_two_variables, get_variables_in_term, term_to_string, is_binary_operation};
 
 /// Maximum depth for term evaluation to prevent stack overflow
 pub const MAX_DEPTH: usize = 1000;

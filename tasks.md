@@ -300,6 +300,29 @@ This document outlines the tasks needed to implement full compatibility between 
 - [ ] Implement array manipulation and analysis
 - [ ] Test integer array functionality
 
+### Task 11
+Implement Malcev conditions, show that they agree with java methods:
+
+#### Subtask 11.1
+- [ ] "maltsev_term"
+- [ ] "join_term"
+- [ ] "majority_term"
+- [ ] "minority_term"
+- [ ] "near_unanimity_term":
+- [ ] "semilattice_term"
+- [ ] "difference_term"
+- [ ] "pixley_term": 
+- [ ] "weak_majority_term"
+- [ ] "weak_nu_term"
+- [ ] "weak_3edge_term"
+- [ ] "fixed_kedge_term"
+- [ ] "jonsson_terms"
+- [ ] "gumm_terms"
+- [ ] "hagemann_mitschke_terms"
+- [ ] "sd_terms"
+- [ ] "sdmeet_terms"
+- [ ] "primality_terms"
+
 ## Implementation Guidelines
 
 ### General Approach

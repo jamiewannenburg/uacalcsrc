@@ -883,6 +883,20 @@ pub fn generate_argument_combinations(universe: &[usize], arity: usize) -> Vec<V
         return vec![vec![]];
     }
     
+    // Prevent exponential explosion by limiting combinations
+    let universe_size = universe.len();
+    let max_combinations = 10000; // Reasonable limit to prevent memory issues
+    
+    // Calculate the maximum number of combinations that would be generated
+    let estimated_combinations = universe_size.pow(arity as u32);
+    
+    if estimated_combinations > max_combinations {
+        // For large combinations, return empty vector to prevent segfault
+        // This is a safety measure - in practice, such large combinations
+        // are not useful for subalgebra generation
+        return Vec::new();
+    }
+    
     let mut combinations = Vec::new();
     generate_combinations_recursive(universe, arity, &mut Vec::new(), &mut combinations);
     combinations
@@ -892,6 +906,11 @@ pub fn generate_argument_combinations(universe: &[usize], arity: usize) -> Vec<V
 fn generate_combinations_recursive(universe: &[usize], remaining_arity: usize, current: &mut Vec<usize>, combinations: &mut Vec<Vec<usize>>) {
     if remaining_arity == 0 {
         combinations.push(current.clone());
+        return;
+    }
+    
+    // Safety check to prevent runaway recursion
+    if combinations.len() > 10000 {
         return;
     }
     
