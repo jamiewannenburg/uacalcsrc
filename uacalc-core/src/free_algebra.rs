@@ -15,6 +15,7 @@ use crate::memory::check_free_algebra_memory_limit;
 
 use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, Mutex};
+use std::time::{Duration, Instant};
 
 /// Represents a variety constraint for free algebra generation
 #[derive(Debug, Clone, PartialEq)]
@@ -67,6 +68,16 @@ impl FreeAlgebra {
         num_generators: usize,
         max_depth: usize,
     ) -> UACalcResult<Self> {
+        Self::from_algebra_with_timeout(algebra, num_generators, max_depth, Duration::from_secs(120))
+    }
+
+    /// Create a new free algebra with timeout to prevent deadlocks
+    pub fn from_algebra_with_timeout(
+        algebra: &dyn crate::algebra::SmallAlgebra,
+        num_generators: usize,
+        max_depth: usize,
+        timeout: Duration,
+    ) -> UACalcResult<Self> {
         if num_generators == 0 {
             return Err(UACalcError::ParseError {
                 message: "Free algebra must have at least one generator".to_string(),
@@ -93,12 +104,13 @@ impl FreeAlgebra {
         }
 
         // Create the free algebra with idempotent variety constraint
-        Self::new(
+        Self::new_with_timeout(
             format!("F{}", num_generators),
             generators,
             VarietyConstraint::Idempotent,
             operation_symbols,
             max_depth,
+            timeout,
         )
     }
 
@@ -109,6 +121,18 @@ impl FreeAlgebra {
         variety_constraints: VarietyConstraint,
         operation_symbols: Vec<OperationSymbol>,
         max_depth: usize,
+    ) -> UACalcResult<Self> {
+        Self::new_with_timeout(name, generators, variety_constraints, operation_symbols, max_depth, Duration::from_secs(120))
+    }
+
+    /// Create a new free algebra with timeout to prevent deadlocks
+    pub fn new_with_timeout(
+        name: String,
+        generators: Vec<String>,
+        variety_constraints: VarietyConstraint,
+        operation_symbols: Vec<OperationSymbol>,
+        max_depth: usize,
+        timeout: Duration,
     ) -> UACalcResult<Self> {
         if generators.is_empty() {
             return Err(UACalcError::ParseError {
@@ -148,12 +172,15 @@ impl FreeAlgebra {
             generator_terms.push(term);
         }
 
-        // Generate all terms up to max_depth
-        let all_terms = Self::generate_terms(
+        // Generate all terms up to max_depth with timeout
+        let start_time = Instant::now();
+        let all_terms = Self::generate_terms_with_timeout(
             &mut term_arena,
             &generator_terms,
             &operation_symbols,
             max_depth,
+            timeout,
+            start_time,
         )?;
 
         // Apply variety constraints to reduce terms
@@ -198,6 +225,18 @@ impl FreeAlgebra {
         operation_symbols: &[OperationSymbol],
         max_depth: usize,
     ) -> UACalcResult<Vec<TermId>> {
+        Self::generate_terms_with_timeout(arena, generators, operation_symbols, max_depth, Duration::from_secs(120), Instant::now())
+    }
+
+    /// Generate all terms up to a given depth with timeout
+    fn generate_terms_with_timeout(
+        arena: &mut TermArena,
+        generators: &[TermId],
+        operation_symbols: &[OperationSymbol],
+        max_depth: usize,
+        timeout: Duration,
+        start_time: Instant,
+    ) -> UACalcResult<Vec<TermId>> {
         let mut all_terms = Vec::new();
         let mut current_level = generators.to_vec();
 
@@ -206,10 +245,17 @@ impl FreeAlgebra {
 
         // Generate terms level by level
         for depth in 1..=max_depth {
+            // Check timeout
+            if start_time.elapsed() > timeout {
+                return Err(UACalcError::TimeoutError {
+                    message: format!("Free algebra generation timed out after {:?}", timeout),
+                });
+            }
+            
             let mut next_level = Vec::new();
             
             // Limit total terms to prevent memory explosion
-            if all_terms.len() > 1000 {
+            if all_terms.len() > 100 {
                 break;
             }
             
@@ -222,12 +268,14 @@ impl FreeAlgebra {
                 } else {
                     // Generate all combinations of arguments from previous levels
                     let mut args_combinations = Vec::new();
-                    Self::generate_argument_combinations(
+                    Self::generate_argument_combinations_with_timeout(
                         &all_terms,
                         arity,
                         &mut args_combinations,
                         Vec::new(),
-                    );
+                        timeout,
+                        start_time,
+                    )?;
                     
                     // Limit combinations to prevent exponential explosion
                     if args_combinations.len() > 1000 {
@@ -255,26 +303,49 @@ impl FreeAlgebra {
         combinations: &mut Vec<Vec<TermId>>,
         current: Vec<TermId>,
     ) {
+        Self::generate_argument_combinations_with_timeout(available_terms, arity, combinations, current, Duration::from_secs(120), Instant::now()).unwrap_or_default();
+    }
+
+    /// Generate all combinations of arguments for operations with timeout
+    fn generate_argument_combinations_with_timeout(
+        available_terms: &[TermId],
+        arity: usize,
+        combinations: &mut Vec<Vec<TermId>>,
+        current: Vec<TermId>,
+        timeout: Duration,
+        start_time: Instant,
+    ) -> UACalcResult<()> {
+        // Check timeout
+        if start_time.elapsed() > timeout {
+            return Err(UACalcError::TimeoutError {
+                message: format!("Argument combination generation timed out after {:?}", timeout),
+            });
+        }
+        
         // Prevent exponential explosion by limiting combinations
         if combinations.len() > 10000 {
-            return;
+            return Ok(());
         }
         
         if current.len() == arity {
             combinations.push(current);
-            return;
+            return Ok(());
         }
 
         for &term in available_terms {
             let mut new_current = current.clone();
             new_current.push(term);
-            Self::generate_argument_combinations(
+            Self::generate_argument_combinations_with_timeout(
                 available_terms,
                 arity,
                 combinations,
                 new_current,
-            );
+                timeout,
+                start_time,
+            )?;
         }
+        
+        Ok(())
     }
 
     /// Apply variety constraints to reduce the set of terms
@@ -497,6 +568,11 @@ impl FreeAlgebra {
 
     /// Get idempotent terms (matches Java getIdempotentTerms())
     pub fn get_idempotent_terms(&self) -> UACalcResult<Vec<TermId>> {
+        self.get_idempotent_terms_with_timeout(Duration::from_secs(120))
+    }
+
+    /// Get idempotent terms with timeout to prevent deadlocks
+    pub fn get_idempotent_terms_with_timeout(&self, timeout: Duration) -> UACalcResult<Vec<TermId>> {
         let mut idempotent_terms = Vec::new();
         let terms = self.get_terms();
         
@@ -504,11 +580,19 @@ impl FreeAlgebra {
         idempotent_terms.extend_from_slice(&self.generator_terms);
         
         // Check other terms for idempotency
+        let start_time = Instant::now();
         for term_id in terms {
+            // Check timeout
+            if start_time.elapsed() > timeout {
+                return Err(UACalcError::TimeoutError {
+                    message: format!("Idempotent term checking timed out after {:?}", timeout),
+                });
+            }
+            
             if !self.generator_terms.contains(&term_id) {
                 // For now, we'll use a simplified check
                 // In a full implementation, we'd evaluate the term and check if the resulting operation is idempotent
-                if self.is_term_idempotent(term_id)? {
+                if self.is_term_idempotent_with_timeout(term_id, timeout, start_time)? {
                     idempotent_terms.push(term_id);
                 }
             }
@@ -519,6 +603,11 @@ impl FreeAlgebra {
 
     /// Check if a term is idempotent by evaluating it
     fn is_term_idempotent(&self, term_id: TermId) -> UACalcResult<bool> {
+        self.is_term_idempotent_with_timeout(term_id, Duration::from_secs(120), Instant::now())
+    }
+
+    /// Check if a term is idempotent by evaluating it with timeout
+    fn is_term_idempotent_with_timeout(&self, term_id: TermId, timeout: Duration, start_time: Instant) -> UACalcResult<bool> {
         use crate::term::eval_term;
         use crate::term::variable::VariableAssignment;
         
@@ -534,6 +623,13 @@ impl FreeAlgebra {
         let n = self.universe.len();
         
         for x in 0..n {
+            // Check timeout
+            if start_time.elapsed() > timeout {
+                return Err(UACalcError::TimeoutError {
+                    message: format!("Term idempotency evaluation timed out after {:?}", timeout),
+                });
+            }
+            
             // Create assignment where all variables are set to x
             let mut assignment = VariableAssignment::new();
             for i in 0..self.generators.len() {

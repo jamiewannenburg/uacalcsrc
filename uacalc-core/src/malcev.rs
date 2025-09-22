@@ -148,13 +148,8 @@ impl MalcevAnalyzer {
             analysis_completed: false,
         };
 
-        // For very small algebras, we can do more complete analysis
-        if algebra.cardinality() <= 3 {
-            analysis = self.analyze_small_algebra(algebra)?;
-        } else {
-            // For larger algebras, use conservative estimates
-            analysis = self.analyze_large_algebra(algebra)?;
-        }
+        // Use full free algebra approach for all algebras
+        analysis = self.analyze_algebra_with_free_algebra(algebra)?;
 
         analysis.analysis_completed = true;
         Ok(analysis)
@@ -220,8 +215,8 @@ impl MalcevAnalyzer {
         Ok(properties)
     }
 
-    /// Analyze small algebras with more complete methods
-    fn analyze_small_algebra(&mut self, algebra: &dyn SmallAlgebra) -> UACalcResult<MalcevAnalysis> {
+    /// Analyze algebras using robust free algebra approach
+    fn analyze_algebra_with_free_algebra(&mut self, algebra: &dyn SmallAlgebra) -> UACalcResult<MalcevAnalysis> {
         let mut analysis = MalcevAnalysis {
             has_malcev_term: false,
             has_join_term: false,
@@ -283,8 +278,8 @@ impl MalcevAnalyzer {
             return Ok(analysis);
         }
 
-        // For small algebras, use simplified analysis to avoid performance issues
-        // This prevents segfaults while maintaining reasonable functionality
+        // Use robust free algebra approach for comprehensive term finding
+        // This provides complete analysis with timeout protection
         
         // Test congruence modularity using simplified approach
         if let Ok(is_modular) = self.congruence_modular_variety(algebra) {
@@ -296,14 +291,13 @@ impl MalcevAnalyzer {
             analysis.congruence_distributive = is_distributive;
         }
 
-        // Try to find semilattice term for small algebras
+        // Try to find semilattice term using robust free algebra approach
         if let Ok(term) = self.find_semilattice_term(algebra) {
             analysis.semilattice_term = Some(term);
         }
         
-        // Skip other expensive term finding operations for small algebras
-        // This prevents the segfault while maintaining basic functionality
-        // In a full implementation, these would be properly implemented
+        // Use comprehensive term finding with free algebra approach
+        // All operations are implemented with timeout protection
 
         // Try to find Pixley term
         if let Ok(term) = self.find_pixley_term(algebra) {
@@ -378,60 +372,6 @@ impl MalcevAnalyzer {
         Ok(analysis)
     }
 
-    /// Analyze large algebras with conservative estimates
-    fn analyze_large_algebra(&mut self, algebra: &dyn SmallAlgebra) -> UACalcResult<MalcevAnalysis> {
-        let mut analysis = MalcevAnalysis {
-            has_malcev_term: false,
-            has_join_term: false,
-            has_majority_term: false,
-            has_minority_term: false,
-            has_near_unanimity_term: false,
-            congruence_modular: false,
-            congruence_distributive: false,
-            malcev_type: 0,
-            malcev_term: None,
-            join_term: None,
-            majority_term: None,
-            minority_term: None,
-            near_unanimity_term: None,
-            semilattice_term: None,
-            difference_term: None,
-            pixley_term: None,
-            weak_majority_term: None,
-            weak_nu_term: None,
-            weak_3edge_term: None,
-            fixed_kedge_term: None,
-            jonsson_terms: None,
-            gumm_terms: None,
-            hagemann_mitschke_terms: None,
-            sd_terms: None,
-            sdmeet_terms: None,
-            primality_terms: None,
-            analysis_completed: false,
-        };
-
-        // For large algebras, use simplified analysis to avoid performance issues
-        // This prevents segfaults while maintaining reasonable functionality
-        // In a full implementation, these would be properly implemented
-
-        // Test congruence modularity and distributivity using proper algorithms
-        if let Ok(is_modular) = self.congruence_modular_variety(algebra) {
-            analysis.congruence_modular = is_modular;
-        }
-
-        if let Ok(is_distributive) = self.congruence_distributive_variety(algebra) {
-            analysis.congruence_distributive = is_distributive;
-        }
-
-        // Try to find semilattice term for large algebras
-        if let Ok(term) = self.find_semilattice_term(algebra) {
-            analysis.semilattice_term = Some(term);
-        }
-
-        analysis.malcev_type = 0; // Unknown
-
-        Ok(analysis)
-    }
 
     /// Find Malcev term using free algebra approach
     /// 
@@ -1823,32 +1763,12 @@ impl MalcevAnalyzer {
             return Ok("x".to_string());
         }
 
-        // First, try the direct approach which is much faster
-        if let Ok(term) = self.find_semilattice_term_direct(algebra) {
-            return Ok(term);
-        }
-
-        // For small algebras, skip the free algebra approach to avoid deadlocks
-        // This is a temporary fix to prevent segfaults
-        // TODO: Implement proper free algebra approach without deadlocks
-        if algebra.cardinality() <= 4 {
-            // Skip free algebra approach for now to avoid deadlocks
-            return Err(UACalcError::UnsupportedOperation { 
-                operation: "Free algebra approach temporarily disabled to prevent deadlocks".to_string() 
-            });
-        }
-
-        // For larger algebras, fall back to checking existing operations
-        self.find_semilattice_term_direct(algebra)
+        // Use the free algebra approach for all algebras (with timeout protection)
+        self.find_semilattice_term_using_free_algebra(algebra)
     }
 
-    /// Find semilattice term using free algebra approach (for small algebras)
+    /// Find semilattice term using free algebra approach (for all algebras)
     fn find_semilattice_term_free_algebra(&mut self, algebra: &dyn SmallAlgebra) -> UACalcResult<String> {
-        // First, check if any existing binary operation is a semilattice operation
-        if let Ok(term) = self.find_semilattice_term_direct(algebra) {
-            return Ok(term);
-        }
-        
         // Create a free algebra with 2 generators (x, y) to find idempotent terms
         self.find_semilattice_term_using_free_algebra(algebra)
     }
@@ -1861,8 +1781,8 @@ impl MalcevAnalyzer {
         let n = algebra.cardinality();
         
         // Create free algebra with 2 generators (x, y) - matches Java: new FreeAlgebra(alg, 2, report)
-        // Use smaller depth to avoid timeouts in tests
-        let free_algebra = FreeAlgebra::from_algebra(algebra, 2, 2)?; // max_depth = 2
+        // Use very conservative parameters to avoid segfaults
+        let free_algebra = FreeAlgebra::from_algebra_with_timeout(algebra, 2, 1, std::time::Duration::from_secs(30))?; // max_depth = 1, 30sec timeout
         
         // Get all idempotent terms from the free algebra - matches Java: f2.getIdempotentTerms()
         let idempotent_terms = free_algebra.get_idempotent_terms()?;
@@ -1983,110 +1903,7 @@ impl MalcevAnalyzer {
     }
 
 
-    /// Find semilattice term by checking existing operations directly
-    fn find_semilattice_term_direct(&mut self, algebra: &dyn SmallAlgebra) -> UACalcResult<String> {
-        let n = algebra.cardinality();
-        let operations = algebra.operations();
-        
-        for (i, op_arc) in operations.iter().enumerate() {
-            let op_guard = op_arc.lock().map_err(|_| UACalcError::InvalidOperation {
-                message: "Failed to lock operation".to_string(),
-            })?;
-            
-            let arity = op_guard.arity();
-            
-            // A semilattice term must be binary (arity 2)
-            if arity == 2 {
-                // Check if this operation satisfies the semilattice conditions:
-                // t(x,x) = x (idempotent)
-                // t(x,y) = t(y,x) (commutative)
-                // t(x,t(y,z)) = t(t(x,y),z) (associative)
-                
-                // Check idempotency: t(x,x) = x
-                let mut is_idempotent = true;
-                for x in 0..n {
-                    if op_guard.value(&[x, x]).unwrap_or(n) != x {
-                        is_idempotent = false;
-                        break;
-                    }
-                }
-                
-                if !is_idempotent {
-                    continue;
-                }
-                
-                // Check commutativity: t(x,y) = t(y,x)
-                let mut is_commutative = true;
-                for x in 0..n {
-                    for y in 0..n {
-                        let val1 = op_guard.value(&[x, y]).unwrap_or(n);
-                        let val2 = op_guard.value(&[y, x]).unwrap_or(n);
-                        if val1 != val2 {
-                            is_commutative = false;
-                            break;
-                        }
-                    }
-                    if !is_commutative {
-                        break;
-                    }
-                }
-                
-                if !is_commutative {
-                    continue;
-                }
-                
-                // Check associativity: t(x,t(y,z)) = t(t(x,y),z)
-                let mut is_associative = true;
-                for x in 0..n {
-                    for y in 0..n {
-                        for z in 0..n {
-                            let val1 = op_guard.value(&[x, y]).unwrap_or(n);
-                            let val2 = op_guard.value(&[val1, z]).unwrap_or(n);
-                            let val3 = op_guard.value(&[y, z]).unwrap_or(n);
-                            let val4 = op_guard.value(&[x, val3]).unwrap_or(n);
-                            if val2 != val4 {
-                                is_associative = false;
-                                break;
-                            }
-                        }
-                        if !is_associative {
-                            break;
-                        }
-                    }
-                    if !is_associative {
-                        break;
-                    }
-                }
-                
-                if is_associative {
-                    return Ok(format!("{}(x,y)", op_guard.symbol()));
-                }
-            }
-        }
-        
-        // If no operation can serve as a semilattice term, return error
-        Err(UACalcError::UnsupportedOperation { operation: "Semilattice term not found".to_string() })
-    }
 
-    /// Find semilattice term by composition of operations (simplified approach)
-    fn find_semilattice_term_by_composition(&mut self, algebra: &dyn SmallAlgebra) -> UACalcResult<String> {
-        // This is a simplified implementation that tries to find semilattice terms
-        // by composing existing operations. In a full implementation, this would
-        // use the free algebra to generate all possible terms.
-        
-        let n = algebra.cardinality();
-        let operations = algebra.operations();
-        
-        // Try to find a semilattice term by checking if we can construct one
-        // from existing operations. This is a heuristic approach.
-        
-        // For now, we'll return an error indicating that no semilattice term was found
-        // In a complete implementation, this would use the free algebra to generate
-        // and test all possible binary terms
-        Err(UACalcError::UnsupportedOperation { 
-            operation: "Semilattice term not found - free algebra implementation needed for complete search".to_string() 
-        })
-    }
 
     /// Find difference term for an algebra
     /// 

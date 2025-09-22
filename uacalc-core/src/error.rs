@@ -41,6 +41,9 @@ pub enum UACalcError {
 
     #[error("Invalid input: {message}")]
     InvalidInput { message: String },
+
+    #[error("Timeout error: {message}")]
+    TimeoutError { message: String },
 }
 
 /// Result type for UACalc operations
