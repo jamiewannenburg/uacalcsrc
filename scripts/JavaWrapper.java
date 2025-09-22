@@ -98,6 +98,14 @@ public class JavaWrapper {
             System.err.println(
                     "  free_algebra <generators_json> <variety_constraints_json> - Generate free algebra");
             System.err.println(
+                    "  free_algebra_terms <generators_json> <variety_constraints_json> - Get terms from free algebra");
+            System.err.println(
+                    "  free_algebra_terms_from_algebra <ua_file> <generators_json> <variety_constraints_json> - Get terms from free algebra over given algebra");
+            System.err.println(
+                    "  free_algebra_idempotent_terms <ua_file> <generators_json> <variety_constraints_json> - Get idempotent terms from free algebra");
+            System.err.println(
+                    "  free_algebra_term_map <ua_file> <generators_json> <variety_constraints_json> - Get term map from free algebra");
+            System.err.println(
                     "  product_algebra <ua_file1> <ua_file2> - Construct direct product of two algebras");
             System.err.println(
                     "  quotient_algebra <ua_file> <congruence_json> - Construct quotient algebra from congruence");
@@ -357,6 +365,38 @@ public class JavaWrapper {
                         System.exit(1);
                     }
                     outputFreeAlgebra(args[1], args[2]);
+                    break;
+                case "free_algebra_terms":
+                    if (args.length < 3) {
+                        System.err.println(
+                                "Usage: JavaWrapper free_algebra_terms <generators_json> <variety_constraints_json>");
+                        System.exit(1);
+                    }
+                    outputFreeAlgebraTerms(args[1], args[2]);
+                    break;
+                case "free_algebra_terms_from_algebra":
+                    if (args.length < 4) {
+                        System.err.println(
+                                "Usage: JavaWrapper free_algebra_terms_from_algebra <ua_file> <generators_json> <variety_constraints_json>");
+                        System.exit(1);
+                    }
+                    outputFreeAlgebraTermsFromAlgebra(args[1], args[2], args[3]);
+                    break;
+                case "free_algebra_idempotent_terms":
+                    if (args.length < 4) {
+                        System.err.println(
+                                "Usage: JavaWrapper free_algebra_idempotent_terms <ua_file> <generators_json> <variety_constraints_json>");
+                        System.exit(1);
+                    }
+                    outputFreeAlgebraIdempotentTerms(args[1], args[2], args[3]);
+                    break;
+                case "free_algebra_term_map":
+                    if (args.length < 4) {
+                        System.err.println(
+                                "Usage: JavaWrapper free_algebra_term_map <ua_file> <generators_json> <variety_constraints_json>");
+                        System.exit(1);
+                    }
+                    outputFreeAlgebraTermMap(args[1], args[2], args[3]);
                     break;
                 case "product_algebra":
                     if (args.length < 3) {
@@ -1945,6 +1985,530 @@ public class JavaWrapper {
         operations.add(binaryOp);
 
         return new BasicAlgebra("BaseAlgebra", 2, operations);
+    }
+
+    private static void outputFreeAlgebraTerms(String generatorsJson, String varietyConstraintsJson) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        try {
+            // Parse generators JSON array
+            List<Integer> generators = parseIntegerArray(generatorsJson);
+            int numGenerators = generators.size();
+            
+            // Parse variety constraints - simple JSON parsing for {"type":"trivial"}
+            String varietyType = "trivial"; // default
+            String json = varietyConstraintsJson.trim();
+            if (json.startsWith("{") && json.endsWith("}")) {
+                String content = json.substring(1, json.length() - 1);
+                String[] pairs = content.split(",");
+                for (String pair : pairs) {
+                    String[] keyValue = pair.split(":");
+                    if (keyValue.length == 2) {
+                        String key = keyValue[0].trim().replace("\"", "");
+                        String value = keyValue[1].trim().replace("\"", "");
+                        if ("type".equals(key)) {
+                            varietyType = value;
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            // Create a small base algebra for the free algebra construction
+            SmallAlgebra baseAlgebra = createSimpleBaseAlgebra();
+            
+            // Create the free algebra using the real Java implementation
+            FreeAlgebra freeAlgebra = new FreeAlgebra(
+                "FreeAlgebra_" + numGenerators + "_" + varietyType,
+                baseAlgebra,
+                numGenerators,
+                true,  // makeUniverse
+                false, // thinGens
+                false, // decompose
+                null,  // relations
+                null   // progressReport
+            );
+
+            // Get the terms from the free algebra
+            Term[] terms = freeAlgebra.getTerms();
+            List<Variable> variables = freeAlgebra.getVariables();
+            
+            long endMemory = getMemoryUsage();
+            long endTime = System.currentTimeMillis();
+
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"free_algebra_terms\",");
+            result.append("\"generators\":");
+            appendIntegerArray(result, generators);
+            result.append(",");
+            result.append("\"variety\":\"").append(varietyType).append("\",");
+            result.append("\"free_algebra_cardinality\":").append(freeAlgebra.cardinality()).append(",");
+            result.append("\"terms_count\":").append(terms.length).append(",");
+            result.append("\"variables_count\":").append(variables.size()).append(",");
+            result.append("\"terms\":[");
+            
+            // Add term information
+            for (int i = 0; i < terms.length; i++) {
+                if (i > 0) result.append(",");
+                result.append("{");
+                result.append("\"index\":").append(i).append(",");
+                result.append("\"is_variable\":").append(terms[i].isaVariable()).append(",");
+                
+                if (terms[i].isaVariable()) {
+                    // Find which variable this is
+                    int varIndex = -1;
+                    for (int j = 0; j < variables.size(); j++) {
+                        if (variables.get(j).equals(terms[i])) {
+                            varIndex = j;
+                            break;
+                        }
+                    }
+                    result.append("\"variable_index\":").append(varIndex).append(",");
+                    result.append("\"variable_name\":\"").append(variables.get(varIndex).getName()).append("\",");
+                } else {
+                    // Operation term
+                    org.uacalc.alg.op.OperationSymbol symbol = terms[i].leadingOperationSymbol();
+                    if (symbol != null) {
+                        result.append("\"operation_symbol\":\"").append(symbol.name()).append("\",");
+                        result.append("\"operation_arity\":").append(symbol.arity()).append(",");
+                    }
+                    
+                    List<Term> children = terms[i].getChildren();
+                    if (children != null) {
+                        result.append("\"children_count\":").append(children.size()).append(",");
+                        result.append("\"children\":[");
+                        for (int j = 0; j < children.size(); j++) {
+                            if (j > 0) result.append(",");
+                            // Find the index of the child term
+                            int childIndex = -1;
+                            for (int k = 0; k < terms.length; k++) {
+                                if (terms[k].equals(children.get(j))) {
+                                    childIndex = k;
+                                    break;
+                                }
+                            }
+                            result.append(childIndex);
+                        }
+                        result.append("],");
+                    }
+                }
+                
+                // Remove trailing comma
+                if (result.charAt(result.length() - 1) == ',') {
+                    result.setLength(result.length() - 1);
+                }
+                result.append("}");
+            }
+            
+            result.append("],");
+            result.append("\"variables\":[");
+            for (int i = 0; i < variables.size(); i++) {
+                if (i > 0) result.append(",");
+                result.append("{");
+                result.append("\"index\":").append(i).append(",");
+                result.append("\"name\":\"").append(variables.get(i).getName()).append("\"");
+                result.append("}");
+            }
+            result.append("],");
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime);
+            result.append("}");
+
+            System.out.println(result.toString());
+
+        } catch (Exception e) {
+            outputErrorResult("free_algebra_terms", e);
+        }
+    }
+
+    private static void outputFreeAlgebraTermsFromAlgebra(String uaFile, String generatorsJson, String varietyConstraintsJson) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        try {
+            // Load the algebra from file
+            SmallAlgebra baseAlgebra = AlgebraIO.readAlgebraFile(uaFile);
+            
+            // Parse generators JSON array
+            List<Integer> generators = parseIntegerArray(generatorsJson);
+            int numGenerators = generators.size();
+            
+            // Parse variety constraints - simple JSON parsing for {"type":"trivial"}
+            String varietyType = "trivial"; // default
+            String json = varietyConstraintsJson.trim();
+            if (json.startsWith("{") && json.endsWith("}")) {
+                String content = json.substring(1, json.length() - 1);
+                String[] pairs = content.split(",");
+                for (String pair : pairs) {
+                    String[] keyValue = pair.split(":");
+                    if (keyValue.length == 2) {
+                        String key = keyValue[0].trim().replace("\"", "");
+                        String value = keyValue[1].trim().replace("\"", "");
+                        if ("type".equals(key)) {
+                            varietyType = value;
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            // Create the free algebra using the loaded algebra
+            FreeAlgebra freeAlgebra = new FreeAlgebra(
+                "FreeAlgebra_" + numGenerators + "_over_" + baseAlgebra.getName(),
+                baseAlgebra,
+                numGenerators,
+                true,  // makeUniverse
+                false, // thinGens
+                false, // decompose
+                null,  // relations
+                null   // progressReport
+            );
+
+            // Get the terms from the free algebra
+            Term[] terms = freeAlgebra.getTerms();
+            List<Variable> variables = freeAlgebra.getVariables();
+            
+            long endMemory = getMemoryUsage();
+            long endTime = System.currentTimeMillis();
+
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"free_algebra_terms_from_algebra\",");
+            result.append("\"base_algebra_file\":\"").append(uaFile).append("\",");
+            result.append("\"base_algebra_name\":\"").append(baseAlgebra.getName()).append("\",");
+            result.append("\"base_algebra_cardinality\":").append(baseAlgebra.cardinality()).append(",");
+            result.append("\"base_algebra_operations\":").append(baseAlgebra.operations().size()).append(",");
+            result.append("\"generators\":");
+            appendIntegerArray(result, generators);
+            result.append(",");
+            result.append("\"variety\":\"").append(varietyType).append("\",");
+            result.append("\"free_algebra_cardinality\":").append(freeAlgebra.cardinality()).append(",");
+            result.append("\"terms_count\":").append(terms.length).append(",");
+            result.append("\"variables_count\":").append(variables.size()).append(",");
+            result.append("\"terms\":[");
+            
+            // Add term information
+            for (int i = 0; i < terms.length; i++) {
+                if (i > 0) result.append(",");
+                result.append("{");
+                result.append("\"index\":").append(i).append(",");
+                result.append("\"is_variable\":").append(terms[i].isaVariable()).append(",");
+                
+                if (terms[i].isaVariable()) {
+                    // Find which variable this is
+                    int varIndex = -1;
+                    for (int j = 0; j < variables.size(); j++) {
+                        if (variables.get(j).equals(terms[i])) {
+                            varIndex = j;
+                            break;
+                        }
+                    }
+                    result.append("\"variable_index\":").append(varIndex).append(",");
+                    result.append("\"variable_name\":\"").append(variables.get(varIndex).getName()).append("\",");
+                } else {
+                    // Operation term
+                    org.uacalc.alg.op.OperationSymbol symbol = terms[i].leadingOperationSymbol();
+                    if (symbol != null) {
+                        result.append("\"operation_symbol\":\"").append(symbol.name()).append("\",");
+                        result.append("\"operation_arity\":").append(symbol.arity()).append(",");
+                    }
+                    
+                    List<Term> children = terms[i].getChildren();
+                    if (children != null) {
+                        result.append("\"children_count\":").append(children.size()).append(",");
+                        result.append("\"children\":[");
+                        for (int j = 0; j < children.size(); j++) {
+                            if (j > 0) result.append(",");
+                            // Find the index of the child term
+                            int childIndex = -1;
+                            for (int k = 0; k < terms.length; k++) {
+                                if (terms[k].equals(children.get(j))) {
+                                    childIndex = k;
+                                    break;
+                                }
+                            }
+                            result.append(childIndex);
+                        }
+                        result.append("],");
+                    }
+                }
+                
+                // Remove trailing comma
+                if (result.charAt(result.length() - 1) == ',') {
+                    result.setLength(result.length() - 1);
+                }
+                result.append("}");
+            }
+            
+            result.append("],");
+            result.append("\"variables\":[");
+            for (int i = 0; i < variables.size(); i++) {
+                if (i > 0) result.append(",");
+                result.append("{");
+                result.append("\"index\":").append(i).append(",");
+                result.append("\"name\":\"").append(variables.get(i).getName()).append("\"");
+                result.append("}");
+            }
+            result.append("],");
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime);
+            result.append("}");
+
+            System.out.println(result.toString());
+
+        } catch (Exception e) {
+            outputErrorResult("free_algebra_terms_from_algebra", e);
+        }
+    }
+
+    private static void outputFreeAlgebraIdempotentTerms(String uaFile, String generatorsJson, String varietyConstraintsJson) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        try {
+            // Load the algebra from file
+            SmallAlgebra baseAlgebra = AlgebraIO.readAlgebraFile(uaFile);
+            
+            // Parse generators JSON array
+            List<Integer> generators = parseIntegerArray(generatorsJson);
+            int numGenerators = generators.size();
+            
+            // Parse variety constraints - simple JSON parsing for {"type":"trivial"}
+            String varietyType = "trivial"; // default
+            String json = varietyConstraintsJson.trim();
+            if (json.startsWith("{") && json.endsWith("}")) {
+                String content = json.substring(1, json.length() - 1);
+                String[] pairs = content.split(",");
+                for (String pair : pairs) {
+                    String[] keyValue = pair.split(":");
+                    if (keyValue.length == 2) {
+                        String key = keyValue[0].trim().replace("\"", "");
+                        String value = keyValue[1].trim().replace("\"", "");
+                        if ("type".equals(key)) {
+                            varietyType = value;
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            // Create the free algebra using the loaded algebra
+            FreeAlgebra freeAlgebra = new FreeAlgebra(
+                "FreeAlgebra_" + numGenerators + "_over_" + baseAlgebra.getName(),
+                baseAlgebra,
+                numGenerators,
+                true,  // makeUniverse
+                false, // thinGens
+                false, // decompose
+                null,  // relations
+                null   // progressReport
+            );
+
+            // Get the idempotent terms from the free algebra
+            List<Term> idempotentTermsList = freeAlgebra.getIdempotentTerms();
+            Term[] idempotentTerms = idempotentTermsList.toArray(new Term[0]);
+            List<Variable> variables = freeAlgebra.getVariables();
+            
+            long endMemory = getMemoryUsage();
+            long endTime = System.currentTimeMillis();
+
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"free_algebra_idempotent_terms\",");
+            result.append("\"base_algebra_file\":\"").append(uaFile).append("\",");
+            result.append("\"base_algebra_name\":\"").append(baseAlgebra.getName()).append("\",");
+            result.append("\"base_algebra_cardinality\":").append(baseAlgebra.cardinality()).append(",");
+            result.append("\"base_algebra_operations\":").append(baseAlgebra.operations().size()).append(",");
+            result.append("\"generators\":");
+            appendIntegerArray(result, generators);
+            result.append(",");
+            result.append("\"variety\":\"").append(varietyType).append("\",");
+            result.append("\"free_algebra_cardinality\":").append(freeAlgebra.cardinality()).append(",");
+            result.append("\"idempotent_terms_count\":").append(idempotentTerms.length).append(",");
+            result.append("\"variables_count\":").append(variables.size()).append(",");
+            result.append("\"idempotent_terms\":[");
+            
+            // Add idempotent term information
+            for (int i = 0; i < idempotentTerms.length; i++) {
+                if (i > 0) result.append(",");
+                result.append("{");
+                result.append("\"index\":").append(i).append(",");
+                result.append("\"is_variable\":").append(idempotentTerms[i].isaVariable()).append(",");
+                
+                if (idempotentTerms[i].isaVariable()) {
+                    // Find which variable this is
+                    int varIndex = -1;
+                    for (int j = 0; j < variables.size(); j++) {
+                        if (variables.get(j).equals(idempotentTerms[i])) {
+                            varIndex = j;
+                            break;
+                        }
+                    }
+                    result.append("\"variable_index\":").append(varIndex).append(",");
+                    result.append("\"variable_name\":\"").append(variables.get(varIndex).getName()).append("\",");
+                } else {
+                    // Operation term
+                    org.uacalc.alg.op.OperationSymbol symbol = idempotentTerms[i].leadingOperationSymbol();
+                    if (symbol != null) {
+                        result.append("\"operation_symbol\":\"").append(symbol.name()).append("\",");
+                        result.append("\"operation_arity\":").append(symbol.arity()).append(",");
+                    }
+                }
+                
+                // Remove trailing comma
+                if (result.charAt(result.length() - 1) == ',') {
+                    result.setLength(result.length() - 1);
+                }
+                result.append("}");
+            }
+            
+            result.append("],");
+            result.append("\"variables\":[");
+            for (int i = 0; i < variables.size(); i++) {
+                if (i > 0) result.append(",");
+                result.append("{");
+                result.append("\"index\":").append(i).append(",");
+                result.append("\"name\":\"").append(variables.get(i).getName()).append("\"");
+                result.append("}");
+            }
+            result.append("],");
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime);
+            result.append("}");
+
+            System.out.println(result.toString());
+
+        } catch (Exception e) {
+            outputErrorResult("free_algebra_idempotent_terms", e);
+        }
+    }
+
+    private static void outputFreeAlgebraTermMap(String uaFile, String generatorsJson, String varietyConstraintsJson) throws Exception {
+        long startTime = System.currentTimeMillis();
+        long startMemory = getMemoryUsage();
+
+        try {
+            // Load the algebra from file
+            SmallAlgebra baseAlgebra = AlgebraIO.readAlgebraFile(uaFile);
+            
+            // Parse generators JSON array
+            List<Integer> generators = parseIntegerArray(generatorsJson);
+            int numGenerators = generators.size();
+            
+            // Parse variety constraints - simple JSON parsing for {"type":"trivial"}
+            String varietyType = "trivial"; // default
+            String json = varietyConstraintsJson.trim();
+            if (json.startsWith("{") && json.endsWith("}")) {
+                String content = json.substring(1, json.length() - 1);
+                String[] pairs = content.split(",");
+                for (String pair : pairs) {
+                    String[] keyValue = pair.split(":");
+                    if (keyValue.length == 2) {
+                        String key = keyValue[0].trim().replace("\"", "");
+                        String value = keyValue[1].trim().replace("\"", "");
+                        if ("type".equals(key)) {
+                            varietyType = value;
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            // Create the free algebra using the loaded algebra
+            FreeAlgebra freeAlgebra = new FreeAlgebra(
+                "FreeAlgebra_" + numGenerators + "_over_" + baseAlgebra.getName(),
+                baseAlgebra,
+                numGenerators,
+                true,  // makeUniverse
+                false, // thinGens
+                false, // decompose
+                null,  // relations
+                null   // progressReport
+            );
+
+            // Get the term map from the free algebra
+            Map<IntArray, Term> termMap = freeAlgebra.getTermMap();
+            List<Variable> variables = freeAlgebra.getVariables();
+            
+            long endMemory = getMemoryUsage();
+            long endTime = System.currentTimeMillis();
+
+            StringBuilder result = new StringBuilder();
+            result.append("{");
+            result.append("\"success\":true,");
+            result.append("\"operation\":\"free_algebra_term_map\",");
+            result.append("\"base_algebra_file\":\"").append(uaFile).append("\",");
+            result.append("\"base_algebra_name\":\"").append(baseAlgebra.getName()).append("\",");
+            result.append("\"base_algebra_cardinality\":").append(baseAlgebra.cardinality()).append(",");
+            result.append("\"base_algebra_operations\":").append(baseAlgebra.operations().size()).append(",");
+            result.append("\"generators\":");
+            appendIntegerArray(result, generators);
+            result.append(",");
+            result.append("\"variety\":\"").append(varietyType).append("\",");
+            result.append("\"free_algebra_cardinality\":").append(freeAlgebra.cardinality()).append(",");
+            result.append("\"term_map_size\":").append(termMap.size()).append(",");
+            result.append("\"variables_count\":").append(variables.size()).append(",");
+            result.append("\"term_map\":{");
+            
+            // Add term map information
+            boolean first = true;
+            for (Map.Entry<IntArray, Term> entry : termMap.entrySet()) {
+                if (!first) result.append(",");
+                first = false;
+                
+                IntArray element = entry.getKey();
+                Term term = entry.getValue();
+                
+                result.append("\"").append(element.toString()).append("\":{");
+                result.append("\"is_variable\":").append(term.isaVariable()).append(",");
+                
+                if (term.isaVariable()) {
+                    // Find which variable this is
+                    int varIndex = -1;
+                    for (int j = 0; j < variables.size(); j++) {
+                        if (variables.get(j).equals(term)) {
+                            varIndex = j;
+                            break;
+                        }
+                    }
+                    result.append("\"variable_index\":").append(varIndex).append(",");
+                    result.append("\"variable_name\":\"").append(variables.get(varIndex).getName()).append("\"");
+                } else {
+                    // Operation term
+                    org.uacalc.alg.op.OperationSymbol symbol = term.leadingOperationSymbol();
+                    if (symbol != null) {
+                        result.append("\"operation_symbol\":\"").append(symbol.name()).append("\",");
+                        result.append("\"operation_arity\":").append(symbol.arity());
+                    }
+                }
+                
+                result.append("}");
+            }
+            
+            result.append("},");
+            result.append("\"variables\":[");
+            for (int i = 0; i < variables.size(); i++) {
+                if (i > 0) result.append(",");
+                result.append("{");
+                result.append("\"index\":").append(i).append(",");
+                result.append("\"name\":\"").append(variables.get(i).getName()).append("\"");
+                result.append("}");
+            }
+            result.append("],");
+            result.append("\"java_memory_mb\":").append((endMemory - startMemory) / 1024.0 / 1024.0).append(",");
+            result.append("\"computation_time_ms\":").append(endTime - startTime);
+            result.append("}");
+
+            System.out.println(result.toString());
+
+        } catch (Exception e) {
+            outputErrorResult("free_algebra_term_map", e);
+        }
     }
 
     private static void outputProductAlgebra(String uaFile1, String uaFile2) throws Exception {

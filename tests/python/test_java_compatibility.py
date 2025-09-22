@@ -115,7 +115,7 @@ class BaseCompatibilityTest(unittest.TestCase):
             
         try:
             cmd = [
-                "java", "-cp", f"{self.java_jar_path}{os.pathsep}scripts",
+                "java", "-Xmx256m", "-XX:CompressedClassSpaceSize=64m", "-cp", f"{self.java_jar_path}{os.pathsep}scripts",
                 "JavaWrapper", operation
             ] + list(args)
             
@@ -528,7 +528,7 @@ class JavaCompatibilityTest(BaseCompatibilityTest):
         """Run Cg(a,b) computation in Java and return partition"""
         try:
             result = subprocess.run([
-                "java", "-cp", f"{self.java_jar_path}{os.pathsep}scripts",
+                "java", "-Xmx256m", "-XX:CompressedClassSpaceSize=64m", "-cp", f"{self.java_jar_path}{os.pathsep}scripts",
                 "JavaWrapper", "cg", ua_file, str(a), str(b)
             ], capture_output=True, text=True, timeout=30)
             
@@ -546,7 +546,7 @@ class JavaCompatibilityTest(BaseCompatibilityTest):
         """Run lattice computation in Java and return lattice info"""
         try:
             result = subprocess.run([
-                "java", "-cp", f"{self.java_jar_path}{os.pathsep}scripts",
+                "java", "-Xmx256m", "-XX:CompressedClassSpaceSize=64m", "-cp", f"{self.java_jar_path}{os.pathsep}scripts",
                 "JavaWrapper", "lattice", ua_file
             ], capture_output=True, text=True, timeout=60)
             
@@ -761,7 +761,7 @@ class TermCompatibilityTest(unittest.TestCase):
         """Run term parsing in Java"""
         try:
             result = subprocess.run([
-                "java", "-cp", f"jars/uacalc.jar{os.pathsep}scripts",
+                "java", "-Xmx256m", "-XX:CompressedClassSpaceSize=64m", "-cp", f"jars/uacalc.jar{os.pathsep}scripts",
                 "JavaWrapper", "parse_term", term_str
             ], capture_output=True, text=True, timeout=10)
             
@@ -776,7 +776,7 @@ class TermCompatibilityTest(unittest.TestCase):
         """Run variable creation in Java"""
         try:
             result = subprocess.run([
-                "java", "-cp", f"jars/uacalc.jar{os.pathsep}scripts",
+                "java", "-Xmx256m", "-XX:CompressedClassSpaceSize=64m", "-cp", f"jars/uacalc.jar{os.pathsep}scripts",
                 "JavaWrapper", "create_variable", var_name
             ], capture_output=True, text=True, timeout=10)
             
@@ -794,7 +794,7 @@ class TermCompatibilityTest(unittest.TestCase):
             var_json = json.dumps(variables)
             
             result = subprocess.run([
-                "java", "-cp", f"jars/uacalc.jar{os.pathsep}scripts",
+                "java", "-Xmx256m", "-XX:CompressedClassSpaceSize=64m", "-cp", f"jars/uacalc.jar{os.pathsep}scripts",
                 "JavaWrapper", "eval_term", term_str, var_json
             ], capture_output=True, text=True, timeout=10)
             
@@ -813,7 +813,7 @@ class TermCompatibilityTest(unittest.TestCase):
             uacalc.save_algebra(algebra, temp_file)
             
             result = subprocess.run([
-                "java", "-cp", f"jars/uacalc.jar{os.pathsep}scripts",
+                "java", "-Xmx256m", "-XX:CompressedClassSpaceSize=64m", "-cp", f"jars/uacalc.jar{os.pathsep}scripts",
                 "JavaWrapper", "validate_term", term_str, temp_file
             ], capture_output=True, text=True, timeout=10)
             

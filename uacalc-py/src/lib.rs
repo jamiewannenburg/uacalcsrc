@@ -100,6 +100,7 @@ fn uacalc_rust(_py: Python, m: &Bound<PyModule>) -> PyResult<()> {
     m.add_class::<PyPropertyChecker>()?;
     m.add_class::<PyTerm>()?;
     m.add_class::<PyTermArena>()?;
+    m.add_class::<PyVariable>()?;
     m.add_class::<PyEquation>()?;
     m.add_class::<PyEquationComplexity>()?;
     m.add_class::<PyEquationProperties>()?;
@@ -1117,6 +1118,49 @@ impl PyTerm {
         let arena_guard = self.arena.inner.lock().unwrap();
         let term = arena_guard.get_term(self.id).map_err(map_uacalc_error)?;
         term.to_string(&arena_guard).map_err(map_uacalc_error)
+    }
+}
+
+/// Python wrapper for Variable
+#[pyclass]
+#[derive(Clone)]
+pub struct PyVariable {
+    inner: uacalc_core::term::variable::Variable,
+}
+
+#[pymethods]
+impl PyVariable {
+    #[new]
+    fn new(index: u8) -> Self {
+        Self {
+            inner: uacalc_core::term::variable::Variable::new(index),
+        }
+    }
+
+    #[getter]
+    fn index(&self) -> u8 {
+        self.inner.index()
+    }
+
+    #[getter]
+    fn name(&self) -> Option<String> {
+        self.inner.name().map(|s| s.to_string())
+    }
+
+    fn set_name(&mut self, name: String) {
+        self.inner.set_name(name);
+    }
+
+    fn __str__(&self) -> String {
+        if let Some(name) = self.inner.name() {
+            format!("Variable({}, '{}')", self.inner.index(), name)
+        } else {
+            format!("Variable({})", self.inner.index())
+        }
+    }
+
+    fn __repr__(&self) -> String {
+        self.__str__()
     }
 }
 
@@ -2533,6 +2577,83 @@ impl PyFreeAlgebra {
     /// Convert to default value operations (mirrors Java's convertToDefaultValueOps())
     fn convert_to_default_value_ops(&mut self) -> PyResult<()> {
         self.inner.convert_to_default_value_ops().map_err(map_uacalc_error)
+    }
+
+    /// Get all terms in the free algebra (exposes Rust get_terms())
+    fn get_terms(&self) -> PyResult<Vec<PyTerm>> {
+        let terms = self.inner.get_terms();
+        let mut py_terms = Vec::new();
+        for term_id in terms {
+            // Create a PyTerm with the term arena from the free algebra
+            let py_term = PyTerm {
+                id: term_id,
+                arena: PyTermArena {
+                    inner: Arc::new(Mutex::new(self.inner.term_arena.clone())),
+                },
+            };
+            py_terms.push(py_term);
+        }
+        Ok(py_terms)
+    }
+
+    /// Get variables (generators) used in the free algebra (exposes Rust get_variables())
+    fn get_variables(&self) -> PyResult<Vec<PyVariable>> {
+        let variables = self.inner.get_variables().map_err(map_uacalc_error)?;
+        let py_variables = variables.into_iter().map(|var| PyVariable { inner: var }).collect();
+        Ok(py_variables)
+    }
+
+    /// Get term for a specific element (exposes Rust get_term())
+    fn get_term(&self, element_index: usize) -> PyResult<PyTerm> {
+        let term_id = self.inner.get_term(element_index).map_err(map_uacalc_error)?;
+        Ok(PyTerm {
+            id: term_id,
+            arena: PyTermArena {
+                inner: Arc::new(Mutex::new(self.inner.term_arena.clone())),
+            },
+        })
+    }
+
+    /// Get element index from term (exposes Rust get_element_from_term())
+    fn get_element_from_term(&self, term: &PyTerm) -> PyResult<usize> {
+        self.inner.get_element_from_term(term.id).map_err(map_uacalc_error)
+    }
+
+    /// Get idempotent terms (exposes Rust get_idempotent_terms())
+    fn get_idempotent_terms(&self) -> PyResult<Vec<PyTerm>> {
+        let idempotent_terms = self.inner.get_idempotent_terms().map_err(map_uacalc_error)?;
+        let mut py_terms = Vec::new();
+        for term_id in idempotent_terms {
+            let py_term = PyTerm {
+                id: term_id,
+                arena: PyTermArena {
+                    inner: Arc::new(Mutex::new(self.inner.term_arena.clone())),
+                },
+            };
+            py_terms.push(py_term);
+        }
+        Ok(py_terms)
+    }
+
+    /// Get term map - mapping from universe elements to terms (exposes Rust get_term_map())
+    fn get_term_map(&self) -> std::collections::HashMap<usize, PyTerm> {
+        let term_map = self.inner.get_term_map();
+        let mut py_term_map = std::collections::HashMap::new();
+        for (element_index, term_id) in term_map {
+            let py_term = PyTerm {
+                id: term_id,
+                arena: PyTermArena {
+                    inner: Arc::new(Mutex::new(self.inner.term_arena.clone())),
+                },
+            };
+            py_term_map.insert(element_index, py_term);
+        }
+        py_term_map
+    }
+
+    /// Get variable to generator map (exposes Rust get_variable_to_generator_map())
+    fn get_variable_to_generator_map(&self) -> std::collections::HashMap<usize, usize> {
+        self.inner.get_variable_to_generator_map()
     }
 }
 

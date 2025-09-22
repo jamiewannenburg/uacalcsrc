@@ -84,7 +84,7 @@ class JavaUACalcRunner:
             
         try:
             result = subprocess.run([
-                "java", "-cp", f"{self.java_jar_path}{os.pathsep}scripts",
+                "java", "-Xmx256m", "-XX:CompressedClassSpaceSize=64m", "-cp", f"{self.java_jar_path}{os.pathsep}scripts",
                 "JavaWrapper", "properties", ua_file
             ], capture_output=True, text=True, timeout=30)
             
@@ -106,7 +106,7 @@ class JavaUACalcRunner:
             
         try:
             result = subprocess.run([
-                "java", "-cp", f"{self.java_jar_path}{os.pathsep}scripts",
+                "java", "-Xmx256m", "-XX:CompressedClassSpaceSize=64m", "-cp", f"{self.java_jar_path}{os.pathsep}scripts",
                 "JavaWrapper", "cg", ua_file, str(a), str(b)
             ], capture_output=True, text=True, timeout=60)
             
@@ -130,7 +130,7 @@ class JavaUACalcRunner:
             
         try:
             result = subprocess.run([
-                "java", "-cp", f"{self.java_jar_path}{os.pathsep}scripts",
+                "java", "-Xmx256m", "-XX:CompressedClassSpaceSize=64m", "-cp", f"{self.java_jar_path}{os.pathsep}scripts",
                 "JavaWrapper", "lattice", ua_file
             ], capture_output=True, text=True, timeout=300)
             

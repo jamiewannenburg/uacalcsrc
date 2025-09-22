@@ -166,7 +166,7 @@ class BaseCompatibilityTest(unittest.TestCase):
         """Check if Java is properly installed and accessible"""
         try:
             result = subprocess.run(
-                ["java", "-version"], 
+                ["java", "-Xmx256m", "-XX:CompressedClassSpaceSize=64m", "-version"], 
                 capture_output=True, text=True, timeout=10
             )
             if result.returncode == 0:
@@ -226,7 +226,7 @@ class BaseCompatibilityTest(unittest.TestCase):
             
             # Test basic properties operation
             result = subprocess.run([
-                "java", "-cp", f"{cls.java_jar_path}{os.pathsep}scripts",
+                "java", "-Xmx256m", "-XX:CompressedClassSpaceSize=64m", "-cp", f"{cls.java_jar_path}{os.pathsep}scripts",
                 "JavaWrapper", "properties", str(test_file)
             ], capture_output=True, text=True, timeout=30)
             
@@ -305,7 +305,7 @@ class BaseCompatibilityTest(unittest.TestCase):
             
         try:
             cmd = [
-                "java", "-cp", f"{self.java_jar_path}{os.pathsep}scripts",
+                "java", "-Xmx256m", "-XX:CompressedClassSpaceSize=64m", "-cp", f"{self.java_jar_path}{os.pathsep}scripts",
                 "JavaWrapper", operation
             ] + [str(arg) for arg in args]
             

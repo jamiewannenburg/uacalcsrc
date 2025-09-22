@@ -747,6 +747,60 @@ impl FreeAlgebra {
     pub fn is_freely_generated(&self) -> bool {
         true
     }
+
+    /// Get variables (generators) used in the free algebra (mirrors Java getVariables())
+    pub fn get_variables(&self) -> UACalcResult<Vec<crate::term::variable::Variable>> {
+        let mut variables = Vec::new();
+        for (i, generator) in self.generators.iter().enumerate() {
+            let variable = crate::term::variable::Variable::named(i as u8, generator.clone());
+            variables.push(variable);
+        }
+        Ok(variables)
+    }
+
+    /// Get term map - mapping from universe elements to terms (mirrors Java getTermMap())
+    pub fn get_term_map(&self) -> HashMap<usize, TermId> {
+        let mut term_map = HashMap::new();
+        let terms = self.get_terms();
+        for (element_index, &term_id) in terms.iter().enumerate() {
+            term_map.insert(element_index, term_id);
+        }
+        term_map
+    }
+
+    /// Get term for a specific element (mirrors Java getTerm(IntArray elt))
+    pub fn get_term(&self, element_index: usize) -> UACalcResult<TermId> {
+        let terms = self.get_terms();
+        if element_index >= terms.len() {
+            return Err(UACalcError::IndexOutOfBounds {
+                index: element_index,
+                size: terms.len(),
+            });
+        }
+        Ok(terms[element_index])
+    }
+
+    /// Get element index from term (mirrors Java getElementFromTerm(Term t))
+    pub fn get_element_from_term(&self, term_id: TermId) -> UACalcResult<usize> {
+        let terms = self.get_terms();
+        for (index, &t) in terms.iter().enumerate() {
+            if t == term_id {
+                return Ok(index);
+            }
+        }
+        Err(UACalcError::InvalidOperation {
+            message: "Term not found in free algebra".to_string(),
+        })
+    }
+
+    /// Get variable to generator map (mirrors Java getVariableToGeneratorMap())
+    pub fn get_variable_to_generator_map(&self) -> HashMap<usize, usize> {
+        let mut var_to_gen_map = HashMap::new();
+        for (i, _generator) in self.generators.iter().enumerate() {
+            var_to_gen_map.insert(i, i); // In free algebra, variables map to themselves
+        }
+        var_to_gen_map
+    }
 }
 
 impl Algebra for FreeAlgebra {
@@ -966,5 +1020,192 @@ mod tests {
         );
         
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_get_variables() {
+        use crate::memory::set_memory_limit;
+        
+        // Set a reasonable memory limit for this test (50MB)
+        set_memory_limit(50 * 1024 * 1024).unwrap();
+        
+        let generators = vec!["x".to_string(), "y".to_string()];
+        let variety = VarietyConstraint::Trivial;
+        let operation_symbols = vec![
+            OperationSymbol::new("*".to_string(), 2),
+        ];
+
+        let free_algebra = FreeAlgebra::new(
+            "TestFreeAlgebra".to_string(),
+            generators.clone(),
+            variety,
+            operation_symbols,
+            2,
+        ).unwrap();
+
+        let variables = free_algebra.get_variables().unwrap();
+        assert_eq!(variables.len(), 2);
+        assert_eq!(variables[0].index(), 0);
+        assert_eq!(variables[0].name(), Some("x"));
+        assert_eq!(variables[1].index(), 1);
+        assert_eq!(variables[1].name(), Some("y"));
+    }
+
+    #[test]
+    fn test_get_term_map() {
+        use crate::memory::set_memory_limit;
+        
+        // Set a reasonable memory limit for this test (50MB)
+        set_memory_limit(50 * 1024 * 1024).unwrap();
+        
+        let generators = vec!["x".to_string()];
+        let variety = VarietyConstraint::Trivial;
+        let operation_symbols = vec![
+            OperationSymbol::new("*".to_string(), 2),
+        ];
+
+        let free_algebra = FreeAlgebra::new(
+            "TestFreeAlgebra".to_string(),
+            generators,
+            variety,
+            operation_symbols,
+            1,
+        ).unwrap();
+
+        let term_map = free_algebra.get_term_map();
+        assert!(!term_map.is_empty());
+        
+        // Check that each element maps to a valid term
+        for (element_index, term_id) in &term_map {
+            assert!(*element_index < free_algebra.cardinality());
+            // Verify the term exists in the arena
+            let _term = free_algebra.term_arena.get_term(*term_id).unwrap();
+        }
+    }
+
+    #[test]
+    fn test_get_term() {
+        use crate::memory::set_memory_limit;
+        
+        // Set a reasonable memory limit for this test (50MB)
+        set_memory_limit(50 * 1024 * 1024).unwrap();
+        
+        let generators = vec!["x".to_string()];
+        let variety = VarietyConstraint::Trivial;
+        let operation_symbols = vec![
+            OperationSymbol::new("*".to_string(), 2),
+        ];
+
+        let free_algebra = FreeAlgebra::new(
+            "TestFreeAlgebra".to_string(),
+            generators,
+            variety,
+            operation_symbols,
+            1,
+        ).unwrap();
+
+        // Test getting a valid term
+        let term_id = free_algebra.get_term(0).unwrap();
+        let _term = free_algebra.term_arena.get_term(term_id).unwrap();
+        
+        // Test getting an invalid term index
+        let result = free_algebra.get_term(free_algebra.cardinality());
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_get_element_from_term() {
+        use crate::memory::set_memory_limit;
+        
+        // Set a reasonable memory limit for this test (50MB)
+        set_memory_limit(50 * 1024 * 1024).unwrap();
+        
+        let generators = vec!["x".to_string()];
+        let variety = VarietyConstraint::Trivial;
+        let operation_symbols = vec![
+            OperationSymbol::new("*".to_string(), 2),
+        ];
+
+        let free_algebra = FreeAlgebra::new(
+            "TestFreeAlgebra".to_string(),
+            generators,
+            variety,
+            operation_symbols,
+            1,
+        ).unwrap();
+
+        let terms = free_algebra.get_terms();
+        assert!(!terms.is_empty());
+        
+        // Test getting element from a valid term
+        let element_index = free_algebra.get_element_from_term(terms[0]).unwrap();
+        assert!(element_index < free_algebra.cardinality());
+        
+        // Test getting element from an invalid term (create a dummy term ID)
+        let invalid_term_id = 99999;
+        let result = free_algebra.get_element_from_term(invalid_term_id);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_get_variable_to_generator_map() {
+        use crate::memory::set_memory_limit;
+        
+        // Set a reasonable memory limit for this test (50MB)
+        set_memory_limit(50 * 1024 * 1024).unwrap();
+        
+        let generators = vec!["x".to_string(), "y".to_string(), "z".to_string()];
+        let variety = VarietyConstraint::Trivial;
+        let operation_symbols = vec![
+            OperationSymbol::new("*".to_string(), 2),
+        ];
+
+        let free_algebra = FreeAlgebra::new(
+            "TestFreeAlgebra".to_string(),
+            generators,
+            variety,
+            operation_symbols,
+            1,
+        ).unwrap();
+
+        let var_to_gen_map = free_algebra.get_variable_to_generator_map();
+        assert_eq!(var_to_gen_map.len(), 3);
+        
+        // In free algebra, variables map to themselves
+        assert_eq!(var_to_gen_map.get(&0), Some(&0));
+        assert_eq!(var_to_gen_map.get(&1), Some(&1));
+        assert_eq!(var_to_gen_map.get(&2), Some(&2));
+    }
+
+    #[test]
+    fn test_get_idempotent_terms_with_timeout() {
+        use crate::memory::set_memory_limit;
+        use std::time::Duration;
+        
+        // Set a reasonable memory limit for this test (50MB)
+        set_memory_limit(50 * 1024 * 1024).unwrap();
+        
+        let generators = vec!["x".to_string()];
+        let variety = VarietyConstraint::Idempotent;
+        let operation_symbols = vec![
+            OperationSymbol::new("*".to_string(), 2),
+        ];
+
+        let free_algebra = FreeAlgebra::new(
+            "TestFreeAlgebra".to_string(),
+            generators,
+            variety,
+            operation_symbols,
+            1,
+        ).unwrap();
+
+        // Test with 2 minute timeout as specified in requirements
+        let idempotent_terms = free_algebra.get_idempotent_terms_with_timeout(Duration::from_secs(120)).unwrap();
+        assert!(!idempotent_terms.is_empty());
+        
+        // All generator terms should be idempotent
+        for &gen_term in &free_algebra.generator_terms {
+            assert!(idempotent_terms.contains(&gen_term));
+        }
     }
 }
