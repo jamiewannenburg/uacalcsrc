@@ -1,0 +1,91 @@
+graph TD
+    org_uacalc_alg["org.uacalc.alg"]
+    org_uacalc_alg_conlat["org.uacalc.alg.conlat"]
+    org_uacalc_alg_op["org.uacalc.alg.op"]
+    org_uacalc_alg_parallel["org.uacalc.alg.parallel"]
+    org_uacalc_alg_sublat["org.uacalc.alg.sublat"]
+    org_uacalc_element["org.uacalc.element"]
+    org_uacalc_eq["org.uacalc.eq"]
+    org_uacalc_example["org.uacalc.example"]
+    org_uacalc_fplat["org.uacalc.fplat"]
+    org_uacalc_group["org.uacalc.group"]
+    org_uacalc_io["org.uacalc.io"]
+    org_uacalc_lat["org.uacalc.lat"]
+    org_uacalc_nbui["org.uacalc.nbui"]
+    org_uacalc_terms["org.uacalc.terms"]
+    org_uacalc_ui["org.uacalc.ui"]
+    org_uacalc_ui_table["org.uacalc.ui.table"]
+    org_uacalc_ui_tm["org.uacalc.ui.tm"]
+    org_uacalc_ui_util["org.uacalc.ui.util"]
+    org_uacalc_util["org.uacalc.util"]
+    org_uacalc_util_virtuallist["org.uacalc.util.virtuallist"]
+    org_uacalc_io --> org_uacalc_alg_op
+    org_uacalc_io --> org_uacalc_alg
+    org_uacalc_ui --> org_uacalc_alg
+    org_uacalc_ui --> org_uacalc_alg_op
+    org_uacalc_ui --> org_uacalc_lat
+    org_uacalc_ui --> org_uacalc_ui
+    org_uacalc_ui --> org_uacalc_ui_tm
+    org_uacalc_ui --> org_uacalc_ui_table
+    org_uacalc_nbui --> org_uacalc_alg
+    org_uacalc_nbui --> org_uacalc_alg_op
+    org_uacalc_nbui --> org_uacalc_alg_sublat
+    org_uacalc_nbui --> org_uacalc_ui
+    org_uacalc_nbui --> org_uacalc_ui_tm
+    org_uacalc_lat --> org_uacalc_alg_op
+    org_uacalc_lat --> org_uacalc_alg
+    org_uacalc_fplat --> org_uacalc_lat
+    org_uacalc_group --> org_uacalc_alg_op
+    org_uacalc_group --> org_uacalc_alg
+    org_uacalc_eq --> org_uacalc_alg_op
+    org_uacalc_eq --> org_uacalc_alg
+    org_uacalc_eq --> org_uacalc_ui_tm
+    org_uacalc_terms --> org_uacalc_alg_op
+    org_uacalc_terms --> org_uacalc_alg
+    org_uacalc_terms --> org_uacalc_util
+    org_uacalc_alg --> org_uacalc_io
+    org_uacalc_alg --> org_uacalc_alg
+    org_uacalc_alg --> org_uacalc_alg_parallel
+    org_uacalc_alg --> org_uacalc_alg_op
+    org_uacalc_alg --> org_uacalc_alg_sublat
+    org_uacalc_alg --> org_uacalc_ui_tm
+    org_uacalc_alg --> org_uacalc_alg_conlat
+    org_uacalc_element --> org_uacalc_alg
+    org_uacalc_example --> org_uacalc_io
+    org_uacalc_example --> org_uacalc_alg
+    org_uacalc_example --> org_uacalc_alg_op
+    org_uacalc_example --> org_uacalc_terms
+    org_uacalc_example --> org_uacalc_ui
+    org_uacalc_example --> org_uacalc_ui_tm
+    org_uacalc_example --> org_uacalc_example
+    org_uacalc_example --> org_uacalc_util
+    org_uacalc_util --> org_uacalc_alg_conlat
+    org_uacalc_ui_table --> org_uacalc_alg
+    org_uacalc_ui_table --> org_uacalc_alg_op
+    org_uacalc_ui_table --> org_uacalc_ui
+    org_uacalc_ui_table --> org_uacalc_nbui
+    org_uacalc_ui_table --> org_uacalc_ui_table
+    org_uacalc_ui_table --> org_uacalc_alg_conlat
+    org_uacalc_ui_table --> org_uacalc_util
+    org_uacalc_ui_tm --> org_uacalc_alg
+    org_uacalc_ui_tm --> org_uacalc_ui
+    org_uacalc_ui_tm --> org_uacalc_ui_table
+    org_uacalc_ui_util --> org_uacalc_alg
+    org_uacalc_ui_util --> org_uacalc_ui
+    org_uacalc_alg_conlat --> org_uacalc_alg
+    org_uacalc_alg_conlat --> org_uacalc_alg_op
+    org_uacalc_alg_conlat --> org_uacalc_ui_tm
+    org_uacalc_alg_conlat --> org_uacalc_util
+    org_uacalc_alg_op --> org_uacalc_alg
+    org_uacalc_alg_op --> org_uacalc_ui
+    org_uacalc_alg_op --> org_uacalc_ui_tm
+    org_uacalc_alg_op --> org_uacalc_alg_conlat
+    org_uacalc_alg_op --> org_uacalc_util
+    org_uacalc_alg_parallel --> org_uacalc_alg
+    org_uacalc_alg_parallel --> org_uacalc_ui
+    org_uacalc_alg_sublat --> org_uacalc_alg
+    org_uacalc_alg_sublat --> org_uacalc_alg_op
+    org_uacalc_alg_sublat --> org_uacalc_ui_tm
+    org_uacalc_alg_sublat --> org_uacalc_util
+    org_uacalc_util_virtuallist --> org_uacalc_alg_op
+    org_uacalc_util_virtuallist --> org_uacalc_util

@@ -1,0 +1,1232 @@
+{
+  "packages": [
+    "org.uacalc.alg",
+    "org.uacalc.alg.conlat",
+    "org.uacalc.alg.op",
+    "org.uacalc.alg.parallel",
+    "org.uacalc.alg.sublat",
+    "org.uacalc.element",
+    "org.uacalc.eq",
+    "org.uacalc.example",
+    "org.uacalc.fplat",
+    "org.uacalc.group",
+    "org.uacalc.io",
+    "org.uacalc.lat",
+    "org.uacalc.nbui",
+    "org.uacalc.terms",
+    "org.uacalc.ui",
+    "org.uacalc.ui.table",
+    "org.uacalc.ui.tm",
+    "org.uacalc.ui.util",
+    "org.uacalc.util",
+    "org.uacalc.util.virtuallist"
+  ],
+  "classes": [
+    "org.uacalc.alg.Algebra",
+    "org.uacalc.alg.AlgebraFromMinimalSets",
+    "org.uacalc.alg.AlgebraWithGeneratingVector",
+    "org.uacalc.alg.Algebras",
+    "org.uacalc.alg.BasicAlgebra",
+    "org.uacalc.alg.BigProductAlgebra",
+    "org.uacalc.alg.Closer",
+    "org.uacalc.alg.CloserTiming",
+    "org.uacalc.alg.FreeAlgebra",
+    "org.uacalc.alg.GeneralAlgebra",
+    "org.uacalc.alg.Homomorphism",
+    "org.uacalc.alg.Malcev",
+    "org.uacalc.alg.MaltsevDecompositionIterator",
+    "org.uacalc.alg.MaltsevProductDecomposition",
+    "org.uacalc.alg.MatrixPowerAlgebra",
+    "org.uacalc.alg.ParameterizedAlgebra",
+    "org.uacalc.alg.PolinLikeAlgebra",
+    "org.uacalc.alg.PowerAlgebra",
+    "org.uacalc.alg.ProductAlgebra",
+    "org.uacalc.alg.QuotientAlgebra",
+    "org.uacalc.alg.QuotientElement",
+    "org.uacalc.alg.ReductAlgebra",
+    "org.uacalc.alg.SmallAlgebra",
+    "org.uacalc.alg.SubProductAlgebra",
+    "org.uacalc.alg.Subalgebra",
+    "org.uacalc.alg.UnaryTermsMonoid",
+    "org.uacalc.alg.conlat.BasicBinaryRelation",
+    "org.uacalc.alg.conlat.BasicPartition",
+    "org.uacalc.alg.conlat.BinaryRelation",
+    "org.uacalc.alg.conlat.CentralityData",
+    "org.uacalc.alg.conlat.CongruenceLattice",
+    "org.uacalc.alg.conlat.Partition",
+    "org.uacalc.alg.conlat.Polymorphisms",
+    "org.uacalc.alg.conlat.Subtrace",
+    "org.uacalc.alg.conlat.TypeFinder",
+    "org.uacalc.alg.op.AbstractIntOperation",
+    "org.uacalc.alg.op.AbstractOperation",
+    "org.uacalc.alg.op.Operation",
+    "org.uacalc.alg.op.OperationSymbol",
+    "org.uacalc.alg.op.OperationWithDefaultValue",
+    "org.uacalc.alg.op.Operations",
+    "org.uacalc.alg.op.ParameterizedOperation",
+    "org.uacalc.alg.op.SimilarityType",
+    "org.uacalc.alg.op.TermOperation",
+    "org.uacalc.alg.op.TermOperationImp",
+    "org.uacalc.alg.parallel.Pool",
+    "org.uacalc.alg.parallel.SingleClose",
+    "org.uacalc.alg.sublat.BasicSet",
+    "org.uacalc.alg.sublat.SubalgebraLattice",
+    "org.uacalc.element.Element",
+    "org.uacalc.element.SubProductElement",
+    "org.uacalc.eq.Equation",
+    "org.uacalc.eq.Equations",
+    "org.uacalc.eq.Presentation",
+    "org.uacalc.example.Average",
+    "org.uacalc.example.ConLyndonF3",
+    "org.uacalc.example.FilteringAlgebras",
+    "org.uacalc.example.FiniteField",
+    "org.uacalc.example.FinitelyPresentedAlg",
+    "org.uacalc.example.HasConstantTuple",
+    "org.uacalc.example.HasKaryNU",
+    "org.uacalc.example.Jipsen",
+    "org.uacalc.example.KKMVWExample",
+    "org.uacalc.example.Kearnes",
+    "org.uacalc.example.MembershipTester",
+    "org.uacalc.example.Michalewski",
+    "org.uacalc.example.NoSymGroup",
+    "org.uacalc.example.ParallelClose",
+    "org.uacalc.example.ParallelClose8",
+    "org.uacalc.example.TupleStream",
+    "org.uacalc.example.Type1",
+    "org.uacalc.fplat.PartiallyDefinedLattice",
+    "org.uacalc.fplat.package-info",
+    "org.uacalc.group.PermutationGroup",
+    "org.uacalc.io.AlgebraIO",
+    "org.uacalc.io.AlgebraReader",
+    "org.uacalc.io.AlgebraWriter",
+    "org.uacalc.io.BadAlgebraFileException",
+    "org.uacalc.io.ExtFileFilter",
+    "org.uacalc.io.JSONChannel",
+    "org.uacalc.io.Mace4Reader",
+    "org.uacalc.lat.BasicLattice",
+    "org.uacalc.lat.Lattice",
+    "org.uacalc.lat.Lattices",
+    "org.uacalc.lat.Order",
+    "org.uacalc.lat.OrderedSets",
+    "org.uacalc.lat.SmallLattice",
+    "org.uacalc.nbui.AlgebraEditorController",
+    "org.uacalc.nbui.AlgebraPreviewer",
+    "org.uacalc.nbui.ComputationsController",
+    "org.uacalc.nbui.ConController",
+    "org.uacalc.nbui.DrawingController",
+    "org.uacalc.nbui.LatDrawer",
+    "org.uacalc.nbui.MainController",
+    "org.uacalc.nbui.PopupListener",
+    "org.uacalc.nbui.SubController",
+    "org.uacalc.nbui.UACalc",
+    "org.uacalc.nbui.UACalculator2",
+    "org.uacalc.nbui.UACalculatorUI",
+    "org.uacalc.nbui.Version",
+    "org.uacalc.terms.NonVariableTerm",
+    "org.uacalc.terms.Taylor",
+    "org.uacalc.terms.Term",
+    "org.uacalc.terms.Terms",
+    "org.uacalc.terms.Variable",
+    "org.uacalc.terms.VariableImp",
+    "org.uacalc.ui.AlgebraEditor",
+    "org.uacalc.ui.AlgebraTableInputPanel",
+    "org.uacalc.ui.ComputationsPanel",
+    "org.uacalc.ui.LatDrawPanel",
+    "org.uacalc.ui.MonitorPanel",
+    "org.uacalc.ui.NewAlgebraDialog",
+    "org.uacalc.ui.PropertiesPanel",
+    "org.uacalc.ui.Tabs",
+    "org.uacalc.ui.UACalculator",
+    "org.uacalc.ui.table.AlgebraTableModel",
+    "org.uacalc.ui.table.AlgebraTablePanel",
+    "org.uacalc.ui.table.ConLatticeTableModel",
+    "org.uacalc.ui.table.ElemKeyTableModel",
+    "org.uacalc.ui.table.IntegerEditor",
+    "org.uacalc.ui.table.LatticeTableModel",
+    "org.uacalc.ui.table.OperationInputTable",
+    "org.uacalc.ui.table.OperationTableModel",
+    "org.uacalc.ui.table.TableUtils",
+    "org.uacalc.ui.table.TaskTableModel",
+    "org.uacalc.ui.table.TermTableModel",
+    "org.uacalc.ui.table.TermTablePanel",
+    "org.uacalc.ui.tm.BackgroundExec",
+    "org.uacalc.ui.tm.GuiExecutor",
+    "org.uacalc.ui.tm.ProgressReport",
+    "org.uacalc.ui.tm.ProgressState",
+    "org.uacalc.ui.tm.Status",
+    "org.uacalc.ui.util.GUIAlgebra",
+    "org.uacalc.ui.util.GUIAlgebraList",
+    "org.uacalc.ui.util.RandomGenerator",
+    "org.uacalc.ui.util.WebBrowser",
+    "org.uacalc.util.ArrayIncrementor",
+    "org.uacalc.util.ArrayString",
+    "org.uacalc.util.Horner",
+    "org.uacalc.util.IntArray",
+    "org.uacalc.util.PermutationGenerator",
+    "org.uacalc.util.SequenceGenerator",
+    "org.uacalc.util.SimpleList",
+    "org.uacalc.util.virtuallist.LongList",
+    "org.uacalc.util.virtuallist.TupleWithMin",
+    "org.uacalc.util.virtuallist.VirtualLists"
+  ],
+  "package_dependencies": {
+    "org.uacalc.io": [
+      "org.uacalc",
+      "org.uacalc.alg",
+      "org.uacalc.alg.op"
+    ],
+    "org.uacalc.ui": [
+      "org.uacalc",
+      "org.uacalc.alg",
+      "org.uacalc.alg.op",
+      "org.uacalc.lat",
+      "org.uacalc.ui",
+      "org.uacalc.ui.table",
+      "org.uacalc.ui.tm"
+    ],
+    "org.uacalc.nbui": [
+      "org.uacalc",
+      "org.uacalc.alg",
+      "org.uacalc.alg.op",
+      "org.uacalc.alg.sublat",
+      "org.uacalc.ui",
+      "org.uacalc.ui.table.TermTableModel",
+      "org.uacalc.ui.tm"
+    ],
+    "org.uacalc.lat": [
+      "org.uacalc",
+      "org.uacalc.alg",
+      "org.uacalc.alg.SmallAlgebra",
+      "org.uacalc.alg.op"
+    ],
+    "org.uacalc.fplat": [
+      "org.uacalc",
+      "org.uacalc.lat"
+    ],
+    "org.uacalc.group": [
+      "org.uacalc",
+      "org.uacalc.alg",
+      "org.uacalc.alg.op"
+    ],
+    "org.uacalc.eq": [
+      "org.uacalc",
+      "org.uacalc.alg",
+      "org.uacalc.alg.op",
+      "org.uacalc.ui.tm"
+    ],
+    "org.uacalc.terms": [
+      "org.uacalc",
+      "org.uacalc.alg",
+      "org.uacalc.alg.op",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.alg": [
+      "org.uacalc",
+      "org.uacalc.alg",
+      "org.uacalc.alg.SmallAlgebra",
+      "org.uacalc.alg.conlat",
+      "org.uacalc.alg.op",
+      "org.uacalc.alg.parallel",
+      "org.uacalc.alg.sublat",
+      "org.uacalc.io",
+      "org.uacalc.ui.tm"
+    ],
+    "org.uacalc.element": [
+      "org.uacalc",
+      "org.uacalc.alg"
+    ],
+    "org.uacalc.example": [
+      "org.uacalc",
+      "org.uacalc.alg",
+      "org.uacalc.alg.op",
+      "org.uacalc.example",
+      "org.uacalc.io",
+      "org.uacalc.terms",
+      "org.uacalc.ui",
+      "org.uacalc.ui.tm",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.util": [
+      "org.uacalc.alg.conlat"
+    ],
+    "org.uacalc.ui.table": [
+      "org.uacalc",
+      "org.uacalc.alg",
+      "org.uacalc.alg.SmallAlgebra",
+      "org.uacalc.alg.conlat",
+      "org.uacalc.alg.op",
+      "org.uacalc.nbui",
+      "org.uacalc.ui",
+      "org.uacalc.ui.table",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.ui.tm": [
+      "org.uacalc.alg",
+      "org.uacalc.ui",
+      "org.uacalc.ui.table"
+    ],
+    "org.uacalc.ui.util": [
+      "org.uacalc",
+      "org.uacalc.alg",
+      "org.uacalc.ui"
+    ],
+    "org.uacalc.alg.conlat": [
+      "org.uacalc",
+      "org.uacalc.alg",
+      "org.uacalc.alg.conlat.Partition",
+      "org.uacalc.alg.op",
+      "org.uacalc.ui.tm",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.alg.op": [
+      "org.uacalc",
+      "org.uacalc.alg",
+      "org.uacalc.alg.conlat",
+      "org.uacalc.ui",
+      "org.uacalc.ui.tm",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.alg.parallel": [
+      "org.uacalc",
+      "org.uacalc.alg",
+      "org.uacalc.ui"
+    ],
+    "org.uacalc.alg.sublat": [
+      "org.uacalc",
+      "org.uacalc.alg",
+      "org.uacalc.alg.op",
+      "org.uacalc.ui.tm",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.util.virtuallist": [
+      "org.uacalc",
+      "org.uacalc.alg.op",
+      "org.uacalc.util"
+    ]
+  },
+  "class_dependencies": {
+    "org.uacalc.io.AlgebraWriter": [
+      "org.uacalc.alg",
+      "org.uacalc.alg.conlat",
+      "org.uacalc.alg.op.Operation",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.io.JSONChannel": [
+      "org.uacalc.alg",
+      "org.uacalc.alg.conlat",
+      "org.uacalc.io"
+    ],
+    "org.uacalc.io.AlgebraReader": [
+      "org.uacalc.alg",
+      "org.uacalc.alg.conlat",
+      "org.uacalc.alg.op.Operation",
+      "org.uacalc.alg.op.OperationSymbol",
+      "org.uacalc.alg.op.Operations",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.io.AlgebraIO": [
+      "org.uacalc.alg",
+      "org.uacalc.alg.conlat",
+      "org.uacalc.alg.op.Operation",
+      "org.uacalc.alg.op.OperationSymbol",
+      "org.uacalc.alg.op.Operations",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.io.Mace4Reader": [
+      "org.uacalc.alg",
+      "org.uacalc.alg.op"
+    ],
+    "org.uacalc.ui.LatDrawPanel": [
+      "org.uacalc.lat.BasicLattice"
+    ],
+    "org.uacalc.ui.MonitorPanel": [
+      "org.uacalc.ui.table",
+      "org.uacalc.ui.tm"
+    ],
+    "org.uacalc.ui.ComputationsPanel": [
+      "org.uacalc.alg",
+      "org.uacalc.ui.table",
+      "org.uacalc.ui.tm",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.nbui.LatDrawer": [
+      "org.uacalc.alg",
+      "org.uacalc.alg.conlat",
+      "org.uacalc.alg.sublat",
+      "org.uacalc.lat"
+    ],
+    "org.uacalc.ui.UACalculator": [
+      "org.uacalc.alg",
+      "org.uacalc.alg.conlat",
+      "org.uacalc.alg.op.Operation",
+      "org.uacalc.alg.op.Operations",
+      "org.uacalc.alg.sublat",
+      "org.uacalc.io",
+      "org.uacalc.lat",
+      "org.uacalc.ui.MonitorPanel",
+      "org.uacalc.ui.table.AlgebraTablePanel",
+      "org.uacalc.ui.tm.ProgressReport"
+    ],
+    "org.uacalc.ui.AlgebraEditor": [
+      "org.uacalc.alg",
+      "org.uacalc.alg.op.Operation",
+      "org.uacalc.alg.op.OperationSymbol",
+      "org.uacalc.alg.op.OperationWithDefaultValue",
+      "org.uacalc.alg.op.Operations",
+      "org.uacalc.ui.table"
+    ],
+    "org.uacalc.lat.Order": [
+      "org.uacalc.alg"
+    ],
+    "org.uacalc.lat.Lattice": [
+      "org.uacalc.alg"
+    ],
+    "org.uacalc.lat.SmallLattice": [
+      "org.uacalc.alg"
+    ],
+    "org.uacalc.lat.BasicLattice": [
+      "org.uacalc.alg",
+      "org.uacalc.alg.SmallAlgebra.AlgebraType",
+      "org.uacalc.alg.conlat",
+      "org.uacalc.alg.op.AbstractOperation",
+      "org.uacalc.alg.op.Operation",
+      "org.uacalc.alg.op.OperationSymbol",
+      "org.uacalc.alg.sublat",
+      "org.uacalc.io",
+      "org.uacalc.lat",
+      "org.uacalc.ui",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.lat.Lattices": [
+      "org.uacalc.alg",
+      "org.uacalc.alg.conlat",
+      "org.uacalc.alg.op.Operation",
+      "org.uacalc.alg.sublat"
+    ],
+    "org.uacalc.fplat.PartiallyDefinedLattice": [
+      "org.uacalc.lat.Order",
+      "org.uacalc.terms"
+    ],
+    "org.uacalc.group.PermutationGroup": [
+      "org.uacalc.alg",
+      "org.uacalc.alg.conlat",
+      "org.uacalc.alg.op.AbstractOperation",
+      "org.uacalc.alg.op.Operation",
+      "org.uacalc.alg.op.OperationSymbol",
+      "org.uacalc.alg.sublat",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.eq.Equations": [
+      "org.uacalc.alg.op.OperationSymbol",
+      "org.uacalc.terms"
+    ],
+    "org.uacalc.eq.Presentation": [
+      "org.uacalc.terms"
+    ],
+    "org.uacalc.eq.Equation": [
+      "org.uacalc.alg",
+      "org.uacalc.alg.op",
+      "org.uacalc.terms",
+      "org.uacalc.ui.tm.ProgressReport"
+    ],
+    "org.uacalc.nbui.UACalculator2": [
+      "org.uacalc.alg",
+      "org.uacalc.alg.conlat",
+      "org.uacalc.io",
+      "org.uacalc.ui.table",
+      "org.uacalc.ui.util"
+    ],
+    "org.uacalc.nbui.AlgebraEditorController": [
+      "org.uacalc.alg",
+      "org.uacalc.alg.op.Operation",
+      "org.uacalc.alg.op.OperationSymbol",
+      "org.uacalc.alg.op.OperationWithDefaultValue",
+      "org.uacalc.alg.op.Operations",
+      "org.uacalc.ui.table",
+      "org.uacalc.ui.table.TermTableModel.ResultTableType",
+      "org.uacalc.ui.util"
+    ],
+    "org.uacalc.nbui.ComputationsController": [
+      "org.uacalc.alg",
+      "org.uacalc.alg.conlat",
+      "org.uacalc.alg.op",
+      "org.uacalc.alg.sublat.BasicSet",
+      "org.uacalc.eq",
+      "org.uacalc.terms",
+      "org.uacalc.ui.table",
+      "org.uacalc.ui.table.TermTableModel.ResultTableType",
+      "org.uacalc.ui.tm",
+      "org.uacalc.ui.util",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.nbui.SubController": [
+      "org.uacalc.alg.SmallAlgebra",
+      "org.uacalc.alg.Subalgebra",
+      "org.uacalc.alg.sublat",
+      "org.uacalc.ui.util"
+    ],
+    "org.uacalc.nbui.AlgebraPreviewer": [
+      "org.uacalc.alg",
+      "org.uacalc.io"
+    ],
+    "org.uacalc.nbui.DrawingController": [
+      "org.uacalc.alg.SmallAlgebra",
+      "org.uacalc.alg.op",
+      "org.uacalc.lat",
+      "org.uacalc.ui.util"
+    ],
+    "org.uacalc.nbui.ConController": [
+      "org.uacalc.alg",
+      "org.uacalc.alg.conlat",
+      "org.uacalc.lat",
+      "org.uacalc.ui.table",
+      "org.uacalc.ui.util"
+    ],
+    "org.uacalc.nbui.MainController": [
+      "org.uacalc.alg",
+      "org.uacalc.alg.conlat",
+      "org.uacalc.alg.op.Operation",
+      "org.uacalc.alg.op.OperationWithDefaultValue",
+      "org.uacalc.alg.op.Operations",
+      "org.uacalc.alg.sublat",
+      "org.uacalc.io",
+      "org.uacalc.lat",
+      "org.uacalc.ui",
+      "org.uacalc.ui.table",
+      "org.uacalc.ui.tm.ProgressReport",
+      "org.uacalc.ui.util"
+    ],
+    "org.uacalc.terms.VariableImp": [
+      "org.uacalc.alg",
+      "org.uacalc.alg.op.AbstractOperation",
+      "org.uacalc.alg.op.Operation",
+      "org.uacalc.alg.op.OperationSymbol",
+      "org.uacalc.alg.op.TermOperation",
+      "org.uacalc.alg.op.TermOperationImp",
+      "org.uacalc.util.SimpleList"
+    ],
+    "org.uacalc.terms.Terms": [
+      "org.uacalc.alg.op",
+      "org.uacalc.eq"
+    ],
+    "org.uacalc.terms.Variable": [
+      "org.uacalc.alg",
+      "org.uacalc.util.SimpleList"
+    ],
+    "org.uacalc.terms.Term": [
+      "org.uacalc.alg",
+      "org.uacalc.alg.op.Operation",
+      "org.uacalc.alg.op.OperationSymbol",
+      "org.uacalc.alg.op.TermOperation"
+    ],
+    "org.uacalc.terms.Taylor": [
+      "org.uacalc.alg.op.OperationSymbol",
+      "org.uacalc.eq",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.terms.NonVariableTerm": [
+      "org.uacalc.alg",
+      "org.uacalc.alg.op.AbstractOperation",
+      "org.uacalc.alg.op.Operation",
+      "org.uacalc.alg.op.OperationSymbol",
+      "org.uacalc.alg.op.Operations",
+      "org.uacalc.alg.op.TermOperation",
+      "org.uacalc.alg.op.TermOperationImp",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.alg.PolinLikeAlgebra": [
+      "org.uacalc.alg.conlat",
+      "org.uacalc.alg.op.AbstractOperation",
+      "org.uacalc.alg.op.Operation",
+      "org.uacalc.alg.op.OperationSymbol",
+      "org.uacalc.alg.sublat",
+      "org.uacalc.lat",
+      "org.uacalc.terms",
+      "org.uacalc.ui",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.alg.FreeAlgebra": [
+      "org.uacalc.alg.SmallAlgebra.AlgebraType",
+      "org.uacalc.alg.conlat",
+      "org.uacalc.alg.op.Operation",
+      "org.uacalc.alg.op.Operations",
+      "org.uacalc.alg.sublat",
+      "org.uacalc.eq",
+      "org.uacalc.io",
+      "org.uacalc.terms",
+      "org.uacalc.ui.tm.ProgressReport",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.alg.SubProductAlgebra": [
+      "org.uacalc.alg.SmallAlgebra.AlgebraType",
+      "org.uacalc.alg.conlat",
+      "org.uacalc.alg.op.AbstractOperation",
+      "org.uacalc.alg.op.Operation",
+      "org.uacalc.alg.op.Operations",
+      "org.uacalc.alg.sublat",
+      "org.uacalc.lat",
+      "org.uacalc.terms",
+      "org.uacalc.ui.tm.ProgressReport",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.alg.GeneralAlgebra": [
+      "org.uacalc.alg.conlat",
+      "org.uacalc.alg.op.Operation",
+      "org.uacalc.alg.op.OperationSymbol",
+      "org.uacalc.alg.op.Operations",
+      "org.uacalc.alg.op.SimilarityType",
+      "org.uacalc.alg.sublat",
+      "org.uacalc.ui.tm.ProgressReport"
+    ],
+    "org.uacalc.alg.AlgebraWithGeneratingVector": [
+      "org.uacalc.alg.conlat",
+      "org.uacalc.alg.sublat",
+      "org.uacalc.eq",
+      "org.uacalc.terms",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.alg.AlgebraFromMinimalSets": [
+      "org.uacalc.alg.op"
+    ],
+    "org.uacalc.alg.QuotientAlgebra": [
+      "org.uacalc.alg.SmallAlgebra.AlgebraType",
+      "org.uacalc.alg.conlat",
+      "org.uacalc.alg.op.AbstractOperation",
+      "org.uacalc.alg.op.Operation",
+      "org.uacalc.alg.op.Operations",
+      "org.uacalc.alg.sublat",
+      "org.uacalc.io.AlgebraIO",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.alg.MaltsevProductDecomposition": [
+      "org.uacalc.alg",
+      "org.uacalc.alg.conlat"
+    ],
+    "org.uacalc.alg.Algebra": [
+      "org.uacalc.alg.op.Operation",
+      "org.uacalc.alg.op.OperationSymbol",
+      "org.uacalc.alg.op.SimilarityType",
+      "org.uacalc.ui.tm.ProgressReport"
+    ],
+    "org.uacalc.alg.PowerAlgebra": [
+      "org.uacalc.alg.conlat",
+      "org.uacalc.alg.op.Operation",
+      "org.uacalc.alg.sublat.SubalgebraLattice",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.alg.QuotientElement": [
+      "org.uacalc.alg.conlat",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.alg.ParameterizedAlgebra": [
+      "org.uacalc.alg.conlat",
+      "org.uacalc.alg.op.ParameterizedOperation",
+      "org.uacalc.alg.sublat"
+    ],
+    "org.uacalc.alg.BasicAlgebra": [
+      "org.uacalc.alg.conlat",
+      "org.uacalc.alg.op.AbstractOperation",
+      "org.uacalc.alg.op.Operation",
+      "org.uacalc.alg.op.OperationSymbol",
+      "org.uacalc.alg.op.OperationWithDefaultValue",
+      "org.uacalc.alg.op.Operations",
+      "org.uacalc.alg.sublat"
+    ],
+    "org.uacalc.alg.Subalgebra": [
+      "org.uacalc.alg.SmallAlgebra.AlgebraType",
+      "org.uacalc.alg.conlat",
+      "org.uacalc.alg.op.AbstractOperation",
+      "org.uacalc.alg.op.Operation",
+      "org.uacalc.alg.op.Operations",
+      "org.uacalc.alg.sublat",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.alg.Closer": [
+      "org.uacalc.alg.conlat",
+      "org.uacalc.alg.op.AbstractOperation",
+      "org.uacalc.alg.op.Operation",
+      "org.uacalc.alg.op.OperationSymbol",
+      "org.uacalc.alg.op.OperationWithDefaultValue",
+      "org.uacalc.alg.op.Operations",
+      "org.uacalc.alg.parallel.SingleClose",
+      "org.uacalc.eq",
+      "org.uacalc.terms",
+      "org.uacalc.ui.tm.ProgressReport",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.alg.ReductAlgebra": [
+      "org.uacalc.alg.SmallAlgebra.AlgebraType",
+      "org.uacalc.alg.conlat",
+      "org.uacalc.alg.op.Operation",
+      "org.uacalc.alg.sublat",
+      "org.uacalc.terms",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.alg.BigProductAlgebra": [
+      "org.uacalc.alg.conlat",
+      "org.uacalc.alg.op.AbstractOperation",
+      "org.uacalc.alg.op.Operation",
+      "org.uacalc.alg.op.OperationSymbol",
+      "org.uacalc.alg.op.Operations",
+      "org.uacalc.alg.sublat",
+      "org.uacalc.terms",
+      "org.uacalc.ui.tm.ProgressReport",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.alg.UnaryTermsMonoid": [
+      "org.uacalc.alg.SmallAlgebra.AlgebraType",
+      "org.uacalc.alg.conlat.CongruenceLattice",
+      "org.uacalc.alg.op",
+      "org.uacalc.alg.sublat.SubalgebraLattice",
+      "org.uacalc.io",
+      "org.uacalc.terms",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.alg.MatrixPowerAlgebra": [
+      "org.uacalc.alg.SmallAlgebra.AlgebraType",
+      "org.uacalc.alg.conlat",
+      "org.uacalc.alg.op.AbstractOperation",
+      "org.uacalc.alg.op.Operation",
+      "org.uacalc.alg.op.Operations",
+      "org.uacalc.alg.sublat",
+      "org.uacalc.io.AlgebraIO",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.alg.MaltsevDecompositionIterator": [
+      "org.uacalc.alg.conlat",
+      "org.uacalc.io.AlgebraIO"
+    ],
+    "org.uacalc.alg.ProductAlgebra": [
+      "org.uacalc.alg.SmallAlgebra.AlgebraType",
+      "org.uacalc.alg.conlat",
+      "org.uacalc.alg.op.AbstractOperation",
+      "org.uacalc.alg.op.Operation",
+      "org.uacalc.alg.op.Operations",
+      "org.uacalc.alg.sublat",
+      "org.uacalc.io.AlgebraIO",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.alg.Malcev": [
+      "org.uacalc.alg.conlat",
+      "org.uacalc.alg.op",
+      "org.uacalc.alg.sublat",
+      "org.uacalc.terms",
+      "org.uacalc.ui.tm.ProgressReport",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.alg.Homomorphism": [
+      "org.uacalc.alg.conlat",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.alg.CloserTiming": [
+      "org.uacalc.alg.op",
+      "org.uacalc.ui.tm.ProgressReport"
+    ],
+    "org.uacalc.alg.Algebras": [
+      "org.uacalc.alg.QuotientAlgebra",
+      "org.uacalc.alg.conlat",
+      "org.uacalc.alg.op.Operation",
+      "org.uacalc.alg.op.OperationSymbol",
+      "org.uacalc.alg.op.Operations",
+      "org.uacalc.alg.op.SimilarityType",
+      "org.uacalc.alg.sublat",
+      "org.uacalc.terms",
+      "org.uacalc.ui.tm.ProgressReport",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.alg.SmallAlgebra": [
+      "org.uacalc.alg.conlat.CongruenceLattice",
+      "org.uacalc.alg.sublat.SubalgebraLattice"
+    ],
+    "org.uacalc.element.SubProductElement": [
+      "org.uacalc.alg",
+      "org.uacalc.terms",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.element.Element": [
+      "org.uacalc.alg.Algebra"
+    ],
+    "org.uacalc.example.Kearnes": [
+      "org.uacalc.alg",
+      "org.uacalc.alg.conlat",
+      "org.uacalc.alg.op.AbstractOperation",
+      "org.uacalc.alg.op.Operation",
+      "org.uacalc.alg.op.OperationSymbol",
+      "org.uacalc.alg.sublat",
+      "org.uacalc.io",
+      "org.uacalc.lat",
+      "org.uacalc.terms",
+      "org.uacalc.ui",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.example.FiniteField": [
+      "org.uacalc.alg.GeneralAlgebra",
+      "org.uacalc.alg.SmallAlgebra",
+      "org.uacalc.alg.op.AbstractOperation",
+      "org.uacalc.alg.op.Operation",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.example.Michalewski": [
+      "org.uacalc.alg",
+      "org.uacalc.io",
+      "org.uacalc.terms",
+      "org.uacalc.ui.tm",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.example.FilteringAlgebras": [
+      "org.uacalc.alg",
+      "org.uacalc.io.AlgebraIO"
+    ],
+    "org.uacalc.example.Average": [
+      "org.uacalc.alg",
+      "org.uacalc.alg.conlat",
+      "org.uacalc.alg.op.AbstractOperation",
+      "org.uacalc.alg.op.Operation",
+      "org.uacalc.alg.op.OperationSymbol",
+      "org.uacalc.alg.sublat",
+      "org.uacalc.io",
+      "org.uacalc.lat",
+      "org.uacalc.terms",
+      "org.uacalc.ui",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.example.HasKaryNU": [
+      "org.uacalc.alg.BigProductAlgebra",
+      "org.uacalc.alg.ProductAlgebra",
+      "org.uacalc.alg.SmallAlgebra",
+      "org.uacalc.io.BadAlgebraFileException",
+      "org.uacalc.ui.tm.ProgressReport",
+      "org.uacalc.util.ArrayIncrementor",
+      "org.uacalc.util.IntArray",
+      "org.uacalc.util.SequenceGenerator"
+    ],
+    "org.uacalc.example.KKMVWExample": [
+      "org.uacalc.alg",
+      "org.uacalc.alg.conlat",
+      "org.uacalc.alg.op.AbstractOperation",
+      "org.uacalc.alg.op.Operation",
+      "org.uacalc.alg.sublat",
+      "org.uacalc.io",
+      "org.uacalc.lat",
+      "org.uacalc.terms",
+      "org.uacalc.ui",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.example.NoSymGroup": [
+      "org.uacalc.alg.BasicAlgebra",
+      "org.uacalc.alg.BigProductAlgebra",
+      "org.uacalc.alg.PowerAlgebra",
+      "org.uacalc.alg.SmallAlgebra",
+      "org.uacalc.alg.SubProductAlgebra",
+      "org.uacalc.alg.op.AbstractOperation",
+      "org.uacalc.alg.op.Operation",
+      "org.uacalc.example.HasConstantTuple",
+      "org.uacalc.io.AlgebraIO",
+      "org.uacalc.util.IntArray"
+    ],
+    "org.uacalc.example.FinitelyPresentedAlg": [
+      "org.uacalc.alg",
+      "org.uacalc.alg.op",
+      "org.uacalc.eq",
+      "org.uacalc.io",
+      "org.uacalc.terms"
+    ],
+    "org.uacalc.example.HasConstantTuple": [
+      "org.uacalc.alg.BigProductAlgebra",
+      "org.uacalc.alg.Closer",
+      "org.uacalc.alg.SmallAlgebra",
+      "org.uacalc.terms.Term",
+      "org.uacalc.terms.Variable",
+      "org.uacalc.terms.VariableImp",
+      "org.uacalc.util.IntArray"
+    ],
+    "org.uacalc.example.TupleStream": [
+      "org.uacalc.util"
+    ],
+    "org.uacalc.example.MembershipTester": [
+      "org.uacalc.alg",
+      "org.uacalc.eq",
+      "org.uacalc.io",
+      "org.uacalc.terms"
+    ],
+    "org.uacalc.example.ParallelClose8": [
+      "org.uacalc.alg.op",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.example.Jipsen": [
+      "org.uacalc.alg",
+      "org.uacalc.alg.conlat",
+      "org.uacalc.io"
+    ],
+    "org.uacalc.example.Type1": [
+      "org.uacalc.alg",
+      "org.uacalc.alg.conlat",
+      "org.uacalc.alg.op",
+      "org.uacalc.io",
+      "org.uacalc.terms",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.example.ConLyndonF3": [
+      "org.uacalc.alg",
+      "org.uacalc.alg.conlat",
+      "org.uacalc.eq",
+      "org.uacalc.io",
+      "org.uacalc.terms"
+    ],
+    "org.uacalc.util.IntArray": [
+      "org.uacalc.alg.conlat.Partition"
+    ],
+    "org.uacalc.ui.table.LatticeTableModel": [
+      "org.uacalc.alg"
+    ],
+    "org.uacalc.ui.table.OperationInputTable": [
+      "org.uacalc.alg.op.Operation",
+      "org.uacalc.alg.op.OperationWithDefaultValue",
+      "org.uacalc.ui.UACalculator",
+      "org.uacalc.ui.table.OperationTableModel"
+    ],
+    "org.uacalc.ui.table.ElemKeyTableModel": [
+      "org.uacalc.alg",
+      "org.uacalc.alg.SmallAlgebra.AlgebraType",
+      "org.uacalc.alg.conlat.Partition",
+      "org.uacalc.terms",
+      "org.uacalc.ui.util",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.ui.table.ConLatticeTableModel": [
+      "org.uacalc.alg",
+      "org.uacalc.alg.conlat",
+      "org.uacalc.nbui.LatDrawer"
+    ],
+    "org.uacalc.ui.table.OperationTableModel": [
+      "org.uacalc.alg.op.Operation",
+      "org.uacalc.alg.op.OperationSymbol",
+      "org.uacalc.alg.op.OperationWithDefaultValue",
+      "org.uacalc.alg.op.Operations",
+      "org.uacalc.ui.UACalculator",
+      "org.uacalc.util.ArrayIncrementor",
+      "org.uacalc.util.ArrayString",
+      "org.uacalc.util.Horner",
+      "org.uacalc.util.SequenceGenerator"
+    ],
+    "org.uacalc.ui.table.TermTableModel": [
+      "org.uacalc.alg.conlat",
+      "org.uacalc.terms",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.ui.table.TermTablePanel": [
+      "org.uacalc.alg",
+      "org.uacalc.alg.op",
+      "org.uacalc.terms",
+      "org.uacalc.ui"
+    ],
+    "org.uacalc.ui.table.AlgebraTableModel": [
+      "org.uacalc.alg.SmallAlgebra",
+      "org.uacalc.ui.util"
+    ],
+    "org.uacalc.ui.table.TaskTableModel": [
+      "org.uacalc.ui",
+      "org.uacalc.ui.tm"
+    ],
+    "org.uacalc.ui.tm.ProgressReport": [
+      "org.uacalc.alg.AlgebraWithGeneratingVector",
+      "org.uacalc.ui.MonitorPanel",
+      "org.uacalc.ui.table.TaskTableModel"
+    ],
+    "org.uacalc.ui.util.GUIAlgebra": [
+      "org.uacalc.alg",
+      "org.uacalc.alg.op",
+      "org.uacalc.lat",
+      "org.uacalc.ui.table"
+    ],
+    "org.uacalc.ui.util.GUIAlgebraList": [
+      "org.uacalc.alg"
+    ],
+    "org.uacalc.alg.conlat.CongruenceLattice": [
+      "org.uacalc.alg",
+      "org.uacalc.alg.op.Operation",
+      "org.uacalc.alg.op.OperationSymbol",
+      "org.uacalc.alg.op.SimilarityType",
+      "org.uacalc.alg.sublat",
+      "org.uacalc.element",
+      "org.uacalc.io",
+      "org.uacalc.lat",
+      "org.uacalc.ui.tm.ProgressReport",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.alg.conlat.Polymorphisms": [
+      "org.uacalc.alg.op",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.alg.conlat.TypeFinder": [
+      "org.uacalc.alg",
+      "org.uacalc.alg.op.Operation",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.alg.conlat.BasicPartition": [
+      "org.uacalc.alg",
+      "org.uacalc.alg.conlat.Partition.PrintType",
+      "org.uacalc.alg.op",
+      "org.uacalc.lat",
+      "org.uacalc.terms",
+      "org.uacalc.ui.tm.ProgressReport",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.alg.conlat.BinaryRelation": [
+      "org.uacalc.util"
+    ],
+    "org.uacalc.alg.conlat.Subtrace": [
+      "org.uacalc.util.IntArray"
+    ],
+    "org.uacalc.alg.conlat.BasicBinaryRelation": [
+      "org.uacalc.util"
+    ],
+    "org.uacalc.alg.conlat.CentralityData": [
+      "org.uacalc.element"
+    ],
+    "org.uacalc.alg.op.TermOperation": [
+      "org.uacalc.terms"
+    ],
+    "org.uacalc.alg.op.TermOperationImp": [
+      "org.uacalc.alg.SmallAlgebra",
+      "org.uacalc.terms"
+    ],
+    "org.uacalc.alg.op.OperationWithDefaultValue": [
+      "org.uacalc.ui.util",
+      "org.uacalc.util.ArrayString",
+      "org.uacalc.util.Horner"
+    ],
+    "org.uacalc.alg.op.Operations": [
+      "org.uacalc.alg.conlat.BasicPartition",
+      "org.uacalc.ui.tm.ProgressReport",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.alg.op.ParameterizedOperation": [
+      "org.uacalc.alg.ParameterizedAlgebra"
+    ],
+    "org.uacalc.alg.parallel.SingleClose": [
+      "org.uacalc.alg",
+      "org.uacalc.alg.op",
+      "org.uacalc.terms",
+      "org.uacalc.ui.tm",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.alg.sublat.BasicSet": [
+      "org.uacalc.alg.SmallAlgebra",
+      "org.uacalc.util.ArrayString",
+      "org.uacalc.util.IntArray"
+    ],
+    "org.uacalc.alg.sublat.SubalgebraLattice": [
+      "org.uacalc.alg",
+      "org.uacalc.alg.conlat",
+      "org.uacalc.alg.op.Operation",
+      "org.uacalc.alg.op.OperationSymbol",
+      "org.uacalc.alg.op.SimilarityType",
+      "org.uacalc.lat",
+      "org.uacalc.ui.tm.ProgressReport",
+      "org.uacalc.util"
+    ],
+    "org.uacalc.util.virtuallist.VirtualLists": [
+      "org.uacalc.alg.op.Operation",
+      "org.uacalc.util",
+      "org.uacalc.util.virtuallist"
+    ],
+    "org.uacalc.util.virtuallist.TupleWithMin": [
+      "org.uacalc.util",
+      "org.uacalc.util.virtuallist"
+    ]
+  },
+  "package_structure": {
+    "org.uacalc.io": [
+      "AlgebraIO",
+      "AlgebraReader",
+      "AlgebraWriter",
+      "BadAlgebraFileException",
+      "ExtFileFilter",
+      "JSONChannel",
+      "Mace4Reader"
+    ],
+    "org.uacalc.ui": [
+      "AlgebraEditor",
+      "AlgebraTableInputPanel",
+      "ComputationsPanel",
+      "LatDrawPanel",
+      "MonitorPanel",
+      "NewAlgebraDialog",
+      "PropertiesPanel",
+      "Tabs",
+      "UACalculator"
+    ],
+    "org.uacalc.nbui": [
+      "AlgebraEditorController",
+      "AlgebraPreviewer",
+      "ComputationsController",
+      "ConController",
+      "DrawingController",
+      "LatDrawer",
+      "MainController",
+      "PopupListener",
+      "SubController",
+      "UACalc",
+      "UACalculator2",
+      "UACalculatorUI",
+      "Version"
+    ],
+    "org.uacalc.lat": [
+      "BasicLattice",
+      "Lattice",
+      "Lattices",
+      "Order",
+      "OrderedSets",
+      "SmallLattice"
+    ],
+    "org.uacalc.fplat": [
+      "PartiallyDefinedLattice",
+      "package-info"
+    ],
+    "org.uacalc.group": [
+      "PermutationGroup"
+    ],
+    "org.uacalc.eq": [
+      "Equation",
+      "Equations",
+      "Presentation"
+    ],
+    "org.uacalc.terms": [
+      "NonVariableTerm",
+      "Taylor",
+      "Term",
+      "Terms",
+      "Variable",
+      "VariableImp"
+    ],
+    "org.uacalc.alg": [
+      "Algebra",
+      "AlgebraFromMinimalSets",
+      "AlgebraWithGeneratingVector",
+      "Algebras",
+      "BasicAlgebra",
+      "BigProductAlgebra",
+      "Closer",
+      "CloserTiming",
+      "FreeAlgebra",
+      "GeneralAlgebra",
+      "Homomorphism",
+      "Malcev",
+      "MaltsevDecompositionIterator",
+      "MaltsevProductDecomposition",
+      "MatrixPowerAlgebra",
+      "ParameterizedAlgebra",
+      "PolinLikeAlgebra",
+      "PowerAlgebra",
+      "ProductAlgebra",
+      "QuotientAlgebra",
+      "QuotientElement",
+      "ReductAlgebra",
+      "SmallAlgebra",
+      "SubProductAlgebra",
+      "Subalgebra",
+      "UnaryTermsMonoid"
+    ],
+    "org.uacalc.element": [
+      "Element",
+      "SubProductElement"
+    ],
+    "org.uacalc.example": [
+      "Average",
+      "ConLyndonF3",
+      "FilteringAlgebras",
+      "FiniteField",
+      "FinitelyPresentedAlg",
+      "HasConstantTuple",
+      "HasKaryNU",
+      "Jipsen",
+      "KKMVWExample",
+      "Kearnes",
+      "MembershipTester",
+      "Michalewski",
+      "NoSymGroup",
+      "ParallelClose",
+      "ParallelClose8",
+      "TupleStream",
+      "Type1"
+    ],
+    "org.uacalc.util": [
+      "ArrayIncrementor",
+      "ArrayString",
+      "Horner",
+      "IntArray",
+      "PermutationGenerator",
+      "SequenceGenerator",
+      "SimpleList"
+    ],
+    "org.uacalc.ui.table": [
+      "AlgebraTableModel",
+      "AlgebraTablePanel",
+      "ConLatticeTableModel",
+      "ElemKeyTableModel",
+      "IntegerEditor",
+      "LatticeTableModel",
+      "OperationInputTable",
+      "OperationTableModel",
+      "TableUtils",
+      "TaskTableModel",
+      "TermTableModel",
+      "TermTablePanel"
+    ],
+    "org.uacalc.ui.tm": [
+      "BackgroundExec",
+      "GuiExecutor",
+      "ProgressReport",
+      "ProgressState",
+      "Status"
+    ],
+    "org.uacalc.ui.util": [
+      "GUIAlgebra",
+      "GUIAlgebraList",
+      "RandomGenerator",
+      "WebBrowser"
+    ],
+    "org.uacalc.alg.conlat": [
+      "BasicBinaryRelation",
+      "BasicPartition",
+      "BinaryRelation",
+      "CentralityData",
+      "CongruenceLattice",
+      "Partition",
+      "Polymorphisms",
+      "Subtrace",
+      "TypeFinder"
+    ],
+    "org.uacalc.alg.op": [
+      "AbstractIntOperation",
+      "AbstractOperation",
+      "Operation",
+      "OperationSymbol",
+      "OperationWithDefaultValue",
+      "Operations",
+      "ParameterizedOperation",
+      "SimilarityType",
+      "TermOperation",
+      "TermOperationImp"
+    ],
+    "org.uacalc.alg.parallel": [
+      "Pool",
+      "SingleClose"
+    ],
+    "org.uacalc.alg.sublat": [
+      "BasicSet",
+      "SubalgebraLattice"
+    ],
+    "org.uacalc.util.virtuallist": [
+      "LongList",
+      "TupleWithMin",
+      "VirtualLists"
+    ]
+  },
+  "statistics": {
+    "total_packages": 20,
+    "total_classes": 146,
+    "total_dependencies": 510
+  }
+}

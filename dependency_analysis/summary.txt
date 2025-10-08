@@ -1,0 +1,342 @@
+UACalc Java Library Dependency Analysis
+==================================================
+
+Total Packages: 20
+Total Classes: 146
+Total Dependencies: 510
+
+Package Structure:
+--------------------
+org.uacalc.alg (26 classes)
+  - Algebra
+  - AlgebraFromMinimalSets
+  - AlgebraWithGeneratingVector
+  - Algebras
+  - BasicAlgebra
+  - BigProductAlgebra
+  - Closer
+  - CloserTiming
+  - FreeAlgebra
+  - GeneralAlgebra
+  - Homomorphism
+  - Malcev
+  - MaltsevDecompositionIterator
+  - MaltsevProductDecomposition
+  - MatrixPowerAlgebra
+  - ParameterizedAlgebra
+  - PolinLikeAlgebra
+  - PowerAlgebra
+  - ProductAlgebra
+  - QuotientAlgebra
+  - QuotientElement
+  - ReductAlgebra
+  - SmallAlgebra
+  - SubProductAlgebra
+  - Subalgebra
+  - UnaryTermsMonoid
+
+org.uacalc.alg.conlat (9 classes)
+  - BasicBinaryRelation
+  - BasicPartition
+  - BinaryRelation
+  - CentralityData
+  - CongruenceLattice
+  - Partition
+  - Polymorphisms
+  - Subtrace
+  - TypeFinder
+
+org.uacalc.alg.op (10 classes)
+  - AbstractIntOperation
+  - AbstractOperation
+  - Operation
+  - OperationSymbol
+  - OperationWithDefaultValue
+  - Operations
+  - ParameterizedOperation
+  - SimilarityType
+  - TermOperation
+  - TermOperationImp
+
+org.uacalc.alg.parallel (2 classes)
+  - Pool
+  - SingleClose
+
+org.uacalc.alg.sublat (2 classes)
+  - BasicSet
+  - SubalgebraLattice
+
+org.uacalc.element (2 classes)
+  - Element
+  - SubProductElement
+
+org.uacalc.eq (3 classes)
+  - Equation
+  - Equations
+  - Presentation
+
+org.uacalc.example (17 classes)
+  - Average
+  - ConLyndonF3
+  - FilteringAlgebras
+  - FiniteField
+  - FinitelyPresentedAlg
+  - HasConstantTuple
+  - HasKaryNU
+  - Jipsen
+  - KKMVWExample
+  - Kearnes
+  - MembershipTester
+  - Michalewski
+  - NoSymGroup
+  - ParallelClose
+  - ParallelClose8
+  - TupleStream
+  - Type1
+
+org.uacalc.fplat (2 classes)
+  - PartiallyDefinedLattice
+  - package-info
+
+org.uacalc.group (1 classes)
+  - PermutationGroup
+
+org.uacalc.io (7 classes)
+  - AlgebraIO
+  - AlgebraReader
+  - AlgebraWriter
+  - BadAlgebraFileException
+  - ExtFileFilter
+  - JSONChannel
+  - Mace4Reader
+
+org.uacalc.lat (6 classes)
+  - BasicLattice
+  - Lattice
+  - Lattices
+  - Order
+  - OrderedSets
+  - SmallLattice
+
+org.uacalc.nbui (13 classes)
+  - AlgebraEditorController
+  - AlgebraPreviewer
+  - ComputationsController
+  - ConController
+  - DrawingController
+  - LatDrawer
+  - MainController
+  - PopupListener
+  - SubController
+  - UACalc
+  - UACalculator2
+  - UACalculatorUI
+  - Version
+
+org.uacalc.terms (6 classes)
+  - NonVariableTerm
+  - Taylor
+  - Term
+  - Terms
+  - Variable
+  - VariableImp
+
+org.uacalc.ui (9 classes)
+  - AlgebraEditor
+  - AlgebraTableInputPanel
+  - ComputationsPanel
+  - LatDrawPanel
+  - MonitorPanel
+  - NewAlgebraDialog
+  - PropertiesPanel
+  - Tabs
+  - UACalculator
+
+org.uacalc.ui.table (12 classes)
+  - AlgebraTableModel
+  - AlgebraTablePanel
+  - ConLatticeTableModel
+  - ElemKeyTableModel
+  - IntegerEditor
+  - LatticeTableModel
+  - OperationInputTable
+  - OperationTableModel
+  - TableUtils
+  - TaskTableModel
+  - TermTableModel
+  - TermTablePanel
+
+org.uacalc.ui.tm (5 classes)
+  - BackgroundExec
+  - GuiExecutor
+  - ProgressReport
+  - ProgressState
+  - Status
+
+org.uacalc.ui.util (4 classes)
+  - GUIAlgebra
+  - GUIAlgebraList
+  - RandomGenerator
+  - WebBrowser
+
+org.uacalc.util (7 classes)
+  - ArrayIncrementor
+  - ArrayString
+  - Horner
+  - IntArray
+  - PermutationGenerator
+  - SequenceGenerator
+  - SimpleList
+
+org.uacalc.util.virtuallist (3 classes)
+  - LongList
+  - TupleWithMin
+  - VirtualLists
+
+Package Dependencies:
+--------------------
+org.uacalc.alg depends on:
+  - org.uacalc
+  - org.uacalc.alg
+  - org.uacalc.alg.SmallAlgebra
+  - org.uacalc.alg.conlat
+  - org.uacalc.alg.op
+  - org.uacalc.alg.parallel
+  - org.uacalc.alg.sublat
+  - org.uacalc.io
+  - org.uacalc.ui.tm
+
+org.uacalc.alg.conlat depends on:
+  - org.uacalc
+  - org.uacalc.alg
+  - org.uacalc.alg.conlat.Partition
+  - org.uacalc.alg.op
+  - org.uacalc.ui.tm
+  - org.uacalc.util
+
+org.uacalc.alg.op depends on:
+  - org.uacalc
+  - org.uacalc.alg
+  - org.uacalc.alg.conlat
+  - org.uacalc.ui
+  - org.uacalc.ui.tm
+  - org.uacalc.util
+
+org.uacalc.alg.parallel depends on:
+  - org.uacalc
+  - org.uacalc.alg
+  - org.uacalc.ui
+
+org.uacalc.alg.sublat depends on:
+  - org.uacalc
+  - org.uacalc.alg
+  - org.uacalc.alg.op
+  - org.uacalc.ui.tm
+  - org.uacalc.util
+
+org.uacalc.element depends on:
+  - org.uacalc
+  - org.uacalc.alg
+
+org.uacalc.eq depends on:
+  - org.uacalc
+  - org.uacalc.alg
+  - org.uacalc.alg.op
+  - org.uacalc.ui.tm
+
+org.uacalc.example depends on:
+  - org.uacalc
+  - org.uacalc.alg
+  - org.uacalc.alg.op
+  - org.uacalc.example
+  - org.uacalc.io
+  - org.uacalc.terms
+  - org.uacalc.ui
+  - org.uacalc.ui.tm
+  - org.uacalc.util
+
+org.uacalc.fplat depends on:
+  - org.uacalc
+  - org.uacalc.lat
+
+org.uacalc.group depends on:
+  - org.uacalc
+  - org.uacalc.alg
+  - org.uacalc.alg.op
+
+org.uacalc.io depends on:
+  - org.uacalc
+  - org.uacalc.alg
+  - org.uacalc.alg.op
+
+org.uacalc.lat depends on:
+  - org.uacalc
+  - org.uacalc.alg
+  - org.uacalc.alg.SmallAlgebra
+  - org.uacalc.alg.op
+
+org.uacalc.nbui depends on:
+  - org.uacalc
+  - org.uacalc.alg
+  - org.uacalc.alg.op
+  - org.uacalc.alg.sublat
+  - org.uacalc.ui
+  - org.uacalc.ui.table.TermTableModel
+  - org.uacalc.ui.tm
+
+org.uacalc.terms depends on:
+  - org.uacalc
+  - org.uacalc.alg
+  - org.uacalc.alg.op
+  - org.uacalc.util
+
+org.uacalc.ui depends on:
+  - org.uacalc
+  - org.uacalc.alg
+  - org.uacalc.alg.op
+  - org.uacalc.lat
+  - org.uacalc.ui
+  - org.uacalc.ui.table
+  - org.uacalc.ui.tm
+
+org.uacalc.ui.table depends on:
+  - org.uacalc
+  - org.uacalc.alg
+  - org.uacalc.alg.SmallAlgebra
+  - org.uacalc.alg.conlat
+  - org.uacalc.alg.op
+  - org.uacalc.nbui
+  - org.uacalc.ui
+  - org.uacalc.ui.table
+  - org.uacalc.util
+
+org.uacalc.ui.tm depends on:
+  - org.uacalc.alg
+  - org.uacalc.ui
+  - org.uacalc.ui.table
+
+org.uacalc.ui.util depends on:
+  - org.uacalc
+  - org.uacalc.alg
+  - org.uacalc.ui
+
+org.uacalc.util depends on:
+  - org.uacalc.alg.conlat
+
+org.uacalc.util.virtuallist depends on:
+  - org.uacalc
+  - org.uacalc.alg.op
+  - org.uacalc.util
+
+Most Connected Packages:
+-------------------------
+org.uacalc.alg: 9 dependencies
+org.uacalc.example: 9 dependencies
+org.uacalc.ui.table: 9 dependencies
+org.uacalc.ui: 7 dependencies
+org.uacalc.nbui: 7 dependencies
+org.uacalc.alg.conlat: 6 dependencies
+org.uacalc.alg.op: 6 dependencies
+org.uacalc.alg.sublat: 5 dependencies
+org.uacalc.lat: 4 dependencies
+org.uacalc.eq: 4 dependencies
