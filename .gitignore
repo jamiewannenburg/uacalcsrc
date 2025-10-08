@@ -17,3 +17,8 @@ Cargo.lock
 *.class
 target/
 jars/uacalc.jar
+build/
+dist/
+tools/callgraph/
+call_graph_analysis/
+dependency_analysis/
