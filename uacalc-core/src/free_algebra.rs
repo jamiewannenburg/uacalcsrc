@@ -228,7 +228,7 @@ impl FreeAlgebra {
         Self::generate_terms_with_timeout(arena, generators, operation_symbols, max_depth, Duration::from_secs(120), Instant::now())
     }
 
-    /// Generate all terms up to a given depth with timeout
+    /// Generate all terms using closure approach (like Java sgClose)
     fn generate_terms_with_timeout(
         arena: &mut TermArena,
         generators: &[TermId],
@@ -237,39 +237,66 @@ impl FreeAlgebra {
         timeout: Duration,
         start_time: Instant,
     ) -> UACalcResult<Vec<TermId>> {
-        let mut all_terms = Vec::new();
-        let mut current_level = generators.to_vec();
+        // Use closure approach with proper bounds to avoid infinite loops
+        let mut universe = std::collections::HashSet::new();
+        let mut work_queue = std::collections::VecDeque::new();
 
-        // Add generators as depth 0 terms
-        all_terms.extend_from_slice(generators);
+        // Initialize with generators
+        for &gen in generators {
+            universe.insert(gen);
+            work_queue.push_back(gen);
+        }
 
-        // Generate terms level by level
-        for depth in 1..=max_depth {
+        // Process work queue with bounds to prevent infinite loops
+        let mut iterations = 0;
+        let max_iterations = 10000; // Prevent infinite loops
+        let max_terms = 10000; // Limit total terms to prevent memory explosion
+
+        while let Some(term) = work_queue.pop_front() {
             // Check timeout
             if start_time.elapsed() > timeout {
                 return Err(UACalcError::TimeoutError {
                     message: format!("Free algebra generation timed out after {:?}", timeout),
                 });
             }
-            
-            let mut next_level = Vec::new();
-            
-            // Limit total terms to prevent memory explosion
-            if all_terms.len() > 100 {
+
+            // Check iteration limit
+            iterations += 1;
+            if iterations > max_iterations {
                 break;
             }
-            
+
+            // Check term limit
+            if universe.len() > max_terms {
+                break;
+            }
+
+            // Apply each operation to combinations including the new term
             for symbol in operation_symbols {
                 let arity = symbol.arity();
+                
                 if arity == 0 {
                     // Constant operation - create a term with no children
-                    let term = arena.make_term(symbol, &[]);
-                    next_level.push(term);
+                    let new_term = arena.make_term(symbol, &[]);
+                    if universe.insert(new_term) {
+                        work_queue.push_back(new_term);
+                    }
+                } else if arity == 2 {
+                    // For binary operations, try all pairs with existing terms
+                    let elements: Vec<TermId> = universe.iter().cloned().collect();
+                    for &a in &elements {
+                        for &b in &elements {
+                            let new_term = arena.make_term(symbol, &[a, b]);
+                            if universe.insert(new_term) {
+                                work_queue.push_back(new_term);
+                            }
+                        }
+                    }
                 } else {
-                    // Generate all combinations of arguments from previous levels
+                    // For higher arity operations, use the existing combination approach
                     let mut args_combinations = Vec::new();
                     Self::generate_argument_combinations_with_timeout(
-                        &all_terms,
+                        &universe.iter().cloned().collect::<Vec<_>>(),
                         arity,
                         &mut args_combinations,
                         Vec::new(),
@@ -277,23 +304,17 @@ impl FreeAlgebra {
                         start_time,
                     )?;
                     
-                    // Limit combinations to prevent exponential explosion
-                    if args_combinations.len() > 1000 {
-                        args_combinations.truncate(1000);
-                    }
-
                     for args in args_combinations {
-                        let term = arena.make_term(symbol, &args);
-                        next_level.push(term);
+                        let new_term = arena.make_term(symbol, &args);
+                        if universe.insert(new_term) {
+                            work_queue.push_back(new_term);
+                        }
                     }
                 }
             }
-
-            all_terms.extend_from_slice(&next_level);
-            current_level = next_level;
         }
 
-        Ok(all_terms)
+        Ok(universe.into_iter().collect())
     }
 
     /// Generate all combinations of arguments for operations

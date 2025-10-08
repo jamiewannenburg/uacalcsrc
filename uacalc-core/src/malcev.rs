@@ -1781,8 +1781,8 @@ impl MalcevAnalyzer {
         let n = algebra.cardinality();
         
         // Create free algebra with 2 generators (x, y) - matches Java: new FreeAlgebra(alg, 2, report)
-        // Use very conservative parameters to avoid segfaults
-        let free_algebra = FreeAlgebra::from_algebra_with_timeout(algebra, 2, 1, std::time::Duration::from_secs(30))?; // max_depth = 1, 30sec timeout
+        // Use reasonable depth to generate enough terms for semilattice operations
+        let free_algebra = FreeAlgebra::from_algebra_with_timeout(algebra, 2, 3, std::time::Duration::from_secs(30))?; // max_depth = 3, 30sec timeout
         
         // Get all idempotent terms from the free algebra - matches Java: f2.getIdempotentTerms()
         let idempotent_terms = free_algebra.get_idempotent_terms()?;
