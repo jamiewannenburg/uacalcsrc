@@ -2,9 +2,9 @@
 name = "uacalc"
 version = "0.1.0"
 edition = "2021"
-authors = ["UACalc Contributors"]
+authors = ["UACalc Contributors","J.J. Wannenburg"]
 license = "MIT"
-repository = "https://github.com/uacalc/uacalcsrc"
+repository = "https://github.com/jamiewannenburg/uacalcsrc"
 
 [dependencies]
 # Add any external dependencies here as needed

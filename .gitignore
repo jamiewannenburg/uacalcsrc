@@ -22,3 +22,4 @@ dist/
 tools/callgraph/
 call_graph_analysis/
 dependency_analysis/
+venv/

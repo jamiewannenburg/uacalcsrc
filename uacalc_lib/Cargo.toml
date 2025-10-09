@@ -1,10 +1,10 @@
 [package]
 name = "uacalc_lib"
-version.workspace = true
-edition.workspace = true
-authors.workspace = true
-license.workspace = true
-repository.workspace = true
+version = "0.1.0"
+edition = "2021"
+authors = ["UACalc Contributors", "J.J. Wannenburg"]
+license = "MIT"
+repository = "https://github.com/jamiewannenburg/uacalcsrc"
 
 [lib]
 name = "uacalc_lib"
