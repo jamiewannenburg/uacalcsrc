@@ -9,6 +9,7 @@ pub mod group;
 pub mod io;
 pub mod lat;
 pub mod terms;
+pub mod types;
 pub mod util;
 
 /// A Python module implemented in Rust.
@@ -63,6 +64,11 @@ fn uacalc_lib(_py: Python, m: &PyModule) -> PyResult<()> {
     let util_module = PyModule::new(_py, "util")?;
     util::register_util_module(_py, util_module)?;
     m.add_submodule(util_module)?;
+
+    // Types module
+    let types_module = PyModule::new(_py, "types")?;
+    types::register_types_module(_py, types_module)?;
+    m.add_submodule(types_module)?;
 
     Ok(())
 }

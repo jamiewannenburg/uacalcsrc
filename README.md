@@ -45,6 +45,8 @@ pip install uacalc_lib/target/wheels/uacalc-*.whl
 ├── uacalc_lib/                   # Python bindings (PyO3)
 │   └── src/                      # Modular binding modules
 ├── python/uacalc/               # Python package structure
+├── java_wrapper/                # Command-line wrappers for Java classes
+│   └── README.md                # Documentation for wrapper system
 └── org/uacalc/                  # Original Java implementation (reference)
 ```
 
@@ -55,6 +57,7 @@ pip install uacalc_lib/target/wheels/uacalc-*.whl
 - **Modular Design**: Clean separation of algebra components
 - **Cross-Platform**: Works on Linux, macOS, and Windows
 - **Development Ready**: Easy build and test workflow
+- **Validation System**: Java wrapper classes for testing and comparison
 
 ## Development
 
@@ -73,6 +76,32 @@ import uacalc_lib
 ```
 
 The structure mirrors the original Java implementation in `org/uacalc/` but excludes UI components, focusing on the core computational algebra library.
+
+## Java Wrapper System
+
+The `java_wrapper/` directory contains command-line wrapper classes that expose Java UACalc functionality for testing and validation against Rust/Python implementations.
+
+### Purpose
+
+- **Validation**: Compare outputs between Java, Rust, and Python implementations
+- **Testing**: Automated regression testing across all implementations
+- **Benchmarking**: Performance comparison between implementations
+- **Development**: Ensure feature parity during development
+
+### Usage
+
+```bash
+# Test algebra creation across implementations
+java -cp uacalc.jar org.uacalc.alg.SmallAlgebra create 4 "meet,join" > java_output.txt
+./target/release/uacalc alg create 4 "meet,join" > rust_output.txt
+python -c "import uacalc_lib; ..." > python_output.txt
+
+# Compare results
+diff java_output.txt rust_output.txt
+diff java_output.txt python_output.txt
+```
+
+See `java_wrapper/README.md` for detailed documentation on the wrapper system.
 
 ---
 
