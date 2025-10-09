@@ -51,7 +51,9 @@ pip install uacalc_lib/target/wheels/uacalc-*.whl
 ├── tests/                        # Rust application integration tests
 ├── benches/                      # Rust performance benchmarks
 ├── java_wrapper/                # Command-line wrappers for Java classes
-│   └── README.md                # Documentation for wrapper system
+│   ├── src/                    # Java wrapper source files
+│   ├── build/                  # Compiled wrapper classes and scripts
+│   └── README.md               # Documentation for wrapper system
 └── org/uacalc/                  # Original Java implementation (reference)
 ```
 
@@ -93,11 +95,15 @@ The `java_wrapper/` directory contains command-line wrapper classes that expose 
 - **Benchmarking**: Performance comparison between implementations
 - **Development**: Ensure feature parity during development
 
-### Usage
+### Build and Usage
 
 ```bash
+# Build Java wrappers
+ant compile-wrappers
+ant create-wrapper-scripts
+
 # Test algebra creation across implementations
-java -cp uacalc.jar org.uacalc.alg.SmallAlgebra create 4 "meet,join" > java_output.txt
+./java_wrapper/build/scripts/small-algebra create 4 "meet,join" > java_output.txt
 ./target/release/uacalc alg create 4 "meet,join" > rust_output.txt
 python -c "import uacalc_lib; ..." > python_output.txt
 

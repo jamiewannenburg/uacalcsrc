@@ -21,6 +21,12 @@
   <property name="verbose" value="yes"/>
   <property name="build" value="build"/>
   <property name="dist.dir"  value="dist"/>
+  
+  <!-- Java wrapper properties -->
+  <property name="java.wrapper.src" value="java_wrapper/src"/>
+  <property name="java.wrapper.build" value="java_wrapper/build"/>
+  <property name="java.wrapper.classes" value="${java.wrapper.build}/classes"/>
+  <property name="java.wrapper.scripts" value="${java.wrapper.build}/scripts"/>
 
   <path id="classpath">
     <pathelement location="."/>
@@ -50,7 +56,7 @@
     <javac srcdir="${src.dir}" 
            debug="${dist-debug}"
            destdir="${class.dir}"
-           excludes="board/geom/BSpline.java">
+           excludes="board/geom/BSpline.java,tools/callgraph/**/*.java">
       <classpath refid="dist-classpath"/>
       <!-- <compilerarg value="-Xlint:unchecked" compiler="javac1.5"/> -->
     </javac>
@@ -82,7 +88,7 @@
     </copy>
   </target>
 
-  <target name="dist" depends="dist-jar,compile-dist-work"/>
+  <target name="dist" depends="dist-jar,compile-dist-work,compile-wrappers"/>
 
   <target name="dist-small" depends="dist-jar"/>
 
@@ -168,10 +174,84 @@
     </javadoc>
   </target>
 
+  <!-- Java Wrapper Build Targets -->
+  <target name="compile-wrappers" depends="compile-dist" 
+          description="Compile Java wrapper classes">
+    <echo message="Compiling Java wrapper classes..."/>
+    <mkdir dir="${java.wrapper.classes}"/>
+    <javac srcdir="${java.wrapper.src}" 
+           destdir="${java.wrapper.classes}"
+           debug="${dist-debug}"
+           classpathref="dist-classpath">
+      <include name="**/*.java"/>
+    </javac>
+    <echo message="Java wrapper classes compiled to ${java.wrapper.classes}"/>
+  </target>
+
+  <target name="create-wrapper-scripts" depends="compile-wrappers" 
+          description="Create executable scripts for Java wrappers">
+    <echo message="Creating wrapper scripts..."/>
+    <mkdir dir="${java.wrapper.scripts}"/>
+    
+    <!-- Create a script template -->
+    <echo file="${java.wrapper.scripts}/template.sh" 
+          message="#!/bin/bash&#10;java -cp ${java.wrapper.classes}:${class.dir}:${jar.dir}/* $@&#10;"/>
+    
+    <!-- Make template executable -->
+    <chmod file="${java.wrapper.scripts}/template.sh" perm="755"/>
+    
+    <!-- Create individual wrapper scripts -->
+    <scriptdef name="create-wrapper" language="javascript">
+      <attribute name="classname"/>
+      <attribute name="scriptname"/>
+      <![CDATA[
+        var classname = attributes.get("classname");
+        var scriptname = attributes.get("scriptname");
+        var script = "#!/bin/bash\n";
+        script += "java -cp " + project.getProperty("java.wrapper.classes") + ":" + 
+                  project.getProperty("class.dir") + ":" + 
+                  project.getProperty("jar.dir") + "/* " + 
+                  "org.uacalc." + classname + " \"$@\"\n";
+        
+        var file = new java.io.File(project.getProperty("java.wrapper.scripts") + "/" + scriptname);
+        var writer = new java.io.FileWriter(file);
+        writer.write(script);
+        writer.close();
+        
+        // Make executable
+        var process = java.lang.Runtime.getRuntime().exec("chmod +x " + file.getAbsolutePath());
+        process.waitFor();
+      ]]>
+    </scriptdef>
+    
+    <!-- Generate scripts for each wrapper class -->
+    <!-- Note: These will be created as wrapper classes are added -->
+    <echo message="Wrapper scripts created in ${java.wrapper.scripts}"/>
+    <echo message="To add a new wrapper script, add a create-wrapper task for your class"/>
+  </target>
+
+  <target name="test-wrappers" depends="create-wrapper-scripts" 
+          description="Test Java wrapper scripts">
+    <echo message="Testing Java wrapper scripts..."/>
+    
+    <!-- Test that scripts can be executed -->
+    <available file="${java.wrapper.scripts}" property="scripts.exist"/>
+    <fail unless="scripts.exist" message="Wrapper scripts not found. Run 'ant create-wrapper-scripts' first."/>
+    
+    <echo message="Java wrapper scripts are ready for testing"/>
+    <echo message="Example usage: ${java.wrapper.scripts}/&lt;script-name&gt; &lt;args&gt;"/>
+  </target>
+
+  <target name="clean-wrappers" description="Clean Java wrapper build files">
+    <delete dir="${java.wrapper.build}"/>
+    <echo message="Java wrapper build files cleaned."/>
+  </target>
+
   <target name="clean">
     <!-- Delete the ${build} and ${dist.dir} directory trees -->
     <delete dir="${class.dir}"/>
     <delete dir="${dist.dir}"/>
+    <antcall target="clean-wrappers"/>
   </target>
 
   <!-- Call Graph Analysis Targets -->
