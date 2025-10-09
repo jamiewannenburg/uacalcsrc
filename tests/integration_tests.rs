@@ -6,11 +6,27 @@
 use uacalc::alg::*;
 use uacalc::lat::*;
 use uacalc::terms::*;
+mod common;
+use common::*;
 
 #[test]
 fn test_basic_algebra_creation() {
-    // TODO: Test basic algebra creation functionality
+    // TODO: Test basic algebra creation functionality with Java comparison
     // This will test the core algebra structures
+    // Example:
+    // let config = TestConfig::default();
+    // let harness = TestHarness::new(config).expect("Failed to create test harness");
+    // 
+    // let result = harness.compare_with_java(
+    //     "basic_algebra_creation",
+    //     "small-algebra",
+    //     &["create", "--size", "2", "--operations", "meet,join"],
+    //     || {
+    //         // Create basic boolean algebra
+    //         create_boolean_algebra()
+    //     },
+    //     None,
+    // ).expect("Basic algebra creation test failed");
 }
 
 #[test]
