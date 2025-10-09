@@ -1,0 +1,15 @@
+[package]
+name = "uacalc_lib"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lib]
+name = "uacalc_lib"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.21", features = ["extension-module"] }
+uacalc = { path = ".." }

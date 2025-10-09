@@ -1,0 +1,10 @@
+[package]
+name = "uacalc"
+version = "0.1.0"
+edition = "2021"
+authors = ["UACalc Contributors"]
+license = "MIT"
+repository = "https://github.com/uacalc/uacalcsrc"
+
+[dependencies]
+# Add any external dependencies here as needed
