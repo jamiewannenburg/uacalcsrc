@@ -13,3 +13,8 @@ crate-type = ["cdylib"]
 [dependencies]
 pyo3 = { version = "0.21", features = ["extension-module"] }
 uacalc = { path = ".." }
+
+[dev-dependencies]
+# Test dependencies for Python bindings
+pyo3 = { version = "0.21", features = ["extension-module", "auto-initialize"] }
+tempfile = "3.0"

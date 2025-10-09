@@ -43,8 +43,13 @@ pip install uacalc_lib/target/wheels/uacalc-*.whl
 │   ├── terms/                    # Term structures
 │   └── util/                     # Utility functions
 ├── uacalc_lib/                   # Python bindings (PyO3)
-│   └── src/                      # Modular binding modules
+│   ├── src/                      # Modular binding modules
+│   └── tests/                    # Python binding tests
 ├── python/uacalc/               # Python package structure
+│   ├── tests/                    # Python package tests
+│   └── uacalc_lib.pyi           # Type stubs
+├── tests/                        # Rust application integration tests
+├── benches/                      # Rust performance benchmarks
 ├── java_wrapper/                # Command-line wrappers for Java classes
 │   └── README.md                # Documentation for wrapper system
 └── org/uacalc/                  # Original Java implementation (reference)
@@ -102,6 +107,53 @@ diff java_output.txt python_output.txt
 ```
 
 See `java_wrapper/README.md` for detailed documentation on the wrapper system.
+
+## Testing
+
+The project includes comprehensive testing infrastructure across all components:
+
+### Test Structure
+
+- **`tests/`** - Rust application integration tests
+  - `integration_tests.rs` - End-to-end application tests
+  - `unit_tests.rs` - Individual component tests
+- **`uacalc_lib/tests/`** - Python binding tests
+  - `binding_tests.rs` - PyO3 binding functionality tests
+  - `python_integration_tests.rs` - Python environment integration tests
+- **`python/uacalc/tests/`** - Python package tests
+  - `test_uacalc.py` - Core Python package functionality tests
+  - `test_compatibility.py` - Cross-implementation compatibility tests
+- **`benches/`** - Performance benchmarks
+  - `uacalc_benchmarks.rs` - Rust performance benchmarks
+
+### Running Tests
+
+```bash
+# Run Rust application tests
+cargo test
+
+# Run Python binding tests
+cargo test -p uacalc_lib
+
+# Run Python package tests
+cd python && python -m pytest
+
+# Run performance benchmarks
+cargo bench
+
+# Run all tests with coverage
+cargo test --all
+cd python && python -m pytest --cov=uacalc
+```
+
+### Test Categories
+
+1. **Unit Tests**: Test individual functions and modules in isolation
+2. **Integration Tests**: Test complete workflows and component interactions
+3. **Binding Tests**: Verify Python-Rust integration works correctly
+4. **Compatibility Tests**: Ensure consistency across Java, Rust, and Python implementations
+5. **Performance Tests**: Benchmark computational performance
+6. **Cross-Platform Tests**: Verify functionality across different operating systems
 
 ---
 

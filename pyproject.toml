@@ -35,3 +35,46 @@ Documentation = "https://uacalc.org"
 module-name = "uacalc_lib"
 python-source = "python"
 manifest-path = "uacalc_lib/Cargo.toml"
+
+[project.optional-dependencies]
+test = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "pytest-benchmark>=4.0",
+    "pytest-xdist>=3.0",
+]
+
+[build-system]
+requires = ["maturin>=1.0,<2.0"]
+build-backend = "maturin"
+
+[tool.pytest.ini_options]
+testpaths = ["python/uacalc/tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--verbose",
+    "--tb=short",
+]
+
+[tool.coverage.run]
+source = ["python/uacalc"]
+omit = [
+    "python/uacalc/tests/*",
+    "python/uacalc/__pycache__/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+]

@@ -8,3 +8,13 @@ repository = "https://github.com/jamiewannenburg/uacalcsrc"
 
 [dependencies]
 # Add any external dependencies here as needed
+
+[dev-dependencies]
+# Test dependencies
+criterion = { version = "0.5", features = ["html_reports"] }
+proptest = "1.0"
+tempfile = "3.0"
+
+[[bench]]
+name = "uacalc_benchmarks"
+harness = false
