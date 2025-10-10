@@ -15,6 +15,9 @@ use tempfile::TempDir;
 use serde_json::Value;
 use std::io;
 
+// Re-export the macro
+pub use crate::compare_with_java;
+
 /// Configuration for test timeouts and memory limits.
 #[derive(Debug, Clone)]
 pub struct TestConfig {
@@ -209,7 +212,14 @@ pub fn compare_outputs(
         serde_json::from_str::<Value>(rust_output),
         java_output.parse_json(),
     ) {
-        compare_json_outputs(&rust_json, &java_json, tolerance)
+        // Extract the 'data' field from Java response if it exists
+        let java_data = if let Some(data) = java_json.get("data") {
+            data.clone()
+        } else {
+            java_json
+        };
+        
+        compare_json_outputs(&rust_json, &java_data, tolerance)
     } else {
         // Fall back to string comparison
         compare_string_outputs(rust_output, &java_output.stdout)

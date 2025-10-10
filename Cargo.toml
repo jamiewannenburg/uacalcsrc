@@ -10,6 +10,7 @@ repository = "https://github.com/jamiewannenburg/uacalcsrc"
 # Add any external dependencies here as needed
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+once_cell = "1.19"
 
 [dev-dependencies]
 # Test dependencies
