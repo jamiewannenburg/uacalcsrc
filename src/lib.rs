@@ -1,4 +1,6 @@
 pub mod alg;
+#[cfg(feature = "test-infrastructure")]
+pub mod common;
 pub mod element;
 pub mod eq;
 pub mod example;

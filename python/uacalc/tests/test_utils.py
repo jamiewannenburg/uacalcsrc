@@ -16,6 +16,7 @@ import subprocess
 import tempfile
 import threading
 import psutil
+import platform
 from pathlib import Path
 from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass
@@ -86,9 +87,18 @@ class TestHarness:
         import shutil
         shutil.rmtree(self.temp_dir, ignore_errors=True)
     
+    def get_script_extension(self) -> str:
+        """Get the appropriate script extension for the current platform."""
+        return ".bat" if platform.system() == "Windows" else ""
+    
+    def get_script_path(self, script_name: str) -> Path:
+        """Get the full script path with appropriate extension for the current platform."""
+        extension = self.get_script_extension()
+        return Path(self.config.java_wrapper_path) / f"{script_name}{extension}"
+
     def run_java_cli(self, script_name: str, args: List[str]) -> JavaCliOutput:
         """Run a Java CLI wrapper and capture its output."""
-        script_path = Path(self.config.java_wrapper_path) / script_name
+        script_path = self.get_script_path(script_name)
         
         if not script_path.exists():
             raise FileNotFoundError(f"Java CLI script not found: {script_path}")

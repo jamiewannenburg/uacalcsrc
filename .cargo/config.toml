@@ -1,0 +1,7 @@
+[build]
+# Enable test-infrastructure feature by default for tests
+rustflags = ["--cfg", "feature=\"test-infrastructure\""]
+
+[target.'cfg(test)']
+# Alternative approach - this doesn't work for integration tests
+# but shows the concept

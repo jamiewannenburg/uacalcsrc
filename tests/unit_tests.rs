@@ -7,8 +7,7 @@ use uacalc::alg::*;
 use uacalc::lat::*;
 use uacalc::terms::*;
 use uacalc::util::*;
-mod common;
-use common::*;
+use uacalc::common::*;
 
 #[cfg(test)]
 mod alg_tests {

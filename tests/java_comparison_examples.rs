@@ -4,8 +4,7 @@
 //! Rust implementations directly with Java CLI wrappers, avoiding potential
 //! deadlocks in Python bindings.
 
-mod common;
-use common::*;
+use uacalc::common::*;
 use std::time::Duration;
 
 /// Example test using the compare_with_java! macro

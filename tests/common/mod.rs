@@ -15,7 +15,7 @@ use tempfile::TempDir;
 use serde_json::Value;
 use std::io;
 
-// Re-export the macro
+// Re-export the macro (used by test files)
 pub use crate::compare_with_java;
 
 /// Configuration for test timeouts and memory limits.
@@ -82,13 +82,28 @@ where
     rt.block_on(with_timeout(timeout, async { f() }))
 }
 
+/// Get the appropriate script extension for the current platform.
+fn get_script_extension() -> &'static str {
+    if cfg!(target_os = "windows") {
+        ".bat"
+    } else {
+        ""
+    }
+}
+
+/// Get the full script path with appropriate extension for the current platform.
+fn get_script_path(base_path: &str, script_name: &str) -> std::path::PathBuf {
+    let extension = get_script_extension();
+    Path::new(base_path).join(format!("{}{}", script_name, extension))
+}
+
 /// Run a Java CLI wrapper and capture its output.
 pub fn run_java_cli(
     script_name: &str,
     args: &[&str],
     config: &TestConfig,
 ) -> TestResult<JavaCliOutput> {
-    let script_path = Path::new(&config.java_wrapper_path).join(script_name);
+    let script_path = get_script_path(&config.java_wrapper_path, script_name);
     
     if !script_path.exists() {
         return Err(TestError::JavaCliError(format!(
@@ -121,7 +136,7 @@ pub fn run_java_cli_with_timeout(
     config: &TestConfig,
     timeout: Duration,
 ) -> TestResult<JavaCliOutput> {
-    let script_path = Path::new(&config.java_wrapper_path).join(script_name);
+    let script_path = get_script_path(&config.java_wrapper_path, script_name);
     
     if !script_path.exists() {
         return Err(TestError::JavaCliError(format!(

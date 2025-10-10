@@ -193,12 +193,16 @@
     <echo message="Creating wrapper scripts..."/>
     <mkdir dir="${java.wrapper.scripts}"/>
     
-    <!-- Create a script template -->
+    <!-- Create Unix script template -->
     <echo file="${java.wrapper.scripts}/template.sh" 
           message="#!/bin/bash&#10;java -cp ${java.wrapper.classes}:${class.dir}:${jar.dir}/* $@&#10;"/>
     
     <!-- Make template executable -->
     <chmod file="${java.wrapper.scripts}/template.sh" perm="755"/>
+    
+    <!-- Create Windows batch template -->
+    <echo file="${java.wrapper.scripts}/template.bat" 
+          message="@echo off&#10;java -cp ${java.wrapper.classes};${class.dir};${jar.dir}\* %*&#10;"/>
     
     <!-- Create individual wrapper scripts -->
     <scriptdef name="create-wrapper" language="javascript">
@@ -207,27 +211,46 @@
       <![CDATA[
         var classname = attributes.get("classname");
         var scriptname = attributes.get("scriptname");
-        var script = "#!/bin/bash\n";
-        script += "java -cp " + project.getProperty("java.wrapper.classes") + ":" + 
-                  project.getProperty("class.dir") + ":" + 
-                  project.getProperty("jar.dir") + "/* " + 
-                  "org.uacalc." + classname + " \"$@\"\n";
         
-        var file = new java.io.File(project.getProperty("java.wrapper.scripts") + "/" + scriptname);
-        var writer = new java.io.FileWriter(file);
-        writer.write(script);
-        writer.close();
+        // Create Unix shell script
+        var unixScript = "#!/bin/bash\n";
+        unixScript += "java -cp " + project.getProperty("java.wrapper.classes") + ":" + 
+                      project.getProperty("class.dir") + ":" + 
+                      project.getProperty("jar.dir") + "/* " + 
+                      "java_wrapper.src." + classname + " \"$@\"\n";
         
-        // Make executable
-        var process = java.lang.Runtime.getRuntime().exec("chmod +x " + file.getAbsolutePath());
-        process.waitFor();
+        var unixFile = new java.io.File(project.getProperty("java.wrapper.scripts") + "/" + scriptname);
+        var unixWriter = new java.io.FileWriter(unixFile);
+        unixWriter.write(unixScript);
+        unixWriter.close();
+        
+        // Make Unix script executable
+        var unixProcess = java.lang.Runtime.getRuntime().exec("chmod +x " + unixFile.getAbsolutePath());
+        unixProcess.waitFor();
+        
+        // Create Windows batch script
+        var winScript = "@echo off\n";
+        winScript += "java -cp " + project.getProperty("java.wrapper.classes") + ";" + 
+                     project.getProperty("class.dir") + ";" + 
+                     project.getProperty("jar.dir") + "\\* " + 
+                     "java_wrapper.src." + classname + " %*\n";
+        
+        var winFile = new java.io.File(project.getProperty("java.wrapper.scripts") + "/" + scriptname + ".bat");
+        var winWriter = new java.io.FileWriter(winFile);
+        winWriter.write(winScript);
+        winWriter.close();
       ]]>
     </scriptdef>
     
     <!-- Generate scripts for each wrapper class -->
     <create-wrapper classname="util.HornerWrapper" scriptname="HornerWrapper"/>
+    <create-wrapper classname="alg.op.OperationSymbolWrapper" scriptname="OperationSymbolWrapper"/>
+    <create-wrapper classname="alg.op.SimilarityTypeWrapper" scriptname="SimilarityTypeWrapper"/>
+    <create-wrapper classname="util.SimpleListWrapper" scriptname="SimpleListWrapper"/>
     
     <echo message="Wrapper scripts created in ${java.wrapper.scripts}"/>
+    <echo message="Unix scripts: *.sh files"/>
+    <echo message="Windows scripts: *.bat files"/>
     <echo message="To add a new wrapper script, add a create-wrapper task for your class"/>
   </target>
 

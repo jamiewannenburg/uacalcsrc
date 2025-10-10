@@ -365,4 +365,174 @@ pub fn register_[module]_module(_py: Python, m: &PyModule) -> PyResult<()> {
 }
 ```
 
-This pattern ensures consistent, maintainable, and robust implementations across all translated classes.
+## 10. Cross-Platform Compatibility Pattern
+
+### Windows Compatibility for Wrapper Scripts
+
+The build system and test infrastructure must support both Windows and Unix/Linux platforms.
+
+#### Build System (build.xml)
+
+```xml
+<!-- Create individual wrapper scripts -->
+<scriptdef name="create-wrapper" language="javascript">
+  <attribute name="classname"/>
+  <attribute name="scriptname"/>
+  <![CDATA[
+    var classname = attributes.get("classname");
+    var scriptname = attributes.get("scriptname");
+    
+    // Create Unix shell script
+    var unixScript = "#!/bin/bash\n";
+    unixScript += "java -cp " + project.getProperty("java.wrapper.classes") + ":" + 
+                  project.getProperty("class.dir") + ":" + 
+                  project.getProperty("jar.dir") + "/* " + 
+                  "java_wrapper.src." + classname + " \"$@\"\n";
+    
+    var unixFile = new java.io.File(project.getProperty("java.wrapper.scripts") + "/" + scriptname);
+    var unixWriter = new java.io.FileWriter(unixFile);
+    unixWriter.write(unixScript);
+    unixWriter.close();
+    
+    // Make Unix script executable
+    var unixProcess = java.lang.Runtime.getRuntime().exec("chmod +x " + unixFile.getAbsolutePath());
+    unixProcess.waitFor();
+    
+    // Create Windows batch script
+    var winScript = "@echo off\n";
+    winScript += "java -cp " + project.getProperty("java.wrapper.classes") + ";" + 
+                 project.getProperty("class.dir") + ";" + 
+                 project.getProperty("jar.dir") + "\\* " + 
+                 "java_wrapper.src." + classname + " %*\n";
+    
+    var winFile = new java.io.File(project.getProperty("java.wrapper.scripts") + "/" + scriptname + ".bat");
+    var winWriter = new java.io.FileWriter(winFile);
+    winWriter.write(winScript);
+    winWriter.close();
+  ]]>
+</scriptdef>
+
+<!-- Generate scripts for each wrapper class -->
+<create-wrapper classname="util.HornerWrapper" scriptname="HornerWrapper"/>
+<create-wrapper classname="alg.op.OperationSymbolWrapper" scriptname="OperationSymbolWrapper"/>
+<create-wrapper classname="alg.op.SimilarityTypeWrapper" scriptname="SimilarityTypeWrapper"/>
+<create-wrapper classname="util.SimpleListWrapper" scriptname="SimpleListWrapper"/>
+```
+
+#### Rust Test Infrastructure (tests/common/mod.rs)
+
+```rust
+/// Get the appropriate script extension for the current platform.
+fn get_script_extension() -> &'static str {
+    if cfg!(target_os = "windows") {
+        ".bat"
+    } else {
+        ""
+    }
+}
+
+/// Get the full script path with appropriate extension for the current platform.
+fn get_script_path(base_path: &str, script_name: &str) -> std::path::PathBuf {
+    let extension = get_script_extension();
+    Path::new(base_path).join(format!("{}{}", script_name, extension))
+}
+
+/// Run a Java CLI wrapper and capture its output.
+pub fn run_java_cli(
+    script_name: &str,
+    args: &[&str],
+    config: &TestConfig,
+) -> TestResult<JavaCliOutput> {
+    let script_path = get_script_path(&config.java_wrapper_path, script_name);
+    
+    if !script_path.exists() {
+        return Err(TestError::JavaCliError(format!(
+            "Java CLI script not found: {}",
+            script_path.display()
+        )));
+    }
+    
+    // ... rest of implementation
+}
+```
+
+#### Python Test Infrastructure (python/uacalc/tests/test_utils.py)
+
+```python
+import platform
+
+class TestHarness:
+    def get_script_extension(self) -> str:
+        """Get the appropriate script extension for the current platform."""
+        return ".bat" if platform.system() == "Windows" else ""
+    
+    def get_script_path(self, script_name: str) -> Path:
+        """Get the full script path with appropriate extension for the current platform."""
+        extension = self.get_script_extension()
+        return Path(self.config.java_wrapper_path) / f"{script_name}{extension}"
+
+    def run_java_cli(self, script_name: str, args: List[str]) -> JavaCliOutput:
+        """Run a Java CLI wrapper and capture its output."""
+        script_path = self.get_script_path(script_name)
+        
+        if not script_path.exists():
+            raise FileNotFoundError(f"Java CLI script not found: {script_path}")
+        
+        # ... rest of implementation
+```
+
+#### Individual Python Test Files
+
+```python
+import platform
+
+def run_java_wrapper(command, args):
+    """Run Java wrapper and return JSON output."""
+    # Use Windows-compatible script path
+    script_extension = ".bat" if platform.system() == "Windows" else ""
+    java_wrapper_path = project_root / "java_wrapper" / "build" / "scripts" / f"ClassNameWrapper{script_extension}"
+    
+    if not java_wrapper_path.exists():
+        pytest.skip(f"Java wrapper not found at {java_wrapper_path}")
+    
+    cmd = [str(java_wrapper_path), command] + args
+    
+    # ... rest of implementation
+```
+
+### Key Points
+
+- **Platform Detection**: Use `cfg!(target_os = "windows")` in Rust and `platform.system() == "Windows"` in Python
+- **Script Extensions**: Use `.bat` for Windows, no extension for Unix/Linux
+- **Path Separators**: Use `;` for Windows classpath, `:` for Unix classpath
+- **File Separators**: Use `\` for Windows paths, `/` for Unix paths
+- **Automatic Generation**: Build system creates both script types automatically
+- **Test Compatibility**: Tests work on both platforms without modification
+
+### Generated Scripts
+
+**Unix Scripts (.sh):**
+- `HornerWrapper`
+- `OperationSymbolWrapper`
+- `SimilarityTypeWrapper`
+- `SimpleListWrapper`
+
+**Windows Scripts (.bat):**
+- `HornerWrapper.bat`
+- `OperationSymbolWrapper.bat`
+- `SimilarityTypeWrapper.bat`
+- `SimpleListWrapper.bat`
+
+### Testing Cross-Platform Compatibility
+
+```bash
+# Test on Windows
+java_wrapper\build\scripts\HornerWrapper.bat help
+
+# Test on Unix/Linux
+./java_wrapper/build/scripts/HornerWrapper help
+
+# Both should work identically
+```
+
+This pattern ensures consistent, maintainable, and robust implementations across all translated classes and all supported platforms.

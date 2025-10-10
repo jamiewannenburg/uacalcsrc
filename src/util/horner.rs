@@ -12,7 +12,7 @@ used for encoding elements from direct products of algebras.
 /// * `sizes` - The sizes of the algebras. Should have the same length as `args`
 /// 
 /// # Returns
-/// The Horner encoding as an integer
+/// The Horner encoding as an integer (with wrapping arithmetic for compatibility)
 /// 
 /// # Panics
 /// Panics if `args` and `sizes` have different lengths
@@ -32,7 +32,7 @@ pub fn horner(args: &[i32], sizes: &[i32]) -> i32 {
     let k = args.len();
     let mut ans = args[k - 1];
     for i in (0..k-1).rev() {
-        ans = sizes[i] * ans + args[i];
+        ans = sizes[i].wrapping_mul(ans).wrapping_add(args[i]);
     }
     ans
 }
@@ -45,7 +45,7 @@ pub fn horner(args: &[i32], sizes: &[i32]) -> i32 {
 /// * `sizes` - The sizes of the algebras. Should have the same length as `args`
 /// 
 /// # Returns
-/// * `Ok(i32)` - The Horner encoding as an integer
+/// * `Ok(i32)` - The Horner encoding as an integer (with wrapping arithmetic for compatibility)
 /// * `Err(String)` - Error if arrays have different lengths
 pub fn horner_safe(args: &[i32], sizes: &[i32]) -> Result<i32, String> {
     if args.len() != sizes.len() {
@@ -55,7 +55,7 @@ pub fn horner_safe(args: &[i32], sizes: &[i32]) -> Result<i32, String> {
     let k = args.len();
     let mut ans = args[k - 1];
     for i in (0..k-1).rev() {
-        ans = sizes[i] * ans + args[i];
+        ans = sizes[i].wrapping_mul(ans).wrapping_add(args[i]);
     }
     Ok(ans)
 }

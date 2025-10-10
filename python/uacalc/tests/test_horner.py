@@ -10,6 +10,7 @@ import subprocess
 import json
 import os
 import sys
+import platform
 from pathlib import Path
 
 # Add the project root to the path to import uacalc_lib
@@ -25,7 +26,9 @@ except ImportError:
 
 def run_java_wrapper(command, args):
     """Run Java wrapper and return JSON output."""
-    java_wrapper_path = project_root / "java_wrapper" / "build" / "scripts" / "HornerWrapper"
+    # Use Windows-compatible script path
+    script_extension = ".bat" if platform.system() == "Windows" else ""
+    java_wrapper_path = project_root / "java_wrapper" / "build" / "scripts" / f"HornerWrapper{script_extension}"
     
     if not java_wrapper_path.exists():
         pytest.skip(f"Java wrapper not found at {java_wrapper_path}")

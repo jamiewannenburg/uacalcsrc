@@ -3,8 +3,8 @@
 //! This module tests the Rust implementation of Horner encoding against
 //! the Java implementation using the enhanced test infrastructure.
 
-mod common;
-use common::*;
+use uacalc::common::*;
+use uacalc::{compare_with_java, test_with_java_comparison};
 use std::time::Duration;
 use uacalc::util::horner;
 

@@ -6,8 +6,7 @@
 use uacalc::alg::*;
 use uacalc::lat::*;
 use uacalc::terms::*;
-mod common;
-use common::*;
+use uacalc::common::*;
 
 #[test]
 fn test_basic_algebra_creation() {
