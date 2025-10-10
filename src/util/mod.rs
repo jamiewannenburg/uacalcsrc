@@ -1,5 +1,6 @@
 pub mod virtuallist;
 pub mod horner;
+pub mod simple_list;
 
 pub struct ArrayIncrementor {
     // TODO: Implement array incrementor
@@ -19,8 +20,4 @@ pub struct PermutationGenerator {
 
 pub struct SequenceGenerator {
     // TODO: Implement sequence generator
-}
-
-pub struct SimpleList {
-    // TODO: Implement simple list
 }
