@@ -4,9 +4,12 @@
  * a command-line interface for testing and validation against Rust/Python implementations.
  */
 
+package java_wrapper.src.alg.op;
+
 import java.util.*;
 import org.uacalc.alg.op.SimilarityType;
 import org.uacalc.alg.op.OperationSymbol;
+import java_wrapper.src.WrapperBase;
 
 /**
  * CLI wrapper for the SimilarityType class that provides command-line access

@@ -4,6 +4,8 @@
  * including standardized JSON output, error handling, and argument parsing.
  */
 
+package java_wrapper.src;
+
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;

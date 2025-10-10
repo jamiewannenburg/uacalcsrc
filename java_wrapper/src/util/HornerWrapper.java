@@ -4,8 +4,11 @@
  * a command-line interface for testing and validation against Rust/Python implementations.
  */
 
+package java_wrapper.src.util;
+
 import java.util.*;
 import org.uacalc.util.Horner;
+import java_wrapper.src.WrapperBase;
 
 /**
  * CLI wrapper for the Horner class that provides command-line access

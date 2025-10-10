@@ -6,8 +6,8 @@ This document establishes the patterns and best practices for translating Java c
 
 ### File Structure
 - **Location**: `java_wrapper/src/[package]/[ClassName]Wrapper.java`
-- **Package**: Default package (no package declaration)
-- **Base Class**: Extends `WrapperBase`
+- **Package**: `java_wrapper.src.[package]` (matches directory structure)
+- **Base Class**: Extends `WrapperBase` (imported from `java_wrapper.src.WrapperBase`)
 
 ### Template Structure
 ```java
@@ -17,8 +17,11 @@ This document establishes the patterns and best practices for translating Java c
  * a command-line interface for testing and validation against Rust/Python implementations.
  */
 
+package java_wrapper.src.[package];
+
 import java.util.*;
 import org.uacalc.[package].[ClassName];
+import java_wrapper.src.WrapperBase;
 
 /**
  * CLI wrapper for the [ClassName] class that provides command-line access
@@ -267,6 +270,12 @@ def test_[method_name](self):
 ```bash
 # Compile Java wrapper
 ant compile-wrappers
+
+# Create wrapper scripts
+ant create-wrapper-scripts
+
+# Test wrapper functionality
+java_wrapper/build/scripts/[ClassName]Wrapper help
 
 # Compile Rust library
 cargo build --release
