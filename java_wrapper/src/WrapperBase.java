@@ -315,6 +315,7 @@ public abstract class WrapperBase {
             boolean first = true;
             for (Map.Entry<?, ?> entry : map.entrySet()) {
                 if (!first) sb.append(",\n");
+                // Always quote keys for valid JSON, but preserve integer values
                 sb.append("    \"").append(escapeJson(entry.getKey().toString())).append("\": ");
                 sb.append(serializeObject(entry.getValue()));
                 first = false;

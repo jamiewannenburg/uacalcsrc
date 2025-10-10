@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use std::cmp::Ordering;
 use std::hash::{Hash, Hasher};
 use once_cell::sync::Lazy;
+use num_traits::cast::ToPrimitive;
 
 /// An operation symbol with a name and arity.
 /// 
@@ -190,9 +191,11 @@ impl std::fmt::Display for OperationSymbol {
 impl Ord for OperationSymbol {
     fn cmp(&self, other: &Self) -> Ordering {
         // High arity operations first, then by name (ascending)
-        match other.arity.cmp(&self.arity) {
+        // This matches Java's compareTo: if (arity < sym.arity()) return 1; if (arity > sym.arity()) return -1;
+        match self.arity.cmp(&other.arity) {
             Ordering::Equal => self.name.cmp(&other.name),
-            other => other,
+            Ordering::Less => Ordering::Greater,    // self.arity < other.arity -> self > other
+            Ordering::Greater => Ordering::Less,    // self.arity > other.arity -> self < other
         }
     }
 }
@@ -243,8 +246,242 @@ pub struct ParameterizedOperation {
     // TODO: Implement parameterized operation
 }
 
+/// A set of OperationSymbol's representing a similarity type.
+/// 
+/// This struct represents a collection of operation symbols that define
+/// the similarity type of an algebra. It provides methods for calculating
+/// input sizes, managing arities, and various utility functions.
+#[derive(Debug, Clone)]
 pub struct SimilarityType {
-    // TODO: Implement similarity type
+    operation_symbols: Vec<OperationSymbol>,
+    arities_map: Option<std::collections::BTreeMap<i32, i32>>,
+    max_arity: Option<i32>,
+}
+
+// Static constants matching Java implementation
+static LATTICE_SIMILARITY_TYPE: Lazy<SimilarityType> = Lazy::new(|| {
+    let opsyms = vec![
+        OperationSymbol::join().clone(),
+        OperationSymbol::meet().clone(),
+    ];
+    SimilarityType::new(opsyms)
+});
+
+static GROUP_SIMILARITY_TYPE: Lazy<SimilarityType> = Lazy::new(|| {
+    let opsyms = vec![
+        OperationSymbol::product().clone(),
+        OperationSymbol::inverse().clone(),
+        OperationSymbol::identity().clone(),
+    ];
+    SimilarityType::new(opsyms)
+});
+
+impl SimilarityType {
+    /// Create a new SimilarityType with the given operation symbols.
+    /// 
+    /// # Arguments
+    /// * `op_syms` - Vector of operation symbols
+    /// 
+    /// # Returns
+    /// A new SimilarityType instance
+    pub fn new(op_syms: Vec<OperationSymbol>) -> Self {
+        Self::new_with_sort(op_syms, false)
+    }
+    
+    /// Create a new SimilarityType with the given operation symbols and optional sorting.
+    /// 
+    /// # Arguments
+    /// * `op_syms` - Vector of operation symbols
+    /// * `sort` - Whether to sort the operation symbols
+    /// 
+    /// # Returns
+    /// A new SimilarityType instance
+    pub fn new_with_sort(mut op_syms: Vec<OperationSymbol>, sort: bool) -> Self {
+        if sort {
+            op_syms.sort();
+        }
+        SimilarityType {
+            operation_symbols: op_syms,
+            arities_map: None,
+            max_arity: None,
+        }
+    }
+    
+    /// Create a new SimilarityType with proper error handling.
+    /// 
+    /// # Arguments
+    /// * `op_syms` - Vector of operation symbols
+    /// 
+    /// # Returns
+    /// * `Ok(SimilarityType)` if successful
+    /// * `Err(String)` if validation fails
+    pub fn new_safe(op_syms: Vec<OperationSymbol>) -> Result<Self, String> {
+        Ok(Self::new(op_syms))
+    }
+    
+    /// Get the operation symbols in this similarity type.
+    /// 
+    /// # Returns
+    /// A reference to the vector of operation symbols
+    pub fn get_operation_symbols(&self) -> &Vec<OperationSymbol> {
+        &self.operation_symbols
+    }
+    
+    /// Get a sorted list of operation symbols.
+    /// 
+    /// The sorting is by lowest arity first, then by alphabetical order on the name.
+    /// 
+    /// # Returns
+    /// A sorted vector of operation symbols
+    pub fn get_sorted_operation_symbols(&self) -> Vec<OperationSymbol> {
+        let mut sorted = self.operation_symbols.clone();
+        sorted.sort();
+        sorted
+    }
+    
+    /// Calculate the computer input size for this similarity type.
+    /// 
+    /// If the result exceeds the maximum integer value, returns -1.
+    /// If there are no operations, returns the algebra size.
+    /// 
+    /// # Arguments
+    /// * `alg_size` - The algebra size
+    /// 
+    /// # Returns
+    /// The input size if it fits in an i32, or -1 if it exceeds the maximum
+    pub fn input_size(&self, alg_size: i32) -> i32 {
+        if self.operation_symbols.is_empty() {
+            return alg_size;
+        }
+        
+        let mut input_size = num_bigint::BigInt::from(0);
+        let algebra_size = num_bigint::BigInt::from(alg_size as i64);
+        let max_int = num_bigint::BigInt::from(i32::MAX as i64);
+        
+        for sym in &self.operation_symbols {
+            input_size += algebra_size.pow(sym.arity() as u32);
+            if input_size >= max_int {
+                return -1;
+            }
+        }
+        
+        input_size.to_i32().unwrap_or(-1)
+    }
+    
+    /// Get a map from arity to the number of operations of that arity.
+    /// 
+    /// This method caches the result for performance.
+    /// 
+    /// # Returns
+    /// A BTreeMap mapping arity to count
+    pub fn get_arities_map(&mut self) -> &std::collections::BTreeMap<i32, i32> {
+        if self.arities_map.is_none() {
+            let mut map = std::collections::BTreeMap::new();
+            let mut max = -1;
+            
+            for sym in &self.operation_symbols {
+                let k = sym.arity();
+                max = max.max(k);
+                *map.entry(k).or_insert(0) += 1;
+            }
+            
+            self.arities_map = Some(map);
+            self.max_arity = Some(max);
+        }
+        
+        self.arities_map.as_ref().unwrap()
+    }
+    
+    /// Get the maximum arity among all operation symbols.
+    /// 
+    /// This method caches the result for performance.
+    /// 
+    /// # Returns
+    /// The maximum arity, or -1 if there are no operations
+    pub fn get_max_arity(&mut self) -> i32 {
+        if self.max_arity.is_none() {
+            self.get_arities_map(); // This will set max_arity
+        }
+        self.max_arity.unwrap_or(-1)
+    }
+    
+    /// Get the LATTICE_SIMILARITY_TYPE constant.
+    /// 
+    /// # Returns
+    /// A reference to the static lattice similarity type
+    pub fn lattice_similarity_type() -> &'static SimilarityType {
+        &LATTICE_SIMILARITY_TYPE
+    }
+    
+    /// Get the GROUP_SIMILARITY_TYPE constant.
+    /// 
+    /// # Returns
+    /// A reference to the static group similarity type
+    pub fn group_similarity_type() -> &'static SimilarityType {
+        &GROUP_SIMILARITY_TYPE
+    }
+    
+    /// Generate a string representation of the arities.
+    /// 
+    /// # Returns
+    /// A string describing the arities of operations in this similarity type
+    pub fn arities_string(&mut self) -> String {
+        let k = self.get_max_arity();
+        let arities_map = self.get_arities_map();
+        let mut parts = Vec::new();
+        
+        for i in (0..=k).rev() {
+            if let Some(&num) = arities_map.get(&i) {
+                let ary_string = match i {
+                    1 => format!("unary ({})", num),
+                    2 => format!("binary: ({})", num),
+                    _ => format!("{}-ary ({})", i, num),
+                };
+                parts.push(ary_string);
+            }
+        }
+        
+        parts.join(", ")
+    }
+}
+
+impl std::fmt::Display for SimilarityType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "(")?;
+        for (i, sym) in self.operation_symbols.iter().enumerate() {
+            if i > 0 {
+                write!(f, ", ")?;
+            }
+            write!(f, "{}", sym)?;
+        }
+        write!(f, ")")
+    }
+}
+
+impl PartialEq for SimilarityType {
+    fn eq(&self, other: &Self) -> bool {
+        if self.operation_symbols.len() != other.operation_symbols.len() {
+            return false;
+        }
+        
+        for op in &self.operation_symbols {
+            if !other.operation_symbols.contains(op) {
+                return false;
+            }
+        }
+        true
+    }
+}
+
+impl Eq for SimilarityType {}
+
+impl Hash for SimilarityType {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        // Sort the operation symbols for consistent hashing
+        let mut sorted = self.operation_symbols.clone();
+        sorted.sort();
+        sorted.hash(state);
+    }
 }
 
 pub struct TermOperation {
