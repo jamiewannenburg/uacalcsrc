@@ -486,7 +486,7 @@ macro_rules! compare_with_java {
 macro_rules! test_with_java_comparison {
     ($config:expr, $timeout:expr, $script:expr, $args:expr, $rust_fn:expr) => {
         {
-            let result = with_timeout_blocking($timeout, || {
+            let result = with_timeout_blocking($timeout, move || {
                 let java_output = run_java_cli_with_timeout(
                     $script,
                     &$args,

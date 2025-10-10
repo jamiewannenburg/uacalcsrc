@@ -1,4 +1,5 @@
 pub mod virtuallist;
+pub mod horner;
 
 pub struct ArrayIncrementor {
     // TODO: Implement array incrementor
@@ -6,10 +7,6 @@ pub struct ArrayIncrementor {
 
 pub struct ArrayString {
     // TODO: Implement array string
-}
-
-pub struct Horner {
-    // TODO: Implement Horner
 }
 
 pub struct IntArray {

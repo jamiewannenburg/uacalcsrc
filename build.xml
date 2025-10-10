@@ -225,7 +225,8 @@
     </scriptdef>
     
     <!-- Generate scripts for each wrapper class -->
-    <!-- Note: These will be created as wrapper classes are added -->
+    <create-wrapper classname="util.HornerWrapper" scriptname="HornerWrapper"/>
+    
     <echo message="Wrapper scripts created in ${java.wrapper.scripts}"/>
     <echo message="To add a new wrapper script, add a create-wrapper task for your class"/>
   </target>
