@@ -1,4 +1,5 @@
 use pyo3::prelude::*;
+use pyo3::exceptions::PyValueError;
 use uacalc::alg::*;
 
 /// Python wrapper for OperationSymbol
@@ -21,8 +22,10 @@ impl PyOperationSymbol {
     #[new]
     #[pyo3(signature = (name, arity, associative=false))]
     fn new(name: &str, arity: i32, associative: bool) -> PyResult<Self> {
-        let inner = uacalc::alg::op::OperationSymbol::new(name, arity, associative);
-        Ok(PyOperationSymbol { inner })
+        match uacalc::alg::op::OperationSymbol::new_safe(name, arity, associative) {
+            Ok(inner) => Ok(PyOperationSymbol { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
     }
     
     /// Get the arity of this operation symbol.
@@ -59,8 +62,10 @@ impl PyOperationSymbol {
     /// Raises:
     ///     ValueError: If assoc is True but the arity is not 2.
     fn set_associative(&mut self, assoc: bool) -> PyResult<()> {
-        self.inner.set_associative(assoc);
-        Ok(())
+        match self.inner.set_associative(assoc) {
+            Ok(()) => Ok(()),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
     }
     
     /// Convert this operation symbol to a string representation.

@@ -105,13 +105,13 @@ fn test_operation_symbol_is_associative() {
 fn test_operation_symbol_set_associative() {
     let config = TestConfig::default();
     
-    compare_with_java!(
+        compare_with_java!(
         config,
         "OperationSymbolWrapper",
         ["setAssociative", "--name", "f", "--arity", "2", "--associative", "false", "--newAssociative", "true"],
         || {
             let mut sym = OperationSymbol::new("f", 2, false);
-            sym.set_associative(true);
+            sym.set_associative(true).unwrap();
             json!({
                 "name": sym.name(),
                 "arity": sym.arity(),

@@ -289,14 +289,9 @@ class TestOperationSymbol:
     
     def test_associativity_validation(self):
         """Test that associativity validation works."""
-        # The Rust implementation panics for non-binary associative operations
-        # This is the expected behavior - we just verify it raises some exception
-        try:
+        # The Rust implementation now raises ValueError for non-binary associative operations
+        with pytest.raises(ValueError, match="Only binary terms can be associative"):
             OperationSymbol("f", 1, associative=True)
-            pytest.fail("Should have raised an exception")
-        except:
-            # Any exception is fine - the important thing is that it fails
-            pass
     
     def test_comprehensive_functionality(self):
         """Test comprehensive functionality."""

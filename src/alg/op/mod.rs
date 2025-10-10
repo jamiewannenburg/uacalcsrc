@@ -42,8 +42,28 @@ impl OperationSymbol {
             arity,
             associative: false,
         };
-        sym.set_associative(associative);
+        sym.set_associative_panic(associative);
         sym
+    }
+    
+    /// Create a new OperationSymbol with proper error handling.
+    /// 
+    /// # Arguments
+    /// * `name` - The name of the operation symbol
+    /// * `arity` - The arity (number of operands) of the operation
+    /// * `associative` - Whether the operation is associative (only valid for binary operations)
+    /// 
+    /// # Returns
+    /// * `Ok(OperationSymbol)` if successful
+    /// * `Err(String)` if `associative` is true but `arity` is not 2
+    pub fn new_safe(name: &str, arity: i32, associative: bool) -> Result<Self, String> {
+        let mut sym = OperationSymbol {
+            name: name.to_string(),
+            arity,
+            associative: false,
+        };
+        sym.set_associative(associative)?;
+        Ok(sym)
     }
     
     /// Get the arity of this operation symbol.
@@ -68,9 +88,25 @@ impl OperationSymbol {
     /// # Arguments
     /// * `assoc` - Whether the operation should be associative
     /// 
+    /// # Returns
+    /// * `Ok(())` if successful
+    /// * `Err(String)` if `assoc` is true but the arity is not 2
+    pub fn set_associative(&mut self, assoc: bool) -> Result<(), String> {
+        if assoc && self.arity != 2 {
+            return Err("Only binary terms can be associative.".to_string());
+        }
+        self.associative = assoc && self.arity == 2;
+        Ok(())
+    }
+    
+    /// Set whether this operation symbol is associative (panicking version for compatibility).
+    /// 
+    /// # Arguments
+    /// * `assoc` - Whether the operation should be associative
+    /// 
     /// # Panics
     /// Panics if `assoc` is true but the arity is not 2.
-    pub fn set_associative(&mut self, assoc: bool) {
+    pub fn set_associative_panic(&mut self, assoc: bool) {
         if assoc && self.arity != 2 {
             panic!("Only binary terms can be associative.");
         }
