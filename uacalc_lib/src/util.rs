@@ -5,8 +5,9 @@ use uacalc::util::simple_list;
 use uacalc::util::array_string;
 use uacalc::util::permutation_generator;
 use uacalc::util::array_incrementor;
+use uacalc::util::int_array::{IntArrayTrait, IntArray};
 use std::sync::Arc;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 /// A type-erased SimpleList that can hold any Python object
 /// This maintains the linked list structure while allowing dynamic typing
@@ -1168,6 +1169,262 @@ impl PySimpleArrayIncrementor {
     }
 }
 
+/// Python wrapper for IntArray
+#[pyclass]
+pub struct PyIntArray {
+    inner: IntArray,
+}
+
+#[pymethods]
+impl PyIntArray {
+    /// Create a new IntArray with the given size, initialized to 0.
+    /// 
+    /// Args:
+    ///     size (int): The size of the array
+    /// 
+    /// Returns:
+    ///     IntArray: A new IntArray instance
+    /// 
+    /// Raises:
+    ///     ValueError: If size is invalid
+    #[new]
+    #[pyo3(signature = (size))]
+    fn new(size: usize) -> PyResult<Self> {
+        match IntArray::new(size) {
+            Ok(inner) => Ok(PyIntArray { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Create a new IntArray from an existing array.
+    /// 
+    /// Args:
+    ///     array (List[int]): The array to wrap
+    /// 
+    /// Returns:
+    ///     IntArray: A new IntArray instance
+    /// 
+    /// Raises:
+    ///     ValueError: If array is empty
+    #[staticmethod]
+    fn from_array(array: Vec<i32>) -> PyResult<Self> {
+        match IntArray::from_array(array) {
+            Ok(inner) => Ok(PyIntArray { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Create a new IntArray from a string representation.
+    /// 
+    /// Args:
+    ///     str (str): String representation of the array
+    /// 
+    /// Returns:
+    ///     IntArray: A new IntArray instance
+    /// 
+    /// Raises:
+    ///     ValueError: If string format is invalid
+    #[staticmethod]
+    fn from_string(str: &str) -> PyResult<Self> {
+        match IntArray::from_string(str) {
+            Ok(inner) => Ok(PyIntArray { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Get the size of the universe (array length).
+    fn universe_size(&self) -> usize {
+        self.inner.universe_size()
+    }
+    
+    /// Get the underlying array as a list.
+    fn to_array(&self) -> Vec<i32> {
+        self.inner.as_slice().to_vec()
+    }
+    
+    /// Get a value at the specified index.
+    /// 
+    /// Args:
+    ///     index (int): The index to access
+    /// 
+    /// Returns:
+    ///     int: The value at the index
+    /// 
+    /// Raises:
+    ///     IndexError: If the index is out of bounds
+    fn get(&self, index: usize) -> PyResult<i32> {
+        match self.inner.get(index) {
+            Some(value) => Ok(value),
+            None => Err(PyValueError::new_err(format!("Index {} out of bounds", index))),
+        }
+    }
+    
+    /// Set a value at the specified index.
+    /// 
+    /// Args:
+    ///     index (int): The index to set
+    ///     value (int): The value to set
+    /// 
+    /// Raises:
+    ///     ValueError: If the index is out of bounds
+    fn set(&mut self, index: usize, value: i32) -> PyResult<()> {
+        match self.inner.set(index, value) {
+            Ok(()) => Ok(()),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Test if the array is constant on each block of the partition.
+    /// 
+    /// Args:
+    ///     blocks (List[List[int]]): The blocks of a partition on the index set
+    /// 
+    /// Returns:
+    ///     bool: True if the condition is satisfied
+    fn satisfies_blocks_constraint(&self, blocks: Vec<Vec<usize>>) -> bool {
+        self.inner.satisfies_blocks_constraint(&blocks)
+    }
+    
+    /// Test if this satisfies array[i] = v for each [i,v] in values.
+    /// 
+    /// Args:
+    ///     values (List[Tuple[int, int]]): An array of pairs [i,v] specifying array[i] = v
+    /// 
+    /// Returns:
+    ///     bool: True if the condition is satisfied
+    fn satisfies_values_constraint(&self, values: Vec<(usize, i32)>) -> bool {
+        self.inner.satisfies_values_constraint(&values)
+    }
+    
+    /// Test if this IntArray value at index is in a set of possible values.
+    /// 
+    /// Args:
+    ///     index (int): The index to test
+    ///     possible_values (Set[int]): A set of possible values
+    /// 
+    /// Returns:
+    ///     bool: True if the value at index is in the set
+    fn satisfies_set_constraint(&self, index: usize, possible_values: HashSet<i32>) -> bool {
+        self.inner.satisfies_set_constraint(index, &possible_values)
+    }
+    
+    /// Test if this IntArray's value at index is congruent mod alpha to the element with index elem_index.
+    /// 
+    /// Args:
+    ///     index (int): The index to test
+    ///     alpha (Partition): The partition defining the congruence
+    ///     elem_index (int): The element index to compare with
+    /// 
+    /// Returns:
+    ///     bool: True if the condition is satisfied
+    fn satisfies_congruence_constraint(&self, index: usize, alpha: &PyAny, elem_index: usize) -> PyResult<bool> {
+        // We need to extract the Partition from the Python object
+        // For now, we'll return an error since we need to implement the Partition Python binding
+        Err(PyValueError::new_err("Partition constraint not yet implemented in Python bindings"))
+    }
+    
+    /// Test if this represents an idempotent function.
+    /// 
+    /// A function f is idempotent if f(f(x)) = f(x) for all x.
+    /// 
+    /// Returns:
+    ///     bool: True if the function is idempotent
+    fn is_idempotent(&self) -> bool {
+        self.inner.is_idempotent()
+    }
+    
+    /// Test if this array is constant (all elements are the same).
+    /// 
+    /// Returns:
+    ///     bool: True if all elements are the same
+    fn is_constant(&self) -> bool {
+        self.inner.is_constant()
+    }
+    
+    /// Clone the array into a new instance.
+    fn clone_array(&self) -> Self {
+        PyIntArray {
+            inner: self.inner.clone(),
+        }
+    }
+    
+    /// Convert the array to a string representation.
+    /// 
+    /// Returns:
+    ///     str: String representation in format "[1, 2, 3]"
+    fn to_string(&self) -> String {
+        self.inner.to_string()
+    }
+    
+    /// Convert a string to an array of integers.
+    /// 
+    /// Args:
+    ///     str (str): String containing integers separated by commas or spaces
+    /// 
+    /// Returns:
+    ///     List[int]: Array of integers
+    /// 
+    /// Raises:
+    ///     ValueError: If parsing fails
+    #[staticmethod]
+    fn string_to_array(str: &str) -> PyResult<Vec<i32>> {
+        match IntArray::string_to_array(str) {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Convert an array to a string representation.
+    /// 
+    /// Args:
+    ///     array (List[int]): The array to convert
+    /// 
+    /// Returns:
+    ///     str: String representation in format "[1, 2, 3]"
+    #[staticmethod]
+    fn array_to_string(array: Vec<i32>) -> String {
+        IntArray::array_to_string(&array)
+    }
+    
+    /// Check if two arrays are equal.
+    /// 
+    /// Args:
+    ///     a (List[int]): First array
+    ///     b (List[int]): Second array
+    /// 
+    /// Returns:
+    ///     bool: True if arrays are equal
+    #[staticmethod]
+    fn arrays_equal(a: Vec<i32>, b: Vec<i32>) -> bool {
+        IntArray::arrays_equal(&a, &b)
+    }
+    
+    /// Python string representation
+    fn __str__(&self) -> String {
+        self.inner.to_string()
+    }
+    
+    /// Python repr representation
+    fn __repr__(&self) -> String {
+        format!("IntArray({})", self.inner.to_string())
+    }
+    
+    /// Python equality comparison
+    fn __eq__(&self, other: &PyIntArray) -> bool {
+        self.inner == other.inner
+    }
+    
+    /// Python hash function
+    fn __hash__(&self) -> u64 {
+        use std::collections::hash_map::DefaultHasher;
+        use std::hash::{Hash, Hasher};
+        
+        let mut hasher = DefaultHasher::new();
+        self.inner.hash(&mut hasher);
+        hasher.finish()
+    }
+}
+
 pub fn register_util_module(py: Python, m: &PyModule) -> PyResult<()> {
     // Register classes internally but only export clean names
     m.add_class::<PyHorner>()?;
@@ -1180,6 +1437,7 @@ pub fn register_util_module(py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyListIncrementor>()?;
     m.add_class::<PyArrayIncrementorImpl>()?;
     m.add_class::<PySimpleArrayIncrementor>()?;
+    m.add_class::<PyIntArray>()?;
     
     // Export only clean names (without Py prefix)
     m.add("Horner", m.getattr("PyHorner")?)?;
@@ -1188,6 +1446,7 @@ pub fn register_util_module(py: Python, m: &PyModule) -> PyResult<()> {
     m.add("PermutationGenerator", m.getattr("PyPermutationGenerator")?)?;
     m.add("ArrayIncrementorImpl", m.getattr("PyArrayIncrementorImpl")?)?;
     m.add("SimpleArrayIncrementor", m.getattr("PySimpleArrayIncrementor")?)?;
+    m.add("IntArray", m.getattr("PyIntArray")?)?;
     
     // Remove the Py* names from the module to avoid confusion
     let module_dict = m.dict();
@@ -1201,6 +1460,7 @@ pub fn register_util_module(py: Python, m: &PyModule) -> PyResult<()> {
     module_dict.del_item("PyListIncrementor")?;
     module_dict.del_item("PyArrayIncrementorImpl")?;
     module_dict.del_item("PySimpleArrayIncrementor")?;
+    module_dict.del_item("PyIntArray")?;
     
     Ok(())
 }

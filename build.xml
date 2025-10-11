@@ -254,6 +254,13 @@
     <echo file="${java.wrapper.scripts}/ArrayIncrementorWrapper.bat" 
           message="@echo off&#10;java -cp ${java.wrapper.classes};${class.dir};${jar.dir}\* java_wrapper.src.util.ArrayIncrementorWrapper %*&#10;"/>
     
+    <!-- IntArrayWrapper script -->
+    <echo file="${java.wrapper.scripts}/IntArrayWrapper" 
+          message="#!/bin/bash&#10;java -cp ${java.wrapper.classes}:${class.dir}:${jar.dir}/* java_wrapper.src.util.IntArrayWrapper &quot;$@&quot;&#10;"/>
+    <chmod file="${java.wrapper.scripts}/IntArrayWrapper" perm="755"/>
+    <echo file="${java.wrapper.scripts}/IntArrayWrapper.bat" 
+          message="@echo off&#10;java -cp ${java.wrapper.classes};${class.dir};${jar.dir}\* java_wrapper.src.util.IntArrayWrapper %*&#10;"/>
+    
     <!-- PartitionWrapper script -->
     <echo file="${java.wrapper.scripts}/PartitionWrapper" 
           message="#!/bin/bash&#10;java -cp ${java.wrapper.classes}:${class.dir}:${jar.dir}/* java_wrapper.src.alg.conlat.PartitionWrapper &quot;$@&quot;&#10;"/>
@@ -274,6 +281,13 @@
     <chmod file="${java.wrapper.scripts}/ExtFileFilterWrapper" perm="755"/>
     <echo file="${java.wrapper.scripts}/ExtFileFilterWrapper.bat" 
           message="@echo off&#10;java -cp ${java.wrapper.classes};${class.dir};${jar.dir}\* java_wrapper.src.io.ExtFileFilterWrapper %*&#10;"/>
+    
+    <!-- BasicBinaryRelationWrapper script -->
+    <echo file="${java.wrapper.scripts}/BasicBinaryRelationWrapper" 
+          message="#!/bin/bash&#10;java -cp ${java.wrapper.classes}:${class.dir}:${jar.dir}/* java_wrapper.src.alg.conlat.BasicBinaryRelationWrapper &quot;$@&quot;&#10;"/>
+    <chmod file="${java.wrapper.scripts}/BasicBinaryRelationWrapper" perm="755"/>
+    <echo file="${java.wrapper.scripts}/BasicBinaryRelationWrapper.bat" 
+          message="@echo off&#10;java -cp ${java.wrapper.classes};${class.dir};${jar.dir}\* java_wrapper.src.alg.conlat.BasicBinaryRelationWrapper %*&#10;"/>
     
     <echo message="Wrapper scripts created in ${java.wrapper.scripts}"/>
     <echo message="Unix scripts: *.sh files"/>

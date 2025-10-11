@@ -100,7 +100,6 @@ impl std::error::Error for BadAlgebraFileException {
 
 use std::path::Path;
 use once_cell::sync::Lazy;
-use std::collections::HashSet;
 use std::hash::{Hash, Hasher};
 
 /// Filter files by extension.
@@ -123,13 +122,13 @@ use std::hash::{Hash, Hasher};
 /// ```
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ExtFileFilter {
-    exts: HashSet<String>,
+    exts: Vec<String>,
     description: String,
 }
 
 impl Hash for ExtFileFilter {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        // Convert HashSet to sorted Vec for consistent hashing
+        // Sort extensions for consistent hashing
         let mut sorted_exts: Vec<&String> = self.exts.iter().collect();
         sorted_exts.sort();
         sorted_exts.hash(state);
@@ -181,7 +180,7 @@ impl ExtFileFilter {
     /// ```
     pub fn new(description: &str, exts: Vec<String>) -> Self {
         Self {
-            exts: exts.into_iter().collect(),
+            exts: exts,
             description: description.to_string(),
         }
     }
@@ -203,7 +202,7 @@ impl ExtFileFilter {
     /// ```
     pub fn new_single(description: &str, ext: &str) -> Self {
         Self {
-            exts: vec![ext.to_string()].into_iter().collect(),
+            exts: vec![ext.to_string()],
             description: description.to_string(),
         }
     }
@@ -311,10 +310,10 @@ impl ExtFileFilter {
         &self.description
     }
 
-    /// Returns the set of allowed extensions.
+    /// Returns the list of allowed extensions.
     /// 
     /// # Returns
-    /// A reference to the set of allowed extensions
+    /// A reference to the list of allowed extensions
     /// 
     /// # Examples
     /// ```
@@ -322,9 +321,9 @@ impl ExtFileFilter {
     /// 
     /// let filter = ExtFileFilter::new("UA Files", vec!["ua".to_string()]);
     /// let exts = filter.get_extensions();
-    /// assert!(exts.contains("ua"));
+    /// assert!(exts.contains(&"ua".to_string()));
     /// ```
-    pub fn get_extensions(&self) -> &HashSet<String> {
+    pub fn get_extensions(&self) -> &Vec<String> {
         &self.exts
     }
 

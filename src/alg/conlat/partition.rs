@@ -10,6 +10,11 @@ in his unpublished notes on partition algorithms.
 use std::collections::{HashMap, BTreeSet};
 use std::fmt;
 use std::hash::{Hash, Hasher};
+use crate::util::int_array::{IntArray, IntArrayTrait};
+use super::binary_relation::{
+    BinaryRelation, MutableBinaryRelation, BinaryRelationCompare, BinaryRelationIterator, BinaryRelationFactory
+};
+use super::basic_binary_relation::BasicBinaryRelation;
 
 /// Print types for partition string representations.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -800,6 +805,83 @@ impl Ord for Partition {
         }
         
         std::cmp::Ordering::Equal
+    }
+}
+
+// BinaryRelation trait implementation for Partition
+impl BinaryRelation<IntArray> for Partition {
+    fn universe_size(&self) -> usize {
+        self.universe_size()
+    }
+    
+    fn is_related(&self, i: usize, j: usize) -> bool {
+        self.is_related(i, j)
+    }
+    
+    fn get_pairs(&self) -> BTreeSet<IntArray> {
+        let mut pairs = BTreeSet::new();
+        
+        // Generate all pairs (i, j) where i and j are in the same block
+        for i in 0..self.universe_size() {
+            for j in 0..self.universe_size() {
+                if self.is_related(i, j) {
+                    let pair = IntArray::from_array(vec![i as i32, j as i32]).unwrap();
+                    pairs.insert(pair);
+                }
+            }
+        }
+        
+        pairs
+    }
+    
+    fn compose(&self, other: &dyn BinaryRelation<IntArray>) -> Result<Box<dyn BinaryRelation<IntArray>>, String> {
+        if self.universe_size() != other.universe_size() {
+            return Err(format!(
+                "Cannot compose relations with different universe sizes: {} and {}",
+                self.universe_size(),
+                other.universe_size()
+            ));
+        }
+        
+        let mut result = BasicBinaryRelation::new(self.universe_size())?;
+        
+        // For each pair (i, j) in this partition
+        for pair in self.get_pairs() {
+            let i = pair.get(0).unwrap() as usize;
+            let j = pair.get(1).unwrap() as usize;
+            
+            // For each k in the universe
+            for k in 0..self.universe_size() {
+                // If (j, k) is in the other relation, add (i, k) to the result
+                if other.is_related(j, k) {
+                    result.add(i, k)?;
+                }
+            }
+        }
+        
+        Ok(Box::new(result))
+    }
+}
+
+impl BinaryRelationCompare<IntArray> for Partition {}
+
+impl BinaryRelationIterator<IntArray> for Partition {
+    fn pairs(&self) -> std::collections::btree_set::IntoIter<IntArray> {
+        self.get_pairs().into_iter()
+    }
+}
+
+impl BinaryRelationFactory<IntArray> for Partition {
+    fn identity(size: usize) -> Result<Box<dyn BinaryRelation<IntArray>>, String> {
+        Ok(Box::new(Self::zero(size)))
+    }
+    
+    fn universal(size: usize) -> Result<Box<dyn BinaryRelation<IntArray>>, String> {
+        Ok(Box::new(Self::one(size)))
+    }
+    
+    fn empty(size: usize) -> Result<Box<dyn BinaryRelation<IntArray>>, String> {
+        Ok(Box::new(Self::zero(size)))
     }
 }
 

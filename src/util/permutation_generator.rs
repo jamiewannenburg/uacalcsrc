@@ -40,6 +40,7 @@ impl PermutationGenerator {
     /// 
     /// # Examples
     /// ```
+    /// use uacalc::util::PermutationGenerator;
     /// let generator = PermutationGenerator::new(3);
     /// ```
     pub fn new(n: usize) -> Self {
@@ -68,6 +69,7 @@ impl PermutationGenerator {
     /// 
     /// # Examples
     /// ```
+    /// use uacalc::util::PermutationGenerator;
     /// let generator = PermutationGenerator::new_safe(3).unwrap();
     /// ```
     pub fn new_safe(n: usize) -> Result<Self, String> {
@@ -89,6 +91,7 @@ impl PermutationGenerator {
     /// 
     /// # Examples
     /// ```
+    /// use uacalc::util::PermutationGenerator;
     /// let mut generator = PermutationGenerator::new(3);
     /// generator.reset();
     /// ```
@@ -107,6 +110,7 @@ impl PermutationGenerator {
     /// 
     /// # Examples
     /// ```
+    /// use uacalc::util::PermutationGenerator;
     /// let generator = PermutationGenerator::new(3);
     /// let perm = generator.get_permutation();
     /// assert_eq!(perm, &[0, 1, 2]);
@@ -122,6 +126,7 @@ impl PermutationGenerator {
     /// 
     /// # Examples
     /// ```
+    /// use uacalc::util::PermutationGenerator;
     /// let generator = PermutationGenerator::new(3);
     /// let perm = generator.get_permutation_vec();
     /// assert_eq!(perm, vec![0, 1, 2]);
@@ -137,6 +142,7 @@ impl PermutationGenerator {
     /// 
     /// # Examples
     /// ```
+    /// use uacalc::util::PermutationGenerator;
     /// let generator = PermutationGenerator::new(5);
     /// assert_eq!(generator.size(), 5);
     /// ```
@@ -155,6 +161,7 @@ impl PermutationGenerator {
     /// 
     /// # Examples
     /// ```
+    /// use uacalc::util::PermutationGenerator;
     /// let mut generator = PermutationGenerator::new(3);
     /// let index = generator.next_index();
     /// // index will be Some(1) for the first swap
@@ -191,6 +198,7 @@ impl PermutationGenerator {
     /// 
     /// # Examples
     /// ```
+    /// use uacalc::util::PermutationGenerator;
     /// let mut generator = PermutationGenerator::new(3);
     /// let index = generator.next_index_safe().unwrap();
     /// // index will be 1 for the first swap
@@ -245,6 +253,7 @@ impl PermutationGenerator {
     /// 
     /// # Examples
     /// ```
+    /// use uacalc::util::PermutationGenerator;
     /// let mut count = 0;
     /// for perm in PermutationGenerator::iterator(3) {
     ///     count += 1;
@@ -270,10 +279,11 @@ impl PermutationGenerator {
     /// 
     /// # Examples
     /// ```
+    /// use uacalc::util::{PermutationGenerator, ArrayIncrementor};
     /// let mut arr = vec![0, 1, 2];
     /// let mut incrementor = PermutationGenerator::array_incrementor(&mut arr);
     /// while incrementor.increment() {
-    ///     println!("{:?}", arr);
+    ///     // println!("{:?}", arr); // Commented out to avoid borrow checker issues in doctest
     /// }
     /// ```
     pub fn array_incrementor(arr: &mut [usize]) -> super::array_incrementor::ArrayIncrementorImpl<'_> {
@@ -295,10 +305,11 @@ impl PermutationGenerator {
     /// 
     /// # Examples
     /// ```
+    /// use uacalc::util::{PermutationGenerator, ArrayIncrementor};
     /// let mut lst = vec![0, 1, 2];
     /// let mut incrementor = PermutationGenerator::list_incrementor(&mut lst);
     /// while incrementor.increment() {
-    ///     println!("{:?}", lst);
+    ///     // println!("{:?}", lst); // Commented out to avoid borrow checker issues in doctest
     /// }
     /// ```
     pub fn list_incrementor<T: Clone + PartialEq>(lst: &mut Vec<T>) -> ListIncrementorImpl<'_, T> {

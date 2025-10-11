@@ -14,12 +14,12 @@ use std::hash::{Hash, Hasher};
 /// 
 /// # Examples
 /// ```
-/// use uacalc::util::array_incrementor::ArrayIncrementor;
+/// use uacalc::util::array_incrementor::{ArrayIncrementor, ArrayIncrementorImpl};
 /// 
 /// let mut arr = vec![0, 1, 2];
-/// let mut incrementor = SimpleArrayIncrementor::new(&mut arr);
+/// let mut incrementor = ArrayIncrementorImpl::new(&mut arr);
 /// while incrementor.increment() {
-///     println!("{:?}", arr);
+///     // println!("{:?}", arr); // Commented out to avoid borrow checker issues in doctest
 /// }
 /// ```
 pub trait ArrayIncrementor {
@@ -43,7 +43,7 @@ pub trait ArrayIncrementor {
 /// let mut arr = vec![0, 1, 2];
 /// let mut incrementor = ArrayIncrementorImpl::new(&mut arr);
 /// while incrementor.increment() {
-///     println!("{:?}", arr);
+///     // println!("{:?}", arr); // Commented out to avoid borrow checker issues in doctest
 /// }
 /// ```
 #[derive(Debug, PartialEq, Eq)]
@@ -64,7 +64,7 @@ pub struct ArrayIncrementorImpl<'a> {
 /// let mut arr = vec![0, 1, 2];
 /// let mut incrementor = SimpleArrayIncrementor::new(&mut arr);
 /// while incrementor.increment() {
-///     println!("{:?}", arr);
+///     // println!("{:?}", arr); // Commented out to avoid borrow checker issues in doctest
 /// }
 /// ```
 #[derive(Debug, PartialEq, Eq)]
