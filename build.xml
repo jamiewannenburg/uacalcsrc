@@ -26,7 +26,6 @@
   <property name="java.wrapper.src" value="java_wrapper/src"/>
   <property name="java.wrapper.build" value="java_wrapper/build"/>
   <property name="java.wrapper.classes" value="${java.wrapper.build}/classes"/>
-  <property name="java.wrapper.scripts" value="${java.wrapper.build}/scripts"/>
 
   <path id="classpath">
     <pathelement location="."/>
@@ -188,124 +187,7 @@
     <echo message="Java wrapper classes compiled to ${java.wrapper.classes}"/>
   </target>
 
-  <target name="create-wrapper-scripts" depends="compile-wrappers" 
-          description="Create executable scripts for Java wrappers">
-    <echo message="Creating wrapper scripts..."/>
-    <mkdir dir="${java.wrapper.scripts}"/>
-    
-    <!-- Create Unix script template -->
-    <echo file="${java.wrapper.scripts}/template.sh" 
-          message="#!/bin/bash&#10;java -cp ${java.wrapper.classes}:${class.dir}:${jar.dir}/* $@&#10;"/>
-    
-    <!-- Make template executable -->
-    <chmod file="${java.wrapper.scripts}/template.sh" perm="755"/>
-    
-    <!-- Create Windows batch template -->
-    <echo file="${java.wrapper.scripts}/template.bat" 
-          message="@echo off&#10;java -cp ${java.wrapper.classes};${class.dir};${jar.dir}\* %*&#10;"/>
-    
-    <!-- Create individual wrapper scripts using static Ant tasks -->
-    <!-- HornerWrapper script -->
-    <echo file="${java.wrapper.scripts}/HornerWrapper" 
-          message="#!/bin/bash&#10;java -cp ${java.wrapper.classes}:${class.dir}:${jar.dir}/* java_wrapper.src.util.HornerWrapper &quot;$@&quot;&#10;"/>
-    <chmod file="${java.wrapper.scripts}/HornerWrapper" perm="755"/>
-    <echo file="${java.wrapper.scripts}/HornerWrapper.bat" 
-          message="@echo off&#10;java -cp ${java.wrapper.classes};${class.dir};${jar.dir}\* java_wrapper.src.util.HornerWrapper %*&#10;"/>
-    
-    <!-- OperationSymbolWrapper script -->
-    <echo file="${java.wrapper.scripts}/OperationSymbolWrapper" 
-          message="#!/bin/bash&#10;java -cp ${java.wrapper.classes}:${class.dir}:${jar.dir}/* java_wrapper.src.alg.op.OperationSymbolWrapper &quot;$@&quot;&#10;"/>
-    <chmod file="${java.wrapper.scripts}/OperationSymbolWrapper" perm="755"/>
-    <echo file="${java.wrapper.scripts}/OperationSymbolWrapper.bat" 
-          message="@echo off&#10;java -cp ${java.wrapper.classes};${class.dir};${jar.dir}\* java_wrapper.src.alg.op.OperationSymbolWrapper %*&#10;"/>
-    
-    <!-- SimilarityTypeWrapper script -->
-    <echo file="${java.wrapper.scripts}/SimilarityTypeWrapper" 
-          message="#!/bin/bash&#10;java -cp ${java.wrapper.classes}:${class.dir}:${jar.dir}/* java_wrapper.src.alg.op.SimilarityTypeWrapper &quot;$@&quot;&#10;"/>
-    <chmod file="${java.wrapper.scripts}/SimilarityTypeWrapper" perm="755"/>
-    <echo file="${java.wrapper.scripts}/SimilarityTypeWrapper.bat" 
-          message="@echo off&#10;java -cp ${java.wrapper.classes};${class.dir};${jar.dir}\* java_wrapper.src.alg.op.SimilarityTypeWrapper %*&#10;"/>
-    
-    <!-- SimpleListWrapper script -->
-    <echo file="${java.wrapper.scripts}/SimpleListWrapper" 
-          message="#!/bin/bash&#10;java -cp ${java.wrapper.classes}:${class.dir}:${jar.dir}/* java_wrapper.src.util.SimpleListWrapper &quot;$@&quot;&#10;"/>
-    <chmod file="${java.wrapper.scripts}/SimpleListWrapper" perm="755"/>
-    <echo file="${java.wrapper.scripts}/SimpleListWrapper.bat" 
-          message="@echo off&#10;java -cp ${java.wrapper.classes};${class.dir};${jar.dir}\* java_wrapper.src.util.SimpleListWrapper %*&#10;"/>
-    
-    <!-- ArrayStringWrapper script -->
-    <echo file="${java.wrapper.scripts}/ArrayStringWrapper" 
-          message="#!/bin/bash&#10;java -cp ${java.wrapper.classes}:${class.dir}:${jar.dir}/* java_wrapper.src.util.ArrayStringWrapper &quot;$@&quot;&#10;"/>
-    <chmod file="${java.wrapper.scripts}/ArrayStringWrapper" perm="755"/>
-    <echo file="${java.wrapper.scripts}/ArrayStringWrapper.bat" 
-          message="@echo off&#10;java -cp ${java.wrapper.classes};${class.dir};${jar.dir}\* java_wrapper.src.util.ArrayStringWrapper %*&#10;"/>
-    
-    <!-- PermutationGeneratorWrapper script -->
-    <echo file="${java.wrapper.scripts}/PermutationGeneratorWrapper" 
-          message="#!/bin/bash&#10;java -cp ${java.wrapper.classes}:${class.dir}:${jar.dir}/* java_wrapper.src.util.PermutationGeneratorWrapper &quot;$@&quot;&#10;"/>
-    <chmod file="${java.wrapper.scripts}/PermutationGeneratorWrapper" perm="755"/>
-    <echo file="${java.wrapper.scripts}/PermutationGeneratorWrapper.bat" 
-          message="@echo off&#10;java -cp ${java.wrapper.classes};${class.dir};${jar.dir}\* java_wrapper.src.util.PermutationGeneratorWrapper %*&#10;"/>
-    
-    <!-- ArrayIncrementorWrapper script -->
-    <echo file="${java.wrapper.scripts}/ArrayIncrementorWrapper" 
-          message="#!/bin/bash&#10;java -cp ${java.wrapper.classes}:${class.dir}:${jar.dir}/* java_wrapper.src.util.ArrayIncrementorWrapper &quot;$@&quot;&#10;"/>
-    <chmod file="${java.wrapper.scripts}/ArrayIncrementorWrapper" perm="755"/>
-    <echo file="${java.wrapper.scripts}/ArrayIncrementorWrapper.bat" 
-          message="@echo off&#10;java -cp ${java.wrapper.classes};${class.dir};${jar.dir}\* java_wrapper.src.util.ArrayIncrementorWrapper %*&#10;"/>
-    
-    <!-- IntArrayWrapper script -->
-    <echo file="${java.wrapper.scripts}/IntArrayWrapper" 
-          message="#!/bin/bash&#10;java -cp ${java.wrapper.classes}:${class.dir}:${jar.dir}/* java_wrapper.src.util.IntArrayWrapper &quot;$@&quot;&#10;"/>
-    <chmod file="${java.wrapper.scripts}/IntArrayWrapper" perm="755"/>
-    <echo file="${java.wrapper.scripts}/IntArrayWrapper.bat" 
-          message="@echo off&#10;java -cp ${java.wrapper.classes};${class.dir};${jar.dir}\* java_wrapper.src.util.IntArrayWrapper %*&#10;"/>
-    
-    <!-- PartitionWrapper script -->
-    <echo file="${java.wrapper.scripts}/PartitionWrapper" 
-          message="#!/bin/bash&#10;java -cp ${java.wrapper.classes}:${class.dir}:${jar.dir}/* java_wrapper.src.alg.conlat.PartitionWrapper &quot;$@&quot;&#10;"/>
-    <chmod file="${java.wrapper.scripts}/PartitionWrapper" perm="755"/>
-    <echo file="${java.wrapper.scripts}/PartitionWrapper.bat" 
-          message="@echo off&#10;java -cp ${java.wrapper.classes};${class.dir};${jar.dir}\* java_wrapper.src.alg.conlat.PartitionWrapper %*&#10;"/>
-    
-    <!-- BadAlgebraFileExceptionWrapper script -->
-    <echo file="${java.wrapper.scripts}/BadAlgebraFileExceptionWrapper" 
-          message="#!/bin/bash&#10;java -cp ${java.wrapper.classes}:${class.dir}:${jar.dir}/* java_wrapper.src.io.BadAlgebraFileExceptionWrapper &quot;$@&quot;&#10;"/>
-    <chmod file="${java.wrapper.scripts}/BadAlgebraFileExceptionWrapper" perm="755"/>
-    <echo file="${java.wrapper.scripts}/BadAlgebraFileExceptionWrapper.bat" 
-          message="@echo off&#10;java -cp ${java.wrapper.classes};${class.dir};${jar.dir}\* java_wrapper.src.io.BadAlgebraFileExceptionWrapper %*&#10;"/>
-    
-    <!-- ExtFileFilterWrapper script -->
-    <echo file="${java.wrapper.scripts}/ExtFileFilterWrapper" 
-          message="#!/bin/bash&#10;java -cp ${java.wrapper.classes}:${class.dir}:${jar.dir}/* java_wrapper.src.io.ExtFileFilterWrapper &quot;$@&quot;&#10;"/>
-    <chmod file="${java.wrapper.scripts}/ExtFileFilterWrapper" perm="755"/>
-    <echo file="${java.wrapper.scripts}/ExtFileFilterWrapper.bat" 
-          message="@echo off&#10;java -cp ${java.wrapper.classes};${class.dir};${jar.dir}\* java_wrapper.src.io.ExtFileFilterWrapper %*&#10;"/>
-    
-    <!-- BasicBinaryRelationWrapper script -->
-    <echo file="${java.wrapper.scripts}/BasicBinaryRelationWrapper" 
-          message="#!/bin/bash&#10;java -cp ${java.wrapper.classes}:${class.dir}:${jar.dir}/* java_wrapper.src.alg.conlat.BasicBinaryRelationWrapper &quot;$@&quot;&#10;"/>
-    <chmod file="${java.wrapper.scripts}/BasicBinaryRelationWrapper" perm="755"/>
-    <echo file="${java.wrapper.scripts}/BasicBinaryRelationWrapper.bat" 
-          message="@echo off&#10;java -cp ${java.wrapper.classes};${class.dir};${jar.dir}\* java_wrapper.src.alg.conlat.BasicBinaryRelationWrapper %*&#10;"/>
-    
-    <echo message="Wrapper scripts created in ${java.wrapper.scripts}"/>
-    <echo message="Unix scripts: *.sh files"/>
-    <echo message="Windows scripts: *.bat files"/>
-    <echo message="To add a new wrapper script, add a create-wrapper task for your class"/>
-  </target>
 
-  <target name="test-wrappers" depends="create-wrapper-scripts" 
-          description="Test Java wrapper scripts">
-    <echo message="Testing Java wrapper scripts..."/>
-    
-    <!-- Test that scripts can be executed -->
-    <available file="${java.wrapper.scripts}" property="scripts.exist"/>
-    <fail unless="scripts.exist" message="Wrapper scripts not found. Run 'ant create-wrapper-scripts' first."/>
-    
-    <echo message="Java wrapper scripts are ready for testing"/>
-    <echo message="Example usage: ${java.wrapper.scripts}/&lt;script-name&gt; &lt;args&gt;"/>
-  </target>
 
   <target name="clean-wrappers" description="Clean Java wrapper build files">
     <delete dir="${java.wrapper.build}"/>

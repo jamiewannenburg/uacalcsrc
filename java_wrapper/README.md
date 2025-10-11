@@ -34,8 +34,7 @@ java_wrapper/
 │   └── util/              # Utility functions
 │       └── virtuallist/   # Virtual list implementations
 ├── build/                  # Build output directory
-│   ├── classes/           # Compiled .class files
-│   └── scripts/           # Executable wrapper scripts
+│   └── classes/           # Compiled .class files
 └── README.md              # This documentation
 ```
 
@@ -49,11 +48,8 @@ The Java wrappers are integrated with the main Ant build system:
 # Compile Java wrapper classes
 ant compile-wrappers
 
-# Create executable wrapper scripts
-ant create-wrapper-scripts
-
-# Test wrapper scripts
-ant test-wrappers
+# Test wrapper functionality
+java -cp java_wrapper/build/classes:build/classes:jars/* java_wrapper.src.util.HornerWrapper help
 
 # Clean wrapper build files
 ant clean-wrappers
@@ -62,8 +58,6 @@ ant clean-wrappers
 ### Build Targets
 
 - **`compile-wrappers`**: Compiles all Java wrapper classes to `java_wrapper/build/classes/`
-- **`create-wrapper-scripts`**: Creates executable shell scripts in `java_wrapper/build/scripts/`
-- **`test-wrappers`**: Tests that wrapper scripts are properly created
 - **`clean-wrappers`**: Removes all build artifacts
 
 ### Integration with Main Build
@@ -99,12 +93,12 @@ java -cp java_wrapper/build/classes:build/classes:jars/* org.uacalc.alg.SmallAlg
 java -cp java_wrapper/build/classes:build/classes:jars/* org.uacalc.alg.SmallAlgebra subalgebras algebra_001
 ```
 
-### Script Usage (After Running `ant create-wrapper-scripts`)
+### Direct Java Invocation
 
 ```bash
-# Using executable wrapper scripts
-./java_wrapper/build/scripts/small-algebra create 4 "meet,join"
-./java_wrapper/build/scripts/small-algebra subalgebras algebra_001
+# Using direct Java command invocation
+java -cp java_wrapper/build/classes:build/classes:jars/* java_wrapper.src.alg.SmallAlgebraWrapper create 4 "meet,join"
+java -cp java_wrapper/build/classes:build/classes:jars/* java_wrapper.src.alg.SmallAlgebraWrapper subalgebras algebra_001
 ```
 
 ### Compatibility Testing
@@ -112,7 +106,7 @@ java -cp java_wrapper/build/classes:build/classes:jars/* org.uacalc.alg.SmallAlg
 ```bash
 # Compare with Rust implementation
 ./target/release/uacalc alg create 4 "meet,join" > rust_output.txt
-./java_wrapper/build/scripts/small-algebra create 4 "meet,join" > java_output.txt
+java -cp java_wrapper/build/classes:build/classes:jars/* java_wrapper.src.alg.SmallAlgebraWrapper create 4 "meet,join" > java_output.txt
 diff rust_output.txt java_output.txt
 
 # Compare with Python implementation
@@ -147,16 +141,7 @@ To add a new wrapper class:
 1. Create `java_wrapper/src/alg/SmallAlgebra.java`
 2. Implement command-line interface
 3. Run `ant compile-wrappers` to compile
-4. Run `ant create-wrapper-scripts` to create executable script
-
-### Build Script Integration
-
-To automatically generate wrapper scripts, add this to `build.xml` in the `create-wrapper-scripts` target:
-
-```xml
-<create-wrapper classname="alg.SmallAlgebra" scriptname="small-algebra"/>
-<create-wrapper classname="lat.BasicLattice" scriptname="basic-lattice"/>
-```
+4. Test with direct Java invocation: `java -cp java_wrapper/build/classes:build/classes:jars/* java_wrapper.src.alg.SmallAlgebraWrapper help`
 
 ## Future Development
 

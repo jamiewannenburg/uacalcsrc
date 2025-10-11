@@ -26,15 +26,12 @@ class TestPermutationGenerator:
     
     def run_java_wrapper(self, command, args):
         """Run Java wrapper and return JSON output."""
-        script_extension = self.get_script_extension()
-        java_wrapper_path = self.java_wrapper_path / f"PermutationGeneratorWrapper{script_extension}"
+        from test_utils import build_java_command
         
-        if not java_wrapper_path.exists():
-            pytest.skip(f"Java wrapper not found at {java_wrapper_path}")
+        wrapper_class = "java_wrapper.src.util.PermutationGeneratorWrapper"
+        cmd = build_java_command(wrapper_class, [command] + args)
         
         import subprocess
-        cmd = [str(java_wrapper_path), command] + args
-        
         try:
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
             if result.returncode != 0:

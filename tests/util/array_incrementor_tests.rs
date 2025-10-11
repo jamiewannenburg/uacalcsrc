@@ -9,7 +9,7 @@ fn test_new() {
     
     compare_with_java!(
         config,
-        "ArrayIncrementorWrapper",
+        "java_wrapper.src.util.ArrayIncrementorWrapper",
         ["test"],
         || {
             let mut arr = vec![0, 1, 2];
@@ -28,7 +28,7 @@ fn test_new_with_max_values() {
     
     compare_with_java!(
         config,
-        "ArrayIncrementorWrapper",
+        "java_wrapper.src.util.ArrayIncrementorWrapper",
         ["test"],
         || {
             let mut arr = vec![0, 0, 0];
@@ -48,7 +48,7 @@ fn test_increment_basic() {
     
     compare_with_java!(
         config,
-        "ArrayIncrementorWrapper",
+        "java_wrapper.src.util.ArrayIncrementorWrapper",
         ["array_incrementor", "--array", "0,1,2"],
         || {
             let mut arr = vec![0, 1, 2];
@@ -77,7 +77,7 @@ fn test_increment_with_custom_max() {
     
     compare_with_java!(
         config,
-        "ArrayIncrementorWrapper",
+        "java_wrapper.src.util.ArrayIncrementorWrapper",
         ["test"],
         || {
             let mut arr = vec![0, 0, 0];
@@ -105,7 +105,7 @@ fn test_increment_exhaustion() {
     
     compare_with_java!(
         config,
-        "ArrayIncrementorWrapper",
+        "java_wrapper.src.util.ArrayIncrementorWrapper",
         ["array_incrementor", "--array", "2,2,2"],
         || {
             let mut arr = vec![2, 2, 2];
@@ -136,7 +136,7 @@ fn test_list_incrementor_comparison() {
     
     compare_with_java!(
         config,
-        "ArrayIncrementorWrapper",
+        "java_wrapper.src.util.ArrayIncrementorWrapper",
         ["list_incrementor", "--list", "a,b,c"],
         || {
             // Since we don't have a direct list incrementor in our SimpleArrayIncrementor,

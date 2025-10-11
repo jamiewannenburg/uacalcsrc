@@ -10,7 +10,7 @@ fn test_new() {
     
     compare_with_java!(
         config,
-        "PermutationGeneratorWrapper",
+        "java_wrapper.src.util.PermutationGeneratorWrapper",
         ["new", "--n", "3"],
         || {
             let _generator = PermutationGenerator::new(3);
@@ -28,7 +28,7 @@ fn test_new_safe() {
     
     compare_with_java!(
         config,
-        "PermutationGeneratorWrapper",
+        "java_wrapper.src.util.PermutationGeneratorWrapper",
         ["new", "--n", "3"],
         || {
             let _generator = PermutationGenerator::new_safe(3).unwrap();
@@ -58,7 +58,7 @@ fn test_iterator() {
     
     compare_with_java!(
         config,
-        "PermutationGeneratorWrapper",
+        "java_wrapper.src.util.PermutationGeneratorWrapper",
         ["iterator", "--n", "3"],
         || {
             let mut count = 0;
@@ -80,7 +80,7 @@ fn test_array_incrementor() {
     
     compare_with_java!(
         config,
-        "PermutationGeneratorWrapper",
+        "java_wrapper.src.util.PermutationGeneratorWrapper",
         ["array_incrementor", "--array", "[0,1,2]"],
         || {
             let mut arr = vec![0, 1, 2];
@@ -106,7 +106,7 @@ fn test_list_incrementor() {
     
     compare_with_java!(
         config,
-        "PermutationGeneratorWrapper",
+        "java_wrapper.src.util.PermutationGeneratorWrapper",
         ["list_incrementor", "--list", "[\"a\",\"b\",\"c\"]"],
         || {
             let mut lst = vec!["a".to_string(), "b".to_string(), "c".to_string()];
@@ -132,7 +132,7 @@ fn test_basic_functionality() {
     
     compare_with_java!(
         config,
-        "PermutationGeneratorWrapper",
+        "java_wrapper.src.util.PermutationGeneratorWrapper",
         ["test"],
         || {
             let mut test_results = Vec::new();

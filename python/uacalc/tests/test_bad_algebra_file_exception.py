@@ -25,7 +25,7 @@ class TestBadAlgebraFileException:
         BadAlgebraFileException = uacalc_lib.io.BadAlgebraFileException
         
         exception = BadAlgebraFileException("Test message")
-        java_result = self.harness.run_java_cli("BadAlgebraFileExceptionWrapper", 
+        java_result = self.harness.run_java_cli("java_wrapper.src.io.BadAlgebraFileExceptionWrapper", 
                                                ["create", "--message", "Test message"])
         
         assert exception.message() == "Test message"
@@ -41,7 +41,7 @@ class TestBadAlgebraFileException:
         BadAlgebraFileException = uacalc_lib.io.BadAlgebraFileException
         
         exception = BadAlgebraFileException("")
-        java_result = self.harness.run_java_cli("BadAlgebraFileExceptionWrapper", 
+        java_result = self.harness.run_java_cli("java_wrapper.src.io.BadAlgebraFileExceptionWrapper", 
                                                ["create", "--message", ""])
         
         assert exception.message() == ""
@@ -57,7 +57,7 @@ class TestBadAlgebraFileException:
         
         special_message = "Error: File 'test\\file.txt' not found!\nLine 42: Invalid format"
         exception = BadAlgebraFileException(special_message)
-        java_result = self.harness.run_java_cli("BadAlgebraFileExceptionWrapper", 
+        java_result = self.harness.run_java_cli("java_wrapper.src.io.BadAlgebraFileExceptionWrapper", 
                                                ["create", "--message", special_message])
         
         assert exception.message() == special_message
@@ -74,7 +74,7 @@ class TestBadAlgebraFileException:
         BadAlgebraFileException = uacalc_lib.io.BadAlgebraFileException
         
         exception = BadAlgebraFileException("String test")
-        java_result = self.harness.run_java_cli("BadAlgebraFileExceptionWrapper", 
+        java_result = self.harness.run_java_cli("java_wrapper.src.io.BadAlgebraFileExceptionWrapper", 
                                                ["create", "--message", "String test"])
         
         # Test __str__
@@ -124,7 +124,7 @@ class TestBadAlgebraFileException:
         """Test comprehensive functionality against Java implementation."""
         BadAlgebraFileException = uacalc_lib.io.BadAlgebraFileException
         
-        java_result = self.harness.run_java_cli("BadAlgebraFileExceptionWrapper", ["test"])
+        java_result = self.harness.run_java_cli("java_wrapper.src.io.BadAlgebraFileExceptionWrapper", ["test"])
         assert java_result.is_success()
         
         java_data = java_result.parse_json()["data"]

@@ -27,8 +27,6 @@ mod test_infrastructure {
         pub default_timeout: Duration,
         /// Memory limit in MB
         pub memory_limit_mb: usize,
-        /// Path to Java CLI wrapper scripts
-        pub java_wrapper_path: String,
         /// Whether to enable verbose output
         pub verbose: bool,
     }
@@ -38,7 +36,6 @@ mod test_infrastructure {
             Self {
                 default_timeout: Duration::from_secs(30),
                 memory_limit_mb: 1024, // 1GB default
-                java_wrapper_path: "java_wrapper/build/scripts".to_string(),
                 verbose: false,
             }
         }
@@ -84,76 +81,77 @@ mod test_infrastructure {
         rt.block_on(with_timeout(timeout, async { f() }))
     }
 
-    /// Get the appropriate script extension for the current platform.
-    fn get_script_extension() -> &'static str {
-        if cfg!(target_os = "windows") {
-            ".bat"
-        } else {
-            ""
-        }
-    }
 
-    /// Get the full script path with appropriate extension for the current platform.
-    fn get_script_path(base_path: &str, script_name: &str) -> std::path::PathBuf {
-        let extension = get_script_extension();
-        Path::new(base_path).join(format!("{}{}", script_name, extension))
+    /// Build a platform-independent Java command for wrapper classes.
+    fn build_java_command(wrapper_class: &str, args: &[&str]) -> Vec<String> {
+        let separator = if cfg!(target_os = "windows") { ";" } else { ":" };
+        let classpath = format!(
+            "java_wrapper/build/classes{}build/classes{}jars/*",
+            separator, separator
+        );
+        
+        let mut cmd = vec![
+            "java".to_string(),
+            "-cp".to_string(),
+            classpath,
+            wrapper_class.to_string(),
+        ];
+        cmd.extend(args.iter().map(|s| s.to_string()));
+        cmd
     }
 
     /// Run a Java CLI wrapper and capture its output.
     pub fn run_java_cli(
-        script_name: &str,
+        wrapper_class: &str,
         args: &[&str],
         config: &TestConfig,
     ) -> TestResult<JavaCliOutput> {
-        let script_path = get_script_path(&config.java_wrapper_path, script_name);
-        
-        if !script_path.exists() {
-            return Err(TestError::JavaCliError(format!(
-                "Java CLI script not found: {}",
-                script_path.display()
-            )));
-        }
+        let java_cmd = build_java_command(wrapper_class, args);
         
         let start = Instant::now();
-        let output = Command::new(&script_path)
-            .args(args)
+        let output = Command::new(&java_cmd[0])
+            .args(&java_cmd[1..])
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
             .output()?;
         
-        let duration = start.elapsed();
-        
-        Ok(JavaCliOutput {
-            stdout: String::from_utf8_lossy(&output.stdout).to_string(),
-            stderr: String::from_utf8_lossy(&output.stderr).to_string(),
-            exit_code: output.status.code().unwrap_or(-1),
-            duration,
-        })
+    let duration = start.elapsed();
+    let exit_code = output.status.code().unwrap_or(-1);
+    
+    let java_output = JavaCliOutput {
+        stdout: String::from_utf8_lossy(&output.stdout).to_string(),
+        stderr: String::from_utf8_lossy(&output.stderr).to_string(),
+        exit_code,
+        duration,
+    };
+    
+    // Check if the Java command failed
+    if exit_code != 0 {
+        return Err(TestError::JavaCliError(format!(
+            "Java CLI failed with exit code {}: {}",
+            exit_code, java_output.stderr
+        )));
+    }
+    
+    Ok(java_output)
     }
 
     /// Run a Java CLI wrapper with timeout and capture its output.
     pub fn run_java_cli_with_timeout(
-        script_name: &str,
+        wrapper_class: &str,
         args: &[&str],
         config: &TestConfig,
         timeout: Duration,
     ) -> TestResult<JavaCliOutput> {
-        let script_path = get_script_path(&config.java_wrapper_path, script_name);
-        
-        if !script_path.exists() {
-            return Err(TestError::JavaCliError(format!(
-                "Java CLI script not found: {}",
-                script_path.display()
-            )));
-        }
+        let java_cmd = build_java_command(wrapper_class, args);
         
         let start = Instant::now();
         
         // Use timeout for the command
         let output = std::thread::scope(|s| {
             let handle = s.spawn(|| {
-                Command::new(&script_path)
-                    .args(args)
+                Command::new(&java_cmd[0])
+                    .args(&java_cmd[1..])
                     .stdout(Stdio::piped())
                     .stderr(Stdio::piped())
                     .output()
@@ -179,14 +177,25 @@ mod test_infrastructure {
             }
         })?;
         
-        let duration = start.elapsed();
-        
-        Ok(JavaCliOutput {
-            stdout: String::from_utf8_lossy(&output.stdout).to_string(),
-            stderr: String::from_utf8_lossy(&output.stderr).to_string(),
-            exit_code: output.status.code().unwrap_or(-1),
-            duration,
-        })
+    let duration = start.elapsed();
+    let exit_code = output.status.code().unwrap_or(-1);
+    
+    let java_output = JavaCliOutput {
+        stdout: String::from_utf8_lossy(&output.stdout).to_string(),
+        stderr: String::from_utf8_lossy(&output.stderr).to_string(),
+        exit_code,
+        duration,
+    };
+    
+    // Check if the Java command failed
+    if exit_code != 0 {
+        return Err(TestError::JavaCliError(format!(
+            "Java CLI failed with exit code {}: {}",
+            exit_code, java_output.stderr
+        )));
+    }
+    
+    Ok(java_output)
     }
 
     /// Output from a Java CLI execution.
@@ -486,7 +495,7 @@ mod test_infrastructure {
         pub fn compare_with_java<F, T>(
             &self,
             test_name: &str,
-            java_script: &str,
+            wrapper_class: &str,
             java_args: &[&str],
             rust_function: F,
             timeout: Option<Duration>,
@@ -499,7 +508,7 @@ mod test_infrastructure {
             let memory_monitor = MemoryMonitor::new(self.config.memory_limit_mb);
             
             // Clone the necessary data to move into the closure
-            let java_script = java_script.to_string();
+            let wrapper_class = wrapper_class.to_string();
             let java_args: Vec<String> = java_args.iter().map(|s| s.to_string()).collect();
             let config = self.config.clone();
             let test_name = test_name.to_string();
@@ -514,7 +523,7 @@ mod test_infrastructure {
                 
                 // Run Java CLI first
                 let java_output = run_java_cli_with_timeout(
-                    &java_script,
+                    &wrapper_class,
                     &java_args_refs,
                     &config,
                     timeout,
@@ -746,10 +755,10 @@ pub use test_infrastructure::*;
 #[cfg(feature = "test-infrastructure")]
 #[macro_export]
 macro_rules! compare_with_java {
-    ($config:expr, $script:expr, $args:expr, $rust_fn:expr) => {
+    ($config:expr, $wrapper_class:expr, $args:expr, $rust_fn:expr) => {
         {
             let java_output = run_java_cli_with_timeout(
-                $script,
+                $wrapper_class,
                 &$args,
                 &$config,
                 $config.default_timeout
@@ -763,10 +772,10 @@ macro_rules! compare_with_java {
                 .expect("Rust and Java outputs do not match");
         }
     };
-    ($config:expr, $script:expr, $args:expr, $rust_fn:expr, $tolerance:expr) => {
+    ($config:expr, $wrapper_class:expr, $args:expr, $rust_fn:expr, $tolerance:expr) => {
         {
             let java_output = run_java_cli_with_timeout(
-                $script,
+                $wrapper_class,
                 &$args,
                 &$config,
                 $config.default_timeout

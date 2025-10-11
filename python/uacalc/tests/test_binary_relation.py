@@ -391,15 +391,10 @@ class TestBasicBinaryRelation:
 
 def run_java_wrapper(command: str, args: List[str]) -> Dict[str, Any]:
     """Run Java wrapper and return JSON output."""
-    # Use Windows-compatible script path
-    script_extension = ".bat" if platform.system() == "Windows" else ""
-    project_root = Path(__file__).parent.parent.parent.parent
-    java_wrapper_path = project_root / "java_wrapper" / "build" / "scripts" / f"BasicBinaryRelationWrapper{script_extension}"
+    from test_utils import build_java_command
     
-    if not java_wrapper_path.exists():
-        pytest.skip(f"Java wrapper not found at {java_wrapper_path}")
-    
-    cmd = [str(java_wrapper_path), command] + args
+    wrapper_class = "java_wrapper.src.alg.conlat.BasicBinaryRelationWrapper"
+    cmd = build_java_command(wrapper_class, [command] + args)
     
     try:
         result = subprocess.run(

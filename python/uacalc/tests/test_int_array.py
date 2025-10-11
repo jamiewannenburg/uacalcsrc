@@ -21,16 +21,10 @@ IntArray = uacalc_lib.util.IntArray
 
 def run_java_wrapper(command, args):
     """Run Java wrapper and return JSON output."""
-    import platform
+    from test_utils import build_java_command
     
-    # Use Windows-compatible script path
-    script_extension = ".bat" if platform.system() == "Windows" else ""
-    java_wrapper_path = project_root / "java_wrapper" / "build" / "scripts" / f"IntArrayWrapper{script_extension}"
-    
-    if not java_wrapper_path.exists():
-        pytest.skip(f"Java wrapper not found at {java_wrapper_path}")
-    
-    cmd = [str(java_wrapper_path), command] + args
+    wrapper_class = "java_wrapper.src.util.IntArrayWrapper"
+    cmd = build_java_command(wrapper_class, [command] + args)
     
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)

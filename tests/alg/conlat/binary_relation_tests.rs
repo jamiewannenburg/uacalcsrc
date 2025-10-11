@@ -16,7 +16,7 @@ fn test_basic_binary_relation_new() {
     
     compare_with_java!(
         config,
-        "BasicBinaryRelationWrapper",
+        "java_wrapper.src.alg.conlat.BasicBinaryRelationWrapper",
         ["create", "--size", "5"],
         || {
             let relation = BasicBinaryRelation::new(5).unwrap();
@@ -125,7 +125,7 @@ fn test_basic_binary_relation_identity() {
     
     compare_with_java!(
         config,
-        "BasicBinaryRelationWrapper",
+        "java_wrapper.src.alg.conlat.BasicBinaryRelationWrapper",
         ["identity", "--size", "3"],
         || {
             let identity = BasicBinaryRelation::identity(3).unwrap();
@@ -171,7 +171,7 @@ fn test_basic_binary_relation_test() {
     
     compare_with_java!(
         config,
-        "BasicBinaryRelationWrapper",
+        "java_wrapper.src.alg.conlat.BasicBinaryRelationWrapper",
         ["test"],
         || {
             let mut relation = BasicBinaryRelation::new(3).unwrap();

@@ -5,7 +5,7 @@ This repository contains a **Rust/Python implementation** of the Universal Algeb
 ## Quick Start
 
 ### Prerequisites
-- **Java 8+**: Required for building Java components and wrapper scripts
+- **Java 8+**: Required for building Java components
 - **Rust**: For building the core Rust application
 - **Python 3.8+**: For Python bindings
 - **Ant**: For building Java components (`sudo apt install ant` on Ubuntu/Debian)
@@ -58,7 +58,7 @@ pip install uacalc_lib/target/wheels/uacalc-*.whl
 ├── benches/                      # Rust performance benchmarks
 ├── java_wrapper/                # Command-line wrappers for Java classes
 │   ├── src/                    # Java wrapper source files
-│   ├── build/                  # Compiled wrapper classes and scripts
+│   ├── build/                  # Compiled wrapper classes
 │   └── README.md               # Documentation for wrapper system
 └── org/uacalc/                  # Original Java implementation (reference)
 ```
@@ -106,10 +106,9 @@ The `java_wrapper/` directory contains command-line wrapper classes that expose 
 ```bash
 # Build Java wrappers
 ant compile-wrappers
-ant create-wrapper-scripts
 
 # Test algebra creation across implementations
-./java_wrapper/build/scripts/small-algebra create 4 "meet,join" > java_output.txt
+java -cp java_wrapper/build/classes:build/classes:jars/* java_wrapper.src.alg.SmallAlgebraWrapper create 4 "meet,join" > java_output.txt
 ./target/release/uacalc alg create 4 "meet,join" > rust_output.txt
 python -c "import uacalc_lib; ..." > python_output.txt
 
@@ -118,15 +117,13 @@ diff java_output.txt rust_output.txt
 diff java_output.txt python_output.txt
 ```
 
-### Troubleshooting Java Wrapper Build
+### Direct Java Invocation
 
-**Issue**: `ant create-wrapper-scripts` fails with "Unable to create javax script engine for javascript" error.
+The system uses direct Java command invocation for platform independence:
+- **Unix/Linux**: Uses `:` as classpath separator
+- **Windows**: Uses `;` as classpath separator
 
-**Cause**: Java 15+ removed the Nashorn JavaScript engine that was used in the original build.xml for dynamic script generation.
-
-**Solution**: The build.xml has been updated to use static Ant tasks instead of JavaScript, eliminating the dependency on a JavaScript engine. This fix is already included in the current version.
-
-**For older Java versions (8-14)**: The original JavaScript-based approach would work, but the static approach is more reliable and doesn't require additional dependencies.
+This approach eliminates the need for platform-specific wrapper scripts and provides a more reliable cross-platform solution.
 
 See `java_wrapper/README.md` for detailed documentation on the wrapper system.
 

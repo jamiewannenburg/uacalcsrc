@@ -10,7 +10,7 @@ fn test_new() {
     
     compare_with_java!(
         config,
-        "ExtFileFilterWrapper",
+        "java_wrapper.src.io.ExtFileFilterWrapper",
         ["new", "--description", "UA Files", "--exts", "ua,xml"],
         || {
             let _filter = ExtFileFilter::new("UA Files", vec!["ua".to_string(), "xml".to_string()]);
@@ -30,7 +30,7 @@ fn test_new_single() {
     
     compare_with_java!(
         config,
-        "ExtFileFilterWrapper",
+        "java_wrapper.src.io.ExtFileFilterWrapper",
         ["new_single", "--description", "UA Files", "--ext", "ua"],
         || {
             let _filter = ExtFileFilter::new_single("UA Files", "ua");
@@ -50,7 +50,7 @@ fn test_accept() {
     
     compare_with_java!(
         config,
-        "ExtFileFilterWrapper",
+        "java_wrapper.src.io.ExtFileFilterWrapper",
         ["accept", "--description", "UA Files", "--exts", "ua,xml", "--path", "example.ua"],
         || {
             let filter = ExtFileFilter::new("UA Files", vec!["ua".to_string(), "xml".to_string()]);
@@ -73,7 +73,7 @@ fn test_accept_rejected() {
     
     compare_with_java!(
         config,
-        "ExtFileFilterWrapper",
+        "java_wrapper.src.io.ExtFileFilterWrapper",
         ["accept", "--description", "UA Files", "--exts", "ua,xml", "--path", "example.txt"],
         || {
             let filter = ExtFileFilter::new("UA Files", vec!["ua".to_string(), "xml".to_string()]);
@@ -96,7 +96,7 @@ fn test_accept_directory() {
     
     compare_with_java!(
         config,
-        "ExtFileFilterWrapper",
+        "java_wrapper.src.io.ExtFileFilterWrapper",
         ["accept", "--description", "UA Files", "--exts", "ua,xml", "--path", "/tmp"],
         || {
             let filter = ExtFileFilter::new("UA Files", vec!["ua".to_string(), "xml".to_string()]);
@@ -119,7 +119,7 @@ fn test_get_description() {
     
     compare_with_java!(
         config,
-        "ExtFileFilterWrapper",
+        "java_wrapper.src.io.ExtFileFilterWrapper",
         ["get_description", "--description", "UA Files", "--exts", "ua,xml"],
         || {
             let filter = ExtFileFilter::new("UA Files", vec!["ua".to_string(), "xml".to_string()]);
@@ -140,7 +140,7 @@ fn test_get_extensions() {
     
     compare_with_java!(
         config,
-        "ExtFileFilterWrapper",
+        "java_wrapper.src.io.ExtFileFilterWrapper",
         ["get_extensions", "--description", "UA Files", "--exts", "ua,xml"],
         || {
             let filter = ExtFileFilter::new("UA Files", vec!["ua".to_string(), "xml".to_string()]);
@@ -161,7 +161,7 @@ fn test_split_off_extension() {
     
     compare_with_java!(
         config,
-        "ExtFileFilterWrapper",
+        "java_wrapper.src.io.ExtFileFilterWrapper",
         ["split_off_extension", "--path", "example.ua"],
         || {
             let path = Path::new("example.ua");
@@ -184,7 +184,7 @@ fn test_split_off_extension_no_ext() {
     
     compare_with_java!(
         config,
-        "ExtFileFilterWrapper",
+        "java_wrapper.src.io.ExtFileFilterWrapper",
         ["split_off_extension", "--path", "noextension"],
         || {
             let path = Path::new("noextension");
@@ -207,7 +207,7 @@ fn test_get_extension() {
     
     compare_with_java!(
         config,
-        "ExtFileFilterWrapper",
+        "java_wrapper.src.io.ExtFileFilterWrapper",
         ["get_extension", "--path", "example.ua"],
         || {
             let path = Path::new("example.ua");
@@ -227,7 +227,7 @@ fn test_get_extension_no_ext() {
     
     compare_with_java!(
         config,
-        "ExtFileFilterWrapper",
+        "java_wrapper.src.io.ExtFileFilterWrapper",
         ["get_extension", "--path", "noextension"],
         || {
             let path = Path::new("noextension");

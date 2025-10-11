@@ -24,6 +24,14 @@ from contextlib import contextmanager
 import pytest
 
 
+def build_java_command(wrapper_class: str, args: List[str]) -> List[str]:
+    """Build platform-independent Java command."""
+    separator = ";" if platform.system() == "Windows" else ":"
+    classpath = f"java_wrapper/build/classes{separator}build/classes{separator}jars/*"
+    
+    return ["java", "-cp", classpath, wrapper_class] + args
+
+
 @dataclass
 class TestConfig:
     """Configuration for test timeouts and memory limits."""
@@ -31,7 +39,6 @@ class TestConfig:
     
     default_timeout: float = 60.0  # seconds
     memory_limit_mb: int = 1024  # MB
-    java_wrapper_path: str = "java_wrapper/build/scripts"
     verbose: bool = False
 
 
@@ -90,27 +97,15 @@ class TestHarness:
         import shutil
         shutil.rmtree(self.temp_dir, ignore_errors=True)
     
-    def get_script_extension(self) -> str:
-        """Get the appropriate script extension for the current platform."""
-        return ".bat" if platform.system() == "Windows" else ""
-    
-    def get_script_path(self, script_name: str) -> Path:
-        """Get the full script path with appropriate extension for the current platform."""
-        extension = self.get_script_extension()
-        return Path(self.config.java_wrapper_path) / f"{script_name}{extension}"
-
-    def run_java_cli(self, script_name: str, args: List[str]) -> JavaCliOutput:
+    def run_java_cli(self, wrapper_class: str, args: List[str]) -> JavaCliOutput:
         """Run a Java CLI wrapper and capture its output."""
-        script_path = self.get_script_path(script_name)
-        
-        if not script_path.exists():
-            raise FileNotFoundError(f"Java CLI script not found: {script_path}")
+        cmd = build_java_command(wrapper_class, args)
         
         start_time = time.time()
         
         try:
             result = subprocess.run(
-                [str(script_path)] + args,
+                cmd,
                 capture_output=True,
                 text=True,
                 timeout=self.config.default_timeout

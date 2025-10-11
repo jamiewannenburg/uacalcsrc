@@ -15,7 +15,7 @@ fn test_horner_encoding() {
     
     compare_with_java!(
         config,
-        "HornerWrapper",
+        "java_wrapper.src.util.HornerWrapper",
         ["horner", "--args", "1,2,3", "--sizes", "4,5,6"],
         || {
             let args = vec![1, 2, 3];
@@ -37,7 +37,7 @@ fn test_horner_encoding_different_sizes() {
     
     compare_with_java!(
         config,
-        "HornerWrapper",
+        "java_wrapper.src.util.HornerWrapper",
         ["horner", "--args", "0,1,2", "--sizes", "3,4,5"],
         || {
             let args = vec![0, 1, 2];
@@ -59,7 +59,7 @@ fn test_horner_inv() {
     
     compare_with_java!(
         config,
-        "HornerWrapper",
+        "java_wrapper.src.util.HornerWrapper",
         ["hornerInv", "--k", "123", "--sizes", "4,5,6"],
         || {
             let k = 123;
@@ -81,7 +81,7 @@ fn test_horner_inv_different_values() {
     
     compare_with_java!(
         config,
-        "HornerWrapper",
+        "java_wrapper.src.util.HornerWrapper",
         ["hornerInv", "--k", "0", "--sizes", "2,3,4"],
         || {
             let k = 0;
@@ -103,7 +103,7 @@ fn test_horner_same_size() {
     
     compare_with_java!(
         config,
-        "HornerWrapper",
+        "java_wrapper.src.util.HornerWrapper",
         ["hornerSameSize", "--args", "1,2,3", "--size", "10"],
         || {
             let args = vec![1, 2, 3];
@@ -125,7 +125,7 @@ fn test_horner_inv_same_size() {
     
     compare_with_java!(
         config,
-        "HornerWrapper",
+        "java_wrapper.src.util.HornerWrapper",
         ["hornerInvSameSize", "--k", "321", "--size", "10", "--length", "3"],
         || {
             let k = 321;
@@ -149,7 +149,7 @@ fn test_horner_integer() {
     
     compare_with_java!(
         config,
-        "HornerWrapper",
+        "java_wrapper.src.util.HornerWrapper",
         ["hornerInteger", "--args", "2,1,0", "--size", "5"],
         || {
             let args = vec![2, 1, 0];
@@ -171,7 +171,7 @@ fn test_reverse_array() {
     
     compare_with_java!(
         config,
-        "HornerWrapper",
+        "java_wrapper.src.util.HornerWrapper",
         ["reverseArray", "--arr", "1,2,3,4"],
         || {
             let arr = vec![1, 2, 3, 4];
@@ -191,7 +191,7 @@ fn test_left_right_reverse() {
     
     compare_with_java!(
         config,
-        "HornerWrapper",
+        "java_wrapper.src.util.HornerWrapper",
         ["leftRightReverse", "--values", "0,1,2,3", "--algSize", "2", "--arity", "2"],
         || {
             let values = vec![0, 1, 2, 3];
@@ -215,7 +215,7 @@ fn test_horner_main_functionality() {
     
     compare_with_java!(
         config,
-        "HornerWrapper",
+        "java_wrapper.src.util.HornerWrapper",
         ["test"],
         || {
             // This test runs the original main method test
@@ -236,7 +236,7 @@ fn test_horner_edge_cases() {
     // Test with single element arrays
     compare_with_java!(
         config,
-        "HornerWrapper",
+        "java_wrapper.src.util.HornerWrapper",
         ["horner", "--args", "5", "--sizes", "10"],
         || {
             let args = vec![5];
@@ -258,7 +258,7 @@ fn test_horner_large_arrays() {
     
     compare_with_java!(
         config,
-        "HornerWrapper",
+        "java_wrapper.src.util.HornerWrapper",
         ["horner", "--args", "1,2,3,4,5", "--sizes", "6,7,8,9,10"],
         || {
             let args = vec![1, 2, 3, 4, 5];
@@ -287,7 +287,7 @@ fn test_horner_round_trip() {
     let k_str = encoded.to_string();
     compare_with_java!(
         config,
-        "HornerWrapper",
+        "java_wrapper.src.util.HornerWrapper",
         ["hornerInv", "--k", &k_str, "--sizes", "4,5,6"],
         || {
             let result = horner::horner_inv(encoded, &sizes);
@@ -346,7 +346,7 @@ fn test_horner_performance() {
     test_with_java_comparison!(
         config,
         Duration::from_secs(5), // 5 second timeout
-        "HornerWrapper",
+        "java_wrapper.src.util.HornerWrapper",
         ["horner", "--args", "1,2,3,4,5,6,7,8,9,10", "--sizes", "11,12,13,14,15,16,17,18,19,20"],
         || {
             let args = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
@@ -369,7 +369,7 @@ fn test_horner_with_harness() {
     
     let result = harness.compare_with_java(
         "horner_harness_test",
-        "HornerWrapper",
+        "java_wrapper.src.util.HornerWrapper",
         &["horner", "--args", "7,8,9", "--sizes", "10,11,12"],
         || {
             let args = vec![7, 8, 9];

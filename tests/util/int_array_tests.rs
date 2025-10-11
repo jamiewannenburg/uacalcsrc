@@ -22,7 +22,7 @@ fn test_new() {
     
     compare_with_java!(
         config,
-        "IntArrayWrapper",
+        "java_wrapper.src.util.IntArrayWrapper",
         ["new", "--size", "5"],
         || {
             let array = IntArray::new(5).unwrap();
@@ -41,7 +41,7 @@ fn test_from_array() {
     
     compare_with_java!(
         config,
-        "IntArrayWrapper",
+        "java_wrapper.src.util.IntArrayWrapper",
         ["from_array", "--array", "[1, 2, 3]"],
         || {
             let array = IntArray::from_array(vec![1, 2, 3]).unwrap();
@@ -60,7 +60,7 @@ fn test_from_string() {
     
     compare_with_java!(
         config,
-        "IntArrayWrapper",
+        "java_wrapper.src.util.IntArrayWrapper",
         ["from_string", "--str", "1, 2, 3"],
         || {
             let array = IntArray::from_string("1, 2, 3").unwrap();
@@ -86,7 +86,7 @@ fn test_universe_size() {
     // For Java comparison, we use the test command which does comprehensive testing
     compare_with_java!(
         config,
-        "IntArrayWrapper",
+        "java_wrapper.src.util.IntArrayWrapper",
         ["test"],
         || {
             json!({
@@ -117,7 +117,7 @@ fn test_to_array() {
     // For Java comparison, we use the test command which does comprehensive testing
     compare_with_java!(
         config,
-        "IntArrayWrapper",
+        "java_wrapper.src.util.IntArrayWrapper",
         ["test"],
         || {
             json!({
@@ -148,7 +148,7 @@ fn test_get() {
     // For Java comparison, we use the test command which does comprehensive testing
     compare_with_java!(
         config,
-        "IntArrayWrapper",
+        "java_wrapper.src.util.IntArrayWrapper",
         ["test"],
         || {
             json!({
@@ -179,7 +179,7 @@ fn test_set() {
     // For Java comparison, we use the test command which does comprehensive testing
     compare_with_java!(
         config,
-        "IntArrayWrapper",
+        "java_wrapper.src.util.IntArrayWrapper",
         ["test"],
         || {
             json!({
@@ -211,7 +211,7 @@ fn test_satisfies_blocks_constraint() {
     // For Java comparison, we use the test command which does comprehensive testing
     compare_with_java!(
         config,
-        "IntArrayWrapper",
+        "java_wrapper.src.util.IntArrayWrapper",
         ["test"],
         || {
             json!({
@@ -243,7 +243,7 @@ fn test_satisfies_values_constraint() {
     // For Java comparison, we use the test command which does comprehensive testing
     compare_with_java!(
         config,
-        "IntArrayWrapper",
+        "java_wrapper.src.util.IntArrayWrapper",
         ["test"],
         || {
             json!({
@@ -277,7 +277,7 @@ fn test_satisfies_set_constraint() {
     // For Java comparison, we use the test command which does comprehensive testing
     compare_with_java!(
         config,
-        "IntArrayWrapper",
+        "java_wrapper.src.util.IntArrayWrapper",
         ["test"],
         || {
             json!({
@@ -308,7 +308,7 @@ fn test_is_idempotent() {
     // For Java comparison, we use the test command which does comprehensive testing
     compare_with_java!(
         config,
-        "IntArrayWrapper",
+        "java_wrapper.src.util.IntArrayWrapper",
         ["test"],
         || {
             json!({
@@ -339,7 +339,7 @@ fn test_is_constant() {
     // For Java comparison, we use the test command which does comprehensive testing
     compare_with_java!(
         config,
-        "IntArrayWrapper",
+        "java_wrapper.src.util.IntArrayWrapper",
         ["test"],
         || {
             json!({
@@ -371,7 +371,7 @@ fn test_clone_array() {
     // For Java comparison, we use the test command which does comprehensive testing
     compare_with_java!(
         config,
-        "IntArrayWrapper",
+        "java_wrapper.src.util.IntArrayWrapper",
         ["test"],
         || {
             json!({
@@ -402,7 +402,7 @@ fn test_to_string() {
     // For Java comparison, we use the test command which does comprehensive testing
     compare_with_java!(
         config,
-        "IntArrayWrapper",
+        "java_wrapper.src.util.IntArrayWrapper",
         ["test"],
         || {
             json!({
@@ -427,7 +427,7 @@ fn test_string_to_array() {
     
     compare_with_java!(
         config,
-        "IntArrayWrapper",
+        "java_wrapper.src.util.IntArrayWrapper",
         ["string_to_array", "--str", "1, 2, 3"],
         || {
             let result = IntArray::string_to_array("1, 2, 3").unwrap();
@@ -446,7 +446,7 @@ fn test_array_to_string() {
     
     compare_with_java!(
         config,
-        "IntArrayWrapper",
+        "java_wrapper.src.util.IntArrayWrapper",
         ["array_to_string", "--array", "[1, 2, 3]"],
         || {
             let result = IntArray::array_to_string(&[1, 2, 3]);
@@ -465,7 +465,7 @@ fn test_arrays_equal() {
     
     compare_with_java!(
         config,
-        "IntArrayWrapper",
+        "java_wrapper.src.util.IntArrayWrapper",
         ["arrays_equal", "--array1", "[1,2,3]", "--array2", "[1,2,3]"],
         || {
             let result = IntArray::arrays_equal(&[1, 2, 3], &[1, 2, 3]);
@@ -485,7 +485,7 @@ fn test_arrays_not_equal() {
     
     compare_with_java!(
         config,
-        "IntArrayWrapper",
+        "java_wrapper.src.util.IntArrayWrapper",
         ["arrays_equal", "--array1", "[1,2,3]", "--array2", "[1,2,4]"],
         || {
             let result = IntArray::arrays_equal(&[1, 2, 3], &[1, 2, 4]);
@@ -544,7 +544,7 @@ fn test_comprehensive() {
     
     compare_with_java!(
         config,
-        "IntArrayWrapper",
+        "java_wrapper.src.util.IntArrayWrapper",
         ["test"],
         || {
             // Run comprehensive tests

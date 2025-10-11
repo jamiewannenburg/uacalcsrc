@@ -16,7 +16,7 @@ fn test_create_simple_message() {
     
     compare_with_java!(
         config,
-        "BadAlgebraFileExceptionWrapper",
+        "java_wrapper.src.io.BadAlgebraFileExceptionWrapper",
         ["create", "--message", "Test message"],
         || {
             let exception = BadAlgebraFileException::new("Test message");
@@ -35,7 +35,7 @@ fn test_create_empty_message() {
     
     compare_with_java!(
         config,
-        "BadAlgebraFileExceptionWrapper",
+        "java_wrapper.src.io.BadAlgebraFileExceptionWrapper",
         ["create", "--message", ""],
         || {
             let exception = BadAlgebraFileException::new("");
@@ -56,7 +56,7 @@ fn test_create_special_characters() {
     
     compare_with_java!(
         config,
-        "BadAlgebraFileExceptionWrapper",
+        "java_wrapper.src.io.BadAlgebraFileExceptionWrapper",
         ["create", "--message", special_message],
         || {
             let exception = BadAlgebraFileException::new(special_message);
@@ -75,7 +75,7 @@ fn test_new_safe_method() {
     
     compare_with_java!(
         config,
-        "BadAlgebraFileExceptionWrapper",
+        "java_wrapper.src.io.BadAlgebraFileExceptionWrapper",
         ["create", "--message", "Safe method test"],
         || {
             let exception = BadAlgebraFileException::new_safe("Safe method test").unwrap();
@@ -94,7 +94,7 @@ fn test_message_method() {
     
     compare_with_java!(
         config,
-        "BadAlgebraFileExceptionWrapper",
+        "java_wrapper.src.io.BadAlgebraFileExceptionWrapper",
         ["create", "--message", "Message method test"],
         || {
             let exception = BadAlgebraFileException::new("Message method test");
@@ -113,7 +113,7 @@ fn test_display_trait() {
     
     compare_with_java!(
         config,
-        "BadAlgebraFileExceptionWrapper",
+        "java_wrapper.src.io.BadAlgebraFileExceptionWrapper",
         ["create", "--message", "Display test"],
         || {
             let exception = BadAlgebraFileException::new("Display test");
@@ -132,7 +132,7 @@ fn test_error_trait() {
     
     compare_with_java!(
         config,
-        "BadAlgebraFileExceptionWrapper",
+        "java_wrapper.src.io.BadAlgebraFileExceptionWrapper",
         ["create", "--message", "Error trait test"],
         || {
             let exception = BadAlgebraFileException::new("Error trait test");
@@ -151,7 +151,7 @@ fn test_equality() {
     
     compare_with_java!(
         config,
-        "BadAlgebraFileExceptionWrapper",
+        "java_wrapper.src.io.BadAlgebraFileExceptionWrapper",
         ["create", "--message", "Equality test"],
         || {
             let exception1 = BadAlgebraFileException::new("Equality test");
@@ -173,7 +173,7 @@ fn test_hash() {
     
     compare_with_java!(
         config,
-        "BadAlgebraFileExceptionWrapper",
+        "java_wrapper.src.io.BadAlgebraFileExceptionWrapper",
         ["create", "--message", "Hash test"],
         || {
             let exception1 = BadAlgebraFileException::new("Hash test");
@@ -202,7 +202,7 @@ fn test_clone() {
     
     compare_with_java!(
         config,
-        "BadAlgebraFileExceptionWrapper",
+        "java_wrapper.src.io.BadAlgebraFileExceptionWrapper",
         ["create", "--message", "Clone test"],
         || {
             let exception1 = BadAlgebraFileException::new("Clone test");
@@ -223,7 +223,7 @@ fn test_debug() {
     
     compare_with_java!(
         config,
-        "BadAlgebraFileExceptionWrapper",
+        "java_wrapper.src.io.BadAlgebraFileExceptionWrapper",
         ["create", "--message", "Debug test"],
         || {
             let exception = BadAlgebraFileException::new("Debug test");
@@ -242,7 +242,7 @@ fn test_comprehensive_functionality() {
     
     compare_with_java!(
         config,
-        "BadAlgebraFileExceptionWrapper",
+        "java_wrapper.src.io.BadAlgebraFileExceptionWrapper",
         ["test"],
         || {
             // Test 1: Create exception with simple message

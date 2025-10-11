@@ -49,7 +49,7 @@ class TestSimpleList:
     
     def test_empty_list_creation(self, test_harness: TestHarness):
         """Test creating an empty SimpleList."""
-        java_output = test_harness.run_java_cli("SimpleListWrapper", ["make_list"])
+        java_output = test_harness.run_java_cli("java_wrapper.src.util.SimpleListWrapper", ["make_list"])
         python_result = uacalc_lib.util.SimpleList()
         
         # Compare the actual data from Java with Python result
@@ -61,7 +61,7 @@ class TestSimpleList:
     def test_make_list_single(self, test_harness: TestHarness):
         """Test creating a SimpleList with a single element."""
         java_output = test_harness.run_java_cli(
-            "SimpleListWrapper", 
+            "java_wrapper.src.util.SimpleListWrapper", 
             ["make_list_single", "--obj", "hello"]
         )
         
@@ -77,7 +77,7 @@ class TestSimpleList:
     def test_is_empty(self, test_harness: TestHarness):
         """Test is_empty method."""
         # Test empty list
-        java_output = test_harness.run_java_cli("SimpleListWrapper", ["is_empty"])
+        java_output = test_harness.run_java_cli("java_wrapper.src.util.SimpleListWrapper", ["is_empty"])
         python_result = uacalc_lib.util.SimpleList()
         
         java_data = java_output.parse_json()["data"]
@@ -86,7 +86,7 @@ class TestSimpleList:
         
         # Test non-empty list
         java_output = test_harness.run_java_cli(
-            "SimpleListWrapper", 
+            "java_wrapper.src.util.SimpleListWrapper", 
             ["is_empty", "--list", "a,b,c"]
         )
         
@@ -100,44 +100,44 @@ class TestSimpleList:
         """Test size method."""
         # Test empty list
         python_result = uacalc_lib.util.SimpleList()
-        assert_java_python_equal(test_harness, "SimpleListWrapper", ["size"], python_result.size(), "Empty list size")
+        assert_java_python_equal(test_harness, "java_wrapper.src.util.SimpleListWrapper", ["size"], python_result.size(), "Empty list size")
         
         # Test non-empty list
         python_result = uacalc_lib.util.SimpleList.from_list(["a", "b", "c"])
-        assert_java_python_equal(test_harness, "SimpleListWrapper", ["size", "--list", "a,b,c"], python_result.size(), "Non-empty list size")
+        assert_java_python_equal(test_harness, "java_wrapper.src.util.SimpleListWrapper", ["size", "--list", "a,b,c"], python_result.size(), "Non-empty list size")
     
     def test_first(self, test_harness: TestHarness):
         """Test first method."""
         # Test empty list
         python_result = uacalc_lib.util.SimpleList()
-        assert_java_python_equal(test_harness, "SimpleListWrapper", ["first"], python_result.first(), "Empty list first")
+        assert_java_python_equal(test_harness, "java_wrapper.src.util.SimpleListWrapper", ["first"], python_result.first(), "Empty list first")
         
         # Test non-empty list
         python_result = uacalc_lib.util.SimpleList.from_list(["a", "b", "c"])
-        assert_java_python_equal(test_harness, "SimpleListWrapper", ["first", "--list", "a,b,c"], python_result.first(), "Non-empty list first")
+        assert_java_python_equal(test_harness, "java_wrapper.src.util.SimpleListWrapper", ["first", "--list", "a,b,c"], python_result.first(), "Non-empty list first")
     
     def test_rest(self, test_harness: TestHarness):
         """Test rest method."""
         # Test empty list
         python_result = uacalc_lib.util.SimpleList()
-        assert_java_python_equal(test_harness, "SimpleListWrapper", ["rest"], str(python_result.rest()), "Empty list rest")
+        assert_java_python_equal(test_harness, "java_wrapper.src.util.SimpleListWrapper", ["rest"], str(python_result.rest()), "Empty list rest")
         
         # Test non-empty list
         python_result = uacalc_lib.util.SimpleList.from_list(["a", "b", "c"])
-        assert_java_python_equal(test_harness, "SimpleListWrapper", ["rest", "--list", "a,b,c"], str(python_result.rest()), "Non-empty list rest")
+        assert_java_python_equal(test_harness, "java_wrapper.src.util.SimpleListWrapper", ["rest", "--list", "a,b,c"], str(python_result.rest()), "Non-empty list rest")
     
     def test_cons(self, test_harness: TestHarness):
         """Test cons method."""
         python_result = uacalc_lib.util.SimpleList.from_list(["a", "b"]).cons("c")
         
-        assert_java_python_equal(test_harness, "SimpleListWrapper", ["cons", "--list", "a,b", "--obj", "c"], str(python_result), "Cons operation result")
+        assert_java_python_equal(test_harness, "java_wrapper.src.util.SimpleListWrapper", ["cons", "--list", "a,b", "--obj", "c"], str(python_result), "Cons operation result")
         assert python_result.size() == 3
     
     def test_copy_list(self, test_harness: TestHarness):
         """Test copy_list method."""
         python_result = uacalc_lib.util.SimpleList.from_list(["a", "b", "c"]).copy_list()
         
-        assert_java_python_equal(test_harness, "SimpleListWrapper", ["copy_list", "--list", "a,b,c"], str(python_result), "Copy list result")
+        assert_java_python_equal(test_harness, "java_wrapper.src.util.SimpleListWrapper", ["copy_list", "--list", "a,b,c"], str(python_result), "Copy list result")
         assert python_result.size() == 3
     
     def test_append(self, test_harness: TestHarness):
@@ -146,14 +146,14 @@ class TestSimpleList:
         list2 = uacalc_lib.util.SimpleList.from_list(["c", "d"])
         python_result = list1.append(list2)
         
-        assert_java_python_equal(test_harness, "SimpleListWrapper", ["append", "--list", "a,b", "--list2", "c,d"], str(python_result), "Append operation result")
+        assert_java_python_equal(test_harness, "java_wrapper.src.util.SimpleListWrapper", ["append", "--list", "a,b", "--list2", "c,d"], str(python_result), "Append operation result")
         assert python_result.size() == 4
     
     def test_reverse(self, test_harness: TestHarness):
         """Test reverse method."""
         python_result = uacalc_lib.util.SimpleList.from_list(["a", "b", "c"]).reverse()
         
-        assert_java_python_equal(test_harness, "SimpleListWrapper", ["reverse", "--list", "a,b,c"], str(python_result), "Reverse operation result")
+        assert_java_python_equal(test_harness, "java_wrapper.src.util.SimpleListWrapper", ["reverse", "--list", "a,b,c"], str(python_result), "Reverse operation result")
         assert python_result.size() == 3
     
     def test_reverse_with(self, test_harness: TestHarness):
@@ -162,7 +162,7 @@ class TestSimpleList:
         list2 = uacalc_lib.util.SimpleList.from_list(["c", "d"])
         python_result = list1.reverse_with(list2)
         
-        assert_java_python_equal(test_harness, "SimpleListWrapper", ["reverse_with", "--list", "a,b", "--list2", "c,d"], str(python_result), "Reverse with operation result")
+        assert_java_python_equal(test_harness, "java_wrapper.src.util.SimpleListWrapper", ["reverse_with", "--list", "a,b", "--list2", "c,d"], str(python_result), "Reverse with operation result")
         assert python_result.size() == 4
     
     def test_contains(self, test_harness: TestHarness):
@@ -170,28 +170,28 @@ class TestSimpleList:
         python_result = uacalc_lib.util.SimpleList.from_list(["a", "b", "c"])
         
         # Test contains existing element
-        assert_java_python_equal(test_harness, "SimpleListWrapper", ["contains", "--list", "a,b,c", "--obj", "b"], python_result.contains("b"), "Contains existing element")
+        assert_java_python_equal(test_harness, "java_wrapper.src.util.SimpleListWrapper", ["contains", "--list", "a,b,c", "--obj", "b"], python_result.contains("b"), "Contains existing element")
         
         # Test contains non-existing element
-        assert_java_python_equal(test_harness, "SimpleListWrapper", ["contains", "--list", "a,b,c", "--obj", "d"], python_result.contains("d"), "Contains non-existing element")
+        assert_java_python_equal(test_harness, "java_wrapper.src.util.SimpleListWrapper", ["contains", "--list", "a,b,c", "--obj", "d"], python_result.contains("d"), "Contains non-existing element")
     
     def test_get(self, test_harness: TestHarness):
         """Test get method."""
         python_result = uacalc_lib.util.SimpleList.from_list(["a", "b", "c"])
         
-        assert_java_python_equal(test_harness, "SimpleListWrapper", ["get", "--list", "a,b,c", "--index", "1"], python_result.get(1), "Get element at index 1")
+        assert_java_python_equal(test_harness, "java_wrapper.src.util.SimpleListWrapper", ["get", "--list", "a,b,c", "--index", "1"], python_result.get(1), "Get element at index 1")
     
     def test_index_of(self, test_harness: TestHarness):
         """Test index_of method."""
         python_result = uacalc_lib.util.SimpleList.from_list(["a", "b", "c"])
         
-        assert_java_python_equal(test_harness, "SimpleListWrapper", ["index_of", "--list", "a,b,c", "--obj", "b"], python_result.index_of("b"), "Index of element 'b'")
+        assert_java_python_equal(test_harness, "java_wrapper.src.util.SimpleListWrapper", ["index_of", "--list", "a,b,c", "--obj", "b"], python_result.index_of("b"), "Index of element 'b'")
     
     def test_last_index_of(self, test_harness: TestHarness):
         """Test last_index_of method."""
         python_result = uacalc_lib.util.SimpleList.from_list(["a", "b", "b", "c"])
         
-        assert_java_python_equal(test_harness, "SimpleListWrapper", ["last_index_of", "--list", "a,b,b,c", "--obj", "b"], python_result.last_index_of("b"), "Last index of element 'b'")
+        assert_java_python_equal(test_harness, "java_wrapper.src.util.SimpleListWrapper", ["last_index_of", "--list", "a,b,b,c", "--obj", "b"], python_result.last_index_of("b"), "Last index of element 'b'")
     
     def test_sub_list(self, test_harness: TestHarness):
         """Test sub_list method."""
@@ -213,11 +213,11 @@ class TestSimpleList:
         list1 = uacalc_lib.util.SimpleList.from_list(["a", "b", "c"])
         list2 = uacalc_lib.util.SimpleList.from_list(["a", "b"])
         
-        assert_java_python_equal(test_harness, "SimpleListWrapper", ["contains_all", "--list", "a,b,c", "--list2", "a,b"], list1.contains_all(list2), "Contains all elements")
+        assert_java_python_equal(test_harness, "java_wrapper.src.util.SimpleListWrapper", ["contains_all", "--list", "a,b,c", "--list2", "a,b"], list1.contains_all(list2), "Contains all elements")
     
     def test_comprehensive_operations(self, test_harness: TestHarness):
         """Test comprehensive operations matching Java test."""
-        java_output = test_harness.run_java_cli("SimpleListWrapper", ["test"])
+        java_output = test_harness.run_java_cli("java_wrapper.src.util.SimpleListWrapper", ["test"])
         
         # Test basic operations
         empty = uacalc_lib.util.SimpleList()

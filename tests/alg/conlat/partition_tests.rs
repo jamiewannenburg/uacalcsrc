@@ -14,7 +14,7 @@ fn test_zero_partition() {
     
     compare_with_java!(
         config,
-        "PartitionWrapper",
+        "java_wrapper.src.alg.conlat.PartitionWrapper",
         ["zero", "--size", "3"],
         || {
             let partition = Partition::zero(3);
@@ -34,7 +34,7 @@ fn test_one_partition() {
     
     compare_with_java!(
         config,
-        "PartitionWrapper",
+        "java_wrapper.src.alg.conlat.PartitionWrapper",
         ["one", "--size", "3"],
         || {
             let partition = Partition::one(3);
@@ -54,7 +54,7 @@ fn test_from_array() {
     
     compare_with_java!(
         config,
-        "PartitionWrapper",
+        "java_wrapper.src.alg.conlat.PartitionWrapper",
         ["from_array", "--array", "[-2,0,-1,-1]"],
         || {
             let partition = Partition::new(vec![-2, 0, -1, -1]).unwrap();
@@ -73,7 +73,7 @@ fn test_from_string() {
     
     compare_with_java!(
         config,
-        "PartitionWrapper",
+        "java_wrapper.src.alg.conlat.PartitionWrapper",
         ["from_string", "--str", "|0 1|2 3|"],
         || {
             let partition = Partition::from_string("|0 1|2 3|").unwrap();
@@ -92,7 +92,7 @@ fn test_universe_size() {
     
     compare_with_java!(
         config,
-        "PartitionWrapper",
+        "java_wrapper.src.alg.conlat.PartitionWrapper",
         ["universe_size", "--partition_array", "[-2,0,-1,-1]"],
         || {
             let partition = Partition::new(vec![-2, 0, -1, -1]).unwrap();
@@ -109,7 +109,7 @@ fn test_number_of_blocks() {
     
     compare_with_java!(
         config,
-        "PartitionWrapper",
+        "java_wrapper.src.alg.conlat.PartitionWrapper",
         ["number_of_blocks", "--partition_array", "[-2,0,-1,-1]"],
         || {
             let partition = Partition::new(vec![-2, 0, -1, -1]).unwrap();
@@ -126,7 +126,7 @@ fn test_is_related() {
     
     compare_with_java!(
         config,
-        "PartitionWrapper",
+        "java_wrapper.src.alg.conlat.PartitionWrapper",
         ["is_related", "--partition_array", "[-2,0,-1,-1]", "--i", "0", "--j", "1"],
         || {
             let partition = Partition::new(vec![-2, 0, -1, -1]).unwrap();
@@ -143,7 +143,7 @@ fn test_representative() {
     
     compare_with_java!(
         config,
-        "PartitionWrapper",
+        "java_wrapper.src.alg.conlat.PartitionWrapper",
         ["representative", "--partition_array", "[-2,0,-1,-1]", "--i", "1"],
         || {
             let partition = Partition::new(vec![-2, 0, -1, -1]).unwrap();
@@ -160,7 +160,7 @@ fn test_is_representative() {
     
     compare_with_java!(
         config,
-        "PartitionWrapper",
+        "java_wrapper.src.alg.conlat.PartitionWrapper",
         ["is_representative", "--partition_array", "[-2,0,-1,-1]", "--i", "0"],
         || {
             let partition = Partition::new(vec![-2, 0, -1, -1]).unwrap();
@@ -177,7 +177,7 @@ fn test_representatives() {
     
     compare_with_java!(
         config,
-        "PartitionWrapper",
+        "java_wrapper.src.alg.conlat.PartitionWrapper",
         ["representatives", "--partition_array", "[-2,0,-1,-1]"],
         || {
             let partition = Partition::new(vec![-2, 0, -1, -1]).unwrap();
@@ -194,7 +194,7 @@ fn test_block_index() {
     
     compare_with_java!(
         config,
-        "PartitionWrapper",
+        "java_wrapper.src.alg.conlat.PartitionWrapper",
         ["block_index", "--partition_array", "[-2,0,-1,-1]", "--i", "1"],
         || {
             let partition = Partition::new(vec![-2, 0, -1, -1]).unwrap();
@@ -211,7 +211,7 @@ fn test_get_blocks() {
     
     compare_with_java!(
         config,
-        "PartitionWrapper",
+        "java_wrapper.src.alg.conlat.PartitionWrapper",
         ["get_blocks", "--partition_array", "[-2,0,-1,-1]"],
         || {
             let partition = Partition::new(vec![-2, 0, -1, -1]).unwrap();
@@ -228,7 +228,7 @@ fn test_join_blocks() {
     
     compare_with_java!(
         config,
-        "PartitionWrapper",
+        "java_wrapper.src.alg.conlat.PartitionWrapper",
         ["join_blocks", "--partition_array", "[-1,-1,-1,-1]", "--r", "0", "--s", "1"],
         || {
             let mut partition = Partition::new(vec![-1, -1, -1, -1]).unwrap();
@@ -246,7 +246,7 @@ fn test_join() {
     
     compare_with_java!(
         config,
-        "PartitionWrapper",
+        "java_wrapper.src.alg.conlat.PartitionWrapper",
         ["join", "--partition1_array", "[-2,0,-1,-1]", "--partition2_array", "[-1,-1,-2,2]"],
         || {
             let partition1 = Partition::new(vec![-2, 0, -1, -1]).unwrap();
@@ -265,7 +265,7 @@ fn test_meet() {
     
     compare_with_java!(
         config,
-        "PartitionWrapper",
+        "java_wrapper.src.alg.conlat.PartitionWrapper",
         ["meet", "--partition1_array", "[-2,0,-1,-1]", "--partition2_array", "[-1,-1,-2,2]"],
         || {
             let partition1 = Partition::new(vec![-2, 0, -1, -1]).unwrap();
@@ -284,7 +284,7 @@ fn test_leq() {
     
     compare_with_java!(
         config,
-        "PartitionWrapper",
+        "java_wrapper.src.alg.conlat.PartitionWrapper",
         ["leq", "--partition1_array", "[-2,0,-1,-1]", "--partition2_array", "[-4,0,0,0]"],
         || {
             let partition1 = Partition::new(vec![-2, 0, -1, -1]).unwrap();
@@ -302,7 +302,7 @@ fn test_normalize() {
     
     compare_with_java!(
         config,
-        "PartitionWrapper",
+        "java_wrapper.src.alg.conlat.PartitionWrapper",
         ["normalize", "--partition_array", "[-2,0,-1,-1]"],
         || {
             let mut partition = Partition::new(vec![-2, 0, -1, -1]).unwrap();
@@ -320,7 +320,7 @@ fn test_is_zero() {
     
     compare_with_java!(
         config,
-        "PartitionWrapper",
+        "java_wrapper.src.alg.conlat.PartitionWrapper",
         ["is_zero", "--partition_array", "[-1,-1,-1,-1]"],
         || {
             let partition = Partition::new(vec![-1, -1, -1, -1]).unwrap();
@@ -337,7 +337,7 @@ fn test_is_uniform() {
     
     compare_with_java!(
         config,
-        "PartitionWrapper",
+        "java_wrapper.src.alg.conlat.PartitionWrapper",
         ["is_uniform", "--partition_array", "[-2,0,-2,2]"],
         || {
             let partition = Partition::new(vec![-2, 0, -2, 2]).unwrap();
@@ -354,7 +354,7 @@ fn test_is_initial_lex_representative() {
     
     compare_with_java!(
         config,
-        "PartitionWrapper",
+        "java_wrapper.src.alg.conlat.PartitionWrapper",
         ["is_initial_lex_representative", "--partition_array", "[-2,0,-1,-1]"],
         || {
             let partition = Partition::new(vec![-2, 0, -1, -1]).unwrap();
@@ -371,7 +371,7 @@ fn test_to_array() {
     
     compare_with_java!(
         config,
-        "PartitionWrapper",
+        "java_wrapper.src.alg.conlat.PartitionWrapper",
         ["to_array", "--partition_array", "[-2,0,-1,-1]"],
         || {
             let partition = Partition::new(vec![-2, 0, -1, -1]).unwrap();
@@ -388,7 +388,7 @@ fn test_rank() {
     
     compare_with_java!(
         config,
-        "PartitionWrapper",
+        "java_wrapper.src.alg.conlat.PartitionWrapper",
         ["rank", "--partition_array", "[-2,0,-1,-1]"],
         || {
             let partition = Partition::new(vec![-2, 0, -1, -1]).unwrap();
@@ -405,7 +405,7 @@ fn test_to_string() {
     
     compare_with_java!(
         config,
-        "PartitionWrapper",
+        "java_wrapper.src.alg.conlat.PartitionWrapper",
         ["to_string", "--partition_array", "[-2,0,-1,-1]"],
         || {
             let partition = Partition::new(vec![-2, 0, -1, -1]).unwrap();
@@ -422,7 +422,7 @@ fn test_to_string_with_type() {
     
     compare_with_java!(
         config,
-        "PartitionWrapper",
+        "java_wrapper.src.alg.conlat.PartitionWrapper",
         ["to_string_with_type", "--partition_array", "[-2,0,-1,-1]", "--type", "block"],
         || {
             let partition = Partition::new(vec![-2, 0, -1, -1]).unwrap();
@@ -439,7 +439,7 @@ fn test_to_string_with_max_len() {
     
     compare_with_java!(
         config,
-        "PartitionWrapper",
+        "java_wrapper.src.alg.conlat.PartitionWrapper",
         ["to_string_with_max_len", "--partition_array", "[-2,0,-1,-1]", "--max_len", "50"],
         || {
             let partition = Partition::new(vec![-2, 0, -1, -1]).unwrap();
@@ -457,7 +457,7 @@ fn test_basic_functionality() {
     // Test a simple join operation that can be compared with Java
     compare_with_java!(
         config,
-        "PartitionWrapper",
+        "java_wrapper.src.alg.conlat.PartitionWrapper",
         ["join", "--partition1_array", "[-1,-1,-1,-1]", "--partition2_array", "[-4,0,0,0]"],
         || {
             let p1 = Partition::new(vec![-1, -1, -1, -1]).unwrap();

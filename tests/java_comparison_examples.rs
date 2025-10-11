@@ -110,13 +110,13 @@ fn test_floating_point_with_tolerance() {
 fn test_java_cli_error_handling() {
     let config = TestConfig::default();
     
-    // Test with non-existent script
-    let result = run_java_cli("non_existent_script", &[], &config);
+    // Test with non-existent Java class
+    let result = run_java_cli("NonExistentClass", &[], &config);
     assert!(result.is_err());
     
     match result.unwrap_err() {
         TestError::JavaCliError(msg) => {
-            assert!(msg.contains("Java CLI script not found"));
+            assert!(msg.contains("Could not find or load main class") || msg.contains("ClassNotFoundException"));
         }
         _ => panic!("Expected JavaCliError"),
     }
