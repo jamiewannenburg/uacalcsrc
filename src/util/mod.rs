@@ -2,19 +2,8 @@ pub mod virtuallist;
 pub mod horner;
 pub mod simple_list;
 pub mod array_string;
+pub mod permutation_generator;
+pub mod array_incrementor;
 
-pub struct ArrayIncrementor {
-    // TODO: Implement array incrementor
-}
-
-pub struct IntArray {
-    // TODO: Implement int array
-}
-
-pub struct PermutationGenerator {
-    // TODO: Implement permutation generator
-}
-
-pub struct SequenceGenerator {
-    // TODO: Implement sequence generator
-}
+pub use permutation_generator::PermutationGenerator;
+pub use array_incrementor::{ArrayIncrementor, ArrayIncrementorImpl, SimpleArrayIncrementor};

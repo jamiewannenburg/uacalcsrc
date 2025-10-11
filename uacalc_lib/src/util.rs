@@ -3,6 +3,8 @@ use pyo3::exceptions::PyValueError;
 use uacalc::util::horner;
 use uacalc::util::simple_list;
 use uacalc::util::array_string;
+use uacalc::util::permutation_generator;
+use uacalc::util::array_incrementor;
 use std::sync::Arc;
 use std::collections::HashMap;
 
@@ -746,17 +748,446 @@ impl PyArrayString {
     }
 }
 
+/// Python wrapper for PermutationGenerator
+#[pyclass]
+pub struct PyPermutationGenerator {
+    inner: permutation_generator::PermutationGenerator,
+}
+
+#[pymethods]
+impl PyPermutationGenerator {
+    /// Create a new PermutationGenerator for permutations of n elements.
+    #[new]
+    #[pyo3(signature = (n))]
+    fn new(n: usize) -> PyResult<Self> {
+        match permutation_generator::PermutationGenerator::new_safe(n) {
+            Ok(inner) => Ok(PyPermutationGenerator { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Reset the generator to the initial state (identity permutation).
+    fn reset(&mut self) {
+        self.inner.reset();
+    }
+    
+    /// Get the current permutation array.
+    fn get_permutation(&self) -> Vec<usize> {
+        self.inner.get_permutation_vec()
+    }
+    
+    /// Get the size of the permutation.
+    fn size(&self) -> usize {
+        self.inner.size()
+    }
+    
+    /// Get the next index for permutation.
+    /// 
+    /// Returns the index i such that the next permutation should interchange 
+    /// the i-th and following elements. Returns None if no more permutations.
+    fn next_index(&mut self) -> Option<usize> {
+        self.inner.next_index()
+    }
+    
+    /// Get the next index for permutation with error handling.
+    /// 
+    /// Returns the index i such that the next permutation should interchange 
+    /// the i-th and following elements. Returns an error if no more permutations.
+    fn next_index_safe(&mut self) -> PyResult<usize> {
+        match self.inner.next_index_safe() {
+            Ok(index) => Ok(index),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Create an iterator over all permutations.
+    /// 
+    /// This iterator iterates all permutations on the set 0, ..., n-1.
+    /// The iteration is on a fixed array so one needs to be careful to
+    /// copy any permutation that needs to be saved.
+    #[staticmethod]
+    fn iterator(n: usize) -> PyResult<PyPermutationIterator> {
+        if n < 1 {
+            return Err(PyValueError::new_err("Min 1"));
+        }
+        Ok(PyPermutationIterator::new(n))
+    }
+    
+    /// Create an array incrementor for the given array.
+    /// 
+    /// This increments arr, applying the next transposition that results
+    /// in a different array.
+    /// The iteration is on a fixed array so one needs to be careful to
+    /// copy any result that needs to be saved.
+    #[staticmethod]
+    fn array_incrementor(arr: Vec<usize>) -> PyResult<PyArrayIncrementor> {
+        if arr.is_empty() {
+            return Err(PyValueError::new_err("Array cannot be empty"));
+        }
+        Ok(PyArrayIncrementor::new(arr))
+    }
+    
+    /// Create a list incrementor for the given list.
+    /// 
+    /// This increments lst, applying the next transposition that results
+    /// in a different list.
+    /// The iteration is on a fixed list so one needs to be careful to
+    /// copy any result that needs to be saved.
+    #[staticmethod]
+    fn list_incrementor(lst: Vec<PyObject>) -> PyResult<PyListIncrementor> {
+        if lst.is_empty() {
+            return Err(PyValueError::new_err("List cannot be empty"));
+        }
+        Ok(PyListIncrementor::new(lst))
+    }
+    
+    /// Python string representation
+    fn __str__(&self) -> String {
+        self.inner.to_string()
+    }
+    
+    /// Python repr representation
+    fn __repr__(&self) -> String {
+        format!("PermutationGenerator({})", self.inner.to_string())
+    }
+    
+    /// Python equality comparison
+    fn __eq__(&self, other: &PyPermutationGenerator) -> bool {
+        self.inner == other.inner
+    }
+    
+    /// Python hash function
+    fn __hash__(&self) -> u64 {
+        use std::collections::hash_map::DefaultHasher;
+        use std::hash::{Hash, Hasher};
+        
+        let mut hasher = DefaultHasher::new();
+        self.inner.hash(&mut hasher);
+        hasher.finish()
+    }
+}
+
+/// Python wrapper for PermutationIterator
+#[pyclass]
+pub struct PyPermutationIterator {
+    inner: permutation_generator::PermutationIterator,
+}
+
+#[pymethods]
+impl PyPermutationIterator {
+    fn __iter__(slf: PyRef<Self>) -> PyRef<Self> {
+        slf
+    }
+    
+    fn __next__(&mut self) -> Option<Vec<usize>> {
+        self.inner.next()
+    }
+}
+
+impl PyPermutationIterator {
+    fn new(n: usize) -> Self {
+        Self {
+            inner: permutation_generator::PermutationGenerator::iterator(n),
+        }
+    }
+}
+
+/// Python wrapper for ArrayIncrementor
+#[pyclass]
+pub struct PyArrayIncrementor {
+    inner: Vec<usize>,
+    generator: permutation_generator::PermutationGenerator,
+}
+
+#[pymethods]
+impl PyArrayIncrementor {
+    /// Get the current array
+    fn get_array(&self) -> Vec<usize> {
+        self.inner.clone()
+    }
+    
+    /// Increment the array to the next permutation
+    fn increment(&mut self) -> bool {
+        loop {
+            match self.generator.next_index() {
+                Some(k) => {
+                    if self.inner[k] != self.inner[k + 1] {
+                        self.inner.swap(k, k + 1);
+                        return true;
+                    }
+                    // If elements are equal, continue to next permutation
+                }
+                None => {
+                    // Reset to original state if array has more than 1 element
+                    if self.inner.len() > 1 {
+                        self.inner.swap(0, 1);
+                    }
+                    return false;
+                }
+            }
+        }
+    }
+}
+
+impl PyArrayIncrementor {
+    fn new(arr: Vec<usize>) -> Self {
+        let mut generator = permutation_generator::PermutationGenerator::new(arr.len());
+        Self {
+            inner: arr,
+            generator,
+        }
+    }
+}
+
+/// Python wrapper for ListIncrementor
+#[pyclass]
+pub struct PyListIncrementor {
+    inner: Vec<PyObject>,
+    generator: permutation_generator::PermutationGenerator,
+}
+
+#[pymethods]
+impl PyListIncrementor {
+    /// Get the current list
+    fn get_list(&self) -> Vec<PyObject> {
+        self.inner.clone()
+    }
+    
+    /// Increment the list to the next permutation
+    fn increment(&mut self) -> bool {
+        loop {
+            match self.generator.next_index() {
+                Some(k) => {
+                    // Use Python's equality comparison
+                    let are_equal = Python::with_gil(|py| {
+                        if let Ok(equal) = self.inner[k].call_method1(py, "__eq__", (&self.inner[k + 1],)) {
+                            if let Ok(is_equal) = equal.extract::<bool>(py) {
+                                return is_equal;
+                            }
+                        }
+                        false
+                    });
+                    
+                    if !are_equal {
+                        self.inner.swap(k, k + 1);
+                        return true;
+                    }
+                    // If elements are equal, continue to next permutation
+                }
+                None => {
+                    // Reset to original state if list has more than 1 element
+                    if self.inner.len() > 1 {
+                        self.inner.swap(0, 1);
+                    }
+                    return false;
+                }
+            }
+        }
+    }
+}
+
+impl PyListIncrementor {
+    fn new(lst: Vec<PyObject>) -> Self {
+        let mut generator = permutation_generator::PermutationGenerator::new(lst.len());
+        Self {
+            inner: lst,
+            generator,
+        }
+    }
+}
+
+/// Python wrapper for ArrayIncrementorImpl
+#[pyclass]
+pub struct PyArrayIncrementorImpl {
+    data: Vec<usize>,
+    generator: permutation_generator::PermutationGenerator,
+}
+
+/// Python wrapper for SimpleArrayIncrementor
+#[pyclass]
+pub struct PySimpleArrayIncrementor {
+    data: Vec<usize>,
+    max_values: Vec<usize>,
+    first_call: bool,
+}
+
+#[pymethods]
+impl PyArrayIncrementorImpl {
+    /// Create a new ArrayIncrementorImpl for the given array.
+    #[new]
+    #[pyo3(signature = (arr))]
+    fn new(arr: Vec<usize>) -> PyResult<Self> {
+        let generator = permutation_generator::PermutationGenerator::new(arr.len());
+        Ok(Self {
+            data: arr,
+            generator,
+        })
+    }
+    
+    /// Modify the array to be the next one; return false if there is no more.
+    fn increment(&mut self) -> bool {
+        loop {
+            match self.generator.next_index() {
+                Some(k) => {
+                    if self.data[k] != self.data[k + 1] {
+                        self.data.swap(k, k + 1);
+                        return true;
+                    }
+                    // If elements are equal, continue to next permutation
+                }
+                None => {
+                    // Reset to original state if array has more than 1 element
+                    if self.data.len() > 1 {
+                        self.data.swap(0, 1);
+                    }
+                    return false;
+                }
+            }
+        }
+    }
+    
+    /// Get a copy of the current array state.
+    fn get_array(&self) -> Vec<usize> {
+        self.data.clone()
+    }
+    
+    /// Python string representation
+    fn __str__(&self) -> String {
+        format!("ArrayIncrementorImpl(arr={:?})", self.data)
+    }
+    
+    /// Python repr representation
+    fn __repr__(&self) -> String {
+        format!("ArrayIncrementorImpl({:?})", self.data)
+    }
+    
+    /// Python equality comparison
+    fn __eq__(&self, other: &PyArrayIncrementorImpl) -> bool {
+        self.data == other.data
+    }
+    
+    /// Python hash function
+    fn __hash__(&self) -> u64 {
+        use std::collections::hash_map::DefaultHasher;
+        use std::hash::{Hash, Hasher};
+        
+        let mut hasher = DefaultHasher::new();
+        self.data.hash(&mut hasher);
+        hasher.finish()
+    }
+}
+
+#[pymethods]
+impl PySimpleArrayIncrementor {
+    /// Create a new SimpleArrayIncrementor for the given array.
+    #[new]
+    #[pyo3(signature = (arr))]
+    fn new(arr: Vec<usize>) -> PyResult<Self> {
+        let max_values = vec![arr.len() - 1; arr.len()];
+        Ok(Self {
+            data: arr,
+            max_values,
+            first_call: true,
+        })
+    }
+    
+    /// Create a new SimpleArrayIncrementor with custom maximum values.
+    #[staticmethod]
+    fn new_with_max_values(arr: Vec<usize>, max_values: Vec<usize>) -> PyResult<Self> {
+        if arr.len() != max_values.len() {
+            return Err(PyValueError::new_err("Array and max_values must have the same length"));
+        }
+        
+        // Validate that all array values are within their max bounds
+        for (i, &val) in arr.iter().enumerate() {
+            if val > max_values[i] {
+                return Err(PyValueError::new_err(format!(
+                    "Array value {} at position {} exceeds maximum {}", 
+                    val, i, max_values[i]
+                )));
+            }
+        }
+        
+        Ok(Self {
+            data: arr,
+            max_values,
+            first_call: true,
+        })
+    }
+    
+    /// Modify the array to be the next one; return false if there is no more.
+    fn increment(&mut self) -> bool {
+        if self.first_call {
+            self.first_call = false;
+            return true; // Return the initial state
+        }
+        
+        // Find the rightmost position that can be incremented
+        for i in (0..self.data.len()).rev() {
+            if self.data[i] < self.max_values[i] {
+                self.data[i] += 1;
+                // Reset all positions to the right to 0
+                for j in (i + 1)..self.data.len() {
+                    self.data[j] = 0;
+                }
+                return true;
+            }
+        }
+        
+        false // No more increments possible
+    }
+    
+    /// Get a copy of the current array state.
+    fn get_array(&self) -> Vec<usize> {
+        self.data.clone()
+    }
+    
+    /// Python string representation
+    fn __str__(&self) -> String {
+        format!("SimpleArrayIncrementor(arr={:?})", self.data)
+    }
+    
+    /// Python repr representation
+    fn __repr__(&self) -> String {
+        format!("SimpleArrayIncrementor({:?})", self.data)
+    }
+    
+    /// Python equality comparison
+    fn __eq__(&self, other: &PySimpleArrayIncrementor) -> bool {
+        self.data == other.data
+    }
+    
+    /// Python hash function
+    fn __hash__(&self) -> u64 {
+        use std::collections::hash_map::DefaultHasher;
+        use std::hash::{Hash, Hasher};
+        
+        let mut hasher = DefaultHasher::new();
+        self.data.hash(&mut hasher);
+        hasher.finish()
+    }
+}
+
 pub fn register_util_module(py: Python, m: &PyModule) -> PyResult<()> {
     // Register classes internally but only export clean names
     m.add_class::<PyHorner>()?;
     m.add_class::<PySimpleList>()?;
     m.add_class::<PySimpleListIterator>()?;
     m.add_class::<PyArrayString>()?;
+    m.add_class::<PyPermutationGenerator>()?;
+    m.add_class::<PyPermutationIterator>()?;
+    m.add_class::<PyArrayIncrementor>()?;
+    m.add_class::<PyListIncrementor>()?;
+    m.add_class::<PyArrayIncrementorImpl>()?;
+    m.add_class::<PySimpleArrayIncrementor>()?;
     
     // Export only clean names (without Py prefix)
     m.add("Horner", m.getattr("PyHorner")?)?;
     m.add("SimpleList", m.getattr("PySimpleList")?)?;
     m.add("ArrayString", m.getattr("PyArrayString")?)?;
+    m.add("PermutationGenerator", m.getattr("PyPermutationGenerator")?)?;
+    m.add("ArrayIncrementorImpl", m.getattr("PyArrayIncrementorImpl")?)?;
+    m.add("SimpleArrayIncrementor", m.getattr("PySimpleArrayIncrementor")?)?;
     
     // Remove the Py* names from the module to avoid confusion
     let module_dict = m.dict();
@@ -764,6 +1195,12 @@ pub fn register_util_module(py: Python, m: &PyModule) -> PyResult<()> {
     module_dict.del_item("PySimpleList")?;
     module_dict.del_item("PySimpleListIterator")?;
     module_dict.del_item("PyArrayString")?;
+    module_dict.del_item("PyPermutationGenerator")?;
+    module_dict.del_item("PyPermutationIterator")?;
+    module_dict.del_item("PyArrayIncrementor")?;
+    module_dict.del_item("PyListIncrementor")?;
+    module_dict.del_item("PyArrayIncrementorImpl")?;
+    module_dict.del_item("PySimpleArrayIncrementor")?;
     
     Ok(())
 }

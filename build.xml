@@ -240,6 +240,20 @@
     <echo file="${java.wrapper.scripts}/ArrayStringWrapper.bat" 
           message="@echo off&#10;java -cp ${java.wrapper.classes};${class.dir};${jar.dir}\* java_wrapper.src.util.ArrayStringWrapper %*&#10;"/>
     
+    <!-- PermutationGeneratorWrapper script -->
+    <echo file="${java.wrapper.scripts}/PermutationGeneratorWrapper" 
+          message="#!/bin/bash&#10;java -cp ${java.wrapper.classes}:${class.dir}:${jar.dir}/* java_wrapper.src.util.PermutationGeneratorWrapper &quot;$@&quot;&#10;"/>
+    <chmod file="${java.wrapper.scripts}/PermutationGeneratorWrapper" perm="755"/>
+    <echo file="${java.wrapper.scripts}/PermutationGeneratorWrapper.bat" 
+          message="@echo off&#10;java -cp ${java.wrapper.classes};${class.dir};${jar.dir}\* java_wrapper.src.util.PermutationGeneratorWrapper %*&#10;"/>
+    
+    <!-- ArrayIncrementorWrapper script -->
+    <echo file="${java.wrapper.scripts}/ArrayIncrementorWrapper" 
+          message="#!/bin/bash&#10;java -cp ${java.wrapper.classes}:${class.dir}:${jar.dir}/* java_wrapper.src.util.ArrayIncrementorWrapper &quot;$@&quot;&#10;"/>
+    <chmod file="${java.wrapper.scripts}/ArrayIncrementorWrapper" perm="755"/>
+    <echo file="${java.wrapper.scripts}/ArrayIncrementorWrapper.bat" 
+          message="@echo off&#10;java -cp ${java.wrapper.classes};${class.dir};${jar.dir}\* java_wrapper.src.util.ArrayIncrementorWrapper %*&#10;"/>
+    
     <!-- PartitionWrapper script -->
     <echo file="${java.wrapper.scripts}/PartitionWrapper" 
           message="#!/bin/bash&#10;java -cp ${java.wrapper.classes}:${class.dir}:${jar.dir}/* java_wrapper.src.alg.conlat.PartitionWrapper &quot;$@&quot;&#10;"/>
