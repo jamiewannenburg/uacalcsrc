@@ -27,7 +27,7 @@ import pytest
 def build_java_command(wrapper_class: str, args: List[str]) -> List[str]:
     """Build platform-independent Java command."""
     separator = ";" if platform.system() == "Windows" else ":"
-    classpath = f"java_wrapper/build/classes{separator}build/classes{separator}jars/*"
+    classpath = f"java_wrapper/build/classes{separator}build/classes{separator}org{separator}jars/*"
     
     return ["java", "-cp", classpath, wrapper_class] + args
 

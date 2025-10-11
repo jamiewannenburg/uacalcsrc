@@ -86,8 +86,8 @@ mod test_infrastructure {
     fn build_java_command(wrapper_class: &str, args: &[&str]) -> Vec<String> {
         let separator = if cfg!(target_os = "windows") { ";" } else { ":" };
         let classpath = format!(
-            "java_wrapper/build/classes{}build/classes{}jars/*",
-            separator, separator
+            "java_wrapper/build/classes{}build/classes{}org{}jars/*",
+            separator, separator, separator
         );
         
         let mut cmd = vec![

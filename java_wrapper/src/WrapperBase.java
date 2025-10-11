@@ -52,7 +52,12 @@ public abstract class WrapperBase {
             if (arg.startsWith("--")) {
                 // Long option
                 String key = arg.substring(2);
-                if (i + 1 < args.length && !args[i + 1].startsWith("-")) {
+                if (key.contains("=")) {
+                    // Handle --key=value format
+                    String[] parts = key.split("=", 2);
+                    options.put(parts[0], parts[1]);
+                } else if (i + 1 < args.length && !args[i + 1].startsWith("-")) {
+                    // Handle --key value format
                     options.put(key, args[++i]);
                 } else {
                     options.put(key, "true");

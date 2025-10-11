@@ -6,6 +6,9 @@ use uacalc::util::array_string;
 use uacalc::util::permutation_generator;
 use uacalc::util::array_incrementor;
 use uacalc::util::int_array::{IntArrayTrait, IntArray};
+use uacalc::util::virtuallist::{
+    LongList, IntTuples, IntTuplesWithMin, FixedSizedSubsets, Subsets, Permutations, LongListUtils
+};
 use std::sync::Arc;
 use std::collections::{HashMap, HashSet};
 
@@ -1425,6 +1428,251 @@ impl PyIntArray {
     }
 }
 
+/// Python wrapper for IntTuples
+#[pyclass]
+pub struct PyIntTuples {
+    inner: IntTuples,
+}
+
+#[pymethods]
+impl PyIntTuples {
+    /// Create a new IntTuples LongList.
+    #[new]
+    #[pyo3(signature = (tuple_length, base))]
+    fn new(tuple_length: usize, base: usize) -> PyResult<Self> {
+        match IntTuples::new_safe(tuple_length, base) {
+            Ok(inner) => Ok(PyIntTuples { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Get the kth element.
+    fn get(&self, k: i64) -> Vec<i32> {
+        self.inner.get(k)
+    }
+    
+    /// Get the size of the list.
+    fn size(&self) -> i64 {
+        self.inner.size()
+    }
+    
+    /// Python string representation
+    fn __str__(&self) -> String {
+        format!("IntTuples(tuple_length={}, base={}, size={})", 
+                self.inner.tuple_length, self.inner.base, self.inner.size())
+    }
+    
+    /// Python repr representation
+    fn __repr__(&self) -> String {
+        format!("IntTuples({}, {})", self.inner.tuple_length, self.inner.base)
+    }
+}
+
+/// Python wrapper for IntTuplesWithMin
+#[pyclass]
+pub struct PyIntTuplesWithMin {
+    inner: IntTuplesWithMin,
+}
+
+#[pymethods]
+impl PyIntTuplesWithMin {
+    /// Create a new IntTuplesWithMin LongList.
+    #[new]
+    #[pyo3(signature = (tuple_length, base, min))]
+    fn new(tuple_length: usize, base: usize, min: usize) -> PyResult<Self> {
+        match IntTuplesWithMin::new_safe(tuple_length, base, min) {
+            Ok(inner) => Ok(PyIntTuplesWithMin { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Get the kth element.
+    fn get(&self, k: i64) -> Vec<i32> {
+        self.inner.get(k)
+    }
+    
+    /// Get the size of the list.
+    fn size(&self) -> i64 {
+        self.inner.size()
+    }
+    
+    /// Python string representation
+    fn __str__(&self) -> String {
+        format!("IntTuplesWithMin(tuple_length={}, base={}, min={}, size={})", 
+                self.inner.tuple_length, self.inner.base, self.inner.min, self.inner.size())
+    }
+    
+    /// Python repr representation
+    fn __repr__(&self) -> String {
+        format!("IntTuplesWithMin({}, {}, {})", self.inner.tuple_length, self.inner.base, self.inner.min)
+    }
+}
+
+/// Python wrapper for FixedSizedSubsets
+#[pyclass]
+pub struct PyFixedSizedSubsets {
+    inner: FixedSizedSubsets,
+}
+
+#[pymethods]
+impl PyFixedSizedSubsets {
+    /// Create a new FixedSizedSubsets LongList.
+    #[new]
+    #[pyo3(signature = (subset_size, set_size))]
+    fn new(subset_size: usize, set_size: usize) -> PyResult<Self> {
+        match FixedSizedSubsets::new_safe(subset_size, set_size) {
+            Ok(inner) => Ok(PyFixedSizedSubsets { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Get the kth element.
+    fn get(&self, k: i64) -> Vec<i32> {
+        self.inner.get(k)
+    }
+    
+    /// Get the size of the list.
+    fn size(&self) -> i64 {
+        self.inner.size()
+    }
+    
+    /// Python string representation
+    fn __str__(&self) -> String {
+        format!("FixedSizedSubsets(subset_size={}, set_size={}, size={})", 
+                self.inner.subset_size, self.inner.set_size, self.inner.size())
+    }
+    
+    /// Python repr representation
+    fn __repr__(&self) -> String {
+        format!("FixedSizedSubsets({}, {})", self.inner.subset_size, self.inner.set_size)
+    }
+}
+
+/// Python wrapper for Subsets
+#[pyclass]
+pub struct PySubsets {
+    inner: Subsets,
+}
+
+#[pymethods]
+impl PySubsets {
+    /// Create a new Subsets LongList.
+    #[new]
+    #[pyo3(signature = (set_size))]
+    fn new(set_size: usize) -> PyResult<Self> {
+        match Subsets::new_safe(set_size) {
+            Ok(inner) => Ok(PySubsets { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Get the kth element.
+    fn get(&self, k: i64) -> Vec<i32> {
+        self.inner.get(k)
+    }
+    
+    /// Get the size of the list.
+    fn size(&self) -> i64 {
+        self.inner.size()
+    }
+    
+    /// Python string representation
+    fn __str__(&self) -> String {
+        format!("Subsets(set_size={}, size={})", self.inner.set_size, self.inner.size())
+    }
+    
+    /// Python repr representation
+    fn __repr__(&self) -> String {
+        format!("Subsets({})", self.inner.set_size)
+    }
+}
+
+/// Python wrapper for Permutations
+#[pyclass]
+pub struct PyPermutations {
+    inner: Permutations,
+}
+
+#[pymethods]
+impl PyPermutations {
+    /// Create a new Permutations LongList.
+    #[new]
+    #[pyo3(signature = (n))]
+    fn new(n: usize) -> PyResult<Self> {
+        match Permutations::new_safe(n) {
+            Ok(inner) => Ok(PyPermutations { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Get the kth element.
+    fn get(&self, k: i64) -> Vec<i32> {
+        self.inner.get(k)
+    }
+    
+    /// Get the size of the list.
+    fn size(&self) -> i64 {
+        self.inner.size()
+    }
+    
+    /// Python string representation
+    fn __str__(&self) -> String {
+        format!("Permutations(n={}, size={})", self.inner.n, self.inner.size())
+    }
+    
+    /// Python repr representation
+    fn __repr__(&self) -> String {
+        format!("Permutations({})", self.inner.n)
+    }
+}
+
+/// Python wrapper for LongListUtils
+#[pyclass]
+pub struct PyLongListUtils;
+
+#[pymethods]
+impl PyLongListUtils {
+    /// Create a new LongListUtils instance (static methods, so this is just a placeholder)
+    #[new]
+    fn new() -> Self {
+        PyLongListUtils
+    }
+    
+    /// Calculate factorial of n
+    #[staticmethod]
+    fn factorial(n: usize) -> i64 {
+        LongListUtils::factorial(n)
+    }
+    
+    /// Calculate binomial coefficient C(n, r)
+    #[staticmethod]
+    fn binomial(n: usize, r: usize) -> i64 {
+        LongListUtils::binomial(n, r)
+    }
+    
+    /// Calculate log2 of k
+    #[staticmethod]
+    fn log2(k: i64) -> usize {
+        LongListUtils::log2(k)
+    }
+    
+    /// Calculate 2^r
+    #[staticmethod]
+    fn pow2(r: usize) -> i64 {
+        LongListUtils::pow2(r)
+    }
+    
+    /// Python string representation
+    fn __str__(&self) -> String {
+        "LongListUtils".to_string()
+    }
+    
+    /// Python repr representation
+    fn __repr__(&self) -> String {
+        "LongListUtils()".to_string()
+    }
+}
+
 pub fn register_util_module(py: Python, m: &PyModule) -> PyResult<()> {
     // Register classes internally but only export clean names
     m.add_class::<PyHorner>()?;
@@ -1438,6 +1686,12 @@ pub fn register_util_module(py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyArrayIncrementorImpl>()?;
     m.add_class::<PySimpleArrayIncrementor>()?;
     m.add_class::<PyIntArray>()?;
+    m.add_class::<PyIntTuples>()?;
+    m.add_class::<PyIntTuplesWithMin>()?;
+    m.add_class::<PyFixedSizedSubsets>()?;
+    m.add_class::<PySubsets>()?;
+    m.add_class::<PyPermutations>()?;
+    m.add_class::<PyLongListUtils>()?;
     
     // Export only clean names (without Py prefix)
     m.add("Horner", m.getattr("PyHorner")?)?;
@@ -1447,6 +1701,12 @@ pub fn register_util_module(py: Python, m: &PyModule) -> PyResult<()> {
     m.add("ArrayIncrementorImpl", m.getattr("PyArrayIncrementorImpl")?)?;
     m.add("SimpleArrayIncrementor", m.getattr("PySimpleArrayIncrementor")?)?;
     m.add("IntArray", m.getattr("PyIntArray")?)?;
+    m.add("IntTuples", m.getattr("PyIntTuples")?)?;
+    m.add("IntTuplesWithMin", m.getattr("PyIntTuplesWithMin")?)?;
+    m.add("FixedSizedSubsets", m.getattr("PyFixedSizedSubsets")?)?;
+    m.add("Subsets", m.getattr("PySubsets")?)?;
+    m.add("Permutations", m.getattr("PyPermutations")?)?;
+    m.add("LongListUtils", m.getattr("PyLongListUtils")?)?;
     
     // Remove the Py* names from the module to avoid confusion
     let module_dict = m.dict();
@@ -1461,6 +1721,12 @@ pub fn register_util_module(py: Python, m: &PyModule) -> PyResult<()> {
     module_dict.del_item("PyArrayIncrementorImpl")?;
     module_dict.del_item("PySimpleArrayIncrementor")?;
     module_dict.del_item("PyIntArray")?;
+    module_dict.del_item("PyIntTuples")?;
+    module_dict.del_item("PyIntTuplesWithMin")?;
+    module_dict.del_item("PyFixedSizedSubsets")?;
+    module_dict.del_item("PySubsets")?;
+    module_dict.del_item("PyPermutations")?;
+    module_dict.del_item("PyLongListUtils")?;
     
     Ok(())
 }

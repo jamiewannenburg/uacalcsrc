@@ -288,11 +288,14 @@ def test_[method_name](self):
 
 ### Build Commands
 ```bash
-# Compile Java wrapper
+# Compile Java wrapper (if using ant)
 ant compile-wrappers
 
+# OR manually compile Java wrapper
+javac -cp "java_wrapper/src:org" java_wrapper/src/WrapperBase.java java_wrapper/src/[package]/[ClassName]Wrapper.java
+
 # Test wrapper functionality
-java -cp java_wrapper/build/classes:build/classes:jars/* java_wrapper.src.[package].[ClassName]Wrapper help
+java -cp "java_wrapper/build/classes:build/classes:org:jars/*" java_wrapper.src.[package].[ClassName]Wrapper help
 
 # Compile Rust library
 cargo build --release
@@ -318,6 +321,8 @@ pytest python/uacalc/tests/test_[class_name].py -v
 - Verify cross-language compatibility
 - **Update `WrapperBase.java`** to handle `List` serialization properly
 - **Run doctests separately** to catch compilation issues early
+- **Include `org` directory in classpath** for Java wrapper compilation and execution
+- **Use `--key value` format for test arguments** instead of `--key=value` format
 
 ### Required WrapperBase.java Updates
 
@@ -423,6 +428,10 @@ sl = SimpleList()
 11. **Don't forget to implement `Hash` trait manually** - When using `HashSet` in structs
 12. **Don't use `result` field in test JSON** - Use `status` field to avoid conflicts with comparison logic
 13. **Don't forget to handle `List` serialization in Java** - Update `WrapperBase` for proper JSON arrays
+14. **Don't forget the `org` directory in Java classpath** - Always include it for compilation and execution
+15. **Don't use `--key=value` format in tests** - Use `--key value` format instead
+16. **Don't assume Java wrapper data is already parsed** - Parse the `data` field twice in Python tests
+17. **Don't make Rust struct fields private if accessed by Python** - Make them public for Python bindings
 
 ## 9. File Naming Conventions
 
@@ -613,6 +622,89 @@ public List<String> getExtensions() {
 }
 ```
 
+### Issue 9: Java Wrapper Classpath Issues
+
+**Problem**: Java wrapper compilation and execution fails due to missing `org` directory in classpath.
+
+**Solution**: Always include the `org` directory in the classpath for both compilation and execution.
+
+```bash
+# ❌ WRONG - Missing org directory
+javac -cp "java_wrapper/src" java_wrapper/src/WrapperBase.java
+java -cp "java_wrapper/build/classes:build/classes:jars/*" java_wrapper.src.util.LongListWrapper
+
+# ✅ CORRECT - Include org directory
+javac -cp "java_wrapper/src:org" java_wrapper/src/WrapperBase.java
+java -cp "java_wrapper/build/classes:build/classes:org:jars/*" java_wrapper.src.util.LongListWrapper
+```
+
+### Issue 10: Java Argument Parsing Format
+
+**Problem**: Java `WrapperBase.parseArgs()` method doesn't handle `--key=value` format correctly, causing tests to fail.
+
+**Solution**: Use `--key value` format in tests instead of `--key=value` format.
+
+```rust
+// ❌ WRONG - Causes argument parsing failures
+compare_with_java!(
+    config,
+    "java_wrapper.src.util.LongListWrapper",
+    ["factorial", "--n=5"],  // This format fails
+    || { ... }
+);
+
+// ✅ CORRECT - Use space-separated format
+compare_with_java!(
+    config,
+    "java_wrapper.src.util.LongListWrapper", 
+    ["factorial", "--n", "5"],  // This format works
+    || { ... }
+);
+```
+
+### Issue 11: Python Test JSON Parsing
+
+**Problem**: Java wrapper returns nested JSON where the `data` field contains a JSON string, not a JSON object.
+
+**Solution**: Parse the `data` field twice in Python tests.
+
+```python
+# ❌ WRONG - Assumes data is already a JSON object
+java_result = run_java_wrapper("factorial", ["--n", "5"])
+assert result == java_result["data"]["status"]  # Fails: data is a string
+
+# ✅ CORRECT - Parse data field twice
+def run_java_wrapper(command, args):
+    # ... existing code ...
+    output = json.loads(result.stdout)
+    # Parse the data field again if it's a string
+    if "data" in output and isinstance(output["data"], str):
+        output["data"] = json.loads(output["data"])
+    return output
+```
+
+### Issue 12: Rust Field Visibility for Python Bindings
+
+**Problem**: Python bindings can't access private fields of Rust structs, causing compilation errors.
+
+**Solution**: Make fields public that need to be accessed by Python bindings.
+
+```rust
+// ❌ WRONG - Private fields cause Python binding errors
+pub struct IntTuples {
+    tuple_length: usize,  // Private field
+    base: usize,          // Private field
+    size: i64,           // Private field
+}
+
+// ✅ CORRECT - Make fields public for Python access
+pub struct IntTuples {
+    pub tuple_length: usize,  // Public field
+    pub base: usize,          // Public field  
+    pub size: i64,           // Public field
+}
+```
+
 ## 12. Verification Checklist
 
 Before marking a translation as complete, verify:
@@ -631,3 +723,8 @@ Before marking a translation as complete, verify:
 - [ ] Hash implementations are consistent
 - [ ] JSON serialization works correctly
 - [ ] Platform compatibility is maintained
+- [ ] **Java wrapper classpath includes `org` directory**
+- [ ] **Test arguments use `--key value` format, not `--key=value`**
+- [ ] **Python tests handle nested JSON parsing correctly**
+- [ ] **Rust struct fields are public if accessed by Python bindings**
+- [ ] **Java wrapper argument parsing works correctly**
