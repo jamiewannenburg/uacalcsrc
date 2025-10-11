@@ -9,7 +9,7 @@ use std::time::Duration;
 
 #[test]
 fn test_empty_list_creation() {
-    let list = SimpleList::new();
+    let list = SimpleList::<i32>::new();
     assert!(list.is_empty());
     assert_eq!(list.size(), 0);
     assert!(list.first().is_none());
@@ -17,29 +17,29 @@ fn test_empty_list_creation() {
 
 #[test]
 fn test_cons_operation() {
-    let empty = SimpleList::new();
+    let empty = SimpleList::<i32>::new();
     let list = empty.cons_safe(42).unwrap();
     
     assert!(!list.is_empty());
     assert_eq!(list.size(), 1);
-    assert_eq!(*list.first_as::<i32>().unwrap(), 42);
+    assert_eq!(*list.first().unwrap(), 42);
 }
 
 #[test]
 fn test_multiple_cons() {
-    let empty = SimpleList::new();
+    let empty = SimpleList::<i32>::new();
     let list = empty.cons_safe(3).unwrap()
                    .cons_safe(2).unwrap()
                    .cons_safe(1).unwrap();
     
     assert_eq!(list.size(), 3);
-    assert_eq!(*list.first_as::<i32>().unwrap(), 1);
+    assert_eq!(*list.first().unwrap(), 1);
 }
 
 #[test]
 fn test_append() {
-    let list1 = SimpleList::new().cons_safe(1).unwrap().cons_safe(2).unwrap();
-    let list2 = SimpleList::new().cons_safe(3).unwrap().cons_safe(4).unwrap();
+    let list1 = SimpleList::<i32>::new().cons_safe(1).unwrap().cons_safe(2).unwrap();
+    let list2 = SimpleList::<i32>::new().cons_safe(3).unwrap().cons_safe(4).unwrap();
     let result = list1.append(&list2);
     
     assert_eq!(result.size(), 4);
@@ -47,7 +47,7 @@ fn test_append() {
 
 #[test]
 fn test_reverse() {
-    let list = SimpleList::new().cons_safe(1).unwrap()
+    let list = SimpleList::<i32>::new().cons_safe(1).unwrap()
                    .cons_safe(2).unwrap()
                    .cons_safe(3).unwrap();
     let reversed = list.reverse();
@@ -55,12 +55,12 @@ fn test_reverse() {
     assert_eq!(reversed.size(), 3);
     // After reversing (3 (2 (1 ()))) becomes (1 (2 (3 ())))
     // The first element should be 1
-    assert_eq!(*reversed.first_as::<i32>().unwrap(), 1);
+    assert_eq!(*reversed.first().unwrap(), 1);
 }
 
 #[test]
 fn test_contains() {
-    let list = SimpleList::new().cons_safe(1).unwrap()
+    let list = SimpleList::<i32>::new().cons_safe(1).unwrap()
                    .cons_safe(2).unwrap()
                    .cons_safe(3).unwrap();
     
@@ -70,19 +70,19 @@ fn test_contains() {
 
 #[test]
 fn test_get() {
-    let list = SimpleList::new().cons_safe(1).unwrap()
+    let list = SimpleList::<i32>::new().cons_safe(1).unwrap()
                    .cons_safe(2).unwrap()
                    .cons_safe(3).unwrap();
     
     // The list is (3 (2 (1 ()))), so indices are 0=3, 1=2, 2=1
-    assert_eq!(*list.get_safe(0).unwrap().unwrap().downcast_ref::<i32>().unwrap(), 3);
-    assert_eq!(*list.get_safe(1).unwrap().unwrap().downcast_ref::<i32>().unwrap(), 2);
-    assert_eq!(*list.get_safe(2).unwrap().unwrap().downcast_ref::<i32>().unwrap(), 1);
+    assert_eq!(*list.get_safe(0).unwrap().unwrap(), 3);
+    assert_eq!(*list.get_safe(1).unwrap().unwrap(), 2);
+    assert_eq!(*list.get_safe(2).unwrap().unwrap(), 1);
 }
 
 #[test]
 fn test_index_of() {
-    let list = SimpleList::new().cons_safe(1).unwrap()
+    let list = SimpleList::<i32>::new().cons_safe(1).unwrap()
                    .cons_safe(2).unwrap()
                    .cons_safe(3).unwrap();
     
@@ -92,7 +92,7 @@ fn test_index_of() {
 
 #[test]
 fn test_sub_list() {
-    let list = SimpleList::new().cons_safe(1).unwrap()
+    let list = SimpleList::<i32>::new().cons_safe(1).unwrap()
                    .cons_safe(2).unwrap()
                    .cons_safe(3).unwrap()
                    .cons_safe(4).unwrap();
@@ -103,15 +103,15 @@ fn test_sub_list() {
 
 #[test]
 fn test_iterator() {
-    let list = SimpleList::new().cons_safe(1).unwrap()
+    let list = SimpleList::<i32>::new().cons_safe(1).unwrap()
                    .cons_safe(2).unwrap()
                    .cons_safe(3).unwrap();
     
     let mut iter = uacalc::util::simple_list::SimpleListIterator::new(list.clone());
     // The list is (3 (2 (1 ()))), so first element is 3
-    assert_eq!(*iter.next().unwrap().downcast_ref::<i32>().unwrap(), 3);
-    assert_eq!(*iter.next().unwrap().downcast_ref::<i32>().unwrap(), 2);
-    assert_eq!(*iter.next().unwrap().downcast_ref::<i32>().unwrap(), 1);
+    assert_eq!(iter.next().unwrap(), 3);
+    assert_eq!(iter.next().unwrap(), 2);
+    assert_eq!(iter.next().unwrap(), 1);
     assert!(iter.next().is_none());
 }
 
@@ -121,16 +121,16 @@ fn test_from_collection() {
     let list = SimpleList::from_collection_safe(&vec).unwrap();
     
     assert_eq!(list.size(), 4);
-    assert_eq!(*list.first_as::<i32>().unwrap(), 1);
+    assert_eq!(*list.first().unwrap(), 1);
 }
 
 #[test]
 fn test_equality_and_hashing() {
-    let list1 = SimpleList::new()
+    let list1 = SimpleList::<&str>::new()
         .cons_safe("a").unwrap()
         .cons_safe("b").unwrap();
     
-    let list2 = SimpleList::new()
+    let list2 = SimpleList::<&str>::new()
         .cons_safe("a").unwrap()
         .cons_safe("b").unwrap();
     
@@ -152,7 +152,7 @@ fn test_equality_and_hashing() {
 
 #[test]
 fn test_ordering() {
-    let empty = SimpleList::new();
+    let empty = SimpleList::<&str>::new();
     let list1 = empty.cons_safe("a").unwrap();
     let list2 = empty.cons_safe("a").unwrap().cons_safe("b").unwrap();
     
@@ -167,7 +167,7 @@ fn test_ordering() {
 #[test]
 fn test_memory_sharing() {
     // Test that lists share memory efficiently
-    let base = SimpleList::new()
+    let base = SimpleList::<&str>::new()
         .cons_safe("x").unwrap()
         .cons_safe("y").unwrap();
     
@@ -186,7 +186,7 @@ fn test_memory_sharing() {
 #[test]
 fn test_edge_cases() {
     // Test operations on empty list
-    let empty = SimpleList::new();
+    let empty = SimpleList::<&str>::new();
     
     assert!(empty.is_empty());
     assert_eq!(empty.size(), 0);
@@ -199,7 +199,7 @@ fn test_edge_cases() {
     let single = empty.cons_safe("a").unwrap();
     assert!(!single.is_empty());
     assert_eq!(single.size(), 1);
-    assert_eq!(*single.first_as::<&str>().unwrap(), "a");
+    assert_eq!(*single.first().unwrap(), "a");
     assert_eq!(single.rest(), empty);
     assert_eq!(single.reverse(), single);
 }
@@ -210,7 +210,7 @@ fn test_performance_characteristics() {
     let start = std::time::Instant::now();
     
     // Create a moderately large list
-    let mut list = SimpleList::new();
+    let mut list = SimpleList::<i32>::new();
     for i in (0..1000).rev() {
         list = list.cons_safe(i).unwrap();
     }

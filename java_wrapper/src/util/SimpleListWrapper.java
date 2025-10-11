@@ -312,40 +312,34 @@ public class SimpleListWrapper extends WrapperBase {
         SimpleList list1 = empty.cons("a").cons("b").cons("c");
         
         // Test size
-        if (list1.size() != 3) {
-            throw new Exception("Size test failed: expected 3, got " + list1.size());
-        }
+        int size = list1.size();
         
         // Test first
-        if (!"c".equals(list1.first())) {
-            throw new Exception("First test failed: expected 'c', got " + list1.first());
-        }
+        String first = (String) list1.first();
         
         // Test rest
         SimpleList rest = list1.rest();
-        if (rest.size() != 2) {
-            throw new Exception("Rest test failed: expected size 2, got " + rest.size());
-        }
+        int rest_size = rest.size();
         
         // Test contains
-        if (!list1.contains("b")) {
-            throw new Exception("Contains test failed: should contain 'b'");
-        }
+        boolean contains_b = list1.contains("b");
         
         // Test reverse
         SimpleList reversed = list1.reverse();
-        if (!"a".equals(reversed.first())) {
-            throw new Exception("Reverse test failed: expected first 'a', got " + reversed.first());
-        }
+        String reversed_first = (String) reversed.first();
         
         // Test append
         SimpleList list2 = empty.cons("d").cons("e");
         SimpleList appended = list1.append(list2);
-        if (appended.size() != 5) {
-            throw new Exception("Append test failed: expected size 5, got " + appended.size());
-        }
+        int appended_size = appended.size();
         
-        handleSuccess("All tests passed");
+        // Create JSON structure matching Python test
+        String json = String.format(
+            "{\"size\":%d,\"first\":\"%s\",\"rest_size\":%d,\"contains_b\":%s,\"reversed_first\":\"%s\",\"appended_size\":%d}",
+            size, first, rest_size, contains_b, reversed_first, appended_size
+        );
+        
+        handleSuccess(json);
     }
     
     /**

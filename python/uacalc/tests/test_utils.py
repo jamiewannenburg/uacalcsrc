@@ -27,6 +27,8 @@ import pytest
 @dataclass
 class TestConfig:
     """Configuration for test timeouts and memory limits."""
+    __test__ = False  # Tell pytest not to collect this as a test class
+    
     default_timeout: float = 60.0  # seconds
     memory_limit_mb: int = 1024  # MB
     java_wrapper_path: str = "java_wrapper/build/scripts"
@@ -75,6 +77,7 @@ class MemoryMonitor:
 
 class TestHarness:
     """Test harness for running UACalc operations with full validation."""
+    __test__ = False  # Tell pytest not to collect this as a test class
     
     def __init__(self, config: TestConfig):
         self.config = config

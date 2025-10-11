@@ -218,8 +218,17 @@ public class HornerWrapper extends WrapperBase {
      */
     private void handleTest(Map<String, String> options) throws Exception {
         // Run the original test from the main method
-        String[] testArgs = {};
-        org.uacalc.util.Horner.main(testArgs);
+        // Redirect stdout to prevent polluting the JSON output
+        java.io.PrintStream originalOut = System.out;
+        try {
+            // Redirect stdout to stderr so it doesn't interfere with JSON output
+            System.setOut(new java.io.PrintStream(System.err));
+            String[] testArgs = {};
+            org.uacalc.util.Horner.main(testArgs);
+        } finally {
+            // Restore original stdout
+            System.setOut(originalOut);
+        }
         
         Map<String, Object> data = new HashMap<>();
         data.put("message", "Test completed successfully");

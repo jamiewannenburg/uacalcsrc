@@ -3,25 +3,359 @@ use pyo3::exceptions::PyValueError;
 use uacalc::util::horner;
 use uacalc::util::simple_list;
 use std::sync::Arc;
+use std::collections::HashMap;
 
-/// Helper function to convert PyObject to Arc<dyn Any + Send + Sync>
-fn pyobject_to_any(obj: PyObject) -> PyResult<Arc<dyn std::any::Any + Send + Sync>> {
-    Python::with_gil(|py| {
-        // Try to extract common Python types
-        if let Ok(int_val) = obj.extract::<i32>(py) {
-            Ok(Arc::new(int_val) as Arc<dyn std::any::Any + Send + Sync>)
-        } else if let Ok(string_val) = obj.extract::<String>(py) {
-            Ok(Arc::new(string_val) as Arc<dyn std::any::Any + Send + Sync>)
-        } else if let Ok(bool_val) = obj.extract::<bool>(py) {
-            Ok(Arc::new(bool_val) as Arc<dyn std::any::Any + Send + Sync>)
-        } else if let Ok(str_val) = obj.extract::<&str>(py) {
-            Ok(Arc::new(str_val.to_string()) as Arc<dyn std::any::Any + Send + Sync>)
-        } else {
-            // For other types, convert to string representation
-            let str_repr = obj.to_string();
-            Ok(Arc::new(str_repr) as Arc<dyn std::any::Any + Send + Sync>)
+/// A type-erased SimpleList that can hold any Python object
+/// This maintains the linked list structure while allowing dynamic typing
+#[derive(Debug, Clone)]
+pub enum PySimpleListInner {
+    Cons {
+        first: PyObject,
+        rest: Arc<PySimpleListInner>,
+    },
+    Empty,
+}
+
+impl PySimpleListInner {
+    /// Create a new empty list
+    pub fn new() -> Arc<Self> {
+        Arc::new(PySimpleListInner::Empty)
+    }
+
+    /// Create a new list with a single element
+    pub fn new_safe(obj: PyObject) -> Result<Arc<Self>, String> {
+        Ok(Arc::new(PySimpleListInner::Cons {
+            first: obj,
+            rest: Self::new(),
+        }))
+    }
+
+    /// Constructs a list with obj followed by list (cons operation)
+    pub fn cons_safe(self: &Arc<Self>, obj: PyObject) -> Result<Arc<Self>, String> {
+        Ok(Arc::new(PySimpleListInner::Cons {
+            first: obj,
+            rest: self.clone(),
+        }))
+    }
+
+    /// Check if the list is empty
+    pub fn is_empty(&self) -> bool {
+        matches!(self, PySimpleListInner::Empty)
+    }
+
+    /// Get the size of the list (inefficient - O(n))
+    pub fn size(&self) -> usize {
+        let mut count = 0;
+        let mut current = self;
+        
+        loop {
+            match current {
+                PySimpleListInner::Empty => break,
+                PySimpleListInner::Cons { rest, .. } => {
+                    count += 1;
+                    current = rest.as_ref();
+                }
+            }
         }
-    })
+        
+        count
+    }
+
+    /// Get the first element
+    pub fn first(&self) -> Option<PyObject> {
+        match self {
+            PySimpleListInner::Empty => None,
+            PySimpleListInner::Cons { first, .. } => Some(first.clone()),
+        }
+    }
+
+    /// Get the rest of the list
+    pub fn rest(&self) -> Arc<Self> {
+        match self {
+            PySimpleListInner::Empty => Self::new(),
+            PySimpleListInner::Cons { rest, .. } => rest.clone(),
+        }
+    }
+
+    /// Copy the list (deep copy)
+    pub fn copy_list(&self) -> Arc<Self> {
+        let mut result = Self::new();
+        let mut current = self;
+        
+        // Collect elements in reverse order
+        let mut elements = Vec::new();
+        loop {
+            match current {
+                PySimpleListInner::Empty => break,
+                PySimpleListInner::Cons { first, rest } => {
+                    elements.push(first.clone());
+                    current = rest.as_ref();
+                }
+            }
+        }
+        
+        // Build the result by consing elements in reverse order
+        for element in elements.into_iter().rev() {
+            result = result.cons_safe(element).unwrap();
+        }
+        
+        result
+    }
+
+    /// Append another list to this list
+    pub fn append(&self, other: &Arc<Self>) -> Arc<Self> {
+        let mut result = other.clone();
+        let mut current = self;
+        
+        // Collect elements in reverse order
+        let mut elements = Vec::new();
+        loop {
+            match current {
+                PySimpleListInner::Empty => break,
+                PySimpleListInner::Cons { first, rest } => {
+                    elements.push(first.clone());
+                    current = rest.as_ref();
+                }
+            }
+        }
+        
+        // Build the result by consing elements in reverse order
+        for element in elements.into_iter().rev() {
+            result = result.cons_safe(element).unwrap();
+        }
+        
+        result
+    }
+
+    /// Reverse the list
+    pub fn reverse(&self) -> Arc<Self> {
+        self.reverse_with(Self::new())
+    }
+
+    /// Reverse the list and append another list (revappend)
+    pub fn reverse_with(&self, other: Arc<Self>) -> Arc<Self> {
+        let mut result = other;
+        let mut current = self;
+        
+        loop {
+            match current {
+                PySimpleListInner::Empty => break,
+                PySimpleListInner::Cons { first, rest } => {
+                    result = result.cons_safe(first.clone()).unwrap();
+                    current = rest.as_ref();
+                }
+            }
+        }
+        
+        result
+    }
+
+    /// Check if the list contains an element
+    pub fn contains(&self, obj: &PyObject) -> bool {
+        let mut current = self;
+        
+        loop {
+            match current {
+                PySimpleListInner::Empty => return false,
+                PySimpleListInner::Cons { first, rest } => {
+                    // Use Python's equality comparison
+                    let found = Python::with_gil(|py| {
+                        if let Ok(equal) = first.call_method1(py, "__eq__", (obj,)) {
+                            if let Ok(is_equal) = equal.extract::<bool>(py) {
+                                return is_equal;
+                            }
+                        }
+                        false
+                    });
+                    if found {
+                        return true;
+                    }
+                    current = rest.as_ref();
+                }
+            }
+        }
+    }
+
+    /// Get element at index (inefficient - O(n))
+    pub fn get_safe(&self, index: usize) -> Result<Option<PyObject>, String> {
+        // Special case: index 0 can be accessed directly without traversal
+        if index == 0 {
+            return Ok(self.first());
+        }
+        
+        // Traverse to the desired index
+        let mut current = self;
+        let mut current_index = 0;
+        
+        // Traverse to the desired index
+        while current_index < index {
+            current = match current {
+                PySimpleListInner::Empty => {
+                    return Err(format!("Index {} out of bounds - list has only {} elements", index, current_index));
+                },
+                PySimpleListInner::Cons { rest, .. } => {
+                    current_index += 1;
+                    rest.as_ref()
+                },
+            };
+        }
+        
+        // Check if we reached the end before finding the index
+        match current {
+            PySimpleListInner::Empty => {
+                Err(format!("Index {} out of bounds - list has only {} elements", index, current_index))
+            },
+            _ => Ok(current.first())
+        }
+    }
+
+    /// Find index of an element
+    pub fn index_of(&self, obj: &PyObject) -> Option<usize> {
+        let mut current = self;
+        let mut index = 0;
+        
+        loop {
+            match current {
+                PySimpleListInner::Empty => return None,
+                PySimpleListInner::Cons { first, rest } => {
+                    // Use Python's equality comparison
+                    let found = Python::with_gil(|py| {
+                        if let Ok(equal) = first.call_method1(py, "__eq__", (obj,)) {
+                            if let Ok(is_equal) = equal.extract::<bool>(py) {
+                                return is_equal;
+                            }
+                        }
+                        false
+                    });
+                    if found {
+                        return Some(index);
+                    }
+                    current = rest.as_ref();
+                    index += 1;
+                }
+            }
+        }
+    }
+
+    /// Find last index of an element
+    pub fn last_index_of(&self, obj: &PyObject) -> Option<usize> {
+        let mut last_index = None;
+        let mut current = self;
+        let mut index = 0;
+        
+        loop {
+            match current {
+                PySimpleListInner::Empty => return last_index,
+                PySimpleListInner::Cons { first, rest } => {
+                    // Use Python's equality comparison
+                    let found = Python::with_gil(|py| {
+                        if let Ok(equal) = first.call_method1(py, "__eq__", (obj,)) {
+                            if let Ok(is_equal) = equal.extract::<bool>(py) {
+                                return is_equal;
+                            }
+                        }
+                        false
+                    });
+                    if found {
+                        last_index = Some(index);
+                    }
+                    current = rest.as_ref();
+                    index += 1;
+                }
+            }
+        }
+    }
+
+    /// Get a sublist
+    pub fn sub_list_safe(&self, start: usize, end: usize) -> Result<Arc<Self>, String> {
+        if start > end {
+            return Err(format!("Start index {} > end index {}", start, end));
+        }
+        if end > self.size() {
+            return Err(format!("End index {} > list size {}", end, self.size()));
+        }
+        
+        let mut result = Self::new();
+        let mut current = self;
+        let mut index = 0;
+        
+        loop {
+            match current {
+                PySimpleListInner::Empty => break,
+                PySimpleListInner::Cons { first, rest } => {
+                    if index >= start && index < end {
+                        result = result.cons_safe(first.clone())?;
+                    }
+                    if index >= end {
+                        break;
+                    }
+                    current = rest.as_ref();
+                    index += 1;
+                }
+            }
+        }
+        
+        Ok(result.reverse())
+    }
+
+    /// Convert to Python list
+    pub fn to_list(&self, py: Python) -> PyResult<Vec<PyObject>> {
+        let mut result = Vec::new();
+        let mut current = self;
+        
+        loop {
+            match current {
+                PySimpleListInner::Empty => break,
+                PySimpleListInner::Cons { first, rest } => {
+                    result.push(first.clone());
+                    current = rest.as_ref();
+                }
+            }
+        }
+        
+        Ok(result)
+    }
+
+    /// Check if this list contains all elements from another list
+    pub fn contains_all(&self, other: &Arc<Self>) -> bool {
+        let mut current = other;
+        
+        loop {
+            match current.as_ref() {
+                PySimpleListInner::Empty => return true,
+                PySimpleListInner::Cons { first, rest } => {
+                    if !self.contains(first) {
+                        return false;
+                    }
+                    current = rest;
+                }
+            }
+        }
+    }
+
+    /// Convert to string representation
+    pub fn to_string(&self) -> String {
+        let mut result = String::from("(");
+        let mut first = true;
+        let mut current = self;
+        
+        loop {
+            match current {
+                PySimpleListInner::Empty => break,
+                PySimpleListInner::Cons { first: elem, rest } => {
+                    if !first {
+                        result.push(' ');
+                    }
+                    result.push_str(&elem.to_string());
+                    first = false;
+                    current = rest;
+                }
+            }
+        }
+        
+        result.push(')');
+        result
+    }
 }
 
 /// Python wrapper for Horner encoding/decoding operations
@@ -117,7 +451,7 @@ impl PyHorner {
 /// Python wrapper for SimpleList
 #[pyclass]
 pub struct PySimpleList {
-    inner: std::sync::Arc<simple_list::SimpleList>,
+    inner: Arc<PySimpleListInner>,
 }
 
 #[pymethods]
@@ -126,26 +460,23 @@ impl PySimpleList {
     #[new]
     fn new() -> Self {
         PySimpleList {
-            inner: simple_list::SimpleList::new(),
+            inner: PySimpleListInner::new(),
         }
     }
     
     /// Create a new SimpleList with a single element
     #[staticmethod]
     fn make_list(obj: PyObject) -> PyResult<Self> {
-        // Convert Python object to a generic Any type
-        let any_obj = pyobject_to_any(obj)?;
-        let inner = simple_list::SimpleList::new().cons_any(any_obj);
+        let inner = PySimpleListInner::new_safe(obj).map_err(|e| PyValueError::new_err(e))?;
         Ok(PySimpleList { inner })
     }
     
     /// Create a new SimpleList from a Python list
     #[staticmethod]
     fn from_list(py: Python, items: Vec<PyObject>) -> PyResult<Self> {
-        let mut result = simple_list::SimpleList::new();
+        let mut result = PySimpleListInner::new();
         for item in items.into_iter().rev() {
-            let any_obj = pyobject_to_any(item)?;
-            result = result.cons_any(any_obj);
+            result = result.cons_safe(item).map_err(|e| PyValueError::new_err(e))?;
         }
         Ok(PySimpleList { inner: result })
     }
@@ -162,21 +493,7 @@ impl PySimpleList {
     
     /// Get the first element
     fn first(&self) -> Option<PyObject> {
-        self.inner.first().map(|f| {
-            Python::with_gil(|py| {
-                // Try to downcast to common Python types
-                if let Ok(int_val) = f.clone().downcast::<i32>() {
-                    (*int_val).to_object(py)
-                } else if let Ok(string_val) = f.clone().downcast::<String>() {
-                    (*string_val).to_object(py)
-                } else if let Ok(bool_val) = f.clone().downcast::<bool>() {
-                    (*bool_val).to_object(py)
-                } else {
-                    // For other types, convert to string representation
-                    format!("{:?}", f).to_object(py)
-                }
-            })
-        })
+        self.inner.first()
     }
     
     /// Get the rest of the list
@@ -188,8 +505,7 @@ impl PySimpleList {
     
     /// Add an element to the front of the list (cons operation)
     fn cons(&self, obj: PyObject) -> PyResult<Self> {
-        let any_obj = pyobject_to_any(obj)?;
-        let inner = self.inner.cons_any(any_obj);
+        let inner = self.inner.cons_safe(obj).map_err(|e| PyValueError::new_err(e))?;
         Ok(PySimpleList { inner })
     }
     
@@ -223,114 +539,25 @@ impl PySimpleList {
     
     /// Check if the list contains an element
     fn contains(&self, obj: PyObject) -> bool {
-        // For now, we'll do a simple comparison by converting to string
-        // This is a limitation of the current implementation
-        let obj_str = obj.to_string();
-        let mut current = &*self.inner;
-        loop {
-            match current {
-                simple_list::SimpleList::Empty => return false,
-                simple_list::SimpleList::Cons { first, rest } => {
-                    let first_str = if let Ok(int_val) = first.clone().downcast::<i32>() {
-                        (*int_val).to_string()
-                    } else if let Ok(string_val) = first.clone().downcast::<String>() {
-                        (*string_val).clone()
-                    } else if let Ok(bool_val) = first.clone().downcast::<bool>() {
-                        (*bool_val).to_string()
-                    } else {
-                        format!("{:?}", first)
-                    };
-                    
-                    if first_str == obj_str {
-                        return true;
-                    }
-                    current = rest;
-                }
-            }
-        }
+        self.inner.contains(&obj)
     }
     
     /// Get element at index
     fn get(&self, index: usize) -> PyResult<Option<PyObject>> {
         match self.inner.get_safe(index) {
-            Ok(Some(item)) => {
-                Ok(Some(Python::with_gil(|py| {
-                    // Try to downcast to common Python types
-                    if let Ok(int_val) = item.clone().downcast::<i32>() {
-                        (*int_val).to_object(py)
-                    } else if let Ok(string_val) = item.clone().downcast::<String>() {
-                        (*string_val).to_object(py)
-                    } else if let Ok(bool_val) = item.clone().downcast::<bool>() {
-                        (*bool_val).to_object(py)
-                    } else {
-                        format!("{:?}", item).to_object(py)
-                    }
-                })))
-            }
-            Ok(None) => Ok(None),
+            Ok(item) => Ok(item),
             Err(e) => Err(PyValueError::new_err(e)),
         }
     }
     
     /// Find index of an element
     fn index_of(&self, obj: PyObject) -> Option<usize> {
-        let obj_str = obj.to_string();
-        let mut current = &*self.inner;
-        let mut index = 0;
-        
-        loop {
-            match current {
-                simple_list::SimpleList::Empty => return None,
-                simple_list::SimpleList::Cons { first, rest } => {
-                    let first_str = if let Ok(int_val) = first.clone().downcast::<i32>() {
-                        (*int_val).to_string()
-                    } else if let Ok(string_val) = first.clone().downcast::<String>() {
-                        (*string_val).clone()
-                    } else if let Ok(bool_val) = first.clone().downcast::<bool>() {
-                        (*bool_val).to_string()
-                    } else {
-                        format!("{:?}", first)
-                    };
-                    
-                    if first_str == obj_str {
-                        return Some(index);
-                    }
-                    current = rest;
-                    index += 1;
-                }
-            }
-        }
+        self.inner.index_of(&obj)
     }
     
     /// Find last index of an element
     fn last_index_of(&self, obj: PyObject) -> Option<usize> {
-        let obj_str = obj.to_string();
-        let mut last_index = None;
-        let mut current = &*self.inner;
-        let mut index = 0;
-        
-        loop {
-            match current {
-                simple_list::SimpleList::Empty => return last_index,
-                simple_list::SimpleList::Cons { first, rest } => {
-                    let first_str = if let Ok(int_val) = first.clone().downcast::<i32>() {
-                        (*int_val).to_string()
-                    } else if let Ok(string_val) = first.clone().downcast::<String>() {
-                        (*string_val).clone()
-                    } else if let Ok(bool_val) = first.clone().downcast::<bool>() {
-                        (*bool_val).to_string()
-                    } else {
-                        format!("{:?}", first)
-                    };
-                    
-                    if first_str == obj_str {
-                        last_index = Some(index);
-                    }
-                    current = rest;
-                    index += 1;
-                }
-            }
-        }
+        self.inner.last_index_of(&obj)
     }
     
     /// Get a sublist
@@ -343,44 +570,12 @@ impl PySimpleList {
     
     /// Convert to Python list
     fn to_list(&self, py: Python) -> PyResult<Vec<PyObject>> {
-        let mut result = Vec::new();
-        let mut current = &*self.inner;
-        
-        loop {
-            match current {
-                simple_list::SimpleList::Empty => break,
-                simple_list::SimpleList::Cons { first, rest } => {
-                    // Try to downcast to common Python types
-                    let py_obj = if let Ok(int_val) = first.clone().downcast::<i32>() {
-                        (*int_val).to_object(py)
-                    } else if let Ok(string_val) = first.clone().downcast::<String>() {
-                        (*string_val).to_object(py)
-                    } else if let Ok(bool_val) = first.clone().downcast::<bool>() {
-                        (*bool_val).to_object(py)
-                    } else {
-                        format!("{:?}", first).to_object(py)
-                    };
-                    result.push(py_obj);
-                    current = rest;
-                }
-            }
-        }
-        
-        Ok(result)
+        self.inner.to_list(py)
     }
     
     /// Check if this list contains all elements from another list
     fn contains_all(&self, other: &PySimpleList) -> bool {
-        // Simple implementation - check each element
-        let other_list = Python::with_gil(|py| other.to_list(py));
-        if let Ok(other_list) = other_list {
-            for item in other_list {
-                if !self.contains(item) {
-                    return false;
-                }
-            }
-        }
-        true
+        self.inner.contains_all(&other.inner)
     }
     
     /// Python string representation
@@ -395,7 +590,9 @@ impl PySimpleList {
     
     /// Python equality comparison
     fn __eq__(&self, other: &PySimpleList) -> bool {
-        self.inner == other.inner
+        // For now, use string comparison for equality
+        // This could be improved to do proper element-wise comparison
+        self.inner.to_string() == other.inner.to_string()
     }
     
     /// Python hash function
@@ -404,7 +601,7 @@ impl PySimpleList {
         use std::hash::{Hash, Hasher};
         
         let mut hasher = DefaultHasher::new();
-        self.inner.hash(&mut hasher);
+        self.inner.to_string().hash(&mut hasher);
         hasher.finish()
     }
     
@@ -423,7 +620,7 @@ impl PySimpleList {
 /// Iterator for Python SimpleList
 #[pyclass]
 pub struct PySimpleListIterator {
-    current: std::sync::Arc<simple_list::SimpleList>,
+    current: Arc<PySimpleListInner>,
 }
 
 #[pymethods]
@@ -434,17 +631,9 @@ impl PySimpleListIterator {
     
     fn __next__(&mut self, py: Python) -> PyResult<Option<PyObject>> {
         match self.current.as_ref() {
-            simple_list::SimpleList::Empty => Ok(None),
-            simple_list::SimpleList::Cons { first, rest } => {
-                let result = if let Ok(int_val) = first.clone().downcast::<i32>() {
-                    (*int_val).to_object(py)
-                } else if let Ok(string_val) = first.clone().downcast::<String>() {
-                    (*string_val).to_object(py)
-                } else if let Ok(bool_val) = first.clone().downcast::<bool>() {
-                    (*bool_val).to_object(py)
-                } else {
-                    format!("{:?}", first).to_object(py)
-                };
+            PySimpleListInner::Empty => Ok(None),
+            PySimpleListInner::Cons { first, rest } => {
+                let result = first.clone();
                 self.current = rest.clone();
                 Ok(Some(result))
             }
@@ -453,7 +642,7 @@ impl PySimpleListIterator {
 }
 
 impl PySimpleListIterator {
-    fn new(list: std::sync::Arc<simple_list::SimpleList>) -> Self {
+    fn new(list: Arc<PySimpleListInner>) -> Self {
         Self { current: list }
     }
 }
