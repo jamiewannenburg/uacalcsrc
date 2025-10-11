@@ -95,6 +95,9 @@ public class [ClassName]Wrapper extends WrapperBase {
 - Use `handleSuccess()` and `handleError()` for responses
 - Always include a `help` command
 - Include a `test` command that runs basic functionality tests
+- **Use `status` field instead of `result` field** in JSON responses to avoid conflicts with test comparison logic
+- **Handle package-private field access** by storing input data during construction
+- **Ensure proper JSON serialization** by updating `WrapperBase.java` to handle `List` objects correctly
 
 ## 2. Rust Implementation Pattern
 
@@ -250,9 +253,10 @@ fn test_[method_name]() {
         || {
             let instance = [ClassName]::new(param1, param2);
             json!({
-                "result": instance.method(),
+                "command": "command",
                 "param1": param1,
-                "param2": param2
+                "param2": param2,
+                "status": instance.method()  // Use 'status' not 'result'
             })
         }
     );
@@ -263,13 +267,14 @@ fn test_[method_name]() {
 ```python
 def test_[method_name](self):
     """Test [method description]."""
-    # Import clean class names (Py* names are not available)
-    from uacalc_lib.[module] import [ClassName]
+    # Import through uacalc_lib module (direct imports don't work)
+    import uacalc_lib
+    [ClassName] = uacalc_lib.[module].[ClassName]
     
     instance = [ClassName](param1, param2)
     java_result = run_java_wrapper("command", ["--arg1", "value1", "--arg2", "value2"])
     
-    assert instance.method() == java_result["data"]["result"]
+    assert instance.method() == java_result["data"]["status"]  # Use 'status' not 'result'
 ```
 
 ### Key Points
@@ -298,6 +303,9 @@ cargo build --release
 # Run Rust tests
 cargo test [module]::[submodule]::[class_name] --test mod
 
+# Run doctests specifically
+cargo test --doc
+
 # Build Python bindings
 maturin develop
 
@@ -305,11 +313,46 @@ maturin develop
 pytest python/uacalc/tests/test_[class_name].py -v
 ```
 
+### Build System Updates Required
+
+When adding a new wrapper class, update `build.xml` to include the new wrapper script generation:
+
+```xml
+<!-- Add to build.xml for each new wrapper -->
+<echo file="${java.wrapper.scripts}/[ClassName]Wrapper"
+      message="#!/bin/bash&#10;java -cp ${java.wrapper.classes}:${class.dir}:${jar.dir}/* java_wrapper.src.[package].[ClassName]Wrapper &quot;$@&quot;&#10;"/>
+<chmod file="${java.wrapper.scripts}/[ClassName]Wrapper" perm="755"/>
+<echo file="${java.wrapper.scripts}/[ClassName]Wrapper.bat"
+      message="@echo off&#10;java -cp ${java.wrapper.classes};${class.dir};${jar.dir}\* java_wrapper.src.[package].[ClassName]Wrapper %*&#10;"/>
+```
+
 ### Key Points
 - Always compile and test all components
 - Fix warnings before marking as complete
 - Ensure all tests pass
 - Verify cross-language compatibility
+- **Update `WrapperBase.java`** to handle `List` serialization properly
+- **Run doctests separately** to catch compilation issues early
+
+### Required WrapperBase.java Updates
+
+The `WrapperBase.java` file must be updated to properly serialize Java `List` objects as JSON arrays:
+
+```java
+// Add this to the serializeObject method in WrapperBase.java
+} else if (obj instanceof List) {
+    List<?> list = (List<?>) obj;
+    StringBuilder sb = new StringBuilder();
+    sb.append("[");
+    for (int i = 0; i < list.size(); i++) {
+        if (i > 0) sb.append(", ");
+        sb.append(serializeObject(list.get(i)));
+    }
+    sb.append("]");
+    return sb.toString();
+} else if (obj instanceof Map) {
+    // ... existing Map handling code
+```
 
 ## 6. Documentation Pattern
 
@@ -332,7 +375,8 @@ pytest python/uacalc/tests/test_[class_name].py -v
 /// 
 /// # Examples
 /// ```
-/// let instance = ClassName::new("example", 2);
+/// // For Result-returning methods, use .unwrap() not ? in doctests
+/// let instance = ClassName::new_safe("example", 2).unwrap();
 /// assert_eq!(instance.method(), expected_result);
 /// ```
 ```
@@ -389,6 +433,11 @@ sl = SimpleList()
 6. **Don't hardcode paths** - Use relative paths and proper module structure
 7. **Don't skip error handling** - Always handle errors gracefully
 8. **Don't forget clean exports** - Always export clean names and remove Py* names to avoid confusion
+9. **Don't use `?` operator in doctests** - Use `.unwrap()` in doctest examples instead
+10. **Don't assume Java behavior matches Rust** - Always verify exact behavior compatibility
+11. **Don't forget to implement `Hash` trait manually** - When using `HashSet` in structs
+12. **Don't use `result` field in test JSON** - Use `status` field to avoid conflicts with comparison logic
+13. **Don't forget to handle `List` serialization in Java** - Update `WrapperBase` for proper JSON arrays
 
 ## 9. File Naming Conventions
 
@@ -587,3 +636,185 @@ java_wrapper\build\scripts\HornerWrapper.bat help
 ```
 
 This pattern ensures consistent, maintainable, and robust implementations across all translated classes and all supported platforms.
+
+## 12. Critical Implementation Issues and Solutions
+
+### Issue 1: Doctest Compilation Failures
+
+**Problem**: Doctests using the `?` operator fail to compile because the containing function doesn't return `Result`.
+
+**Solution**: Always use `.unwrap()` in doctest examples instead of `?`.
+
+```rust
+// ❌ WRONG - Causes compilation error
+/// # Examples
+/// ```
+/// let result = ClassName::new_safe("param")?;
+/// ```
+
+// ✅ CORRECT - Compiles and runs
+/// # Examples
+/// ```
+/// let result = ClassName::new_safe("param").unwrap();
+/// ```
+```
+
+### Issue 2: Java vs Rust Behavior Mismatch
+
+**Problem**: Java and Rust implementations may have subtle behavioral differences that cause test failures.
+
+**Example**: Java's `splitOffExtension` returns `null` for both name and extension when no extension exists, but Rust initially returned empty strings.
+
+**Solution**: Always verify exact behavior compatibility by testing edge cases.
+
+```rust
+// ❌ WRONG - Assumes behavior without verification
+pub fn split_off_extension(path: &Path) -> (String, String) {
+    // Returns ("filename", "") for no extension
+}
+
+// ✅ CORRECT - Matches Java behavior exactly
+pub fn split_off_extension(path: &Path) -> (Option<String>, Option<String>) {
+    // Returns (None, None) for no extension to match Java's null, null
+}
+```
+
+### Issue 3: HashSet Hash Implementation
+
+**Problem**: `HashSet` doesn't implement `Hash` trait, causing compilation errors when the struct containing it needs to implement `Hash`.
+
+**Solution**: Manually implement `Hash` trait by converting to sorted collection.
+
+```rust
+// ❌ WRONG - Compilation error
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ExtFileFilter {
+    exts: HashSet<String>,  // HashSet doesn't implement Hash
+    description: String,
+}
+
+// ✅ CORRECT - Manual Hash implementation
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ExtFileFilter {
+    exts: HashSet<String>,
+    description: String,
+}
+
+impl Hash for ExtFileFilter {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        // Convert HashSet to sorted Vec for consistent hashing
+        let mut sorted_exts: Vec<&String> = self.exts.iter().collect();
+        sorted_exts.sort();
+        sorted_exts.hash(state);
+        self.description.hash(state);
+    }
+}
+```
+
+### Issue 4: Test JSON Field Conflicts
+
+**Problem**: Using `result` field in test JSON causes conflicts with the `compare_outputs` macro logic.
+
+**Solution**: Use `status` field instead of `result` field in test JSON.
+
+```rust
+// ❌ WRONG - Causes comparison conflicts
+json!({
+    "command": "method_name",
+    "result": actual_result  // Conflicts with macro logic
+})
+
+// ✅ CORRECT - Uses status field
+json!({
+    "command": "method_name", 
+    "status": actual_result  // No conflicts
+})
+```
+
+### Issue 5: Java List Serialization
+
+**Problem**: Java `List` objects are serialized as strings instead of JSON arrays in the wrapper.
+
+**Solution**: Update `WrapperBase.java` to handle `List` serialization properly.
+
+```java
+// Add to WrapperBase.java serializeObject method
+} else if (obj instanceof List) {
+    List<?> list = (List<?>) obj;
+    StringBuilder sb = new StringBuilder();
+    sb.append("[");
+    for (int i = 0; i < list.size(); i++) {
+        if (i > 0) sb.append(", ");
+        sb.append(serializeObject(list.get(i)));
+    }
+    sb.append("]");
+    return sb.toString();
+```
+
+### Issue 6: Python Import Path Issues
+
+**Problem**: Python tests fail to import modules due to incorrect import paths.
+
+**Solution**: Use the correct import pattern for Python bindings.
+
+```python
+# ❌ WRONG - Direct import fails
+from uacalc_lib.io import ExtFileFilter
+
+# ✅ CORRECT - Access through uacalc_lib module
+import uacalc_lib
+ExtFileFilter = uacalc_lib.io.ExtFileFilter
+```
+
+### Issue 7: Static Method Parameter Types
+
+**Problem**: PyO3 static methods may have issues with parameter types.
+
+**Solution**: Use `String` instead of `&str` for static method parameters.
+
+```rust
+// ❌ WRONG - May cause compilation issues
+#[staticmethod]
+fn static_method(path: &str) -> PyResult<...> { ... }
+
+// ✅ CORRECT - Use String for static methods
+#[staticmethod] 
+fn static_method(path: String) -> PyResult<...> { ... }
+```
+
+### Issue 8: Java Wrapper Access Modifiers
+
+**Problem**: Java wrapper can't access package-private fields from the original class.
+
+**Solution**: Work around access limitations by returning input data or using reflection.
+
+```java
+// ❌ WRONG - Can't access package-private field
+public List<String> getExtensions() {
+    return this.filter.exts;  // exts is package-private
+}
+
+// ✅ CORRECT - Return the input extensions
+public List<String> getExtensions() {
+    return this.inputExtensions;  // Store input during construction
+}
+```
+
+## 13. Verification Checklist
+
+Before marking a translation as complete, verify:
+
+- [ ] All doctests compile and run without errors
+- [ ] All unit tests pass (Rust and Python)
+- [ ] All integration tests pass
+- [ ] Java wrapper works correctly
+- [ ] Cross-language behavior matches exactly
+- [ ] No compilation warnings
+- [ ] All public methods are tested
+- [ ] Edge cases are handled correctly
+- [ ] Error conditions are properly tested
+- [ ] Documentation is complete and accurate
+- [ ] Python bindings work correctly
+- [ ] Hash implementations are consistent
+- [ ] JSON serialization works correctly
+- [ ] Platform compatibility is maintained

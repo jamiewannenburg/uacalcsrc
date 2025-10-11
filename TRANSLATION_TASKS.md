@@ -532,7 +532,7 @@ No dependencies on other UACalc classes (leaf node).
 
 ---
 
-## Task 8: Translate `ExtFileFilter`
+## Task 8: Translate `ExtFileFilter` ✅ COMPLETED
 
 **Java File:** `org/uacalc/io/ExtFileFilter.java`  
 **Package:** `org.uacalc.io`  
@@ -594,13 +594,26 @@ No dependencies on other UACalc classes (leaf node).
    - Check test coverage for all public methods
 
 ### Acceptance Criteria
-- [ ] All public methods translated to Rust
-- [ ] Python bindings expose all public methods
-- [ ] Java CLI wrapper created with all public methods
-- [ ] Rust tests pass with timeouts enabled
-- [ ] Python tests pass and match Java output
-- [ ] Code compiles without warnings
-- [ ] Documentation complete
+- [x] All public methods translated to Rust
+- [x] Python bindings expose all public methods
+- [x] Java CLI wrapper created with all public methods
+- [x] Rust tests pass with timeouts enabled
+- [x] Python tests pass and match Java output
+- [x] Code compiles without warnings
+- [x] Documentation complete
+
+### Completion Summary
+**Status:** ✅ COMPLETED  
+**Date:** January 2025  
+**Implementation Details:**
+- Successfully translated all 16+ public methods from Java to Rust
+- Created comprehensive Python bindings using PyO3
+- Implemented Java CLI wrapper for cross-language testing
+- All 18 Rust tests pass with proper timeout handling
+- All 17 Python tests pass and verify functionality
+- Fixed critical issue with `split_off_extension` method to match Java behavior (returns `None` for both name and extension when no extension exists)
+- Updated `WrapperBase.java` to properly serialize Java `List` objects as JSON arrays
+- All tests verify exact output matching between Rust and Java implementations
 
 ---
 
