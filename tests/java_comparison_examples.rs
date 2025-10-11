@@ -10,7 +10,7 @@ use std::time::Duration;
 /// Example test using the compare_with_java! macro
 #[test]
 fn test_horner_encoding_macro() {
-    let config = TestConfig::default();
+    let _config = TestConfig::default();
     
     // This would work once the Horner class is implemented
     // compare_with_java!(
@@ -34,7 +34,7 @@ fn test_horner_encoding_macro() {
 /// Example test using the test_with_java_comparison! macro with timeout
 #[test]
 fn test_complex_algorithm_macro() {
-    let config = TestConfig::default();
+    let _config = TestConfig::default();
     
     // This would work once complex algorithms are implemented
     // test_with_java_comparison!(
@@ -58,7 +58,7 @@ fn test_horner_with_harness() {
         ..Default::default()
     };
     
-    let harness = TestHarness::new(config).expect("Failed to create test harness");
+    let _harness = TestHarness::new(config).expect("Failed to create test harness");
     
     // This would work once the Horner class is implemented
     // let result = harness.compare_with_java(
@@ -86,7 +86,7 @@ fn test_horner_with_harness() {
 #[test]
 fn test_floating_point_with_tolerance() {
     let config = TestConfig::default();
-    let harness = TestHarness::new(config).expect("Failed to create test harness");
+    let _harness = TestHarness::new(config).expect("Failed to create test harness");
     
     // This would work for algorithms that produce floating-point results
     // let result = harness.compare_with_java_tolerance(
@@ -125,7 +125,7 @@ fn test_java_cli_error_handling() {
 /// Example test for timeout handling
 #[test]
 fn test_java_cli_timeout() {
-    let config = TestConfig {
+    let _config = TestConfig {
         default_timeout: Duration::from_millis(100),
         ..Default::default()
     };
@@ -153,7 +153,7 @@ fn test_memory_monitoring() {
         ..Default::default()
     };
     
-    let harness = TestHarness::new(config).expect("Failed to create test harness");
+    let _harness = TestHarness::new(config).expect("Failed to create test harness");
     
     // This would test memory usage during computation
     // let result = harness.run_test("memory_test", || {
@@ -173,7 +173,7 @@ fn test_memory_monitoring() {
 #[test]
 fn test_multiple_java_calls() {
     let config = TestConfig::default();
-    let harness = TestHarness::new(config).expect("Failed to create test harness");
+    let _harness = TestHarness::new(config).expect("Failed to create test harness");
     
     // This would test multiple related operations
     // let results = vec![
@@ -202,7 +202,7 @@ fn test_multiple_java_calls() {
 #[test]
 fn test_batch_processing() {
     let config = TestConfig::default();
-    let harness = TestHarness::new(config).expect("Failed to create test harness");
+    let _harness = TestHarness::new(config).expect("Failed to create test harness");
     
     // This would test batch processing with multiple inputs
     // let test_data = vec![
@@ -229,7 +229,7 @@ fn test_batch_processing() {
 #[test]
 fn test_performance_comparison() {
     let config = TestConfig::default();
-    let harness = TestHarness::new(config).expect("Failed to create test harness");
+    let _harness = TestHarness::new(config).expect("Failed to create test harness");
     
     // This would test performance comparison between Rust and Java
     // let start = std::time::Instant::now();
@@ -255,7 +255,7 @@ fn test_performance_comparison() {
 #[test]
 fn test_edge_cases() {
     let config = TestConfig::default();
-    let harness = TestHarness::new(config).expect("Failed to create test harness");
+    let _harness = TestHarness::new(config).expect("Failed to create test harness");
     
     // This would test edge cases that might cause issues
     // let edge_cases = vec![

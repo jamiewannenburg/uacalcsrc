@@ -3,10 +3,11 @@
 //! These tests verify that the complete application works correctly
 //! and can be used for end-to-end testing scenarios.
 
-use uacalc::alg::*;
-use uacalc::lat::*;
-use uacalc::terms::*;
-use uacalc::common::*;
+// TODO: Add imports when implementing actual tests
+// use uacalc::alg::*;
+// use uacalc::lat::*;
+// use uacalc::terms::*;
+// use uacalc::common::*;
 
 #[test]
 fn test_basic_algebra_creation() {

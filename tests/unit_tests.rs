@@ -3,16 +3,18 @@
 //! These tests focus on testing individual functions and modules
 //! in isolation to ensure they work correctly.
 
-use uacalc::alg::*;
-use uacalc::lat::*;
-use uacalc::terms::*;
-use uacalc::util::*;
-use uacalc::common::*;
+// TODO: Add imports when implementing actual tests
+// use uacalc::alg::*;
+// use uacalc::lat::*;
+// use uacalc::terms::*;
+// use uacalc::util::*;
+// use uacalc::common::*;
 
 #[cfg(test)]
 mod alg_tests {
-    use super::*;
-    use std::time::Duration;
+    // TODO: Add imports when implementing actual tests
+    // use super::*;
+    // use std::time::Duration;
     
     #[test]
     fn test_algebra_creation() {
@@ -72,7 +74,8 @@ mod alg_tests {
 
 #[cfg(test)]
 mod lat_tests {
-    use super::*;
+    // TODO: Add imports when implementing actual tests
+    // use super::*;
     
     #[test]
     fn test_lattice_creation() {
@@ -87,7 +90,8 @@ mod lat_tests {
 
 #[cfg(test)]
 mod terms_tests {
-    use super::*;
+    // TODO: Add imports when implementing actual tests
+    // use super::*;
     
     #[test]
     fn test_term_creation() {
@@ -102,7 +106,8 @@ mod terms_tests {
 
 #[cfg(test)]
 mod util_tests {
-    use super::*;
+    // TODO: Add imports when implementing actual tests
+    // use super::*;
     
     #[test]
     fn test_utility_functions() {

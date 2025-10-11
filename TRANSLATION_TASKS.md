@@ -312,6 +312,7 @@ No dependencies on other UACalc classes (leaf node).
 - [x] Python tests pass and match Java output
 - [x] Code compiles without warnings
 - [x] Documentation complete
+- [ ] TODO: Investigate and fix segfault in large list creation
 
 ---
 

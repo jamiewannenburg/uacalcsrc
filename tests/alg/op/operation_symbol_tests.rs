@@ -1,7 +1,7 @@
 use uacalc::alg::op::OperationSymbol;
 use crate::common::*;
 use serde_json::json;
-use std::time::Duration;
+// use std::time::Duration; // TODO: Add when implementing timeout tests
 
 /// Test basic OperationSymbol creation
 #[test]
@@ -208,7 +208,7 @@ fn test_operation_symbol_equals() {
 /// Test hash code
 #[test]
 fn test_operation_symbol_hash_code() {
-    let config = TestConfig::default();
+    let _config = TestConfig::default();
     
     // Hash codes will be different between Rust and Java due to different algorithms
     // So we just test that the hash is consistent within Rust
@@ -329,7 +329,7 @@ fn test_operation_symbol_get_operation_symbol_high_arity() {
 /// Test that getOperationSymbol generates sequential names
 #[test]
 fn test_operation_symbol_get_operation_symbol_sequence() {
-    let config = TestConfig::default();
+    let _config = TestConfig::default();
     
     // Test multiple calls to ensure sequential naming
     let sym1 = OperationSymbol::get_operation_symbol(2);

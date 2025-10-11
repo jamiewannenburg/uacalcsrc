@@ -1,7 +1,7 @@
 use uacalc::alg::op::{SimilarityType, OperationSymbol};
 use crate::common::*;
 use serde_json::json;
-use std::time::Duration;
+// use std::time::Duration; // TODO: Add when implementing timeout tests
 
 /// Test basic SimilarityType creation
 #[test]
@@ -377,7 +377,7 @@ fn test_similarity_type_equals_different() {
 /// Test hash code
 #[test]
 fn test_similarity_type_hash_code() {
-    let config = TestConfig::default();
+    let _config = TestConfig::default();
     
     // Hash codes will be different between Rust and Java due to different algorithms
     // So we just test that the hash is consistent within Rust
