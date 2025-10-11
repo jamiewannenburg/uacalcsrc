@@ -222,22 +222,33 @@ pub fn compare_outputs(
         )));
     }
     
-    // Try to parse both as JSON for structured comparison
-    if let (Ok(rust_json), Ok(java_json)) = (
-        serde_json::from_str::<Value>(rust_output),
-        java_output.parse_json(),
-    ) {
-        // Extract the 'data' field from Java response if it exists
-        let java_data = if let Some(data) = java_json.get("data") {
-            data.clone()
+    // Extract the actual data from Java output (handles both JSON and raw string)
+    let java_data = extract_java_data(&java_output.stdout);
+    
+    // Try to parse Rust output as JSON
+    if let Ok(rust_json) = serde_json::from_str::<Value>(rust_output) {
+        // Check if Rust has a "result" field - if so, compare that with Java data
+        if let Some(rust_result) = rust_json.get("result") {
+            // Try to parse the Java string as JSON (it might be a number, boolean, etc.)
+            let java_value = if let Ok(parsed) = serde_json::from_str::<Value>(&java_data) {
+                parsed
+            } else {
+                // If parsing fails, treat as string
+                serde_json::Value::String(java_data)
+            };
+            compare_json_outputs(rust_result, &java_value, tolerance)
         } else {
-            java_json
-        };
-        
-        compare_json_outputs(&rust_json, &java_data, tolerance)
+            // No "result" field, try to parse Java data as JSON and compare whole objects
+            let java_value = if let Ok(parsed) = serde_json::from_str::<Value>(&java_data) {
+                parsed
+            } else {
+                serde_json::Value::String(java_data)
+            };
+            compare_json_outputs(&rust_json, &java_value, tolerance)
+        }
     } else {
         // Fall back to string comparison
-        compare_string_outputs(rust_output, &java_output.stdout)
+        compare_string_outputs(rust_output, &java_data)
     }
 }
 
@@ -462,14 +473,50 @@ macro_rules! compare_with_java {
                 $config.default_timeout
             ).expect("Java CLI execution failed");
             
+            // Extract the "data" field from Java wrapper output
+            let java_data = extract_java_data(&java_output.stdout)
+                .expect("Failed to extract data from Java wrapper output");
+            
             let rust_result = $rust_fn();
             let rust_json = serde_json::to_string_pretty(&rust_result)
                 .expect("Failed to serialize Rust result to JSON");
             
-            compare_outputs(&rust_json, &java_output, Some($tolerance))
+            compare_outputs(&rust_json, &java_data, Some($tolerance))
                 .expect("Rust and Java outputs do not match");
         }
     };
+}
+
+/// Extract the "data" field from Java wrapper JSON output, with fallback to raw string.
+/// 
+/// The Java wrapper outputs JSON in the format:
+/// ```json
+/// {
+///   "success": true,
+///   "timestamp": 1234567890,
+///   "duration_ms": 50,
+///   "data": "actual_result_here"
+/// }
+/// ```
+/// 
+/// This function extracts the "data" field value, or returns the raw string if JSON parsing fails.
+pub fn extract_java_data(java_output: &str) -> String {
+    // Try to parse the Java output as JSON
+    if let Ok(json) = serde_json::from_str::<serde_json::Value>(java_output) {
+        // Extract the "data" field
+        if let Some(data) = json.get("data") {
+            match data {
+                serde_json::Value::String(s) => s.clone(),
+                other => other.to_string(),
+            }
+        } else {
+            // No "data" field, return the whole JSON as string
+            json.to_string()
+        }
+    } else {
+        // JSON parsing failed, return the raw string
+        java_output.to_string()
+    }
 }
 
 /// Macro for testing Rust functions with Java comparison and timeout.

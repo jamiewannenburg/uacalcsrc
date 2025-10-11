@@ -3,6 +3,9 @@ pub mod op;
 pub mod parallel;
 pub mod sublat;
 
+// Re-export partition types for convenience
+pub use conlat::partition::{Partition, PrintType};
+
 pub struct Algebra {
     // TODO: Implement algebra structure
 }

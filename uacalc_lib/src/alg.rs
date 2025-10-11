@@ -336,19 +336,449 @@ impl PySimilarityType {
     }
 }
 
+/// Python wrapper for PrintType
+#[pyclass]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct PyPrintType {
+    inner: uacalc::alg::conlat::partition::PrintType,
+}
+
+#[pymethods]
+impl PyPrintType {
+    /// Create a new PrintType from string.
+    #[new]
+    fn new(print_type: &str) -> PyResult<Self> {
+        let inner = match print_type.to_lowercase().as_str() {
+            "internal" => uacalc::alg::conlat::partition::PrintType::Internal,
+            "ewk" => uacalc::alg::conlat::partition::PrintType::Ewk,
+            "block" => uacalc::alg::conlat::partition::PrintType::Block,
+            "human" => uacalc::alg::conlat::partition::PrintType::Human,
+            "sq_brace_block" => uacalc::alg::conlat::partition::PrintType::SqBraceBlock,
+            _ => return Err(PyValueError::new_err(format!("Invalid print type: {}", print_type))),
+        };
+        Ok(PyPrintType { inner })
+    }
+    
+    /// Get the string representation of this print type.
+    fn to_string(&self) -> String {
+        match self.inner {
+            uacalc::alg::conlat::partition::PrintType::Internal => "internal".to_string(),
+            uacalc::alg::conlat::partition::PrintType::Ewk => "ewk".to_string(),
+            uacalc::alg::conlat::partition::PrintType::Block => "block".to_string(),
+            uacalc::alg::conlat::partition::PrintType::Human => "human".to_string(),
+            uacalc::alg::conlat::partition::PrintType::SqBraceBlock => "sq_brace_block".to_string(),
+        }
+    }
+    
+    /// Python string representation.
+    fn __str__(&self) -> String {
+        self.to_string()
+    }
+    
+    /// Python repr representation.
+    fn __repr__(&self) -> String {
+        format!("PrintType('{}')", self.to_string())
+    }
+    
+    /// Python equality comparison.
+    fn __eq__(&self, other: &PyPrintType) -> bool {
+        self.inner == other.inner
+    }
+    
+    /// Python hash function.
+    fn __hash__(&self) -> u64 {
+        use std::collections::hash_map::DefaultHasher;
+        use std::hash::{Hash, Hasher};
+        
+        let mut hasher = DefaultHasher::new();
+        self.inner.hash(&mut hasher);
+        hasher.finish()
+    }
+}
+
+/// Python wrapper for Partition
+#[pyclass]
+pub struct PyPartition {
+    inner: uacalc::alg::conlat::partition::Partition,
+}
+
+#[pymethods]
+impl PyPartition {
+    /// Create a new Partition from an array representation.
+    /// 
+    /// Args:
+    ///     array (List[int]): The array representation of the partition
+    /// 
+    /// Returns:
+    ///     Partition: A new Partition instance
+    /// 
+    /// Raises:
+    ///     ValueError: If the array is invalid
+    #[new]
+    fn new(array: Vec<i32>) -> PyResult<Self> {
+        match uacalc::alg::conlat::partition::Partition::new(array) {
+            Ok(inner) => Ok(PyPartition { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Create a new Partition from a string representation.
+    /// 
+    /// Args:
+    ///     str (str): String representation of the partition
+    /// 
+    /// Returns:
+    ///     Partition: A new Partition instance
+    /// 
+    /// Raises:
+    ///     ValueError: If the string format is invalid
+    #[staticmethod]
+    fn from_string(str: &str) -> PyResult<Self> {
+        match uacalc::alg::conlat::partition::Partition::from_string(str) {
+            Ok(inner) => Ok(PyPartition { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Create a new Partition from a string representation with specified length.
+    /// 
+    /// Args:
+    ///     str (str): String representation of the partition
+    ///     length (int): Maximum universe size (-1 for auto-detect)
+    /// 
+    /// Returns:
+    ///     Partition: A new Partition instance
+    /// 
+    /// Raises:
+    ///     ValueError: If the string format is invalid
+    #[staticmethod]
+    fn from_string_with_length(str: &str, length: i32) -> PyResult<Self> {
+        match uacalc::alg::conlat::partition::Partition::from_string_with_length(str, length) {
+            Ok(inner) => Ok(PyPartition { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Create the zero partition (all elements in separate blocks).
+    /// 
+    /// Args:
+    ///     size (int): Size of the universe
+    /// 
+    /// Returns:
+    ///     Partition: Zero partition
+    #[staticmethod]
+    fn zero(size: usize) -> Self {
+        PyPartition {
+            inner: uacalc::alg::conlat::partition::Partition::zero(size),
+        }
+    }
+    
+    /// Create the one partition (all elements in one block).
+    /// 
+    /// Args:
+    ///     size (int): Size of the universe
+    /// 
+    /// Returns:
+    ///     Partition: One partition
+    #[staticmethod]
+    fn one(size: usize) -> Self {
+        PyPartition {
+            inner: uacalc::alg::conlat::partition::Partition::one(size),
+        }
+    }
+    
+    /// Get the universe size (number of elements).
+    /// 
+    /// Returns:
+    ///     int: The universe size
+    fn universe_size(&self) -> usize {
+        self.inner.universe_size()
+    }
+    
+    /// Get the number of blocks in the partition.
+    /// 
+    /// Returns:
+    ///     int: The number of blocks
+    fn number_of_blocks(&self) -> usize {
+        self.inner.number_of_blocks()
+    }
+    
+    /// Check if two elements are related (in the same block).
+    /// 
+    /// Args:
+    ///     i (int): First element
+    ///     j (int): Second element
+    /// 
+    /// Returns:
+    ///     bool: True if elements are in the same block
+    fn is_related(&self, i: usize, j: usize) -> bool {
+        self.inner.is_related(i, j)
+    }
+    
+    /// Get the representative (root) of the block containing element i.
+    /// 
+    /// Args:
+    ///     i (int): Element index
+    /// 
+    /// Returns:
+    ///     int: Representative element index
+    fn representative(&self, i: usize) -> usize {
+        self.inner.representative(i)
+    }
+    
+    /// Check if an element is a representative (root) of its block.
+    /// 
+    /// Args:
+    ///     i (int): Element index
+    /// 
+    /// Returns:
+    ///     bool: True if element is a representative
+    fn is_representative(&self, i: usize) -> bool {
+        self.inner.is_representative(i)
+    }
+    
+    /// Get all representatives of the partition.
+    /// 
+    /// Returns:
+    ///     List[int]: List of representative indices
+    fn representatives(&self) -> Vec<usize> {
+        self.inner.representatives()
+    }
+    
+    /// Get the index of the block containing element i.
+    /// 
+    /// Args:
+    ///     i (int): Element index
+    /// 
+    /// Returns:
+    ///     int: Block index
+    /// 
+    /// Raises:
+    ///     ValueError: If element not found in representatives
+    fn block_index(&self, i: usize) -> PyResult<usize> {
+        match self.inner.block_index(i) {
+            Ok(idx) => Ok(idx),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Get the blocks of the partition as an array of arrays.
+    /// 
+    /// Returns:
+    ///     List[List[int]]: List of blocks, where each block is a list of element indices
+    fn get_blocks(&self) -> Vec<Vec<usize>> {
+        self.inner.get_blocks()
+    }
+    
+    /// Join two blocks by their representatives.
+    /// 
+    /// Args:
+    ///     r (int): Representative of first block
+    ///     s (int): Representative of second block
+    /// 
+    /// Raises:
+    ///     ValueError: If r or s are not representatives or if r == s
+    fn join_blocks(&mut self, r: usize, s: usize) -> PyResult<()> {
+        if r == s {
+            return Err(PyValueError::new_err("Cannot join a block with itself"));
+        }
+        if !self.inner.is_representative(r) || !self.inner.is_representative(s) {
+            return Err(PyValueError::new_err("Both arguments must be representatives"));
+        }
+        
+        self.inner.join_blocks(r, s);
+        Ok(())
+    }
+    
+    /// Compute the join of two partitions.
+    /// 
+    /// Args:
+    ///     other (Partition): Other partition to join with
+    /// 
+    /// Returns:
+    ///     Partition: Join of the two partitions
+    /// 
+    /// Raises:
+    ///     ValueError: If partitions have different universe sizes
+    fn join(&self, other: &PyPartition) -> PyResult<PyPartition> {
+        match self.inner.join(&other.inner) {
+            Ok(inner) => Ok(PyPartition { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Compute the meet of two partitions.
+    /// 
+    /// Args:
+    ///     other (Partition): Other partition to meet with
+    /// 
+    /// Returns:
+    ///     Partition: Meet of the two partitions
+    /// 
+    /// Raises:
+    ///     ValueError: If partitions have different universe sizes
+    fn meet(&self, other: &PyPartition) -> PyResult<PyPartition> {
+        match self.inner.meet(&other.inner) {
+            Ok(inner) => Ok(PyPartition { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Check if this partition is less than or equal to another partition.
+    /// 
+    /// Args:
+    ///     other (Partition): Other partition to compare with
+    /// 
+    /// Returns:
+    ///     bool: True if this partition refines the other
+    fn leq(&self, other: &PyPartition) -> bool {
+        self.inner.leq(&other.inner)
+    }
+    
+    /// Normalize the partition representation.
+    fn normalize(&mut self) {
+        self.inner.normalize();
+    }
+    
+    /// Check if this is the zero partition (all elements in separate blocks).
+    /// 
+    /// Returns:
+    ///     bool: True if this is the zero partition
+    fn is_zero(&self) -> bool {
+        self.inner.is_zero()
+    }
+    
+    /// Check if this partition is uniform (all blocks have the same size).
+    /// 
+    /// Returns:
+    ///     bool: True if all blocks have the same size
+    fn is_uniform(&self) -> bool {
+        self.inner.is_uniform()
+    }
+    
+    /// Check if this partition is in initial lexicographic representative form.
+    /// 
+    /// Returns:
+    ///     bool: True if in initial lexicographic representative form
+    fn is_initial_lex_representative(&self) -> bool {
+        self.inner.is_initial_lex_representative()
+    }
+    
+    /// Get the array representation of the partition.
+    /// 
+    /// Returns:
+    ///     List[int]: Array representation
+    fn to_array(&self) -> Vec<i32> {
+        self.inner.to_array()
+    }
+    
+    /// Get the rank of the partition (universe size - number of blocks).
+    /// 
+    /// Returns:
+    ///     int: The rank
+    fn rank(&self) -> usize {
+        self.inner.rank()
+    }
+    
+    /// Convert to string with specified print type and maximum length.
+    /// 
+    /// Args:
+    ///     print_type (PrintType): Type of string representation
+    ///     max_len (int, optional): Maximum length (-1 for no limit)
+    /// 
+    /// Returns:
+    ///     str: String representation
+    fn to_string_with_type(&self, print_type: &PyPrintType, max_len: Option<i32>) -> String {
+        self.inner.to_string_with_type(print_type.inner, max_len.unwrap_or(-1))
+    }
+    
+    /// Convert to string with specified print type.
+    /// 
+    /// Args:
+    ///     print_type (PrintType): Type of string representation
+    /// 
+    /// Returns:
+    ///     str: String representation
+    fn to_string_with_print_type(&self, print_type: &PyPrintType) -> String {
+        self.inner.to_string_with_print_type(print_type.inner)
+    }
+    
+    /// Convert to string with maximum length.
+    /// 
+    /// Args:
+    ///     max_len (int): Maximum length
+    /// 
+    /// Returns:
+    ///     str: String representation
+    fn to_string_with_max_len(&self, max_len: i32) -> String {
+        self.inner.to_string_with_max_len(max_len)
+    }
+    
+    /// Python string representation.
+    fn __str__(&self) -> String {
+        self.inner.to_string()
+    }
+    
+    /// Python repr representation.
+    fn __repr__(&self) -> String {
+        format!("Partition({})", self.inner.to_string())
+    }
+    
+    /// Python equality comparison.
+    fn __eq__(&self, other: &PyPartition) -> bool {
+        self.inner == other.inner
+    }
+    
+    /// Python hash function.
+    fn __hash__(&self) -> u64 {
+        use std::collections::hash_map::DefaultHasher;
+        use std::hash::{Hash, Hasher};
+        
+        let mut hasher = DefaultHasher::new();
+        self.inner.hash(&mut hasher);
+        hasher.finish()
+    }
+    
+    /// Python comparison (less than).
+    fn __lt__(&self, other: &PyPartition) -> bool {
+        self.inner < other.inner
+    }
+    
+    /// Python comparison (less than or equal).
+    fn __le__(&self, other: &PyPartition) -> bool {
+        self.inner <= other.inner
+    }
+    
+    /// Python comparison (greater than).
+    fn __gt__(&self, other: &PyPartition) -> bool {
+        self.inner > other.inner
+    }
+    
+    /// Python comparison (greater than or equal).
+    fn __ge__(&self, other: &PyPartition) -> bool {
+        self.inner >= other.inner
+    }
+}
+
 pub fn register_alg_module(py: Python, m: &PyModule) -> PyResult<()> {
     // Register classes internally but only export clean names
     m.add_class::<PyOperationSymbol>()?;
     m.add_class::<PySimilarityType>()?;
+    m.add_class::<PyPrintType>()?;
+    m.add_class::<PyPartition>()?;
     
     // Export only clean names (without Py prefix)
     m.add("OperationSymbol", m.getattr("PyOperationSymbol")?)?;
     m.add("SimilarityType", m.getattr("PySimilarityType")?)?;
+    m.add("PrintType", m.getattr("PyPrintType")?)?;
+    m.add("Partition", m.getattr("PyPartition")?)?;
     
     // Remove the Py* names from the module to avoid confusion
     let module_dict = m.dict();
     module_dict.del_item("PyOperationSymbol")?;
     module_dict.del_item("PySimilarityType")?;
+    module_dict.del_item("PyPrintType")?;
+    module_dict.del_item("PyPartition")?;
     
     Ok(())
 }
