@@ -647,9 +647,21 @@ impl PySimpleListIterator {
     }
 }
 
-pub fn register_util_module(_py: Python, m: &PyModule) -> PyResult<()> {
+pub fn register_util_module(py: Python, m: &PyModule) -> PyResult<()> {
+    // Register classes internally but only export clean names
     m.add_class::<PyHorner>()?;
     m.add_class::<PySimpleList>()?;
     m.add_class::<PySimpleListIterator>()?;
+    
+    // Export only clean names (without Py prefix)
+    m.add("Horner", m.getattr("PyHorner")?)?;
+    m.add("SimpleList", m.getattr("PySimpleList")?)?;
+    
+    // Remove the Py* names from the module to avoid confusion
+    let module_dict = m.dict();
+    module_dict.del_item("PyHorner")?;
+    module_dict.del_item("PySimpleList")?;
+    module_dict.del_item("PySimpleListIterator")?;
+    
     Ok(())
 }

@@ -148,7 +148,7 @@ impl [ClassName] {
 
 ### File Structure
 - **Location**: `uacalc_lib/src/[module].rs`
-- **Class**: `Py[ClassName]`
+- **Class**: `Py[ClassName]` (internal), `[ClassName]` (exported)
 
 ### Template Structure
 ```rust
@@ -210,8 +210,17 @@ impl Py[ClassName] {
     }
 }
 
-pub fn register_[module]_module(_py: Python, m: &PyModule) -> PyResult<()> {
+pub fn register_[module]_module(py: Python, m: &PyModule) -> PyResult<()> {
+    // Register classes internally but only export clean names
     m.add_class::<Py[ClassName]>()?;
+    
+    // Export only clean names (without Py prefix)
+    m.add("[ClassName]", m.getattr("Py[ClassName]")?)?;
+    
+    // Remove the Py* names from the module to avoid confusion
+    let module_dict = m.dict();
+    module_dict.del_item("Py[ClassName]")?;
+    
     Ok(())
 }
 ```
@@ -222,6 +231,9 @@ pub fn register_[module]_module(_py: Python, m: &PyModule) -> PyResult<()> {
 - Implement Python magic methods (`__str__`, `__repr__`, `__eq__`, `__hash__`, comparison operators)
 - Use `#[pyo3(signature = (...))]` for default parameters
 - Always provide both `_safe` and regular versions of methods
+- **Naming Convention**: Use `Py[ClassName]` for internal Rust struct names, but export ONLY clean `[ClassName]` names to Python
+- **Module Registration**: Always export clean names and remove Py* names to avoid confusion
+- **Clean API**: Only clean class names are available to Python users - no Py* prefixes
 
 ## 4. Testing Pattern
 
@@ -251,6 +263,9 @@ fn test_[method_name]() {
 ```python
 def test_[method_name](self):
     """Test [method description]."""
+    # Import clean class names (Py* names are not available)
+    from uacalc_lib.[module] import [ClassName]
+    
     instance = [ClassName](param1, param2)
     java_result = run_java_wrapper("command", ["--arg1", "value1", "--arg2", "value2"])
     
@@ -329,7 +344,42 @@ pytest python/uacalc/tests/test_[class_name].py -v
 - Document error conditions
 - Use `# Arguments`, `# Returns`, `# Panics` sections
 
-## 7. Common Pitfalls to Avoid
+## 7. Python Binding Naming Convention
+
+### Clean Export Names Only
+- **Internal Rust Names**: Use `Py[ClassName]` for the actual PyO3 struct names
+- **Exported Python Names**: Export ONLY clean `[ClassName]` names without the `Py` prefix
+- **Module Registration**: Always export clean names and remove Py* names to avoid confusion
+
+### Example Implementation
+```rust
+// Internal struct name with Py prefix
+#[pyclass]
+pub struct PySimpleList { ... }
+
+// Module registration with clean export only
+pub fn register_util_module(py: Python, m: &PyModule) -> PyResult<()> {
+    m.add_class::<PySimpleList>()?;
+    // Export clean name without Py prefix
+    m.add("SimpleList", m.getattr("PySimpleList")?)?;
+    // Remove Py* name to avoid confusion
+    let module_dict = m.dict();
+    module_dict.del_item("PySimpleList")?;
+    Ok(())
+}
+```
+
+### Python Usage
+```python
+# Clean import (only option available)
+from uacalc_lib.util import SimpleList
+sl = SimpleList()
+
+# Py* names are NOT available - this will raise AttributeError
+# from uacalc_lib.util import PySimpleList  # This will fail
+```
+
+## 8. Common Pitfalls to Avoid
 
 1. **Don't use panics in Python bindings** - Always use proper error handling
 2. **Don't skip validation** - Always validate inputs in both Rust and Python
@@ -338,15 +388,16 @@ pytest python/uacalc/tests/test_[class_name].py -v
 5. **Don't forget thread safety** - Use proper synchronization for static mutable state
 6. **Don't hardcode paths** - Use relative paths and proper module structure
 7. **Don't skip error handling** - Always handle errors gracefully
+8. **Don't forget clean exports** - Always export clean names and remove Py* names to avoid confusion
 
-## 8. File Naming Conventions
+## 9. File Naming Conventions
 
 - **Java Wrapper**: `[ClassName]Wrapper.java`
 - **Rust Implementation**: `[class_name].rs` or in `mod.rs`
 - **Python Tests**: `test_[class_name].py`
 - **Rust Tests**: `[class_name]_tests.rs`
 
-## 9. Module Registration
+## 10. Module Registration
 
 ### In `uacalc_lib/src/lib.rs`
 ```rust
@@ -365,7 +416,7 @@ pub fn register_[module]_module(_py: Python, m: &PyModule) -> PyResult<()> {
 }
 ```
 
-## 10. Cross-Platform Compatibility Pattern
+## 11. Cross-Platform Compatibility Pattern
 
 ### Windows Compatibility for Wrapper Scripts
 

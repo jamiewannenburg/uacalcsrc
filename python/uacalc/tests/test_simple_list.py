@@ -50,7 +50,7 @@ class TestSimpleList:
     def test_empty_list_creation(self, test_harness: TestHarness):
         """Test creating an empty SimpleList."""
         java_output = test_harness.run_java_cli("SimpleListWrapper", ["make_list"])
-        python_result = uacalc_lib.util.PySimpleList()
+        python_result = uacalc_lib.util.SimpleList()
         
         # Compare the actual data from Java with Python result
         java_data = java_output.parse_json()["data"]
@@ -65,7 +65,7 @@ class TestSimpleList:
             ["make_list_single", "--obj", "hello"]
         )
         
-        python_result = uacalc_lib.util.PySimpleList.make_list("hello")
+        python_result = uacalc_lib.util.SimpleList.make_list("hello")
         
         # Compare the actual data from Java with Python result
         java_data = java_output.parse_json()["data"]
@@ -78,7 +78,7 @@ class TestSimpleList:
         """Test is_empty method."""
         # Test empty list
         java_output = test_harness.run_java_cli("SimpleListWrapper", ["is_empty"])
-        python_result = uacalc_lib.util.PySimpleList()
+        python_result = uacalc_lib.util.SimpleList()
         
         java_data = java_output.parse_json()["data"]
         assert java_data.lower() == str(python_result.is_empty()).lower()
@@ -90,7 +90,7 @@ class TestSimpleList:
             ["is_empty", "--list", "a,b,c"]
         )
         
-        python_result = uacalc_lib.util.PySimpleList.from_list(["a", "b", "c"])
+        python_result = uacalc_lib.util.SimpleList.from_list(["a", "b", "c"])
         
         java_data = java_output.parse_json()["data"]
         assert java_data.lower() == str(python_result.is_empty()).lower()
@@ -99,51 +99,51 @@ class TestSimpleList:
     def test_size(self, test_harness: TestHarness):
         """Test size method."""
         # Test empty list
-        python_result = uacalc_lib.util.PySimpleList()
+        python_result = uacalc_lib.util.SimpleList()
         assert_java_python_equal(test_harness, "SimpleListWrapper", ["size"], python_result.size(), "Empty list size")
         
         # Test non-empty list
-        python_result = uacalc_lib.util.PySimpleList.from_list(["a", "b", "c"])
+        python_result = uacalc_lib.util.SimpleList.from_list(["a", "b", "c"])
         assert_java_python_equal(test_harness, "SimpleListWrapper", ["size", "--list", "a,b,c"], python_result.size(), "Non-empty list size")
     
     def test_first(self, test_harness: TestHarness):
         """Test first method."""
         # Test empty list
-        python_result = uacalc_lib.util.PySimpleList()
+        python_result = uacalc_lib.util.SimpleList()
         assert_java_python_equal(test_harness, "SimpleListWrapper", ["first"], python_result.first(), "Empty list first")
         
         # Test non-empty list
-        python_result = uacalc_lib.util.PySimpleList.from_list(["a", "b", "c"])
+        python_result = uacalc_lib.util.SimpleList.from_list(["a", "b", "c"])
         assert_java_python_equal(test_harness, "SimpleListWrapper", ["first", "--list", "a,b,c"], python_result.first(), "Non-empty list first")
     
     def test_rest(self, test_harness: TestHarness):
         """Test rest method."""
         # Test empty list
-        python_result = uacalc_lib.util.PySimpleList()
+        python_result = uacalc_lib.util.SimpleList()
         assert_java_python_equal(test_harness, "SimpleListWrapper", ["rest"], str(python_result.rest()), "Empty list rest")
         
         # Test non-empty list
-        python_result = uacalc_lib.util.PySimpleList.from_list(["a", "b", "c"])
+        python_result = uacalc_lib.util.SimpleList.from_list(["a", "b", "c"])
         assert_java_python_equal(test_harness, "SimpleListWrapper", ["rest", "--list", "a,b,c"], str(python_result.rest()), "Non-empty list rest")
     
     def test_cons(self, test_harness: TestHarness):
         """Test cons method."""
-        python_result = uacalc_lib.util.PySimpleList.from_list(["a", "b"]).cons("c")
+        python_result = uacalc_lib.util.SimpleList.from_list(["a", "b"]).cons("c")
         
         assert_java_python_equal(test_harness, "SimpleListWrapper", ["cons", "--list", "a,b", "--obj", "c"], str(python_result), "Cons operation result")
         assert python_result.size() == 3
     
     def test_copy_list(self, test_harness: TestHarness):
         """Test copy_list method."""
-        python_result = uacalc_lib.util.PySimpleList.from_list(["a", "b", "c"]).copy_list()
+        python_result = uacalc_lib.util.SimpleList.from_list(["a", "b", "c"]).copy_list()
         
         assert_java_python_equal(test_harness, "SimpleListWrapper", ["copy_list", "--list", "a,b,c"], str(python_result), "Copy list result")
         assert python_result.size() == 3
     
     def test_append(self, test_harness: TestHarness):
         """Test append method."""
-        list1 = uacalc_lib.util.PySimpleList.from_list(["a", "b"])
-        list2 = uacalc_lib.util.PySimpleList.from_list(["c", "d"])
+        list1 = uacalc_lib.util.SimpleList.from_list(["a", "b"])
+        list2 = uacalc_lib.util.SimpleList.from_list(["c", "d"])
         python_result = list1.append(list2)
         
         assert_java_python_equal(test_harness, "SimpleListWrapper", ["append", "--list", "a,b", "--list2", "c,d"], str(python_result), "Append operation result")
@@ -151,15 +151,15 @@ class TestSimpleList:
     
     def test_reverse(self, test_harness: TestHarness):
         """Test reverse method."""
-        python_result = uacalc_lib.util.PySimpleList.from_list(["a", "b", "c"]).reverse()
+        python_result = uacalc_lib.util.SimpleList.from_list(["a", "b", "c"]).reverse()
         
         assert_java_python_equal(test_harness, "SimpleListWrapper", ["reverse", "--list", "a,b,c"], str(python_result), "Reverse operation result")
         assert python_result.size() == 3
     
     def test_reverse_with(self, test_harness: TestHarness):
         """Test reverse_with method."""
-        list1 = uacalc_lib.util.PySimpleList.from_list(["a", "b"])
-        list2 = uacalc_lib.util.PySimpleList.from_list(["c", "d"])
+        list1 = uacalc_lib.util.SimpleList.from_list(["a", "b"])
+        list2 = uacalc_lib.util.SimpleList.from_list(["c", "d"])
         python_result = list1.reverse_with(list2)
         
         assert_java_python_equal(test_harness, "SimpleListWrapper", ["reverse_with", "--list", "a,b", "--list2", "c,d"], str(python_result), "Reverse with operation result")
@@ -167,7 +167,7 @@ class TestSimpleList:
     
     def test_contains(self, test_harness: TestHarness):
         """Test contains method."""
-        python_result = uacalc_lib.util.PySimpleList.from_list(["a", "b", "c"])
+        python_result = uacalc_lib.util.SimpleList.from_list(["a", "b", "c"])
         
         # Test contains existing element
         assert_java_python_equal(test_harness, "SimpleListWrapper", ["contains", "--list", "a,b,c", "--obj", "b"], python_result.contains("b"), "Contains existing element")
@@ -177,19 +177,19 @@ class TestSimpleList:
     
     def test_get(self, test_harness: TestHarness):
         """Test get method."""
-        python_result = uacalc_lib.util.PySimpleList.from_list(["a", "b", "c"])
+        python_result = uacalc_lib.util.SimpleList.from_list(["a", "b", "c"])
         
         assert_java_python_equal(test_harness, "SimpleListWrapper", ["get", "--list", "a,b,c", "--index", "1"], python_result.get(1), "Get element at index 1")
     
     def test_index_of(self, test_harness: TestHarness):
         """Test index_of method."""
-        python_result = uacalc_lib.util.PySimpleList.from_list(["a", "b", "c"])
+        python_result = uacalc_lib.util.SimpleList.from_list(["a", "b", "c"])
         
         assert_java_python_equal(test_harness, "SimpleListWrapper", ["index_of", "--list", "a,b,c", "--obj", "b"], python_result.index_of("b"), "Index of element 'b'")
     
     def test_last_index_of(self, test_harness: TestHarness):
         """Test last_index_of method."""
-        python_result = uacalc_lib.util.PySimpleList.from_list(["a", "b", "b", "c"])
+        python_result = uacalc_lib.util.SimpleList.from_list(["a", "b", "b", "c"])
         
         assert_java_python_equal(test_harness, "SimpleListWrapper", ["last_index_of", "--list", "a,b,b,c", "--obj", "b"], python_result.last_index_of("b"), "Last index of element 'b'")
     
@@ -200,7 +200,7 @@ class TestSimpleList:
     
     def test_to_array(self, test_harness: TestHarness):
         """Test to_list method (equivalent to toArray)."""
-        python_result = uacalc_lib.util.PySimpleList.from_list(["a", "b", "c"])
+        python_result = uacalc_lib.util.SimpleList.from_list(["a", "b", "c"])
         python_list = python_result.to_list()
         
         # For this test, we'll just verify the Python functionality works
@@ -210,8 +210,8 @@ class TestSimpleList:
     
     def test_contains_all(self, test_harness: TestHarness):
         """Test contains_all method."""
-        list1 = uacalc_lib.util.PySimpleList.from_list(["a", "b", "c"])
-        list2 = uacalc_lib.util.PySimpleList.from_list(["a", "b"])
+        list1 = uacalc_lib.util.SimpleList.from_list(["a", "b", "c"])
+        list2 = uacalc_lib.util.SimpleList.from_list(["a", "b"])
         
         assert_java_python_equal(test_harness, "SimpleListWrapper", ["contains_all", "--list", "a,b,c", "--list2", "a,b"], list1.contains_all(list2), "Contains all elements")
     
@@ -220,7 +220,7 @@ class TestSimpleList:
         java_output = test_harness.run_java_cli("SimpleListWrapper", ["test"])
         
         # Test basic operations
-        empty = uacalc_lib.util.PySimpleList()
+        empty = uacalc_lib.util.SimpleList()
         list1 = empty.cons("a").cons("b").cons("c")
         
         # Test size
@@ -264,7 +264,7 @@ class TestSimpleList:
     def test_large_list_operations(self, test_harness: TestHarness):
         """Test operations with larger lists."""
         # Create a large list
-        large_list = uacalc_lib.util.PySimpleList()
+        large_list = uacalc_lib.util.SimpleList()
         for i in range(100):
             large_list = large_list.cons(i)
         
@@ -283,7 +283,7 @@ class TestSimpleList:
     
     def test_error_conditions(self):
         """Test error conditions."""
-        list_obj = uacalc_lib.util.PySimpleList.from_list(["a", "b"])
+        list_obj = uacalc_lib.util.SimpleList.from_list(["a", "b"])
         
         # Test get with out-of-bounds index
         with pytest.raises(Exception):  # Should raise an error
@@ -299,7 +299,7 @@ class TestSimpleList:
     
     def test_iterator_functionality(self):
         """Test iterator functionality."""
-        list_obj = uacalc_lib.util.PySimpleList.from_list(["a", "b", "c"])
+        list_obj = uacalc_lib.util.SimpleList.from_list(["a", "b", "c"])
         
         # Test iteration
         elements = list(list_obj)
@@ -317,7 +317,7 @@ class TestSimpleList:
     def test_from_list(self):
         """Test from_list method."""
         items = ["a", "b", "c"]
-        list_obj = uacalc_lib.util.PySimpleList.from_list(items)
+        list_obj = uacalc_lib.util.SimpleList.from_list(items)
         
         assert list_obj.size() == 3
         assert list_obj.first() == "a"
@@ -328,8 +328,8 @@ class TestSimpleList:
     
     def test_equality_and_hashing(self):
         """Test equality and hashing."""
-        list1 = uacalc_lib.util.PySimpleList.from_list(["a", "b"])
-        list2 = uacalc_lib.util.PySimpleList.from_list(["a", "b"])
+        list1 = uacalc_lib.util.SimpleList.from_list(["a", "b"])
+        list2 = uacalc_lib.util.SimpleList.from_list(["a", "b"])
         
         # Test equality
         assert list1 == list2
@@ -343,7 +343,7 @@ class TestSimpleList:
     
     def test_string_representations(self):
         """Test string representations."""
-        list_obj = uacalc_lib.util.PySimpleList.from_list(["a", "b", "c"])
+        list_obj = uacalc_lib.util.SimpleList.from_list(["a", "b", "c"])
         
         # Test __str__
         str_repr = str(list_obj)
@@ -357,17 +357,17 @@ class TestSimpleList:
     
     def test_length_function(self):
         """Test __len__ function."""
-        list_obj = uacalc_lib.util.PySimpleList.from_list(["a", "b", "c"])
+        list_obj = uacalc_lib.util.SimpleList.from_list(["a", "b", "c"])
         
         assert len(list_obj) == 3
         
-        empty_list = uacalc_lib.util.PySimpleList()
+        empty_list = uacalc_lib.util.SimpleList()
         assert len(empty_list) == 0
     
     def test_edge_cases(self):
         """Test edge cases."""
         # Test operations on empty list
-        empty = uacalc_lib.util.PySimpleList()
+        empty = uacalc_lib.util.SimpleList()
         
         assert empty.is_empty()
         assert empty.size() == 0
@@ -387,7 +387,7 @@ class TestSimpleList:
     def test_memory_sharing(self):
         """Test that lists share memory efficiently."""
         # Create a base list
-        base = uacalc_lib.util.PySimpleList.from_list(["x", "y"])
+        base = uacalc_lib.util.SimpleList.from_list(["x", "y"])
         
         # Create two lists that share the base
         list1 = base.cons("a")
@@ -407,7 +407,7 @@ class TestSimpleList:
         start_time = time.time()
         
         # Create a moderately large list
-        large_list = uacalc_lib.util.PySimpleList()
+        large_list = uacalc_lib.util.SimpleList()
         for i in range(1000):
             large_list = large_list.cons(i)
         
@@ -438,25 +438,25 @@ class TestSimpleListIntegration:
     def test_with_horner_operations(self, test_harness: TestHarness):
         """Test SimpleList integration with Horner operations."""
         # Create a list of integers
-        int_list = uacalc_lib.util.PySimpleList.from_list([1, 2, 3, 4])
+        int_list = uacalc_lib.util.SimpleList.from_list([1, 2, 3, 4])
         
         # Convert to regular Python list for Horner operations
         int_array = int_list.to_list()
         
         # Test Horner encoding
         sizes = [5, 5, 5, 5]  # All elements have size 5
-        encoded = uacalc_lib.util.PyHorner.horner(int_array, sizes)
+        encoded = uacalc_lib.util.Horner.horner(int_array, sizes)
         
         # Test Horner decoding
-        decoded = uacalc_lib.util.PyHorner.horner_inv(encoded, sizes)
+        decoded = uacalc_lib.util.Horner.horner_inv(encoded, sizes)
         
         assert decoded == int_array
     
     def test_with_algebra_operations(self, test_harness: TestHarness):
         """Test SimpleList with algebra operations."""
         # Create lists representing algebra elements
-        element1 = uacalc_lib.util.PySimpleList.from_list([0, 1, 0])
-        element2 = uacalc_lib.util.PySimpleList.from_list([1, 0, 1])
+        element1 = uacalc_lib.util.SimpleList.from_list([0, 1, 0])
+        element2 = uacalc_lib.util.SimpleList.from_list([1, 0, 1])
         
         # Test list operations
         combined = element1.append(element2)
@@ -469,10 +469,10 @@ class TestSimpleListIntegration:
     def test_nested_lists(self):
         """Test nested SimpleList structures."""
         # Create nested lists
-        inner1 = uacalc_lib.util.PySimpleList.from_list(["a", "b"])
-        inner2 = uacalc_lib.util.PySimpleList.from_list(["c", "d"])
+        inner1 = uacalc_lib.util.SimpleList.from_list(["a", "b"])
+        inner2 = uacalc_lib.util.SimpleList.from_list(["c", "d"])
         
-        outer = uacalc_lib.util.PySimpleList.from_list([inner1, inner2])
+        outer = uacalc_lib.util.SimpleList.from_list([inner1, inner2])
         
         assert outer.size() == 2
         assert outer.first() == inner1
@@ -488,7 +488,7 @@ class TestSimpleListPerformance:
     
     def test_large_list_creation(self):
         """Test creation of large lists."""
-        large_list = uacalc_lib.util.PySimpleList()
+        large_list = uacalc_lib.util.SimpleList()
         for i in range(10000):
             large_list = large_list.cons(i)
         
@@ -498,12 +498,12 @@ class TestSimpleListPerformance:
     def test_large_list_operations(self):
         """Test operations on large lists."""
         # Create large list
-        large_list = uacalc_lib.util.PySimpleList()
+        large_list = uacalc_lib.util.SimpleList()
         for i in range(5000):
             large_list = large_list.cons(i)
         
         # Test append
-        other_list = uacalc_lib.util.PySimpleList()
+        other_list = uacalc_lib.util.SimpleList()
         for i in range(5000, 10000):
             other_list = other_list.cons(i)
         
@@ -519,7 +519,7 @@ class TestSimpleListPerformance:
     def test_memory_efficiency(self):
         """Test memory efficiency of SimpleList operations."""
         # Create multiple lists that share structure
-        base = uacalc_lib.util.PySimpleList.from_list(list(range(1000)))
+        base = uacalc_lib.util.SimpleList.from_list(list(range(1000)))
         
         # Create many lists that share the base
         shared_lists = []

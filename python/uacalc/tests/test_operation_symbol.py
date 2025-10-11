@@ -19,7 +19,7 @@ sys.path.insert(0, str(project_root))
 
 try:
     import uacalc_lib
-    OperationSymbol = uacalc_lib.alg.PyOperationSymbol
+    OperationSymbol = uacalc_lib.alg.OperationSymbol
 except ImportError:
     pytest.skip("uacalc_lib not available", allow_module_level=True)
 

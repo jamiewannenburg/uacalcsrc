@@ -336,8 +336,19 @@ impl PySimilarityType {
     }
 }
 
-pub fn register_alg_module(_py: Python, m: &PyModule) -> PyResult<()> {
+pub fn register_alg_module(py: Python, m: &PyModule) -> PyResult<()> {
+    // Register classes internally but only export clean names
     m.add_class::<PyOperationSymbol>()?;
     m.add_class::<PySimilarityType>()?;
+    
+    // Export only clean names (without Py prefix)
+    m.add("OperationSymbol", m.getattr("PyOperationSymbol")?)?;
+    m.add("SimilarityType", m.getattr("PySimilarityType")?)?;
+    
+    // Remove the Py* names from the module to avoid confusion
+    let module_dict = m.dict();
+    module_dict.del_item("PyOperationSymbol")?;
+    module_dict.del_item("PySimilarityType")?;
+    
     Ok(())
 }

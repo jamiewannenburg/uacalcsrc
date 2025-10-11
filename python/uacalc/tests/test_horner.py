@@ -19,7 +19,7 @@ sys.path.insert(0, str(project_root))
 
 try:
     import uacalc_lib
-    Horner = uacalc_lib.util.PyHorner
+    Horner = uacalc_lib.util.Horner
 except ImportError:
     pytest.skip("uacalc_lib not available", allow_module_level=True)
 
