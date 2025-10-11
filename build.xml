@@ -233,6 +233,13 @@
     <echo file="${java.wrapper.scripts}/SimpleListWrapper.bat" 
           message="@echo off&#10;java -cp ${java.wrapper.classes};${class.dir};${jar.dir}\* java_wrapper.src.util.SimpleListWrapper %*&#10;"/>
     
+    <!-- ArrayStringWrapper script -->
+    <echo file="${java.wrapper.scripts}/ArrayStringWrapper" 
+          message="#!/bin/bash&#10;java -cp ${java.wrapper.classes}:${class.dir}:${jar.dir}/* java_wrapper.src.util.ArrayStringWrapper &quot;$@&quot;&#10;"/>
+    <chmod file="${java.wrapper.scripts}/ArrayStringWrapper" perm="755"/>
+    <echo file="${java.wrapper.scripts}/ArrayStringWrapper.bat" 
+          message="@echo off&#10;java -cp ${java.wrapper.classes};${class.dir};${jar.dir}\* java_wrapper.src.util.ArrayStringWrapper %*&#10;"/>
+    
     <!-- PartitionWrapper script -->
     <echo file="${java.wrapper.scripts}/PartitionWrapper" 
           message="#!/bin/bash&#10;java -cp ${java.wrapper.classes}:${class.dir}:${jar.dir}/* java_wrapper.src.alg.conlat.PartitionWrapper &quot;$@&quot;&#10;"/>

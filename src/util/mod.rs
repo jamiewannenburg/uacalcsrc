@@ -1,13 +1,10 @@
 pub mod virtuallist;
 pub mod horner;
 pub mod simple_list;
+pub mod array_string;
 
 pub struct ArrayIncrementor {
     // TODO: Implement array incrementor
-}
-
-pub struct ArrayString {
-    // TODO: Implement array string
 }
 
 pub struct IntArray {
