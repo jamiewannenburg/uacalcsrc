@@ -204,50 +204,41 @@
     <echo file="${java.wrapper.scripts}/template.bat" 
           message="@echo off&#10;java -cp ${java.wrapper.classes};${class.dir};${jar.dir}\* %*&#10;"/>
     
-    <!-- Create individual wrapper scripts -->
-    <scriptdef name="create-wrapper" language="javascript">
-      <attribute name="classname"/>
-      <attribute name="scriptname"/>
-      <![CDATA[
-        var classname = attributes.get("classname");
-        var scriptname = attributes.get("scriptname");
-        
-        // Create Unix shell script
-        var unixScript = "#!/bin/bash\n";
-        unixScript += "java -cp " + project.getProperty("java.wrapper.classes") + ":" + 
-                      project.getProperty("class.dir") + ":" + 
-                      project.getProperty("jar.dir") + "/* " + 
-                      "java_wrapper.src." + classname + " \"$@\"\n";
-        
-        var unixFile = new java.io.File(project.getProperty("java.wrapper.scripts") + "/" + scriptname);
-        var unixWriter = new java.io.FileWriter(unixFile);
-        unixWriter.write(unixScript);
-        unixWriter.close();
-        
-        // Make Unix script executable
-        var unixProcess = java.lang.Runtime.getRuntime().exec("chmod +x " + unixFile.getAbsolutePath());
-        unixProcess.waitFor();
-        
-        // Create Windows batch script
-        var winScript = "@echo off\n";
-        winScript += "java -cp " + project.getProperty("java.wrapper.classes") + ";" + 
-                     project.getProperty("class.dir") + ";" + 
-                     project.getProperty("jar.dir") + "\\* " + 
-                     "java_wrapper.src." + classname + " %*\n";
-        
-        var winFile = new java.io.File(project.getProperty("java.wrapper.scripts") + "/" + scriptname + ".bat");
-        var winWriter = new java.io.FileWriter(winFile);
-        winWriter.write(winScript);
-        winWriter.close();
-      ]]>
-    </scriptdef>
+    <!-- Create individual wrapper scripts using static Ant tasks -->
+    <!-- HornerWrapper script -->
+    <echo file="${java.wrapper.scripts}/HornerWrapper" 
+          message="#!/bin/bash&#10;java -cp ${java.wrapper.classes}:${class.dir}:${jar.dir}/* java_wrapper.src.util.HornerWrapper &quot;$@&quot;&#10;"/>
+    <chmod file="${java.wrapper.scripts}/HornerWrapper" perm="755"/>
+    <echo file="${java.wrapper.scripts}/HornerWrapper.bat" 
+          message="@echo off&#10;java -cp ${java.wrapper.classes};${class.dir};${jar.dir}\* java_wrapper.src.util.HornerWrapper %*&#10;"/>
     
-    <!-- Generate scripts for each wrapper class -->
-    <create-wrapper classname="util.HornerWrapper" scriptname="HornerWrapper"/>
-    <create-wrapper classname="alg.op.OperationSymbolWrapper" scriptname="OperationSymbolWrapper"/>
-    <create-wrapper classname="alg.op.SimilarityTypeWrapper" scriptname="SimilarityTypeWrapper"/>
-    <create-wrapper classname="util.SimpleListWrapper" scriptname="SimpleListWrapper"/>
-    <create-wrapper classname="alg.conlat.PartitionWrapper" scriptname="PartitionWrapper"/>
+    <!-- OperationSymbolWrapper script -->
+    <echo file="${java.wrapper.scripts}/OperationSymbolWrapper" 
+          message="#!/bin/bash&#10;java -cp ${java.wrapper.classes}:${class.dir}:${jar.dir}/* java_wrapper.src.alg.op.OperationSymbolWrapper &quot;$@&quot;&#10;"/>
+    <chmod file="${java.wrapper.scripts}/OperationSymbolWrapper" perm="755"/>
+    <echo file="${java.wrapper.scripts}/OperationSymbolWrapper.bat" 
+          message="@echo off&#10;java -cp ${java.wrapper.classes};${class.dir};${jar.dir}\* java_wrapper.src.alg.op.OperationSymbolWrapper %*&#10;"/>
+    
+    <!-- SimilarityTypeWrapper script -->
+    <echo file="${java.wrapper.scripts}/SimilarityTypeWrapper" 
+          message="#!/bin/bash&#10;java -cp ${java.wrapper.classes}:${class.dir}:${jar.dir}/* java_wrapper.src.alg.op.SimilarityTypeWrapper &quot;$@&quot;&#10;"/>
+    <chmod file="${java.wrapper.scripts}/SimilarityTypeWrapper" perm="755"/>
+    <echo file="${java.wrapper.scripts}/SimilarityTypeWrapper.bat" 
+          message="@echo off&#10;java -cp ${java.wrapper.classes};${class.dir};${jar.dir}\* java_wrapper.src.alg.op.SimilarityTypeWrapper %*&#10;"/>
+    
+    <!-- SimpleListWrapper script -->
+    <echo file="${java.wrapper.scripts}/SimpleListWrapper" 
+          message="#!/bin/bash&#10;java -cp ${java.wrapper.classes}:${class.dir}:${jar.dir}/* java_wrapper.src.util.SimpleListWrapper &quot;$@&quot;&#10;"/>
+    <chmod file="${java.wrapper.scripts}/SimpleListWrapper" perm="755"/>
+    <echo file="${java.wrapper.scripts}/SimpleListWrapper.bat" 
+          message="@echo off&#10;java -cp ${java.wrapper.classes};${class.dir};${jar.dir}\* java_wrapper.src.util.SimpleListWrapper %*&#10;"/>
+    
+    <!-- PartitionWrapper script -->
+    <echo file="${java.wrapper.scripts}/PartitionWrapper" 
+          message="#!/bin/bash&#10;java -cp ${java.wrapper.classes}:${class.dir}:${jar.dir}/* java_wrapper.src.alg.conlat.PartitionWrapper &quot;$@&quot;&#10;"/>
+    <chmod file="${java.wrapper.scripts}/PartitionWrapper" perm="755"/>
+    <echo file="${java.wrapper.scripts}/PartitionWrapper.bat" 
+          message="@echo off&#10;java -cp ${java.wrapper.classes};${class.dir};${jar.dir}\* java_wrapper.src.alg.conlat.PartitionWrapper %*&#10;"/>
     
     <echo message="Wrapper scripts created in ${java.wrapper.scripts}"/>
     <echo message="Unix scripts: *.sh files"/>

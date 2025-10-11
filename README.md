@@ -4,6 +4,12 @@ This repository contains a **Rust/Python implementation** of the Universal Algeb
 
 ## Quick Start
 
+### Prerequisites
+- **Java 8+**: Required for building Java components and wrapper scripts
+- **Rust**: For building the core Rust application
+- **Python 3.8+**: For Python bindings
+- **Ant**: For building Java components (`sudo apt install ant` on Ubuntu/Debian)
+
 ### Build and Run
 ```bash
 # Build Rust application
@@ -111,6 +117,16 @@ python -c "import uacalc_lib; ..." > python_output.txt
 diff java_output.txt rust_output.txt
 diff java_output.txt python_output.txt
 ```
+
+### Troubleshooting Java Wrapper Build
+
+**Issue**: `ant create-wrapper-scripts` fails with "Unable to create javax script engine for javascript" error.
+
+**Cause**: Java 15+ removed the Nashorn JavaScript engine that was used in the original build.xml for dynamic script generation.
+
+**Solution**: The build.xml has been updated to use static Ant tasks instead of JavaScript, eliminating the dependency on a JavaScript engine. This fix is already included in the current version.
+
+**For older Java versions (8-14)**: The original JavaScript-based approach would work, but the static approach is more reliable and doesn't require additional dependencies.
 
 See `java_wrapper/README.md` for detailed documentation on the wrapper system.
 
