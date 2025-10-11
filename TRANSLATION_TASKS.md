@@ -752,12 +752,12 @@ No dependencies on other UACalc classes (leaf node).
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -824,12 +824,12 @@ No dependencies on other UACalc classes (leaf node).
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -896,12 +896,12 @@ No dependencies on other UACalc classes (leaf node).
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -968,12 +968,12 @@ No dependencies on other UACalc classes (leaf node).
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -1040,12 +1040,12 @@ No dependencies on other UACalc classes (leaf node).
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -1112,12 +1112,12 @@ No dependencies on other UACalc classes (leaf node).
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -1184,12 +1184,12 @@ No dependencies on other UACalc classes (leaf node).
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -1256,12 +1256,12 @@ No dependencies on other UACalc classes (leaf node).
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -1329,12 +1329,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -1402,12 +1402,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -1475,12 +1475,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -1621,12 +1621,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -1767,12 +1767,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -1840,12 +1840,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -1913,12 +1913,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -1986,12 +1986,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -2059,12 +2059,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -2132,12 +2132,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -2205,12 +2205,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -2279,12 +2279,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -2353,12 +2353,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -2427,12 +2427,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -2500,12 +2500,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -2574,12 +2574,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -2648,12 +2648,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -2722,12 +2722,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -2796,12 +2796,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -2870,12 +2870,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -2944,12 +2944,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -3018,12 +3018,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -3092,12 +3092,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -3166,12 +3166,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -3240,12 +3240,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -3315,12 +3315,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -3390,12 +3390,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -3465,12 +3465,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -3540,12 +3540,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -3614,12 +3614,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -3688,12 +3688,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -3763,12 +3763,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -3838,12 +3838,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -3913,12 +3913,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -3989,12 +3989,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -4064,12 +4064,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -4140,12 +4140,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -4216,12 +4216,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -4291,12 +4291,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -4367,12 +4367,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -4444,12 +4444,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -4520,12 +4520,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -4598,12 +4598,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -4675,12 +4675,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -4753,12 +4753,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -4831,12 +4831,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -4909,12 +4909,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -4988,12 +4988,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -5067,12 +5067,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -5145,12 +5145,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -5224,12 +5224,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -5303,12 +5303,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -5382,12 +5382,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -5462,12 +5462,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -5542,12 +5542,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -5622,12 +5622,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -5701,12 +5701,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -5781,12 +5781,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -5861,12 +5861,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -5942,12 +5942,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -6023,12 +6023,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -6104,12 +6104,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -6185,12 +6185,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -6266,12 +6266,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -6348,12 +6348,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
@@ -6431,12 +6431,12 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods
-- [x] Java CLI wrapper created with all public methods
-- [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
-- [x] Code compiles without warnings
-- [x] Documentation complete
+- [ ] Python bindings expose all public methods
+- [ ] Java CLI wrapper created with all public methods
+- [ ] Rust tests pass with timeouts enabled
+- [ ] Python tests pass and match Java output
+- [ ] Code compiles without warnings
+- [ ] Documentation complete
 
 ---
 
