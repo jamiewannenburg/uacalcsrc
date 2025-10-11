@@ -2,6 +2,7 @@
 
 pub mod common;
 pub mod alg;
+pub mod util;
 pub mod simple_list_basic_tests;
 pub mod horner_tests;
 pub mod integration_tests;

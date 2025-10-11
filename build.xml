@@ -247,6 +247,7 @@
     <create-wrapper classname="alg.op.OperationSymbolWrapper" scriptname="OperationSymbolWrapper"/>
     <create-wrapper classname="alg.op.SimilarityTypeWrapper" scriptname="SimilarityTypeWrapper"/>
     <create-wrapper classname="util.SimpleListWrapper" scriptname="SimpleListWrapper"/>
+    <create-wrapper classname="util.ArrayStringWrapper" scriptname="ArrayStringWrapper"/>
     <create-wrapper classname="alg.conlat.PartitionWrapper" scriptname="PartitionWrapper"/>
     
     <echo message="Wrapper scripts created in ${java.wrapper.scripts}"/>

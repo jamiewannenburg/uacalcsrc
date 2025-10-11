@@ -2,6 +2,7 @@ use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
 use uacalc::util::horner;
 use uacalc::util::simple_list;
+use uacalc::util::array_string;
 use std::sync::Arc;
 use std::collections::HashMap;
 
@@ -647,21 +648,122 @@ impl PySimpleListIterator {
     }
 }
 
+/// Python wrapper for ArrayString operations
+#[pyclass]
+pub struct PyArrayString;
+
+#[pymethods]
+impl PyArrayString {
+    /// Create a new ArrayString instance (static methods, so this is just a placeholder)
+    #[new]
+    fn new() -> Self {
+        PyArrayString
+    }
+    
+    /// Convert an array or collection to a string representation.
+    /// 
+    /// This function mimics the behavior of Java's ArrayString.toString() method.
+    /// It recursively converts nested arrays and collections to a bracketed format.
+    #[staticmethod]
+    fn to_string(arr: Vec<PyObject>) -> PyResult<String> {
+        // Convert Python objects to their string representations
+        let mut result = String::new();
+        result.push('[');
+        
+        for (i, item) in arr.iter().enumerate() {
+            if i > 0 {
+                result.push(',');
+            }
+            result.push_str(&item.to_string());
+        }
+        
+        result.push(']');
+        Ok(result)
+    }
+    
+    /// Convert a 2D array to a string representation.
+    #[staticmethod]
+    fn to_string_2d(arr: Vec<Vec<PyObject>>) -> PyResult<String> {
+        let mut result = String::new();
+        result.push('[');
+        
+        for (i, row) in arr.iter().enumerate() {
+            if i > 0 {
+                result.push(',');
+            }
+            result.push('[');
+            for (j, item) in row.iter().enumerate() {
+                if j > 0 {
+                    result.push(',');
+                }
+                result.push_str(&item.to_string());
+            }
+            result.push(']');
+        }
+        
+        result.push(']');
+        Ok(result)
+    }
+    
+    /// Convert any displayable type to string (handles non-arrays like Java's String.valueOf).
+    #[staticmethod]
+    fn value_of(value: PyObject) -> String {
+        value.to_string()
+    }
+    
+    /// Convert an integer array to string representation.
+    #[staticmethod]
+    fn to_string_int(arr: Vec<i32>) -> String {
+        array_string::to_string(&arr)
+    }
+    
+    /// Convert a 2D integer array to string representation.
+    #[staticmethod]
+    fn to_string_2d_int(arr: Vec<Vec<i32>>) -> String {
+        array_string::to_string_2d(&arr)
+    }
+    
+    /// Convert a string array to string representation.
+    #[staticmethod]
+    fn to_string_str(arr: Vec<String>) -> String {
+        array_string::to_string(&arr)
+    }
+    
+    /// Convert a 2D string array to string representation.
+    #[staticmethod]
+    fn to_string_2d_str(arr: Vec<Vec<String>>) -> String {
+        array_string::to_string_2d(&arr)
+    }
+    
+    /// Python string representation
+    fn __str__(&self) -> String {
+        "ArrayString".to_string()
+    }
+    
+    /// Python repr representation
+    fn __repr__(&self) -> String {
+        "ArrayString()".to_string()
+    }
+}
+
 pub fn register_util_module(py: Python, m: &PyModule) -> PyResult<()> {
     // Register classes internally but only export clean names
     m.add_class::<PyHorner>()?;
     m.add_class::<PySimpleList>()?;
     m.add_class::<PySimpleListIterator>()?;
+    m.add_class::<PyArrayString>()?;
     
     // Export only clean names (without Py prefix)
     m.add("Horner", m.getattr("PyHorner")?)?;
     m.add("SimpleList", m.getattr("PySimpleList")?)?;
+    m.add("ArrayString", m.getattr("PyArrayString")?)?;
     
     // Remove the Py* names from the module to avoid confusion
     let module_dict = m.dict();
     module_dict.del_item("PyHorner")?;
     module_dict.del_item("PySimpleList")?;
     module_dict.del_item("PySimpleListIterator")?;
+    module_dict.del_item("PyArrayString")?;
     
     Ok(())
 }
