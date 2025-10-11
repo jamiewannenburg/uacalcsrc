@@ -285,7 +285,7 @@ The following packages are **excluded** from this plan:
 """
     
     # Write output to plan file
-    output_file = project_root / "uacalc-rust-translation-plan.plan.md"
+    output_file = project_root / "TRANSLATION_TASKS.md"
     output_file.write_text(output)
     
     print(f"Generated {len(tasks)} tasks")

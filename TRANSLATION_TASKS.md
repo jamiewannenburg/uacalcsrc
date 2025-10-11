@@ -1,56 +1,30 @@
-# UACalc Rust/Python Translation Task List
-
-**Generated:** generate_task_list.py  
-**Total Tasks:** 85
+# UACalc Rust/Python Translation Plan
 
 ## Overview
 
-This document contains a comprehensive task list for translating the UACalc Java library to Rust with Python bindings. Each task translates a single Java file and includes:
+This plan contains the ordered list of translation tasks for converting the UACalc Java library to Rust with Python bindings. Tasks are ordered by dependency count to ensure foundational classes are translated before dependent classes.
 
-1. **Rust Implementation** - Direct translation maintaining Java semantics
-2. **Python Bindings** - PyO3 bindings exposing all public methods
-3. **Java CLI Wrapper** - Command-line interface to Java implementation for testing
-4. **Comprehensive Tests** - Rust and Python tests with timeouts and memory limits
+## Translation Strategy
 
-## Task Organization
+### Approach
+- Direct Java-to-Rust translation maintaining exact semantics
+- Use Rust idioms where appropriate (traits for interfaces, Result/Option, etc.)
+- All public methods must be translated and tested
+- Output must match Java implementation exactly
 
-Tasks are ordered by dependency count (ascending):
-- **Low dependency tasks first** - Foundational classes with few dependencies
-- **High dependency tasks last** - Complex classes building on earlier work
+### Testing Strategy
+- Rust tests for all public methods with timeouts
+- Python binding tests comparing against Java
+- Java CLI wrappers for ground truth comparison
+- Global memory limit configurable from Python
 
-This ensures that when translating a class, all its dependencies are already available.
-
-## Excluded Packages
-
-The following packages are **excluded** from this task list:
+### Excluded Packages
+The following packages are **excluded** from this plan:
 - `org.uacalc.ui.*` - UI components (not needed for core library)
 - `org.uacalc.nbui.*` - NetBeans UI components
 - `org.uacalc.example.*` - Example/demo classes (NOTE: To be implemented later)
 
-## Testing Requirements
-
-### Rust Tests
-- Test all public methods
-- Include timeouts (set slightly longer than Java completion times)
-- Test edge cases and error conditions
-- Compare outputs with Java CLI wrapper
-
-### Python Tests
-- Test all public methods through bindings
-- Verify results match Java implementation exactly
-- Test Python-specific concerns (GIL, memory management)
-
-### Memory Limits
-- Global memory limit configurable from Python
-- Prevent runaway memory usage during testing
-
-## Progress Reporting
-
-A minimal `ProgressReport` trait will be created early to replace UI-dependent progress reporting from the Java library. This enables debugging without UI dependencies.
-
----
-
-# Tasks
+## Translation Tasks
 
 
 ## Task 1: Translate `OperationSymbol`
@@ -115,13 +89,13 @@ No dependencies on other UACalc classes (leaf node).
    - Check test coverage for all public methods
 
 ### Acceptance Criteria
-- [ ] All public methods translated to Rust
-- [ ] Python bindings expose all public methods
-- [ ] Java CLI wrapper created with all public methods
-- [ ] Rust tests pass with timeouts enabled
-- [ ] Python tests pass and match Java output
-- [ ] Code compiles without warnings
-- [ ] Documentation complete
+- [x] All public methods translated to Rust
+- [x] Python bindings expose all public methods
+- [x] Java CLI wrapper created with all public methods
+- [x] Rust tests pass with timeouts enabled
+- [x] Python tests pass and match Java output
+- [x] Code compiles without warnings
+- [x] Documentation complete
 
 ---
 
@@ -187,13 +161,13 @@ No dependencies on other UACalc classes (leaf node).
    - Check test coverage for all public methods
 
 ### Acceptance Criteria
-- [ ] All public methods translated to Rust
-- [ ] Python bindings expose all public methods
-- [ ] Java CLI wrapper created with all public methods
-- [ ] Rust tests pass with timeouts enabled
-- [ ] Python tests pass and match Java output
-- [ ] Code compiles without warnings
-- [ ] Documentation complete
+- [x] All public methods translated to Rust
+- [x] Python bindings expose all public methods
+- [x] Java CLI wrapper created with all public methods
+- [x] Rust tests pass with timeouts enabled
+- [x] Python tests pass and match Java output
+- [x] Code compiles without warnings
+- [x] Documentation complete
 
 ---
 
@@ -259,13 +233,13 @@ No dependencies on other UACalc classes (leaf node).
    - Check test coverage for all public methods
 
 ### Acceptance Criteria
-- [ ] All public methods translated to Rust
-- [ ] Python bindings expose all public methods
-- [ ] Java CLI wrapper created with all public methods
-- [ ] Rust tests pass with timeouts enabled
-- [ ] Python tests pass and match Java output
-- [ ] Code compiles without warnings
-- [ ] Documentation complete
+- [x] All public methods translated to Rust
+- [x] Python bindings expose all public methods
+- [x] Java CLI wrapper created with all public methods
+- [x] Rust tests pass with timeouts enabled
+- [x] Python tests pass and match Java output
+- [x] Code compiles without warnings
+- [x] Documentation complete
 
 ---
 
@@ -331,13 +305,13 @@ No dependencies on other UACalc classes (leaf node).
    - Check test coverage for all public methods
 
 ### Acceptance Criteria
-- [ ] All public methods translated to Rust
-- [ ] Python bindings expose all public methods
-- [ ] Java CLI wrapper created with all public methods
-- [ ] Rust tests pass with timeouts enabled
-- [ ] Python tests pass and match Java output
-- [ ] Code compiles without warnings
-- [ ] Documentation complete
+- [x] All public methods translated to Rust
+- [x] Python bindings expose all public methods
+- [x] Java CLI wrapper created with all public methods
+- [x] Rust tests pass with timeouts enabled
+- [x] Python tests pass and match Java output
+- [x] Code compiles without warnings
+- [x] Documentation complete
 
 ---
 
@@ -6451,3 +6425,18 @@ This class depends on:
 - [ ] Documentation complete
 
 ---
+
+## Summary
+
+- **Total Tasks**: 85
+- **0 Dependencies**: 17 classes
+- **1-2 Dependencies**: 27 classes
+- **3-5 Dependencies**: 17 classes
+- **6+ Dependencies**: 24 classes
+
+## Notes
+
+- Each task includes analysis, implementation, testing, and verification phases
+- All tasks are designed to be LLM-executable with clear acceptance criteria
+- Tasks are ordered by dependency count to ensure dependencies are available when needed
+- Java CLI wrappers provide ground truth for comparison testing
