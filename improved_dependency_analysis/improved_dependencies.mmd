@@ -1,0 +1,229 @@
+graph TD
+    org_uacalc_io_AlgebraWriter["AlgebraWriter"]
+    org_uacalc_io_JSONChannel["JSONChannel"]
+    org_uacalc_io_AlgebraReader["AlgebraReader"]
+    org_uacalc_io_AlgebraIO["AlgebraIO"]
+    org_uacalc_io_ExtFileFilter["ExtFileFilter"]
+    org_uacalc_ui_UACalculator["UACalculator"]
+    org_uacalc_lat_BasicLattice["BasicLattice"]
+    org_uacalc_group_PermutationGroup["PermutationGroup"]
+    org_uacalc_nbui_UACalculator2["UACalculator2"]
+    org_uacalc_nbui_UACalculatorUI["UACalculatorUI"]
+    org_uacalc_nbui_AlgebraEditorController["AlgebraEditorController"]
+    org_uacalc_nbui_ComputationsController["ComputationsController"]
+    org_uacalc_nbui_SubController["SubController"]
+    org_uacalc_nbui_DrawingController["DrawingController"]
+    org_uacalc_nbui_ConController["ConController"]
+    org_uacalc_nbui_MainController["MainController"]
+    org_uacalc_terms_VariableImp["VariableImp"]
+    org_uacalc_terms_Terms["Terms"]
+    org_uacalc_terms_Term["Term"]
+    org_uacalc_terms_Taylor["Taylor"]
+    org_uacalc_terms_NonVariableTerm["NonVariableTerm"]
+    org_uacalc_alg_PolinLikeAlgebra["PolinLikeAlgebra"]
+    org_uacalc_alg_FreeAlgebra["FreeAlgebra"]
+    org_uacalc_alg_SubProductAlgebra["SubProductAlgebra"]
+    org_uacalc_alg_GeneralAlgebra["GeneralAlgebra"]
+    org_uacalc_alg_AlgebraFromMinimalSets["AlgebraFromMinimalSets"]
+    org_uacalc_alg_QuotientAlgebra["QuotientAlgebra"]
+    org_uacalc_alg_Algebra["Algebra"]
+    org_uacalc_alg_PowerAlgebra["PowerAlgebra"]
+    org_uacalc_alg_QuotientElement["QuotientElement"]
+    org_uacalc_alg_ParameterizedAlgebra["ParameterizedAlgebra"]
+    org_uacalc_alg_BasicAlgebra["BasicAlgebra"]
+    org_uacalc_alg_Subalgebra["Subalgebra"]
+    org_uacalc_alg_Closer["Closer"]
+    org_uacalc_alg_ReductAlgebra["ReductAlgebra"]
+    org_uacalc_alg_BigProductAlgebra["BigProductAlgebra"]
+    org_uacalc_alg_UnaryTermsMonoid["UnaryTermsMonoid"]
+    org_uacalc_alg_MatrixPowerAlgebra["MatrixPowerAlgebra"]
+    org_uacalc_alg_MaltsevDecompositionIterator["MaltsevDecompositionIterator"]
+    org_uacalc_alg_ProductAlgebra["ProductAlgebra"]
+    org_uacalc_alg_Malcev["Malcev"]
+    org_uacalc_alg_Algebras["Algebras"]
+    org_uacalc_alg_SmallAlgebra["SmallAlgebra"]
+    org_uacalc_example_Kearnes["Kearnes"]
+    org_uacalc_example_Michalewski["Michalewski"]
+    org_uacalc_example_FilteringAlgebras["FilteringAlgebras"]
+    org_uacalc_example_HasKaryNU["HasKaryNU"]
+    org_uacalc_example_NoSymGroup["NoSymGroup"]
+    org_uacalc_example_FinitelyPresentedAlg["FinitelyPresentedAlg"]
+    org_uacalc_example_MembershipTester["MembershipTester"]
+    org_uacalc_example_ParallelClose8["ParallelClose8"]
+    org_uacalc_example_ConLyndonF3["ConLyndonF3"]
+    org_uacalc_util_IntArray["IntArray"]
+    org_uacalc_util_PermutationGenerator["PermutationGenerator"]
+    org_uacalc_util_SequenceGenerator["SequenceGenerator"]
+    org_uacalc_util_ArrayString["ArrayString"]
+    org_uacalc_util_Horner["Horner"]
+    org_uacalc_util_SimpleList["SimpleList"]
+    org_uacalc_ui_table_ElemKeyTableModel["ElemKeyTableModel"]
+    org_uacalc_ui_table_OperationTableModel["OperationTableModel"]
+    org_uacalc_ui_tm_BackgroundTask["BackgroundTask"]
+    org_uacalc_ui_tm_ProgressReport["ProgressReport"]
+    org_uacalc_ui_util_WebBrowser["WebBrowser"]
+    org_uacalc_alg_conlat_CongruenceLattice["CongruenceLattice"]
+    org_uacalc_alg_conlat_to["to"]
+    org_uacalc_alg_conlat_BasicPartition["BasicPartition"]
+    org_uacalc_alg_conlat_Subtrace["Subtrace"]
+    org_uacalc_alg_conlat_Partition["Partition"]
+    org_uacalc_alg_op_TermOperation["TermOperation"]
+    org_uacalc_alg_op_Operation["Operation"]
+    org_uacalc_alg_op_TermOperationImp["TermOperationImp"]
+    org_uacalc_alg_op_OperationWithDefaultValue["OperationWithDefaultValue"]
+    org_uacalc_alg_op_OperationSymbol["OperationSymbol"]
+    org_uacalc_alg_op_SimilarityType["SimilarityType"]
+    org_uacalc_alg_op_Operations["Operations"]
+    org_uacalc_alg_op_AbstractOperation["AbstractOperation"]
+    org_uacalc_alg_sublat_BasicSet["BasicSet"]
+    org_uacalc_alg_sublat_SubalgebraLattice["SubalgebraLattice"]
+    org_uacalc_io_AlgebraWriter --> org_uacalc_io_AlgebraIO
+    org_uacalc_io_JSONChannel --> org_uacalc_io_AlgebraIO
+    org_uacalc_io_AlgebraReader --> org_uacalc_alg_op_Operations
+    org_uacalc_io_AlgebraIO --> org_uacalc_alg_op_Operations
+    org_uacalc_io_AlgebraIO --> org_uacalc_io_ExtFileFilter
+    org_uacalc_io_AlgebraIO --> org_uacalc_io_AlgebraIO
+    org_uacalc_io_AlgebraIO --> org_uacalc_alg_op_OperationSymbol
+    org_uacalc_io_ExtFileFilter --> org_uacalc_io_ExtFileFilter
+    org_uacalc_ui_UACalculator --> org_uacalc_alg_op_Operations
+    org_uacalc_ui_UACalculator --> org_uacalc_io_ExtFileFilter
+    org_uacalc_lat_BasicLattice --> org_uacalc_lat_Lattices
+    org_uacalc_lat_BasicLattice --> org_uacalc_alg_SmallAlgebra
+    org_uacalc_lat_BasicLattice --> org_uacalc_alg_op_OperationSymbol
+    org_uacalc_group_PermutationGroup --> org_uacalc_alg_op_OperationSymbol
+    org_uacalc_nbui_UACalculator2 --> org_uacalc_io_ExtFileFilter
+    org_uacalc_nbui_UACalculatorUI --> org_uacalc_io_ExtFileFilter
+    org_uacalc_nbui_UACalculatorUI --> org_uacalc_nbui_UACalculatorUI
+    org_uacalc_nbui_AlgebraEditorController --> org_uacalc_alg_op_Operations
+    org_uacalc_nbui_AlgebraEditorController --> org_uacalc_ui_table_TermTableModel
+    org_uacalc_nbui_AlgebraEditorController --> org_uacalc_nbui_MainController
+    org_uacalc_nbui_ComputationsController --> org_uacalc_ui_table_TermTableModel
+    org_uacalc_nbui_ComputationsController --> org_uacalc_nbui_ComputationsController
+    org_uacalc_nbui_ComputationsController --> org_uacalc_nbui_MainController
+    org_uacalc_nbui_SubController --> org_uacalc_nbui_MainController
+    org_uacalc_nbui_DrawingController --> org_uacalc_nbui_MainController
+    org_uacalc_nbui_ConController --> org_uacalc_nbui_MainController
+    org_uacalc_nbui_MainController --> org_uacalc_io_ExtFileFilter
+    org_uacalc_nbui_MainController --> org_uacalc_alg_op_Operations
+    org_uacalc_nbui_MainController --> org_uacalc_nbui_Version
+    org_uacalc_nbui_MainController --> org_uacalc_nbui_LatDrawer
+    org_uacalc_terms_VariableImp --> org_uacalc_terms_VariableImp
+    org_uacalc_terms_Terms --> org_uacalc_terms_Variable
+    org_uacalc_terms_Term --> org_uacalc_alg_op_Operation
+    org_uacalc_terms_Taylor --> org_uacalc_terms_Variable
+    org_uacalc_terms_NonVariableTerm --> org_uacalc_alg_op_Operations
+    org_uacalc_terms_NonVariableTerm --> org_uacalc_terms_NonVariableTerm
+    org_uacalc_terms_NonVariableTerm --> org_uacalc_alg_op_Operation
+    org_uacalc_alg_PolinLikeAlgebra --> org_uacalc_alg_Malcev
+    org_uacalc_alg_PolinLikeAlgebra --> org_uacalc_io_AlgebraIO
+    org_uacalc_alg_FreeAlgebra --> org_uacalc_alg_op_Operations
+    org_uacalc_alg_FreeAlgebra --> org_uacalc_alg_AlgebraWithGeneratingVector
+    org_uacalc_alg_FreeAlgebra --> org_uacalc_io_AlgebraIO
+    org_uacalc_alg_FreeAlgebra --> org_uacalc_alg_SmallAlgebra
+    org_uacalc_alg_FreeAlgebra --> org_uacalc_alg_FreeAlgebra
+    org_uacalc_alg_SubProductAlgebra --> org_uacalc_alg_op_Operations
+    org_uacalc_alg_SubProductAlgebra --> org_uacalc_alg_ProductAlgebra
+    org_uacalc_alg_SubProductAlgebra --> org_uacalc_io_AlgebraIO
+    org_uacalc_alg_SubProductAlgebra --> org_uacalc_alg_SmallAlgebra
+    org_uacalc_alg_GeneralAlgebra --> org_uacalc_alg_GeneralAlgebra
+    org_uacalc_alg_GeneralAlgebra --> org_uacalc_alg_op_Operations
+    org_uacalc_alg_AlgebraFromMinimalSets --> org_uacalc_io_AlgebraIO
+    org_uacalc_alg_QuotientAlgebra --> org_uacalc_alg_op_Operations
+    org_uacalc_alg_QuotientAlgebra --> org_uacalc_alg_SmallAlgebra
+    org_uacalc_alg_QuotientAlgebra --> org_uacalc_io_AlgebraIO
+    org_uacalc_alg_QuotientAlgebra --> org_uacalc_alg_QuotientAlgebra
+    org_uacalc_alg_Algebra --> org_uacalc_alg_op_Operation
+    org_uacalc_alg_Algebra --> org_uacalc_alg_Algebra
+    org_uacalc_alg_PowerAlgebra --> org_uacalc_alg_PowerAlgebra
+    org_uacalc_alg_PowerAlgebra --> org_uacalc_io_AlgebraIO
+    org_uacalc_alg_QuotientElement --> org_uacalc_alg_QuotientElement
+    org_uacalc_alg_ParameterizedAlgebra --> org_uacalc_alg_BasicAlgebra
+    org_uacalc_alg_BasicAlgebra --> org_uacalc_alg_BasicAlgebra
+    org_uacalc_alg_BasicAlgebra --> org_uacalc_alg_op_Operations
+    org_uacalc_alg_Subalgebra --> org_uacalc_alg_op_Operations
+    org_uacalc_alg_Subalgebra --> org_uacalc_alg_Subalgebra
+    org_uacalc_alg_Subalgebra --> org_uacalc_io_AlgebraIO
+    org_uacalc_alg_Subalgebra --> org_uacalc_alg_SmallAlgebra
+    org_uacalc_alg_Closer --> org_uacalc_alg_Algebras
+    org_uacalc_alg_Closer --> org_uacalc_alg_op_Operations
+    org_uacalc_alg_ReductAlgebra --> org_uacalc_alg_ReductAlgebra
+    org_uacalc_alg_ReductAlgebra --> org_uacalc_io_AlgebraIO
+    org_uacalc_alg_ReductAlgebra --> org_uacalc_alg_SmallAlgebra
+    org_uacalc_alg_BigProductAlgebra --> org_uacalc_alg_ProductAlgebra
+    org_uacalc_alg_BigProductAlgebra --> org_uacalc_alg_Algebras
+    org_uacalc_alg_BigProductAlgebra --> org_uacalc_alg_op_Operations
+    org_uacalc_alg_BigProductAlgebra --> org_uacalc_io_AlgebraIO
+    org_uacalc_alg_BigProductAlgebra --> org_uacalc_alg_BigProductAlgebra
+    org_uacalc_alg_UnaryTermsMonoid --> org_uacalc_alg_SmallAlgebra
+    org_uacalc_alg_MatrixPowerAlgebra --> org_uacalc_alg_op_Operations
+    org_uacalc_alg_MatrixPowerAlgebra --> org_uacalc_alg_SmallAlgebra
+    org_uacalc_alg_MaltsevDecompositionIterator --> org_uacalc_io_AlgebraIO
+    org_uacalc_alg_ProductAlgebra --> org_uacalc_alg_op_Operations
+    org_uacalc_alg_ProductAlgebra --> org_uacalc_alg_ProductAlgebra
+    org_uacalc_alg_ProductAlgebra --> org_uacalc_io_AlgebraIO
+    org_uacalc_alg_ProductAlgebra --> org_uacalc_alg_SmallAlgebra
+    org_uacalc_alg_Malcev --> org_uacalc_alg_Malcev
+    org_uacalc_alg_Malcev --> org_uacalc_io_AlgebraIO
+    org_uacalc_alg_Algebras --> org_uacalc_alg_Malcev
+    org_uacalc_alg_Algebras --> org_uacalc_alg_op_Operations
+    org_uacalc_alg_Algebras --> org_uacalc_io_AlgebraIO
+    org_uacalc_alg_Algebras --> org_uacalc_alg_Algebras
+    org_uacalc_alg_SmallAlgebra --> org_uacalc_alg_Algebra
+    org_uacalc_example_Kearnes --> org_uacalc_alg_op_OperationSymbol
+    org_uacalc_example_Michalewski --> org_uacalc_io_AlgebraIO
+    org_uacalc_example_FilteringAlgebras --> org_uacalc_io_AlgebraIO
+    org_uacalc_example_HasKaryNU --> org_uacalc_io_AlgebraIO
+    org_uacalc_example_HasKaryNU --> org_uacalc_util_SequenceGenerator
+    org_uacalc_example_NoSymGroup --> org_uacalc_example_HasConstantTuple
+    org_uacalc_example_NoSymGroup --> org_uacalc_io_AlgebraIO
+    org_uacalc_example_FinitelyPresentedAlg --> org_uacalc_io_AlgebraIO
+    org_uacalc_example_MembershipTester --> org_uacalc_io_AlgebraIO
+    org_uacalc_example_ParallelClose8 --> org_uacalc_example_TupleStream
+    org_uacalc_example_ConLyndonF3 --> org_uacalc_io_AlgebraIO
+    org_uacalc_util_IntArray --> org_uacalc_util_IntArray
+    org_uacalc_util_PermutationGenerator --> org_uacalc_util_ArrayString
+    org_uacalc_util_PermutationGenerator --> org_uacalc_util_PermutationGenerator
+    org_uacalc_util_SequenceGenerator --> org_uacalc_util_ArrayString
+    org_uacalc_util_SequenceGenerator --> org_uacalc_util_SequenceGenerator
+    org_uacalc_util_ArrayString --> org_uacalc_util_ArrayString
+    org_uacalc_util_Horner --> org_uacalc_util_ArrayString
+    org_uacalc_util_Horner --> org_uacalc_util_Horner
+    org_uacalc_util_SimpleList --> org_uacalc_util_SimpleList
+    org_uacalc_ui_table_ElemKeyTableModel --> org_uacalc_alg_SmallAlgebra
+    org_uacalc_ui_table_OperationTableModel --> org_uacalc_alg_op_Operations
+    org_uacalc_ui_table_OperationTableModel --> org_uacalc_util_ArrayString
+    org_uacalc_ui_table_OperationTableModel --> org_uacalc_util_SequenceGenerator
+    org_uacalc_ui_table_OperationTableModel --> org_uacalc_util_Horner
+    org_uacalc_ui_table_OperationTableModel --> org_uacalc_alg_op_OperationSymbol
+    org_uacalc_ui_tm_BackgroundTask --> org_uacalc_ui_tm_GuiExecutor
+    org_uacalc_ui_tm_ProgressReport --> org_uacalc_ui_tm_GuiExecutor
+    org_uacalc_ui_tm_ProgressReport --> org_uacalc_ui_tm_ProgressReport
+    org_uacalc_ui_util_WebBrowser --> org_uacalc_ui_util_WebBrowser
+    org_uacalc_alg_conlat_CongruenceLattice --> org_uacalc_alg_conlat_CongruenceLattice
+    org_uacalc_alg_conlat_CongruenceLattice --> org_uacalc_alg_conlat_BasicPartition
+    org_uacalc_alg_conlat_CongruenceLattice --> org_uacalc_alg_op_SimilarityType
+    org_uacalc_alg_conlat_to --> org_uacalc_io_AlgebraIO
+    org_uacalc_alg_conlat_BasicPartition --> org_uacalc_alg_conlat_Partition
+    org_uacalc_alg_conlat_BasicPartition --> org_uacalc_alg_conlat_BasicPartition
+    org_uacalc_alg_conlat_BasicPartition --> org_uacalc_util_ArrayString
+    org_uacalc_alg_conlat_BasicPartition --> org_uacalc_io_AlgebraIO
+    org_uacalc_alg_conlat_Subtrace --> org_uacalc_alg_conlat_Subtrace
+    org_uacalc_alg_conlat_Partition --> org_uacalc_alg_conlat_Partition
+    org_uacalc_alg_op_TermOperation --> org_uacalc_alg_op_Operation
+    org_uacalc_alg_op_Operation --> org_uacalc_alg_op_Operation
+    org_uacalc_alg_op_TermOperationImp --> org_uacalc_alg_op_Operation
+    org_uacalc_alg_op_OperationWithDefaultValue --> org_uacalc_alg_op_Operations
+    org_uacalc_alg_op_OperationWithDefaultValue --> org_uacalc_util_Horner
+    org_uacalc_alg_op_OperationSymbol --> org_uacalc_alg_op_Operation
+    org_uacalc_alg_op_SimilarityType --> org_uacalc_alg_op_SimilarityType
+    org_uacalc_alg_op_SimilarityType --> org_uacalc_alg_op_OperationSymbol
+    org_uacalc_alg_op_Operations --> org_uacalc_alg_op_Operations
+    org_uacalc_alg_op_Operations --> org_uacalc_alg_op_Operation
+    org_uacalc_alg_op_AbstractOperation --> org_uacalc_alg_op_Operations
+    org_uacalc_alg_op_AbstractOperation --> org_uacalc_util_ArrayString
+    org_uacalc_alg_op_AbstractOperation --> org_uacalc_alg_op_AbstractOperation
+    org_uacalc_alg_sublat_BasicSet --> org_uacalc_util_ArrayString
+    org_uacalc_alg_sublat_SubalgebraLattice --> org_uacalc_alg_sublat_SubalgebraLattice
+    org_uacalc_alg_sublat_SubalgebraLattice --> org_uacalc_alg_op_SimilarityType
+    org_uacalc_alg_sublat_SubalgebraLattice --> org_uacalc_alg_sublat_BasicSet
+    org_uacalc_alg_sublat_SubalgebraLattice --> org_uacalc_io_AlgebraIO

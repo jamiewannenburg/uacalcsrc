@@ -5,10 +5,15 @@ pub mod array_string;
 pub mod permutation_generator;
 pub mod array_incrementor;
 pub mod int_array;
+pub mod sequence_generator;
 
 pub use permutation_generator::PermutationGenerator;
 pub use array_incrementor::{ArrayIncrementor, ArrayIncrementorImpl, SimpleArrayIncrementor};
 pub use int_array::{IntArrayTrait, IntArray};
+pub use sequence_generator::{
+    SequenceGenerator, NondecreasingSequenceIncrementor, IncreasingSequenceIncrementor,
+    SequenceIncrementor, LeftSequenceIncrementor, PartitionArrayIncrementor
+};
 pub use virtuallist::{
     LongList, IntTuples, IntTuplesWithMin, FixedSizedSubsets, Subsets, Permutations, LongListUtils
 };
