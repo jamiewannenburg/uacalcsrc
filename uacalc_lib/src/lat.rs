@@ -108,7 +108,7 @@ impl PyNaturalOrder {
     }
 }
 
-pub fn register_lat_module(_py: Python, m: &PyModule) -> PyResult<()> {
+pub fn register_lat_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     // Register classes internally but only export clean names
     m.add_class::<PyDivisibilityOrder>()?;
     m.add_class::<PyPrefixOrder>()?;

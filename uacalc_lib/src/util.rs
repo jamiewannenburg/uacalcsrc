@@ -1324,7 +1324,7 @@ impl PyIntArray {
     /// 
     /// Returns:
     ///     bool: True if the condition is satisfied
-    fn satisfies_congruence_constraint(&self, index: usize, alpha: &PyAny, elem_index: usize) -> PyResult<bool> {
+    fn satisfies_congruence_constraint(&self, index: usize, alpha: &Bound<'_, PyAny>, elem_index: usize) -> PyResult<bool> {
         // We need to extract the Partition from the Python object
         // For now, we'll return an error since we need to implement the Partition Python binding
         Err(PyValueError::new_err("Partition constraint not yet implemented in Python bindings"))
@@ -2064,7 +2064,7 @@ impl PyPartitionArrayIncrementor {
     }
 }
 
-pub fn register_util_module(py: Python, m: &PyModule) -> PyResult<()> {
+pub fn register_util_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     // Register classes internally but only export clean names
     m.add_class::<PyHorner>()?;
     m.add_class::<PySimpleList>()?;

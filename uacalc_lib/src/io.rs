@@ -127,7 +127,7 @@ impl PyExtFileFilter {
     }
 }
 
-pub fn register_io_module(_py: Python, m: &PyModule) -> PyResult<()> {
+pub fn register_io_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     // Register classes internally but only export clean names
     m.add_class::<PyBadAlgebraFileException>()?;
     m.add_class::<PyExtFileFilter>()?;
