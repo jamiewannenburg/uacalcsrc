@@ -1,96 +1,164 @@
-# UACalc Rust/Python Translation Plan
-
-## Overview
-
-This plan contains the ordered list of translation tasks for converting the UACalc Java library to Rust with Python bindings. Tasks are ordered by dependency count to ensure foundational classes are translated before dependent classes.
-
-## Translation Strategy
-
-### Approach
-- Direct Java-to-Rust translation maintaining exact semantics
-- Use Rust idioms where appropriate (traits for interfaces, Result/Option, etc.)
-- All public methods must be translated and tested
-- Output must match Java implementation exactly
-
-### Testing Strategy
-- Rust tests for all public methods with timeouts
-- Python binding tests comparing against Java
-- Java CLI wrappers for ground truth comparison
-- Global memory limit configurable from Python
-
-### ExcluRded Packages
-The following packages are **excluded** from this plan:
-- `org.uacalc.ui.*` - UI components (not needed for core library)
-- `org.uacalc.nbui.*` - NetBeans UI components
-- `org.uacalc.example.*` - Example/demo classes (NOTE: To be implemented later)
-
-
-## Translation Tasks
-
-## Task 36: Translate `PartiallyDefinedLattice`
+# Task 36: Translate `PartiallyDefinedLattice`
 
 **Java File:** `org/uacalc/fplat/PartiallyDefinedLattice.java`  
 **Package:** `org.uacalc.fplat`  
 **Rust Module:** `fplat::PartiallyDefinedLattice`  
 **Dependencies:** 2 (2 non-UI/example)  
-**Estimated Public Methods:** ~3
+**Estimated Public Methods:** 2
 
-### Description
-Translate the Java class `org.uacalc.fplat.PartiallyDefinedLattice` to Rust with Python bindings.
+## Java File Analysis
 
-### Dependencies
-This class depends on:
-- `org.uacalc.lat.Order`
-- `org.uacalc.terms`
+### Class Structure
+- **Type**: Concrete class implementing `Order<Variable>`
+- **Package**: `org.uacalc.fplat`
+- **Implements**: `Order<Variable>` interface
+- **Fields**:
+  - `Order<Variable> order` - The underlying order relation
+  - `List<List<Variable>> definedJoins` - List of defined join operations
+  - `List<List<Variable>> definedMeets` - List of defined meet operations
 
-### Implementation Steps
+### Public Methods
+1. `PartiallyDefinedLattice(String name, Order<Variable> order, List<List<Variable>> joins, List<List<Variable>> meets)` - Constructor
+2. `boolean leq(Variable a, Variable b)` - Implements Order interface method
 
-1. **Analyze Java Implementation**
-   - Read and understand the Java source code
-   - Identify all public methods and their signatures
-   - Note any special patterns (interfaces, abstract classes, etc.)
-   - Identify dependencies on other UACalc classes
+### Dependencies Analysis
+**Correctly Identified Dependencies:**
+- `org.uacalc.lat.Order` - Interface implemented by this class
+- `org.uacalc.terms` - Package containing Variable interface and related classes
 
-2. **Design Rust Translation**
-   - Determine if Java interfaces should become Rust traits
-   - Design struct/enum representations matching Java semantics
-   - Plan for Rust idioms (Option instead of null, Result for errors, etc.)
-   - Ensure all public methods are translated
+**Dependency Verification:**
+- ✅ `Order<Variable>` - Used as field type and interface implementation
+- ✅ `Variable` - Used as generic parameter and method parameters
+- ✅ `List<List<Variable>>` - Used for joins and meets storage
 
-3. **Implement Rust Code**
-   - Create Rust module structure
-   - Implement all public methods
-   - Add comprehensive documentation
-   - Follow Rust naming conventions (snake_case)
+## Rust Implementation Recommendations
 
-4. **Create Python Bindings (PyO3)**
-   - Expose all public methods to Python
-   - Use appropriate PyO3 types (PyResult, etc.)
-   - Add Python docstrings
+### Design Decisions
+- **Rust Construct**: `struct` (concrete class)
+- **Trait Implementation**: Implement `Order<Variable>` trait
+- **Generic Parameters**: Use `Variable` as the element type
+- **Field Types**: 
+  - `order: Box<dyn Order<Variable>>` - Trait object for order relation
+  - `defined_joins: Vec<Vec<Variable>>` - Vector of join operations
+  - `defined_meets: Vec<Vec<Variable>>` - Vector of meet operations
 
-5. **Create Java CLI Wrapper**
-   - Create wrapper in `java_wrapper/src/` matching package structure
-   - Implement `main` method accepting command-line arguments
-   - Expose all public methods through CLI commands
-   - Output results in JSON/text format for comparison
+### Implementation Structure
+```rust
+pub struct PartiallyDefinedLattice {
+    order: Box<dyn Order<Variable>>,
+    defined_joins: Vec<Vec<Variable>>,
+    defined_meets: Vec<Vec<Variable>>,
+}
 
-6. **Write Rust Tests**
-   - Test all public methods
-   - Add tests with timeouts (slightly longer than Java completion times)
-   - Test edge cases and error conditions
-   - Compare results against Java CLI wrapper output
+impl Order<Variable> for PartiallyDefinedLattice {
+    fn leq(&self, a: &Variable, b: &Variable) -> bool {
+        self.order.leq(a, b)
+    }
+}
+```
 
-7. **Write Python Tests**
-   - Test all public methods through Python bindings
-   - Compare results against Java CLI wrapper output
-   - Verify Python API matches Rust API
+### Method Organization
+- **Constructor**: `new(name: String, order: Box<dyn Order<Variable>>, joins: Vec<Vec<Variable>>, meets: Vec<Vec<Variable>>) -> Self`
+- **Trait Method**: `leq(&self, a: &Variable, b: &Variable) -> bool`
+- **Accessor Methods**: 
+  - `get_defined_joins(&self) -> &Vec<Vec<Variable>>`
+  - `get_defined_meets(&self) -> &Vec<Vec<Variable>>`
 
-8. **Verification**
-   - Run all tests and ensure they pass
-   - Verify outputs match Java implementation exactly
-   - Check test coverage for all public methods
+### Error Handling
+- Use `Result<Self, String>` for constructor validation
+- Validate that joins and meets lists are not empty
+- Validate that all variables in joins/meets are consistent
 
-### Acceptance Criteria
+## Java Wrapper Suitability
+
+### Assessment
+- **Suitable**: YES - Concrete class with public methods
+- **Testing Strategy**: Direct instantiation and method testing
+- **Wrapper Methods**:
+  - `create` - Test constructor with various parameters
+  - `leq` - Test order relation with different variable pairs
+  - `get_joins` - Test accessor for defined joins
+  - `get_meets` - Test accessor for defined meets
+
+### Java Wrapper Implementation
+```java
+public class PartiallyDefinedLatticeWrapper extends WrapperBase {
+    // Test constructor with different order types
+    // Test leq method with various variable combinations
+    // Test accessor methods for joins and meets
+}
+```
+
+## Python Bindings Strategy
+
+### PyO3 Implementation
+- **Class Name**: `PartiallyDefinedLattice` (clean export)
+- **Internal Name**: `PyPartiallyDefinedLattice`
+- **Methods**: Expose all public methods with proper error handling
+- **Trait Objects**: Use `PyObject` for order parameter to handle trait objects
+
+### Python API
+```python
+# Create with custom order
+lattice = PartiallyDefinedLattice("test", order, joins, meets)
+
+# Test order relation
+result = lattice.leq(var1, var2)
+
+# Access defined operations
+joins = lattice.get_defined_joins()
+meets = lattice.get_defined_meets()
+```
+
+## Testing Strategy
+
+### Rust Tests
+- **Unit Tests**: Test constructor validation and method behavior
+- **Integration Tests**: Test with different Order implementations
+- **Edge Cases**: Empty joins/meets, null parameters, invalid variables
+- **Java Comparison**: Use `compare_with_java!` macro for exact behavior matching
+
+### Python Tests
+- **Method Tests**: Test all exposed methods through Python bindings
+- **Error Handling**: Test validation errors and proper exception handling
+- **Java Comparison**: Compare results with Java wrapper output
+
+### Test Cases
+1. **Constructor Tests**:
+   - Valid parameters
+   - Empty joins/meets lists
+   - Invalid order parameter
+   - Duplicate variable names
+
+2. **leq Method Tests**:
+   - Variables in order
+   - Variables not in order
+   - Same variable comparison
+   - Variables from different sources
+
+3. **Accessor Tests**:
+   - Get defined joins
+   - Get defined meets
+   - Verify immutability
+
+## Critical Implementation Notes
+
+### Dependency Requirements
+- **Order Trait**: Must be implemented before this class
+- **Variable Struct**: Must be implemented before this class
+- **Trait Objects**: Use `Box<dyn Order<Variable>>` for dynamic dispatch
+
+### Integration Points
+- **OrderedSets.maximals()**: This class will be used as Order parameter
+- **Lattice Operations**: May be used in lattice construction algorithms
+- **Term Evaluation**: Variables may be used in term evaluation contexts
+
+### Memory Management
+- **Trait Objects**: Use `Box<dyn Order<Variable>>` to avoid lifetime issues
+- **Vector Storage**: Use `Vec<Vec<Variable>>` for efficient storage
+- **Clone Requirements**: Implement `Clone` for Variable if needed
+
+## Acceptance Criteria
 - [ ] All public methods translated to Rust
 - [ ] Python bindings expose all public methods
 - [ ] Java CLI wrapper created with all public methods
@@ -98,3 +166,6 @@ This class depends on:
 - [ ] Python tests pass and match Java output
 - [ ] Code compiles without warnings
 - [ ] Documentation complete
+- [ ] Order trait dependency implemented
+- [ ] Variable struct dependency implemented
+- [ ] Trait object handling works correctly

@@ -1,137 +1,164 @@
-# UACalc Rust/Python Translation Plan
-
-## Overview
-
-This plan contains the ordered list of translation tasks for converting the UACalc Java library to Rust with Python bindings. Tasks are ordered by dependency count to ensure foundational classes are translated before dependent classes.
-
-## Translation Strategy
-
-### Approach
-- Direct Java-to-Rust translation maintaining exact semantics
-- Use Rust idioms where appropriate (traits for interfaces, Result/Option, etc.)
-- All public methods must be translated and tested
-- Output must match Java implementation exactly
-
-### Testing Strategy
-- Rust tests for all public methods with timeouts
-- Python binding tests comparing against Java
-- Java CLI wrappers for ground truth comparison
-- Global memory limit configurable from Python
-
-### ExcluRded Packages
-The following packages are **excluded** from this plan:
-- `org.uacalc.ui.*` - UI components (not needed for core library)
-- `org.uacalc.nbui.*` - NetBeans UI components
-- `org.uacalc.example.*` - Example/demo classes (NOTE: To be implemented later)
-
-
-## Translation Tasks
-
-## Task 12: Translate `Operation`
+# Task 12: Translate `Operation`
 
 **Java File:** `org/uacalc/alg/op/Operation.java`  
 **Package:** `org.uacalc.alg.op`  
 **Rust Module:** `alg::op::Operation`  
-**Dependencies:** 0 (0 non-UI/example)  
-**Estimated Public Methods:** ~17
+**Dependencies:** 1 (1 non-UI/example)  
+**Estimated Public Methods:** 17
 
-### Description
-Translate the Java class `org.uacalc.alg.op.Operation` to Rust with Python bindings.
+## Description
+Translate the Java interface `org.uacalc.alg.op.Operation` to Rust with Python bindings.
 
-### Dependencies
-- **OperationSymbol** (Task 1) - Used for operation symbol representation and comparison
-- **Operations** (Task 50) - Used for static utility methods like isTotal, isAssociative, etc.
+## Java Class Analysis
 
-**Note**: While Operation itself has minimal dependencies, it is a foundational interface that many other classes depend on. The Operations utility class provides static methods that are used by Operation implementations.
-
-### Implementation Steps
-
-1. **Analyze Java Implementation**
-   - Read and understand the Java source code
-   - Identify all public methods and their signatures
-   - Note any special patterns (interfaces, abstract classes, etc.)
-   - Identify dependencies on other UACalc classes
-
-2. **Design Rust Translation**
-   - Determine if Java interfaces should become Rust traits
-   - Design struct/enum representations matching Java semantics
-   - Plan for Rust idioms (Option instead of null, Result for errors, etc.)
-   - Ensure all public methods are translated
-
-3. **Implement Rust Code**
-   - Create Rust module structure
-   - Implement all public methods
-   - Add comprehensive documentation
-   - Follow Rust naming conventions (snake_case)
-
-4. **Create Python Bindings (PyO3)**
-   - Expose all public methods to Python
-   - Use appropriate PyO3 types (PyResult, etc.)
-   - Add Python docstrings
-
-5. **Create Java CLI Wrapper**
-   - Create wrapper in `java_wrapper/src/` matching package structure
-   - Implement `main` method accepting command-line arguments
-   - Expose all public methods through CLI commands
-   - Output results in JSON/text format for comparison
-
-6. **Write Rust Tests**
-   - Test all public methods
-   - Add tests with timeouts (slightly longer than Java completion times)
-   - Test edge cases and error conditions
-   - Compare results against Java CLI wrapper output
-
-7. **Write Python Tests**
-   - Test all public methods through Python bindings
-   - Compare results against Java CLI wrapper output
-   - Verify Python API matches Rust API
-
-8. **Verification**
-   - Run all tests and ensure they pass
-   - Verify outputs match Java implementation exactly
-   - Check test coverage for all public methods
-
-### Implementation Recommendations
-
-#### Java Class Analysis
+### Class Type
 - **Type**: Interface (17 public methods)
-- **Key Methods**: 
-  - `arity()`, `getSetSize()`, `symbol()` - Basic properties
-  - `valueAt(List)`, `valueAt(int[][])`, `intValueAt(int[])`, `intValueAt(int)` - Operation evaluation
-  - `makeTable()`, `getTable()`, `isTableBased()` - Table management
-  - `isIdempotent()`, `isAssociative()`, `isCommutative()`, `isTotallySymmetric()`, `isMaltsev()`, `isTotal()` - Property checks
-- **Dependencies**: Only OperationSymbol (already implemented) and standard Java collections
-- **Usage**: Heavily used throughout codebase as foundational interface
+- **Extends**: `Comparable<Operation>`
+- **Purpose**: Foundational interface defining operations in universal algebra
 
-#### Rust Implementation Strategy
-- **Rust Construct**: `trait Operation` (interface → trait)
-- **Trait Methods**: All 17 public methods should be trait methods
-- **Generic vs Dynamic Dispatch**: Use dynamic dispatch (`dyn Operation`) for flexibility
+### Method Analysis
+**Core Properties (3 methods):**
+- `arity() -> int` - Returns the arity (number of operands) of the operation
+- `getSetSize() -> int` - Returns the size of the set the operation acts on
+- `symbol() -> OperationSymbol` - Returns the operation symbol
+
+**Operation Evaluation (4 methods):**
+- `valueAt(List args) -> Object` - Element version of operation evaluation
+- `valueAt(int[][] args) -> int[]` - Fast product operation evaluation
+- `intValueAt(int[] args) -> int` - Integer version of operation evaluation
+- `intValueAt(int arg) -> int` - Fast table access using Horner encoding
+
+**Table Management (4 methods):**
+- `makeTable() -> void` - Creates operation table for faster evaluation
+- `getTable() -> int[]` - Gets the operation table or null if not exists
+- `getTable(boolean makeTable) -> int[]` - Gets table, creating if requested
+- `isTableBased() -> boolean` - Checks if operation is table-based
+
+**Property Checks (6 methods):**
+- `isIdempotent() -> boolean` - Checks if f(x,x,...,x) = x
+- `isAssociative() -> boolean` - Checks if operation is binary and associative
+- `isCommutative() -> boolean` - Checks if operation is binary and commutative
+- `isTotallySymmetric() -> boolean` - Checks if invariant under all variable permutations
+- `isMaltsev() -> boolean` - Checks if ternary operation is Maltsev
+- `isTotal() -> boolean` - Checks if operation is total (only OperationWithDefaultValue can fail)
+
+## Dependencies Analysis
+
+### Direct Dependencies
+- **OperationSymbol** (Task 1) ✅ - Already implemented
+- **java.util.List** - Standard Java collections
+
+### Indirect Dependencies
+- **Operations** (Task 50) ❌ - Provides static utility methods used by implementations
+- **Horner** (Task 3) ❌ - Used for table encoding/decoding
+- **ArrayString** (Task 6) ❌ - Used for debugging output
+
+### Usage Patterns Found
+- Used as parameter type in `List<Operation>`, `Map<OperationSymbol, Operation>`
+- Heavily used in algebra classes for operation evaluation
+- Concrete implementations: `AbstractOperation`, `OperationWithDefaultValue`, `IntOperationImp`
+- Static utility methods in `Operations` class work with `Operation` instances
+
+## Rust Implementation Strategy
+
+### Trait Design
+```rust
+pub trait Operation: Ord + PartialOrd + Eq + PartialEq + Hash + Display {
+    // Core properties
+    fn arity(&self) -> i32;
+    fn get_set_size(&self) -> i32;
+    fn symbol(&self) -> &OperationSymbol;
+    
+    // Operation evaluation
+    fn value_at(&self, args: &[i32]) -> Result<i32, String>;
+    fn value_at_arrays(&self, args: &[&[i32]]) -> Result<Vec<i32>, String>;
+    fn int_value_at(&self, args: &[i32]) -> Result<i32, String>;
+    fn int_value_at_horner(&self, arg: i32) -> Result<i32, String>;
+    
+    // Table management
+    fn make_table(&mut self) -> Result<(), String>;
+    fn get_table(&self) -> Option<&[i32]>;
+    fn get_table_force(&mut self, make_table: bool) -> Result<&[i32], String>;
+    fn is_table_based(&self) -> bool;
+    
+    // Property checks
+    fn is_idempotent(&self) -> Result<bool, String>;
+    fn is_associative(&self) -> Result<bool, String>;
+    fn is_commutative(&self) -> Result<bool, String>;
+    fn is_totally_symmetric(&self) -> Result<bool, String>;
+    fn is_maltsev(&self) -> Result<bool, String>;
+    fn is_total(&self) -> Result<bool, String>;
+}
+```
+
+### Key Design Decisions
 - **Error Handling**: Use `Result<T, String>` for methods that can fail
-- **Comparable**: Implement `Ord`, `PartialOrd`, `Eq`, `PartialEq` traits
+- **Generic vs Dynamic Dispatch**: Use dynamic dispatch (`dyn Operation`) for flexibility
+- **Comparable**: Implement `Ord`, `PartialOrd`, `Eq`, `PartialEq`, `Hash` traits
+- **Display**: Implement `Display` trait for string representation
+- **Table Management**: Use `Option<&[i32]>` for optional table access
+- **Method Naming**: Use snake_case following Rust conventions
 
-#### Java Wrapper Suitability
-- **NOT SUITABLE** - Operation is an interface that cannot be instantiated directly
-- **Alternative**: Create wrapper for concrete implementations (AbstractOperation, OperationWithDefaultValue, etc.)
-- **Testing Strategy**: Test through concrete implementations rather than interface directly
+## Java Wrapper Suitability
 
-#### Dependencies Verification
-- **OperationSymbol**: ✅ Already implemented (Task 1)
-- **Operations**: ❌ Not yet implemented (Task 50) - provides static utility methods
-- **Missing Dependencies**: None identified
+### Assessment: NOT SUITABLE
+- **Reason**: Operation is an interface that cannot be instantiated directly
+- **Alternative**: Create wrappers for concrete implementations:
+  - `AbstractOperationWrapper` - For testing abstract operation functionality
+  - `OperationWithDefaultValueWrapper` - For testing default value operations
+  - `IntOperationWrapper` - For testing table-based operations
 
-#### Implementation Priority
-- **HIGH PRIORITY** - This is a foundational interface that many other classes depend on
-- **Blocking**: AbstractOperation, OperationWithDefaultValue, and other operation classes cannot be implemented without this trait
-- **Recommendation**: Implement this trait first, then work on concrete implementations
+### Testing Strategy
+- Test through concrete implementations rather than interface directly
+- Create factory methods in wrapper to generate test instances
+- Use `Operations.makeIntOperation()` to create testable instances
 
-### Acceptance Criteria
+## Implementation Recommendations
+
+### Phase 1: Core Trait Implementation
+1. **Define Operation trait** with all 17 methods
+2. **Implement comparison traits** (Ord, PartialOrd, Eq, PartialEq, Hash)
+3. **Add Display trait** for string representation
+4. **Create trait documentation** with examples
+
+### Phase 2: Concrete Implementations
+1. **Implement AbstractOperation** struct implementing Operation trait
+2. **Implement IntOperation** for table-based operations
+3. **Implement OperationWithDefaultValue** for default value handling
+4. **Add factory methods** for creating test instances
+
+### Phase 3: Python Bindings
+1. **Create PyOperation trait** for Python exposure
+2. **Implement concrete PyO3 classes** for each implementation
+3. **Add Python magic methods** (__str__, __repr__, __eq__, etc.)
+4. **Export clean names** without Py prefix
+
+### Phase 4: Testing Infrastructure
+1. **Create Java wrappers** for concrete implementations
+2. **Implement Rust tests** using compare_with_java! macro
+3. **Add Python tests** through concrete implementations
+4. **Test all property methods** with various operation types
+
+## Dependencies Status
+- **OperationSymbol**: ✅ Completed (Task 1)
+- **Operations**: ❌ Not implemented (Task 50) - Required for static utility methods
+- **Horner**: ❌ Not implemented (Task 3) - Required for table encoding
+- **ArrayString**: ❌ Not implemented (Task 6) - Required for debugging
+
+## Implementation Priority
+- **HIGH PRIORITY** - Foundational interface blocking many other classes
+- **Blocking Classes**: AbstractOperation, OperationWithDefaultValue, IntOperation, all algebra classes
+- **Recommendation**: Implement trait first, then concrete implementations, then dependent classes
+
+## Acceptance Criteria
 - [ ] Operation trait implemented with all 17 methods
-- [ ] Trait implements Comparable (Ord, PartialOrd, Eq, PartialEq)
+- [ ] Trait implements Ord, PartialOrd, Eq, PartialEq, Hash, Display
 - [ ] Proper error handling with Result types
-- [ ] Python bindings expose trait (though not directly instantiable)
-- [ ] Java wrapper created for concrete implementations
+- [ ] AbstractOperation struct implementing Operation trait
+- [ ] IntOperation struct for table-based operations
+- [ ] Python bindings for concrete implementations
+- [ ] Java wrappers for concrete implementations
 - [ ] Rust tests pass with timeouts enabled
 - [ ] Python tests pass through concrete implementations
 - [ ] Code compiles without warnings
-- [ ] Documentation complete
+- [ ] Documentation complete with examples

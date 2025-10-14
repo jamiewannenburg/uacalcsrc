@@ -32,72 +32,121 @@ The following packages are **excluded** from this plan:
 **Java File:** `org/uacalc/alg/AlgebraWithGeneratingVector.java`  
 **Package:** `org.uacalc.alg`  
 **Rust Module:** `alg::AlgebraWithGeneratingVector`  
-**Dependencies:** 5 (5 non-UI/example)  
-**Estimated Public Methods:** ~9
+**Dependencies:** 7 (7 non-UI/example)  
+**Estimated Public Methods:** 9
 
 ### Description
 Translate the Java class `org.uacalc.alg.AlgebraWithGeneratingVector` to Rust with Python bindings.
 
+### Java Class Analysis
+- **Type**: Concrete class implementing `Comparable<AlgebraWithGeneratingVector>`
+- **Purpose**: Represents an algebra with an associated vector of elements that generates it
+- **Key Features**: Allows repeats in generating vector, supports subdirect decomposition
+- **Usage**: Used in `FreeAlgebra` for subdirect decomposition and `ProgressReport` as witness algebra
+
 ### Dependencies
 This class depends on:
-- `org.uacalc.alg.conlat`
-- `org.uacalc.alg.sublat`
-- `org.uacalc.eq`
-- `org.uacalc.terms`
-- `org.uacalc.util`
+- `org.uacalc.alg.SmallAlgebra` - Core dependency (field type)
+- `org.uacalc.alg.QuotientAlgebra` - Used in `siDecompose` method
+- `org.uacalc.alg.conlat` - Used for congruence lattice operations
+- `org.uacalc.alg.sublat` - Used for subalgebra lattice operations
+- `org.uacalc.eq` - Used for `Equation` class
+- `org.uacalc.terms` - Used for `Variable` class
+- `org.uacalc.util` - Used for `ArrayString.toString()`
+
+### Rust Implementation Recommendations
+
+#### 1. Struct Design
+```rust
+pub struct AlgebraWithGeneratingVector {
+    pub alg: SmallAlgebra,
+    pub gens_vector: Vec<i32>,
+}
+```
+
+#### 2. Trait Implementations
+- `PartialEq` and `Eq` - Based on `equals()` method logic
+- `PartialOrd` and `Ord` - Based on `compareTo()` method logic  
+- `Display` - Based on `toString()` method
+- `Debug` - For debugging support
+
+#### 3. Method Organization
+**Instance Methods:**
+- `new(alg: SmallAlgebra, vec: Vec<i32>) -> Self` - Constructor
+- `get_algebra(&self) -> &SmallAlgebra` - Getter
+- `get_vector(&self) -> &[i32]` - Getter
+- `is_image_of(&self, other: &AlgebraWithGeneratingVector) -> bool` - Image check
+- `to_string(&self) -> String` - String representation
+
+**Static Methods:**
+- `si_decompose(alg: &SmallAlgebra, vec: &[i32]) -> Vec<Self>` - Decomposition (2 overloads)
+
+#### 4. Error Handling
+- Use `Result<T, String>` for methods that can fail
+- Provide both `_safe` and `_panic` versions of methods
+- Handle null checks with `Option<T>` where appropriate
+
+#### 5. Dependencies Required
+- `SmallAlgebra` - Must be implemented first (core dependency)
+- `QuotientAlgebra` - Must be implemented first (used in `si_decompose`)
+- `conlat` module - For congruence lattice operations
+- `sublat` module - For subalgebra lattice operations
+- `eq` module - For `Equation` class
+- `terms` module - For `Variable` class
+- `util` module - For `ArrayString.toString()`
+
+### Java Wrapper Suitability
+**SUITABLE** - This is a concrete class with clear public methods that can be easily wrapped for testing.
+
+### Testing Strategy
+1. **Unit Tests** - Test all public methods with various inputs
+2. **Integration Tests** - Test with real algebra instances
+3. **Cross-Language Tests** - Compare Rust/Python results with Java wrapper
+4. **Edge Cases** - Test with empty vectors, null algebras, etc.
 
 ### Implementation Steps
 
-1. **Analyze Java Implementation**
-   - Read and understand the Java source code
-   - Identify all public methods and their signatures
-   - Note any special patterns (interfaces, abstract classes, etc.)
-   - Identify dependencies on other UACalc classes
+1. **Prerequisites**
+   - Implement `SmallAlgebra` (Task 55)
+   - Implement `QuotientAlgebra` (Task 77)
+   - Implement `conlat` module (congruence lattice)
+   - Implement `sublat` module (subalgebra lattice)
+   - Implement `eq` module (equations)
+   - Implement `terms` module (variables)
+   - Implement `util` module (ArrayString)
 
-2. **Design Rust Translation**
-   - Determine if Java interfaces should become Rust traits
-   - Design struct/enum representations matching Java semantics
-   - Plan for Rust idioms (Option instead of null, Result for errors, etc.)
-   - Ensure all public methods are translated
-
-3. **Implement Rust Code**
-   - Create Rust module structure
-   - Implement all public methods
+2. **Implement Rust Code**
+   - Create `src/alg/algebra_with_generating_vector.rs`
+   - Implement struct with proper field visibility
+   - Implement all trait methods (Eq, PartialEq, Ord, PartialOrd, Display, Debug)
+   - Implement instance methods
+   - Implement static methods
    - Add comprehensive documentation
-   - Follow Rust naming conventions (snake_case)
 
-4. **Create Python Bindings (PyO3)**
-   - Expose all public methods to Python
-   - Use appropriate PyO3 types (PyResult, etc.)
-   - Add Python docstrings
+3. **Create Python Bindings**
+   - Add PyO3 bindings in `uacalc_lib/src/alg.rs`
+   - Expose all public methods
+   - Implement Python magic methods (`__str__`, `__repr__`, `__eq__`, `__hash__`)
+   - Use clean export names (no Py prefix)
 
-5. **Create Java CLI Wrapper**
-   - Create wrapper in `java_wrapper/src/` matching package structure
-   - Implement `main` method accepting command-line arguments
-   - Expose all public methods through CLI commands
-   - Output results in JSON/text format for comparison
+4. **Create Java CLI Wrapper**
+   - Create `java_wrapper/src/alg/AlgebraWithGeneratingVectorWrapper.java`
+   - Implement all public methods as CLI commands
+   - Handle constructor parameters and return values
+   - Output results in JSON format
 
-6. **Write Rust Tests**
-   - Test all public methods
-   - Add tests with timeouts (slightly longer than Java completion times)
-   - Test edge cases and error conditions
-   - Compare results against Java CLI wrapper output
-
-7. **Write Python Tests**
-   - Test all public methods through Python bindings
-   - Compare results against Java CLI wrapper output
-   - Verify Python API matches Rust API
-
-8. **Verification**
-   - Run all tests and ensure they pass
-   - Verify outputs match Java implementation exactly
-   - Check test coverage for all public methods
+5. **Write Tests**
+   - Rust unit tests for all methods
+   - Python integration tests
+   - Cross-language comparison tests
+   - Edge case testing
 
 ### Acceptance Criteria
-- [ ] All public methods translated to Rust
+- [ ] All 9 public methods translated to Rust
 - [ ] Python bindings expose all public methods
 - [ ] Java CLI wrapper created with all public methods
 - [ ] Rust tests pass with timeouts enabled
 - [ ] Python tests pass and match Java output
 - [ ] Code compiles without warnings
 - [ ] Documentation complete
+- [ ] All dependencies properly implemented first

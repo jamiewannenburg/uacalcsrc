@@ -40,14 +40,17 @@ Translate the Java class `org.uacalc.alg.MatrixPowerAlgebra` to Rust with Python
 
 ### Dependencies
 This class depends on:
-- `org.uacalc.alg.SmallAlgebra.AlgebraType`
-- `org.uacalc.alg.conlat`
-- `org.uacalc.alg.op.AbstractOperation`
-- `org.uacalc.alg.op.Operation`
-- `org.uacalc.alg.op.Operations`
-- `org.uacalc.alg.sublat`
-- `org.uacalc.io.AlgebraIO`
-- `org.uacalc.util`
+- `org.uacalc.alg.GeneralAlgebra` (parent class)
+- `org.uacalc.alg.SmallAlgebra` (interface implemented)
+- `org.uacalc.alg.PowerAlgebra` (used as field)
+- `org.uacalc.alg.SmallAlgebra.AlgebraType` (enum)
+- `org.uacalc.alg.conlat.CongruenceLattice` (returned by con() method)
+- `org.uacalc.alg.sublat.SubalgebraLattice` (returned by sub() method)
+- `org.uacalc.alg.op.Operation` (used in operations list)
+- `org.uacalc.alg.op.Operations` (static methods: makeLeftShift, makeMatrixDiagonalOp)
+- `org.uacalc.util.Horner` (static method: hornerInv)
+
+**Note**: `AlgebraIO` and `AbstractOperation` are imported but not used in the implementation.
 
 ### Implementation Steps
 
@@ -96,6 +99,56 @@ This class depends on:
    - Verify outputs match Java implementation exactly
    - Check test coverage for all public methods
 
+### Implementation Recommendations
+
+#### Rust Design
+- **Struct Type**: Concrete struct implementing both `GeneralAlgebra` and `SmallAlgebra` traits
+- **Key Fields**:
+  - `root: Box<dyn SmallAlgebra>` - The base algebra
+  - `root_size: usize` - Cardinality of root algebra
+  - `power: usize` - The power/exponent
+  - `power_algebra: PowerAlgebra` - The underlying power algebra
+- **Trait Implementation**: Implement both `GeneralAlgebra` and `SmallAlgebra` traits
+- **Error Handling**: Use `Result<T, String>` for constructors and methods that can fail
+
+#### Method Organization
+- **Constructor Methods**: 
+  - `new(name: String, alg: Box<dyn SmallAlgebra>, power: usize) -> Result<Self, String>`
+  - `new_simple(alg: Box<dyn SmallAlgebra>, power: usize) -> Result<Self, String>`
+- **Getter Methods**: All getters should be simple field accessors
+- **Special Methods**:
+  - `get_element(index: usize) -> Object` - Uses `Horner::horner_inv`
+  - `element_index(obj: Object) -> usize` - Delegates to power_algebra
+  - `con()` and `sub()` - Lazy initialization with `OnceCell` or similar
+
+#### Dependencies
+- **Required Traits**: `GeneralAlgebra`, `SmallAlgebra`
+- **Required Structs**: `PowerAlgebra`, `CongruenceLattice`, `SubalgebraLattice`
+- **Required Utils**: `Horner::horner_inv`, `Operations::make_left_shift`, `Operations::make_matrix_diagonal_op`
+- **Enum**: `AlgebraType::MatrixPower`
+
+#### Java Wrapper Suitability
+- **Suitable**: Yes - This is a concrete class that can be instantiated and tested
+- **Key Test Methods**:
+  - Constructor with various parameters
+  - `getElement()` and `elementIndex()` methods
+  - `cardinality()` and `algebraType()` methods
+  - `con()` and `sub()` lattice methods
+- **Test Data**: Use small algebras (e.g., 2-element boolean algebra) with powers 2-4
+
+#### Testing Strategy
+- **Rust Tests**: Test all public methods with small test algebras
+- **Python Tests**: Verify Python bindings work correctly
+- **Java Comparison**: Compare results with Java implementation for exact behavior matching
+- **Edge Cases**: Test with power=0, power=1, and large powers
+- **Error Cases**: Test with invalid parameters
+
+#### Special Considerations
+- **Note**: The Java comment indicates this class "is not working yet" and may be better as a subclass of PowerAlgebra
+- **Matrix Operations**: The class adds matrix-specific operations (left shift, diagonal) to the power algebra
+- **Horner Encoding**: Uses Horner encoding for element indexing, which must be implemented correctly
+- **Lazy Lattices**: Congruence and subalgebra lattices are created on-demand
+
 ### Acceptance Criteria
 - [ ] All public methods translated to Rust
 - [ ] Python bindings expose all public methods
@@ -104,3 +157,6 @@ This class depends on:
 - [ ] Python tests pass and match Java output
 - [ ] Code compiles without warnings
 - [ ] Documentation complete
+- [ ] Horner encoding implementation verified
+- [ ] Matrix operations (left shift, diagonal) implemented correctly
+- [ ] Lazy lattice initialization working properly

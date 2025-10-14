@@ -1,38 +1,9 @@
-# UACalc Rust/Python Translation Plan
-
-## Overview
-
-This plan contains the ordered list of translation tasks for converting the UACalc Java library to Rust with Python bindings. Tasks are ordered by dependency count to ensure foundational classes are translated before dependent classes.
-
-## Translation Strategy
-
-### Approach
-- Direct Java-to-Rust translation maintaining exact semantics
-- Use Rust idioms where appropriate (traits for interfaces, Result/Option, etc.)
-- All public methods must be translated and tested
-- Output must match Java implementation exactly
-
-### Testing Strategy
-- Rust tests for all public methods with timeouts
-- Python binding tests comparing against Java
-- Java CLI wrappers for ground truth comparison
-- Global memory limit configurable from Python
-
-### ExcluRded Packages
-The following packages are **excluded** from this plan:
-- `org.uacalc.ui.*` - UI components (not needed for core library)
-- `org.uacalc.nbui.*` - NetBeans UI components
-- `org.uacalc.example.*` - Example/demo classes (NOTE: To be implemented later)
-
-
-## Translation Tasks
-
-## Task 49: Translate `OperationWithDefaultValue`
+# Task 49: Translate `OperationWithDefaultValue`
 
 **Java File:** `org/uacalc/alg/op/OperationWithDefaultValue.java`  
 **Package:** `org.uacalc.alg.op`  
 **Rust Module:** `alg::op::OperationWithDefaultValue`  
-**Dependencies:** 3 (2 non-UI/example)  
+**Dependencies:** 6 (5 non-UI/example)  
 **Estimated Public Methods:** ~23
 
 ### Description
@@ -40,55 +11,130 @@ Translate the Java class `org.uacalc.alg.op.OperationWithDefaultValue` to Rust w
 
 ### Dependencies
 This class depends on:
-- `org.uacalc.util.ArrayString`
-- `org.uacalc.util.Horner`
+- `org.uacalc.alg.op.AbstractOperation` (Task 11) - Parent class
+- `org.uacalc.alg.op.Operation` (Task 12) - Interface implemented by parent
+- `org.uacalc.alg.op.OperationSymbol` (Task 1) - ✅ Already implemented
+- `org.uacalc.alg.op.Operations` (Task 50) - Static utility methods
+- `org.uacalc.util.Horner` (Task 3) - ✅ Already implemented
+- `org.uacalc.ui.util.RandomGenerator` - UI utility (excluded)
 
-### Implementation Steps
+**Note**: `ArrayString` is imported but not used in the implementation.
 
-1. **Analyze Java Implementation**
-   - Read and understand the Java source code
-   - Identify all public methods and their signatures
-   - Note any special patterns (interfaces, abstract classes, etc.)
-   - Identify dependencies on other UACalc classes
+### Java Class Analysis
 
-2. **Design Rust Translation**
-   - Determine if Java interfaces should become Rust traits
-   - Design struct/enum representations matching Java semantics
-   - Plan for Rust idioms (Option instead of null, Result for errors, etc.)
-   - Ensure all public methods are translated
+**Type**: Concrete class extending `AbstractOperation`
+**Purpose**: Convenience class for UI that wraps operations with default value handling
+**Key Features**:
+- Wraps an `Operation` with default value semantics
+- Supports random value generation for undefined entries
+- Provides idempotent operation support
+- Can convert to ordinary operations by filling in default values
 
-3. **Implement Rust Code**
-   - Create Rust module structure
-   - Implement all public methods
-   - Add comprehensive documentation
-   - Follow Rust naming conventions (snake_case)
+**Public Methods** (23 methods):
+1. **Constructors** (6): Various constructors for different initialization patterns
+2. **Value Access** (3): `intValueAt(int[])`, `intValueAt(int)`, `valueAt(List)`
+3. **Default Value Management** (3): `getDefaultValue()`, `setDefaultValue(int)`, `isTotal()`
+4. **Random Value Management** (2): `updateRandomValueTable()`, `getRandomValueTable()`
+5. **Idempotent Operations** (3): `isIdempotentSet()`, `setIdempotent(boolean)`, `makeIdempotent()`
+6. **Diagonal Operations** (1): `isDiagonal(int, int)`
+7. **Table Operations** (3): `makeTable()`, `getTotalTable()`, `makeOrdinaryOperation()`
+8. **Static Methods** (1): `makeOrdinary(List<Operation>)`
+9. **Inherited Methods**: All methods from `AbstractOperation` and `Operation`
 
-4. **Create Python Bindings (PyO3)**
-   - Expose all public methods to Python
-   - Use appropriate PyO3 types (PyResult, etc.)
-   - Add Python docstrings
+### Rust Implementation Recommendations
 
-5. **Create Java CLI Wrapper**
-   - Create wrapper in `java_wrapper/src/` matching package structure
-   - Implement `main` method accepting command-line arguments
-   - Expose all public methods through CLI commands
-   - Output results in JSON/text format for comparison
+**Struct Design**: Concrete struct implementing `Operation` trait through `AbstractOperation` trait
+**Pattern**: Wrapper struct that delegates to internal `Operation` and adds default value logic
 
-6. **Write Rust Tests**
-   - Test all public methods
-   - Add tests with timeouts (slightly longer than Java completion times)
-   - Test edge cases and error conditions
-   - Compare results against Java CLI wrapper output
+```rust
+pub struct OperationWithDefaultValue {
+    // Core operation being wrapped
+    op: Box<dyn Operation>,
+    // Default value (-1 = undefined, -2 = random, >=0 = specific value)
+    default_value: i32,
+    // Random value table for undefined entries
+    random_value_table: Option<Vec<i32>>,
+    // Idempotent operation support
+    idempotent_set: bool,
+    // Diagonal indices for idempotent operations
+    diag_indices: Option<Vec<i32>>,
+    // Diagonal divisor for diagonal checking
+    diag_div: i32,
+    // Random number generator
+    random: std::collections::hash_map::DefaultHasher,
+}
+```
 
-7. **Write Python Tests**
-   - Test all public methods through Python bindings
-   - Compare results against Java CLI wrapper output
-   - Verify Python API matches Rust API
+**Trait Implementation**: Implement `Operation` trait by delegating to internal `Operation`
+**Method Organization**: 
+- Core methods as struct methods
+- Inherited methods through trait delegation
+- Static methods as associated functions
 
-8. **Verification**
-   - Run all tests and ensure they pass
-   - Verify outputs match Java implementation exactly
-   - Check test coverage for all public methods
+**Generic vs Dynamic Dispatch**: Use dynamic dispatch (`Box<dyn Operation>`) for flexibility
+**Error Handling**: Use `Result<T, String>` for methods that can fail, `Option<T>` for nullable returns
+
+### Java Wrapper Suitability
+
+**SUITABLE** - This is a concrete class that can be instantiated and tested
+**Testing Strategy**: 
+- Test all constructors with various parameter combinations
+- Test default value handling (undefined, specific, random)
+- Test idempotent operations
+- Test table operations and conversions
+- Test static utility methods
+
+### Implementation Dependencies
+
+**Blocking Dependencies**:
+- `AbstractOperation` (Task 11) - Parent class must be implemented first
+- `Operation` (Task 12) - Interface must be implemented first  
+- `Operations` (Task 50) - Static utility methods required
+
+**Available Dependencies**:
+- `OperationSymbol` (Task 1) - ✅ Already implemented
+- `Horner` (Task 3) - ✅ Already implemented
+
+### Usage Pattern Analysis
+
+**Primary Usage**: UI convenience class for operation editing and manipulation
+**Common Patterns**:
+- Wrapping existing operations with default value semantics
+- Converting between partial and total operations
+- Random value generation for testing
+- Idempotent operation creation
+
+**Integration Points**:
+- Used in `AlgebraEditor` for operation management
+- Used in `OperationTableModel` for UI display
+- Used in `Closer` for algorithm operations
+- Used in `BasicAlgebra` for operation wrapping
+
+### Testing Strategy
+
+**Rust Tests**:
+- Test all constructors with various parameter combinations
+- Test default value handling scenarios
+- Test random value generation
+- Test idempotent operations
+- Test table operations and conversions
+- Test static utility methods
+- Compare results against Java implementation
+
+**Python Tests**:
+- Test all public methods through Python bindings
+- Test default value behavior
+- Test random value generation
+- Test idempotent operations
+- Verify Python API matches Rust API
+
+**Java Wrapper Tests**:
+- Test all constructors
+- Test default value operations
+- Test random value generation
+- Test idempotent operations
+- Test table operations
+- Test static utility methods
 
 ### Acceptance Criteria
 - [ ] All public methods translated to Rust
@@ -98,3 +144,8 @@ This class depends on:
 - [ ] Python tests pass and match Java output
 - [ ] Code compiles without warnings
 - [ ] Documentation complete
+- [ ] Default value handling works correctly
+- [ ] Random value generation works correctly
+- [ ] Idempotent operations work correctly
+- [ ] Table operations work correctly
+- [ ] Static utility methods work correctly

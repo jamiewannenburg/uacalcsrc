@@ -222,7 +222,7 @@ Begin your analysis and update the task file accordingly. Return your findings i
                 cmd,
                 capture_output=True,
                 text=True,
-                timeout=300  # 5 minute timeout per task
+                timeout=900  # 15 minute timeout per task
             )
             
             if result.returncode == 0:
@@ -289,9 +289,43 @@ Begin your analysis and update the task file accordingly. Return your findings i
         task_files.sort(key=lambda x: int(re.search(r'Task (\d+)', x.name).group(1)) if re.search(r'Task (\d+)', x.name) else 0)
         return task_files
     
-    def run_analysis(self, parallel: int = 3, task_filter: Optional[str] = None, dry_run: bool = False):
+    def load_existing_results(self) -> Dict[str, Dict]:
+        """Load existing results from task_analysis_results.json."""
+        results_file = self.project_root / "task_analysis_results.json"
+        if not results_file.exists():
+            return {}
+        
+        try:
+            with open(results_file, 'r') as f:
+                results = json.load(f)
+            # Convert list to dict keyed by task path for easier lookup
+            return {result['task']: result for result in results}
+        except (json.JSONDecodeError, KeyError) as e:
+            logger.warning(f"Failed to load existing results: {e}")
+            return {}
+    
+    def save_results_incrementally(self, new_results: List[Dict], existing_results: Dict[str, Dict]):
+        """Save results incrementally by merging with existing results."""
+        results_file = self.project_root / "task_analysis_results.json"
+        
+        # Merge new results with existing ones
+        for result in new_results:
+            existing_results[result['task']] = result
+        
+        # Convert back to list and save
+        all_results = list(existing_results.values())
+        with open(results_file, 'w') as f:
+            json.dump(all_results, f, indent=2, default=str)
+        
+        logger.info(f"Results saved incrementally to {results_file}")
+
+    def run_analysis(self, parallel: int = 3, task_filter: Optional[str] = None, dry_run: bool = False, rerun: bool = False):
         """Run the complete task analysis with batched parallel processing."""
         logger.info("Starting task analysis...")
+        
+        # Load existing results
+        existing_results = self.load_existing_results()
+        logger.info(f"Loaded {len(existing_results)} existing results")
         
         # Get all task files
         task_files = self.get_all_task_files()
@@ -300,6 +334,14 @@ Begin your analysis and update the task file accordingly. Return your findings i
         if task_filter:
             task_files = [f for f in task_files if task_filter in f.name]
         
+        # Filter out completed tasks unless rerun is specified
+        if not rerun:
+            original_count = len(task_files)
+            task_files = [f for f in task_files if str(f) not in existing_results]
+            filtered_count = original_count - len(task_files)
+            if filtered_count > 0:
+                logger.info(f"Filtered out {filtered_count} already completed tasks (use --rerun to include them)")
+        
         logger.info(f"Found {len(task_files)} task files to process")
         
         if dry_run:
@@ -307,7 +349,8 @@ Begin your analysis and update the task file accordingly. Return your findings i
             for task_file in task_files:
                 task_info = self.parse_task_file(task_file)
                 if task_info:
-                    logger.info(f"  - {task_file.name}: {task_info['java_file']} ({'completed' if task_info['is_completed'] else 'incomplete'})")
+                    status = "already completed" if str(task_file) in existing_results else "incomplete"
+                    logger.info(f"  - {task_file.name}: {task_info['java_file']} ({status})")
             return
         
         # Process tasks in batches
@@ -352,6 +395,10 @@ Begin your analysis and update the task file accordingly. Return your findings i
                             batch_results.append(error_result)
                             results.append(error_result)
                     
+                    # Save results incrementally after each batch
+                    if batch_results:
+                        self.save_results_incrementally(batch_results, existing_results)
+                    
                     # Log batch results
                     batch_successful = sum(1 for r in batch_results if r['success'])
                     batch_failed = len(batch_results) - batch_successful
@@ -368,6 +415,9 @@ Begin your analysis and update the task file accordingly. Return your findings i
                 logger.info(f"Processing task {i}/{len(task_files)}: {task_file.name}")
                 result = self.process_single_task(task_file)
                 results.append(result)
+                
+                # Save results incrementally after each task
+                self.save_results_incrementally([result], existing_results)
         
         # Report final results
         elapsed_time = time.time() - start_time
@@ -376,13 +426,6 @@ Begin your analysis and update the task file accordingly. Return your findings i
         
         logger.info(f"Analysis complete in {elapsed_time:.2f} seconds")
         logger.info(f"Total results: {successful} successful, {failed} failed")
-        
-        # Save results to file
-        results_file = self.project_root / "task_analysis_results.json"
-        with open(results_file, 'w') as f:
-            json.dump(results, f, indent=2, default=str)
-        
-        logger.info(f"Results saved to {results_file}")
         
         return results
 
@@ -394,6 +437,8 @@ def main():
                        help="Only process tasks matching this pattern")
     parser.add_argument("--dry-run", "-d", action="store_true",
                        help="Show what would be done without executing")
+    parser.add_argument("--rerun", "-r", action="store_true",
+                       help="Rerun all tasks, including those already completed")
     parser.add_argument("--project-root", type=str, default="/home/jamie/Documents/uacalcsrc",
                        help="Project root directory")
     
@@ -404,7 +449,8 @@ def main():
         analyzer.run_analysis(
             parallel=args.parallel,
             task_filter=args.task_filter,
-            dry_run=args.dry_run
+            dry_run=args.dry_run,
+            rerun=args.rerun
         )
     except Exception as e:
         logger.error(f"Analysis failed: {e}")

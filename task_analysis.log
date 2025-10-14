@@ -184,3 +184,649 @@
 2025-10-14 11:45:24,494 - INFO - Analysis complete in 599.40 seconds
 2025-10-14 11:45:24,494 - INFO - Total results: 10 successful, 1 failed
 2025-10-14 11:45:24,495 - INFO - Results saved to /home/jamie/Documents/uacalcsrc/task_analysis_results.json
+2025-10-14 11:46:52,407 - INFO - Starting task analysis...
+2025-10-14 11:46:52,409 - INFO - Found 85 task files to process
+2025-10-14 11:46:52,409 - INFO - Processing 85 tasks in 29 batches of 3 parallel workers
+2025-10-14 11:46:52,409 - INFO - Processing batch 1/29 (3 tasks)
+2025-10-14 11:46:52,409 - INFO - Processing task: Task 1 - OperationSymbol.md
+2025-10-14 11:46:52,410 - INFO - Processing task: Task 2 - SimilarityType.md
+2025-10-14 11:46:52,410 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 1 - OperationSymbol.md
+2025-10-14 11:46:52,411 - INFO - Processing task: Task 3 - Horner.md
+2025-10-14 11:46:52,411 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 2 - SimilarityType.md
+2025-10-14 11:46:52,412 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 3 - Horner.md
+2025-10-14 11:48:36,118 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 2 - SimilarityType.md
+2025-10-14 11:48:49,807 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 1 - OperationSymbol.md
+2025-10-14 11:49:04,947 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 3 - Horner.md
+2025-10-14 11:49:04,947 - INFO - Batch 1 complete: 3 successful, 0 failed
+2025-10-14 11:49:04,947 - INFO - Waiting 2 seconds before next batch...
+2025-10-14 11:49:06,948 - INFO - Processing batch 2/29 (3 tasks)
+2025-10-14 11:49:06,948 - INFO - Processing task: Task 4 - SimpleList.md
+2025-10-14 11:49:06,949 - INFO - Processing task: Task 5 - Partition.md
+2025-10-14 11:49:06,949 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 4 - SimpleList.md
+2025-10-14 11:49:06,949 - INFO - Processing task: Task 6 - ArrayString.md
+2025-10-14 11:49:06,949 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 5 - Partition.md
+2025-10-14 11:49:06,950 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 6 - ArrayString.md
+2025-10-14 11:50:38,846 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 6 - ArrayString.md
+2025-10-14 11:50:43,882 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 5 - Partition.md
+2025-10-14 11:50:52,422 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 4 - SimpleList.md
+2025-10-14 11:50:52,422 - INFO - Batch 2 complete: 3 successful, 0 failed
+2025-10-14 11:50:52,423 - INFO - Waiting 2 seconds before next batch...
+2025-10-14 11:50:54,423 - INFO - Processing batch 3/29 (3 tasks)
+2025-10-14 11:50:54,424 - INFO - Processing task: Task 7 - BadAlgebraFileException.md
+2025-10-14 11:50:54,425 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 7 - BadAlgebraFileException.md
+2025-10-14 11:50:54,425 - INFO - Processing task: Task 8 - ExtFileFilter.md
+2025-10-14 11:50:54,426 - INFO - Processing task: Task 9 - PermutationGenerator.md
+2025-10-14 11:50:54,427 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 8 - ExtFileFilter.md
+2025-10-14 11:50:54,428 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 9 - PermutationGenerator.md
+2025-10-14 11:52:14,919 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 7 - BadAlgebraFileException.md
+2025-10-14 11:52:24,853 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 9 - PermutationGenerator.md
+2025-10-14 11:53:02,672 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 8 - ExtFileFilter.md
+2025-10-14 11:53:02,672 - INFO - Batch 3 complete: 3 successful, 0 failed
+2025-10-14 11:53:02,672 - INFO - Waiting 2 seconds before next batch...
+2025-10-14 11:53:04,673 - INFO - Processing batch 4/29 (3 tasks)
+2025-10-14 11:53:04,674 - INFO - Processing task: Task 10 - LongList.md
+2025-10-14 11:53:04,675 - INFO - Processing task: Task 11 - AbstractOperation.md
+2025-10-14 11:53:04,675 - INFO - Processing task: Task 12 - Operation.md
+2025-10-14 11:53:04,676 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 10 - LongList.md
+2025-10-14 11:53:04,676 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 11 - AbstractOperation.md
+2025-10-14 11:53:04,677 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 12 - Operation.md
+2025-10-14 11:54:50,055 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 10 - LongList.md
+2025-10-14 11:54:50,119 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 11 - AbstractOperation.md
+2025-10-14 11:55:07,106 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 12 - Operation.md
+2025-10-14 11:55:07,107 - INFO - Batch 4 complete: 3 successful, 0 failed
+2025-10-14 11:55:07,107 - INFO - Waiting 2 seconds before next batch...
+2025-10-14 11:55:09,107 - INFO - Processing batch 5/29 (3 tasks)
+2025-10-14 11:55:09,108 - INFO - Processing task: Task 13 - AbstractIntOperation.md
+2025-10-14 11:55:09,108 - INFO - Processing task: Task 14 - ArrayIncrementor.md
+2025-10-14 11:55:09,108 - INFO - Processing task: Task 15 - SequenceGenerator.md
+2025-10-14 11:55:09,109 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 15 - SequenceGenerator.md
+2025-10-14 11:55:09,109 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 13 - AbstractIntOperation.md
+2025-10-14 11:55:09,109 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 14 - ArrayIncrementor.md
+2025-10-14 11:56:23,487 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 15 - SequenceGenerator.md
+2025-10-14 11:56:28,550 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 14 - ArrayIncrementor.md
+2025-10-14 11:56:56,259 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 13 - AbstractIntOperation.md
+2025-10-14 11:56:56,260 - INFO - Batch 5 complete: 3 successful, 0 failed
+2025-10-14 11:56:56,260 - INFO - Waiting 2 seconds before next batch...
+2025-10-14 11:56:58,261 - INFO - Processing batch 6/29 (3 tasks)
+2025-10-14 11:56:58,261 - INFO - Processing task: Task 16 - OrderedSets.md
+2025-10-14 11:56:58,261 - INFO - Processing task: Task 17 - Pool.md
+2025-10-14 11:56:58,261 - INFO - Processing task: Task 18 - Order.md
+2025-10-14 11:56:58,262 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 16 - OrderedSets.md
+2025-10-14 11:56:58,262 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 17 - Pool.md
+2025-10-14 11:56:58,263 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 18 - Order.md
+2025-10-14 11:58:10,073 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 17 - Pool.md
+2025-10-14 11:58:26,865 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 18 - Order.md
+2025-10-14 11:58:40,269 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 16 - OrderedSets.md
+2025-10-14 11:58:40,270 - INFO - Batch 6 complete: 3 successful, 0 failed
+2025-10-14 11:58:40,270 - INFO - Waiting 2 seconds before next batch...
+2025-10-14 11:58:42,271 - INFO - Processing batch 7/29 (3 tasks)
+2025-10-14 11:58:42,273 - INFO - Processing task: Task 19 - BasicBinaryRelation.md
+2025-10-14 11:58:42,275 - INFO - Processing task: Task 20 - Lattice.md
+2025-10-14 11:58:42,276 - INFO - Processing task: Task 21 - BinaryRelation.md
+2025-10-14 11:58:42,277 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 19 - BasicBinaryRelation.md
+2025-10-14 11:58:42,277 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 20 - Lattice.md
+2025-10-14 11:58:42,278 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 21 - BinaryRelation.md
+2025-10-14 12:00:14,565 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 20 - Lattice.md
+2025-10-14 12:00:22,976 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 21 - BinaryRelation.md
+2025-10-14 12:00:33,540 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 19 - BasicBinaryRelation.md
+2025-10-14 12:00:33,540 - INFO - Batch 7 complete: 3 successful, 0 failed
+2025-10-14 12:00:33,542 - INFO - Waiting 2 seconds before next batch...
+2025-10-14 12:00:35,543 - INFO - Processing batch 8/29 (3 tasks)
+2025-10-14 12:00:35,544 - INFO - Processing task: Task 22 - Presentation.md
+2025-10-14 12:00:35,545 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 22 - Presentation.md
+2025-10-14 12:00:35,545 - INFO - Processing task: Task 23 - IntArray.md
+2025-10-14 12:00:35,546 - INFO - Processing task: Task 24 - AlgebraFromMinimalSets.md
+2025-10-14 12:00:35,547 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 24 - AlgebraFromMinimalSets.md
+2025-10-14 12:00:35,546 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 23 - IntArray.md
+2025-10-14 12:02:55,410 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 22 - Presentation.md
+2025-10-14 12:03:30,474 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 23 - IntArray.md
+2025-10-14 12:03:44,404 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 24 - AlgebraFromMinimalSets.md
+2025-10-14 12:03:44,404 - INFO - Batch 8 complete: 3 successful, 0 failed
+2025-10-14 12:03:44,405 - INFO - Waiting 2 seconds before next batch...
+2025-10-14 12:03:46,406 - INFO - Processing batch 9/29 (3 tasks)
+2025-10-14 12:03:46,407 - INFO - Processing task: Task 25 - TermOperation.md
+2025-10-14 12:03:46,408 - INFO - Processing task: Task 26 - CentralityData.md
+2025-10-14 12:03:46,408 - INFO - Processing task: Task 27 - ParameterizedOperation.md
+2025-10-14 12:03:46,409 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 25 - TermOperation.md
+2025-10-14 12:03:46,409 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 27 - ParameterizedOperation.md
+2025-10-14 12:03:46,409 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 26 - CentralityData.md
+2025-10-14 12:03:50,374 - ERROR - cursor-agent failed for /home/jamie/Documents/uacalcsrc/tasks/Task 25 - TermOperation.md: Error: ENOENT: no such file or directory, rename '/home/jamie/.cursor/cli-config.json.tmp' -> '/home/jamie/.cursor/cli-config.json'
+
+2025-10-14 12:05:12,625 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 27 - ParameterizedOperation.md
+2025-10-14 12:05:38,614 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 26 - CentralityData.md
+2025-10-14 12:05:38,615 - INFO - Batch 9 complete: 2 successful, 1 failed
+2025-10-14 12:05:38,615 - INFO - Waiting 2 seconds before next batch...
+2025-10-14 12:05:40,616 - INFO - Processing batch 10/29 (3 tasks)
+2025-10-14 12:05:40,616 - INFO - Processing task: Task 28 - SmallLattice.md
+2025-10-14 12:05:40,616 - INFO - Processing task: Task 29 - Subtrace.md
+2025-10-14 12:05:40,617 - INFO - Processing task: Task 30 - Element.md
+2025-10-14 12:05:40,617 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 28 - SmallLattice.md
+2025-10-14 12:05:40,617 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 30 - Element.md
+2025-10-14 12:05:40,618 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 29 - Subtrace.md
+2025-10-14 12:07:07,919 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 30 - Element.md
+2025-10-14 12:08:03,633 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 28 - SmallLattice.md
+2025-10-14 12:10:20,898 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 29 - Subtrace.md
+2025-10-14 12:10:20,898 - INFO - Batch 10 complete: 3 successful, 0 failed
+2025-10-14 12:10:20,899 - INFO - Waiting 2 seconds before next batch...
+2025-10-14 12:10:22,899 - INFO - Processing batch 11/29 (3 tasks)
+2025-10-14 12:10:22,900 - INFO - Processing task: Task 31 - TupleWithMin.md
+2025-10-14 12:10:22,901 - INFO - Processing task: Task 32 - MaltsevDecompositionIterator.md
+2025-10-14 12:10:22,901 - INFO - Processing task: Task 33 - TermOperationImp.md
+2025-10-14 12:10:22,902 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 31 - TupleWithMin.md
+2025-10-14 12:10:22,902 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 32 - MaltsevDecompositionIterator.md
+2025-10-14 12:10:22,902 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 33 - TermOperationImp.md
+2025-10-14 12:11:51,568 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 33 - TermOperationImp.md
+2025-10-14 12:12:23,422 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 31 - TupleWithMin.md
+2025-10-14 12:12:47,103 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 32 - MaltsevDecompositionIterator.md
+2025-10-14 12:12:47,103 - INFO - Batch 11 complete: 3 successful, 0 failed
+2025-10-14 12:12:47,103 - INFO - Waiting 2 seconds before next batch...
+2025-10-14 12:12:49,104 - INFO - Processing batch 12/29 (3 tasks)
+2025-10-14 12:12:49,105 - INFO - Processing task: Task 34 - CloserTiming.md
+2025-10-14 12:12:49,105 - INFO - Processing task: Task 35 - Equations.md
+2025-10-14 12:12:49,105 - INFO - Processing task: Task 36 - PartiallyDefinedLattice.md
+2025-10-14 12:12:49,106 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 34 - CloserTiming.md
+2025-10-14 12:12:49,106 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 36 - PartiallyDefinedLattice.md
+2025-10-14 12:12:49,106 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 35 - Equations.md
+2025-10-14 12:14:20,912 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 34 - CloserTiming.md
+2025-10-14 12:14:44,652 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 36 - PartiallyDefinedLattice.md
+2025-10-14 12:15:35,095 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 35 - Equations.md
+2025-10-14 12:15:35,096 - INFO - Batch 12 complete: 3 successful, 0 failed
+2025-10-14 12:15:35,096 - INFO - Waiting 2 seconds before next batch...
+2025-10-14 12:15:37,096 - INFO - Processing batch 13/29 (3 tasks)
+2025-10-14 12:15:37,097 - INFO - Processing task: Task 37 - Mace4Reader.md
+2025-10-14 12:15:37,097 - INFO - Processing task: Task 38 - MaltsevProductDecomposition.md
+2025-10-14 12:15:37,097 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 37 - Mace4Reader.md
+2025-10-14 12:15:37,098 - INFO - Processing task: Task 39 - QuotientElement.md
+2025-10-14 12:15:37,099 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 38 - MaltsevProductDecomposition.md
+2025-10-14 12:15:37,099 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 39 - QuotientElement.md
+2025-10-14 12:17:28,794 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 37 - Mace4Reader.md
+2025-10-14 12:17:33,404 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 38 - MaltsevProductDecomposition.md
+2025-10-14 12:17:34,688 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 39 - QuotientElement.md
+2025-10-14 12:17:34,689 - INFO - Batch 13 complete: 3 successful, 0 failed
+2025-10-14 12:17:34,689 - INFO - Waiting 2 seconds before next batch...
+2025-10-14 12:17:36,690 - INFO - Processing batch 14/29 (3 tasks)
+2025-10-14 12:17:36,690 - INFO - Processing task: Task 40 - Variable.md
+2025-10-14 12:17:36,691 - INFO - Processing task: Task 41 - SmallAlgebra.md
+2025-10-14 12:17:36,691 - INFO - Processing task: Task 42 - Polymorphisms.md
+2025-10-14 12:17:36,691 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 40 - Variable.md
+2025-10-14 12:17:36,692 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 41 - SmallAlgebra.md
+2025-10-14 12:17:36,692 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 42 - Polymorphisms.md
+2025-10-14 12:19:14,656 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 41 - SmallAlgebra.md
+2025-10-14 12:19:33,753 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 40 - Variable.md
+2025-10-14 12:19:40,640 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 42 - Polymorphisms.md
+2025-10-14 12:19:40,640 - INFO - Batch 14 complete: 3 successful, 0 failed
+2025-10-14 12:19:40,641 - INFO - Waiting 2 seconds before next batch...
+2025-10-14 12:19:42,641 - INFO - Processing batch 15/29 (3 tasks)
+2025-10-14 12:19:42,642 - INFO - Processing task: Task 43 - Homomorphism.md
+2025-10-14 12:19:42,642 - INFO - Processing task: Task 44 - Terms.md
+2025-10-14 12:19:42,643 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 43 - Homomorphism.md
+2025-10-14 12:19:42,643 - INFO - Processing task: Task 45 - JSONChannel.md
+2025-10-14 12:19:42,643 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 44 - Terms.md
+2025-10-14 12:19:42,644 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 45 - JSONChannel.md
+2025-10-14 12:21:50,085 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 43 - Homomorphism.md
+2025-10-14 12:21:51,995 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 45 - JSONChannel.md
+2025-10-14 12:24:42,745 - ERROR - cursor-agent timed out for /home/jamie/Documents/uacalcsrc/tasks/Task 44 - Terms.md
+2025-10-14 12:24:42,745 - INFO - Batch 15 complete: 2 successful, 1 failed
+2025-10-14 12:24:42,745 - INFO - Waiting 2 seconds before next batch...
+2025-10-14 12:24:44,746 - INFO - Processing batch 16/29 (3 tasks)
+2025-10-14 12:24:44,746 - INFO - Processing task: Task 46 - TypeFinder.md
+2025-10-14 12:24:44,747 - INFO - Processing task: Task 47 - BasicSet.md
+2025-10-14 12:24:44,747 - INFO - Processing task: Task 48 - Taylor.md
+2025-10-14 12:24:44,747 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 46 - TypeFinder.md
+2025-10-14 12:24:44,748 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 47 - BasicSet.md
+2025-10-14 12:24:44,748 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 48 - Taylor.md
+2025-10-14 12:26:19,621 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 48 - Taylor.md
+2025-10-14 12:29:44,868 - ERROR - cursor-agent timed out for /home/jamie/Documents/uacalcsrc/tasks/Task 47 - BasicSet.md
+2025-10-14 12:29:44,868 - ERROR - cursor-agent timed out for /home/jamie/Documents/uacalcsrc/tasks/Task 46 - TypeFinder.md
+2025-10-14 12:29:44,869 - INFO - Batch 16 complete: 1 successful, 2 failed
+2025-10-14 12:29:44,869 - INFO - Waiting 2 seconds before next batch...
+2025-10-14 12:29:46,869 - INFO - Processing batch 17/29 (3 tasks)
+2025-10-14 12:29:46,870 - INFO - Processing task: Task 49 - OperationWithDefaultValue.md
+2025-10-14 12:29:46,870 - INFO - Processing task: Task 50 - Operations.md
+2025-10-14 12:29:46,870 - INFO - Processing task: Task 51 - SubProductElement.md
+2025-10-14 12:29:46,870 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 49 - OperationWithDefaultValue.md
+2025-10-14 12:29:46,871 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 51 - SubProductElement.md
+2025-10-14 12:29:46,871 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 50 - Operations.md
+2025-10-14 12:31:19,897 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 51 - SubProductElement.md
+2025-10-14 12:31:46,514 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 49 - OperationWithDefaultValue.md
+2025-10-14 12:32:01,873 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 50 - Operations.md
+2025-10-14 12:32:01,873 - INFO - Batch 17 complete: 3 successful, 0 failed
+2025-10-14 12:32:01,873 - INFO - Waiting 2 seconds before next batch...
+2025-10-14 12:32:03,873 - INFO - Processing batch 18/29 (3 tasks)
+2025-10-14 12:32:03,874 - INFO - Processing task: Task 52 - ParameterizedAlgebra.md
+2025-10-14 12:32:03,874 - INFO - Processing task: Task 53 - VirtualLists.md
+2025-10-14 12:32:03,874 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 52 - ParameterizedAlgebra.md
+2025-10-14 12:32:03,874 - INFO - Processing task: Task 54 - AlgebraWriter.md
+2025-10-14 12:32:03,875 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 53 - VirtualLists.md
+2025-10-14 12:32:03,875 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 54 - AlgebraWriter.md
+2025-10-14 12:33:31,248 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 52 - ParameterizedAlgebra.md
+2025-10-14 12:34:14,823 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 54 - AlgebraWriter.md
+2025-10-14 12:37:03,994 - ERROR - cursor-agent timed out for /home/jamie/Documents/uacalcsrc/tasks/Task 53 - VirtualLists.md
+2025-10-14 12:37:03,994 - INFO - Batch 18 complete: 2 successful, 1 failed
+2025-10-14 12:37:03,994 - INFO - Waiting 2 seconds before next batch...
+2025-10-14 12:37:05,995 - INFO - Processing batch 19/29 (3 tasks)
+2025-10-14 12:37:05,996 - INFO - Processing task: Task 55 - Algebra.md
+2025-10-14 12:37:05,996 - INFO - Processing task: Task 56 - Term.md
+2025-10-14 12:37:05,996 - INFO - Processing task: Task 57 - PowerAlgebra.md
+2025-10-14 12:37:05,997 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 55 - Algebra.md
+2025-10-14 12:37:05,997 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 56 - Term.md
+2025-10-14 12:37:05,997 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 57 - PowerAlgebra.md
+2025-10-14 12:38:48,463 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 55 - Algebra.md
+2025-10-14 12:38:51,768 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 56 - Term.md
+2025-10-14 12:39:18,768 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 57 - PowerAlgebra.md
+2025-10-14 12:39:18,768 - INFO - Batch 19 complete: 3 successful, 0 failed
+2025-10-14 12:39:18,768 - INFO - Waiting 2 seconds before next batch...
+2025-10-14 12:39:20,769 - INFO - Processing batch 20/29 (3 tasks)
+2025-10-14 12:39:20,770 - INFO - Processing task: Task 58 - Equation.md
+2025-10-14 12:39:20,770 - INFO - Processing task: Task 59 - Lattices.md
+2025-10-14 12:39:20,770 - INFO - Processing task: Task 60 - AlgebraWithGeneratingVector.md
+2025-10-14 12:39:20,771 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 58 - Equation.md
+2025-10-14 12:39:20,771 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 60 - AlgebraWithGeneratingVector.md
+2025-10-14 12:39:20,771 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 59 - Lattices.md
+2025-10-14 12:41:06,512 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 58 - Equation.md
+2025-10-14 12:41:17,478 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 59 - Lattices.md
+2025-10-14 12:41:22,929 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 60 - AlgebraWithGeneratingVector.md
+2025-10-14 12:41:22,929 - INFO - Batch 20 complete: 3 successful, 0 failed
+2025-10-14 12:41:22,929 - INFO - Waiting 2 seconds before next batch...
+2025-10-14 12:41:24,929 - INFO - Processing batch 21/29 (3 tasks)
+2025-10-14 12:41:24,930 - INFO - Processing task: Task 61 - SingleClose.md
+2025-10-14 12:41:24,930 - INFO - Processing task: Task 62 - AlgebraReader.md
+2025-10-14 12:41:24,930 - INFO - Processing task: Task 63 - Malcev.md
+2025-10-14 12:41:24,930 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 63 - Malcev.md
+2025-10-14 12:41:24,931 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 61 - SingleClose.md
+2025-10-14 12:41:24,931 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 62 - AlgebraReader.md
+2025-10-14 12:43:37,095 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 62 - AlgebraReader.md
+2025-10-14 12:46:25,026 - ERROR - cursor-agent timed out for /home/jamie/Documents/uacalcsrc/tasks/Task 61 - SingleClose.md
+2025-10-14 12:46:25,027 - ERROR - cursor-agent timed out for /home/jamie/Documents/uacalcsrc/tasks/Task 63 - Malcev.md
+2025-10-14 12:46:25,028 - INFO - Batch 21 complete: 1 successful, 2 failed
+2025-10-14 12:46:25,028 - INFO - Waiting 2 seconds before next batch...
+2025-10-14 12:46:27,029 - INFO - Processing batch 22/29 (3 tasks)
+2025-10-14 12:46:27,029 - INFO - Processing task: Task 64 - ReductAlgebra.md
+2025-10-14 12:46:27,030 - INFO - Processing task: Task 65 - AlgebraIO.md
+2025-10-14 12:46:27,030 - INFO - Processing task: Task 66 - GeneralAlgebra.md
+2025-10-14 12:46:27,030 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 64 - ReductAlgebra.md
+2025-10-14 12:46:27,031 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 65 - AlgebraIO.md
+2025-10-14 12:46:27,031 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 66 - GeneralAlgebra.md
+2025-10-14 12:48:23,016 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 64 - ReductAlgebra.md
+2025-10-14 12:48:31,436 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 65 - AlgebraIO.md
+2025-10-14 12:48:58,731 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 66 - GeneralAlgebra.md
+2025-10-14 12:48:58,731 - INFO - Batch 22 complete: 3 successful, 0 failed
+2025-10-14 12:48:58,732 - INFO - Waiting 2 seconds before next batch...
+2025-10-14 12:49:00,732 - INFO - Processing batch 23/29 (3 tasks)
+2025-10-14 12:49:00,733 - INFO - Processing task: Task 67 - VariableImp.md
+2025-10-14 12:49:00,733 - INFO - Processing task: Task 68 - Subalgebra.md
+2025-10-14 12:49:00,733 - INFO - Processing task: Task 69 - BasicPartition.md
+2025-10-14 12:49:00,733 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 67 - VariableImp.md
+2025-10-14 12:49:00,734 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 68 - Subalgebra.md
+2025-10-14 12:49:00,734 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 69 - BasicPartition.md
+2025-10-14 12:51:20,610 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 67 - VariableImp.md
+2025-10-14 12:51:28,195 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 68 - Subalgebra.md
+2025-10-14 12:54:00,847 - ERROR - cursor-agent timed out for /home/jamie/Documents/uacalcsrc/tasks/Task 69 - BasicPartition.md
+2025-10-14 12:54:00,848 - INFO - Batch 23 complete: 2 successful, 1 failed
+2025-10-14 12:54:00,848 - INFO - Waiting 2 seconds before next batch...
+2025-10-14 12:54:02,849 - INFO - Processing batch 24/29 (3 tasks)
+2025-10-14 12:54:02,850 - INFO - Processing task: Task 70 - PermutationGroup.md
+2025-10-14 12:54:02,850 - INFO - Processing task: Task 71 - BasicAlgebra.md
+2025-10-14 12:54:02,850 - INFO - Processing task: Task 72 - UnaryTermsMonoid.md
+2025-10-14 12:54:02,851 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 70 - PermutationGroup.md
+2025-10-14 12:54:02,851 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 72 - UnaryTermsMonoid.md
+2025-10-14 12:54:02,851 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 71 - BasicAlgebra.md
+2025-10-14 12:55:42,107 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 72 - UnaryTermsMonoid.md
+2025-10-14 12:59:02,950 - ERROR - cursor-agent timed out for /home/jamie/Documents/uacalcsrc/tasks/Task 70 - PermutationGroup.md
+2025-10-14 12:59:02,971 - ERROR - cursor-agent timed out for /home/jamie/Documents/uacalcsrc/tasks/Task 71 - BasicAlgebra.md
+2025-10-14 12:59:02,971 - INFO - Batch 24 complete: 1 successful, 2 failed
+2025-10-14 12:59:02,971 - INFO - Waiting 2 seconds before next batch...
+2025-10-14 12:59:04,972 - INFO - Processing batch 25/29 (3 tasks)
+2025-10-14 12:59:04,972 - INFO - Processing task: Task 73 - ProductAlgebra.md
+2025-10-14 12:59:04,973 - INFO - Processing task: Task 74 - NonVariableTerm.md
+2025-10-14 12:59:04,973 - INFO - Processing task: Task 75 - MatrixPowerAlgebra.md
+2025-10-14 12:59:04,973 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 73 - ProductAlgebra.md
+2025-10-14 12:59:04,974 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 74 - NonVariableTerm.md
+2025-10-14 12:59:04,974 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 75 - MatrixPowerAlgebra.md
+2025-10-14 13:01:07,277 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 75 - MatrixPowerAlgebra.md
+2025-10-14 13:01:14,960 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 73 - ProductAlgebra.md
+2025-10-14 13:01:23,724 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 74 - NonVariableTerm.md
+2025-10-14 13:01:23,724 - INFO - Batch 25 complete: 3 successful, 0 failed
+2025-10-14 13:01:23,724 - INFO - Waiting 2 seconds before next batch...
+2025-10-14 13:01:25,724 - INFO - Processing batch 26/29 (3 tasks)
+2025-10-14 13:01:25,725 - INFO - Processing task: Task 76 - SubalgebraLattice.md
+2025-10-14 13:01:25,726 - INFO - Processing task: Task 77 - QuotientAlgebra.md
+2025-10-14 13:01:25,726 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 77 - QuotientAlgebra.md
+2025-10-14 13:01:25,727 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 76 - SubalgebraLattice.md
+2025-10-14 13:01:25,727 - INFO - Processing task: Task 78 - BigProductAlgebra.md
+2025-10-14 13:01:25,728 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 78 - BigProductAlgebra.md
+2025-10-14 13:03:17,173 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 77 - QuotientAlgebra.md
+2025-10-14 13:06:25,801 - ERROR - cursor-agent timed out for /home/jamie/Documents/uacalcsrc/tasks/Task 78 - BigProductAlgebra.md
+2025-10-14 13:06:25,812 - ERROR - cursor-agent timed out for /home/jamie/Documents/uacalcsrc/tasks/Task 76 - SubalgebraLattice.md
+2025-10-14 13:06:25,813 - INFO - Batch 26 complete: 1 successful, 2 failed
+2025-10-14 13:06:25,813 - INFO - Waiting 2 seconds before next batch...
+2025-10-14 13:06:27,814 - INFO - Processing batch 27/29 (3 tasks)
+2025-10-14 13:06:27,815 - INFO - Processing task: Task 79 - PolinLikeAlgebra.md
+2025-10-14 13:06:27,815 - INFO - Processing task: Task 80 - CongruenceLattice.md
+2025-10-14 13:06:27,815 - INFO - Processing task: Task 81 - FreeAlgebra.md
+2025-10-14 13:06:27,816 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 79 - PolinLikeAlgebra.md
+2025-10-14 13:06:27,816 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 81 - FreeAlgebra.md
+2025-10-14 13:06:27,817 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 80 - CongruenceLattice.md
+2025-10-14 13:08:19,552 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 81 - FreeAlgebra.md
+2025-10-14 13:08:34,229 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 80 - CongruenceLattice.md
+2025-10-14 13:10:54,657 - INFO - Starting task analysis...
+2025-10-14 13:10:54,658 - INFO - Loaded 11 existing results
+2025-10-14 13:10:54,659 - INFO - Filtered out 11 already completed tasks (use --rerun to include them)
+2025-10-14 13:10:54,659 - INFO - Found 74 task files to process
+2025-10-14 13:10:54,659 - INFO - DRY RUN - Would process the following tasks:
+2025-10-14 13:10:54,660 - INFO -   - Task 2 - SimilarityType.md: org/uacalc/alg/op/SimilarityType.java (incomplete)
+2025-10-14 13:10:54,660 - INFO -   - Task 3 - Horner.md: org/uacalc/util/Horner.java (incomplete)
+2025-10-14 13:10:54,660 - INFO -   - Task 4 - SimpleList.md: org/uacalc/util/SimpleList.java (incomplete)
+2025-10-14 13:10:54,661 - INFO -   - Task 5 - Partition.md: org/uacalc/alg/conlat/Partition.java (incomplete)
+2025-10-14 13:10:54,661 - INFO -   - Task 6 - ArrayString.md: org/uacalc/util/ArrayString.java (incomplete)
+2025-10-14 13:10:54,661 - INFO -   - Task 7 - BadAlgebraFileException.md: org/uacalc/io/BadAlgebraFileException.java (incomplete)
+2025-10-14 13:10:54,661 - INFO -   - Task 8 - ExtFileFilter.md: org/uacalc/io/ExtFileFilter.java (incomplete)
+2025-10-14 13:10:54,661 - INFO -   - Task 9 - PermutationGenerator.md: org/uacalc/util/PermutationGenerator.java (incomplete)
+2025-10-14 13:10:54,662 - INFO -   - Task 20 - Lattice.md: org/uacalc/lat/Lattice.java (incomplete)
+2025-10-14 13:10:54,662 - INFO -   - Task 21 - BinaryRelation.md: org/uacalc/alg/conlat/BinaryRelation.java (incomplete)
+2025-10-14 13:10:54,662 - INFO -   - Task 22 - Presentation.md: org/uacalc/eq/Presentation.java (incomplete)
+2025-10-14 13:10:54,662 - INFO -   - Task 23 - IntArray.md: org/uacalc/util/IntArray.java (incomplete)
+2025-10-14 13:10:54,662 - INFO -   - Task 24 - AlgebraFromMinimalSets.md: org/uacalc/alg/AlgebraFromMinimalSets.java (incomplete)
+2025-10-14 13:10:54,663 - INFO -   - Task 25 - TermOperation.md: org/uacalc/alg/op/TermOperation.java (incomplete)
+2025-10-14 13:10:54,663 - INFO -   - Task 26 - CentralityData.md: org/uacalc/alg/conlat/CentralityData.java (incomplete)
+2025-10-14 13:10:54,663 - INFO -   - Task 27 - ParameterizedOperation.md: org/uacalc/alg/op/ParameterizedOperation.java (incomplete)
+2025-10-14 13:10:54,663 - INFO -   - Task 28 - SmallLattice.md: org/uacalc/lat/SmallLattice.java (incomplete)
+2025-10-14 13:10:54,663 - INFO -   - Task 29 - Subtrace.md: org/uacalc/alg/conlat/Subtrace.java (incomplete)
+2025-10-14 13:10:54,663 - INFO -   - Task 30 - Element.md: org/uacalc/element/Element.java (incomplete)
+2025-10-14 13:10:54,664 - INFO -   - Task 31 - TupleWithMin.md: org/uacalc/util/virtuallist/TupleWithMin.java (incomplete)
+2025-10-14 13:10:54,664 - INFO -   - Task 32 - MaltsevDecompositionIterator.md: org/uacalc/alg/MaltsevDecompositionIterator.java (incomplete)
+2025-10-14 13:10:54,664 - INFO -   - Task 33 - TermOperationImp.md: org/uacalc/alg/op/TermOperationImp.java (incomplete)
+2025-10-14 13:10:54,664 - INFO -   - Task 34 - CloserTiming.md: org/uacalc/alg/CloserTiming.java (incomplete)
+2025-10-14 13:10:54,664 - INFO -   - Task 35 - Equations.md: org/uacalc/eq/Equations.java (incomplete)
+2025-10-14 13:10:54,664 - INFO -   - Task 36 - PartiallyDefinedLattice.md: org/uacalc/fplat/PartiallyDefinedLattice.java (incomplete)
+2025-10-14 13:10:54,665 - INFO -   - Task 37 - Mace4Reader.md: org/uacalc/io/Mace4Reader.java (incomplete)
+2025-10-14 13:10:54,665 - INFO -   - Task 38 - MaltsevProductDecomposition.md: org/uacalc/alg/MaltsevProductDecomposition.java (incomplete)
+2025-10-14 13:10:54,665 - INFO -   - Task 39 - QuotientElement.md: org/uacalc/alg/QuotientElement.java (incomplete)
+2025-10-14 13:10:54,665 - INFO -   - Task 40 - Variable.md: org/uacalc/terms/Variable.java (incomplete)
+2025-10-14 13:10:54,665 - INFO -   - Task 41 - SmallAlgebra.md: org/uacalc/alg/SmallAlgebra.java (incomplete)
+2025-10-14 13:10:54,665 - INFO -   - Task 42 - Polymorphisms.md: org/uacalc/alg/conlat/Polymorphisms.java (incomplete)
+2025-10-14 13:10:54,666 - INFO -   - Task 43 - Homomorphism.md: org/uacalc/alg/Homomorphism.java (incomplete)
+2025-10-14 13:10:54,666 - INFO -   - Task 44 - Terms.md: org/uacalc/terms/Terms.java (incomplete)
+2025-10-14 13:10:54,666 - INFO -   - Task 45 - JSONChannel.md: org/uacalc/io/JSONChannel.java (incomplete)
+2025-10-14 13:10:54,666 - INFO -   - Task 46 - TypeFinder.md: org/uacalc/alg/conlat/TypeFinder.java (incomplete)
+2025-10-14 13:10:54,666 - INFO -   - Task 47 - BasicSet.md: org/uacalc/alg/sublat/BasicSet.java (incomplete)
+2025-10-14 13:10:54,666 - INFO -   - Task 48 - Taylor.md: org/uacalc/terms/Taylor.java (incomplete)
+2025-10-14 13:10:54,667 - INFO -   - Task 49 - OperationWithDefaultValue.md: org/uacalc/alg/op/OperationWithDefaultValue.java (incomplete)
+2025-10-14 13:10:54,667 - INFO -   - Task 50 - Operations.md: org/uacalc/alg/op/Operations.java (incomplete)
+2025-10-14 13:10:54,667 - INFO -   - Task 51 - SubProductElement.md: org/uacalc/element/SubProductElement.java (incomplete)
+2025-10-14 13:10:54,667 - INFO -   - Task 52 - ParameterizedAlgebra.md: org/uacalc/alg/ParameterizedAlgebra.java (incomplete)
+2025-10-14 13:10:54,667 - INFO -   - Task 53 - VirtualLists.md: org/uacalc/util/virtuallist/VirtualLists.java (incomplete)
+2025-10-14 13:10:54,668 - INFO -   - Task 54 - AlgebraWriter.md: org/uacalc/io/AlgebraWriter.java (incomplete)
+2025-10-14 13:10:54,668 - INFO -   - Task 55 - Algebra.md: org/uacalc/alg/Algebra.java (incomplete)
+2025-10-14 13:10:54,668 - INFO -   - Task 56 - Term.md: org/uacalc/terms/Term.java (incomplete)
+2025-10-14 13:10:54,668 - INFO -   - Task 57 - PowerAlgebra.md: org/uacalc/alg/PowerAlgebra.java (incomplete)
+2025-10-14 13:10:54,668 - INFO -   - Task 58 - Equation.md: org/uacalc/eq/Equation.java (incomplete)
+2025-10-14 13:10:54,668 - INFO -   - Task 59 - Lattices.md: org/uacalc/lat/Lattices.java (incomplete)
+2025-10-14 13:10:54,668 - INFO -   - Task 60 - AlgebraWithGeneratingVector.md: org/uacalc/alg/AlgebraWithGeneratingVector.java (incomplete)
+2025-10-14 13:10:54,669 - INFO -   - Task 61 - SingleClose.md: org/uacalc/alg/parallel/SingleClose.java (incomplete)
+2025-10-14 13:10:54,669 - INFO -   - Task 62 - AlgebraReader.md: org/uacalc/io/AlgebraReader.java (incomplete)
+2025-10-14 13:10:54,669 - INFO -   - Task 63 - Malcev.md: org/uacalc/alg/Malcev.java (incomplete)
+2025-10-14 13:10:54,669 - INFO -   - Task 64 - ReductAlgebra.md: org/uacalc/alg/ReductAlgebra.java (incomplete)
+2025-10-14 13:10:54,669 - INFO -   - Task 65 - AlgebraIO.md: org/uacalc/io/AlgebraIO.java (incomplete)
+2025-10-14 13:10:54,670 - INFO -   - Task 66 - GeneralAlgebra.md: org/uacalc/alg/GeneralAlgebra.java (incomplete)
+2025-10-14 13:10:54,670 - INFO -   - Task 67 - VariableImp.md: org/uacalc/terms/VariableImp.java (incomplete)
+2025-10-14 13:10:54,670 - INFO -   - Task 68 - Subalgebra.md: org/uacalc/alg/Subalgebra.java (incomplete)
+2025-10-14 13:10:54,670 - INFO -   - Task 69 - BasicPartition.md: org/uacalc/alg/conlat/BasicPartition.java (incomplete)
+2025-10-14 13:10:54,670 - INFO -   - Task 70 - PermutationGroup.md: org/uacalc/group/PermutationGroup.java (incomplete)
+2025-10-14 13:10:54,671 - INFO -   - Task 71 - BasicAlgebra.md: org/uacalc/alg/BasicAlgebra.java (incomplete)
+2025-10-14 13:10:54,671 - INFO -   - Task 72 - UnaryTermsMonoid.md: org/uacalc/alg/UnaryTermsMonoid.java (incomplete)
+2025-10-14 13:10:54,671 - INFO -   - Task 73 - ProductAlgebra.md: org/uacalc/alg/ProductAlgebra.java (incomplete)
+2025-10-14 13:10:54,671 - INFO -   - Task 74 - NonVariableTerm.md: org/uacalc/terms/NonVariableTerm.java (incomplete)
+2025-10-14 13:10:54,671 - INFO -   - Task 75 - MatrixPowerAlgebra.md: org/uacalc/alg/MatrixPowerAlgebra.java (incomplete)
+2025-10-14 13:10:54,672 - INFO -   - Task 76 - SubalgebraLattice.md: org/uacalc/alg/sublat/SubalgebraLattice.java (incomplete)
+2025-10-14 13:10:54,672 - INFO -   - Task 77 - QuotientAlgebra.md: org/uacalc/alg/QuotientAlgebra.java (incomplete)
+2025-10-14 13:10:54,672 - INFO -   - Task 78 - BigProductAlgebra.md: org/uacalc/alg/BigProductAlgebra.java (incomplete)
+2025-10-14 13:10:54,672 - INFO -   - Task 79 - PolinLikeAlgebra.md: org/uacalc/alg/PolinLikeAlgebra.java (incomplete)
+2025-10-14 13:10:54,672 - INFO -   - Task 80 - CongruenceLattice.md: org/uacalc/alg/conlat/CongruenceLattice.java (incomplete)
+2025-10-14 13:10:54,672 - INFO -   - Task 81 - FreeAlgebra.md: org/uacalc/alg/FreeAlgebra.java (incomplete)
+2025-10-14 13:10:54,672 - INFO -   - Task 82 - Algebras.md: org/uacalc/alg/Algebras.java (incomplete)
+2025-10-14 13:10:54,673 - INFO -   - Task 83 - SubProductAlgebra.md: org/uacalc/alg/SubProductAlgebra.java (incomplete)
+2025-10-14 13:10:54,673 - INFO -   - Task 84 - Closer.md: org/uacalc/alg/Closer.java (incomplete)
+2025-10-14 13:10:54,673 - INFO -   - Task 85 - BasicLattice.md: org/uacalc/lat/BasicLattice.java (incomplete)
+2025-10-14 13:10:57,298 - INFO - Starting task analysis...
+2025-10-14 13:10:57,299 - INFO - Loaded 11 existing results
+2025-10-14 13:10:57,300 - INFO - Found 85 task files to process
+2025-10-14 13:10:57,300 - INFO - DRY RUN - Would process the following tasks:
+2025-10-14 13:10:57,301 - INFO -   - Task 1 - OperationSymbol.md: org/uacalc/alg/op/OperationSymbol.java (already completed)
+2025-10-14 13:10:57,301 - INFO -   - Task 2 - SimilarityType.md: org/uacalc/alg/op/SimilarityType.java (incomplete)
+2025-10-14 13:10:57,301 - INFO -   - Task 3 - Horner.md: org/uacalc/util/Horner.java (incomplete)
+2025-10-14 13:10:57,301 - INFO -   - Task 4 - SimpleList.md: org/uacalc/util/SimpleList.java (incomplete)
+2025-10-14 13:10:57,302 - INFO -   - Task 5 - Partition.md: org/uacalc/alg/conlat/Partition.java (incomplete)
+2025-10-14 13:10:57,302 - INFO -   - Task 6 - ArrayString.md: org/uacalc/util/ArrayString.java (incomplete)
+2025-10-14 13:10:57,302 - INFO -   - Task 7 - BadAlgebraFileException.md: org/uacalc/io/BadAlgebraFileException.java (incomplete)
+2025-10-14 13:10:57,302 - INFO -   - Task 8 - ExtFileFilter.md: org/uacalc/io/ExtFileFilter.java (incomplete)
+2025-10-14 13:10:57,302 - INFO -   - Task 9 - PermutationGenerator.md: org/uacalc/util/PermutationGenerator.java (incomplete)
+2025-10-14 13:10:57,302 - INFO -   - Task 10 - LongList.md: org/uacalc/util/virtuallist/LongList.java (already completed)
+2025-10-14 13:10:57,303 - INFO -   - Task 11 - AbstractOperation.md: org/uacalc/alg/op/AbstractOperation.java (already completed)
+2025-10-14 13:10:57,303 - INFO -   - Task 12 - Operation.md: org/uacalc/alg/op/Operation.java (already completed)
+2025-10-14 13:10:57,303 - INFO -   - Task 13 - AbstractIntOperation.md: org/uacalc/alg/op/AbstractIntOperation.java (already completed)
+2025-10-14 13:10:57,303 - INFO -   - Task 14 - ArrayIncrementor.md: org/uacalc/util/ArrayIncrementor.java (already completed)
+2025-10-14 13:10:57,303 - INFO -   - Task 15 - SequenceGenerator.md: org/uacalc/util/SequenceGenerator.java (already completed)
+2025-10-14 13:10:57,304 - INFO -   - Task 16 - OrderedSets.md: org/uacalc/lat/OrderedSets.java (already completed)
+2025-10-14 13:10:57,304 - INFO -   - Task 17 - Pool.md: org/uacalc/alg/parallel/Pool.java (already completed)
+2025-10-14 13:10:57,304 - INFO -   - Task 18 - Order.md: org/uacalc/lat/Order.java (already completed)
+2025-10-14 13:10:57,304 - INFO -   - Task 19 - BasicBinaryRelation.md: org/uacalc/alg/conlat/BasicBinaryRelation.java (already completed)
+2025-10-14 13:10:57,304 - INFO -   - Task 20 - Lattice.md: org/uacalc/lat/Lattice.java (incomplete)
+2025-10-14 13:10:57,304 - INFO -   - Task 21 - BinaryRelation.md: org/uacalc/alg/conlat/BinaryRelation.java (incomplete)
+2025-10-14 13:10:57,305 - INFO -   - Task 22 - Presentation.md: org/uacalc/eq/Presentation.java (incomplete)
+2025-10-14 13:10:57,305 - INFO -   - Task 23 - IntArray.md: org/uacalc/util/IntArray.java (incomplete)
+2025-10-14 13:10:57,305 - INFO -   - Task 24 - AlgebraFromMinimalSets.md: org/uacalc/alg/AlgebraFromMinimalSets.java (incomplete)
+2025-10-14 13:10:57,305 - INFO -   - Task 25 - TermOperation.md: org/uacalc/alg/op/TermOperation.java (incomplete)
+2025-10-14 13:10:57,305 - INFO -   - Task 26 - CentralityData.md: org/uacalc/alg/conlat/CentralityData.java (incomplete)
+2025-10-14 13:10:57,306 - INFO -   - Task 27 - ParameterizedOperation.md: org/uacalc/alg/op/ParameterizedOperation.java (incomplete)
+2025-10-14 13:10:57,306 - INFO -   - Task 28 - SmallLattice.md: org/uacalc/lat/SmallLattice.java (incomplete)
+2025-10-14 13:10:57,306 - INFO -   - Task 29 - Subtrace.md: org/uacalc/alg/conlat/Subtrace.java (incomplete)
+2025-10-14 13:10:57,306 - INFO -   - Task 30 - Element.md: org/uacalc/element/Element.java (incomplete)
+2025-10-14 13:10:57,306 - INFO -   - Task 31 - TupleWithMin.md: org/uacalc/util/virtuallist/TupleWithMin.java (incomplete)
+2025-10-14 13:10:57,306 - INFO -   - Task 32 - MaltsevDecompositionIterator.md: org/uacalc/alg/MaltsevDecompositionIterator.java (incomplete)
+2025-10-14 13:10:57,307 - INFO -   - Task 33 - TermOperationImp.md: org/uacalc/alg/op/TermOperationImp.java (incomplete)
+2025-10-14 13:10:57,307 - INFO -   - Task 34 - CloserTiming.md: org/uacalc/alg/CloserTiming.java (incomplete)
+2025-10-14 13:10:57,307 - INFO -   - Task 35 - Equations.md: org/uacalc/eq/Equations.java (incomplete)
+2025-10-14 13:10:57,307 - INFO -   - Task 36 - PartiallyDefinedLattice.md: org/uacalc/fplat/PartiallyDefinedLattice.java (incomplete)
+2025-10-14 13:10:57,308 - INFO -   - Task 37 - Mace4Reader.md: org/uacalc/io/Mace4Reader.java (incomplete)
+2025-10-14 13:10:57,308 - INFO -   - Task 38 - MaltsevProductDecomposition.md: org/uacalc/alg/MaltsevProductDecomposition.java (incomplete)
+2025-10-14 13:10:57,308 - INFO -   - Task 39 - QuotientElement.md: org/uacalc/alg/QuotientElement.java (incomplete)
+2025-10-14 13:10:57,308 - INFO -   - Task 40 - Variable.md: org/uacalc/terms/Variable.java (incomplete)
+2025-10-14 13:10:57,308 - INFO -   - Task 41 - SmallAlgebra.md: org/uacalc/alg/SmallAlgebra.java (incomplete)
+2025-10-14 13:10:57,308 - INFO -   - Task 42 - Polymorphisms.md: org/uacalc/alg/conlat/Polymorphisms.java (incomplete)
+2025-10-14 13:10:57,309 - INFO -   - Task 43 - Homomorphism.md: org/uacalc/alg/Homomorphism.java (incomplete)
+2025-10-14 13:10:57,309 - INFO -   - Task 44 - Terms.md: org/uacalc/terms/Terms.java (incomplete)
+2025-10-14 13:10:57,309 - INFO -   - Task 45 - JSONChannel.md: org/uacalc/io/JSONChannel.java (incomplete)
+2025-10-14 13:10:57,309 - INFO -   - Task 46 - TypeFinder.md: org/uacalc/alg/conlat/TypeFinder.java (incomplete)
+2025-10-14 13:10:57,310 - INFO -   - Task 47 - BasicSet.md: org/uacalc/alg/sublat/BasicSet.java (incomplete)
+2025-10-14 13:10:57,310 - INFO -   - Task 48 - Taylor.md: org/uacalc/terms/Taylor.java (incomplete)
+2025-10-14 13:10:57,310 - INFO -   - Task 49 - OperationWithDefaultValue.md: org/uacalc/alg/op/OperationWithDefaultValue.java (incomplete)
+2025-10-14 13:10:57,310 - INFO -   - Task 50 - Operations.md: org/uacalc/alg/op/Operations.java (incomplete)
+2025-10-14 13:10:57,310 - INFO -   - Task 51 - SubProductElement.md: org/uacalc/element/SubProductElement.java (incomplete)
+2025-10-14 13:10:57,311 - INFO -   - Task 52 - ParameterizedAlgebra.md: org/uacalc/alg/ParameterizedAlgebra.java (incomplete)
+2025-10-14 13:10:57,311 - INFO -   - Task 53 - VirtualLists.md: org/uacalc/util/virtuallist/VirtualLists.java (incomplete)
+2025-10-14 13:10:57,311 - INFO -   - Task 54 - AlgebraWriter.md: org/uacalc/io/AlgebraWriter.java (incomplete)
+2025-10-14 13:10:57,311 - INFO -   - Task 55 - Algebra.md: org/uacalc/alg/Algebra.java (incomplete)
+2025-10-14 13:10:57,311 - INFO -   - Task 56 - Term.md: org/uacalc/terms/Term.java (incomplete)
+2025-10-14 13:10:57,312 - INFO -   - Task 57 - PowerAlgebra.md: org/uacalc/alg/PowerAlgebra.java (incomplete)
+2025-10-14 13:10:57,312 - INFO -   - Task 58 - Equation.md: org/uacalc/eq/Equation.java (incomplete)
+2025-10-14 13:10:57,312 - INFO -   - Task 59 - Lattices.md: org/uacalc/lat/Lattices.java (incomplete)
+2025-10-14 13:10:57,312 - INFO -   - Task 60 - AlgebraWithGeneratingVector.md: org/uacalc/alg/AlgebraWithGeneratingVector.java (incomplete)
+2025-10-14 13:10:57,312 - INFO -   - Task 61 - SingleClose.md: org/uacalc/alg/parallel/SingleClose.java (incomplete)
+2025-10-14 13:10:57,312 - INFO -   - Task 62 - AlgebraReader.md: org/uacalc/io/AlgebraReader.java (incomplete)
+2025-10-14 13:10:57,312 - INFO -   - Task 63 - Malcev.md: org/uacalc/alg/Malcev.java (incomplete)
+2025-10-14 13:10:57,313 - INFO -   - Task 64 - ReductAlgebra.md: org/uacalc/alg/ReductAlgebra.java (incomplete)
+2025-10-14 13:10:57,313 - INFO -   - Task 65 - AlgebraIO.md: org/uacalc/io/AlgebraIO.java (incomplete)
+2025-10-14 13:10:57,313 - INFO -   - Task 66 - GeneralAlgebra.md: org/uacalc/alg/GeneralAlgebra.java (incomplete)
+2025-10-14 13:10:57,313 - INFO -   - Task 67 - VariableImp.md: org/uacalc/terms/VariableImp.java (incomplete)
+2025-10-14 13:10:57,313 - INFO -   - Task 68 - Subalgebra.md: org/uacalc/alg/Subalgebra.java (incomplete)
+2025-10-14 13:10:57,313 - INFO -   - Task 69 - BasicPartition.md: org/uacalc/alg/conlat/BasicPartition.java (incomplete)
+2025-10-14 13:10:57,314 - INFO -   - Task 70 - PermutationGroup.md: org/uacalc/group/PermutationGroup.java (incomplete)
+2025-10-14 13:10:57,314 - INFO -   - Task 71 - BasicAlgebra.md: org/uacalc/alg/BasicAlgebra.java (incomplete)
+2025-10-14 13:10:57,314 - INFO -   - Task 72 - UnaryTermsMonoid.md: org/uacalc/alg/UnaryTermsMonoid.java (incomplete)
+2025-10-14 13:10:57,314 - INFO -   - Task 73 - ProductAlgebra.md: org/uacalc/alg/ProductAlgebra.java (incomplete)
+2025-10-14 13:10:57,314 - INFO -   - Task 74 - NonVariableTerm.md: org/uacalc/terms/NonVariableTerm.java (incomplete)
+2025-10-14 13:10:57,314 - INFO -   - Task 75 - MatrixPowerAlgebra.md: org/uacalc/alg/MatrixPowerAlgebra.java (incomplete)
+2025-10-14 13:10:57,314 - INFO -   - Task 76 - SubalgebraLattice.md: org/uacalc/alg/sublat/SubalgebraLattice.java (incomplete)
+2025-10-14 13:10:57,315 - INFO -   - Task 77 - QuotientAlgebra.md: org/uacalc/alg/QuotientAlgebra.java (incomplete)
+2025-10-14 13:10:57,315 - INFO -   - Task 78 - BigProductAlgebra.md: org/uacalc/alg/BigProductAlgebra.java (incomplete)
+2025-10-14 13:10:57,315 - INFO -   - Task 79 - PolinLikeAlgebra.md: org/uacalc/alg/PolinLikeAlgebra.java (incomplete)
+2025-10-14 13:10:57,315 - INFO -   - Task 80 - CongruenceLattice.md: org/uacalc/alg/conlat/CongruenceLattice.java (incomplete)
+2025-10-14 13:10:57,315 - INFO -   - Task 81 - FreeAlgebra.md: org/uacalc/alg/FreeAlgebra.java (incomplete)
+2025-10-14 13:10:57,316 - INFO -   - Task 82 - Algebras.md: org/uacalc/alg/Algebras.java (incomplete)
+2025-10-14 13:10:57,316 - INFO -   - Task 83 - SubProductAlgebra.md: org/uacalc/alg/SubProductAlgebra.java (incomplete)
+2025-10-14 13:10:57,316 - INFO -   - Task 84 - Closer.md: org/uacalc/alg/Closer.java (incomplete)
+2025-10-14 13:10:57,316 - INFO -   - Task 85 - BasicLattice.md: org/uacalc/lat/BasicLattice.java (incomplete)
+2025-10-14 13:10:59,748 - INFO - Starting task analysis...
+2025-10-14 13:10:59,748 - INFO - Loaded 11 existing results
+2025-10-14 13:10:59,750 - INFO - Found 11 task files to process
+2025-10-14 13:10:59,750 - INFO - Processing tasks sequentially...
+2025-10-14 13:10:59,750 - INFO - Processing task 1/11: Task 2 - SimilarityType.md
+2025-10-14 13:10:59,750 - INFO - Processing task: Task 2 - SimilarityType.md
+2025-10-14 13:10:59,751 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 2 - SimilarityType.md
+2025-10-14 13:10:59,752 - ERROR - Error running cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 2 - SimilarityType.md: [Errno 2] No such file or directory: 'cursor-agent'
+2025-10-14 13:10:59,754 - INFO - Results saved incrementally to /home/jamie/Documents/uacalcsrc/task_analysis_results.json
+2025-10-14 13:10:59,754 - INFO - Processing task 2/11: Task 20 - Lattice.md
+2025-10-14 13:10:59,754 - INFO - Processing task: Task 20 - Lattice.md
+2025-10-14 13:10:59,755 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 20 - Lattice.md
+2025-10-14 13:10:59,756 - ERROR - Error running cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 20 - Lattice.md: [Errno 2] No such file or directory: 'cursor-agent'
+2025-10-14 13:10:59,757 - INFO - Results saved incrementally to /home/jamie/Documents/uacalcsrc/task_analysis_results.json
+2025-10-14 13:10:59,757 - INFO - Processing task 3/11: Task 21 - BinaryRelation.md
+2025-10-14 13:10:59,757 - INFO - Processing task: Task 21 - BinaryRelation.md
+2025-10-14 13:10:59,757 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 21 - BinaryRelation.md
+2025-10-14 13:10:59,758 - ERROR - Error running cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 21 - BinaryRelation.md: [Errno 2] No such file or directory: 'cursor-agent'
+2025-10-14 13:10:59,760 - INFO - Results saved incrementally to /home/jamie/Documents/uacalcsrc/task_analysis_results.json
+2025-10-14 13:10:59,760 - INFO - Processing task 4/11: Task 22 - Presentation.md
+2025-10-14 13:10:59,760 - INFO - Processing task: Task 22 - Presentation.md
+2025-10-14 13:10:59,760 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 22 - Presentation.md
+2025-10-14 13:10:59,761 - ERROR - Error running cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 22 - Presentation.md: [Errno 2] No such file or directory: 'cursor-agent'
+2025-10-14 13:10:59,763 - INFO - Results saved incrementally to /home/jamie/Documents/uacalcsrc/task_analysis_results.json
+2025-10-14 13:10:59,763 - INFO - Processing task 5/11: Task 23 - IntArray.md
+2025-10-14 13:10:59,763 - INFO - Processing task: Task 23 - IntArray.md
+2025-10-14 13:10:59,763 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 23 - IntArray.md
+2025-10-14 13:10:59,764 - ERROR - Error running cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 23 - IntArray.md: [Errno 2] No such file or directory: 'cursor-agent'
+2025-10-14 13:10:59,766 - INFO - Results saved incrementally to /home/jamie/Documents/uacalcsrc/task_analysis_results.json
+2025-10-14 13:10:59,767 - INFO - Processing task 6/11: Task 24 - AlgebraFromMinimalSets.md
+2025-10-14 13:10:59,767 - INFO - Processing task: Task 24 - AlgebraFromMinimalSets.md
+2025-10-14 13:10:59,767 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 24 - AlgebraFromMinimalSets.md
+2025-10-14 13:10:59,770 - ERROR - Error running cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 24 - AlgebraFromMinimalSets.md: [Errno 2] No such file or directory: 'cursor-agent'
+2025-10-14 13:10:59,773 - INFO - Results saved incrementally to /home/jamie/Documents/uacalcsrc/task_analysis_results.json
+2025-10-14 13:10:59,773 - INFO - Processing task 7/11: Task 25 - TermOperation.md
+2025-10-14 13:10:59,773 - INFO - Processing task: Task 25 - TermOperation.md
+2025-10-14 13:10:59,773 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 25 - TermOperation.md
+2025-10-14 13:10:59,774 - ERROR - Error running cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 25 - TermOperation.md: [Errno 2] No such file or directory: 'cursor-agent'
+2025-10-14 13:10:59,776 - INFO - Results saved incrementally to /home/jamie/Documents/uacalcsrc/task_analysis_results.json
+2025-10-14 13:10:59,776 - INFO - Processing task 8/11: Task 26 - CentralityData.md
+2025-10-14 13:10:59,776 - INFO - Processing task: Task 26 - CentralityData.md
+2025-10-14 13:10:59,776 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 26 - CentralityData.md
+2025-10-14 13:10:59,778 - ERROR - Error running cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 26 - CentralityData.md: [Errno 2] No such file or directory: 'cursor-agent'
+2025-10-14 13:10:59,780 - INFO - Results saved incrementally to /home/jamie/Documents/uacalcsrc/task_analysis_results.json
+2025-10-14 13:10:59,780 - INFO - Processing task 9/11: Task 27 - ParameterizedOperation.md
+2025-10-14 13:10:59,780 - INFO - Processing task: Task 27 - ParameterizedOperation.md
+2025-10-14 13:10:59,780 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 27 - ParameterizedOperation.md
+2025-10-14 13:10:59,781 - ERROR - Error running cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 27 - ParameterizedOperation.md: [Errno 2] No such file or directory: 'cursor-agent'
+2025-10-14 13:10:59,783 - INFO - Results saved incrementally to /home/jamie/Documents/uacalcsrc/task_analysis_results.json
+2025-10-14 13:10:59,783 - INFO - Processing task 10/11: Task 28 - SmallLattice.md
+2025-10-14 13:10:59,783 - INFO - Processing task: Task 28 - SmallLattice.md
+2025-10-14 13:10:59,783 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 28 - SmallLattice.md
+2025-10-14 13:10:59,784 - ERROR - Error running cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 28 - SmallLattice.md: [Errno 2] No such file or directory: 'cursor-agent'
+2025-10-14 13:10:59,786 - INFO - Results saved incrementally to /home/jamie/Documents/uacalcsrc/task_analysis_results.json
+2025-10-14 13:10:59,786 - INFO - Processing task 11/11: Task 29 - Subtrace.md
+2025-10-14 13:10:59,786 - INFO - Processing task: Task 29 - Subtrace.md
+2025-10-14 13:10:59,786 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 29 - Subtrace.md
+2025-10-14 13:10:59,787 - ERROR - Error running cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 29 - Subtrace.md: [Errno 2] No such file or directory: 'cursor-agent'
+2025-10-14 13:10:59,790 - INFO - Results saved incrementally to /home/jamie/Documents/uacalcsrc/task_analysis_results.json
+2025-10-14 13:10:59,790 - INFO - Analysis complete in 0.04 seconds
+2025-10-14 13:10:59,791 - INFO - Total results: 0 successful, 11 failed
+2025-10-14 13:11:14,541 - INFO - Starting task analysis...
+2025-10-14 13:11:14,542 - INFO - Loaded 22 existing results
+2025-10-14 13:11:14,543 - INFO - Filtered out 22 already completed tasks (use --rerun to include them)
+2025-10-14 13:11:14,543 - INFO - Found 63 task files to process
+2025-10-14 13:11:14,543 - INFO - DRY RUN - Would process the following tasks:
+2025-10-14 13:11:14,544 - INFO -   - Task 3 - Horner.md: org/uacalc/util/Horner.java (incomplete)
+2025-10-14 13:11:14,544 - INFO -   - Task 4 - SimpleList.md: org/uacalc/util/SimpleList.java (incomplete)
+2025-10-14 13:11:14,544 - INFO -   - Task 5 - Partition.md: org/uacalc/alg/conlat/Partition.java (incomplete)
+2025-10-14 13:11:14,544 - INFO -   - Task 6 - ArrayString.md: org/uacalc/util/ArrayString.java (incomplete)
+2025-10-14 13:11:14,544 - INFO -   - Task 7 - BadAlgebraFileException.md: org/uacalc/io/BadAlgebraFileException.java (incomplete)
+2025-10-14 13:11:14,544 - INFO -   - Task 8 - ExtFileFilter.md: org/uacalc/io/ExtFileFilter.java (incomplete)
+2025-10-14 13:11:14,545 - INFO -   - Task 9 - PermutationGenerator.md: org/uacalc/util/PermutationGenerator.java (incomplete)
+2025-10-14 13:11:14,545 - INFO -   - Task 30 - Element.md: org/uacalc/element/Element.java (incomplete)
+2025-10-14 13:11:14,545 - INFO -   - Task 31 - TupleWithMin.md: org/uacalc/util/virtuallist/TupleWithMin.java (incomplete)
+2025-10-14 13:11:14,545 - INFO -   - Task 32 - MaltsevDecompositionIterator.md: org/uacalc/alg/MaltsevDecompositionIterator.java (incomplete)
+2025-10-14 13:11:14,545 - INFO -   - Task 33 - TermOperationImp.md: org/uacalc/alg/op/TermOperationImp.java (incomplete)
+2025-10-14 13:11:14,545 - INFO -   - Task 34 - CloserTiming.md: org/uacalc/alg/CloserTiming.java (incomplete)
+2025-10-14 13:11:14,545 - INFO -   - Task 35 - Equations.md: org/uacalc/eq/Equations.java (incomplete)
+2025-10-14 13:11:14,546 - INFO -   - Task 36 - PartiallyDefinedLattice.md: org/uacalc/fplat/PartiallyDefinedLattice.java (incomplete)
+2025-10-14 13:11:14,546 - INFO -   - Task 37 - Mace4Reader.md: org/uacalc/io/Mace4Reader.java (incomplete)
+2025-10-14 13:11:14,546 - INFO -   - Task 38 - MaltsevProductDecomposition.md: org/uacalc/alg/MaltsevProductDecomposition.java (incomplete)
+2025-10-14 13:11:14,546 - INFO -   - Task 39 - QuotientElement.md: org/uacalc/alg/QuotientElement.java (incomplete)
+2025-10-14 13:11:14,546 - INFO -   - Task 40 - Variable.md: org/uacalc/terms/Variable.java (incomplete)
+2025-10-14 13:11:14,546 - INFO -   - Task 41 - SmallAlgebra.md: org/uacalc/alg/SmallAlgebra.java (incomplete)
+2025-10-14 13:11:14,546 - INFO -   - Task 42 - Polymorphisms.md: org/uacalc/alg/conlat/Polymorphisms.java (incomplete)
+2025-10-14 13:11:14,547 - INFO -   - Task 43 - Homomorphism.md: org/uacalc/alg/Homomorphism.java (incomplete)
+2025-10-14 13:11:14,547 - INFO -   - Task 44 - Terms.md: org/uacalc/terms/Terms.java (incomplete)
+2025-10-14 13:11:14,547 - INFO -   - Task 45 - JSONChannel.md: org/uacalc/io/JSONChannel.java (incomplete)
+2025-10-14 13:11:14,547 - INFO -   - Task 46 - TypeFinder.md: org/uacalc/alg/conlat/TypeFinder.java (incomplete)
+2025-10-14 13:11:14,547 - INFO -   - Task 47 - BasicSet.md: org/uacalc/alg/sublat/BasicSet.java (incomplete)
+2025-10-14 13:11:14,547 - INFO -   - Task 48 - Taylor.md: org/uacalc/terms/Taylor.java (incomplete)
+2025-10-14 13:11:14,547 - INFO -   - Task 49 - OperationWithDefaultValue.md: org/uacalc/alg/op/OperationWithDefaultValue.java (incomplete)
+2025-10-14 13:11:14,548 - INFO -   - Task 50 - Operations.md: org/uacalc/alg/op/Operations.java (incomplete)
+2025-10-14 13:11:14,548 - INFO -   - Task 51 - SubProductElement.md: org/uacalc/element/SubProductElement.java (incomplete)
+2025-10-14 13:11:14,548 - INFO -   - Task 52 - ParameterizedAlgebra.md: org/uacalc/alg/ParameterizedAlgebra.java (incomplete)
+2025-10-14 13:11:14,548 - INFO -   - Task 53 - VirtualLists.md: org/uacalc/util/virtuallist/VirtualLists.java (incomplete)
+2025-10-14 13:11:14,548 - INFO -   - Task 54 - AlgebraWriter.md: org/uacalc/io/AlgebraWriter.java (incomplete)
+2025-10-14 13:11:14,548 - INFO -   - Task 55 - Algebra.md: org/uacalc/alg/Algebra.java (incomplete)
+2025-10-14 13:11:14,548 - INFO -   - Task 56 - Term.md: org/uacalc/terms/Term.java (incomplete)
+2025-10-14 13:11:14,548 - INFO -   - Task 57 - PowerAlgebra.md: org/uacalc/alg/PowerAlgebra.java (incomplete)
+2025-10-14 13:11:14,549 - INFO -   - Task 58 - Equation.md: org/uacalc/eq/Equation.java (incomplete)
+2025-10-14 13:11:14,549 - INFO -   - Task 59 - Lattices.md: org/uacalc/lat/Lattices.java (incomplete)
+2025-10-14 13:11:14,549 - INFO -   - Task 60 - AlgebraWithGeneratingVector.md: org/uacalc/alg/AlgebraWithGeneratingVector.java (incomplete)
+2025-10-14 13:11:14,549 - INFO -   - Task 61 - SingleClose.md: org/uacalc/alg/parallel/SingleClose.java (incomplete)
+2025-10-14 13:11:14,549 - INFO -   - Task 62 - AlgebraReader.md: org/uacalc/io/AlgebraReader.java (incomplete)
+2025-10-14 13:11:14,549 - INFO -   - Task 63 - Malcev.md: org/uacalc/alg/Malcev.java (incomplete)
+2025-10-14 13:11:14,550 - INFO -   - Task 64 - ReductAlgebra.md: org/uacalc/alg/ReductAlgebra.java (incomplete)
+2025-10-14 13:11:14,550 - INFO -   - Task 65 - AlgebraIO.md: org/uacalc/io/AlgebraIO.java (incomplete)
+2025-10-14 13:11:14,550 - INFO -   - Task 66 - GeneralAlgebra.md: org/uacalc/alg/GeneralAlgebra.java (incomplete)
+2025-10-14 13:11:14,550 - INFO -   - Task 67 - VariableImp.md: org/uacalc/terms/VariableImp.java (incomplete)
+2025-10-14 13:11:14,550 - INFO -   - Task 68 - Subalgebra.md: org/uacalc/alg/Subalgebra.java (incomplete)
+2025-10-14 13:11:14,550 - INFO -   - Task 69 - BasicPartition.md: org/uacalc/alg/conlat/BasicPartition.java (incomplete)
+2025-10-14 13:11:14,551 - INFO -   - Task 70 - PermutationGroup.md: org/uacalc/group/PermutationGroup.java (incomplete)
+2025-10-14 13:11:14,551 - INFO -   - Task 71 - BasicAlgebra.md: org/uacalc/alg/BasicAlgebra.java (incomplete)
+2025-10-14 13:11:14,551 - INFO -   - Task 72 - UnaryTermsMonoid.md: org/uacalc/alg/UnaryTermsMonoid.java (incomplete)
+2025-10-14 13:11:14,551 - INFO -   - Task 73 - ProductAlgebra.md: org/uacalc/alg/ProductAlgebra.java (incomplete)
+2025-10-14 13:11:14,551 - INFO -   - Task 74 - NonVariableTerm.md: org/uacalc/terms/NonVariableTerm.java (incomplete)
+2025-10-14 13:11:14,552 - INFO -   - Task 75 - MatrixPowerAlgebra.md: org/uacalc/alg/MatrixPowerAlgebra.java (incomplete)
+2025-10-14 13:11:14,552 - INFO -   - Task 76 - SubalgebraLattice.md: org/uacalc/alg/sublat/SubalgebraLattice.java (incomplete)
+2025-10-14 13:11:14,552 - INFO -   - Task 77 - QuotientAlgebra.md: org/uacalc/alg/QuotientAlgebra.java (incomplete)
+2025-10-14 13:11:14,552 - INFO -   - Task 78 - BigProductAlgebra.md: org/uacalc/alg/BigProductAlgebra.java (incomplete)
+2025-10-14 13:11:14,552 - INFO -   - Task 79 - PolinLikeAlgebra.md: org/uacalc/alg/PolinLikeAlgebra.java (incomplete)
+2025-10-14 13:11:14,553 - INFO -   - Task 80 - CongruenceLattice.md: org/uacalc/alg/conlat/CongruenceLattice.java (incomplete)
+2025-10-14 13:11:14,553 - INFO -   - Task 81 - FreeAlgebra.md: org/uacalc/alg/FreeAlgebra.java (incomplete)
+2025-10-14 13:11:14,553 - INFO -   - Task 82 - Algebras.md: org/uacalc/alg/Algebras.java (incomplete)
+2025-10-14 13:11:14,553 - INFO -   - Task 83 - SubProductAlgebra.md: org/uacalc/alg/SubProductAlgebra.java (incomplete)
+2025-10-14 13:11:14,554 - INFO -   - Task 84 - Closer.md: org/uacalc/alg/Closer.java (incomplete)
+2025-10-14 13:11:14,554 - INFO -   - Task 85 - BasicLattice.md: org/uacalc/lat/BasicLattice.java (incomplete)
+2025-10-14 13:11:27,929 - ERROR - cursor-agent timed out for /home/jamie/Documents/uacalcsrc/tasks/Task 79 - PolinLikeAlgebra.md
+2025-10-14 13:11:27,929 - INFO - Batch 27 complete: 2 successful, 1 failed
+2025-10-14 13:11:27,929 - INFO - Waiting 2 seconds before next batch...
+2025-10-14 13:11:29,930 - INFO - Processing batch 28/29 (3 tasks)
+2025-10-14 13:11:29,930 - INFO - Processing task: Task 82 - Algebras.md
+2025-10-14 13:11:29,931 - INFO - Processing task: Task 83 - SubProductAlgebra.md
+2025-10-14 13:11:29,931 - INFO - Processing task: Task 84 - Closer.md
+2025-10-14 13:11:29,931 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 82 - Algebras.md
+2025-10-14 13:11:29,931 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 83 - SubProductAlgebra.md
+2025-10-14 13:11:29,932 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 84 - Closer.md
+2025-10-14 13:11:33,386 - ERROR - cursor-agent failed for /home/jamie/Documents/uacalcsrc/tasks/Task 82 - Algebras.md: Error: ENOENT: no such file or directory, rename '/home/jamie/.cursor/cli-config.json.tmp' -> '/home/jamie/.cursor/cli-config.json'
+
+2025-10-14 13:13:26,069 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 84 - Closer.md
+2025-10-14 13:13:44,411 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 83 - SubProductAlgebra.md
+2025-10-14 13:13:44,411 - INFO - Batch 28 complete: 2 successful, 1 failed
+2025-10-14 13:13:44,411 - INFO - Waiting 2 seconds before next batch...
+2025-10-14 13:13:46,411 - INFO - Processing batch 29/29 (1 tasks)
+2025-10-14 13:13:46,412 - INFO - Processing task: Task 85 - BasicLattice.md
+2025-10-14 13:13:46,413 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 85 - BasicLattice.md
+2025-10-14 13:15:48,432 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 85 - BasicLattice.md
+2025-10-14 13:15:48,432 - INFO - Batch 29 complete: 1 successful, 0 failed
+2025-10-14 13:15:48,432 - INFO - Analysis complete in 5336.02 seconds
+2025-10-14 13:15:48,432 - INFO - Total results: 71 successful, 14 failed
+2025-10-14 13:15:48,442 - INFO - Results saved to /home/jamie/Documents/uacalcsrc/task_analysis_results.json

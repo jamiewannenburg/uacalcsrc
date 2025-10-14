@@ -32,34 +32,71 @@ The following packages are **excluded** from this plan:
 **Java File:** `org/uacalc/alg/op/TermOperationImp.java`  
 **Package:** `org.uacalc.alg.op`  
 **Rust Module:** `alg::op::TermOperationImp`  
-**Dependencies:** 2 (2 non-UI/example)  
-**Estimated Public Methods:** ~9
+**Dependencies:** 5 (5 non-UI/example)  
+**Estimated Public Methods:** 7
 
 ### Description
 Translate the Java class `org.uacalc.alg.op.TermOperationImp` to Rust with Python bindings.
 
+### Java Class Analysis
+- **Type**: Concrete class that extends `AbstractOperation` and implements `TermOperation`
+- **Purpose**: Represents the interpretation of a term in an algebra
+- **Key Methods**: 7 public methods including constructors, value evaluation, and accessors
+- **Pattern**: Wrapper class that delegates to an internal `Operation` interpretation
+
 ### Dependencies
 This class depends on:
-- `org.uacalc.alg.SmallAlgebra`
-- `org.uacalc.terms`
+- `org.uacalc.alg.SmallAlgebra` (Task 71 - BasicAlgebra)
+- `org.uacalc.terms.*` (Term, Variable, etc.)
+- `org.uacalc.alg.op.AbstractOperation` (Task 11)
+- `org.uacalc.alg.op.TermOperation` (Task 25)
+- `org.uacalc.alg.op.Operation` (Task 12)
+
+### Rust Implementation Strategy
+
+#### 1. Struct Design
+```rust
+pub struct TermOperationImp {
+    term: Box<dyn Term>,
+    variables: Vec<Box<dyn Variable>>,
+    alg: Box<dyn SmallAlgebra>,
+    interpretation: Box<dyn Operation>,
+}
+```
+
+#### 2. Trait Implementation
+- Implement `TermOperation` trait (from Task 25)
+- Implement `Operation` trait (from Task 12) 
+- Delegate most operations to the internal `interpretation` field
+
+#### 3. Method Organization
+- **Constructors**: `new()` and `new_with_name()` with proper error handling
+- **Value Methods**: `value_at()` and `int_value_at()` delegate to interpretation
+- **Accessors**: `get_term()`, `get_ordered_variables()` return stored values
+- **Table Methods**: `get_table()` delegate to interpretation
+- **Display**: `to_string()` delegate to term
+
+#### 4. Generic vs Dynamic Dispatch
+- Use dynamic dispatch (`Box<dyn Trait>`) for `Term`, `Variable`, `SmallAlgebra`, and `Operation`
+- This matches Java's polymorphic behavior and allows for flexible term types
 
 ### Implementation Steps
 
 1. **Analyze Java Implementation**
    - Read and understand the Java source code
    - Identify all public methods and their signatures
-   - Note any special patterns (interfaces, abstract classes, etc.)
+   - Note delegation pattern to internal `interpretation` field
    - Identify dependencies on other UACalc classes
 
 2. **Design Rust Translation**
-   - Determine if Java interfaces should become Rust traits
-   - Design struct/enum representations matching Java semantics
-   - Plan for Rust idioms (Option instead of null, Result for errors, etc.)
+   - Create struct with dynamic dispatch fields
+   - Implement `TermOperation` and `Operation` traits
+   - Plan delegation pattern for value evaluation methods
    - Ensure all public methods are translated
 
 3. **Implement Rust Code**
    - Create Rust module structure
-   - Implement all public methods
+   - Implement all public methods with proper error handling
    - Add comprehensive documentation
    - Follow Rust naming conventions (snake_case)
 
@@ -90,6 +127,15 @@ This class depends on:
    - Verify outputs match Java implementation exactly
    - Check test coverage for all public methods
 
+### Java Wrapper Suitability
+**SUITABLE** - This is a concrete class with well-defined public methods that can be easily tested through a CLI wrapper. The class is designed to be instantiated and used directly.
+
+### Testing Strategy
+- **Unit Tests**: Test all constructors and public methods
+- **Integration Tests**: Test with various term types and algebras
+- **Java Comparison**: Compare results with Java CLI wrapper
+- **Edge Cases**: Test with empty variable lists, null terms, etc.
+
 ### Acceptance Criteria
 - [ ] All public methods translated to Rust
 - [ ] Python bindings expose all public methods
@@ -98,3 +144,5 @@ This class depends on:
 - [ ] Python tests pass and match Java output
 - [ ] Code compiles without warnings
 - [ ] Documentation complete
+- [ ] All dependencies properly implemented
+- [ ] Delegation pattern correctly implemented

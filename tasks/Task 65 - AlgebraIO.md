@@ -1,104 +1,166 @@
-# UACalc Rust/Python Translation Plan
-
-## Overview
-
-This plan contains the ordered list of translation tasks for converting the UACalc Java library to Rust with Python bindings. Tasks are ordered by dependency count to ensure foundational classes are translated before dependent classes.
-
-## Translation Strategy
-
-### Approach
-- Direct Java-to-Rust translation maintaining exact semantics
-- Use Rust idioms where appropriate (traits for interfaces, Result/Option, etc.)
-- All public methods must be translated and tested
-- Output must match Java implementation exactly
-
-### Testing Strategy
-- Rust tests for all public methods with timeouts
-- Python binding tests comparing against Java
-- Java CLI wrappers for ground truth comparison
-- Global memory limit configurable from Python
-
-### ExcluRded Packages
-The following packages are **excluded** from this plan:
-- `org.uacalc.ui.*` - UI components (not needed for core library)
-- `org.uacalc.nbui.*` - NetBeans UI components
-- `org.uacalc.example.*` - Example/demo classes (NOTE: To be implemented later)
-
-
-## Translation Tasks
-
-## Task 65: Translate `AlgebraIO`
+# Task 65: Translate `AlgebraIO`
 
 **Java File:** `org/uacalc/io/AlgebraIO.java`  
 **Package:** `org.uacalc.io`  
 **Rust Module:** `io::AlgebraIO`  
-**Dependencies:** 6 (6 non-UI/example)  
-**Estimated Public Methods:** ~22
+**Dependencies:** 11 (11 non-UI/example)  
+**Estimated Public Methods:** 18
 
-### Description
+## Description
 Translate the Java class `org.uacalc.io.AlgebraIO` to Rust with Python bindings.
 
-### Dependencies
-This class depends on:
-- `org.uacalc.alg`
-- `org.uacalc.alg.conlat`
-- `org.uacalc.alg.op.Operation`
-- `org.uacalc.alg.op.OperationSymbol`
-- `org.uacalc.alg.op.Operations`
-- `org.uacalc.util`
+## Java File Analysis
 
-### Implementation Steps
+### Class Type
+- **Type**: Concrete class with static methods only
+- **Pattern**: Utility class (all methods are static)
+- **Constructor**: Private (utility class pattern)
+- **Public Methods**: 18 static methods
 
-1. **Analyze Java Implementation**
-   - Read and understand the Java source code
-   - Identify all public methods and their signatures
-   - Note any special patterns (interfaces, abstract classes, etc.)
-   - Identify dependencies on other UACalc classes
+### Method Analysis
+The class contains the following public static methods:
+1. `parseLine(String line)` - Parse line as int, return -1 for comments
+2. `readAlgebraFile(String f)` - Read algebra from file path
+3. `readAlgebraFile(File f)` - Read algebra from File object
+4. `readAlgebraFromStream(InputStream is)` - Read algebra from stream
+5. `readAlgebraListFile(String f)` - Read list of algebras from file path
+6. `readAlgebraListFile(File f)` - Read list of algebras from File object
+7. `readAlgebraListFromStream(InputStream is)` - Read single algebra from stream
+8. `readOp(int arity, int size, BufferedReader in)` - Read operation from stream
+9. `readDepth2List(BufferedReader in, String start, String end)` - Unimplemented
+10. `convertToXML(String f)` - Convert algebra file to XML
+11. `convertToXML(File f)` - Convert algebra file to XML
+12. `writeAlgebraFile(SmallAlgebra alg, String f)` - Write algebra to file
+13. `writeAlgebraFile(SmallAlgebra alg, File f)` - Write algebra to file
+14. `writeAlgebraFile(SmallAlgebra alg, String f, boolean oldStyle)` - Write with style option
+15. `writeAlgebraFile(SmallAlgebra alg, File f, boolean oldStyle)` - Write with style option
+16. `readProjectivePlane(InputStream f)` - Read projective plane from stream
+17. `readProjectivePlane(String f)` - Read projective plane from file path
+18. `readProjectivePlane(File f)` - Read projective plane from File object
+19. `readProjectivePlane(BufferedReader in)` - Read projective plane from reader
 
-2. **Design Rust Translation**
-   - Determine if Java interfaces should become Rust traits
-   - Design struct/enum representations matching Java semantics
-   - Plan for Rust idioms (Option instead of null, Result for errors, etc.)
-   - Ensure all public methods are translated
+## Dependencies Analysis
 
-3. **Implement Rust Code**
-   - Create Rust module structure
-   - Implement all public methods
-   - Add comprehensive documentation
-   - Follow Rust naming conventions (snake_case)
+### Current Dependencies (Incorrect)
+The task file lists only 6 dependencies, but analysis reveals 11 dependencies:
 
-4. **Create Python Bindings (PyO3)**
-   - Expose all public methods to Python
-   - Use appropriate PyO3 types (PyResult, etc.)
-   - Add Python docstrings
+### Corrected Dependencies
+1. `org.uacalc.alg` - For SmallAlgebra, BasicAlgebra
+2. `org.uacalc.alg.conlat` - For conlat package (imported but not directly used)
+3. `org.uacalc.alg.op.Operation` - For Operation interface
+4. `org.uacalc.alg.op.OperationSymbol` - For OperationSymbol class
+5. `org.uacalc.alg.op.Operations` - For Operations.makeIntOperation
+6. `org.uacalc.util` - For util package (imported but not directly used)
+7. `org.uacalc.io.ExtFileFilter` - For file extension handling
+8. `org.uacalc.io.AlgebraReader` - For reading XML algebra files
+9. `org.uacalc.io.AlgebraWriter` - For writing XML algebra files
+10. `org.uacalc.io.Mace4Reader` - For reading Mace4 format files
+11. `org.uacalc.io.BadAlgebraFileException` - For exception handling
+12. `org.uacalc.util.Horner` - For hornerInv method
 
-5. **Create Java CLI Wrapper**
-   - Create wrapper in `java_wrapper/src/` matching package structure
-   - Implement `main` method accepting command-line arguments
-   - Expose all public methods through CLI commands
-   - Output results in JSON/text format for comparison
+### Missing Dependencies
+The following dependencies are missing from the current task file:
+- `org.uacalc.io.ExtFileFilter` (Task 8)
+- `org.uacalc.io.AlgebraReader` (Task 62)
+- `org.uacalc.io.AlgebraWriter` (Task 54)
+- `org.uacalc.io.Mace4Reader` (Task 37)
+- `org.uacalc.io.BadAlgebraFileException` (Task 7)
+- `org.uacalc.util.Horner` (Task 3)
 
-6. **Write Rust Tests**
-   - Test all public methods
-   - Add tests with timeouts (slightly longer than Java completion times)
-   - Test edge cases and error conditions
-   - Compare results against Java CLI wrapper output
+## Rust Implementation Recommendations
 
-7. **Write Python Tests**
-   - Test all public methods through Python bindings
-   - Compare results against Java CLI wrapper output
-   - Verify Python API matches Rust API
+### Design Pattern
+- **Rust Construct**: Module with free functions (not a struct)
+- **Reasoning**: Java class has only static methods, so Rust should use free functions in a module
+- **Module Structure**: `io::algebra_io` module with public functions
 
-8. **Verification**
-   - Run all tests and ensure they pass
-   - Verify outputs match Java implementation exactly
-   - Check test coverage for all public methods
+### Function Organization
+- **Static Methods → Free Functions**: All static methods become free functions
+- **Error Handling**: Use `Result<T, BadAlgebraFileException>` for functions that can fail
+- **File I/O**: Use `std::fs::File` and `std::io::BufReader` for file operations
+- **Stream I/O**: Use `std::io::Read` trait for stream operations
 
-### Acceptance Criteria
-- [ ] All public methods translated to Rust
-- [ ] Python bindings expose all public methods
-- [ ] Java CLI wrapper created with all public methods
+### Key Implementation Decisions
+1. **Generic vs Dynamic Dispatch**: Use dynamic dispatch for file format detection
+2. **Error Handling**: Use custom `BadAlgebraFileException` type
+3. **File Format Support**: Support .alg, .ua, .xml, and .m4 formats
+4. **Stream Handling**: Use `Box<dyn Read>` for stream parameters
+
+### Method Translation Strategy
+- `parseLine` → `parse_line(line: &str) -> Result<i32, String>`
+- `readAlgebraFile` → `read_algebra_file(path: &Path) -> Result<SmallAlgebra, BadAlgebraFileException>`
+- `writeAlgebraFile` → `write_algebra_file(alg: &SmallAlgebra, path: &Path, old_style: bool) -> Result<(), std::io::Error>`
+- All other methods follow similar patterns
+
+## Java Wrapper Suitability
+
+### Assessment: **SUITABLE**
+- **Reason**: Concrete utility class with static methods
+- **Testing Strategy**: Create wrapper with CLI commands for each method
+- **Wrapper Location**: `java_wrapper/src/io/AlgebraIOWrapper.java`
+
+### Wrapper Design
+- **Base Class**: Extend `WrapperBase`
+- **Command Structure**: One command per public method
+- **Input Handling**: File paths, streams, and parameters
+- **Output Format**: JSON with method results
+
+## Testing Strategy
+
+### Rust Tests
+- **Unit Tests**: Test each function individually
+- **Integration Tests**: Test file I/O operations
+- **Error Tests**: Test error conditions and edge cases
+- **Format Tests**: Test different file formats (.alg, .ua, .xml, .m4)
+
+### Python Tests
+- **Binding Tests**: Test Python bindings for all functions
+- **File I/O Tests**: Test reading/writing various file formats
+- **Error Handling Tests**: Test exception handling in Python
+
+### Java Wrapper Tests
+- **CLI Tests**: Test all command-line interfaces
+- **Cross-Validation**: Compare results with Rust implementation
+- **File Format Tests**: Test all supported file formats
+
+## Implementation Status
+
+### Current Status: **NOT IMPLEMENTED**
+- **Rust Implementation**: Only placeholder struct exists in `src/io/mod.rs`
+- **Python Bindings**: Not implemented
+- **Java Wrapper**: Not implemented
+- **Tests**: Not implemented
+
+### Required Dependencies Status
+- `ExtFileFilter` (Task 8): ✅ **COMPLETED**
+- `BadAlgebraFileException` (Task 7): ✅ **COMPLETED** 
+- `Horner` (Task 3): ✅ **COMPLETED**
+- `AlgebraReader` (Task 62): ❌ **NOT COMPLETED**
+- `AlgebraWriter` (Task 54): ❌ **NOT COMPLETED**
+- `Mace4Reader` (Task 37): ❌ **NOT COMPLETED**
+
+## Implementation Priority
+
+### Priority: **MEDIUM**
+- **Reason**: Core I/O functionality, but depends on incomplete tasks
+- **Blocking Dependencies**: AlgebraReader, AlgebraWriter, Mace4Reader
+- **Recommendation**: Implement after dependencies are completed
+
+## Next Steps
+
+1. **Complete Dependencies**: Finish AlgebraReader, AlgebraWriter, Mace4Reader tasks
+2. **Implement Rust Module**: Create `src/io/algebra_io.rs` with all functions
+3. **Add Python Bindings**: Expose functions through PyO3
+4. **Create Java Wrapper**: Implement CLI wrapper for testing
+5. **Write Tests**: Comprehensive test suite for all functions
+6. **Update Dependencies**: Correct the dependency list in this task file
+
+## Acceptance Criteria
+- [ ] All 18 public methods translated to Rust free functions
+- [ ] Python bindings expose all functions
+- [ ] Java CLI wrapper created with all methods
 - [ ] Rust tests pass with timeouts enabled
 - [ ] Python tests pass and match Java output
 - [ ] Code compiles without warnings
 - [ ] Documentation complete
+- [ ] All dependencies completed and available

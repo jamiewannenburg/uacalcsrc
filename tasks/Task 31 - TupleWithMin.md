@@ -32,16 +32,15 @@ The following packages are **excluded** from this plan:
 **Java File:** `org/uacalc/util/virtuallist/TupleWithMin.java`  
 **Package:** `org.uacalc.util.virtuallist`  
 **Rust Module:** `util::virtuallist::TupleWithMin`  
-**Dependencies:** 2 (2 non-UI/example)  
-**Estimated Public Methods:** ~4
+**Dependencies:** 1 (1 non-UI/example)  
+**Estimated Public Methods:** 3
 
 ### Description
 Translate the Java class `org.uacalc.util.virtuallist.TupleWithMin` to Rust with Python bindings.
 
 ### Dependencies
 This class depends on:
-- `org.uacalc.util`
-- `org.uacalc.util.virtuallist`
+- `org.uacalc.util.virtuallist.LongList` (interface)
 
 ### Implementation Steps
 
@@ -98,3 +97,88 @@ This class depends on:
 - [ ] Python tests pass and match Java output
 - [ ] Code compiles without warnings
 - [ ] Documentation complete
+
+## Detailed Analysis
+
+### Java Class Analysis
+- **Class Type**: Concrete class implementing `LongList<int[]>`
+- **Public Methods**: 3 methods
+  - `TupleWithMin(int arrayLen, int base, int min)` - Constructor
+  - `get(long k)` - Get kth element (from LongList interface)
+  - `size()` - Get size (from LongList interface)
+- **Special Patterns**: Implements LongList interface, uses complex mathematical algorithm for tuple generation
+
+### Dependencies Analysis
+- **Direct Dependencies**: 
+  - `org.uacalc.util.virtuallist.LongList` (interface) - ✅ Already implemented in Rust
+- **Standard Java Dependencies**: 
+  - `java.util.Arrays` - ✅ Available in Rust as `std::fmt::Debug`
+  - `java.util.stream.*` - ✅ Available in Rust as iterators
+- **Dependencies Correct**: ✅ Yes, only depends on LongList which is already implemented
+
+### Rust Implementation Recommendations
+
+#### 1. Struct Design
+```rust
+pub struct TupleWithMin {
+    pub array_len: usize,
+    pub size: i64,
+    pub min: usize,
+    pub diff: usize,
+    partial_sums: Vec<i64>,
+}
+```
+
+#### 2. Trait Implementation
+- Implement `LongList<Vec<i32>>` trait
+- Provide both `new_safe()` and `new()` constructors
+- Use `Result<Self, String>` for error handling
+
+#### 3. Method Organization
+- **Constructor**: `new_safe(array_len: usize, base: usize, min: usize) -> Result<Self, String>`
+- **Trait Methods**: `get(&self, k: i64) -> Vec<i32>` and `size(&self) -> i64`
+- **Private Methods**: Helper methods for mathematical calculations
+
+#### 4. Generic vs Dynamic Dispatch
+- Use concrete struct (not dynamic dispatch) since it's a specific implementation
+- Implement `LongList<Vec<i32>>` trait for interface compliance
+
+#### 5. Error Handling
+- Use `Result<Self, String>` for constructor validation
+- Validate input parameters (array_len > 0, base > min, etc.)
+- Handle overflow cases in mathematical calculations
+
+### Java Wrapper Suitability
+- **Suitable**: ✅ Yes, concrete class with clear public interface
+- **Wrapper Location**: `java_wrapper/src/util/virtuallist/TupleWithMinWrapper.java`
+- **Required Methods**: Constructor, get, size, main (for testing)
+
+### Testing Strategy
+- **Rust Tests**: Add to `tests/util/long_list_tests.rs`
+- **Python Tests**: Add to `python/uacalc/tests/test_long_list.py`
+- **Java Wrapper Tests**: Add to `LongListWrapper.java` or create separate wrapper
+- **Test Cases**: Basic functionality, edge cases, error conditions, mathematical correctness
+
+### Implementation Priority
+1. **High Priority**: Core functionality (constructor, get, size)
+2. **Medium Priority**: Error handling and validation
+3. **Low Priority**: Performance optimizations
+
+### Key Implementation Notes
+- The algorithm is mathematically complex and must match Java exactly
+- Partial sums calculation is critical for correct tuple generation
+- Stage-based tuple generation requires careful implementation
+- Must handle large numbers without overflow
+- Thread safety is important for parallel processing
+
+### Expected Challenges
+1. **Mathematical Accuracy**: Complex algorithm must match Java exactly
+2. **Overflow Handling**: Large number calculations need careful handling
+3. **Performance**: Algorithm should be efficient for large datasets
+4. **Testing**: Comprehensive testing against Java ground truth
+
+### Success Metrics
+- All tests pass against Java implementation
+- Performance matches or exceeds Java version
+- Memory usage is reasonable
+- Code is maintainable and well-documented

@@ -32,16 +32,17 @@ The following packages are **excluded** from this plan:
 **Java File:** `org/uacalc/alg/Homomorphism.java`  
 **Package:** `org.uacalc.alg`  
 **Rust Module:** `alg::Homomorphism`  
-**Dependencies:** 2 (2 non-UI/example)  
-**Estimated Public Methods:** ~10
+**Dependencies:** 3 (3 non-UI/example)  
+**Estimated Public Methods:** 8
 
 ### Description
 Translate the Java class `org.uacalc.alg.Homomorphism` to Rust with Python bindings.
 
 ### Dependencies
 This class depends on:
-- `org.uacalc.alg.conlat`
-- `org.uacalc.util`
+- `org.uacalc.alg.conlat.Partition` (Task 5 - completed)
+- `org.uacalc.util.IntArray` (Task 23 - completed)  
+- `org.uacalc.alg.SmallAlgebra` (Task 41 - not completed)
 
 ### Implementation Steps
 
@@ -90,11 +91,101 @@ This class depends on:
    - Verify outputs match Java implementation exactly
    - Check test coverage for all public methods
 
+### Java Class Analysis
+
+**Class Type:** Concrete class  
+**Purpose:** Represents a homomorphism from domain algebra to range algebra  
+**Key Features:** Kernel computation, product homomorphism construction, element mapping  
+**Public Methods:** 8 methods including constructors, getters/setters, kernel computation, and static utility
+
+**Method Analysis:**
+- `Homomorphism(SmallAlgebra, SmallAlgebra, Map<Integer,Integer>)` - Constructor
+- `kernel()` - Computes kernel partition using BasicPartition.zero()
+- `productHomo(List<Homomorphism>)` - Static method creating product homomorphism
+- `getDomain()`, `setDomain(SmallAlgebra)` - Domain algebra accessors
+- `getRange()`, `setRange(SmallAlgebra)` - Range algebra accessors  
+- `getMap()`, `setMap(Map<Integer,Integer>)` - Mapping accessors
+- `toString()` - String representation
+
+**Dependencies Analysis:**
+- `org.uacalc.alg.conlat.Partition` - Used in kernel() method via BasicPartition.zero()
+- `org.uacalc.util.IntArray` - Used in productHomo() static method
+- `org.uacalc.alg.SmallAlgebra` - Domain and range algebra types
+- `java.util.Map<Integer,Integer>` - Internal mapping representation
+- `java.util.List<Homomorphism>` - Product homomorphism parameter
+
+### Rust Implementation Recommendations
+
+#### 1. Struct Design
+```rust
+/// Homomorphism from domain algebra to range algebra
+pub struct Homomorphism {
+    domain: SmallAlgebra,
+    range: SmallAlgebra, 
+    map: HashMap<usize, usize>,
+}
+```
+
+#### 2. Method Translation
+- **Constructor**: `new(domain: SmallAlgebra, range: SmallAlgebra, map: HashMap<usize, usize>) -> Result<Self, String>`
+- **Kernel**: `kernel(&self) -> Result<Partition, String>` - Uses BasicPartition::zero()
+- **Product**: `product_homo(homomorphisms: &[Homomorphism]) -> Result<Vec<IntArray>, String>` - Static method
+- **Accessors**: Standard getter/setter methods with proper error handling
+- **Display**: Implement `Display` trait for string representation
+
+#### 3. Error Handling
+- Use `Result<T, String>` for methods that can fail
+- Validate domain/range compatibility in constructor
+- Handle empty homomorphism lists in product_homo
+- Provide both safe and panic versions of methods
+
+#### 4. Generic Considerations
+- Use `usize` instead of `Integer` for indices (Rust convention)
+- Use `HashMap<usize, usize>` instead of `Map<Integer, Integer>`
+- Use `Vec<IntArray>` instead of `List<IntArray>`
+
+### Python Bindings Strategy
+- Expose as `Homomorphism` class with clean API
+- Use `PyResult<T>` for error handling
+- Implement Python magic methods (`__str__`, `__repr__`, `__eq__`)
+- Handle `HashMap` serialization for Python access
+
+### Java Wrapper Suitability
+**Status:** ✅ **SUITABLE** - Concrete class with clear public interface
+- Can instantiate with test data
+- All methods can be called directly
+- Static method `productHomo` can be tested
+- Kernel computation can be verified
+
+### Testing Strategy
+1. **Unit Tests**: Test all 8 public methods with various inputs
+2. **Integration Tests**: Test with different algebra types and mappings
+3. **Edge Cases**: Empty mappings, invalid domains, kernel computation
+4. **Cross-Language**: Compare Rust/Python results with Java wrapper
+5. **Performance**: Test kernel computation with large algebras
+
+### Implementation Order
+1. **Prerequisites**: Complete SmallAlgebra (Task 41) first
+2. **Core Implementation**: Implement Homomorphism struct and methods
+3. **Python Bindings**: Add PyO3 bindings with error handling
+4. **Java Wrapper**: Create CLI wrapper for testing
+5. **Testing**: Comprehensive test suite with cross-language validation
+
+### Critical Implementation Notes
+- **Kernel Algorithm**: Must match Java implementation exactly using BasicPartition.zero()
+- **Product Method**: Static method that creates IntArray elements from homomorphism list
+- **Memory Management**: Use owned types for domain/range algebras
+- **Error Propagation**: Proper Result handling throughout the call chain
+- **Documentation**: Include mathematical definitions and usage examples
+
 ### Acceptance Criteria
-- [ ] All public methods translated to Rust
-- [ ] Python bindings expose all public methods
+- [ ] All 8 public methods translated to Rust
+- [ ] Python bindings expose all public methods with proper error handling
 - [ ] Java CLI wrapper created with all public methods
 - [ ] Rust tests pass with timeouts enabled
 - [ ] Python tests pass and match Java output
+- [ ] Kernel computation matches Java implementation exactly
+- [ ] Product homomorphism method works correctly
 - [ ] Code compiles without warnings
-- [ ] Documentation complete
+- [ ] Documentation complete with mathematical context
+- [ ] SmallAlgebra dependency completed (Task 41)

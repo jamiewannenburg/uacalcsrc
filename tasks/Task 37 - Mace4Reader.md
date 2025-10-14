@@ -1,96 +1,111 @@
-# UACalc Rust/Python Translation Plan
-
-## Overview
-
-This plan contains the ordered list of translation tasks for converting the UACalc Java library to Rust with Python bindings. Tasks are ordered by dependency count to ensure foundational classes are translated before dependent classes.
-
-## Translation Strategy
-
-### Approach
-- Direct Java-to-Rust translation maintaining exact semantics
-- Use Rust idioms where appropriate (traits for interfaces, Result/Option, etc.)
-- All public methods must be translated and tested
-- Output must match Java implementation exactly
-
-### Testing Strategy
-- Rust tests for all public methods with timeouts
-- Python binding tests comparing against Java
-- Java CLI wrappers for ground truth comparison
-- Global memory limit configurable from Python
-
-### ExcluRded Packages
-The following packages are **excluded** from this plan:
-- `org.uacalc.ui.*` - UI components (not needed for core library)
-- `org.uacalc.nbui.*` - NetBeans UI components
-- `org.uacalc.example.*` - Example/demo classes (NOTE: To be implemented later)
-
-
-## Translation Tasks
-
-## Task 37: Translate `Mace4Reader`
+# Task 37: Translate `Mace4Reader`
 
 **Java File:** `org/uacalc/io/Mace4Reader.java`  
 **Package:** `org.uacalc.io`  
 **Rust Module:** `io::Mace4Reader`  
-**Dependencies:** 2 (2 non-UI/example)  
-**Estimated Public Methods:** ~5
+**Dependencies:** 4 (4 non-UI/example)  
+**Estimated Public Methods:** 3
 
-### Description
-Translate the Java class `org.uacalc.io.Mace4Reader` to Rust with Python bindings.
+## Description
+Translate the Java class `org.uacalc.io.Mace4Reader` to Rust with Python bindings. This class reads Mace4 model files and parses them into algebras, specifically handling the operations while ignoring relations.
 
-### Dependencies
-This class depends on:
-- `org.uacalc.alg`
-- `org.uacalc.alg.op`
+## Java Class Analysis
 
-### Implementation Steps
+### Class Type
+- **Type**: Concrete class (`public final class Mace4Reader`)
+- **Pattern**: Reader/parser with stateful parsing
+- **Key Features**: 
+  - Stateful parser with line tracking
+  - Character-by-character parsing
+  - Error handling with line/column information
+  - Returns `SmallAlgebra` objects
 
-1. **Analyze Java Implementation**
-   - Read and understand the Java source code
-   - Identify all public methods and their signatures
-   - Note any special patterns (interfaces, abstract classes, etc.)
-   - Identify dependencies on other UACalc classes
+### Public Methods
+1. `Mace4Reader(InputStream stream)` - Constructor
+2. `parseAlgebra()` - Parse single algebra from stream
+3. `parseAlgebraList()` - Parse multiple algebras from stream
+4. `isOrdinaryCharacter(char c)` - Static utility method
+5. `isSpecialCharacter(char c)` - Static utility method
 
-2. **Design Rust Translation**
-   - Determine if Java interfaces should become Rust traits
-   - Design struct/enum representations matching Java semantics
-   - Plan for Rust idioms (Option instead of null, Result for errors, etc.)
-   - Ensure all public methods are translated
+### Dependencies Analysis
+**Direct Dependencies:**
+- `org.uacalc.alg.SmallAlgebra` (interface)
+- `org.uacalc.alg.BasicAlgebra` (concrete class)
+- `org.uacalc.alg.op.Operation` (interface)
+- `org.uacalc.alg.op.Operations` (utility class with static methods)
+- `org.uacalc.io.BadAlgebraFileException` (exception class)
 
-3. **Implement Rust Code**
-   - Create Rust module structure
-   - Implement all public methods
-   - Add comprehensive documentation
-   - Follow Rust naming conventions (snake_case)
+**Indirect Dependencies:**
+- `org.uacalc.alg.op.OperationSymbol` (used by Operations.makeIntOperation)
+- `org.uacalc.alg.op.AbstractOperation` (base class for operations)
+- `org.uacalc.alg.op.IntOperationImp` (concrete operation implementation)
+- `org.uacalc.alg.GeneralAlgebra` (base class for BasicAlgebra)
 
-4. **Create Python Bindings (PyO3)**
-   - Expose all public methods to Python
-   - Use appropriate PyO3 types (PyResult, etc.)
-   - Add Python docstrings
+**Missing Dependencies in Task:**
+- `org.uacalc.alg.BasicAlgebra` (not listed but used)
+- `org.uacalc.alg.op.Operation` (not listed but used)
+- `org.uacalc.alg.op.Operations` (not listed but used)
 
-5. **Create Java CLI Wrapper**
-   - Create wrapper in `java_wrapper/src/` matching package structure
-   - Implement `main` method accepting command-line arguments
-   - Expose all public methods through CLI commands
-   - Output results in JSON/text format for comparison
+## Rust Implementation Recommendations
 
-6. **Write Rust Tests**
-   - Test all public methods
-   - Add tests with timeouts (slightly longer than Java completion times)
-   - Test edge cases and error conditions
-   - Compare results against Java CLI wrapper output
+### Design Decisions
+1. **Main Struct**: `Mace4Reader` - stateful parser with internal state
+2. **Error Handling**: Use `Result<SmallAlgebra, BadAlgebraFileException>` for parsing methods
+3. **State Management**: Store `BufferedReader`, line number, and parsing state
+4. **Static Methods**: Convert to associated functions
 
-7. **Write Python Tests**
-   - Test all public methods through Python bindings
-   - Compare results against Java CLI wrapper output
-   - Verify Python API matches Rust API
+### Struct Design
+```rust
+pub struct Mace4Reader {
+    reader: BufReader<Box<dyn Read>>,
+    line: Option<String>,
+    lineno: usize,
+    index: usize,
+}
+```
 
-8. **Verification**
-   - Run all tests and ensure they pass
-   - Verify outputs match Java implementation exactly
-   - Check test coverage for all public methods
+### Method Organization
+- **Constructor**: `new(stream: Box<dyn Read>) -> Result<Self, String>`
+- **Instance Methods**: `parse_algebra()`, `parse_algebra_list()`
+- **Static Methods**: `is_ordinary_character()`, `is_special_character()`
+- **Private Methods**: All parsing helper methods
 
-### Acceptance Criteria
+### Dependencies Status
+- ❌ `SmallAlgebra` - Not implemented (placeholder exists)
+- ❌ `BasicAlgebra` - Not implemented (placeholder exists)  
+- ❌ `Operation` - Not implemented (placeholder exists)
+- ❌ `Operations` - Not implemented (placeholder exists)
+- ❌ `BadAlgebraFileException` - Implemented in `src/io/mod.rs`
+
+### Implementation Strategy
+1. **Phase 1**: Implement core parsing logic with placeholder return types
+2. **Phase 2**: Implement proper return types once dependencies are available
+3. **Phase 3**: Add comprehensive error handling and validation
+4. **Phase 4**: Add Python bindings and testing
+
+## Java Wrapper Suitability
+**Status**: ✅ Suitable for testing
+**Reason**: Concrete class with clear public API that can be easily wrapped
+
+### Wrapper Design
+- **Constructor**: Accept file path or input stream
+- **Methods**: Expose `parseAlgebra()` and `parseAlgebraList()`
+- **Testing**: Use sample Mace4 files for validation
+
+## Testing Strategy
+1. **Unit Tests**: Test parsing logic with known Mace4 files
+2. **Integration Tests**: Compare against Java implementation
+3. **Error Tests**: Test malformed input handling
+4. **Edge Cases**: Empty files, invalid syntax, large files
+
+## Implementation Priority
+**BLOCKED** - Cannot proceed until dependencies are implemented:
+1. `SmallAlgebra` interface
+2. `BasicAlgebra` concrete class  
+3. `Operation` interface
+4. `Operations` utility class
+
+## Acceptance Criteria
 - [ ] All public methods translated to Rust
 - [ ] Python bindings expose all public methods
 - [ ] Java CLI wrapper created with all public methods
@@ -98,3 +113,4 @@ This class depends on:
 - [ ] Python tests pass and match Java output
 - [ ] Code compiles without warnings
 - [ ] Documentation complete
+- [ ] **Dependencies implemented first**

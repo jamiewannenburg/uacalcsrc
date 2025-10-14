@@ -1,101 +1,91 @@
-# UACalc Rust/Python Translation Plan
-
-## Overview
-
-This plan contains the ordered list of translation tasks for converting the UACalc Java library to Rust with Python bindings. Tasks are ordered by dependency count to ensure foundational classes are translated before dependent classes.
-
-## Translation Strategy
-
-### Approach
-- Direct Java-to-Rust translation maintaining exact semantics
-- Use Rust idioms where appropriate (traits for interfaces, Result/Option, etc.)
-- All public methods must be translated and tested
-- Output must match Java implementation exactly
-
-### Testing Strategy
-- Rust tests for all public methods with timeouts
-- Python binding tests comparing against Java
-- Java CLI wrappers for ground truth comparison
-- Global memory limit configurable from Python
-
-### ExcluRded Packages
-The following packages are **excluded** from this plan:
-- `org.uacalc.ui.*` - UI components (not needed for core library)
-- `org.uacalc.nbui.*` - NetBeans UI components
-- `org.uacalc.example.*` - Example/demo classes (NOTE: To be implemented later)
-
-
-## Translation Tasks
-
-## Task 52: Translate `ParameterizedAlgebra`
+# Task 52: Translate `ParameterizedAlgebra`
 
 **Java File:** `org/uacalc/alg/ParameterizedAlgebra.java`  
 **Package:** `org.uacalc.alg`  
 **Rust Module:** `alg::ParameterizedAlgebra`  
-**Dependencies:** 3 (3 non-UI/example)  
-**Estimated Public Methods:** ~1
+**Dependencies:** 1 (1 non-UI/example)  
+**Estimated Public Methods:** 1
 
 ### Description
 Translate the Java class `org.uacalc.alg.ParameterizedAlgebra` to Rust with Python bindings.
 
-### Dependencies
-This class depends on:
-- `org.uacalc.alg.conlat`
-- `org.uacalc.alg.op.ParameterizedOperation`
-- `org.uacalc.alg.sublat`
+### Java Class Analysis
+- **Type**: Concrete class (not interface or abstract)
+- **Purpose**: Represents parameterized algebras with configurable parameters
+- **Key Fields**:
+  - `List<String> parameterNames` - Names of parameters
+  - `String name` - Algebra name
+  - `String setSizeExp` - Expression for set size
+  - `String description` - Algebra description
+  - `List<ParameterizedOperation> ops` - List of parameterized operations
+- **Public Methods**: 1
+  - `getParameterMap(List<Integer> values)` - Creates parameter mapping from values
 
-### Implementation Steps
+### Dependencies Analysis
+**CORRECTED DEPENDENCIES** (based on actual codebase analysis):
+- `org.uacalc.alg.BasicAlgebra` - Only actual dependency found in usage
+- ~~`org.uacalc.alg.conlat`~~ - Imported but not used in implementation
+- ~~`org.uacalc.alg.sublat`~~ - Imported but not used in implementation  
+- ~~`org.uacalc.alg.op.ParameterizedOperation`~~ - Not directly used, only imported
 
-1. **Analyze Java Implementation**
-   - Read and understand the Java source code
-   - Identify all public methods and their signatures
-   - Note any special patterns (interfaces, abstract classes, etc.)
-   - Identify dependencies on other UACalc classes
+**Dependency Level**: 1 (only depends on BasicAlgebra)
 
-2. **Design Rust Translation**
-   - Determine if Java interfaces should become Rust traits
-   - Design struct/enum representations matching Java semantics
-   - Plan for Rust idioms (Option instead of null, Result for errors, etc.)
-   - Ensure all public methods are translated
+### Rust Implementation Recommendations
 
-3. **Implement Rust Code**
-   - Create Rust module structure
-   - Implement all public methods
-   - Add comprehensive documentation
-   - Follow Rust naming conventions (snake_case)
+#### 1. Struct Design
+```rust
+pub struct ParameterizedAlgebra {
+    pub parameter_names: Vec<String>,
+    pub name: String,
+    pub set_size_exp: String,
+    pub description: String,
+    pub ops: Vec<ParameterizedOperation>,
+}
+```
 
-4. **Create Python Bindings (PyO3)**
-   - Expose all public methods to Python
-   - Use appropriate PyO3 types (PyResult, etc.)
-   - Add Python docstrings
+#### 2. Method Implementation
+- **`get_parameter_map(values: Vec<i32>) -> HashMap<String, String>`**
+  - Convert `List<Integer>` to `Vec<i32>`
+  - Return `HashMap<String, String>` instead of `Map<String, String>`
+  - Handle iterator logic with Rust idioms
 
-5. **Create Java CLI Wrapper**
-   - Create wrapper in `java_wrapper/src/` matching package structure
-   - Implement `main` method accepting command-line arguments
-   - Expose all public methods through CLI commands
-   - Output results in JSON/text format for comparison
+#### 3. Constructor Pattern
+- Implement `new()` constructor with all fields
+- Consider `new_safe()` for validation if needed
+- No special builder pattern required (simple struct)
 
-6. **Write Rust Tests**
-   - Test all public methods
-   - Add tests with timeouts (slightly longer than Java completion times)
-   - Test edge cases and error conditions
-   - Compare results against Java CLI wrapper output
+#### 4. Dependencies
+- **BasicAlgebra**: Must be implemented first (dependency level 1)
+- **ParameterizedOperation**: Referenced in field but not used in methods
+- **conlat/sublat**: Imported but unused - can be removed
 
-7. **Write Python Tests**
-   - Test all public methods through Python bindings
-   - Compare results against Java CLI wrapper output
-   - Verify Python API matches Rust API
+#### 5. Error Handling
+- Use `Result<HashMap<String, String>, String>` for `get_parameter_map_safe()`
+- Provide both safe and panic versions following patterns
+- Validate input lengths match parameter count
 
-8. **Verification**
-   - Run all tests and ensure they pass
-   - Verify outputs match Java implementation exactly
-   - Check test coverage for all public methods
+### Java Wrapper Suitability
+**SUITABLE** - This is a concrete class with:
+- Simple data structure (no complex logic)
+- One public method that can be easily tested
+- No abstract methods or interfaces
+- Can be instantiated and tested directly
+
+### Testing Strategy
+1. **Rust Tests**: Test `get_parameter_map` with various input sizes
+2. **Python Tests**: Verify parameter mapping functionality
+3. **Java Wrapper**: Test parameter mapping with different value lists
+4. **Edge Cases**: Empty lists, mismatched sizes, special characters
+
+### Implementation Priority
+**HIGH** - This is a foundational class (dependency level 1) that other classes depend on. Should be implemented early in the translation process.
 
 ### Acceptance Criteria
 - [ ] All public methods translated to Rust
-- [ ] Python bindings expose all public methods
+- [ ] Python bindings expose all public methods  
 - [ ] Java CLI wrapper created with all public methods
 - [ ] Rust tests pass with timeouts enabled
 - [ ] Python tests pass and match Java output
 - [ ] Code compiles without warnings
 - [ ] Documentation complete
+- [ ] Dependencies corrected (only BasicAlgebra)

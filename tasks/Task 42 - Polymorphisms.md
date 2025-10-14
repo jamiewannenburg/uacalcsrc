@@ -1,100 +1,227 @@
-# UACalc Rust/Python Translation Plan
-
-## Overview
-
-This plan contains the ordered list of translation tasks for converting the UACalc Java library to Rust with Python bindings. Tasks are ordered by dependency count to ensure foundational classes are translated before dependent classes.
-
-## Translation Strategy
-
-### Approach
-- Direct Java-to-Rust translation maintaining exact semantics
-- Use Rust idioms where appropriate (traits for interfaces, Result/Option, etc.)
-- All public methods must be translated and tested
-- Output must match Java implementation exactly
-
-### Testing Strategy
-- Rust tests for all public methods with timeouts
-- Python binding tests comparing against Java
-- Java CLI wrappers for ground truth comparison
-- Global memory limit configurable from Python
-
-### ExcluRded Packages
-The following packages are **excluded** from this plan:
-- `org.uacalc.ui.*` - UI components (not needed for core library)
-- `org.uacalc.nbui.*` - NetBeans UI components
-- `org.uacalc.example.*` - Example/demo classes (NOTE: To be implemented later)
-
-
-## Translation Tasks
-
-## Task 42: Translate `Polymorphisms`
+# Task 42: Translate `Polymorphisms`
 
 **Java File:** `org/uacalc/alg/conlat/Polymorphisms.java`  
 **Package:** `org.uacalc.alg.conlat`  
 **Rust Module:** `alg::conlat::Polymorphisms`  
-**Dependencies:** 2 (2 non-UI/example)  
-**Estimated Public Methods:** ~2
+**Dependencies:** 3 (3 non-UI/example)  
+**Estimated Public Methods:** 1
 
-### Description
+## Description
 Translate the Java class `org.uacalc.alg.conlat.Polymorphisms` to Rust with Python bindings.
 
-### Dependencies
-This class depends on:
-- `org.uacalc.alg.op`
-- `org.uacalc.util`
+## Java Class Analysis
 
-### Implementation Steps
+### Class Type
+- **Type**: Concrete class (incomplete implementation)
+- **Purpose**: Calculate polymorphisms of a collection of partitions
+- **Status**: **INCOMPLETE** - Only has constructor and empty main method
+- **Key Issue**: The actual polymorphism calculation methods are implemented in `BasicPartition.java`, not in this class
 
-1. **Analyze Java Implementation**
-   - Read and understand the Java source code
-   - Identify all public methods and their signatures
-   - Note any special patterns (interfaces, abstract classes, etc.)
-   - Identify dependencies on other UACalc classes
+### Method Analysis
+**Current Methods (1):**
+- `Polymorphisms(int arity, List<Partition> pars, boolean idempotent, int[] fixedValues)` - Constructor
 
-2. **Design Rust Translation**
-   - Determine if Java interfaces should become Rust traits
-   - Design struct/enum representations matching Java semantics
-   - Plan for Rust idioms (Option instead of null, Result for errors, etc.)
-   - Ensure all public methods are translated
+**Missing Methods:**
+- The class appears to be a placeholder or incomplete implementation
+- Actual polymorphism methods are in `BasicPartition.java`:
+  - `unaryPolymorphisms(List<Partition> pars, ProgressReport report) -> NavigableSet<IntArray>`
+  - `binaryPolymorphisms(List<Partition> pars, NavigableSet<IntArray> unaryClone, ProgressReport report) -> NavigableSet<IntArray>`
+  - `unaryPolymorphismsAlgebra(List<Partition> pars, ProgressReport report) -> SmallAlgebra`
+  - `binaryPolymorphismsAlgebra(List<Partition> pars, ProgressReport report) -> SmallAlgebra`
 
-3. **Implement Rust Code**
-   - Create Rust module structure
-   - Implement all public methods
-   - Add comprehensive documentation
-   - Follow Rust naming conventions (snake_case)
+### Dependencies Analysis
 
-4. **Create Python Bindings (PyO3)**
-   - Expose all public methods to Python
-   - Use appropriate PyO3 types (PyResult, etc.)
-   - Add Python docstrings
+**Correctly Identified:**
+- `org.uacalc.alg.conlat.Partition` - Used in constructor parameter and field
+- `org.uacalc.alg.op.Operation` - Used in partialOp field
+- `org.uacalc.util.IntArray` - Used in graph field
 
-5. **Create Java CLI Wrapper**
-   - Create wrapper in `java_wrapper/src/` matching package structure
-   - Implement `main` method accepting command-line arguments
-   - Expose all public methods through CLI commands
-   - Output results in JSON/text format for comparison
+**Dependencies are accurate** - All three dependencies are correctly identified.
 
-6. **Write Rust Tests**
-   - Test all public methods
-   - Add tests with timeouts (slightly longer than Java completion times)
-   - Test edge cases and error conditions
-   - Compare results against Java CLI wrapper output
+## Rust Implementation Analysis
 
-7. **Write Python Tests**
-   - Test all public methods through Python bindings
-   - Compare results against Java CLI wrapper output
-   - Verify Python API matches Rust API
+### Current Implementation Status: ❌ NOT STARTED
+- **Rust Construct**: Should be a struct
+- **Design Pattern**: Concrete struct with constructor
+- **Error Handling**: Needs proper Result/Option usage
+- **Memory Management**: Uses `Vec<Partition>` for partitions, `Option<Operation>` for partialOp
 
-8. **Verification**
-   - Run all tests and ensure they pass
-   - Verify outputs match Java implementation exactly
-   - Check test coverage for all public methods
+### Implementation Recommendations
 
-### Acceptance Criteria
-- [ ] All public methods translated to Rust
-- [ ] Python bindings expose all public methods
-- [ ] Java CLI wrapper created with all public methods
-- [ ] Rust tests pass with timeouts enabled
+**Struct Design:**
+```rust
+pub struct Polymorphisms {
+    pub pars: Vec<Partition>,
+    pub alg_size: usize,
+    pub arity: usize,
+    pub idempotent: bool,
+    pub fixed_values: Option<Vec<i32>>,
+    pub partial_op: Option<Operation>,
+    pub partial_op_table: Option<Vec<i32>>,
+    pub table_size: usize,
+    pub graph: Option<HashMap<IntArray, HashMap<IntArray, Partition>>>,
+}
+```
+
+**Constructor Design:**
+```rust
+impl Polymorphisms {
+    pub fn new_safe(arity: usize, pars: Vec<Partition>, idempotent: bool, fixed_values: Option<Vec<i32>>) -> Result<Self, String> {
+        if pars.is_empty() {
+            return Err("Partitions list cannot be empty".to_string());
+        }
+        let alg_size = pars[0].universe_size();
+        let table_size = alg_size.pow(arity as u32);
+        Ok(Self {
+            pars,
+            alg_size,
+            arity,
+            idempotent,
+            fixed_values,
+            partial_op: None,
+            partial_op_table: None,
+            table_size,
+            graph: None,
+        })
+    }
+    
+    pub fn new(arity: usize, pars: Vec<Partition>, idempotent: bool, fixed_values: Option<Vec<i32>>) -> Self {
+        Self::new_safe(arity, pars, idempotent, fixed_values).unwrap()
+    }
+}
+```
+
+**Key Implementation Points:**
+- Use `Vec<Partition>` instead of `List<Partition>`
+- Use `Option<T>` for nullable fields
+- Use `HashMap` instead of `TreeMap` for graph
+- Implement proper error handling with `Result<T, String>`
+- Add validation for empty partitions list
+
+## Python Bindings Analysis
+
+### Current Implementation Status: ❌ NOT STARTED
+- **Python Class**: `Polymorphisms` (clean export name)
+- **PyO3 Integration**: Needs proper error handling
+- **Constructor**: Should accept Python lists and convert to Rust types
+
+### Implementation Recommendations
+
+**Python Binding Design:**
+```rust
+#[pyclass]
+pub struct PyPolymorphisms {
+    inner: uacalc::alg::conlat::Polymorphisms,
+}
+
+#[pymethods]
+impl PyPolymorphisms {
+    #[new]
+    #[pyo3(signature = (arity, pars, idempotent, fixed_values=None))]
+    fn new(arity: usize, pars: Vec<PyPartition>, idempotent: bool, fixed_values: Option<Vec<i32>>) -> PyResult<Self> {
+        let rust_pars: Vec<Partition> = pars.into_iter().map(|p| p.inner).collect();
+        match uacalc::alg::conlat::Polymorphisms::new_safe(arity, rust_pars, idempotent, fixed_values) {
+            Ok(inner) => Ok(PyPolymorphisms { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+}
+```
+
+## Java Wrapper Analysis
+
+### Current Implementation Status: ❌ NOT STARTED
+- **Wrapper Class**: `PolymorphismsWrapper`
+- **Suitability**: **SUITABLE** - Concrete class with constructor
+- **Testing Strategy**: Test constructor with various parameter combinations
+
+### Implementation Recommendations
+
+**Java Wrapper Design:**
+```java
+public class PolymorphismsWrapper extends WrapperBase {
+    public static void main(String[] args) {
+        PolymorphismsWrapper wrapper = new PolymorphismsWrapper();
+        try {
+            wrapper.run(args);
+        } catch (Exception e) {
+            wrapper.handleError("Polymorphisms wrapper failed", e);
+        }
+    }
+    
+    @Override
+    public void run(String[] args) throws Exception {
+        // Implementation for constructor testing
+    }
+    
+    private void testConstructor(String[] args) throws Exception {
+        int arity = getIntArg(args, "arity", 1);
+        List<Partition> pars = getPartitionListArg(args, "pars");
+        boolean idempotent = getBoolArg(args, "idempotent", false);
+        int[] fixedValues = getIntArrayArg(args, "fixedValues", null);
+        
+        Polymorphisms poly = new Polymorphisms(arity, pars, idempotent, fixedValues);
+        
+        handleSuccess(json!({
+            "command": "constructor",
+            "arity": arity,
+            "pars_count": pars.size(),
+            "idempotent": idempotent,
+            "fixed_values": fixedValues,
+            "alg_size": poly.algSize,
+            "table_size": poly.tableSize,
+            "status": "success"
+        }));
+    }
+}
+```
+
+## Testing Strategy
+
+### Rust Tests
+- Test constructor with valid parameters
+- Test constructor with invalid parameters (empty partitions)
+- Test constructor with different arity values
+- Test constructor with different idempotent values
+
+### Python Tests
+- Test constructor through Python bindings
+- Test error handling for invalid parameters
+- Compare results with Java wrapper
+
+## Critical Issues and Recommendations
+
+### Issue 1: Incomplete Implementation
+**Problem**: The Java class is incomplete - it only has a constructor and empty main method.
+**Recommendation**: 
+1. **Option A**: Implement the missing polymorphism methods in the Rust version
+2. **Option B**: Mark this task as incomplete and focus on the actual implementation in `BasicPartition.java`
+3. **Option C**: Create a complete implementation based on the methods in `BasicPartition.java`
+
+### Issue 2: Missing Core Functionality
+**Problem**: The class doesn't have the actual polymorphism calculation methods.
+**Recommendation**: Implement the core methods:
+- `calculate_unary_polymorphisms() -> Result<Vec<IntArray>, String>`
+- `calculate_binary_polymorphisms() -> Result<Vec<IntArray>, String>`
+- `make_graph() -> Result<(), String>`
+
+### Issue 3: Dependencies on Unimplemented Classes
+**Problem**: Depends on `Partition`, `Operation`, and `IntArray` which may not be fully implemented.
+**Recommendation**: Verify all dependencies are available before implementing.
+
+## Implementation Priority
+
+**HIGH PRIORITY**: This class appears to be incomplete and may need significant work to be functional. Consider:
+1. Implementing the missing methods based on `BasicPartition.java`
+2. Creating a complete implementation from scratch
+3. Or marking as incomplete until the Java implementation is finished
+
+## Acceptance Criteria
+- [ ] Constructor translated to Rust with proper error handling
+- [ ] Python bindings expose constructor
+- [ ] Java CLI wrapper created for constructor testing
+- [ ] Rust tests pass for constructor
 - [ ] Python tests pass and match Java output
 - [ ] Code compiles without warnings
 - [ ] Documentation complete
+- [ ] **CRITICAL**: Decide on approach for missing methods

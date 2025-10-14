@@ -1,33 +1,4 @@
-# UACalc Rust/Python Translation Plan
-
-## Overview
-
-This plan contains the ordered list of translation tasks for converting the UACalc Java library to Rust with Python bindings. Tasks are ordered by dependency count to ensure foundational classes are translated before dependent classes.
-
-## Translation Strategy
-
-### Approach
-- Direct Java-to-Rust translation maintaining exact semantics
-- Use Rust idioms where appropriate (traits for interfaces, Result/Option, etc.)
-- All public methods must be translated and tested
-- Output must match Java implementation exactly
-
-### Testing Strategy
-- Rust tests for all public methods with timeouts
-- Python binding tests comparing against Java
-- Java CLI wrappers for ground truth comparison
-- Global memory limit configurable from Python
-
-### ExcluRded Packages
-The following packages are **excluded** from this plan:
-- `org.uacalc.ui.*` - UI components (not needed for core library)
-- `org.uacalc.nbui.*` - NetBeans UI components
-- `org.uacalc.example.*` - Example/demo classes (NOTE: To be implemented later)
-
-
-## Translation Tasks
-
-## Task 62: Translate `AlgebraReader`
+# Task 62: Translate `AlgebraReader`
 
 **Java File:** `org/uacalc/io/AlgebraReader.java`  
 **Package:** `org.uacalc.io`  
@@ -35,64 +6,105 @@ The following packages are **excluded** from this plan:
 **Dependencies:** 6 (6 non-UI/example)  
 **Estimated Public Methods:** ~17
 
-### Description
+## Description
 Translate the Java class `org.uacalc.io.AlgebraReader` to Rust with Python bindings.
 
-### Dependencies
-This class depends on:
-- `org.uacalc.alg`
-- `org.uacalc.alg.conlat`
-- `org.uacalc.alg.op.Operation`
-- `org.uacalc.alg.op.OperationSymbol`
-- `org.uacalc.alg.op.Operations`
-- `org.uacalc.util`
+## Java Class Analysis
 
-### Implementation Steps
+### Class Type
+- **Type**: Concrete class extending `DefaultHandler` (SAX XML parser)
+- **Pattern**: SAX event handler for parsing XML algebra files
+- **Complexity**: High - complex state management with many internal variables
 
-1. **Analyze Java Implementation**
-   - Read and understand the Java source code
-   - Identify all public methods and their signatures
-   - Note any special patterns (interfaces, abstract classes, etc.)
-   - Identify dependencies on other UACalc classes
+### Public Methods (17 total)
+1. `AlgebraReader(File file)` - Constructor from File
+2. `AlgebraReader(String file)` - Constructor from String path  
+3. `AlgebraReader(InputStream is)` - Constructor from InputStream
+4. `readAlgebraFile()` - Read single algebra from file
+5. `readAlgebraFromStream()` - Read single algebra from stream
+6. `readAlgebraListFile()` - Read list of algebras from file
+7. `readAlgebraListFromStream()` - Read list of algebras from stream
+8. `startElement()` - SAX start element handler
+9. `characters()` - SAX character data handler
+10. `endElement()` - SAX end element handler
+11. `main()` - Test/demo method
 
-2. **Design Rust Translation**
-   - Determine if Java interfaces should become Rust traits
-   - Design struct/enum representations matching Java semantics
-   - Plan for Rust idioms (Option instead of null, Result for errors, etc.)
-   - Ensure all public methods are translated
+### Dependencies Analysis
+**Correctly Listed Dependencies:**
+- `org.uacalc.alg` - Used for SmallAlgebra, Algebra interfaces
+- `org.uacalc.alg.conlat` - Used for BasicPartition (congruence handling)
+- `org.uacalc.alg.op.Operation` - Used for operation objects
+- `org.uacalc.alg.op.OperationSymbol` - Used for operation symbols
+- `org.uacalc.alg.op.Operations` - Used for operation creation
+- `org.uacalc.util` - Used for SimpleList, Horner, IntArray utilities
 
-3. **Implement Rust Code**
-   - Create Rust module structure
-   - Implement all public methods
-   - Add comprehensive documentation
-   - Follow Rust naming conventions (snake_case)
+**Missing Dependencies:**
+- `org.uacalc.io.BadAlgebraFileException` - Exception class used in method signatures
 
-4. **Create Python Bindings (PyO3)**
-   - Expose all public methods to Python
-   - Use appropriate PyO3 types (PyResult, etc.)
-   - Add Python docstrings
+### Usage Patterns
+- **Primary Usage**: Used by `AlgebraIO` class for reading XML algebra files
+- **File Types**: Handles `.ua` and `.xml` algebra files
+- **Algebra Types**: Supports BasicAlgebra, ProductAlgebra, QuotientAlgebra, Subalgebra, PowerAlgebra, BigProductAlgebra, SubProductAlgebra
+- **XML Structure**: Complex nested XML with operations, congruences, subuniverses, etc.
 
-5. **Create Java CLI Wrapper**
-   - Create wrapper in `java_wrapper/src/` matching package structure
-   - Implement `main` method accepting command-line arguments
-   - Expose all public methods through CLI commands
-   - Output results in JSON/text format for comparison
+## Rust Implementation Recommendations
 
-6. **Write Rust Tests**
-   - Test all public methods
-   - Add tests with timeouts (slightly longer than Java completion times)
-   - Test edge cases and error conditions
-   - Compare results against Java CLI wrapper output
+### Design Decisions
+- **Rust Construct**: `struct` (concrete class)
+- **Error Handling**: Use `Result<AlgebraReader, String>` for constructors, `Result<SmallAlgebra, String>` for read methods
+- **State Management**: Use `RefCell` or `Mutex` for mutable state during parsing
+- **XML Parsing**: Use `quick-xml` or `roxmltree` for XML parsing instead of SAX
+- **Memory Management**: Use `Rc<RefCell<>>` for shared references to algebras
 
-7. **Write Python Tests**
-   - Test all public methods through Python bindings
-   - Compare results against Java CLI wrapper output
-   - Verify Python API matches Rust API
+### Key Implementation Challenges
+1. **Complex State Management**: 20+ internal state variables need careful management
+2. **XML Parsing**: SAX event-driven parsing needs to be converted to DOM or streaming parser
+3. **Algebra Construction**: Multiple algebra types with different construction patterns
+4. **Error Handling**: Convert Java exceptions to Rust Result types
+5. **Memory Safety**: Ensure proper ownership of algebra objects during construction
 
-8. **Verification**
-   - Run all tests and ensure they pass
-   - Verify outputs match Java implementation exactly
-   - Check test coverage for all public methods
+### Method Organization
+- **Constructor Methods**: `new_from_file()`, `new_from_path()`, `new_from_stream()`
+- **Read Methods**: `read_algebra_file()`, `read_algebra_from_stream()`, `read_algebra_list_file()`, `read_algebra_list_from_stream()`
+- **SAX Handlers**: `start_element()`, `characters()`, `end_element()` (private)
+- **Utility Methods**: `clear_strings()`, `current_tag()`, `parent_tag()`, `int_row()`, `raw_int_array()`, `int_array()`, `add_description()` (private)
+
+### Generic vs Dynamic Dispatch
+- **Use Dynamic Dispatch**: For algebra types (SmallAlgebra, Algebra) since they have different implementations
+- **Use Generics**: For utility methods that work with generic types
+
+## Java Wrapper Suitability
+- **Suitable**: Yes - concrete class with clear public API
+- **Testing Strategy**: Test all read methods with sample algebra files
+- **CLI Commands**: 
+  - `read-algebra-file --file <path>` - Read single algebra
+  - `read-algebra-list-file --file <path>` - Read algebra list
+  - `read-algebra-from-stream --input <data>` - Read from stream
+  - `read-algebra-list-from-stream --input <data>` - Read list from stream
+
+## Testing Strategy
+- **Rust Tests**: Test with sample `.ua` and `.xml` files, verify algebra construction
+- **Python Tests**: Test all read methods, compare results with Java wrapper
+- **Integration Tests**: Test with various algebra types and complex XML structures
+- **Error Tests**: Test with malformed XML, invalid algebra data
+
+## Implementation Priority
+- **High Priority**: Core read methods for single algebras
+- **Medium Priority**: List reading methods, error handling
+- **Low Priority**: Advanced XML features, optimization
+
+## Dependencies Status
+- **All Dependencies Available**: Yes, all required classes are implemented
+- **Dependency Order**: Correct - all dependencies are lower-numbered tasks
+- **Missing Dependencies**: Add `org.uacalc.io.BadAlgebraFileException` to dependency list
+
+## Recommendations
+1. **Start with Basic Implementation**: Focus on BasicAlgebra reading first
+2. **Use XML Library**: Don't try to reimplement SAX - use existing Rust XML library
+3. **State Management**: Use builder pattern for complex algebra construction
+4. **Error Handling**: Provide both `_safe` and panic versions of methods
+5. **Testing**: Create comprehensive test suite with various algebra file types
+6. **Documentation**: Document XML format requirements and algebra construction process
 
 ### Acceptance Criteria
 - [ ] All public methods translated to Rust
@@ -102,3 +114,6 @@ This class depends on:
 - [ ] Python tests pass and match Java output
 - [ ] Code compiles without warnings
 - [ ] Documentation complete
+- [ ] XML parsing works correctly for all algebra types
+- [ ] Error handling matches Java behavior
+- [ ] Memory management is safe and efficient

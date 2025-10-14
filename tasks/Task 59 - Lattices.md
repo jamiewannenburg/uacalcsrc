@@ -1,102 +1,123 @@
-# UACalc Rust/Python Translation Plan
-
-## Overview
-
-This plan contains the ordered list of translation tasks for converting the UACalc Java library to Rust with Python bindings. Tasks are ordered by dependency count to ensure foundational classes are translated before dependent classes.
-
-## Translation Strategy
-
-### Approach
-- Direct Java-to-Rust translation maintaining exact semantics
-- Use Rust idioms where appropriate (traits for interfaces, Result/Option, etc.)
-- All public methods must be translated and tested
-- Output must match Java implementation exactly
-
-### Testing Strategy
-- Rust tests for all public methods with timeouts
-- Python binding tests comparing against Java
-- Java CLI wrappers for ground truth comparison
-- Global memory limit configurable from Python
-
-### ExcluRded Packages
-The following packages are **excluded** from this plan:
-- `org.uacalc.ui.*` - UI components (not needed for core library)
-- `org.uacalc.nbui.*` - NetBeans UI components
-- `org.uacalc.example.*` - Example/demo classes (NOTE: To be implemented later)
-
-
-## Translation Tasks
-
-## Task 59: Translate `Lattices`
+# Task 59: Translate `Lattices`
 
 **Java File:** `org/uacalc/lat/Lattices.java`  
 **Package:** `org.uacalc.lat`  
 **Rust Module:** `lat::Lattices`  
-**Dependencies:** 4 (4 non-UI/example)  
-**Estimated Public Methods:** ~15
+**Dependencies:** 6 (6 non-UI/example)  
+**Estimated Public Methods:** 6
 
-### Description
+## Description
 Translate the Java class `org.uacalc.lat.Lattices` to Rust with Python bindings.
 
-### Dependencies
-This class depends on:
-- `org.uacalc.alg`
-- `org.uacalc.alg.conlat`
-- `org.uacalc.alg.op.Operation`
-- `org.uacalc.alg.sublat`
+## Java Class Analysis
 
-### Implementation Steps
+### Class Type
+- **Type**: Utility class with static methods (6 public methods)
+- **Constructor**: Private (utility class pattern)
+- **Purpose**: Factory methods for creating lattices from operations and other lattice operations
 
-1. **Analyze Java Implementation**
-   - Read and understand the Java source code
-   - Identify all public methods and their signatures
-   - Note any special patterns (interfaces, abstract classes, etc.)
-   - Identify dependencies on other UACalc classes
+### Method Analysis
+**Factory Methods (4 methods):**
+- `latticeFromMeet(String name, Operation meet) -> BasicLattice` - Creates lattice from meet operation using integers
+- `latticeFromJoin(String name, Operation join) -> BasicLattice` - Creates lattice from join operation using integers  
+- `latticeFromMeet(String name, List univ, Operation meet) -> BasicLattice` - Creates lattice from meet operation with custom universe
+- `latticeFromJoin(String name, List univ, Operation join) -> BasicLattice` - Creates lattice from join operation with custom universe
 
-2. **Design Rust Translation**
-   - Determine if Java interfaces should become Rust traits
-   - Design struct/enum representations matching Java semantics
-   - Plan for Rust idioms (Option instead of null, Result for errors, etc.)
-   - Ensure all public methods are translated
+**Lattice Operations (2 methods):**
+- `conToSmallLattice(CongruenceLattice con) -> SmallLattice` - Converts congruence lattice to small lattice
+- `dual(BasicLattice lat) -> BasicLattice` - Creates dual of a basic lattice
 
-3. **Implement Rust Code**
-   - Create Rust module structure
-   - Implement all public methods
-   - Add comprehensive documentation
-   - Follow Rust naming conventions (snake_case)
+## Dependencies Analysis
 
-4. **Create Python Bindings (PyO3)**
-   - Expose all public methods to Python
-   - Use appropriate PyO3 types (PyResult, etc.)
-   - Add Python docstrings
+### Direct Dependencies
+- **CongruenceLattice** (Task 80) - Used in conToSmallLattice method
+- **BasicLattice** (Task 85) - Return type for factory methods and dual method
+- **Operation** (Task 12) - Used in all factory methods
+- **SmallLattice** (Task 28) - Return type for conToSmallLattice method
+- **Partition** (Task 5) - Used in conToSmallLattice method
+- **org.latdraw.orderedset.OrderedSet** - External dependency for lattice construction
+
+### Missing Dependencies
+The current dependency list is **INCORRECT**. Missing dependencies:
+- **SmallLattice** (Task 28) - Return type for conToSmallLattice
+- **Partition** (Task 5) - Used in conToSmallLattice method
+- **org.latdraw.orderedset.OrderedSet** - External dependency (excluded from translation)
+
+### Dependency Order
+This task should be implemented **AFTER**:
+1. Task 5: Partition ✅ (completed)
+2. Task 12: Operation ✅ (completed) 
+3. Task 28: SmallLattice (pending)
+4. Task 80: CongruenceLattice (pending)
+5. Task 85: BasicLattice (pending)
+
+## Rust Implementation Recommendations
+
+### Design Pattern
+- **Rust Construct**: Module with free functions (utility class pattern)
+- **No struct needed**: All methods are static/utility functions
+- **Error Handling**: Use `Result<BasicLattice, String>` for factory methods that can fail
+- **External Dependencies**: Handle `org.latdraw.orderedset.OrderedSet` dependency by either:
+  1. Creating a minimal Rust equivalent
+  2. Using `Option<OrderedSet>` and returning `None` when external dependency unavailable
+  3. Marking methods as `unimplemented!()` until external dependency is available
+
+### Method Organization
+- **Factory Methods**: Implement as free functions in `lat::lattices` module
+- **Lattice Operations**: Implement as free functions
+- **Error Handling**: All methods that can fail should return `Result<T, String>`
+- **Null Handling**: Replace Java `null` returns with `Option<T>` or `Result<T, String>`
+
+### Key Implementation Challenges
+1. **External Dependency**: `org.latdraw.orderedset.OrderedSet` is not part of UACalc
+2. **Exception Handling**: Java methods catch `NonOrderedSetException` and print stack trace
+3. **Generic Lists**: Java uses raw `List` types - need proper generic constraints
+4. **Iterator Patterns**: Convert Java iterators to Rust iterator patterns
+
+### Java Wrapper Suitability
+- **Suitable**: Yes - concrete utility class with static methods
+- **Testing Strategy**: Can test all methods with mock data
+- **CLI Commands**: One command per method with appropriate parameters
+
+## Implementation Steps
+
+1. **Wait for Dependencies**
+   - Complete Task 28: SmallLattice
+   - Complete Task 80: CongruenceLattice  
+   - Complete Task 85: BasicLattice
+
+2. **Design Rust Module**
+   - Create `src/lat/lattices.rs` module
+   - Implement free functions for each static method
+   - Handle external dependency appropriately
+
+3. **Implement Core Methods**
+   - `lattice_from_meet` (both variants)
+   - `lattice_from_join` (both variants)
+   - `con_to_small_lattice`
+   - `dual`
+
+4. **Create Python Bindings**
+   - Expose all functions to Python
+   - Use `#[pyfunction]` for static methods
+   - Handle error cases with `PyResult`
 
 5. **Create Java CLI Wrapper**
-   - Create wrapper in `java_wrapper/src/` matching package structure
-   - Implement `main` method accepting command-line arguments
-   - Expose all public methods through CLI commands
-   - Output results in JSON/text format for comparison
+   - Implement wrapper with all 6 methods
+   - Use appropriate test data for each method
+   - Handle external dependency gracefully
 
-6. **Write Rust Tests**
-   - Test all public methods
-   - Add tests with timeouts (slightly longer than Java completion times)
-   - Test edge cases and error conditions
-   - Compare results against Java CLI wrapper output
+6. **Write Tests**
+   - Test all methods with valid inputs
+   - Test error cases and edge conditions
+   - Compare outputs with Java implementation
 
-7. **Write Python Tests**
-   - Test all public methods through Python bindings
-   - Compare results against Java CLI wrapper output
-   - Verify Python API matches Rust API
-
-8. **Verification**
-   - Run all tests and ensure they pass
-   - Verify outputs match Java implementation exactly
-   - Check test coverage for all public methods
-
-### Acceptance Criteria
-- [ ] All public methods translated to Rust
-- [ ] Python bindings expose all public methods
-- [ ] Java CLI wrapper created with all public methods
+## Acceptance Criteria
+- [ ] All 6 public methods translated to Rust
+- [ ] Python bindings expose all methods as functions
+- [ ] Java CLI wrapper created with all methods
 - [ ] Rust tests pass with timeouts enabled
 - [ ] Python tests pass and match Java output
 - [ ] Code compiles without warnings
 - [ ] Documentation complete
+- [ ] External dependency handled appropriately

@@ -1,99 +1,148 @@
-# UACalc Rust/Python Translation Plan
-
-## Overview
-
-This plan contains the ordered list of translation tasks for converting the UACalc Java library to Rust with Python bindings. Tasks are ordered by dependency count to ensure foundational classes are translated before dependent classes.
-
-## Translation Strategy
-
-### Approach
-- Direct Java-to-Rust translation maintaining exact semantics
-- Use Rust idioms where appropriate (traits for interfaces, Result/Option, etc.)
-- All public methods must be translated and tested
-- Output must match Java implementation exactly
-
-### Testing Strategy
-- Rust tests for all public methods with timeouts
-- Python binding tests comparing against Java
-- Java CLI wrappers for ground truth comparison
-- Global memory limit configurable from Python
-
-### ExcluRded Packages
-The following packages are **excluded** from this plan:
-- `org.uacalc.ui.*` - UI components (not needed for core library)
-- `org.uacalc.nbui.*` - NetBeans UI components
-- `org.uacalc.example.*` - Example/demo classes (NOTE: To be implemented later)
-
-
-## Translation Tasks
-
-## Task 20: Translate `Lattice`
+# Task 20: Translate `Lattice`
 
 **Java File:** `org/uacalc/lat/Lattice.java`  
 **Package:** `org.uacalc.lat`  
 **Rust Module:** `lat::Lattice`  
-**Dependencies:** 1 (1 non-UI/example)  
-**Estimated Public Methods:** ~8
+**Dependencies:** 2 (2 non-UI/example) - **CORRECTED**  
+**Estimated Public Methods:** 8
 
 ### Description
-Translate the Java class `org.uacalc.lat.Lattice` to Rust with Python bindings.
+Translate the Java interface `org.uacalc.lat.Lattice` to Rust with Python bindings.
 
 ### Dependencies
-This class depends on:
-- `org.uacalc.alg`
+**CORRECTED DEPENDENCIES:**
+This interface depends on:
+- `org.uacalc.alg.Algebra` (Task 55 - NOT COMPLETED)
+- `org.uacalc.lat.Order` (Task 18 - NOT COMPLETED)
 
-### Implementation Steps
+**Analysis Results:**
+- Lattice extends both Algebra and Order interfaces
+- Algebra interface has 4 dependencies (Operation, OperationSymbol, SimilarityType, ProgressReport)
+- Order interface has 0 dependencies (unused import)
+- **Dependency count is correctly 2** (Algebra + Order)
+- **Both dependencies are NOT COMPLETED** - cannot implement Lattice yet
 
-1. **Analyze Java Implementation**
-   - Read and understand the Java source code
-   - Identify all public methods and their signatures
-   - Note any special patterns (interfaces, abstract classes, etc.)
-   - Identify dependencies on other UACalc classes
+### Implementation Recommendations
 
-2. **Design Rust Translation**
-   - Determine if Java interfaces should become Rust traits
-   - Design struct/enum representations matching Java semantics
-   - Plan for Rust idioms (Option instead of null, Result for errors, etc.)
-   - Ensure all public methods are translated
+#### Java Class Analysis
+- **Type**: Interface (extends Algebra, Order)
+- **Generic Parameter**: None (but inherits from Order<E>)
+- **Public Methods**: 8 methods
+  - `joinIrreducibles() -> List<? extends Object>`
+  - `meetIrreducibles() -> List<? extends Object>`
+  - `atoms() -> List<? extends Object>`
+  - `coatoms() -> List<? extends Object>`
+  - `join(Object a, Object b) -> Object`
+  - `join(List args) -> Object`
+  - `meet(Object a, Object b) -> Object`
+  - `meet(List args) -> Object`
+- **Dependencies**: Algebra (28 methods), Order (1 method)
+- **Mathematical Purpose**: Defines lattice operations (join, meet) and special elements
 
-3. **Implement Rust Code**
-   - Create Rust module structure
-   - Implement all public methods
-   - Add comprehensive documentation
-   - Follow Rust naming conventions (snake_case)
+#### Rust Translation Design
+- **Rust Construct**: Trait (not struct)
+- **Trait Name**: `Lattice`
+- **Inheritance**: Must extend both `Algebra` and `Order<Object>`
+- **Method Signatures**: 
+  - `fn join_irreducibles(&self) -> Option<Vec<Object>>`
+  - `fn meet_irreducibles(&self) -> Option<Vec<Object>>`
+  - `fn atoms(&self) -> Option<Vec<Object>>`
+  - `fn coatoms(&self) -> Option<Vec<Object>>`
+  - `fn join(&self, a: &Object, b: &Object) -> Object`
+  - `fn join_list(&self, args: &[Object]) -> Object`
+  - `fn meet(&self, a: &Object, b: &Object) -> Object`
+  - `fn meet_list(&self, args: &[Object]) -> Object`
+- **Generic Dispatch**: Yes (trait with generic parameter from Order)
+- **Dynamic Dispatch**: Yes (trait objects)
+- **Associated Types**: None
+- **Trait Bounds**: Must implement Algebra + Order<Object>
 
-4. **Create Python Bindings (PyO3)**
-   - Expose all public methods to Python
-   - Use appropriate PyO3 types (PyResult, etc.)
-   - Add Python docstrings
+#### Implementation Strategy
+```rust
+/// A lattice is a partially ordered set with join and meet operations.
+/// 
+/// This trait defines the fundamental operations of lattice theory:
+/// - Join (∨): least upper bound of two elements
+/// - Meet (∧): greatest lower bound of two elements
+/// - Special elements: atoms, coatoms, join/meet irreducibles
+pub trait Lattice: Algebra + Order<Object> {
+    /// Returns the list of join irreducible elements, if available
+    fn join_irreducibles(&self) -> Option<Vec<Object>>;
+    
+    /// Returns the list of meet irreducible elements, if available
+    fn meet_irreducibles(&self) -> Option<Vec<Object>>;
+    
+    /// Returns the list of atoms (minimal non-zero elements)
+    fn atoms(&self) -> Option<Vec<Object>>;
+    
+    /// Returns the list of coatoms (maximal non-one elements)
+    fn coatoms(&self) -> Option<Vec<Object>>;
+    
+    /// Returns the join (least upper bound) of two elements
+    fn join(&self, a: &Object, b: &Object) -> Object;
+    
+    /// Returns the join of a list of elements
+    fn join_list(&self, args: &[Object]) -> Object;
+    
+    /// Returns the meet (greatest lower bound) of two elements
+    fn meet(&self, a: &Object, b: &Object) -> Object;
+    
+    /// Returns the meet of a list of elements
+    fn meet_list(&self, args: &[Object]) -> Object;
+}
+```
 
-5. **Create Java CLI Wrapper**
-   - Create wrapper in `java_wrapper/src/` matching package structure
-   - Implement `main` method accepting command-line arguments
-   - Expose all public methods through CLI commands
-   - Output results in JSON/text format for comparison
+#### Java Wrapper Suitability
+- **Suitable**: NO - Interface cannot be instantiated directly
+- **Reason**: Lattice is an interface, not a concrete class
+- **Alternative**: Create wrapper for concrete implementations like BasicLattice, SubalgebraLattice, CongruenceLattice
+- **Testing Strategy**: Test through implementing classes, not direct interface testing
+- **Note**: The interface itself cannot be tested in isolation
 
-6. **Write Rust Tests**
-   - Test all public methods
-   - Add tests with timeouts (slightly longer than Java completion times)
-   - Test edge cases and error conditions
-   - Compare results against Java CLI wrapper output
+#### Python Bindings Strategy
+- **Approach**: Export as trait, not concrete struct
+- **Usage**: Python users implement the trait for their lattice types
+- **Example**: `class MyLattice(Lattice): def join(self, a, b): return ...`
+- **Integration**: Must work with BasicLattice, SubalgebraLattice, CongruenceLattice
+- **Type Safety**: Ensure proper Object type handling in Python
 
-7. **Write Python Tests**
-   - Test all public methods through Python bindings
-   - Compare results against Java CLI wrapper output
-   - Verify Python API matches Rust API
+#### Testing Strategy
+- **Rust Tests**: Test trait implementations, not trait itself
+- **Python Tests**: Test through implementing classes
+- **Integration Tests**: Test with BasicLattice, SubalgebraLattice, CongruenceLattice
+- **Edge Cases**: Test with empty lists, single elements, large lattices
+- **Mathematical Properties**: Test lattice laws (associativity, commutativity, absorption)
+- **Performance**: Test with large lattices and complex operations
 
-8. **Verification**
-   - Run all tests and ensure they pass
-   - Verify outputs match Java implementation exactly
-   - Check test coverage for all public methods
+#### Dependencies Verification
+- **Current Status**: INCORRECT - Listed as 1 dependency
+- **Actual Status**: 2 DEPENDENCIES (Algebra + Order)
+- **Action Required**: Update dependency count and list
+- **Task Order**: Cannot be implemented until Algebra and Order are completed
+- **Blocking Tasks**: Task 55 (Algebra), Task 18 (Order)
+
+#### Critical Implementation Notes
+1. **Trait Inheritance**: Must extend both Algebra and Order<Object>
+2. **Object Type**: Need to define Object type (likely generic or enum)
+3. **Optional Methods**: Some methods return Option<Vec<Object>> (optional operations)
+4. **List Operations**: Support both single elements and lists for join/meet
+5. **Mathematical Correctness**: Implementations must satisfy lattice laws
+6. **Performance**: Consider performance for large lattices
+7. **Error Handling**: Optional methods return None, required methods return values
+8. **Documentation**: Include mathematical definitions and lattice theory concepts
 
 ### Acceptance Criteria
-- [ ] All public methods translated to Rust
-- [ ] Python bindings expose all public methods
-- [ ] Java CLI wrapper created with all public methods
-- [ ] Rust tests pass with timeouts enabled
-- [ ] Python tests pass and match Java output
+- [ ] Lattice trait implemented in Rust with proper documentation
+- [ ] Python bindings expose Lattice trait for user implementation
+- [ ] Java wrapper created for concrete implementations (not interface)
+- [ ] Rust tests pass for trait implementations with various lattice types
+- [ ] Python tests pass for trait implementations
 - [ ] Code compiles without warnings
-- [ ] Documentation complete
+- [ ] Documentation complete with mathematical properties and examples
+- [ ] Integration with BasicLattice, SubalgebraLattice, CongruenceLattice verified
+- [ ] Mathematical properties (lattice laws) tested
+- [ ] Performance tests with large lattices
+- [ ] Object type handling works correctly in both Rust and Python
+- [ ] Trait objects support both static and dynamic dispatch
+- [ ] Examples provided for common lattice types (Boolean, divisibility, etc.)
+- [ ] **Dependencies completed**: Algebra (Task 55) and Order (Task 18) must be finished first

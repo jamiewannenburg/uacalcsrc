@@ -32,16 +32,104 @@ The following packages are **excluded** from this plan:
 **Java File:** `org/uacalc/alg/op/Operations.java`  
 **Package:** `org.uacalc.alg.op`  
 **Rust Module:** `alg::op::Operations`  
-**Dependencies:** 3 (2 non-UI/example)  
+**Dependencies:** 15 (12 non-UI/example)  
 **Estimated Public Methods:** ~76
 
 ### Description
 Translate the Java class `org.uacalc.alg.op.Operations` to Rust with Python bindings.
 
+## Java Class Analysis
+
+### Class Type
+- **Type**: Concrete utility class with static methods
+- **Purpose**: Factory class for creating and testing operations
+- **Key Features**: 
+  - 76+ public static methods for operation creation and testing
+  - Factory methods for various operation types
+  - Property testing methods (commutative, associative, etc.)
+  - Script-based operation creation using Groovy
+
 ### Dependencies
 This class depends on:
-- `org.uacalc.alg.conlat.BasicPartition`
-- `org.uacalc.util`
+- `org.uacalc.alg.conlat.BasicPartition` (Task 5)
+- `org.uacalc.util.*` (Multiple utility classes):
+  - `ArrayString` (Task 6) ✅
+  - `ArrayIncrementor` (Task 4)
+  - `SequenceGenerator` (Task 15)
+  - `PermutationGenerator` (Task 9)
+  - `Horner` (Task 3) ✅
+  - `IntArray` (Task 23)
+- `org.uacalc.alg.op.*` (Operation-related classes):
+  - `Operation` (Task 12)
+  - `OperationSymbol` (Task 1) ✅
+  - `AbstractOperation` (Task 11)
+  - `OperationWithDefaultValue` (Task 49)
+  - `SimilarityType` (Task 2)
+- `org.uacalc.ui.tm.ProgressReport` (UI class - excluded)
+- `javax.script.*` (Java Scripting API for Groovy support)
+
+## Rust Implementation Strategy
+
+### Module Structure
+- **Rust Module**: `alg::op::operations` (module with free functions)
+- **Pattern**: Static utility class → Rust module with free functions
+- **Error Handling**: Use `Result<T, String>` for methods that can fail
+- **Logging**: Use `log` crate for logging functionality
+
+### Key Implementation Decisions
+
+#### 1. Static Methods → Free Functions
+- All 76+ static methods become free functions in the module
+- Use `pub fn` for public functions
+- Group related functions in submodules if needed
+
+#### 2. Operation Creation Methods
+- `makeIntOperation()` → `make_int_operation()`
+- `makeRandomOperation()` → `make_random_operation()`
+- `makeDerivedOperation()` → `make_derived_operation()`
+- Return `Result<Box<dyn Operation>, String>` for error handling
+
+#### 3. Property Testing Methods
+- `isCommutative()` → `is_commutative()`
+- `isAssociative()` → `is_associative()`
+- `isTotallySymmetric()` → `is_totally_symmetric()`
+- `isMaltsev()` → `is_maltsev()`
+- `isIdempotent()` → `is_idempotent()`
+
+#### 4. Script-Based Operation Creation
+- `makeOperationFromScript()` → `make_operation_from_script()`
+- **Challenge**: Java uses Groovy scripting engine
+- **Solution**: Either implement a simple expression parser or skip this functionality initially
+- **Alternative**: Use a Rust scripting library like `rhai` or `mlua`
+
+#### 5. Array and Collection Handling
+- Use `Vec<T>` instead of Java arrays
+- Use `&[T]` for slice parameters
+- Use `HashMap<K, V>` for maps
+- Use `Vec<T>` for lists
+
+#### 6. Progress Reporting
+- `ProgressReport` is UI-related and excluded
+- Use Rust logging or callback functions for progress updates
+- Or implement a simple progress trait
+
+### Dependencies Implementation Order
+1. **Prerequisites** (must be completed first):
+   - Task 1: OperationSymbol ✅
+   - Task 3: Horner ✅
+   - Task 6: ArrayString ✅
+   - Task 2: SimilarityType
+   - Task 4: ArrayIncrementor
+   - Task 9: PermutationGenerator
+   - Task 11: AbstractOperation
+   - Task 12: Operation
+   - Task 15: SequenceGenerator
+   - Task 23: IntArray
+   - Task 49: OperationWithDefaultValue
+
+2. **This Task**: Operations (Task 50)
+
+3. **Dependents**: Many classes depend on Operations for operation creation and testing
 
 ### Implementation Steps
 
@@ -90,11 +178,68 @@ This class depends on:
    - Verify outputs match Java implementation exactly
    - Check test coverage for all public methods
 
-### Acceptance Criteria
-- [ ] All public methods translated to Rust
+## Critical Implementation Notes
+
+### 1. Script-Based Operation Creation
+- **Challenge**: `makeOperationFromScript()` uses Java's Groovy scripting engine
+- **Impact**: High - this is a key feature for dynamic operation creation
+- **Solutions**:
+  - Implement a simple expression parser for basic operations
+  - Use Rust scripting libraries (`rhai`, `mlua`, or `pest`)
+  - Skip initially and implement later
+  - Create a simplified version that handles common patterns
+
+### 2. Progress Reporting
+- **Challenge**: `ProgressReport` is UI-related and excluded
+- **Impact**: Medium - affects `findDifference()` method
+- **Solution**: Use Rust logging or callback functions for progress updates
+
+### 3. Array and Collection Handling
+- **Challenge**: Java uses arrays and collections extensively
+- **Impact**: High - affects all methods
+- **Solution**: Use `Vec<T>` and `&[T]` consistently, implement proper conversions
+
+### 4. Error Handling
+- **Challenge**: Java uses exceptions, Rust uses Result
+- **Impact**: High - affects all methods
+- **Solution**: Use `Result<T, String>` for methods that can fail, implement proper error propagation
+
+### 5. Static Method Organization
+- **Challenge**: 76+ static methods in one class
+- **Impact**: Medium - affects code organization
+- **Solution**: Group related methods in submodules (creation, testing, utilities)
+
+## Testing Strategy
+
+### Java Wrapper Suitability
+- **Suitable**: Yes - Operations is a concrete class with static methods
+- **Testing Approach**: Test all static methods through CLI commands
+- **Key Methods to Test**:
+  - Operation creation methods (`makeIntOperation`, `makeRandomOperation`, etc.)
+  - Property testing methods (`isCommutative`, `isAssociative`, etc.)
+  - Utility methods (`commutes`, `findDifference`, etc.)
+
+### Rust Testing Strategy
+- **Unit Tests**: Test each static method individually
+- **Integration Tests**: Test method combinations and workflows
+- **Property Tests**: Test operation properties with various inputs
+- **Performance Tests**: Test with large operations and timeouts
+
+### Python Testing Strategy
+- **API Tests**: Test all exposed methods through Python bindings
+- **Compatibility Tests**: Compare results with Java implementation
+- **Error Handling Tests**: Test error conditions and edge cases
+
+## Acceptance Criteria
+- [ ] All 76+ public static methods translated to Rust free functions
 - [ ] Python bindings expose all public methods
 - [ ] Java CLI wrapper created with all public methods
 - [ ] Rust tests pass with timeouts enabled
 - [ ] Python tests pass and match Java output
 - [ ] Code compiles without warnings
 - [ ] Documentation complete
+- [ ] All dependencies properly handled (12 non-UI dependencies)
+- [ ] Script-based operation creation implemented or properly handled
+- [ ] Progress reporting implemented or properly handled
+- [ ] Array and collection handling properly implemented
+- [ ] Error handling properly implemented with Result types

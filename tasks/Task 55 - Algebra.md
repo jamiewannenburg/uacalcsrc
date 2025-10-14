@@ -32,7 +32,7 @@ The following packages are **excluded** from this plan:
 **Java File:** `org/uacalc/alg/Algebra.java`  
 **Package:** `org.uacalc.alg`  
 **Rust Module:** `alg::Algebra`  
-**Dependencies:** 4 (3 non-UI/example)  
+**Dependencies:** 3 (2 non-UI/example)  
 **Estimated Public Methods:** ~28
 
 ### Description
@@ -40,9 +40,10 @@ Translate the Java class `org.uacalc.alg.Algebra` to Rust with Python bindings.
 
 ### Dependencies
 This class depends on:
-- `org.uacalc.alg.op.Operation`
-- `org.uacalc.alg.op.OperationSymbol`
-- `org.uacalc.alg.op.SimilarityType`
+- `org.uacalc.alg.op.Operation` (Task 12 - Operation)
+- `org.uacalc.alg.op.OperationSymbol` (Task 1 - OperationSymbol) ✅ **COMPLETED**
+- `org.uacalc.alg.op.SimilarityType` (Task 2 - SimilarityType) ✅ **COMPLETED**
+- `org.uacalc.ui.tm.ProgressReport` (UI dependency - excluded from translation)
 
 ### Implementation Steps
 
@@ -91,11 +92,112 @@ This class depends on:
    - Verify outputs match Java implementation exactly
    - Check test coverage for all public methods
 
+### Java Class Analysis
+
+**Class Type**: Interface
+**Key Characteristics**:
+- Defines the core contract for all algebras in UACalc
+- Contains 28 public methods covering universe, operations, cardinality, and metadata
+- Uses Java generics and collections extensively
+- Has static constants for cardinality types
+- Includes monitoring/progress reporting capabilities
+
+**Critical Methods**:
+- `universe()` - Returns the universe set (may be infinite)
+- `cardinality()` - Returns cardinality or negative values for unknown/infinite
+- `operations()` - Returns list of operations
+- `getOperation(OperationSymbol)` - Gets operation by symbol
+- `similarityType()` - Returns the similarity type
+- `isSimilarTo(Algebra)` - Compares similarity types
+
+### Rust Implementation Strategy
+
+**Rust Construct**: Trait
+**Design Approach**:
+- Convert Java interface to Rust trait with associated types
+- Use `Box<dyn Iterator<Item = T>>` for universe iteration (handles infinite algebras)
+- Use `Result<Option<T>, String>` for operations that may fail
+- Implement proper error handling for cardinality calculations
+- Use `Arc<Mutex<>>` for thread-safe monitoring
+
+**Key Design Decisions**:
+1. **Universe Representation**: Use `Box<dyn Iterator<Item = T>>` to handle infinite algebras
+2. **Cardinality Handling**: Use `Option<i32>` with special negative values for unknown/infinite
+3. **Operation Access**: Use `HashMap<OperationSymbol, Box<dyn Operation>>` for efficient lookup
+4. **Monitoring**: Create separate `ProgressMonitor` trait to avoid UI dependencies
+
+### Implementation Requirements
+
+**Prerequisites**:
+- Task 12 (Operation) must be completed first
+- Task 1 (OperationSymbol) is already completed ✅
+- Task 2 (SimilarityType) is already completed ✅
+
+**Core Trait Design**:
+```rust
+pub trait Algebra {
+    type UniverseItem;
+    
+    fn universe(&self) -> Box<dyn Iterator<Item = Self::UniverseItem>>;
+    fn cardinality(&self) -> Option<i32>;
+    fn input_size(&self) -> Option<i32>;
+    fn is_unary(&self) -> bool;
+    fn operations(&self) -> Vec<Box<dyn Operation>>;
+    fn get_operation(&self, sym: &OperationSymbol) -> Option<Box<dyn Operation>>;
+    fn operations_map(&self) -> HashMap<OperationSymbol, Box<dyn Operation>>;
+    fn name(&self) -> &str;
+    fn set_name(&mut self, name: String);
+    fn description(&self) -> Option<&str>;
+    fn set_description(&mut self, desc: Option<String>);
+    fn similarity_type(&self) -> &SimilarityType;
+    fn update_similarity_type(&mut self);
+    fn is_similar_to(&self, other: &dyn Algebra) -> bool;
+    fn make_operation_tables(&mut self);
+    fn constant_operations(&self) -> Vec<Box<dyn Operation>>;
+    fn is_idempotent(&self) -> bool;
+    fn is_total(&self) -> bool;
+}
+```
+
+### Java Wrapper Suitability
+
+**Suitability**: **NOT SUITABLE** for direct testing
+**Reason**: Algebra is an interface that cannot be instantiated directly
+**Alternative Strategy**: 
+- Test through concrete implementations (GeneralAlgebra, SmallAlgebra, etc.)
+- Create wrapper for GeneralAlgebra which implements Algebra
+- Focus testing on interface contract compliance
+
+### Testing Strategy
+
+**Rust Tests**:
+- Test through concrete implementations (GeneralAlgebra, SmallAlgebra)
+- Verify trait method implementations
+- Test edge cases (infinite algebras, unknown cardinality)
+- Test error conditions and validation
+
+**Python Tests**:
+- Test through concrete algebra implementations
+- Verify Python API matches Rust API
+- Test cardinality edge cases
+- Test operation lookup and management
+
+### Critical Implementation Notes
+
+1. **Infinite Algebra Support**: The interface is designed to handle infinite algebras, so iterator-based universe access is crucial
+2. **Cardinality Constants**: Implement the special negative constants for unknown/infinite cardinality
+3. **Thread Safety**: Use proper synchronization for monitoring and mutable state
+4. **Memory Management**: Handle large algebras efficiently with proper memory management
+5. **Error Handling**: Provide comprehensive error handling for all operations that can fail
+
 ### Acceptance Criteria
-- [ ] All public methods translated to Rust
-- [ ] Python bindings expose all public methods
-- [ ] Java CLI wrapper created with all public methods
+- [ ] Algebra trait defined with all 28 methods
+- [ ] Concrete implementations (GeneralAlgebra, SmallAlgebra) implement the trait
+- [ ] Python bindings expose trait through concrete implementations
+- [ ] Java CLI wrapper created for GeneralAlgebra (implements Algebra)
 - [ ] Rust tests pass with timeouts enabled
 - [ ] Python tests pass and match Java output
 - [ ] Code compiles without warnings
 - [ ] Documentation complete
+- [ ] Proper error handling for all edge cases
+- [ ] Thread-safe implementation

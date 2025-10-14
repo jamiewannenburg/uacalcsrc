@@ -32,7 +32,7 @@ The following packages are **excluded** from this plan:
 **Java File:** `org/uacalc/alg/ProductAlgebra.java`  
 **Package:** `org.uacalc.alg`  
 **Rust Module:** `alg::ProductAlgebra`  
-**Dependencies:** 8 (8 non-UI/example)  
+**Dependencies:** 12 (12 non-UI/example)  
 **Estimated Public Methods:** ~29
 
 ### Description
@@ -40,14 +40,19 @@ Translate the Java class `org.uacalc.alg.ProductAlgebra` to Rust with Python bin
 
 ### Dependencies
 This class depends on:
-- `org.uacalc.alg.SmallAlgebra.AlgebraType`
-- `org.uacalc.alg.conlat`
-- `org.uacalc.alg.op.AbstractOperation`
-- `org.uacalc.alg.op.Operation`
-- `org.uacalc.alg.op.Operations`
-- `org.uacalc.alg.sublat`
-- `org.uacalc.io.AlgebraIO`
-- `org.uacalc.util`
+- `org.uacalc.alg.SmallAlgebra.AlgebraType` - Used for algebra type identification
+- `org.uacalc.alg.conlat.CongruenceLattice` - Used in con() method
+- `org.uacalc.alg.conlat.BasicPartition` - Used in projectionKernel() method
+- `org.uacalc.alg.op.AbstractOperation` - Used in makeOperations() method
+- `org.uacalc.alg.op.Operation` - Used in makeOperations() method
+- `org.uacalc.alg.op.Operations` - Used in makeOperations() method
+- `org.uacalc.alg.sublat.SubalgebraLattice` - Used in sub() method
+- `org.uacalc.io.AlgebraIO` - Used in main() method for file I/O
+- `org.uacalc.util.Horner` - Used for horner calculations
+- `org.uacalc.util.IntArray` - Used for element representation
+- `org.uacalc.util.ArrayString` - Used in debug output (commented out)
+- `java.util.*` - Standard Java collections
+- `java.math.BigInteger` - Used in calcCard() method
 
 ### Implementation Steps
 
@@ -96,6 +101,60 @@ This class depends on:
    - Verify outputs match Java implementation exactly
    - Check test coverage for all public methods
 
+### Rust Implementation Recommendations
+
+#### Class Analysis
+- **Java Class Type**: Concrete class extending `GeneralAlgebra` and implementing `SmallAlgebra`
+- **Rust Construct**: Should be a struct implementing appropriate traits
+- **Key Features**: 
+  - Direct product of `SmallAlgebra` instances
+  - Complex operation construction using `AbstractOperation`
+  - Cartesian product universe generation
+  - Horner-based indexing system
+
+#### Struct Design
+```rust
+pub struct ProductAlgebra {
+    pub algebras: Vec<Box<dyn SmallAlgebra>>,
+    pub sizes: Vec<usize>,
+    pub number_of_products: usize,
+    pub size: usize,
+    pub universe: Vec<IntArray>,
+    pub operations: Vec<Box<dyn Operation>>,
+    pub con: Option<CongruenceLattice>,
+    pub sub: Option<SubalgebraLattice>,
+}
+```
+
+#### Method Translation Patterns
+- **Constructors**: `new(name: String, algs: Vec<Box<dyn SmallAlgebra>>) -> Self`
+- **Operation Methods**: `make_operations()`, `make_operation_tables()`
+- **Accessor Methods**: `factors()`, `parents()`, `projection(k: usize)`
+- **Utility Methods**: `element_index(obj: &dyn Any) -> Result<usize, String>`
+- **Static Methods**: `calc_card(sizes: &[usize]) -> Result<usize, String>`
+
+#### Key Implementation Challenges
+1. **Generic Operations**: The `makeOperations()` method creates `AbstractOperation` instances with complex `valueAt()` implementations
+2. **Cartesian Product**: The `makeCartesianProduct()` method creates a complex `AbstractSet` with custom iterator
+3. **Horner Calculations**: Heavy use of `Horner.horner()` and `Horner.hornerInv()` for indexing
+4. **Lazy Initialization**: `con()` and `sub()` methods use lazy initialization patterns
+
+#### Python Bindings Strategy
+- Export as `ProductAlgebra` class with all public methods
+- Handle `Vec<Box<dyn SmallAlgebra>>` through trait objects
+- Implement proper error handling for `Result` types
+- Provide convenient constructors for common use cases
+
+#### Java Wrapper Suitability
+- **Suitable**: Yes - concrete class with public methods
+- **Testing Strategy**: Test all public methods with various algebra combinations
+- **Key Test Cases**: 
+  - Construction with different algebra lists
+  - Operation table generation
+  - Element indexing and retrieval
+  - Projection operations
+  - Cardinality calculations
+
 ### Acceptance Criteria
 - [ ] All public methods translated to Rust
 - [ ] Python bindings expose all public methods
@@ -104,3 +163,7 @@ This class depends on:
 - [ ] Python tests pass and match Java output
 - [ ] Code compiles without warnings
 - [ ] Documentation complete
+- [ ] Horner calculations implemented correctly
+- [ ] Cartesian product iterator works properly
+- [ ] Operation construction handles all arities
+- [ ] Lazy initialization patterns implemented

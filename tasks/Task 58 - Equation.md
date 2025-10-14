@@ -33,16 +33,17 @@ The following packages are **excluded** from this plan:
 **Package:** `org.uacalc.eq`  
 **Rust Module:** `eq::Equation`  
 **Dependencies:** 4 (3 non-UI/example)  
-**Estimated Public Methods:** ~11
+**Estimated Public Methods:** 8
 
 ### Description
 Translate the Java class `org.uacalc.eq.Equation` to Rust with Python bindings.
 
 ### Dependencies
 This class depends on:
-- `org.uacalc.alg`
-- `org.uacalc.alg.op`
-- `org.uacalc.terms`
+- `org.uacalc.alg` - Uses `SmallAlgebra` class
+- `org.uacalc.alg.op` - Uses `Operation`, `OperationSymbol`, `Operations` classes
+- `org.uacalc.terms` - Uses `Term`, `Variable` classes
+- `org.uacalc.ui.tm` - Uses `ProgressReport` class (UI dependency, but needed for core functionality)
 
 ### Implementation Steps
 
@@ -91,6 +92,63 @@ This class depends on:
    - Verify outputs match Java implementation exactly
    - Check test coverage for all public methods
 
+### Implementation Recommendations
+
+#### Java Class Analysis
+- **Class Type**: Concrete class with immutable fields
+- **Key Fields**: `leftSide: Term`, `rightSide: Term`, `varList: Option<List<Variable>>`
+- **Public Methods**: 8 methods total
+  - Constructors: `new(left: Term, right: Term)`, `new(left: Term, right: Term, vars: List<Variable>)`
+  - Getters: `leftSide()`, `rightSide()`, `getVariableList()`, `getOperationSymbols()`
+  - Core functionality: `findFailure(alg: SmallAlgebra)`, `findFailure(alg: SmallAlgebra, report: Option<ProgressReport>)`, `findFailureMap(alg: SmallAlgebra)`, `findFailureMap(alg: SmallAlgebra, report: Option<ProgressReport>)`
+  - Utility: `toString()`
+
+#### Rust Translation Strategy
+- **Rust Construct**: `struct` (not trait or enum)
+- **Field Design**: 
+  - `left_side: Term` (immutable)
+  - `right_side: Term` (immutable) 
+  - `var_list: Option<Vec<Variable>>` (lazy-computed, cached)
+- **Method Organization**: All methods as struct methods (no trait needed)
+- **Error Handling**: Use `Result<T, String>` for methods that can fail
+- **Null Handling**: Use `Option<T>` instead of null returns
+
+#### Key Implementation Details
+1. **Lazy Variable List**: Implement `getVariableList()` with lazy computation and caching
+2. **Operation Symbol Collection**: Use `HashSet<OperationSymbol>` for `getOperationSymbols()`
+3. **Failure Detection**: Implement `findFailure()` methods that return `Option<Vec<i32>>` instead of `int[]`
+4. **Failure Map**: Implement `findFailureMap()` that returns `Option<HashMap<Variable, i32>>`
+5. **Progress Reporting**: Handle optional `ProgressReport` parameter in failure detection methods
+6. **String Representation**: Implement `Display` trait for `toString()` functionality
+
+#### Dependencies Required
+- `Term` and `Variable` from `terms` module
+- `SmallAlgebra` from `alg` module  
+- `Operation`, `OperationSymbol`, `Operations` from `alg::op` module
+- `ProgressReport` from `progress` module (or create minimal version)
+
+#### Java Wrapper Suitability
+- **Suitable**: Yes - concrete class with public constructors and methods
+- **Testing Strategy**: Create wrapper with methods to test all public functionality
+- **Key Test Cases**: 
+  - Constructor with 2 and 3 parameters
+  - Getter methods (leftSide, rightSide, getVariableList, getOperationSymbols)
+  - findFailure methods with various algebra inputs
+  - findFailureMap methods
+  - toString method
+
+#### Python Bindings Strategy
+- **Export as**: `Equation` class (clean name, no Py prefix)
+- **Constructor**: Support both 2-parameter and 3-parameter constructors
+- **Error Handling**: Use `PyValueError` for validation errors
+- **Return Types**: Convert `Option<T>` to Python `None`/value, `HashMap` to Python `dict`
+
+#### Testing Strategy
+- **Rust Tests**: Unit tests for all methods, integration tests with mock algebras
+- **Python Tests**: Test all methods through Python bindings
+- **Java Wrapper Tests**: Compare results against Java implementation
+- **Edge Cases**: Test with empty variable lists, null/None values, various algebra sizes
+
 ### Acceptance Criteria
 - [ ] All public methods translated to Rust
 - [ ] Python bindings expose all public methods
@@ -99,3 +157,6 @@ This class depends on:
 - [ ] Python tests pass and match Java output
 - [ ] Code compiles without warnings
 - [ ] Documentation complete
+- [ ] Lazy variable list computation implemented
+- [ ] Progress reporting support added
+- [ ] Error handling matches Java behavior exactly

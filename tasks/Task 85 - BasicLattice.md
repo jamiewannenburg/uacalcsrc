@@ -1,33 +1,4 @@
-# UACalc Rust/Python Translation Plan
-
-## Overview
-
-This plan contains the ordered list of translation tasks for converting the UACalc Java library to Rust with Python bindings. Tasks are ordered by dependency count to ensure foundational classes are translated before dependent classes.
-
-## Translation Strategy
-
-### Approach
-- Direct Java-to-Rust translation maintaining exact semantics
-- Use Rust idioms where appropriate (traits for interfaces, Result/Option, etc.)
-- All public methods must be translated and tested
-- Output must match Java implementation exactly
-
-### Testing Strategy
-- Rust tests for all public methods with timeouts
-- Python binding tests comparing against Java
-- Java CLI wrappers for ground truth comparison
-- Global memory limit configurable from Python
-
-### ExcluRded Packages
-The following packages are **excluded** from this plan:
-- `org.uacalc.ui.*` - UI components (not needed for core library)
-- `org.uacalc.nbui.*` - NetBeans UI components
-- `org.uacalc.example.*` - Example/demo classes (NOTE: To be implemented later)
-
-
-## Translation Tasks
-
-## Task 85: Translate `BasicLattice`
+# Task 85: Translate `BasicLattice`
 
 **Java File:** `org/uacalc/lat/BasicLattice.java`  
 **Package:** `org.uacalc.lat`  
@@ -35,69 +6,115 @@ The following packages are **excluded** from this plan:
 **Dependencies:** 11 (11 non-UI/example)  
 **Estimated Public Methods:** ~54
 
-### Description
-Translate the Java class `org.uacalc.lat.BasicLattice` to Rust with Python bindings.
+## Analysis Summary
 
-### Dependencies
-This class depends on:
-- `org.uacalc.alg`
-- `org.uacalc.alg.SmallAlgebra.AlgebraType`
-- `org.uacalc.alg.conlat`
-- `org.uacalc.alg.op.AbstractOperation`
-- `org.uacalc.alg.op.Operation`
-- `org.uacalc.alg.op.OperationSymbol`
-- `org.uacalc.alg.sublat`
-- `org.uacalc.io`
-- `org.uacalc.lat`
-- `org.uacalc.ui`
-- ... and 1 more
+### Java Class Analysis
+- **Type**: Concrete class extending `GeneralAlgebra` and implementing `SmallAlgebra` and `Lattice` interfaces
+- **Purpose**: Represents a basic lattice structure with join/meet operations, primarily used for drawing and visualization
+- **Key Features**: 
+  - Wraps a `latdraw.orderedset.OrderedSet` (external dependency)
+  - Implements lattice operations (join, meet, leq)
+  - Provides diagram generation capabilities
+  - Supports TCT (Type Classification Theory) labeling for congruence lattices
 
-### Implementation Steps
+### Dependencies Analysis
+**Correctly Listed Dependencies:**
+- `org.uacalc.alg` - GeneralAlgebra, SmallAlgebra
+- `org.uacalc.alg.SmallAlgebra.AlgebraType` - Enum for algebra types
+- `org.uacalc.alg.conlat` - CongruenceLattice
+- `org.uacalc.alg.op.AbstractOperation` - Abstract operation implementation
+- `org.uacalc.alg.op.Operation` - Operation interface
+- `org.uacalc.alg.op.OperationSymbol` - Operation symbol constants
+- `org.uacalc.alg.sublat` - SubalgebraLattice
+- `org.uacalc.io` - I/O utilities
+- `org.uacalc.lat` - Lattice interface
+- `org.uacalc.ui` - UI components (for diagram display)
 
-1. **Analyze Java Implementation**
-   - Read and understand the Java source code
-   - Identify all public methods and their signatures
-   - Note any special patterns (interfaces, abstract classes, etc.)
-   - Identify dependencies on other UACalc classes
+**Missing Dependencies:**
+- `org.uacalc.util` - Utility classes (SimpleList)
+- `org.latdraw.orderedset.*` - External latdraw library for ordered sets and diagrams
+- `org.latdraw.diagram.*` - External latdraw library for diagram generation
 
-2. **Design Rust Translation**
-   - Determine if Java interfaces should become Rust traits
-   - Design struct/enum representations matching Java semantics
-   - Plan for Rust idioms (Option instead of null, Result for errors, etc.)
-   - Ensure all public methods are translated
+### Usage Pattern Analysis
+**Primary Usage Patterns:**
+1. **Factory Creation**: Created from `Lattices.latticeFromMeet()`, `Lattices.latticeFromJoin()`, `Lattices.dual()`
+2. **Wrapper Creation**: Used as a wrapper for `CongruenceLattice` and `SubalgebraLattice` via `getBasicLattice()`
+3. **Diagram Generation**: Used for lattice visualization and drawing
+4. **TCT Analysis**: Special constructor for TCT-labeled congruence lattices
 
-3. **Implement Rust Code**
-   - Create Rust module structure
-   - Implement all public methods
-   - Add comprehensive documentation
-   - Follow Rust naming conventions (snake_case)
+### Rust Implementation Recommendations
 
-4. **Create Python Bindings (PyO3)**
-   - Expose all public methods to Python
-   - Use appropriate PyO3 types (PyResult, etc.)
-   - Add Python docstrings
+#### 1. Struct Design
+```rust
+pub struct BasicLattice {
+    name: String,
+    poset: Box<dyn OrderedSet>, // External dependency - may need trait abstraction
+    univ_list: Vec<POElem>,     // External dependency
+    univ_hs: Option<HashSet<POElem>>,
+    join_operation: Box<dyn Operation>,
+    meet_operation: Box<dyn Operation>,
+    join_irreducibles: Option<Vec<POElem>>,
+    meet_irreducibles: Option<Vec<POElem>>,
+    tct_type_map: Option<HashMap<Edge, String>>,
+    diagram: Option<Box<dyn Diagram>>, // External dependency
+}
+```
 
-5. **Create Java CLI Wrapper**
-   - Create wrapper in `java_wrapper/src/` matching package structure
-   - Implement `main` method accepting command-line arguments
-   - Expose all public methods through CLI commands
-   - Output results in JSON/text format for comparison
+#### 2. Trait Implementations
+- **SmallAlgebra**: Implement all required methods
+- **Lattice**: Implement join, meet, leq operations
+- **GeneralAlgebra**: Inherit from base algebra functionality
 
-6. **Write Rust Tests**
-   - Test all public methods
-   - Add tests with timeouts (slightly longer than Java completion times)
-   - Test edge cases and error conditions
-   - Compare results against Java CLI wrapper output
+#### 3. Key Implementation Challenges
+1. **External Dependencies**: `latdraw` library integration (may need FFI or reimplementation)
+2. **POElem Type**: External type from latdraw - needs abstraction
+3. **Diagram Generation**: Complex visualization logic
+4. **TCT Integration**: Specialized congruence lattice labeling
 
-7. **Write Python Tests**
-   - Test all public methods through Python bindings
-   - Compare results against Java CLI wrapper output
-   - Verify Python API matches Rust API
+#### 4. Method Organization
+- **Constructor Methods**: `new_from_poset()`, `new_from_lattice()`, `new_from_congruence_lattice()`
+- **Lattice Operations**: `join()`, `meet()`, `leq()`, `atoms()`, `coatoms()`
+- **Irreducible Elements**: `join_irreducibles()`, `meet_irreducibles()`
+- **Diagram Methods**: `get_diagram()`, `get_vertices()`
+- **Utility Methods**: `cardinality()`, `universe()`, `dual()`
 
-8. **Verification**
-   - Run all tests and ensure they pass
-   - Verify outputs match Java implementation exactly
-   - Check test coverage for all public methods
+### Java Wrapper Suitability
+**Suitable for Testing**: Yes
+- Concrete class with well-defined public interface
+- All methods are testable through CLI
+- No complex UI dependencies in core functionality
+- Can be instantiated with test data
+
+### Testing Strategy
+1. **Unit Tests**: Test all lattice operations with small test cases
+2. **Integration Tests**: Test with real lattice data from UACalc examples
+3. **Java Comparison**: Compare against Java CLI wrapper for complex operations
+4. **Performance Tests**: Test with larger lattices to ensure scalability
+
+### Implementation Priority
+**High Priority** - This class is:
+- Used extensively throughout the codebase
+- Required for diagram generation and visualization
+- A core component of the lattice theory functionality
+- Dependencies are mostly available or can be stubbed
+
+### Critical Dependencies Status
+- ✅ `OperationSymbol` - Implemented
+- ❌ `Operation` - Not implemented (placeholder exists)
+- ❌ `AbstractOperation` - Not implemented (placeholder exists)
+- ❌ `GeneralAlgebra` - Not implemented (placeholder exists)
+- ❌ `SmallAlgebra` - Not implemented (placeholder exists)
+- ❌ `Lattice` - Not implemented (placeholder exists)
+- ❌ `CongruenceLattice` - Not implemented
+- ❌ `SubalgebraLattice` - Not implemented
+- ❌ External `latdraw` library - Not available
+
+### Recommendations
+1. **Implement Core Traits First**: `Lattice`, `SmallAlgebra`, `GeneralAlgebra` traits
+2. **Stub External Dependencies**: Create trait abstractions for latdraw functionality
+3. **Focus on Core Logic**: Implement lattice operations without diagram generation initially
+4. **Incremental Testing**: Start with simple test cases and build up complexity
+5. **Consider Alternative Libraries**: Research Rust alternatives to latdraw for diagram generation
 
 ### Acceptance Criteria
 - [ ] All public methods translated to Rust
@@ -107,20 +124,6 @@ This class depends on:
 - [ ] Python tests pass and match Java output
 - [ ] Code compiles without warnings
 - [ ] Documentation complete
-
----
-
-## Summary
-
-- **Total Tasks**: 85
-- **0 Dependencies**: 17 classes
-- **1-2 Dependencies**: 27 classes
-- **3-5 Dependencies**: 17 classes
-- **6+ Dependencies**: 24 classes
-
-## Notes
-
-- Each task includes analysis, implementation, testing, and verification phases
-- All tasks are designed to be LLM-executable with clear acceptance criteria
-- Tasks are ordered by dependency count to ensure dependencies are available when needed
-- Java CLI wrappers provide ground truth for comparison testing
+- [ ] External dependencies properly abstracted
+- [ ] Lattice operations work correctly
+- [ ] Diagram generation functional (or stubbed appropriately)
