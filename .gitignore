@@ -22,3 +22,8 @@ dist/
 tools/callgraph/
 call_graph_analysis/
 dependency_analysis/
+
+
+# Added by cargo
+
+/target
