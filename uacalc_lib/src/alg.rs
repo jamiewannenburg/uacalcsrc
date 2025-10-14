@@ -1,5 +1,6 @@
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
+use pyo3::types::{PyList, PyListMethods};
 use uacalc::alg::*;
 use uacalc::alg::conlat::{BinaryRelation, MutableBinaryRelation};
 use uacalc::util::IntArrayTrait;
@@ -1119,13 +1120,15 @@ impl PyIntOperation {
     /// Args:
     ///     symbol (OperationSymbol): The operation symbol
     ///     set_size (int): The size of the set on which the operation is defined
-    ///     table (List[int]): The precomputed table of operation results
+    ///     table (List[int] or numpy.ndarray): The precomputed table of operation results
     /// 
     /// Raises:
     ///     ValueError: If parameters are invalid
     #[new]
-    fn new(symbol: &PyOperationSymbol, set_size: i32, table: Vec<i32>) -> PyResult<Self> {
-        match IntOperation::new(symbol.inner.clone(), set_size, table) {
+    fn new(symbol: &PyOperationSymbol, set_size: i32, table: &PyAny) -> PyResult<Self> {
+        // Try to convert table to Vec<i32> - handles both lists and numpy arrays
+        let table_vec: Vec<i32> = table.extract()?;
+        match IntOperation::new(symbol.inner.clone(), set_size, table_vec) {
             Ok(inner) => Ok(PyIntOperation { inner }),
             Err(e) => Err(PyValueError::new_err(e)),
         }
@@ -1205,6 +1208,229 @@ impl PyIntOperation {
             Ok(inner) => Ok(PyIntOperation { inner }),
             Err(e) => Err(PyValueError::new_err(e)),
         }
+    }
+    
+    /// Create an IntOperation from a Python function (int_value_at style).
+    /// 
+    /// Args:
+    ///     name (str): The name of the operation
+    ///     arity (int): The arity (number of arguments) of the operation
+    ///     set_size (int): The size of the set on which the operation is defined
+    ///     int_value_at_fn (callable): A Python function that takes a list of integers and returns an integer
+    /// 
+    /// Returns:
+    ///     IntOperation: A new IntOperation that uses the provided function
+    /// 
+    /// Example:
+    ///     def my_op(args):
+    ///         return (args[0] + args[1]) % 3
+    ///     op = IntOperation.from_int_value_at("add_mod3", 2, 3, my_op)
+    #[staticmethod]
+    fn from_int_value_at(name: &str, arity: i32, set_size: i32, int_value_at_fn: PyObject) -> PyResult<Self> {
+        Python::with_gil(|py| {
+            // Create the operation table by evaluating the function for all possible inputs
+            let symbol = match uacalc::alg::op::OperationSymbol::new_safe(name, arity, false) {
+                Ok(sym) => sym,
+                Err(e) => return Err(PyValueError::new_err(e)),
+            };
+            
+            let table_size = if arity == 0 { 1 } else { (set_size as usize).pow(arity as u32) };
+            let mut table = Vec::with_capacity(table_size);
+            
+            // Generate all possible argument combinations and evaluate the function
+            fn generate_args(arity: i32, set_size: i32, current: &mut Vec<i32>, all_args: &mut Vec<Vec<i32>>) {
+                if current.len() == arity as usize {
+                    all_args.push(current.clone());
+                    return;
+                }
+                for i in 0..set_size {
+                    current.push(i);
+                    generate_args(arity, set_size, current, all_args);
+                    current.pop();
+                }
+            }
+            
+            let mut all_args = Vec::new();
+            if arity == 0 {
+                all_args.push(Vec::new());
+            } else {
+                generate_args(arity, set_size, &mut Vec::new(), &mut all_args);
+            }
+            
+            // Evaluate function for each argument combination
+            for args in all_args {
+                let py_args = PyList::new_bound(py, &args);
+                let result = int_value_at_fn.call1(py, (py_args,))?;
+                let result_int: i32 = result.extract(py)?;
+                
+                // Validate result is in range
+                if result_int < 0 || result_int >= set_size {
+                    return Err(PyValueError::new_err(format!(
+                        "Function returned {} which is out of range [0, {})", 
+                        result_int, set_size
+                    )));
+                }
+                
+                table.push(result_int);
+            }
+            
+            // Create IntOperation with computed table
+            match IntOperation::new(symbol, set_size, table) {
+                Ok(inner) => Ok(PyIntOperation { inner }),
+                Err(e) => Err(PyValueError::new_err(e)),
+            }
+        })
+    }
+    
+    /// Create an IntOperation from a Python function (value_at style for non-integer universes).
+    /// 
+    /// Args:
+    ///     name (str): The name of the operation
+    ///     arity (int): The arity (number of arguments) of the operation
+    ///     universe (list): The universe elements (e.g., ["a", "b", "c"])
+    ///     value_at_fn (callable): A Python function that takes a list of universe elements and returns a universe element
+    /// 
+    /// Returns:
+    ///     IntOperation: A new IntOperation that uses the provided function (with integer indices)
+    /// 
+    /// Example:
+    ///     def string_concat(args):
+    ///         return args[0] + args[1]
+    ///     op = IntOperation.from_value_at("concat", 2, ["a", "b", "c"], string_concat)
+    #[staticmethod]
+    fn from_value_at(name: &str, arity: i32, universe: Vec<PyObject>, value_at_fn: PyObject) -> PyResult<Self> {
+        Python::with_gil(|py| {
+            let set_size = universe.len() as i32;
+            
+            // Create the operation table by evaluating the function for all possible inputs
+            let symbol = match uacalc::alg::op::OperationSymbol::new_safe(name, arity, false) {
+                Ok(sym) => sym,
+                Err(e) => return Err(PyValueError::new_err(e)),
+            };
+            
+            let table_size = if arity == 0 { 1 } else { (set_size as usize).pow(arity as u32) };
+            let mut table = Vec::with_capacity(table_size);
+            
+            // Generate all possible argument combinations and evaluate the function
+            fn generate_indices(arity: i32, set_size: i32, current: &mut Vec<i32>, all_indices: &mut Vec<Vec<i32>>) {
+                if current.len() == arity as usize {
+                    all_indices.push(current.clone());
+                    return;
+                }
+                for i in 0..set_size {
+                    current.push(i);
+                    generate_indices(arity, set_size, current, all_indices);
+                    current.pop();
+                }
+            }
+            
+            let mut all_indices = Vec::new();
+            if arity == 0 {
+                all_indices.push(Vec::new());
+            } else {
+                generate_indices(arity, set_size, &mut Vec::new(), &mut all_indices);
+            }
+            
+            // Evaluate function for each argument combination
+            for indices in all_indices {
+                // Convert indices to universe elements
+                let mut universe_args = Vec::new();
+                for &idx in &indices {
+                    if idx < 0 || idx >= set_size {
+                        return Err(PyValueError::new_err("Index out of universe bounds"));
+                    }
+                    universe_args.push(universe[idx as usize].clone());
+                }
+                
+                let py_args = PyList::new_bound(py, &universe_args);
+                let result = value_at_fn.call1(py, (py_args,))?;
+                
+                // Find the index of the result in the universe
+                let mut result_index = None;
+                for (i, universe_elem) in universe.iter().enumerate() {
+                    if result.bind(py).eq(universe_elem)? {
+                        result_index = Some(i as i32);
+                        break;
+                    }
+                }
+                
+                match result_index {
+                    Some(idx) => table.push(idx),
+                    None => return Err(PyValueError::new_err(
+                        "Function returned a value not in the universe"
+                    )),
+                }
+            }
+            
+            // Create IntOperation with computed table
+            match IntOperation::new(symbol, set_size, table) {
+                Ok(inner) => Ok(PyIntOperation { inner }),
+                Err(e) => Err(PyValueError::new_err(e)),
+            }
+        })
+    }
+    
+    /// Create an IntOperation from a 2D array/matrix (for binary operations).
+    /// 
+    /// Args:
+    ///     name (str): The name of the operation
+    ///     operation_matrix (List[List[int]] or 2D numpy.ndarray): A 2D array where entry [i][j] gives the result of operation(i, j)
+    /// 
+    /// Returns:
+    ///     IntOperation: A new IntOperation based on the matrix
+    /// 
+    /// Example:
+    ///     # XOR operation matrix
+    ///     matrix = [[0, 1], [1, 0]]
+    ///     op = IntOperation.from_matrix("xor", matrix)
+    #[staticmethod]
+    fn from_matrix(name: &str, operation_matrix: &PyAny) -> PyResult<Self> {
+        Python::with_gil(|py| {
+            // Extract the 2D matrix
+            let matrix: Vec<Vec<i32>> = operation_matrix.extract()?;
+            
+            if matrix.is_empty() {
+                return Err(PyValueError::new_err("Operation matrix cannot be empty"));
+            }
+            
+            let set_size = matrix.len() as i32;
+            
+            // Validate matrix is square and all rows have the same length
+            for (i, row) in matrix.iter().enumerate() {
+                if row.len() != set_size as usize {
+                    return Err(PyValueError::new_err(format!(
+                        "Row {} has length {} but expected {} (matrix must be square)",
+                        i, row.len(), set_size
+                    )));
+                }
+                
+                // Validate all values are in range
+                for (j, &value) in row.iter().enumerate() {
+                    if value < 0 || value >= set_size {
+                        return Err(PyValueError::new_err(format!(
+                            "Value {} at position [{}, {}] is out of range [0, {})",
+                            value, i, j, set_size
+                        )));
+                    }
+                }
+            }
+            
+            // Convert matrix to flat table (row-major order for binary operations)
+            let mut table = Vec::with_capacity((set_size * set_size) as usize);
+            for row in &matrix {
+                table.extend_from_slice(row);
+            }
+            
+            let symbol = match uacalc::alg::op::OperationSymbol::new_safe(name, 2, false) {
+                Ok(sym) => sym,
+                Err(e) => return Err(PyValueError::new_err(e)),
+            };
+            
+            match IntOperation::new(symbol, set_size, table) {
+                Ok(inner) => Ok(PyIntOperation { inner }),
+                Err(e) => Err(PyValueError::new_err(e)),
+            }
+        })
     }
     
     // Include all the same methods as PyAbstractOperation
@@ -1701,6 +1927,583 @@ impl PySubtrace {
     }
 }
 
+// New abstract operation classes that can be instantiated from Python
+#[derive(Debug, Clone)]
+enum IntOperationEvaluationMode {
+    Function(PyObject),
+    Table(Vec<i32>),
+}
+
+/// Python wrapper for the new AbstractIntOperation class (function/table-based)
+#[pyclass]
+pub struct PyAbstractIntOperationNew {
+    symbol: uacalc::alg::op::OperationSymbol,
+    set_size: i32,
+    evaluation_mode: IntOperationEvaluationMode,
+}
+
+#[pymethods]
+impl PyAbstractIntOperationNew {
+    /// Create an AbstractIntOperation from a Python function.
+    #[staticmethod]
+    fn from_int_value_at_function(name: &str, arity: i32, set_size: i32, int_value_at_fn: PyObject) -> PyResult<Self> {
+        let symbol = match uacalc::alg::op::OperationSymbol::new_safe(name, arity, false) {
+            Ok(sym) => sym,
+            Err(e) => return Err(PyValueError::new_err(e)),
+        };
+        
+        if set_size <= 0 {
+            return Err(PyValueError::new_err("Set size must be positive"));
+        }
+        
+        Ok(PyAbstractIntOperationNew {
+            symbol,
+            set_size,
+            evaluation_mode: IntOperationEvaluationMode::Function(int_value_at_fn),
+        })
+    }
+    
+    /// Create an AbstractIntOperation from a pre-computed table.
+    #[staticmethod]
+    fn from_table(name: &str, arity: i32, set_size: i32, table: &PyAny) -> PyResult<Self> {
+        let symbol = match uacalc::alg::op::OperationSymbol::new_safe(name, arity, false) {
+            Ok(sym) => sym,
+            Err(e) => return Err(PyValueError::new_err(e)),
+        };
+        
+        if set_size <= 0 {
+            return Err(PyValueError::new_err("Set size must be positive"));
+        }
+        
+        let table_vec: Vec<i32> = table.extract()?;
+        let expected_size = if arity == 0 { 1 } else { (set_size as usize).pow(arity as u32) };
+        
+        if table_vec.len() != expected_size {
+            return Err(PyValueError::new_err(format!(
+                "Table size {} doesn't match expected size {} for arity {} and set size {}",
+                table_vec.len(), expected_size, arity, set_size
+            )));
+        }
+        
+        for (i, &value) in table_vec.iter().enumerate() {
+            if value < 0 || value >= set_size {
+                return Err(PyValueError::new_err(format!(
+                    "Table value {} at index {} is out of range [0, {})",
+                    value, i, set_size
+                )));
+            }
+        }
+        
+        Ok(PyAbstractIntOperationNew {
+            symbol,
+            set_size,
+            evaluation_mode: IntOperationEvaluationMode::Table(table_vec),
+        })
+    }
+    
+    fn arity(&self) -> i32 { self.symbol.arity() }
+    fn get_set_size(&self) -> i32 { self.set_size }
+    fn symbol(&self) -> PyOperationSymbol { PyOperationSymbol { inner: self.symbol.clone() } }
+    
+    fn int_value_at(&self, args: Vec<i32>) -> PyResult<i32> {
+        if args.len() != self.arity() as usize {
+            return Err(PyValueError::new_err(format!("Expected {} arguments, got {}", self.arity(), args.len())));
+        }
+        
+        for &arg in &args {
+            if arg < 0 || arg >= self.set_size {
+                return Err(PyValueError::new_err(format!("Argument {} is out of bounds [0, {})", arg, self.set_size)));
+            }
+        }
+        
+        match &self.evaluation_mode {
+            IntOperationEvaluationMode::Function(func) => {
+                Python::with_gil(|py| {
+                    let py_args = PyList::new_bound(py, &args);
+                    let result = func.call1(py, (py_args,))?;
+                    let result_int: i32 = result.extract(py)?;
+                    
+                    if result_int < 0 || result_int >= self.set_size {
+                        return Err(PyValueError::new_err(format!(
+                            "Function returned {} which is out of range [0, {})", result_int, self.set_size
+                        )));
+                    }
+                    
+                    Ok(result_int)
+                })
+            }
+            IntOperationEvaluationMode::Table(table) => {
+                let index = self.horner_encode(&args);
+                Ok(table[index as usize])
+            }
+        }
+    }
+    
+    fn make_table(&mut self) -> PyResult<()> {
+        // Clone the function to avoid borrowing issues
+        let func_clone = match &self.evaluation_mode {
+            IntOperationEvaluationMode::Table(_) => return Ok(()),
+            IntOperationEvaluationMode::Function(func) => func.clone(),
+        };
+        
+        Python::with_gil(|py| {
+            let arity = self.arity();
+            let set_size = self.set_size;
+            let table_size = if arity == 0 { 1 } else { (set_size as usize).pow(arity as u32) };
+            let mut table = Vec::with_capacity(table_size);
+            
+            let mut all_args = Vec::new();
+            if arity == 0 {
+                all_args.push(Vec::new());
+            } else {
+                PyAbstractIntOperationNew::generate_args_static(arity, set_size, &mut Vec::new(), &mut all_args);
+            }
+            
+            for args in all_args {
+                let py_args = PyList::new_bound(py, &args);
+                let result = func_clone.call1(py, (py_args,))?;
+                let result_int: i32 = result.extract(py)?;
+                
+                if result_int < 0 || result_int >= set_size {
+                    return Err(PyValueError::new_err(format!(
+                        "Function returned {} which is out of range [0, {})", result_int, set_size
+                    )));
+                }
+                
+                table.push(result_int);
+            }
+            
+            self.evaluation_mode = IntOperationEvaluationMode::Table(table);
+            Ok(())
+        })
+    }
+    
+    fn get_table(&self) -> Option<Vec<i32>> {
+        match &self.evaluation_mode {
+            IntOperationEvaluationMode::Table(table) => Some(table.clone()),
+            IntOperationEvaluationMode::Function(_) => None,
+        }
+    }
+    
+    fn is_table_based(&self) -> bool {
+        matches!(self.evaluation_mode, IntOperationEvaluationMode::Table(_))
+    }
+    
+    fn is_idempotent(&self) -> PyResult<bool> {
+        let arity = self.arity();
+        for x in 0..self.set_size {
+            let args = vec![x; arity as usize];
+            if self.int_value_at(args)? != x {
+                return Ok(false);
+            }
+        }
+        Ok(true)
+    }
+    
+    fn is_associative(&self) -> PyResult<bool> {
+        if self.arity() != 2 { return Ok(false); }
+        
+        for x in 0..self.set_size {
+            for y in 0..self.set_size {
+                for z in 0..self.set_size {
+                    let xy = self.int_value_at(vec![x, y])?;
+                    let yz = self.int_value_at(vec![y, z])?;
+                    let left = self.int_value_at(vec![xy, z])?;
+                    let right = self.int_value_at(vec![x, yz])?;
+                    
+                    if left != right { return Ok(false); }
+                }
+            }
+        }
+        Ok(true)
+    }
+    
+    fn is_commutative(&self) -> PyResult<bool> {
+        if self.arity() != 2 { return Ok(false); }
+        
+        for x in 0..self.set_size {
+            for y in 0..self.set_size {
+                let xy = self.int_value_at(vec![x, y])?;
+                let yx = self.int_value_at(vec![y, x])?;
+                if xy != yx { return Ok(false); }
+            }
+        }
+        Ok(true)
+    }
+    
+    fn is_totally_symmetric(&self) -> PyResult<bool> {
+        let arity = self.arity() as usize;
+        if arity <= 1 { return Ok(true); }
+        
+        if arity >= 2 {
+            let mut all_args = Vec::new();
+            self.generate_args_recursive(self.arity(), &mut Vec::new(), &mut all_args);
+            
+            for args in all_args {
+                let original = self.int_value_at(args.clone())?;
+                let mut swapped = args;
+                swapped.swap(0, 1);
+                let swapped_result = self.int_value_at(swapped)?;
+                
+                if original != swapped_result { return Ok(false); }
+            }
+        }
+        
+        Ok(true)
+    }
+    
+    fn is_maltsev(&self) -> PyResult<bool> {
+        if self.arity() != 3 { return Ok(false); }
+        
+        for x in 0..self.set_size {
+            for y in 0..self.set_size {
+                let xyy = self.int_value_at(vec![x, y, y])?;
+                let xxy = self.int_value_at(vec![x, x, y])?;
+                
+                if xyy != x || xxy != y { return Ok(false); }
+            }
+        }
+        Ok(true)
+    }
+    
+    fn is_total(&self) -> PyResult<bool> { Ok(true) }
+    
+    fn __str__(&self) -> String {
+        format!("AbstractIntOperation({}, arity={}, set_size={}, table_based={})", 
+                self.symbol.name(), self.arity(), self.set_size, self.is_table_based())
+    }
+    
+    fn __repr__(&self) -> String {
+        format!("AbstractIntOperation(name='{}', arity={}, set_size={}, table_based={})", 
+                self.symbol.name(), self.arity(), self.set_size, self.is_table_based())
+    }
+}
+
+impl PyAbstractIntOperationNew {
+    fn horner_encode(&self, args: &[i32]) -> i32 {
+        let mut result = 0;
+        let mut multiplier = 1;
+        
+        for &arg in args.iter().rev() {
+            result += arg * multiplier;
+            multiplier *= self.set_size;
+        }
+        
+        result
+    }
+    
+    fn generate_args_recursive(&self, arity: i32, current: &mut Vec<i32>, all_args: &mut Vec<Vec<i32>>) {
+        Self::generate_args_static(arity, self.set_size, current, all_args);
+    }
+    
+    fn generate_args_static(arity: i32, set_size: i32, current: &mut Vec<i32>, all_args: &mut Vec<Vec<i32>>) {
+        if current.len() == arity as usize {
+            all_args.push(current.clone());
+            return;
+        }
+        for i in 0..set_size {
+            current.push(i);
+            Self::generate_args_static(arity, set_size, current, all_args);
+            current.pop();
+        }
+    }
+}
+
+/// Evaluation mode for AbstractOperation that supports both integer and non-integer universes
+#[derive(Debug, Clone)]
+enum AbstractOperationEvaluationMode {
+    IntFunction(PyObject),
+    ValueFunction(PyObject, Vec<PyObject>), // function and universe
+    IntTable(Vec<i32>),
+    ValueTable(Vec<i32>, Vec<PyObject>), // table indices and universe
+}
+
+/// Python wrapper for the new AbstractOperation class (supports both integer and non-integer universes)
+#[pyclass]
+pub struct PyAbstractOperationNew {
+    symbol: uacalc::alg::op::OperationSymbol,
+    set_size: i32,
+    evaluation_mode: AbstractOperationEvaluationMode,
+}
+
+#[pymethods]
+impl PyAbstractOperationNew {
+    #[staticmethod]
+    fn from_int_value_at_function(name: &str, arity: i32, set_size: i32, int_value_at_fn: PyObject) -> PyResult<Self> {
+        let symbol = match uacalc::alg::op::OperationSymbol::new_safe(name, arity, false) {
+            Ok(sym) => sym,
+            Err(e) => return Err(PyValueError::new_err(e)),
+        };
+        
+        if set_size <= 0 {
+            return Err(PyValueError::new_err("Set size must be positive"));
+        }
+        
+        Ok(PyAbstractOperationNew {
+            symbol,
+            set_size,
+            evaluation_mode: AbstractOperationEvaluationMode::IntFunction(int_value_at_fn),
+        })
+    }
+    
+    #[staticmethod]
+    fn from_value_at_function(name: &str, arity: i32, universe: Vec<PyObject>, value_at_fn: PyObject) -> PyResult<Self> {
+        let set_size = universe.len() as i32;
+        let symbol = match uacalc::alg::op::OperationSymbol::new_safe(name, arity, false) {
+            Ok(sym) => sym,
+            Err(e) => return Err(PyValueError::new_err(e)),
+        };
+        
+        if set_size <= 0 {
+            return Err(PyValueError::new_err("Universe cannot be empty"));
+        }
+        
+        Ok(PyAbstractOperationNew {
+            symbol,
+            set_size,
+            evaluation_mode: AbstractOperationEvaluationMode::ValueFunction(value_at_fn, universe),
+        })
+    }
+    
+    fn arity(&self) -> i32 { self.symbol.arity() }
+    fn get_set_size(&self) -> i32 { self.set_size }
+    fn symbol(&self) -> PyOperationSymbol { PyOperationSymbol { inner: self.symbol.clone() } }
+    
+    fn int_value_at(&self, args: Vec<i32>) -> PyResult<i32> {
+        if args.len() != self.arity() as usize {
+            return Err(PyValueError::new_err(format!("Expected {} arguments, got {}", self.arity(), args.len())));
+        }
+        
+        for &arg in &args {
+            if arg < 0 || arg >= self.set_size {
+                return Err(PyValueError::new_err(format!("Argument {} is out of bounds [0, {})", arg, self.set_size)));
+            }
+        }
+        
+        match &self.evaluation_mode {
+            AbstractOperationEvaluationMode::IntFunction(func) => {
+                Python::with_gil(|py| {
+                    let py_args = PyList::new_bound(py, &args);
+                    let result = func.call1(py, (py_args,))?;
+                    let result_int: i32 = result.extract(py)?;
+                    
+                    if result_int < 0 || result_int >= self.set_size {
+                        return Err(PyValueError::new_err(format!(
+                            "Function returned {} which is out of range [0, {})", result_int, self.set_size
+                        )));
+                    }
+                    
+                    Ok(result_int)
+                })
+            }
+            AbstractOperationEvaluationMode::ValueFunction(func, universe) => {
+                Python::with_gil(|py| {
+                    let universe_args: Vec<PyObject> = args.iter().map(|&i| universe[i as usize].clone()).collect();
+                    let py_args = PyList::new_bound(py, &universe_args);
+                    let result = func.call1(py, (py_args,))?;
+                    
+                    for (i, universe_elem) in universe.iter().enumerate() {
+                        if result.bind(py).eq(universe_elem)? {
+                            return Ok(i as i32);
+                        }
+                    }
+                    
+                    Err(PyValueError::new_err("Function returned a value not in the universe"))
+                })
+            }
+            AbstractOperationEvaluationMode::IntTable(table) | AbstractOperationEvaluationMode::ValueTable(table, _) => {
+                let index = self.horner_encode(&args);
+                Ok(table[index as usize])
+            }
+        }
+    }
+    
+    fn make_table(&mut self) -> PyResult<()> {
+        match &self.evaluation_mode {
+            AbstractOperationEvaluationMode::IntTable(_) | AbstractOperationEvaluationMode::ValueTable(_, _) => Ok(()),
+            AbstractOperationEvaluationMode::IntFunction(func) => {
+                let func_clone = func.clone();
+                
+                Python::with_gil(|py| {
+                    let arity = self.arity();
+                    let table_size = if arity == 0 { 1 } else { (self.set_size as usize).pow(arity as u32) };
+                    let mut table = Vec::with_capacity(table_size);
+                    
+                    let mut all_args = Vec::new();
+                    if arity == 0 {
+                        all_args.push(Vec::new());
+                    } else {
+                        PyAbstractIntOperationNew::generate_args_static(arity, self.set_size, &mut Vec::new(), &mut all_args);
+                    }
+                    
+                    for args in all_args {
+                        let py_args = PyList::new_bound(py, &args);
+                        let result = func_clone.call1(py, (py_args,))?;
+                        let result_int: i32 = result.extract(py)?;
+                        table.push(result_int);
+                    }
+                    
+                    self.evaluation_mode = AbstractOperationEvaluationMode::IntTable(table);
+                    Ok(())
+                })
+            }
+            AbstractOperationEvaluationMode::ValueFunction(func, universe) => {
+                let func_clone = func.clone();
+                let universe_clone = universe.clone();
+                
+                Python::with_gil(|py| {
+                    let arity = self.arity();
+                    let table_size = if arity == 0 { 1 } else { (self.set_size as usize).pow(arity as u32) };
+                    let mut table = Vec::with_capacity(table_size);
+                    
+                    let mut all_args = Vec::new();
+                    if arity == 0 {
+                        all_args.push(Vec::new());
+                    } else {
+                        PyAbstractIntOperationNew::generate_args_static(arity, self.set_size, &mut Vec::new(), &mut all_args);
+                    }
+                    
+                    for args in all_args {
+                        let universe_args: Vec<PyObject> = args.iter().map(|&i| universe_clone[i as usize].clone()).collect();
+                        let py_args = PyList::new_bound(py, &universe_args);
+                        let result = func_clone.call1(py, (py_args,))?;
+                        
+                        let mut result_index = None;
+                        for (i, universe_elem) in universe_clone.iter().enumerate() {
+                            if result.bind(py).eq(universe_elem)? {
+                                result_index = Some(i as i32);
+                                break;
+                            }
+                        }
+                        
+                        match result_index {
+                            Some(idx) => table.push(idx),
+                            None => return Err(PyValueError::new_err("Function returned a value not in the universe")),
+                        }
+                    }
+                    
+                    self.evaluation_mode = AbstractOperationEvaluationMode::ValueTable(table, universe_clone);
+                    Ok(())
+                })
+            }
+        }
+    }
+    
+    fn get_table(&self) -> Option<Vec<i32>> {
+        match &self.evaluation_mode {
+            AbstractOperationEvaluationMode::IntTable(table) | AbstractOperationEvaluationMode::ValueTable(table, _) => Some(table.clone()),
+            AbstractOperationEvaluationMode::IntFunction(_) | AbstractOperationEvaluationMode::ValueFunction(_, _) => None,
+        }
+    }
+    
+    fn is_table_based(&self) -> bool {
+        matches!(self.evaluation_mode, AbstractOperationEvaluationMode::IntTable(_) | AbstractOperationEvaluationMode::ValueTable(_, _))
+    }
+    
+    fn is_idempotent(&self) -> PyResult<bool> {
+        let arity = self.arity();
+        for x in 0..self.set_size {
+            let args = vec![x; arity as usize];
+            if self.int_value_at(args)? != x { return Ok(false); }
+        }
+        Ok(true)
+    }
+    
+    fn is_associative(&self) -> PyResult<bool> {
+        if self.arity() != 2 { return Ok(false); }
+        for x in 0..self.set_size {
+            for y in 0..self.set_size {
+                for z in 0..self.set_size {
+                    let xy = self.int_value_at(vec![x, y])?;
+                    let yz = self.int_value_at(vec![y, z])?;
+                    let left = self.int_value_at(vec![xy, z])?;
+                    let right = self.int_value_at(vec![x, yz])?;
+                    if left != right { return Ok(false); }
+                }
+            }
+        }
+        Ok(true)
+    }
+    
+    fn is_commutative(&self) -> PyResult<bool> {
+        if self.arity() != 2 { return Ok(false); }
+        for x in 0..self.set_size {
+            for y in 0..self.set_size {
+                let xy = self.int_value_at(vec![x, y])?;
+                let yx = self.int_value_at(vec![y, x])?;
+                if xy != yx { return Ok(false); }
+            }
+        }
+        Ok(true)
+    }
+    
+    fn is_totally_symmetric(&self) -> PyResult<bool> {
+        let arity = self.arity() as usize;
+        if arity <= 1 { return Ok(true); }
+        
+        if arity >= 2 {
+            let mut all_args = Vec::new();
+            PyAbstractIntOperationNew::generate_args_static(self.arity(), self.set_size, &mut Vec::new(), &mut all_args);
+            
+            for args in all_args {
+                let original = self.int_value_at(args.clone())?;
+                let mut swapped = args;
+                swapped.swap(0, 1);
+                let swapped_result = self.int_value_at(swapped)?;
+                if original != swapped_result { return Ok(false); }
+            }
+        }
+        
+        Ok(true)
+    }
+    
+    fn is_maltsev(&self) -> PyResult<bool> {
+        if self.arity() != 3 { return Ok(false); }
+        for x in 0..self.set_size {
+            for y in 0..self.set_size {
+                let xyy = self.int_value_at(vec![x, y, y])?;
+                let xxy = self.int_value_at(vec![x, x, y])?;
+                if xyy != x || xxy != y { return Ok(false); }
+            }
+        }
+        Ok(true)
+    }
+    
+    fn is_total(&self) -> PyResult<bool> { Ok(true) }
+    
+    fn __str__(&self) -> String {
+        let universe_type = match &self.evaluation_mode {
+            AbstractOperationEvaluationMode::IntFunction(_) | AbstractOperationEvaluationMode::IntTable(_) => "integer",
+            AbstractOperationEvaluationMode::ValueFunction(_, _) | AbstractOperationEvaluationMode::ValueTable(_, _) => "general",
+        };
+        format!("AbstractOperation({}, arity={}, set_size={}, universe={}, table_based={})", 
+                self.symbol.name(), self.arity(), self.set_size, universe_type, self.is_table_based())
+    }
+    
+    fn __repr__(&self) -> String {
+        let universe_type = match &self.evaluation_mode {
+            AbstractOperationEvaluationMode::IntFunction(_) | AbstractOperationEvaluationMode::IntTable(_) => "integer",
+            AbstractOperationEvaluationMode::ValueFunction(_, _) | AbstractOperationEvaluationMode::ValueTable(_, _) => "general",
+        };
+        format!("AbstractOperation(name='{}', arity={}, set_size={}, universe={}, table_based={})", 
+                self.symbol.name(), self.arity(), self.set_size, universe_type, self.is_table_based())
+    }
+}
+
+impl PyAbstractOperationNew {
+    fn horner_encode(&self, args: &[i32]) -> i32 {
+        let mut result = 0;
+        let mut multiplier = 1;
+        
+        for &arg in args.iter().rev() {
+            result += arg * multiplier;
+            multiplier *= self.set_size;
+        }
+        
+        result
+    }
+}
+
 pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     // Register classes internally but only export clean names
     m.add_class::<PyOperationSymbol>()?;
@@ -1711,6 +2514,8 @@ pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     m.add_class::<PyBasicOperation>()?;
     m.add_class::<PyIntOperation>()?;
     m.add_class::<PyAbstractIntOperation>()?;
+    m.add_class::<PyAbstractIntOperationNew>()?;
+    m.add_class::<PyAbstractOperationNew>()?;
     m.add_class::<PySubtrace>()?;
     
     // Export only clean names (without Py prefix)
@@ -1721,10 +2526,9 @@ pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     m.add("BasicBinaryRelation", m.getattr("PyBasicBinaryRelation")?)?;
     m.add("BasicOperation", m.getattr("PyBasicOperation")?)?;
     m.add("IntOperation", m.getattr("PyIntOperation")?)?;
-    m.add("AbstractIntOperation", m.getattr("PyAbstractIntOperation")?)?;
+    m.add("AbstractIntOperation", m.getattr("PyAbstractIntOperationNew")?)?;
+    m.add("AbstractOperation", m.getattr("PyAbstractOperationNew")?)?;
     m.add("Subtrace", m.getattr("PySubtrace")?)?;
-    // Add AbstractOperation as an alias to BasicOperation for compatibility
-    m.add("AbstractOperation", m.getattr("PyBasicOperation")?)?;
     
     // Remove the Py* names from the module to avoid confusion
     let module_dict = m.dict();
@@ -1736,6 +2540,8 @@ pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     module_dict.del_item("PyBasicOperation")?;
     module_dict.del_item("PyIntOperation")?;
     module_dict.del_item("PyAbstractIntOperation")?;
+    module_dict.del_item("PyAbstractIntOperationNew")?;
+    module_dict.del_item("PyAbstractOperationNew")?;
     module_dict.del_item("PySubtrace")?;
     
     Ok(())
@@ -1991,7 +2797,7 @@ impl PyBasicBinaryRelation {
     fn __iter__(&self) -> PyResult<PyObject> {
         let pairs = self.get_pairs();
         Python::with_gil(|py| {
-            let list = pyo3::types::PyList::new(py, pairs);
+            let list = pyo3::types::PyList::new_bound(py, pairs);
             Ok(list.into())
         })
     }

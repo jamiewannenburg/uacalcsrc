@@ -12,7 +12,7 @@ use crate::alg::op::{Operation, OperationSymbol, AbstractOperation};
 /// 
 /// # Examples
 /// ```
-/// use uacalc::alg::op::{AbstractIntOperation, OperationSymbol};
+/// use uacalc::alg::op::{AbstractIntOperation, OperationSymbol, Operation, AbstractOperation};
 /// 
 /// let symbol = OperationSymbol::new("test", 2, false);
 /// let op = AbstractIntOperation::new_with_symbol(symbol, 3);
@@ -42,7 +42,7 @@ impl AbstractIntOperation {
     /// 
     /// # Examples
     /// ```
-    /// use uacalc::alg::op::AbstractIntOperation;
+    /// use uacalc::alg::op::{AbstractIntOperation, Operation};
     /// 
     /// let op = AbstractIntOperation::new("add", 2, 5);
     /// assert_eq!(op.arity(), 2);
@@ -93,7 +93,7 @@ impl AbstractIntOperation {
     /// 
     /// # Examples
     /// ```
-    /// use uacalc::alg::op::{AbstractIntOperation, OperationSymbol};
+    /// use uacalc::alg::op::{AbstractIntOperation, OperationSymbol, Operation};
     /// 
     /// let symbol = OperationSymbol::new("mult", 2, false);
     /// let op = AbstractIntOperation::new_with_symbol(symbol, 3);

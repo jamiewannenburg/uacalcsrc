@@ -26,7 +26,7 @@ impl BasicOperation {
     /// 
     /// # Examples
     /// ```
-    /// use uacalc::alg::op::{BasicOperation, OperationSymbol};
+    /// use uacalc::alg::op::{BasicOperation, OperationSymbol, Operation};
     /// 
     /// let symbol = OperationSymbol::new("f", 2, false);
     /// let op = BasicOperation::new(symbol, 3);

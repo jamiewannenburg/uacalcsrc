@@ -29,7 +29,7 @@ impl IntOperation {
     /// 
     /// # Examples
     /// ```
-    /// use uacalc::alg::op::{IntOperation, OperationSymbol};
+    /// use uacalc::alg::op::{IntOperation, OperationSymbol, Operation};
     /// 
     /// let symbol = OperationSymbol::new("f", 2, false);
     /// // Binary operation on {0,1} where f(0,0)=0, f(0,1)=1, f(1,0)=1, f(1,1)=0 (XOR)
