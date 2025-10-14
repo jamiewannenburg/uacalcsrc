@@ -32,14 +32,21 @@ The following packages are **excluded** from this plan:
 **Java File:** `org/uacalc/lat/OrderedSets.java`  
 **Package:** `org.uacalc.lat`  
 **Rust Module:** `lat::OrderedSets`  
-**Dependencies:** 0 (0 non-UI/example)  
-**Estimated Public Methods:** ~3
+**Dependencies:** 1 (Order interface)  
+**Estimated Public Methods:** 2 (maximals, main)
 
 ### Description
 Translate the Java class `org.uacalc.lat.OrderedSets` to Rust with Python bindings.
 
 ### Dependencies
-No dependencies on other UACalc classes (leaf node).
+**CORRECTED DEPENDENCIES:**
+- `org.uacalc.lat.Order` - Interface for order relations (required for maximals method)
+- `java.util.*` - Standard Java collections (Collection, List, ArrayList)
+
+**USAGE ANALYSIS:**
+- Used by `org.uacalc.alg.SubProductAlgebra.thinGenerators()` method
+- No direct imports found in codebase (used via fully qualified name)
+- Static utility class - no instantiation required
 
 ### Implementation Steps
 
@@ -88,6 +95,54 @@ No dependencies on other UACalc classes (leaf node).
    - Verify outputs match Java implementation exactly
    - Check test coverage for all public methods
 
+### Rust Implementation Recommendations
+
+**Class Analysis:**
+- **Java Type**: Concrete class with static methods only
+- **Rust Construct**: Module with free functions (no struct needed)
+- **Pattern**: Static utility module
+
+**Method Translation:**
+1. **`maximals<E>(Collection<? extends E> elems, Order<? super E> order) -> List<E>`**
+   - **Rust**: `pub fn maximals<T, F>(elems: &[T], order: F) -> Vec<T> where F: Fn(&T, &T) -> bool`
+   - **Pattern**: Generic function with closure parameter
+   - **Note**: Use `&[T]` instead of `Collection` for better Rust ergonomics
+
+2. **`main(String[] args)`**
+   - **Rust**: `pub fn main()` (for testing)
+   - **Pattern**: Test function, not part of public API
+
+**Dependencies:**
+- **Order Interface**: Translate to `Fn(&T, &T) -> bool` closure trait bound
+- **Collections**: Use `Vec<T>` and `&[T]` instead of Java collections
+
+**Rust Module Structure:**
+```rust
+// src/lat/ordered_sets.rs
+pub fn maximals<T, F>(elems: &[T], order: F) -> Vec<T> 
+where 
+    F: Fn(&T, &T) -> bool 
+{
+    // Implementation matching Java algorithm exactly
+}
+```
+
+**Python Bindings:**
+- Expose `maximals` as static method
+- Use `List[T]` for Python collections
+- Accept callable for order relation
+
+**Java Wrapper Suitability:**
+- **SUITABLE**: Concrete class with static methods
+- **Testing Strategy**: Unit tests with various order relations
+- **CLI Commands**: `maximals` command with test data
+
+**Testing Strategy:**
+- Test with integer divisibility order (as in main method)
+- Test with custom order relations
+- Test edge cases (empty collections, single elements)
+- Compare results with Java implementation
+
 ### Acceptance Criteria
 - [ ] All public methods translated to Rust
 - [ ] Python bindings expose all public methods
@@ -96,3 +151,5 @@ No dependencies on other UACalc classes (leaf node).
 - [ ] Python tests pass and match Java output
 - [ ] Code compiles without warnings
 - [ ] Documentation complete
+- [ ] Order interface dependency properly handled
+- [ ] Generic type parameters correctly translated

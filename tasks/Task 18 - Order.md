@@ -32,15 +32,27 @@ The following packages are **excluded** from this plan:
 **Java File:** `org/uacalc/lat/Order.java`  
 **Package:** `org.uacalc.lat`  
 **Rust Module:** `lat::Order`  
-**Dependencies:** 1 (1 non-UI/example)  
-**Estimated Public Methods:** ~1
+**Dependencies:** 0 (0 non-UI/example) - **CORRECTED**  
+**Estimated Public Methods:** 1
 
 ### Description
 Translate the Java class `org.uacalc.lat.Order` to Rust with Python bindings.
 
 ### Dependencies
-This class depends on:
-- `org.uacalc.alg`
+**CORRECTED DEPENDENCIES:**
+This interface has **NO ACTUAL DEPENDENCIES** on other UACalc classes.
+
+**Analysis Results:**
+- The `import org.uacalc.alg.*;` statement in Order.java is **UNUSED**
+- No classes from org.uacalc.alg are referenced in the Order interface
+- The interface only uses standard Java types (generic type parameter E)
+- **Dependency count should be 0, not 1**
+
+**Usage Patterns Found:**
+- Used by `PartiallyDefinedLattice` (implements Order<Variable>)
+- Used by `OrderedSets.maximals()` method as a parameter
+- Used in `SubProductAlgebra.thinGenerators()` method
+- Anonymous implementations in test code (OrderedSets.main())
 
 ### Implementation Steps
 
@@ -89,11 +101,67 @@ This class depends on:
    - Verify outputs match Java implementation exactly
    - Check test coverage for all public methods
 
+### Implementation Recommendations
+
+#### Java Class Analysis
+- **Type**: Interface (generic)
+- **Generic Parameter**: `E` (element type)
+- **Public Methods**: 1 (`leq(E a, E b) -> boolean`)
+- **Dependencies**: None (unused import should be removed)
+- **File Size**: 20 lines, 1 method
+
+#### Rust Translation Design
+- **Rust Construct**: Trait (not struct)
+- **Trait Name**: `Order<E>`
+- **Method Signature**: `fn leq(&self, a: &E, b: &E) -> bool`
+- **Generic Dispatch**: Yes (trait with generic parameter)
+- **Dynamic Dispatch**: Yes (trait objects)
+- **No Associated Types**: Simple trait with single method
+
+#### Implementation Strategy
+```rust
+pub trait Order<E> {
+    /// The order relation - returns true if a ≤ b
+    fn leq(&self, a: &E, b: &E) -> bool;
+}
+```
+
+#### Java Wrapper Suitability
+- **Suitable**: NO - Interface cannot be instantiated directly
+- **Reason**: Order is an interface, not a concrete class
+- **Alternative**: Create wrapper for concrete implementations like PartiallyDefinedLattice
+- **Testing Strategy**: Test through implementing classes, not direct interface testing
+
+#### Python Bindings Strategy
+- **Approach**: Export as trait, not concrete struct
+- **Usage**: Python users implement the trait for their types
+- **Example**: `class MyOrder(Order): def leq(self, a, b): return a <= b`
+
+#### Testing Strategy
+- **Rust Tests**: Test trait implementations, not trait itself
+- **Python Tests**: Test through implementing classes
+- **Integration Tests**: Test with OrderedSets.maximals() method
+- **Edge Cases**: Test with different element types (Integer, String, custom types)
+
+#### Dependencies Verification
+- **Current Status**: INCORRECT - Lists org.uacalc.alg dependency
+- **Actual Status**: NO DEPENDENCIES
+- **Action Required**: Remove unused import from Java file
+- **Task Order**: Can be implemented immediately (no dependencies)
+
+#### Critical Implementation Notes
+1. **Generic Trait**: Must support any type E that implements appropriate bounds
+2. **Trait Objects**: Support both static and dynamic dispatch
+3. **Documentation**: Include mathematical definition of order relation
+4. **Examples**: Provide examples with different element types
+5. **Integration**: Ensure compatibility with OrderedSets.maximals()
+
 ### Acceptance Criteria
-- [ ] All public methods translated to Rust
-- [ ] Python bindings expose all public methods
-- [ ] Java CLI wrapper created with all public methods
-- [ ] Rust tests pass with timeouts enabled
-- [ ] Python tests pass and match Java output
+- [ ] Order trait implemented in Rust
+- [ ] Python bindings expose Order trait
+- [ ] Java wrapper created for concrete implementations (not interface)
+- [ ] Rust tests pass for trait implementations
+- [ ] Python tests pass for trait implementations
 - [ ] Code compiles without warnings
-- [ ] Documentation complete
+- [ ] Documentation complete with examples
+- [ ] Integration with OrderedSets.maximals() verified

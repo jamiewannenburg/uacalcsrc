@@ -165,7 +165,7 @@ class TaskAnalyzer:
 - If criteria not met: uncheck boxes and add recommendations
 
 ## Output Requirements:
-1. Update the task file with detailed recommendations
+1. Update the task file with detailed recommendations, delete irrelevant sections in the task file.
 2. For completed tasks: verify and potentially uncheck boxes if criteria not met
 3. Add specific recommendations for:
    - Rust struct/trait/enum design
