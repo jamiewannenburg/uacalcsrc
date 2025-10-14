@@ -705,6 +705,41 @@ pub struct IntTuples {
 }
 ```
 
+### Issue 13: PyO3 API Compatibility Issues
+
+**Problem**: Compilation failures due to PyO3 API version mismatches between module registration functions. Newer PyO3 versions use `&Bound<'_, PyModule>` while older code may still use `&PyModule`.
+
+**Error Example**:
+```
+error[E0308]: mismatched types
+  --> src/lib.rs:20:35
+   |
+20 |     alg::register_alg_module(_py, &alg_module)?;
+   |     ------------------------      ^^^^^^^^^^^ expected `&PyModule`, found `&Bound<'_, PyModule>`
+```
+
+**Solution**: Update all module registration functions to use the newer `&Bound<'_, PyModule>` signature.
+
+```rust
+// ❌ WRONG - Old PyO3 API signature
+pub fn register_alg_module(py: Python, m: &PyModule) -> PyResult<()> {
+    // ...
+}
+
+// ✅ CORRECT - New PyO3 API signature
+pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
+    // ...
+}
+```
+
+**Detection**: Look for compilation errors mentioning type mismatches between `&PyModule` and `&Bound<'_, PyModule>`.
+
+**Fix Process**:
+1. Check all `register_*_module` functions for consistent signatures
+2. Update any functions still using `&PyModule` to use `&Bound<'_, PyModule>`
+3. Consider prefixing unused `py` parameters with underscore (`_py`) to avoid warnings
+4. Test compilation with `maturin develop` to verify the fix
+
 ## 12. Verification Checklist
 
 Before marking a translation as complete, verify:
