@@ -1,105 +1,141 @@
-# UACalc Rust/Python Translation Plan
-
-## Overview
-
-This plan contains the ordered list of translation tasks for converting the UACalc Java library to Rust with Python bindings. Tasks are ordered by dependency count to ensure foundational classes are translated before dependent classes.
-
-## Translation Strategy
-
-### Approach
-- Direct Java-to-Rust translation maintaining exact semantics
-- Use Rust idioms where appropriate (traits for interfaces, Result/Option, etc.)
-- All public methods must be translated and tested
-- Output must match Java implementation exactly
-
-### Testing Strategy
-- Rust tests for all public methods with timeouts
-- Python binding tests comparing against Java
-- Java CLI wrappers for ground truth comparison
-- Global memory limit configurable from Python
-
-### ExcluRded Packages
-The following packages are **excluded** from this plan:
-- `org.uacalc.ui.*` - UI components (not needed for core library)
-- `org.uacalc.nbui.*` - NetBeans UI components
-- `org.uacalc.example.*` - Example/demo classes (NOTE: To be implemented later)
-
-
-## Translation Tasks
-
-## Task 71: Translate `BasicAlgebra`
+# Task 71: Translate `BasicAlgebra`
 
 **Java File:** `org/uacalc/alg/BasicAlgebra.java`  
 **Package:** `org.uacalc.alg`  
 **Rust Module:** `alg::BasicAlgebra`  
-**Dependencies:** 7 (7 non-UI/example)  
-**Estimated Public Methods:** ~25
+**Dependencies:** 8 (8 non-UI/example)  
+**Estimated Public Methods:** 12
 
-### Description
-Translate the Java class `org.uacalc.alg.BasicAlgebra` to Rust with Python bindings.
+## Description
+Translate the Java class `org.uacalc.alg.BasicAlgebra` to Rust with Python bindings. BasicAlgebra represents small algebras with a map from {0, ..., n-1} to the elements of the algebra. Operations are performed on integers and converted back to elements.
 
-### Dependencies
-This class depends on:
-- `org.uacalc.alg.conlat`
-- `org.uacalc.alg.op.AbstractOperation`
-- `org.uacalc.alg.op.Operation`
-- `org.uacalc.alg.op.OperationSymbol`
-- `org.uacalc.alg.op.OperationWithDefaultValue`
-- `org.uacalc.alg.op.Operations`
-- `org.uacalc.alg.sublat`
+## Java File Analysis
 
-### Implementation Steps
+### Class Structure
+- **Type**: Concrete class extending `GeneralAlgebra` and implementing `SmallAlgebra`
+- **Key Fields**:
+  - `protected List universeList` - Ordered list of the universe
+  - `protected Map universeOrder` - Map from elements to their order in universe list
+  - Inherits `con` and `sub` fields from `GeneralAlgebra` (CongruenceLattice and SubalgebraLattice)
 
-1. **Analyze Java Implementation**
-   - Read and understand the Java source code
-   - Identify all public methods and their signatures
-   - Note any special patterns (interfaces, abstract classes, etc.)
-   - Identify dependencies on other UACalc classes
+### Public Methods (12 total)
+1. `BasicAlgebra(String name, int s, List<Operation> operations)` - Constructor with integer universe
+2. `BasicAlgebra(String name, List univ, List<Operation> operations)` - Constructor with custom universe
+3. `getUniverseList()` - Get universe as List
+4. `setUniverseList(List lst)` - Set universe list
+5. `getUniverseOrder()` - Get universe order map
+6. `setUniverseOrder(Map ord)` - Set universe order map
+7. `intUniverse()` - Check if using integer universe
+8. `elementIndex(Object obj)` - Get index of element
+9. `getElement(int index)` - Get element at index
+10. `con()` - Get congruence lattice (lazy initialization)
+11. `sub()` - Get subalgebra lattice (lazy initialization)
+12. `resetConAndSub()` - Reset lattice caches
+13. `convertToDefaultValueOps()` - Convert operations to default value operations
+14. `algebraType()` - Return AlgebraType.BASIC
 
-2. **Design Rust Translation**
-   - Determine if Java interfaces should become Rust traits
-   - Design struct/enum representations matching Java semantics
-   - Plan for Rust idioms (Option instead of null, Result for errors, etc.)
-   - Ensure all public methods are translated
+### Dependencies Analysis
+**Corrected Dependencies (8 total):**
+- `org.uacalc.alg.GeneralAlgebra` (parent class)
+- `org.uacalc.alg.SmallAlgebra` (interface)
+- `org.uacalc.alg.Algebra` (grandparent interface)
+- `org.uacalc.alg.op.Operation` (used in constructors and methods)
+- `org.uacalc.alg.op.AbstractOperation` (used in constructor)
+- `org.uacalc.alg.op.OperationWithDefaultValue` (used in convertToDefaultValueOps)
+- `org.uacalc.alg.op.OperationSymbol` (used in main method)
+- `org.uacalc.alg.op.Operations` (used in main method)
 
-3. **Implement Rust Code**
-   - Create Rust module structure
-   - Implement all public methods
-   - Add comprehensive documentation
-   - Follow Rust naming conventions (snake_case)
+**Note**: The original dependency list incorrectly included `conlat` and `sublat` packages. These are only used through inherited fields from `GeneralAlgebra`, not directly imported.
 
-4. **Create Python Bindings (PyO3)**
-   - Expose all public methods to Python
-   - Use appropriate PyO3 types (PyResult, etc.)
-   - Add Python docstrings
+## Rust Implementation Recommendations
 
-5. **Create Java CLI Wrapper**
-   - Create wrapper in `java_wrapper/src/` matching package structure
-   - Implement `main` method accepting command-line arguments
-   - Expose all public methods through CLI commands
-   - Output results in JSON/text format for comparison
+### Struct Design
+```rust
+pub struct BasicAlgebra {
+    // Core fields
+    pub name: String,
+    pub universe_list: Option<Vec<Box<dyn Any + Send + Sync>>>,
+    pub universe_order: Option<HashMap<Box<dyn Any + Send + Sync>, usize>>,
+    pub operations: Vec<Box<dyn Operation>>,
+    
+    // Inherited fields from GeneralAlgebra
+    pub universe: HashSet<Box<dyn Any + Send + Sync>>,
+    pub size: usize,
+    pub description: Option<String>,
+    
+    // Lazy-initialized fields
+    pub con: Option<Box<dyn CongruenceLattice>>,
+    pub sub: Option<Box<dyn SubalgebraLattice>>,
+}
+```
 
-6. **Write Rust Tests**
-   - Test all public methods
-   - Add tests with timeouts (slightly longer than Java completion times)
-   - Test edge cases and error conditions
-   - Compare results against Java CLI wrapper output
+### Trait Implementation
+- Implement `SmallAlgebra` trait (from interface)
+- Implement `Algebra` trait (from grandparent interface)
+- Use dynamic dispatch with `Box<dyn Trait>` for polymorphic types
 
-7. **Write Python Tests**
-   - Test all public methods through Python bindings
-   - Compare results against Java CLI wrapper output
-   - Verify Python API matches Rust API
+### Method Organization
+- **Constructors**: Two main constructors matching Java signatures
+- **Getter/Setter Methods**: Direct field access with proper error handling
+- **Lazy Initialization**: `con()` and `sub()` methods with lazy initialization
+- **Utility Methods**: `intUniverse()`, `elementIndex()`, `getElement()`
+- **Conversion Methods**: `convertToDefaultValueOps()`
 
-8. **Verification**
-   - Run all tests and ensure they pass
-   - Verify outputs match Java implementation exactly
-   - Check test coverage for all public methods
+### Error Handling
+- Use `Result<T, String>` for methods that can fail
+- Use `Option<T>` for nullable references
+- Implement both `_safe` and `_panic` versions of methods
 
-### Acceptance Criteria
-- [ ] All public methods translated to Rust
+### Key Implementation Challenges
+1. **Dynamic Universe Types**: Handle both integer and custom object universes
+2. **Lazy Lattice Initialization**: Implement proper lazy loading for con/sub lattices
+3. **Operation Wrapping**: Wrap operations in AbstractOperation for custom universes
+4. **Type Safety**: Ensure proper type conversions between universe elements and indices
+
+## Java Wrapper Suitability
+**Suitable for testing** - This is a concrete class with well-defined public methods that can be easily exposed through CLI commands.
+
+### Recommended CLI Commands
+- `construct-int` - Create with integer universe
+- `construct-custom` - Create with custom universe
+- `get-universe-list` - Get universe as list
+- `set-universe-list` - Set universe list
+- `get-universe-order` - Get universe order map
+- `set-universe-order` - Set universe order map
+- `int-universe` - Check if using integer universe
+- `element-index` - Get index of element
+- `get-element` - Get element at index
+- `con` - Get congruence lattice
+- `sub` - Get subalgebra lattice
+- `reset-con-sub` - Reset lattice caches
+- `convert-default-value-ops` - Convert operations
+- `algebra-type` - Get algebra type
+- `test` - Run basic functionality tests
+
+## Testing Strategy
+1. **Unit Tests**: Test all public methods with various inputs
+2. **Integration Tests**: Test with different operation types and universe sizes
+3. **Error Tests**: Test invalid inputs and edge cases
+4. **Cross-Language Tests**: Compare results with Java wrapper
+5. **Performance Tests**: Test with large universes and many operations
+
+## Implementation Priority
+**High Priority** - This is a foundational class (dependency level 1) that many other classes depend on. Should be implemented early in the translation process.
+
+## Blocking Dependencies
+- `GeneralAlgebra` (parent class) - Must be implemented first
+- `SmallAlgebra` trait (interface) - Must be implemented first
+- `Algebra` trait (grandparent interface) - Must be implemented first
+- `Operation` trait and related classes - Must be implemented first
+
+## Acceptance Criteria
+- [ ] All 12 public methods translated to Rust
 - [ ] Python bindings expose all public methods
 - [ ] Java CLI wrapper created with all public methods
 - [ ] Rust tests pass with timeouts enabled
 - [ ] Python tests pass and match Java output
 - [ ] Code compiles without warnings
 - [ ] Documentation complete
+- [ ] Proper error handling implemented
+- [ ] Lazy initialization working correctly
+- [ ] Cross-language compatibility verified

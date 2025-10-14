@@ -1,33 +1,4 @@
-# UACalc Rust/Python Translation Plan
-
-## Overview
-
-This plan contains the ordered list of translation tasks for converting the UACalc Java library to Rust with Python bindings. Tasks are ordered by dependency count to ensure foundational classes are translated before dependent classes.
-
-## Translation Strategy
-
-### Approach
-- Direct Java-to-Rust translation maintaining exact semantics
-- Use Rust idioms where appropriate (traits for interfaces, Result/Option, etc.)
-- All public methods must be translated and tested
-- Output must match Java implementation exactly
-
-### Testing Strategy
-- Rust tests for all public methods with timeouts
-- Python binding tests comparing against Java
-- Java CLI wrappers for ground truth comparison
-- Global memory limit configurable from Python
-
-### ExcluRded Packages
-The following packages are **excluded** from this plan:
-- `org.uacalc.ui.*` - UI components (not needed for core library)
-- `org.uacalc.nbui.*` - NetBeans UI components
-- `org.uacalc.example.*` - Example/demo classes (NOTE: To be implemented later)
-
-
-## Translation Tasks
-
-## Task 47: Translate `BasicSet`
+# Task 47: Translate `BasicSet`
 
 **Java File:** `org/uacalc/alg/sublat/BasicSet.java`  
 **Package:** `org.uacalc.alg.sublat`  
@@ -35,63 +6,93 @@ The following packages are **excluded** from this plan:
 **Dependencies:** 3 (3 non-UI/example)  
 **Estimated Public Methods:** ~14
 
-### Description
+## Description
 Translate the Java class `org.uacalc.alg.sublat.BasicSet` to Rust with Python bindings.
 
-### Dependencies
-This class depends on:
-- `org.uacalc.alg.SmallAlgebra`
-- `org.uacalc.util.ArrayString`
-- `org.uacalc.util.IntArray`
+## Java Class Analysis
 
-### Implementation Steps
+### Class Type
+- **Type**: Concrete class
+- **Inheritance**: Extends `IntArray`, implements `Comparable`
+- **Purpose**: Represents a set of integers {0, 1, ..., n-1} with basic set operations
 
-1. **Analyze Java Implementation**
-   - Read and understand the Java source code
-   - Identify all public methods and their signatures
-   - Note any special patterns (interfaces, abstract classes, etc.)
-   - Identify dependencies on other UACalc classes
+### Public Methods Identified
+1. `BasicSet(int[] set)` - Constructor
+2. `normalize()` - Sorts the array in ascending order
+3. `compareTo(Object o)` - Implements Comparable interface
+4. `leq(BasicSet set2)` - Subset check
+5. `leq(int[] u, int[] v)` - Static subset check
+6. `contains(int i)` - Membership test
+7. `setDifference(BasicSet set2)` - Set difference
+8. `intersection(BasicSet set2)` - Set intersection
+9. `intersection(BasicSet set1, BasicSet set2)` - Static intersection
+10. `union(BasicSet set2)` - Set union
+11. `union(BasicSet set1, BasicSet set2)` - Static union
+12. `toString(SmallAlgebra alg)` - String representation with algebra elements
 
-2. **Design Rust Translation**
-   - Determine if Java interfaces should become Rust traits
-   - Design struct/enum representations matching Java semantics
-   - Plan for Rust idioms (Option instead of null, Result for errors, etc.)
-   - Ensure all public methods are translated
+### Static Constants
+- `EMPTY_SET` - Empty set constant
 
-3. **Implement Rust Code**
-   - Create Rust module structure
-   - Implement all public methods
-   - Add comprehensive documentation
-   - Follow Rust naming conventions (snake_case)
+## Dependencies Analysis
 
-4. **Create Python Bindings (PyO3)**
-   - Expose all public methods to Python
-   - Use appropriate PyO3 types (PyResult, etc.)
-   - Add Python docstrings
+### Direct Dependencies (Verified)
+- `org.uacalc.alg.SmallAlgebra` - Used in `toString()` method
+- `org.uacalc.util.ArrayString` - Used in `toString()` method  
+- `org.uacalc.util.IntArray` - Parent class
 
-5. **Create Java CLI Wrapper**
-   - Create wrapper in `java_wrapper/src/` matching package structure
-   - Implement `main` method accepting command-line arguments
-   - Expose all public methods through CLI commands
-   - Output results in JSON/text format for comparison
+### Usage Patterns Found
+- Heavily used in `SubalgebraLattice` for representing subalgebras
+- Used in `Algebras.java` for various algebra operations
+- Used in `ComputationsController.java` for UI operations
+- Core data structure for set operations in the algebra system
 
-6. **Write Rust Tests**
-   - Test all public methods
-   - Add tests with timeouts (slightly longer than Java completion times)
-   - Test edge cases and error conditions
-   - Compare results against Java CLI wrapper output
+## Rust Implementation Recommendations
 
-7. **Write Python Tests**
-   - Test all public methods through Python bindings
-   - Compare results against Java CLI wrapper output
-   - Verify Python API matches Rust API
+### Struct Design
+```rust
+pub struct BasicSet {
+    pub elements: Vec<i32>,  // Sorted array of integers
+}
+```
 
-8. **Verification**
-   - Run all tests and ensure they pass
-   - Verify outputs match Java implementation exactly
-   - Check test coverage for all public methods
+### Trait Implementations Required
+- `Clone` - For copying BasicSet instances
+- `Debug` - For debugging output
+- `PartialEq` and `Eq` - For equality comparison
+- `PartialOrd` and `Ord` - For ordering (implements Comparable)
+- `Hash` - For use in HashMap/HashSet
+- `Display` - For string representation
 
-### Acceptance Criteria
+### Method Organization
+- **Constructor**: `new(elements: Vec<i32>) -> Self`
+- **Instance Methods**: All non-static methods as `&self` or `&mut self`
+- **Static Methods**: All static methods as associated functions
+- **Error Handling**: Use `Result<T, String>` for methods that can fail
+
+### Key Implementation Details
+1. **Normalization**: Always keep elements sorted (ascending order)
+2. **Empty Set**: Use `BasicSet::EMPTY_SET` constant
+3. **Set Operations**: Implement efficient algorithms for union, intersection, difference
+4. **Membership Test**: Use binary search for O(log n) performance
+5. **Comparison**: First by size, then lexicographically
+
+## Java Wrapper Suitability
+- **Suitable**: Yes - Concrete class with clear public API
+- **Testing Strategy**: Create wrapper with all public methods exposed via CLI
+- **Key Methods to Test**: All constructors, set operations, comparison methods
+
+## Implementation Priority
+- **High Priority**: Core set operations (union, intersection, difference, contains)
+- **Medium Priority**: Comparison and ordering methods
+- **Low Priority**: String representation methods
+
+## Testing Strategy
+1. **Unit Tests**: Test each method individually with various inputs
+2. **Integration Tests**: Test set operations with complex scenarios
+3. **Cross-Language Tests**: Compare Rust output with Java wrapper output
+4. **Edge Cases**: Empty sets, single elements, duplicate elements
+
+## Acceptance Criteria
 - [ ] All public methods translated to Rust
 - [ ] Python bindings expose all public methods
 - [ ] Java CLI wrapper created with all public methods

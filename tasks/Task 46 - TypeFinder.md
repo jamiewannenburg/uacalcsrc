@@ -40,9 +40,16 @@ Translate the Java class `org.uacalc.alg.conlat.TypeFinder` to Rust with Python 
 
 ### Dependencies
 This class depends on:
-- `org.uacalc.alg`
-- `org.uacalc.alg.op.Operation`
-- `org.uacalc.util`
+- `org.uacalc.alg.SmallAlgebra` (interface)
+- `org.uacalc.alg.BigProductAlgebra` (class)
+- `org.uacalc.alg.conlat.CongruenceLattice` (class)
+- `org.uacalc.alg.conlat.Subtrace` (class)
+- `org.uacalc.alg.conlat.Partition` (class)
+- `org.uacalc.alg.op.Operation` (interface)
+- `org.uacalc.util.IntArray` (class)
+- `org.uacalc.util.SequenceGenerator` (class)
+- `org.uacalc.util.ArrayIncrementor` (class)
+- `org.uacalc.util.ArrayString` (class)
 
 ### Implementation Steps
 
@@ -91,6 +98,57 @@ This class depends on:
    - Verify outputs match Java implementation exactly
    - Check test coverage for all public methods
 
+### Implementation Recommendations
+
+#### Java Class Analysis
+- **Type**: Concrete class (not interface or abstract)
+- **Purpose**: Utility class for finding subtraces and TCT types in algebras
+- **Key Features**: 
+  - Reusable for efficiency (maintains state)
+  - Works with join irreducible congruences
+  - Implements complex algorithm for finding subtraces
+  - Thread-safe considerations (interrupt handling)
+
+#### Rust Implementation Design
+- **Primary Construct**: `struct TypeFinder` (not trait)
+- **State Management**: Mutable struct with internal state
+- **Error Handling**: Use `Result<T, String>` for methods that can fail
+- **Thread Safety**: Consider `Arc<Mutex<>>` for shared state if needed
+
+#### Method Organization
+- **Constructor**: `new(small_algebra: SmallAlgebra) -> Self`
+- **Constructor with alpha**: `new_with_alpha(small_algebra: SmallAlgebra, alpha: Partition) -> Self`
+- **Public Methods** (all should be translated):
+  - `init()` -> `init() -> Result<(), String>`
+  - `init(alpha: Partition)` -> `init_with_alpha(alpha: Partition) -> Result<(), String>`
+  - `find_type_set()` -> `find_type_set() -> Result<HashSet<i32>, String>`
+  - `is_subtrace(ia: IntArray, beta: Partition)` -> `is_subtrace(ia: IntArray, beta: Partition) -> Result<bool, String>`
+  - `find_subtrace(beta: Partition)` -> `find_subtrace(beta: Partition) -> Result<Subtrace, String>`
+  - `find_subtrace(beta: Partition, alpha: Partition)` -> `find_subtrace_with_alpha(beta: Partition, alpha: Partition) -> Result<Subtrace, String>`
+  - `find_subtrace(ia: IntArray)` -> `find_subtrace_from_pair(ia: IntArray) -> Result<Subtrace, String>`
+  - `next_pair_for_subtrace(...)` -> `next_pair_for_subtrace(...) -> Result<Option<IntArray>, String>`
+  - `find_type(beta: Partition)` -> `find_type(beta: Partition) -> Result<i32, String>`
+  - `find_type(beta: Partition, alpha: Partition)` -> `find_type_with_alpha(beta: Partition, alpha: Partition) -> Result<i32, String>`
+  - `find_type(subtrace: Subtrace)` -> `find_type_from_subtrace(subtrace: Subtrace) -> Result<i32, String>`
+
+#### Key Implementation Considerations
+1. **State Management**: The class maintains significant internal state (visited sets, diagonal sets, etc.)
+2. **Algorithm Complexity**: Implements complex graph traversal algorithms
+3. **Memory Management**: Uses multiple collections (HashSet, List) that need careful Rust ownership
+4. **Thread Interruption**: Java version checks `Thread.currentThread().isInterrupted()` - consider using `std::sync::atomic::AtomicBool` for cancellation
+5. **Generic vs Dynamic Dispatch**: Use dynamic dispatch for `SmallAlgebra` and `Operation` interfaces
+6. **Error Propagation**: Many methods can fail and should return `Result<T, String>`
+
+#### Java Wrapper Suitability
+- **Suitable**: Yes, this is a concrete class that can be instantiated and tested
+- **Testing Strategy**: Create wrapper that can load algebras and test all public methods
+- **Key Test Cases**: Test with different algebra types, edge cases for type finding
+
+#### Dependencies Verification
+- **Missing Dependencies**: The original dependency list was incomplete
+- **Corrected Dependencies**: Added all specific classes that TypeFinder actually uses
+- **Dependency Order**: Ensure all dependencies are translated before TypeFinder
+
 ### Acceptance Criteria
 - [ ] All public methods translated to Rust
 - [ ] Python bindings expose all public methods
@@ -99,3 +157,6 @@ This class depends on:
 - [ ] Python tests pass and match Java output
 - [ ] Code compiles without warnings
 - [ ] Documentation complete
+- [ ] All dependencies correctly identified and translated
+- [ ] Thread safety considerations implemented
+- [ ] Memory management optimized for Rust ownership model

@@ -298,30 +298,81 @@ Begin your analysis and update the task file accordingly. Return your findings i
         try:
             with open(results_file, 'r') as f:
                 results = json.load(f)
-            # Convert list to dict keyed by task path for easier lookup
-            return {result['task']: result for result in results}
+            
+            # Convert list to dict keyed by task path, keeping only the last occurrence of each task
+            # This ensures that if there are duplicates, the most recent one is used
+            task_results = {}
+            for result in results:
+                task_path = result.get('task')
+                if task_path:
+                    task_results[task_path] = result
+            
+            return task_results
         except (json.JSONDecodeError, KeyError) as e:
             logger.warning(f"Failed to load existing results: {e}")
             return {}
+    
+    def is_task_failed(self, task_path: str, existing_results: Dict[str, Dict]) -> bool:
+        """Check if a task failed based on existing results."""
+        if task_path not in existing_results:
+            return False
+        
+        result = existing_results[task_path]
+        return result.get('success', True) == False
     
     def save_results_incrementally(self, new_results: List[Dict], existing_results: Dict[str, Dict]):
         """Save results incrementally by merging with existing results."""
         results_file = self.project_root / "task_analysis_results.json"
         
-        # Merge new results with existing ones
+        # Merge new results with existing ones (this overwrites any existing result for the same task)
         for result in new_results:
             existing_results[result['task']] = result
         
-        # Convert back to list and save
+        # Convert back to list and save (this ensures no duplicates)
         all_results = list(existing_results.values())
         with open(results_file, 'w') as f:
             json.dump(all_results, f, indent=2, default=str)
         
         logger.info(f"Results saved incrementally to {results_file}")
+    
+    def cleanup_results_file(self):
+        """Clean up the results file to remove any duplicate entries."""
+        results_file = self.project_root / "task_analysis_results.json"
+        if not results_file.exists():
+            return
+        
+        try:
+            with open(results_file, 'r') as f:
+                results = json.load(f)
+            
+            # Remove duplicates by keeping only the last occurrence of each task
+            seen_tasks = set()
+            cleaned_results = []
+            duplicate_count = 0
+            
+            for result in results:
+                task_path = result.get('task')
+                if task_path and task_path not in seen_tasks:
+                    seen_tasks.add(task_path)
+                    cleaned_results.append(result)
+                elif task_path:
+                    duplicate_count += 1
+            
+            if duplicate_count > 0:
+                logger.info(f"Removed {duplicate_count} duplicate entries from results file")
+                with open(results_file, 'w') as f:
+                    json.dump(cleaned_results, f, indent=2, default=str)
+                logger.info(f"Cleaned results file saved to {results_file}")
+            
+        except (json.JSONDecodeError, KeyError) as e:
+            logger.warning(f"Failed to cleanup results file: {e}")
 
     def run_analysis(self, parallel: int = 3, task_filter: Optional[str] = None, dry_run: bool = False, rerun: bool = False):
         """Run the complete task analysis with batched parallel processing."""
         logger.info("Starting task analysis...")
+        
+        # Clean up results file to remove any duplicates
+        self.cleanup_results_file()
         
         # Load existing results
         existing_results = self.load_existing_results()
@@ -334,13 +385,13 @@ Begin your analysis and update the task file accordingly. Return your findings i
         if task_filter:
             task_files = [f for f in task_files if task_filter in f.name]
         
-        # Filter out completed tasks unless rerun is specified
+        # Only run previously failed tasks unless rerun is specified
         if not rerun:
             original_count = len(task_files)
-            task_files = [f for f in task_files if str(f) not in existing_results]
+            task_files = [f for f in task_files if self.is_task_failed(str(f), existing_results)]
             filtered_count = original_count - len(task_files)
             if filtered_count > 0:
-                logger.info(f"Filtered out {filtered_count} already completed tasks (use --rerun to include them)")
+                logger.info(f"Filtered out {filtered_count} successful/new tasks (use --rerun to include them)")
         
         logger.info(f"Found {len(task_files)} task files to process")
         
@@ -349,7 +400,8 @@ Begin your analysis and update the task file accordingly. Return your findings i
             for task_file in task_files:
                 task_info = self.parse_task_file(task_file)
                 if task_info:
-                    status = "already completed" if str(task_file) in existing_results else "incomplete"
+                    is_failed = self.is_task_failed(str(task_file), existing_results)
+                    status = "previously failed" if is_failed else "new/incomplete"
                     logger.info(f"  - {task_file.name}: {task_info['java_file']} ({status})")
             return
         
@@ -439,6 +491,8 @@ def main():
                        help="Show what would be done without executing")
     parser.add_argument("--rerun", "-r", action="store_true",
                        help="Rerun all tasks, including those already completed")
+    parser.add_argument("--cleanup", "-c", action="store_true",
+                       help="Clean up results file to remove duplicates and exit")
     parser.add_argument("--project-root", type=str, default="/home/jamie/Documents/uacalcsrc",
                        help="Project root directory")
     
@@ -446,6 +500,11 @@ def main():
     
     try:
         analyzer = TaskAnalyzer(args.project_root)
+        
+        if args.cleanup:
+            analyzer.cleanup_results_file()
+            return 0
+        
         analyzer.run_analysis(
             parallel=args.parallel,
             task_filter=args.task_filter,

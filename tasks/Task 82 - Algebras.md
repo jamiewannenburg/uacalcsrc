@@ -1,107 +1,166 @@
-# UACalc Rust/Python Translation Plan
-
-## Overview
-
-This plan contains the ordered list of translation tasks for converting the UACalc Java library to Rust with Python bindings. Tasks are ordered by dependency count to ensure foundational classes are translated before dependent classes.
-
-## Translation Strategy
-
-### Approach
-- Direct Java-to-Rust translation maintaining exact semantics
-- Use Rust idioms where appropriate (traits for interfaces, Result/Option, etc.)
-- All public methods must be translated and tested
-- Output must match Java implementation exactly
-
-### Testing Strategy
-- Rust tests for all public methods with timeouts
-- Python binding tests comparing against Java
-- Java CLI wrappers for ground truth comparison
-- Global memory limit configurable from Python
-
-### ExcluRded Packages
-The following packages are **excluded** from this plan:
-- `org.uacalc.ui.*` - UI components (not needed for core library)
-- `org.uacalc.nbui.*` - NetBeans UI components
-- `org.uacalc.example.*` - Example/demo classes (NOTE: To be implemented later)
-
-
-## Translation Tasks
-
-## Task 82: Translate `Algebras`
+# Task 82: Translate `Algebras`
 
 **Java File:** `org/uacalc/alg/Algebras.java`  
 **Package:** `org.uacalc.alg`  
 **Rust Module:** `alg::Algebras`  
-**Dependencies:** 10 (9 non-UI/example)  
+**Dependencies:** 15+ (many critical dependencies missing)  
 **Estimated Public Methods:** ~23
 
-### Description
-Translate the Java class `org.uacalc.alg.Algebras` to Rust with Python bindings.
+## Java Class Analysis
 
-### Dependencies
-This class depends on:
-- `org.uacalc.alg.QuotientAlgebra`
-- `org.uacalc.alg.conlat`
-- `org.uacalc.alg.op.Operation`
-- `org.uacalc.alg.op.OperationSymbol`
-- `org.uacalc.alg.op.Operations`
-- `org.uacalc.alg.op.SimilarityType`
-- `org.uacalc.alg.sublat`
-- `org.uacalc.terms`
-- `org.uacalc.util`
+### Class Type
+- **Type**: Utility class with static methods only
+- **Purpose**: Collection of static utility methods for algebra operations and analysis
+- **Key Pattern**: All methods are static - no instance state
+- **Constructor**: Private constructor to prevent instantiation
 
-### Implementation Steps
+### Public Methods Analysis (23 total)
+1. `unaryCloneAlgFromPartitions(List<Partition>, List<Partition>)` - Creates unary clone algebra from partitions
+2. `unaryCloneAlgFromPartitions(List<Partition>, Partition, Partition)` - Creates unary clone algebra with eta partitions
+3. `unaryClone(List<Partition>, Partition, Partition)` - Computes unary clone set
+4. `findNUF(SmallAlgebra, int)` - Finds near unanimity term
+5. `jonssonTerms(SmallAlgebra)` - Returns Jonsson terms for distributive variety
+6. `jonssonLevel(SmallAlgebra)` - Returns minimal number of Jonsson terms
+7. `isEndomorphism(Operation, SmallAlgebra)` - Tests if operation is endomorphism
+8. `isHomomorphism(int[], SmallAlgebra, SmallAlgebra)` - Tests if map is homomorphism
+9. `matrixPower(SmallAlgebra, int)` - Creates matrix power algebra
+10. `fullTransformationSemigroup(int, boolean, boolean)` - Creates transformation semigroup
+11. `findInClone(List<Operation>, SmallAlgebra, ProgressReport)` - Finds operations in clone
+12. `makeRandomAlgebra(int, SimilarityType)` - Creates random algebra
+13. `makeRandomAlgebra(int, SimilarityType, long)` - Creates random algebra with seed
+14. `makeRandomAlgebra(int, int[])` - Creates random algebra with arities
+15. `makeRandomAlgebra(int, int[], long)` - Creates random algebra with arities and seed
+16. `ternaryDiscriminatorAlgebra(int)` - Creates ternary discriminator algebra
+17. `memberOfQuasivariety(SmallAlgebra, SmallAlgebra, ProgressReport)` - Tests quasivariety membership
+18. `memberOfQuasivariety(SmallAlgebra, List<SmallAlgebra>, ProgressReport)` - Tests quasivariety membership
+19. `memberOfQuasivarietyGenByProperSubs(SmallAlgebra, ProgressReport)` - Tests membership in proper subalgebras
+20. `quasiCriticalCongruences(SmallAlgebra, ProgressReport)` - Finds quasi-critical congruences
+21. `quasiCritical(SmallAlgebra)` - Tests if algebra is quasi-critical
+22. `quasiCritical(SmallAlgebra, ProgressReport)` - Tests if algebra is quasi-critical with report
+23. `main(String[])` - Main method for testing
 
-1. **Analyze Java Implementation**
-   - Read and understand the Java source code
-   - Identify all public methods and their signatures
-   - Note any special patterns (interfaces, abstract classes, etc.)
-   - Identify dependencies on other UACalc classes
+### Dependencies Analysis
 
-2. **Design Rust Translation**
-   - Determine if Java interfaces should become Rust traits
-   - Design struct/enum representations matching Java semantics
-   - Plan for Rust idioms (Option instead of null, Result for errors, etc.)
-   - Ensure all public methods are translated
+**Critical Missing Dependencies (must be implemented first):**
+- `SmallAlgebra` - Core algebra interface (Task 41)
+- `BasicAlgebra` - Basic algebra implementation (Task 71)
+- `QuotientAlgebra` - Quotient algebra (Task 77)
+- `Operation` - Operation interface (Task 12)
+- `Operations` - Operation factory class (Task 50)
+- `OperationSymbol` - Operation symbol (Task 1) ✓ (implemented)
+- `SimilarityType` - Similarity type (Task 2) ✓ (implemented)
+- `Partition` - Partition class (Task 5) ✓ (implemented)
+- `IntArray` - Integer array utility (Task 23) ✓ (implemented)
+- `Malcev` - Malcev operations (Task 63)
+- `FreeAlgebra` - Free algebra (Task 81)
+- `Closer` - Closer for term generation (Task 84)
+- `SubalgebraLattice` - Subalgebra lattice (Task 76)
+- `PowerAlgebra` - Power algebra (Task 57)
+- `Homomorphism` - Homomorphism class (Task 43)
+- `Term` - Term class (Task 56)
+- `Horner` - Horner encoding (Task 3) ✓ (implemented)
+- `ArrayIncrementor` - Array incrementor (Task 14) ✓ (implemented)
+- `SequenceGenerator` - Sequence generator (Task 15) ✓ (implemented)
 
-3. **Implement Rust Code**
-   - Create Rust module structure
-   - Implement all public methods
-   - Add comprehensive documentation
-   - Follow Rust naming conventions (snake_case)
+**UI Dependencies (can be made optional):**
+- `ProgressReport` - Progress reporting interface
 
-4. **Create Python Bindings (PyO3)**
-   - Expose all public methods to Python
-   - Use appropriate PyO3 types (PyResult, etc.)
-   - Add Python docstrings
+## Rust Implementation Recommendations
 
-5. **Create Java CLI Wrapper**
-   - Create wrapper in `java_wrapper/src/` matching package structure
-   - Implement `main` method accepting command-line arguments
-   - Expose all public methods through CLI commands
-   - Output results in JSON/text format for comparison
+### 1. Struct Design
+```rust
+// Since Algebras is a utility class with only static methods,
+// we don't need a struct - just implement as a module with functions
+pub mod algebras {
+    // All methods will be public functions, not methods
+}
+```
 
-6. **Write Rust Tests**
-   - Test all public methods
-   - Add tests with timeouts (slightly longer than Java completion times)
-   - Test edge cases and error conditions
-   - Compare results against Java CLI wrapper output
+### 2. Method Organization
+- **Static Methods → Free Functions**: All Java static methods become Rust free functions
+- **Error Handling**: Use `Result<T, String>` for methods that can fail
+- **Optional Parameters**: Use `Option<T>` for optional parameters
+- **Collections**: Use `Vec<T>` instead of `List<T>`
 
-7. **Write Python Tests**
-   - Test all public methods through Python bindings
-   - Compare results against Java CLI wrapper output
-   - Verify Python API matches Rust API
+### 3. Key Implementation Patterns
+```rust
+// Example method signature translation
+pub fn find_nuf(alg: &SmallAlgebra, arity: i32) -> Option<Term> {
+    // Implementation
+}
 
-8. **Verification**
-   - Run all tests and ensure they pass
-   - Verify outputs match Java implementation exactly
-   - Check test coverage for all public methods
+pub fn make_random_algebra_safe(
+    n: i32, 
+    sim_type: &SimilarityType, 
+    seed: Option<i64>
+) -> Result<BasicAlgebra, String> {
+    // Implementation with proper error handling
+}
+```
 
-### Acceptance Criteria
-- [ ] All public methods translated to Rust
+### 4. Dependencies Resolution
+- **Cannot implement until dependencies are complete**: This class has too many critical dependencies
+- **Priority order**: Implement in dependency order (Tasks 1-84 before this)
+- **Mock implementations**: Consider creating mock implementations for testing
+
+### 5. Java Wrapper Suitability
+- **Suitable for testing**: Yes, once dependencies are implemented
+- **All methods can be exposed**: All 23 public methods can be wrapped
+- **Complex parameter types**: Will need careful handling of collections and complex objects
+
+## Implementation Status
+
+### Current State
+- **Rust Implementation**: Not started (blocked by dependencies)
+- **Dependencies Status**: Most critical dependencies not implemented
+- **Java Wrapper**: Not created (blocked by dependencies)
+
+### Blocking Dependencies
+This task cannot be implemented until the following are complete:
+1. Task 41: SmallAlgebra
+2. Task 71: BasicAlgebra  
+3. Task 77: QuotientAlgebra
+4. Task 12: Operation
+5. Task 50: Operations
+6. Task 63: Malcev
+7. Task 81: FreeAlgebra
+8. Task 84: Closer
+9. Task 76: SubalgebraLattice
+10. Task 57: PowerAlgebra
+11. Task 43: Homomorphism
+12. Task 56: Term
+
+### Recommendations
+1. **Defer implementation**: This task should be moved much later in the dependency order
+2. **Update dependency count**: Should be 15+ dependencies, not 10
+3. **Create placeholder**: Add placeholder implementation that compiles but panics
+4. **Focus on dependencies**: Implement core algebra types first
+
+## Testing Strategy
+
+### Rust Tests
+- Test all 23 public methods
+- Use mock implementations for dependencies initially
+- Test error conditions and edge cases
+- Compare against Java implementation
+
+### Python Tests
+- Expose all methods through Python bindings
+- Test parameter validation
+- Test return value types
+
+### Java Wrapper
+- Create comprehensive CLI wrapper
+- Support all method signatures
+- Handle complex parameter types (collections, objects)
+- Output results in JSON format for comparison
+
+## Acceptance Criteria
+- [ ] All 23 public methods translated to Rust
 - [ ] Python bindings expose all public methods
 - [ ] Java CLI wrapper created with all public methods
 - [ ] Rust tests pass with timeouts enabled
 - [ ] Python tests pass and match Java output
 - [ ] Code compiles without warnings
 - [ ] Documentation complete
+- [ ] **All blocking dependencies implemented first**
