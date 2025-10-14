@@ -11,6 +11,7 @@ use uacalc_core::algebra::{Algebra, BasicAlgebra, SmallAlgebra};
 use uacalc_core::binary_relation::{BasicBinaryRelation, BinaryRelation};
 use uacalc_core::conlat::{BasicCongruenceLattice, CongruenceLattice as CongruenceLatticeTrait};
 use uacalc_core::error::UACalcError;
+use uacalc_core::lat::{maximals, Order};
 use uacalc_core::operation::{Operation, OperationSymbol, TableOperation};
 use uacalc_core::partition::{BasicPartition, Partition};
 use uacalc_core::product::ProductAlgebra;
@@ -49,6 +50,7 @@ fn uacalc_rust(_py: Python, m: &Bound<PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(rust_create_product_algebra, m)?)?;
     m.add_function(wrap_pyfunction!(rust_create_quotient_algebra, m)?)?;
     m.add_function(wrap_pyfunction!(rust_create_subalgebra, m)?)?;
+    m.add_function(wrap_pyfunction!(py_maximals, m)?)?;
 
     // Add custom exception classes
     m.add("UACalcError", _py.get_type_bound::<PyUACalcError>())?;
@@ -1878,4 +1880,27 @@ fn rust_create_subalgebra(
 
     // Return PySubalgebra directly, preserving Subalgebra-specific methods
     Ok(PySubalgebra { inner: subalgebra })
+}
+
+/// Helper function to find maximals in an ordered set
+#[pyfunction] 
+fn py_maximals(elements: Vec<i32>, order_type: String) -> PyResult<Vec<i32>> {
+    // Create order relation based on type
+    let order_result = match order_type.as_str() {
+        "divisibility" => {
+            let divisibility_order = |a: &i32, b: &i32| a % b == 0;
+            maximals(&elements, &divisibility_order)
+        },
+        "natural" => {
+            let natural_order = |a: &i32, b: &i32| a <= b;
+            maximals(&elements, &natural_order)
+        },
+        _ => {
+            return Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+                format!("Unknown order type: {}. Supported: divisibility, natural", order_type)
+            ));
+        }
+    };
+    
+    Ok(order_result)
 }

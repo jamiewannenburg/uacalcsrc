@@ -8,6 +8,7 @@ pub mod binary_relation;
 #[cfg(feature = "conlat")]
 pub mod conlat;
 pub mod error;
+pub mod lat;
 pub mod operation;
 pub mod partition;
 pub mod product;
@@ -25,6 +26,7 @@ pub use binary_relation::{
     BasicBinaryRelation, BinaryRelation,
 };
 pub use error::{UACalcError, UACalcResult};
+pub use lat::{maximals, ordered_sets_main, Order};
 pub use operation::{
     FlatOperationTable, FunctionOperation, Operation, OperationSymbol, OperationType,
     TableOperation,
@@ -56,10 +58,10 @@ pub use term::{eval_term, eval_term_int, term_to_table, EvaluationContext, Term,
 pub mod prelude {
     pub use crate::{
         coarsest_partition, empty_relation, equivalence_from_partition, finest_partition,
-        identity_relation, universal_relation, Algebra, BasicAlgebra, BasicBinaryRelation,
-        BasicPartition, BinaryRelation, FlatOperationTable, FunctionOperation, Operation,
-        OperationSymbol, OperationType, Partition, QuotientAlgebra, SmallAlgebra, Subalgebra,
-        TableOperation, UACalcError, UACalcResult,
+        identity_relation, maximals, ordered_sets_main, universal_relation, Algebra, BasicAlgebra,
+        BasicBinaryRelation, BasicPartition, BinaryRelation, FlatOperationTable, FunctionOperation,
+        Operation, OperationSymbol, OperationType, Order, Partition, QuotientAlgebra, SmallAlgebra,
+        Subalgebra, TableOperation, UACalcError, UACalcResult,
     };
 
     // Utility functions
