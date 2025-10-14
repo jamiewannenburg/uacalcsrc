@@ -6,6 +6,7 @@
 pub mod binary_relation;
 pub mod basic_binary_relation;
 pub mod partition;
+pub mod subtrace;
 
 pub use binary_relation::{
     BinaryRelation, MutableBinaryRelation, BinaryRelationCompare, 
@@ -13,3 +14,4 @@ pub use binary_relation::{
 };
 pub use basic_binary_relation::BasicBinaryRelation;
 pub use partition::{Partition, PrintType};
+pub use subtrace::Subtrace;

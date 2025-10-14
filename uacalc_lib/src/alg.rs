@@ -3,7 +3,7 @@ use pyo3::exceptions::PyValueError;
 use uacalc::alg::*;
 use uacalc::alg::conlat::{BinaryRelation, MutableBinaryRelation};
 use uacalc::util::IntArrayTrait;
-use uacalc::alg::conlat::BasicBinaryRelation;
+use uacalc::alg::conlat::{BasicBinaryRelation, Subtrace};
 
 /// Python wrapper for OperationSymbol
 #[pyclass]
@@ -770,6 +770,7 @@ pub fn register_alg_module(py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyPrintType>()?;
     m.add_class::<PyPartition>()?;
     m.add_class::<PyBasicBinaryRelation>()?;
+    m.add_class::<PySubtrace>()?;
     
     // Export only clean names (without Py prefix)
     m.add("OperationSymbol", m.getattr("PyOperationSymbol")?)?;
@@ -777,6 +778,7 @@ pub fn register_alg_module(py: Python, m: &PyModule) -> PyResult<()> {
     m.add("PrintType", m.getattr("PyPrintType")?)?;
     m.add("Partition", m.getattr("PyPartition")?)?;
     m.add("BasicBinaryRelation", m.getattr("PyBasicBinaryRelation")?)?;
+    m.add("Subtrace", m.getattr("PySubtrace")?)?;
     
     // Remove the Py* names from the module to avoid confusion
     let module_dict = m.dict();
@@ -785,6 +787,7 @@ pub fn register_alg_module(py: Python, m: &PyModule) -> PyResult<()> {
     module_dict.del_item("PyPrintType")?;
     module_dict.del_item("PyPartition")?;
     module_dict.del_item("PyBasicBinaryRelation")?;
+    module_dict.del_item("PySubtrace")?;
     
     Ok(())
 }
@@ -793,6 +796,12 @@ pub fn register_alg_module(py: Python, m: &PyModule) -> PyResult<()> {
 #[pyclass]
 pub struct PyBasicBinaryRelation {
     inner: BasicBinaryRelation,
+}
+
+/// Python wrapper for Subtrace
+#[pyclass]
+pub struct PySubtrace {
+    inner: Subtrace,
 }
 
 #[pymethods]
@@ -1042,5 +1051,216 @@ impl PyBasicBinaryRelation {
             let list = pyo3::types::PyList::new(py, pairs);
             Ok(list.into())
         })
+    }
+}
+
+#[pymethods]
+impl PySubtrace {
+    /// Create a new Subtrace with given elements and involution flag.
+    /// 
+    /// Args:
+    ///     a (int): First element of the subtrace pair
+    ///     b (int): Second element of the subtrace pair
+    ///     has_involution (bool): Whether this subtrace has involution
+    #[new]
+    fn new(a: i32, b: i32, has_involution: bool) -> Self {
+        PySubtrace {
+            inner: Subtrace::new(a, b, has_involution),
+        }
+    }
+    
+    /// Create a new Subtrace with given elements, involution flag, and type.
+    /// 
+    /// Args:
+    ///     a (int): First element of the subtrace pair
+    ///     b (int): Second element of the subtrace pair
+    ///     has_involution (bool): Whether this subtrace has involution
+    ///     type_value (int): TCT type classification
+    /// 
+    /// Returns:
+    ///     Subtrace: A new Subtrace instance with the specified type
+    #[staticmethod]
+    fn new_with_type(a: i32, b: i32, has_involution: bool, type_value: i32) -> Self {
+        PySubtrace {
+            inner: Subtrace::new_with_type(a, b, has_involution, type_value),
+        }
+    }
+    
+    /// Get the first element of the subtrace pair.
+    /// 
+    /// Returns:
+    ///     int: The first element
+    fn first(&self) -> i32 {
+        self.inner.first()
+    }
+    
+    /// Get the second element of the subtrace pair.
+    /// 
+    /// Returns:
+    ///     int: The second element
+    fn second(&self) -> i32 {
+        self.inner.second()
+    }
+    
+    /// Get the TCT type classification.
+    /// 
+    /// Returns:
+    ///     int: The type value (-1 if not set)
+    fn type_value(&self) -> i32 {
+        self.inner.type_value()
+    }
+    
+    /// Check if this subtrace has involution.
+    /// 
+    /// Returns:
+    ///     bool: True if the subtrace has involution, False otherwise
+    fn has_involution(&self) -> bool {
+        self.inner.has_involution()
+    }
+    
+    /// Get the subtrace universe.
+    /// 
+    /// Returns:
+    ///     list or None: List of IntArray pairs if set, None otherwise
+    fn get_subtrace_universe(&self) -> Option<Vec<Vec<i32>>> {
+        self.inner.get_subtrace_universe().map(|universe| {
+            universe.iter()
+                .map(|int_array| vec![int_array.get(0).unwrap(), int_array.get(1).unwrap()])
+                .collect()
+        })
+    }
+    
+    /// Set the subtrace universe.
+    /// 
+    /// Args:
+    ///     universe (list): List of pairs as lists of two integers
+    fn set_subtrace_universe(&mut self, universe: Vec<Vec<i32>>) -> PyResult<()> {
+        let int_arrays: Result<Vec<_>, _> = universe.into_iter()
+            .map(|pair| {
+                if pair.len() != 2 {
+                    Err("Each pair must have exactly 2 elements")
+                } else {
+                    Ok(uacalc::util::int_array::IntArray::from_array(pair)
+                        .map_err(|e| format!("Failed to create IntArray: {}", e))?)
+                }
+            })
+            .collect();
+        
+        match int_arrays {
+            Ok(arrays) => {
+                self.inner.set_subtrace_universe(arrays);
+                Ok(())
+            }
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Get the matrix universe.
+    /// 
+    /// Returns:
+    ///     list or None: List of 4-tuples if set, None otherwise
+    fn get_matrix_universe(&self) -> Option<Vec<Vec<i32>>> {
+        self.inner.get_matrix_universe().map(|universe| {
+            universe.iter()
+                .map(|int_array| {
+                    (0..int_array.universe_size())
+                        .map(|i| int_array.get(i).unwrap())
+                        .collect()
+                })
+                .collect()
+        })
+    }
+    
+    /// Set the matrix universe.
+    /// 
+    /// Args:
+    ///     universe (list): List of 4-tuples as lists of four integers
+    fn set_matrix_universe(&mut self, universe: Vec<Vec<i32>>) -> PyResult<()> {
+        let int_arrays: Result<Vec<_>, _> = universe.into_iter()
+            .map(|tuple| {
+                if tuple.len() != 4 {
+                    Err("Each tuple must have exactly 4 elements")
+                } else {
+                    Ok(uacalc::util::int_array::IntArray::from_array(tuple)
+                        .map_err(|e| format!("Failed to create IntArray: {}", e))?)
+                }
+            })
+            .collect();
+        
+        match int_arrays {
+            Ok(arrays) => {
+                self.inner.set_matrix_universe(arrays);
+                Ok(())
+            }
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Set the TCT type classification.
+    /// 
+    /// Args:
+    ///     type_value (int): The type to set
+    fn set_type(&mut self, type_value: i32) {
+        self.inner.set_type(type_value);
+    }
+    
+    /// Get a string representation in brief format.
+    /// 
+    /// Args:
+    ///     brief (bool): If True, returns brief format [a, b], otherwise full format
+    /// 
+    /// Returns:
+    ///     str: String representation of the subtrace
+    fn to_string_brief(&self, brief: bool) -> String {
+        self.inner.to_string_brief(brief)
+    }
+    
+    /// Python string representation
+    fn __str__(&self) -> String {
+        self.inner.to_string()
+    }
+    
+    /// Python repr representation
+    fn __repr__(&self) -> String {
+        format!("Subtrace({}, {}, {}, {})", 
+                self.inner.first(), 
+                self.inner.second(), 
+                self.inner.has_involution(),
+                self.inner.type_value())
+    }
+    
+    /// Python equality comparison
+    fn __eq__(&self, other: &PySubtrace) -> bool {
+        self.inner == other.inner
+    }
+    
+    /// Python hash function
+    fn __hash__(&self) -> u64 {
+        use std::collections::hash_map::DefaultHasher;
+        use std::hash::{Hash, Hasher};
+        
+        let mut hasher = DefaultHasher::new();
+        self.inner.hash(&mut hasher);
+        hasher.finish()
+    }
+    
+    /// Python comparison (less than)
+    fn __lt__(&self, other: &PySubtrace) -> bool {
+        self.inner < other.inner
+    }
+    
+    /// Python comparison (less than or equal)
+    fn __le__(&self, other: &PySubtrace) -> bool {
+        self.inner <= other.inner
+    }
+    
+    /// Python comparison (greater than)
+    fn __gt__(&self, other: &PySubtrace) -> bool {
+        self.inner > other.inner
+    }
+    
+    /// Python comparison (greater than or equal)
+    fn __ge__(&self, other: &PySubtrace) -> bool {
+        self.inner >= other.inner
     }
 }
