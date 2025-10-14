@@ -108,6 +108,56 @@ impl PyNaturalOrder {
     }
 }
 
+/// Find maximal elements in a collection using DivisibilityOrder
+#[pyfunction]
+fn maximals_divisibility(elems: Vec<i32>) -> PyResult<Vec<i32>> {
+    let order = uacalc::lat::DivisibilityOrder;
+    Ok(uacalc::lat::ordered_sets::maximals(&elems, &order))
+}
+
+/// Find maximal elements in a collection using PrefixOrder
+#[pyfunction]
+fn maximals_prefix(elems: Vec<String>) -> PyResult<Vec<String>> {
+    let order = uacalc::lat::PrefixOrder;
+    Ok(uacalc::lat::ordered_sets::maximals(&elems, &order))
+}
+
+/// Find maximal elements in a collection using NaturalOrder for integers
+#[pyfunction]
+fn maximals_natural_i32(elems: Vec<i32>) -> PyResult<Vec<i32>> {
+    let order = uacalc::lat::NaturalOrder;
+    Ok(uacalc::lat::ordered_sets::maximals(&elems, &order))
+}
+
+/// Find maximal elements in a collection using NaturalOrder for strings
+#[pyfunction]
+fn maximals_natural_string(elems: Vec<String>) -> PyResult<Vec<String>> {
+    let order = uacalc::lat::NaturalOrder;
+    Ok(uacalc::lat::ordered_sets::maximals(&elems, &order))
+}
+
+/// Run the main test function for ordered_sets
+#[pyfunction]
+fn ordered_sets_main() -> PyResult<String> {
+    // Capture output from the main function
+    let lst = vec![2, 3, 6, 35, 35 * 5];
+    
+    // Define divisibility order where a ≤ b if b % a == 0
+    struct DivOrder;
+    impl uacalc::lat::Order<i32> for DivOrder {
+        fn leq(&self, a: &i32, b: &i32) -> bool {
+            if *a == 0 { return true; }  // 0 divides everything by convention
+            if *b == 0 { return *a == 0; }
+            *a != 0 && *b % *a == 0
+        }
+    }
+    
+    let order = DivOrder;
+    let maxs = uacalc::lat::ordered_sets::maximals(&lst, &order);
+    
+    Ok(format!("max's are {:?}", maxs))
+}
+
 pub fn register_lat_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     // Register classes internally but only export clean names
     m.add_class::<PyDivisibilityOrder>()?;
@@ -118,6 +168,13 @@ pub fn register_lat_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     m.add("DivisibilityOrder", m.getattr("PyDivisibilityOrder")?)?;
     m.add("PrefixOrder", m.getattr("PyPrefixOrder")?)?;
     m.add("NaturalOrder", m.getattr("PyNaturalOrder")?)?;
+    
+    // Add OrderedSets functions
+    m.add_function(wrap_pyfunction!(maximals_divisibility, m)?)?;
+    m.add_function(wrap_pyfunction!(maximals_prefix, m)?)?;
+    m.add_function(wrap_pyfunction!(maximals_natural_i32, m)?)?;
+    m.add_function(wrap_pyfunction!(maximals_natural_string, m)?)?;
+    m.add_function(wrap_pyfunction!(ordered_sets_main, m)?)?;
     
     // Remove the Py* names from the module to avoid confusion
     let module_dict = m.dict();
