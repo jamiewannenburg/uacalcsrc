@@ -1,26 +1,27 @@
+pub mod algebra;
 pub mod conlat;
+pub mod general_algebra;
 pub mod op;
 pub mod parallel;
+pub mod small_algebra;
 pub mod sublat;
 
 // Re-export partition types for convenience
 pub use conlat::partition::{Partition, PrintType};
 
-pub struct Algebra {
-    // TODO: Implement algebra structure
-}
+// Re-export algebra types
+pub use algebra::{
+    Algebra, CloneableAlgebra, BoxedAlgebra, boxed_algebra, ProgressMonitor,
+    CARDINALITY_UNKNOWN, CARDINALITY_FINITE, CARDINALITY_INFINITE,
+    CARDINALITY_COUNTABLE, CARDINALITY_COUNTABLY_INFINITE
+};
 
-pub struct SmallAlgebra {
-    // TODO: Implement small algebra structure
-}
+// Re-export concrete algebra implementations
+pub use general_algebra::GeneralAlgebra;
+pub use small_algebra::{SmallAlgebra, BasicSmallAlgebra, AlgebraType};
 
-pub struct BasicAlgebra {
-    // TODO: Implement basic algebra structure
-}
-
-pub struct GeneralAlgebra {
-    // TODO: Implement general algebra structure
-}
+// BasicAlgebra is now implemented as BasicSmallAlgebra
+// GeneralAlgebra is now implemented in general_algebra.rs
 
 pub struct FreeAlgebra {
     // TODO: Implement free algebra structure

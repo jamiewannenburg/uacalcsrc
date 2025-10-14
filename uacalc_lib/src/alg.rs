@@ -2802,3 +2802,340 @@ impl PyBasicBinaryRelation {
         })
     }
 }
+
+/// Python wrapper for GeneralAlgebra (for integer universes)
+#[pyclass]
+pub struct PyGeneralAlgebra {
+    inner: uacalc::alg::GeneralAlgebra<i32>,
+}
+
+#[pymethods]
+impl PyGeneralAlgebra {
+    /// Create a new GeneralAlgebra with a name.
+    /// 
+    /// Args:
+    ///     name (str): The name of the algebra
+    /// 
+    /// Returns:
+    ///     GeneralAlgebra: A new GeneralAlgebra instance
+    #[new]
+    #[pyo3(signature = (name))]
+    fn new(name: String) -> Self {
+        PyGeneralAlgebra {
+            inner: uacalc::alg::GeneralAlgebra::new(name),
+        }
+    }
+    
+    /// Create a new GeneralAlgebra with a name and universe.
+    /// 
+    /// Args:
+    ///     name (str): The name of the algebra
+    ///     universe (Set[int]): The universe set as a list of integers
+    /// 
+    /// Returns:
+    ///     GeneralAlgebra: A new GeneralAlgebra instance
+    #[staticmethod]
+    fn with_universe(name: String, universe: Vec<i32>) -> Self {
+        let universe_set: std::collections::HashSet<i32> = universe.into_iter().collect();
+        PyGeneralAlgebra {
+            inner: uacalc::alg::GeneralAlgebra::new_with_universe(name, universe_set),
+        }
+    }
+    
+    /// Get the name of this algebra.
+    /// 
+    /// Returns:
+    ///     str: The name of the algebra
+    fn name(&self) -> &str {
+        self.inner.name()
+    }
+    
+    /// Set the name of this algebra.
+    /// 
+    /// Args:
+    ///     name (str): The new name for the algebra
+    fn set_name(&mut self, name: String) {
+        self.inner.set_name(name);
+    }
+    
+    /// Get the description of this algebra.
+    /// 
+    /// Returns:
+    ///     Optional[str]: The description of the algebra, or None if not set
+    fn description(&self) -> Option<&str> {
+        self.inner.description()
+    }
+    
+    /// Set the description of this algebra.
+    /// 
+    /// Args:
+    ///     desc (Optional[str]): The new description for the algebra
+    fn set_description(&mut self, desc: Option<String>) {
+        self.inner.set_description(desc);
+    }
+    
+    /// Get the cardinality of this algebra.
+    /// 
+    /// Returns:
+    ///     int: The cardinality, or a negative value for infinite/unknown cardinalities
+    fn cardinality(&self) -> i32 {
+        self.inner.cardinality()
+    }
+    
+    /// Get the input size for this algebra.
+    /// 
+    /// Returns:
+    ///     int: The input size, or -1 if it exceeds maximum integer value
+    fn input_size(&self) -> i32 {
+        self.inner.input_size()
+    }
+    
+    /// Check if this algebra is unary.
+    /// 
+    /// Returns:
+    ///     bool: True if all operations have arity 1
+    fn is_unary(&self) -> bool {
+        self.inner.is_unary()
+    }
+    
+    /// Check if all operations in this algebra are idempotent.
+    /// 
+    /// Returns:
+    ///     bool: True if all operations are idempotent
+    fn is_idempotent(&self) -> bool {
+        self.inner.is_idempotent()
+    }
+    
+    /// Check if all operations in this algebra are total.
+    /// 
+    /// Returns:
+    ///     bool: True if all operations are total
+    fn is_total(&self) -> bool {
+        self.inner.is_total()
+    }
+    
+    /// Check if monitoring is enabled for this algebra.
+    /// 
+    /// Returns:
+    ///     bool: True if monitoring is enabled
+    fn monitoring(&self) -> bool {
+        self.inner.monitoring()
+    }
+    
+    /// Get the universe as a list of integers.
+    /// 
+    /// Returns:
+    ///     List[int]: The universe elements as a list
+    fn get_universe(&self) -> Vec<i32> {
+        self.inner.universe().collect()
+    }
+    
+    /// Python string representation
+    fn __str__(&self) -> String {
+        self.inner.to_string()
+    }
+    
+    /// Python repr representation
+    fn __repr__(&self) -> String {
+        format!("GeneralAlgebra({})", self.inner.to_string())
+    }
+    
+    /// Python equality comparison
+    fn __eq__(&self, other: &PyGeneralAlgebra) -> bool {
+        // Compare basic properties since we can't easily compare the full structure
+        self.inner.name() == other.inner.name() && 
+        self.inner.cardinality() == other.inner.cardinality()
+    }
+}
+
+/// Python wrapper for BasicSmallAlgebra (for integer universes)
+#[pyclass]
+pub struct PyBasicSmallAlgebra {
+    inner: uacalc::alg::BasicSmallAlgebra<i32>,
+}
+
+#[pymethods]
+impl PyBasicSmallAlgebra {
+    /// Create a new BasicSmallAlgebra.
+    /// 
+    /// Args:
+    ///     name (str): The name of the algebra
+    ///     universe (Set[int]): The universe set as a list of integers
+    /// 
+    /// Returns:
+    ///     BasicSmallAlgebra: A new BasicSmallAlgebra instance
+    #[new]
+    #[pyo3(signature = (name, universe))]
+    fn new(name: String, universe: Vec<i32>) -> Self {
+        let universe_set: std::collections::HashSet<i32> = universe.into_iter().collect();
+        let operations = Vec::new(); // Start with no operations
+        PyBasicSmallAlgebra {
+            inner: uacalc::alg::BasicSmallAlgebra::new(name, universe_set, operations),
+        }
+    }
+    
+    /// Get the name of this algebra.
+    /// 
+    /// Returns:
+    ///     str: The name of the algebra
+    fn name(&self) -> &str {
+        self.inner.name()
+    }
+    
+    /// Set the name of this algebra.
+    /// 
+    /// Args:
+    ///     name (str): The new name for the algebra
+    fn set_name(&mut self, name: String) {
+        self.inner.set_name(name);
+    }
+    
+    /// Get the description of this algebra.
+    /// 
+    /// Returns:
+    ///     Optional[str]: The description of the algebra, or None if not set
+    fn description(&self) -> Option<&str> {
+        self.inner.description()
+    }
+    
+    /// Set the description of this algebra.
+    /// 
+    /// Args:
+    ///     desc (Optional[str]): The new description for the algebra
+    fn set_description(&mut self, desc: Option<String>) {
+        self.inner.set_description(desc);
+    }
+    
+    /// Get the cardinality of this algebra.
+    /// 
+    /// Returns:
+    ///     int: The cardinality of the algebra
+    fn cardinality(&self) -> i32 {
+        self.inner.cardinality()
+    }
+    
+    /// Get the input size for this algebra.
+    /// 
+    /// Returns:
+    ///     int: The input size, or -1 if it exceeds maximum integer value
+    fn input_size(&self) -> i32 {
+        self.inner.input_size()
+    }
+    
+    /// Check if this algebra is unary.
+    /// 
+    /// Returns:
+    ///     bool: True if all operations have arity 1
+    fn is_unary(&self) -> bool {
+        self.inner.is_unary()
+    }
+    
+    /// Check if all operations in this algebra are idempotent.
+    /// 
+    /// Returns:
+    ///     bool: True if all operations are idempotent
+    fn is_idempotent(&self) -> bool {
+        self.inner.is_idempotent()
+    }
+    
+    /// Check if all operations in this algebra are total.
+    /// 
+    /// Returns:
+    ///     bool: True if all operations are total
+    fn is_total(&self) -> bool {
+        self.inner.is_total()
+    }
+    
+    /// Check if monitoring is enabled for this algebra.
+    /// 
+    /// Returns:
+    ///     bool: True if monitoring is enabled
+    fn monitoring(&self) -> bool {
+        self.inner.monitoring()
+    }
+    
+    /// Get the universe as a list of integers.
+    /// 
+    /// Returns:
+    ///     List[int]: The universe elements as a list
+    fn get_universe(&self) -> Vec<i32> {
+        self.inner.universe().collect()
+    }
+    
+    /// Get the algebra type.
+    /// 
+    /// Returns:
+    ///     str: The algebra type as a string
+    fn algebra_type(&self) -> String {
+        format!("{:?}", self.inner.algebra_type())
+    }
+    
+    /// Python string representation
+    fn __str__(&self) -> String {
+        self.inner.to_string()
+    }
+    
+    /// Python repr representation
+    fn __repr__(&self) -> String {
+        format!("BasicSmallAlgebra({})", self.inner.to_string())
+    }
+    
+    /// Python equality comparison
+    fn __eq__(&self, other: &PyBasicSmallAlgebra) -> bool {
+        // Compare basic properties since we can't easily compare the full structure
+        self.inner.name() == other.inner.name() && 
+        self.inner.cardinality() == other.inner.cardinality()
+    }
+}
+
+pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
+    // Register existing classes (keeping the original alg.rs classes)
+    m.add_class::<PyOperationSymbol>()?;
+    m.add_class::<PySimilarityType>()?;
+    m.add_class::<PyBasicOperation>()?;
+    m.add_class::<PyIntOperation>()?;
+    m.add_class::<PyAbstractIntOperation>()?;
+    m.add_class::<PyOperationWithDefaultValue>()?;
+    m.add_class::<PyBasicBinaryRelation>()?;
+    m.add_class::<PySubtrace>()?;
+    
+    // Register new Algebra classes
+    m.add_class::<PyGeneralAlgebra>()?;
+    m.add_class::<PyBasicSmallAlgebra>()?;
+    
+    // Export clean names (without Py prefix)
+    m.add("OperationSymbol", m.getattr("PyOperationSymbol")?)?;
+    m.add("SimilarityType", m.getattr("PySimilarityType")?)?;
+    m.add("BasicOperation", m.getattr("PyBasicOperation")?)?;
+    m.add("IntOperation", m.getattr("PyIntOperation")?)?;
+    m.add("AbstractIntOperation", m.getattr("PyAbstractIntOperation")?)?;
+    m.add("OperationWithDefaultValue", m.getattr("PyOperationWithDefaultValue")?)?;
+    m.add("BasicBinaryRelation", m.getattr("PyBasicBinaryRelation")?)?;
+    m.add("Subtrace", m.getattr("PySubtrace")?)?;
+    
+    // Export new Algebra classes
+    m.add("GeneralAlgebra", m.getattr("PyGeneralAlgebra")?)?;
+    m.add("BasicSmallAlgebra", m.getattr("PyBasicSmallAlgebra")?)?;
+    
+    // Remove the Py* names from the module to avoid confusion
+    let module_dict = m.dict();
+    module_dict.del_item("PyOperationSymbol")?;
+    module_dict.del_item("PySimilarityType")?;
+    module_dict.del_item("PyBasicOperation")?;
+    module_dict.del_item("PyIntOperation")?;
+    module_dict.del_item("PyAbstractIntOperation")?;
+    module_dict.del_item("PyOperationWithDefaultValue")?;
+    module_dict.del_item("PyBasicBinaryRelation")?;
+    module_dict.del_item("PySubtrace")?;
+    module_dict.del_item("PyGeneralAlgebra")?;
+    module_dict.del_item("PyBasicSmallAlgebra")?;
+    
+    // Export cardinality constants
+    m.add("CARDINALITY_UNKNOWN", uacalc::alg::CARDINALITY_UNKNOWN)?;
+    m.add("CARDINALITY_FINITE", uacalc::alg::CARDINALITY_FINITE)?;
+    m.add("CARDINALITY_INFINITE", uacalc::alg::CARDINALITY_INFINITE)?;
+    m.add("CARDINALITY_COUNTABLE", uacalc::alg::CARDINALITY_COUNTABLE)?;
+    m.add("CARDINALITY_COUNTABLY_INFINITE", uacalc::alg::CARDINALITY_COUNTABLY_INFINITE)?;
+    
+    Ok(())
+}
