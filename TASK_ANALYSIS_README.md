@@ -165,14 +165,20 @@ If you want to use the advanced cursor-agent analysis:
    curl https://cursor.com/install -fsS | bash
    ```
 
-2. **Setup authentication**:
+2. **Add to PATH** (if not already done):
    ```bash
-   python3 run_full_analysis.py --setup-auth
+   echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+   source ~/.bashrc
    ```
 
-3. **Run analysis**:
+3. **Setup authentication**:
    ```bash
-   python3 run_full_analysis.py --use-cursor-agent
+   cursor-agent login
+   ```
+
+4. **Run analysis**:
+   ```bash
+   python3 analyze_tasks.py --use-cursor-agent
    ```
 
 ## Cursor-Agent Headless Mode
@@ -218,9 +224,10 @@ This approach provides good performance while maintaining system stability.
 ## Troubleshooting
 
 ### cursor-agent Authentication Issues
-- Run `~/.local/bin/cursor-agent status` to check authentication
-- Use `~/.local/bin/cursor-agent login` to authenticate manually
+- Run `cursor-agent status` to check authentication
+- Use `cursor-agent login` to authenticate manually
 - Ensure you have a Cursor account and API access
+- Verify cursor-agent is in PATH: `which cursor-agent`
 
 ### Simple Analysis Issues
 - Check that all required files exist:

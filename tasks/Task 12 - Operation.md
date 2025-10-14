@@ -39,7 +39,10 @@ The following packages are **excluded** from this plan:
 Translate the Java class `org.uacalc.alg.op.Operation` to Rust with Python bindings.
 
 ### Dependencies
-No dependencies on other UACalc classes (leaf node).
+- **OperationSymbol** (Task 1) - Used for operation symbol representation and comparison
+- **Operations** (Task 50) - Used for static utility methods like isTotal, isAssociative, etc.
+
+**Note**: While Operation itself has minimal dependencies, it is a foundational interface that many other classes depend on. The Operations utility class provides static methods that are used by Operation implementations.
 
 ### Implementation Steps
 
@@ -88,11 +91,47 @@ No dependencies on other UACalc classes (leaf node).
    - Verify outputs match Java implementation exactly
    - Check test coverage for all public methods
 
+### Implementation Recommendations
+
+#### Java Class Analysis
+- **Type**: Interface (17 public methods)
+- **Key Methods**: 
+  - `arity()`, `getSetSize()`, `symbol()` - Basic properties
+  - `valueAt(List)`, `valueAt(int[][])`, `intValueAt(int[])`, `intValueAt(int)` - Operation evaluation
+  - `makeTable()`, `getTable()`, `isTableBased()` - Table management
+  - `isIdempotent()`, `isAssociative()`, `isCommutative()`, `isTotallySymmetric()`, `isMaltsev()`, `isTotal()` - Property checks
+- **Dependencies**: Only OperationSymbol (already implemented) and standard Java collections
+- **Usage**: Heavily used throughout codebase as foundational interface
+
+#### Rust Implementation Strategy
+- **Rust Construct**: `trait Operation` (interface → trait)
+- **Trait Methods**: All 17 public methods should be trait methods
+- **Generic vs Dynamic Dispatch**: Use dynamic dispatch (`dyn Operation`) for flexibility
+- **Error Handling**: Use `Result<T, String>` for methods that can fail
+- **Comparable**: Implement `Ord`, `PartialOrd`, `Eq`, `PartialEq` traits
+
+#### Java Wrapper Suitability
+- **NOT SUITABLE** - Operation is an interface that cannot be instantiated directly
+- **Alternative**: Create wrapper for concrete implementations (AbstractOperation, OperationWithDefaultValue, etc.)
+- **Testing Strategy**: Test through concrete implementations rather than interface directly
+
+#### Dependencies Verification
+- **OperationSymbol**: ✅ Already implemented (Task 1)
+- **Operations**: ❌ Not yet implemented (Task 50) - provides static utility methods
+- **Missing Dependencies**: None identified
+
+#### Implementation Priority
+- **HIGH PRIORITY** - This is a foundational interface that many other classes depend on
+- **Blocking**: AbstractOperation, OperationWithDefaultValue, and other operation classes cannot be implemented without this trait
+- **Recommendation**: Implement this trait first, then work on concrete implementations
+
 ### Acceptance Criteria
-- [ ] All public methods translated to Rust
-- [ ] Python bindings expose all public methods
-- [ ] Java CLI wrapper created with all public methods
+- [ ] Operation trait implemented with all 17 methods
+- [ ] Trait implements Comparable (Ord, PartialOrd, Eq, PartialEq)
+- [ ] Proper error handling with Result types
+- [ ] Python bindings expose trait (though not directly instantiable)
+- [ ] Java wrapper created for concrete implementations
 - [ ] Rust tests pass with timeouts enabled
-- [ ] Python tests pass and match Java output
+- [ ] Python tests pass through concrete implementations
 - [ ] Code compiles without warnings
 - [ ] Documentation complete

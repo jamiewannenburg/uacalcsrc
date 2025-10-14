@@ -32,14 +32,18 @@ The following packages are **excluded** from this plan:
 **Java File:** `org/uacalc/alg/op/AbstractIntOperation.java`  
 **Package:** `org.uacalc.alg.op`  
 **Rust Module:** `alg::op::AbstractIntOperation`  
-**Dependencies:** 0 (0 non-UI/example)  
+**Dependencies:** 3 (3 non-UI/example)  
 **Estimated Public Methods:** ~4
 
 ### Description
 Translate the Java class `org.uacalc.alg.op.AbstractIntOperation` to Rust with Python bindings.
 
 ### Dependencies
-No dependencies on other UACalc classes (leaf node).
+- **AbstractOperation** (Task 11) - Parent class that AbstractIntOperation extends
+- **OperationSymbol** (Task 1) - Used in constructors for operation symbol representation
+- **Operation interface** (Task 12) - Inherited through AbstractOperation
+
+**Note**: Despite the name "Abstract", this is actually a concrete class designed for Jython/Groovy compatibility. It has optional methods that throw UnsupportedOperationException.
 
 ### Implementation Steps
 
@@ -88,11 +92,77 @@ No dependencies on other UACalc classes (leaf node).
    - Verify outputs match Java implementation exactly
    - Check test coverage for all public methods
 
+### Implementation Recommendations
+
+#### Java Class Analysis
+- **Type**: Concrete class extending AbstractOperation (despite "Abstract" name)
+- **Purpose**: Jython/Groovy compatibility - provides optional methods that throw UnsupportedOperationException
+- **Key Methods**: 
+  - 2 constructors (String name + arity + algSize, OperationSymbol + algSize)
+  - 1 overridden method (`valueAt` that throws UnsupportedOperationException)
+  - 1 main method (empty stub)
+- **Inheritance**: Extends AbstractOperation, inherits all Operation interface methods
+
+#### Rust Implementation Strategy
+- **Struct Design**: Concrete struct implementing Operation trait through AbstractOperation trait
+- **Trait Implementation**: Implement Operation trait methods by delegating to AbstractOperation
+- **Error Handling**: Use `Result<T, String>` for methods that can fail
+- **Constructor Pattern**: Provide both `new` and `new_safe` constructors
+- **Method Delegation**: Override `value_at` to return `Err("UnsupportedOperationException")`
+
+#### Dependencies Required (MUST be implemented first)
+1. **Operation Trait** (Task 12) - Core interface that must be implemented first
+2. **AbstractOperation Trait** (Task 11) - Parent trait with default implementations
+3. **OperationSymbol** (Task 1) - Already implemented ✅
+
+#### Java Wrapper Suitability
+- **NOT SUITABLE** - This class is designed as a base class for Jython/Groovy compatibility
+- **Issue**: Most methods throw UnsupportedOperationException, making direct testing impractical
+- **Alternative**: Test through concrete subclasses that properly implement the methods
+- **Testing Strategy**: Focus on constructor testing and basic functionality
+
+#### Critical Implementation Notes
+- This is a concrete class despite the "Abstract" name - it can be instantiated
+- The `valueAt` method intentionally throws UnsupportedOperationException
+- Designed for inheritance by Jython/Groovy subclasses that implement the actual logic
+- Very minimal implementation - mostly just constructor delegation to parent
+- Main method is empty stub - not suitable for CLI testing
+
+#### Rust Implementation Pattern
+```rust
+pub struct AbstractIntOperation {
+    // Delegate to AbstractOperation implementation
+    inner: AbstractOperationImpl,
+}
+
+impl Operation for AbstractIntOperation {
+    // Delegate all methods to inner implementation
+}
+
+impl AbstractIntOperation {
+    pub fn new(name: &str, arity: i32, alg_size: i32) -> Self {
+        // Delegate to AbstractOperation::new
+    }
+    
+    pub fn new_with_symbol(symbol: OperationSymbol, alg_size: i32) -> Self {
+        // Delegate to AbstractOperation::new_with_symbol
+    }
+    
+    // Override value_at to throw UnsupportedOperationException
+    pub fn value_at(&self, args: &[i32]) -> Result<i32, String> {
+        Err("UnsupportedOperationException".to_string())
+    }
+}
+```
+
 ### Acceptance Criteria
-- [ ] All public methods translated to Rust
-- [ ] Python bindings expose all public methods
-- [ ] Java CLI wrapper created with all public methods
-- [ ] Rust tests pass with timeouts enabled
-- [ ] Python tests pass and match Java output
+- [ ] Operation trait implemented (Task 12)
+- [ ] AbstractOperation trait implemented (Task 11)  
+- [ ] AbstractIntOperation struct implemented
+- [ ] All constructors translated to Rust
+- [ ] valueAt method throws appropriate error
+- [ ] Python bindings expose constructors
+- [ ] Rust tests for constructors and error cases
 - [ ] Code compiles without warnings
 - [ ] Documentation complete
+- [ ] **Java wrapper NOT suitable - skip CLI wrapper**

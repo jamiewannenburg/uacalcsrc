@@ -206,10 +206,9 @@ Begin your analysis and update the task file accordingly. Return your findings i
             original_cwd = os.getcwd()
             os.chdir(self.project_root)
             
-            # Build cursor-agent command with full path using headless syntax
-            cursor_agent_path = os.path.expanduser("~/.local/bin/cursor-agent")
+            # Build cursor-agent command using headless syntax
             cmd = [
-                cursor_agent_path,
+                "cursor-agent",  # Now available in PATH
                 "-p",  # Enable print mode for non-interactive execution
                 "--force",  # Allow file modifications without confirmation
                 "--output-format", "json",  # Set output format to JSON for structured output
