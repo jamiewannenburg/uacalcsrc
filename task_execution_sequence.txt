@@ -1,0 +1,224 @@
+TASK EXECUTION SEQUENCE
+================================================================================
+The following sequence ensures each task only depends on previously completed tasks:
+
+ 1. CongruenceLattice
+     Dependencies: None (or all completed)
+
+ 2. JSONChannel
+     Dependencies: None (or all completed)
+
+ 3. Closer
+     Dependencies: None (or all completed)
+
+ 4. SingleClose
+     Dependencies: None (or all completed)
+
+ 5. TermOperation
+     Dependencies: None (or all completed)
+
+ 6. TupleWithMin
+     Dependencies: None (or all completed)
+
+ 7. PartiallyDefinedLattice
+     Dependencies: None (or all completed)
+
+ 8. MaltsevProductDecomposition
+     Dependencies: None (or all completed)
+
+ 9. Polymorphisms
+     Dependencies: None (or all completed)
+
+10. QuotientAlgebra
+     Dependencies: None (or all completed)
+
+11. TermOperationImp
+     Dependencies: None (or all completed)
+
+12. QuotientElement
+     Dependencies: None (or all completed)
+
+13. Terms
+     Dependencies: None (or all completed)
+
+14. SubProductElement
+     Dependencies: None (or all completed)
+
+15. BigProductAlgebra
+     Dependencies: None (or all completed)
+
+16. Homomorphism
+     Dependencies: None (or all completed)
+
+17. SimpleList
+     Dependencies: None (or all completed)
+
+18. NonVariableTerm
+     Dependencies: None (or all completed)
+
+19. AlgebraFromMinimalSets
+     Dependencies: None (or all completed)
+
+20. SmallAlgebra
+     Dependencies: None (or all completed)
+
+21. VariableImp
+     Dependencies: None (or all completed)
+
+22. Algebras
+     Dependencies: None (or all completed)
+
+23. BasicAlgebra
+     Dependencies: None (or all completed)
+
+24. SubProductAlgebra
+     Dependencies: None (or all completed)
+
+25. Operations
+     Dependencies: None (or all completed)
+
+26. AlgebraIO
+     Dependencies: None (or all completed)
+
+27. Lattice
+     Dependencies: None (or all completed)
+
+28. VirtualLists
+     Dependencies: None (or all completed)
+
+29. FreeAlgebra
+     Dependencies: None (or all completed)
+
+30. Variable
+     Dependencies: None (or all completed)
+
+31. MatrixPowerAlgebra
+     Dependencies: None (or all completed)
+
+32. ParameterizedOperation
+     Dependencies: None (or all completed)
+
+33. SmallLattice
+     Dependencies: None (or all completed)
+
+34. AlgebraWriter
+     Dependencies: None (or all completed)
+
+35. Subalgebra
+     Dependencies: None (or all completed)
+
+36. Mace4Reader
+     Dependencies: None (or all completed)
+
+37. Malcev
+     Dependencies: None (or all completed)
+
+38. GeneralAlgebra
+     Dependencies: None (or all completed)
+
+39. Order
+     Dependencies: None (or all completed)
+
+40. Taylor
+     Dependencies: None (or all completed)
+
+41. TypeFinder
+     Dependencies: None (or all completed)
+
+42. ReductAlgebra
+     Dependencies: None (or all completed)
+
+43. AlgebraWithGeneratingVector
+     Dependencies: None (or all completed)
+
+44. Pool
+     Dependencies: None (or all completed)
+
+45. Subtrace
+     Dependencies: None (or all completed)
+
+46. ParameterizedAlgebra
+     Dependencies: None (or all completed)
+
+47. Term
+     Dependencies: None (or all completed)
+
+48. Presentation
+     Dependencies: None (or all completed)
+
+49. Equation
+     Dependencies: None (or all completed)
+
+50. SubalgebraLattice
+     Dependencies: None (or all completed)
+
+51. Lattices
+     Dependencies: None (or all completed)
+
+52. Element
+     Dependencies: None (or all completed)
+
+53. PowerAlgebra
+     Dependencies: None (or all completed)
+
+54. Equations
+     Dependencies: None (or all completed)
+
+55. OperationWithDefaultValue
+     Dependencies: None (or all completed)
+
+56. BasicLattice
+     Dependencies: None (or all completed)
+
+57. AlgebraReader
+     Dependencies: None (or all completed)
+
+58. CloserTiming
+     Dependencies: None (or all completed)
+
+59. CentralityData
+     Dependencies: None (or all completed)
+
+60. PermutationGroup
+     Dependencies: None (or all completed)
+
+61. BasicPartition
+     Dependencies: None (or all completed)
+
+62. MaltsevDecompositionIterator
+     Dependencies: None (or all completed)
+
+63. UnaryTermsMonoid
+     Dependencies: None (or all completed)
+
+64. OrderedSets
+     Dependencies: None (or all completed)
+
+65. PolinLikeAlgebra
+     Dependencies: None (or all completed)
+
+66. BasicSet
+     Dependencies: None (or all completed)
+
+67. ProductAlgebra
+     Dependencies: None (or all completed)
+
+68. Operation
+     Dependencies: Operations
+
+69. Algebra
+     Dependencies: Operation
+
+70. AbstractOperation
+     Dependencies: Operations, Operation
+
+71. AbstractIntOperation
+     Dependencies: Operation, AbstractOperation
+
+
+DEPENDENCY ANALYSIS SUMMARY
+================================================================================
+Total tasks analyzed: 85
+Completed tasks: 14
+Incomplete tasks: 71
+Tasks in execution sequence: 71

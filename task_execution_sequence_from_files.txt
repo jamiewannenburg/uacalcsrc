@@ -1,0 +1,266 @@
+TASK EXECUTION SEQUENCE (from task files)
+================================================================================
+The following sequence ensures each task only depends on previously completed tasks:
+
+ 1. Task 68: Subalgebra
+     Dependencies: Task 0: NOT COMPLETED), Task 0: COMPLETED)
+
+ 2. Task 33: TermOperationImp
+     Dependencies: Task 0: ), Task 0: BasicAlgebra)
+
+ 3. Task 30: Element
+     Dependencies: Task 0: )
+
+ 4. Task  5: Partition
+     Dependencies: None
+
+ 5. Task 15: SequenceGenerator
+     Dependencies: Task 0: )
+
+ 6. Task 84: Closer
+     Dependencies: None
+
+ 7. Task 18: Order
+     Dependencies: None
+
+ 8. Task 71: BasicAlgebra
+     Dependencies: None
+
+ 9. Task 75: MatrixPowerAlgebra
+     Dependencies: None
+
+10. Task 19: BasicBinaryRelation
+     Dependencies: None
+
+11. Task 27: ParameterizedOperation
+     Dependencies: None
+
+12. Task 46: TypeFinder
+     Dependencies: None
+
+13. Task 31: TupleWithMin
+     Dependencies: None
+
+14. Task 63: Malcev
+     Dependencies: None
+
+15. Task 23: IntArray
+     Dependencies: None
+
+16. Task  9: PermutationGenerator
+     Dependencies: Task 0: )
+
+17. Task 45: JSONChannel
+     Dependencies: None
+
+18. Task 61: SingleClose
+     Dependencies: None
+
+19. Task 53: VirtualLists
+     Dependencies: None
+
+20. Task 83: SubProductAlgebra
+     Dependencies: None
+
+21. Task 16: OrderedSets
+     Dependencies: None
+
+22. Task  6: ArrayString
+     Dependencies: None
+
+23. Task 65: AlgebraIO
+     Dependencies: Task 0: )
+
+24. Task 51: SubProductElement
+     Dependencies: None
+
+25. Task  4: SimpleList
+     Dependencies: None
+
+26. Task 47: BasicSet
+     Dependencies: None
+
+27. Task 10: LongList
+     Dependencies: None
+
+28. Task 17: Pool
+     Dependencies: None
+
+29. Task 48: Taylor
+     Dependencies: None
+
+30. Task 29: Subtrace
+     Dependencies: None
+
+31. Task 34: CloserTiming
+     Dependencies: None
+
+32. Task 24: AlgebraFromMinimalSets
+     Dependencies: None
+
+33. Task  7: BadAlgebraFileException
+     Dependencies: None
+
+34. Task 54: AlgebraWriter
+     Dependencies: None
+
+35. Task  2: SimilarityType
+     Dependencies: None
+
+36. Task 66: GeneralAlgebra
+     Dependencies: None
+
+37. Task 14: ArrayIncrementor
+     Dependencies: None
+
+38. Task 64: ReductAlgebra
+     Dependencies: None
+
+39. Task 32: MaltsevDecompositionIterator
+     Dependencies: None
+
+40. Task 41: SmallAlgebra
+     Dependencies: None
+
+41. Task  8: ExtFileFilter
+     Dependencies: None
+
+42. Task 37: Mace4Reader
+     Dependencies: None
+
+43. Task 38: MaltsevProductDecomposition
+     Dependencies: Task 68: Subalgebra, Task 0: )
+
+44. Task 40: Variable
+     Dependencies: Task 33: TermOperationImp
+
+45. Task 25: TermOperation
+     Dependencies: Task 33: TermOperationImp
+
+46. Task 77: QuotientAlgebra
+     Dependencies: Task 5: Partition, Task 0: ✅ COMPLETED), Task 0: not completed)
+
+47. Task 59: Lattices
+     Dependencies: Task 5: Partition, Task 0: )
+
+48. Task 42: Polymorphisms
+     Dependencies: Task 5: Partition
+
+49. Task 26: CentralityData
+     Dependencies: Task 5: Partition, Task 0: NOT COMPLETED), Task 0: COMPLETED)
+
+50. Task 76: SubalgebraLattice
+     Dependencies: Task 5: Partition
+
+51. Task 62: AlgebraReader
+     Dependencies: Task 5: Partition
+
+52. Task 50: Operations
+     Dependencies: Task 5: Partition, Task 15: SequenceGenerator, Task 33: TermOperationImp, Task 0: ), Task 0: ) ✅
+
+53. Task 36: PartiallyDefinedLattice
+     Dependencies: Task 18: Order
+
+54. Task 12: Operation
+     Dependencies: Task 18: Order
+
+55. Task 52: ParameterizedAlgebra
+     Dependencies: Task 71: BasicAlgebra
+
+56. Task 70: PermutationGroup
+     Dependencies: Task 23: IntArray
+
+57. Task 43: Homomorphism
+     Dependencies: Task 5: Partition, Task 23: IntArray, Task 0: not completed)
+
+58. Task 21: BinaryRelation
+     Dependencies: Task 19: BasicBinaryRelation, Task 23: IntArray
+
+59. Task  3: Horner
+     Dependencies: Task 6: ArrayString
+
+60. Task 72: UnaryTermsMonoid
+     Dependencies: Task 19: BasicBinaryRelation, Task 33: TermOperationImp, Task 38: MaltsevProductDecomposition
+
+61. Task 28: SmallLattice
+     Dependencies: Task 59: Lattices, Task 0: NOT COMPLETED)
+
+62. Task 80: CongruenceLattice
+     Dependencies: Task 59: Lattices
+
+63. Task 79: PolinLikeAlgebra
+     Dependencies: Task 19: BasicBinaryRelation, Task 33: TermOperationImp, Task 50: Operations, Task 68: Subalgebra, Task 71: BasicAlgebra
+
+64. Task 69: BasicPartition
+     Dependencies: Task 5: Partition, Task 19: BasicBinaryRelation, Task 50: Operations, Task 71: BasicAlgebra, Task 0: not completed), Task 0: completed)
+
+65. Task 56: Term
+     Dependencies: Task 50: Operations, Task 68: Subalgebra
+
+66. Task 73: ProductAlgebra
+     Dependencies: Task 50: Operations
+
+67. Task 58: Equation
+     Dependencies: Task 33: TermOperationImp, Task 40: Variable, Task 50: Operations
+
+68. Task  1: OperationSymbol
+     Dependencies: Task 12: Operation, Task 19: BasicBinaryRelation, Task 33: TermOperationImp, Task 50: Operations, Task 71: BasicAlgebra
+
+69. Task 44: Terms
+     Dependencies: Task 56: Term
+
+70. Task 74: NonVariableTerm
+     Dependencies: Task 56: Term
+
+71. Task 78: BigProductAlgebra
+     Dependencies: Task 73: ProductAlgebra, Task 84: Closer
+
+72. Task 81: FreeAlgebra
+     Dependencies: Task 58: Equation
+
+73. Task 35: Equations
+     Dependencies: Task 1: OperationSymbol, Task 40: Variable, Task 0: Incomplete)
+
+74. Task 49: OperationWithDefaultValue
+     Dependencies: Task 1: OperationSymbol, Task 6: ArrayString, Task 12: Operation, Task 50: Operations, Task 0: )
+
+75. Task 55: Algebra
+     Dependencies: Task 1: OperationSymbol, Task 12: Operation, Task 68: Subalgebra, Task 0: SimilarityType) ✅ **COMPLETED**
+
+76. Task 13: AbstractIntOperation
+     Dependencies: Task 1: OperationSymbol, Task 12: Operation, Task 50: Operations, Task 0: )
+
+77. Task 11: AbstractOperation
+     Dependencies: Task 1: OperationSymbol, Task 6: ArrayString, Task 12: Operation, Task 33: TermOperationImp, Task 50: Operations
+
+78. Task 22: Presentation
+     Dependencies: Task 35: Equations, Task 40: Variable, Task 58: Equation
+
+79. Task 60: AlgebraWithGeneratingVector
+     Dependencies: Task 6: ArrayString, Task 35: Equations, Task 40: Variable
+
+80. Task 85: BasicLattice
+     Dependencies: Task 55: Algebra, Task 59: Lattices, Task 68: Subalgebra
+
+81. Task 67: VariableImp
+     Dependencies: Task 40: Variable, Task 50: Operations, Task 55: Algebra, Task 68: Subalgebra
+
+82. Task 39: QuotientElement
+     Dependencies: Task 5: Partition, Task 55: Algebra, Task 68: Subalgebra, Task 77: QuotientAlgebra, Task 80: CongruenceLattice, Task 0: )
+
+83. Task 20: Lattice
+     Dependencies: Task 18: Order, Task 55: Algebra, Task 68: Subalgebra
+
+84. Task 57: PowerAlgebra
+     Dependencies: Task 55: Algebra, Task 83: SubProductAlgebra
+
+85. Task 82: Algebras
+     Dependencies: Task 1: OperationSymbol, Task 3: Horner, Task 5: Partition, Task 12: Operation, Task 15: SequenceGenerator, Task 23: IntArray, Task 33: TermOperationImp, Task 41: SmallAlgebra, Task 43: Homomorphism, Task 50: Operations, Task 55: Algebra, Task 56: Term, Task 57: PowerAlgebra, Task 63: Malcev, Task 68: Subalgebra, Task 71: BasicAlgebra, Task 75: MatrixPowerAlgebra, Task 76: SubalgebraLattice, Task 77: QuotientAlgebra, Task 81: FreeAlgebra, Task 84: Closer, Task 0: ) ✓ (implemented), Task 0: : SmallAlgebra, Task 0: : PowerAlgebra, Task 0: : FreeAlgebra, Task 0: )
+
+
+DEPENDENCY ANALYSIS SUMMARY
+================================================================================
+Total tasks analyzed: 85
+Tasks with dependencies: 49
+Tasks without dependencies: 36
+Tasks in execution sequence: 85
