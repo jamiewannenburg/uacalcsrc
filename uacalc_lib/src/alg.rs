@@ -4,6 +4,7 @@ use uacalc::alg::*;
 use uacalc::alg::conlat::{BinaryRelation, MutableBinaryRelation};
 use uacalc::util::IntArrayTrait;
 use uacalc::alg::conlat::BasicBinaryRelation;
+use uacalc::alg::op::{Operation, AbstractOperation, IntOperation, OperationWithDefaultValue};
 
 /// Python wrapper for OperationSymbol
 #[pyclass]
@@ -763,6 +764,594 @@ impl PyPartition {
     }
 }
 
+/// Python wrapper for AbstractOperation
+#[pyclass]
+pub struct PyAbstractOperation {
+    inner: AbstractOperation,
+}
+
+#[pymethods]
+impl PyAbstractOperation {
+    /// Create a new AbstractOperation with the given symbol and set size.
+    /// 
+    /// Args:
+    ///     symbol (OperationSymbol): The operation symbol
+    ///     set_size (int): The size of the set on which the operation is defined
+    /// 
+    /// Raises:
+    ///     ValueError: If set_size is invalid
+    #[new]
+    fn new(symbol: &PyOperationSymbol, set_size: i32) -> PyResult<Self> {
+        match AbstractOperation::new_safe(symbol.inner.clone(), set_size) {
+            Ok(inner) => Ok(PyAbstractOperation { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Create a simple binary operation for testing.
+    /// 
+    /// Args:
+    ///     name (str): The name of the operation
+    ///     set_size (int): The size of the set
+    /// 
+    /// Returns:
+    ///     AbstractOperation: A new AbstractOperation instance
+    #[staticmethod]
+    fn simple_binary_op(name: &str, set_size: i32) -> PyResult<Self> {
+        match AbstractOperation::simple_binary_op(name, set_size) {
+            Ok(inner) => Ok(PyAbstractOperation { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Create a simple unary operation for testing.
+    /// 
+    /// Args:
+    ///     name (str): The name of the operation
+    ///     set_size (int): The size of the set
+    /// 
+    /// Returns:
+    ///     AbstractOperation: A new AbstractOperation instance
+    #[staticmethod]
+    fn simple_unary_op(name: &str, set_size: i32) -> PyResult<Self> {
+        match AbstractOperation::simple_unary_op(name, set_size) {
+            Ok(inner) => Ok(PyAbstractOperation { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Create a simple nullary operation for testing.
+    /// 
+    /// Args:
+    ///     name (str): The name of the operation
+    ///     set_size (int): The size of the set
+    /// 
+    /// Returns:
+    ///     AbstractOperation: A new AbstractOperation instance
+    #[staticmethod]
+    fn simple_nullary_op(name: &str, set_size: i32) -> PyResult<Self> {
+        match AbstractOperation::simple_nullary_op(name, set_size) {
+            Ok(inner) => Ok(PyAbstractOperation { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Get the arity of this operation.
+    /// 
+    /// Returns:
+    ///     int: The number of arguments this operation takes
+    fn arity(&self) -> i32 {
+        self.inner.arity()
+    }
+    
+    /// Get the size of the set upon which the operation is defined.
+    /// 
+    /// Returns:
+    ///     int: The size of the underlying set
+    fn get_set_size(&self) -> i32 {
+        self.inner.get_set_size()
+    }
+    
+    /// Get the operation symbol for this operation.
+    /// 
+    /// Returns:
+    ///     OperationSymbol: The operation symbol
+    fn symbol(&self) -> PyOperationSymbol {
+        PyOperationSymbol {
+            inner: self.inner.symbol().clone()
+        }
+    }
+    
+    /// Evaluate the operation at the given arguments.
+    /// 
+    /// Args:
+    ///     args (List[int]): Arguments for the operation
+    /// 
+    /// Returns:
+    ///     int: The result of the operation
+    /// 
+    /// Raises:
+    ///     ValueError: If arguments are invalid
+    fn value_at(&self, args: Vec<i32>) -> PyResult<i32> {
+        match self.inner.value_at(&args) {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Evaluate the operation on arrays of arguments.
+    /// 
+    /// Args:
+    ///     args (List[List[int]]): Arrays of arguments
+    /// 
+    /// Returns:
+    ///     List[int]: Array of results
+    /// 
+    /// Raises:
+    ///     ValueError: If arguments are invalid
+    fn value_at_arrays(&self, args: Vec<Vec<i32>>) -> PyResult<Vec<i32>> {
+        let arg_refs: Vec<&[i32]> = args.iter().map(|v| v.as_slice()).collect();
+        match self.inner.value_at_arrays(&arg_refs) {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Integer version of the operation evaluation.
+    /// 
+    /// Args:
+    ///     args (List[int]): Integer arguments
+    /// 
+    /// Returns:
+    ///     int: The result of the operation
+    /// 
+    /// Raises:
+    ///     ValueError: If arguments are invalid
+    fn int_value_at(&self, args: Vec<i32>) -> PyResult<i32> {
+        match self.inner.int_value_at(&args) {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Fast table access using Horner encoding.
+    /// 
+    /// Args:
+    ///     arg (int): The Horner encoding of the actual args
+    /// 
+    /// Returns:
+    ///     int: The result of the operation
+    /// 
+    /// Raises:
+    ///     ValueError: If argument is invalid or table doesn't exist
+    fn int_value_at_horner(&self, arg: i32) -> PyResult<i32> {
+        match self.inner.int_value_at_horner(arg) {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Create a table for faster operation evaluation.
+    /// 
+    /// Raises:
+    ///     ValueError: If table creation fails
+    fn make_table(&mut self) -> PyResult<()> {
+        match self.inner.make_table() {
+            Ok(()) => Ok(()),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Get the table for this operation.
+    /// 
+    /// Returns:
+    ///     List[int] or None: The operation table or None if it doesn't exist
+    fn get_table(&self) -> Option<Vec<i32>> {
+        self.inner.get_table().map(|slice| slice.to_vec())
+    }
+    
+    /// Get the table, creating it if necessary.
+    /// 
+    /// Args:
+    ///     make_table (bool): Whether to create the table if it doesn't exist
+    /// 
+    /// Returns:
+    ///     List[int]: The operation table
+    /// 
+    /// Raises:
+    ///     ValueError: If table creation fails
+    fn get_table_force(&mut self, make_table: bool) -> PyResult<Vec<i32>> {
+        match self.inner.get_table_force(make_table) {
+            Ok(slice) => Ok(slice.to_vec()),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Check if this operation is table-based.
+    /// 
+    /// Returns:
+    ///     bool: True if the operation uses a precomputed table
+    fn is_table_based(&self) -> bool {
+        self.inner.is_table_based()
+    }
+    
+    /// Check if this operation is idempotent.
+    /// 
+    /// Returns:
+    ///     bool: True if f(x,x,...,x) = x for all x
+    /// 
+    /// Raises:
+    ///     ValueError: If the check fails
+    fn is_idempotent(&self) -> PyResult<bool> {
+        match self.inner.is_idempotent() {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Check if this operation is binary and associative.
+    /// 
+    /// Returns:
+    ///     bool: True if the operation is binary and associative
+    /// 
+    /// Raises:
+    ///     ValueError: If the check fails
+    fn is_associative(&self) -> PyResult<bool> {
+        match self.inner.is_associative() {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Check if this operation is binary and commutative.
+    /// 
+    /// Returns:
+    ///     bool: True if the operation is binary and commutative
+    /// 
+    /// Raises:
+    ///     ValueError: If the check fails
+    fn is_commutative(&self) -> PyResult<bool> {
+        match self.inner.is_commutative() {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Check if this operation is totally symmetric.
+    /// 
+    /// Returns:
+    ///     bool: True if the operation is invariant under all variable permutations
+    /// 
+    /// Raises:
+    ///     ValueError: If the check fails
+    fn is_totally_symmetric(&self) -> PyResult<bool> {
+        match self.inner.is_totally_symmetric() {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Check if this is a Maltsev operation.
+    /// 
+    /// Returns:
+    ///     bool: True if the operation is a Maltsev operation
+    /// 
+    /// Raises:
+    ///     ValueError: If the check fails
+    fn is_maltsev(&self) -> PyResult<bool> {
+        match self.inner.is_maltsev() {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Check if this operation is total.
+    /// 
+    /// Returns:
+    ///     bool: True if the operation is total
+    /// 
+    /// Raises:
+    ///     ValueError: If the check fails
+    fn is_total(&self) -> PyResult<bool> {
+        match self.inner.is_total() {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Python string representation.
+    fn __str__(&self) -> String {
+        self.inner.to_string()
+    }
+    
+    /// Python repr representation.
+    fn __repr__(&self) -> String {
+        format!("AbstractOperation({})", self.inner.to_string())
+    }
+    
+    /// Python equality comparison.
+    fn __eq__(&self, other: &PyAbstractOperation) -> bool {
+        self.inner == other.inner
+    }
+    
+    /// Python hash function.
+    fn __hash__(&self) -> u64 {
+        use std::collections::hash_map::DefaultHasher;
+        use std::hash::{Hash, Hasher};
+        
+        let mut hasher = DefaultHasher::new();
+        self.inner.hash(&mut hasher);
+        hasher.finish()
+    }
+    
+    /// Python comparison (less than).
+    fn __lt__(&self, other: &PyAbstractOperation) -> bool {
+        self.inner < other.inner
+    }
+    
+    /// Python comparison (less than or equal).
+    fn __le__(&self, other: &PyAbstractOperation) -> bool {
+        self.inner <= other.inner
+    }
+    
+    /// Python comparison (greater than).
+    fn __gt__(&self, other: &PyAbstractOperation) -> bool {
+        self.inner > other.inner
+    }
+    
+    /// Python comparison (greater than or equal).
+    fn __ge__(&self, other: &PyAbstractOperation) -> bool {
+        self.inner >= other.inner
+    }
+}
+
+/// Python wrapper for IntOperation
+#[pyclass]
+pub struct PyIntOperation {
+    inner: IntOperation,
+}
+
+#[pymethods]
+impl PyIntOperation {
+    /// Create a new IntOperation with the given parameters.
+    /// 
+    /// Args:
+    ///     symbol (OperationSymbol): The operation symbol
+    ///     set_size (int): The size of the set on which the operation is defined
+    ///     table (List[int]): The precomputed table of operation results
+    /// 
+    /// Raises:
+    ///     ValueError: If parameters are invalid
+    #[new]
+    fn new(symbol: &PyOperationSymbol, set_size: i32, table: Vec<i32>) -> PyResult<Self> {
+        match IntOperation::new(symbol.inner.clone(), set_size, table) {
+            Ok(inner) => Ok(PyIntOperation { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Create a binary XOR operation for testing.
+    /// 
+    /// Args:
+    ///     name (str): The name of the operation
+    /// 
+    /// Returns:
+    ///     IntOperation: A new IntOperation implementing XOR on {0, 1}
+    #[staticmethod]
+    fn binary_xor(name: &str) -> PyResult<Self> {
+        match IntOperation::binary_xor(name) {
+            Ok(inner) => Ok(PyIntOperation { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Create a binary AND operation for testing.
+    /// 
+    /// Args:
+    ///     name (str): The name of the operation
+    /// 
+    /// Returns:
+    ///     IntOperation: A new IntOperation implementing AND on {0, 1}
+    #[staticmethod]
+    fn binary_and(name: &str) -> PyResult<Self> {
+        match IntOperation::binary_and(name) {
+            Ok(inner) => Ok(PyIntOperation { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Create a binary OR operation for testing.
+    /// 
+    /// Args:
+    ///     name (str): The name of the operation
+    /// 
+    /// Returns:
+    ///     IntOperation: A new IntOperation implementing OR on {0, 1}
+    #[staticmethod]
+    fn binary_or(name: &str) -> PyResult<Self> {
+        match IntOperation::binary_or(name) {
+            Ok(inner) => Ok(PyIntOperation { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Create a unary NOT operation for testing.
+    /// 
+    /// Args:
+    ///     name (str): The name of the operation
+    /// 
+    /// Returns:
+    ///     IntOperation: A new IntOperation implementing NOT on {0, 1}
+    #[staticmethod]
+    fn unary_not(name: &str) -> PyResult<Self> {
+        match IntOperation::unary_not(name) {
+            Ok(inner) => Ok(PyIntOperation { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Create a nullary constant operation for testing.
+    /// 
+    /// Args:
+    ///     name (str): The name of the operation
+    ///     constant_value (int): The constant value to return
+    /// 
+    /// Returns:
+    ///     IntOperation: A new IntOperation returning the constant value
+    #[staticmethod]
+    fn nullary_constant(name: &str, constant_value: i32) -> PyResult<Self> {
+        match IntOperation::nullary_constant(name, constant_value) {
+            Ok(inner) => Ok(PyIntOperation { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    // Include all the same methods as PyAbstractOperation
+    fn arity(&self) -> i32 {
+        self.inner.arity()
+    }
+    
+    fn get_set_size(&self) -> i32 {
+        self.inner.get_set_size()
+    }
+    
+    fn symbol(&self) -> PyOperationSymbol {
+        PyOperationSymbol {
+            inner: self.inner.symbol().clone()
+        }
+    }
+    
+    fn value_at(&self, args: Vec<i32>) -> PyResult<i32> {
+        match self.inner.value_at(&args) {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    fn value_at_arrays(&self, args: Vec<Vec<i32>>) -> PyResult<Vec<i32>> {
+        let arg_refs: Vec<&[i32]> = args.iter().map(|v| v.as_slice()).collect();
+        match self.inner.value_at_arrays(&arg_refs) {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    fn int_value_at(&self, args: Vec<i32>) -> PyResult<i32> {
+        match self.inner.int_value_at(&args) {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    fn int_value_at_horner(&self, arg: i32) -> PyResult<i32> {
+        match self.inner.int_value_at_horner(arg) {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    fn make_table(&mut self) -> PyResult<()> {
+        match self.inner.make_table() {
+            Ok(()) => Ok(()),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    fn get_table(&self) -> Option<Vec<i32>> {
+        self.inner.get_table().map(|slice| slice.to_vec())
+    }
+    
+    fn get_table_force(&mut self, make_table: bool) -> PyResult<Vec<i32>> {
+        match self.inner.get_table_force(make_table) {
+            Ok(slice) => Ok(slice.to_vec()),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    fn is_table_based(&self) -> bool {
+        self.inner.is_table_based()
+    }
+    
+    fn is_idempotent(&self) -> PyResult<bool> {
+        match self.inner.is_idempotent() {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    fn is_associative(&self) -> PyResult<bool> {
+        match self.inner.is_associative() {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    fn is_commutative(&self) -> PyResult<bool> {
+        match self.inner.is_commutative() {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    fn is_totally_symmetric(&self) -> PyResult<bool> {
+        match self.inner.is_totally_symmetric() {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    fn is_maltsev(&self) -> PyResult<bool> {
+        match self.inner.is_maltsev() {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    fn is_total(&self) -> PyResult<bool> {
+        match self.inner.is_total() {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    fn __str__(&self) -> String {
+        self.inner.to_string()
+    }
+    
+    fn __repr__(&self) -> String {
+        format!("IntOperation({})", self.inner.to_string())
+    }
+    
+    fn __eq__(&self, other: &PyIntOperation) -> bool {
+        self.inner == other.inner
+    }
+    
+    fn __hash__(&self) -> u64 {
+        use std::collections::hash_map::DefaultHasher;
+        use std::hash::{Hash, Hasher};
+        
+        let mut hasher = DefaultHasher::new();
+        self.inner.hash(&mut hasher);
+        hasher.finish()
+    }
+    
+    fn __lt__(&self, other: &PyIntOperation) -> bool {
+        self.inner < other.inner
+    }
+    
+    fn __le__(&self, other: &PyIntOperation) -> bool {
+        self.inner <= other.inner
+    }
+    
+    fn __gt__(&self, other: &PyIntOperation) -> bool {
+        self.inner > other.inner
+    }
+    
+    fn __ge__(&self, other: &PyIntOperation) -> bool {
+        self.inner >= other.inner
+    }
+}
+
 pub fn register_alg_module(py: Python, m: &PyModule) -> PyResult<()> {
     // Register classes internally but only export clean names
     m.add_class::<PyOperationSymbol>()?;
@@ -770,6 +1359,8 @@ pub fn register_alg_module(py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyPrintType>()?;
     m.add_class::<PyPartition>()?;
     m.add_class::<PyBasicBinaryRelation>()?;
+    m.add_class::<PyAbstractOperation>()?;
+    m.add_class::<PyIntOperation>()?;
     
     // Export only clean names (without Py prefix)
     m.add("OperationSymbol", m.getattr("PyOperationSymbol")?)?;
@@ -777,6 +1368,8 @@ pub fn register_alg_module(py: Python, m: &PyModule) -> PyResult<()> {
     m.add("PrintType", m.getattr("PyPrintType")?)?;
     m.add("Partition", m.getattr("PyPartition")?)?;
     m.add("BasicBinaryRelation", m.getattr("PyBasicBinaryRelation")?)?;
+    m.add("AbstractOperation", m.getattr("PyAbstractOperation")?)?;
+    m.add("IntOperation", m.getattr("PyIntOperation")?)?;
     
     // Remove the Py* names from the module to avoid confusion
     let module_dict = m.dict();
@@ -785,6 +1378,8 @@ pub fn register_alg_module(py: Python, m: &PyModule) -> PyResult<()> {
     module_dict.del_item("PyPrintType")?;
     module_dict.del_item("PyPartition")?;
     module_dict.del_item("PyBasicBinaryRelation")?;
+    module_dict.del_item("PyAbstractOperation")?;
+    module_dict.del_item("PyIntOperation")?;
     
     Ok(())
 }

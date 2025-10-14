@@ -221,25 +221,33 @@ impl Hash for OperationSymbol {
     }
 }
 
-// Placeholder structs for future implementation
-pub struct Operation {
-    // TODO: Implement operation structure
-}
+// Operation trait and related functionality
+pub mod operation;
+pub use operation::{Operation, CloneableOperation, BoxedOperation, boxed_operation};
+
+// Concrete operation implementations
+pub mod abstract_operation;
+pub mod int_operation;
+pub mod operation_with_default_value;
+
+pub use abstract_operation::AbstractOperation;
+pub use int_operation::IntOperation;
+pub use operation_with_default_value::OperationWithDefaultValue;
+
+// Tests module
+#[cfg(test)]
+mod operation_tests;
+
+// Simple tests module (no Java integration)
+#[cfg(test)]
+mod simple_operation_tests;
 
 pub struct Operations {
     // TODO: Implement operations collection
 }
 
-pub struct AbstractOperation {
-    // TODO: Implement abstract operation
-}
-
 pub struct AbstractIntOperation {
     // TODO: Implement abstract int operation
-}
-
-pub struct OperationWithDefaultValue {
-    // TODO: Implement operation with default value
 }
 
 pub struct ParameterizedOperation {
