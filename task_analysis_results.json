@@ -1,0 +1,79 @@
+[
+  {
+    "task": "/home/jamie/Documents/uacalcsrc/tasks/Task 1 - OperationSymbol.md",
+    "success": false,
+    "output": "",
+    "java_file": "org/uacalc/alg/op/OperationSymbol.java",
+    "is_completed": true
+  },
+  {
+    "task": "/home/jamie/Documents/uacalcsrc/tasks/Task 10 - LongList.md",
+    "success": false,
+    "output": "",
+    "java_file": "org/uacalc/util/virtuallist/LongList.java",
+    "is_completed": true
+  },
+  {
+    "task": "/home/jamie/Documents/uacalcsrc/tasks/Task 11 - AbstractOperation.md",
+    "success": false,
+    "output": "",
+    "java_file": "org/uacalc/alg/op/AbstractOperation.java",
+    "is_completed": false
+  },
+  {
+    "task": "/home/jamie/Documents/uacalcsrc/tasks/Task 12 - Operation.md",
+    "success": false,
+    "output": "",
+    "java_file": "org/uacalc/alg/op/Operation.java",
+    "is_completed": false
+  },
+  {
+    "task": "/home/jamie/Documents/uacalcsrc/tasks/Task 13 - AbstractIntOperation.md",
+    "success": false,
+    "output": "",
+    "java_file": "org/uacalc/alg/op/AbstractIntOperation.java",
+    "is_completed": false
+  },
+  {
+    "task": "/home/jamie/Documents/uacalcsrc/tasks/Task 14 - ArrayIncrementor.md",
+    "success": false,
+    "output": "",
+    "java_file": "org/uacalc/util/ArrayIncrementor.java",
+    "is_completed": true
+  },
+  {
+    "task": "/home/jamie/Documents/uacalcsrc/tasks/Task 15 - SequenceGenerator.md",
+    "success": false,
+    "output": "",
+    "java_file": "org/uacalc/util/SequenceGenerator.java",
+    "is_completed": true
+  },
+  {
+    "task": "/home/jamie/Documents/uacalcsrc/tasks/Task 16 - OrderedSets.md",
+    "success": false,
+    "output": "",
+    "java_file": "org/uacalc/lat/OrderedSets.java",
+    "is_completed": false
+  },
+  {
+    "task": "/home/jamie/Documents/uacalcsrc/tasks/Task 17 - Pool.md",
+    "success": false,
+    "output": "",
+    "java_file": "org/uacalc/alg/parallel/Pool.java",
+    "is_completed": false
+  },
+  {
+    "task": "/home/jamie/Documents/uacalcsrc/tasks/Task 18 - Order.md",
+    "success": false,
+    "output": "",
+    "java_file": "org/uacalc/lat/Order.java",
+    "is_completed": false
+  },
+  {
+    "task": "/home/jamie/Documents/uacalcsrc/tasks/Task 19 - BasicBinaryRelation.md",
+    "success": false,
+    "output": "",
+    "java_file": "org/uacalc/alg/conlat/BasicBinaryRelation.java",
+    "is_completed": true
+  }
+]

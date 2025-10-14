@@ -1,0 +1,133 @@
+2025-10-14 11:13:57,518 - INFO - Starting task analysis...
+2025-10-14 11:13:57,521 - INFO - Found 11 task files to process
+2025-10-14 11:13:57,521 - INFO - DRY RUN - Would process the following tasks:
+2025-10-14 11:13:57,542 - INFO -   - Task 1 - OperationSymbol.md: org/uacalc/alg/op/OperationSymbol.java (completed)
+2025-10-14 11:13:57,543 - INFO -   - Task 10 - LongList.md: org/uacalc/util/virtuallist/LongList.java (completed)
+2025-10-14 11:13:57,543 - INFO -   - Task 11 - AbstractOperation.md: org/uacalc/alg/op/AbstractOperation.java (incomplete)
+2025-10-14 11:13:57,543 - INFO -   - Task 12 - Operation.md: org/uacalc/alg/op/Operation.java (incomplete)
+2025-10-14 11:13:57,544 - INFO -   - Task 13 - AbstractIntOperation.md: org/uacalc/alg/op/AbstractIntOperation.java (incomplete)
+2025-10-14 11:13:57,544 - INFO -   - Task 14 - ArrayIncrementor.md: org/uacalc/util/ArrayIncrementor.java (completed)
+2025-10-14 11:13:57,544 - INFO -   - Task 15 - SequenceGenerator.md: org/uacalc/util/SequenceGenerator.java (completed)
+2025-10-14 11:13:57,545 - INFO -   - Task 16 - OrderedSets.md: org/uacalc/lat/OrderedSets.java (incomplete)
+2025-10-14 11:13:57,545 - INFO -   - Task 17 - Pool.md: org/uacalc/alg/parallel/Pool.java (incomplete)
+2025-10-14 11:13:57,545 - INFO -   - Task 18 - Order.md: org/uacalc/lat/Order.java (incomplete)
+2025-10-14 11:13:57,545 - INFO -   - Task 19 - BasicBinaryRelation.md: org/uacalc/alg/conlat/BasicBinaryRelation.java (completed)
+2025-10-14 11:13:59,446 - INFO - Starting task analysis...
+2025-10-14 11:13:59,448 - INFO - Found 11 task files to process
+2025-10-14 11:13:59,449 - INFO - Processing task: Task 1 - OperationSymbol.md
+2025-10-14 11:13:59,450 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 1 - OperationSymbol.md
+2025-10-14 11:13:59,451 - ERROR - Error running cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 1 - OperationSymbol.md: [Errno 2] No such file or directory: 'cursor-agent'
+2025-10-14 11:13:59,452 - INFO - Processing task: Task 10 - LongList.md
+2025-10-14 11:13:59,452 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 10 - LongList.md
+2025-10-14 11:13:59,453 - ERROR - Error running cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 10 - LongList.md: [Errno 2] No such file or directory: 'cursor-agent'
+2025-10-14 11:13:59,453 - INFO - Processing task: Task 11 - AbstractOperation.md
+2025-10-14 11:13:59,453 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 11 - AbstractOperation.md
+2025-10-14 11:13:59,454 - ERROR - Error running cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 11 - AbstractOperation.md: [Errno 2] No such file or directory: 'cursor-agent'
+2025-10-14 11:13:59,454 - INFO - Processing task: Task 12 - Operation.md
+2025-10-14 11:13:59,454 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 12 - Operation.md
+2025-10-14 11:13:59,455 - ERROR - Error running cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 12 - Operation.md: [Errno 2] No such file or directory: 'cursor-agent'
+2025-10-14 11:13:59,455 - INFO - Processing task: Task 13 - AbstractIntOperation.md
+2025-10-14 11:13:59,455 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 13 - AbstractIntOperation.md
+2025-10-14 11:13:59,456 - ERROR - Error running cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 13 - AbstractIntOperation.md: [Errno 2] No such file or directory: 'cursor-agent'
+2025-10-14 11:13:59,456 - INFO - Processing task: Task 14 - ArrayIncrementor.md
+2025-10-14 11:13:59,456 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 14 - ArrayIncrementor.md
+2025-10-14 11:13:59,457 - ERROR - Error running cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 14 - ArrayIncrementor.md: [Errno 2] No such file or directory: 'cursor-agent'
+2025-10-14 11:13:59,457 - INFO - Processing task: Task 15 - SequenceGenerator.md
+2025-10-14 11:13:59,457 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 15 - SequenceGenerator.md
+2025-10-14 11:13:59,458 - ERROR - Error running cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 15 - SequenceGenerator.md: [Errno 2] No such file or directory: 'cursor-agent'
+2025-10-14 11:13:59,458 - INFO - Processing task: Task 16 - OrderedSets.md
+2025-10-14 11:13:59,458 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 16 - OrderedSets.md
+2025-10-14 11:13:59,459 - ERROR - Error running cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 16 - OrderedSets.md: [Errno 2] No such file or directory: 'cursor-agent'
+2025-10-14 11:13:59,459 - INFO - Processing task: Task 17 - Pool.md
+2025-10-14 11:13:59,459 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 17 - Pool.md
+2025-10-14 11:13:59,460 - ERROR - Error running cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 17 - Pool.md: [Errno 2] No such file or directory: 'cursor-agent'
+2025-10-14 11:13:59,460 - INFO - Processing task: Task 18 - Order.md
+2025-10-14 11:13:59,460 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 18 - Order.md
+2025-10-14 11:13:59,461 - ERROR - Error running cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 18 - Order.md: [Errno 2] No such file or directory: 'cursor-agent'
+2025-10-14 11:13:59,461 - INFO - Processing task: Task 19 - BasicBinaryRelation.md
+2025-10-14 11:13:59,461 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 19 - BasicBinaryRelation.md
+2025-10-14 11:13:59,461 - ERROR - Error running cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 19 - BasicBinaryRelation.md: [Errno 2] No such file or directory: 'cursor-agent'
+2025-10-14 11:13:59,462 - INFO - Analysis complete in 0.01 seconds
+2025-10-14 11:13:59,462 - INFO - Successful: 0, Failed: 11
+2025-10-14 11:13:59,463 - INFO - Results saved to /home/jamie/Documents/uacalcsrc/task_analysis_results.json
+2025-10-14 11:14:30,141 - INFO - Starting task analysis...
+2025-10-14 11:14:30,164 - INFO - Found 11 task files to process
+2025-10-14 11:14:30,164 - INFO - Processing task: Task 1 - OperationSymbol.md
+2025-10-14 11:14:30,178 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 1 - OperationSymbol.md
+2025-10-14 11:14:32,061 - ERROR - cursor-agent failed for /home/jamie/Documents/uacalcsrc/tasks/Task 1 - OperationSymbol.md: 
+2025-10-14 11:14:32,062 - INFO - Processing task: Task 10 - LongList.md
+2025-10-14 11:14:32,062 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 10 - LongList.md
+2025-10-14 11:14:33,924 - ERROR - cursor-agent failed for /home/jamie/Documents/uacalcsrc/tasks/Task 10 - LongList.md: 
+2025-10-14 11:14:33,925 - INFO - Processing task: Task 11 - AbstractOperation.md
+2025-10-14 11:14:33,925 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 11 - AbstractOperation.md
+2025-10-14 11:14:35,801 - ERROR - cursor-agent failed for /home/jamie/Documents/uacalcsrc/tasks/Task 11 - AbstractOperation.md: 
+2025-10-14 11:14:35,801 - INFO - Processing task: Task 12 - Operation.md
+2025-10-14 11:14:35,802 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 12 - Operation.md
+2025-10-14 11:14:37,737 - ERROR - cursor-agent failed for /home/jamie/Documents/uacalcsrc/tasks/Task 12 - Operation.md: 
+2025-10-14 11:14:37,737 - INFO - Processing task: Task 13 - AbstractIntOperation.md
+2025-10-14 11:14:37,739 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 13 - AbstractIntOperation.md
+2025-10-14 11:14:39,494 - ERROR - cursor-agent failed for /home/jamie/Documents/uacalcsrc/tasks/Task 13 - AbstractIntOperation.md: 
+2025-10-14 11:14:39,494 - INFO - Processing task: Task 14 - ArrayIncrementor.md
+2025-10-14 11:14:39,495 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 14 - ArrayIncrementor.md
+2025-10-14 11:14:41,291 - ERROR - cursor-agent failed for /home/jamie/Documents/uacalcsrc/tasks/Task 14 - ArrayIncrementor.md: 
+2025-10-14 11:14:41,291 - INFO - Processing task: Task 15 - SequenceGenerator.md
+2025-10-14 11:14:41,292 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 15 - SequenceGenerator.md
+2025-10-14 11:14:43,348 - ERROR - cursor-agent failed for /home/jamie/Documents/uacalcsrc/tasks/Task 15 - SequenceGenerator.md: 
+2025-10-14 11:14:43,351 - INFO - Processing task: Task 16 - OrderedSets.md
+2025-10-14 11:14:43,372 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 16 - OrderedSets.md
+2025-10-14 11:14:45,576 - ERROR - cursor-agent failed for /home/jamie/Documents/uacalcsrc/tasks/Task 16 - OrderedSets.md: 
+2025-10-14 11:14:45,576 - INFO - Processing task: Task 17 - Pool.md
+2025-10-14 11:14:45,577 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 17 - Pool.md
+2025-10-14 11:14:47,292 - ERROR - cursor-agent failed for /home/jamie/Documents/uacalcsrc/tasks/Task 17 - Pool.md: 
+2025-10-14 11:14:47,292 - INFO - Processing task: Task 18 - Order.md
+2025-10-14 11:14:47,294 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 18 - Order.md
+2025-10-14 11:14:49,011 - ERROR - cursor-agent failed for /home/jamie/Documents/uacalcsrc/tasks/Task 18 - Order.md: 
+2025-10-14 11:14:49,011 - INFO - Processing task: Task 19 - BasicBinaryRelation.md
+2025-10-14 11:14:49,012 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 19 - BasicBinaryRelation.md
+2025-10-14 11:14:50,885 - ERROR - cursor-agent failed for /home/jamie/Documents/uacalcsrc/tasks/Task 19 - BasicBinaryRelation.md: 
+2025-10-14 11:14:50,886 - INFO - Analysis complete in 20.72 seconds
+2025-10-14 11:14:50,886 - INFO - Successful: 0, Failed: 11
+2025-10-14 11:14:50,891 - INFO - Results saved to /home/jamie/Documents/uacalcsrc/task_analysis_results.json
+2025-10-14 11:31:28,809 - INFO - Starting task analysis...
+2025-10-14 11:31:28,813 - INFO - Found 11 task files to process
+2025-10-14 11:31:28,815 - INFO - DRY RUN - Would process the following tasks:
+2025-10-14 11:31:28,816 - INFO -   - Task 1 - OperationSymbol.md: org/uacalc/alg/op/OperationSymbol.java (completed)
+2025-10-14 11:31:28,817 - INFO -   - Task 10 - LongList.md: org/uacalc/util/virtuallist/LongList.java (completed)
+2025-10-14 11:31:28,817 - INFO -   - Task 11 - AbstractOperation.md: org/uacalc/alg/op/AbstractOperation.java (incomplete)
+2025-10-14 11:31:28,818 - INFO -   - Task 12 - Operation.md: org/uacalc/alg/op/Operation.java (incomplete)
+2025-10-14 11:31:28,818 - INFO -   - Task 13 - AbstractIntOperation.md: org/uacalc/alg/op/AbstractIntOperation.java (incomplete)
+2025-10-14 11:31:28,818 - INFO -   - Task 14 - ArrayIncrementor.md: org/uacalc/util/ArrayIncrementor.java (completed)
+2025-10-14 11:31:28,818 - INFO -   - Task 15 - SequenceGenerator.md: org/uacalc/util/SequenceGenerator.java (completed)
+2025-10-14 11:31:28,818 - INFO -   - Task 16 - OrderedSets.md: org/uacalc/lat/OrderedSets.java (incomplete)
+2025-10-14 11:31:28,818 - INFO -   - Task 17 - Pool.md: org/uacalc/alg/parallel/Pool.java (incomplete)
+2025-10-14 11:31:28,819 - INFO -   - Task 18 - Order.md: org/uacalc/lat/Order.java (incomplete)
+2025-10-14 11:31:28,819 - INFO -   - Task 19 - BasicBinaryRelation.md: org/uacalc/alg/conlat/BasicBinaryRelation.java (completed)
+2025-10-14 11:35:15,706 - INFO - Starting task analysis...
+2025-10-14 11:35:15,712 - INFO - Found 0 task files to process
+2025-10-14 11:35:15,715 - INFO - DRY RUN - Would process the following tasks:
+2025-10-14 11:35:19,948 - INFO - Starting task analysis...
+2025-10-14 11:35:19,950 - INFO - Found 11 task files to process
+2025-10-14 11:35:19,951 - INFO - DRY RUN - Would process the following tasks:
+2025-10-14 11:35:19,952 - INFO -   - Task 1 - OperationSymbol.md: org/uacalc/alg/op/OperationSymbol.java (completed)
+2025-10-14 11:35:19,952 - INFO -   - Task 10 - LongList.md: org/uacalc/util/virtuallist/LongList.java (completed)
+2025-10-14 11:35:19,953 - INFO -   - Task 11 - AbstractOperation.md: org/uacalc/alg/op/AbstractOperation.java (incomplete)
+2025-10-14 11:35:19,953 - INFO -   - Task 12 - Operation.md: org/uacalc/alg/op/Operation.java (incomplete)
+2025-10-14 11:35:19,954 - INFO -   - Task 13 - AbstractIntOperation.md: org/uacalc/alg/op/AbstractIntOperation.java (incomplete)
+2025-10-14 11:35:19,954 - INFO -   - Task 14 - ArrayIncrementor.md: org/uacalc/util/ArrayIncrementor.java (completed)
+2025-10-14 11:35:19,955 - INFO -   - Task 15 - SequenceGenerator.md: org/uacalc/util/SequenceGenerator.java (completed)
+2025-10-14 11:35:19,955 - INFO -   - Task 16 - OrderedSets.md: org/uacalc/lat/OrderedSets.java (incomplete)
+2025-10-14 11:35:19,955 - INFO -   - Task 17 - Pool.md: org/uacalc/alg/parallel/Pool.java (incomplete)
+2025-10-14 11:35:19,955 - INFO -   - Task 18 - Order.md: org/uacalc/lat/Order.java (incomplete)
+2025-10-14 11:35:19,955 - INFO -   - Task 19 - BasicBinaryRelation.md: org/uacalc/alg/conlat/BasicBinaryRelation.java (completed)
+2025-10-14 11:35:25,094 - INFO - Starting task analysis...
+2025-10-14 11:35:25,098 - INFO - Found 11 task files to process
+2025-10-14 11:35:25,099 - INFO - Processing 11 tasks in 4 batches of 3 parallel workers
+2025-10-14 11:35:25,099 - INFO - Processing batch 1/4 (3 tasks)
+2025-10-14 11:35:25,103 - INFO - Processing task: Task 1 - OperationSymbol.md
+2025-10-14 11:35:25,105 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 1 - OperationSymbol.md
+2025-10-14 11:35:25,104 - INFO - Processing task: Task 10 - LongList.md
+2025-10-14 11:35:25,104 - INFO - Processing task: Task 11 - AbstractOperation.md
+2025-10-14 11:35:25,108 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 10 - LongList.md
+2025-10-14 11:35:25,109 - INFO - Spawning cursor-agent for /home/jamie/Documents/uacalcsrc/tasks/Task 11 - AbstractOperation.md
+2025-10-14 11:37:13,044 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 11 - AbstractOperation.md
+2025-10-14 11:37:42,006 - INFO - Successfully processed /home/jamie/Documents/uacalcsrc/tasks/Task 10 - LongList.md

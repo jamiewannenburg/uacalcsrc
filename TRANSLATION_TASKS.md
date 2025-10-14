@@ -18,7 +18,7 @@ This plan contains the ordered list of translation tasks for converting the UACa
 - Java CLI wrappers for ground truth comparison
 - Global memory limit configurable from Python
 
-### Excluded Packages
+### ExcluRded Packages
 The following packages are **excluded** from this plan:
 - `org.uacalc.ui.*` - UI components (not needed for core library)
 - `org.uacalc.nbui.*` - NetBeans UI components
