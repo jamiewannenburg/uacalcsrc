@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use crate::alg::op::{Operation, AbstractOperation, IntOperation, OperationSymbol};
+    use crate::alg::op::{Operation, BasicOperation, AbstractIntOperation, IntOperation, OperationSymbol};
     use crate::common::{TestConfig, compare_with_java, run_java_cli_with_timeout, compare_outputs};
     use serde_json::json;
 
@@ -14,7 +14,7 @@ mod tests {
             ["arity", "--type", "binary", "--setSize", "3"],
             || {
                 let symbol = OperationSymbol::new("testBin", 2, false);
-                let op = AbstractOperation::new(symbol, 3);
+                let op = BasicOperation::new(symbol, 3);
                 json!({
                     "arity": op.arity(),
                     "type": "binary",
@@ -33,7 +33,7 @@ mod tests {
             "java_wrapper.src.alg.op.AbstractOperationWrapper",
             ["arity", "--type", "unary", "--setSize", "4"],
             || {
-                let op = AbstractOperation::simple_unary_op("testUn", 4).unwrap();
+                let op = BasicOperation::simple_unary_op("testUn", 4).unwrap();
                 json!({
                     "arity": op.arity(),
                     "type": "unary",
@@ -52,7 +52,7 @@ mod tests {
             "java_wrapper.src.alg.op.AbstractOperationWrapper",
             ["arity", "--type", "nullary", "--setSize", "3"],
             || {
-                let op = AbstractOperation::simple_nullary_op("testNull", 3).unwrap();
+                let op = BasicOperation::simple_nullary_op("testNull", 3).unwrap();
                 json!({
                     "arity": op.arity(),
                     "type": "nullary", 
@@ -71,7 +71,7 @@ mod tests {
             "java_wrapper.src.alg.op.AbstractOperationWrapper",
             ["intValueAt", "--type", "binary", "--args", "0,1", "--setSize", "3"],
             || {
-                let op = AbstractOperation::simple_binary_op("testBin", 3).unwrap();
+                let op = BasicOperation::simple_binary_op("testBin", 3).unwrap();
                 let result = op.int_value_at(&[0, 1]).unwrap();
                 json!({
                     "result": result,
@@ -91,7 +91,7 @@ mod tests {
             "java_wrapper.src.alg.op.AbstractOperationWrapper",
             ["intValueAt", "--type", "unary", "--args", "2", "--setSize", "3"],
             || {
-                let op = AbstractOperation::simple_unary_op("testUn", 3).unwrap();
+                let op = BasicOperation::simple_unary_op("testUn", 3).unwrap();
                 let result = op.int_value_at(&[2]).unwrap();
                 json!({
                     "result": result,
@@ -111,7 +111,7 @@ mod tests {
             "java_wrapper.src.alg.op.AbstractOperationWrapper",
             ["intValueAt", "--type", "nullary", "--args", "", "--setSize", "3"],
             || {
-                let op = AbstractOperation::simple_nullary_op("testNull", 3).unwrap();
+                let op = BasicOperation::simple_nullary_op("testNull", 3).unwrap();
                 let result = op.int_value_at(&[]).unwrap();
                 json!({
                     "result": result,
@@ -131,7 +131,7 @@ mod tests {
             "java_wrapper.src.alg.op.AbstractOperationWrapper",
             ["makeTable", "--type", "binary", "--setSize", "2"],
             || {
-                let mut op = AbstractOperation::simple_binary_op("testBin", 2).unwrap();
+                let mut op = BasicOperation::simple_binary_op("testBin", 2).unwrap();
                 op.make_table().unwrap();
                 json!({
                     "status": "table_created",
@@ -151,7 +151,7 @@ mod tests {
             "java_wrapper.src.alg.op.AbstractOperationWrapper",
             ["getTable", "--type", "binary", "--setSize", "2"],
             || {
-                let mut op = AbstractOperation::simple_binary_op("testBin", 2).unwrap();
+                let mut op = BasicOperation::simple_binary_op("testBin", 2).unwrap();
                 op.make_table().unwrap();
                 let table = op.get_table().map(|slice| slice.to_vec());
                 json!({
@@ -172,7 +172,7 @@ mod tests {
             "java_wrapper.src.alg.op.AbstractOperationWrapper",
             ["isTableBased", "--type", "binary", "--setSize", "3"],
             || {
-                let op = AbstractOperation::simple_binary_op("testBin", 3).unwrap();
+                let op = BasicOperation::simple_binary_op("testBin", 3).unwrap();
                 json!({
                     "isTableBased": op.is_table_based(),
                     "type": "binary"
@@ -190,7 +190,7 @@ mod tests {
             "java_wrapper.src.alg.op.AbstractOperationWrapper",
             ["isIdempotent", "--type", "binary", "--setSize", "3"],
             || {
-                let op = AbstractOperation::simple_binary_op("testBin", 3).unwrap();
+                let op = BasicOperation::simple_binary_op("testBin", 3).unwrap();
                 json!({
                     "isIdempotent": op.is_idempotent().unwrap(),
                     "type": "binary"
@@ -208,7 +208,7 @@ mod tests {
             "java_wrapper.src.alg.op.AbstractOperationWrapper",
             ["isAssociative", "--type", "binary", "--setSize", "3"],
             || {
-                let op = AbstractOperation::simple_binary_op("testBin", 3).unwrap();
+                let op = BasicOperation::simple_binary_op("testBin", 3).unwrap();
                 json!({
                     "isAssociative": op.is_associative().unwrap(),
                     "type": "binary"
@@ -226,7 +226,7 @@ mod tests {
             "java_wrapper.src.alg.op.AbstractOperationWrapper",
             ["isCommutative", "--type", "binary", "--setSize", "3"],
             || {
-                let op = AbstractOperation::simple_binary_op("testBin", 3).unwrap();
+                let op = BasicOperation::simple_binary_op("testBin", 3).unwrap();
                 json!({
                     "isCommutative": op.is_commutative().unwrap(),
                     "type": "binary"
@@ -244,7 +244,7 @@ mod tests {
             "java_wrapper.src.alg.op.AbstractOperationWrapper",
             ["isTotallySymmetric", "--type", "binary", "--setSize", "3"],
             || {
-                let op = AbstractOperation::simple_binary_op("testBin", 3).unwrap();
+                let op = BasicOperation::simple_binary_op("testBin", 3).unwrap();
                 json!({
                     "isTotallySymmetric": op.is_totally_symmetric().unwrap(),
                     "type": "binary"
@@ -262,7 +262,7 @@ mod tests {
             "java_wrapper.src.alg.op.AbstractOperationWrapper",
             ["isMaltsev", "--type", "binary", "--setSize", "3"],
             || {
-                let op = AbstractOperation::simple_binary_op("testBin", 3).unwrap();
+                let op = BasicOperation::simple_binary_op("testBin", 3).unwrap();
                 json!({
                     "isMaltsev": op.is_maltsev().unwrap(),
                     "type": "binary"
@@ -280,7 +280,7 @@ mod tests {
             "java_wrapper.src.alg.op.AbstractOperationWrapper",
             ["isTotal", "--type", "binary", "--setSize", "3"],
             || {
-                let op = AbstractOperation::simple_binary_op("testBin", 3).unwrap();
+                let op = BasicOperation::simple_binary_op("testBin", 3).unwrap();
                 json!({
                     "isTotal": op.is_total().unwrap(),
                     "type": "binary"

@@ -1,11 +1,11 @@
 use std::fmt::{Debug, Display, Formatter};
 use std::hash::{Hash, Hasher};
 use std::cmp::Ordering;
-use crate::alg::op::{Operation, OperationSymbol, AbstractOperation};
+use crate::alg::op::{Operation, OperationSymbol, BasicOperation};
 
 /// OperationWithDefaultValue is an operation that may not be total.
 /// 
-/// This struct wraps an AbstractOperation and provides a default value
+/// This struct wraps a BasicOperation and provides a default value
 /// for arguments that are outside the domain of the wrapped operation.
 /// This is useful for partial operations where some argument combinations
 /// may not be defined.
@@ -13,7 +13,7 @@ use crate::alg::op::{Operation, OperationSymbol, AbstractOperation};
 pub struct OperationWithDefaultValue {
     symbol: OperationSymbol,
     set_size: i32,
-    base_operation: AbstractOperation,
+    base_operation: BasicOperation,
     default_value: i32,
     undefined_args: std::collections::HashSet<Vec<i32>>,
 }
@@ -24,7 +24,7 @@ impl OperationWithDefaultValue {
     /// # Arguments
     /// * `symbol` - The operation symbol
     /// * `set_size` - The size of the set on which the operation is defined
-    /// * `base_operation` - The underlying AbstractOperation to wrap
+    /// * `base_operation` - The underlying BasicOperation to wrap
     /// * `default_value` - The value to return for undefined arguments
     /// * `undefined_args` - Set of argument combinations that are undefined
     /// 
@@ -34,7 +34,7 @@ impl OperationWithDefaultValue {
     pub fn new(
         symbol: OperationSymbol,
         set_size: i32,
-        base_operation: AbstractOperation,
+        base_operation: BasicOperation,
         default_value: i32,
         undefined_args: std::collections::HashSet<Vec<i32>>,
     ) -> Result<Self, String> {
@@ -85,7 +85,7 @@ impl OperationWithDefaultValue {
         undefined_pairs: Vec<(i32, i32)>
     ) -> Result<Self, String> {
         let symbol = OperationSymbol::new_safe(name, 2, false)?;
-        let base_op = AbstractOperation::simple_binary_op(name, set_size)?;
+        let base_op = BasicOperation::simple_binary_op(name, set_size)?;
         
         let mut undefined_args = std::collections::HashSet::new();
         for (x, y) in undefined_pairs {
@@ -118,7 +118,7 @@ impl OperationWithDefaultValue {
         undefined_values: Vec<i32>
     ) -> Result<Self, String> {
         let symbol = OperationSymbol::new_safe(name, 1, false)?;
-        let base_op = AbstractOperation::simple_unary_op(name, set_size)?;
+        let base_op = BasicOperation::simple_unary_op(name, set_size)?;
         
         let mut undefined_args = std::collections::HashSet::new();
         for x in undefined_values {

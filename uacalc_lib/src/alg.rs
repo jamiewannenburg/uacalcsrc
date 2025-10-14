@@ -4,7 +4,7 @@ use uacalc::alg::*;
 use uacalc::alg::conlat::{BinaryRelation, MutableBinaryRelation};
 use uacalc::util::IntArrayTrait;
 use uacalc::alg::conlat::BasicBinaryRelation;
-use uacalc::alg::op::{Operation, AbstractOperation, IntOperation, OperationWithDefaultValue};
+use uacalc::alg::op::{Operation, BasicOperation, AbstractIntOperation, IntOperation, OperationWithDefaultValue};
 
 /// Python wrapper for OperationSymbol
 #[pyclass]
@@ -764,14 +764,14 @@ impl PyPartition {
     }
 }
 
-/// Python wrapper for AbstractOperation
+/// Python wrapper for BasicOperation
 #[pyclass]
-pub struct PyAbstractOperation {
-    inner: AbstractOperation,
+pub struct PyBasicOperation {
+    inner: BasicOperation,
 }
 
 #[pymethods]
-impl PyAbstractOperation {
+impl PyBasicOperation {
     /// Create a new AbstractOperation with the given symbol and set size.
     /// 
     /// Args:
@@ -782,8 +782,8 @@ impl PyAbstractOperation {
     ///     ValueError: If set_size is invalid
     #[new]
     fn new(symbol: &PyOperationSymbol, set_size: i32) -> PyResult<Self> {
-        match AbstractOperation::new_safe(symbol.inner.clone(), set_size) {
-            Ok(inner) => Ok(PyAbstractOperation { inner }),
+        match BasicOperation::new_safe(symbol.inner.clone(), set_size) {
+            Ok(inner) => Ok(PyBasicOperation { inner }),
             Err(e) => Err(PyValueError::new_err(e)),
         }
     }
@@ -798,8 +798,8 @@ impl PyAbstractOperation {
     ///     AbstractOperation: A new AbstractOperation instance
     #[staticmethod]
     fn simple_binary_op(name: &str, set_size: i32) -> PyResult<Self> {
-        match AbstractOperation::simple_binary_op(name, set_size) {
-            Ok(inner) => Ok(PyAbstractOperation { inner }),
+        match BasicOperation::simple_binary_op(name, set_size) {
+            Ok(inner) => Ok(PyBasicOperation { inner }),
             Err(e) => Err(PyValueError::new_err(e)),
         }
     }
@@ -814,8 +814,8 @@ impl PyAbstractOperation {
     ///     AbstractOperation: A new AbstractOperation instance
     #[staticmethod]
     fn simple_unary_op(name: &str, set_size: i32) -> PyResult<Self> {
-        match AbstractOperation::simple_unary_op(name, set_size) {
-            Ok(inner) => Ok(PyAbstractOperation { inner }),
+        match BasicOperation::simple_unary_op(name, set_size) {
+            Ok(inner) => Ok(PyBasicOperation { inner }),
             Err(e) => Err(PyValueError::new_err(e)),
         }
     }
@@ -830,8 +830,8 @@ impl PyAbstractOperation {
     ///     AbstractOperation: A new AbstractOperation instance
     #[staticmethod]
     fn simple_nullary_op(name: &str, set_size: i32) -> PyResult<Self> {
-        match AbstractOperation::simple_nullary_op(name, set_size) {
-            Ok(inner) => Ok(PyAbstractOperation { inner }),
+        match BasicOperation::simple_nullary_op(name, set_size) {
+            Ok(inner) => Ok(PyBasicOperation { inner }),
             Err(e) => Err(PyValueError::new_err(e)),
         }
     }
@@ -1066,11 +1066,11 @@ impl PyAbstractOperation {
     
     /// Python repr representation.
     fn __repr__(&self) -> String {
-        format!("AbstractOperation({})", self.inner.to_string())
+        format!("BasicOperation({})", self.inner.to_string())
     }
     
     /// Python equality comparison.
-    fn __eq__(&self, other: &PyAbstractOperation) -> bool {
+    fn __eq__(&self, other: &PyBasicOperation) -> bool {
         self.inner == other.inner
     }
     
@@ -1085,22 +1085,22 @@ impl PyAbstractOperation {
     }
     
     /// Python comparison (less than).
-    fn __lt__(&self, other: &PyAbstractOperation) -> bool {
+    fn __lt__(&self, other: &PyBasicOperation) -> bool {
         self.inner < other.inner
     }
     
     /// Python comparison (less than or equal).
-    fn __le__(&self, other: &PyAbstractOperation) -> bool {
+    fn __le__(&self, other: &PyBasicOperation) -> bool {
         self.inner <= other.inner
     }
     
     /// Python comparison (greater than).
-    fn __gt__(&self, other: &PyAbstractOperation) -> bool {
+    fn __gt__(&self, other: &PyBasicOperation) -> bool {
         self.inner > other.inner
     }
     
     /// Python comparison (greater than or equal).
-    fn __ge__(&self, other: &PyAbstractOperation) -> bool {
+    fn __ge__(&self, other: &PyBasicOperation) -> bool {
         self.inner >= other.inner
     }
 }
@@ -1352,6 +1352,126 @@ impl PyIntOperation {
     }
 }
 
+/// Python wrapper for AbstractIntOperation
+#[pyclass]
+pub struct PyAbstractIntOperation {
+    inner: AbstractIntOperation,
+}
+
+#[pymethods]
+impl PyAbstractIntOperation {
+    /// Create a new AbstractIntOperation with name, arity, and algebra size.
+    /// 
+    /// Args:
+    ///     name (str): The name of the operation
+    ///     arity (int): The arity (number of arguments) of the operation
+    ///     alg_size (int): The size of the algebra set
+    /// 
+    /// Raises:
+    ///     ValueError: If parameters are invalid
+    #[new]
+    fn new(name: &str, arity: i32, alg_size: i32) -> PyResult<Self> {
+        match AbstractIntOperation::new_safe(name, arity, alg_size) {
+            Ok(inner) => Ok(PyAbstractIntOperation { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Create a new AbstractIntOperation with an existing OperationSymbol.
+    /// 
+    /// Args:
+    ///     symbol (OperationSymbol): The operation symbol
+    ///     alg_size (int): The size of the algebra set
+    /// 
+    /// Raises:
+    ///     ValueError: If alg_size is invalid
+    #[staticmethod]
+    fn with_symbol(symbol: &PyOperationSymbol, alg_size: i32) -> PyResult<Self> {
+        match AbstractIntOperation::new_with_symbol_safe(symbol.inner.clone(), alg_size) {
+            Ok(inner) => Ok(PyAbstractIntOperation { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Get the arity of this operation.
+    fn arity(&self) -> i32 {
+        self.inner.arity()
+    }
+    
+    /// Get the size of the set upon which the operation is defined.
+    fn get_set_size(&self) -> i32 {
+        self.inner.get_set_size()
+    }
+    
+    /// Get the operation symbol for this operation.
+    fn symbol(&self) -> PyOperationSymbol {
+        PyOperationSymbol {
+            inner: self.inner.symbol().clone()
+        }
+    }
+    
+    /// Attempt to evaluate the operation (will fail with UnsupportedOperationException).
+    /// 
+    /// Args:
+    ///     args (List[int]): Arguments for the operation
+    /// 
+    /// Raises:
+    ///     ValueError: Always raises since this method is not implemented
+    fn value_at(&self, args: Vec<i32>) -> PyResult<i32> {
+        match self.inner.value_at(&args) {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Attempt integer operation evaluation (will fail with UnsupportedOperationException).
+    /// 
+    /// Args:
+    ///     args (List[int]): Integer arguments
+    /// 
+    /// Raises:
+    ///     ValueError: Always raises since this method is not implemented
+    fn int_value_at(&self, args: Vec<i32>) -> PyResult<i32> {
+        match self.inner.int_value_at(&args) {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Check if this operation is total.
+    fn is_total(&self) -> PyResult<bool> {
+        match self.inner.is_total() {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Python string representation.
+    fn __str__(&self) -> String {
+        self.inner.to_string()
+    }
+    
+    /// Python repr representation.
+    fn __repr__(&self) -> String {
+        format!("AbstractIntOperation({})", self.inner.to_string())
+    }
+    
+    /// Python equality comparison.
+    fn __eq__(&self, other: &PyAbstractIntOperation) -> bool {
+        self.inner == other.inner
+    }
+    
+    /// Python hash function.
+    fn __hash__(&self) -> u64 {
+        use std::collections::hash_map::DefaultHasher;
+        use std::hash::{Hash, Hasher};
+        
+        let mut hasher = DefaultHasher::new();
+        self.inner.hash(&mut hasher);
+        hasher.finish()
+    }
+}
+
 pub fn register_alg_module(py: Python, m: &PyModule) -> PyResult<()> {
     // Register classes internally but only export clean names
     m.add_class::<PyOperationSymbol>()?;
@@ -1359,8 +1479,9 @@ pub fn register_alg_module(py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyPrintType>()?;
     m.add_class::<PyPartition>()?;
     m.add_class::<PyBasicBinaryRelation>()?;
-    m.add_class::<PyAbstractOperation>()?;
+    m.add_class::<PyBasicOperation>()?;
     m.add_class::<PyIntOperation>()?;
+    m.add_class::<PyAbstractIntOperation>()?;
     
     // Export only clean names (without Py prefix)
     m.add("OperationSymbol", m.getattr("PyOperationSymbol")?)?;
@@ -1368,8 +1489,9 @@ pub fn register_alg_module(py: Python, m: &PyModule) -> PyResult<()> {
     m.add("PrintType", m.getattr("PyPrintType")?)?;
     m.add("Partition", m.getattr("PyPartition")?)?;
     m.add("BasicBinaryRelation", m.getattr("PyBasicBinaryRelation")?)?;
-    m.add("AbstractOperation", m.getattr("PyAbstractOperation")?)?;
+    m.add("BasicOperation", m.getattr("PyBasicOperation")?)?;
     m.add("IntOperation", m.getattr("PyIntOperation")?)?;
+    m.add("AbstractIntOperation", m.getattr("PyAbstractIntOperation")?)?;
     
     // Remove the Py* names from the module to avoid confusion
     let module_dict = m.dict();
@@ -1378,8 +1500,9 @@ pub fn register_alg_module(py: Python, m: &PyModule) -> PyResult<()> {
     module_dict.del_item("PyPrintType")?;
     module_dict.del_item("PyPartition")?;
     module_dict.del_item("PyBasicBinaryRelation")?;
-    module_dict.del_item("PyAbstractOperation")?;
+    module_dict.del_item("PyBasicOperation")?;
     module_dict.del_item("PyIntOperation")?;
+    module_dict.del_item("PyAbstractIntOperation")?;
     
     Ok(())
 }

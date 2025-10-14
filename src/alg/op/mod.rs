@@ -225,12 +225,19 @@ impl Hash for OperationSymbol {
 pub mod operation;
 pub use operation::{Operation, CloneableOperation, BoxedOperation, boxed_operation};
 
-// Concrete operation implementations
+// Abstract operation trait (Task 11)
 pub mod abstract_operation;
-pub mod int_operation;
+
+// Concrete operation implementations  
+pub mod basic_operation;
+pub mod abstract_int_operation;
+pub mod int_operation; 
 pub mod operation_with_default_value;
 
-pub use abstract_operation::AbstractOperation;
+// Re-exports
+pub use abstract_operation::AbstractOperation; // This will be the trait
+pub use basic_operation::BasicOperation; // The concrete implementation I made
+pub use abstract_int_operation::AbstractIntOperation; // Task 13
 pub use int_operation::IntOperation;
 pub use operation_with_default_value::OperationWithDefaultValue;
 
@@ -246,9 +253,6 @@ pub struct Operations {
     // TODO: Implement operations collection
 }
 
-pub struct AbstractIntOperation {
-    // TODO: Implement abstract int operation
-}
 
 pub struct ParameterizedOperation {
     // TODO: Implement parameterized operation
