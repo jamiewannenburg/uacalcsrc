@@ -11,6 +11,7 @@ use uacalc_core::algebra::{Algebra, BasicAlgebra, SmallAlgebra};
 use uacalc_core::binary_relation::{BasicBinaryRelation, BinaryRelation};
 use uacalc_core::conlat::{BasicCongruenceLattice, CongruenceLattice as CongruenceLatticeTrait};
 use uacalc_core::error::UACalcError;
+use uacalc_core::fplat::PartiallyDefinedLattice;
 use uacalc_core::lat::{maximals, Order};
 use uacalc_core::operation::{Operation, OperationSymbol, TableOperation};
 use uacalc_core::partition::{BasicPartition, Partition};
@@ -19,7 +20,7 @@ use uacalc_core::quotient::QuotientAlgebra;
 use uacalc_core::subalgebra::Subalgebra;
 use uacalc_core::term::evaluation::EvaluationContext;
 use uacalc_core::term::variable::VariableAssignment;
-use uacalc_core::term::{TermArena, TermId};
+use uacalc_core::term::{TermArena, TermId, Variable};
 
 /// Python module for UACalc
 #[pymodule]
@@ -51,6 +52,8 @@ fn uacalc_rust(_py: Python, m: &Bound<PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(rust_create_quotient_algebra, m)?)?;
     m.add_function(wrap_pyfunction!(rust_create_subalgebra, m)?)?;
     m.add_function(wrap_pyfunction!(py_maximals, m)?)?;
+    m.add_function(wrap_pyfunction!(py_create_partially_defined_lattice, m)?)?;
+    m.add_function(wrap_pyfunction!(py_test_partially_defined_lattice, m)?)?;
 
     // Add custom exception classes
     m.add("UACalcError", _py.get_type_bound::<PyUACalcError>())?;
@@ -1903,4 +1906,192 @@ fn py_maximals(elements: Vec<i32>, order_type: String) -> PyResult<Vec<i32>> {
     };
     
     Ok(order_result)
+}
+
+/// Helper function to create a partially defined lattice
+#[pyfunction]
+fn py_create_partially_defined_lattice(
+    name: String,
+    variables: Vec<String>,
+    order_type: String,
+    joins: Vec<Vec<String>>,
+    meets: Vec<Vec<String>>,
+) -> PyResult<String> {
+    // Create variables from names
+    let rust_variables: Vec<Variable> = variables
+        .iter()
+        .enumerate()
+        .map(|(i, name)| Variable::named(i as u8, name.clone()))
+        .collect();
+    
+    // Create order relation based on type
+    let result = match order_type.as_str() {
+        "index" => {
+            let order = |a: &Variable, b: &Variable| a.index() <= b.index();
+            
+            // Convert join/meet strings to variables
+            let join_vars: Vec<Vec<Variable>> = joins
+                .iter()
+                .map(|join_names| {
+                    join_names
+                        .iter()
+                        .filter_map(|name| {
+                            variables
+                                .iter()
+                                .position(|v| v == name)
+                                .map(|i| Variable::named(i as u8, name.clone()))
+                        })
+                        .collect()
+                })
+                .collect();
+                
+            let meet_vars: Vec<Vec<Variable>> = meets
+                .iter()
+                .map(|meet_names| {
+                    meet_names
+                        .iter()
+                        .filter_map(|name| {
+                            variables
+                                .iter()
+                                .position(|v| v == name)
+                                .map(|i| Variable::named(i as u8, name.clone()))
+                        })
+                        .collect()
+                })
+                .collect();
+            
+            let pdl = PartiallyDefinedLattice::new(name, order, join_vars, meet_vars);
+            
+            format!(
+                "PartiallyDefinedLattice '{}' created with {} variables, {} joins, {} meets",
+                pdl.name(),
+                rust_variables.len(),
+                pdl.defined_joins().len(),
+                pdl.defined_meets().len()
+            )
+        }
+        
+        "alphabetical" => {
+            let order = |a: &Variable, b: &Variable| {
+                match (a.name(), b.name()) {
+                    (Some(name_a), Some(name_b)) => name_a <= name_b,
+                    _ => a.index() <= b.index(),
+                }
+            };
+            
+            // Convert join/meet strings to variables (same logic as above)
+            let join_vars: Vec<Vec<Variable>> = joins
+                .iter()
+                .map(|join_names| {
+                    join_names
+                        .iter()
+                        .filter_map(|name| {
+                            variables
+                                .iter()
+                                .position(|v| v == name)
+                                .map(|i| Variable::named(i as u8, name.clone()))
+                        })
+                        .collect()
+                })
+                .collect();
+                
+            let meet_vars: Vec<Vec<Variable>> = meets
+                .iter()
+                .map(|meet_names| {
+                    meet_names
+                        .iter()
+                        .filter_map(|name| {
+                            variables
+                                .iter()
+                                .position(|v| v == name)
+                                .map(|i| Variable::named(i as u8, name.clone()))
+                        })
+                        .collect()
+                })
+                .collect();
+            
+            let pdl = PartiallyDefinedLattice::new(name, order, join_vars, meet_vars);
+            
+            format!(
+                "PartiallyDefinedLattice '{}' created with {} variables, {} joins, {} meets (alphabetical order)",
+                pdl.name(),
+                rust_variables.len(),
+                pdl.defined_joins().len(),
+                pdl.defined_meets().len()
+            )
+        }
+        
+        _ => {
+            return Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+                format!("Unknown order type: {}. Supported: index, alphabetical", order_type)
+            ));
+        }
+    };
+    
+    Ok(result)
+}
+
+/// Test function for partially defined lattice functionality
+#[pyfunction]
+fn py_test_partially_defined_lattice() -> String {
+    // Create example variables
+    let x = Variable::named(0, "x".to_string());
+    let y = Variable::named(1, "y".to_string());
+    let z = Variable::named(2, "z".to_string());
+    
+    // Define a simple order based on variable indices
+    let index_order = |a: &Variable, b: &Variable| a.index() <= b.index();
+    
+    // Define some join and meet operations
+    let joins = vec![
+        vec![x.clone(), y.clone()],  // x ∨ y is defined
+        vec![y.clone(), z.clone()],  // y ∨ z is defined
+    ];
+    
+    let meets = vec![
+        vec![x.clone(), y.clone()],  // x ∧ y is defined
+        vec![x.clone(), z.clone()],  // x ∧ z is defined
+    ];
+    
+    // Create the partially defined lattice
+    let pdl = PartiallyDefinedLattice::new(
+        "test_example".to_string(),
+        index_order,
+        joins,
+        meets,
+    );
+    
+    // Test order relations
+    let order_tests = vec![
+        ("x <= y", pdl.leq(&x, &y)),
+        ("y <= z", pdl.leq(&y, &z)),
+        ("x <= z", pdl.leq(&x, &z)),
+        ("y <= x", pdl.leq(&y, &x)),
+    ];
+    
+    // Test operation definitions
+    let op_tests = vec![
+        ("x ∨ y defined", pdl.is_join_defined(&[x.clone(), y.clone()])),
+        ("y ∨ z defined", pdl.is_join_defined(&[y.clone(), z.clone()])),
+        ("x ∨ z defined", pdl.is_join_defined(&[x.clone(), z.clone()])),
+        ("x ∧ y defined", pdl.is_meet_defined(&[x.clone(), y.clone()])),
+        ("x ∧ z defined", pdl.is_meet_defined(&[x.clone(), z.clone()])),
+        ("y ∧ z defined", pdl.is_meet_defined(&[y.clone(), z.clone()])),
+    ];
+    
+    format!(
+        "PartiallyDefinedLattice test results:\n\
+        Name: {}\n\
+        Variables: {:?}\n\
+        Order tests: {:?}\n\
+        Operation tests: {:?}\n\
+        Joins count: {}\n\
+        Meets count: {}",
+        pdl.name(),
+        pdl.variables().iter().map(|v| v.name().unwrap_or("unnamed")).collect::<Vec<_>>(),
+        order_tests,
+        op_tests,
+        pdl.defined_joins().len(),
+        pdl.defined_meets().len()
+    )
 }
