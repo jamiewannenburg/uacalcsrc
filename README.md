@@ -1,314 +1,183 @@
-# uacalcsrc
-
-This is the main repository for the source code of the [Universal Algebra
-Calculator](http://uacalc.org) (UACalc).
-
-For the GUI version of the program, please visit
-the [UACalc webpage (uacalc.org)](http://uacalc.org).
-
---------------------------------------------------
-
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Contents**
-
-  - [The UACalc API](#the-uacalc-api)
-    - [Using UACalc packages in your own software](#using-uacalc-packages-in-your-own-software)
-  - [Importing, browsing, and collaborating](#importing-browsing-and-collaborating)
-    - [Browsing the source code](#browsing-the-source-code)
-    - [Contributing using fork and pull requests](#contributing-using-fork-and-pull-requests)
-    - [Importing uacalcsrc into Eclipse](#importing-uacalcsrc-into-eclipse)
-    - [Updating your fork](#updating-your-fork)
-  - [Bugs and Other Issues](#bugs-and-other-issues)
-  - [History](#history)
-  - [Citing UACalc](#citing-uacalc)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
-
-## The UACalc API
-
-In this section, we describe the quickest way to import
-and make use of UACalc Java libraries in your own
-programs. (The might be programs that you write in Java, or Scala,
-or any other language that runs on the JVM or otherwise allows importing
-of .jar files.) 
-
-Later sections will explain how to import the 
-entire UACalc source code repository in an IDE
-like Eclipse or IntelliJ IDEA, which can be useful,
-but it is not necessary if your goal is to simply 
-make use of some Java classes and methods defined 
-in the UACalc library.
-
-### Using UACalc packages in your own software
-It's possible to write programs in Scala or Jython
-(and probably other languages that runs on the jvm) that import
-and make use of java packages that make up the UACalc.
-Here we show how to obtain the UACalc jar files
-and then give an example demonstrating how to use the jars
-and import UACalc packages into a Scala project
-using the IntelliJ Idea IDE. Something similar should work
-for other languages (e.g., Jython) in other IDEs (e.g., Eclipse).
-
-1. **Getting the jar files.**
-   There are two ways to do this.  (You only need to do one of these---A or B, not both.)
-
-   + **A. Download precompiled jars.**  
-     If you just want pre-compiled (and possibly a bit out-of-date) versions of uacalc.jar and other jars, you can
-     try invoking the following at the command line:
-
-           wget http://uacalc.org/uacalc.jar
-
-     (If you don't have the `wget` program, then you could try pasting http://uacalc.org/uacalc.jar into the address field of your web browser; your browser should ask you where you want to save the `uacalc.jar` file.)
-
-     You can download other supporting jar files you might need from the links on [this page](http://www.uacalc.org/download/), or copy and paste the following into a terminal on a computer that has the `wget` program installed:
-
-           wget http://uacalc.org/download/designgridlayout-1.1p1.jar
-           wget http://uacalc.org/download/groovy-all-1.0.jar
-           wget http://uacalc.org/download/groovy-engine.jar
-           wget http://uacalc.org/download/miglayout-3.7-swing.jar
-           wget http://uacalc.org/download/swing-layout-1.0.2.jar
-
-   + **B. Roll your own.**  
-     Clone the uacalcsrc repository, e.g.,
-
-          git clone git@github.com:UACalc/uacalcsrc.git
-
-     Compile the code (see [these instructions](http://uacalc.org/download/) for more info)
-
-          cd uacalcsrc
-          ant dist
-
-     (You must install the `ant` program if you don't have it already; on an Ubuntu Linux box, do `sudo apt install ant`)
-
-     If the `ant dist` command above succeeds then all of the jar files should now be in the `../dist/lib` directory.
-
-
-
-TODO: insert example of importing and using the uacalc.jar file
-
-
-
-## Importing, browsing, and collaborating
-
-The page is meant to provide some hints and advice about downloading, importing,
-browsing, and modifying the source code in the uacalcsrc repository. Much of it
-concerns the use of git and GitHub, and there are plenty of better sources
-for this information, such as the [GitHub help pages](https://help.github.com/).
-
-The instructions below will require entering commands in a terminal
-window with some sort of Unix style shell, like bash.
-If you will be copying the repository to your local machine, these steps
-assume the repository lives in a directory called `~/git/uacalcsrc`, so
-this first command creates a `~/git` directory, if it doesn't already exists
-(and does nothing if it does exist):
-
-    $ mkdir -p ~/git
-
-### Browsing the source code
-
-If you merely want to browse the UACalc source code, you can do so using the
-GitHub webpages, or you can
-[clone](https://help.github.com/articles/fetching-a-remote/) the repository to
-your local drive with a command like:
-
-    $ git clone git@github.com:UACalc/uacalcsrc.git ~/git/uacalcsrc
-
-or
-
-    $ git clone https://github.com/UACalc/uacalcsrc.git ~/git/uacalcsrc
-
-
-### Contributing using fork and pull requests
-
-If you expect to contribute improvements to the source code, instead of cloning
-directly it is advisable to first
-[fork](https://help.github.com/articles/fork-a-repo/) the repository to your own
-GitHub account, and then clone your own fork.  To do so, login to your GitHub account,
-navigate to the [UACalc/uacalcsrc](https://github.com/UACalc/uacalcsrc)
-repository, then click the
-[Fork link](https://github.com/UACalc/uacalcsrc#fork-destination-box) on the
-upper right.  Once the fork is created, clone the forked repository to your
-local drive with a command like
-
-    $ git clone git@github.com:your-user-name/uacalcsrc.git ~/git/uacalcsrc
-
-or
-
-    $ git clone https://github.com/your-user-name/uacalcsrc.git ~/git/uacalcsrc
-
-Now you can modify the source code as you wish and then, if you want to
-recommend that your changes be incorporated into the main UACalc/uacalcsrc
-repository, you should follow these steps:
-
-1. Commit your changes to your local repository (with an informative commit
-   message!).
-
-        $ git commit -m "fixed a bug in the bar method of the Foo class"
-
-2. Push the changes to your remote repository (i.e., to the fork you created above).
-
-		$ git push origin master
-
-3. [Create a pull request](https://help.github.com/articles/creating-a-pull-request/)
-   by navigating to your fork's GitHub page and clicking the `Pull
-   Request` link (which appears next to a message like, "This branch is 1 commit
-   ahead of UACalc:master").
-
-   Be sure to include an informative comment justifying the
-   recommendation to merge your changes into the main respository.
-
-To keep your fork current with the main UACalc/uacalcsrc repository, see the
-section [Updating your fork](#updating-your-fork) below.
-
-### Importing uacalcsrc into Eclipse or IntelliJ
-
-There are a number of ways to import this repository into the
-[Eclipse IDE](http://www.eclipse.org/) or [IntelliJ IDEA](https://www.jetbrains.com/idea/). 
-One such method is described in this section.
-
-If you plan to make improvements to the code and expect them to be considered for
-adoption in the main UACalc/uacalcsrc repository, please create your own
-fork of the repository, as explained in the 
-section on [contributing using fork](#contributing-using-fork-and-pull-requests).
-
-**Steps to import into Eclipse**
-
-1. First, clone the repository to your local drive. If you forked the repo as suggested
-   above, then use a command like
-
-        git clone git@github.com:your-user-name/uacalcsrc.git ~/git/uacalcsrc
-
-   or
-
-        git clone https://github.com/your-user-name/uacalcsrc.git ~/git/uacalcsrc
-
-   If you didn't create your own fork, you can clone with the command
-   
-        git clone https://github.com/UACalc/uacalcsrc.git ~/git/uacalcsrc
-
-
-2. Launch Eclipse and use the File menu to import the source code:
-
-        File --> Import --> Git --> Projects from Git
-
-   then click Next.
-
-3. Select `Local`, click Next, then click Add and browse to the directory where
-   you clone the repository in Step 1 above (e.g., ~/git/uacalcsrc).
-
-4. Select the uacalcsrc repository and click Next.
-
-5. Select the `Import existing project` radio button, click Next, and then
-   select the algebra project and click finish.
-
-**Steps to import into IntelliJ IDEA**
-
-(This section is for users of the IntelliJ IDEA software.  If you are using
-Eclipse, you can skip this section.)
-
-1. Clone the `uacalcsrc` repository to your local drive as described above.
-
-2. Launch the IntelliJ IDEA program.  At the main project browser/welcome window
-   (with all other projects closed), select Import Project and locate the
-   `uacalcsrc` directory that contains the repository you cloned in step 1.
-   Select OK.
-   
-3. In the "Import Project" dialog box, select "Import project from external model"
-   and make sure Eclipse is highlighted in the list of external models.
-
-4. Select Next two more times and, with "algebra" checkbox checked, click "Finish."
-   
-   
-
-### Updating your fork
-
-When improvements are made to the "upstream" UACalc/uacalcsrc repository,
-you will probably want to update your fork to incorporate these
-changes.  Below is a list of the commands that accomplish this, but see
-[this page](https://help.github.com/articles/configuring-a-remote-for-a-fork/) and
-[this page](https://help.github.com/articles/syncing-a-fork/)
-for more details.
-
-1. Change to the working directory of your local copy of the repository and
-   specify the upstream repository.
-
-        $ cd ~/git/uacalcsrc
-        $ git remote add upstream git@github.com:UACalc/uacalcsrc.git
-
-2. Verify that it worked.
-
-        $ git remote -v
-
-   The output should look something like this:
-
-        origin	git@github.com:your-user-name/uacalcsrc.git (fetch)
-        origin	git@github.com:your-user-name/uacalcsrc.git (push)
-        upstream	git@github.com:UACalc/uacalcsrc.git (fetch)
-        upstream	git@github.com:UACalc/uacalcsrc.git (push)
-
-   If the foregoing fails, try
-
-        git remote add upstream https://github.com/UACalc/uacalcsrc.git
-
-
-3. In the working directory of your local project, fetch the branches and their
-   commits from the upstream repository and merge upstream/master
-   into your local master branch.
-
-        git fetch upstream
-        git checkout master
-        git merge upstream/master
-
-   This brings your fork's master branch into sync with the upstream repository,
-   without losing your local changes. 
-
-4. Finally, commit the changes and push to your remote fork.
-
-        git commit -m "merged changes from upstream"
-        git push origin master
-
-   If you now visit the GitHub page for your fork's repo, it should show the
-   message, "This branch is even with UACalc:master." 
-
-5. If there are other branches besides `master` that you want to update, repeat
-   steps 4--6, replacing `master` with another branch name.
-
-
------------------------------------------
-
-## Bugs and Other Issues
-If you think you found a bug in the calculator, if you encounter a problem with
-the instructions on this page, or if you have any other issue that you'd like to
-call attention to, please
-[create a new issue](https://github.com/UACalc/uacalcsrc/issues).
-
-## History
-
-This git repository was initially created on 2014 Nov 25 by importing Ralph
-Freese's uacalcsrc cvs repository from sourceforge using the following command:
-
-    git cvsimport -C ~/git/uacalcsrc -r cvs -k -v -d :pserver:anonymous@uacalc.cvs.sourceforge.net:/cvsroot/uacalc -A authorfile.txt uacalcsrc
-
-Before issuing the above `git cvsimport` command the git-cvs package must be
-installed (e.g., `sudo apt-get install git-cvs`)
-
-
-**General Notes**
-
-The authorfile.txt contains names and email addresses of authors who
-contributed to the cvs source tree. This is needed in order to preserve the
-contribution in the resulting git repo.
-
-## Citing UACalc
-
-If you are using BibTeX, you can use the following BibTeX entry to cite UACalc:
-
-    @misc{UACalc,
-      author =      {Ralph Freese and Emil Kiss and Matthew Valeriote},
-      title =       {Universal {A}lgebra {C}alculator},
-      note =        {Available at: {\verb+www.uacalc.org+}},
-      year =        {2011},
-    }
-
+# UACalc Rust Implementation - Task 12: Operation
+
+This directory contains the Rust implementation of the Universal Algebra Calculator's `Operation` interface with Python bindings.
+
+## Overview
+
+Task 12 implements the foundational `Operation` trait that defines operations in universal algebra, corresponding to the Java `org.uacalc.alg.op.Operation` interface.
+
+## Implementation Status
+
+✅ **COMPLETED**: All core components implemented and tested
+
+### Components Implemented
+
+1. **Operation Trait** (`src/alg/op/operation_trait.rs`)
+   - All 17 methods from Java interface
+   - Core properties: `arity()`, `get_set_size()`, `symbol()`
+   - Operation evaluation: `int_value_at()`, `int_value_at_horner()`, `value_at_arrays()`
+   - Table management: `make_table()`, `get_table()`, `is_table_based()`
+   - Property checks: `is_idempotent()`, `is_associative()`, `is_commutative()`, etc.
+
+2. **OperationSymbol** (`src/alg/op/operation_symbol.rs`)
+   - Name and arity storage
+   - Associative flag for binary operations
+   - Comparison and hashing support
+   - Uniform symbol generation
+   - Python bindings with `@pyclass`
+
+3. **AbstractOperation** (`src/alg/op/abstract_operation.rs`)
+   - Base implementation providing common functionality
+   - Horner encoding/decoding for table indexing
+   - Default implementations for most Operation methods
+   - Python bindings with `@pyclass`
+
+4. **IntOperation** (`src/alg/op/int_operation.rs`)
+   - Table-based concrete implementation
+   - Fast operation evaluation using lookup tables
+   - Factory methods for creating common operations
+   - All property checking implementations
+   - Python bindings with `@pyclass`
+
+5. **Comprehensive Tests** (`src/alg/op/tests.rs`)
+   - 17 test functions covering all functionality
+   - Operation symbol creation and ordering
+   - Table-based operation evaluation
+   - Property testing (idempotent, associative, etc.)
+   - Error handling validation
+
+## Key Features
+
+### Rust Traits Implemented
+- `Operation` - Core trait with all 17 methods
+- `Ord`, `PartialOrd`, `Eq`, `PartialEq` - For comparison
+- `Hash` - For use in collections
+- `Display` - For string representation
+- `Send`, `Sync` - For thread safety
+
+### Error Handling
+- Custom `UaCalcError` enum with descriptive error types
+- `Result<T, UaCalcError>` return types for fallible operations
+- Proper validation of arguments and table sizes
+
+### Python Bindings
+- All classes exposed to Python via PyO3
+- Pythonic method names (`is_idempotent_py()`, etc.)
+- Magic methods (`__str__`, `__repr__`, `__hash__`, `__eq__`, etc.)
+- Factory methods for easy operation creation
+
+## Usage Examples
+
+### Rust
+```rust
+use uacalc::alg::op::{OperationSymbol, IntOperation};
+
+// Create a binary XOR operation
+let xor_table = vec![0, 1, 1, 0];
+let symbol = OperationSymbol::new("xor".to_string(), 2)?;
+let xor_op = IntOperation::new(symbol, xor_table, 2)?;
+
+// Evaluate the operation
+let result = xor_op.int_value_at(&[1, 0])?; // returns 1
+
+// Test properties
+assert_eq!(xor_op.is_commutative()?, true);
+assert_eq!(xor_op.is_associative()?, true);
+```
+
+### Python
+```python
+import uacalc
+
+# Create a binary operation
+xor_table = [0, 1, 1, 0]
+xor_op = uacalc.IntOperation.create_binary_operation_py("xor", 2, xor_table)
+
+# Evaluate the operation
+result = xor_op.int_value_at_py([1, 0])  # returns 1
+
+# Test properties
+print(f"Commutative: {xor_op.is_commutative_py()}")
+print(f"Associative: {xor_op.is_associative_py()}")
+```
+
+## Testing
+
+### Run Rust Tests
+```bash
+cargo test
+```
+
+### Test Python Bindings
+```bash
+# First build the Python module
+pip install maturin
+maturin develop
+
+# Then run the test script
+python test_python_bindings.py
+```
+
+### Test Java Integration
+```bash
+# Compile and run Java wrapper tests
+javac -cp ".:jars/*" test_wrappers/OperationTest.java
+java -cp ".:jars/*" test_wrappers.OperationTest
+```
+
+## File Structure
+
+```
+├── Cargo.toml                      # Rust project configuration
+├── src/
+│   ├── lib.rs                      # Main library entry point
+│   ├── error.rs                    # Error types
+│   └── alg/
+│       └── op/
+│           ├── mod.rs              # Module exports
+│           ├── operation_trait.rs  # Core Operation trait
+│           ├── operation_symbol.rs # OperationSymbol implementation
+│           ├── abstract_operation.rs # AbstractOperation base class
+│           ├── int_operation.rs    # IntOperation table-based impl
+│           └── tests.rs            # Comprehensive test suite
+├── test_wrappers/
+│   └── OperationTest.java          # Java integration tests
+├── test_python_bindings.py         # Python binding tests
+└── README.md                       # This file
+```
+
+## Dependencies
+
+### Runtime Dependencies
+- `pyo3` - Python bindings
+- `thiserror` - Error handling
+- `serde` - Serialization support
+
+### Dependencies Status
+- ✅ **OperationSymbol** - Self-contained implementation
+- ❌ **Operations** (Task 50) - Static utility methods (future dependency)
+- ❌ **Horner** (Task 3) - Table encoding utilities (future dependency)
+- ❌ **ArrayString** (Task 6) - Debug output formatting (future dependency)
+
+## Future Enhancements
+
+1. **Performance Optimizations**
+   - Lazy table generation for large operations
+   - SIMD operations for bulk evaluation
+   - Parallel property checking for large algebras
+
+2. **Additional Operation Types**
+   - `OperationWithDefaultValue` implementation
+   - `TermOperation` for term-based operations
+   - Custom operation types for specific algebras
+
+3. **Enhanced Property Testing**
+   - More efficient totally symmetric checking
+   - Specialized algorithms for large arity operations
+   - Approximate property checking for very large operations
+
+## Integration Notes
+
+This implementation is designed to integrate with the existing Java UACalc codebase while providing modern Rust performance and safety guarantees. The Python bindings enable easy scripting and interactive exploration of algebraic structures.
+
+The trait-based design allows for easy extension with new operation types while maintaining compatibility with existing code patterns from the Java implementation.

@@ -1,0 +1,20 @@
+[package]
+name = "uacalc"
+version = "0.1.0"
+edition = "2021"
+description = "Universal Algebra Calculator - Rust Implementation"
+license = "MIT OR Apache-2.0"
+
+[lib]
+name = "uacalc"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+pyo3 = { version = "0.22", features = ["extension-module"] }
+thiserror = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+
+[dev-dependencies]
+
+[build-dependencies]
+pyo3-build-config = "0.22"
