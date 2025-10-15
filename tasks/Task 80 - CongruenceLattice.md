@@ -204,7 +204,7 @@ pub struct CongruenceLattice {
 **HIGH PRIORITY** - This is a core class with many dependencies. Should be implemented after:
 - `SmallAlgebra` (Task 41)
 - `Partition`/`BasicPartition` (Tasks 5, 6)
-- `Lattice` interface (Task 20)
+- `Lattice` interface (Task 20 - ✅ **COMPLETED**)
 - `Operation`/`OperationSymbol` (Tasks 1, 45)
 - `SimilarityType` (Task 2)
 
