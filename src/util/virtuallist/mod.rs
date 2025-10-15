@@ -467,6 +467,123 @@ impl LongList<Vec<i32>> for Permutations {
     }
 }
 
+/// A concrete implementation of LongList for tuples with minimum values.
+/// This is a direct translation of the Java TupleWithMin class.
+pub struct TupleWithMin {
+    pub array_len: i32,
+    pub size: i32,
+    pub min: i32,
+    pub diff: i32,
+    pub partial_sums: Vec<i64>,
+}
+
+impl TupleWithMin {
+    /// Create a new TupleWithMin.
+    /// 
+    /// # Arguments
+    /// * `array_len` - The length of each tuple array
+    /// * `base` - The base for the numbering system
+    /// * `min` - The minimum value for at least one entry
+    /// 
+    /// # Returns
+    /// * `Ok(TupleWithMin)` - Successfully created
+    /// * `Err(String)` - If arguments are invalid
+    /// 
+    /// # Examples
+    /// ```
+    /// use uacalc::util::virtuallist::{TupleWithMin, LongList};
+    /// let tuples = TupleWithMin::new_safe(3, 4, 2).unwrap();
+    /// assert_eq!(tuples.size(), 56);
+    /// ```
+    pub fn new_safe(array_len: i32, base: i32, min: i32) -> Result<Self, String> {
+        if array_len < 0 {
+            return Err("array_len must be non-negative".to_string());
+        }
+        if base < 0 {
+            return Err("base must be non-negative".to_string());
+        }
+        if min < 0 {
+            return Err("min must be non-negative".to_string());
+        }
+        if base <= min {
+            return Err("base must be greater than min".to_string());
+        }
+        
+        let diff = base - min;
+        let mut partial_sums = vec![0i64; array_len as usize];
+        
+        // Calculate initial summand = diff * (min^(array_len-1))
+        let mut summand = diff as i64;
+        for _ in 1..array_len {
+            summand = summand.saturating_mul(min as i64);
+        }
+        
+        partial_sums[0] = summand;
+        
+        // Calculate remaining partial sums
+        for i in 1..array_len as usize {
+            summand = (summand.saturating_mul(base as i64)) / (min as i64);
+            partial_sums[i] = partial_sums[i-1].saturating_add(summand);
+        }
+        
+        Ok(TupleWithMin {
+            array_len,
+            size: base,
+            min,
+            diff,
+            partial_sums,
+        })
+    }
+    
+    /// Create a new TupleWithMin (panic version for compatibility).
+    /// 
+    /// # Panics
+    /// Panics if arguments are invalid.
+    pub fn new(array_len: i32, base: i32, min: i32) -> Self {
+        Self::new_safe(array_len, base, min).unwrap()
+    }
+}
+
+impl LongList<Vec<i32>> for TupleWithMin {
+    fn get(&self, k: i64) -> Vec<i32> {
+        let mut k = k;
+        let mut stage = 0;
+        
+        // Find the stage
+        while stage < self.partial_sums.len() && k >= self.partial_sums[stage] {
+            stage += 1;
+        }
+        
+        if stage > 0 {
+            k = k - self.partial_sums[stage - 1];
+        }
+        
+        let mut ans = vec![0; self.array_len as usize];
+        
+        // Fill the first stage positions
+        for i in 0..stage {
+            ans[i] = (k % self.size as i64) as i32;
+            k = k / self.size as i64;
+        }
+        
+        // Fill the stage position with min constraint
+        ans[stage] = self.min + (k % self.diff as i64) as i32;
+        k = k / self.diff as i64;
+        
+        // Fill the remaining positions
+        for i in (stage + 1)..self.array_len as usize {
+            ans[i] = (k % self.min as i64) as i32;
+            k = k / self.min as i64;
+        }
+        
+        ans
+    }
+    
+    fn size(&self) -> i64 {
+        self.partial_sums[self.array_len as usize - 1]
+    }
+}
+
 /// Utility functions for LongList operations
 pub struct LongListUtils;
 

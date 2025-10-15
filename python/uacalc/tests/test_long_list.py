@@ -208,6 +208,53 @@ class TestPermutations:
             Permutations(21)  # too large
 
 
+class TestTupleWithMin:
+    """Test TupleWithMin LongList implementation."""
+    
+    def test_basic_creation(self):
+        """Test basic TupleWithMin creation."""
+        TupleWithMin = uacalc_lib.util.TupleWithMin
+        
+        # Test basic creation
+        list_obj = TupleWithMin(3, 4, 2)
+        assert list_obj.size() > 0
+        
+        # Test with Java comparison using size command
+        wrapper_class = "java_wrapper.src.util.TupleWithMinWrapper"
+        cmd = build_java_command(wrapper_class, ["size", "--array_len", "3", "--base", "4", "--min", "2"])
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+        java_result = json.loads(result.stdout)
+        if "data" in java_result and isinstance(java_result["data"], str):
+            java_result["data"] = json.loads(java_result["data"])
+        
+        assert list_obj.size() == java_result["data"]["status"]
+    
+    def test_get_element(self):
+        """Test getting elements from TupleWithMin."""
+        TupleWithMin = uacalc_lib.util.TupleWithMin
+        
+        list_obj = TupleWithMin(3, 4, 2)
+        result = list_obj.get(5)
+        
+        # Test with Java comparison using get command
+        wrapper_class = "java_wrapper.src.util.TupleWithMinWrapper"
+        cmd = build_java_command(wrapper_class, ["get", "--array_len", "3", "--base", "4", "--min", "2", "--k", "5"])
+        java_output = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+        java_result = json.loads(java_output.stdout)
+        if "data" in java_result and isinstance(java_result["data"], str):
+            java_result["data"] = json.loads(java_result["data"])
+        
+        assert str(result) == java_result["data"]["status"]
+    
+    def test_error_handling(self):
+        """Test error handling for invalid parameters."""
+        TupleWithMin = uacalc_lib.util.TupleWithMin
+        
+        # Test with invalid parameters that should raise errors
+        with pytest.raises(Exception):
+            TupleWithMin(3, 2, 2)  # base <= min
+
+
 class TestLongListUtils:
     """Test LongListUtils utility functions."""
     
