@@ -313,9 +313,100 @@ fn test_comprehensive() {
 }
 
 #[test]
+fn test_tuple_with_min_size() {
+    let config = TestConfig::default();
+    
+    compare_with_java!(
+        config,
+        "java_wrapper.src.util.TupleWithMinWrapper",
+        ["size", "--array_len", "3", "--base", "4", "--min", "2"],
+        || {
+            let tuples = IntTuplesWithMin::new(3, 4, 2);
+            json!({
+                "array_len": 3,
+                "base": 4,
+                "min": 2,
+                "status": tuples.size()
+            })
+        }
+    );
+}
+
+#[test]
+fn test_tuple_with_min_get() {
+    let config = TestConfig::default();
+    
+    compare_with_java!(
+        config,
+        "java_wrapper.src.util.TupleWithMinWrapper",
+        ["get", "--array_len", "3", "--base", "4", "--min", "2", "--k", "5"],
+        || {
+            let tuples = IntTuplesWithMin::new(3, 4, 2);
+            let result = tuples.get(5);
+            json!({
+                "array_len": 3,
+                "base": 4,
+                "min": 2,
+                "k": 5,
+                "status": format!("{:?}", result)
+            })
+        }
+    );
+}
+
+#[test]
+fn test_tuple_with_min_create() {
+    let config = TestConfig::default();
+    
+    compare_with_java!(
+        config,
+        "java_wrapper.src.util.TupleWithMinWrapper",
+        ["create", "--array_len", "3", "--base", "4", "--min", "2"],
+        || {
+            let tuples = IntTuplesWithMin::new(3, 4, 2);
+            json!({
+                "array_len": 3,
+                "base": 4,
+                "min": 2,
+                "status": tuples.size()
+            })
+        }
+    );
+}
+
+#[test]
+fn test_tuple_with_min_test() {
+    let config = TestConfig::default();
+    
+    compare_with_java!(
+        config,
+        "java_wrapper.src.util.TupleWithMinWrapper",
+        ["test"],
+        || {
+            let tuples = IntTuplesWithMin::new(3, 4, 2);
+            let size = tuples.size();
+            let first = tuples.get(0);
+            let last = tuples.get(size - 1);
+            json!({
+                "array_len": 3,
+                "base": 4,
+                "min": 2,
+                "size": size,
+                "first": format!("{:?}", first),
+                "last": format!("{:?}", last),
+                "status": "all_tests_passed"
+            })
+        }
+    );
+}
+
+#[test]
 fn test_error_handling() {
     // Test error cases that should be handled gracefully
     let result = IntTuples::new_safe(0, 0);
+    assert!(result.is_err());
+    
+    let result = IntTuplesWithMin::new_safe(3, 2, 2); // base <= min
     assert!(result.is_err());
     
     let result = IntTuplesWithMin::new_safe(3, 2, 2); // base <= min

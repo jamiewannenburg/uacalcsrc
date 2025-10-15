@@ -1630,6 +1630,46 @@ impl PyPermutations {
     }
 }
 
+/// Python wrapper for IntTuplesWithMin
+#[pyclass]
+pub struct PyTupleWithMin {
+    inner: IntTuplesWithMin,
+}
+
+#[pymethods]
+impl PyTupleWithMin {
+    /// Create a new IntTuplesWithMin.
+    #[new]
+    #[pyo3(signature = (array_len, base, min))]
+    fn new(array_len: i32, base: i32, min: i32) -> PyResult<Self> {
+        match IntTuplesWithMin::new_safe(array_len as usize, base as usize, min as usize) {
+            Ok(inner) => Ok(PyTupleWithMin { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Get the kth element.
+    fn get(&self, k: i64) -> Vec<i32> {
+        self.inner.get(k)
+    }
+    
+    /// Get the size of the list.
+    fn size(&self) -> i64 {
+        self.inner.size()
+    }
+    
+    /// Python string representation
+    fn __str__(&self) -> String {
+        format!("IntTuplesWithMin(array_len={}, base={}, min={}, size={})", 
+                self.inner.tuple_length, self.inner.base, self.inner.min, self.inner.size())
+    }
+    
+    /// Python repr representation
+    fn __repr__(&self) -> String {
+        format!("IntTuplesWithMin({}, {}, {})", self.inner.tuple_length, self.inner.size, self.inner.min)
+    }
+}
+
 /// Python wrapper for LongListUtils
 #[pyclass]
 pub struct PyLongListUtils;
@@ -2082,6 +2122,7 @@ pub fn register_util_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()
     m.add_class::<PyFixedSizedSubsets>()?;
     m.add_class::<PySubsets>()?;
     m.add_class::<PyPermutations>()?;
+    m.add_class::<PyTupleWithMin>()?;
     m.add_class::<PyLongListUtils>()?;
     m.add_class::<PySequenceGenerator>()?;
     m.add_class::<PyNondecreasingSequenceIncrementor>()?;
@@ -2103,6 +2144,7 @@ pub fn register_util_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()
     m.add("FixedSizedSubsets", m.getattr("PyFixedSizedSubsets")?)?;
     m.add("Subsets", m.getattr("PySubsets")?)?;
     m.add("Permutations", m.getattr("PyPermutations")?)?;
+    m.add("TupleWithMin", m.getattr("PyTupleWithMin")?)?;
     m.add("LongListUtils", m.getattr("PyLongListUtils")?)?;
     m.add("SequenceGenerator", m.getattr("PySequenceGenerator")?)?;
     m.add("NondecreasingSequenceIncrementor", m.getattr("PyNondecreasingSequenceIncrementor")?)?;
@@ -2129,6 +2171,7 @@ pub fn register_util_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()
     module_dict.del_item("PyFixedSizedSubsets")?;
     module_dict.del_item("PySubsets")?;
     module_dict.del_item("PyPermutations")?;
+    module_dict.del_item("PyTupleWithMin")?;
     module_dict.del_item("PyLongListUtils")?;
     module_dict.del_item("PySequenceGenerator")?;
     module_dict.del_item("PyNondecreasingSequenceIncrementor")?;
