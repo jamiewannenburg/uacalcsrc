@@ -21,13 +21,13 @@
 ## Dependency Analysis
 
 ### Dependencies Found
-- **org.uacalc.terms** - For `Term` interface (used in `getTerm()` return type)
-- **org.uacalc.alg.op.Operation** - Parent interface (inherits 17 methods)
+- **org.uacalc.terms** - For `Term` interface (used in `getTerm()` return type) - ❌ **PENDING**
+- **org.uacalc.alg.op.Operation** - Parent interface (inherits 17 methods) - ✅ **COMPLETED**
 
 ### Dependencies Correct
-❌ **NO** - Current task incorrectly lists only 1 dependency:
-- **Missing**: `org.uacalc.alg.op.Operation` (parent interface)
-- **Present**: `org.uacalc.terms` (for Term type)
+✅ **YES** - Dependencies are now correctly identified:
+- **Present**: `org.uacalc.alg.op.Operation` (parent interface) - ✅ **COMPLETED**
+- **Present**: `org.uacalc.terms` (for Term type) - ❌ **PENDING**
 
 ### Usage Patterns in Codebase
 - **Interface Usage**: Used as return type in `Term.interpretation()` method

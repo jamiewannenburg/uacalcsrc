@@ -49,7 +49,7 @@ The current task file lists only:
 ### Dependency Order Verification
 Based on task numbers:
 - Task 5: Partition (completed)
-- Task 41: SmallAlgebra (completed)
+- Task 41: SmallAlgebra ✅ **COMPLETED**
 - Task 68: Subalgebra (completed)
 - Task 77: QuotientAlgebra (completed)
 - **Task 38: MaltsevProductDecomposition** ← Current task

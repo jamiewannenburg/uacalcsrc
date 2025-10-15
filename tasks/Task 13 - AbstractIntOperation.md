@@ -47,8 +47,8 @@ Translate the Java class `org.uacalc.alg.op.AbstractIntOperation` to Rust with P
 
 ### Dependency Status
 - **OperationSymbol** (Task 1) - ✅ Already implemented
-- **Operation interface** (Task 12) - ❌ Not yet implemented (placeholder exists)
-- **AbstractOperation** (Task 11) - ❌ Not yet implemented (placeholder exists)
+- **Operation interface** (Task 12) - ✅ **COMPLETED** - Fully implemented
+- **AbstractOperation** (Task 11) - ✅ **COMPLETED** - Fully implemented
 
 ### Implementation Steps
 

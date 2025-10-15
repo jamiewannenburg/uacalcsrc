@@ -11,11 +11,11 @@ Translate the Java class `org.uacalc.alg.op.OperationWithDefaultValue` to Rust w
 
 ### Dependencies
 This class depends on:
-- `org.uacalc.alg.op.AbstractOperation` (Task 11) - Parent class
-- `org.uacalc.alg.op.Operation` (Task 12) - Interface implemented by parent
-- `org.uacalc.alg.op.OperationSymbol` (Task 1) - ✅ Already implemented
-- `org.uacalc.alg.op.Operations` (Task 50) - Static utility methods
-- `org.uacalc.util.Horner` (Task 3) - ✅ Already implemented
+- `org.uacalc.alg.op.AbstractOperation` (Task 11) - ✅ **COMPLETED** - Parent class
+- `org.uacalc.alg.op.Operation` (Task 12) - ✅ **COMPLETED** - Interface implemented by parent
+- `org.uacalc.alg.op.OperationSymbol` (Task 1) - ✅ **COMPLETED** - Already implemented
+- `org.uacalc.alg.op.Operations` (Task 50) - ❌ **PENDING** - Static utility methods
+- `org.uacalc.util.Horner` (Task 3) - ✅ **COMPLETED** - Already implemented
 - `org.uacalc.ui.util.RandomGenerator` - UI utility (excluded)
 
 **Note**: `ArrayString` is imported but not used in the implementation.

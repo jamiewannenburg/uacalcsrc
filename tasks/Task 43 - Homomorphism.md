@@ -42,7 +42,7 @@ Translate the Java class `org.uacalc.alg.Homomorphism` to Rust with Python bindi
 This class depends on:
 - `org.uacalc.alg.conlat.Partition` (Task 5 - completed)
 - `org.uacalc.util.IntArray` (Task 23 - completed)  
-- `org.uacalc.alg.SmallAlgebra` (Task 41 - not completed)
+- `org.uacalc.alg.SmallAlgebra` (Task 41 - ✅ **COMPLETED**)
 
 ### Implementation Steps
 

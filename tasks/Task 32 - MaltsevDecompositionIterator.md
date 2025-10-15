@@ -92,9 +92,8 @@ pub struct MaltsevDecompositionIterator {
 ## Implementation Strategy
 
 ### Phase 1: Dependency Completion
-1. Complete Task 80 (CongruenceLattice) - provides `zero()`, `one()`, `findUpperCover()`
-   - **Note**: Task 20 (Lattice interface) is ✅ **COMPLETED**
-2. Complete Task 41 (SmallAlgebra) - provides `isIdempotent()`, `con()`, `cardinality()`
+1. Complete Task 20 (CongruenceLattice) - provides `zero()`, `one()`, `findUpperCover()`
+2. ✅ Complete Task 41 (SmallAlgebra) - provides `isIdempotent()`, `con()`, `cardinality()` - **COMPLETED**
 3. Complete Task 68 (Subalgebra) - provides `new Subalgebra(algebra, block)`
 4. Complete Task 77 (QuotientAlgebra) - provides `new QuotientAlgebra(subalg, par)`
 

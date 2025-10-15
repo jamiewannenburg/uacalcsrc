@@ -40,14 +40,14 @@ Translate the Java class `org.uacalc.alg.conlat.CongruenceLattice` to Rust with 
 
 ### Dependencies
 This class depends on:
-- `org.uacalc.alg.SmallAlgebra` - Core algebra interface
-- `org.uacalc.alg.Subalgebra` - For congruence as algebra operations
-- `org.uacalc.alg.SubProductAlgebra` - For tolerance and centrality calculations
-- `org.uacalc.alg.BigProductAlgebra` - For product algebra operations
-- `org.uacalc.alg.op.Operation` - Operation interface
-- `org.uacalc.alg.op.OperationSymbol` - Operation symbol representation
-- `org.uacalc.alg.op.SimilarityType` - Similarity type definitions
-- `org.uacalc.alg.sublat.SubalgebraLattice` - Subalgebra lattice interface
+- `org.uacalc.alg.SmallAlgebra` - ✅ **COMPLETED** - Core algebra interface
+- `org.uacalc.alg.Subalgebra` - ❌ **PENDING** - For congruence as algebra operations
+- `org.uacalc.alg.SubProductAlgebra` - ❌ **PENDING** - For tolerance and centrality calculations
+- `org.uacalc.alg.BigProductAlgebra` - ❌ **PENDING** - For product algebra operations
+- `org.uacalc.alg.op.Operation` - ✅ **COMPLETED** - Operation interface
+- `org.uacalc.alg.op.OperationSymbol` - ✅ **COMPLETED** - Operation symbol representation
+- `org.uacalc.alg.op.SimilarityType` - ❌ **PENDING** - Similarity type definitions
+- `org.uacalc.alg.sublat.SubalgebraLattice` - ❌ **PENDING** - Subalgebra lattice interface
 - `org.uacalc.element.Partition` - Core partition representation
 - `org.uacalc.element.BasicPartition` - Basic partition implementation
 - `org.uacalc.element.IntArray` - Integer array wrapper
