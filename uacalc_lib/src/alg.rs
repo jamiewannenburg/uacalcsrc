@@ -3863,6 +3863,13 @@ pub struct PyBasicSmallAlgebra {
     inner: uacalc::alg::BasicSmallAlgebra<i32>,
 }
 
+impl PyBasicSmallAlgebra {
+    /// Create PyBasicSmallAlgebra from inner Rust type (not exposed to Python)
+    pub fn from_inner(inner: uacalc::alg::BasicSmallAlgebra<i32>) -> Self {
+        PyBasicSmallAlgebra { inner }
+    }
+}
+
 #[pymethods]
 impl PyBasicSmallAlgebra {
     /// Create a new BasicSmallAlgebra.

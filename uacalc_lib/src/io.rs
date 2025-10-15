@@ -127,19 +127,108 @@ impl PyExtFileFilter {
     }
 }
 
+/// Python wrapper for AlgebraReader
+#[pyclass]
+pub struct PyAlgebraReader {
+    inner: uacalc::io::AlgebraReader,
+}
+
+#[pymethods]
+impl PyAlgebraReader {
+    /// Create a new AlgebraReader from a file path
+    #[staticmethod]
+    #[pyo3(signature = (file_path))]
+    fn new_from_file(file_path: String) -> PyResult<Self> {
+        let path = Path::new(&file_path);
+        match uacalc::io::AlgebraReader::new_from_file(path) {
+            Ok(inner) => Ok(PyAlgebraReader { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Create a new AlgebraReader from a path string
+    #[staticmethod]
+    #[pyo3(signature = (path))]
+    fn new_from_path(path: String) -> PyResult<Self> {
+        match uacalc::io::AlgebraReader::new_from_path(&path) {
+            Ok(inner) => Ok(PyAlgebraReader { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Create a new AlgebraReader from input data
+    #[staticmethod]
+    #[pyo3(signature = (data))]
+    fn new_from_stream(data: Vec<u8>) -> PyResult<Self> {
+        match uacalc::io::AlgebraReader::new_from_stream(data) {
+            Ok(inner) => Ok(PyAlgebraReader { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Read a single algebra from the file
+    fn read_algebra_file(&self) -> PyResult<crate::alg::PyBasicSmallAlgebra> {
+        match self.inner.read_algebra_file() {
+            Ok(algebra) => Ok(crate::alg::PyBasicSmallAlgebra::from_inner(algebra)),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Read a single algebra from the stream
+    fn read_algebra_from_stream(&self) -> PyResult<crate::alg::PyBasicSmallAlgebra> {
+        match self.inner.read_algebra_from_stream() {
+            Ok(algebra) => Ok(crate::alg::PyBasicSmallAlgebra::from_inner(algebra)),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Read a list of algebras from the file
+    fn read_algebra_list_file(&self) -> PyResult<Vec<crate::alg::PyBasicSmallAlgebra>> {
+        match self.inner.read_algebra_list_file() {
+            Ok(algebras) => Ok(algebras.into_iter()
+                .map(|a| crate::alg::PyBasicSmallAlgebra::from_inner(a))
+                .collect()),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Read a list of algebras from the stream
+    fn read_algebra_list_from_stream(&self) -> PyResult<Vec<crate::alg::PyBasicSmallAlgebra>> {
+        match self.inner.read_algebra_list_from_stream() {
+            Ok(algebras) => Ok(algebras.into_iter()
+                .map(|a| crate::alg::PyBasicSmallAlgebra::from_inner(a))
+                .collect()),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Python string representation
+    fn __str__(&self) -> String {
+        "AlgebraReader".to_string()
+    }
+    
+    /// Python repr representation
+    fn __repr__(&self) -> String {
+        "AlgebraReader()".to_string()
+    }
+}
+
 pub fn register_io_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     // Register classes internally but only export clean names
     m.add_class::<PyBadAlgebraFileException>()?;
     m.add_class::<PyExtFileFilter>()?;
+    m.add_class::<PyAlgebraReader>()?;
     
     // Export only clean names (without Py prefix)
     m.add("BadAlgebraFileException", m.getattr("PyBadAlgebraFileException")?)?;
     m.add("ExtFileFilter", m.getattr("PyExtFileFilter")?)?;
+    m.add("AlgebraReader", m.getattr("PyAlgebraReader")?)?;
     
     // Remove the Py* names from the module to avoid confusion
     let module_dict = m.dict();
     module_dict.del_item("PyBadAlgebraFileException")?;
     module_dict.del_item("PyExtFileFilter")?;
+    module_dict.del_item("PyAlgebraReader")?;
     
     Ok(())
 }

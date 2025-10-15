@@ -1,9 +1,8 @@
+mod algebra_reader;
+pub use algebra_reader::AlgebraReader;
+
 pub struct AlgebraIO {
     // TODO: Implement algebra IO
-}
-
-pub struct AlgebraReader {
-    // TODO: Implement algebra reader
 }
 
 pub struct AlgebraWriter {
