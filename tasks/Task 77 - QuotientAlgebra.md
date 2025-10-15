@@ -57,7 +57,7 @@ Translate the Java class `org.uacalc.alg.QuotientAlgebra` to Rust with Python bi
 - `org.uacalc.alg.sublat.SubalgebraLattice` - Subalgebra lattice (Task 76 - not completed)
 - `org.uacalc.alg.op.AbstractOperation` - Abstract operation class (Task 11 - ✅ **COMPLETED**)
 - `org.uacalc.alg.op.Operation` - Operation interface (Task 12 - ✅ **COMPLETED**)
-- `org.uacalc.alg.op.Operations` - Operations utility (Task 50 - not completed)
+- `org.uacalc.alg.op.Operations` - Operations utility (Task 50 - ✅ **COMPLETED**)
 - `org.uacalc.io.AlgebraIO` - Algebra I/O (Task 65 - not completed)
 - `org.uacalc.util.Horner` - Horner encoding (Task 3 - ✅ COMPLETED)
 - `org.uacalc.util.Arrays` - Java Arrays utility (built-in)

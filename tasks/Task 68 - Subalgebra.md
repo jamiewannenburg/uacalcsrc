@@ -68,7 +68,7 @@ This class depends on:
 - `org.uacalc.alg.sublat.SubalgebraLattice` (Task 76 - NOT COMPLETED) - Lattice operations
 - `org.uacalc.alg.op.AbstractOperation` (Task 11 - ✅ **COMPLETED**) - Operation creation
 - `org.uacalc.alg.op.Operation` (Task 12 - ✅ **COMPLETED**) - Operation interface
-- `org.uacalc.alg.op.Operations` (Task 50 - NOT COMPLETED) - Operation utilities
+- `org.uacalc.alg.op.Operations` (Task 50 - ✅ **COMPLETED**) - Operation utilities
 - `org.uacalc.alg.ProductAlgebra` (Task 57 - NOT COMPLETED) - Used in static methods
 - `org.uacalc.util.IntArray` (Task 23 - COMPLETED) - Array wrapper
 - `org.uacalc.util.Horner` (Task 3 - COMPLETED) - Horner encoding

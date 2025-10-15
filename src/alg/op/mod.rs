@@ -233,6 +233,7 @@ pub mod basic_operation;
 pub mod abstract_int_operation;
 pub mod int_operation; 
 pub mod operation_with_default_value;
+pub mod operations;
 
 // Re-exports
 pub use abstract_operation::AbstractOperation; // This will be the trait
@@ -240,6 +241,7 @@ pub use basic_operation::BasicOperation; // The concrete implementation I made
 pub use abstract_int_operation::AbstractIntOperation; // Task 13
 pub use int_operation::IntOperation;
 pub use operation_with_default_value::OperationWithDefaultValue;
+pub use operations as ops; // Re-export operations module
 
 // Tests module
 #[cfg(test)]
@@ -248,10 +250,6 @@ mod operation_tests;
 // Simple tests module (no Java integration)
 #[cfg(test)]
 mod simple_operation_tests;
-
-pub struct Operations {
-    // TODO: Implement operations collection
-}
 
 
 pub struct ParameterizedOperation {
