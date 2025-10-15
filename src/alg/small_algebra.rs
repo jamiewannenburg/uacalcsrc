@@ -153,6 +153,14 @@ where
         }
     }
     
+    /// Set the operations for this algebra.
+    /// 
+    /// # Arguments
+    /// * `operations` - The new operations list
+    pub fn set_operations(&mut self, operations: Vec<Box<dyn Operation>>) {
+        self.base.set_operations(operations);
+    }
+
     /// Ensure the universe list is cached.
     fn ensure_universe_list(&mut self) {
         if self.universe_list.is_none() {

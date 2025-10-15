@@ -51,9 +51,9 @@ pub struct Algebras {
     // TODO: Implement algebras collection
 }
 
-pub struct AlgebraFromMinimalSets {
-    // TODO: Implement algebra from minimal sets
-}
+// AlgebraFromMinimalSets implemented in separate module
+pub mod algebra_from_minimal_sets;
+pub use algebra_from_minimal_sets::AlgebraFromMinimalSets;
 
 pub struct AlgebraWithGeneratingVector {
     // TODO: Implement algebra with generating vector
