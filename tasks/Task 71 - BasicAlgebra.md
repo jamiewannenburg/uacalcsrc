@@ -41,9 +41,9 @@ Translate the Java class `org.uacalc.alg.BasicAlgebra` to Rust with Python bindi
 - `org.uacalc.alg.Algebra` (grandparent interface)
 - `org.uacalc.alg.op.Operation` (used in constructors and methods)
 - `org.uacalc.alg.op.AbstractOperation` (used in constructor)
-- `org.uacalc.alg.op.OperationWithDefaultValue` (used in convertToDefaultValueOps)
+- `org.uacalc.alg.op.OperationWithDefaultValue` (Task 49 - ✅ COMPLETED)
 - `org.uacalc.alg.op.OperationSymbol` (used in main method)
-- `org.uacalc.alg.op.Operations` (used in main method)
+- `org.uacalc.alg.op.Operations` (Task 50 - ✅ COMPLETED)
 
 **Note**: The original dependency list incorrectly included `conlat` and `sublat` packages. These are only used through inherited fields from `GeneralAlgebra`, not directly imported.
 

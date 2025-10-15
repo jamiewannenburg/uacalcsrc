@@ -49,7 +49,7 @@ Translate the Java interface `org.uacalc.alg.op.Operation` to Rust with Python b
 - **java.util.List** - Standard Java collections
 
 ### Indirect Dependencies
-- **Operations** (Task 50) ❌ - Provides static utility methods used by implementations
+- **Operations** (Task 50) ✅ - Provides static utility methods used by implementations
 - **Horner** (Task 3) ❌ - Used for table encoding/decoding
 - **ArrayString** (Task 6) ❌ - Used for debugging output
 
@@ -141,9 +141,9 @@ pub trait Operation: Ord + PartialOrd + Eq + PartialEq + Hash + Display {
 
 ## Dependencies Status
 - **OperationSymbol**: ✅ Completed (Task 1)
-- **Operations**: ❌ Not implemented (Task 50) - Required for static utility methods
-- **Horner**: ❌ Not implemented (Task 3) - Required for table encoding
-- **ArrayString**: ❌ Not implemented (Task 6) - Required for debugging
+- **Operations**: ✅ Implemented (Task 50) - Static utility methods available
+- **Horner**: ✅ Implemented (Task 3) - Table encoding available
+- **ArrayString**: ✅ Implemented (Task 6)
 
 ## Implementation Priority
 - **HIGH PRIORITY** - Foundational interface blocking many other classes

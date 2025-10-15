@@ -168,6 +168,23 @@ public abstract class WrapperBase {
     }
     
     /**
+     * Execute an action while temporarily silencing System.out to avoid
+     * polluting JSON output with library debug prints.
+     */
+    protected <T> T withSilencedStdout(java.util.concurrent.Callable<T> action) throws Exception {
+        PrintStream originalOut = System.out;
+        try {
+            System.setOut(new PrintStream(new OutputStream() {
+                @Override public void write(int b) { /* discard */ }
+                @Override public void write(byte[] b, int off, int len) { /* discard */ }
+            }));
+            return action.call();
+        } finally {
+            System.setOut(originalOut);
+        }
+    }
+    
+    /**
      * Get a required argument from the options map.
      * 
      * @param options The options map
@@ -230,6 +247,27 @@ public abstract class WrapperBase {
             return defaultValue;
         }
         return Boolean.parseBoolean(value);
+    }
+    
+    /**
+     * Parse a long argument.
+     * 
+     * @param options The options map
+     * @param key The argument key
+     * @param defaultValue The default value
+     * @return The parsed long
+     * @throws NumberFormatException if the value cannot be parsed
+     */
+    protected long getLongArg(Map<String, String> options, String key, long defaultValue) {
+        String value = options.get(key);
+        if (value == null) {
+            return defaultValue;
+        }
+        try {
+            return Long.parseLong(value);
+        } catch (NumberFormatException e) {
+            throw new NumberFormatException("Invalid long for argument " + key + ": " + value);
+        }
     }
     
     /**

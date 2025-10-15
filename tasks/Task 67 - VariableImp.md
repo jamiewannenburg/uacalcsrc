@@ -43,6 +43,7 @@
 - **Operation** (Task 12) - ✅ **COMPLETED** - Fully implemented
 - **TermOperation** (Task 25) - ❌ **NOT IMPLEMENTED** - Only placeholder exists
 - **TermOperationImp** (Task 33) - ❌ **NOT IMPLEMENTED** - Only placeholder exists
+- **Operations** (Task 50) - ✅ **COMPLETED** - Available for building operations in term evaluation
 - **Algebra/SmallAlgebra** - ✅ **COMPLETED** - Both Algebra and SmallAlgebra implemented
 
 ### Usage Patterns in Codebase

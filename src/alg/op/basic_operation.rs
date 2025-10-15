@@ -57,6 +57,19 @@ impl BasicOperation {
         Ok(BasicOperation::new(symbol, set_size))
     }
 
+    /// Create a BasicOperation with an explicit value table.
+    /// The table length must equal set_size^arity (or 1 for nullary).
+    pub fn new_with_table(symbol: OperationSymbol, set_size: i32, table: Vec<i32>) -> Result<Self, String> {
+        if set_size <= 0 {
+            return Err("Set size must be positive".to_string());
+        }
+        let expected = if symbol.arity() == 0 { 1 } else { (set_size as usize).pow(symbol.arity() as u32) };
+        if table.len() != expected { return Err(format!("Table size {} does not match expected {}", table.len(), expected)); }
+        let mut op = BasicOperation::new(symbol, set_size);
+        op.table = Some(table);
+        Ok(op)
+    }
+
     /// Create a simple binary operation for testing.
     /// 
     /// This creates a simple binary operation that returns (a + b) % set_size.

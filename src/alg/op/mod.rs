@@ -58,6 +58,9 @@ impl OperationSymbol {
     /// * `Ok(OperationSymbol)` if successful
     /// * `Err(String)` if `associative` is true but `arity` is not 2
     pub fn new_safe(name: &str, arity: i32, associative: bool) -> Result<Self, String> {
+        if arity < 0 {
+            return Err("Arity must be non-negative".to_string());
+        }
         let mut sym = OperationSymbol {
             name: name.to_string(),
             arity,

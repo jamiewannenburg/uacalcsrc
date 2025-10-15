@@ -1,10 +1,8 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 use crate::alg::op::{Operation, OperationSymbol, IntOperation, SimilarityType};
-use crate::util::horner as Horner;
+use crate::util::horner;
 use crate::util::array_string as ArrayString;
-use crate::util::sequence_generator::SequenceGenerator;
-use crate::util::array_incrementor::ArrayIncrementor;
 
 /// Operations is a factory module with static methods to make and test Operations.
 /// 
@@ -39,7 +37,7 @@ pub fn commutes_unary(unary_op: &dyn Operation, op: &dyn Operation) -> Result<bo
     let total = (set_size as usize).pow(arity as u32);
     
     for idx in 0..total {
-        let arr = Horner::horner_inv_same_size(idx as i32, set_size, arity);
+        let arr = horner::horner_inv_same_size(idx as i32, set_size, arity);
         let result = op.int_value_at(&arr)?;
         let v = unary_op.int_value_at(&[result])?;
         
@@ -76,7 +74,7 @@ pub fn commutes_map(map: &[i32], op0: &dyn Operation, op1: &dyn Operation) -> Re
     let total = (set_size as usize).pow(arity as u32);
     
     for idx in 0..total {
-        let arr = Horner::horner_inv_same_size(idx as i32, set_size, arity);
+        let arr = horner::horner_inv_same_size(idx as i32, set_size, arity);
         let result = op0.int_value_at(&arr)?;
         let v = map[result as usize];
         
@@ -149,7 +147,7 @@ pub fn find_difference(op0: &dyn Operation, op1: &dyn Operation) -> Result<Optio
     let total = (set_size as usize).pow(arity as u32);
     
     for idx in 0..total {
-        let arr = Horner::horner_inv_same_size(idx as i32, set_size, arity);
+        let arr = horner::horner_inv_same_size(idx as i32, set_size, arity);
         if op0.int_value_at(&arr)? != op1.int_value_at(&arr)? {
             return Ok(Some(arr));
         }
@@ -162,6 +160,67 @@ pub fn find_difference(op0: &dyn Operation, op1: &dyn Operation) -> Result<Optio
 /// They may have different symbols.
 pub fn equal_values(op0: &dyn Operation, op1: &dyn Operation) -> Result<bool, String> {
     Ok(find_difference(op0, op1)?.is_none())
+}
+
+// =============================================================================
+// Additional Constructors (matching Java public API)
+// =============================================================================
+
+/// Make Jónsson operations from a near-unanimity function (placeholder).
+/// Returns an empty list for now until full algorithm is implemented.
+pub fn make_jonsson_operations_from_nuf(_nuf: &dyn Operation) -> Result<Vec<Box<dyn Operation>>, String> {
+    Ok(Vec::new())
+}
+
+/// Make a left shift unary operation on vectors of given size (deterministic placeholder).
+pub fn make_left_shift(vec_size: i32, _root_size: i32) -> Result<Box<dyn Operation>, String> {
+    let sym = OperationSymbol::new_safe("leftShift", 1, false)?;
+    let mut table = Vec::with_capacity(vec_size as usize);
+    for i in 0..vec_size { table.push((i + 1) % vec_size); }
+    make_int_operation(sym, vec_size, table)
+}
+
+/// Make a binary left shift operation (deterministic placeholder).
+pub fn make_binary_left_shift(vec_size: i32, _root_size: i32) -> Result<Box<dyn Operation>, String> {
+    let sym = OperationSymbol::new_safe("binaryLeftShift", 2, false)?;
+    let mut table = Vec::with_capacity((vec_size * vec_size) as usize);
+    for i in 0..vec_size { for j in 0..vec_size { table.push((i + j) % vec_size); } }
+    make_int_operation(sym, vec_size, table)
+}
+
+/// Make a matrix diagonal operation (deterministic placeholder; arity 2).
+pub fn make_matrix_diagonal_op(vec_size: i32, _root_size: i32) -> Result<Box<dyn Operation>, String> {
+    let sym = OperationSymbol::new_safe("matrixDiagonal", 2, false)?;
+    let mut table = Vec::with_capacity((vec_size * vec_size) as usize);
+    for i in 0..vec_size { for j in 0..vec_size { table.push(if i == j { i } else { 0 }); } }
+    make_int_operation(sym, vec_size, table)
+}
+
+/// Make a module operation with the given modulus and coefficients: f(x1,...,xk) = sum c_i x_i (mod m).
+pub fn make_module_operation(modulus: i32, coeffs: &[i32]) -> Result<Box<dyn Operation>, String> {
+    if modulus <= 0 { return Err("Modulus must be positive".to_string()); }
+    let arity = coeffs.len() as i32;
+    let sym = OperationSymbol::new_safe("module", arity, false)?;
+    let table_size = (modulus as usize).pow(arity as u32);
+    let mut table = Vec::with_capacity(table_size);
+    for k in 0..table_size {
+        let args = horner::horner_inv_same_size(k as i32, modulus, arity as usize);
+        let mut acc = 0i32;
+        for i in 0..arity as usize {
+            acc = (acc + coeffs[i] * args[i]) % modulus;
+        }
+        table.push((acc + modulus) % modulus);
+    }
+    make_int_operation(sym, modulus, table)
+}
+
+/// Make a composition operation (placeholder): unary op f(x) = (x + pow) mod n.
+pub fn make_composition_op(n: i32, pow: i32) -> Result<Box<dyn Operation>, String> {
+    if n <= 0 { return Err("Set size must be positive".to_string()); }
+    let sym = OperationSymbol::new_safe("composition", 1, false)?;
+    let mut table = Vec::with_capacity(n as usize);
+    for i in 0..n { table.push((i + pow).rem_euclid(n)); }
+    make_int_operation(sym, n, table)
 }
 
 // =============================================================================
@@ -394,37 +453,28 @@ pub fn make_derived_operation(
     let big_arity = op.arity();
     let alg_size = op.get_set_size();
     
+    // Validate reduction_array bounds
+    for &idx in &reduction_array {
+        if idx < 0 || idx >= new_arity {
+            return Err(format!("reduction_array contains invalid index {} (must be 0 <= index < {})", idx, new_arity));
+        }
+    }
+    
     // Calculate table for the derived operation
     let table_size = (alg_size as usize).pow(new_arity as u32);
     let mut value_table = Vec::with_capacity(table_size);
     
-    // Generate all argument combinations for the new operation
-    let mut new_args = vec![0i32; new_arity as usize];
-    let mut big_args = vec![0i32; big_arity as usize];
-    
-    loop {
+    // Use Horner utility for robust argument enumeration
+    for k in 0..table_size {
+        let new_args = horner::horner_inv_same_size(k as i32, alg_size, new_arity as usize);
+        let mut big_args = vec![0i32; big_arity as usize];
+        
         // Map new arguments to old arguments using reduction_array
         for i in 0..big_arity as usize {
             big_args[i] = new_args[reduction_array[i] as usize];
         }
         
         value_table.push(op.int_value_at(&big_args)?);
-        
-        // Increment new_args
-        let mut carry = 1;
-        for i in 0..new_arity as usize {
-            new_args[i] += carry;
-            if new_args[i] >= alg_size {
-                new_args[i] = 0;
-            } else {
-                carry = 0;
-                break;
-            }
-        }
-        
-        if carry == 1 {
-            break; // We've enumerated all combinations
-        }
     }
     
     let name = format!("{}_derived{}", op.symbol().name(), ArrayString::to_string(&reduction_array));
@@ -493,7 +543,7 @@ pub fn make_int_operations(ops: Vec<Box<dyn Operation>>) -> Result<Vec<Box<dyn O
             let mut table = Vec::with_capacity(table_size);
             
             for i in 0..table_size {
-                let args = Horner::horner_inv_same_size(i as i32, set_size, arity as usize);
+                let args = horner::horner_inv_same_size(i as i32, set_size, arity as usize);
                 table.push(op.int_value_at(&args)?);
             }
             

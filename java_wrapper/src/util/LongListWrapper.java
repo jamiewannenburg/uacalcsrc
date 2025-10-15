@@ -307,7 +307,7 @@ public class LongListWrapper extends WrapperBase {
      * @param defaultValue The default value
      * @return The argument value or default
      */
-    private long getLongArg(Map<String, String> options, String key, long defaultValue) {
+    protected long getLongArg(Map<String, String> options, String key, long defaultValue) {
         String value = options.get(key);
         if (value == null) {
             return defaultValue;
