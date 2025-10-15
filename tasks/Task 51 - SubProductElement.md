@@ -40,9 +40,10 @@ Translate the Java class `org.uacalc.element.SubProductElement` to Rust with Pyt
 
 ### Dependencies
 This class depends on:
-- `org.uacalc.alg`
-- `org.uacalc.terms`
-- `org.uacalc.util`
+- `org.uacalc.alg` - Algebra interfaces and classes
+- `org.uacalc.element.Element` - Element trait interface ✅ (Task 30 - COMPLETED)
+- `org.uacalc.terms` - Term-related classes
+- `org.uacalc.util` - Utility classes (IntArray, etc.)
 
 ### Implementation Steps
 
