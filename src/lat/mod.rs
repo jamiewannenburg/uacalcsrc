@@ -69,9 +69,7 @@ pub struct Lattices {
     // TODO: Implement lattices collection
 }
 
-pub struct OrderedSets {
-    // TODO: Implement ordered sets
-}
+pub mod ordered_sets;
 
 pub struct SmallLattice {
     // TODO: Implement small lattice
