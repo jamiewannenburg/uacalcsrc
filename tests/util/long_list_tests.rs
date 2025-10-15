@@ -9,6 +9,174 @@ use crate::common::*;
 use uacalc::util::virtuallist::*;
 use serde_json::json;
 
+// TupleWithMin Tests
+
+#[test]
+fn test_tuple_with_min_new() {
+    let config = TestConfig::default();
+    
+    compare_with_java!(
+        config,
+        "java_wrapper.src.util.virtuallist.TupleWithMinWrapper",
+        ["new", "--arrayLen", "3", "--base", "4", "--min", "2"],
+        || {
+            let tuples = TupleWithMin::new(3, 4, 2);
+            json!({
+                "command": "new",
+                "arrayLen": 3,
+                "base": 4,
+                "min": 2,
+                "status": "created",
+                "size": tuples.size()
+            })
+        }
+    );
+}
+
+#[test]
+fn test_tuple_with_min_size() {
+    let config = TestConfig::default();
+    
+    compare_with_java!(
+        config,
+        "java_wrapper.src.util.virtuallist.TupleWithMinWrapper",
+        ["size", "--arrayLen", "3", "--base", "4", "--min", "2"],
+        || {
+            let tuples = TupleWithMin::new(3, 4, 2);
+            json!({
+                "command": "size",
+                "arrayLen": 3,
+                "base": 4,
+                "min": 2,
+                "size": tuples.size()
+            })
+        }
+    );
+}
+
+#[test]
+fn test_tuple_with_min_get_first() {
+    let config = TestConfig::default();
+    
+    compare_with_java!(
+        config,
+        "java_wrapper.src.util.virtuallist.TupleWithMinWrapper",
+        ["get", "--arrayLen", "3", "--base", "4", "--min", "2", "--k", "0"],
+        || {
+            let tuples = TupleWithMin::new(3, 4, 2);
+            let result_vec = tuples.get(0);
+            json!({
+                "command": "get",
+                "arrayLen": 3,
+                "base": 4,
+                "min": 2,
+                "k": 0,
+                "value": result_vec
+            })
+        }
+    );
+}
+
+#[test]
+fn test_tuple_with_min_get_middle() {
+    let config = TestConfig::default();
+    
+    compare_with_java!(
+        config,
+        "java_wrapper.src.util.virtuallist.TupleWithMinWrapper",
+        ["get", "--arrayLen", "3", "--base", "4", "--min", "2", "--k", "28"],
+        || {
+            let tuples = TupleWithMin::new(3, 4, 2);
+            let result_vec = tuples.get(28);
+            json!({
+                "command": "get",
+                "arrayLen": 3,
+                "base": 4,
+                "min": 2,
+                "k": 28,
+                "value": result_vec
+            })
+        }
+    );
+}
+
+#[test]
+fn test_tuple_with_min_get_last() {
+    let config = TestConfig::default();
+    
+    compare_with_java!(
+        config,
+        "java_wrapper.src.util.virtuallist.TupleWithMinWrapper",
+        ["get", "--arrayLen", "3", "--base", "4", "--min", "2", "--k", "55"],
+        || {
+            let tuples = TupleWithMin::new(3, 4, 2);
+            let result_vec = tuples.get(55);
+            json!({
+                "command": "get",
+                "arrayLen": 3,
+                "base": 4,
+                "min": 2,
+                "k": 55,
+                "value": result_vec
+            })
+        }
+    );
+}
+
+#[test]
+fn test_tuple_with_min_different_params() {
+    let config = TestConfig::default();
+    
+    compare_with_java!(
+        config,
+        "java_wrapper.src.util.virtuallist.TupleWithMinWrapper",
+        ["new", "--arrayLen", "4", "--base", "5", "--min", "3"],
+        || {
+            let tuples = TupleWithMin::new(4, 5, 3);
+            json!({
+                "command": "new",
+                "arrayLen": 4,
+                "base": 5,
+                "min": 3,
+                "status": "created",
+                "size": tuples.size()
+            })
+        }
+    );
+}
+
+#[test]
+fn test_tuple_with_min_sequence() {
+    let config = TestConfig::default();
+    
+    // Test multiple elements in sequence
+    let tuples = TupleWithMin::new(3, 4, 2);
+    let mut elements = Vec::new();
+    for i in 0..10 {
+        elements.push(tuples.get(i));
+    }
+    
+    // Compare using the test command which generates the same sequence in Java
+    compare_with_java!(
+        config,
+        "java_wrapper.src.util.virtuallist.TupleWithMinWrapper",
+        ["test"],
+        || {
+            json!({
+                "command": "test",
+                "arrayLen": 3,
+                "base": 4,
+                "min": 2,
+                "size": tuples.size(),
+                "elements": elements,
+                "status": "passed"
+            })
+        }
+    );
+}
+
+// Existing IntTuples tests
+
 #[test]
 fn test_int_tuples_basic() {
     let config = TestConfig::default();
