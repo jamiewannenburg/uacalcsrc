@@ -182,5 +182,9 @@ pub fn register_lat_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     module_dict.del_item("PyPrefixOrder")?;
     module_dict.del_item("PyNaturalOrder")?;
     
+    // Note: Lattice and SmallLattice are traits (interfaces) and cannot be instantiated directly.
+    // Python bindings will be created for concrete implementations like BasicLattice,
+    // CongruenceLattice, SubalgebraLattice, etc. when those classes are implemented.
+    
     Ok(())
 }
