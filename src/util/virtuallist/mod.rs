@@ -382,6 +382,125 @@ impl LongList<Vec<i32>> for Subsets {
     }
 }
 
+/// A LongList of int arrays with at least one entry in a specified range.
+/// This is a direct translation of org.uacalc.util.virtuallist.TupleWithMin.
+/// 
+/// The tuples generated have length `array_len` with entries between 0 and `base` - 1,
+/// and having at least one entry in the range `min` to `base` - 1.
+pub struct TupleWithMin {
+    pub array_len: usize,
+    pub base: usize,
+    pub min: usize,
+    pub diff: usize,
+    partial_sums: Vec<i64>,
+}
+
+impl TupleWithMin {
+    /// Create a new TupleWithMin LongList.
+    /// 
+    /// # Arguments
+    /// * `array_len` - The length of each tuple
+    /// * `base` - The base for the numbering system (max value + 1)
+    /// * `min` - The minimum value for at least one entry
+    /// 
+    /// # Returns
+    /// * `Ok(TupleWithMin)` - Successfully created
+    /// * `Err(String)` - If arguments are invalid or result is too large
+    /// 
+    /// # Examples
+    /// ```
+    /// use uacalc::util::virtuallist::{TupleWithMin, LongList};
+    /// let tuples = TupleWithMin::new_safe(3, 4, 2).unwrap();
+    /// assert_eq!(tuples.size(), 56);
+    /// ```
+    pub fn new_safe(array_len: usize, base: usize, min: usize) -> Result<Self, String> {
+        if base <= min {
+            return Err("base must be greater than min".to_string());
+        }
+        
+        let diff = base - min;
+        
+        // Calculate partial sums
+        let mut partial_sums = vec![0i64; array_len];
+        let mut summand = diff as i64;
+        
+        // Initial summand = diff * min^(arrayLen - 1)
+        for _ in 1..array_len {
+            summand = summand.checked_mul(min as i64)
+                .ok_or_else(|| format!("Overflow calculating initial summand"))?;
+        }
+        partial_sums[0] = summand;
+        
+        // Calculate remaining partial sums
+        for i in 1..array_len {
+            summand = summand.checked_mul(base as i64)
+                .ok_or_else(|| format!("Overflow in partial sum calculation"))?
+                .checked_div(min as i64)
+                .ok_or_else(|| format!("Division error in partial sum calculation"))?;
+            partial_sums[i] = partial_sums[i-1].checked_add(summand)
+                .ok_or_else(|| format!("Overflow adding partial sums"))?;
+        }
+        
+        Ok(TupleWithMin {
+            array_len,
+            base,
+            min,
+            diff,
+            partial_sums,
+        })
+    }
+    
+    /// Create a new TupleWithMin LongList (panic version for compatibility).
+    /// 
+    /// # Panics
+    /// Panics if arguments are invalid or result is too large
+    pub fn new(array_len: usize, base: usize, min: usize) -> Self {
+        Self::new_safe(array_len, base, min).unwrap()
+    }
+}
+
+impl LongList<Vec<i32>> for TupleWithMin {
+    fn get(&self, k: i64) -> Vec<i32> {
+        let mut k = k;
+        let mut stage = 0;
+        
+        // Find the stage
+        while stage < self.partial_sums.len() && k >= self.partial_sums[stage] {
+            stage += 1;
+        }
+        
+        if stage > 0 {
+            k = k - self.partial_sums[stage - 1];
+        }
+        
+        let mut ans = vec![0; self.array_len];
+        
+        // Fill the first stage positions
+        for i in 0..stage {
+            ans[i] = (k % self.base as i64) as i32;
+            k = k / self.base as i64;
+        }
+        
+        // Fill the stage position with min constraint
+        if stage < self.array_len {
+            ans[stage] = (self.min as i64 + (k % self.diff as i64)) as i32;
+            k = k / self.diff as i64;
+        }
+        
+        // Fill the remaining positions
+        for i in (stage + 1)..self.array_len {
+            ans[i] = (k % self.min as i64) as i32;
+            k = k / self.min as i64;
+        }
+        
+        ans
+    }
+    
+    fn size(&self) -> i64 {
+        self.partial_sums[self.array_len - 1]
+    }
+}
+
 /// A LongList of all permutations of n elements.
 pub struct Permutations {
     pub n: usize,

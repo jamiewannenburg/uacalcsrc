@@ -33,6 +33,138 @@ def run_java_wrapper(command, args):
         pytest.fail(f"Failed to parse Java wrapper output: {e}")
 
 
+def run_tuple_with_min_wrapper(command, args):
+    """Run TupleWithMin Java wrapper and return JSON output."""
+    wrapper_class = "java_wrapper.src.util.virtuallist.TupleWithMinWrapper"
+    cmd = build_java_command(wrapper_class, [command] + args)
+    
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+        if result.returncode != 0:
+            pytest.fail(f"Java wrapper failed: {result.stderr}")
+        
+        output = json.loads(result.stdout)
+        # The data field contains a JSON string, so we need to parse it again
+        if "data" in output and isinstance(output["data"], str):
+            output["data"] = json.loads(output["data"])
+        return output
+    except subprocess.TimeoutExpired:
+        pytest.fail("Java wrapper timed out")
+    except json.JSONDecodeError as e:
+        pytest.fail(f"Failed to parse Java wrapper output: {e}")
+
+
+class TestTupleWithMin:
+    """Test TupleWithMin LongList implementation."""
+    
+    def test_basic_creation(self):
+        """Test basic TupleWithMin creation."""
+        TupleWithMin = uacalc_lib.util.TupleWithMin
+        
+        # Test basic creation
+        tuples = TupleWithMin(3, 4, 2)
+        assert tuples.size() == 56  # Expected size for (3, 4, 2)
+        
+        # Test with Java comparison
+        java_result = run_tuple_with_min_wrapper("new", ["--arrayLen", "3", "--base", "4", "--min", "2"])
+        assert tuples.size() == java_result["data"]["size"]
+    
+    def test_size(self):
+        """Test TupleWithMin size method."""
+        TupleWithMin = uacalc_lib.util.TupleWithMin
+        
+        tuples = TupleWithMin(3, 4, 2)
+        result = tuples.size()
+        
+        # Test with Java comparison
+        java_result = run_tuple_with_min_wrapper("size", ["--arrayLen", "3", "--base", "4", "--min", "2"])
+        assert result == java_result["data"]["size"]
+    
+    def test_get_first_element(self):
+        """Test getting the first element from TupleWithMin."""
+        TupleWithMin = uacalc_lib.util.TupleWithMin
+        
+        tuples = TupleWithMin(3, 4, 2)
+        result = tuples.get(0)
+        
+        # Test with Java comparison
+        java_result = run_tuple_with_min_wrapper("get", ["--arrayLen", "3", "--base", "4", "--min", "2", "--k", "0"])
+        assert result == java_result["data"]["value"]
+    
+    def test_get_middle_element(self):
+        """Test getting a middle element from TupleWithMin."""
+        TupleWithMin = uacalc_lib.util.TupleWithMin
+        
+        tuples = TupleWithMin(3, 4, 2)
+        result = tuples.get(28)
+        
+        # Test with Java comparison
+        java_result = run_tuple_with_min_wrapper("get", ["--arrayLen", "3", "--base", "4", "--min", "2", "--k", "28"])
+        assert result == java_result["data"]["value"]
+    
+    def test_get_last_element(self):
+        """Test getting the last element from TupleWithMin."""
+        TupleWithMin = uacalc_lib.util.TupleWithMin
+        
+        tuples = TupleWithMin(3, 4, 2)
+        result = tuples.get(55)
+        
+        # Test with Java comparison
+        java_result = run_tuple_with_min_wrapper("get", ["--arrayLen", "3", "--base", "4", "--min", "2", "--k", "55"])
+        assert result == java_result["data"]["value"]
+    
+    def test_different_parameters(self):
+        """Test TupleWithMin with different parameters."""
+        TupleWithMin = uacalc_lib.util.TupleWithMin
+        
+        tuples = TupleWithMin(4, 5, 3)
+        result = tuples.size()
+        
+        # Test with Java comparison
+        java_result = run_tuple_with_min_wrapper("new", ["--arrayLen", "4", "--base", "5", "--min", "3"])
+        assert result == java_result["data"]["size"]
+    
+    def test_sequence_of_elements(self):
+        """Test getting a sequence of elements."""
+        TupleWithMin = uacalc_lib.util.TupleWithMin
+        
+        tuples = TupleWithMin(3, 4, 2)
+        elements = [tuples.get(i) for i in range(10)]
+        
+        # Test with Java comparison
+        java_result = run_tuple_with_min_wrapper("test", [])
+        assert elements == java_result["data"]["elements"]
+    
+    def test_error_handling(self):
+        """Test error handling for invalid parameters."""
+        TupleWithMin = uacalc_lib.util.TupleWithMin
+        
+        # Test with invalid parameters - base <= min should raise error
+        with pytest.raises(Exception):
+            TupleWithMin(3, 2, 2)
+        
+        # Test with base < min
+        with pytest.raises(Exception):
+            TupleWithMin(3, 2, 3)
+    
+    def test_string_representation(self):
+        """Test string representation methods."""
+        TupleWithMin = uacalc_lib.util.TupleWithMin
+        
+        tuples = TupleWithMin(3, 4, 2)
+        
+        # Test __str__
+        str_repr = str(tuples)
+        assert "TupleWithMin" in str_repr
+        assert "3" in str_repr
+        assert "4" in str_repr
+        assert "2" in str_repr
+        
+        # Test __repr__
+        repr_str = repr(tuples)
+        assert "TupleWithMin" in repr_str
+
+
 class TestIntTuples:
     """Test IntTuples LongList implementation."""
     
