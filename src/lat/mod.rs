@@ -57,12 +57,15 @@ pub trait Order<E> {
     fn leq(&self, a: &E, b: &E) -> bool;
 }
 
+// Import trait implementations from separate modules
+pub mod lattice;
+pub mod small_lattice;
+
+pub use lattice::Lattice;
+pub use small_lattice::SmallLattice;
+
 pub struct BasicLattice {
     // TODO: Implement basic lattice
-}
-
-pub struct Lattice {
-    // TODO: Implement lattice
 }
 
 pub struct Lattices {
@@ -70,10 +73,6 @@ pub struct Lattices {
 }
 
 pub mod ordered_sets;
-
-pub struct SmallLattice {
-    // TODO: Implement small lattice
-}
 
 // Example implementations for testing
 #[derive(Debug, Clone)]

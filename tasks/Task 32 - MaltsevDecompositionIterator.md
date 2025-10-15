@@ -35,7 +35,8 @@ Translate the Java class `org.uacalc.alg.MaltsevDecompositionIterator` to Rust w
 - **Partition**: Task 1 (completed) - Available in `src/alg/conlat/partition.rs`
 - **Subalgebra**: Task 68 (not completed) - Required for `new Subalgebra(algebra, block)`
 - **QuotientAlgebra**: Task 77 (not completed) - Required for `new QuotientAlgebra(subalg, par)`
-- **CongruenceLattice**: Task 20 (not completed) - Required for `con().zero()`, `con().one()`, `findUpperCover()`
+- **CongruenceLattice**: Task 20 (not completed) - Required for `con().zero()`, `con().one()`, `findUpperCover()` 
+  - **Note**: Task 20 (Lattice interface) is ✅ **COMPLETED** but CongruenceLattice implementation (Task 80) is not completed
 
 ## Rust Implementation Recommendations
 
@@ -80,7 +81,8 @@ pub struct MaltsevDecompositionIterator {
 - SmallAlgebra interface (Task 41) - not completed
 - Subalgebra class (Task 68) - not completed  
 - QuotientAlgebra class (Task 77) - not completed
-- CongruenceLattice class (Task 20) - not completed
+- CongruenceLattice class (Task 80) - not completed
+  - **Note**: Task 20 (Lattice interface) is ✅ **COMPLETED**
 
 ### Recommendation
 - **Wait for dependencies**: Complete Tasks 20, 41, 68, 77 first

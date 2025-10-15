@@ -33,13 +33,13 @@ Translate the Java class `org.uacalc.lat.Lattices` to Rust with Python bindings.
 - **CongruenceLattice** (Task 80) - Used in conToSmallLattice method
 - **BasicLattice** (Task 85) - Return type for factory methods and dual method
 - **Operation** (Task 12) - Used in all factory methods
-- **SmallLattice** (Task 28) - Return type for conToSmallLattice method
+- **SmallLattice** (Task 28 - ✅ **COMPLETED**) - Return type for conToSmallLattice method
 - **Partition** (Task 5) - Used in conToSmallLattice method
 - **org.latdraw.orderedset.OrderedSet** - External dependency for lattice construction
 
 ### Missing Dependencies
 The current dependency list is **INCORRECT**. Missing dependencies:
-- **SmallLattice** (Task 28) - Return type for conToSmallLattice
+- **SmallLattice** (Task 28 - ✅ **COMPLETED**) - Return type for conToSmallLattice
 - **Partition** (Task 5) - Used in conToSmallLattice method
 - **org.latdraw.orderedset.OrderedSet** - External dependency (excluded from translation)
 
@@ -47,7 +47,7 @@ The current dependency list is **INCORRECT**. Missing dependencies:
 This task should be implemented **AFTER**:
 1. Task 5: Partition ✅ (completed)
 2. Task 12: Operation ✅ (completed) 
-3. Task 28: SmallLattice (pending)
+3. Task 28: SmallLattice (✅ **COMPLETED**)
 4. Task 80: CongruenceLattice (pending)
 5. Task 85: BasicLattice (pending)
 
@@ -82,7 +82,7 @@ This task should be implemented **AFTER**:
 ## Implementation Steps
 
 1. **Wait for Dependencies**
-   - Complete Task 28: SmallLattice
+   - Complete Task 28: SmallLattice (✅ **COMPLETED**)
    - Complete Task 80: CongruenceLattice  
    - Complete Task 85: BasicLattice
 

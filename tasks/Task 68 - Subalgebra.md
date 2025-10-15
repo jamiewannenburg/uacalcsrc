@@ -63,7 +63,8 @@ This class depends on:
 - `org.uacalc.alg.GeneralAlgebra` (Task 66 - ✅ **COMPLETED**) - Parent class
 - `org.uacalc.alg.conlat.Partition` (Task 5 - COMPLETED) - Partition operations
 - `org.uacalc.alg.conlat.BasicPartition` (Task 5 - COMPLETED) - Partition creation
-- `org.uacalc.alg.conlat.CongruenceLattice` (Task 20 - NOT COMPLETED) - Lattice operations
+- `org.uacalc.alg.conlat.CongruenceLattice` (Task 80 - NOT COMPLETED) - Lattice operations
+  - **Note**: Task 20 (Lattice interface) is ✅ **COMPLETED**
 - `org.uacalc.alg.sublat.SubalgebraLattice` (Task 76 - NOT COMPLETED) - Lattice operations
 - `org.uacalc.alg.op.AbstractOperation` (Task 11 - ✅ **COMPLETED**) - Operation creation
 - `org.uacalc.alg.op.Operation` (Task 12 - ✅ **COMPLETED**) - Operation interface
@@ -299,7 +300,8 @@ impl PySubalgebra {
 **BLOCKED** - Cannot implement until dependencies are completed:
 1. **SmallAlgebra** (Task 41) - Core interface
 2. **GeneralAlgebra** (Task 66) - Parent class
-3. **CongruenceLattice** (Task 20) - Lattice operations
+3. **CongruenceLattice** (Task 80) - Lattice operations
+   - **Note**: Task 20 (Lattice interface) is ✅ **COMPLETED**
 4. **SubalgebraLattice** (Task 76) - Lattice operations
 5. **Operation/AbstractOperation** (Task 12) - Operation system
 6. **Operations** (Task 50) - Operation utilities
