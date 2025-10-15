@@ -24,7 +24,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('task_analysis.log'),
+        logging.FileHandler('../task_analysis/task_analysis.log'),
         logging.StreamHandler()
     ]
 )
@@ -291,7 +291,7 @@ Begin your analysis and update the task file accordingly. Return your findings i
     
     def load_existing_results(self) -> Dict[str, Dict]:
         """Load existing results from task_analysis_results.json."""
-        results_file = self.project_root / "task_analysis_results.json"
+        results_file = self.project_root / "task_analysis" / "task_analysis_results.json"
         if not results_file.exists():
             return {}
         
@@ -322,7 +322,7 @@ Begin your analysis and update the task file accordingly. Return your findings i
     
     def save_results_incrementally(self, new_results: List[Dict], existing_results: Dict[str, Dict]):
         """Save results incrementally by merging with existing results."""
-        results_file = self.project_root / "task_analysis_results.json"
+        results_file = self.project_root / "task_analysis" / "task_analysis_results.json"
         
         # Merge new results with existing ones (this overwrites any existing result for the same task)
         for result in new_results:
@@ -337,7 +337,7 @@ Begin your analysis and update the task file accordingly. Return your findings i
     
     def cleanup_results_file(self):
         """Clean up the results file to remove any duplicate entries."""
-        results_file = self.project_root / "task_analysis_results.json"
+        results_file = self.project_root / "task_analysis" / "task_analysis_results.json"
         if not results_file.exists():
             return
         
