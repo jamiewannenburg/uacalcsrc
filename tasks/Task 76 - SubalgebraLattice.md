@@ -18,13 +18,13 @@ Translate the Java class `org.uacalc.alg.sublat.SubalgebraLattice` to Rust with 
 
 ### Dependencies Analysis
 **Direct Dependencies:**
-- `org.uacalc.alg.*` - Core algebra types (SmallAlgebra, Operation, etc.)
-- `org.uacalc.alg.conlat.*` - CongruenceLattice, Partition
-- `org.uacalc.alg.op.Operation` - Operation interface
-- `org.uacalc.alg.op.OperationSymbol` - Operation symbol types
-- `org.uacalc.alg.op.SimilarityType` - Similarity type definitions
-- `org.uacalc.lat.*` - Lattice, Order, BasicLattice interfaces
-- `org.uacalc.util.*` - Utility classes (ArrayIncrementor, SequenceGenerator, etc.)
+- `org.uacalc.alg.*` - Core algebra types (SmallAlgebra, Operation, etc.) - ✅ **COMPLETED** (SmallAlgebra, Operation)
+- `org.uacalc.alg.conlat.*` - CongruenceLattice, Partition - ❌ **PENDING**
+- `org.uacalc.alg.op.Operation` - ✅ **COMPLETED** - Operation interface
+- `org.uacalc.alg.op.OperationSymbol` - ✅ **COMPLETED** - Operation symbol types
+- `org.uacalc.alg.op.SimilarityType` - ❌ **PENDING** - Similarity type definitions
+- `org.uacalc.lat.*` - Lattice, Order, BasicLattice interfaces - ✅ **COMPLETED** (Order)
+- `org.uacalc.util.*` - Utility classes (ArrayIncrementor, SequenceGenerator, etc.) - ❌ **PENDING**
 - `org.uacalc.ui.tm.ProgressReport` - Progress reporting (UI dependency - can be optional)
 
 **Missing Dependencies (should be added):**

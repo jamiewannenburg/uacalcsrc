@@ -51,20 +51,20 @@ Translate the Java class `org.uacalc.alg.op.Operations` to Rust with Python bind
 
 ### Dependencies
 This class depends on:
-- `org.uacalc.alg.conlat.BasicPartition` (Task 5)
+- `org.uacalc.alg.conlat.BasicPartition` (Task 5) - ❌ **PENDING**
 - `org.uacalc.util.*` (Multiple utility classes):
-  - `ArrayString` (Task 6) ✅
-  - `ArrayIncrementor` (Task 4)
-  - `SequenceGenerator` (Task 15)
-  - `PermutationGenerator` (Task 9)
-  - `Horner` (Task 3) ✅
-  - `IntArray` (Task 23)
+  - `ArrayString` (Task 6) ✅ **COMPLETED**
+  - `ArrayIncrementor` (Task 4) - ❌ **PENDING**
+  - `SequenceGenerator` (Task 15) - ❌ **PENDING**
+  - `PermutationGenerator` (Task 9) - ❌ **PENDING**
+  - `Horner` (Task 3) ✅ **COMPLETED**
+  - `IntArray` (Task 23) - ❌ **PENDING**
 - `org.uacalc.alg.op.*` (Operation-related classes):
-  - `Operation` (Task 12)
-  - `OperationSymbol` (Task 1) ✅
-  - `AbstractOperation` (Task 11)
-  - `OperationWithDefaultValue` (Task 49)
-  - `SimilarityType` (Task 2)
+  - `Operation` (Task 12) ✅ **COMPLETED**
+  - `OperationSymbol` (Task 1) ✅ **COMPLETED**
+  - `AbstractOperation` (Task 11) ✅ **COMPLETED**
+  - `OperationWithDefaultValue` (Task 49) - ❌ **PENDING**
+  - `SimilarityType` (Task 2) - ❌ **PENDING**
 - `org.uacalc.ui.tm.ProgressReport` (UI class - excluded)
 - `javax.script.*` (Java Scripting API for Groovy support)
 
@@ -115,17 +115,17 @@ This class depends on:
 
 ### Dependencies Implementation Order
 1. **Prerequisites** (must be completed first):
-   - Task 1: OperationSymbol ✅
-   - Task 3: Horner ✅
-   - Task 6: ArrayString ✅
-   - Task 2: SimilarityType
-   - Task 4: ArrayIncrementor
-   - Task 9: PermutationGenerator
-   - Task 11: AbstractOperation
-   - Task 12: Operation
-   - Task 15: SequenceGenerator
-   - Task 23: IntArray
-   - Task 49: OperationWithDefaultValue
+   - Task 1: OperationSymbol ✅ **COMPLETED**
+   - Task 3: Horner ✅ **COMPLETED**
+   - Task 6: ArrayString ✅ **COMPLETED**
+   - Task 2: SimilarityType - ❌ **PENDING**
+   - Task 4: ArrayIncrementor - ❌ **PENDING**
+   - Task 9: PermutationGenerator - ❌ **PENDING**
+   - Task 11: AbstractOperation ✅ **COMPLETED**
+   - Task 12: Operation ✅ **COMPLETED**
+   - Task 15: SequenceGenerator - ❌ **PENDING**
+   - Task 23: IntArray - ❌ **PENDING**
+   - Task 49: OperationWithDefaultValue - ❌ **PENDING**
 
 2. **This Task**: Operations (Task 50)
 

@@ -108,8 +108,8 @@ The wrapper should be created after these dependencies are implemented.
 5. **Cross-language Tests**: Compare with Java implementation
 
 ## Implementation Priority
-**BLOCKED** - Cannot implement until dependencies are completed:
-1. `GeneralAlgebra` (Task 41 - SmallAlgebra)
+⚠️ **PARTIALLY UNBLOCKED** - Core algebra dependency completed:
+1. `GeneralAlgebra` (Task 66 - GeneralAlgebra) ✅ **COMPLETED**
 2. `ProductAlgebra` (Task 73 - ProductAlgebra) 
 3. `CongruenceLattice` (Task 45 - CongruenceLattice)
 4. `SubalgebraLattice` (Task 46 - SubalgebraLattice)

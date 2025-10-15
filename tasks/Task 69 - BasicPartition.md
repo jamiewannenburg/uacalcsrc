@@ -20,8 +20,8 @@
 - `org.uacalc.util.IntArray` ✅ (Task 23 - completed)
 - `org.uacalc.alg.conlat.Partition` ✅ (Task 5 - completed)
 - `org.uacalc.alg.conlat.BinaryRelation` ✅ (Task 19 - completed)
-- `org.uacalc.alg.SmallAlgebra` ❌ (Task 41 - not completed)
-- `org.uacalc.alg.op.Operation` ❌ (Task 12 - not completed)
+- `org.uacalc.alg.SmallAlgebra` ✅ **COMPLETED** (Task 41 - completed)
+- `org.uacalc.alg.op.Operation` ✅ **COMPLETED** (Task 12 - completed)
 - `org.uacalc.terms.*` ❌ (Multiple tasks - not completed)
 - `org.uacalc.lat.*` ❌ (Multiple tasks - not completed)
 - `org.uacalc.util.*` ✅ (Various utility classes - completed)
@@ -33,7 +33,7 @@
 - `org.uacalc.alg.SubProductAlgebra` ❌ (Task 83 - not completed)
 - `org.uacalc.ui.tm.ProgressReport` ❌ (UI package - excluded)
 
-**Dependency Status**: ❌ **BLOCKED** - Multiple critical dependencies not completed yet
+**Dependency Status**: ⚠️ **PARTIALLY UNBLOCKED** - Core algebra dependencies completed, but terms and lattice dependencies still pending
 
 ## Rust Implementation Recommendations
 
