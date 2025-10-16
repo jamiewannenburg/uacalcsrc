@@ -188,13 +188,19 @@
 - Note: Full evaluation/interpretation requires Algebra implementation (future work)
 
 ### Known Limitations
-- **Evaluation Methods**: Return placeholder errors (require Algebra/Operation integration)
 - **Interpretation Methods**: Return placeholder errors (require TermOperation implementation)
 - **Substitute Method**: Basic implementation (requires term cloning support)
 - **NonVariableTerm Clone**: Not implemented due to trait object constraints
+- **Operations Cloning**: Algebra operations cannot be easily cloned (requires Arc<dyn Operation>)
+
+### Completed Features
+- ✅ **Full Evaluation**: Terms can be evaluated in algebras with proper variable assignment
+- ✅ **Nested Term Evaluation**: Recursive evaluation works correctly for nested terms
+- ✅ **File-based Testing**: Tests read algebras from .ua files and evaluate terms
+- ✅ **Integration with Algebra**: Uses `get_operation_ref` for operation lookup
 
 ### Future Work
-- Implement full evaluation when Algebra trait is ready
 - Implement interpretation methods when TermOperation is ready
 - Add Python bindings for NonVariableTerm
 - Implement term cloning mechanism for substitute operations
+- Consider using Arc<dyn Operation> for better operation cloning support

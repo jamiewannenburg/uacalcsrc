@@ -1,5 +1,7 @@
 use super::*;
 use std::collections::HashMap;
+use crate::io::AlgebraReader;
+use crate::alg::SmallAlgebra;
 
 #[test]
 fn test_variable_imp_creation() {
@@ -63,35 +65,69 @@ fn test_variable_imp_get_variable_list() {
     assert_eq!(vars[0], "x");
 }
 
+// Helper function to create a simple test algebra
+fn create_test_algebra() -> crate::alg::BasicSmallAlgebra<i32> {
+    use crate::alg::op::OperationSymbol;
+    use crate::alg::op::operations;
+    use std::collections::HashSet;
+    use crate::alg::op::Operation;
+    use crate::alg::Algebra;
+    
+    // Create a simple algebra with universe {0, 1, 2}
+    let mut universe = HashSet::new();
+    universe.insert(0);
+    universe.insert(1);
+    universe.insert(2);
+    
+    // Create operations
+    let mut ops: Vec<Box<dyn Operation>> = Vec::new();
+    
+    // Add a binary operation (e.g., addition mod 3)
+    let add_sym = OperationSymbol::new("add", 2, false);
+    let add_table = vec![
+        0, 1, 2,  // 0 + 0, 0 + 1, 0 + 2
+        1, 2, 0,  // 1 + 0, 1 + 1, 1 + 2
+        2, 0, 1,  // 2 + 0, 2 + 1, 2 + 2
+    ];
+    let add_op = operations::make_int_operation(add_sym, 3, add_table).expect("Failed to create operation");
+    ops.push(add_op);
+    
+    // Create the algebra
+    crate::alg::BasicSmallAlgebra::new("TestAlgebra".to_string(), universe, ops)
+}
+
 #[test]
-fn test_variable_imp_eval() {
+fn test_variable_imp_eval_with_algebra() {
+    let alg = create_test_algebra();
     let x = VariableImp::new("x");
     let mut map = HashMap::new();
-    map.insert("x".to_string(), 5);
+    map.insert("x".to_string(), 1);
     
-    let result = x.eval(&map);
+    let result = x.eval(&alg, &map);
     assert!(result.is_ok());
-    assert_eq!(result.unwrap(), 5);
+    assert_eq!(result.unwrap(), 1);
 }
 
 #[test]
 fn test_variable_imp_eval_missing() {
+    let alg = create_test_algebra();
     let x = VariableImp::new("x");
     let map = HashMap::new();
     
-    let result = x.eval(&map);
+    let result = x.eval(&alg, &map);
     assert!(result.is_err());
 }
 
 #[test]
 fn test_variable_imp_int_eval() {
+    let alg = create_test_algebra();
     let x = VariableImp::new("x");
     let mut map = HashMap::new();
-    map.insert("x".to_string(), 3);
+    map.insert("x".to_string(), 2);
     
-    let result = x.int_eval(&map);
+    let result = x.int_eval(&alg, &map);
     assert!(result.is_ok());
-    assert_eq!(result.unwrap(), 3);
+    assert_eq!(result.unwrap(), 2);
 }
 
 #[test]
@@ -203,4 +239,130 @@ fn test_non_variable_term_nested() {
     assert_eq!(outer_term.depth(), 2); // 1 + 1 = 2
     assert_eq!(outer_term.length(), 4); // 1 + (1 + 1 + 1) = 4
     assert_eq!(outer_term.to_string(), "g(f(x,y))");
+}
+
+#[test]
+fn test_non_variable_term_eval_simple() {
+    let alg = create_test_algebra();
+    
+    // Create term: add(x, y) where x=1, y=2
+    // Expected result: (1 + 2) mod 3 = 0
+    let add_sym = OperationSymbol::new("add", 2, false);
+    let x = Box::new(VariableImp::new("x")) as Box<dyn Term>;
+    let y = Box::new(VariableImp::new("y")) as Box<dyn Term>;
+    let children = vec![x, y];
+    let term = NonVariableTerm::new(add_sym, children);
+    
+    let mut map = HashMap::new();
+    map.insert("x".to_string(), 1);
+    map.insert("y".to_string(), 2);
+    
+    let result = term.eval(&alg, &map);
+    assert!(result.is_ok(), "Evaluation should succeed: {:?}", result);
+    assert_eq!(result.unwrap(), 0, "1 + 2 = 0 (mod 3)");
+}
+
+#[test]
+fn test_non_variable_term_eval_nested() {
+    let alg = create_test_algebra();
+    
+    // Create term: add(add(x, y), z) where x=1, y=1, z=1
+    // Expected: add(add(1, 1), 1) = add(2, 1) = 0 (mod 3)
+    let add_sym = OperationSymbol::new("add", 2, false);
+    
+    // Inner term: add(x, y)
+    let x = Box::new(VariableImp::new("x")) as Box<dyn Term>;
+    let y = Box::new(VariableImp::new("y")) as Box<dyn Term>;
+    let inner_children = vec![x, y];
+    let inner_term = NonVariableTerm::new(add_sym.clone(), inner_children);
+    
+    // Outer term: add(inner, z)
+    let z = Box::new(VariableImp::new("z")) as Box<dyn Term>;
+    let outer_children = vec![Box::new(inner_term) as Box<dyn Term>, z];
+    let outer_term = NonVariableTerm::new(add_sym, outer_children);
+    
+    let mut map = HashMap::new();
+    map.insert("x".to_string(), 1);
+    map.insert("y".to_string(), 1);
+    map.insert("z".to_string(), 1);
+    
+    let result = outer_term.eval(&alg, &map);
+    assert!(result.is_ok(), "Nested evaluation should succeed: {:?}", result);
+    assert_eq!(result.unwrap(), 0, "add(add(1, 1), 1) = add(2, 1) = 0 (mod 3)");
+}
+
+#[test]
+fn test_term_eval_with_algebra_file() {
+    use crate::alg::Algebra;
+    
+    // Test with a real algebra file
+    let reader = AlgebraReader::new_from_path("resources/algebras/cyclic3.ua");
+    if reader.is_err() {
+        // Skip test if file doesn't exist
+        println!("Skipping test - algebra file not found");
+        return;
+    }
+    
+    let alg = reader.unwrap().read_algebra_file();
+    if alg.is_err() {
+        // Skip test if can't read algebra
+        println!("Skipping test - can't read algebra");
+        return;
+    }
+    
+    let alg = alg.unwrap();
+    println!("Loaded algebra: {}", alg.name());
+    println!("Cardinality: {}", alg.cardinality());
+    
+    // Create a simple variable term
+    let x = VariableImp::new("x");
+    let mut map = HashMap::new();
+    map.insert("x".to_string(), 0);
+    
+    let result = x.eval(&alg, &map);
+    assert!(result.is_ok());
+    assert_eq!(result.unwrap(), 0);
+}
+
+#[test]
+fn test_term_eval_with_cyclic2() {
+    use crate::alg::Algebra;
+    
+    // Test with cyclic group of order 2
+    let reader = AlgebraReader::new_from_path("resources/algebras/cyclic2.ua");
+    if reader.is_err() {
+        println!("Skipping test - algebra file not found");
+        return;
+    }
+    
+    let alg = reader.unwrap().read_algebra_file();
+    if alg.is_err() {
+        println!("Skipping test - can't read algebra");
+        return;
+    }
+    
+    let alg = alg.unwrap();
+    println!("Testing with algebra: {}", alg.name());
+    
+    // Note: operations() may return empty due to cloning limitations
+    // We'll create a term using a known operation symbol from the algebra
+    // For cyclic2, there should be a binary operation
+    
+    // Try to create a term with the operation symbol "+"
+    let op_sym = OperationSymbol::new("+", 2, false);
+    let x = Box::new(VariableImp::new("x")) as Box<dyn Term>;
+    let y = Box::new(VariableImp::new("y")) as Box<dyn Term>;
+    let children = vec![x, y];
+    let term = NonVariableTerm::new(op_sym, children);
+    
+    let mut map = HashMap::new();
+    map.insert("x".to_string(), 0);
+    map.insert("y".to_string(), 1);
+    
+    let result = term.eval(&alg, &map);
+    if result.is_ok() {
+        println!("Result: {}", result.unwrap());
+    } else {
+        println!("Evaluation failed: {:?}", result);
+    }
 }

@@ -29,6 +29,11 @@ pub enum AlgebraType {
 /// for some positive integer n. This trait provides additional methods for
 /// working with indexed elements.
 pub trait SmallAlgebra: Algebra {
+    /// Get a reference to an operation by symbol (internal use).
+    /// This is a workaround for the limitation of not being able to clone trait objects.
+    fn get_operation_ref(&self, sym: &OperationSymbol) -> Option<&dyn Operation>;
+    
+
     /// Get the type of this small algebra.
     /// 
     /// # Returns
@@ -297,6 +302,10 @@ impl<T> SmallAlgebra for BasicSmallAlgebra<T>
 where 
     T: Clone + PartialEq + Eq + Hash + Debug + Send + Sync + Display + 'static
 {
+    fn get_operation_ref(&self, sym: &OperationSymbol) -> Option<&dyn Operation> {
+        self.base.get_operation_ref(sym)
+    }
+
     fn algebra_type(&self) -> AlgebraType {
         self.algebra_type.clone()
     }

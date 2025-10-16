@@ -162,6 +162,17 @@ where
     pub fn operations_mut(&mut self) -> &mut Vec<Box<dyn Operation>> {
         &mut self.operations
     }
+    
+    /// Get a reference to an operation by symbol (internal use).
+    /// This is a workaround for the limitation of not being able to clone trait objects.
+    pub fn get_operation_ref(&self, sym: &OperationSymbol) -> Option<&dyn Operation> {
+        for op in &self.operations {
+            if op.symbol() == sym {
+                return Some(op.as_ref());
+            }
+        }
+        None
+    }
 }
 
 impl<T> Debug for GeneralAlgebra<T>
@@ -247,15 +258,10 @@ where
     }
     
     fn get_operation(&self, sym: &OperationSymbol) -> Option<Box<dyn Operation>> {
-        // Linear search through operations since we can't easily clone
-        for op in &self.operations {
-            if op.symbol() == sym {
-                // We can't clone the operation, so this is a limitation
-                // In a real implementation, we'd use Arc<dyn Operation> or similar
-                return None; // Placeholder
-            }
-        }
-        None
+        // Linear search through operations
+        // We can't return a Box easily, so return by reference via a new trait method
+        // For now, we'll need to work around this limitation
+        None // This needs Arc<dyn Operation> to work properly
     }
     
     fn get_operations_map(&self) -> HashMap<OperationSymbol, Box<dyn Operation>> {

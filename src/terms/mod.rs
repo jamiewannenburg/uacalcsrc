@@ -1,6 +1,7 @@
 use std::collections::{HashMap, HashSet};
 use std::fmt::{Display, Debug};
 use crate::alg::op::OperationSymbol;
+use crate::alg::SmallAlgebra;
 
 /// The Term trait represents algebraic terms in universal algebra.
 /// 
@@ -48,15 +49,12 @@ pub trait Term: Display + Debug {
     /// 
     /// # Arguments
     /// * `alg` - The algebra in which to evaluate the term
-    /// * `map` - A map from variables to their values
+    /// * `map` - A map from variable names to their integer values
     /// 
     /// # Returns
     /// * `Ok(i32)` - The result of evaluating the term
     /// * `Err(String)` - Error message if evaluation fails
-    /// 
-    /// # Note
-    /// This is a placeholder that will be properly implemented when algebra evaluation is ready
-    fn eval(&self, map: &HashMap<String, i32>) -> Result<i32, String>;
+    fn eval(&self, alg: &dyn SmallAlgebra<UniverseItem = i32>, map: &HashMap<String, i32>) -> Result<i32, String>;
     
     /// Evaluates this term as an integer in an algebra.
     /// 
@@ -67,10 +65,7 @@ pub trait Term: Display + Debug {
     /// # Returns
     /// * `Ok(i32)` - The integer result of evaluating the term
     /// * `Err(String)` - Error message if evaluation fails
-    /// 
-    /// # Note
-    /// This is a placeholder that will be properly implemented when algebra evaluation is ready
-    fn int_eval(&self, map: &HashMap<String, i32>) -> Result<i32, String>;
+    fn int_eval(&self, alg: &dyn SmallAlgebra<UniverseItem = i32>, map: &HashMap<String, i32>) -> Result<i32, String>;
     
     /// Returns the interpretation of this term as an operation on the given algebra.
     /// 
@@ -250,16 +245,16 @@ impl Term for VariableImp {
         None
     }
     
-    fn eval(&self, map: &HashMap<String, i32>) -> Result<i32, String> {
+    fn eval(&self, _alg: &dyn SmallAlgebra<UniverseItem = i32>, map: &HashMap<String, i32>) -> Result<i32, String> {
+        // For a variable, just look up its value in the assignment map
         map.get(&self.name)
             .copied()
             .ok_or_else(|| format!("Variable {} not found in assignment map", self.name))
     }
     
-    fn int_eval(&self, map: &HashMap<String, i32>) -> Result<i32, String> {
-        map.get(&self.name)
-            .copied()
-            .ok_or_else(|| format!("Variable {} not found in assignment map", self.name))
+    fn int_eval(&self, alg: &dyn SmallAlgebra<UniverseItem = i32>, map: &HashMap<String, i32>) -> Result<i32, String> {
+        // For variables, int_eval is the same as eval
+        self.eval(alg, map)
     }
     
     fn interpretation(&self, _varlist: &[String], _use_all: bool) -> Result<(), String> {
@@ -400,16 +395,26 @@ impl Term for NonVariableTerm {
         None
     }
     
-    fn eval(&self, _map: &HashMap<String, i32>) -> Result<i32, String> {
+    fn eval(&self, alg: &dyn SmallAlgebra<UniverseItem = i32>, map: &HashMap<String, i32>) -> Result<i32, String> {
         // Get the operation from the algebra
-        // Evaluate all children
-        // Apply the operation
-        Err("NonVariableTerm eval not yet fully implemented".to_string())
+        let op = alg.get_operation_ref(&self.leading_operation_symbol)
+            .ok_or_else(|| format!("Operation {} not found in algebra", 
+                                  self.leading_operation_symbol.name()))?;
+        
+        // Recursively evaluate all children
+        let mut args = Vec::new();
+        for child in &self.children {
+            let value = child.eval(alg, map)?;
+            args.push(value);
+        }
+        
+        // Apply the operation to the evaluated arguments
+        op.int_value_at(&args)
     }
     
-    fn int_eval(&self, _map: &HashMap<String, i32>) -> Result<i32, String> {
-        // Similar to eval but uses int_value_at
-        Err("NonVariableTerm int_eval not yet fully implemented".to_string())
+    fn int_eval(&self, alg: &dyn SmallAlgebra<UniverseItem = i32>, map: &HashMap<String, i32>) -> Result<i32, String> {
+        // For integer algebras, int_eval is the same as eval
+        self.eval(alg, map)
     }
     
     fn interpretation(&self, _varlist: &[String], _use_all: bool) -> Result<(), String> {
