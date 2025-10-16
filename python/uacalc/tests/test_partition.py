@@ -27,7 +27,13 @@ def run_java_wrapper(command, args):
     
     import subprocess
     try:
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+        result = subprocess.run(
+            cmd, 
+            capture_output=True, 
+            text=True, 
+            timeout=30,
+            cwd=project_root  # Run from project root so relative paths work
+        )
         if result.returncode != 0:
             pytest.fail(f"Java wrapper failed: {result.stderr}")
         
