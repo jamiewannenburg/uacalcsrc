@@ -365,6 +365,30 @@ def memory_limit(limit_mb: int):
     return decorator
 
 
+def run_java_wrapper(wrapper_class: str, args: List[str], config: Optional[TestConfig] = None) -> JavaCliOutput:
+    """
+    Run a Java CLI wrapper and capture its output.
+    
+    This is a convenience function that creates a TestHarness and runs the Java CLI.
+    
+    Args:
+        wrapper_class: The Java wrapper class to run (e.g., "eq.EquationsWrapper")
+        args: Command line arguments for the wrapper
+        config: Optional test configuration (uses default if None)
+        
+    Returns:
+        JavaCliOutput containing stdout, stderr, and exit code
+        
+    Raises:
+        RuntimeError: If Java wrapper execution fails
+    """
+    if config is None:
+        config = TestConfig()
+    
+    with TestHarness(config) as harness:
+        return harness.run_java_cli(wrapper_class, args)
+
+
 # Example usage and tests
 if __name__ == "__main__":
     # Example usage

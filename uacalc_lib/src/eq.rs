@@ -1,6 +1,6 @@
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
-use uacalc::eq::Equation;
+use uacalc::eq::{Equation, equations};
 use uacalc::terms::Term;  // Import Term trait for clone_box method
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -134,9 +134,71 @@ fn convert_to_term(obj: &Bound<'_, PyAny>) -> PyResult<Box<dyn uacalc::terms::Te
     ))
 }
 
+/// Create associative law equation: f(x,f(y,z)) = f(f(x,y),z)
+/// 
+/// The operation symbol must have arity 2.
+/// 
+/// # Arguments
+/// * `op_symbol` - The operation symbol (must have arity 2)
+/// 
+/// # Returns
+/// * `PyEquation` - The associative law equation
+/// 
+/// # Raises
+/// * `ValueError` - If the arity is not 2
+#[pyfunction]
+fn associative_law(op_symbol: &crate::alg::PyOperationSymbol) -> PyResult<PyEquation> {
+    let equation = equations::associative_law(&op_symbol.get_inner())
+        .map_err(|e| PyValueError::new_err(e))?;
+    Ok(PyEquation { inner: equation })
+}
+
+/// Create cyclic law equation: f(x0,x1,...,x{k-1}) = f(x{k-1},x0,...,x{k-2})
+/// 
+/// The operation symbol must have arity at least 1.
+/// 
+/// # Arguments
+/// * `op_symbol` - The operation symbol (must have arity >= 1)
+/// 
+/// # Returns
+/// * `PyEquation` - The cyclic law equation
+/// 
+/// # Raises
+/// * `ValueError` - If the arity is less than 1
+#[pyfunction]
+fn cyclic_law(op_symbol: &crate::alg::PyOperationSymbol) -> PyResult<PyEquation> {
+    let equation = equations::cyclic_law(&op_symbol.get_inner())
+        .map_err(|e| PyValueError::new_err(e))?;
+    Ok(PyEquation { inner: equation })
+}
+
+/// Create first-second symmetric law equation: f(x0,x1,x2,...,xk) = f(x1,x0,x2,...,xk)
+/// 
+/// The operation symbol must have arity at least 2.
+/// 
+/// # Arguments
+/// * `op_symbol` - The operation symbol (must have arity >= 2)
+/// 
+/// # Returns
+/// * `PyEquation` - The first-second symmetric law equation
+/// 
+/// # Raises
+/// * `ValueError` - If the arity is less than 2
+#[pyfunction]
+fn first_second_symmetric_law(op_symbol: &crate::alg::PyOperationSymbol) -> PyResult<PyEquation> {
+    let equation = equations::first_second_symmetric_law(&op_symbol.get_inner())
+        .map_err(|e| PyValueError::new_err(e))?;
+    Ok(PyEquation { inner: equation })
+}
+
 pub fn register_eq_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     // Register classes internally but only export clean names
     m.add_class::<PyEquation>()?;
+    
+    // Register equation generation functions
+    m.add_function(wrap_pyfunction!(associative_law, m)?)?;
+    m.add_function(wrap_pyfunction!(cyclic_law, m)?)?;
+    m.add_function(wrap_pyfunction!(first_second_symmetric_law, m)?)?;
     
     // Export only clean names (without Py prefix)
     m.add("Equation", m.getattr("PyEquation")?)?;

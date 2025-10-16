@@ -165,10 +165,8 @@ impl fmt::Display for Equation {
     }
 }
 
-// Placeholder for future implementation
-pub struct Equations {
-    // TODO: Implement equations collection
-}
+// Equations module for generating common algebraic equations
+pub mod equations;
 
 pub struct Presentation {
     // TODO: Implement presentation structure
