@@ -29,7 +29,7 @@
 - **org.uacalc.alg.*** - Used for `Algebra`, `SmallAlgebra` types in method signatures
 - **org.uacalc.alg.op.Operation** - Used in `eval()`, `intEval()`, `interpretation()` methods
 - **org.uacalc.alg.op.OperationSymbol** - Used in `leadingOperationSymbol()`, `getOperationSymbols()` methods
-- **org.uacalc.alg.op.TermOperation** - Used in `interpretation()` method return type
+- **org.uacalc.alg.op.TermOperation** - Used in `interpretation()` method return type - ✅ **COMPLETED** (Task 25)
 
 ### Dependencies Correct
 ✅ **YES** - Current task correctly lists all 4 actual dependencies:

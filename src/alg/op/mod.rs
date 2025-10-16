@@ -254,10 +254,18 @@ mod operation_tests;
 #[cfg(test)]
 mod simple_operation_tests;
 
+// Term operation tests (Task 25)
+#[cfg(test)]
+mod term_operation_tests;
+
 
 pub struct ParameterizedOperation {
     // TODO: Implement parameterized operation
 }
+
+// Term operation trait (Task 25)
+pub mod term_operation;
+pub use term_operation::TermOperation;
 
 /// A set of OperationSymbol's representing a similarity type.
 /// 
@@ -497,10 +505,6 @@ impl Hash for SimilarityType {
     }
 }
 
-pub struct TermOperation {
-    // TODO: Implement term operation
-}
-
 pub struct TermOperationImp {
-    // TODO: Implement term operation implementation
+    // TODO: Implement term operation implementation (Task 33)
 }
