@@ -13,9 +13,13 @@ import os
 # Add the parent directory to the path so we can import uacalc
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from uacalc.eq import Presentation, Equation
-from uacalc.terms import VariableImp, NonVariableTerm
-from uacalc.alg.op import OperationSymbol
+import uacalc_lib
+# Import from the correct module structure
+Presentation = uacalc_lib.eq.Presentation
+Equation = uacalc_lib.eq.Equation
+VariableImp = uacalc_lib.terms.VariableImp
+NonVariableTerm = uacalc_lib.terms.NonVariableTerm
+OperationSymbol = uacalc_lib.alg.OperationSymbol
 
 
 class TestPresentation(unittest.TestCase):
@@ -165,7 +169,7 @@ class TestPresentationIntegration(unittest.TestCase):
     def test_presentation_with_equations_module(self):
         """Test presentation with equations from equations module."""
         try:
-            from uacalc.eq.equations import associative_law
+            associative_law = uacalc_lib.eq.associative_law
             
             # Create operation symbol
             f = OperationSymbol("multiply", 2)

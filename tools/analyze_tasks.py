@@ -127,6 +127,14 @@ class TaskAnalyzer:
         
         prompt = f"""You are a Rust translation expert analyzing a Java-to-Rust translation task. Your job is to analyze the current implementation status and provide detailed status information.
 
+## CRITICAL: DO NOT IMPLEMENT ANYTHING
+- DO NOT write any Rust code
+- DO NOT write any Python bindings
+- DO NOT write any Java wrappers
+- DO NOT write any tests
+- DO NOT modify existing implementations
+- ONLY analyze what already exists
+
 ## Your Task:
 1. Read and analyze the task file: {task_file}
 2. Read and analyze the Java file: {java_file}
@@ -136,18 +144,20 @@ class TaskAnalyzer:
 
 ## Analysis Requirements:
 
-### 1. Implementation Status Verification
+### 1. Implementation Status Verification (READ-ONLY)
 - Check if Rust implementation exists in src/ directory
 - Check if Python bindings exist in uacalc_lib/src/ directory  
 - Check if Java wrapper exists in java_wrapper/src/ directory
 - Check if tests exist (either in separate test files or in mod.rs)
 - Verify the quality and completeness of each component
+- DO NOT create any files - only check what exists
 
-### 2. Dependency Analysis
+### 2. Dependency Analysis (READ-ONLY)
 - Parse Java imports to identify UACalc dependencies
 - Check if dependencies are implemented in the codebase
 - Determine if this task is blocked by missing dependencies
 - Identify what needs to be implemented before this task can proceed
+- DO NOT implement any dependencies
 
 ### 3. Status Determination
 Based on implementation status, determine:
@@ -157,11 +167,12 @@ Based on implementation status, determine:
 - **Blocked**: Has dependencies that prevent implementation
 - **Not Started**: Less than 25% components implemented
 
-### 4. Task File Updates
+### 4. Task File Updates (ANALYSIS ONLY)
 - Update the task file with current implementation status
 - Mark acceptance criteria as complete/incomplete based on actual implementation
 - Add detailed status information and recommendations
 - Remove outdated or incorrect information
+- DO NOT implement any code
 
 ## Output Requirements:
 1. Update the task file with current implementation status
@@ -170,7 +181,7 @@ Based on implementation status, determine:
 4. Include blocking dependencies if any
 5. Give recommendations for next steps
 
-## Files to Analyze:
+## Files to Analyze (READ-ONLY):
 - Task file: {task_file}
 - Java file: {java_file}
 - Rust source: src/ directory
@@ -184,6 +195,8 @@ Begin your analysis and update the task file accordingly. Return your findings i
     "java_file": "{java_file}",
     "status": "complete|partially_complete|in_progress|blocked|not_started",
     "completion_percentage": 0-100,
+    "priority": "high|medium|low",
+    "priority_reason": "explanation of why this priority level was assigned",
     "rust_implementation": {{
       "exists": true/false,
       "path": "path/to/implementation",
@@ -214,7 +227,13 @@ Begin your analysis and update the task file accordingly. Return your findings i
   }},
   "task_file_updated": true/false,
   "changes_made": "description of changes made to task file"
-}}"""
+}}
+
+## Priority Assessment Guidelines:
+- **High Priority**: Core foundational classes, interfaces, or classes with many dependencies
+- **Medium Priority**: Important utility classes or classes with moderate dependencies  
+- **Low Priority**: Specialized classes, UI components, or classes with few dependencies
+- Consider: How many other classes depend on this one? Is it a core interface or abstract class? Is it needed for basic functionality?"""
 
         return prompt
     
@@ -297,8 +316,8 @@ Generated on: {time.strftime('%Y-%m-%d %H:%M:%S')}
 
 ## Task Details
 
-| Task | Java File | Status | Completion | Rust | Python | Java Wrapper | Tests | Blocking Dependencies |
-|------|-----------|--------|------------|------|--------|--------------|-------|----------------------|
+| Task | Java File | Status | Completion | Priority | Rust | Python | Java Wrapper | Tests | Blocking Dependencies |
+|------|-----------|--------|------------|---------|------|--------|--------------|-------|----------------------|
 """
         
         for result in sorted_results:
@@ -329,12 +348,15 @@ Generated on: {time.strftime('%Y-%m-%d %H:%M:%S')}
             if tests_impl.get('quality'):
                 tests_status += f" ({tests_impl['quality']})"
             
+            priority = result.get('priority', 'unknown')
+            priority_emoji = "🔴" if priority == "high" else "🟡" if priority == "medium" else "🟢" if priority == "low" else "⚪"
+            
             blocking_deps = result.get('blocking_dependencies', [])
             blocking_str = ", ".join(blocking_deps[:2])  # Show first 2 dependencies
             if len(blocking_deps) > 2:
                 blocking_str += f" (+{len(blocking_deps) - 2} more)"
             
-            md_content += f"| {task_name} | `{java_file}` | {status.replace('_', ' ').title()} | {completion} | {rust_status} | {python_status} | {java_wrapper_status} | {tests_status} | {blocking_str} |\n"
+            md_content += f"| {task_name} | `{java_file}` | {status.replace('_', ' ').title()} | {completion} | {priority_emoji} {priority.title()} | {rust_status} | {python_status} | {java_wrapper_status} | {tests_status} | {blocking_str} |\n"
         
         md_content += """
 ## Status Definitions
@@ -344,6 +366,12 @@ Generated on: {time.strftime('%Y-%m-%d %H:%M:%S')}
 - **In Progress**: 25-74% components implemented  
 - **Blocked**: Has dependencies that prevent implementation
 - **Not Started**: Less than 25% components implemented
+
+## Priority Definitions
+
+- **🔴 High**: Core foundational classes, interfaces, or classes with many dependencies
+- **🟡 Medium**: Important utility classes or classes with moderate dependencies  
+- **🟢 Low**: Specialized classes, UI components, or classes with few dependencies
 
 ## Implementation Components
 
@@ -385,20 +413,97 @@ Generated on: {time.strftime('%Y-%m-%d %H:%M:%S')}
         structured_output = None
         if success and output:
             try:
+                # First try to parse the output directly as JSON
                 structured_output = json.loads(output)
+                logger.info(f"Successfully parsed output as JSON for {task_path.name}")
             except json.JSONDecodeError:
-                logger.warning(f"Failed to parse JSON output for {task_path.name}")
-                structured_output = {"raw_output": output}
+                logger.info(f"Output is not direct JSON for {task_path.name}, trying to extract from result field")
+                # If that fails, try to extract JSON from the result field
+                try:
+                    temp_output = json.loads(output)
+                    if isinstance(temp_output, dict) and 'result' in temp_output:
+                        # Extract JSON from the result field
+                        result_text = temp_output['result']
+                        # Look for JSON block in the result text
+                        import re
+                        # Try to find JSON block with ```json markers
+                        json_match = re.search(r'```json\s*(\{.*\})\s*```', result_text, re.DOTALL)
+                        if json_match:
+                            json_str = json_match.group(1)
+                            logger.info(f"Found JSON block for {task_path.name}, length: {len(json_str)}")
+                            try:
+                                structured_output = json.loads(json_str)
+                                logger.info(f"Successfully parsed JSON for {task_path.name}")
+                            except json.JSONDecodeError as e:
+                                logger.warning(f"Failed to parse extracted JSON for {task_path.name}: {e}")
+                                structured_output = {"raw_output": output}
+                        else:
+                            # Try to find complete JSON object by counting braces
+                            json_start = result_text.find('```json\n{')
+                            if json_start != -1:
+                                # Skip the ```json marker
+                                json_start = result_text.find('{', json_start)
+                            elif result_text.find('{"success"') != -1:
+                                json_start = result_text.find('{"success"')
+                            elif result_text.find('{\n  "success"') != -1:
+                                json_start = result_text.find('{\n  "success"')
+                            elif result_text.find('{ "success"') != -1:
+                                json_start = result_text.find('{ "success"')
+                            
+                            if json_start != -1:
+                                logger.info(f"Found JSON start marker for {task_path.name} at position {json_start}")
+                                # Find the matching closing brace
+                                brace_count = 0
+                                json_end = json_start
+                                for i, char in enumerate(result_text[json_start:], json_start):
+                                    if char == '{':
+                                        brace_count += 1
+                                    elif char == '}':
+                                        brace_count -= 1
+                                        if brace_count == 0:
+                                            json_end = i + 1
+                                            break
+                                
+                                logger.info(f"JSON extraction: start={json_start}, end={json_end}, brace_count={brace_count}")
+                                if brace_count == 0:
+                                    json_str = result_text[json_start:json_end]
+                                    logger.info(f"Extracted JSON for {task_path.name}, length: {len(json_str)}")
+                                    try:
+                                        structured_output = json.loads(json_str)
+                                        logger.info(f"Successfully parsed extracted JSON for {task_path.name}")
+                                    except json.JSONDecodeError as e:
+                                        logger.warning(f"Failed to parse JSON object for {task_path.name}: {e}")
+                                        structured_output = {"raw_output": output}
+                                else:
+                                    logger.warning(f"Could not find complete JSON object for {task_path.name}")
+                                    structured_output = {"raw_output": output}
+                            else:
+                                logger.warning(f"Could not find JSON start marker for {task_path.name}")
+                                structured_output = {"raw_output": output}
+                    else:
+                        logger.warning(f"Failed to parse JSON output for {task_path.name}")
+                        structured_output = {"raw_output": output}
+                except (json.JSONDecodeError, KeyError) as e:
+                    logger.warning(f"Failed to parse JSON output for {task_path.name}: {e}")
+                    structured_output = {"raw_output": output}
         
         # Extract status information from structured output
+        logger.info(f"Processing structured output for {task_path.name}: {structured_output is not None}")
+        if structured_output:
+            logger.info(f"Structured output keys: {list(structured_output.keys()) if isinstance(structured_output, dict) else 'Not a dict'}")
+            logger.info(f"Success field: {structured_output.get('success') if isinstance(structured_output, dict) else 'N/A'}")
+        
         if structured_output and structured_output.get('success'):
             analysis = structured_output.get('analysis', {})
+            logger.info(f"Successfully extracted analysis for {task_path.name}: status={analysis.get('status')}, priority={analysis.get('priority')}")
             return {
                 'task_file': str(task_path),
                 'success': True,
                 'java_file': task_info['java_file'],
                 'status': analysis.get('status', 'unknown'),
                 'completion_percentage': analysis.get('completion_percentage', 0),
+                'priority': analysis.get('priority', 'unknown'),
+                'priority_reason': analysis.get('priority_reason', ''),
                 'rust_implementation': analysis.get('rust_implementation', {}),
                 'python_bindings': analysis.get('python_bindings', {}),
                 'java_wrapper': analysis.get('java_wrapper', {}),
