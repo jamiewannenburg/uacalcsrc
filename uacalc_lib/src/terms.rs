@@ -7,7 +7,7 @@ use std::collections::HashMap;
 /// Python wrapper for VariableImp
 #[pyclass]
 pub struct PyVariableImp {
-    inner: VariableImp,
+    pub(crate) inner: VariableImp,
 }
 
 #[pymethods]
@@ -130,7 +130,7 @@ impl PyVariableImp {
 /// Python wrapper for NonVariableTerm
 #[pyclass]
 pub struct PyNonVariableTerm {
-    inner: NonVariableTerm,
+    pub(crate) inner: NonVariableTerm,
 }
 
 #[pymethods]
