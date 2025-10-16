@@ -1,5 +1,4 @@
 use pyo3::prelude::*;
-use pyo3::exceptions::PyValueError;
 use uacalc::lat::*;
 
 /// Python wrapper for DivisibilityOrder

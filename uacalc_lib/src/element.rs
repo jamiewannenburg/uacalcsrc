@@ -1,5 +1,4 @@
 use pyo3::prelude::*;
-use uacalc::element::*;
 
 /// Python bindings for the Element module.
 /// 
@@ -21,7 +20,7 @@ use uacalc::element::*;
 /// concrete implementations like SubProductElement will implement the
 /// Element trait and provide Python bindings with the Element methods.
 
-pub fn register_element_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
+pub fn register_element_module(_py: Python, _m: &Bound<'_, PyModule>) -> PyResult<()> {
     // Element is a trait, so Python bindings will be provided through
     // concrete implementations like SubProductElement (Task 51)
     // 

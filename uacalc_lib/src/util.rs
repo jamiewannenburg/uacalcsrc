@@ -1,20 +1,17 @@
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
 use uacalc::util::horner;
-use uacalc::util::simple_list;
 use uacalc::util::array_string;
 use uacalc::util::permutation_generator;
-use uacalc::util::array_incrementor;
 use uacalc::util::int_array::{IntArrayTrait, IntArray};
 use uacalc::util::sequence_generator::{
-    SequenceGenerator, NondecreasingSequenceIncrementor, IncreasingSequenceIncrementor,
-    SequenceIncrementor, LeftSequenceIncrementor, PartitionArrayIncrementor
+    SequenceGenerator
 };
 use uacalc::util::virtuallist::{
     LongList, IntTuples, IntTuplesWithMin, TupleWithMin, FixedSizedSubsets, Subsets, Permutations, LongListUtils
 };
 use std::sync::Arc;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 
 /// A type-erased SimpleList that can hold any Python object
 /// This maintains the linked list structure while allowing dynamic typing
@@ -310,7 +307,7 @@ impl PySimpleListInner {
     }
 
     /// Convert to Python list
-    pub fn to_list(&self, py: Python) -> PyResult<Vec<PyObject>> {
+    pub fn to_list(&self, _py: Python) -> PyResult<Vec<PyObject>> {
         let mut result = Vec::new();
         let mut current = self;
         
@@ -484,7 +481,7 @@ impl PySimpleList {
     
     /// Create a new SimpleList from a Python list
     #[staticmethod]
-    fn from_list(py: Python, items: Vec<PyObject>) -> PyResult<Self> {
+    fn from_list(_py: Python, items: Vec<PyObject>) -> PyResult<Self> {
         let mut result = PySimpleListInner::new();
         for item in items.into_iter().rev() {
             result = result.cons_safe(item).map_err(|e| PyValueError::new_err(e))?;
@@ -640,7 +637,7 @@ impl PySimpleListIterator {
         slf
     }
     
-    fn __next__(&mut self, py: Python) -> PyResult<Option<PyObject>> {
+    fn __next__(&mut self, _py: Python) -> PyResult<Option<PyObject>> {
         match self.current.as_ref() {
             PySimpleListInner::Empty => Ok(None),
             PySimpleListInner::Cons { first, rest } => {
@@ -939,7 +936,7 @@ impl PyArrayIncrementor {
 
 impl PyArrayIncrementor {
     fn new(arr: Vec<usize>) -> Self {
-        let mut generator = permutation_generator::PermutationGenerator::new(arr.len());
+        let generator = permutation_generator::PermutationGenerator::new(arr.len());
         Self {
             inner: arr,
             generator,
@@ -996,7 +993,7 @@ impl PyListIncrementor {
 
 impl PyListIncrementor {
     fn new(lst: Vec<PyObject>) -> Self {
-        let mut generator = permutation_generator::PermutationGenerator::new(lst.len());
+        let generator = permutation_generator::PermutationGenerator::new(lst.len());
         Self {
             inner: lst,
             generator,
@@ -1324,7 +1321,7 @@ impl PyIntArray {
     /// 
     /// Returns:
     ///     bool: True if the condition is satisfied
-    fn satisfies_congruence_constraint(&self, index: usize, alpha: &Bound<'_, PyAny>, elem_index: usize) -> PyResult<bool> {
+    fn satisfies_congruence_constraint(&self, _index: usize, _alpha: &Bound<'_, PyAny>, _elem_index: usize) -> PyResult<bool> {
         // We need to extract the Partition from the Python object
         // For now, we'll return an error since we need to implement the Partition Python binding
         Err(PyValueError::new_err("Partition constraint not yet implemented in Python bindings"))

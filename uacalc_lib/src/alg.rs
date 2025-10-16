@@ -1,6 +1,6 @@
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
-use pyo3::types::{PyList, PyListMethods, PyDict};
+use pyo3::types::PyList;
 use uacalc::alg::*;
 use uacalc::alg::conlat::{BinaryRelation, MutableBinaryRelation};
 use uacalc::util::IntArrayTrait;
@@ -187,6 +187,13 @@ impl PyOperationSymbol {
     /// Python comparison (greater than or equal).
     fn __ge__(&self, other: &PyOperationSymbol) -> bool {
         self.inner >= other.inner
+    }
+}
+
+impl PyOperationSymbol {
+    /// Get the inner OperationSymbol (for internal use)
+    pub(crate) fn get_inner(&self) -> uacalc::alg::op::OperationSymbol {
+        self.inner.clone()
     }
 }
 
@@ -1393,7 +1400,7 @@ impl PyIntOperation {
     ///     op = IntOperation.from_matrix("xor", matrix)
     #[staticmethod]
     fn from_matrix(name: &str, operation_matrix: &PyAny) -> PyResult<Self> {
-        Python::with_gil(|py| {
+        Python::with_gil(|_py| {
             // Extract the 2D matrix
             let matrix: Vec<Vec<i32>> = operation_matrix.extract()?;
             
@@ -2555,7 +2562,7 @@ impl PyOperationWithDefaultValue {
                 PyValueError::new_err("algebra size required when passing OperationSymbol")
             )?;
             
-            if let Some(table_param) = set_size {
+            if let Some(_table_param) = set_size {
                 // This is actually the value table - Constructor 6
                 // For now, use constructor 4
                 match uacalc::alg::op::OperationWithDefaultValue::new_with_symbol_and_default(
@@ -2865,7 +2872,7 @@ impl PyOperations {
     #[staticmethod]
     fn make_ternary_discriminator(alg_size: i32) -> PyResult<PyBasicOperation> {
         match uacalc::alg::op::ops::ternary_discriminator(alg_size) {
-            Ok(op) => {
+            Ok(_op) => {
                 // For now, we'll create a simple BasicOperation wrapper
                 let symbol = match uacalc::alg::op::OperationSymbol::new_safe("discriminator", 3, false) {
                     Ok(sym) => sym,
