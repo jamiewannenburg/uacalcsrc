@@ -68,12 +68,12 @@ Translate the Java class `org.uacalc.util.Horner` to Rust with Python bindings.
 - ✅ **Python Bindings:** Complete in `uacalc_lib/src/util.rs` (PyHorner)
 - ✅ **Java Wrapper:** Complete in `java_wrapper/src/util/HornerWrapper.java`
 - ✅ **Rust Tests:** Complete in `tests/horner_tests.rs` (16 tests)
-- ✅ **Python Tests:** Complete in `python/uacalc/tests/test_horner.py` (25 tests)
+- ✅ **Python Tests:** Complete in `python/uacalc/tests/test_horner.py` (23 tests)
 - ✅ **Documentation:** Complete with examples and error handling
 
 ### Verification Results
 - ✅ All Rust tests pass (16/16)
-- ✅ All Python tests pass (25/25) 
+- ✅ All Python tests pass (23/23) 
 - ✅ Java wrapper functional and tested
 - ✅ Cross-language behavior matches exactly
 - ✅ Error handling works correctly

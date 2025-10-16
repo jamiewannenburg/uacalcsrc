@@ -165,9 +165,178 @@ impl fmt::Display for Equation {
     }
 }
 
+impl fmt::Display for Presentation {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let rels: Vec<String> = self.relations.iter().map(|r| format!("{}", r)).collect();
+        write!(f, "Presentation(variables=[{}], relations=[{}])", 
+               self.variables.join(", "), rels.join(", "))
+    }
+}
+
 // Equations module for generating common algebraic equations
 pub mod equations;
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::terms::VariableImp;
+    
+    #[test]
+    fn test_presentation_creation() {
+        let variables = vec!["x".to_string(), "y".to_string()];
+        let relations = vec![];
+        
+        let pres = Presentation::new(variables, relations);
+        
+        assert_eq!(pres.get_variables().len(), 2);
+        assert_eq!(pres.get_relations().len(), 0);
+    }
+    
+    #[test]
+    fn test_presentation_with_relations() {
+        let variables = vec!["x".to_string(), "y".to_string()];
+        
+        let left = Box::new(VariableImp::new("x")) as Box<dyn Term>;
+        let right = Box::new(VariableImp::new("y")) as Box<dyn Term>;
+        let equation = Equation::new(left, right);
+        let relations = vec![equation];
+        
+        let pres = Presentation::new(variables, relations);
+        
+        assert_eq!(pres.get_variables().len(), 2);
+        assert_eq!(pres.get_relations().len(), 1);
+    }
+    
+    #[test]
+    fn test_presentation_getters() {
+        let variables = vec!["x".to_string(), "y".to_string()];
+        let relations = vec![];
+        
+        let pres = Presentation::new(variables, relations);
+        
+        let vars = pres.get_variables();
+        assert_eq!(vars.len(), 2);
+        assert_eq!(vars[0], "x");
+        assert_eq!(vars[1], "y");
+        
+        let rels = pres.get_relations();
+        assert_eq!(rels.len(), 0);
+    }
+    
+    #[test]
+    fn test_presentation_display() {
+        let variables = vec!["x".to_string(), "y".to_string()];
+        let relations = vec![];
+        
+        let pres = Presentation::new(variables, relations);
+        let display_str = format!("{}", pres);
+        
+        assert!(display_str.contains("variables=[x, y]"));
+        assert!(display_str.contains("relations=[]"));
+    }
+    
+    #[test]
+    fn test_presentation_clone() {
+        let variables = vec!["x".to_string()];
+        let relations = vec![];
+        
+        let pres1 = Presentation::new(variables, relations);
+        let pres2 = pres1.clone();
+        
+        assert_eq!(pres1.get_variables().len(), pres2.get_variables().len());
+        assert_eq!(pres1.get_relations().len(), pres2.get_relations().len());
+    }
+    
+    #[test]
+    fn test_presentation_equality() {
+        let variables1 = vec!["x".to_string(), "y".to_string()];
+        let relations1 = vec![];
+        
+        let variables2 = vec!["x".to_string(), "y".to_string()];
+        let relations2 = vec![];
+        
+        let pres1 = Presentation::new(variables1, relations1);
+        let pres2 = Presentation::new(variables2, relations2);
+        
+        // Test that they have the same content (since we can't derive PartialEq)
+        assert_eq!(pres1.get_variables(), pres2.get_variables());
+        assert_eq!(pres1.get_relations().len(), pres2.get_relations().len());
+    }
+}
+
+/// A presentation for finitely presented algebras.
+/// 
+/// A presentation consists of a list of variables and equations 
+/// thought of as relations.
+/// 
+/// In Java: `org.uacalc.eq.Presentation`
+#[derive(Debug)]
 pub struct Presentation {
-    // TODO: Implement presentation structure
+    /// The variables in this presentation (stored as names for simplicity)
+    pub variables: Vec<String>,
+    /// The equations (relations) in this presentation
+    pub relations: Vec<Equation>,
+}
+
+impl Presentation {
+    /// Create a new presentation with the given variables and relations.
+    /// 
+    /// # Arguments
+    /// * `variables` - The list of variable names
+    /// * `relations` - The list of equations (relations)
+    /// 
+    /// # Returns
+    /// A new Presentation instance
+    /// 
+    /// # Examples
+    /// ```
+    /// use uacalc::eq::Presentation;
+    /// 
+    /// let vars = vec!["x".to_string(), "y".to_string()];
+    /// let rels = vec![];
+    /// let pres = Presentation::new(vars, rels);
+    /// ```
+    pub fn new(variables: Vec<String>, relations: Vec<Equation>) -> Self {
+        Presentation {
+            variables,
+            relations,
+        }
+    }
+    
+    /// Get the variables in this presentation.
+    /// 
+    /// # Returns
+    /// A reference to the variables list
+    pub fn get_variables(&self) -> &Vec<String> {
+        &self.variables
+    }
+    
+    /// Get the relations (equations) in this presentation.
+    /// 
+    /// # Returns
+    /// A reference to the relations list
+    pub fn get_relations(&self) -> &Vec<Equation> {
+        &self.relations
+    }
+}
+
+impl Clone for Equation {
+    fn clone(&self) -> Self {
+        // Note: This is a simplified clone that doesn't preserve the var_list cache
+        // In a real implementation, you might want to handle this differently
+        Equation {
+            left_side: self.left_side.clone_box(),
+            right_side: self.right_side.clone_box(),
+            var_list: Arc::new(Mutex::new(None)), // Reset cache
+        }
+    }
+}
+
+impl Clone for Presentation {
+    fn clone(&self) -> Self {
+        Presentation {
+            variables: self.variables.clone(),
+            relations: self.relations.clone(),
+        }
+    }
 }

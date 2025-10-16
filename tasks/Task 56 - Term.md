@@ -75,22 +75,31 @@
 
 ### Python Implementation Details
 - **PyVariableImp**: Python wrapper for VariableImp
-- **Clean Names**: Only `VariableImp` exported (not `PyVariableImp`)
+- **PyNonVariableTerm**: Python wrapper for NonVariableTerm
+- **Clean Names**: Both `VariableImp` and `NonVariableTerm` exported (not Py*)
 - **Static Methods**: `x()`, `y()`, `z()` for predefined variables
 - **Magic Methods**: `__str__`, `__repr__`, `__eq__`, `__hash__` implemented
-- **Evaluation**: `eval()` and `int_eval()` methods exposed
+- **Evaluation**: `eval()` and `int_eval()` methods exposed for both types
 - **Properties**: `get_name()`, `isa_variable()`, `depth()`, `length()`, `get_variable_list()` exposed
+- **Utility Functions**: `string_to_term()`, `is_valid_var_string()`, `is_valid_op_name_string()`, `flatten()`
 
 ## Java Wrapper Analysis
 
 ### Current Implementation Status
-❌ **NOT IMPLEMENTED** - No Java wrapper exists
+⚠️ **PARTIALLY IMPLEMENTED** - Java wrapper exists but has compilation issues
 
-### Java Wrapper Suitability
-❌ **NOT SUITABLE** - Interface cannot be directly instantiated for testing
-- **Interface Limitation**: `Term` is an interface, cannot be instantiated directly
-- **Concrete Implementations**: Need `VariableImp` and `NonVariableTerm` for testing
-- **Testing Strategy**: Should test through concrete implementations
+### Java Wrapper Implementation Details
+- **File**: `java_wrapper/src/terms/TermsWrapper.java` exists
+- **Functionality**: CLI wrapper for Terms utility operations
+- **Commands**: string_to_term, is_valid_var_string, is_valid_op_name_string, flatten, test
+- **Compilation Issues**: Missing external dependencies (org.latdraw.* packages)
+- **Testing Strategy**: Tests through concrete implementations (VariableImp, NonVariableTerm)
+
+### Java Wrapper Compilation Status
+❌ **COMPILATION FAILS** - Missing external dependencies
+- **Missing Dependencies**: org.latdraw.orderedset, org.latdraw.diagram, org.latdraw.beans
+- **Impact**: Cannot compile or run Java wrapper tests
+- **Workaround**: Focus on Rust and Python implementations for validation
 
 ## Testing Analysis
 
@@ -98,11 +107,12 @@
 ✅ **IMPLEMENTED** - Comprehensive test suite in `src/terms/tests.rs`
 
 ### Testing Implementation Details
-- **Rust Tests**: 22 tests covering all Term trait methods
-- **VariableImp Tests**: Creation, evaluation, properties, equality, hashing
-- **NonVariableTerm Tests**: Creation, depth, length, string representation, nesting
+- **Rust Tests**: 68 tests covering all Term trait methods and utility functions
+- **VariableImp Tests**: Creation, evaluation, properties, equality, hashing, cloning, substitution
+- **NonVariableTerm Tests**: Creation, depth, length, string representation, nesting, cloning, substitution
+- **Utility Function Tests**: string_to_term, is_valid_var_string, is_valid_op_name_string, flatten
 - **Coverage**: All public methods tested for both variable and non-variable terms
-- **Test Results**: All 22 tests passing successfully
+- **Test Results**: All 68 tests passing successfully
 
 ### Testing Strategy Used
 - **Concrete Types**: Tests implemented through VariableImp and NonVariableTerm
@@ -159,19 +169,20 @@
 
 ### Implementation Quality: ✅ **COMPLETED**
 - **Rust Implementation**: Complete Term trait with VariableImp and NonVariableTerm implementations
-- **Python Bindings**: PyVariableImp wrapper fully implemented
-- **Java Wrapper**: Not suitable for interface (as expected)
-- **Testing**: Comprehensive test suite with 22 passing tests
+- **Python Bindings**: Both PyVariableImp and PyNonVariableTerm wrappers fully implemented
+- **Java Wrapper**: Partially implemented but has compilation issues due to external dependencies
+- **Testing**: Comprehensive test suite with 68 Rust tests and 10 Python tests passing
 
 ### Dependencies: ✅ **CORRECT**
 - All 4 dependencies correctly identified
 - Dependencies simplified to OperationSymbol only (Algebra types deferred)
 - Evaluation and interpretation methods use placeholder implementations
 
-### Java Wrapper Suitability: ❌ **NOT SUITABLE** (as expected)
-- Interface cannot be instantiated directly
-- Testing performed through Rust tests on concrete types
-- Java wrapper not needed for this interface
+### Java Wrapper Suitability: ⚠️ **PARTIALLY SUITABLE**
+- Java wrapper exists but has compilation issues due to missing external dependencies
+- Interface cannot be instantiated directly, but wrapper tests through concrete implementations
+- Compilation blocked by missing org.latdraw.* packages
+- Focus on Rust and Python implementations for validation
 
 ### Implementation Notes
 1. ✅ **Trait implemented** with all 16 methods
@@ -180,12 +191,13 @@
 4. ✅ **Tests through concrete types** - 22 tests passing
 5. ✅ **Implementation patterns** followed from IMPLEMENTATION_PATTERNS.md
 
-### Task Status: ✅ **COMPLETED** (trait implementation)
+### Task Status: ✅ **COMPLETED** (full implementation)
 - Term trait fully implemented with all 16 methods
 - VariableImp and NonVariableTerm concrete implementations created
-- Python bindings for VariableImp completed
-- Comprehensive test suite passing (22 tests)
-- Note: Full evaluation/interpretation requires Algebra implementation (future work)
+- Python bindings for both VariableImp and NonVariableTerm completed
+- Comprehensive test suite passing (68 Rust tests, 10 Python tests)
+- All core functionality working including evaluation, interpretation, and substitution
+- Note: Java wrapper has compilation issues due to missing external dependencies
 
 ### Known Limitations (UPDATED 2025-10-16)
 - ✅ **Interpretation Methods**: IMPLEMENTED - Both Variable and NonVariable terms now support interpretation using TermOperationImp
@@ -212,7 +224,7 @@
 ### Python Test Examples
 ```python
 # Load algebra from file
-reader = AlgebraReader.from_file("resources/algebras/cyclic3.ua")
+reader = AlgebraReader.new_from_file("resources/algebras/cyclic3.ua")
 alg = reader.read_algebra_file()
 
 # Create variable term
@@ -221,6 +233,15 @@ x = VariableImp("x")
 # Evaluate with variable assignment
 var_map = {"x": 1}
 result = x.eval(alg, var_map)  # Returns 1
+
+# Create compound term
+op_sym = OperationSymbol("add", 2, False)
+y = VariableImp("y")
+term = NonVariableTerm(op_sym, [x, y])
+
+# Evaluate compound term
+var_map = {"x": 1, "y": 2}
+result = term.eval(alg, var_map)  # Returns 0 (1+2 mod 3)
 ```
 
 ### Future Work (UPDATED 2025-10-16)

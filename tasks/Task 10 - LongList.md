@@ -111,31 +111,35 @@ Translate the Java interface `org.uacalc.util.virtuallist.LongList` to Rust with
 
 - [x] **Rust Implementation**: Complete trait + concrete structs implementation
   - `LongList<E>` trait with `get()` and `size()` methods
-  - Concrete implementations: `IntTuples`, `IntTuplesWithMin`, `FixedSizedSubsets`, `Subsets`, `Permutations`
+  - Concrete implementations: `IntTuples`, `IntTuplesWithMin`, `FixedSizedSubsets`, `Subsets`, `Permutations`, `TupleWithMin`
   - Utility struct `LongListUtils` with static methods
   - Proper error handling with `Result<T, String>` types
+  - All implementations are thread-safe (Send + Sync)
 
 - [x] **Python Bindings**: Complete PyO3 bindings for all types
   - All concrete LongList implementations exposed to Python
   - Utility functions accessible through `LongListUtils`
   - Clean API without Py* prefixes
   - Proper error handling with `PyValueError`
+  - Compiles successfully with only deprecation warnings
 
 - [x] **Java CLI Wrapper**: Complete wrapper implementation
   - All static factory methods accessible via CLI
   - All utility functions accessible via CLI
   - Comprehensive test command
   - Proper JSON output format
+  - Separate wrapper for `TupleWithMin` class
 
 - [x] **Testing**: Comprehensive test coverage
-  - Rust tests: 20+ test cases covering all functionality
+  - Rust tests: 25+ test cases covering all functionality
   - Python tests: Complete test suite with Java comparison
   - Error handling tests for invalid inputs
   - Edge case testing (empty lists, large values, etc.)
   - Consistency and bounds checking tests
+  - Cross-language validation against Java implementation
 
 - [x] **Code Quality**: Production ready
-  - No compilation warnings
+  - Compiles without errors (only minor warnings)
   - Complete documentation with examples
   - Proper trait implementations (Hash, Eq, Display, Debug)
   - Thread-safe implementations (Send + Sync)

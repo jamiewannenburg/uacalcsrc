@@ -1,12 +1,13 @@
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
-use uacalc::eq::{Equation, equations};
+use uacalc::eq::{Equation, equations, Presentation};
 use uacalc::terms::Term;  // Import Term trait for clone_box method
 use std::collections::HashMap;
 use std::sync::Arc;
 
 /// Python wrapper for Equation
 #[pyclass]
+#[derive(Clone)]
 pub struct PyEquation {
     inner: Equation,
 }
@@ -194,6 +195,7 @@ fn first_second_symmetric_law(op_symbol: &crate::alg::PyOperationSymbol) -> PyRe
 pub fn register_eq_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     // Register classes internally but only export clean names
     m.add_class::<PyEquation>()?;
+    m.add_class::<PyPresentation>()?;
     
     // Register equation generation functions
     m.add_function(wrap_pyfunction!(associative_law, m)?)?;
@@ -202,10 +204,72 @@ pub fn register_eq_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> 
     
     // Export only clean names (without Py prefix)
     m.add("Equation", m.getattr("PyEquation")?)?;
+    m.add("Presentation", m.getattr("PyPresentation")?)?;
     
     // Remove the Py* names from the module to avoid confusion
     let module_dict = m.dict();
     module_dict.del_item("PyEquation")?;
+    module_dict.del_item("PyPresentation")?;
     
     Ok(())
+}
+
+/// Python wrapper for Presentation
+#[pyclass]
+pub struct PyPresentation {
+    inner: Presentation,
+}
+
+#[pymethods]
+impl PyPresentation {
+    /// Create a new presentation with the given variables and relations.
+    /// 
+    /// # Arguments
+    /// * `variables` - List of variable names (strings)
+    /// * `relations` - List of PyEquation objects
+    /// 
+    /// # Returns
+    /// A new Presentation instance
+    #[new]
+    fn new(variables: Vec<String>, relations: Vec<PyEquation>) -> PyResult<Self> {
+        // Extract equations from PyEquation wrappers
+        let eqs: Vec<Equation> = relations
+            .into_iter()
+            .map(|py_eq| py_eq.inner)
+            .collect();
+        
+        let inner = Presentation::new(variables, eqs);
+        Ok(PyPresentation { inner })
+    }
+    
+    /// Get the variables in this presentation.
+    /// 
+    /// # Returns
+    /// List of variable names
+    fn get_variables(&self) -> Vec<String> {
+        self.inner.variables.clone()
+    }
+    
+    /// Get the relations (equations) in this presentation.
+    /// 
+    /// # Returns
+    /// List of equation string representations
+    fn get_relations(&self) -> Vec<String> {
+        self.inner.relations
+            .iter()
+            .map(|eq| format!("{}", eq))
+            .collect()
+    }
+    
+    /// String representation of the presentation.
+    fn __str__(&self) -> String {
+        let vars_str = self.get_variables().join(", ");
+        let rels_str = self.get_relations().join(", ");
+        format!("Presentation(variables=[{}], relations=[{}])", vars_str, rels_str)
+    }
+    
+    /// Detailed string representation of the presentation.
+    fn __repr__(&self) -> String {
+        self.__str__()
+    }
 }

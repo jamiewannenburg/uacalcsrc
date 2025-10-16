@@ -25,7 +25,7 @@ fn test_submodule_imports() {
                          "group", "io", "lat", "terms", "types", "util"];
         
         for submodule_name in &submodules {
-            let submodule = module.getattr(submodule_name)
+            let submodule = module.getattr(*submodule_name)
                 .expect(&format!("Failed to import submodule: {}", submodule_name));
             assert!(submodule.getattr("__name__").is_ok());
         }

@@ -119,226 +119,146 @@ class TaskAnalyzer:
         # Consider completed if all boxes are checked
         return checked_boxes > 0 and checked_boxes == total_boxes
     
-    def check_rust_implementation(self, java_file_path: str) -> Dict[str, bool]:
-        """Check if Rust implementation exists for the Java file."""
-        # Convert Java path to expected Rust module path
-        # e.g., org/uacalc/alg/op/OperationSymbol.java -> alg/op/operation_symbol.rs
-        java_path = Path(java_file_path)
-        java_name = java_path.stem  # e.g., OperationSymbol
-        
-        # Convert CamelCase to snake_case
-        rust_name = re.sub(r'(?<!^)(?=[A-Z])', '_', java_name).lower()
-        
-        # Map Java package to Rust module
-        package_mapping = {
-            'org/uacalc/alg': 'alg',
-            'org/uacalc/terms': 'terms', 
-            'org/uacalc/eq': 'eq',
-            'org/uacalc/util': 'util',
-            'org/uacalc/io': 'io',
-            'org/uacalc/lat': 'lat',
-            'org/uacalc/group': 'group',
-            'org/uacalc/element': 'element',
-            'org/uacalc/fplat': 'fplat',
-            'org/uacalc/example': 'example'
-        }
-        
-        rust_module = None
-        for java_pkg, rust_mod in package_mapping.items():
-            if java_file_path.startswith(java_pkg):
-                rust_module = rust_mod
-                break
-        
-        if not rust_module:
-            return {'exists': False, 'path': None, 'reason': 'Unknown package'}
-        
-        # Check for Rust file
-        rust_file_path = self.rust_src_dir / rust_module / f"{rust_name}.rs"
-        rust_exists = rust_file_path.exists()
-        
-        # Check for implementation in mod.rs
-        mod_rs_path = self.rust_src_dir / rust_module / "mod.rs"
-        mod_rs_contains = False
-        if mod_rs_path.exists():
-            with open(mod_rs_path, 'r', encoding='utf-8') as f:
-                mod_content = f.read()
-                mod_rs_contains = java_name.lower() in mod_content.lower() or rust_name in mod_content
-        
-        return {
-            'exists': rust_exists or mod_rs_contains,
-            'path': str(rust_file_path) if rust_exists else str(mod_rs_path) if mod_rs_contains else None,
-            'reason': 'Found in separate file' if rust_exists else 'Found in mod.rs' if mod_rs_contains else 'Not found'
-        }
-    
-    def check_python_bindings(self, java_file_path: str) -> Dict[str, bool]:
-        """Check if Python bindings exist for the Java file."""
-        java_path = Path(java_file_path)
-        java_name = java_path.stem
-        
-        # Convert CamelCase to snake_case
-        rust_name = re.sub(r'(?<!^)(?=[A-Z])', '_', java_name).lower()
-        
-        # Map Java package to Python module
-        package_mapping = {
-            'org/uacalc/alg': 'alg',
-            'org/uacalc/terms': 'terms',
-            'org/uacalc/eq': 'eq', 
-            'org/uacalc/util': 'util',
-            'org/uacalc/io': 'io',
-            'org/uacalc/lat': 'lat',
-            'org/uacalc/group': 'group',
-            'org/uacalc/element': 'element',
-            'org/uacalc/fplat': 'fplat',
-            'org/uacalc/example': 'example'
-        }
-        
-        python_module = None
-        for java_pkg, py_mod in package_mapping.items():
-            if java_file_path.startswith(java_pkg):
-                python_module = py_mod
-                break
-        
-        if not python_module:
-            return {'exists': False, 'path': None, 'reason': 'Unknown package'}
-        
-        # Check for Python bindings file
-        python_file_path = self.python_lib_dir / f"{python_module}.rs"
-        python_exists = python_file_path.exists()
-        
-        # Check if the class is exposed in the Python bindings
-        python_contains = False
-        if python_exists:
-            with open(python_file_path, 'r', encoding='utf-8') as f:
-                py_content = f.read()
-                # Look for PyO3 bindings or class name
-                python_contains = (f"Py{java_name}" in py_content or 
-                                 java_name in py_content or
-                                 rust_name in py_content)
-        
-        return {
-            'exists': python_exists and python_contains,
-            'path': str(python_file_path) if python_exists else None,
-            'reason': 'Found in Python bindings' if python_exists and python_contains else 'Not found'
-        }
-    
-    def check_java_wrapper(self, java_file_path: str) -> Dict[str, bool]:
-        """Check if Java wrapper exists for the Java file."""
-        java_path = Path(java_file_path)
-        java_name = java_path.stem
-        
-        # Convert Java path to wrapper path
-        # e.g., org/uacalc/alg/op/OperationSymbol.java -> alg/op/OperationSymbolWrapper.java
-        wrapper_path = self.java_wrapper_dir / java_file_path.replace('.java', 'Wrapper.java')
-        
-        wrapper_exists = wrapper_path.exists()
-        
-        return {
-            'exists': wrapper_exists,
-            'path': str(wrapper_path) if wrapper_exists else None,
-            'reason': 'Found wrapper' if wrapper_exists else 'No wrapper found'
-        }
-    
-    def check_tests(self, java_file_path: str) -> Dict[str, bool]:
-        """Check if tests exist for the Java file."""
-        java_path = Path(java_file_path)
-        java_name = java_path.stem
-        
-        # Convert CamelCase to snake_case
-        rust_name = re.sub(r'(?<!^)(?=[A-Z])', '_', java_name).lower()
-        
-        # Check for Rust tests
-        rust_test_path = self.rust_src_dir / "tests" / f"{rust_name}_tests.rs"
-        rust_tests_exist = rust_test_path.exists()
-        
-        # Check for tests in the module itself
-        mod_tests_exist = False
-        package_mapping = {
-            'org/uacalc/alg': 'alg',
-            'org/uacalc/terms': 'terms',
-            'org/uacalc/eq': 'eq',
-            'org/uacalc/util': 'util',
-            'org/uacalc/io': 'io',
-            'org/uacalc/lat': 'lat',
-            'org/uacalc/group': 'group',
-            'org/uacalc/element': 'element',
-            'org/uacalc/fplat': 'fplat',
-            'org/uacalc/example': 'example'
-        }
-        
-        for java_pkg, rust_mod in package_mapping.items():
-            if java_file_path.startswith(java_pkg):
-                mod_path = self.rust_src_dir / rust_mod / "mod.rs"
-                if mod_path.exists():
-                    with open(mod_path, 'r', encoding='utf-8') as f:
-                        mod_content = f.read()
-                        mod_tests_exist = '#[cfg(test)]' in mod_content and 'mod tests' in mod_content
-                break
-        
-        return {
-            'exists': rust_tests_exist or mod_tests_exist,
-            'path': str(rust_test_path) if rust_tests_exist else 'In mod.rs' if mod_tests_exist else None,
-            'reason': 'Found test file' if rust_tests_exist else 'Found in mod.rs' if mod_tests_exist else 'No tests found'
-        }
-    
-    def analyze_implementation_status(self, task_info: Dict) -> Dict:
-        """Analyze the implementation status of a task."""
+    def build_agent_prompt(self, task_info: Dict) -> str:
+        """Build comprehensive prompt for cursor-agent to analyze implementation status."""
+        task_file = task_info['task_file']
         java_file = task_info['java_file']
-        if not java_file:
-            return {
-                'success': False,
-                'error': 'No Java file found in task'
-            }
+        is_completed = task_info['is_completed']
         
-        # Check implementation status
-        rust_status = self.check_rust_implementation(java_file)
-        python_status = self.check_python_bindings(java_file)
-        java_wrapper_status = self.check_java_wrapper(java_file)
-        tests_status = self.check_tests(java_file)
-        
-        # Determine overall status
-        rust_impl = rust_status['exists']
-        python_impl = python_status['exists']
-        java_wrapper_impl = java_wrapper_status['exists']
-        tests_impl = tests_status['exists']
-        
-        # Calculate completion percentage
-        total_components = 4  # Rust, Python, Java wrapper, Tests
-        completed_components = sum([rust_impl, python_impl, java_wrapper_impl, tests_impl])
-        completion_percentage = (completed_components / total_components) * 100
-        
-        # Determine status
-        if completion_percentage == 100:
-            status = "complete"
-        elif completion_percentage >= 75:
-            status = "partially_complete"
-        elif completion_percentage >= 25:
-            status = "in_progress"
-        else:
-            status = "not_started"
-        
-        # Check for blocking dependencies
-        dependencies = task_info.get('dependencies', [])
-        blocking_deps = []
-        
-        # For now, we'll mark as blocked if dependencies exist and implementation is not complete
-        # This is a simplified check - in a real implementation, you'd check if dependencies are implemented
-        if dependencies and completion_percentage < 100:
-            status = "blocked"
-            blocking_deps = dependencies
-        
-        return {
-            'success': True,
-            'task_file': task_info['task_file'],
-            'java_file': java_file,
-            'status': status,
-            'completion_percentage': completion_percentage,
-            'rust_implementation': rust_status,
-            'python_bindings': python_status,
-            'java_wrapper': java_wrapper_status,
-            'tests': tests_status,
-            'blocking_dependencies': blocking_deps,
-            'dependencies': dependencies
-        }
+        prompt = f"""You are a Rust translation expert analyzing a Java-to-Rust translation task. Your job is to analyze the current implementation status and provide detailed status information.
+
+## Your Task:
+1. Read and analyze the task file: {task_file}
+2. Read and analyze the Java file: {java_file}
+3. Check the current implementation status in the codebase
+4. Update the task file with current implementation status
+5. Provide structured status information
+
+## Analysis Requirements:
+
+### 1. Implementation Status Verification
+- Check if Rust implementation exists in src/ directory
+- Check if Python bindings exist in uacalc_lib/src/ directory  
+- Check if Java wrapper exists in java_wrapper/src/ directory
+- Check if tests exist (either in separate test files or in mod.rs)
+- Verify the quality and completeness of each component
+
+### 2. Dependency Analysis
+- Parse Java imports to identify UACalc dependencies
+- Check if dependencies are implemented in the codebase
+- Determine if this task is blocked by missing dependencies
+- Identify what needs to be implemented before this task can proceed
+
+### 3. Status Determination
+Based on implementation status, determine:
+- **Complete**: All 4 components implemented (Rust, Python, Java wrapper, Tests)
+- **Partially Complete**: 75%+ components implemented
+- **In Progress**: 25-74% components implemented
+- **Blocked**: Has dependencies that prevent implementation
+- **Not Started**: Less than 25% components implemented
+
+### 4. Task File Updates
+- Update the task file with current implementation status
+- Mark acceptance criteria as complete/incomplete based on actual implementation
+- Add detailed status information and recommendations
+- Remove outdated or incorrect information
+
+## Output Requirements:
+1. Update the task file with current implementation status
+2. Return structured JSON output with your findings
+3. Provide detailed status breakdown for each component
+4. Include blocking dependencies if any
+5. Give recommendations for next steps
+
+## Files to Analyze:
+- Task file: {task_file}
+- Java file: {java_file}
+- Rust source: src/ directory
+- Python bindings: uacalc_lib/src/ directory
+- Java wrappers: java_wrapper/src/ directory
+
+Begin your analysis and update the task file accordingly. Return your findings in JSON format with the following structure:
+{{
+  "success": true/false,
+  "analysis": {{
+    "java_file": "{java_file}",
+    "status": "complete|partially_complete|in_progress|blocked|not_started",
+    "completion_percentage": 0-100,
+    "rust_implementation": {{
+      "exists": true/false,
+      "path": "path/to/implementation",
+      "quality": "excellent|good|basic|poor",
+      "notes": "implementation notes"
+    }},
+    "python_bindings": {{
+      "exists": true/false,
+      "path": "path/to/bindings", 
+      "quality": "excellent|good|basic|poor",
+      "notes": "bindings notes"
+    }},
+    "java_wrapper": {{
+      "exists": true/false,
+      "path": "path/to/wrapper",
+      "quality": "excellent|good|basic|poor", 
+      "notes": "wrapper notes"
+    }},
+    "tests": {{
+      "exists": true/false,
+      "path": "path/to/tests",
+      "quality": "excellent|good|basic|poor",
+      "notes": "test notes"
+    }},
+    "blocking_dependencies": ["list", "of", "blocking", "dependencies"],
+    "ready_dependencies": ["list", "of", "ready", "dependencies"],
+    "recommendations": "detailed recommendations for next steps"
+  }},
+  "task_file_updated": true/false,
+  "changes_made": "description of changes made to task file"
+}}"""
+
+        return prompt
+    
+    def spawn_cursor_agent(self, task_file: str, prompt: str) -> Tuple[bool, str]:
+        """Spawn cursor-agent for a single task using headless mode."""
+        try:
+            # Change to project root directory
+            original_cwd = os.getcwd()
+            os.chdir(self.project_root)
+            
+            # Build cursor-agent command using headless syntax
+            cmd = [
+                "cursor-agent",  # Now available in PATH
+                "-p",  # Enable print mode for non-interactive execution
+                "--force",  # Allow file modifications without confirmation
+                "--output-format", "json",  # Set output format to JSON for structured output
+                prompt  # Provide the prompt (includes file paths and context)
+            ]
+            
+            logger.info(f"Spawning cursor-agent for {task_file}")
+            
+            # Execute cursor-agent
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=900  # 15 minute timeout per task
+            )
+            
+            if result.returncode == 0:
+                logger.info(f"Successfully processed {task_file}")
+                return True, result.stdout
+            else:
+                logger.error(f"cursor-agent failed for {task_file}: {result.stderr}")
+                return False, result.stderr
+                
+        except subprocess.TimeoutExpired:
+            logger.error(f"cursor-agent timed out for {task_file}")
+            return False, "Timeout"
+        except Exception as e:
+            logger.error(f"Error running cursor-agent for {task_file}: {e}")
+            return False, str(e)
+        finally:
+            os.chdir(original_cwd)
     
     def create_task_status_md(self, all_results: List[Dict]) -> str:
         """Create the TASK_STATUS.md file content."""
@@ -388,10 +308,26 @@ Generated on: {time.strftime('%Y-%m-%d %H:%M:%S')}
             status = result.get('status', 'unknown')
             completion = f"{result.get('completion_percentage', 0):.0f}%"
             
-            rust_status = "✅" if result.get('rust_implementation', {}).get('exists', False) else "❌"
-            python_status = "✅" if result.get('python_bindings', {}).get('exists', False) else "❌"
-            java_wrapper_status = "✅" if result.get('java_wrapper', {}).get('exists', False) else "❌"
-            tests_status = "✅" if result.get('tests', {}).get('exists', False) else "❌"
+            # Extract component status from cursor-agent analysis
+            rust_impl = result.get('rust_implementation', {})
+            python_impl = result.get('python_bindings', {})
+            java_wrapper_impl = result.get('java_wrapper', {})
+            tests_impl = result.get('tests', {})
+            
+            rust_status = "✅" if rust_impl.get('exists', False) else "❌"
+            python_status = "✅" if python_impl.get('exists', False) else "❌"
+            java_wrapper_status = "✅" if java_wrapper_impl.get('exists', False) else "❌"
+            tests_status = "✅" if tests_impl.get('exists', False) else "❌"
+            
+            # Add quality indicators if available
+            if rust_impl.get('quality'):
+                rust_status += f" ({rust_impl['quality']})"
+            if python_impl.get('quality'):
+                python_status += f" ({python_impl['quality']})"
+            if java_wrapper_impl.get('quality'):
+                java_wrapper_status += f" ({java_wrapper_impl['quality']})"
+            if tests_impl.get('quality'):
+                tests_status += f" ({tests_impl['quality']})"
             
             blocking_deps = result.get('blocking_dependencies', [])
             blocking_str = ", ".join(blocking_deps[:2])  # Show first 2 dependencies
@@ -439,10 +375,49 @@ Generated on: {time.strftime('%Y-%m-%d %H:%M:%S')}
                 'error': 'Failed to parse task file'
             }
         
-        # Analyze implementation status
-        analysis_result = self.analyze_implementation_status(task_info)
+        # Build prompt for cursor-agent
+        prompt = self.build_agent_prompt(task_info)
         
-        return analysis_result
+        # Spawn cursor-agent
+        success, output = self.spawn_cursor_agent(str(task_path), prompt)
+        
+        # Try to parse JSON output if successful
+        structured_output = None
+        if success and output:
+            try:
+                structured_output = json.loads(output)
+            except json.JSONDecodeError:
+                logger.warning(f"Failed to parse JSON output for {task_path.name}")
+                structured_output = {"raw_output": output}
+        
+        # Extract status information from structured output
+        if structured_output and structured_output.get('success'):
+            analysis = structured_output.get('analysis', {})
+            return {
+                'task_file': str(task_path),
+                'success': True,
+                'java_file': task_info['java_file'],
+                'status': analysis.get('status', 'unknown'),
+                'completion_percentage': analysis.get('completion_percentage', 0),
+                'rust_implementation': analysis.get('rust_implementation', {}),
+                'python_bindings': analysis.get('python_bindings', {}),
+                'java_wrapper': analysis.get('java_wrapper', {}),
+                'tests': analysis.get('tests', {}),
+                'blocking_dependencies': analysis.get('blocking_dependencies', []),
+                'ready_dependencies': analysis.get('ready_dependencies', []),
+                'recommendations': analysis.get('recommendations', ''),
+                'task_file_updated': structured_output.get('task_file_updated', False),
+                'changes_made': structured_output.get('changes_made', ''),
+                'structured_output': structured_output
+            }
+        else:
+            return {
+                'task_file': str(task_path),
+                'success': False,
+                'java_file': task_info['java_file'],
+                'error': output if not success else 'Failed to parse analysis',
+                'structured_output': structured_output
+            }
     
     def get_all_task_files(self) -> List[Path]:
         """Get all task files in the tasks directory."""
@@ -455,10 +430,61 @@ Generated on: {time.strftime('%Y-%m-%d %H:%M:%S')}
         task_files.sort(key=lambda x: int(re.search(r'Task (\d+)', x.name).group(1)) if re.search(r'Task (\d+)', x.name) else 0)
         return task_files
     
+    def load_existing_results(self) -> Dict[str, Dict]:
+        """Load existing results from task_analysis_results.json."""
+        results_file = self.project_root / "task_analysis" / "task_analysis_results.json"
+        if not results_file.exists():
+            return {}
+        
+        try:
+            with open(results_file, 'r') as f:
+                results = json.load(f)
+            
+            # Convert list to dict keyed by task path, keeping only the last occurrence of each task
+            task_results = {}
+            for result in results:
+                task_path = result.get('task_file')
+                if task_path:
+                    task_results[task_path] = result
+            
+            return task_results
+        except (json.JSONDecodeError, KeyError) as e:
+            logger.warning(f"Failed to load existing results: {e}")
+            return {}
+    
+    def is_task_failed(self, task_path: str, existing_results: Dict[str, Dict]) -> bool:
+        """Check if a task failed based on existing results."""
+        if task_path not in existing_results:
+            return False
+        
+        result = existing_results[task_path]
+        return result.get('success', True) == False
+    
+    def save_results_incrementally(self, new_results: List[Dict], existing_results: Dict[str, Dict]):
+        """Save results incrementally by merging with existing results."""
+        results_file = self.project_root / "task_analysis" / "task_analysis_results.json"
+        
+        # Create directory if it doesn't exist
+        results_file.parent.mkdir(exist_ok=True)
+        
+        # Merge new results with existing ones
+        for result in new_results:
+            existing_results[result['task_file']] = result
+        
+        # Convert back to list and save
+        all_results = list(existing_results.values())
+        with open(results_file, 'w') as f:
+            json.dump(all_results, f, indent=2, default=str)
+        
+        logger.info(f"Results saved incrementally to {results_file}")
 
     def run_analysis(self, parallel: int = 3, task_filter: Optional[str] = None, dry_run: bool = False, rerun: bool = False):
         """Run the complete task analysis with batched parallel processing."""
         logger.info("Starting task implementation status analysis...")
+        
+        # Load existing results
+        existing_results = self.load_existing_results()
+        logger.info(f"Loaded {len(existing_results)} existing results")
         
         # Get all task files
         task_files = self.get_all_task_files()
@@ -467,6 +493,14 @@ Generated on: {time.strftime('%Y-%m-%d %H:%M:%S')}
         if task_filter:
             task_files = [f for f in task_files if task_filter in f.name]
         
+        # Only run previously failed tasks unless rerun is specified
+        if not rerun:
+            original_count = len(task_files)
+            task_files = [f for f in task_files if self.is_task_failed(str(f), existing_results)]
+            filtered_count = original_count - len(task_files)
+            if filtered_count > 0:
+                logger.info(f"Filtered out {filtered_count} successful/new tasks (use --rerun to include them)")
+        
         logger.info(f"Found {len(task_files)} task files to process")
         
         if dry_run:
@@ -474,7 +508,9 @@ Generated on: {time.strftime('%Y-%m-%d %H:%M:%S')}
             for task_file in task_files:
                 task_info = self.parse_task_file(task_file)
                 if task_info:
-                    logger.info(f"  - {task_file.name}: {task_info['java_file']}")
+                    is_failed = self.is_task_failed(str(task_file), existing_results)
+                    status = "previously failed" if is_failed else "new/incomplete"
+                    logger.info(f"  - {task_file.name}: {task_info['java_file']} ({status})")
             return
         
         # Process tasks in batches
@@ -519,6 +555,10 @@ Generated on: {time.strftime('%Y-%m-%d %H:%M:%S')}
                             batch_results.append(error_result)
                             results.append(error_result)
                     
+                    # Save results incrementally after each batch
+                    if batch_results:
+                        self.save_results_incrementally(batch_results, existing_results)
+                    
                     # Log batch results
                     batch_successful = sum(1 for r in batch_results if r.get('success', False))
                     batch_failed = len(batch_results) - batch_successful
@@ -535,6 +575,9 @@ Generated on: {time.strftime('%Y-%m-%d %H:%M:%S')}
                 logger.info(f"Processing task {i}/{len(task_files)}: {task_file.name}")
                 result = self.process_single_task(task_file)
                 results.append(result)
+                
+                # Save results incrementally after each task
+                self.save_results_incrementally([result], existing_results)
         
         # Generate TASK_STATUS.md file
         logger.info("Generating TASK_STATUS.md file...")
