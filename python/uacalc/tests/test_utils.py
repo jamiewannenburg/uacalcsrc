@@ -103,12 +103,16 @@ class TestHarness:
         
         start_time = time.time()
         
+        # Get project root for proper working directory
+        project_root = get_project_root()
+        
         try:
             result = subprocess.run(
                 cmd,
                 capture_output=True,
                 text=True,
-                timeout=self.config.default_timeout
+                timeout=self.config.default_timeout,
+                cwd=project_root  # Run from project root so relative paths work
             )
         except subprocess.TimeoutExpired as e:
             raise TimeoutError(f"Java CLI timed out after {self.config.default_timeout}s")
