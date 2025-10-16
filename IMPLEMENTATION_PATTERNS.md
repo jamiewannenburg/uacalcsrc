@@ -1182,6 +1182,198 @@ def algebra_loader():
 5. Update `__all__` list to export all fixtures
 6. Run tests to verify all fixtures are available
 
+### Issue 15: Cloning Trait Objects (Box<dyn Trait>)
+
+**Problem**: Rust cannot automatically derive `Clone` for structs containing `Box<dyn Trait>` because trait objects don't implement `Clone` by default. This affects recursive data structures like term trees.
+
+**Error Example**:
+```rust
+#[derive(Debug, Clone)]  // ❌ Compilation error
+pub struct NonVariableTerm {
+    pub leading_operation_symbol: OperationSymbol,
+    pub children: Vec<Box<dyn Term>>,  // Cannot derive Clone
+}
+```
+
+**Solution**: Implement a `clone_box()` method in the trait and manually implement `Clone` for concrete types.
+
+**Step 1: Add clone_box() to Trait**
+```rust
+pub trait Term: Display + Debug + Send + Sync {
+    // ... other methods ...
+    
+    /// Clone this term into a new boxed trait object.
+    /// 
+    /// This allows cloning of trait objects by delegating to the concrete type's
+    /// Clone implementation.
+    fn clone_box(&self) -> Box<dyn Term>;
+}
+```
+
+**Step 2: Implement for Cloneable Types**
+```rust
+// For types that already implement Clone
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct VariableImp {
+    pub name: String,
+}
+
+impl Term for VariableImp {
+    // ... other methods ...
+    
+    fn clone_box(&self) -> Box<dyn Term> {
+        Box::new(self.clone())
+    }
+}
+```
+
+**Step 3: Manually Implement Clone for Composite Types**
+```rust
+// For types containing trait objects
+#[derive(Debug)]  // Don't derive Clone
+pub struct NonVariableTerm {
+    pub leading_operation_symbol: OperationSymbol,
+    pub children: Vec<Box<dyn Term>>,
+}
+
+impl Clone for NonVariableTerm {
+    fn clone(&self) -> Self {
+        NonVariableTerm {
+            leading_operation_symbol: self.leading_operation_symbol.clone(),
+            children: self.children.iter()
+                .map(|child| child.clone_box())  // Use clone_box() for each child
+                .collect(),
+        }
+    }
+}
+
+impl Term for NonVariableTerm {
+    // ... other methods ...
+    
+    fn clone_box(&self) -> Box<dyn Term> {
+        Box::new(self.clone())
+    }
+}
+```
+
+**Step 4: Use in Methods That Return Cloned Children**
+```rust
+impl Term for NonVariableTerm {
+    fn get_children(&self) -> Option<Vec<Box<dyn Term>>> {
+        // Clone each child using clone_box()
+        Some(self.children.iter()
+            .map(|child| child.clone_box())
+            .collect())
+    }
+    
+    fn substitute(&self, map: &HashMap<String, Box<dyn Term>>) -> Result<Box<dyn Term>, String> {
+        // Recursively substitute in all children
+        let new_children: Vec<Box<dyn Term>> = self.children
+            .iter()
+            .map(|child| child.substitute(map))
+            .collect::<Result<Vec<_>, _>>()?;
+        
+        // Create new term with substituted children
+        Ok(Box::new(NonVariableTerm {
+            leading_operation_symbol: self.leading_operation_symbol.clone(),
+            children: new_children,
+        }))
+    }
+}
+```
+
+**Key Points**:
+- Add `clone_box()` method to the trait (not as a separate trait)
+- Don't use a blanket implementation that might conflict
+- Manually implement `Clone` for types containing trait objects
+- Use `clone_box()` for recursive cloning
+- This pattern enables:
+  - Returning cloned children from methods
+  - Implementing substitution and transformation operations
+  - Supporting Python bindings for nested structures
+  - Creating deep copies of complex term trees
+
+**Python Bindings Support**:
+```rust
+// In Python bindings
+impl PyNonVariableTerm {
+    #[new]
+    fn new(op_sym: &PyOperationSymbol, children: &Bound<'_, PyList>) -> PyResult<Self> {
+        let mut rust_children: Vec<Box<dyn Term>> = Vec::new();
+        
+        for item in children.iter() {
+            if let Ok(var) = item.extract::<PyRef<PyVariableImp>>() {
+                rust_children.push(Box::new(var.inner.clone()));
+            } else if let Ok(nvt) = item.extract::<PyRef<PyNonVariableTerm>>() {
+                // Now we can clone NonVariableTerm!
+                rust_children.push(nvt.inner.clone_box());
+            }
+            // ...
+        }
+        
+        Ok(PyNonVariableTerm {
+            inner: NonVariableTerm::new(op_sym.get_inner(), rust_children),
+        })
+    }
+}
+```
+
+**Testing Pattern**:
+```rust
+#[test]
+fn test_deep_term_cloning() {
+    // Create nested term: h(g(f(x, y), z))
+    let f_sym = OperationSymbol::new("f", 2, false);
+    let g_sym = OperationSymbol::new("g", 2, false);
+    let h_sym = OperationSymbol::new("h", 1, false);
+    
+    let x = Box::new(VariableImp::new("x")) as Box<dyn Term>;
+    let y = Box::new(VariableImp::new("y")) as Box<dyn Term>;
+    let f_term = NonVariableTerm::new(f_sym, vec![x, y]);
+    
+    let z = Box::new(VariableImp::new("z")) as Box<dyn Term>;
+    let g_term = NonVariableTerm::new(g_sym, vec![Box::new(f_term), z]);
+    
+    let h_term = NonVariableTerm::new(h_sym, vec![Box::new(g_term)]);
+    
+    // Clone the entire structure
+    let h_boxed: Box<dyn Term> = Box::new(h_term);
+    let h_cloned = h_boxed.clone_box();
+    
+    // Verify structure is preserved
+    assert_eq!(h_cloned.to_string(), "h(g(f(x,y),z))");
+    assert_eq!(h_cloned.depth(), 3);
+    assert_eq!(h_cloned.length(), 6);
+}
+
+#[test]
+fn test_substitute_with_cloning() {
+    // Create term: f(x, y)
+    let op_sym = OperationSymbol::new("f", 2, false);
+    let x = Box::new(VariableImp::new("x")) as Box<dyn Term>;
+    let y = Box::new(VariableImp::new("y")) as Box<dyn Term>;
+    let term = Box::new(NonVariableTerm::new(op_sym, vec![x, y])) as Box<dyn Term>;
+    
+    // Substitute x -> z
+    let mut map: HashMap<String, Box<dyn Term>> = HashMap::new();
+    map.insert("x".to_string(), Box::new(VariableImp::new("z")));
+    
+    let result = term.substitute(&map).unwrap();
+    assert_eq!(result.to_string(), "f(z,y)");
+}
+```
+
+**Common Mistakes to Avoid**:
+1. ❌ Don't create a separate `TermClone` trait with blanket implementation (causes ambiguity)
+2. ❌ Don't try to derive `Clone` for types containing `Box<dyn Trait>`
+3. ❌ Don't forget to implement `clone_box()` for all implementing types
+4. ❌ Don't use `Arc<dyn Trait>` as a workaround (changes ownership semantics)
+
+**Related Patterns**:
+- Visitor pattern (for traversing without cloning)
+- Builder pattern (for constructing complex structures)
+- Strategy pattern (for polymorphic behavior without cloning)
+
 ## 13. Verification Checklist
 
 Before marking a translation as complete, verify:

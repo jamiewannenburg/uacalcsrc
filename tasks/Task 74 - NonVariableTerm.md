@@ -168,27 +168,35 @@
 ### Blocked/Missing Features (UPDATED 2025-10-16)
 - [x] ✅ Python bindings - CREATED with eval() and int_eval() methods
 - [x] ✅ interpretation() methods - IMPLEMENTED using TermOperationImp
-- [ ] interpretation_simple() - Requires term cloning mechanism
-- [ ] substitute() method - Needs term cloning
-- [ ] equals/hashCode - Trait object limitation
-- [ ] getChildren() - Returns None (trait object limitation)
+- [x] ✅ interpretation_simple() - IMPLEMENTED using clone_box() pattern
+- [x] ✅ substitute() method - IMPLEMENTED with full recursive support
+- [x] ✅ Clone implementation - Manual Clone using clone_box() for children
+- [x] ✅ getChildren() - Returns cloned children using clone_box()
+- [x] ✅ Python bindings support nested NonVariableTerm - Uses clone_box()
+- [ ] equals/hashCode - Trait object limitation (not needed for current use cases)
 - [ ] Java wrapper - Not created (optional)
 
 ### Next Steps (UPDATED 2025-10-16)
 1. ✅ **Create Python bindings** - COMPLETED
 2. ✅ **TermOperation integration** - COMPLETED
-3. 📝 **Design term cloning** for substitute() and interpretation_simple()
+3. ✅ **Design term cloning** for substitute() and interpretation_simple() - COMPLETED
 4. ⚠️ **Add Java wrapper** for testing (optional)
 5. 📊 **Expand test suite** with more complex scenarios
-6. 🔨 **Enhance Python bindings** to support NonVariableTerm children (requires cloning)
+6. ✅ **Enhance Python bindings** to support NonVariableTerm children - COMPLETED
 
 ### Recent Improvements (2025-10-16)
 - ✅ Implemented `interpretation(alg, varlist, use_all)` - evaluates term recursively
 - ✅ Created Python bindings (PyNonVariableTerm) with eval() and int_eval()
 - ✅ Updated TermOperationImp to use Arc<dyn SmallAlgebra>
-- ✅ All 26 term tests passing
+- ✅ **Implemented term cloning** - Added clone_box() method to Term trait
+- ✅ **Manual Clone implementation** - Clones children using clone_box() pattern
+- ✅ **Fixed get_children()** - Returns cloned children instead of None
+- ✅ **Fixed substitute()** - Recursively substitutes in all children
+- ✅ **Fixed interpretation_simple()** - Now works with term cloning support
+- ✅ **Enhanced Python bindings** - Now supports nested NonVariableTerm children
+- ✅ All 38 term tests passing (12 new cloning tests added)
 - ✅ Rust library compiles without errors
-- ✅ Python bindings support constant terms and variable children
+- ✅ Python bindings support constant terms, variable children, and nested NonVariableTerm children
 
 ### Acceptance Criteria (UPDATED 2025-10-16)
 - [x] Core dependencies implemented

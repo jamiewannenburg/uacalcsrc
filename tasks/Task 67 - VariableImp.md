@@ -175,13 +175,13 @@ impl VariableImp {
 
 ### Blocked Features (UPDATED 2025-10-16)
 - [x] interpretation() methods - ✅ IMPLEMENTED using TermOperation and TermOperationImp
-- [ ] substitute() method - Needs term cloning mechanism (low priority)
+- [x] substitute() method - ✅ IMPLEMENTED using clone_box() pattern
 - [x] Complete Python bindings - ✅ All evaluation methods working
 - [ ] Java wrapper - Not created (optional)
 
 ### Next Steps (UPDATED 2025-10-16)
 1. ✅ **TermOperation integration** - COMPLETED
-2. 🔨 **Design term cloning** for substitute() implementation (low priority)
+2. ✅ **Design term cloning** for substitute() implementation - COMPLETED
 3. 📝 **Add Java wrapper** for cross-language testing (optional)
 4. ✅ **Update documentation** - DONE
 
@@ -189,7 +189,9 @@ impl VariableImp {
 - ✅ Implemented `interpretation(alg, varlist, use_all)` - creates projection operation
 - ✅ Implemented `interpretation_simple(alg)` - returns TermOperationImp wrapper
 - ✅ Updated TermOperationImp to use Arc<dyn SmallAlgebra> for flexibility
-- ✅ All 26 term tests passing
+- ✅ **Implemented substitute()** - Uses clone_box() to clone replacement terms
+- ✅ **Implemented clone_box()** - Enables cloning of VariableImp as trait objects
+- ✅ All 38 term tests passing (including 12 new cloning tests)
 - ✅ Rust library compiles without errors
 
 ### Acceptance Criteria (UPDATED 2025-10-16)

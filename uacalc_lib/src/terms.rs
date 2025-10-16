@@ -152,12 +152,9 @@ impl PyNonVariableTerm {
             // Try to extract as PyVariableImp first
             if let Ok(var) = item.extract::<PyRef<PyVariableImp>>() {
                 rust_children.push(Box::new(var.inner.clone()));
-            } else if let Ok(_nvt) = item.extract::<PyRef<PyNonVariableTerm>>() {
-                // For NonVariableTerm, we need to create a new one since it doesn't implement Clone
-                // For now, return an error
-                return Err(PyValueError::new_err(
-                    "NonVariableTerm children are not yet supported (requires cloning)"
-                ));
+            } else if let Ok(nvt) = item.extract::<PyRef<PyNonVariableTerm>>() {
+                // Now we can clone NonVariableTerm!
+                rust_children.push(nvt.inner.clone_box());
             } else {
                 return Err(PyValueError::new_err(
                     "Children must be VariableImp or NonVariableTerm instances"

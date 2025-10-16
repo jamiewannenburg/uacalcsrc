@@ -367,3 +367,267 @@ fn test_term_eval_with_cyclic2() {
     }
 }
 
+// ==================== Cloning Tests ====================
+
+#[test]
+fn test_variable_imp_clone_box() {
+    let x = VariableImp::new("x");
+    let x_boxed: Box<dyn Term> = Box::new(x.clone());
+    let x_cloned = x_boxed.clone_box();
+    
+    // Check that the cloned term has the same properties
+    assert_eq!(x_cloned.to_string(), "x");
+    assert!(x_cloned.isa_variable());
+    assert_eq!(x_cloned.depth(), 0);
+    assert_eq!(x_cloned.length(), 1);
+}
+
+#[test]
+fn test_non_variable_term_clone_box_simple() {
+    let op_sym = OperationSymbol::new("f", 2, false);
+    let x = Box::new(VariableImp::new("x")) as Box<dyn Term>;
+    let y = Box::new(VariableImp::new("y")) as Box<dyn Term>;
+    let children = vec![x, y];
+    
+    let term = NonVariableTerm::new(op_sym, children);
+    let term_boxed: Box<dyn Term> = Box::new(term);
+    let term_cloned = term_boxed.clone_box();
+    
+    // Check that the cloned term has the same properties
+    assert_eq!(term_cloned.to_string(), "f(x,y)");
+    assert!(!term_cloned.isa_variable());
+    assert_eq!(term_cloned.depth(), 1);
+    assert_eq!(term_cloned.length(), 3);
+}
+
+#[test]
+fn test_non_variable_term_clone_box_nested() {
+    let op_sym1 = OperationSymbol::new("f", 2, false);
+    let op_sym2 = OperationSymbol::new("g", 1, false);
+    
+    // Create nested term: g(f(x, y))
+    let x = Box::new(VariableImp::new("x")) as Box<dyn Term>;
+    let y = Box::new(VariableImp::new("y")) as Box<dyn Term>;
+    let children1 = vec![x, y];
+    let inner_term = NonVariableTerm::new(op_sym1, children1);
+    
+    let boxed_inner = Box::new(inner_term) as Box<dyn Term>;
+    let children2 = vec![boxed_inner];
+    let outer_term = NonVariableTerm::new(op_sym2, children2);
+    
+    let outer_boxed: Box<dyn Term> = Box::new(outer_term);
+    let outer_cloned = outer_boxed.clone_box();
+    
+    // Check that the cloned term has the same properties
+    assert_eq!(outer_cloned.to_string(), "g(f(x,y))");
+    assert!(!outer_cloned.isa_variable());
+    assert_eq!(outer_cloned.depth(), 2);
+    assert_eq!(outer_cloned.length(), 4);
+}
+
+#[test]
+fn test_non_variable_term_get_children() {
+    let op_sym = OperationSymbol::new("f", 2, false);
+    let x = Box::new(VariableImp::new("x")) as Box<dyn Term>;
+    let y = Box::new(VariableImp::new("y")) as Box<dyn Term>;
+    let children = vec![x, y];
+    
+    let term = NonVariableTerm::new(op_sym, children);
+    let term_children = term.get_children();
+    
+    // Check that get_children() returns Some with cloned children
+    assert!(term_children.is_some());
+    let children = term_children.unwrap();
+    assert_eq!(children.len(), 2);
+    assert_eq!(children[0].to_string(), "x");
+    assert_eq!(children[1].to_string(), "y");
+}
+
+#[test]
+fn test_variable_substitute_simple() {
+    let x = VariableImp::new("x");
+    let x_term: Box<dyn Term> = Box::new(x);
+    
+    // Substitute x -> y
+    let mut map: HashMap<String, Box<dyn Term>> = HashMap::new();
+    let y_term: Box<dyn Term> = Box::new(VariableImp::new("y"));
+    map.insert("x".to_string(), y_term);
+    
+    let result = x_term.substitute(&map);
+    assert!(result.is_ok());
+    let substituted = result.unwrap();
+    assert_eq!(substituted.to_string(), "y");
+}
+
+#[test]
+fn test_variable_substitute_no_match() {
+    let x = VariableImp::new("x");
+    let x_term: Box<dyn Term> = Box::new(x);
+    
+    // Try to substitute y (not x), so x should remain unchanged
+    let mut map: HashMap<String, Box<dyn Term>> = HashMap::new();
+    let z_term: Box<dyn Term> = Box::new(VariableImp::new("z"));
+    map.insert("y".to_string(), z_term);
+    
+    let result = x_term.substitute(&map);
+    assert!(result.is_ok());
+    let substituted = result.unwrap();
+    assert_eq!(substituted.to_string(), "x");
+}
+
+#[test]
+fn test_non_variable_term_substitute_simple() {
+    // Create term: f(x, y)
+    let op_sym = OperationSymbol::new("f", 2, false);
+    let x = Box::new(VariableImp::new("x")) as Box<dyn Term>;
+    let y = Box::new(VariableImp::new("y")) as Box<dyn Term>;
+    let children = vec![x, y];
+    let term = NonVariableTerm::new(op_sym, children);
+    let term_boxed: Box<dyn Term> = Box::new(term);
+    
+    // Substitute x -> z
+    let mut map: HashMap<String, Box<dyn Term>> = HashMap::new();
+    let z_term: Box<dyn Term> = Box::new(VariableImp::new("z"));
+    map.insert("x".to_string(), z_term);
+    
+    let result = term_boxed.substitute(&map);
+    assert!(result.is_ok());
+    let substituted = result.unwrap();
+    // Result should be f(z, y)
+    assert_eq!(substituted.to_string(), "f(z,y)");
+}
+
+#[test]
+fn test_non_variable_term_substitute_nested() {
+    // Create term: g(f(x, y))
+    let op_sym1 = OperationSymbol::new("f", 2, false);
+    let op_sym2 = OperationSymbol::new("g", 1, false);
+    
+    let x = Box::new(VariableImp::new("x")) as Box<dyn Term>;
+    let y = Box::new(VariableImp::new("y")) as Box<dyn Term>;
+    let children1 = vec![x, y];
+    let inner_term = NonVariableTerm::new(op_sym1, children1);
+    
+    let boxed_inner = Box::new(inner_term) as Box<dyn Term>;
+    let children2 = vec![boxed_inner];
+    let outer_term = NonVariableTerm::new(op_sym2, children2);
+    let outer_boxed: Box<dyn Term> = Box::new(outer_term);
+    
+    // Substitute x -> a, y -> b
+    let mut map: HashMap<String, Box<dyn Term>> = HashMap::new();
+    let a_term: Box<dyn Term> = Box::new(VariableImp::new("a"));
+    let b_term: Box<dyn Term> = Box::new(VariableImp::new("b"));
+    map.insert("x".to_string(), a_term);
+    map.insert("y".to_string(), b_term);
+    
+    let result = outer_boxed.substitute(&map);
+    assert!(result.is_ok());
+    let substituted = result.unwrap();
+    // Result should be g(f(a, b))
+    assert_eq!(substituted.to_string(), "g(f(a,b))");
+}
+
+#[test]
+fn test_non_variable_term_substitute_with_compound_term() {
+    // Create term: f(x, y)
+    let op_sym = OperationSymbol::new("f", 2, false);
+    let x = Box::new(VariableImp::new("x")) as Box<dyn Term>;
+    let y = Box::new(VariableImp::new("y")) as Box<dyn Term>;
+    let children = vec![x, y];
+    let term = NonVariableTerm::new(op_sym, children);
+    let term_boxed: Box<dyn Term> = Box::new(term);
+    
+    // Create compound term to substitute: g(z)
+    let g_sym = OperationSymbol::new("g", 1, false);
+    let z = Box::new(VariableImp::new("z")) as Box<dyn Term>;
+    let g_term = NonVariableTerm::new(g_sym, vec![z]);
+    
+    // Substitute x -> g(z)
+    let mut map: HashMap<String, Box<dyn Term>> = HashMap::new();
+    map.insert("x".to_string(), Box::new(g_term) as Box<dyn Term>);
+    
+    let result = term_boxed.substitute(&map);
+    assert!(result.is_ok());
+    let substituted = result.unwrap();
+    // Result should be f(g(z), y)
+    assert_eq!(substituted.to_string(), "f(g(z),y)");
+}
+
+#[test]
+fn test_non_variable_term_interpretation_simple() {
+    use std::sync::Arc;
+    
+    let alg = create_test_algebra();
+    let alg_arc = Arc::new(alg);
+    
+    // Create term: add(x, y)
+    let add_sym = OperationSymbol::new("add", 2, false);
+    let x = Box::new(VariableImp::new("x")) as Box<dyn Term>;
+    let y = Box::new(VariableImp::new("y")) as Box<dyn Term>;
+    let children = vec![x, y];
+    let term = NonVariableTerm::new(add_sym, children);
+    
+    // Get the interpretation
+    let result = term.interpretation_simple(alg_arc);
+    assert!(result.is_ok(), "interpretation_simple should succeed: {:?}", result);
+    
+    let term_op = result.unwrap();
+    // Verify it's a TermOperation with the right properties
+    assert_eq!(term_op.arity(), 2);
+}
+
+#[test]
+fn test_variable_imp_interpretation_simple() {
+    use std::sync::Arc;
+    
+    let alg = create_test_algebra();
+    let alg_arc = Arc::new(alg);
+    
+    let x = VariableImp::new("x");
+    
+    // Get the interpretation
+    let result = x.interpretation_simple(alg_arc);
+    assert!(result.is_ok(), "interpretation_simple should succeed: {:?}", result);
+    
+    let term_op = result.unwrap();
+    // Variable becomes a unary projection
+    assert_eq!(term_op.arity(), 1);
+}
+
+#[test]
+fn test_deep_term_cloning() {
+    // Test that deep nested structures can be cloned correctly
+    // Create: h(g(f(x, y), z))
+    let f_sym = OperationSymbol::new("f", 2, false);
+    let g_sym = OperationSymbol::new("g", 2, false);
+    let h_sym = OperationSymbol::new("h", 1, false);
+    
+    let x = Box::new(VariableImp::new("x")) as Box<dyn Term>;
+    let y = Box::new(VariableImp::new("y")) as Box<dyn Term>;
+    let f_term = NonVariableTerm::new(f_sym, vec![x, y]);
+    
+    let z = Box::new(VariableImp::new("z")) as Box<dyn Term>;
+    let g_term = NonVariableTerm::new(g_sym, vec![Box::new(f_term), z]);
+    
+    let h_term = NonVariableTerm::new(h_sym, vec![Box::new(g_term)]);
+    
+    // Clone the entire structure
+    let h_boxed: Box<dyn Term> = Box::new(h_term);
+    let h_cloned = h_boxed.clone_box();
+    
+    // Verify structure is preserved
+    assert_eq!(h_cloned.to_string(), "h(g(f(x,y),z))");
+    assert_eq!(h_cloned.depth(), 3);
+    assert_eq!(h_cloned.length(), 6); // h + g + f + x + y + z
+    
+    // Verify we can get children and they're properly cloned
+    let h_children = h_cloned.get_children().unwrap();
+    assert_eq!(h_children.len(), 1);
+    assert_eq!(h_children[0].to_string(), "g(f(x,y),z)");
+    
+    let g_children = h_children[0].get_children().unwrap();
+    assert_eq!(g_children.len(), 2);
+    assert_eq!(g_children[0].to_string(), "f(x,y)");
+    assert_eq!(g_children[1].to_string(), "z");
+}
+

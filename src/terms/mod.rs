@@ -140,6 +140,16 @@ pub trait Term: Display + Debug + Send + Sync {
     /// * `Err(String)` - Error message if substitution fails
     fn substitute(&self, map: &HashMap<String, Box<dyn Term>>) -> Result<Box<dyn Term>, String>;
     
+    /// Clone this term into a new boxed trait object.
+    /// 
+    /// This allows cloning of trait objects by delegating to the concrete type's
+    /// Clone implementation. This is necessary because `Box<dyn Term>` cannot
+    /// automatically implement Clone.
+    /// 
+    /// # Returns
+    /// A new boxed copy of this term
+    fn clone_box(&self) -> Box<dyn Term>;
+    
     /// Writes this term to a string buffer.
     /// 
     /// This is an efficiency helper for `to_string()`.
@@ -211,17 +221,6 @@ impl VariableImp {
 impl Display for VariableImp {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.name)
-    }
-}
-
-// Implement Clone for Box<dyn Term> to allow term manipulation
-pub trait TermClone {
-    fn clone_box(&self) -> Box<dyn Term>;
-}
-
-impl<T: 'static + Term + Clone> TermClone for T {
-    fn clone_box(&self) -> Box<dyn Term> {
-        Box::new(self.clone())
     }
 }
 
@@ -313,13 +312,17 @@ impl Term for VariableImp {
     }
     
     fn substitute(&self, map: &HashMap<String, Box<dyn Term>>) -> Result<Box<dyn Term>, String> {
-        if let Some(_replacement) = map.get(&self.name) {
-            // Clone the term by converting to string and back (placeholder)
-            // In a real implementation, we'd need proper cloning
-            Ok(Box::new(self.clone()))
+        if let Some(replacement) = map.get(&self.name) {
+            // Clone the replacement term
+            Ok(replacement.clone_box())
         } else {
+            // No replacement, return clone of self
             Ok(Box::new(self.clone()))
         }
+    }
+    
+    fn clone_box(&self) -> Box<dyn Term> {
+        Box::new(self.clone())
     }
     
     fn write_string_buffer(&self, sb: &mut String) {
@@ -336,6 +339,17 @@ impl Term for VariableImp {
 pub struct NonVariableTerm {
     pub leading_operation_symbol: OperationSymbol,
     pub children: Vec<Box<dyn Term>>,
+}
+
+impl Clone for NonVariableTerm {
+    fn clone(&self) -> Self {
+        NonVariableTerm {
+            leading_operation_symbol: self.leading_operation_symbol.clone(),
+            children: self.children.iter()
+                .map(|child| child.clone_box())
+                .collect(),
+        }
+    }
 }
 
 impl NonVariableTerm {
@@ -423,9 +437,10 @@ impl Term for NonVariableTerm {
     }
     
     fn get_children(&self) -> Option<Vec<Box<dyn Term>>> {
-        // We need to clone the children, which requires Term to be cloneable
-        // For now, return None as a placeholder
-        None
+        // Clone each child using clone_box()
+        Some(self.children.iter()
+            .map(|child| child.clone_box())
+            .collect())
     }
     
     fn eval(&self, alg: &dyn SmallAlgebra<UniverseItem = i32>, map: &HashMap<String, i32>) -> Result<i32, String> {
@@ -510,12 +525,13 @@ impl Term for NonVariableTerm {
     
     fn interpretation_simple(
         &self,
-        _alg: Arc<dyn SmallAlgebra<UniverseItem = i32>>,
+        alg: Arc<dyn SmallAlgebra<UniverseItem = i32>>,
     ) -> Result<Box<dyn TermOperation>, String> {
-        let _varlist = self.get_variable_list();
-        // We can't easily create a Box<dyn Term> from &self since NonVariableTerm doesn't implement Clone
-        // For now, return an error
-        Err("NonVariableTerm interpretation_simple requires term cloning".to_string())
+        let varlist = self.get_variable_list();
+        // Clone this term into a Box
+        let term: Box<dyn Term> = self.clone_box();
+        let interpretation = self.interpretation(alg.clone(), &varlist, true)?;
+        Ok(Box::new(TermOperationImp::new(term, varlist, alg, interpretation)))
     }
     
     fn depth(&self) -> i32 {
@@ -540,8 +556,22 @@ impl Term for NonVariableTerm {
         lst
     }
     
-    fn substitute(&self, _map: &HashMap<String, Box<dyn Term>>) -> Result<Box<dyn Term>, String> {
-        Err("NonVariableTerm substitute not yet fully implemented".to_string())
+    fn substitute(&self, map: &HashMap<String, Box<dyn Term>>) -> Result<Box<dyn Term>, String> {
+        // Recursively substitute in all children
+        let new_children: Vec<Box<dyn Term>> = self.children
+            .iter()
+            .map(|child| child.substitute(map))
+            .collect::<Result<Vec<_>, _>>()?;
+        
+        // Create new term with substituted children
+        Ok(Box::new(NonVariableTerm {
+            leading_operation_symbol: self.leading_operation_symbol.clone(),
+            children: new_children,
+        }))
+    }
+    
+    fn clone_box(&self) -> Box<dyn Term> {
+        Box::new(self.clone())
     }
     
     fn write_string_buffer(&self, sb: &mut String) {

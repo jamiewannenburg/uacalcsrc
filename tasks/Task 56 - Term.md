@@ -189,9 +189,11 @@
 
 ### Known Limitations (UPDATED 2025-10-16)
 - ✅ **Interpretation Methods**: IMPLEMENTED - Both Variable and NonVariable terms now support interpretation using TermOperationImp
-- **Substitute Method**: Basic implementation (requires term cloning support)
-- **NonVariableTerm Clone**: Not implemented due to trait object constraints
-- **NonVariableTerm interpretation_simple**: Not implemented (requires term cloning)
+- ✅ **Substitute Method**: IMPLEMENTED - Full support for variable substitution with term cloning
+- ✅ **NonVariableTerm Clone**: IMPLEMENTED - Manual Clone implementation using clone_box() pattern
+- ✅ **NonVariableTerm interpretation_simple**: IMPLEMENTED - Now works with term cloning support
+- ✅ **Term Cloning**: IMPLEMENTED - clone_box() method added to Term trait for trait object cloning
+- ✅ **get_children()**: IMPLEMENTED - Returns cloned children for NonVariableTerm
 
 ### Completed Features
 - ✅ **Full Evaluation**: Terms can be evaluated in algebras with proper variable assignment
@@ -224,8 +226,9 @@ result = x.eval(alg, var_map)  # Returns 1
 ### Future Work (UPDATED 2025-10-16)
 - ✅ Implement interpretation methods when TermOperation is ready - DONE
 - ✅ Add Python bindings for NonVariableTerm - DONE
-- Implement term cloning mechanism for substitute operations (for NonVariableTerm)
-- Enhance NonVariableTerm to support cloning for interpretation_simple
+- ✅ Implement term cloning mechanism for substitute operations - DONE
+- ✅ Enhance NonVariableTerm to support cloning for interpretation_simple - DONE
+- ✅ Enable Python bindings to support nested NonVariableTerm structures - DONE
 - Add comprehensive Python tests for compound term evaluation with NonVariableTerm bindings
 
 ### Recent Updates (2025-10-16)
@@ -234,5 +237,11 @@ result = x.eval(alg, var_map)  # Returns 1
 - ✅ Implemented `interpretation_simple()` for VariableImp - returns TermOperationImp
 - ✅ Updated TermOperationImp to use Arc<dyn SmallAlgebra> instead of Box for better flexibility
 - ✅ Created Python bindings for NonVariableTerm with eval() and int_eval() methods
-- ✅ All 26 Rust tests passing successfully
+- ✅ **Implemented term cloning** - Added clone_box() method to Term trait
+- ✅ **Implemented Clone for NonVariableTerm** - Manual implementation using clone_box() pattern
+- ✅ **Fixed get_children()** - Now returns cloned children instead of None
+- ✅ **Fixed substitute()** - Full support for variable substitution in both VariableImp and NonVariableTerm
+- ✅ **Fixed interpretation_simple() for NonVariableTerm** - Now works with term cloning
+- ✅ **Enhanced Python bindings** - NonVariableTerm constructor now supports nested NonVariableTerm children
+- ✅ All 38 Rust tests passing successfully (12 new cloning tests added)
 - ✅ Rust library compiles without errors
