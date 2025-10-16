@@ -631,3 +631,362 @@ fn test_deep_term_cloning() {
     assert_eq!(g_children[1].to_string(), "z");
 }
 
+// ==================== Terms Utility Function Tests ====================
+
+#[test]
+fn test_is_valid_var_string_valid() {
+    use super::is_valid_var_string;
+    
+    assert!(is_valid_var_string("x"));
+    assert!(is_valid_var_string("y"));
+    assert!(is_valid_var_string("var"));
+    assert!(is_valid_var_string("var1"));
+    assert!(is_valid_var_string("MyVariable"));
+    assert!(is_valid_var_string("x1"));
+}
+
+#[test]
+fn test_is_valid_var_string_invalid() {
+    use super::is_valid_var_string;
+    
+    assert!(!is_valid_var_string("")); // empty
+    assert!(!is_valid_var_string("1x")); // starts with digit
+    assert!(!is_valid_var_string("x,y")); // contains comma
+    assert!(!is_valid_var_string("x(")); // contains open paren
+    assert!(!is_valid_var_string("x)")); // contains close paren
+    assert!(!is_valid_var_string("x y")); // contains whitespace
+}
+
+#[test]
+fn test_is_valid_op_name_string() {
+    use super::is_valid_op_name_string;
+    
+    // Same rules as variable names
+    assert!(is_valid_op_name_string("f"));
+    assert!(is_valid_op_name_string("add"));
+    assert!(is_valid_op_name_string("mult"));
+    assert!(!is_valid_op_name_string(""));
+    assert!(!is_valid_op_name_string("1f"));
+}
+
+#[test]
+fn test_string_to_term_simple_variable() {
+    use super::string_to_term;
+    
+    let result = string_to_term("x");
+    assert!(result.is_ok());
+    let term = result.unwrap();
+    assert!(term.isa_variable());
+    assert_eq!(term.to_string(), "x");
+}
+
+#[test]
+fn test_string_to_term_compound() {
+    use super::string_to_term;
+    
+    let result = string_to_term("f(x,y)");
+    assert!(result.is_ok());
+    let term = result.unwrap();
+    assert!(!term.isa_variable());
+    assert_eq!(term.to_string(), "f(x,y)");
+}
+
+#[test]
+fn test_string_to_term_nested() {
+    use super::string_to_term;
+    
+    let result = string_to_term("f(g(x),y)");
+    assert!(result.is_ok());
+    let term = result.unwrap();
+    assert_eq!(term.to_string(), "f(g(x),y)");
+    assert_eq!(term.depth(), 2);
+}
+
+#[test]
+fn test_string_to_term_deeply_nested() {
+    use super::string_to_term;
+    
+    let result = string_to_term("h(g(f(x,y),z))");
+    assert!(result.is_ok());
+    let term = result.unwrap();
+    assert_eq!(term.to_string(), "h(g(f(x,y),z))");
+    assert_eq!(term.depth(), 3);
+}
+
+#[test]
+fn test_string_to_term_nullary() {
+    use super::string_to_term;
+    
+    let result = string_to_term("c()");
+    assert!(result.is_ok());
+    let term = result.unwrap();
+    assert_eq!(term.to_string(), "c()");
+    assert!(!term.isa_variable());
+    let children = term.get_children().unwrap();
+    assert_eq!(children.len(), 0);
+}
+
+#[test]
+fn test_string_to_term_empty_error() {
+    use super::string_to_term;
+    
+    let result = string_to_term("");
+    assert!(result.is_err());
+}
+
+#[test]
+fn test_string_to_term_invalid_var_error() {
+    use super::string_to_term;
+    
+    let result = string_to_term("1x");
+    assert!(result.is_err());
+}
+
+#[test]
+fn test_string_to_term_invalid_op_error() {
+    use super::string_to_term;
+    
+    let result = string_to_term("1f(x)");
+    assert!(result.is_err());
+}
+
+#[test]
+fn test_string_to_term_with_spaces() {
+    use super::string_to_term;
+    
+    // Spaces should be trimmed
+    let result = string_to_term("  x  ");
+    assert!(result.is_ok());
+    let term = result.unwrap();
+    assert_eq!(term.to_string(), "x");
+}
+
+#[test]
+fn test_string_to_term_missing_close_paren() {
+    use super::string_to_term;
+    
+    // Should be adjusted by adjust_parens
+    let result = string_to_term("f(x,y");
+    assert!(result.is_ok());
+    let term = result.unwrap();
+    assert_eq!(term.to_string(), "f(x,y)");
+}
+
+#[test]
+fn test_string_to_term_extra_close_paren() {
+    use super::string_to_term;
+    
+    // Should be adjusted by adjust_parens
+    let result = string_to_term("f(x,y))");
+    assert!(result.is_ok());
+    let term = result.unwrap();
+    assert_eq!(term.to_string(), "f(x,y)");
+}
+
+#[test]
+fn test_flatten_variable() {
+    use super::flatten;
+    
+    let x = VariableImp::new("x");
+    let x_term: &dyn Term = &x;
+    let flattened = flatten(x_term);
+    
+    assert!(flattened.isa_variable());
+    assert_eq!(flattened.to_string(), "x");
+}
+
+#[test]
+fn test_flatten_non_associative() {
+    use super::flatten;
+    
+    // Non-associative operation should not be flattened
+    let f = OperationSymbol::new("f", 2, false);
+    let x = Box::new(VariableImp::new("x")) as Box<dyn Term>;
+    let y = Box::new(VariableImp::new("y")) as Box<dyn Term>;
+    let term = NonVariableTerm::new(f, vec![x, y]);
+    
+    let flattened = flatten(&term);
+    assert_eq!(flattened.to_string(), "f(x,y)");
+}
+
+#[test]
+fn test_flatten_associative_simple() {
+    use super::flatten;
+    
+    // Associative operation: f(f(x,y),z) -> f(x,y,z)
+    let f = OperationSymbol::new("f", 2, true);
+    
+    let x = Box::new(VariableImp::new("x")) as Box<dyn Term>;
+    let y = Box::new(VariableImp::new("y")) as Box<dyn Term>;
+    let inner = Box::new(NonVariableTerm::new(f.clone(), vec![x, y])) as Box<dyn Term>;
+    
+    let z = Box::new(VariableImp::new("z")) as Box<dyn Term>;
+    let outer = NonVariableTerm::new(f, vec![inner, z]);
+    
+    let flattened = flatten(&outer);
+    assert_eq!(flattened.to_string(), "f(x,y,z)");
+}
+
+#[test]
+fn test_flatten_associative_left() {
+    use super::flatten;
+    
+    // f(x, f(y,z)) -> f(x,y,z)
+    let f = OperationSymbol::new("f", 2, true);
+    
+    let y = Box::new(VariableImp::new("y")) as Box<dyn Term>;
+    let z = Box::new(VariableImp::new("z")) as Box<dyn Term>;
+    let inner = Box::new(NonVariableTerm::new(f.clone(), vec![y, z])) as Box<dyn Term>;
+    
+    let x = Box::new(VariableImp::new("x")) as Box<dyn Term>;
+    let outer = NonVariableTerm::new(f, vec![x, inner]);
+    
+    let flattened = flatten(&outer);
+    assert_eq!(flattened.to_string(), "f(x,y,z)");
+}
+
+#[test]
+fn test_flatten_associative_both_sides() {
+    use super::flatten;
+    
+    // f(f(x,y), f(z,w)) -> f(x,y,z,w)
+    let f = OperationSymbol::new("f", 2, true);
+    
+    let x = Box::new(VariableImp::new("x")) as Box<dyn Term>;
+    let y = Box::new(VariableImp::new("y")) as Box<dyn Term>;
+    let left = Box::new(NonVariableTerm::new(f.clone(), vec![x, y])) as Box<dyn Term>;
+    
+    let z = Box::new(VariableImp::new("z")) as Box<dyn Term>;
+    let w = Box::new(VariableImp::new("w")) as Box<dyn Term>;
+    let right = Box::new(NonVariableTerm::new(f.clone(), vec![z, w])) as Box<dyn Term>;
+    
+    let outer = NonVariableTerm::new(f, vec![left, right]);
+    
+    let flattened = flatten(&outer);
+    assert_eq!(flattened.to_string(), "f(x,y,z,w)");
+}
+
+#[test]
+fn test_flatten_associative_nested_deep() {
+    use super::flatten;
+    
+    // f(f(f(x,y),z),w) -> f(x,y,z,w)
+    let f = OperationSymbol::new("f", 2, true);
+    
+    let x = Box::new(VariableImp::new("x")) as Box<dyn Term>;
+    let y = Box::new(VariableImp::new("y")) as Box<dyn Term>;
+    let inner1 = Box::new(NonVariableTerm::new(f.clone(), vec![x, y])) as Box<dyn Term>;
+    
+    let z = Box::new(VariableImp::new("z")) as Box<dyn Term>;
+    let inner2 = Box::new(NonVariableTerm::new(f.clone(), vec![inner1, z])) as Box<dyn Term>;
+    
+    let w = Box::new(VariableImp::new("w")) as Box<dyn Term>;
+    let outer = NonVariableTerm::new(f, vec![inner2, w]);
+    
+    let flattened = flatten(&outer);
+    assert_eq!(flattened.to_string(), "f(x,y,z,w)");
+}
+
+#[test]
+fn test_flatten_mixed_operations() {
+    use super::flatten;
+    
+    // f(g(x,y),z) where f is associative but g is not
+    // Should only flatten f, not g
+    let f = OperationSymbol::new("f", 2, true);
+    let g = OperationSymbol::new("g", 2, false);
+    
+    let x = Box::new(VariableImp::new("x")) as Box<dyn Term>;
+    let y = Box::new(VariableImp::new("y")) as Box<dyn Term>;
+    let inner = Box::new(NonVariableTerm::new(g, vec![x, y])) as Box<dyn Term>;
+    
+    let z = Box::new(VariableImp::new("z")) as Box<dyn Term>;
+    let outer = NonVariableTerm::new(f, vec![inner, z]);
+    
+    let flattened = flatten(&outer);
+    // g(x,y) should not be flattened because g is not associative
+    assert_eq!(flattened.to_string(), "f(g(x,y),z)");
+}
+
+#[test]
+fn test_get_argument_strings_single() {
+    use super::get_argument_strings;
+    
+    let result = get_argument_strings("x");
+    assert_eq!(result.len(), 1);
+    assert_eq!(result[0], "x");
+}
+
+#[test]
+fn test_get_argument_strings_multiple() {
+    use super::get_argument_strings;
+    
+    let result = get_argument_strings("x,y,z");
+    assert_eq!(result.len(), 3);
+    assert_eq!(result[0], "x");
+    assert_eq!(result[1], "y");
+    assert_eq!(result[2], "z");
+}
+
+#[test]
+fn test_get_argument_strings_nested() {
+    use super::get_argument_strings;
+    
+    let result = get_argument_strings("x,f(x,y),z");
+    assert_eq!(result.len(), 3);
+    assert_eq!(result[0], "x");
+    assert_eq!(result[1], "f(x,y)");
+    assert_eq!(result[2], "z");
+}
+
+#[test]
+fn test_get_argument_strings_deeply_nested() {
+    use super::get_argument_strings;
+    
+    let result = get_argument_strings("x,f(g(x),y),z");
+    assert_eq!(result.len(), 3);
+    assert_eq!(result[0], "x");
+    assert_eq!(result[1], "f(g(x),y)");
+    assert_eq!(result[2], "z");
+}
+
+#[test]
+fn test_adjust_parens_balanced() {
+    use super::adjust_parens;
+    
+    let result = adjust_parens("f(x,y)");
+    assert_eq!(result, "f(x,y)");
+}
+
+#[test]
+fn test_adjust_parens_missing_close() {
+    use super::adjust_parens;
+    
+    let result = adjust_parens("f(x,y");
+    assert_eq!(result, "f(x,y)");
+}
+
+#[test]
+fn test_adjust_parens_missing_multiple_close() {
+    use super::adjust_parens;
+    
+    let result = adjust_parens("f(g(x)");
+    assert_eq!(result, "f(g(x))");
+}
+
+#[test]
+fn test_adjust_parens_extra_close() {
+    use super::adjust_parens;
+    
+    let result = adjust_parens("f(x,y))");
+    assert_eq!(result, "f(x,y)");
+}
+
+#[test]
+fn test_adjust_parens_extra_multiple_close() {
+    use super::adjust_parens;
+    
+    let result = adjust_parens("f(x,y)))");
+    assert_eq!(result, "f(x,y)");
+}
+
