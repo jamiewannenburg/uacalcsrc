@@ -43,9 +43,9 @@ This class depends on:
 - `org.uacalc.alg.op.OperationSymbol` ✅ **IMPLEMENTED** (Task 1 - Complete)
 - `org.uacalc.terms.Variable` ❌ **NOT IMPLEMENTED** (Task 40 - Incomplete)
 - `org.uacalc.terms.NonVariableTerm` ❌ **NOT IMPLEMENTED** (Task 74 - Incomplete)  
-- `org.uacalc.eq.Equation` ❌ **NOT IMPLEMENTED** (Task 58 - Incomplete)
+- `org.uacalc.eq.Equation` ✅ **IMPLEMENTED** (Task 58 - Completed 2025-10-16)
 
-**Dependency Status**: 1 of 4 dependencies implemented. **BLOCKED** - Cannot proceed until terms package is implemented.
+**Dependency Status**: 2 of 4 dependencies implemented. **BLOCKED** - Cannot proceed until Variable and NonVariableTerm are implemented.
 
 ### Implementation Steps
 
@@ -194,11 +194,11 @@ symm_eq = uacalc_lib.eq.equations.first_second_symmetric_law(op)
 ### Prerequisites
 
 **Must Complete First**:
-1. Task 40 - Variable (interface)
-2. Task 67 - VariableImp (concrete implementation)  
-3. Task 56 - Term (interface)
-4. Task 74 - NonVariableTerm (concrete implementation)
-5. Task 58 - Equation (concrete class)
+1. Task 40 - Variable (interface) - ❌ NOT IMPLEMENTED
+2. Task 67 - VariableImp (concrete implementation) - ❌ NOT IMPLEMENTED  
+3. Task 56 - Term (interface) - ❌ NOT IMPLEMENTED
+4. Task 74 - NonVariableTerm (concrete implementation) - ❌ NOT IMPLEMENTED
+5. Task 58 - Equation (concrete class) - ✅ **COMPLETED** (2025-10-16)
 
 **Estimated Effort**: 2-3 days after dependencies are complete
 

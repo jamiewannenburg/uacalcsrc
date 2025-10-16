@@ -28,7 +28,7 @@ Translate the Java class `org.uacalc.eq.Presentation` to Rust with Python bindin
 
 **Dependency Status**:
 - `Variable` (Task 40): ❌ Not implemented - all acceptance criteria unchecked
-- `Equation` (Task 58): ❌ Not implemented - all acceptance criteria unchecked
+- `Equation` (Task 58): ✅ **COMPLETED** - Implementation ready
 
 ## Rust Implementation Recommendations
 
@@ -68,10 +68,9 @@ pub struct Presentation {
 ## Implementation Recommendations
 
 ### 1. Dependency Resolution
-**CRITICAL**: This task cannot be completed until dependencies are implemented:
-- Must wait for Task 40 (Variable) to be completed
-- Must wait for Task 58 (Equation) to be completed
-- Both dependencies show no progress (all acceptance criteria unchecked)
+**PARTIAL**: This task can now proceed with Equation implemented:
+- Must wait for Task 40 (Variable) to be completed - ❌ NOT IMPLEMENTED
+- Task 58 (Equation) - ✅ **COMPLETED** (2025-10-16)
 
 ### 2. Rust Implementation
 - Simple struct with two public fields
@@ -94,7 +93,7 @@ pub struct Presentation {
 ## Updated Dependencies
 This class depends on:
 - `org.uacalc.terms.Variable` (Task 40 - NOT IMPLEMENTED)
-- `org.uacalc.eq.Equation` (Task 58 - NOT IMPLEMENTED)
+- `org.uacalc.eq.Equation` (Task 58 - ✅ **COMPLETED** 2025-10-16)
 
 ## Implementation Steps
 
