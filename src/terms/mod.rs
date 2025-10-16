@@ -593,9 +593,310 @@ pub struct Taylor {
     // TODO: Implement Taylor
 }
 
-/// Placeholder for the Terms collection
-pub struct Terms {
-    // TODO: Implement terms collection
+// =============================================================================
+// Terms Module - Utility functions for term manipulation
+// =============================================================================
+
+/// Parse a string representation into a Term.
+/// 
+/// This function converts a string like "f(x,y)" or "x" into a Term object.
+/// The string should follow these rules:
+/// - Variable names must start with a letter and contain no spaces, commas, or parentheses
+/// - Operation names follow the same rules as variable names
+/// - Operations are written as `name(arg1,arg2,...,argn)`
+/// - Nested operations are supported: `f(g(x),y)`
+/// 
+/// # Arguments
+/// * `str` - The string representation of the term
+/// 
+/// # Returns
+/// * `Ok(Box<dyn Term>)` - The parsed term
+/// * `Err(String)` - Error message if parsing fails
+/// 
+/// # Examples
+/// ```
+/// use uacalc::terms;
+/// 
+/// // Parse a variable
+/// let x = terms::string_to_term("x").unwrap();
+/// assert_eq!(x.to_string(), "x");
+/// 
+/// // Parse a compound term
+/// let term = terms::string_to_term("f(x,y)").unwrap();
+/// assert_eq!(term.to_string(), "f(x,y)");
+/// 
+/// // Parse a nested term
+/// let nested = terms::string_to_term("f(g(x),y)").unwrap();
+/// assert_eq!(nested.to_string(), "f(g(x),y)");
+/// ```
+pub fn string_to_term(str: &str) -> Result<Box<dyn Term>, String> {
+    if str.is_empty() {
+        return Err("empty string".to_string());
+    }
+    
+    let str = str.trim();
+    if str.is_empty() {
+        return Err("empty string".to_string());
+    }
+    
+    let str = adjust_parens(str);
+    
+    // Split on first '('
+    if let Some(paren_pos) = str.find('(') {
+        let op_name = &str[..paren_pos];
+        let rest = &str[paren_pos + 1..];
+        
+        // Validate operation name
+        if !is_valid_op_name_string(op_name) {
+            return Err(format!("The string {} cannot be made into a function symbol.", op_name));
+        }
+        
+        // Remove trailing ')' if present
+        let args_string = if rest.ends_with(')') {
+            &rest[..rest.len() - 1]
+        } else {
+            rest
+        };
+        
+        // Parse arguments
+        let arg_strings = get_argument_strings(args_string);
+        let arity = arg_strings.len();
+        let sym = OperationSymbol::new(op_name, arity as i32, false);
+        
+        // Recursively parse each argument
+        let mut children: Vec<Box<dyn Term>> = Vec::new();
+        for arg_string in arg_strings {
+            children.push(string_to_term(&arg_string)?);
+        }
+        
+        Ok(Box::new(NonVariableTerm::new(sym, children)))
+    } else {
+        // No '(' means it's a variable
+        if is_valid_var_string(&str) {
+            Ok(Box::new(VariableImp::new(&str)))
+        } else {
+            Err(format!("The string {} cannot be made into a variable.", str))
+        }
+    }
+}
+
+/// Validate if a string can be a variable name.
+/// 
+/// A valid variable name must:
+/// - Not be empty
+/// - Start with a letter (A-Z or a-z)
+/// - Not contain whitespace, commas, or parentheses
+/// 
+/// # Arguments
+/// * `str` - The string to validate
+/// 
+/// # Returns
+/// `true` if the string is a valid variable name, `false` otherwise
+/// 
+/// # Examples
+/// ```
+/// use uacalc::terms;
+/// 
+/// assert!(terms::is_valid_var_string("x"));
+/// assert!(terms::is_valid_var_string("var1"));
+/// assert!(terms::is_valid_var_string("myVar"));
+/// assert!(!terms::is_valid_var_string(""));
+/// assert!(!terms::is_valid_var_string("1x"));
+/// assert!(!terms::is_valid_var_string("x,y"));
+/// assert!(!terms::is_valid_var_string("x("));
+/// ```
+pub fn is_valid_var_string(str: &str) -> bool {
+    if str.is_empty() {
+        return false;
+    }
+    
+    // Check first character is a letter
+    let first_char = str.chars().next().unwrap();
+    if !first_char.is_ascii_alphabetic() {
+        return false;
+    }
+    
+    // Check for invalid characters
+    if str.contains(char::is_whitespace) {
+        return false;
+    }
+    if str.contains(',') {
+        return false;
+    }
+    if str.contains('(') {
+        return false;
+    }
+    if str.contains(')') {
+        return false;
+    }
+    
+    true
+}
+
+/// Validate if a string can be an operation name.
+/// 
+/// Uses the same validation rules as variable names.
+/// 
+/// # Arguments
+/// * `str` - The string to validate
+/// 
+/// # Returns
+/// `true` if the string is a valid operation name, `false` otherwise
+/// 
+/// # Examples
+/// ```
+/// use uacalc::terms;
+/// 
+/// assert!(terms::is_valid_op_name_string("f"));
+/// assert!(terms::is_valid_op_name_string("add"));
+/// assert!(!terms::is_valid_op_name_string(""));
+/// assert!(!terms::is_valid_op_name_string("1f"));
+/// ```
+pub fn is_valid_op_name_string(str: &str) -> bool {
+    is_valid_var_string(str)
+}
+
+/// Flatten associative operations in a term.
+/// 
+/// This function takes a term and flattens any associative operations,
+/// reducing nesting where possible. For example, `f(f(x,y),z)` becomes
+/// `f(x,y,z)` if `f` is associative.
+/// 
+/// # Arguments
+/// * `term` - The term to flatten
+/// 
+/// # Returns
+/// A new term with associative operations flattened
+/// 
+/// # Examples
+/// ```
+/// use uacalc::terms::{VariableImp, NonVariableTerm, Term};
+/// use uacalc::alg::op::OperationSymbol;
+/// use uacalc::terms;
+/// 
+/// // Create an associative operation f
+/// let f = OperationSymbol::new("f", 2, true);
+/// 
+/// // Create term f(f(x,y),z)
+/// let x: Box<dyn Term> = Box::new(VariableImp::new("x"));
+/// let y: Box<dyn Term> = Box::new(VariableImp::new("y"));
+/// let z: Box<dyn Term> = Box::new(VariableImp::new("z"));
+/// let inner = Box::new(NonVariableTerm::new(f.clone(), vec![x, y]));
+/// let outer = Box::new(NonVariableTerm::new(f.clone(), vec![inner, z]));
+/// 
+/// // Flatten should produce f(x,y,z)
+/// let flattened = terms::flatten(outer.as_ref());
+/// assert_eq!(flattened.to_string(), "f(x,y,z)");
+/// ```
+pub fn flatten(term: &dyn Term) -> Box<dyn Term> {
+    if term.isa_variable() {
+        return term.clone_box();
+    }
+    
+    let children = term.get_children().unwrap_or_default();
+    let mut flat_children: Vec<Box<dyn Term>> = Vec::new();
+    
+    // Recursively flatten all children
+    for child in children {
+        flat_children.push(flatten(child.as_ref()));
+    }
+    
+    let leading_op_sym = term.leading_operation_symbol().unwrap();
+    
+    // If the operation is not associative, just return with flattened children
+    if !leading_op_sym.is_associative() {
+        return Box::new(NonVariableTerm::new(leading_op_sym.clone(), flat_children));
+    }
+    
+    // For associative operations, flatten children with the same operation
+    let mut args: Vec<Box<dyn Term>> = Vec::new();
+    for arg in flat_children {
+        if arg.isa_variable() {
+            args.push(arg);
+        } else {
+            let arg_op_sym = arg.leading_operation_symbol().unwrap();
+            if arg_op_sym == leading_op_sym {
+                // Same operation, flatten it in
+                if let Some(grandchildren) = arg.get_children() {
+                    args.extend(grandchildren);
+                }
+            } else {
+                // Different operation, keep it as is
+                args.push(arg);
+            }
+        }
+    }
+    
+    Box::new(NonVariableTerm::new(leading_op_sym.clone(), args))
+}
+
+// =============================================================================
+// Private helper functions
+// =============================================================================
+
+/// Parse comma-separated arguments respecting parentheses.
+/// 
+/// Takes a string like "x,y,f(x,z),u" and returns ["x", "y", "f(x,z)", "u"].
+/// Commas inside parentheses are not treated as separators.
+fn get_argument_strings(str: &str) -> Vec<String> {
+    let mut ans = Vec::new();
+    let mut start = 0;
+    let mut depth = 0;
+    
+    for (i, ch) in str.char_indices() {
+        match ch {
+            '(' => depth += 1,
+            ')' => depth -= 1,
+            ',' if depth == 0 => {
+                ans.push(str[start..i].to_string());
+                start = i + 1;
+            }
+            _ => {}
+        }
+    }
+    
+    // Add the last argument
+    if start < str.len() {
+        ans.push(str[start..].to_string());
+    } else if str.is_empty() {
+        // Empty string means no arguments
+    } else {
+        ans.push(String::new());
+    }
+    
+    ans
+}
+
+/// Adjust parentheses in a string to balance them.
+/// 
+/// If there are more '(' than ')', add ')' at the end.
+/// If there are more ')' than '(', remove trailing ')'.
+fn adjust_parens(str: &str) -> String {
+    let mut depth = 0;
+    
+    for ch in str.chars() {
+        match ch {
+            '(' => depth += 1,
+            ')' => depth -= 1,
+            _ => {}
+        }
+    }
+    
+    if depth == 0 {
+        str.to_string()
+    } else if depth > 0 {
+        // Add closing parentheses
+        let mut result = str.to_string();
+        for _ in 0..depth {
+            result.push(')');
+        }
+        result
+    } else {
+        // Remove extra closing parentheses from the end
+        let chars: Vec<char> = str.chars().collect();
+        let new_len = (chars.len() as i32 + depth) as usize;
+        chars[..new_len].iter().collect()
+    }
 }
 
 #[cfg(test)]
