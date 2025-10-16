@@ -9,7 +9,7 @@ use crate::alg::SmallAlgebra;
 /// This trait defines the core interface for term manipulation, evaluation, and interpretation.
 /// 
 /// In Java: `org.uacalc.terms.Term` interface
-pub trait Term: Display + Debug {
+pub trait Term: Display + Debug + Send + Sync {
     
     /// Determines if this term is a variable.
     /// 

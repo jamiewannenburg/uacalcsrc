@@ -231,6 +231,14 @@ pub use operation::{Operation, CloneableOperation, BoxedOperation, boxed_operati
 // Abstract operation trait (Task 11)
 pub mod abstract_operation;
 
+// TermOperation trait (Task 25)
+pub mod term_operation;
+pub use term_operation::TermOperation;
+
+// TermOperationImp implementation (Task 33)
+pub mod term_operation_imp;
+pub use term_operation_imp::TermOperationImp;
+
 // Concrete operation implementations  
 pub mod basic_operation;
 pub mod abstract_int_operation;
@@ -253,6 +261,10 @@ mod operation_tests;
 // Simple tests module (no Java integration)
 #[cfg(test)]
 mod simple_operation_tests;
+
+// TermOperationImp tests module
+#[cfg(test)]
+mod term_operation_imp_tests;
 
 
 pub struct ParameterizedOperation {
@@ -497,10 +509,4 @@ impl Hash for SimilarityType {
     }
 }
 
-pub struct TermOperation {
-    // TODO: Implement term operation
-}
-
-pub struct TermOperationImp {
-    // TODO: Implement term operation implementation
-}
+// TermOperation and TermOperationImp are now implemented in their own modules
