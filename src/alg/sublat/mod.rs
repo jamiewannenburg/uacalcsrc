@@ -1,6 +1,6 @@
-pub struct BasicSet {
-    // TODO: Implement basic set
-}
+mod basic_set;
+
+pub use basic_set::BasicSet;
 
 pub struct SubalgebraLattice {
     // TODO: Implement subalgebra lattice

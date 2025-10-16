@@ -28,7 +28,7 @@ Translate the Java class `org.uacalc.alg.sublat.SubalgebraLattice` to Rust with 
 - `org.uacalc.ui.tm.ProgressReport` - Progress reporting (UI dependency - can be optional)
 
 **Missing Dependencies (should be added):**
-- `org.uacalc.alg.sublat.BasicSet` - Core data structure for subalgebras
+- `org.uacalc.alg.sublat.BasicSet` - **[COMPLETED - Task 47]** Core data structure for subalgebras
 - `org.uacalc.alg.sublat.Subalgebra` - Subalgebra wrapper class
 - `org.uacalc.util.PermutationGenerator` - Used for permutation generation
 - `org.uacalc.util.ArrayIncrementor` - Used for sequence generation

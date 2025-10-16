@@ -8,6 +8,8 @@ use uacalc::alg::conlat::BasicBinaryRelation;
 use uacalc::alg::conlat::subtrace::Subtrace;
 use uacalc::alg::op::{Operation, BasicOperation, AbstractIntOperation, IntOperation};
 
+pub mod sublat;
+
 /// Python wrapper for OperationSymbol
 #[pyclass]
 pub struct PyOperationSymbol {
@@ -3395,6 +3397,11 @@ impl PyOperations {
 }
 
 pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
+    // Register sublat submodule
+    let sublat_module = PyModule::new_bound(_py, "sublat")?;
+    sublat::register_sublat_module(_py, &sublat_module)?;
+    m.add_submodule(&sublat_module)?;
+    
     // Register classes internally but only export clean names
     m.add_class::<PyOperationSymbol>()?;
     m.add_class::<PySimilarityType>()?;
