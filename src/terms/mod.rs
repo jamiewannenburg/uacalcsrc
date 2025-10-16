@@ -1,6 +1,7 @@
 use std::collections::{HashMap, HashSet};
 use std::fmt::{Display, Debug};
-use crate::alg::op::OperationSymbol;
+use std::sync::Arc;
+use crate::alg::op::{OperationSymbol, Operation, TermOperation, TermOperationImp, operations};
 use crate::alg::SmallAlgebra;
 
 /// The Term trait represents algebraic terms in universal algebra.
@@ -78,12 +79,14 @@ pub trait Term: Display + Debug + Send + Sync {
     /// * `use_all` - If true, use all variables in varlist regardless of occurrence
     /// 
     /// # Returns
-    /// * `Ok(())` - Success
+    /// * `Ok(Box<dyn Operation>)` - The operation that interprets this term
     /// * `Err(String)` - Error message if interpretation fails
-    /// 
-    /// # Note
-    /// This is a placeholder that will be properly implemented when algebra interpretation is ready
-    fn interpretation(&self, varlist: &[String], use_all: bool) -> Result<(), String>;
+    fn interpretation(
+        &self,
+        alg: Arc<dyn SmallAlgebra<UniverseItem = i32>>,
+        varlist: &[String],
+        use_all: bool,
+    ) -> Result<Box<dyn Operation>, String>;
     
     /// Returns the interpretation using the variables in the order they occur.
     /// 
@@ -91,12 +94,12 @@ pub trait Term: Display + Debug + Send + Sync {
     /// * `alg` - The algebra for interpretation
     /// 
     /// # Returns
-    /// * `Ok(())` - Success
+    /// * `Ok(Box<dyn TermOperation>)` - The term operation that interprets this term
     /// * `Err(String)` - Error message if interpretation fails
-    /// 
-    /// # Note
-    /// This is a placeholder that will be properly implemented when algebra interpretation is ready
-    fn interpretation_simple(&self) -> Result<(), String>;
+    fn interpretation_simple(
+        &self,
+        alg: Arc<dyn SmallAlgebra<UniverseItem = i32>>,
+    ) -> Result<Box<dyn TermOperation>, String>;
     
     /// Returns the depth of the term tree.
     /// 
@@ -257,14 +260,44 @@ impl Term for VariableImp {
         self.eval(alg, map)
     }
     
-    fn interpretation(&self, _varlist: &[String], _use_all: bool) -> Result<(), String> {
-        // For now, return an error as we need TermOperation implementation
-        Err("Term interpretation not yet fully implemented".to_string())
+    fn interpretation(
+        &self,
+        alg: Arc<dyn SmallAlgebra<UniverseItem = i32>>,
+        varlist: &[String],
+        _use_all: bool,
+    ) -> Result<Box<dyn Operation>, String> {
+        // Find this variable's index in the varlist
+        let index = varlist.iter().position(|v| v == &self.name)
+            .ok_or_else(|| format!("Variable {} not found in varlist", self.name))?;
+        
+        // Create a projection operation that returns the i-th argument
+        let arity = varlist.len() as i32;
+        let alg_size = alg.cardinality();
+        let name = format!("Op_{}", self.name);
+        let symbol = OperationSymbol::new(&name, arity, false);
+        
+        // Build value table for projection operation
+        // For projection, the value at args is just args[index]
+        let table_size = (alg_size as usize).pow(arity as u32);
+        let mut table = Vec::with_capacity(table_size);
+        
+        use crate::util::horner;
+        for k in 0..table_size {
+            let args = horner::horner_inv_same_size(k as i32, alg_size, arity as usize);
+            table.push(args[index]);
+        }
+        
+        operations::make_int_operation(symbol, alg_size, table)
     }
     
-    fn interpretation_simple(&self) -> Result<(), String> {
-        // For now, return an error as we need TermOperation implementation
-        Err("Term interpretation not yet fully implemented".to_string())
+    fn interpretation_simple(
+        &self,
+        alg: Arc<dyn SmallAlgebra<UniverseItem = i32>>,
+    ) -> Result<Box<dyn TermOperation>, String> {
+        let varlist = self.get_variable_list();
+        let term: Box<dyn Term> = Box::new(self.clone());
+        let interpretation = self.interpretation(alg.clone(), &varlist, true)?;
+        Ok(Box::new(TermOperationImp::new(term, varlist, alg, interpretation)))
     }
     
     fn depth(&self) -> i32 {
@@ -417,12 +450,72 @@ impl Term for NonVariableTerm {
         self.eval(alg, map)
     }
     
-    fn interpretation(&self, _varlist: &[String], _use_all: bool) -> Result<(), String> {
-        Err("NonVariableTerm interpretation not yet fully implemented".to_string())
+    fn interpretation(
+        &self,
+        alg: Arc<dyn SmallAlgebra<UniverseItem = i32>>,
+        varlist: &[String],
+        use_all: bool,
+    ) -> Result<Box<dyn Operation>, String> {
+        // Get the term's variable list
+        let term_var_list = self.get_variable_list();
+        
+        // Validate that varlist contains all variables in the term
+        for var in &term_var_list {
+            if !varlist.contains(var) {
+                return Err(format!("varlist must have all the variables of the term; missing: {}", var));
+            }
+        }
+        
+        // Determine the arity based on use_all flag
+        let arity = if use_all {
+            varlist.len()
+        } else {
+            term_var_list.len()
+        } as i32;
+        
+        // Build the actual variable list to use
+        let ans_var_list: Vec<String> = if use_all {
+            varlist.to_vec()
+        } else {
+            varlist.iter()
+                .filter(|v| term_var_list.contains(v))
+                .cloned()
+                .collect()
+        };
+        
+        let alg_size = alg.cardinality();
+        let symbol = OperationSymbol::new(&format!("{}", self), arity, false);
+        
+        // Build value table by evaluating the term for all possible argument combinations
+        let table_size = (alg_size as usize).pow(arity as u32);
+        let mut table = Vec::with_capacity(table_size);
+        
+        use crate::util::horner;
+        for k in 0..table_size {
+            let args = horner::horner_inv_same_size(k as i32, alg_size, arity as usize);
+            
+            // Build variable assignment map
+            let mut var_map = HashMap::new();
+            for (i, var) in ans_var_list.iter().enumerate() {
+                var_map.insert(var.clone(), args[i]);
+            }
+            
+            // Evaluate the term with this assignment
+            let value = self.eval(&*alg, &var_map)?;
+            table.push(value);
+        }
+        
+        operations::make_int_operation(symbol, alg_size, table)
     }
     
-    fn interpretation_simple(&self) -> Result<(), String> {
-        Err("NonVariableTerm interpretation_simple not yet fully implemented".to_string())
+    fn interpretation_simple(
+        &self,
+        _alg: Arc<dyn SmallAlgebra<UniverseItem = i32>>,
+    ) -> Result<Box<dyn TermOperation>, String> {
+        let _varlist = self.get_variable_list();
+        // We can't easily create a Box<dyn Term> from &self since NonVariableTerm doesn't implement Clone
+        // For now, return an error
+        Err("NonVariableTerm interpretation_simple requires term cloning".to_string())
     }
     
     fn depth(&self) -> i32 {
@@ -447,7 +540,7 @@ impl Term for NonVariableTerm {
         lst
     }
     
-    fn substitute(&self, map: &HashMap<String, Box<dyn Term>>) -> Result<Box<dyn Term>, String> {
+    fn substitute(&self, _map: &HashMap<String, Box<dyn Term>>) -> Result<Box<dyn Term>, String> {
         Err("NonVariableTerm substitute not yet fully implemented".to_string())
     }
     

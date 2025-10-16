@@ -1,4 +1,5 @@
 use std::fmt::{Display, Debug};
+use std::sync::Arc;
 use crate::alg::op::{Operation, OperationSymbol, TermOperation, AbstractOperation};
 use crate::alg::SmallAlgebra;
 use crate::terms::Term;
@@ -31,7 +32,7 @@ pub struct TermOperationImp {
     variables: Vec<String>,
     
     /// The algebra in which this term is interpreted
-    alg: Box<dyn SmallAlgebra<UniverseItem = i32>>,
+    alg: Arc<dyn SmallAlgebra<UniverseItem = i32>>,
     
     /// The interpretation of the term as an operation
     interpretation: Box<dyn Operation>,
@@ -62,12 +63,12 @@ impl TermOperationImp {
     /// ```ignore
     /// let term = VariableImp::new("x");
     /// let variables = vec!["x".to_string()];
-    /// let term_op = TermOperationImp::new(Box::new(term), variables, alg, interpretation);
+    /// let term_op = TermOperationImp::new(Box::new(term), variables, Arc::new(alg), interpretation);
     /// ```
     pub fn new(
         term: Box<dyn Term>,
         variables: Vec<String>,
-        alg: Box<dyn SmallAlgebra<UniverseItem = i32>>,
+        alg: Arc<dyn SmallAlgebra<UniverseItem = i32>>,
         interpretation: Box<dyn Operation>,
     ) -> Self {
         let name = format!("\"{}\"", term);
@@ -95,7 +96,7 @@ impl TermOperationImp {
     ///     "my_op".to_string(),
     ///     Box::new(term),
     ///     variables,
-    ///     alg,
+    ///     Arc::new(alg),
     ///     interpretation
     /// );
     /// ```
@@ -103,7 +104,7 @@ impl TermOperationImp {
         name: String,
         term: Box<dyn Term>,
         variables: Vec<String>,
-        alg: Box<dyn SmallAlgebra<UniverseItem = i32>>,
+        alg: Arc<dyn SmallAlgebra<UniverseItem = i32>>,
         interpretation: Box<dyn Operation>,
     ) -> Self {
         let arity = variables.len() as i32;
@@ -134,7 +135,7 @@ impl TermOperationImp {
     pub fn new_safe(
         term: Box<dyn Term>,
         variables: Vec<String>,
-        alg: Box<dyn SmallAlgebra<UniverseItem = i32>>,
+        alg: Arc<dyn SmallAlgebra<UniverseItem = i32>>,
         interpretation: Box<dyn Operation>,
     ) -> Result<Self, String> {
         let name = format!("\"{}\"", term);
@@ -157,7 +158,7 @@ impl TermOperationImp {
         name: String,
         term: Box<dyn Term>,
         variables: Vec<String>,
-        alg: Box<dyn SmallAlgebra<UniverseItem = i32>>,
+        alg: Arc<dyn SmallAlgebra<UniverseItem = i32>>,
         interpretation: Box<dyn Operation>,
     ) -> Result<Self, String> {
         // Validate that the interpretation has the correct arity
