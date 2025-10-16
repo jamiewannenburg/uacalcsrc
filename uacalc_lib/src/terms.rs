@@ -74,34 +74,31 @@ impl PyVariableImp {
         self.inner.get_variable_list()
     }
     
-    // TODO: Add eval and int_eval methods once algebra Python bindings are ready
-    // These methods require passing an algebra object from Python
-    // For now, they are commented out to avoid compilation errors
+    /// Evaluate this variable using the given variable assignment
+    /// 
+    /// # Arguments
+    /// * `algebra` - The algebra in which to evaluate (a BasicSmallAlgebra from Python)
+    /// * `var_map` - A dictionary mapping variable names to integer values
+    /// 
+    /// # Returns
+    /// The value assigned to this variable
+    fn eval(&self, algebra: &crate::alg::PyBasicSmallAlgebra, var_map: HashMap<String, i32>) -> PyResult<i32> {
+        self.inner.eval(&algebra.inner, &var_map)
+            .map_err(|e| PyValueError::new_err(e))
+    }
     
-    // /// Evaluate this variable using the given variable assignment
-    // /// 
-    // /// # Arguments
-    // /// * `alg` - The algebra in which to evaluate
-    // /// * `map` - A dictionary mapping variable names to integer values
-    // /// 
-    // /// # Returns
-    // /// The value assigned to this variable
-    // fn eval(&self, alg: &PyAny, map: HashMap<String, i32>) -> PyResult<i32> {
-    //     // Would need to convert PyAny to &dyn SmallAlgebra<UniverseItem=i32>
-    //     Err(PyValueError::new_err("eval not yet implemented in Python bindings"))
-    // }
-    
-    // /// Evaluate this variable as an integer
-    // /// 
-    // /// # Arguments
-    // /// * `alg` - The algebra in which to evaluate
-    // /// * `map` - A dictionary mapping variable names to integer values
-    // /// 
-    // /// # Returns
-    // /// The integer value assigned to this variable
-    // fn int_eval(&self, alg: &PyAny, map: HashMap<String, i32>) -> PyResult<i32> {
-    //     Err(PyValueError::new_err("int_eval not yet implemented in Python bindings"))
-    // }
+    /// Evaluate this variable as an integer
+    /// 
+    /// # Arguments
+    /// * `algebra` - The algebra in which to evaluate
+    /// * `var_map` - A dictionary mapping variable names to integer values
+    /// 
+    /// # Returns
+    /// The integer value assigned to this variable
+    fn int_eval(&self, algebra: &crate::alg::PyBasicSmallAlgebra, var_map: HashMap<String, i32>) -> PyResult<i32> {
+        self.inner.int_eval(&algebra.inner, &var_map)
+            .map_err(|e| PyValueError::new_err(e))
+    }
     
     /// Python string representation
     fn __str__(&self) -> String {

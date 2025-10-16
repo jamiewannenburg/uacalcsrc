@@ -3860,7 +3860,7 @@ impl PyGeneralAlgebra {
 /// Python wrapper for BasicSmallAlgebra (for integer universes)
 #[pyclass]
 pub struct PyBasicSmallAlgebra {
-    inner: uacalc::alg::BasicSmallAlgebra<i32>,
+    pub(crate) inner: uacalc::alg::BasicSmallAlgebra<i32>,
 }
 
 impl PyBasicSmallAlgebra {
