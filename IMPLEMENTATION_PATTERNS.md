@@ -153,6 +153,74 @@ impl [ClassName] {
 - **Location**: `uacalc_lib/src/[module].rs`
 - **Class**: `Py[ClassName]` (internal), `[ClassName]` (exported)
 
+### Loading Algebras in Python Tests
+
+When testing operations that require algebras, use the `AlgebraReader` to load algebra files:
+
+```python
+import os
+import uacalc_lib
+
+def load_algebra(algebra_path: str):
+    """Load an algebra from a .ua file."""
+    if not os.path.exists(algebra_path):
+        raise FileNotFoundError(f"Algebra file {algebra_path} not found")
+    
+    AlgebraReader = uacalc_lib.io.AlgebraReader
+    reader = AlgebraReader.new_from_file(algebra_path)
+    return reader.read_algebra_file()
+
+# Example usage in tests
+def test_with_algebra(self):
+    # Load algebra
+    alg = load_algebra("resources/algebras/cyclic3.ua")
+    
+    # Use algebra for testing
+    VariableImp = uacalc_lib.terms.VariableImp
+    x = VariableImp("x")
+    
+    result = x.eval(alg, {"x": 0})
+    self.assertEqual(result, 0)
+```
+
+#### Common Test Algebras
+
+Available test algebras in `resources/algebras/`:
+- `cyclic2.ua` - 2-element cyclic group
+- `cyclic3.ua` - 3-element cyclic group
+- `n5.ua` - 5-element lattice (pentagon)
+- `m3.ua` - 3-element lattice (diamond)
+
+#### Pattern for Skipping Missing Algebras
+
+```python
+def test_with_optional_algebra(self):
+    algebra_path = "resources/algebras/cyclic3.ua"
+    if not os.path.exists(algebra_path):
+        self.skipTest(f"Algebra file {algebra_path} not found")
+    
+    # Test code here
+```
+
+#### Pattern for Testing Multiple Algebras
+
+```python
+def test_with_multiple_algebras(self):
+    algebra_files = [
+        "resources/algebras/cyclic2.ua",
+        "resources/algebras/cyclic3.ua",
+        "resources/algebras/n5.ua",
+    ]
+    
+    for algebra_path in algebra_files:
+        if not os.path.exists(algebra_path):
+            continue
+        
+        # Load and test with each algebra
+        alg = load_algebra(algebra_path)
+        # ... test operations
+```
+
 ### Template Structure
 ```rust
 use pyo3::prelude::*;
@@ -277,6 +345,31 @@ def test_[method_name](self):
     assert instance.method() == java_result["data"]["status"]  # Use 'status' not 'result'
 ```
 
+### Python Tests with Algebras
+```python
+import os
+import uacalc_lib
+
+def test_operation_with_algebra(self):
+    """Test operation evaluation with loaded algebra."""
+    # Load algebra
+    algebra_path = "resources/algebras/cyclic3.ua"
+    if not os.path.exists(algebra_path):
+        self.skipTest(f"Algebra file {algebra_path} not found")
+    
+    AlgebraReader = uacalc_lib.io.AlgebraReader
+    reader = AlgebraReader.new_from_file(algebra_path)
+    alg = reader.read_algebra_file()
+    
+    # Create and test operation
+    VariableImp = uacalc_lib.terms.VariableImp
+    x = VariableImp("x")
+    
+    # Test evaluation
+    result = x.eval(alg, {"x": 1})
+    self.assertEqual(result, 1)
+```
+
 ### Key Points
 - Use `compare_with_java!` macro for Rust tests
 - Use `run_java_wrapper()` function for Python tests
@@ -284,7 +377,204 @@ def test_[method_name](self):
 - Test all public methods
 - Test edge cases and validation
 
-## 5. Compilation and Build Pattern
+## 5. Test Utilities and Algebra Loading
+
+### Using Test Utilities
+
+The project includes comprehensive test utilities in `python/uacalc/tests/test_utils.py`:
+
+```python
+from python.uacalc.tests.test_utils import (
+    TestConfig,
+    TestHarness,
+    MemoryMonitor,
+    TestDataGenerator,
+    timeout,
+    memory_limit,
+)
+
+# Use in tests
+@timeout(30.0)
+@memory_limit(1024)
+def test_with_monitoring(self):
+    config = TestConfig(default_timeout=30.0, memory_limit_mb=1024)
+    with TestHarness(config) as harness:
+        # Run tests with monitoring
+        pass
+```
+
+### Reusable Algebra Loading Helper
+
+Create a helper function in test files or conftest.py:
+
+```python
+import os
+import uacalc_lib
+from typing import Optional
+
+def load_test_algebra(name: str, skip_if_missing: bool = True):
+    """
+    Load a test algebra from resources/algebras/
+    
+    Args:
+        name: Algebra filename (with or without .ua extension)
+        skip_if_missing: If True, skip test when algebra not found
+        
+    Returns:
+        Loaded algebra object
+        
+    Raises:
+        FileNotFoundError: If algebra not found and skip_if_missing=False
+        unittest.SkipTest: If algebra not found and skip_if_missing=True
+    """
+    if not name.endswith('.ua'):
+        name = f"{name}.ua"
+    
+    algebra_path = f"resources/algebras/{name}"
+    
+    if not os.path.exists(algebra_path):
+        if skip_if_missing:
+            import unittest
+            raise unittest.SkipTest(f"Algebra file {algebra_path} not found")
+        else:
+            raise FileNotFoundError(f"Algebra file {algebra_path} not found")
+    
+    AlgebraReader = uacalc_lib.io.AlgebraReader
+    reader = AlgebraReader.new_from_file(algebra_path)
+    return reader.read_algebra_file()
+
+# Usage in tests
+def test_operation_with_cyclic3(self):
+    alg = load_test_algebra("cyclic3")
+    # Use algebra for testing
+```
+
+### Testing Pattern with Multiple Algebras
+
+```python
+import pytest
+from typing import List
+
+# Parameterized test for multiple algebras
+@pytest.mark.parametrize("algebra_name", [
+    "cyclic2",
+    "cyclic3", 
+    "n5",
+    "m3",
+])
+def test_operation_with_various_algebras(algebra_name: str):
+    """Test operation with different algebra types."""
+    try:
+        alg = load_test_algebra(algebra_name, skip_if_missing=False)
+    except FileNotFoundError:
+        pytest.skip(f"Algebra {algebra_name} not found")
+    
+    # Test with loaded algebra
+    VariableImp = uacalc_lib.terms.VariableImp
+    x = VariableImp("x")
+    
+    # Evaluate for each element in algebra
+    for i in range(alg.cardinality()):
+        result = x.eval(alg, {"x": i})
+        assert result == i
+```
+
+### Creating conftest.py for Shared Fixtures
+
+Create `python/uacalc/tests/conftest.py` for shared test fixtures:
+
+```python
+import pytest
+import os
+import uacalc_lib
+
+@pytest.fixture
+def cyclic2_algebra():
+    """Fixture providing cyclic2 algebra."""
+    if not os.path.exists("resources/algebras/cyclic2.ua"):
+        pytest.skip("cyclic2.ua not found")
+    
+    AlgebraReader = uacalc_lib.io.AlgebraReader
+    reader = AlgebraReader.new_from_file("resources/algebras/cyclic2.ua")
+    return reader.read_algebra_file()
+
+@pytest.fixture
+def cyclic3_algebra():
+    """Fixture providing cyclic3 algebra."""
+    if not os.path.exists("resources/algebras/cyclic3.ua"):
+        pytest.skip("cyclic3.ua not found")
+    
+    AlgebraReader = uacalc_lib.io.AlgebraReader
+    reader = AlgebraReader.new_from_file("resources/algebras/cyclic3.ua")
+    return reader.read_algebra_file()
+
+@pytest.fixture(params=["cyclic2", "cyclic3", "n5"])
+def test_algebra(request):
+    """Parameterized fixture for multiple algebras."""
+    algebra_name = request.param
+    algebra_path = f"resources/algebras/{algebra_name}.ua"
+    
+    if not os.path.exists(algebra_path):
+        pytest.skip(f"{algebra_name}.ua not found")
+    
+    AlgebraReader = uacalc_lib.io.AlgebraReader
+    reader = AlgebraReader.new_from_file(algebra_path)
+    return reader.read_algebra_file()
+
+# Use in tests:
+# def test_with_fixture(cyclic3_algebra):
+#     alg = cyclic3_algebra
+#     # Use algebra
+```
+
+### Complete Test Example with Algebras
+
+```python
+import unittest
+import os
+import uacalc_lib
+
+class TestTermOperations(unittest.TestCase):
+    """Test term operations with loaded algebras."""
+    
+    @classmethod
+    def setUpClass(cls):
+        """Load algebras once for all tests."""
+        cls.algebras = {}
+        
+        for name in ["cyclic2", "cyclic3", "n5"]:
+            path = f"resources/algebras/{name}.ua"
+            if os.path.exists(path):
+                AlgebraReader = uacalc_lib.io.AlgebraReader
+                reader = AlgebraReader.new_from_file(path)
+                cls.algebras[name] = reader.read_algebra_file()
+    
+    def test_variable_eval_cyclic3(self):
+        """Test variable evaluation with cyclic3."""
+        if "cyclic3" not in self.algebras:
+            self.skipTest("cyclic3 algebra not loaded")
+        
+        alg = self.algebras["cyclic3"]
+        VariableImp = uacalc_lib.terms.VariableImp
+        x = VariableImp("x")
+        
+        # Test each element
+        for i in range(3):
+            result = x.eval(alg, {"x": i})
+            self.assertEqual(result, i)
+    
+    def test_all_algebras(self):
+        """Test with all available algebras."""
+        VariableImp = uacalc_lib.terms.VariableImp
+        x = VariableImp("x")
+        
+        for name, alg in self.algebras.items():
+            with self.subTest(algebra=name):
+                result = x.eval(alg, {"x": 0})
+                self.assertEqual(result, 0)
+```
+
+## 6. Compilation and Build Pattern
 
 ### Build Commands
 ```bash
@@ -344,7 +634,7 @@ The `WrapperBase.java` file must be updated to properly serialize Java `List` ob
     // ... existing Map handling code
 ```
 
-## 6. Documentation Pattern
+## 7. Documentation Pattern
 
 ### Rust Documentation
 ```rust
@@ -378,7 +668,7 @@ The `WrapperBase.java` file must be updated to properly serialize Java `List` ob
 - Document error conditions
 - Use `# Arguments`, `# Returns`, `# Panics` sections
 
-## 7. Python Binding Naming Convention
+## 8. Python Binding Naming Convention
 
 ### Clean Export Names Only
 - **Internal Rust Names**: Use `Py[ClassName]` for the actual PyO3 struct names
@@ -413,7 +703,7 @@ sl = SimpleList()
 # from uacalc_lib.util import PySimpleList  # This will fail
 ```
 
-## 8. Common Pitfalls to Avoid
+## 9. Common Pitfalls to Avoid
 
 1. **Don't use panics in Python bindings** - Always use proper error handling
 2. **Don't skip validation** - Always validate inputs in both Rust and Python
@@ -433,14 +723,14 @@ sl = SimpleList()
 16. **Don't assume Java wrapper data is already parsed** - Parse the `data` field twice in Python tests
 17. **Don't make Rust struct fields private if accessed by Python** - Make them public for Python bindings
 
-## 9. File Naming Conventions
+## 10. File Naming Conventions
 
 - **Java Wrapper**: `[ClassName]Wrapper.java`
 - **Rust Implementation**: `[class_name].rs` or in `mod.rs`
 - **Python Tests**: `test_[class_name].py`
 - **Rust Tests**: `[class_name]_tests.rs`
 
-## 10. Module Registration
+## 11. Module Registration
 
 ### In `uacalc_lib/src/lib.rs`
 ```rust
@@ -459,7 +749,7 @@ pub fn register_[module]_module(_py: Python, m: &PyModule) -> PyResult<()> {
 }
 ```
 
-## 11. Critical Implementation Issues and Solutions
+## 12. Critical Implementation Issues and Solutions
 
 ### Issue 1: Doctest Compilation Failures
 
@@ -740,7 +1030,7 @@ pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
 3. Consider prefixing unused `py` parameters with underscore (`_py`) to avoid warnings
 4. Test compilation with `maturin develop` to verify the fix
 
-## 12. Verification Checklist
+## 13. Verification Checklist
 
 Before marking a translation as complete, verify:
 
