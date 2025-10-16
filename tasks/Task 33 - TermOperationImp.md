@@ -49,7 +49,11 @@ This class depends on:
 - `org.uacalc.alg.SmallAlgebra` (Task 71 - BasicAlgebra)
 - `org.uacalc.terms.*` (Term, Variable, etc.)
 - `org.uacalc.alg.op.AbstractOperation` (Task 11)
+<<<<<<< Current (Your changes)
 - `org.uacalc.alg.op.TermOperation` (Task 25)
+=======
+- `org.uacalc.alg.op.TermOperation` (Task 25) - ✅ **COMPLETED**
+>>>>>>> Incoming (Background Agent changes)
 - `org.uacalc.alg.op.Operation` (Task 12)
 
 ### Rust Implementation Strategy
