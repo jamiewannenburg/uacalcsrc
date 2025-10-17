@@ -25,7 +25,7 @@ use crate::eq::Equation;
 /// use uacalc::alg::op::OperationSymbol;
 /// use uacalc::eq::equations::associative_law;
 /// 
-/// let f = OperationSymbol::new("multiply", 2);
+/// let f = OperationSymbol::new("multiply", 2, false);
 /// let equation = associative_law(&f).unwrap();
 /// ```
 pub fn associative_law(f: &OperationSymbol) -> Result<Equation, String> {
@@ -71,7 +71,7 @@ pub fn associative_law(f: &OperationSymbol) -> Result<Equation, String> {
 /// use uacalc::alg::op::OperationSymbol;
 /// use uacalc::eq::equations::cyclic_law;
 /// 
-/// let f = OperationSymbol::new("ternary_op", 3);
+/// let f = OperationSymbol::new("ternary_op", 3, false);
 /// let equation = cyclic_law(&f).unwrap();
 /// ```
 pub fn cyclic_law(f: &OperationSymbol) -> Result<Equation, String> {
@@ -116,7 +116,7 @@ pub fn cyclic_law(f: &OperationSymbol) -> Result<Equation, String> {
 /// use uacalc::alg::op::OperationSymbol;
 /// use uacalc::eq::equations::first_second_symmetric_law;
 /// 
-/// let f = OperationSymbol::new("binary_op", 2);
+/// let f = OperationSymbol::new("binary_op", 2, false);
 /// let equation = first_second_symmetric_law(&f).unwrap();
 /// ```
 pub fn first_second_symmetric_law(f: &OperationSymbol) -> Result<Equation, String> {

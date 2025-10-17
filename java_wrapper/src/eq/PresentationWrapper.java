@@ -1,223 +1,233 @@
-package eq;
+/* PresentationWrapper.java - CLI wrapper for org.uacalc.eq.Presentation
+ * 
+ * This wrapper exposes all public methods of the Presentation class through
+ * a command-line interface for testing and validation against Rust/Python implementations.
+ */
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Arrays;
+package java_wrapper.src.eq;
+
+import java.util.*;
+import org.uacalc.eq.Presentation;
+import org.uacalc.terms.*;
+import org.uacalc.eq.Equation;
+import java_wrapper.src.WrapperBase;
 
 /**
- * Java CLI wrapper for Presentation class.
- * 
- * This wrapper provides command-line access to the Presentation functionality
- * through the Rust implementation via JNI.
+ * CLI wrapper for the Presentation class that provides command-line access
+ * to all public methods for testing and validation purposes.
  */
-public class PresentationWrapper {
+public class PresentationWrapper extends WrapperBase {
     
-    private static final ObjectMapper mapper = new ObjectMapper();
-    
-    // Load the native library
-    static {
+    /**
+     * Main entry point for the Presentation CLI wrapper.
+     */
+    public static void main(String[] args) {
+        PresentationWrapper wrapper = new PresentationWrapper();
         try {
-            System.loadLibrary("uacalc_java_wrapper");
-        } catch (UnsatisfiedLinkError e) {
-            System.err.println("Failed to load native library: " + e.getMessage());
-            System.exit(1);
+            wrapper.run(args);
+        } catch (Exception e) {
+            wrapper.handleError("Presentation wrapper failed", e);
         }
     }
     
-    // Native method declarations
-    private static native long createPresentation(String[] variables, long[] equationPtrs);
-    private static native String[] getVariables(long ptr);
-    private static native String[] getRelations(long ptr);
-    private static native void freePresentation(long ptr);
-    
     /**
-     * Main method for CLI interface.
+     * Run the Presentation CLI wrapper with the given arguments.
      */
-    public static void main(String[] args) {
+    @Override
+    public void run(String[] args) throws Exception {
         if (args.length == 0) {
-            printUsage();
+            showUsage();
             return;
         }
         
-        String command = args[0];
+        Map<String, String> options = parseArgs(args);
+        String command = options.get("arg0");
         
-        try {
-            switch (command) {
-                case "create":
-                    handleCreate(args);
-                    break;
-                case "get_variables":
-                    handleGetVariables(args);
-                    break;
-                case "get_relations":
-                    handleGetRelations(args);
-                    break;
-                case "test":
-                    handleTest();
-                    break;
-                default:
-                    System.err.println("Unknown command: " + command);
-                    printUsage();
-                    System.exit(1);
-            }
-        } catch (Exception e) {
-            System.err.println("Error: " + e.getMessage());
-            e.printStackTrace();
-            System.exit(1);
+        if (command == null) {
+            showUsage();
+            return;
+        }
+        
+        switch (command) {
+            case "help":
+                showUsage();
+                break;
+                
+            case "create":
+                handleCreate(options);
+                break;
+                
+            case "get_variables":
+                handleGetVariables(options);
+                break;
+                
+            case "get_relations":
+                handleGetRelations(options);
+                break;
+                
+            case "test":
+                handleTest();
+                break;
+                
+            default:
+                handleError("Unknown command: " + command, null);
         }
     }
     
     /**
      * Handle the create command.
-     * Usage: create <var1,var2,...> <eq1,eq2,...>
+     * Usage: create --variables "var1,var2,..." --relations "eq1,eq2,..."
      */
-    private static void handleCreate(String[] args) {
-        if (args.length < 3) {
-            System.err.println("Usage: create <var1,var2,...> <eq1,eq2,...>");
-            System.exit(1);
+    private void handleCreate(Map<String, String> options) throws Exception {
+        String variablesStr = getRequiredArg(options, "variables");
+        String relationsStr = getOptionalArg(options, "relations", "");
+        
+        // Parse variables
+        String[] variableNames = variablesStr.split(",");
+        List<Variable> variables = new ArrayList<>();
+        for (String name : variableNames) {
+            variables.add(new VariableImp(name.trim()));
         }
         
-        String[] variables = args[1].split(",");
-        String[] relations = args[2].split(",");
+        // Parse relations (for now, create empty list since we don't have equation parsing)
+        List<Equation> relations = new ArrayList<>();
+        if (!relationsStr.isEmpty()) {
+            // In a real implementation, we would parse the relations string
+            // For now, we'll create empty relations
+        }
         
-        // For now, create empty equation pointers (in real implementation, these would be created)
-        long[] equationPtrs = new long[relations.length];
+        // Create presentation
+        Presentation presentation = new Presentation(variables, relations);
         
-        long ptr = createPresentation(variables, equationPtrs);
+        // Store the presentation for later use (in a real implementation, you'd use a proper storage mechanism)
+        // For now, we'll just return the variable and relation counts
         
-        ObjectNode result = mapper.createObjectNode();
-        result.put("success", true);
-        result.put("presentation_ptr", ptr);
-        result.put("variables_count", variables.length);
-        result.put("relations_count", relations.length);
-        
-        System.out.println(result.toString());
+        Map<String, Object> result = new HashMap<>();
+        result.put("command", "create");
+        result.put("variables_count", variables.size());
+        result.put("relations_count", relations.size());
+        result.put("variables", variables.stream().map(Variable::getName).toArray(String[]::new));
+        handleSuccess(result);
     }
     
     /**
      * Handle the get_variables command.
-     * Usage: get_variables <presentation_ptr>
+     * Usage: get_variables --variables "var1,var2,..."
      */
-    private static void handleGetVariables(String[] args) {
-        if (args.length < 2) {
-            System.err.println("Usage: get_variables <presentation_ptr>");
-            System.exit(1);
+    private void handleGetVariables(Map<String, String> options) throws Exception {
+        String variablesStr = getRequiredArg(options, "variables");
+        
+        // Parse variables
+        String[] variableNames = variablesStr.split(",");
+        List<Variable> variables = new ArrayList<>();
+        for (String name : variableNames) {
+            variables.add(new VariableImp(name.trim()));
         }
         
-        long ptr = Long.parseLong(args[1]);
-        String[] variables = getVariables(ptr);
+        // Create a temporary presentation to test getVariables
+        Presentation presentation = new Presentation(variables, new ArrayList<>());
+        List<Variable> retrievedVariables = presentation.getVariables();
         
-        ObjectNode result = mapper.createObjectNode();
-        result.put("success", true);
-        ArrayNode varsArray = result.putArray("variables");
-        for (String var : variables) {
-            varsArray.add(var);
-        }
+        String[] variableNamesArray = retrievedVariables.stream()
+            .map(Variable::getName)
+            .toArray(String[]::new);
         
-        System.out.println(result.toString());
+        Map<String, Object> result = new HashMap<>();
+        result.put("command", "get_variables");
+        result.put("variables", variableNamesArray);
+        result.put("count", retrievedVariables.size());
+        handleSuccess(result);
     }
     
     /**
      * Handle the get_relations command.
-     * Usage: get_relations <presentation_ptr>
+     * Usage: get_relations --variables "var1,var2,..." --relations "eq1,eq2,..."
      */
-    private static void handleGetRelations(String[] args) {
-        if (args.length < 2) {
-            System.err.println("Usage: get_relations <presentation_ptr>");
-            System.exit(1);
+    private void handleGetRelations(Map<String, String> options) throws Exception {
+        String variablesStr = getRequiredArg(options, "variables");
+        String relationsStr = getOptionalArg(options, "relations", "");
+        
+        // Parse variables
+        String[] variableNames = variablesStr.split(",");
+        List<Variable> variables = new ArrayList<>();
+        for (String name : variableNames) {
+            variables.add(new VariableImp(name.trim()));
         }
         
-        long ptr = Long.parseLong(args[1]);
-        String[] relations = getRelations(ptr);
-        
-        ObjectNode result = mapper.createObjectNode();
-        result.put("success", true);
-        ArrayNode relsArray = result.putArray("relations");
-        for (String rel : relations) {
-            relsArray.add(rel);
+        // Parse relations (for now, create empty list)
+        List<Equation> relations = new ArrayList<>();
+        if (!relationsStr.isEmpty()) {
+            // In a real implementation, we would parse the relations string
         }
         
-        System.out.println(result.toString());
+        // Create a temporary presentation to test getRelations
+        Presentation presentation = new Presentation(variables, relations);
+        List<Equation> retrievedRelations = presentation.getRelations();
+        
+        String[] relationStrings = retrievedRelations.stream()
+            .map(Equation::toString)
+            .toArray(String[]::new);
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("command", "get_relations");
+        result.put("relations", relationStrings);
+        result.put("count", retrievedRelations.size());
+        handleSuccess(result);
     }
     
     /**
      * Handle the test command - run comprehensive tests.
      */
-    private static void handleTest() {
-        ObjectNode result = mapper.createObjectNode();
-        result.put("success", true);
-        result.put("test_name", "PresentationWrapper");
+    private void handleTest() throws Exception {
+        // Test 1: Create presentation with variables
+        List<Variable> variables = Arrays.asList(
+            new VariableImp("x"),
+            new VariableImp("y"),
+            new VariableImp("z")
+        );
+        List<Equation> relations = new ArrayList<>();
         
-        ArrayNode tests = result.putArray("tests");
+        Presentation presentation = new Presentation(variables, relations);
         
-        try {
-            // Test 1: Create presentation with variables
-            String[] variables = {"x", "y", "z"};
-            long[] equationPtrs = {};
-            long ptr = createPresentation(variables, equationPtrs);
-            
-            ObjectNode test1 = mapper.createObjectNode();
-            test1.put("name", "create_presentation");
-            test1.put("passed", true);
-            test1.put("variables_count", variables.length);
-            tests.add(test1);
-            
-            // Test 2: Get variables
-            String[] retrievedVars = getVariables(ptr);
-            ObjectNode test2 = mapper.createObjectNode();
-            test2.put("name", "get_variables");
-            test2.put("passed", Arrays.equals(variables, retrievedVars));
-            test2.put("expected_count", variables.length);
-            test2.put("actual_count", retrievedVars.length);
-            tests.add(test2);
-            
-            // Test 3: Get relations (should be empty)
-            String[] retrievedRels = getRelations(ptr);
-            ObjectNode test3 = mapper.createObjectNode();
-            test3.put("name", "get_relations");
-            test3.put("passed", retrievedRels.length == 0);
-            test3.put("relations_count", retrievedRels.length);
-            tests.add(test3);
-            
-            // Clean up
-            freePresentation(ptr);
-            
-            ObjectNode test4 = mapper.createObjectNode();
-            test4.put("name", "cleanup");
-            test4.put("passed", true);
-            tests.add(test4);
-            
-        } catch (Exception e) {
-            ObjectNode errorTest = mapper.createObjectNode();
-            errorTest.put("name", "error_handling");
-            errorTest.put("passed", false);
-            errorTest.put("error", e.getMessage());
-            tests.add(errorTest);
-        }
+        // Test 2: Get variables
+        List<Variable> retrievedVars = presentation.getVariables();
+        boolean variablesTest = retrievedVars.size() == 3 && 
+            retrievedVars.get(0).getName().equals("x") &&
+            retrievedVars.get(1).getName().equals("y") &&
+            retrievedVars.get(2).getName().equals("z");
         
-        System.out.println(result.toString());
+        // Test 3: Get relations (should be empty)
+        List<Equation> retrievedRels = presentation.getRelations();
+        boolean relationsTest = retrievedRels.isEmpty();
+        
+        // Test 4: String representation
+        String strRepr = presentation.toString();
+        boolean strTest = strRepr.contains("Presentation") && strRepr.contains("x") && strRepr.contains("y") && strRepr.contains("z");
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("command", "test");
+        result.put("create_presentation", true);
+        result.put("get_variables", variablesTest);
+        result.put("get_relations", relationsTest);
+        result.put("string_representation", strTest);
+        result.put("variables_count", retrievedVars.size());
+        result.put("relations_count", retrievedRels.size());
+        handleSuccess(result);
     }
     
     /**
-     * Print usage information.
+     * Show usage information for the Presentation wrapper.
      */
-    private static void printUsage() {
-        System.out.println("PresentationWrapper - Java CLI wrapper for Presentation");
-        System.out.println();
-        System.out.println("Usage: java eq.PresentationWrapper <command> [args...]");
-        System.out.println();
-        System.out.println("Commands:");
-        System.out.println("  create <var1,var2,...> <eq1,eq2,...>  - Create a new presentation");
-        System.out.println("  get_variables <ptr>                   - Get variables from presentation");
-        System.out.println("  get_relations <ptr>                   - Get relations from presentation");
-        System.out.println("  test                                  - Run comprehensive tests");
-        System.out.println();
-        System.out.println("Examples:");
-        System.out.println("  java eq.PresentationWrapper create x,y,z \"x=y,y=z\"");
-        System.out.println("  java eq.PresentationWrapper get_variables 12345");
-        System.out.println("  java eq.PresentationWrapper test");
+    private void showUsage() {
+        String[] examples = {
+            "create --variables \"x,y,z\" --relations \"\"",
+            "get_variables --variables \"x,y,z\"",
+            "get_relations --variables \"x,y,z\" --relations \"\"",
+            "test"
+        };
+        
+        showUsage("Presentation", 
+                 "CLI wrapper for org.uacalc.eq.Presentation operations", 
+                 examples);
     }
 }
