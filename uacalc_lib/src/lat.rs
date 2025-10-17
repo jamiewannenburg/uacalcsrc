@@ -1,5 +1,6 @@
 use pyo3::prelude::*;
 use uacalc::lat::*;
+use uacalc::alg::algebra::Algebra;
 
 /// Python wrapper for DivisibilityOrder
 #[pyclass]
@@ -157,16 +158,214 @@ fn ordered_sets_main() -> PyResult<String> {
     Ok(format!("max's are {:?}", maxs))
 }
 
+/// Python wrapper for DiamondLattice
+#[pyclass]
+pub struct PyDiamondLattice {
+    inner: uacalc::lat::DiamondLattice,
+}
+
+#[pymethods]
+impl PyDiamondLattice {
+    /// Create a new DiamondLattice
+    #[new]
+    fn new() -> Self {
+        PyDiamondLattice {
+            inner: uacalc::lat::DiamondLattice::new(),
+        }
+    }
+    
+    /// Get the element at the given index
+    fn get_element(&self, index: usize) -> Option<usize> {
+        self.inner.get_element(index)
+    }
+    
+    /// Get the size of the lattice
+    fn size(&self) -> usize {
+        self.inner.size()
+    }
+    
+    /// Get the universe (all elements)
+    fn universe(&self) -> Vec<usize> {
+        self.inner.universe().collect()
+    }
+    
+    /// Get the cardinality of the lattice
+    fn cardinality(&self) -> usize {
+        self.inner.cardinality() as usize
+    }
+    
+    /// Check if a ≤ b in the lattice order
+    fn leq(&self, a: usize, b: usize) -> bool {
+        self.inner.leq(&a, &b)
+    }
+    
+    /// Get join irreducibles
+    fn join_irreducibles(&self) -> Option<Vec<usize>> {
+        self.inner.join_irreducibles()
+    }
+    
+    /// Get meet irreducibles
+    fn meet_irreducibles(&self) -> Option<Vec<usize>> {
+        self.inner.meet_irreducibles()
+    }
+    
+    /// Get atoms
+    fn atoms(&self) -> Option<Vec<usize>> {
+        self.inner.atoms()
+    }
+    
+    /// Get coatoms
+    fn coatoms(&self) -> Option<Vec<usize>> {
+        self.inner.coatoms()
+    }
+    
+    /// Compute join of two elements
+    fn join(&self, a: usize, b: usize) -> usize {
+        self.inner.join(&a, &b)
+    }
+    
+    /// Compute join of a list of elements
+    fn join_list(&self, args: Vec<usize>) -> usize {
+        self.inner.join_list(&args)
+    }
+    
+    /// Compute meet of two elements
+    fn meet(&self, a: usize, b: usize) -> usize {
+        self.inner.meet(&a, &b)
+    }
+    
+    /// Compute meet of a list of elements
+    fn meet_list(&self, args: Vec<usize>) -> usize {
+        self.inner.meet_list(&args)
+    }
+    
+    /// Get upper covers indices for an element
+    fn upper_covers_indices(&self, index: usize) -> Vec<usize> {
+        self.inner.upper_covers_indices(index)
+    }
+    
+    /// Python string representation
+    fn __str__(&self) -> String {
+        "DiamondLattice".to_string()
+    }
+    
+    /// Python repr representation
+    fn __repr__(&self) -> String {
+        "DiamondLattice()".to_string()
+    }
+}
+
+/// Python wrapper for BooleanLattice
+#[pyclass]
+pub struct PyBooleanLattice {
+    inner: uacalc::lat::BooleanLattice,
+}
+
+#[pymethods]
+impl PyBooleanLattice {
+    /// Create a new BooleanLattice
+    #[new]
+    fn new() -> Self {
+        PyBooleanLattice {
+            inner: uacalc::lat::BooleanLattice::new(),
+        }
+    }
+    
+    /// Get the element at the given index
+    fn get_element(&self, index: usize) -> Option<usize> {
+        self.inner.get_element(index)
+    }
+    
+    /// Get the size of the lattice
+    fn size(&self) -> usize {
+        self.inner.size()
+    }
+    
+    /// Get the universe (all elements)
+    fn universe(&self) -> Vec<usize> {
+        self.inner.universe().collect()
+    }
+    
+    /// Get the cardinality of the lattice
+    fn cardinality(&self) -> usize {
+        self.inner.cardinality() as usize
+    }
+    
+    /// Check if a ≤ b in the lattice order
+    fn leq(&self, a: usize, b: usize) -> bool {
+        self.inner.leq(&a, &b)
+    }
+    
+    /// Get join irreducibles
+    fn join_irreducibles(&self) -> Option<Vec<usize>> {
+        self.inner.join_irreducibles()
+    }
+    
+    /// Get meet irreducibles
+    fn meet_irreducibles(&self) -> Option<Vec<usize>> {
+        self.inner.meet_irreducibles()
+    }
+    
+    /// Get atoms
+    fn atoms(&self) -> Option<Vec<usize>> {
+        self.inner.atoms()
+    }
+    
+    /// Get coatoms
+    fn coatoms(&self) -> Option<Vec<usize>> {
+        self.inner.coatoms()
+    }
+    
+    /// Compute join of two elements
+    fn join(&self, a: usize, b: usize) -> usize {
+        self.inner.join(&a, &b)
+    }
+    
+    /// Compute join of a list of elements
+    fn join_list(&self, args: Vec<usize>) -> usize {
+        self.inner.join_list(&args)
+    }
+    
+    /// Compute meet of two elements
+    fn meet(&self, a: usize, b: usize) -> usize {
+        self.inner.meet(&a, &b)
+    }
+    
+    /// Compute meet of a list of elements
+    fn meet_list(&self, args: Vec<usize>) -> usize {
+        self.inner.meet_list(&args)
+    }
+    
+    /// Get upper covers indices for an element
+    fn upper_covers_indices(&self, index: usize) -> Vec<usize> {
+        self.inner.upper_covers_indices(index)
+    }
+    
+    /// Python string representation
+    fn __str__(&self) -> String {
+        "BooleanLattice".to_string()
+    }
+    
+    /// Python repr representation
+    fn __repr__(&self) -> String {
+        "BooleanLattice()".to_string()
+    }
+}
+
 pub fn register_lat_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     // Register classes internally but only export clean names
     m.add_class::<PyDivisibilityOrder>()?;
     m.add_class::<PyPrefixOrder>()?;
     m.add_class::<PyNaturalOrder>()?;
+    m.add_class::<PyDiamondLattice>()?;
+    m.add_class::<PyBooleanLattice>()?;
     
     // Export only clean names (without Py prefix)
     m.add("DivisibilityOrder", m.getattr("PyDivisibilityOrder")?)?;
     m.add("PrefixOrder", m.getattr("PyPrefixOrder")?)?;
     m.add("NaturalOrder", m.getattr("PyNaturalOrder")?)?;
+    m.add("DiamondLattice", m.getattr("PyDiamondLattice")?)?;
+    m.add("BooleanLattice", m.getattr("PyBooleanLattice")?)?;
     
     // Add OrderedSets functions
     m.add_function(wrap_pyfunction!(maximals_divisibility, m)?)?;
@@ -180,10 +379,11 @@ pub fn register_lat_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     module_dict.del_item("PyDivisibilityOrder")?;
     module_dict.del_item("PyPrefixOrder")?;
     module_dict.del_item("PyNaturalOrder")?;
+    module_dict.del_item("PyDiamondLattice")?;
+    module_dict.del_item("PyBooleanLattice")?;
     
     // Note: Lattice and SmallLattice are traits (interfaces) and cannot be instantiated directly.
-    // Python bindings will be created for concrete implementations like BasicLattice,
-    // CongruenceLattice, SubalgebraLattice, etc. when those classes are implemented.
+    // Python bindings are provided for concrete implementations like DiamondLattice and BooleanLattice.
     
     Ok(())
 }

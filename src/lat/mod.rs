@@ -62,7 +62,7 @@ pub mod lattice;
 pub mod small_lattice;
 
 pub use lattice::Lattice;
-pub use small_lattice::SmallLattice;
+pub use small_lattice::{SmallLattice, DiamondLattice, BooleanLattice};
 
 pub struct BasicLattice {
     // TODO: Implement basic lattice
