@@ -33,6 +33,16 @@ pub trait SmallAlgebra: Algebra {
     /// This is a workaround for the limitation of not being able to clone trait objects.
     fn get_operation_ref(&self, sym: &OperationSymbol) -> Option<&dyn Operation>;
     
+    /// Clone this algebra into a new boxed trait object.
+    /// 
+    /// This allows cloning of trait objects by delegating to the concrete type's
+    /// Clone implementation. This is necessary because `Box<dyn SmallAlgebra>` cannot
+    /// automatically implement Clone.
+    /// 
+    /// # Returns
+    /// A new boxed copy of this algebra
+    fn clone_box(&self) -> Box<dyn SmallAlgebra<UniverseItem = Self::UniverseItem>>;
+    
 
     /// Get the type of this small algebra.
     /// 
@@ -304,6 +314,10 @@ where
 {
     fn get_operation_ref(&self, sym: &OperationSymbol) -> Option<&dyn Operation> {
         self.base.get_operation_ref(sym)
+    }
+    
+    fn clone_box(&self) -> Box<dyn SmallAlgebra<UniverseItem = Self::UniverseItem>> {
+        Box::new(self.clone())
     }
 
     fn algebra_type(&self) -> AlgebraType {

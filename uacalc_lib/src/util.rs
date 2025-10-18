@@ -1175,8 +1175,9 @@ impl PySimpleArrayIncrementor {
 
 /// Python wrapper for IntArray
 #[pyclass]
+#[derive(Clone)]
 pub struct PyIntArray {
-    inner: IntArray,
+    pub inner: IntArray,
 }
 
 #[pymethods]
@@ -2100,6 +2101,7 @@ impl PyPartitionArrayIncrementor {
         format!("PartitionArrayIncrementor({:?}, {})", self.data, self.num_blocks)
     }
 }
+
 
 pub fn register_util_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     // Register classes internally but only export clean names
