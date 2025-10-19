@@ -6,6 +6,7 @@
 pub mod binary_relation;
 pub mod basic_binary_relation;
 pub mod partition;
+pub mod polymorphisms;
 pub mod subtrace;
 
 pub use binary_relation::{
@@ -14,4 +15,5 @@ pub use binary_relation::{
 };
 pub use basic_binary_relation::BasicBinaryRelation;
 pub use partition::{Partition, PrintType};
+pub use polymorphisms::Polymorphisms;
 pub use subtrace::Subtrace;
