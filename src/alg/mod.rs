@@ -6,6 +6,7 @@ pub mod conlat;
 pub mod general_algebra;
 pub mod op;
 pub mod parallel;
+pub mod product_algebra;
 pub mod small_algebra;
 pub mod subalgebra;
 pub mod sublat;
@@ -24,19 +25,16 @@ pub use algebra::{
 pub use general_algebra::GeneralAlgebra;
 pub use small_algebra::{SmallAlgebra, BasicSmallAlgebra, AlgebraType};
 pub use subalgebra::Subalgebra;
+pub use product_algebra::ProductAlgebra;
 
 // BasicAlgebra is now implemented as BasicSmallAlgebra
 // GeneralAlgebra is now implemented in general_algebra.rs
+// ProductAlgebra is now implemented in product_algebra.rs
+// Subalgebra is now implemented in subalgebra.rs
 
 pub struct FreeAlgebra {
     // TODO: Implement free algebra structure
 }
-
-pub struct ProductAlgebra {
-    // TODO: Implement product algebra structure
-}
-
-// Subalgebra is now implemented in subalgebra.rs
 
 pub struct QuotientAlgebra {
     // TODO: Implement quotient algebra structure
