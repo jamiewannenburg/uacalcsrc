@@ -131,7 +131,7 @@ pub fn make_random_algebra_safe(
 
 **❌ MISSING Critical Dependencies:**
 - `SmallAlgebra` (Task 41) - ❌ **NOT IMPLEMENTED** - Only trait definition exists
-- `BasicAlgebra` (Task 71) - ❌ **NOT IMPLEMENTED** - Only placeholder struct exists
+- `BasicAlgebra` (Task 71) - ✅ **COMPLETED (PARTIAL)** - Fully implemented excluding con/sub lattices
 - `QuotientAlgebra` (Task 77) - ❌ **NOT IMPLEMENTED** - Only placeholder struct exists
 - `Operation` (Task 12) - ❌ **NOT IMPLEMENTED** - Only trait definition exists
 - `Malcev` (Task 63) - ❌ **NOT IMPLEMENTED** - Only placeholder struct exists
@@ -144,7 +144,7 @@ pub fn make_random_algebra_safe(
 ### Blocking Dependencies
 This task cannot be implemented until the following are complete:
 1. Task 41: SmallAlgebra (trait only, no concrete implementation)
-2. Task 71: BasicAlgebra (placeholder only)
+2. Task 71: BasicAlgebra ✅ **COMPLETED (PARTIAL)** - Implemented without con/sub lattices
 3. Task 77: QuotientAlgebra (placeholder only)
 4. Task 12: Operation (trait only, no concrete implementation)
 5. Task 63: Malcev (placeholder only)

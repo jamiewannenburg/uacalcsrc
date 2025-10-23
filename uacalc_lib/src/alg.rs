@@ -4371,6 +4371,70 @@ impl PyBasicSmallAlgebra {
         format!("{:?}", self.inner.algebra_type())
     }
     
+    /// Get the k-th element of the universe.
+    /// 
+    /// Args:
+    ///     k (int): The index of the element to retrieve
+    /// 
+    /// Returns:
+    ///     int: The element at index k, or -1 if k is out of bounds
+    fn get_element(&self, k: usize) -> i32 {
+        self.inner.get_element(k).unwrap_or(-1)
+    }
+    
+    /// Get the index of an element in the universe.
+    /// 
+    /// Args:
+    ///     elem (int): The element to find the index for
+    /// 
+    /// Returns:
+    ///     int: The index of the element, or -1 if not found
+    fn element_index(&self, elem: i32) -> i32 {
+        match self.inner.element_index(&elem) {
+            Some(idx) => idx as i32,
+            None => -1,
+        }
+    }
+    
+    /// Get the universe as a list.
+    /// 
+    /// Returns:
+    ///     List[int]: The universe elements as a list, or None if not available
+    fn get_universe_list(&self) -> Option<Vec<i32>> {
+        self.inner.get_universe_list()
+    }
+    
+    /// Get the universe order map.
+    /// 
+    /// Returns:
+    ///     dict: A mapping from elements to their indices, or None if not available
+    fn get_universe_order(&self) -> Option<HashMap<i32, usize>> {
+        self.inner.get_universe_order()
+    }
+    
+    /// Check if this algebra uses an integer universe.
+    /// 
+    /// Returns:
+    ///     bool: True if the universe is just integers from 0 to n-1
+    fn int_universe(&self) -> bool {
+        self.inner.int_universe()
+    }
+    
+    /// Reset cached congruence and subalgebra lattices.
+    /// 
+    /// Note: In this partial implementation, con/sub lattices are not yet implemented,
+    /// so this is a no-op but matches the Java API signature.
+    fn reset_con_and_sub(&mut self) {
+        self.inner.reset_con_and_sub();
+    }
+    
+    /// Convert operations to default value operations (for UI).
+    /// 
+    /// Note: In this partial implementation, this is a no-op but matches the Java API signature.
+    fn convert_to_default_value_ops(&mut self) {
+        self.inner.convert_to_default_value_ops();
+    }
+    
     /// Python string representation
     fn __str__(&self) -> String {
         self.inner.to_string()
