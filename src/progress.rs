@@ -52,6 +52,18 @@ pub trait ProgressReport: Send + Sync {
     
     /// Get the current description.
     fn get_description(&self) -> String;
+    
+    /// Set the estimated time left for the current operation.
+    /// 
+    /// # Arguments
+    /// * `time_str` - A formatted string representing time left (e.g., "1:23:45")
+    fn set_time_left(&self, time_str: &str);
+    
+    /// Set the estimated time for the next pass.
+    /// 
+    /// # Arguments
+    /// * `time_str` - A formatted string representing time for next pass
+    fn set_time_next(&self, time_str: &str);
 }
 
 /// A no-op implementation that suppresses all progress output.
@@ -74,6 +86,8 @@ impl ProgressReport for NoOpProgressReport {
     fn get_pass_size(&self) -> usize { 0 }
     fn get_size(&self) -> usize { 0 }
     fn get_description(&self) -> String { String::new() }
+    fn set_time_left(&self, _time_str: &str) {}
+    fn set_time_next(&self, _time_str: &str) {}
 }
 
 /// A simple console-based progress reporter.
@@ -88,6 +102,8 @@ pub struct ConsoleProgressReport {
     description: std::sync::Mutex<String>,
     indent: std::sync::Mutex<usize>,
     times: std::sync::Mutex<Vec<Instant>>,
+    time_left: std::sync::Mutex<String>,
+    time_next: std::sync::Mutex<String>,
 }
 
 impl ConsoleProgressReport {
@@ -100,6 +116,8 @@ impl ConsoleProgressReport {
             description: std::sync::Mutex::new(String::new()),
             indent: std::sync::Mutex::new(0),
             times: std::sync::Mutex::new(Vec::new()),
+            time_left: std::sync::Mutex::new(String::new()),
+            time_next: std::sync::Mutex::new(String::new()),
         }
     }
     
@@ -200,6 +218,20 @@ impl ProgressReport for ConsoleProgressReport {
     
     fn get_description(&self) -> String {
         self.description.lock().map(|v| v.clone()).unwrap_or_else(|_| String::new())
+    }
+    
+    fn set_time_left(&self, time_str: &str) {
+        if let Ok(mut time) = self.time_left.lock() {
+            *time = time_str.to_string();
+            eprintln!("Time left: {}", time_str);
+        }
+    }
+    
+    fn set_time_next(&self, time_str: &str) {
+        if let Ok(mut time) = self.time_next.lock() {
+            *time = time_str.to_string();
+            eprintln!("Time for next pass: {}", time_str);
+        }
     }
 }
 
