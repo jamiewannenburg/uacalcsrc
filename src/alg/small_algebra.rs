@@ -1,6 +1,7 @@
 use std::collections::{HashMap, HashSet};
 use std::fmt::{Debug, Display};
 use std::hash::Hash;
+use std::sync::RwLock;
 use crate::alg::algebra::{Algebra, ProgressMonitor};
 use crate::alg::general_algebra::GeneralAlgebra;
 use crate::alg::op::{Operation, OperationSymbol, SimilarityType};
@@ -129,11 +130,11 @@ where
     /// The type of this algebra
     algebra_type: AlgebraType,
     
-    /// Cached universe as a vector for indexed access
-    universe_list: Option<Vec<T>>,
+    /// Cached universe as a vector for indexed access (using RwLock for thread-safe interior mutability)
+    universe_list: RwLock<Option<Vec<T>>>,
     
-    /// Cached universe order map
-    universe_order: Option<HashMap<T, usize>>,
+    /// Cached universe order map (using RwLock for thread-safe interior mutability)
+    universe_order: RwLock<Option<HashMap<T, usize>>>,
     
     /// Parent algebra reference (would need Arc in real implementation)
     parent: Option<Box<dyn SmallAlgebra<UniverseItem = T>>>,
@@ -162,24 +163,43 @@ where
         BasicSmallAlgebra {
             base,
             algebra_type: AlgebraType::Basic,
-            universe_list: None,
-            universe_order: None,
+            universe_list: RwLock::new(None),
+            universe_order: RwLock::new(None),
             parent: None,
         }
     }
     
-    /// Ensure the universe list is cached.
-    fn ensure_universe_list(&mut self) {
-        if self.universe_list.is_none() {
-            // Get universe elements from the HashSet directly since universe() is not available
+    /// Ensure the universe list and order are cached.
+    /// This uses interior mutability via RwLock to allow caching in immutable methods.
+    fn ensure_universe_list(&self) {
+        // Check if we need to initialize (read lock)
+        if self.universe_list.read().unwrap().is_none() {
+            // Initialize with write lock
             let universe_vec: Vec<T> = self.base.universe.iter().cloned().collect();
+            
             let mut universe_order = HashMap::new();
             for (i, elem) in universe_vec.iter().enumerate() {
                 universe_order.insert(elem.clone(), i);
             }
-            self.universe_list = Some(universe_vec);
-            self.universe_order = Some(universe_order);
+            
+            *self.universe_list.write().unwrap() = Some(universe_vec);
+            *self.universe_order.write().unwrap() = Some(universe_order);
         }
+    }
+    
+    /// Check if this algebra uses an integer universe (elements are just 0, 1, ..., n-1).
+    /// 
+    /// # Returns
+    /// `true` if the universe is just integers from 0 to n-1, `false` otherwise
+    pub fn int_universe(&self) -> bool {
+        self.universe_list.read().unwrap().is_none()
+    }
+    
+    /// Reset the cached universe list and order.
+    /// This should be called if the universe is modified.
+    pub fn reset_universe_cache(&self) {
+        *self.universe_list.write().unwrap() = None;
+        *self.universe_order.write().unwrap() = None;
     }
 }
 
@@ -191,7 +211,7 @@ where
         f.debug_struct("BasicSmallAlgebra")
             .field("base", &self.base)
             .field("algebra_type", &self.algebra_type)
-            .field("has_universe_list", &self.universe_list.is_some())
+            .field("has_universe_list", &self.universe_list.read().unwrap().is_some())
             .field("has_parent", &self.parent.is_some())
             .finish()
     }
@@ -205,8 +225,8 @@ where
         BasicSmallAlgebra {
             base: self.base.clone(),
             algebra_type: self.algebra_type.clone(),
-            universe_list: self.universe_list.clone(),
-            universe_order: self.universe_order.clone(),
+            universe_list: RwLock::new(self.universe_list.read().unwrap().clone()),
+            universe_order: RwLock::new(self.universe_order.read().unwrap().clone()),
             // Can't clone trait objects, so start with None
             parent: None,
         }
@@ -324,25 +344,40 @@ where
         self.algebra_type.clone()
     }
     
-    fn get_element(&self, _k: usize) -> Option<Self::UniverseItem> {
-        // We need mutable access to ensure_universe_list, but this method is immutable
-        // This is a design limitation - in practice we'd use RefCell or similar
-        None // Placeholder
+    fn get_element(&self, k: usize) -> Option<Self::UniverseItem> {
+        // Ensure universe list is cached
+        self.ensure_universe_list();
+        
+        // Get element from cached list
+        self.universe_list.read().unwrap()
+            .as_ref()
+            .and_then(|list| list.get(k).cloned())
     }
     
-    fn element_index(&self, _elem: &Self::UniverseItem) -> Option<usize> {
-        // Similar issue - need mutable access for caching
-        None // Placeholder
+    fn element_index(&self, elem: &Self::UniverseItem) -> Option<usize> {
+        // Ensure universe order is cached
+        self.ensure_universe_list();
+        
+        // Get index from cached map
+        self.universe_order.read().unwrap()
+            .as_ref()
+            .and_then(|order| order.get(elem).copied())
     }
     
     fn get_universe_list(&self) -> Option<Vec<Self::UniverseItem>> {
-        // Would need RefCell for internal mutability in real implementation
-        None
+        // Ensure universe list is cached
+        self.ensure_universe_list();
+        
+        // Return cloned list
+        self.universe_list.read().unwrap().clone()
     }
     
     fn get_universe_order(&self) -> Option<HashMap<Self::UniverseItem, usize>> {
-        // Would need RefCell for internal mutability in real implementation
-        None
+        // Ensure universe order is cached
+        self.ensure_universe_list();
+        
+        // Return cloned map
+        self.universe_order.read().unwrap().clone()
     }
     
     fn parent(&self) -> Option<&dyn SmallAlgebra<UniverseItem = Self::UniverseItem>> {
@@ -356,12 +391,16 @@ where
     
     fn reset_con_and_sub(&mut self) {
         // Reset any cached congruence and subalgebra lattices
-        // This is a placeholder - real implementation would clear caches
+        // In this partial implementation, we don't have con/sub lattices yet
+        // This is a no-op for now but matches the Java signature
     }
     
     fn convert_to_default_value_ops(&mut self) {
         // Convert operations to default value operations for UI
-        // This is a placeholder - real implementation would modify operations
+        // This would wrap operations in OperationWithDefaultValue
+        // For now, this is a partial implementation - full implementation
+        // would require OperationWithDefaultValue to be available
+        // This is a no-op for now but matches the Java signature
     }
 }
 
