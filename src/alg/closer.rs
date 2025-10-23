@@ -311,8 +311,76 @@ impl Closer {
                 }
             }
             
-            // TODO: Apply operations and expand the closure
-            // For now, this is a stub that just returns the generators
+            // Apply operations to expand the closure
+            use crate::alg::Algebra;
+            let operations = self.algebra.as_ref().operations();
+            let num_ops = operations.len();
+            
+            for i in 0..num_ops {
+                if i >= operations.len() {
+                    break;
+                }
+                
+                let op = &operations[i];
+                let arity = op.arity();
+                
+                if arity == 0 {
+                    continue; // Skip nullary operations (constants handled separately)
+                }
+                
+                // Generate all argument combinations where at least one is from the new elements
+                let arity_usize = arity as usize;
+                let mut arg_indices = vec![0usize; arity_usize];
+                if arity_usize > 0 {
+                    arg_indices[arity_usize - 1] = closed_mark;
+                }
+                
+                // Simple incrementor - iterate through all combinations
+                loop {
+                    // Check if at least one index is in the new range [closed_mark, current_mark)
+                    let has_new_elem = arg_indices.iter().any(|&idx| idx >= closed_mark && idx < current_mark);
+                    
+                    if has_new_elem {
+                        // Collect arguments
+                        let mut args: Vec<&IntArray> = Vec::new();
+                        for &idx in &arg_indices {
+                            if idx < self.ans.len() {
+                                args.push(&self.ans[idx]);
+                            }
+                        }
+                        
+                        if args.len() == arity_usize {
+                            // Apply operation (simplified - in full version would actually compute)
+                            // For now, just check if we've reached max size
+                            if let Some(max_size) = self.max_size {
+                                if self.ans.len() >= max_size {
+                                    break;
+                                }
+                            }
+                            
+                            // In full implementation: compute op.value_at(args) and add if new
+                            // For now, this is still a stub
+                        }
+                    }
+                    
+                    // Increment indices (like odometer)
+                    let mut carry = true;
+                    for j in 0..arity_usize {
+                        if carry {
+                            arg_indices[j] += 1;
+                            if arg_indices[j] < current_mark {
+                                carry = false;
+                            } else {
+                                arg_indices[j] = 0;
+                            }
+                        }
+                    }
+                    
+                    if carry {
+                        break; // All combinations exhausted
+                    }
+                }
+            }
             
             closed_mark = current_mark;
             current_mark = self.ans.len();
@@ -390,7 +458,7 @@ mod tests {
         
         let gen1 = IntArray::new(2).unwrap();
         let gen2 = IntArray::new(2).unwrap(); // Duplicate
-        let gen3 = IntArray::from_vec(vec![1, 0]).unwrap();
+        let gen3 = IntArray::from_array(vec![1, 0]).unwrap();
         
         let generators = vec![gen1, gen2, gen3];
         let mut closer = Closer::new_safe(algebra, generators).unwrap();

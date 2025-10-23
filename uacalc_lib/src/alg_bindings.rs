@@ -2,8 +2,8 @@ use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
 use std::sync::Arc;
 use std::collections::HashMap;
-use uacalc::alg::{Closer, BigProductAlgebra, SmallAlgebra, BasicSmallAlgebra};
-use uacalc::util::int_array::IntArray;
+use uacalc::alg::{Closer, BigProductAlgebra, SmallAlgebra, BasicSmallAlgebra, Algebra};
+use uacalc::util::int_array::{IntArray, IntArrayTrait};
 
 /// Python wrapper for Closer
 #[pyclass(name = "Closer")]
@@ -22,7 +22,7 @@ impl PyCloser {
     /// # Returns
     /// A new Closer instance
     #[new]
-    fn new(algebra: &PyBigProductAlgebra, generators: Vec<&PyIntArray>) -> PyResult<Self> {
+    fn new(algebra: &PyBigProductAlgebra, generators: Vec<PyIntArray>) -> PyResult<Self> {
         let rust_gens: Vec<IntArray> = generators.iter()
             .map(|g| g.inner.clone())
             .collect();
@@ -135,7 +135,7 @@ impl PyBigProductAlgebra {
     /// # Returns
     /// A new BigProductAlgebra instance
     #[staticmethod]
-    fn new_from_algebras(algebras: Vec<PyRef<PySmallAlgebra>>) -> PyResult<Self> {
+    fn new_from_algebras(algebras: Vec<PySmallAlgebra>) -> PyResult<Self> {
         let rust_algs: Vec<Box<dyn SmallAlgebra<UniverseItem = i32>>> = algebras.iter()
             .map(|a| a.inner.clone_box())
             .collect();
@@ -291,7 +291,7 @@ impl PyIntArray {
     /// A new IntArray instance
     #[staticmethod]
     fn from_list(values: Vec<i32>) -> PyResult<Self> {
-        match IntArray::from_vec(values) {
+        match IntArray::from_array(values) {
             Ok(ia) => Ok(PyIntArray { inner: ia }),
             Err(e) => Err(PyValueError::new_err(e)),
         }
@@ -305,8 +305,8 @@ impl PyIntArray {
     /// Get a value at an index.
     fn get(&self, index: usize) -> PyResult<i32> {
         match self.inner.get(index) {
-            Ok(val) => Ok(val),
-            Err(e) => Err(PyValueError::new_err(e)),
+            Some(val) => Ok(val),
+            None => Err(PyValueError::new_err(format!("Index {} out of bounds", index))),
         }
     }
     
@@ -320,15 +320,21 @@ impl PyIntArray {
     
     /// Convert to a list.
     fn to_list(&self) -> Vec<i32> {
-        self.inner.get_array().to_vec()
+        let mut result = Vec::new();
+        for i in 0..self.inner.universe_size() {
+            if let Some(val) = self.inner.get(i) {
+                result.push(val);
+            }
+        }
+        result
     }
     
     fn __str__(&self) -> String {
-        format!("{:?}", self.inner.get_array())
+        format!("{:?}", self.to_list())
     }
     
     fn __repr__(&self) -> String {
-        format!("IntArray({:?})", self.inner.get_array())
+        format!("IntArray({:?})", self.to_list())
     }
     
     fn __eq__(&self, other: &PyIntArray) -> bool {
