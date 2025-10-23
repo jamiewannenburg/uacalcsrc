@@ -338,7 +338,7 @@ impl PySubalgebra {
 **BLOCKING DEPENDENCIES** (Must be completed first):
 - `CongruenceLattice` (Task 80) - ❌ **NOT IMPLEMENTED** - Required for `con()` method
 - `SubalgebraLattice` (Task 76) - ❌ **NOT IMPLEMENTED** - Required for `sub()` method  
-- `ProductAlgebra` (Task 73) - ❌ **NOT IMPLEMENTED** - Required for static `congruenceAsAlgebra()` methods
+- `ProductAlgebra` (Task 73) - ✅ **PARTIALLY IMPLEMENTED** (70% complete) - Core methods available for static `congruenceAsAlgebra()` methods
 
 **READY DEPENDENCIES** (Available for use):
 - `SmallAlgebra` (Task 41) - ✅ **COMPLETED** - Core interface implemented
@@ -399,7 +399,7 @@ impl PySubalgebra {
 ### Deferred Methods (8 of 26)
 - ❌ con() - Requires CongruenceLattice (Task 80)
 - ❌ sub() - Requires SubalgebraLattice (Task 76)
-- ❌ congruenceAsAlgebra (static, 2 variants) - Requires ProductAlgebra (Task 73)
+- ⚠️ congruenceAsAlgebra (static, 2 variants) - Can now be implemented (ProductAlgebra available)
 - ❌ get_universe_list - Returns None (can be implemented later)
 - ❌ get_universe_order - Returns None (can be implemented later)
 - ❌ convert_to_default_value_ops - Panics (only for basic algebras)
