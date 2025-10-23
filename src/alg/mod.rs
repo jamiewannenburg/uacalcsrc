@@ -4,6 +4,7 @@ use crate::util::int_array::IntArrayTrait;
 use crate::alg::op::{Operation, OperationSymbol, SimilarityType};
 
 pub mod algebra;
+pub mod closer_timing;
 pub mod conlat;
 pub mod general_algebra;
 pub mod op;
@@ -18,6 +19,9 @@ mod matrix_power_algebra_tests;
 
 // Re-export partition types for convenience
 pub use conlat::partition::{Partition, PrintType};
+
+// Re-export CloserTiming
+pub use closer_timing::CloserTiming;
 
 // Re-export algebra types
 pub use algebra::{
