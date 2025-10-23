@@ -164,14 +164,14 @@ This class depends on:
 - ✅ **SmallAlgebra trait**: Implemented in `src/alg/small_algebra.rs`
 - ✅ **Horner utilities**: Implemented in `src/util/horner.rs` with `horner_inv` method
 - ✅ **Operations factory**: Implemented in `src/alg/op/operations.rs` with `make_left_shift` and `make_matrix_diagonal_op`
-- ❌ **PowerAlgebra**: Not implemented (only placeholder struct)
+- ✅ **PowerAlgebra**: Partially implemented (core functionality complete, lattice methods deferred)
 - ❌ **CongruenceLattice**: Not implemented (only placeholder in sublat/mod.rs)
 - ❌ **SubalgebraLattice**: Not implemented (only placeholder in sublat/mod.rs)
 
-**Blocking Dependencies**:
-- PowerAlgebra implementation required
-- CongruenceLattice implementation required  
-- SubalgebraLattice implementation required
+**Remaining Dependencies**:
+- ✅ PowerAlgebra core functionality available
+- ❌ CongruenceLattice implementation required (for lattice methods)
+- ❌ SubalgebraLattice implementation required (for lattice methods)
 
 ### Acceptance Criteria
 - [ ] All public methods translated to Rust
@@ -196,14 +196,14 @@ This class depends on:
 - Java comment indicates "Not working yet" and suggests subclassing PowerAlgebra
 
 **Key Dependencies Status**:
-1. **PowerAlgebra** - Critical dependency, not implemented
+1. **PowerAlgebra** - ✅ Core functionality available (lattice methods deferred)
 2. **CongruenceLattice** - Required for `con()` method, not implemented
 3. **SubalgebraLattice** - Required for `sub()` method, not implemented
 4. **Operations factory methods** - ✅ Available (`make_left_shift`, `make_matrix_diagonal_op`)
 5. **Horner utilities** - ✅ Available (`horner_inv`)
 
 **Recommendations**:
-1. Implement PowerAlgebra first (Task 78)
-2. Implement CongruenceLattice and SubalgebraLattice
-3. Then implement MatrixPowerAlgebra as a wrapper around PowerAlgebra
+1. ✅ PowerAlgebra core functionality is now available
+2. Implement CongruenceLattice and SubalgebraLattice for full functionality
+3. MatrixPowerAlgebra can now be implemented as a wrapper around PowerAlgebra
 4. Consider the Java comment about subclassing PowerAlgebra instead of composition

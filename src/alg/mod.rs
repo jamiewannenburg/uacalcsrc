@@ -1,5 +1,7 @@
 use std::collections::HashMap;
+use std::fmt::{Debug, Display};
 use crate::util::int_array::IntArrayTrait;
+use crate::alg::op::{Operation, OperationSymbol, SimilarityType};
 
 pub mod algebra;
 pub mod conlat;
@@ -26,6 +28,8 @@ pub use general_algebra::GeneralAlgebra;
 pub use small_algebra::{SmallAlgebra, BasicSmallAlgebra, AlgebraType};
 pub use subalgebra::Subalgebra;
 pub use product_algebra::ProductAlgebra;
+
+// PowerAlgebra is implemented in this file (mod.rs)
 
 // BasicAlgebra is now implemented as BasicSmallAlgebra
 // GeneralAlgebra is now implemented in general_algebra.rs
@@ -399,8 +403,398 @@ pub struct PolinLikeAlgebra {
     // TODO: Implement Polin-like algebra
 }
 
+/// A power algebra representing the direct power of a SmallAlgebra.
+/// 
+/// This struct represents the direct power A^n of a single algebra A, where
+/// each element is a tuple of n elements from A. This is a special case of
+/// ProductAlgebra where all factors are the same algebra.
+/// 
+/// # Examples
+/// ```
+/// use uacalc::alg::{PowerAlgebra, SmallAlgebra, BasicSmallAlgebra, Algebra};
+/// use std::collections::HashSet;
+/// 
+/// // Create a small algebra
+/// let alg = Box::new(BasicSmallAlgebra::new(
+///     "A".to_string(),
+///     HashSet::from([0, 1]),
+///     Vec::new()
+/// )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+/// 
+/// // Create power algebra A^3
+/// let power = PowerAlgebra::new_safe(alg, 3).unwrap();
+/// 
+/// assert_eq!(power.cardinality(), 8); // 2^3 = 8
+/// assert_eq!(power.get_power(), 3);
+/// ```
 pub struct PowerAlgebra {
-    // TODO: Implement power algebra
+    /// The underlying product algebra
+    product: ProductAlgebra,
+    
+    /// The root algebra that is being raised to a power
+    root: Box<dyn SmallAlgebra<UniverseItem = i32>>,
+    
+    /// The size of the root algebra
+    root_size: i32,
+    
+    /// The power/exponent (number of copies)
+    power: usize,
+}
+
+impl PowerAlgebra {
+    /// Create a new PowerAlgebra from a root algebra and power.
+    /// 
+    /// # Arguments
+    /// * `root` - The algebra to raise to a power
+    /// * `power` - The power/exponent (number of copies)
+    /// 
+    /// # Returns
+    /// * `Ok(PowerAlgebra)` - Successfully created power algebra
+    /// * `Err(String)` - If power is invalid or algebra is incompatible
+    /// 
+    /// # Examples
+    /// ```
+    /// use uacalc::alg::{PowerAlgebra, SmallAlgebra, BasicSmallAlgebra, Algebra};
+    /// use std::collections::HashSet;
+    /// 
+    /// let alg = Box::new(BasicSmallAlgebra::new(
+    ///     "A".to_string(),
+    ///     HashSet::from([0, 1, 2]),
+    ///     Vec::new()
+    /// )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+    /// 
+    /// let power = PowerAlgebra::new_safe(alg, 2).unwrap();
+    /// assert_eq!(power.cardinality(), 9); // 3^2 = 9
+    /// ```
+    pub fn new_safe(
+        root: Box<dyn SmallAlgebra<UniverseItem = i32>>,
+        power: usize
+    ) -> Result<Self, String> {
+        if power == 0 {
+            return Err("Power cannot be zero".to_string());
+        }
+        
+        let root_size = root.cardinality();
+        if root_size < 0 {
+            return Err("Cannot create power of algebra with unknown cardinality".to_string());
+        }
+        
+        // Create a list of the same algebra repeated 'power' times
+        let mut algebras = Vec::with_capacity(power);
+        for _ in 0..power {
+            algebras.push(root.clone_box());
+        }
+        
+        // Create the product algebra
+        let name = format!("{}^{}", root.name(), power);
+        let product = ProductAlgebra::new_safe(name, algebras)?;
+        
+        Ok(PowerAlgebra {
+            product,
+            root,
+            root_size,
+            power,
+        })
+    }
+    
+    /// Create a new PowerAlgebra with a custom name.
+    /// 
+    /// # Arguments
+    /// * `name` - The name for the power algebra
+    /// * `root` - The algebra to raise to a power
+    /// * `power` - The power/exponent (number of copies)
+    /// 
+    /// # Returns
+    /// * `Ok(PowerAlgebra)` - Successfully created power algebra
+    /// * `Err(String)` - If power is invalid or algebra is incompatible
+    /// 
+    /// # Examples
+    /// ```
+    /// use uacalc::alg::{PowerAlgebra, SmallAlgebra, BasicSmallAlgebra, Algebra};
+    /// use std::collections::HashSet;
+    /// 
+    /// let alg = Box::new(BasicSmallAlgebra::new(
+    ///     "A".to_string(),
+    ///     HashSet::from([0, 1]),
+    ///     Vec::new()
+    /// )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+    /// 
+    /// let power = PowerAlgebra::new_with_name_safe(
+    ///     "CustomPower".to_string(),
+    ///     alg,
+    ///     3
+    /// ).unwrap();
+    /// assert_eq!(power.name(), "CustomPower");
+    /// ```
+    pub fn new_with_name_safe(
+        name: String,
+        root: Box<dyn SmallAlgebra<UniverseItem = i32>>,
+        power: usize
+    ) -> Result<Self, String> {
+        if power == 0 {
+            return Err("Power cannot be zero".to_string());
+        }
+        
+        let root_size = root.cardinality();
+        if root_size < 0 {
+            return Err("Cannot create power of algebra with unknown cardinality".to_string());
+        }
+        
+        // Create a list of the same algebra repeated 'power' times
+        let mut algebras = Vec::with_capacity(power);
+        for _ in 0..power {
+            algebras.push(root.clone_box());
+        }
+        
+        // Create the product algebra
+        let product = ProductAlgebra::new_safe(name, algebras)?;
+        
+        Ok(PowerAlgebra {
+            product,
+            root,
+            root_size,
+            power,
+        })
+    }
+    
+    /// Create a new PowerAlgebra (panicking version for compatibility).
+    /// 
+    /// # Arguments
+    /// * `root` - The algebra to raise to a power
+    /// * `power` - The power/exponent (number of copies)
+    /// 
+    /// # Panics
+    /// Panics if power is invalid or algebra is incompatible
+    pub fn new(
+        root: Box<dyn SmallAlgebra<UniverseItem = i32>>,
+        power: usize
+    ) -> Self {
+        Self::new_safe(root, power).unwrap()
+    }
+    
+    /// Create a new PowerAlgebra with a custom name (panicking version).
+    /// 
+    /// # Arguments
+    /// * `name` - The name for the power algebra
+    /// * `root` - The algebra to raise to a power
+    /// * `power` - The power/exponent (number of copies)
+    /// 
+    /// # Panics
+    /// Panics if power is invalid or algebra is incompatible
+    pub fn new_with_name(
+        name: String,
+        root: Box<dyn SmallAlgebra<UniverseItem = i32>>,
+        power: usize
+    ) -> Self {
+        Self::new_with_name_safe(name, root, power).unwrap()
+    }
+    
+    /// Get the root algebra.
+    /// 
+    /// # Returns
+    /// A reference to the root algebra
+    pub fn get_root(&self) -> &dyn SmallAlgebra<UniverseItem = i32> {
+        self.root.as_ref()
+    }
+    
+    /// Get the parent algebra (same as root for power algebra).
+    /// 
+    /// # Returns
+    /// A reference to the root algebra
+    pub fn parent(&self) -> &dyn SmallAlgebra<UniverseItem = i32> {
+        self.root.as_ref()
+    }
+    
+    /// Get the parent algebras (list containing the root algebra).
+    /// 
+    /// # Returns
+    /// A vector containing the root algebra
+    pub fn parents(&self) -> Vec<&dyn SmallAlgebra<UniverseItem = i32>> {
+        vec![self.root.as_ref()]
+    }
+    
+    /// Get the power/exponent.
+    /// 
+    /// # Returns
+    /// The power (number of copies of the root algebra)
+    pub fn get_power(&self) -> usize {
+        self.power
+    }
+    
+    /// Get the size of the root algebra.
+    /// 
+    /// # Returns
+    /// The cardinality of the root algebra
+    pub fn get_root_size(&self) -> i32 {
+        self.root_size
+    }
+}
+
+impl Debug for PowerAlgebra {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("PowerAlgebra")
+            .field("name", &self.product.name())
+            .field("root_name", &self.root.name())
+            .field("power", &self.power)
+            .field("root_size", &self.root_size)
+            .field("cardinality", &self.product.cardinality())
+            .finish()
+    }
+}
+
+impl Clone for PowerAlgebra {
+    fn clone(&self) -> Self {
+        PowerAlgebra {
+            product: self.product.clone(),
+            root: self.root.clone_box(),
+            root_size: self.root_size,
+            power: self.power,
+        }
+    }
+}
+
+impl Display for PowerAlgebra {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "PowerAlgebra({}, cardinality: {})", self.product.name(), self.product.cardinality())
+    }
+}
+
+impl Algebra for PowerAlgebra {
+    type UniverseItem = i32;
+    
+    fn universe(&self) -> Box<dyn Iterator<Item = Self::UniverseItem>> {
+        self.product.universe()
+    }
+    
+    fn cardinality(&self) -> i32 {
+        self.product.cardinality()
+    }
+    
+    fn input_size(&self) -> i32 {
+        self.product.input_size()
+    }
+    
+    fn is_unary(&self) -> bool {
+        self.product.is_unary()
+    }
+    
+    fn iterator(&self) -> Box<dyn Iterator<Item = Self::UniverseItem>> {
+        self.product.iterator()
+    }
+    
+    fn operations(&self) -> Vec<Box<dyn Operation>> {
+        self.product.operations()
+    }
+    
+    fn get_operation(&self, sym: &OperationSymbol) -> Option<Box<dyn Operation>> {
+        self.product.get_operation(sym)
+    }
+    
+    fn get_operations_map(&self) -> HashMap<OperationSymbol, Box<dyn Operation>> {
+        self.product.get_operations_map()
+    }
+    
+    fn name(&self) -> &str {
+        self.product.name()
+    }
+    
+    fn set_name(&mut self, name: String) {
+        self.product.set_name(name);
+    }
+    
+    fn description(&self) -> Option<&str> {
+        self.product.description()
+    }
+    
+    fn set_description(&mut self, desc: Option<String>) {
+        self.product.set_description(desc);
+    }
+    
+    fn similarity_type(&self) -> &SimilarityType {
+        self.product.similarity_type()
+    }
+    
+    fn update_similarity_type(&mut self) {
+        self.product.update_similarity_type();
+    }
+    
+    fn is_similar_to(&self, other: &dyn Algebra<UniverseItem = Self::UniverseItem>) -> bool {
+        self.product.is_similar_to(other)
+    }
+    
+    fn make_operation_tables(&mut self) {
+        self.product.make_operation_tables();
+    }
+    
+    fn constant_operations(&self) -> Vec<Box<dyn Operation>> {
+        self.product.constant_operations()
+    }
+    
+    fn is_idempotent(&self) -> bool {
+        self.product.is_idempotent()
+    }
+    
+    fn is_total(&self) -> bool {
+        self.product.is_total()
+    }
+    
+    fn monitoring(&self) -> bool {
+        self.product.monitoring()
+    }
+    
+    fn get_monitor(&self) -> Option<&dyn ProgressMonitor> {
+        self.product.get_monitor()
+    }
+    
+    fn set_monitor(&mut self, monitor: Option<Box<dyn ProgressMonitor>>) {
+        self.product.set_monitor(monitor);
+    }
+}
+
+impl SmallAlgebra for PowerAlgebra {
+    fn get_operation_ref(&self, sym: &OperationSymbol) -> Option<&dyn Operation> {
+        self.product.get_operation_ref(sym)
+    }
+    
+    fn clone_box(&self) -> Box<dyn SmallAlgebra<UniverseItem = Self::UniverseItem>> {
+        Box::new(self.clone())
+    }
+    
+    fn algebra_type(&self) -> AlgebraType {
+        AlgebraType::Power
+    }
+    
+    fn get_element(&self, k: usize) -> Option<Self::UniverseItem> {
+        self.product.get_element(k)
+    }
+    
+    fn element_index(&self, elem: &Self::UniverseItem) -> Option<usize> {
+        self.product.element_index(elem)
+    }
+    
+    fn get_universe_list(&self) -> Option<Vec<Self::UniverseItem>> {
+        self.product.get_universe_list()
+    }
+    
+    fn get_universe_order(&self) -> Option<HashMap<Self::UniverseItem, usize>> {
+        self.product.get_universe_order()
+    }
+    
+    fn parent(&self) -> Option<&dyn SmallAlgebra<UniverseItem = Self::UniverseItem>> {
+        Some(self.root.as_ref())
+    }
+    
+    fn parents(&self) -> Option<Vec<&dyn SmallAlgebra<UniverseItem = Self::UniverseItem>>> {
+        Some(vec![self.root.as_ref()])
+    }
+    
+    fn reset_con_and_sub(&mut self) {
+        // No cached lattices in partial implementation
+    }
+    
+    fn convert_to_default_value_ops(&mut self) {
+        panic!("Only for basic algebras");
+    }
 }
 
 pub struct ReductAlgebra {

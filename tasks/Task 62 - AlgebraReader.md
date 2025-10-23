@@ -122,7 +122,7 @@ Translate the Java class `org.uacalc.io.AlgebraReader` to Rust with Python bindi
 - **Status**: COMPLETE for BasicAlgebra reading
 - **Date Completed**: 2025-01-15
 - **Known Limitations**:
-  1. Only BasicAlgebra type is fully supported. ProductAlgebra, QuotientAlgebra, Subalgebra, PowerAlgebra types are parsed but not yet fully constructed due to missing implementations of those algebra types.
+  1. Only BasicAlgebra type is fully supported. ProductAlgebra, QuotientAlgebra, Subalgebra types are parsed but not yet fully constructed due to missing implementations. PowerAlgebra is now partially implemented with core functionality available.
   2. The `operations()` method in GeneralAlgebra returns an empty vector due to trait object cloning limitations. Operations ARE being created and stored internally, they just can't be retrieved via this method. This is a broader issue that needs to be addressed separately.
   3. Java wrapper compilation fails due to missing external dependencies (org.latdraw packages), but the wrapper code is complete and functional.
   
