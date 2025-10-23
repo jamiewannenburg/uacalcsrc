@@ -162,6 +162,72 @@ public class PowerAlgebra extends ProductAlgebra implements SmallAlgebra {
 //
   }
 
+  /**
+   * Create the cartesian product of the algebras.
+   * This generates all possible combinations of elements from the root algebra.
+   */
+  private Set makeCartesianProduct(SmallAlgebra[] algs) {
+    Set result = new HashSet();
+    
+    // Generate all possible combinations
+    int[] indices = new int[algs.length];
+    boolean done = false;
+    
+    while (!done) {
+      // Create the current combination
+      int[] combination = new int[algs.length];
+      for (int i = 0; i < algs.length; i++) {
+        combination[i] = indices[i];
+      }
+      result.add(new IntArray(combination));
+      
+      // Move to next combination
+      int carry = 1;
+      for (int i = algs.length - 1; i >= 0 && carry > 0; i--) {
+        indices[i] += carry;
+        carry = indices[i] / algs[i].cardinality();
+        indices[i] %= algs[i].cardinality();
+      }
+      done = (carry > 0);
+    }
+    
+    return result;
+  }
+
+  /**
+   * Find the index of an element in the universe.
+   * This is a simple linear search through the universe.
+   */
+  public int elementIndex(Object elem) {
+    if (elem == null) return -1;
+    
+    // Convert to IntArray if it's an int array
+    IntArray target;
+    if (elem instanceof int[]) {
+      target = new IntArray((int[])elem);
+    } else if (elem instanceof IntArray) {
+      target = (IntArray)elem;
+    } else {
+      return -1; // Unsupported type
+    }
+    
+    // Linear search through the universe
+    Iterator it = universe().iterator();
+    int index = 0;
+    while (it.hasNext()) {
+      Object current = it.next();
+      if (current instanceof IntArray) {
+        IntArray currentArray = (IntArray)current;
+        if (currentArray.equals(target)) {
+          return index;
+        }
+      }
+      index++;
+    }
+    
+    return -1; // Not found
+  }
+
 }
 
 

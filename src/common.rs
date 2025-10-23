@@ -262,7 +262,16 @@ mod test_infrastructure {
         ) {
             // Extract the 'data' field from Java response if it exists
             let java_data = if let Some(data) = java_json.get("data") {
-                data.clone()
+                // If data is a string, try to parse it as JSON
+                if let Some(data_str) = data.as_str() {
+                    if let Ok(parsed_data) = serde_json::from_str::<Value>(data_str) {
+                        parsed_data
+                    } else {
+                        data.clone()
+                    }
+                } else {
+                    data.clone()
+                }
             } else {
                 java_json
             };

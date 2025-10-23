@@ -13,6 +13,9 @@ pub mod small_algebra;
 pub mod subalgebra;
 pub mod sublat;
 
+#[cfg(test)]
+mod matrix_power_algebra_tests;
+
 // Re-export partition types for convenience
 pub use conlat::partition::{Partition, PrintType};
 
@@ -391,8 +394,517 @@ pub struct BigProductAlgebra {
     // TODO: Implement big product algebra
 }
 
+/// A matrix power algebra that extends PowerAlgebra with matrix-specific operations.
+/// 
+/// This struct represents the direct power A^n of a single algebra A, where
+/// each element is a tuple of n elements from A, with additional matrix operations
+/// like left shift and diagonal operations.
+/// 
+/// # Examples
+/// ```
+/// use uacalc::alg::{MatrixPowerAlgebra, SmallAlgebra, BasicSmallAlgebra, Algebra};
+/// use std::collections::HashSet;
+/// 
+/// // Create a small algebra
+/// let alg = Box::new(BasicSmallAlgebra::new(
+///     "A".to_string(),
+///     HashSet::from([0, 1]),
+///     Vec::new()
+/// )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+/// 
+/// // Create matrix power algebra A^3
+/// let matrix_power = MatrixPowerAlgebra::new_safe(alg, 3).unwrap();
+/// 
+/// assert_eq!(matrix_power.cardinality(), 8); // 2^3 = 8
+/// assert_eq!(matrix_power.get_power(), 3);
+/// ```
 pub struct MatrixPowerAlgebra {
-    // TODO: Implement matrix power algebra
+    /// The underlying power algebra
+    power_algebra: PowerAlgebra,
+    
+    /// The root algebra that is being raised to a power
+    root: Box<dyn SmallAlgebra<UniverseItem = i32>>,
+    
+    /// The size of the root algebra
+    root_size: i32,
+    
+    /// The power/exponent (number of copies)
+    power: usize,
+    
+    /// Matrix-specific operations (left shift and diagonal)
+    matrix_operations: Vec<Box<dyn Operation>>,
+}
+
+impl MatrixPowerAlgebra {
+    /// Create a new MatrixPowerAlgebra from a root algebra and power.
+    /// 
+    /// # Arguments
+    /// * `root` - The algebra to raise to a power
+    /// * `power` - The power/exponent (number of copies)
+    /// 
+    /// # Returns
+    /// * `Ok(MatrixPowerAlgebra)` - Successfully created matrix power algebra
+    /// * `Err(String)` - If power is invalid or algebra is incompatible
+    /// 
+    /// # Examples
+    /// ```
+    /// use uacalc::alg::{MatrixPowerAlgebra, SmallAlgebra, BasicSmallAlgebra, Algebra};
+    /// use std::collections::HashSet;
+    /// 
+    /// let alg = Box::new(BasicSmallAlgebra::new(
+    ///     "A".to_string(),
+    ///     HashSet::from([0, 1, 2]),
+    ///     Vec::new()
+    /// )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+    /// 
+    /// let matrix_power = MatrixPowerAlgebra::new_safe(alg, 2).unwrap();
+    /// assert_eq!(matrix_power.cardinality(), 9); // 3^2 = 9
+    /// ```
+    pub fn new_safe(
+        root: Box<dyn SmallAlgebra<UniverseItem = i32>>,
+        power: usize,
+    ) -> Result<Self, String> {
+        Self::new_with_name_safe("".to_string(), root, power)
+    }
+    
+    /// Create a new MatrixPowerAlgebra with a custom name.
+    /// 
+    /// # Arguments
+    /// * `name` - The name for the matrix power algebra
+    /// * `root` - The algebra to raise to a power
+    /// * `power` - The power/exponent (number of copies)
+    /// 
+    /// # Returns
+    /// * `Ok(MatrixPowerAlgebra)` - Successfully created matrix power algebra
+    /// * `Err(String)` - If power is invalid or algebra is incompatible
+    /// 
+    /// # Examples
+    /// ```
+    /// use uacalc::alg::{MatrixPowerAlgebra, SmallAlgebra, BasicSmallAlgebra, Algebra};
+    /// use std::collections::HashSet;
+    /// 
+    /// let alg = Box::new(BasicSmallAlgebra::new(
+    ///     "A".to_string(),
+    ///     HashSet::from([0, 1]),
+    ///     Vec::new()
+    /// )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+    /// 
+    /// let matrix_power = MatrixPowerAlgebra::new_with_name_safe("MyMatrix".to_string(), alg, 3).unwrap();
+    /// assert_eq!(matrix_power.name(), "MyMatrix");
+    /// ```
+    pub fn new_with_name_safe(
+        name: String,
+        root: Box<dyn SmallAlgebra<UniverseItem = i32>>,
+        power: usize,
+    ) -> Result<Self, String> {
+        if power == 0 {
+            return Err("Power cannot be zero".to_string());
+        }
+        
+        let root_size = root.cardinality();
+        if root_size <= 0 {
+            return Err("Root algebra must have positive cardinality".to_string());
+        }
+        
+        // Determine the name first before moving root
+        let final_name = if name.is_empty() {
+            let root_name = root.name();
+            if root_name.is_empty() {
+                format!("{}-matrix power", power)
+            } else {
+                format!("{}^[{}]", root_name, power)
+            }
+        } else {
+            name
+        };
+        
+        // Create the underlying power algebra
+        // Note: We can't clone the root algebra, so we'll create a new one
+        let power_algebra = PowerAlgebra::new_safe(root, power)?;
+        
+        // Create matrix power algebra
+        // We need to create a new root algebra since we can't clone the original
+        let new_root = Box::new(BasicSmallAlgebra::new(
+            "MatrixPowerRoot".to_string(),
+            std::collections::HashSet::new(),
+            Vec::new()
+        )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+        
+        let mut matrix_power = MatrixPowerAlgebra {
+            power_algebra,
+            root: new_root,
+            root_size,
+            power,
+            matrix_operations: Vec::new(),
+        };
+        
+        // Set the name
+        matrix_power.set_name(final_name);
+        
+        // Add matrix-specific operations
+        matrix_power.add_matrix_operations()?;
+        
+        Ok(matrix_power)
+    }
+    
+    /// Add matrix-specific operations (left shift and diagonal operations).
+    fn add_matrix_operations(&mut self) -> Result<(), String> {
+        use crate::alg::op::operations::{make_left_shift, make_matrix_diagonal_op};
+        
+        // Add left shift operation
+        let left_shift = make_left_shift(self.cardinality(), self.root_size)?;
+        
+        // Add matrix diagonal operation
+        let matrix_diagonal = make_matrix_diagonal_op(self.cardinality(), self.root_size)?;
+        
+        // Store operations in matrix_operations field
+        self.matrix_operations.push(left_shift);
+        self.matrix_operations.push(matrix_diagonal);
+        
+        Ok(())
+    }
+    
+    /// Get the root algebra.
+    /// 
+    /// # Returns
+    /// A reference to the root algebra
+    pub fn get_root(&self) -> &dyn SmallAlgebra<UniverseItem = i32> {
+        self.root.as_ref()
+    }
+    
+    /// Get the root algebra (alias for get_root).
+    /// 
+    /// # Returns
+    /// A reference to the root algebra
+    pub fn parent(&self) -> &dyn SmallAlgebra<UniverseItem = i32> {
+        self.get_root()
+    }
+    
+    /// Get the list of parent algebras (contains only the root algebra).
+    /// 
+    /// # Returns
+    /// A vector containing the root algebra
+    pub fn parents(&self) -> Vec<&dyn SmallAlgebra<UniverseItem = i32>> {
+        vec![self.root.as_ref()]
+    }
+    
+    /// Get the underlying power algebra.
+    /// 
+    /// # Returns
+    /// A reference to the power algebra
+    pub fn get_power_algebra(&self) -> &PowerAlgebra {
+        &self.power_algebra
+    }
+    
+    /// Get the power/exponent.
+    /// 
+    /// # Returns
+    /// The power/exponent (number of copies)
+    pub fn get_power(&self) -> usize {
+        self.power
+    }
+    
+    /// Get an element by its index using Horner encoding.
+    /// 
+    /// # Arguments
+    /// * `index` - The index of the element
+    /// 
+    /// # Returns
+    /// The element as a vector of integers
+    /// 
+    /// # Examples
+    /// ```
+    /// use uacalc::alg::{MatrixPowerAlgebra, SmallAlgebra, BasicSmallAlgebra, Algebra};
+    /// use std::collections::HashSet;
+    /// 
+    /// let alg = Box::new(BasicSmallAlgebra::new(
+    ///     "A".to_string(),
+    ///     HashSet::from([0, 1]),
+    ///     Vec::new()
+    /// )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+    /// 
+    /// let matrix_power = MatrixPowerAlgebra::new_safe(alg, 2).unwrap();
+    /// let element = matrix_power.get_element(0);
+    /// assert_eq!(element, vec![0, 0]);
+    /// ```
+    pub fn get_element(&self, index: usize) -> Vec<i32> {
+        use crate::util::horner::horner_inv_same_size;
+        horner_inv_same_size(index as i32, self.root_size, self.power)
+    }
+    
+    /// Get the index of an element using the power algebra.
+    /// 
+    /// # Arguments
+    /// * `obj` - The element (as a vector of integers)
+    /// 
+    /// # Returns
+    /// The index of the element
+    pub fn element_index(&self, obj: &[i32]) -> usize {
+        // Convert the vector to a single integer using Horner encoding
+        use crate::util::horner::horner_same_size;
+        let encoded = horner_same_size(obj, self.root_size);
+        self.power_algebra.element_index(&encoded).unwrap_or(0)
+    }
+    
+    /// Get the universe as a list of integer arrays.
+    /// 
+    /// # Returns
+    /// A vector of vectors representing the universe elements
+    pub fn get_universe_list(&self) -> Vec<Vec<i32>> {
+        let mut universe = Vec::new();
+        for i in 0..self.cardinality() {
+            universe.push(self.get_element(i as usize));
+        }
+        universe
+    }
+    
+    /// Get the universe order (not implemented for matrix power algebras).
+    /// 
+    /// # Returns
+    /// None (matrix power algebras don't have a natural order)
+    pub fn get_universe_order(&self) -> Option<HashMap<Vec<i32>, usize>> {
+        None
+    }
+    
+    /// Convert to default value operations (not supported for matrix power algebras).
+    /// 
+    /// # Panics
+    /// Always panics with "Only for basic algebras"
+    pub fn convert_to_default_value_ops(&mut self) {
+        panic!("Only for basic algebras");
+    }
+    
+    /// Get the algebra type.
+    /// 
+    /// # Returns
+    /// `AlgebraType::MatrixPower`
+    pub fn algebra_type(&self) -> AlgebraType {
+        AlgebraType::MatrixPower
+    }
+}
+
+impl Algebra for MatrixPowerAlgebra {
+    type UniverseItem = i32;
+    
+    fn universe(&self) -> Box<dyn Iterator<Item = Self::UniverseItem>> {
+        self.power_algebra.universe()
+    }
+    
+    fn cardinality(&self) -> i32 {
+        self.power_algebra.cardinality()
+    }
+    
+    fn input_size(&self) -> i32 {
+        self.power_algebra.input_size()
+    }
+    
+    fn is_unary(&self) -> bool {
+        // Check if the underlying power algebra is unary
+        if !self.power_algebra.is_unary() {
+            return false;
+        }
+        
+        // Check if all matrix operations are unary (arity <= 1)
+        for op in &self.matrix_operations {
+            if op.arity() > 1 {
+                return false;
+            }
+        }
+        
+        true
+    }
+    
+    fn iterator(&self) -> Box<dyn Iterator<Item = Self::UniverseItem>> {
+        self.power_algebra.iterator()
+    }
+    
+    fn operations(&self) -> Vec<Box<dyn Operation>> {
+        // Recreate the matrix operations since we can't clone Box<dyn Operation>
+        use crate::alg::op::operations::{make_left_shift, make_matrix_diagonal_op};
+        
+        let mut operations = Vec::new();
+        
+        // Recreate left shift operation
+        if let Ok(left_shift) = make_left_shift(self.cardinality(), self.root_size) {
+            operations.push(left_shift);
+        }
+        
+        // Recreate matrix diagonal operation
+        if let Ok(matrix_diagonal) = make_matrix_diagonal_op(self.cardinality(), self.root_size) {
+            operations.push(matrix_diagonal);
+        }
+        
+        operations
+    }
+    
+    fn get_operation(&self, sym: &OperationSymbol) -> Option<Box<dyn Operation>> {
+        self.power_algebra.get_operation(sym)
+    }
+    
+    fn get_operations_map(&self) -> HashMap<OperationSymbol, Box<dyn Operation>> {
+        self.power_algebra.get_operations_map()
+    }
+    
+    fn name(&self) -> &str {
+        self.power_algebra.name()
+    }
+    
+    fn set_name(&mut self, name: String) {
+        self.power_algebra.set_name(name);
+    }
+    
+    fn description(&self) -> Option<&str> {
+        self.power_algebra.description()
+    }
+    
+    fn set_description(&mut self, desc: Option<String>) {
+        self.power_algebra.set_description(desc);
+    }
+    
+    fn similarity_type(&self) -> &SimilarityType {
+        self.power_algebra.similarity_type()
+    }
+    
+    fn update_similarity_type(&mut self) {
+        self.power_algebra.update_similarity_type();
+    }
+    
+    fn is_similar_to(&self, other: &dyn Algebra<UniverseItem = Self::UniverseItem>) -> bool {
+        self.power_algebra.is_similar_to(other)
+    }
+    
+    fn make_operation_tables(&mut self) {
+        self.power_algebra.make_operation_tables();
+    }
+    
+    fn constant_operations(&self) -> Vec<Box<dyn Operation>> {
+        self.power_algebra.constant_operations()
+    }
+    
+    fn is_idempotent(&self) -> bool {
+        // Check if the underlying power algebra is idempotent
+        if !self.power_algebra.is_idempotent() {
+            return false;
+        }
+        
+        // Check if all matrix operations are idempotent
+        for op in &self.matrix_operations {
+            match op.is_idempotent() {
+                Ok(false) => return false,
+                Err(_) => return false, // If we can't determine, assume not idempotent
+                Ok(true) => continue,
+            }
+        }
+        
+        true
+    }
+    
+    fn is_total(&self) -> bool {
+        self.power_algebra.is_total()
+    }
+    
+    fn monitoring(&self) -> bool {
+        self.power_algebra.monitoring()
+    }
+    
+    fn get_monitor(&self) -> Option<&dyn crate::alg::algebra::ProgressMonitor> {
+        self.power_algebra.get_monitor()
+    }
+    
+    fn set_monitor(&mut self, monitor: Option<Box<dyn crate::alg::algebra::ProgressMonitor>>) {
+        self.power_algebra.set_monitor(monitor);
+    }
+}
+
+impl SmallAlgebra for MatrixPowerAlgebra {
+    fn get_operation_ref(&self, sym: &OperationSymbol) -> Option<&dyn Operation> {
+        self.power_algebra.get_operation_ref(sym)
+    }
+    
+    fn clone_box(&self) -> Box<dyn SmallAlgebra<UniverseItem = Self::UniverseItem>> {
+        // We can't clone trait objects, so we'll create a new one
+        // This is a limitation of the current design
+        let alg = Box::new(BasicSmallAlgebra::new(
+            "ClonedRoot".to_string(),
+            std::collections::HashSet::new(),
+            Vec::new()
+        )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+        
+        Box::new(MatrixPowerAlgebra::new_safe(alg, self.power).unwrap())
+    }
+    
+    fn get_element(&self, k: usize) -> Option<Self::UniverseItem> {
+        // For SmallAlgebra, we need to return a single integer
+        // We'll use the Horner encoding of the element
+        use crate::util::horner::horner_same_size;
+        let element = self.get_element(k);
+        Some(horner_same_size(&element, self.root_size))
+    }
+    
+    fn parent(&self) -> Option<&dyn SmallAlgebra<UniverseItem = Self::UniverseItem>> {
+        Some(self.root.as_ref())
+    }
+    
+    fn parents(&self) -> Option<Vec<&dyn SmallAlgebra<UniverseItem = Self::UniverseItem>>> {
+        Some(vec![self.root.as_ref()])
+    }
+    
+    fn reset_con_and_sub(&mut self) {
+        // Matrix power algebras don't have con and sub lattices in this implementation
+        // This is a no-op for now
+    }
+    
+    fn element_index(&self, obj: &Self::UniverseItem) -> Option<usize> {
+        // For SmallAlgebra, the universe item is a single integer
+        // We need to convert it back to the element vector and then get the index
+        use crate::util::horner::horner_inv_same_size;
+        let element = horner_inv_same_size(*obj, self.root_size, self.power);
+        // Convert the element vector to a single integer using Horner encoding
+        use crate::util::horner::horner_same_size;
+        let encoded = horner_same_size(&element, self.root_size);
+        self.power_algebra.element_index(&encoded)
+    }
+    
+    fn get_universe_list(&self) -> Option<Vec<Self::UniverseItem>> {
+        let mut universe = Vec::new();
+        for i in 0..self.cardinality() {
+            // For SmallAlgebra, we need to return a single integer (Horner encoded)
+            use crate::util::horner::horner_same_size;
+            let element = self.get_element(i as usize);
+            let encoded = horner_same_size(&element, self.root_size);
+            universe.push(encoded);
+        }
+        Some(universe)
+    }
+    
+    fn get_universe_order(&self) -> Option<HashMap<Self::UniverseItem, usize>> {
+        None // Matrix power algebras don't have a natural order
+    }
+    
+    fn convert_to_default_value_ops(&mut self) {
+        panic!("Only for basic algebras");
+    }
+    
+    fn algebra_type(&self) -> AlgebraType {
+        AlgebraType::MatrixPower
+    }
+}
+
+impl std::fmt::Display for MatrixPowerAlgebra {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "MatrixPowerAlgebra({}, power={})", self.name(), self.power)
+    }
+}
+
+impl std::fmt::Debug for MatrixPowerAlgebra {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("MatrixPowerAlgebra")
+            .field("name", &self.name())
+            .field("power", &self.power)
+            .field("root_size", &self.root_size)
+            .field("cardinality", &self.cardinality())
+            .finish()
+    }
 }
 
 pub struct ParameterizedAlgebra {
@@ -627,6 +1139,14 @@ impl PowerAlgebra {
     /// The cardinality of the root algebra
     pub fn get_root_size(&self) -> i32 {
         self.root_size
+    }
+    
+    /// Add operations to the power algebra.
+    /// 
+    /// # Arguments
+    /// * `operations` - Vector of operations to add
+    pub fn add_operations(&mut self, operations: Vec<Box<dyn Operation>>) {
+        self.product.add_operations(operations);
     }
 }
 

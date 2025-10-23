@@ -343,6 +343,16 @@ impl ProductAlgebra {
     pub fn make_operation_tables(&mut self) {
         self.base.make_operation_tables();
     }
+    
+    /// Add operations to the product algebra.
+    /// 
+    /// # Arguments
+    /// * `operations` - Vector of operations to add
+    pub fn add_operations(&mut self, operations: Vec<Box<dyn Operation>>) {
+        let mut current_operations = self.base.operations();
+        current_operations.extend(operations);
+        self.base.set_operations(current_operations);
+    }
 }
 
 impl Debug for ProductAlgebra {
