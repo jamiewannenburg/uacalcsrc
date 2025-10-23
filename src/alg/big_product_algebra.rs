@@ -1,0 +1,526 @@
+/*!
+ * BigProductAlgebra - Product of SmallAlgebras that may be too large for SmallAlgebra.
+ * 
+ * This is a partial implementation of org.uacalc.alg.BigProductAlgebra,
+ * implementing just enough functionality for Closer to work.
+ */
+
+use std::collections::{HashMap, HashSet};
+use std::fmt;
+use crate::alg::{Algebra, SmallAlgebra, algebra::ProgressMonitor};
+use crate::alg::op::{Operation, OperationSymbol, SimilarityType};
+use crate::util::int_array::IntArray;
+use crate::terms::{Term, NonVariableTerm};
+
+/// A product algebra that may be too large to be a SmallAlgebra.
+/// 
+/// This struct represents the direct product of SmallAlgebras, using IntArray
+/// for elements. After we have a real element scheme, we'll use that.
+/// 
+/// # Examples
+/// ```
+/// use uacalc::alg::{BigProductAlgebra, SmallAlgebra, BasicSmallAlgebra};
+/// use std::collections::HashSet;
+/// 
+/// // Create two small algebras
+/// let alg1 = Box::new(BasicSmallAlgebra::new(
+///     "A1".to_string(),
+///     HashSet::from([0, 1]),
+///     Vec::new()
+/// )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+/// 
+/// let alg2 = Box::new(BasicSmallAlgebra::new(
+///     "A2".to_string(),
+///     HashSet::from([0, 1, 2]),
+///     Vec::new()
+/// )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+/// 
+/// // Create product algebra
+/// let product = BigProductAlgebra::new_safe(vec![alg1, alg2]).unwrap();
+/// assert_eq!(product.get_number_of_factors(), 2);
+/// ```
+#[derive(Debug)]
+pub struct BigProductAlgebra {
+    /// Name of the algebra
+    name: String,
+    
+    /// Description of the algebra
+    description: Option<String>,
+    
+    /// The factor algebras
+    algebras: Vec<Box<dyn SmallAlgebra<UniverseItem = i32>>>,
+    
+    /// Sizes of each factor
+    sizes: Vec<i32>,
+    
+    /// Number of factors
+    number_of_factors: usize,
+    
+    /// Constants in this algebra
+    constants: Option<Vec<IntArray>>,
+    
+    /// Map from constants to their symbols
+    pub constant_to_symbol: Option<HashMap<IntArray, OperationSymbol>>,
+    
+    /// Cardinality (-2 = not calculated, -1 = too big)
+    cardinality: i32,
+    
+    /// Root algebras (for powers)
+    root_algebras: Option<Vec<Box<dyn SmallAlgebra<UniverseItem = i32>>>>,
+    
+    /// Powers (for powers)
+    powers: Option<Vec<i32>>,
+    
+    /// Operations on this algebra
+    operations: Vec<Box<dyn Operation>>,
+    
+    /// Similarity type
+    similarity_type: Option<SimilarityType>,
+    
+    /// Progress monitor
+    monitor: Option<Box<dyn ProgressMonitor>>,
+}
+
+impl BigProductAlgebra {
+    /// Construct the direct product of a list of SmallAlgebras.
+    /// 
+    /// # Arguments
+    /// * `algebras` - Vector of SmallAlgebras to take the product of
+    /// 
+    /// # Returns
+    /// * `Ok(BigProductAlgebra)` - Successfully created product
+    /// * `Err(String)` - If algebras are incompatible
+    pub fn new_safe(
+        algebras: Vec<Box<dyn SmallAlgebra<UniverseItem = i32>>>
+    ) -> Result<Self, String> {
+        Self::new_with_name_safe("".to_string(), algebras)
+    }
+    
+    /// Construct the direct product with a custom name.
+    /// 
+    /// # Arguments
+    /// * `name` - Name for the product algebra
+    /// * `algebras` - Vector of SmallAlgebras to take the product of
+    /// 
+    /// # Returns
+    /// * `Ok(BigProductAlgebra)` - Successfully created product
+    /// * `Err(String)` - If algebras are incompatible
+    pub fn new_with_name_safe(
+        name: String,
+        algebras: Vec<Box<dyn SmallAlgebra<UniverseItem = i32>>>
+    ) -> Result<Self, String> {
+        if algebras.is_empty() {
+            return Err("Cannot create product of empty list of algebras".to_string());
+        }
+        
+        let number_of_factors = algebras.len();
+        let mut sizes = Vec::with_capacity(number_of_factors);
+        
+        for alg in &algebras {
+            sizes.push(alg.cardinality());
+        }
+        
+        let mut product = BigProductAlgebra {
+            name,
+            description: None,
+            algebras,
+            sizes,
+            number_of_factors,
+            constants: None,
+            constant_to_symbol: None,
+            cardinality: -2,
+            root_algebras: None,
+            powers: None,
+            operations: Vec::new(),
+            similarity_type: None,
+            monitor: None,
+        };
+        
+        product.make_operations();
+        
+        Ok(product)
+    }
+    
+    /// Construct the direct power of a SmallAlgebra.
+    /// 
+    /// # Arguments
+    /// * `alg` - The algebra to raise to a power
+    /// * `power` - The power
+    /// 
+    /// # Returns
+    /// * `Ok(BigProductAlgebra)` - Successfully created power
+    /// * `Err(String)` - If power is invalid
+    pub fn new_power_safe(
+        alg: Box<dyn SmallAlgebra<UniverseItem = i32>>,
+        power: usize
+    ) -> Result<Self, String> {
+        Self::new_power_with_name_safe("".to_string(), alg, power)
+    }
+    
+    /// Construct the direct power with a custom name.
+    /// 
+    /// # Arguments
+    /// * `name` - Name for the power algebra
+    /// * `alg` - The algebra to raise to a power
+    /// * `power` - The power
+    /// 
+    /// # Returns
+    /// * `Ok(BigProductAlgebra)` - Successfully created power
+    /// * `Err(String)` - If power is invalid
+    pub fn new_power_with_name_safe(
+        name: String,
+        alg: Box<dyn SmallAlgebra<UniverseItem = i32>>,
+        power: usize
+    ) -> Result<Self, String> {
+        if power == 0 {
+            return Err("Power must be positive".to_string());
+        }
+        
+        let root_algebras = vec![alg];
+        let powers = vec![power as i32];
+        
+        Self::setup(name, root_algebras, powers)
+    }
+    
+    /// Setup a product with powers.
+    fn setup(
+        name: String,
+        root_algs: Vec<Box<dyn SmallAlgebra<UniverseItem = i32>>>,
+        powers: Vec<i32>
+    ) -> Result<Self, String> {
+        if root_algs.len() != powers.len() {
+            return Err("Number of algebras must match number of powers".to_string());
+        }
+        
+        let mut algebras = Vec::new();
+        let mut number_of_factors = 0;
+        
+        for (i, pow) in powers.iter().enumerate() {
+            let alg = &root_algs[i];
+            number_of_factors += *pow as usize;
+            for _ in 0..*pow {
+                algebras.push(alg.clone_box());
+            }
+        }
+        
+        let mut sizes = Vec::with_capacity(number_of_factors);
+        for alg in &algebras {
+            sizes.push(alg.cardinality());
+        }
+        
+        let mut product = BigProductAlgebra {
+            name,
+            description: None,
+            algebras,
+            sizes,
+            number_of_factors,
+            constants: None,
+            constant_to_symbol: None,
+            cardinality: -2,
+            root_algebras: Some(root_algs),
+            powers: Some(powers),
+            operations: Vec::new(),
+            similarity_type: None,
+            monitor: None,
+        };
+        
+        product.make_operations();
+        
+        Ok(product)
+    }
+    
+    /// Make operations on the product algebra.
+    /// 
+    /// This creates operations on the product that apply componentwise.
+    fn make_operations(&mut self) {
+        // For now, stub this out - in full implementation this would create
+        // product operations that apply componentwise
+        self.operations = Vec::new();
+        
+        // Get operations from first algebra as a template
+        if !self.algebras.is_empty() {
+            let first_ops = self.algebras[0].operations();
+            // For each operation in the first algebra, we would create a
+            // corresponding product operation
+            // TODO: Implement full operation creation
+        }
+    }
+    
+    /// Get constants in this algebra.
+    /// 
+    /// # Returns
+    /// A vector of IntArray constants
+    pub fn get_constants(&mut self) -> Vec<IntArray> {
+        if let Some(ref constants) = self.constants {
+            return constants.clone();
+        }
+        
+        let mut constants = Vec::new();
+        let mut constant_to_symbol = HashMap::new();
+        let mut hash: HashSet<IntArray> = HashSet::new();
+        
+        for op in &self.operations {
+            if op.arity() == 0 {
+                // This is a constant - evaluate it
+                // TODO: Implement proper evaluation
+            }
+        }
+        
+        self.constants = Some(constants.clone());
+        self.constant_to_symbol = Some(constant_to_symbol);
+        
+        constants
+    }
+    
+    /// Get the symbol for a constant.
+    /// 
+    /// # Arguments
+    /// * `constant` - The constant to look up
+    /// 
+    /// # Returns
+    /// The operation symbol for this constant, if it exists
+    pub fn get_constant_symbol(&mut self, constant: &IntArray) -> Option<OperationSymbol> {
+        self.get_constants(); // Ensure constants are initialized
+        self.constant_to_symbol.as_ref()?.get(constant).cloned()
+    }
+    
+    /// Get the term for a constant.
+    /// 
+    /// # Arguments
+    /// * `constant` - The constant to get a term for
+    /// 
+    /// # Returns
+    /// * `Ok(Term)` - The term for this constant
+    /// * `Err(String)` - If constant not found
+    pub fn get_constant_term(&mut self, constant: &IntArray) -> Result<Box<dyn Term>, String> {
+        let symbol = self.get_constant_symbol(constant)
+            .ok_or_else(|| "Constant not found".to_string())?;
+        
+        Ok(Box::new(NonVariableTerm::new(symbol, Vec::new())))
+    }
+    
+    /// Get the number of factors.
+    /// 
+    /// # Returns
+    /// The number of factors in this product
+    pub fn get_number_of_factors(&self) -> usize {
+        self.number_of_factors
+    }
+    
+    /// Get the factors list.
+    /// 
+    /// # Returns
+    /// A reference to the list of factor algebras
+    pub fn factors(&self) -> &[Box<dyn SmallAlgebra<UniverseItem = i32>>] {
+        &self.algebras
+    }
+    
+    /// Get the root factors (for powers).
+    /// 
+    /// # Returns
+    /// The list of root algebras, if this is a power
+    pub fn root_factors(&self) -> Option<&[Box<dyn SmallAlgebra<UniverseItem = i32>>]> {
+        self.root_algebras.as_deref()
+    }
+    
+    /// Get the powers (for powers).
+    /// 
+    /// # Returns
+    /// The powers array, if this is a power
+    pub fn get_powers(&self) -> Option<&[i32]> {
+        self.powers.as_deref()
+    }
+    
+    /// Check if this is a power algebra.
+    /// 
+    /// # Returns
+    /// `true` if this is a power of a single algebra
+    pub fn is_power(&self) -> bool {
+        self.powers.is_some()
+    }
+    
+    /// Make operation tables for all operations.
+    pub fn make_operation_tables(&mut self) {
+        for op in &mut self.operations {
+            let _ = op.make_table();
+        }
+        
+        // Also make tables for factor algebras
+        for alg in &mut self.algebras {
+            alg.make_operation_tables();
+        }
+    }
+}
+
+impl fmt::Display for BigProductAlgebra {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "BigProductAlgebra({})", self.name)
+    }
+}
+
+impl Algebra for BigProductAlgebra {
+    type UniverseItem = IntArray;
+    
+    fn universe(&self) -> Box<dyn Iterator<Item = Self::UniverseItem>> {
+        // For now, return empty iterator
+        // TODO: Implement proper universe iteration
+        Box::new(std::iter::empty())
+    }
+    
+    fn cardinality(&self) -> i32 {
+        if self.cardinality > -2 {
+            return self.cardinality;
+        }
+        
+        // Calculate cardinality
+        // TODO: Use ProductAlgebra::calc_card
+        // For now, return -1 for large products
+        -1
+    }
+    
+    fn input_size(&self) -> i32 {
+        self.number_of_factors as i32
+    }
+    
+    fn is_unary(&self) -> bool {
+        if self.algebras.is_empty() {
+            return true;
+        }
+        
+        for alg in &self.algebras {
+            if !alg.is_unary() {
+                return false;
+            }
+        }
+        
+        true
+    }
+    
+    fn iterator(&self) -> Box<dyn Iterator<Item = Self::UniverseItem>> {
+        self.universe()
+    }
+    
+    fn operations(&self) -> Vec<Box<dyn Operation>> {
+        // Return clones/recreations of operations
+        // For now, return empty vec
+        Vec::new()
+    }
+    
+    fn get_operation(&self, _sym: &OperationSymbol) -> Option<Box<dyn Operation>> {
+        None
+    }
+    
+    fn get_operations_map(&self) -> HashMap<OperationSymbol, Box<dyn Operation>> {
+        HashMap::new()
+    }
+    
+    fn name(&self) -> &str {
+        &self.name
+    }
+    
+    fn set_name(&mut self, name: String) {
+        self.name = name;
+    }
+    
+    fn description(&self) -> Option<&str> {
+        self.description.as_deref()
+    }
+    
+    fn set_description(&mut self, desc: Option<String>) {
+        self.description = desc;
+    }
+    
+    fn similarity_type(&self) -> &SimilarityType {
+        // Return cached similarity type or create a default one
+        // For now, create a simple one
+        static DEFAULT: once_cell::sync::Lazy<SimilarityType> = 
+            once_cell::sync::Lazy::new(|| SimilarityType::new(Vec::new()));
+        &DEFAULT
+    }
+    
+    fn update_similarity_type(&mut self) {
+        // Update similarity type from operations
+        // TODO: Implement
+    }
+    
+    fn is_similar_to(&self, _other: &dyn Algebra<UniverseItem = Self::UniverseItem>) -> bool {
+        // TODO: Implement proper similarity check
+        false
+    }
+    
+    fn make_operation_tables(&mut self) {
+        self.make_operation_tables();
+    }
+    
+    fn constant_operations(&self) -> Vec<Box<dyn Operation>> {
+        Vec::new()
+    }
+    
+    fn is_idempotent(&self) -> bool {
+        for alg in &self.algebras {
+            if !alg.is_idempotent() {
+                return false;
+            }
+        }
+        true
+    }
+    
+    fn is_total(&self) -> bool {
+        for alg in &self.algebras {
+            if !alg.is_total() {
+                return false;
+            }
+        }
+        true
+    }
+    
+    fn monitoring(&self) -> bool {
+        self.monitor.is_some()
+    }
+    
+    fn get_monitor(&self) -> Option<&dyn ProgressMonitor> {
+        self.monitor.as_deref()
+    }
+    
+    fn set_monitor(&mut self, monitor: Option<Box<dyn ProgressMonitor>>) {
+        self.monitor = monitor;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::alg::BasicSmallAlgebra;
+    use std::collections::HashSet;
+    
+    #[test]
+    fn test_new_product() {
+        let alg1 = Box::new(BasicSmallAlgebra::new(
+            "A1".to_string(),
+            HashSet::from([0, 1]),
+            Vec::new()
+        )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+        
+        let alg2 = Box::new(BasicSmallAlgebra::new(
+            "A2".to_string(),
+            HashSet::from([0, 1, 2]),
+            Vec::new()
+        )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+        
+        let product = BigProductAlgebra::new_safe(vec![alg1, alg2]).unwrap();
+        assert_eq!(product.get_number_of_factors(), 2);
+    }
+    
+    #[test]
+    fn test_new_power() {
+        let alg = Box::new(BasicSmallAlgebra::new(
+            "A".to_string(),
+            HashSet::from([0, 1]),
+            Vec::new()
+        )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+        
+        let power = BigProductAlgebra::new_power_safe(alg, 3).unwrap();
+        assert_eq!(power.get_number_of_factors(), 3);
+        assert!(power.is_power());
+    }
+}

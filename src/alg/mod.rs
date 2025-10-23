@@ -4,6 +4,8 @@ use crate::util::int_array::IntArrayTrait;
 use crate::alg::op::{Operation, OperationSymbol, SimilarityType};
 
 pub mod algebra;
+pub mod big_product_algebra;
+pub mod closer;
 pub mod closer_timing;
 pub mod conlat;
 pub mod general_algebra;
@@ -20,8 +22,10 @@ mod matrix_power_algebra_tests;
 // Re-export partition types for convenience
 pub use conlat::partition::{Partition, PrintType};
 
-// Re-export CloserTiming
+// Re-export CloserTiming and Closer
 pub use closer_timing::CloserTiming;
+pub use closer::Closer;
+pub use big_product_algebra::BigProductAlgebra;
 
 // Re-export algebra types
 pub use algebra::{
@@ -378,10 +382,6 @@ impl std::fmt::Display for Homomorphism {
     }
 }
 
-pub struct Closer {
-    // TODO: Implement closer structure
-}
-
 pub struct Algebras {
     // TODO: Implement algebras collection
 }
@@ -392,10 +392,6 @@ pub struct AlgebraFromMinimalSets {
 
 pub struct AlgebraWithGeneratingVector {
     // TODO: Implement algebra with generating vector
-}
-
-pub struct BigProductAlgebra {
-    // TODO: Implement big product algebra
 }
 
 /// A matrix power algebra that extends PowerAlgebra with matrix-specific operations.
