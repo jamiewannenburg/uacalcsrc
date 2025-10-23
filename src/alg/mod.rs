@@ -7,6 +7,7 @@ pub mod general_algebra;
 pub mod op;
 pub mod parallel;
 pub mod small_algebra;
+pub mod subalgebra;
 pub mod sublat;
 
 // Re-export partition types for convenience
@@ -22,6 +23,7 @@ pub use algebra::{
 // Re-export concrete algebra implementations
 pub use general_algebra::GeneralAlgebra;
 pub use small_algebra::{SmallAlgebra, BasicSmallAlgebra, AlgebraType};
+pub use subalgebra::Subalgebra;
 
 // BasicAlgebra is now implemented as BasicSmallAlgebra
 // GeneralAlgebra is now implemented in general_algebra.rs
@@ -34,9 +36,7 @@ pub struct ProductAlgebra {
     // TODO: Implement product algebra structure
 }
 
-pub struct Subalgebra {
-    // TODO: Implement subalgebra structure
-}
+// Subalgebra is now implemented in subalgebra.rs
 
 pub struct QuotientAlgebra {
     // TODO: Implement quotient algebra structure
