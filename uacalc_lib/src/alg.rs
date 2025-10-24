@@ -4309,6 +4309,63 @@ impl PyParameterizedOperation {
     }
 }
 
+/// Python wrapper for CongruenceLattice
+#[pyclass]
+pub struct PyCongruenceLattice {
+    inner: uacalc::alg::conlat::CongruenceLattice,
+}
+
+#[pymethods]
+impl PyCongruenceLattice {
+    /// Create a new congruence lattice for an algebra.
+    #[new]
+    fn new(algebra: &PyBasicSmallAlgebra) -> Self {
+        PyCongruenceLattice {
+            inner: uacalc::alg::conlat::CongruenceLattice::new(Box::new(algebra.inner.clone())),
+        }
+    }
+    
+    /// Get the size of the algebra's universe.
+    fn alg_size(&self) -> usize {
+        self.inner.alg_size()
+    }
+    
+    /// Get the zero congruence (all elements in separate blocks).
+    fn zero(&self) -> PyPartition {
+        PyPartition { inner: self.inner.zero() }
+    }
+    
+    /// Get the one congruence (all elements in one block).
+    fn one(&self) -> PyPartition {
+        PyPartition { inner: self.inner.one() }
+    }
+    
+    /// Get the cardinality of the congruence lattice.
+    fn con_cardinality(&mut self) -> usize {
+        self.inner.con_cardinality()
+    }
+    
+    /// Test if the lattice is distributive.
+    fn is_distributive(&mut self) -> bool {
+        self.inner.is_distributive()
+    }
+    
+    /// Get the description of the congruence lattice.
+    fn get_description(&self) -> String {
+        self.inner.get_description()
+    }
+    
+    /// Python string representation
+    fn __str__(&self) -> String {
+        self.inner.to_string()
+    }
+    
+    /// Python repr representation
+    fn __repr__(&self) -> String {
+        format!("CongruenceLattice({})", self.inner.to_string())
+    }
+}
+
 pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     // Register classes internally but only export clean names
     m.add_class::<PyOperationSymbol>()?;
@@ -4320,6 +4377,7 @@ pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     m.add_class::<PyBasicOperation>()?;
     m.add_class::<PyIntOperation>()?;
     m.add_class::<PyAbstractIntOperation>()?;
+    m.add_class::<PyCongruenceLattice>()?;
     m.add_class::<PyAbstractIntOperationNew>()?;
     m.add_class::<PyAbstractOperationNew>()?;
     m.add_class::<PySubtrace>()?;
@@ -4364,6 +4422,7 @@ pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     m.add("ParameterizedAlgebra", m.getattr("PyParameterizedAlgebra")?)?;
     m.add("ParameterizedOperation", m.getattr("PyParameterizedOperation")?)?;
     m.add("ReductAlgebra", m.getattr("PyReductAlgebra")?)?;
+    m.add("CongruenceLattice", m.getattr("PyCongruenceLattice")?)?;
     
     // Remove the Py* names from the module to avoid confusion
     let module_dict = m.dict();
@@ -4376,6 +4435,7 @@ pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     module_dict.del_item("PyBasicOperation")?;
     module_dict.del_item("PyIntOperation")?;
     module_dict.del_item("PyAbstractIntOperation")?;
+    module_dict.del_item("PyCongruenceLattice")?;
     module_dict.del_item("PyAbstractIntOperationNew")?;
     module_dict.del_item("PyAbstractOperationNew")?;
     module_dict.del_item("PySubtrace")?;
