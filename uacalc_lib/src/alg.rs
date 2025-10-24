@@ -774,6 +774,73 @@ impl PyPartition {
     fn __ge__(&self, other: &PyPartition) -> bool {
         self.inner >= other.inner
     }
+    
+    /// Calculate unary polymorphisms of a collection of partitions.
+    /// 
+    /// A unary polymorphism is a function f: {0,...,n-1} -> {0,...,n-1} that
+    /// preserves all partitions in the collection.
+    /// 
+    /// Args:
+    ///     pars (List[Partition]): Collection of partitions to respect
+    /// 
+    /// Returns:
+    ///     List[IntArray]: List of all unary polymorphisms
+    /// 
+    /// Raises:
+    ///     ValueError: If partitions are empty or have different sizes
+    #[staticmethod]
+    fn unary_polymorphisms(pars: Vec<PyRef<PyPartition>>) -> PyResult<Vec<PyIntArray>> {
+        let rust_pars: Vec<uacalc::alg::conlat::partition::Partition> = 
+            pars.iter().map(|p| p.inner.clone()).collect();
+        
+        match uacalc::alg::conlat::partition::Partition::unary_polymorphisms(&rust_pars) {
+            Ok(result) => {
+                let py_result: Vec<PyIntArray> = result.into_iter()
+                    .map(|ia| PyIntArray { inner: ia })
+                    .collect();
+                Ok(py_result)
+            }
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Calculate binary polymorphisms of a collection of partitions.
+    /// 
+    /// A binary polymorphism is a binary operation that preserves all partitions
+    /// in the collection.
+    /// 
+    /// Args:
+    ///     pars (List[Partition]): Collection of partitions to respect
+    ///     unary_clone (List[IntArray], optional): Precomputed unary polymorphisms
+    /// 
+    /// Returns:
+    ///     List[IntArray]: List of all binary polymorphisms
+    /// 
+    /// Raises:
+    ///     ValueError: If partitions are empty or have different sizes
+    #[staticmethod]
+    #[pyo3(signature = (pars, unary_clone=None))]
+    fn binary_polymorphisms(
+        pars: Vec<PyRef<PyPartition>>,
+        unary_clone: Option<Vec<PyIntArray>>
+    ) -> PyResult<Vec<PyIntArray>> {
+        let rust_pars: Vec<uacalc::alg::conlat::partition::Partition> = 
+            pars.iter().map(|p| p.inner.clone()).collect();
+        
+        let rust_unary_clone = unary_clone.map(|uc| {
+            uc.into_iter().map(|ia| ia.inner).collect()
+        });
+        
+        match uacalc::alg::conlat::partition::Partition::binary_polymorphisms(&rust_pars, rust_unary_clone) {
+            Ok(result) => {
+                let py_result: Vec<PyIntArray> = result.into_iter()
+                    .map(|ia| PyIntArray { inner: ia })
+                    .collect();
+                Ok(py_result)
+            }
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
 }
 
 /// Python wrapper for Polymorphisms

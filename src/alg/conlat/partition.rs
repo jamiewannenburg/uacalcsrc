@@ -7,7 +7,7 @@ The implementation is based on Ralph Freese's partition algorithms as described
 in his unpublished notes on partition algorithms.
 */
 
-use std::collections::{HashMap, BTreeSet};
+use std::collections::{BTreeSet, HashMap};
 use std::fmt;
 use std::hash::{Hash, Hasher};
 use crate::util::int_array::{IntArray, IntArrayTrait};
@@ -766,6 +766,279 @@ impl Partition {
         }
         
         result
+    }
+    
+    /// Calculate unary polymorphisms of a collection of partitions.
+    /// 
+    /// A unary polymorphism is a function f: {0,...,n-1} -> {0,...,n-1} that
+    /// preserves all partitions in the collection, meaning if elements a and b
+    /// are related in a partition, then f(a) and f(b) are also related.
+    /// 
+    /// # Arguments
+    /// * `pars` - Collection of partitions to respect
+    /// 
+    /// # Returns
+    /// * `Ok(BTreeSet<IntArray>)` - Set of all unary polymorphisms
+    /// * `Err(String)` - Error if partitions are empty or have different sizes
+    /// 
+    /// # Examples
+    /// ```
+    /// use uacalc::alg::conlat::partition::Partition;
+    /// 
+    /// let pars = vec![Partition::zero(3), Partition::one(3)];
+    /// let polys = Partition::unary_polymorphisms(&pars).unwrap();
+    /// assert!(polys.len() > 0);
+    /// ```
+    pub fn unary_polymorphisms(pars: &[Partition]) -> Result<BTreeSet<IntArray>, String> {
+        if pars.is_empty() {
+            return Err("Partition list cannot be empty".to_string());
+        }
+        
+        let n = pars[0].universe_size();
+        
+        // Validate all partitions have the same universe size
+        for (i, par) in pars.iter().enumerate() {
+            if par.universe_size() != n {
+                return Err(format!(
+                    "Partition {} has universe size {} but expected {}",
+                    i,
+                    par.universe_size(),
+                    n
+                ));
+            }
+        }
+        
+        let mut set = BTreeSet::new();
+        let mut ia = IntArray::from_array(vec![0; n]).unwrap();
+        Self::unary_polymorphisms_aux(&mut ia, 0, n, &mut set, pars);
+        
+        Ok(set)
+    }
+    
+    /// Recursive helper for calculating unary polymorphisms.
+    /// 
+    /// Find all functions respecting the partitions and extending the partial
+    /// function arr and add them to the answer set.
+    /// 
+    /// # Arguments
+    /// * `arr` - Vector representing the partial function f defined for i < k
+    /// * `k` - The first place the function is not defined
+    /// * `n` - The size of the underlying set for the partitions
+    /// * `ans` - The answer set
+    /// * `pars` - The list of partitions
+    fn unary_polymorphisms_aux(
+        arr: &mut IntArray,
+        k: usize,
+        n: usize,
+        ans: &mut BTreeSet<IntArray>,
+        pars: &[Partition],
+    ) {
+        if k == n {
+            // We have a complete function, add it to the answer set
+            ans.insert(arr.clone());
+            return;
+        }
+        
+        // Try each possible value for position k
+        for value in 0..n {
+            if Self::respects_unary(arr, k, value as i32, pars) {
+                let _ = arr.set(k, value as i32);
+                Self::unary_polymorphisms_aux(arr, k + 1, n, ans, pars);
+            }
+        }
+    }
+    
+    /// Check if a partial function respects the partitions.
+    /// 
+    /// # Arguments
+    /// * `partial_function` - The partial function being built
+    /// * `k` - The position being considered
+    /// * `value` - The value to try for position k
+    /// * `pars` - The list of partitions to respect
+    /// 
+    /// # Returns
+    /// `true` if setting partial_function[k] = value respects all partitions
+    fn respects_unary(
+        partial_function: &IntArray,
+        k: usize,
+        value: i32,
+        pars: &[Partition],
+    ) -> bool {
+        for par in pars {
+            let r = par.representative(k);
+            for i in 0..k {
+                if r == par.representative(i) {
+                    // k and i are in the same block, so their images must be related
+                    let img = partial_function.get(i).unwrap_or(0) as usize;
+                    if !par.is_related(value as usize, img) {
+                        return false;
+                    }
+                }
+            }
+        }
+        true
+    }
+    
+    /// Calculate binary polymorphisms of a collection of partitions.
+    /// 
+    /// A binary polymorphism is a binary operation that preserves all partitions
+    /// in the collection. The operation is represented as a function table of size n*n.
+    /// 
+    /// # Arguments
+    /// * `pars` - Collection of partitions to respect
+    /// * `unary_clone` - Optional precomputed set of unary polymorphisms (for efficiency)
+    /// 
+    /// # Returns
+    /// * `Ok(BTreeSet<IntArray>)` - Set of all binary polymorphisms
+    /// * `Err(String)` - Error if partitions are empty or have different sizes
+    /// 
+    /// # Examples
+    /// ```
+    /// use uacalc::alg::conlat::partition::Partition;
+    /// 
+    /// let pars = vec![Partition::zero(3), Partition::one(3)];
+    /// let polys = Partition::binary_polymorphisms(&pars, None).unwrap();
+    /// assert!(polys.len() > 0);
+    /// ```
+    pub fn binary_polymorphisms(
+        pars: &[Partition],
+        unary_clone: Option<BTreeSet<IntArray>>,
+    ) -> Result<BTreeSet<IntArray>, String> {
+        if pars.is_empty() {
+            return Err("Partition list cannot be empty".to_string());
+        }
+        
+        let n = pars[0].universe_size();
+        
+        // Validate all partitions have the same universe size
+        for (i, par) in pars.iter().enumerate() {
+            if par.universe_size() != n {
+                return Err(format!(
+                    "Partition {} has universe size {} but expected {}",
+                    i,
+                    par.universe_size(),
+                    n
+                ));
+            }
+        }
+        
+        // Compute unary clone if not provided
+        let unary_clone = match unary_clone {
+            Some(uc) => uc,
+            None => Self::unary_polymorphisms(pars)?,
+        };
+        
+        let mut set = BTreeSet::new();
+        let mut partial_op: Vec<Option<IntArray>> = vec![None; n];
+        
+        Self::binary_polymorphisms_aux(&mut partial_op, 0, n, &unary_clone, &mut set);
+        
+        Ok(set)
+    }
+    
+    /// Recursive helper for calculating binary polymorphisms.
+    /// 
+    /// # Arguments
+    /// * `partial_op` - List of rows (each is a unary function)
+    /// * `index` - Current row index being filled
+    /// * `n` - Size of the universe
+    /// * `unary_clone` - Set of valid unary polymorphisms
+    /// * `set` - Result set to populate
+    fn binary_polymorphisms_aux(
+        partial_op: &mut Vec<Option<IntArray>>,
+        index: usize,
+        n: usize,
+        unary_clone: &BTreeSet<IntArray>,
+        set: &mut BTreeSet<IntArray>,
+    ) {
+        if index == n {
+            // We have a complete binary operation, convert to flat array
+            let mut op = vec![0; n * n];
+            for i in 0..n {
+                if let Some(ref row) = partial_op[i] {
+                    for j in 0..n {
+                        op[i * n + j] = row.get(j).unwrap_or(0);
+                    }
+                }
+            }
+            set.insert(IntArray::from_array(op).unwrap());
+            return;
+        }
+        
+        // Try each unary function as the next row
+        for unary_fn in unary_clone.iter() {
+            if Self::respects_binary(partial_op, index, n, unary_fn, unary_clone) {
+                partial_op[index] = Some(unary_fn.clone());
+                Self::binary_polymorphisms_aux(partial_op, index + 1, n, unary_clone, set);
+            }
+        }
+    }
+    
+    /// Check if adding a unary function as a row respects the binary operation constraints.
+    /// 
+    /// # Arguments
+    /// * `partial_binary_op` - List of index-many rows
+    /// * `index` - Current row being considered
+    /// * `n` - Size of the universe
+    /// * `unary_op` - Possible row to add
+    /// * `unary_clone` - Set of valid unary polymorphisms
+    /// 
+    /// # Returns
+    /// `true` if adding unary_op at index is consistent
+    fn respects_binary(
+        partial_binary_op: &[Option<IntArray>],
+        index: usize,
+        n: usize,
+        unary_op: &IntArray,
+        unary_clone: &BTreeSet<IntArray>,
+    ) -> bool {
+        let mut ia = IntArray::from_array(vec![0; n]).unwrap();
+        
+        // For each column
+        for col in 0..n {
+            // Build the column vector up to and including index
+            for i in 0..index {
+                if let Some(ref row) = partial_binary_op[i] {
+                    let _ = ia.set(i, row.get(col).unwrap_or(0));
+                }
+            }
+            let _ = ia.set(index, unary_op.get(col).unwrap_or(0));
+            
+            // Check if this initial segment is in unary_clone
+            if !Self::is_initial_member(&ia, index, unary_clone) {
+                return false;
+            }
+        }
+        
+        true
+    }
+    
+    /// Check if an initial segment of an array is a member of unary_clone.
+    /// 
+    /// # Arguments
+    /// * `ia` - The array to check
+    /// * `index` - The length of the initial segment (0..=index)
+    /// * `unary_clone` - Set of unary polymorphisms
+    /// 
+    /// # Returns
+    /// `true` if there exists an element in unary_clone that matches ia on positions 0..=index
+    fn is_initial_member(
+        ia: &IntArray,
+        index: usize,
+        unary_clone: &BTreeSet<IntArray>,
+    ) -> bool {
+        // Find the ceiling (smallest element >= ia in lexicographic order)
+        // BTreeSet doesn't have ceiling directly, so we use range
+        for candidate in unary_clone.range(ia..) {
+            // Check if it matches on the initial segment
+            for i in 0..=index {
+                if candidate.get(i) != ia.get(i) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        false
     }
 }
 
