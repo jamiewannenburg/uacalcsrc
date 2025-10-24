@@ -5,6 +5,7 @@ pub mod alg;
 pub mod io;
 pub mod lat;
 pub mod util;
+pub mod group;
 pub mod simple_list_basic_tests;
 pub mod horner_tests;
 pub mod integration_tests;
