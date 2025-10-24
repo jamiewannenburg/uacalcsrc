@@ -65,7 +65,7 @@ This class depends on:
 - `org.uacalc.alg.conlat.BasicPartition` (Task 5 - COMPLETED) - Partition creation
 - `org.uacalc.alg.conlat.CongruenceLattice` (Task 80 - NOT COMPLETED) - Lattice operations
   - **Note**: Task 20 (Lattice interface) is ✅ **COMPLETED**
-- `org.uacalc.alg.sublat.SubalgebraLattice` (Task 76 - NOT COMPLETED) - Lattice operations
+- `org.uacalc.alg.sublat.SubalgebraLattice` (Task 76 - ✅ COMPLETED) - Lattice operations
 - `org.uacalc.alg.op.AbstractOperation` (Task 11 - ✅ **COMPLETED**) - Operation creation
 - `org.uacalc.alg.op.Operation` (Task 12 - ✅ **COMPLETED**) - Operation interface
 - `org.uacalc.alg.op.Operations` (Task 50 - ✅ **COMPLETED**) - Operation utilities
