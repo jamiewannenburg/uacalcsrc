@@ -199,8 +199,10 @@ where
             name: self.name.clone(),
             description: self.description.clone(),
             universe: self.universe.clone(),
-            // Can't clone trait objects, so start with empty operations
-            operations: Vec::new(),
+            // Clone operations using clone_box()
+            operations: self.operations.iter()
+                .map(|op| op.clone_box())
+                .collect(),
             operations_map: None,
             similarity_type: self.similarity_type.clone(),
             // Can't clone monitor, so start with None
@@ -252,22 +254,29 @@ where
     }
     
     fn operations(&self) -> Vec<Box<dyn Operation>> {
-        // Since we can't easily clone trait objects, return references
-        // This is a limitation we'll need to address in a future iteration
-        Vec::new() // Placeholder - operations are stored internally
+        // Clone operations using clone_box()
+        self.operations.iter()
+            .map(|op| op.clone_box())
+            .collect()
     }
     
     fn get_operation(&self, sym: &OperationSymbol) -> Option<Box<dyn Operation>> {
-        // Linear search through operations
-        // We can't return a Box easily, so return by reference via a new trait method
-        // For now, we'll need to work around this limitation
-        None // This needs Arc<dyn Operation> to work properly
+        // Find operation by symbol and clone it
+        for op in &self.operations {
+            if op.symbol() == sym {
+                return Some(op.clone_box());
+            }
+        }
+        None
     }
     
     fn get_operations_map(&self) -> HashMap<OperationSymbol, Box<dyn Operation>> {
-        // Since we can't easily clone operations, return empty map for now
-        // This is a limitation that would need Arc<dyn Operation> to fix properly
-        HashMap::new()
+        // Build map by cloning operations
+        let mut map = HashMap::new();
+        for op in &self.operations {
+            map.insert(op.symbol().clone(), op.clone_box());
+        }
+        map
     }
     
     fn name(&self) -> &str {

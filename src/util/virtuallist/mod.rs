@@ -954,46 +954,6 @@ pub mod virtuallists {
     /// # Returns
     /// * `String` - Test results
     /// 
-    /// # Examples
-    /// ```
-    /// use uacalc::util::virtuallist::virtuallists::debug_test;
-    /// let result = debug_test();
-    /// println!("{}", result);
-    /// assert!(result.contains("IntTuplesWithMin"));
-    /// ```
-    pub fn debug_test() -> String {
-        let mut result = String::new();
-        
-        // Test what IntTuples produces
-        match int_tuples(3, 4) {
-            Ok(tuples) => {
-                result.push_str(&format!("IntTuples(3, 4) size: {}\n", tuples.size()));
-                for i in 0..tuples.size().min(5) {
-                    result.push_str(&format!("  [{}]: {:?}\n", i, tuples.get(i)));
-                }
-            }
-            Err(e) => result.push_str(&format!("IntTuples error: {}\n", e)),
-        }
-        
-        // Test what IntTuplesWithMin produces
-        match int_tuples_with_min(3, 4, 2) {
-            Ok(tuples) => {
-                result.push_str(&format!("IntTuplesWithMin(3, 4, 2) size: {}\n", tuples.size()));
-                for i in 0..tuples.size().min(5) {
-                    result.push_str(&format!("  [{}]: {:?}\n", i, tuples.get(i)));
-                }
-            }
-            Err(e) => result.push_str(&format!("IntTuplesWithMin error: {}\n", e)),
-        }
-        
-        // Test what array_indexer_with_min produces
-        match array_indexer_with_min(0, 3, 4, 2) {
-            Ok(arr) => result.push_str(&format!("array_indexer_with_min(0, 3, 4, 2): {:?}\n", arr)),
-            Err(e) => result.push_str(&format!("array_indexer_with_min error: {}\n", e)),
-        }
-        
-        result
-    }
 
     /// ```
     pub fn main(args: &[String]) -> String {
