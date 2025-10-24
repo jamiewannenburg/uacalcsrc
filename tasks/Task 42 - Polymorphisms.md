@@ -220,9 +220,11 @@ public class PolymorphismsWrapper extends WrapperBase {
 
 ### Implementation Status Summary
 - **Rust Implementation**: ✅ COMPLETED - Implemented in `src/alg/conlat/polymorphisms.rs`
+- **Rust Polymorphism Methods**: ✅ COMPLETED - Implemented in `src/alg/conlat/partition.rs` (unary_polymorphisms, binary_polymorphisms)
 - **Python Bindings**: ✅ COMPLETED - Implemented in `uacalc_lib/src/alg.rs`
+- **Python Polymorphism Methods**: ✅ COMPLETED - Added static methods to PyPartition
 - **Java Wrapper**: ✅ COMPLETED - Implemented in `java_wrapper/src/alg/conlat/PolymorphismsWrapper.java`
-- **Tests**: ✅ COMPLETED - Rust tests (10 tests), Python tests (8 tests)
+- **Tests**: ✅ COMPLETED - Rust tests (10 tests for Polymorphisms, partition tests pass), Python tests (8 tests)
 - **Dependencies**: ✅ READY - All dependencies (Partition, Operation, IntArray) are implemented
 
 ### Dependency Analysis
@@ -262,6 +264,7 @@ public class PolymorphismsWrapper extends WrapperBase {
 - [x] Python tests pass and match Java output
 - [x] Code compiles without warnings
 - [x] Documentation complete
-- [x] **CRITICAL**: Decided on minimal implementation approach (Option B)
-- [ ] **FUTURE**: Implement core polymorphism calculation methods (deferred until Java implementation is complete)
-- [x] **NEW**: Add comprehensive tests for polymorphism calculations
+- [x] **CRITICAL**: Decided on complete implementation approach
+- [x] **COMPLETED**: Implement core polymorphism calculation methods (unary_polymorphisms, binary_polymorphisms)
+- [x] **COMPLETED**: Add polymorphism methods to BasicPartition (Partition in Rust)
+- [x] **COMPLETED**: Integrate polymorphism methods into Python bindings
