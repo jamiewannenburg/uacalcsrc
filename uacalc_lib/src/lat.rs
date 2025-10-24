@@ -1,4 +1,5 @@
 use pyo3::prelude::*;
+use pyo3::exceptions::PyValueError;
 use uacalc::lat::*;
 use uacalc::alg::algebra::Algebra;
 
@@ -352,6 +353,194 @@ impl PyBooleanLattice {
     }
 }
 
+/// Python wrapper for MeetLattice
+#[pyclass]
+pub struct PyMeetLattice {
+    inner: uacalc::lat::lattices::MeetLattice,
+}
+
+#[pymethods]
+impl PyMeetLattice {
+    /// Get the name of this lattice
+    fn name(&self) -> &str {
+        self.inner.name()
+    }
+    
+    /// Get the universe of this lattice
+    fn universe(&self) -> Vec<i32> {
+        self.inner.universe().to_vec()
+    }
+    
+    /// Get join irreducibles of this lattice
+    fn join_irreducibles(&self) -> Vec<i32> {
+        self.inner.join_irreducibles()
+    }
+    
+    /// Get meet irreducibles of this lattice
+    fn meet_irreducibles(&self) -> Vec<i32> {
+        self.inner.meet_irreducibles()
+    }
+    
+    /// Get atoms of this lattice
+    fn atoms(&self) -> Vec<i32> {
+        self.inner.atoms()
+    }
+    
+    /// Get coatoms of this lattice
+    fn coatoms(&self) -> Vec<i32> {
+        self.inner.coatoms()
+    }
+    
+    /// Compute join of two elements
+    fn join(&self, a: i32, b: i32) -> i32 {
+        self.inner.join(&a, &b)
+    }
+    
+    /// Compute join of a list of elements
+    fn join_list(&self, args: Vec<i32>) -> i32 {
+        self.inner.join_list(&args)
+    }
+    
+    /// Compute meet of two elements
+    fn meet(&self, a: i32, b: i32) -> i32 {
+        self.inner.meet(&a, &b)
+    }
+    
+    /// Compute meet of a list of elements
+    fn meet_list(&self, args: Vec<i32>) -> i32 {
+        self.inner.meet_list(&args)
+    }
+    
+    /// Check if a ≤ b in the lattice order
+    fn leq(&self, a: i32, b: i32) -> bool {
+        self.inner.leq(&a, &b)
+    }
+    
+    /// Python string representation
+    fn __str__(&self) -> String {
+        format!("MeetLattice({})", self.inner.name())
+    }
+    
+    /// Python repr representation
+    fn __repr__(&self) -> String {
+        format!("MeetLattice({})", self.inner.name())
+    }
+}
+
+/// Python wrapper for JoinLattice
+#[pyclass]
+pub struct PyJoinLattice {
+    inner: uacalc::lat::lattices::JoinLattice,
+}
+
+#[pymethods]
+impl PyJoinLattice {
+    /// Get the name of this lattice
+    fn name(&self) -> &str {
+        self.inner.name()
+    }
+    
+    /// Get the universe of this lattice
+    fn universe(&self) -> Vec<i32> {
+        self.inner.universe().to_vec()
+    }
+    
+    /// Get join irreducibles of this lattice
+    fn join_irreducibles(&self) -> Vec<i32> {
+        self.inner.join_irreducibles()
+    }
+    
+    /// Get meet irreducibles of this lattice
+    fn meet_irreducibles(&self) -> Vec<i32> {
+        self.inner.meet_irreducibles()
+    }
+    
+    /// Get atoms of this lattice
+    fn atoms(&self) -> Vec<i32> {
+        self.inner.atoms()
+    }
+    
+    /// Get coatoms of this lattice
+    fn coatoms(&self) -> Vec<i32> {
+        self.inner.coatoms()
+    }
+    
+    /// Compute join of two elements
+    fn join(&self, a: i32, b: i32) -> i32 {
+        self.inner.join(&a, &b)
+    }
+    
+    /// Compute join of a list of elements
+    fn join_list(&self, args: Vec<i32>) -> i32 {
+        self.inner.join_list(&args)
+    }
+    
+    /// Compute meet of two elements
+    fn meet(&self, a: i32, b: i32) -> i32 {
+        self.inner.meet(&a, &b)
+    }
+    
+    /// Compute meet of a list of elements
+    fn meet_list(&self, args: Vec<i32>) -> i32 {
+        self.inner.meet_list(&args)
+    }
+    
+    /// Check if a ≤ b in the lattice order
+    fn leq(&self, a: i32, b: i32) -> bool {
+        self.inner.leq(&a, &b)
+    }
+    
+    /// Python string representation
+    fn __str__(&self) -> String {
+        format!("JoinLattice({})", self.inner.name())
+    }
+    
+    /// Python repr representation
+    fn __repr__(&self) -> String {
+        format!("JoinLattice({})", self.inner.name())
+    }
+}
+
+/// Create a lattice from a meet operation using integers for labels
+#[pyfunction]
+fn py_lattice_from_meet(_name: String, _meet: &PyAny) -> PyResult<PyMeetLattice> {
+    // For now, return an error since we need a concrete Operation implementation
+    Err(PyValueError::new_err("lattice_from_meet requires a concrete Operation implementation which is not yet available"))
+}
+
+/// Create a lattice from a join operation using integers for labels
+#[pyfunction]
+fn py_lattice_from_join(_name: String, _join: &PyAny) -> PyResult<PyJoinLattice> {
+    // For now, return an error since we need a concrete Operation implementation
+    Err(PyValueError::new_err("lattice_from_join requires a concrete Operation implementation which is not yet available"))
+}
+
+/// Create a lattice from a meet operation with custom universe
+#[pyfunction]
+fn py_lattice_from_meet_with_universe(_name: String, _univ: Vec<i32>, _meet: &PyAny) -> PyResult<PyMeetLattice> {
+    // For now, return an error since we need a concrete Operation implementation
+    Err(PyValueError::new_err("lattice_from_meet_with_universe requires a concrete Operation implementation which is not yet available"))
+}
+
+/// Create a lattice from a join operation with custom universe
+#[pyfunction]
+fn py_lattice_from_join_with_universe(_name: String, _univ: Vec<i32>, _join: &PyAny) -> PyResult<PyJoinLattice> {
+    // For now, return an error since we need a concrete Operation implementation
+    Err(PyValueError::new_err("lattice_from_join_with_universe requires a concrete Operation implementation which is not yet available"))
+}
+
+/// Convert a congruence lattice to a small lattice (not implemented)
+#[pyfunction]
+fn py_con_to_small_lattice(_con: &PyAny) -> PyResult<PyObject> {
+    Err(PyValueError::new_err("con_to_small_lattice requires CongruenceLattice which is not yet implemented"))
+}
+
+/// Create the dual of a basic lattice (not implemented)
+#[pyfunction]
+fn py_dual(_lat: &PyAny) -> PyResult<PyObject> {
+    Err(PyValueError::new_err("dual requires BasicLattice which is not yet implemented"))
+}
+
 pub fn register_lat_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     // Register classes internally but only export clean names
     m.add_class::<PyDivisibilityOrder>()?;
@@ -359,6 +548,8 @@ pub fn register_lat_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     m.add_class::<PyNaturalOrder>()?;
     m.add_class::<PyDiamondLattice>()?;
     m.add_class::<PyBooleanLattice>()?;
+    m.add_class::<PyMeetLattice>()?;
+    m.add_class::<PyJoinLattice>()?;
     
     // Export only clean names (without Py prefix)
     m.add("DivisibilityOrder", m.getattr("PyDivisibilityOrder")?)?;
@@ -366,6 +557,8 @@ pub fn register_lat_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     m.add("NaturalOrder", m.getattr("PyNaturalOrder")?)?;
     m.add("DiamondLattice", m.getattr("PyDiamondLattice")?)?;
     m.add("BooleanLattice", m.getattr("PyBooleanLattice")?)?;
+    m.add("MeetLattice", m.getattr("PyMeetLattice")?)?;
+    m.add("JoinLattice", m.getattr("PyJoinLattice")?)?;
     
     // Add OrderedSets functions
     m.add_function(wrap_pyfunction!(maximals_divisibility, m)?)?;
@@ -374,6 +567,22 @@ pub fn register_lat_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     m.add_function(wrap_pyfunction!(maximals_natural_string, m)?)?;
     m.add_function(wrap_pyfunction!(ordered_sets_main, m)?)?;
     
+    // Add Lattices factory functions
+    m.add_function(wrap_pyfunction!(py_lattice_from_meet, m)?)?;
+    m.add_function(wrap_pyfunction!(py_lattice_from_join, m)?)?;
+    m.add_function(wrap_pyfunction!(py_lattice_from_meet_with_universe, m)?)?;
+    m.add_function(wrap_pyfunction!(py_lattice_from_join_with_universe, m)?)?;
+    m.add_function(wrap_pyfunction!(py_con_to_small_lattice, m)?)?;
+    m.add_function(wrap_pyfunction!(py_dual, m)?)?;
+    
+    // Add clean function names
+    m.add("lattice_from_meet", m.getattr("py_lattice_from_meet")?)?;
+    m.add("lattice_from_join", m.getattr("py_lattice_from_join")?)?;
+    m.add("lattice_from_meet_with_universe", m.getattr("py_lattice_from_meet_with_universe")?)?;
+    m.add("lattice_from_join_with_universe", m.getattr("py_lattice_from_join_with_universe")?)?;
+    m.add("con_to_small_lattice", m.getattr("py_con_to_small_lattice")?)?;
+    m.add("dual", m.getattr("py_dual")?)?;
+    
     // Remove the Py* names from the module to avoid confusion
     let module_dict = m.dict();
     module_dict.del_item("PyDivisibilityOrder")?;
@@ -381,6 +590,16 @@ pub fn register_lat_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     module_dict.del_item("PyNaturalOrder")?;
     module_dict.del_item("PyDiamondLattice")?;
     module_dict.del_item("PyBooleanLattice")?;
+    module_dict.del_item("PyMeetLattice")?;
+    module_dict.del_item("PyJoinLattice")?;
+    
+    // Remove the py_* function names from the module to avoid confusion
+    module_dict.del_item("py_lattice_from_meet")?;
+    module_dict.del_item("py_lattice_from_join")?;
+    module_dict.del_item("py_lattice_from_meet_with_universe")?;
+    module_dict.del_item("py_lattice_from_join_with_universe")?;
+    module_dict.del_item("py_con_to_small_lattice")?;
+    module_dict.del_item("py_dual")?;
     
     // Note: Lattice and SmallLattice are traits (interfaces) and cannot be instantiated directly.
     // Python bindings are provided for concrete implementations like DiamondLattice and BooleanLattice.

@@ -10,7 +10,7 @@ fn test_similarity_type_creation() {
     
     compare_with_java!(
         config,
-        "SimilarityTypeWrapper",
+        "java_wrapper.src.alg.op.SimilarityTypeWrapper",
         ["new", "--operation_symbols", "join:2,meet:2"],
         || {
             let ops = vec![
@@ -33,7 +33,7 @@ fn test_similarity_type_creation_sorted() {
     
     compare_with_java!(
         config,
-        "SimilarityTypeWrapper",
+        "java_wrapper.src.alg.op.SimilarityTypeWrapper",
         ["new_sorted", "--operation_symbols", "prod:2,inv:1,id:0"],
         || {
             let ops = vec![
@@ -58,7 +58,7 @@ fn test_similarity_type_get_operation_symbols() {
     
     compare_with_java!(
         config,
-        "SimilarityTypeWrapper",
+        "java_wrapper.src.alg.op.SimilarityTypeWrapper",
         ["get_operation_symbols", "--operation_symbols", "join:2,meet:2"],
         || {
             let ops = vec![
@@ -82,7 +82,7 @@ fn test_similarity_type_get_sorted_operation_symbols() {
     
     compare_with_java!(
         config,
-        "SimilarityTypeWrapper",
+        "java_wrapper.src.alg.op.SimilarityTypeWrapper",
         ["get_sorted_operation_symbols", "--operation_symbols", "prod:2,inv:1,id:0"],
         || {
             let ops = vec![
@@ -107,7 +107,7 @@ fn test_similarity_type_input_size() {
     
     compare_with_java!(
         config,
-        "SimilarityTypeWrapper",
+        "java_wrapper.src.alg.op.SimilarityTypeWrapper",
         ["input_size", "--operation_symbols", "join:2,meet:2", "--alg_size", "5"],
         || {
             let ops = vec![
@@ -133,7 +133,7 @@ fn test_similarity_type_input_size_various() {
     // Test with algebra size 3
     compare_with_java!(
         config,
-        "SimilarityTypeWrapper",
+        "java_wrapper.src.alg.op.SimilarityTypeWrapper",
         ["input_size", "--operation_symbols", "join:2,meet:2", "--alg_size", "3"],
         || {
             let ops = vec![
@@ -158,7 +158,7 @@ fn test_similarity_type_input_size_empty() {
     
     compare_with_java!(
         config,
-        "SimilarityTypeWrapper",
+        "java_wrapper.src.alg.op.SimilarityTypeWrapper",
         ["input_size", "--operation_symbols", "", "--alg_size", "5"],
         || {
             let ops = vec![];
@@ -180,7 +180,7 @@ fn test_similarity_type_get_arities_map() {
     
     compare_with_java!(
         config,
-        "SimilarityTypeWrapper",
+        "java_wrapper.src.alg.op.SimilarityTypeWrapper",
         ["get_arities_map", "--operation_symbols", "join:2,meet:2,inv:1"],
         || {
             let ops = vec![
@@ -205,7 +205,7 @@ fn test_similarity_type_get_max_arity() {
     
     compare_with_java!(
         config,
-        "SimilarityTypeWrapper",
+        "java_wrapper.src.alg.op.SimilarityTypeWrapper",
         ["get_max_arity", "--operation_symbols", "join:2,meet:2,inv:1"],
         || {
             let ops = vec![
@@ -230,7 +230,7 @@ fn test_similarity_type_lattice_similarity_type() {
     
     compare_with_java!(
         config,
-        "SimilarityTypeWrapper",
+        "java_wrapper.src.alg.op.SimilarityTypeWrapper",
         ["lattice_similarity_type"],
         || {
             let lattice_type = SimilarityType::lattice_similarity_type();
@@ -251,7 +251,7 @@ fn test_similarity_type_group_similarity_type() {
     
     compare_with_java!(
         config,
-        "SimilarityTypeWrapper",
+        "java_wrapper.src.alg.op.SimilarityTypeWrapper",
         ["group_similarity_type"],
         || {
             let group_type = SimilarityType::group_similarity_type();
@@ -272,7 +272,7 @@ fn test_similarity_type_arities_string() {
     
     compare_with_java!(
         config,
-        "SimilarityTypeWrapper",
+        "java_wrapper.src.alg.op.SimilarityTypeWrapper",
         ["arities_string", "--operation_symbols", "join:2,meet:2,inv:1"],
         || {
             let ops = vec![
@@ -297,7 +297,7 @@ fn test_similarity_type_to_string() {
     
     compare_with_java!(
         config,
-        "SimilarityTypeWrapper",
+        "java_wrapper.src.alg.op.SimilarityTypeWrapper",
         ["toString", "--operation_symbols", "join:2,meet:2"],
         || {
             let ops = vec![
@@ -321,7 +321,7 @@ fn test_similarity_type_equals() {
     
     compare_with_java!(
         config,
-        "SimilarityTypeWrapper",
+        "java_wrapper.src.alg.op.SimilarityTypeWrapper",
         ["equals", "--operation_symbols1", "join:2,meet:2", "--operation_symbols2", "meet:2,join:2"],
         || {
             let ops1 = vec![
@@ -351,7 +351,7 @@ fn test_similarity_type_equals_different() {
     
     compare_with_java!(
         config,
-        "SimilarityTypeWrapper",
+        "java_wrapper.src.alg.op.SimilarityTypeWrapper",
         ["equals", "--operation_symbols1", "join:2,meet:2", "--operation_symbols2", "join:2,inv:1"],
         || {
             let ops1 = vec![
@@ -411,7 +411,7 @@ fn test_similarity_type_comprehensive() {
     
     compare_with_java!(
         config,
-        "SimilarityTypeWrapper",
+        "java_wrapper.src.alg.op.SimilarityTypeWrapper",
         ["test"],
         || {
             // Test basic creation

@@ -10,7 +10,7 @@ fn test_operation_symbol_creation() {
     
     compare_with_java!(
         config,
-        "OperationSymbolWrapper",
+        "java_wrapper.src.alg.op.OperationSymbolWrapper",
         ["new", "--name", "f", "--arity", "2"],
         || {
             let sym = OperationSymbol::new("f", 2, false);
@@ -30,7 +30,7 @@ fn test_operation_symbol_creation_associative() {
     
     compare_with_java!(
         config,
-        "OperationSymbolWrapper",
+        "java_wrapper.src.alg.op.OperationSymbolWrapper",
         ["new", "--name", "g", "--arity", "2", "--associative", "true"],
         || {
             let sym = OperationSymbol::new("g", 2, true);
@@ -50,7 +50,7 @@ fn test_operation_symbol_arity() {
     
     compare_with_java!(
         config,
-        "OperationSymbolWrapper",
+        "java_wrapper.src.alg.op.OperationSymbolWrapper",
         ["arity", "--name", "f", "--arity", "3"],
         || {
             let sym = OperationSymbol::new("f", 3, false);
@@ -69,7 +69,7 @@ fn test_operation_symbol_name() {
     
     compare_with_java!(
         config,
-        "OperationSymbolWrapper",
+        "java_wrapper.src.alg.op.OperationSymbolWrapper",
         ["name", "--name", "myOp", "--arity", "1"],
         || {
             let sym = OperationSymbol::new("myOp", 1, false);
@@ -88,7 +88,7 @@ fn test_operation_symbol_is_associative() {
     
     compare_with_java!(
         config,
-        "OperationSymbolWrapper",
+        "java_wrapper.src.alg.op.OperationSymbolWrapper",
         ["isAssociative", "--name", "f", "--arity", "2"],
         || {
             let sym = OperationSymbol::new("f", 2, false);
@@ -107,7 +107,7 @@ fn test_operation_symbol_set_associative() {
     
         compare_with_java!(
         config,
-        "OperationSymbolWrapper",
+        "java_wrapper.src.alg.op.OperationSymbolWrapper",
         ["setAssociative", "--name", "f", "--arity", "2", "--associative", "false", "--newAssociative", "true"],
         || {
             let mut sym = OperationSymbol::new("f", 2, false);
@@ -128,7 +128,7 @@ fn test_operation_symbol_to_string() {
     
     compare_with_java!(
         config,
-        "OperationSymbolWrapper",
+        "java_wrapper.src.alg.op.OperationSymbolWrapper",
         ["toString", "--name", "f", "--arity", "2"],
         || {
             let sym = OperationSymbol::new("f", 2, false);
@@ -147,7 +147,7 @@ fn test_operation_symbol_to_string_with_arity() {
     
     compare_with_java!(
         config,
-        "OperationSymbolWrapper",
+        "java_wrapper.src.alg.op.OperationSymbolWrapper",
         ["toStringWithArity", "--name", "f", "--arity", "2", "--showArity", "true"],
         || {
             let sym = OperationSymbol::new("f", 2, false);
@@ -167,7 +167,7 @@ fn test_operation_symbol_compare_to() {
     
     compare_with_java!(
         config,
-        "OperationSymbolWrapper",
+        "java_wrapper.src.alg.op.OperationSymbolWrapper",
         ["compareTo", "--name1", "f", "--arity1", "2", "--name2", "g", "--arity2", "3"],
         || {
             let sym1 = OperationSymbol::new("f", 2, false);
@@ -191,7 +191,7 @@ fn test_operation_symbol_equals() {
     
     compare_with_java!(
         config,
-        "OperationSymbolWrapper",
+        "java_wrapper.src.alg.op.OperationSymbolWrapper",
         ["equals", "--name1", "f", "--arity1", "2", "--name2", "f", "--arity2", "2"],
         || {
             let sym1 = OperationSymbol::new("f", 2, false);
@@ -237,7 +237,7 @@ fn test_operation_symbol_get_operation_symbol_arity_0() {
     
     compare_with_java!(
         config,
-        "OperationSymbolWrapper",
+        "java_wrapper.src.alg.op.OperationSymbolWrapper",
         ["getOperationSymbol", "--arity", "0"],
         || {
             let sym = OperationSymbol::get_operation_symbol(0);
@@ -257,7 +257,7 @@ fn test_operation_symbol_get_operation_symbol_arity_1() {
     
     compare_with_java!(
         config,
-        "OperationSymbolWrapper",
+        "java_wrapper.src.alg.op.OperationSymbolWrapper",
         ["getOperationSymbol", "--arity", "1"],
         || {
             let sym = OperationSymbol::get_operation_symbol(1);
@@ -293,7 +293,7 @@ fn test_operation_symbol_get_operation_symbol_arity_3() {
     
     compare_with_java!(
         config,
-        "OperationSymbolWrapper",
+        "java_wrapper.src.alg.op.OperationSymbolWrapper",
         ["getOperationSymbol", "--arity", "3"],
         || {
             let sym = OperationSymbol::get_operation_symbol(3);
@@ -313,7 +313,7 @@ fn test_operation_symbol_get_operation_symbol_high_arity() {
     
     compare_with_java!(
         config,
-        "OperationSymbolWrapper",
+        "java_wrapper.src.alg.op.OperationSymbolWrapper",
         ["getOperationSymbol", "--arity", "5"],
         || {
             let sym = OperationSymbol::get_operation_symbol(5);
@@ -354,7 +354,7 @@ fn test_operation_symbol_constants() {
     
     compare_with_java!(
         config,
-        "OperationSymbolWrapper",
+        "java_wrapper.src.alg.op.OperationSymbolWrapper",
         ["constants"],
         || {
             json!({
@@ -421,7 +421,7 @@ fn test_operation_symbol_comprehensive() {
     
     compare_with_java!(
         config,
-        "OperationSymbolWrapper",
+        "java_wrapper.src.alg.op.OperationSymbolWrapper",
         ["test"],
         || {
             // Test basic creation
