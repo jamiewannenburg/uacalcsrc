@@ -40,6 +40,9 @@ pub use small_algebra::{SmallAlgebra, BasicSmallAlgebra, AlgebraType};
 pub use subalgebra::Subalgebra;
 pub use product_algebra::ProductAlgebra;
 
+// Import ParameterizedOperation from op module (defined later in this file)
+pub use op::ParameterizedOperation;
+
 // PowerAlgebra is implemented in this file (mod.rs)
 
 // BasicAlgebra is now implemented as BasicSmallAlgebra
@@ -907,8 +910,141 @@ impl std::fmt::Debug for MatrixPowerAlgebra {
     }
 }
 
+/// A parameterized algebra with configurable parameters.
+/// 
+/// This struct represents an algebra that can be instantiated with specific
+/// parameter values. Parameters can be used in expressions for set size and
+/// operation definitions.
+/// 
+/// # Examples
+/// ```
+/// use uacalc::alg::ParameterizedAlgebra;
+/// use std::collections::HashMap;
+/// 
+/// // Create a parameterized algebra
+/// let param_alg = ParameterizedAlgebra::new(
+///     vec!["n".to_string(), "m".to_string()],
+///     "ParamAlg".to_string(),
+///     "n*m".to_string(),
+///     "A parameterized algebra".to_string(),
+///     Vec::new()
+/// );
+/// 
+/// // Get parameter map
+/// let values = vec![3, 4];
+/// let map = param_alg.get_parameter_map(&values).unwrap();
+/// assert_eq!(map.get("n"), Some(&"3".to_string()));
+/// assert_eq!(map.get("m"), Some(&"4".to_string()));
+/// ```
+#[derive(Debug, Clone)]
 pub struct ParameterizedAlgebra {
-    // TODO: Implement parameterized algebra
+    /// Names of the parameters
+    pub parameter_names: Vec<String>,
+    /// Name of the algebra
+    pub name: String,
+    /// Expression for set size (may contain parameter references)
+    pub set_size_exp: String,
+    /// Description of the algebra
+    pub description: String,
+    /// List of parameterized operations
+    pub ops: Vec<ParameterizedOperation>,
+}
+
+impl ParameterizedAlgebra {
+    /// Create a new ParameterizedAlgebra.
+    /// 
+    /// # Arguments
+    /// * `parameter_names` - Names of the parameters
+    /// * `name` - Name of the algebra
+    /// * `set_size_exp` - Expression for set size
+    /// * `description` - Description of the algebra
+    /// * `ops` - List of parameterized operations
+    /// 
+    /// # Returns
+    /// A new ParameterizedAlgebra instance
+    /// 
+    /// # Examples
+    /// ```
+    /// use uacalc::alg::ParameterizedAlgebra;
+    /// 
+    /// let param_alg = ParameterizedAlgebra::new(
+    ///     vec!["n".to_string()],
+    ///     "Zn".to_string(),
+    ///     "n".to_string(),
+    ///     "Cyclic group of order n".to_string(),
+    ///     Vec::new()
+    /// );
+    /// assert_eq!(param_alg.name, "Zn");
+    /// ```
+    pub fn new(
+        parameter_names: Vec<String>,
+        name: String,
+        set_size_exp: String,
+        description: String,
+        ops: Vec<ParameterizedOperation>,
+    ) -> Self {
+        ParameterizedAlgebra {
+            parameter_names,
+            name,
+            set_size_exp,
+            description,
+            ops,
+        }
+    }
+    
+    /// Create a parameter map from values.
+    /// 
+    /// Maps each parameter name to its corresponding value from the values list.
+    /// 
+    /// # Arguments
+    /// * `values` - List of integer values for the parameters
+    /// 
+    /// # Returns
+    /// * `Ok(HashMap<String, String>)` - Map from parameter names to string values
+    /// * `Err(String)` - If the number of values doesn't match the number of parameters
+    /// 
+    /// # Examples
+    /// ```
+    /// use uacalc::alg::ParameterizedAlgebra;
+    /// 
+    /// let param_alg = ParameterizedAlgebra::new(
+    ///     vec!["n".to_string(), "m".to_string()],
+    ///     "Example".to_string(),
+    ///     "n*m".to_string(),
+    ///     "".to_string(),
+    ///     Vec::new()
+    /// );
+    /// 
+    /// let map = param_alg.get_parameter_map(&vec![5, 7]).unwrap();
+    /// assert_eq!(map.get("n"), Some(&"5".to_string()));
+    /// assert_eq!(map.get("m"), Some(&"7".to_string()));
+    /// ```
+    pub fn get_parameter_map(&self, values: &[i32]) -> Result<HashMap<String, String>, String> {
+        if values.len() != self.parameter_names.len() {
+            return Err(format!(
+                "Expected {} values but got {}",
+                self.parameter_names.len(),
+                values.len()
+            ));
+        }
+        
+        let mut map = HashMap::new();
+        for (name, &value) in self.parameter_names.iter().zip(values.iter()) {
+            map.insert(name.clone(), value.to_string());
+        }
+        
+        Ok(map)
+    }
+}
+
+impl std::fmt::Display for ParameterizedAlgebra {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "ParameterizedAlgebra(name={}, params={:?})",
+            self.name, self.parameter_names
+        )
+    }
 }
 
 pub struct PolinLikeAlgebra {

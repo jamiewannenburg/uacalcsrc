@@ -267,8 +267,145 @@ mod simple_operation_tests;
 mod term_operation_imp_tests;
 
 
+/// A parameterized operation with configurable parameters.
+/// 
+/// This struct represents an operation that can be instantiated with specific
+/// parameter values. Parameters can be used in expressions for arity and
+/// operation definitions.
+/// 
+/// Note: This is a partial implementation that does not support Groovy
+/// syntax parsing. The `make_op` method is a simplified version.
+/// 
+/// # Examples
+/// ```
+/// use uacalc::alg::op::ParameterizedOperation;
+/// 
+/// // Create a parameterized operation
+/// let param_op = ParameterizedOperation::new(
+///     "add_mod_n".to_string(),
+///     "plus".to_string(),
+///     "n".to_string(),
+///     vec!["n".to_string()],
+///     "2".to_string(),
+///     "Addition modulo n".to_string(),
+///     "0".to_string(),
+///     "(a + b) % n".to_string(),
+/// );
+/// assert_eq!(param_op.name, "add_mod_n");
+/// ```
+#[derive(Debug, Clone)]
 pub struct ParameterizedOperation {
-    // TODO: Implement parameterized operation
+    /// Name of the operation
+    pub name: String,
+    /// Symbol name for the operation
+    pub symbol_name: String,
+    /// Expression for set size (may contain parameter references)
+    pub set_size_exp: String,
+    /// Names of the parameters
+    pub parameter_names: Vec<String>,
+    /// Expression for arity (may contain parameter references)
+    pub arity_exp: String,
+    /// Description of the operation
+    pub description: String,
+    /// Expression for default value (may contain parameter references)
+    pub default_value_exp: String,
+    /// Expression for operation definition (may contain parameter references)
+    pub definition_exp: String,
+}
+
+impl ParameterizedOperation {
+    /// Create a new ParameterizedOperation.
+    /// 
+    /// # Arguments
+    /// * `name` - Name of the operation
+    /// * `symbol_name` - Symbol name for the operation
+    /// * `set_size_exp` - Expression for set size
+    /// * `parameter_names` - Names of the parameters
+    /// * `arity_exp` - Expression for arity
+    /// * `description` - Description of the operation
+    /// * `default_value_exp` - Expression for default value
+    /// * `definition_exp` - Expression for operation definition
+    /// 
+    /// # Returns
+    /// A new ParameterizedOperation instance
+    /// 
+    /// # Examples
+    /// ```
+    /// use uacalc::alg::op::ParameterizedOperation;
+    /// 
+    /// let param_op = ParameterizedOperation::new(
+    ///     "mult".to_string(),
+    ///     "times".to_string(),
+    ///     "n".to_string(),
+    ///     vec!["n".to_string()],
+    ///     "2".to_string(),
+    ///     "Multiplication".to_string(),
+    ///     "1".to_string(),
+    ///     "a * b".to_string(),
+    /// );
+    /// assert_eq!(param_op.name, "mult");
+    /// ```
+    pub fn new(
+        name: String,
+        symbol_name: String,
+        set_size_exp: String,
+        parameter_names: Vec<String>,
+        arity_exp: String,
+        description: String,
+        default_value_exp: String,
+        definition_exp: String,
+    ) -> Self {
+        ParameterizedOperation {
+            name,
+            symbol_name,
+            set_size_exp,
+            parameter_names,
+            arity_exp,
+            description,
+            default_value_exp,
+            definition_exp,
+        }
+    }
+    
+    /// Substitute parameter values in a parameterized string.
+    /// 
+    /// This is a simplified version that performs basic string substitution
+    /// without full expression parsing. For now, it returns the string as-is.
+    /// 
+    /// # Arguments
+    /// * `parameterized_string` - String containing parameter references
+    /// * `parm_map` - Map from parameter names to values
+    /// 
+    /// # Returns
+    /// The string with parameters substituted
+    /// 
+    /// # Examples
+    /// ```
+    /// use uacalc::alg::op::ParameterizedOperation;
+    /// use std::collections::HashMap;
+    /// 
+    /// let mut map = HashMap::new();
+    /// map.insert("n".to_string(), "5".to_string());
+    /// 
+    /// let result = ParameterizedOperation::sub_parm_values("n+1", &map);
+    /// // Note: This simplified version doesn't parse expressions yet
+    /// assert_eq!(result, "n+1");
+    /// ```
+    pub fn sub_parm_values(parameterized_string: &str, _parm_map: &HashMap<String, String>) -> String {
+        // TODO: Implement actual parameter substitution
+        // For now, return the string as-is (matching Java implementation stub)
+        parameterized_string.to_string()
+    }
+}
+
+impl std::fmt::Display for ParameterizedOperation {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "ParameterizedOperation(name={}, symbol={}, params={:?})",
+            self.name, self.symbol_name, self.parameter_names
+        )
+    }
 }
 
 /// A set of OperationSymbol's representing a similarity type.
