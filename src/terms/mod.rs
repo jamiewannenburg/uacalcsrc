@@ -588,9 +588,574 @@ impl Term for NonVariableTerm {
     }
 }
 
-/// Placeholder for the Taylor struct
+/// Taylor term analyzer for checking Markovic-McKenzie-Siggers term properties.
+/// 
+/// This struct helps determine if a term in a language can be a Markovic-McKenzie-Siggers term,
+/// which is an idempotent term satisfying specific equations.
+/// 
+/// In Java: `org.uacalc.terms.Taylor`
+#[derive(Debug)]
 pub struct Taylor {
-    // TODO: Implement Taylor
+    pub taylor_term: Box<dyn Term>,
+    pub arity: i32,
+    pub eqs: Option<Vec<crate::eq::Equation>>,
+    pub inteqs: Vec<Vec<crate::util::int_array::IntArray>>,
+    root_map: std::collections::HashMap<crate::util::int_array::IntArray, crate::util::int_array::IntArray>,
+}
+
+impl Clone for Taylor {
+    fn clone(&self) -> Self {
+        Taylor {
+            taylor_term: self.taylor_term.clone_box(),
+            arity: self.arity,
+            eqs: self.eqs.clone(),
+            inteqs: self.inteqs.clone(),
+            root_map: self.root_map.clone(),
+        }
+    }
+}
+
+impl Taylor {
+    /// Create a new Taylor analyzer from a term and equations.
+    /// 
+    /// # Arguments
+    /// * `taylor_term` - The Taylor term
+    /// * `eqs` - The list of equations
+    /// 
+    /// # Returns
+    /// A new Taylor instance
+    pub fn new(taylor_term: Box<dyn Term>, eqs: Vec<crate::eq::Equation>) -> Self {
+        let arity = taylor_term.leading_operation_symbol()
+            .expect("Taylor term must have an operation symbol")
+            .arity();
+        
+        let mut taylor = Taylor {
+            taylor_term,
+            arity,
+            eqs: Some(eqs.clone()),
+            inteqs: Vec::new(),
+            root_map: std::collections::HashMap::new(),
+        };
+        
+        taylor.make_root_map_from_eqs(&eqs);
+        taylor
+    }
+    
+    /// Create a new Taylor analyzer from an operation symbol and integer equations.
+    /// 
+    /// # Arguments
+    /// * `sym` - The operation symbol
+    /// * `inteqs` - The list of equation pairs (each equation is a pair of IntArrays)
+    /// 
+    /// # Returns
+    /// A new Taylor instance
+    pub fn new_with_inteqs(sym: OperationSymbol, inteqs: Vec<Vec<crate::util::int_array::IntArray>>) -> Self {
+        let arity = sym.arity();
+        let mut vars: Vec<Box<dyn Term>> = Vec::new();
+        for i in 0..arity {
+            vars.push(Box::new(VariableImp::new(&format!("x_{}", i))));
+        }
+        let taylor_term = Box::new(NonVariableTerm::new(sym, vars));
+        
+        let mut taylor = Taylor {
+            taylor_term,
+            arity,
+            eqs: None,
+            inteqs: inteqs.clone(),
+            root_map: std::collections::HashMap::new(),
+        };
+        
+        taylor.make_root_map(&inteqs);
+        taylor
+    }
+    
+    /// Create a new Taylor analyzer from arity and integer equations.
+    /// 
+    /// # Arguments
+    /// * `arity` - The arity of the operation
+    /// * `inteqs` - The list of equation pairs
+    /// 
+    /// # Returns
+    /// A new Taylor instance
+    pub fn new_with_arity(arity: i32, inteqs: Vec<Vec<crate::util::int_array::IntArray>>) -> Self {
+        Self::new_with_inteqs(OperationSymbol::new("f", arity, false), inteqs)
+    }
+    
+    /// Get the Markovic-McKenzie term (singleton).
+    /// 
+    /// This is a static factory method that returns the standard Markovic-McKenzie term.
+    /// 
+    /// # Returns
+    /// A Taylor instance representing the Markovic-McKenzie term
+    pub fn markovic_mckenzie_term() -> Self {
+        use crate::util::int_array::IntArray;
+        
+        let mut eqs = Vec::new();
+        
+        let mut eq = Vec::new();
+        eq.push(IntArray::from_array(vec![1, 0, 0, 0]).unwrap());
+        eq.push(IntArray::from_array(vec![0, 0, 1, 1]).unwrap());
+        eqs.push(eq);
+        
+        let mut eq = Vec::new();
+        eq.push(IntArray::from_array(vec![0, 0, 1, 0]).unwrap());
+        eq.push(IntArray::from_array(vec![0, 1, 0, 0]).unwrap());
+        eqs.push(eq);
+        
+        Self::new_with_inteqs(OperationSymbol::new("mm", 4, false), eqs)
+    }
+    
+    /// Get the Siggers term (singleton).
+    /// 
+    /// This is a static factory method that returns the standard Siggers term.
+    /// 
+    /// # Returns
+    /// A Taylor instance representing the Siggers term
+    pub fn siggers_term() -> Self {
+        use crate::util::int_array::IntArray;
+        
+        let mut eqs = Vec::new();
+        
+        let mut eq = Vec::new();
+        eq.push(IntArray::from_array(vec![1, 1, 0, 0, 0, 0]).unwrap());
+        eq.push(IntArray::from_array(vec![0, 0, 1, 0, 1, 0]).unwrap());
+        eqs.push(eq);
+        
+        let mut eq = Vec::new();
+        eq.push(IntArray::from_array(vec![0, 0, 0, 0, 1, 1]).unwrap());
+        eq.push(IntArray::from_array(vec![0, 1, 0, 1, 0, 0]).unwrap());
+        eqs.push(eq);
+        
+        Self::new_with_inteqs(OperationSymbol::new("s", 6, false), eqs)
+    }
+    
+    /// Find the canonical form of a term.
+    /// 
+    /// This reduces via idempotence and chooses the lexicographic order.
+    /// 
+    /// # Arguments
+    /// * `t` - The term to canonicalize
+    /// 
+    /// # Returns
+    /// The canonical form of the term
+    pub fn canonical_form(&self, t: &dyn Term) -> Box<dyn Term> {
+        if t.isa_variable() {
+            return t.clone_box();
+        }
+        
+        let children = t.get_children().unwrap_or_default();
+        let mut canonical_children: Vec<Box<dyn Term>> = Vec::new();
+        for child in children {
+            canonical_children.push(self.canonical_form(child.as_ref()));
+        }
+        
+        let mut reps: Vec<Box<dyn Term>> = Vec::new();
+        let mut map: std::collections::HashMap<String, usize> = std::collections::HashMap::new();
+        let mut current = 0;
+        
+        for child in &canonical_children {
+            let child_str = format!("{}", child);
+            if !map.contains_key(&child_str) {
+                map.insert(child_str, current);
+                reps.push(child.clone_box());
+                current += 1;
+                if current > 2 {
+                    return Box::new(NonVariableTerm::new(
+                        self.taylor_term.leading_operation_symbol().unwrap().clone(),
+                        canonical_children,
+                    ));
+                }
+            }
+        }
+        
+        if current == 1 {
+            return canonical_children[0].clone_box();
+        }
+        
+        let (small_term, big_term) = if Taylor::lexicographically_compare_terms(reps[0].as_ref(), reps[1].as_ref()) < 0 {
+            (reps[0].clone_box(), reps[1].clone_box())
+        } else {
+            (reps[1].clone_box(), reps[0].clone_box())
+        };
+        
+        let mut foo = vec![0; self.arity as usize];
+        for (i, child) in canonical_children.iter().enumerate() {
+            let child_str = format!("{}", child);
+            let small_str = format!("{}", small_term);
+            if child_str == small_str {
+                foo[i] = 0;
+            } else {
+                foo[i] = 1;
+            }
+        }
+        
+        use crate::util::int_array::IntArray;
+        let root = self.find_root(&IntArray::from_array(foo).unwrap());
+        
+        if self.all_equal(&root, 0) {
+            return small_term;
+        }
+        if self.all_equal(&root, 1) {
+            return big_term;
+        }
+        
+        let mut mod_children: Vec<Box<dyn Term>> = Vec::new();
+        for i in 0..self.arity as usize {
+            use crate::util::int_array::IntArrayTrait;
+            if root.get(i).unwrap_or(0) == 0 {
+                mod_children.push(small_term.clone_box());
+            } else {
+                mod_children.push(big_term.clone_box());
+            }
+        }
+        
+        Box::new(NonVariableTerm::new(
+            self.taylor_term.leading_operation_symbol().unwrap().clone(),
+            mod_children,
+        ))
+    }
+    
+    /// Find a term which interprets the given Taylor term.
+    /// 
+    /// # Arguments
+    /// * `g` - The target Taylor term to interpret
+    /// * `level` - The depth level to search
+    /// 
+    /// # Returns
+    /// The interpreting term if found, None otherwise
+    pub fn interprets(&self, g: &Taylor, level: i32) -> Option<Box<dyn Term>> {
+        let g_arity = g.arity;
+        let inteqs = &g.inteqs;
+        
+        let mut pow = 1;
+        for _ in 0..level {
+            pow *= self.arity;
+        }
+        
+        let mut seq = vec![0; pow as usize];
+        use crate::util::sequence_generator::SequenceGenerator;
+        use crate::util::array_incrementor::ArrayIncrementor;
+        
+        let mut c: i64 = 0;
+        loop {
+            // Create incrementor, increment, then drop it so we can read seq
+            let has_next = {
+                let mut inc = SequenceGenerator::sequence_incrementor(&mut seq, g_arity - 1);
+                inc.increment()
+            };
+            
+            if !has_next {
+                break;
+            }
+            
+            if c % 1000000 == 0 {
+                println!("c = {}", c);
+            }
+            c += 1;
+            
+            let mut ok = true;
+            for eq in inteqs {
+                use crate::util::int_array::IntArrayTrait;
+                let side = eq[0].as_slice();
+                let mut arr = vec![0; pow as usize];
+                for i in 0..pow as usize {
+                    arr[i] = side[seq[i] as usize];
+                }
+                let left = self.canonical_form(self.term_from_array(&arr).as_ref());
+                
+                let side = eq[1].as_slice();
+                for i in 0..pow as usize {
+                    arr[i] = side[seq[i] as usize];
+                }
+                let rt = self.canonical_form(self.term_from_array(&arr).as_ref());
+                
+                if format!("{}", rt) != format!("{}", left) {
+                    ok = false;
+                    break;
+                }
+            }
+            
+            if ok {
+                use crate::util::array_string::to_string;
+                println!("this works: {}", to_string(&seq));
+                return None;
+            }
+        }
+        
+        None
+    }
+    
+    /// Create a term from an array of variable indices.
+    /// 
+    /// # Arguments
+    /// * `arr` - The array of variable indices (0 for x, 1 for y)
+    /// 
+    /// # Returns
+    /// The term represented by the array
+    pub fn term_from_array(&self, arr: &[i32]) -> Box<dyn Term> {
+        self.term_from_array_range(arr, 0, arr.len())
+    }
+    
+    /// Create a term from a range in an array.
+    /// 
+    /// # Arguments
+    /// * `arr` - The array of variable indices
+    /// * `start` - The starting index
+    /// * `len` - The length of the range
+    /// 
+    /// # Returns
+    /// The term represented by the array range
+    pub fn term_from_array_range(&self, arr: &[i32], start: usize, len: usize) -> Box<dyn Term> {
+        if len == 1 {
+            if arr[start] == 0 {
+                return Box::new(VariableImp::x());
+            }
+            return Box::new(VariableImp::y());
+        }
+        
+        let len2 = len / self.arity as usize;
+        let mut lst: Vec<Box<dyn Term>> = Vec::new();
+        for i in 0..self.arity as usize {
+            lst.push(self.term_from_array_range(arr, start + i * len2, len2));
+        }
+        
+        Box::new(NonVariableTerm::new(
+            self.taylor_term.leading_operation_symbol().unwrap().clone(),
+            lst,
+        ))
+    }
+    
+    /// Make a balanced Taylor term.
+    /// 
+    /// # Arguments
+    /// * `f` - The operation symbol
+    /// * `depth` - The depth of the term (at least 1)
+    /// * `var_list` - The list of variables (length should be k^depth)
+    /// 
+    /// # Returns
+    /// The balanced Taylor term
+    pub fn make_balanced_taylor_term(&self, f: &OperationSymbol, depth: i32, var_list: &[VariableImp]) -> Box<dyn Term> {
+        self.balanced_tt(f, depth, var_list, 0)
+    }
+    
+    /// Lexicographically compare two terms.
+    /// 
+    /// # Arguments
+    /// * `s` - The first term
+    /// * `t` - The second term
+    /// 
+    /// # Returns
+    /// * `-1` if s < t
+    /// * `0` if s == t
+    /// * `1` if s > t
+    pub fn lexicographically_compare_terms(s: &dyn Term, t: &dyn Term) -> i32 {
+        let s_str = format!("{}", s);
+        let t_str = format!("{}", t);
+        if s_str == t_str {
+            return 0;
+        }
+        
+        if s.depth() < t.depth() {
+            return -1;
+        }
+        if t.depth() < s.depth() {
+            return 1;
+        }
+        
+        if s.isa_variable() {
+            // Both are variables
+            if s_str == "x" {
+                return -1;
+            }
+            return 1;
+        }
+        
+        let s_children = s.get_children().unwrap_or_default();
+        let t_children = t.get_children().unwrap_or_default();
+        
+        for i in 0..s_children.len().min(t_children.len()) {
+            let c = Taylor::lexicographically_compare_terms(s_children[i].as_ref(), t_children[i].as_ref());
+            if c < 0 {
+                return -1;
+            }
+            if c > 0 {
+                return 1;
+            }
+        }
+        
+        0
+    }
+    
+    /// Lexicographically compare two IntArrays (static version).
+    /// 
+    /// # Arguments
+    /// * `a` - The first IntArray
+    /// * `b` - The second IntArray
+    /// 
+    /// # Returns
+    /// * `-1` if a < b
+    /// * `0` if a == b
+    /// * `1` if a > b
+    pub fn lexicographically_compare_int_arrays(a: &crate::util::int_array::IntArray, b: &crate::util::int_array::IntArray) -> i32 {
+        use crate::util::int_array::IntArrayTrait;
+        Self::lexicographically_compare_arrays(a.as_slice(), b.as_slice())
+    }
+    
+    /// Lexicographically compare two arrays (static version).
+    /// 
+    /// # Arguments
+    /// * `a` - The first array
+    /// * `b` - The second array
+    /// 
+    /// # Returns
+    /// * `-1` if a < b
+    /// * `0` if a == b
+    /// * `1` if a > b
+    pub fn lexicographically_compare_arrays(a: &[i32], b: &[i32]) -> i32 {
+        if a.len() != b.len() {
+            panic!("Arrays not of the same size");
+        }
+        
+        for i in 0..a.len() {
+            if a[i] < b[i] {
+                return -1;
+            }
+            if a[i] > b[i] {
+                return 1;
+            }
+        }
+        
+        0
+    }
+    
+    /// Get the arity of this Taylor term.
+    /// 
+    /// # Returns
+    /// The arity
+    pub fn arity(&self) -> i32 {
+        self.arity
+    }
+    
+    /// Get the integer equations.
+    /// 
+    /// # Returns
+    /// The list of integer equation pairs
+    pub fn inteqs(&self) -> &Vec<Vec<crate::util::int_array::IntArray>> {
+        &self.inteqs
+    }
+    
+    /// Get the equations.
+    /// 
+    /// # Returns
+    /// The list of equations if available
+    pub fn equations(&self) -> Option<&Vec<crate::eq::Equation>> {
+        self.eqs.as_ref()
+    }
+    
+    // Private helper methods
+    
+    fn make_root_map_from_eqs(&mut self, _eqs: &[crate::eq::Equation]) {
+        // TODO: Implement this method if needed
+        // The Java version has this as TODO as well
+    }
+    
+    fn make_root_map(&mut self, inteqs: &[Vec<crate::util::int_array::IntArray>]) {
+        for eq in inteqs {
+            let r0 = self.find_root(&eq[0]);
+            let r1 = self.find_root(&eq[1]);
+            
+            if Self::lexicographically_compare_int_arrays(&r0, &r1) < 0 {
+                if self.all_equal(&r1, 1) {
+                    self.root_map.insert(r0.clone(), r1.clone());
+                } else {
+                    self.root_map.insert(r1.clone(), r0.clone());
+                }
+            } else if Self::lexicographically_compare_int_arrays(&r0, &r1) > 0 {
+                if self.all_equal(&r0, 1) {
+                    self.root_map.insert(r1.clone(), r0.clone());
+                } else {
+                    self.root_map.insert(r0.clone(), r1.clone());
+                }
+            }
+            
+            let r0 = self.find_root(&self.complement(&eq[0]));
+            let r1 = self.find_root(&self.complement(&eq[1]));
+            
+            if Self::lexicographically_compare_int_arrays(&r0, &r1) < 0 {
+                if self.all_equal(&r1, 1) {
+                    self.root_map.insert(r0.clone(), r1.clone());
+                } else {
+                    self.root_map.insert(r1.clone(), r0.clone());
+                }
+            } else if Self::lexicographically_compare_int_arrays(&r0, &r1) > 0 {
+                if self.all_equal(&r0, 1) {
+                    self.root_map.insert(r1.clone(), r0.clone());
+                } else {
+                    self.root_map.insert(r0.clone(), r1.clone());
+                }
+            }
+        }
+    }
+    
+    fn all_equal(&self, ia: &crate::util::int_array::IntArray, value: i32) -> bool {
+        use crate::util::int_array::IntArrayTrait;
+        for i in 0..self.arity as usize {
+            if let Some(v) = ia.get(i) {
+                if v != value {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
+        true
+    }
+    
+    fn complement(&self, ia: &crate::util::int_array::IntArray) -> crate::util::int_array::IntArray {
+        use crate::util::int_array::{IntArray, IntArrayTrait};
+        let n = ia.universe_size();
+        let mut arr = vec![0; n];
+        for i in 0..n {
+            if ia.get(i).unwrap_or(0) == 0 {
+                arr[i] = 1;
+            } else {
+                arr[i] = 0;
+            }
+        }
+        IntArray::from_array(arr).unwrap()
+    }
+    
+    fn find_root(&self, ia: &crate::util::int_array::IntArray) -> crate::util::int_array::IntArray {
+        if let Some(next) = self.root_map.get(ia) {
+            let r = self.find_root(next);
+            // Note: We can't insert into root_map here due to immutable borrow
+            r
+        } else {
+            ia.clone()
+        }
+    }
+    
+    fn balanced_tt(&self, f: &OperationSymbol, depth: i32, var_list: &[VariableImp], start: usize) -> Box<dyn Term> {
+        let k = f.arity() as usize;
+        let factor = var_list.len() / k;
+        
+        if depth == 1 {
+            let mut lst: Vec<Box<dyn Term>> = Vec::new();
+            for i in 0..k {
+                lst.push(Box::new(var_list[start + i].clone()));
+            }
+            return Box::new(NonVariableTerm::new(f.clone(), lst));
+        }
+        
+        let mut lst: Vec<Box<dyn Term>> = Vec::new();
+        let mut current = start;
+        for _ in 0..k {
+            lst.push(self.balanced_tt(f, depth - 1, var_list, current));
+            current += factor;
+        }
+        
+        Box::new(NonVariableTerm::new(f.clone(), lst))
+    }
 }
 
 // =============================================================================

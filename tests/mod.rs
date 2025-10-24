@@ -10,3 +10,4 @@ pub mod horner_tests;
 pub mod integration_tests;
 pub mod java_comparison_examples;
 pub mod unit_tests;
+pub mod taylor_tests;

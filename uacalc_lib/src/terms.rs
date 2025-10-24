@@ -239,6 +239,217 @@ impl PyNonVariableTerm {
     }
 }
 
+/// Python wrapper for Taylor
+#[pyclass]
+pub struct PyTaylor {
+    pub(crate) inner: uacalc::terms::Taylor,
+}
+
+#[pymethods]
+impl PyTaylor {
+    /// Create a new Taylor analyzer from an operation symbol and integer equations.
+    /// 
+    /// # Arguments
+    /// * `op_sym` - The operation symbol (a PyOperationSymbol)
+    /// * `inteqs` - List of equation pairs (each pair is a list of 2 IntArrays)
+    /// 
+    /// # Returns
+    /// A new Taylor instance
+    #[new]
+    fn new(op_sym: &crate::alg::PyOperationSymbol, inteqs: Vec<Vec<crate::util::PyIntArray>>) -> Self {
+        // Convert PyIntArray to IntArray
+        let rust_inteqs: Vec<Vec<uacalc::util::int_array::IntArray>> = inteqs
+            .iter()
+            .map(|pair| {
+                pair.iter()
+                    .map(|py_ia| py_ia.inner.clone())
+                    .collect()
+            })
+            .collect();
+        
+        PyTaylor {
+            inner: uacalc::terms::Taylor::new_with_inteqs(op_sym.get_inner(), rust_inteqs),
+        }
+    }
+    
+    /// Create a new Taylor analyzer from arity and integer equations.
+    /// 
+    /// # Arguments
+    /// * `arity` - The arity of the operation
+    /// * `inteqs` - List of equation pairs
+    /// 
+    /// # Returns
+    /// A new Taylor instance
+    #[staticmethod]
+    fn new_with_arity(arity: i32, inteqs: Vec<Vec<crate::util::PyIntArray>>) -> Self {
+        // Convert PyIntArray to IntArray
+        let rust_inteqs: Vec<Vec<uacalc::util::int_array::IntArray>> = inteqs
+            .iter()
+            .map(|pair| {
+                pair.iter()
+                    .map(|py_ia| py_ia.inner.clone())
+                    .collect()
+            })
+            .collect();
+        
+        PyTaylor {
+            inner: uacalc::terms::Taylor::new_with_arity(arity, rust_inteqs),
+        }
+    }
+    
+    /// Get the Markovic-McKenzie term (singleton).
+    #[staticmethod]
+    fn markovic_mckenzie_term() -> Self {
+        PyTaylor {
+            inner: uacalc::terms::Taylor::markovic_mckenzie_term(),
+        }
+    }
+    
+    /// Get the Siggers term (singleton).
+    #[staticmethod]
+    fn siggers_term() -> Self {
+        PyTaylor {
+            inner: uacalc::terms::Taylor::siggers_term(),
+        }
+    }
+    
+    /// Find the canonical form of a term.
+    /// 
+    /// # Arguments
+    /// * `term` - The term to canonicalize (VariableImp or NonVariableTerm)
+    /// 
+    /// # Returns
+    /// The canonical form of the term
+    fn canonical_form(&self, term: &Bound<'_, PyAny>) -> PyResult<PyObject> {
+        Python::with_gil(|py| {
+            // Try to extract as PyVariableImp first
+            if let Ok(var) = term.extract::<PyRef<PyVariableImp>>() {
+                let term_ref: &dyn Term = &var.inner;
+                let canonical = self.inner.canonical_form(term_ref);
+                
+                if canonical.isa_variable() {
+                    let var_name = format!("{}", canonical);
+                    let py_var = PyVariableImp {
+                        inner: VariableImp::new(&var_name),
+                    };
+                    Ok(py_var.into_py(py))
+                } else {
+                    let py_term = reconstruct_non_variable_term(canonical.as_ref())?;
+                    Ok(py_term.into_py(py))
+                }
+            } else if let Ok(nvt) = term.extract::<PyRef<PyNonVariableTerm>>() {
+                let term_ref: &dyn Term = &nvt.inner;
+                let canonical = self.inner.canonical_form(term_ref);
+                
+                if canonical.isa_variable() {
+                    let var_name = format!("{}", canonical);
+                    let py_var = PyVariableImp {
+                        inner: VariableImp::new(&var_name),
+                    };
+                    Ok(py_var.into_py(py))
+                } else {
+                    let py_term = reconstruct_non_variable_term(canonical.as_ref())?;
+                    Ok(py_term.into_py(py))
+                }
+            } else {
+                Err(PyValueError::new_err(
+                    "Term must be a VariableImp or NonVariableTerm instance"
+                ))
+            }
+        })
+    }
+    
+    /// Create a term from an array of variable indices.
+    /// 
+    /// # Arguments
+    /// * `arr` - The array of variable indices (0 for x, 1 for y)
+    /// 
+    /// # Returns
+    /// The term represented by the array
+    fn term_from_array(&self, arr: Vec<i32>) -> PyResult<PyObject> {
+        Python::with_gil(|py| {
+            let term = self.inner.term_from_array(&arr);
+            
+            if term.isa_variable() {
+                let var_name = format!("{}", term);
+                let py_var = PyVariableImp {
+                    inner: VariableImp::new(&var_name),
+                };
+                Ok(py_var.into_py(py))
+            } else {
+                let py_term = reconstruct_non_variable_term(term.as_ref())?;
+                Ok(py_term.into_py(py))
+            }
+        })
+    }
+    
+    /// Lexicographically compare two IntArrays (static version).
+    /// 
+    /// # Arguments
+    /// * `a` - The first IntArray
+    /// * `b` - The second IntArray
+    /// 
+    /// # Returns
+    /// * `-1` if a < b
+    /// * `0` if a == b
+    /// * `1` if a > b
+    #[staticmethod]
+    fn lexicographically_compare_int_arrays(a: &crate::util::PyIntArray, b: &crate::util::PyIntArray) -> i32 {
+        uacalc::terms::Taylor::lexicographically_compare_int_arrays(&a.inner, &b.inner)
+    }
+    
+    /// Lexicographically compare two arrays (static version).
+    /// 
+    /// # Arguments
+    /// * `a` - The first array
+    /// * `b` - The second array
+    /// 
+    /// # Returns
+    /// * `-1` if a < b
+    /// * `0` if a == b
+    /// * `1` if a > b
+    #[staticmethod]
+    fn lexicographically_compare_arrays(a: Vec<i32>, b: Vec<i32>) -> PyResult<i32> {
+        if a.len() != b.len() {
+            return Err(PyValueError::new_err("Arrays not of the same size"));
+        }
+        Ok(uacalc::terms::Taylor::lexicographically_compare_arrays(&a, &b))
+    }
+    
+    /// Get the arity of this Taylor term.
+    /// 
+    /// # Returns
+    /// The arity
+    fn arity(&self) -> i32 {
+        self.inner.arity()
+    }
+    
+    /// Get the integer equations.
+    /// 
+    /// # Returns
+    /// The list of integer equation pairs
+    fn inteqs(&self) -> Vec<Vec<crate::util::PyIntArray>> {
+        self.inner.inteqs()
+            .iter()
+            .map(|pair| {
+                pair.iter()
+                    .map(|ia| crate::util::PyIntArray { inner: ia.clone() })
+                    .collect()
+            })
+            .collect()
+    }
+    
+    /// Python string representation
+    fn __str__(&self) -> String {
+        format!("Taylor(arity={})", self.inner.arity())
+    }
+    
+    /// Python repr representation
+    fn __repr__(&self) -> String {
+        format!("Taylor(arity={})", self.inner.arity())
+    }
+}
+
 // ============================================================================
 // Terms Utility Functions - Python Bindings
 // ============================================================================
@@ -411,15 +622,18 @@ pub fn register_terms_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<(
     // Register classes internally but only export clean names
     m.add_class::<PyVariableImp>()?;
     m.add_class::<PyNonVariableTerm>()?;
+    m.add_class::<PyTaylor>()?;
     
     // Export only clean names (without Py prefix)
     m.add("VariableImp", m.getattr("PyVariableImp")?)?;
     m.add("NonVariableTerm", m.getattr("PyNonVariableTerm")?)?;
+    m.add("Taylor", m.getattr("PyTaylor")?)?;
     
     // Remove the Py* names from the module to avoid confusion
     let module_dict = m.dict();
     module_dict.del_item("PyVariableImp")?;
     module_dict.del_item("PyNonVariableTerm")?;
+    module_dict.del_item("PyTaylor")?;
     
     // Register utility functions
     m.add_function(wrap_pyfunction!(string_to_term, m)?)?;
