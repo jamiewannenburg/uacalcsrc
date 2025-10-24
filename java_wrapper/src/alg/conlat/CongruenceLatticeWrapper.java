@@ -62,8 +62,8 @@ public class CongruenceLatticeWrapper extends WrapperBase {
                 testBasic(options);
                 break;
                 
-            case "get_cardinality":
-                getCardinality(options);
+            case "con_cardinality":
+                getConCardinality(options);
                 break;
                 
             case "is_distributive":
@@ -105,13 +105,13 @@ public class CongruenceLatticeWrapper extends WrapperBase {
         result.put("one_blocks", conLat.one().numberOfBlocks());
         result.put("description", conLat.getDescription());
         
-        handleSuccess("test_basic", result);
+        handleSuccess(result);
     }
     
     /**
      * Get the cardinality of the congruence lattice
      */
-    private void getCardinality(Map<String, String> options) throws Exception {
+    private void getConCardinality(Map<String, String> options) throws Exception {
         int size = getIntArg(options, "size", 3);
         
         SmallAlgebra alg = new BasicAlgebra("TestAlg", size, new ArrayList<Operation>());
@@ -121,7 +121,7 @@ public class CongruenceLatticeWrapper extends WrapperBase {
         result.put("cardinality", conLat.cardinality());
         result.put("alg_size", size);
         
-        handleSuccess("get_cardinality", result);
+        handleSuccess(result);
     }
     
     /**
@@ -137,7 +137,7 @@ public class CongruenceLatticeWrapper extends WrapperBase {
         result.put("is_distributive", conLat.isDistributive());
         result.put("cardinality", conLat.cardinality());
         
-        handleSuccess("is_distributive", result);
+        handleSuccess(result);
     }
     
     /**
@@ -155,7 +155,7 @@ public class CongruenceLatticeWrapper extends WrapperBase {
         result.put("count", principals.size());
         result.put("alg_size", size);
         
-        handleSuccess("principals", result);
+        handleSuccess(result);
     }
     
     /**
@@ -173,7 +173,7 @@ public class CongruenceLatticeWrapper extends WrapperBase {
         result.put("count", jis.size());
         result.put("alg_size", size);
         
-        handleSuccess("join_irreducibles", result);
+        handleSuccess(result);
     }
     
     /**
@@ -191,7 +191,7 @@ public class CongruenceLatticeWrapper extends WrapperBase {
         result.put("count", atoms.size());
         result.put("alg_size", size);
         
-        handleSuccess("atoms", result);
+        handleSuccess(result);
     }
     
     /**
@@ -200,7 +200,7 @@ public class CongruenceLatticeWrapper extends WrapperBase {
     private void showUsage() {
         String[] examples = {
             "test_basic --size 3",
-            "get_cardinality --size 4",
+            "con_cardinality --size 4",
             "is_distributive --size 3",
             "principals --size 3",
             "join_irreducibles --size 3",

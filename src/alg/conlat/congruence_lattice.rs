@@ -338,25 +338,14 @@ impl CongruenceLattice {
                     loop {
                         arg[index as usize] = x as i32;
                         let r_val = op.int_value_at(&arg).unwrap_or(0);
-                        let r = {
-                            let temp_part = Partition::new(part.clone()).unwrap();
-                            temp_part.representative(r_val as usize)
-                        };
+                        let r = Self::find_root(r_val as usize, &part);
                         
                         arg[index as usize] = y as i32;
                         let s_val = op.int_value_at(&arg).unwrap_or(0);
-                        let s = {
-                            let temp_part = Partition::new(part.clone()).unwrap();
-                            temp_part.representative(s_val as usize)
-                        };
+                        let s = Self::find_root(s_val as usize, &part);
                         
                         if r != s {
-                            // Join blocks manually using partition logic
-                            let size_r = (-(part[r] as i32)) as usize;
-                            let size_s = (-(part[s] as i32)) as usize;
-                            let (r, s) = if r < s { (r, s) } else { (s, r) };
-                            part[r] = -((size_r + size_s) as i32);
-                            part[s] = r as i32;
+                            Self::join_blocks_in_array(r, s, &mut part);
                             pairs = pairs.cons_panic([r as i32, s as i32]);
                         }
                         
@@ -370,6 +359,32 @@ impl CongruenceLattice {
         }
         
         Partition::new(part).unwrap()
+    }
+    
+    /// Find the root of an element in a partition array.
+    fn find_root(mut elem: usize, part: &[i32]) -> usize {
+        while part[elem] >= 0 {
+            elem = part[elem] as usize;
+        }
+        elem
+    }
+    
+    /// Join two blocks in a partition array.
+    fn join_blocks_in_array(r: usize, s: usize, part: &mut [i32]) {
+        if r == s {
+            return;
+        }
+        
+        let size_r = (-part[r]) as usize;
+        let size_s = (-part[s]) as usize;
+        
+        if size_r >= size_s {
+            part[s] = r as i32;
+            part[r] = -((size_r + size_s) as i32);
+        } else {
+            part[r] = s as i32;
+            part[s] = -((size_r + size_s) as i32);
+        }
     }
     
     /// Increment an argument array for all positions except the given index.
@@ -505,10 +520,12 @@ impl CongruenceLattice {
         let size = jis.len();
         
         for k in 0..size {
-            let elem = &jis[k];
+            let elem = jis[k].clone();
             let n = univ.len();
             
-            for i in (k + 1)..n {
+            // Join with all elements from k onwards (not k+1!)
+            // This matches the Java implementation: for (int i = makeUniverseK; i < n; i++)
+            for i in k..n {
                 let join = elem.join(&univ[i]).unwrap();
                 
                 if !hash.contains(&join) {
@@ -543,8 +560,12 @@ impl CongruenceLattice {
     }
     
     /// Get the cardinality of the congruence lattice.
-    pub fn cardinality(&mut self) -> usize {
-        self.universe().len()
+    /// This will compute the universe if it hasn't been computed yet.
+    pub fn con_cardinality(&mut self) -> usize {
+        if self.universe.is_none() {
+            self.make_universe();
+        }
+        self.universe.as_ref().unwrap().len()
     }
     
     /// Check if the universe has been computed.

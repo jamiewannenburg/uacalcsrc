@@ -341,11 +341,13 @@ impl Partition {
             }
         }
         
-        Ok(Partition {
+        let mut result = Partition {
             array: result_array,
             block_count: -1,
             representatives: None,
-        })
+        };
+        result.normalize();
+        Ok(result)
     }
     
     /// Compute the meet of two partitions.
@@ -406,7 +408,8 @@ impl Partition {
     
     /// Normalize the partition representation.
     /// 
-    /// Ensures that roots are the smallest elements in their blocks.
+    /// Ensures that roots are the smallest elements in their blocks
+    /// and all elements point directly to their roots (path compression).
     pub fn normalize(&mut self) {
         // Validate the partition before normalizing
         if !self.is_valid_partition() {
@@ -414,6 +417,15 @@ impl Partition {
         }
         
         Self::normalize_array(&mut self.array);
+        
+        // Perform path compression: make all elements point directly to their root
+        for i in 0..self.array.len() {
+            if self.array[i] >= 0 {
+                let root = self.representative(i);
+                self.array[i] = root as i32;
+            }
+        }
+        
         self.block_count = -1;
         self.representatives = None;
     }

@@ -4337,8 +4337,8 @@ impl PyCongruenceLattice {
     }
     
     /// Get the cardinality of the congruence lattice.
-    fn cardinality(&mut self) -> usize {
-        self.inner.cardinality()
+    fn con_cardinality(&mut self) -> usize {
+        self.inner.con_cardinality()
     }
     
     /// Test if the lattice is distributive.
