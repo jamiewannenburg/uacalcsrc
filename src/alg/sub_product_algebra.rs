@@ -89,6 +89,12 @@ pub struct SubProductAlgebra {
     
     /// Progress monitor
     monitor: Option<Box<dyn ProgressMonitor>>,
+    
+    /// Lazy-initialized congruence lattice
+    con: Option<Box<crate::alg::conlat::CongruenceLattice>>,
+    
+    /// Lazy-initialized subalgebra lattice
+    sub: Option<Box<crate::alg::sublat::SubalgebraLattice>>,
 }
 
 impl SubProductAlgebra {
@@ -223,6 +229,8 @@ impl SubProductAlgebra {
             operations: Vec::new(),
             similarity_type: None,
             monitor: None,
+            con: None,
+            sub: None,
         };
         
         // Make operations
@@ -267,6 +275,8 @@ impl SubProductAlgebra {
             operations: Vec::new(),
             similarity_type: None,
             monitor: None,
+            con: None,
+            sub: None,
         };
         
         // Create element to index mapping
@@ -395,6 +405,36 @@ impl SubProductAlgebra {
     /// Get the super algebra (same as product algebra).
     pub fn super_algebra(&self) -> &BigProductAlgebra {
         &self.product_algebra
+    }
+    
+    /// Get the congruence lattice (lazy initialization).
+    /// 
+    /// # Returns
+    /// A reference to the congruence lattice
+    /// 
+    /// # Note
+    /// This method is not yet implemented for SubProductAlgebra.
+    /// It requires a different approach due to IntArray universe type.
+    pub fn con(&mut self) -> &crate::alg::conlat::CongruenceLattice {
+        if self.con.is_none() {
+            panic!("con() method not yet implemented for SubProductAlgebra");
+        }
+        self.con.as_ref().unwrap()
+    }
+    
+    /// Get the subalgebra lattice (lazy initialization).
+    /// 
+    /// # Returns
+    /// A reference to the subalgebra lattice
+    /// 
+    /// # Note
+    /// This method is not yet implemented for SubProductAlgebra.
+    /// It requires a different approach due to IntArray universe type.
+    pub fn sub(&mut self) -> &crate::alg::sublat::SubalgebraLattice {
+        if self.sub.is_none() {
+            panic!("sub() method not yet implemented for SubProductAlgebra");
+        }
+        self.sub.as_ref().unwrap()
     }
     
     /// Get the terms array (if terms were computed).

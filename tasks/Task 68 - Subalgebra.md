@@ -396,9 +396,9 @@ impl PySubalgebra {
 - ✅ All SmallAlgebra trait methods
 - ✅ All Algebra trait methods
 
-### Deferred Methods (8 of 26)
-- ❌ con() - Requires CongruenceLattice (Task 80)
-- ❌ sub() - Requires SubalgebraLattice (Task 76)
+### Deferred Methods (6 of 26)
+- ✅ con() - CongruenceLattice (now implemented)
+- ✅ sub() - SubalgebraLattice (now implemented)
 - ❌ congruenceAsAlgebra (static, 2 variants) - Requires ProductAlgebra (Task 73)
 - ❌ get_universe_list - Returns None (can be implemented later)
 - ❌ get_universe_order - Returns None (can be implemented later)
@@ -408,5 +408,4 @@ impl PySubalgebra {
 ### Next Steps
 1. Add unit tests for all implemented methods
 2. Add integration tests for subalgebra creation and operations
-3. Implement lattice methods once dependencies are available
-4. Implement congruenceAsAlgebra once ProductAlgebra is available
+3. Implement congruenceAsAlgebra once ProductAlgebra is available

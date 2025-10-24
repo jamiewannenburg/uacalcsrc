@@ -244,12 +244,12 @@ pub struct SubProductAlgebra {
 
 #### What Was NOT Implemented (Excluded as Requested)
 ❌ **Methods Depending on TypeFinder**: None (not used)
-❌ **Methods Depending on CongruenceLattice**:
-- `con()` method
+✅ **Methods Depending on CongruenceLattice**:
+- `con()` method (now implemented)
 - Congruence-related operations
 
-❌ **Methods Depending on SubalgebraLattice**:
-- `sub()` method  
+✅ **Methods Depending on SubalgebraLattice**:
+- `sub()` method (now implemented)
 - `thinGenerators()` method (uses SubalgebraLattice.extendToHomomorphism)
 - Subalgebra-related operations
 

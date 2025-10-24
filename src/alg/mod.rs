@@ -1,18 +1,17 @@
 use std::collections::{HashMap, HashSet};
 use std::fmt::{Debug, Display};
-use std::sync::Arc;
 use crate::util::int_array::IntArrayTrait;
 use crate::alg::op::{Operation, OperationSymbol, SimilarityType};
 use crate::terms::Term;
 
 /// A wrapper for SmallAlgebra that can be put into an Arc
 #[derive(Debug)]
-struct SmallAlgebraWrapper {
+pub struct SmallAlgebraWrapper {
     inner: Box<dyn SmallAlgebra<UniverseItem = i32>>,
 }
 
 impl SmallAlgebraWrapper {
-    fn new(inner: Box<dyn SmallAlgebra<UniverseItem = i32>>) -> Self {
+    pub fn new(inner: Box<dyn SmallAlgebra<UniverseItem = i32>>) -> Self {
         SmallAlgebraWrapper { inner }
     }
 }
@@ -1664,11 +1663,11 @@ pub struct ReductAlgebra {
     /// The operations created from the terms
     pub operations: Vec<Box<dyn Operation>>,
     
-    /// Lazy-initialized congruence lattice (not implemented yet)
-    pub con: Option<()>, // Placeholder for CongruenceLattice
+    /// Lazy-initialized congruence lattice
+    pub con: Option<Box<crate::alg::conlat::CongruenceLattice>>,
     
-    /// Lazy-initialized subalgebra lattice (not implemented yet)  
-    pub sub: Option<()>, // Placeholder for SubalgebraLattice
+    /// Lazy-initialized subalgebra lattice
+    pub sub: Option<Box<crate::alg::sublat::SubalgebraLattice>>,
     
     /// The similarity type of this algebra
     pub similarity_type: Option<SimilarityType>,
@@ -1832,32 +1831,28 @@ impl ReductAlgebra {
         self.super_algebra.as_ref()
     }
     
-    /// Get the congruence lattice (lazy initialization - not implemented yet).
+    /// Get the congruence lattice (lazy initialization).
     /// 
     /// # Returns
     /// A reference to the congruence lattice
-    /// 
-    /// # Panics
-    /// Currently panics as CongruenceLattice is not implemented
-    pub fn con(&mut self) -> &() {
+    pub fn con(&mut self) -> &crate::alg::conlat::CongruenceLattice {
         if self.con.is_none() {
-            // TODO: Implement when CongruenceLattice is available
-            panic!("CongruenceLattice not implemented yet");
+            // Create a wrapper that implements SmallAlgebra for this ReductAlgebra
+            let wrapper = Box::new(SmallAlgebraWrapper::new(self.super_algebra.clone_box()));
+            self.con = Some(Box::new(crate::alg::conlat::CongruenceLattice::new(wrapper)));
         }
         self.con.as_ref().unwrap()
     }
     
-    /// Get the subalgebra lattice (lazy initialization - not implemented yet).
+    /// Get the subalgebra lattice (lazy initialization).
     /// 
     /// # Returns
     /// A reference to the subalgebra lattice
-    /// 
-    /// # Panics
-    /// Currently panics as SubalgebraLattice is not implemented
-    pub fn sub(&mut self) -> &() {
+    pub fn sub(&mut self) -> &crate::alg::sublat::SubalgebraLattice {
         if self.sub.is_none() {
-            // TODO: Implement when SubalgebraLattice is available
-            panic!("SubalgebraLattice not implemented yet");
+            // Create a wrapper that implements SmallAlgebra for this ReductAlgebra
+            let wrapper = Box::new(SmallAlgebraWrapper::new(self.super_algebra.clone_box()));
+            self.sub = Some(Box::new(crate::alg::sublat::SubalgebraLattice::new(wrapper)));
         }
         self.sub.as_ref().unwrap()
     }
@@ -2115,8 +2110,8 @@ impl Clone for ReductAlgebra {
             size: self.size,
             universe: self.universe.clone(),
             operations: Vec::new(), // Can't clone operations easily
-            con: self.con.clone(),
-            sub: self.sub.clone(),
+            con: None, // Can't clone CongruenceLattice
+            sub: None, // Can't clone SubalgebraLattice
             similarity_type: self.similarity_type.clone(),
         }
     }

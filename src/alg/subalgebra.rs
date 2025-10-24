@@ -1,11 +1,11 @@
 use std::collections::{HashMap, HashSet};
 use std::fmt::{Debug, Display};
-use std::hash::Hash;
 use crate::alg::algebra::{Algebra, ProgressMonitor};
 use crate::alg::general_algebra::GeneralAlgebra;
 use crate::alg::small_algebra::{SmallAlgebra, AlgebraType};
 use crate::alg::op::{Operation, OperationSymbol, SimilarityType};
 use crate::alg::conlat::partition::Partition;
+use crate::alg::SmallAlgebraWrapper;
 use crate::util::horner;
 
 /// A subalgebra of a SmallAlgebra with a restricted universe.
@@ -44,6 +44,12 @@ pub struct Subalgebra {
     
     /// Sorted array of universe indices forming the subuniverse
     univ_array: Vec<i32>,
+    
+    /// Lazy-initialized congruence lattice
+    con: Option<Box<crate::alg::conlat::CongruenceLattice>>,
+    
+    /// Lazy-initialized subalgebra lattice
+    sub: Option<Box<crate::alg::sublat::SubalgebraLattice>>,
 }
 
 impl Subalgebra {
@@ -112,6 +118,8 @@ impl Subalgebra {
             base,
             super_algebra,
             univ_array,
+            con: None,
+            sub: None,
         };
         
         // Create restricted operations
@@ -250,6 +258,32 @@ impl Subalgebra {
         &self.univ_array
     }
     
+    /// Get the congruence lattice (lazy initialization).
+    /// 
+    /// # Returns
+    /// A reference to the congruence lattice
+    pub fn con(&mut self) -> &crate::alg::conlat::CongruenceLattice {
+        if self.con.is_none() {
+            // Create a wrapper that implements SmallAlgebra for this Subalgebra
+            let wrapper = Box::new(SmallAlgebraWrapper::new(self.super_algebra.clone_box()));
+            self.con = Some(Box::new(crate::alg::conlat::CongruenceLattice::new(wrapper)));
+        }
+        self.con.as_ref().unwrap()
+    }
+    
+    /// Get the subalgebra lattice (lazy initialization).
+    /// 
+    /// # Returns
+    /// A reference to the subalgebra lattice
+    pub fn sub(&mut self) -> &crate::alg::sublat::SubalgebraLattice {
+        if self.sub.is_none() {
+            // Create a wrapper that implements SmallAlgebra for this Subalgebra
+            let wrapper = Box::new(SmallAlgebraWrapper::new(self.super_algebra.clone_box()));
+            self.sub = Some(Box::new(crate::alg::sublat::SubalgebraLattice::new(wrapper)));
+        }
+        self.sub.as_ref().unwrap()
+    }
+    
     /// Make the operation tables for all operations.
     pub fn make_operation_tables(&mut self) {
         self.base.make_operation_tables();
@@ -302,6 +336,8 @@ impl Clone for Subalgebra {
             base: self.base.clone(),
             super_algebra: self.super_algebra.clone_box(),
             univ_array: self.univ_array.clone(),
+            con: None,
+            sub: None,
         }
     }
 }

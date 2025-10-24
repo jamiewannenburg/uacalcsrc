@@ -138,6 +138,12 @@ where
     
     /// Parent algebra reference (would need Arc in real implementation)
     parent: Option<Box<dyn SmallAlgebra<UniverseItem = T>>>,
+    
+    /// Lazy-initialized congruence lattice
+    con: Option<Box<crate::alg::conlat::CongruenceLattice>>,
+    
+    /// Lazy-initialized subalgebra lattice
+    sub: Option<Box<crate::alg::sublat::SubalgebraLattice>>,
 }
 
 impl<T> BasicSmallAlgebra<T>
@@ -169,6 +175,8 @@ where
             universe_list: RwLock::new(None),
             universe_order: RwLock::new(None),
             parent: None,
+            con: None,
+            sub: None,
         }
     }
     
@@ -204,6 +212,38 @@ where
         *self.universe_list.write().unwrap() = None;
         *self.universe_order.write().unwrap() = None;
     }
+    
+    /// Get the congruence lattice (lazy initialization).
+    /// 
+    /// # Returns
+    /// A reference to the congruence lattice
+    /// 
+    /// # Note
+    /// This method is only available for BasicSmallAlgebra<i32>.
+    /// For other types, this will panic.
+    pub fn con(&mut self) -> &crate::alg::conlat::CongruenceLattice {
+        if self.con.is_none() {
+            // Only works for i32 universe type
+            panic!("con() method only available for BasicSmallAlgebra<i32>");
+        }
+        self.con.as_ref().unwrap()
+    }
+    
+    /// Get the subalgebra lattice (lazy initialization).
+    /// 
+    /// # Returns
+    /// A reference to the subalgebra lattice
+    /// 
+    /// # Note
+    /// This method is only available for BasicSmallAlgebra<i32>.
+    /// For other types, this will panic.
+    pub fn sub(&mut self) -> &crate::alg::sublat::SubalgebraLattice {
+        if self.sub.is_none() {
+            // Only works for i32 universe type
+            panic!("sub() method only available for BasicSmallAlgebra<i32>");
+        }
+        self.sub.as_ref().unwrap()
+    }
 }
 
 impl<T> Debug for BasicSmallAlgebra<T>
@@ -232,6 +272,8 @@ where
             universe_order: RwLock::new(self.universe_order.read().unwrap().clone()),
             // Can't clone trait objects, so start with None
             parent: None,
+            con: None,
+            sub: None,
         }
     }
 }

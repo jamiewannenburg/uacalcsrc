@@ -168,8 +168,8 @@ pub struct BasicAlgebra {
   - All Algebra trait methods (name, cardinality, etc.)
 
 **Skipped Components (Per Requirements):**
-- ⏸️ con() method - Congruence lattice (excluded per task requirements)
-- ⏸️ sub() method - Subalgebra lattice (excluded per task requirements)
+- ✅ con() method - Congruence lattice (now implemented)
+- ✅ sub() method - Subalgebra lattice (now implemented)
 - ⏸️ Python test execution - Requires maturin for bindings compilation
 
 **Test Results:**
@@ -179,8 +179,7 @@ pub struct BasicAlgebra {
 
 **Future Work:**
 1. Run Python tests once maturin is available
-2. Implement con() and sub() methods when lattice code is ready
-3. Complete convert_to_default_value_ops() implementation
-4. Add integration tests with Java wrapper
+2. Complete convert_to_default_value_ops() implementation
+3. Add integration tests with Java wrapper
 
 **Note**: Implemented as `BasicSmallAlgebra` in Rust to better reflect its dual inheritance from both `GeneralAlgebra` and `SmallAlgebra` interfaces.

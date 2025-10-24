@@ -5074,6 +5074,28 @@ impl PyBasicSmallAlgebra {
         self.inner.name() == other.inner.name() && 
         self.inner.cardinality() == other.inner.cardinality()
     }
+    
+    /// Get the congruence lattice (lazy initialization).
+    /// 
+    /// Returns:
+    ///     CongruenceLattice: The congruence lattice
+    fn con(&mut self) -> PyCongruenceLattice {
+        let con_lat = self.inner.con();
+        PyCongruenceLattice {
+            inner: con_lat.clone(),
+        }
+    }
+    
+    /// Get the subalgebra lattice (lazy initialization).
+    /// 
+    /// Returns:
+    ///     SubalgebraLattice: The subalgebra lattice
+    fn sub(&mut self) -> PySubalgebraLattice {
+        let sub_lat = self.inner.sub();
+        PySubalgebraLattice {
+            inner: std::cell::RefCell::new(sub_lat.clone()),
+        }
+    }
 }
 
 /// Python wrapper for Homomorphism
@@ -5747,6 +5769,28 @@ impl PySubalgebra {
     fn __repr__(&self) -> String {
         format!("Subalgebra({})", self.inner.to_string())
     }
+    
+    /// Get the congruence lattice (lazy initialization).
+    /// 
+    /// Returns:
+    ///     CongruenceLattice: The congruence lattice
+    fn con(&mut self) -> PyCongruenceLattice {
+        let con_lat = self.inner.con();
+        PyCongruenceLattice {
+            inner: con_lat.clone(),
+        }
+    }
+    
+    /// Get the subalgebra lattice (lazy initialization).
+    /// 
+    /// Returns:
+    ///     SubalgebraLattice: The subalgebra lattice
+    fn sub(&mut self) -> PySubalgebraLattice {
+        let sub_lat = self.inner.sub();
+        PySubalgebraLattice {
+            inner: std::cell::RefCell::new(sub_lat.clone()),
+        }
+    }
 }
 
 /// Python wrapper for MatrixPowerAlgebra
@@ -6193,6 +6237,28 @@ impl PyReductAlgebra {
         self.inner.name().hash(&mut hasher);
         self.inner.cardinality().hash(&mut hasher);
         hasher.finish()
+    }
+    
+    /// Get the congruence lattice (lazy initialization).
+    /// 
+    /// Returns:
+    ///     CongruenceLattice: The congruence lattice
+    fn con(&mut self) -> PyCongruenceLattice {
+        let con_lat = self.inner.con();
+        PyCongruenceLattice {
+            inner: con_lat.clone(),
+        }
+    }
+    
+    /// Get the subalgebra lattice (lazy initialization).
+    /// 
+    /// Returns:
+    ///     SubalgebraLattice: The subalgebra lattice
+    fn sub(&mut self) -> PySubalgebraLattice {
+        let sub_lat = self.inner.sub();
+        PySubalgebraLattice {
+            inner: std::cell::RefCell::new(sub_lat.clone()),
+        }
     }
 }
 
