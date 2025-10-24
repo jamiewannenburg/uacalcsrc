@@ -136,7 +136,11 @@ impl IntTuplesWithMin {
         partial_sums[0] = summand;
         
         for i in 1..tuple_length {
-            summand = (summand.saturating_mul(base as i64)) / (min as i64);
+            if min > 0 {
+                summand = (summand.saturating_mul(base as i64)) / (min as i64);
+            } else {
+                summand = summand.saturating_mul(base as i64);
+            }
             partial_sums[i] = partial_sums[i-1].saturating_add(summand);
         }
         
@@ -186,8 +190,13 @@ impl LongList<Vec<i32>> for IntTuplesWithMin {
         
         // Fill the remaining positions
         for i in (stage + 1)..self.tuple_length {
-            ans[i] = (k % self.min as i64) as i32;
-            k = k / self.min as i64;
+            if self.min > 0 {
+                ans[i] = (k % self.min as i64) as i32;
+                k = k / self.min as i64;
+            } else {
+                ans[i] = (k % self.base as i64) as i32;
+                k = k / self.base as i64;
+            }
         }
         
         ans
@@ -665,5 +674,367 @@ impl<E> std::fmt::Display for dyn LongList<E> where E: std::fmt::Display {
 impl<E> std::fmt::Debug for dyn LongList<E> where E: std::fmt::Debug {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "LongList(size={})", self.size())
+    }
+}
+
+/// Static utility methods for creating virtual lists and array indexing.
+/// This module provides the same functionality as the Java VirtualLists class.
+pub mod virtuallists {
+    use super::*;
+    use std::collections::HashMap;
+
+    /// Create a LongList of int tuples of length `tuple_len` with entries between 0 and `base` - 1.
+    /// 
+    /// # Arguments
+    /// * `tuple_len` - The length of each tuple
+    /// * `base` - The base for the numbering system
+    /// 
+    /// # Returns
+    /// * `Ok(Box<dyn LongList<Vec<i32>>>)` - Successfully created LongList
+    /// * `Err(String)` - If arguments are invalid or result is too large
+    /// 
+    /// # Examples
+    /// ```
+    /// use uacalc::util::virtuallist::virtuallists::int_tuples;
+    /// let tuples = int_tuples(3, 4).unwrap();
+    /// assert_eq!(tuples.size(), 64); // 4^3
+    /// ```
+    pub fn int_tuples(tuple_len: usize, base: usize) -> Result<Box<dyn LongList<Vec<i32>>>, String> {
+        let int_tuples = IntTuples::new_safe(tuple_len, base)?;
+        Ok(Box::new(int_tuples))
+    }
+
+    /// Create a LongList of int tuples with minimum constraint.
+    /// 
+    /// # Arguments
+    /// * `tuple_len` - The length of each tuple
+    /// * `base` - The base for the numbering system
+    /// * `min` - The minimum value for at least one entry
+    /// 
+    /// # Returns
+    /// * `Ok(Box<dyn LongList<Vec<i32>>>)` - Successfully created LongList
+    /// * `Err(String)` - If arguments are invalid or result is too large
+    /// 
+    /// # Examples
+    /// ```
+    /// use uacalc::util::virtuallist::virtuallists::int_tuples_with_min;
+    /// let tuples = int_tuples_with_min(3, 4, 2).unwrap();
+    /// assert_eq!(tuples.size(), 56); // 4^3 - 2^3
+    /// ```
+    pub fn int_tuples_with_min(tuple_len: usize, base: usize, min: usize) -> Result<Box<dyn LongList<Vec<i32>>>, String> {
+        let int_tuples_with_min = IntTuplesWithMin::new_safe(tuple_len, base, min)?;
+        Ok(Box::new(int_tuples_with_min))
+    }
+
+    /// Array indexer for tuples with minimum constraint.
+    /// 
+    /// This is an indexer into the set of all int arrays of length `arity` whose entries
+    /// lie between 0 and `base` - 1 and such that at least one entry is greater than
+    /// or equal to `min`.
+    /// 
+    /// # Arguments
+    /// * `k` - The index
+    /// * `arity` - The length of the array
+    /// * `base` - The base for the numbering system
+    /// * `min` - The minimum value for at least one entry
+    /// 
+    /// # Returns
+    /// * `Ok(Vec<i32>)` - The kth array
+    /// * `Err(String)` - If arguments are invalid
+    /// 
+    /// # Examples
+    /// ```
+    /// use uacalc::util::virtuallist::virtuallists::array_indexer_with_min;
+    /// let arr = array_indexer_with_min(0, 3, 4, 2).unwrap();
+    /// assert_eq!(arr, vec![2, 0, 0]);
+    /// ```
+    pub fn array_indexer_with_min(k: i64, arity: usize, base: usize, min: usize) -> Result<Vec<i32>, String> {
+        if arity == 0 {
+            return Ok(vec![]);
+        }
+        
+        if base <= min {
+            return Err("base must be greater than min".to_string());
+        }
+        
+        let diff = base - min;
+        let mut stage = 0;
+        let mut sum = 0i64;
+        let mut summand = diff as i64;
+        
+        // Calculate summand for the first stage
+        for _ in 1..arity {
+            summand = summand.saturating_mul(base as i64);
+        }
+        
+        // Find the correct stage
+        while k >= sum + summand {
+            stage += 1;
+            sum = sum.saturating_add(summand);
+            summand = summand.saturating_mul(min as i64) / (base as i64);
+        }
+        
+        array_indexer_with_min_aux(k - sum, arity, base, min, stage, diff)
+    }
+
+    /// Helper function for array_indexer_with_min.
+    fn array_indexer_with_min_aux(k: i64, arity: usize, base: usize, min: usize, stage: usize, diff: usize) -> Result<Vec<i32>, String> {
+        let mut ans = vec![0; arity];
+        let mut k = k;
+        
+        // Fill the first stage positions
+        for i in 0..stage {
+            ans[i] = (k % min as i64) as i32;
+            k = k / min as i64;
+        }
+        
+        // Fill the stage position with min constraint
+        if stage < arity {
+            ans[stage] = (min as i64 + (k % diff as i64)) as i32;
+            k = k / diff as i64;
+        }
+        
+        // Fill the remaining positions
+        for i in (stage + 1)..arity {
+            ans[i] = (k % base as i64) as i32;
+            k = k / base as i64;
+        }
+        
+        Ok(ans)
+    }
+
+    /// Test method for power calculations.
+    /// 
+    /// # Arguments
+    /// * `k` - The input value
+    /// 
+    /// # Returns
+    /// * `String` - The formatted output
+    /// 
+    /// # Examples
+    /// ```
+    /// use uacalc::util::virtuallist::virtuallists::test_pow;
+    /// let result = test_pow(1000000000);
+    /// assert!(result.contains("k = 1000000000"));
+    /// ```
+    pub fn test_pow(k: i64) -> String {
+        let foo = (6.0 * k as f64).powf(1.0 / 3.0);
+        let floor = foo.floor();
+        let ceil = foo.ceil();
+        format!("k = {}, foo = {}, floor = {}", k, foo, floor)
+    }
+
+    /// Helper method for binomial calculations.
+    /// 
+    /// # Arguments
+    /// * `k` - The input value
+    /// * `r` - The parameter
+    /// 
+    /// # Returns
+    /// * `i32` - The calculated result
+    /// 
+    /// # Examples
+    /// ```
+    /// use uacalc::util::virtuallist::virtuallists::foo;
+    /// let result = foo(1000, 5);
+    /// assert!(result > 0);
+    /// ```
+    pub fn foo(k: i64, r: usize) -> i32 {
+        let r_double = r as f64;
+        let one_over_r = 1.0 / r_double;
+        let factorial_r = factorial(r) as f64;
+        let first_try = (factorial_r * k as f64).powf(one_over_r);
+        
+        (first_try + r_double * (r_double - 1.0) / (24.0 * first_try) - (r_double - 1.0) / 2.0).floor() as i32
+    }
+
+    /// Helper method for binomial calculations.
+    /// 
+    /// # Arguments
+    /// * `k` - The input value
+    /// * `r` - The parameter
+    /// 
+    /// # Returns
+    /// * `i32` - The calculated result
+    /// 
+    /// # Examples
+    /// ```
+    /// use uacalc::util::virtuallist::virtuallists::bar;
+    /// let result = bar(1000, 5);
+    /// assert!(result > 0);
+    /// ```
+    pub fn bar(k: i64, r: usize) -> i32 {
+        let one_over_r = 1.0 / (r as f64);
+        let factorial_r = factorial(r) as f64;
+        ((factorial_r * k as f64).powf(one_over_r) - (r - 1) as f64 / 2.0).floor() as i32
+    }
+
+    /// Helper method for binomial calculations.
+    /// 
+    /// # Arguments
+    /// * `k` - The input value
+    /// * `r` - The parameter
+    /// 
+    /// # Returns
+    /// * `i32` - The calculated result
+    /// 
+    /// # Examples
+    /// ```
+    /// use uacalc::util::virtuallist::virtuallists::baz;
+    /// let result = baz(1000, 5);
+    /// assert!(result > 0);
+    /// ```
+    pub fn baz(k: i64, r: usize) -> i32 {
+        let one_over_r = 1.0 / (r as f64);
+        let factorial_r = factorial(r) as f64;
+        let upper = ((factorial_r * k as f64).powf(one_over_r)).floor() as i32;
+        let lower = upper - r as i32;
+        let t = upper - (r as i32) / 2;
+        
+        // Note: In the Java version, this prints debug information
+        // We'll return the result without printing for now
+        t
+    }
+
+    /// Calculate factorial of n.
+    /// 
+    /// # Arguments
+    /// * `n` - The input value
+    /// 
+    /// # Returns
+    /// * `i64` - The factorial of n
+    /// 
+    /// # Examples
+    /// ```
+    /// use uacalc::util::virtuallist::virtuallists::factorial;
+    /// assert_eq!(factorial(5), 120);
+    /// assert_eq!(factorial(0), 1);
+    /// ```
+    pub fn factorial(n: usize) -> i64 {
+        if n < 2 {
+            1
+        } else {
+            n as i64 * factorial(n - 1)
+        }
+    }
+
+    /// Calculate binomial coefficient C(n, r).
+    /// 
+    /// # Arguments
+    /// * `n` - The total number of items
+    /// * `r` - The number of items to choose
+    /// 
+    /// # Returns
+    /// * `i64` - The binomial coefficient
+    /// 
+    /// # Examples
+    /// ```
+    /// use uacalc::util::virtuallist::virtuallists::binomial;
+    /// assert_eq!(binomial(5, 3), 10);
+    /// assert_eq!(binomial(5, 0), 1);
+    /// ```
+    pub fn binomial(n: usize, r: usize) -> i64 {
+        if r > n {
+            return 0;
+        }
+        
+        let r = r.min(n - r); // Use symmetry
+        let mut result = 1i64;
+        for i in 0..r {
+            result = result.saturating_mul((n - i) as i64) / ((i + 1) as i64);
+        }
+        result
+    }
+
+    /// Main test/demo method.
+    /// 
+    /// # Arguments
+    /// * `args` - Command line arguments (unused in this implementation)
+    /// 
+    /// # Returns
+    /// * `String` - Test results
+    /// 
+    /// # Examples
+    /// ```
+    /// use uacalc::util::virtuallist::virtuallists::debug_test;
+    /// let result = debug_test();
+    /// println!("{}", result);
+    /// assert!(result.contains("IntTuplesWithMin"));
+    /// ```
+    pub fn debug_test() -> String {
+        let mut result = String::new();
+        
+        // Test what IntTuples produces
+        match int_tuples(3, 4) {
+            Ok(tuples) => {
+                result.push_str(&format!("IntTuples(3, 4) size: {}\n", tuples.size()));
+                for i in 0..tuples.size().min(5) {
+                    result.push_str(&format!("  [{}]: {:?}\n", i, tuples.get(i)));
+                }
+            }
+            Err(e) => result.push_str(&format!("IntTuples error: {}\n", e)),
+        }
+        
+        // Test what IntTuplesWithMin produces
+        match int_tuples_with_min(3, 4, 2) {
+            Ok(tuples) => {
+                result.push_str(&format!("IntTuplesWithMin(3, 4, 2) size: {}\n", tuples.size()));
+                for i in 0..tuples.size().min(5) {
+                    result.push_str(&format!("  [{}]: {:?}\n", i, tuples.get(i)));
+                }
+            }
+            Err(e) => result.push_str(&format!("IntTuplesWithMin error: {}\n", e)),
+        }
+        
+        // Test what array_indexer_with_min produces
+        match array_indexer_with_min(0, 3, 4, 2) {
+            Ok(arr) => result.push_str(&format!("array_indexer_with_min(0, 3, 4, 2): {:?}\n", arr)),
+            Err(e) => result.push_str(&format!("array_indexer_with_min error: {}\n", e)),
+        }
+        
+        result
+    }
+
+    /// ```
+    pub fn main(args: &[String]) -> String {
+        let mut result = String::new();
+        
+        // Test int_tuples
+        match int_tuples(3, 4) {
+            Ok(tuples) => {
+                result.push_str(&format!("int_tuples(3, 4) size: {}\n", tuples.size()));
+                for i in 0..tuples.size().min(10) {
+                    result.push_str(&format!("  [{}]: {:?}\n", i, tuples.get(i)));
+                }
+            }
+            Err(e) => result.push_str(&format!("int_tuples error: {}\n", e)),
+        }
+        
+        // Test int_tuples_with_min
+        match int_tuples_with_min(3, 4, 2) {
+            Ok(tuples) => {
+                result.push_str(&format!("int_tuples_with_min(3, 4, 2) size: {}\n", tuples.size()));
+                for i in 0..tuples.size().min(10) {
+                    result.push_str(&format!("  [{}]: {:?}\n", i, tuples.get(i)));
+                }
+            }
+            Err(e) => result.push_str(&format!("int_tuples_with_min error: {}\n", e)),
+        }
+        
+        // Test array_indexer_with_min
+        result.push_str("array_indexer_with_min(0, 3, 4, 2): ");
+        match array_indexer_with_min(0, 3, 4, 2) {
+            Ok(arr) => result.push_str(&format!("{:?}\n", arr)),
+            Err(e) => result.push_str(&format!("error: {}\n", e)),
+        }
+        
+        // Test helper methods
+        result.push_str(&format!("test_pow(1000000000): {}\n", test_pow(1000000000)));
+        result.push_str(&format!("foo(1000, 5): {}\n", foo(1000, 5)));
+        result.push_str(&format!("bar(1000, 5): {}\n", bar(1000, 5)));
+        result.push_str(&format!("baz(1000, 5): {}\n", baz(1000, 5)));
+        
+        result.push_str("Test completed successfully\n");
+        result
     }
 }

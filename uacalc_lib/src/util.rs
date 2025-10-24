@@ -10,6 +10,7 @@ use uacalc::util::sequence_generator::{
 use uacalc::util::virtuallist::{
     LongList, IntTuples, IntTuplesWithMin, TupleWithMin, FixedSizedSubsets, Subsets, Permutations, LongListUtils
 };
+use uacalc::util::virtuallist::virtuallists;
 use std::sync::Arc;
 use std::collections::HashSet;
 
@@ -2102,6 +2103,110 @@ impl PyPartitionArrayIncrementor {
     }
 }
 
+/// Python wrapper for VirtualLists static methods
+#[pyclass]
+pub struct PyVirtualLists;
+
+#[pymethods]
+impl PyVirtualLists {
+    /// Create a new VirtualLists instance (static methods, so this is just a placeholder)
+    #[new]
+    fn new() -> Self {
+        PyVirtualLists
+    }
+    
+    /// Create a LongList of int tuples of length `tuple_len` with entries between 0 and `base` - 1.
+    #[staticmethod]
+    fn int_tuples(tuple_len: usize, base: usize) -> PyResult<PyIntTuples> {
+        match virtuallists::int_tuples(tuple_len, base) {
+            Ok(_long_list) => {
+                // Create a new IntTuples instance for Python
+                match IntTuples::new_safe(tuple_len, base) {
+                    Ok(inner) => Ok(PyIntTuples { inner }),
+                    Err(e) => Err(PyValueError::new_err(e)),
+                }
+            }
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Create a LongList of int tuples with minimum constraint.
+    #[staticmethod]
+    fn int_tuples_with_min(tuple_len: usize, base: usize, min: usize) -> PyResult<PyIntTuplesWithMin> {
+        match virtuallists::int_tuples_with_min(tuple_len, base, min) {
+            Ok(_long_list) => {
+                // Create a new IntTuplesWithMin instance for Python
+                match IntTuplesWithMin::new_safe(tuple_len, base, min) {
+                    Ok(inner) => Ok(PyIntTuplesWithMin { inner }),
+                    Err(e) => Err(PyValueError::new_err(e)),
+                }
+            }
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Array indexer for tuples with minimum constraint.
+    #[staticmethod]
+    fn array_indexer_with_min(k: i64, arity: usize, base: usize, min: usize) -> PyResult<Vec<i32>> {
+        match virtuallists::array_indexer_with_min(k, arity, base, min) {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Test method for power calculations.
+    #[staticmethod]
+    fn test_pow(k: i64) -> String {
+        virtuallists::test_pow(k)
+    }
+    
+    /// Helper method for binomial calculations.
+    #[staticmethod]
+    fn foo(k: i64, r: usize) -> i32 {
+        virtuallists::foo(k, r)
+    }
+    
+    /// Helper method for binomial calculations.
+    #[staticmethod]
+    fn bar(k: i64, r: usize) -> i32 {
+        virtuallists::bar(k, r)
+    }
+    
+    /// Helper method for binomial calculations.
+    #[staticmethod]
+    fn baz(k: i64, r: usize) -> i32 {
+        virtuallists::baz(k, r)
+    }
+    
+    /// Calculate factorial of n.
+    #[staticmethod]
+    fn factorial(n: usize) -> i64 {
+        virtuallists::factorial(n)
+    }
+    
+    /// Calculate binomial coefficient C(n, r).
+    #[staticmethod]
+    fn binomial(n: usize, r: usize) -> i64 {
+        virtuallists::binomial(n, r)
+    }
+    
+    /// Main test/demo method.
+    #[staticmethod]
+    fn main(args: Vec<String>) -> String {
+        virtuallists::main(&args)
+    }
+    
+    /// Python string representation
+    fn __str__(&self) -> String {
+        "VirtualLists".to_string()
+    }
+    
+    /// Python repr representation
+    fn __repr__(&self) -> String {
+        "VirtualLists()".to_string()
+    }
+}
+
 
 pub fn register_util_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     // Register classes internally but only export clean names
@@ -2129,6 +2234,7 @@ pub fn register_util_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()
     m.add_class::<PySequenceIncrementor>()?;
     m.add_class::<PyLeftSequenceIncrementor>()?;
     m.add_class::<PyPartitionArrayIncrementor>()?;
+    m.add_class::<PyVirtualLists>()?;
     
     // Export only clean names (without Py prefix)
     m.add("Horner", m.getattr("PyHorner")?)?;
@@ -2151,6 +2257,7 @@ pub fn register_util_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()
     m.add("SequenceIncrementor", m.getattr("PySequenceIncrementor")?)?;
     m.add("LeftSequenceIncrementor", m.getattr("PyLeftSequenceIncrementor")?)?;
     m.add("PartitionArrayIncrementor", m.getattr("PyPartitionArrayIncrementor")?)?;
+    m.add("VirtualLists", m.getattr("PyVirtualLists")?)?;
     
     // Remove the Py* names from the module to avoid confusion
     let module_dict = m.dict();
@@ -2178,6 +2285,7 @@ pub fn register_util_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()
     module_dict.del_item("PySequenceIncrementor")?;
     module_dict.del_item("PyLeftSequenceIncrementor")?;
     module_dict.del_item("PyPartitionArrayIncrementor")?;
+    module_dict.del_item("PyVirtualLists")?;
     
     Ok(())
 }
