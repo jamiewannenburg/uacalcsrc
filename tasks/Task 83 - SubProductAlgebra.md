@@ -49,13 +49,12 @@ This class depends on:
 - `org.uacalc.lat.*` (Order, OrderedSets) ✓
 - `org.uacalc.terms.*` (Term, Variable, VariableImp) ✓
 - `org.uacalc.util.*` (Horner, SequenceGenerator, ArrayIncrementor) ✓
-- `org.uacalc.alg.BigProductAlgebra` ⚠️ **MISSING**
-- `org.uacalc.alg.GeneralAlgebra` ⚠️ **MISSING** 
-- `org.uacalc.alg.ProductAlgebra` ⚠️ **MISSING** (used in main method)
+- `org.uacalc.alg.BigProductAlgebra` ✓
+- `org.uacalc.alg.GeneralAlgebra` ✓
+- `org.uacalc.alg.ProductAlgebra` ✓ (used in main method)
 - `org.uacalc.alg.conlat.TypeFinder` ⚠️ **MISSING** (used in main method)
 - `org.uacalc.ui.tm.ProgressReport` ⚠️ **MISSING** (UI dependency - may be excluded)
-- `java.util.*` (List, Map, Set, HashSet, HashMap, ArrayList, Iterator, Arrays) ⚠️ **MISSING**
-
+- `java.util.*` (List, Map, Set, HashSet, HashMap, ArrayList, Iterator, Arrays) ✓
 ### Implementation Analysis
 
 #### Java Class Structure

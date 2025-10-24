@@ -22,17 +22,15 @@ Translate the Java class `org.uacalc.alg.sublat.SubalgebraLattice` to Rust with 
 - `org.uacalc.alg.conlat.*` - CongruenceLattice, Partition - ❌ **PENDING**
 - `org.uacalc.alg.op.Operation` - ✅ **COMPLETED** - Operation interface
 - `org.uacalc.alg.op.OperationSymbol` - ✅ **COMPLETED** - Operation symbol types
-- `org.uacalc.alg.op.SimilarityType` - ❌ **PENDING** - Similarity type definitions
+- `org.uacalc.alg.op.SimilarityType` - ✅ **COMPLETED** - Similarity type definitions
 - `org.uacalc.lat.*` - Lattice, Order, BasicLattice interfaces - ✅ **COMPLETED** (Order)
-- `org.uacalc.util.*` - Utility classes (ArrayIncrementor, SequenceGenerator, etc.) - ❌ **PENDING**
+- `org.uacalc.util.*` - Utility classes (ArrayIncrementor, SequenceGenerator, etc.) - ✅ **COMPLETED**
 - `org.uacalc.ui.tm.ProgressReport` - Progress reporting (UI dependency - can be optional)
-
-**Missing Dependencies (should be added):**
-- `org.uacalc.alg.sublat.BasicSet` - Core data structure for subalgebras
-- `org.uacalc.alg.sublat.Subalgebra` - Subalgebra wrapper class
-- `org.uacalc.util.PermutationGenerator` - Used for permutation generation
-- `org.uacalc.util.ArrayIncrementor` - Used for sequence generation
-- `org.uacalc.util.SequenceGenerator` - Used for sequence generation
+- `org.uacalc.alg.sublat.BasicSet` - ✅ **COMPLETED** - Core data structure for subalgebras 
+- `org.uacalc.alg.sublat.Subalgebra` - ✅ mostly completed - Subalgebra wrapper class
+- `org.uacalc.util.PermutationGenerator` - ✅ **COMPLETED** - Used for permutation generation
+- `org.uacalc.util.ArrayIncrementor` - ✅ **COMPLETED** - Used for sequence generation
+- `org.uacalc.util.SequenceGenerator` - ✅ **COMPLETED** - Used for sequence generation
 
 ### Public Methods Analysis
 **Core Methods (77 total):**

@@ -27,9 +27,9 @@
 - `org.uacalc.util.*` ✅ (Various utility classes - completed)
 
 **Additional Dependencies Found:**
-- `org.uacalc.alg.BasicAlgebra` ❌ (Task 71 - not completed)
+- `org.uacalc.alg.BasicAlgebra` ✅ (Task 71 - mostly complete)
 - `org.uacalc.alg.Operations` ✅ (Task 50 - **COMPLETED**)
-- `org.uacalc.util.Horner` ❌ (Task 3 - not completed)
+- `org.uacalc.util.Horner` ✅ (Task 3 - completed)
 - `org.uacalc.alg.SubProductAlgebra` ❌ (Task 83 - not completed)
 - `org.uacalc.ui.tm.ProgressReport` ❌ (UI package - excluded)
 
