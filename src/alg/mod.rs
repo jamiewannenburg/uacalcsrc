@@ -16,6 +16,7 @@ pub mod quotient_algebra;
 pub mod quotient_element;
 pub mod small_algebra;
 pub mod subalgebra;
+pub mod sub_product_algebra;
 pub mod sublat;
 
 #[cfg(test)]
@@ -1459,9 +1460,8 @@ pub struct ReductAlgebra {
     // TODO: Implement reduct algebra
 }
 
-pub struct SubProductAlgebra {
-    // TODO: Implement subproduct algebra
-}
+// SubProductAlgebra is now implemented in sub_product_algebra.rs
+pub use sub_product_algebra::SubProductAlgebra;
 
 pub struct UnaryTermsMonoid {
     // TODO: Implement unary terms monoid

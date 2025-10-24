@@ -1,3 +1,5 @@
+pub mod sub_product_element;
+
 use std::fmt::{Display, Debug};
 use crate::alg::Algebra;
 
@@ -190,6 +192,5 @@ mod tests {
     }
 }
 
-pub struct SubProductElement {
-    // TODO: Implement subproduct element
-}
+// SubProductElement is now implemented in sub_product_element.rs
+pub use sub_product_element::SubProductElement;
