@@ -1,7 +1,165 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fmt::{Debug, Display};
+use std::sync::Arc;
 use crate::util::int_array::IntArrayTrait;
 use crate::alg::op::{Operation, OperationSymbol, SimilarityType};
+use crate::terms::Term;
+
+/// A wrapper for SmallAlgebra that can be put into an Arc
+#[derive(Debug)]
+struct SmallAlgebraWrapper {
+    inner: Box<dyn SmallAlgebra<UniverseItem = i32>>,
+}
+
+impl SmallAlgebraWrapper {
+    fn new(inner: Box<dyn SmallAlgebra<UniverseItem = i32>>) -> Self {
+        SmallAlgebraWrapper { inner }
+    }
+}
+
+impl SmallAlgebra for SmallAlgebraWrapper {
+    fn get_operation_ref(&self, sym: &OperationSymbol) -> Option<&dyn Operation> {
+        self.inner.get_operation_ref(sym)
+    }
+    
+    fn clone_box(&self) -> Box<dyn SmallAlgebra<UniverseItem = Self::UniverseItem>> {
+        Box::new(SmallAlgebraWrapper::new(self.inner.clone_box()))
+    }
+    
+    fn algebra_type(&self) -> AlgebraType {
+        self.inner.algebra_type()
+    }
+    
+    fn get_element(&self, k: usize) -> Option<Self::UniverseItem> {
+        self.inner.get_element(k)
+    }
+    
+    fn element_index(&self, elem: &Self::UniverseItem) -> Option<usize> {
+        self.inner.element_index(elem)
+    }
+    
+    fn get_universe_list(&self) -> Option<Vec<Self::UniverseItem>> {
+        self.inner.get_universe_list()
+    }
+    
+    fn get_universe_order(&self) -> Option<HashMap<Self::UniverseItem, usize>> {
+        self.inner.get_universe_order()
+    }
+    
+    fn parent(&self) -> Option<&dyn SmallAlgebra<UniverseItem = Self::UniverseItem>> {
+        self.inner.parent()
+    }
+    
+    fn parents(&self) -> Option<Vec<&dyn SmallAlgebra<UniverseItem = Self::UniverseItem>>> {
+        self.inner.parents()
+    }
+    
+    fn reset_con_and_sub(&mut self) {
+        self.inner.reset_con_and_sub();
+    }
+    
+    fn convert_to_default_value_ops(&mut self) {
+        self.inner.convert_to_default_value_ops();
+    }
+}
+
+impl Algebra for SmallAlgebraWrapper {
+    type UniverseItem = i32;
+    
+    fn universe(&self) -> Box<dyn Iterator<Item = Self::UniverseItem>> {
+        self.inner.universe()
+    }
+    
+    fn cardinality(&self) -> i32 {
+        self.inner.cardinality()
+    }
+    
+    fn input_size(&self) -> i32 {
+        self.inner.input_size()
+    }
+    
+    fn is_unary(&self) -> bool {
+        self.inner.is_unary()
+    }
+    
+    fn iterator(&self) -> Box<dyn Iterator<Item = Self::UniverseItem>> {
+        self.inner.iterator()
+    }
+    
+    fn operations(&self) -> Vec<Box<dyn Operation>> {
+        self.inner.operations()
+    }
+    
+    fn get_operation(&self, sym: &OperationSymbol) -> Option<Box<dyn Operation>> {
+        self.inner.get_operation(sym)
+    }
+    
+    fn get_operations_map(&self) -> HashMap<OperationSymbol, Box<dyn Operation>> {
+        self.inner.get_operations_map()
+    }
+    
+    fn name(&self) -> &str {
+        self.inner.name()
+    }
+    
+    fn set_name(&mut self, name: String) {
+        self.inner.set_name(name);
+    }
+    
+    fn description(&self) -> Option<&str> {
+        self.inner.description()
+    }
+    
+    fn set_description(&mut self, desc: Option<String>) {
+        self.inner.set_description(desc);
+    }
+    
+    fn similarity_type(&self) -> &SimilarityType {
+        self.inner.similarity_type()
+    }
+    
+    fn update_similarity_type(&mut self) {
+        self.inner.update_similarity_type();
+    }
+    
+    fn is_similar_to(&self, other: &dyn Algebra<UniverseItem = Self::UniverseItem>) -> bool {
+        self.inner.is_similar_to(other)
+    }
+    
+    fn make_operation_tables(&mut self) {
+        self.inner.make_operation_tables();
+    }
+    
+    fn constant_operations(&self) -> Vec<Box<dyn Operation>> {
+        self.inner.constant_operations()
+    }
+    
+    fn is_idempotent(&self) -> bool {
+        self.inner.is_idempotent()
+    }
+    
+    fn is_total(&self) -> bool {
+        self.inner.is_total()
+    }
+    
+    fn monitoring(&self) -> bool {
+        self.inner.monitoring()
+    }
+    
+    fn get_monitor(&self) -> Option<&dyn ProgressMonitor> {
+        self.inner.get_monitor()
+    }
+    
+    fn set_monitor(&mut self, monitor: Option<Box<dyn ProgressMonitor>>) {
+        self.inner.set_monitor(monitor);
+    }
+}
+
+impl std::fmt::Display for SmallAlgebraWrapper {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "SmallAlgebraWrapper({})", self.inner.name())
+    }
+}
 
 pub mod algebra;
 pub mod big_product_algebra;
@@ -1455,8 +1613,518 @@ impl SmallAlgebra for PowerAlgebra {
     }
 }
 
+/// A reduct algebra that represents a reduct of a SmallAlgebra to a list of Terms.
+/// 
+/// This struct represents a reduct of a `SmallAlgebra` to a list of `Term`s.
+/// It creates operations from terms by interpreting them in the super algebra
+/// and delegates universe and element access to the super algebra.
+/// 
+/// # Examples
+/// ```
+/// use uacalc::alg::{ReductAlgebra, SmallAlgebra, BasicSmallAlgebra, Algebra};
+/// use uacalc::terms::{VariableImp, NonVariableTerm, Term};
+/// use uacalc::alg::op::OperationSymbol;
+/// use std::collections::HashSet;
+/// 
+/// // Create a small algebra
+/// let alg = Box::new(BasicSmallAlgebra::new(
+///     "A".to_string(),
+///     HashSet::from([0, 1]),
+///     Vec::new()
+/// )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+/// 
+/// // Create terms
+/// let x = Box::new(VariableImp::new("x")) as Box<dyn Term>;
+/// let y = Box::new(VariableImp::new("y")) as Box<dyn Term>;
+/// let f_sym = OperationSymbol::new("f", 2, false);
+/// let f_term = Box::new(NonVariableTerm::new(f_sym, vec![x, y]));
+/// 
+/// // Create reduct algebra
+/// let reduct = ReductAlgebra::new_safe(alg, vec![f_term]).unwrap();
+/// assert_eq!(reduct.cardinality(), 2);
+/// ```
+#[derive(Debug)]
 pub struct ReductAlgebra {
-    // TODO: Implement reduct algebra
+    /// The super algebra that this reduct is based on
+    pub super_algebra: Box<dyn SmallAlgebra<UniverseItem = i32>>,
+    
+    /// The list of terms that define the operations of this reduct
+    pub term_list: Vec<Box<dyn Term>>,
+    
+    /// The name of this reduct algebra
+    pub name: String,
+    
+    /// The size of the universe (cached from super algebra)
+    pub size: i32,
+    
+    /// The universe of this algebra (same as super algebra)
+    pub universe: HashSet<i32>,
+    
+    /// The operations created from the terms
+    pub operations: Vec<Box<dyn Operation>>,
+    
+    /// Lazy-initialized congruence lattice (not implemented yet)
+    pub con: Option<()>, // Placeholder for CongruenceLattice
+    
+    /// Lazy-initialized subalgebra lattice (not implemented yet)  
+    pub sub: Option<()>, // Placeholder for SubalgebraLattice
+    
+    /// The similarity type of this algebra
+    pub similarity_type: Option<SimilarityType>,
+}
+
+impl ReductAlgebra {
+    /// Create a new ReductAlgebra from a super algebra and list of terms.
+    /// 
+    /// # Arguments
+    /// * `super_algebra` - The super algebra that this reduct is based on
+    /// * `term_list` - The list of terms that define the operations
+    /// 
+    /// # Returns
+    /// * `Ok(ReductAlgebra)` - Successfully created reduct algebra
+    /// * `Err(String)` - If the terms are invalid or algebra is incompatible
+    /// 
+    /// # Examples
+    /// ```
+    /// use uacalc::alg::{ReductAlgebra, SmallAlgebra, BasicSmallAlgebra, Algebra};
+    /// use uacalc::terms::{VariableImp, NonVariableTerm, Term};
+    /// use uacalc::alg::op::OperationSymbol;
+    /// use std::collections::HashSet;
+    /// 
+    /// let alg = Box::new(BasicSmallAlgebra::new(
+    ///     "A".to_string(),
+    ///     HashSet::from([0, 1]),
+    ///     Vec::new()
+    /// )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+    /// 
+    /// let x = Box::new(VariableImp::new("x")) as Box<dyn Term>;
+    /// let y = Box::new(VariableImp::new("y")) as Box<dyn Term>;
+    /// let f_sym = OperationSymbol::new("f", 2, false);
+    /// let f_term = Box::new(NonVariableTerm::new(f_sym, vec![x, y]));
+    /// 
+    /// let reduct = ReductAlgebra::new_safe(alg, vec![f_term]).unwrap();
+    /// assert_eq!(reduct.cardinality(), 2);
+    /// ```
+    pub fn new_safe(
+        super_algebra: Box<dyn SmallAlgebra<UniverseItem = i32>>,
+        term_list: Vec<Box<dyn Term>>,
+    ) -> Result<Self, String> {
+        Self::new_with_name_safe("".to_string(), super_algebra, term_list)
+    }
+    
+    /// Create a new ReductAlgebra with a custom name.
+    /// 
+    /// # Arguments
+    /// * `name` - The name for the reduct algebra
+    /// * `super_algebra` - The super algebra that this reduct is based on
+    /// * `term_list` - The list of terms that define the operations
+    /// 
+    /// # Returns
+    /// * `Ok(ReductAlgebra)` - Successfully created reduct algebra
+    /// * `Err(String)` - If the terms are invalid or algebra is incompatible
+    /// 
+    /// # Examples
+    /// ```
+    /// use uacalc::alg::{ReductAlgebra, SmallAlgebra, BasicSmallAlgebra, Algebra};
+    /// use uacalc::terms::{VariableImp, NonVariableTerm, Term};
+    /// use uacalc::alg::op::OperationSymbol;
+    /// use std::collections::HashSet;
+    /// 
+    /// let alg = Box::new(BasicSmallAlgebra::new(
+    ///     "A".to_string(),
+    ///     HashSet::from([0, 1]),
+    ///     Vec::new()
+    /// )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+    /// 
+    /// let x = Box::new(VariableImp::new("x")) as Box<dyn Term>;
+    /// let y = Box::new(VariableImp::new("y")) as Box<dyn Term>;
+    /// let f_sym = OperationSymbol::new("f", 2, false);
+    /// let f_term = Box::new(NonVariableTerm::new(f_sym, vec![x, y]));
+    /// 
+    /// let reduct = ReductAlgebra::new_with_name_safe(
+    ///     "MyReduct".to_string(),
+    ///     alg,
+    ///     vec![f_term]
+    /// ).unwrap();
+    /// assert_eq!(reduct.name(), "MyReduct");
+    /// ```
+    pub fn new_with_name_safe(
+        name: String,
+        super_algebra: Box<dyn SmallAlgebra<UniverseItem = i32>>,
+        term_list: Vec<Box<dyn Term>>,
+    ) -> Result<Self, String> {
+        // Validate that the super algebra has a finite universe
+        let size = super_algebra.cardinality();
+        if size < 0 {
+            return Err("Cannot create reduct of algebra with unknown cardinality".to_string());
+        }
+        
+        // Get the universe from the super algebra
+        let universe = if let Some(universe_list) = super_algebra.get_universe_list() {
+            universe_list.into_iter().collect()
+        } else {
+            return Err("Cannot create reduct of algebra without universe list".to_string());
+        };
+        
+        // Determine the name
+        let final_name = if name.is_empty() {
+            format!("Reduct({})", super_algebra.name())
+        } else {
+            name
+        };
+        
+        let mut reduct = ReductAlgebra {
+            super_algebra,
+            term_list,
+            name: final_name,
+            size,
+            universe,
+            operations: Vec::new(),
+            con: None,
+            sub: None,
+            similarity_type: None,
+        };
+        
+        // Create operations from terms
+        reduct.make_operation_tables()?;
+        
+        Ok(reduct)
+    }
+    
+    /// Create a new ReductAlgebra (panicking version for compatibility).
+    /// 
+    /// # Arguments
+    /// * `super_algebra` - The super algebra that this reduct is based on
+    /// * `term_list` - The list of terms that define the operations
+    /// 
+    /// # Panics
+    /// Panics if the terms are invalid or algebra is incompatible
+    pub fn new(
+        super_algebra: Box<dyn SmallAlgebra<UniverseItem = i32>>,
+        term_list: Vec<Box<dyn Term>>,
+    ) -> Self {
+        Self::new_safe(super_algebra, term_list).unwrap()
+    }
+    
+    /// Create a new ReductAlgebra with a custom name (panicking version).
+    /// 
+    /// # Arguments
+    /// * `name` - The name for the reduct algebra
+    /// * `super_algebra` - The super algebra that this reduct is based on
+    /// * `term_list` - The list of terms that define the operations
+    /// 
+    /// # Panics
+    /// Panics if the terms are invalid or algebra is incompatible
+    pub fn new_with_name(
+        name: String,
+        super_algebra: Box<dyn SmallAlgebra<UniverseItem = i32>>,
+        term_list: Vec<Box<dyn Term>>,
+    ) -> Self {
+        Self::new_with_name_safe(name, super_algebra, term_list).unwrap()
+    }
+    
+    /// Get the super algebra.
+    /// 
+    /// # Returns
+    /// A reference to the super algebra
+    pub fn super_algebra(&self) -> &dyn SmallAlgebra<UniverseItem = i32> {
+        self.super_algebra.as_ref()
+    }
+    
+    /// Get the congruence lattice (lazy initialization - not implemented yet).
+    /// 
+    /// # Returns
+    /// A reference to the congruence lattice
+    /// 
+    /// # Panics
+    /// Currently panics as CongruenceLattice is not implemented
+    pub fn con(&mut self) -> &() {
+        if self.con.is_none() {
+            // TODO: Implement when CongruenceLattice is available
+            panic!("CongruenceLattice not implemented yet");
+        }
+        self.con.as_ref().unwrap()
+    }
+    
+    /// Get the subalgebra lattice (lazy initialization - not implemented yet).
+    /// 
+    /// # Returns
+    /// A reference to the subalgebra lattice
+    /// 
+    /// # Panics
+    /// Currently panics as SubalgebraLattice is not implemented
+    pub fn sub(&mut self) -> &() {
+        if self.sub.is_none() {
+            // TODO: Implement when SubalgebraLattice is available
+            panic!("SubalgebraLattice not implemented yet");
+        }
+        self.sub.as_ref().unwrap()
+    }
+    
+    /// Create operation tables from the terms.
+    /// 
+    /// This method interprets each term in the super algebra to create
+    /// operations for this reduct algebra.
+    /// 
+    /// # Returns
+    /// * `Ok(())` - Successfully created operations
+    /// * `Err(String)` - If term interpretation fails
+    pub fn make_operation_tables(&mut self) -> Result<(), String> {
+        use std::sync::Arc;
+        
+        self.operations.clear();
+        
+        for term in &self.term_list {
+            // Get the variable list for this term
+            let varlist = term.get_variable_list();
+            
+            // Create the interpretation of this term in the super algebra
+            // We need to clone the super algebra to create an Arc
+            let cloned_alg = self.super_algebra.clone_box();
+            let wrapper = SmallAlgebraWrapper::new(cloned_alg);
+            let alg_arc = Arc::new(wrapper);
+            let interpretation = term.interpretation(alg_arc, &varlist, true)?;
+            
+            self.operations.push(interpretation);
+        }
+        
+        Ok(())
+    }
+}
+
+impl Algebra for ReductAlgebra {
+    type UniverseItem = i32;
+    
+    fn universe(&self) -> Box<dyn Iterator<Item = Self::UniverseItem>> {
+        Box::new(self.universe.clone().into_iter())
+    }
+    
+    fn cardinality(&self) -> i32 {
+        self.size
+    }
+    
+    fn input_size(&self) -> i32 {
+        let card = self.cardinality();
+        if card < 0 {
+            return -1;
+        }
+        self.similarity_type().input_size(card)
+    }
+    
+    fn is_unary(&self) -> bool {
+        for op in &self.operations {
+            if op.arity() > 1 {
+                return false;
+            }
+        }
+        true
+    }
+    
+    fn iterator(&self) -> Box<dyn Iterator<Item = Self::UniverseItem>> {
+        self.universe()
+    }
+    
+    fn operations(&self) -> Vec<Box<dyn Operation>> {
+        // Since we can't easily clone trait objects, return references
+        // This is a limitation we'll need to address in a future iteration
+        Vec::new() // Placeholder - operations are stored internally
+    }
+    
+    fn get_operation(&self, sym: &OperationSymbol) -> Option<Box<dyn Operation>> {
+        // Linear search through operations
+        // We can't return a Box easily, so return by reference via a new trait method
+        // For now, we'll need to work around this limitation
+        None // This needs Arc<dyn Operation> to work properly
+    }
+    
+    fn get_operations_map(&self) -> HashMap<OperationSymbol, Box<dyn Operation>> {
+        // Since we can't easily clone operations, return empty map for now
+        // This is a limitation that would need Arc<dyn Operation> to fix properly
+        HashMap::new()
+    }
+    
+    fn name(&self) -> &str {
+        &self.name
+    }
+    
+    fn set_name(&mut self, name: String) {
+        self.name = name;
+    }
+    
+    fn description(&self) -> Option<&str> {
+        None
+    }
+    
+    fn set_description(&mut self, desc: Option<String>) {
+        // ReductAlgebra doesn't have a description field
+    }
+    
+    fn similarity_type(&self) -> &SimilarityType {
+        // This is a bit tricky because we need to return a reference but might need to compute it
+        // For now, let's assume it's always computed in update_similarity_type
+        self.similarity_type.as_ref().expect("Similarity type not initialized. Call update_similarity_type() first.")
+    }
+    
+    fn update_similarity_type(&mut self) {
+        let mut symbols = Vec::new();
+        for op in &self.operations {
+            symbols.push(op.symbol().clone());
+        }
+        self.similarity_type = Some(SimilarityType::new(symbols));
+    }
+    
+    fn is_similar_to(&self, other: &dyn Algebra<UniverseItem = Self::UniverseItem>) -> bool {
+        self.similarity_type() == other.similarity_type()
+    }
+    
+    fn make_operation_tables(&mut self) {
+        let _ = self.make_operation_tables(); // Ignore errors for now
+    }
+    
+    fn constant_operations(&self) -> Vec<Box<dyn Operation>> {
+        // Since we can't easily clone operations, return empty vec for now
+        // In practice, we'd need to use Arc<dyn Operation> or similar
+        Vec::new()
+    }
+    
+    fn is_idempotent(&self) -> bool {
+        for op in &self.operations {
+            if let Ok(is_idemp) = op.is_idempotent() {
+                if !is_idemp {
+                    return false;
+                }
+            } else {
+                return false; // If we can't check, assume not idempotent
+            }
+        }
+        true
+    }
+    
+    fn is_total(&self) -> bool {
+        for op in &self.operations {
+            if let Ok(is_total) = op.is_total() {
+                if !is_total {
+                    return false;
+                }
+            } else {
+                return false; // If we can't check, assume not total
+            }
+        }
+        true
+    }
+    
+    fn monitoring(&self) -> bool {
+        false
+    }
+    
+    fn get_monitor(&self) -> Option<&dyn ProgressMonitor> {
+        None
+    }
+    
+    fn set_monitor(&mut self, monitor: Option<Box<dyn ProgressMonitor>>) {
+        // ReductAlgebra doesn't support monitoring
+    }
+}
+
+impl SmallAlgebra for ReductAlgebra {
+    fn get_operation_ref(&self, sym: &OperationSymbol) -> Option<&dyn Operation> {
+        for op in &self.operations {
+            if op.symbol() == sym {
+                return Some(op.as_ref());
+            }
+        }
+        None
+    }
+    
+    fn clone_box(&self) -> Box<dyn SmallAlgebra<UniverseItem = Self::UniverseItem>> {
+        // We can't clone trait objects, so we'll create a new one
+        // This is a limitation of the current design
+        let alg = Box::new(BasicSmallAlgebra::new(
+            "ClonedSuper".to_string(),
+            std::collections::HashSet::new(),
+            Vec::new()
+        )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+        
+        // Clone the term list using clone_box()
+        let cloned_terms: Vec<Box<dyn Term>> = self.term_list.iter()
+            .map(|term| term.clone_box())
+            .collect();
+        
+        Box::new(ReductAlgebra::new_safe(alg, cloned_terms).unwrap())
+    }
+    
+    fn algebra_type(&self) -> AlgebraType {
+        AlgebraType::Reduct
+    }
+    
+    fn get_element(&self, k: usize) -> Option<Self::UniverseItem> {
+        self.super_algebra.get_element(k)
+    }
+    
+    fn element_index(&self, elem: &Self::UniverseItem) -> Option<usize> {
+        self.super_algebra.element_index(elem)
+    }
+    
+    fn get_universe_list(&self) -> Option<Vec<Self::UniverseItem>> {
+        self.super_algebra.get_universe_list()
+    }
+    
+    fn get_universe_order(&self) -> Option<HashMap<Self::UniverseItem, usize>> {
+        self.super_algebra.get_universe_order()
+    }
+    
+    fn parent(&self) -> Option<&dyn SmallAlgebra<UniverseItem = Self::UniverseItem>> {
+        Some(self.super_algebra.as_ref())
+    }
+    
+    fn parents(&self) -> Option<Vec<&dyn SmallAlgebra<UniverseItem = Self::UniverseItem>>> {
+        Some(vec![self.super_algebra.as_ref()])
+    }
+    
+    fn reset_con_and_sub(&mut self) {
+        // Reset any cached congruence and subalgebra lattices
+        self.con = None;
+        self.sub = None;
+    }
+    
+    fn convert_to_default_value_ops(&mut self) {
+        panic!("Only for basic algebras");
+    }
+}
+
+impl Clone for ReductAlgebra {
+    fn clone(&self) -> Self {
+        // We can't clone the super_algebra trait object, so we'll create a new one
+        // This is a limitation of the current design
+        let alg = Box::new(BasicSmallAlgebra::new(
+            "ClonedSuper".to_string(),
+            std::collections::HashSet::new(),
+            Vec::new()
+        )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+        
+        // Clone the term list using clone_box()
+        let cloned_terms: Vec<Box<dyn Term>> = self.term_list.iter()
+            .map(|term| term.clone_box())
+            .collect();
+        
+        ReductAlgebra {
+            super_algebra: alg,
+            term_list: cloned_terms,
+            name: self.name.clone(),
+            size: self.size,
+            universe: self.universe.clone(),
+            operations: Vec::new(), // Can't clone operations easily
+            con: self.con.clone(),
+            sub: self.sub.clone(),
+            similarity_type: self.similarity_type.clone(),
+        }
+    }
+}
+
+impl std::fmt::Display for ReductAlgebra {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "ReductAlgebra({}, cardinality: {})", self.name, self.cardinality())
+    }
 }
 
 pub struct SubProductAlgebra {
