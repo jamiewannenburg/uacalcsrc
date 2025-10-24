@@ -6,6 +6,7 @@ use std::collections::HashMap;
 
 /// Python wrapper for VariableImp
 #[pyclass]
+#[derive(Clone)]
 pub struct PyVariableImp {
     pub(crate) inner: VariableImp,
 }

@@ -45,7 +45,7 @@
 /// assert!(order.leq(&"ab".to_string(), &"abcd".to_string()));
 /// assert!(!order.leq(&"abcd".to_string(), &"ab".to_string()));
 /// ```
-pub trait Order<E> {
+pub trait Order<E>: Send + Sync {
     /// Returns true if a ≤ b in this order relation.
     /// 
     /// # Arguments

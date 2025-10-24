@@ -37,7 +37,7 @@ Translate the Java class `org.uacalc.alg.QuotientElement` to Rust with Python bi
 
 **Dependencies Status:**
 - ❌ `QuotientAlgebra` - Not yet implemented (Task 77)
-- ❌ `SmallAlgebra` - Not yet implemented (Task 41) 
+- ✅ `SmallAlgebra` - Mostly implemented (Task 41) 
 - ✅ `Partition` - Implemented (Task 5 - completed)
 
 ### Rust Implementation Recommendations
