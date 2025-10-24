@@ -135,7 +135,7 @@ public class TaylorWrapper extends WrapperBase {
      */
     private void handleNewWithArity(Map<String, String> options) {
         try {
-            int arity = getIntArg(options, "arity");
+            int arity = getIntArg(options, "arity", 0);
             String eqsStr = getRequiredArg(options, "eqs");
             
             // Parse equations: format is "[[1,0,0,0],[0,0,1,1]]:[[0,0,1,0],[0,1,0,0]]"
@@ -160,7 +160,7 @@ public class TaylorWrapper extends WrapperBase {
     private void handleCanonicalForm(Map<String, String> options) {
         try {
             String termStr = getRequiredArg(options, "term");
-            int arity = getIntArg(options, "arity");
+            int arity = getIntArg(options, "arity", 0);
             String eqsStr = getRequiredArg(options, "eqs");
             
             List<List<IntArray>> eqs = parseEquations(eqsStr);
@@ -186,7 +186,7 @@ public class TaylorWrapper extends WrapperBase {
     private void handleTermFromArray(Map<String, String> options) {
         try {
             String arrStr = getRequiredArg(options, "arr");
-            int arity = getIntArg(options, "arity");
+            int arity = getIntArg(options, "arity", 0);
             String eqsStr = getRequiredArg(options, "eqs");
             
             // Parse array: format is "0,1,1,0"
@@ -249,7 +249,7 @@ public class TaylorWrapper extends WrapperBase {
      */
     private void handleArity(Map<String, String> options) {
         try {
-            int arity = getIntArg(options, "arity");
+            int arity = getIntArg(options, "arity", 0);
             String eqsStr = getRequiredArg(options, "eqs");
             
             List<List<IntArray>> eqs = parseEquations(eqsStr);
@@ -270,7 +270,7 @@ public class TaylorWrapper extends WrapperBase {
      */
     private void handleInteqs(Map<String, String> options) {
         try {
-            int arity = getIntArg(options, "arity");
+            int arity = getIntArg(options, "arity", 0);
             String eqsStr = getRequiredArg(options, "eqs");
             
             List<List<IntArray>> eqs = parseEquations(eqsStr);
