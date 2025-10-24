@@ -781,6 +781,24 @@ impl Operation for ProductOperation {
     fn value_at(&self, args: &[i32]) -> Result<i32, String> {
         self.int_value_at(args)
     }
+    
+    fn clone_box(&self) -> Box<dyn Operation> {
+        // ProductOperation doesn't implement Clone, so we need a different approach
+        // For now, we'll create a new instance with the same data
+        let cloned_algebras = self.algebras.iter()
+            .map(|alg| alg.clone_box())
+            .collect();
+        Box::new(ProductOperation {
+            symbol: self.symbol.clone(),
+            size: self.size,
+            arity: self.arity,
+            op_index: self.op_index,
+            algebras: cloned_algebras,
+            sizes: self.sizes.clone(),
+            number_of_products: self.number_of_products,
+            value_table: None, // Don't clone the table
+        })
+    }
 }
 
 impl Debug for ProductOperation {

@@ -288,6 +288,19 @@ impl Operation for TermOperationImp {
     fn is_total(&self) -> Result<bool, String> {
         self.interpretation.is_total()
     }
+    
+    fn clone_box(&self) -> Box<dyn Operation> {
+        // TermOperationImp cannot derive Clone because of trait objects
+        // So we manually create a new instance
+        Box::new(TermOperationImp {
+            term: self.term.clone_box(),
+            variables: self.variables.clone(),
+            alg: self.alg.clone(),
+            interpretation: self.interpretation.clone_box(),
+            symbol: self.symbol.clone(),
+            alg_size: self.alg_size,
+        })
+    }
 }
 
 impl Display for TermOperationImp {

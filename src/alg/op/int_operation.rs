@@ -345,6 +345,10 @@ impl Operation for IntOperation {
         // IntOperation is always total
         Ok(true)
     }
+    
+    fn clone_box(&self) -> Box<dyn Operation> {
+        Box::new(self.clone())
+    }
 }
 
 impl Display for IntOperation {

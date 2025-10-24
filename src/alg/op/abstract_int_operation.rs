@@ -196,6 +196,10 @@ impl Operation for AbstractIntOperation {
     fn is_total(&self) -> Result<bool, String> {
         self.default_is_total()
     }
+    
+    fn clone_box(&self) -> Box<dyn Operation> {
+        Box::new(self.clone())
+    }
 }
 
 impl AbstractOperation for AbstractIntOperation {
