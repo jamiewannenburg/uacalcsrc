@@ -101,9 +101,10 @@ pub struct CentralityData {
 5. **Integration Tests**: Test with actual BinaryRelation and Partition instances
 
 ### Implementation Priority
-**BLOCKED** - Cannot proceed until:
-- `SubProductElement` (Task 51) is completed
-- All dependencies must be available for proper testing
+**CAN PROCEED** (Updated 2025-10-24) - With some limitations:
+- `SubProductElement` (Task 51) is partially implemented with core functionality
+- Basic CentralityData can be implemented now
+- Note: SubProductElement has lifetime management limitations that may require workarounds
 
 ### Current Implementation Status
 
@@ -116,16 +117,18 @@ pub struct CentralityData {
 #### Dependency Analysis
 - **BinaryRelation** (Task 21): ✅ COMPLETED - Available in `src/alg/conlat/binary_relation.rs`
 - **Partition** (Task 5): ✅ COMPLETED - Available in `src/alg/conlat/partition.rs`
-- **SubProductElement** (Task 51): ❌ NOT COMPLETED - Only stub exists in `src/element/mod.rs`
+- **SubProductElement** (Task 51): ⚠️ PARTIALLY COMPLETED - Basic implementation in `src/element/sub_product_element.rs`
 
-#### Blocking Dependencies
-- `SubProductElement` (Task 51) - Required for failure field types
-- Cannot implement CentralityData without SubProductElement implementation
+#### Blocking Dependencies (Updated 2025-10-24)
+- `SubProductElement` (Task 51) - ⚠️ PARTIALLY IMPLEMENTED
+  - Core functionality available but has lifetime limitations
+  - Can be used for basic CentralityData implementation
+  - Note: SubProductElement uses unsafe pointer management (temporary solution)
 
 #### Implementation Readiness
 - **Ready Dependencies**: BinaryRelation, Partition
-- **Blocking Dependencies**: SubProductElement
-- **Implementation Status**: Cannot proceed until SubProductElement is completed
+- **Partially Ready**: SubProductElement (basic functionality available)
+- **Implementation Status**: Can proceed with basic implementation, but SubProductElement limitations may affect some methods
 
 ### Acceptance Criteria
 - [ ] All public methods translated to Rust
