@@ -906,8 +906,8 @@ impl SubalgebraLattice {
                 
                 let mut arg = vec![0_i32; arity_usize];
                 loop {
-                    // Build argument from indices (clone indices to avoid borrow issues)
-                    let arg_indices_copy = arg_indices.clone();
+                    // Build argument from indices using get_current() to avoid borrow issues
+                    let arg_indices_copy = inc.get_current();
                     for i in 0..arity {
                         arg[i as usize] = lst[arg_indices_copy[i as usize] as usize];
                     }
@@ -1276,9 +1276,9 @@ impl SubalgebraLattice {
             );
             
             loop {
-                // Clone arr to check condition without borrowing issues
+                // Use get_current() to check condition without borrowing issues
                 {
-                    let arr_copy = arr.clone();
+                    let arr_copy = inc.get_current();
                     let sub = self.sg(&arr_copy);
                     if sub.universe_size() == self.alg_size as usize {
                         return BasicSet::new(arr_copy).unwrap();
@@ -1402,8 +1402,8 @@ impl SubalgebraLattice {
                     let mut arg_b = vec![0_i32; arity_usize];
                     
                     loop {
-                        // Clone arg_indices to avoid borrow issues
-                        let arg_indices_copy = arg_indices.clone();
+                        // Use get_current() to avoid borrow issues
+                        let arg_indices_copy = inc.get_current();
                         for i in 0..arity {
                             let idx = arg_indices_copy[i as usize] as usize;
                             arg[i as usize] = lst[idx];

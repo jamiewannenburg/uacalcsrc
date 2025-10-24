@@ -1374,7 +1374,142 @@ fn test_substitute_with_cloning() {
 - Builder pattern (for constructing complex structures)
 - Strategy pattern (for polymorphic behavior without cloning)
 
-## 13. Verification Checklist
+## 13. Working with Incrementors and Borrow Checker
+
+### Problem: Incrementor API and Borrow Checker Conflicts
+
+When using incrementors from `SequenceGenerator` or `PermutationGenerator`, you may encounter borrow checker errors when trying to read from the array while the incrementor holds a mutable borrow.
+
+**Error Example**:
+```
+error[E0502]: cannot borrow `arg_indices` as immutable because it is also borrowed as mutable
+   --> src/alg/sublat/mod.rs:910:47
+    |
+903 |     let mut inc = SequenceGenerator::nondecreasing_sequence_incrementor(&mut arg_indices, max);
+    |                                                                          ------------------ mutable borrow occurs here
+...
+910 |         arg[i as usize] = lst[arg_indices[i as usize] as usize];
+    |                               ^^^^^^^^^^^ immutable borrow occurs here
+```
+
+### Solution: Use `get_current()` Method
+
+The incrementor structs now provide a `get_current()` method that returns a copy of the current array state, allowing you to read values while the incrementor is in scope.
+
+**Pattern for Using Incrementors**:
+
+```rust
+// Create the array and incrementor
+let mut arg_indices = vec![0_i32; arity];
+let mut inc = SequenceGenerator::nondecreasing_sequence_incrementor(
+    &mut arg_indices,
+    max_value
+);
+
+loop {
+    // ✅ CORRECT: Use get_current() to get a copy of the array
+    let current_indices = inc.get_current();
+    
+    // Now you can safely read from current_indices while inc is still in scope
+    for i in 0..arity {
+        let value = some_list[current_indices[i as usize] as usize];
+        // Process value...
+    }
+    
+    // Increment for next iteration
+    if !inc.increment() {
+        break;
+    }
+}
+```
+
+**Anti-Pattern (Will Not Compile)**:
+
+```rust
+// ❌ WRONG: Cannot read from array while incrementor holds mutable borrow
+let mut arg_indices = vec![0_i32; arity];
+let mut inc = SequenceGenerator::nondecreasing_sequence_incrementor(&mut arg_indices, max);
+
+loop {
+    // ❌ This will fail - cannot borrow arg_indices as immutable
+    for i in 0..arity {
+        let value = some_list[arg_indices[i as usize] as usize];  // Compile error!
+    }
+    
+    if !inc.increment() {
+        break;
+    }
+}
+```
+
+### Alternative: Drop and Recreate Pattern
+
+If you don't need the incrementor state between reads, you can drop it temporarily:
+
+```rust
+let mut arg_indices = vec![0_i32; arity];
+
+loop {
+    // Read from arg_indices (incrementor not in scope)
+    for i in 0..arity {
+        let value = some_list[arg_indices[i as usize] as usize];
+        // Process value...
+    }
+    
+    // Create incrementor just for incrementing
+    {
+        let mut inc = SequenceGenerator::nondecreasing_sequence_incrementor(&mut arg_indices, max);
+        if !inc.increment() {
+            break;
+        }
+    } // inc is dropped here, releasing the borrow
+}
+```
+
+### Available Incrementor Methods
+
+All incrementor types now support `get_current()`:
+
+- `NondecreasingSequenceIncrementor::get_current()` → `Vec<i32>`
+- `IncreasingSequenceIncrementor::get_current()` → `Vec<i32>`
+- `SequenceIncrementor::get_current()` → `Vec<i32>`
+
+### Real-World Example from SubalgebraLattice
+
+```rust
+// In make_sg_with_max_size() method
+let mut arg_indices = vec![0_i32; arity_usize];
+arg_indices[(arity - 1) as usize] = closed_mark as i32;
+
+let mut inc = SequenceGenerator::nondecreasing_sequence_incrementor(
+    &mut arg_indices,
+    (current_mark - 1) as i32
+);
+
+let mut arg = vec![0_i32; arity_usize];
+loop {
+    // Use get_current() to avoid borrow checker issues
+    let arg_indices_copy = inc.get_current();
+    for i in 0..arity {
+        arg[i as usize] = lst[arg_indices_copy[i as usize] as usize];
+    }
+    
+    // Process arg...
+    
+    if !inc.increment() {
+        break;
+    }
+}
+```
+
+### Key Takeaways
+
+1. **Always use `get_current()`** when you need to read array values while the incrementor is in scope
+2. **Cost is minimal**: `get_current()` clones the array, but this is usually a small overhead for small arrays
+3. **Alternative**: Structure your code to drop the incrementor before reading, but this is more complex
+4. **This pattern resolves all borrow checker conflicts** with incrementors while maintaining clean, readable code
+
+## 14. Verification Checklist
 
 Before marking a translation as complete, verify:
 

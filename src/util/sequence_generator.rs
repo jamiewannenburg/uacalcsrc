@@ -142,6 +142,20 @@ impl SequenceGenerator {
     pub fn nondecreasing_sequence_incrementor(arr: &mut [i32], max: i32) -> NondecreasingSequenceIncrementor {
         Self::nondecreasing_sequence_incrementor_with_last_min(arr, max, 0)
     }
+    
+    /// Get a reference to the current array state from an incrementor.
+    /// 
+    /// This is a helper function to safely access the array while the incrementor
+    /// is in scope, by temporarily releasing the borrow.
+    /// 
+    /// # Arguments
+    /// * `inc` - The incrementor
+    /// 
+    /// # Returns
+    /// A reference to the underlying array
+    pub fn get_array<'a>(inc: &'a NondecreasingSequenceIncrementor<'a>) -> &'a [i32] {
+        inc.arr
+    }
 
     /// Create a nondecreasing sequence incrementor with last minimum constraint.
     /// 
@@ -573,6 +587,34 @@ impl<'a> SequenceIncrementor<'a> {
         }
         false
     }
+    
+    /// Get a copy of the current array state.
+    /// 
+    /// This method allows safe access to the array values while the incrementor
+    /// is in scope by returning a cloned copy. Use this when you need to read
+    /// the array values while the incrementor holds a mutable borrow.
+    /// 
+    /// # Returns
+    /// A vector containing a copy of the current array values
+    /// 
+    /// # Examples
+    /// ```
+    /// use uacalc::util::{SequenceGenerator, ArrayIncrementor};
+    /// 
+    /// let mut arr = vec![0, 0, 0];
+    /// let mut inc = SequenceGenerator::sequence_incrementor(&mut arr, 2);
+    /// 
+    /// // Get a copy of the current state
+    /// let current = inc.get_current();
+    /// assert_eq!(current, vec![0, 0, 0]);
+    /// 
+    /// inc.increment();
+    /// let next = inc.get_current();
+    /// assert_eq!(next, vec![0, 0, 1]);
+    /// ```
+    pub fn get_current(&self) -> Vec<i32> {
+        self.arr.to_vec()
+    }
 }
 
 impl<'a> ArrayIncrementor for LeftSequenceIncrementor<'a> {
@@ -588,6 +630,29 @@ impl<'a> ArrayIncrementor for LeftSequenceIncrementor<'a> {
             }
         }
         false
+    }
+}
+
+impl<'a> NondecreasingSequenceIncrementor<'a> {
+    /// Get a copy of the current array state.
+    /// 
+    /// This method allows safe access to the array values while the incrementor
+    /// is in scope by returning a cloned copy.
+    /// 
+    /// # Returns
+    /// A vector containing a copy of the current array values
+    pub fn get_current(&self) -> Vec<i32> {
+        self.arr.to_vec()
+    }
+}
+
+impl<'a> IncreasingSequenceIncrementor<'a> {
+    /// Get a copy of the current array state.
+    /// 
+    /// # Returns
+    /// A vector containing a copy of the current array values
+    pub fn get_current(&self) -> Vec<i32> {
+        self.arr.to_vec()
     }
 }
 
