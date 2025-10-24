@@ -4318,8 +4318,12 @@ pub struct PyCongruenceLattice {
 #[pymethods]
 impl PyCongruenceLattice {
     /// Create a new congruence lattice for an algebra.
-    /// Note: For now, we don't expose this constructor directly since it requires SmallAlgebra
-    /// This is a placeholder for future implementation when we have proper algebra bindings
+    #[new]
+    fn new(algebra: &PyBasicSmallAlgebra) -> Self {
+        PyCongruenceLattice {
+            inner: uacalc::alg::conlat::CongruenceLattice::new(Box::new(algebra.inner.clone())),
+        }
+    }
     
     /// Get the size of the algebra's universe.
     fn alg_size(&self) -> usize {
