@@ -303,12 +303,19 @@ impl Partition {
         let size_r = (-self.array[r]) as usize;
         let size_s = (-self.array[s]) as usize;
         
+        let combined_size = size_r.saturating_add(size_s);
+        let combined_size_i32 = if combined_size > i32::MAX as usize {
+            i32::MAX
+        } else {
+            combined_size as i32
+        };
+        
         if size_r < size_s {
             self.array[r] = s as i32;
-            self.array[s] = -((size_r + size_s) as i32);
+            self.array[s] = -combined_size_i32;
         } else {
             self.array[s] = r as i32;
-            self.array[r] = -((size_r + size_s) as i32);
+            self.array[r] = -combined_size_i32;
         }
         
         // Invalidate cached values
@@ -547,12 +554,19 @@ impl Partition {
         let size_r = (-part[r]) as usize;
         let size_s = (-part[s]) as usize;
         
+        let combined_size = size_r.saturating_add(size_s);
+        let combined_size_i32 = if combined_size > i32::MAX as usize {
+            i32::MAX
+        } else {
+            combined_size as i32
+        };
+        
         if size_r < size_s {
             part[r] = s as i32;
-            part[s] = -((size_r + size_s) as i32);
+            part[s] = -combined_size_i32;
         } else {
             part[s] = r as i32;
-            part[r] = -((size_r + size_s) as i32);
+            part[r] = -combined_size_i32;
         }
     }
     
