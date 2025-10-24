@@ -996,11 +996,11 @@ impl SubalgebraLattice {
         self.one_generated_subalg_lookup = Some(lookup_map);
     }
     
-    /// Get or compute join irreducibles.
+    /// Get or compute join irreducibles (mutable version).
     /// 
     /// # Returns
-    /// List of join irreducible elements
-    pub fn join_irreducibles(&mut self) -> &Vec<BasicSet> {
+    /// Reference to list of join irreducible elements
+    pub fn join_irreducibles_mut(&mut self) -> &Vec<BasicSet> {
         if self.join_irreducibles.is_none() {
             self.make_join_irreducibles();
         }
@@ -1016,7 +1016,7 @@ impl SubalgebraLattice {
     /// `true` if the subalgebra is join irreducible
     pub fn join_irreducible(&mut self, subalg: &BasicSet) -> bool {
         // Make sure join irreducibles have been computed
-        self.join_irreducibles();
+        self.join_irreducibles_mut();
         
         if let Some(ref jis) = self.jis_hash {
             jis.contains(subalg)
@@ -1084,11 +1084,11 @@ impl SubalgebraLattice {
         self.jis_made = true;
     }
     
-    /// Get or compute meet irreducibles.
+    /// Get or compute meet irreducibles (mutable version).
     /// 
     /// # Returns
-    /// List of meet irreducible elements
-    pub fn meet_irreducibles(&mut self) -> &Vec<BasicSet> {
+    /// Reference to list of meet irreducible elements
+    pub fn meet_irreducibles_mut(&mut self) -> &Vec<BasicSet> {
         if self.meet_irreducibles.is_none() {
             self.make_meet_irreducibles();
         }
@@ -1156,7 +1156,7 @@ impl SubalgebraLattice {
     /// # Arguments
     /// * `max_size` - Maximum size (-1 for no limit)
     pub fn make_universe(&mut self, max_size: i32) {
-        let jis = self.join_irreducibles().clone();
+        let jis = self.join_irreducibles_mut().clone();
         self.size_computed = jis.len() as i32;
         
         let universe = if max_size > 0 {

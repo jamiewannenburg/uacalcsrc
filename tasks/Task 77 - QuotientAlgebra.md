@@ -54,7 +54,7 @@ Translate the Java class `org.uacalc.alg.QuotientAlgebra` to Rust with Python bi
 - `org.uacalc.alg.SmallAlgebra.AlgebraType` - Enum for algebra types (Task 41 - ✅ **COMPLETED**)
 - `org.uacalc.alg.conlat.Partition` - Congruence partition (Task 5 - ✅ COMPLETED)
 - `org.uacalc.alg.conlat.CongruenceLattice` - Congruence lattice (Task 80 - not completed)
-- `org.uacalc.alg.sublat.SubalgebraLattice` - Subalgebra lattice (Task 76 - not completed)
+- `org.uacalc.alg.sublat.SubalgebraLattice` - Subalgebra lattice (Task 76 - ✅ COMPLETED)
 - `org.uacalc.alg.op.AbstractOperation` - Abstract operation class (Task 11 - ✅ **COMPLETED**)
 - `org.uacalc.alg.op.Operation` - Operation interface (Task 12 - ✅ **COMPLETED**)
 - `org.uacalc.alg.op.Operations` - Operations utility (Task 50 - ✅ **COMPLETED**)
