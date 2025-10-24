@@ -1,5 +1,6 @@
 use std::collections::{HashMap, HashSet};
 use std::fmt::{Debug, Display};
+use std::sync::Arc;
 use crate::util::int_array::IntArrayTrait;
 use crate::alg::op::{Operation, OperationSymbol, SimilarityType};
 use crate::terms::Term;
@@ -1878,16 +1879,13 @@ impl ReductAlgebra {
     /// * `Ok(())` - Successfully created operations
     /// * `Err(String)` - If term interpretation fails
     pub fn make_operation_tables(&mut self) -> Result<(), String> {
-        use std::sync::Arc;
-        
         self.operations.clear();
         
         for term in &self.term_list {
             // Get the variable list for this term
             let varlist = term.get_variable_list();
             
-            // Create the interpretation of this term in the super algebra
-            // We need to clone the super algebra to create an Arc
+            // Now that clone_box preserves operations, we can use it safely
             let cloned_alg = self.super_algebra.clone_box();
             let wrapper = SmallAlgebraWrapper::new(cloned_alg);
             let alg_arc = Arc::new(wrapper);

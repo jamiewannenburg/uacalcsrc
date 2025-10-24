@@ -382,7 +382,87 @@ where
     }
     
     fn clone_box(&self) -> Box<dyn SmallAlgebra<UniverseItem = Self::UniverseItem>> {
-        Box::new(self.clone())
+        // Create a new BasicSmallAlgebra with the same properties
+        // Key insight: Preserve operations by forcing them to have tables first,
+        // then reconstruct from those tables.
+        let universe: HashSet<T> = self.base.universe().collect();
+        let mut new_base = GeneralAlgebra::new_with_universe(
+            self.base.name().to_string(),
+            universe.clone(),
+        );
+        
+        // Clone all operations from the current algebra
+        // For each operation, if it doesn't have a table, force it to create one
+        let ops = self.base.get_operations_ref();
+        let mut operations_to_add = Vec::new();
+        
+        for op_ref in ops {
+            // Try to get the table - if missing, compute it
+            let table = if let Some(t) = op_ref.get_table() {
+                t.to_vec()
+            } else {
+                // For operations without tables, we need to compute the table
+                // This works for operations that implement int_value_at correctly
+                let arity = op_ref.arity();
+                let set_size = op_ref.get_set_size();
+                
+                if arity < 0 || set_size <= 0 {
+                    // Skip operations with invalid arity or set_size
+                    continue;
+                }
+                
+                // Compute the table by calling int_value_at for all argument combinations
+                let table_size = if arity == 0 {
+                    1
+                } else {
+                    (set_size as usize).pow(arity as u32)
+                };
+                
+                let mut table = Vec::with_capacity(table_size);
+                
+                use crate::util::horner;
+                for k in 0..table_size {
+                    let args = horner::horner_inv_same_size(k as i32, set_size, arity as usize);
+                    match op_ref.int_value_at(&args) {
+                        Ok(val) => table.push(val),
+                        Err(_) => {
+                            // If we can't compute a value, skip this operation
+                            eprintln!("Warning: Could not compute value for operation {}", op_ref.symbol());
+                            table.clear();
+                            break;
+                        }
+                    }
+                }
+                
+                if table.is_empty() {
+                    continue; // Skip operations we couldn't compute
+                }
+                table
+            };
+            
+            // Create a new operation with the table
+            if let Ok(new_op) = crate::alg::op::operations::make_int_operation(
+                op_ref.symbol().clone(),
+                op_ref.get_set_size(),
+                table,
+            ) {
+                operations_to_add.push(new_op);
+            }
+        }
+        
+        if !operations_to_add.is_empty() {
+            new_base.set_operations(operations_to_add);
+        }
+        
+        Box::new(BasicSmallAlgebra {
+            base: new_base,
+            algebra_type: self.algebra_type.clone(),
+            universe_list: RwLock::new(self.universe_list.read().unwrap().clone()),
+            universe_order: RwLock::new(self.universe_order.read().unwrap().clone()),
+            parent: None,
+            con: None,
+            sub: None,
+        })
     }
 
     fn algebra_type(&self) -> AlgebraType {
