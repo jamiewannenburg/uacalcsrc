@@ -12,6 +12,8 @@ pub mod general_algebra;
 pub mod op;
 pub mod parallel;
 pub mod product_algebra;
+pub mod quotient_algebra;
+pub mod quotient_element;
 pub mod small_algebra;
 pub mod subalgebra;
 pub mod sublat;
@@ -39,6 +41,8 @@ pub use general_algebra::GeneralAlgebra;
 pub use small_algebra::{SmallAlgebra, BasicSmallAlgebra, AlgebraType};
 pub use subalgebra::Subalgebra;
 pub use product_algebra::ProductAlgebra;
+pub use quotient_algebra::QuotientAlgebra;
+pub use quotient_element::QuotientElement;
 
 // Import ParameterizedOperation from op module (defined later in this file)
 pub use op::ParameterizedOperation;
@@ -54,9 +58,7 @@ pub struct FreeAlgebra {
     // TODO: Implement free algebra structure
 }
 
-pub struct QuotientAlgebra {
-    // TODO: Implement quotient algebra structure
-}
+// QuotientAlgebra is now implemented in quotient_algebra.rs
 
 /// A homomorphism from the domain algebra into the range algebra.
 /// 

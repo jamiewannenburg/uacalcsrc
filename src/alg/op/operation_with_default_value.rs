@@ -549,6 +549,10 @@ impl Operation for OperationWithDefaultValue {
     fn is_total(&self) -> Result<bool, String> {
         Ok(self.is_total_op())
     }
+    
+    fn clone_box(&self) -> Box<dyn Operation> {
+        Box::new(self.clone())
+    }
 }
 
 impl Display for OperationWithDefaultValue {

@@ -145,6 +145,15 @@ pub trait Operation: Display + Debug + Send + Sync {
     /// * `Err(String)` - Error message if the check fails
     fn is_totally_symmetric(&self) -> Result<bool, String>;
     
+    /// Clone this operation into a new boxed trait object.
+    /// 
+    /// This allows cloning of trait objects by delegating to the concrete type's
+    /// Clone implementation.
+    /// 
+    /// # Returns
+    /// A new boxed copy of this operation
+    fn clone_box(&self) -> Box<dyn Operation>;
+    
     /// Check if a ternary operation is a Maltsev operation.
     /// 
     /// # Returns

@@ -614,6 +614,18 @@ impl Operation for RestrictedOperation {
     fn value_at(&self, args: &[i32]) -> Result<i32, String> {
         self.int_value_at(args)
     }
+    
+    fn clone_box(&self) -> Box<dyn Operation> {
+        Box::new(RestrictedOperation {
+            symbol: self.symbol.clone(),
+            size: self.size,
+            arity: self.arity,
+            univ_array: self.univ_array.clone(),
+            super_op: self.super_op.clone_box(),
+            super_algebra: self.super_algebra.clone_box(),
+            value_table: None, // Don't clone the table
+        })
+    }
 }
 
 impl Debug for RestrictedOperation {

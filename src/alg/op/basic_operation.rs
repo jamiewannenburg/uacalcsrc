@@ -286,6 +286,10 @@ impl Operation for BasicOperation {
     fn is_total(&self) -> Result<bool, String> {
         self.default_is_total()
     }
+    
+    fn clone_box(&self) -> Box<dyn Operation> {
+        Box::new(self.clone())
+    }
 }
 
 impl Display for BasicOperation {
