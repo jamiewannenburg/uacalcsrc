@@ -1623,20 +1623,30 @@ impl SmallAlgebra for PowerAlgebra {
 /// ```
 /// use uacalc::alg::{ReductAlgebra, SmallAlgebra, BasicSmallAlgebra, Algebra};
 /// use uacalc::terms::{VariableImp, NonVariableTerm, Term};
-/// use uacalc::alg::op::OperationSymbol;
+/// use uacalc::alg::op::{OperationSymbol, BasicOperation, Operation};
 /// use std::collections::HashSet;
 /// 
-/// // Create a small algebra
+/// // Create a small algebra with operation f
+/// let f_sym = OperationSymbol::new("f", 2, false);
+/// let f_op = Box::new(BasicOperation::new(f_sym.clone(), 2)) as Box<dyn Operation>;
 /// let alg = Box::new(BasicSmallAlgebra::new(
 ///     "A".to_string(),
 ///     HashSet::from([0, 1]),
-///     Vec::new()
+///     vec![f_op]
 /// )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+/// 
+/// // Debug: Check if operation exists in algebra
+/// let found_op = alg.get_operation_ref(&f_sym);
+/// assert!(found_op.is_some(), "Operation f should exist in algebra");
+/// 
+/// // Debug: Check the symbol of the found operation
+/// let op_symbol = found_op.unwrap().symbol();
+/// assert_eq!(op_symbol.name(), "f");
+/// assert_eq!(op_symbol.arity(), 2);
 /// 
 /// // Create terms
 /// let x = Box::new(VariableImp::new("x")) as Box<dyn Term>;
 /// let y = Box::new(VariableImp::new("y")) as Box<dyn Term>;
-/// let f_sym = OperationSymbol::new("f", 2, false);
 /// let f_term = Box::new(NonVariableTerm::new(f_sym, vec![x, y]));
 /// 
 /// // Create reduct algebra
@@ -1688,18 +1698,19 @@ impl ReductAlgebra {
     /// ```
     /// use uacalc::alg::{ReductAlgebra, SmallAlgebra, BasicSmallAlgebra, Algebra};
     /// use uacalc::terms::{VariableImp, NonVariableTerm, Term};
-    /// use uacalc::alg::op::OperationSymbol;
+    /// use uacalc::alg::op::{OperationSymbol, BasicOperation, Operation};
     /// use std::collections::HashSet;
     /// 
+    /// let f_sym = OperationSymbol::new("f", 2, false);
+    /// let f_op = Box::new(BasicOperation::new(f_sym.clone(), 2)) as Box<dyn Operation>;
     /// let alg = Box::new(BasicSmallAlgebra::new(
     ///     "A".to_string(),
     ///     HashSet::from([0, 1]),
-    ///     Vec::new()
+    ///     vec![f_op]
     /// )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
     /// 
     /// let x = Box::new(VariableImp::new("x")) as Box<dyn Term>;
     /// let y = Box::new(VariableImp::new("y")) as Box<dyn Term>;
-    /// let f_sym = OperationSymbol::new("f", 2, false);
     /// let f_term = Box::new(NonVariableTerm::new(f_sym, vec![x, y]));
     /// 
     /// let reduct = ReductAlgebra::new_safe(alg, vec![f_term]).unwrap();
@@ -1727,18 +1738,19 @@ impl ReductAlgebra {
     /// ```
     /// use uacalc::alg::{ReductAlgebra, SmallAlgebra, BasicSmallAlgebra, Algebra};
     /// use uacalc::terms::{VariableImp, NonVariableTerm, Term};
-    /// use uacalc::alg::op::OperationSymbol;
+    /// use uacalc::alg::op::{OperationSymbol, BasicOperation, Operation};
     /// use std::collections::HashSet;
     /// 
+    /// let f_sym = OperationSymbol::new("f", 2, false);
+    /// let f_op = Box::new(BasicOperation::new(f_sym.clone(), 2)) as Box<dyn Operation>;
     /// let alg = Box::new(BasicSmallAlgebra::new(
     ///     "A".to_string(),
     ///     HashSet::from([0, 1]),
-    ///     Vec::new()
+    ///     vec![f_op]
     /// )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
     /// 
     /// let x = Box::new(VariableImp::new("x")) as Box<dyn Term>;
     /// let y = Box::new(VariableImp::new("y")) as Box<dyn Term>;
-    /// let f_sym = OperationSymbol::new("f", 2, false);
     /// let f_term = Box::new(NonVariableTerm::new(f_sym, vec![x, y]));
     /// 
     /// let reduct = ReductAlgebra::new_with_name_safe(

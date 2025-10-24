@@ -39,10 +39,10 @@ impl PermutationGroup {
     /// # Examples
     /// ```
     /// use uacalc::group::PermutationGroup;
-    /// use uacalc::util::int_array::IntArray;
+    /// use uacalc::util::int_array::{IntArray, IntArrayTrait};
     /// 
     /// let generators = vec![IntArray::from_array(vec![1, 0, 2]).unwrap()];
-    /// let group = PermutationGroup::new("S3", generators);
+    /// let group = PermutationGroup::new("S3".to_string(), generators);
     /// assert_eq!(group.name, "S3");
     /// ```
     pub fn new(name: String, generators: Vec<IntArray>) -> Self {
@@ -90,11 +90,11 @@ impl PermutationGroup {
     /// # Examples
     /// ```
     /// use uacalc::group::PermutationGroup;
-    /// use uacalc::util::int_array::IntArray;
+    /// use uacalc::util::int_array::{IntArray, IntArrayTrait};
     /// 
     /// let generators = vec![IntArray::from_array(vec![1, 0, 2]).unwrap()];
     /// let universe_list = vec![IntArray::from_array(vec![0, 1, 2]).unwrap()];
-    /// let group = PermutationGroup::new_with_universe("S3", generators, universe_list);
+    /// let group = PermutationGroup::new_with_universe("S3".to_string(), generators, universe_list);
     /// assert_eq!(group.name, "S3");
     /// ```
     pub fn new_with_universe(name: String, generators: Vec<IntArray>, universe_list: Vec<IntArray>) -> Self {
@@ -221,7 +221,7 @@ impl PermutationGroup {
     /// # Examples
     /// ```
     /// use uacalc::group::PermutationGroup;
-    /// use uacalc::util::int_array::IntArray;
+    /// use uacalc::util::int_array::{IntArray, IntArrayTrait};
     /// 
     /// let p0 = IntArray::from_array(vec![1, 0, 2]).unwrap();
     /// let p1 = IntArray::from_array(vec![2, 1, 0]).unwrap();
@@ -280,7 +280,7 @@ impl PermutationGroup {
     /// # Examples
     /// ```
     /// use uacalc::group::PermutationGroup;
-    /// use uacalc::util::int_array::IntArray;
+    /// use uacalc::util::int_array::{IntArray, IntArrayTrait};
     /// 
     /// let p = IntArray::from_array(vec![1, 0, 2]).unwrap();
     /// let inv = PermutationGroup::inv(p);
@@ -333,6 +333,7 @@ impl PermutationGroup {
     /// # Examples
     /// ```
     /// use uacalc::group::PermutationGroup;
+    /// use uacalc::util::int_array::IntArrayTrait;
     /// 
     /// let id = PermutationGroup::id(3);
     /// assert_eq!(id.as_slice(), &[0, 1, 2]);
