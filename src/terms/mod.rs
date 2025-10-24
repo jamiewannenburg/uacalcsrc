@@ -878,6 +878,19 @@ impl Taylor {
             if ok {
                 use crate::util::array_string::to_string;
                 println!("this works: {}", to_string(&seq));
+                // Construct and return the interpreting term corresponding to this sequence.
+                // We can use the first equation's left-hand side with the found sequence,
+                // since all sides canonicalize to the same term when ok == true.
+                if let Some(first_eq) = inteqs.first() {
+                    use crate::util::int_array::IntArrayTrait;
+                    let side = first_eq[0].as_slice();
+                    let mut arr = vec![0; pow as usize];
+                    for i in 0..pow as usize {
+                        arr[i] = side[seq[i] as usize];
+                    }
+                    let term = self.canonical_form(self.term_from_array(&arr).as_ref());
+                    return Some(term);
+                }
                 return None;
             }
         }
