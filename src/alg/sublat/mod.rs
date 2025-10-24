@@ -538,6 +538,33 @@ pub struct SubalgebraLattice {
     make_universe_k: i32,
 }
 
+impl Clone for SubalgebraLattice {
+    fn clone(&self) -> Self {
+        SubalgebraLattice {
+            alg: self.alg.clone_box(),
+            alg_size: self.alg_size,
+            num_ops: self.num_ops,
+            zero_subalg: self.zero_subalg.clone(),
+            one_subalg: self.one_subalg.clone(),
+            description: self.description.clone(),
+            non_drawable: self.non_drawable,
+            one_generated_subalg_lookup: None,
+            one_generated_subalg_generator: None,
+            universe: None,
+            upper_covers_map: None,
+            lower_cover_of_jis: None,
+            one_generated_subalgebras: None,
+            join_irreducibles: None,
+            meet_irreducibles: None,
+            jis_hash: None,
+            size_computed: 0,
+            jis_made: false,
+            stop_make_universe: false,
+            make_universe_k: 0,
+        }
+    }
+}
+
 impl SubalgebraLattice {
     /// Create a new SubalgebraLattice from an algebra.
     /// 

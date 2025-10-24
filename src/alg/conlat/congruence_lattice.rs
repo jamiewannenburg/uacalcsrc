@@ -116,6 +116,33 @@ impl fmt::Debug for CongruenceLattice {
     }
 }
 
+impl Clone for CongruenceLattice {
+    fn clone(&self) -> Self {
+        CongruenceLattice {
+            alg: self.alg.clone_box(),
+            alg_size: self.alg_size,
+            num_ops: self.num_ops,
+            zero_cong: self.zero_cong.clone(),
+            one_cong: self.one_cong.clone(),
+            description: self.description.clone(),
+            non_drawable: self.non_drawable,
+            universe: None,
+            principal_congruences_lookup: None,
+            principal_congruences_rep: None,
+            principal_congruences: None,
+            join_irreducibles: None,
+            lower_cover_of_jis: None,
+            atoms: None,
+            meet_irreducibles: None,
+            upper_covers_map: None,
+            permutability_level: -1,
+            permutability_level_witnesses: None,
+            size_computed: 0,
+            principals_made: false,
+        }
+    }
+}
+
 impl CongruenceLattice {
     /// Create a new congruence lattice for the given algebra.
     ///
