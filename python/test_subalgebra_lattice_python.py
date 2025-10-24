@@ -66,7 +66,7 @@ def test_basic_creation():
     print(f"  ✓ Python: BasicSet class available: {BasicSet}")
     print(f"  ✓ Python: BasicSmallAlgebra class available: {BasicSmallAlgebra}")
     print("  ⊙ Full test requires AlgebraReader (not yet exposed)")
-    return True
+    assert True  # Test passes if we reach here
     
     print("  ✓ Python: Created SubalgebraLattice successfully")
     
@@ -78,10 +78,10 @@ def test_basic_creation():
         print(f"  ✓ Java: Created SubalgebraLattice successfully")
         print(f"    - Algebra name: {java_data.get('algebra_name')}")
         print(f"    - Algebra size: {java_data.get('algebra_size')}")
-        return True
+        assert True  # Test passes if Java creation succeeded
     else:
         print("  ✗ Java: Failed to create SubalgebraLattice")
-        return False
+        assert False, "Java SubalgebraLattice creation failed"
 
 
 def test_zero_and_one():
@@ -90,28 +90,28 @@ def test_zero_and_one():
     
     # Skip for now - needs algebra reader
     print("  ⊙ Skipped: Requires AlgebraReader (not yet exposed)")
-    return True
+    assert True  # Test passes if we reach here
 
 
 def test_sg_generation():
     """Test subalgebra generation."""
     print("\nTest 3: Subalgebra generation")
     print("  ⊙ Skipped: Requires AlgebraReader (not yet exposed)")
-    return True
+    assert True  # Test passes if we reach here
 
 
 def test_one_generated_subalgebras():
     """Test one-generated subalgebras."""
     print("\nTest 4: One-generated subalgebras")
     print("  ⊙ Skipped: Requires AlgebraReader (not yet exposed)")
-    return True
+    assert True  # Test passes if we reach here
 
 
 def test_join_irreducibles():
     """Test join irreducibles."""
     print("\nTest 5: Join irreducibles")
     print("  ⊙ Skipped: Requires AlgebraReader (not yet exposed)")
-    return True
+    assert True  # Test passes if we reach here
 
 
 def test_join_and_meet():
@@ -132,7 +132,7 @@ def test_join_and_meet():
     leq_result = a.leq(union)
     print(f"  ✓ Python leq({a.elements()}, {union.elements()}): {leq_result}")
     
-    return True
+    assert True  # Test passes if we reach here
 
 
 def test_no_duplicates():
@@ -153,34 +153,34 @@ def test_no_duplicates():
         
         if python_result == java_output:
             print("  ✓ Python and Java outputs match!")
-            return True
+            assert True  # Test passes
         else:
             print(f"  ✗ Mismatch: Python={python_result}, Java={java_output}")
-            return False
+            assert False, f"Python and Java outputs don't match: Python={python_result}, Java={java_output}"
     else:
         print("  ✗ Java command failed")
-        return False
+        assert False, "Java command failed"
 
 
 def test_cardinality():
     """Test cardinality computation."""
     print("\nTest 8: Cardinality")
     print("  ⊙ Skipped: Requires AlgebraReader (not yet exposed)")
-    return True
+    assert True  # Test passes if we reach here
 
 
 def test_filter():
     """Test filter operation."""
     print("\nTest 9: Filter operation")
     print("  ⊙ Skipped: Requires AlgebraReader (not yet exposed)")
-    return True
+    assert True  # Test passes if we reach here
 
 
 def test_minimal_generating_set():
     """Test minimal generating set."""
     print("\nTest 10: Minimal generating set")
     print("  ⊙ Skipped: Requires AlgebraReader (not yet exposed)")
-    return True
+    assert True  # Test passes if we reach here
 
 
 def main():
