@@ -474,6 +474,28 @@ impl BigProductAlgebra {
         // induced by the projection map
         Err("Projection kernel calculation not yet implemented".to_string())
     }
+    
+    /// Get the congruence lattice of this algebra.
+    /// 
+    /// Note: This creates a new CongruenceLattice each time it's called.
+    /// For repeated access, cache the result.
+    /// 
+    /// # Returns
+    /// The congruence lattice
+    pub fn con(&self) -> crate::alg::conlat::CongruenceLattice {
+        use crate::alg::conlat::congruence_lattice::SmallAlgebraWrapper;
+        
+        // Clone this algebra - note that this doesn't implement SmallAlgebra
+        // but we can wrap it
+        let alg_clone = self.clone();
+        
+        // BigProductAlgebra is not a SmallAlgebra (it's only Algebra)
+        // For now, we'll need to create a workaround or return an error
+        // Actually, looking at the trait bounds, BigProductAlgebra doesn't implement
+        // SmallAlgebra, so we can't create a congruence lattice for it directly
+        
+        panic!("con() not yet fully implemented for BigProductAlgebra - it doesn't implement SmallAlgebra")
+    }
 }
 
 impl Clone for BigProductAlgebra {

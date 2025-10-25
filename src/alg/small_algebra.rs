@@ -217,14 +217,16 @@ where
     /// 
     /// # Returns
     /// A reference to the congruence lattice
-    /// 
-    /// # Note
-    /// This method is only available for BasicSmallAlgebra<i32>.
-    /// For other types, this will panic.
-    pub fn con(&mut self) -> &crate::alg::conlat::CongruenceLattice {
+    pub fn con(&mut self) -> &crate::alg::conlat::CongruenceLattice
+    where
+        T: 'static,
+    {
         if self.con.is_none() {
-            // Only works for i32 universe type
-            panic!("con() method only available for BasicSmallAlgebra<i32>");
+            // Create congruence lattice using the new wrapper
+            use crate::alg::conlat::congruence_lattice::SmallAlgebraWrapper;
+            let alg_box = Box::new(self.clone()) as Box<dyn SmallAlgebra<UniverseItem = T>>;
+            let wrapper = Box::new(SmallAlgebraWrapper::new(alg_box));
+            self.con = Some(Box::new(crate::alg::conlat::CongruenceLattice::new(wrapper)));
         }
         self.con.as_ref().unwrap()
     }
