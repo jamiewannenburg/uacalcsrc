@@ -139,7 +139,7 @@ pub struct UnaryTermsMonoid {
 
 ### Dependency Analysis
 
-**Ready Dependencies** (8/8):
+**Ready Dependencies** (8/9):
 - ✅ `SmallAlgebra` trait (Task 41) - Implemented in `src/alg/small_algebra.rs`
 - ✅ `TermOperation` trait (Task 25) - Implemented in `src/alg/op/term_operation.rs`
 - ✅ `TermOperationImp` struct (Task 33) - Implemented in `src/alg/op/term_operation_imp.rs`
@@ -148,11 +148,11 @@ pub struct UnaryTermsMonoid {
 - ✅ `IntArray` struct (Task 23) - Implemented in `src/util/int_array.rs`
 - ✅ `ArrayString` module (Task 6) - Implemented in `src/util/array_string.rs`
 - ✅ `BadAlgebraFileException` struct (Task 7) - Implemented in `src/io/mod.rs`
+- ✅ `Operations.makeBinaryIntOperation` - Available in `src/alg/op/operations.rs`
 
 **Blocking Dependencies** (1/1):
 - ❌ `FreeAlgebra` struct (Task 73) - **NOT IMPLEMENTED** - This is the primary blocker
-- ❌ `Operations.makeBinaryIntOperation` - Available but needs FreeAlgebra integration
-- ❌ `AlgebraIO` module (Task 65) - Partially implemented, missing key methods
+- ⚠️ `AlgebraIO` module (Task 65) - Partially implemented, missing key methods
 
 ### Blocking Issues
 
