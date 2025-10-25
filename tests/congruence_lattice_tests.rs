@@ -10,7 +10,7 @@ fn test_new_congruence_lattice() {
         Vec::new()
     )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
     
-    let con_lat = CongruenceLattice::new(alg);
+    let con_lat = CongruenceLattice::new_from_i32_algebra(alg);
     assert_eq!(con_lat.alg_size(), 3);
 }
 
@@ -22,7 +22,7 @@ fn test_zero_and_one() {
         Vec::new()
     )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
     
-    let con_lat = CongruenceLattice::new(alg);
+    let con_lat = CongruenceLattice::new_from_i32_algebra(alg);
     
     let zero = con_lat.zero();
     assert_eq!(zero.number_of_blocks(), 3);
@@ -39,7 +39,7 @@ fn test_principal_congruence() {
         Vec::new()
     )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
     
-    let mut con_lat = CongruenceLattice::new(alg);
+    let mut con_lat = CongruenceLattice::new_from_i32_algebra(alg);
     
     // Cg(0, 1) for an algebra with no operations should relate 0 and 1
     let cg = con_lat.cg(0, 1);
@@ -58,7 +58,7 @@ fn test_cardinality() {
         Vec::new()
     )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
     
-    let mut con_lat = CongruenceLattice::new(alg);
+    let mut con_lat = CongruenceLattice::new_from_i32_algebra(alg);
     
     // For a 3-element algebra with no operations, Con(A) should have 5 congruences
     let card = con_lat.con_cardinality();
@@ -73,7 +73,7 @@ fn test_principals() {
         Vec::new()
     )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
     
-    let mut con_lat = CongruenceLattice::new(alg);
+    let mut con_lat = CongruenceLattice::new_from_i32_algebra(alg);
     
     let principals = con_lat.principals();
     
@@ -89,7 +89,7 @@ fn test_join_irreducibles() {
         Vec::new()
     )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
     
-    let mut con_lat = CongruenceLattice::new(alg);
+    let mut con_lat = CongruenceLattice::new_from_i32_algebra(alg);
     
     let jis = con_lat.join_irreducibles();
     
@@ -105,7 +105,7 @@ fn test_atoms() {
         Vec::new()
     )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
     
-    let mut con_lat = CongruenceLattice::new(alg);
+    let mut con_lat = CongruenceLattice::new_from_i32_algebra(alg);
     
     let atoms = con_lat.atoms();
     
@@ -121,7 +121,7 @@ fn test_is_distributive() {
         Vec::new()
     )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
     
-    let mut con_lat = CongruenceLattice::new(alg);
+    let mut con_lat = CongruenceLattice::new_from_i32_algebra(alg);
     
     // For a 3-element algebra with no operations, the congruence lattice should not be distributive
     let is_dist = con_lat.is_distributive();
@@ -136,7 +136,7 @@ fn test_find_principal_chain() {
         Vec::new()
     )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
     
-    let mut con_lat = CongruenceLattice::new(alg);
+    let mut con_lat = CongruenceLattice::new_from_i32_algebra(alg);
     
     let chain = con_lat.find_principal_chain();
     
@@ -153,7 +153,7 @@ fn test_complements() {
         Vec::new()
     )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
     
-    let mut con_lat = CongruenceLattice::new(alg);
+    let mut con_lat = CongruenceLattice::new_from_i32_algebra(alg);
     
     let zero = con_lat.zero();
     let complements = con_lat.complements(&zero);
@@ -170,7 +170,7 @@ fn test_universe_generation() {
         Vec::new()
     )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
     
-    let mut con_lat = CongruenceLattice::new(alg);
+    let mut con_lat = CongruenceLattice::new_from_i32_algebra(alg);
     
     // Make universe
     con_lat.make_universe();
@@ -190,7 +190,7 @@ fn test_meet_irreducibles() {
         Vec::new()
     )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
     
-    let mut con_lat = CongruenceLattice::new(alg);
+    let mut con_lat = CongruenceLattice::new_from_i32_algebra(alg);
     
     let mis = con_lat.meet_irreducibles();
     
