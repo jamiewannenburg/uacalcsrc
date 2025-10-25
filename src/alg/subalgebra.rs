@@ -265,6 +265,7 @@ impl Subalgebra {
     pub fn con(&mut self) -> &crate::alg::conlat::CongruenceLattice {
         if self.con.is_none() {
             // Create a wrapper that implements SmallAlgebra for this Subalgebra
+            use crate::alg::conlat::congruence_lattice::SmallAlgebraWrapper;
             let wrapper = Box::new(SmallAlgebraWrapper::new(self.super_algebra.clone_box()));
             self.con = Some(Box::new(crate::alg::conlat::CongruenceLattice::new(wrapper)));
         }

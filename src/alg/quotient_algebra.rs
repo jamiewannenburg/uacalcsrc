@@ -61,6 +61,12 @@ pub struct QuotientAlgebra {
     
     /// The operations on the quotient algebra
     operations: Vec<QuotientOperation>,
+    
+    /// Lazy-initialized congruence lattice
+    con: Option<Box<crate::alg::conlat::CongruenceLattice>>,
+    
+    /// Lazy-initialized subalgebra lattice
+    sub: Option<Box<crate::alg::sublat::SubalgebraLattice>>,
 }
 
 /// An operation on a quotient algebra.
@@ -373,6 +379,8 @@ impl QuotientAlgebra {
             universe_list: RwLock::new(None),
             universe_order: RwLock::new(None),
             operations,
+            con: None,
+            sub: None,
         };
         
         Ok(quot)
@@ -482,6 +490,40 @@ impl QuotientAlgebra {
             *self.universe_order.write().unwrap() = Some(universe_order);
         }
     }
+    
+    /// Get the congruence lattice (lazy initialization).
+    /// 
+    /// # Returns
+    /// A reference to the congruence lattice
+    pub fn con(&mut self) -> &crate::alg::conlat::CongruenceLattice {
+        if self.con.is_none() {
+            // Create congruence lattice using the type-erased wrapper
+            use crate::alg::conlat::congruence_lattice::SmallAlgebraWrapper;
+            use crate::alg::quotient_element::QuotientElement;
+            
+            let alg_box = Box::new(self.clone()) as Box<dyn SmallAlgebra<UniverseItem = QuotientElement>>;
+            let wrapper = Box::new(SmallAlgebraWrapper::new(alg_box));
+            self.con = Some(Box::new(crate::alg::conlat::CongruenceLattice::new(wrapper)));
+        }
+        self.con.as_ref().unwrap()
+    }
+    
+    /// Get the subalgebra lattice (lazy initialization).
+    /// 
+    /// # Returns
+    /// A reference to the subalgebra lattice
+    /// 
+    /// # Note
+    /// This method is not yet fully implemented for QuotientAlgebra.
+    /// SubalgebraLattice currently only supports i32 universes.
+    pub fn sub(&mut self) -> &crate::alg::sublat::SubalgebraLattice {
+        if self.sub.is_none() {
+            // SubalgebraLattice currently only works with i32 universes
+            // We need to enhance it to support other universe types
+            panic!("sub() method not yet fully implemented for QuotientAlgebra - SubalgebraLattice requires i32 universe");
+        }
+        self.sub.as_ref().unwrap()
+    }
 }
 
 impl Clone for QuotientAlgebra {
@@ -495,6 +537,8 @@ impl Clone for QuotientAlgebra {
             universe_list: RwLock::new(self.universe_list.read().unwrap().clone()),
             universe_order: RwLock::new(self.universe_order.read().unwrap().clone()),
             operations: self.operations.clone(),
+            con: None, // Don't clone cached lattices
+            sub: None,
         }
     }
 }

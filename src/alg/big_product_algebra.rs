@@ -474,6 +474,30 @@ impl BigProductAlgebra {
         // induced by the projection map
         Err("Projection kernel calculation not yet implemented".to_string())
     }
+    
+    /// Get the congruence lattice of this algebra.
+    /// 
+    /// **Note**: BigProductAlgebra does not implement SmallAlgebra because product
+    /// algebras can be extremely large or conceptually infinite. Congruence lattices
+    /// are only computable for SmallAlgebras.
+    /// 
+    /// To compute congruences of a product algebra:
+    /// 1. Use SubProductAlgebra if you have a finite subalgebra
+    /// 2. Use QuotientAlgebra if you want to quotient first
+    /// 3. Compute congruences on the factor algebras separately
+    /// 
+    /// # Panics
+    /// This method panics because BigProductAlgebra doesn't implement SmallAlgebra.
+    /// 
+    /// # Returns
+    /// Does not return - panics with explanation
+    pub fn con(&self) -> ! {
+        panic!(
+            "con() is not available for BigProductAlgebra. BigProductAlgebra does not \
+            implement SmallAlgebra because product algebras can be extremely large. \
+            To compute congruences, use SubProductAlgebra for finite subalgebras."
+        )
+    }
 }
 
 impl Clone for BigProductAlgebra {

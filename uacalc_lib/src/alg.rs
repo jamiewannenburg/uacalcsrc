@@ -4320,8 +4320,11 @@ impl PyCongruenceLattice {
     /// Create a new congruence lattice for an algebra.
     #[new]
     fn new(algebra: &PyBasicSmallAlgebra) -> Self {
+        use uacalc::alg::conlat::congruence_lattice::SmallAlgebraWrapper;
         PyCongruenceLattice {
-            inner: uacalc::alg::conlat::CongruenceLattice::new(Box::new(algebra.inner.clone())),
+            inner: uacalc::alg::conlat::CongruenceLattice::new(
+                Box::new(SmallAlgebraWrapper::new(Box::new(algebra.inner.clone())))
+            ),
         }
     }
     

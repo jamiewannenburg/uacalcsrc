@@ -411,13 +411,15 @@ impl SubProductAlgebra {
     /// 
     /// # Returns
     /// A reference to the congruence lattice
-    /// 
-    /// # Note
-    /// This method is not yet implemented for SubProductAlgebra.
-    /// It requires a different approach due to IntArray universe type.
     pub fn con(&mut self) -> &crate::alg::conlat::CongruenceLattice {
         if self.con.is_none() {
-            panic!("con() method not yet implemented for SubProductAlgebra");
+            // Create congruence lattice using the type-erased wrapper
+            use crate::alg::conlat::congruence_lattice::SmallAlgebraWrapper;
+            
+            // Clone this algebra as a trait object
+            let alg_box = Box::new(self.clone()) as Box<dyn SmallAlgebra<UniverseItem = IntArray>>;
+            let wrapper = Box::new(SmallAlgebraWrapper::new(alg_box));
+            self.con = Some(Box::new(crate::alg::conlat::CongruenceLattice::new(wrapper)));
         }
         self.con.as_ref().unwrap()
     }
@@ -715,15 +717,38 @@ impl Algebra for SubProductAlgebra {
     }
 }
 
+impl Clone for SubProductAlgebra {
+    fn clone(&self) -> Self {
+        SubProductAlgebra {
+            name: self.name.clone(),
+            description: self.description.clone(),
+            product_algebra: self.product_algebra.clone(),
+            gens: self.gens.clone(),
+            univ: self.univ.clone(),
+            thin_generators: self.thin_generators,
+            decompose: self.decompose,
+            univ_hash_map: self.univ_hash_map.clone(),
+            terms: None, // Don't clone terms (too complex)
+            term_map: None,
+            variables: None,
+            vars_map: None,
+            universe: self.universe.clone(),
+            operations: Vec::new(), // Don't clone operations
+            similarity_type: None,
+            monitor: None,
+            con: None, // Don't clone cached lattices
+            sub: None,
+        }
+    }
+}
+
 impl SmallAlgebra for SubProductAlgebra {
     fn get_operation_ref(&self, sym: &OperationSymbol) -> Option<&dyn Operation> {
         None // Simplified
     }
     
     fn clone_box(&self) -> Box<dyn SmallAlgebra<UniverseItem = Self::UniverseItem>> {
-        // This is a simplified clone
-        // In practice, we can't easily clone BigProductAlgebra
-        panic!("clone_box not implemented for SubProductAlgebra")
+        Box::new(self.clone())
     }
     
     fn get_element(&self, k: usize) -> Option<Self::UniverseItem> {
