@@ -239,7 +239,7 @@ impl BigProductAlgebra {
         
         // Get operations from first algebra as a template
         if !self.algebras.is_empty() {
-            let first_ops = self.algebras[0].operations();
+            let _first_ops = self.algebras[0].operations();
             // For each operation in the first algebra, we would create a
             // corresponding product operation
             // TODO: Implement full operation creation
@@ -255,9 +255,9 @@ impl BigProductAlgebra {
             return constants.clone();
         }
         
-        let mut constants = Vec::new();
-        let mut constant_to_symbol = HashMap::new();
-        let mut hash: HashSet<IntArray> = HashSet::new();
+        let constants = Vec::new();
+        let constant_to_symbol = HashMap::new();
+        let _hash: HashSet<IntArray> = HashSet::new();
         
         for op in &self.operations {
             if op.arity() == 0 {
@@ -403,7 +403,7 @@ impl BigProductAlgebra {
         use std::sync::Arc;
         
         // Make a copy of elements (don't modify input)
-        let mut elems_copy = elems.clone();
+        let elems_copy = elems.clone();
         
         // Create closer
         let algebra_arc = Arc::new(self.clone());
@@ -424,6 +424,55 @@ impl BigProductAlgebra {
         
         // Compute closure
         closer.sg_close()
+    }
+    
+    /// Get the projection algebra for the k-th factor.
+    /// 
+    /// # Arguments
+    /// * `k` - The index of the factor to project to
+    /// 
+    /// # Returns
+    /// * `Ok(Box<dyn SmallAlgebra>)` - The k-th factor algebra
+    /// * `Err(String)` - If k is out of bounds
+    pub fn projection(&self, k: usize) -> Result<Box<dyn SmallAlgebra<UniverseItem = i32>>, String> {
+        if k >= self.number_of_factors {
+            return Err(format!("Factor index {} out of bounds (max: {})", k, self.number_of_factors - 1));
+        }
+        
+        Ok(self.algebras[k].clone_box())
+    }
+    
+    /// Get size multiplicities for this product algebra.
+    /// 
+    /// # Returns
+    /// A map from size to count of algebras with that size
+    pub fn size_multiplicities(&self) -> std::collections::BTreeMap<i32, i32> {
+        let mut multiplicities = std::collections::BTreeMap::new();
+        
+        for &size in &self.sizes {
+            *multiplicities.entry(size).or_insert(0) += 1;
+        }
+        
+        multiplicities
+    }
+    
+    /// Get the projection kernel for the k-th factor.
+    /// 
+    /// # Arguments
+    /// * `k` - The index of the factor
+    /// 
+    /// # Returns
+    /// * `Ok(BasicPartition)` - The projection kernel
+    /// * `Err(String)` - If k is out of bounds or not implemented
+    pub fn projection_kernel(&self, k: usize) -> Result<crate::alg::conlat::partition::Partition, String> {
+        if k >= self.number_of_factors {
+            return Err(format!("Factor index {} out of bounds (max: {})", k, self.number_of_factors - 1));
+        }
+        
+        // TODO: Implement projection kernel calculation
+        // This would require understanding the equivalence relation
+        // induced by the projection map
+        Err("Projection kernel calculation not yet implemented".to_string())
     }
 }
 
@@ -457,8 +506,9 @@ impl Algebra for BigProductAlgebra {
     type UniverseItem = IntArray;
     
     fn universe(&self) -> Box<dyn Iterator<Item = Self::UniverseItem>> {
-        // For now, return empty iterator
-        // TODO: Implement proper universe iteration
+        // Create an iterator over all possible combinations
+        // For now, return empty iterator to avoid memory issues with large products
+        // TODO: Implement proper universe iteration for small products
         Box::new(std::iter::empty())
     }
     
@@ -467,10 +517,17 @@ impl Algebra for BigProductAlgebra {
             return self.cardinality;
         }
         
-        // Calculate cardinality
-        // TODO: Use ProductAlgebra::calc_card
-        // For now, return -1 for large products
-        -1
+        // Calculate cardinality using ProductAlgebra logic
+        let mut total_size = 1i64;
+        for &size in &self.sizes {
+            total_size *= size as i64;
+            // Check for overflow
+            if total_size > i32::MAX as i64 {
+                return -1; // Too big
+            }
+        }
+        
+        total_size as i32
     }
     
     fn input_size(&self) -> i32 {
@@ -496,8 +553,9 @@ impl Algebra for BigProductAlgebra {
     }
     
     fn operations(&self) -> Vec<Box<dyn Operation>> {
-        // Return clones/recreations of operations
-        // For now, return empty vec
+        // Return clones of operations
+        // For now, return empty vec since operations are not fully implemented
+        // TODO: Implement proper operation creation
         Vec::new()
     }
     
