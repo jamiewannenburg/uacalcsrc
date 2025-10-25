@@ -477,24 +477,26 @@ impl BigProductAlgebra {
     
     /// Get the congruence lattice of this algebra.
     /// 
-    /// Note: This creates a new CongruenceLattice each time it's called.
-    /// For repeated access, cache the result.
+    /// **Note**: BigProductAlgebra does not implement SmallAlgebra because product
+    /// algebras can be extremely large or conceptually infinite. Congruence lattices
+    /// are only computable for SmallAlgebras.
+    /// 
+    /// To compute congruences of a product algebra:
+    /// 1. Use SubProductAlgebra if you have a finite subalgebra
+    /// 2. Use QuotientAlgebra if you want to quotient first
+    /// 3. Compute congruences on the factor algebras separately
+    /// 
+    /// # Panics
+    /// This method panics because BigProductAlgebra doesn't implement SmallAlgebra.
     /// 
     /// # Returns
-    /// The congruence lattice
-    pub fn con(&self) -> crate::alg::conlat::CongruenceLattice {
-        use crate::alg::conlat::congruence_lattice::SmallAlgebraWrapper;
-        
-        // Clone this algebra - note that this doesn't implement SmallAlgebra
-        // but we can wrap it
-        let alg_clone = self.clone();
-        
-        // BigProductAlgebra is not a SmallAlgebra (it's only Algebra)
-        // For now, we'll need to create a workaround or return an error
-        // Actually, looking at the trait bounds, BigProductAlgebra doesn't implement
-        // SmallAlgebra, so we can't create a congruence lattice for it directly
-        
-        panic!("con() not yet fully implemented for BigProductAlgebra - it doesn't implement SmallAlgebra")
+    /// Does not return - panics with explanation
+    pub fn con(&self) -> ! {
+        panic!(
+            "con() is not available for BigProductAlgebra. BigProductAlgebra does not \
+            implement SmallAlgebra because product algebras can be extremely large. \
+            To compute congruences, use SubProductAlgebra for finite subalgebras."
+        )
     }
 }
 

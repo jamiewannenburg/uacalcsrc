@@ -389,7 +389,7 @@ impl CongruenceLattice {
     ///     Vec::new()
     /// )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
     ///
-    /// let mut con_lat = CongruenceLattice::new(alg);
+    /// let mut con_lat = CongruenceLattice::new_from_i32_algebra(alg);
     /// let cg = con_lat.cg(0, 1);
     /// assert!(cg.is_related(0, 1));
     /// ```
