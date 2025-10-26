@@ -162,6 +162,7 @@ impl std::fmt::Display for SmallAlgebraWrapper {
 }
 
 pub mod algebra;
+pub mod algebra_with_generating_vector;
 pub mod big_product_algebra;
 pub mod closer;
 pub mod closer_timing;
@@ -202,6 +203,7 @@ pub use subalgebra::Subalgebra;
 pub use product_algebra::ProductAlgebra;
 pub use quotient_algebra::QuotientAlgebra;
 pub use quotient_element::QuotientElement;
+pub use algebra_with_generating_vector::AlgebraWithGeneratingVector;
 
 // Import ParameterizedOperation from op module (defined later in this file)
 pub use op::ParameterizedOperation;
@@ -554,9 +556,7 @@ pub struct AlgebraFromMinimalSets {
     // TODO: Implement algebra from minimal sets
 }
 
-pub struct AlgebraWithGeneratingVector {
-    // TODO: Implement algebra with generating vector
-}
+// AlgebraWithGeneratingVector is now implemented in algebra_with_generating_vector.rs
 
 /// A matrix power algebra that extends PowerAlgebra with matrix-specific operations.
 /// 

@@ -1139,6 +1139,64 @@ impl CongruenceLattice {
         
         ans
     }
+    
+    /// Compute an irredundant meet decomposition of the one congruence.
+    ///
+    /// This method finds a minimal set of meet irreducible congruences whose
+    /// meet equals the one congruence (all elements in one block).
+    ///
+    /// # Returns
+    /// A list of meet irreducible congruences that form an irredundant meet decomposition
+    ///
+    /// # Examples
+    /// ```
+    /// use uacalc::alg::{SmallAlgebra, BasicSmallAlgebra};
+    /// use uacalc::alg::conlat::CongruenceLattice;
+    /// use std::collections::HashSet;
+    ///
+    /// let alg = Box::new(BasicSmallAlgebra::new(
+    ///     "A".to_string(),
+    ///     HashSet::from([0, 1, 2]),
+    ///     Vec::new()
+    /// )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+    ///
+    /// let mut con_lat = CongruenceLattice::new_from_i32_algebra(alg);
+    /// let decomposition = con_lat.irredundant_meet_decomposition();
+    /// // The decomposition should contain meet irreducible congruences
+    /// ```
+    pub fn irredundant_meet_decomposition(&mut self) -> Vec<Partition> {
+        // Ensure meet irreducibles are computed
+        if self.meet_irreducibles.is_none() {
+            self.make_meet_irreducibles();
+        }
+        
+        let meet_irreducibles = self.meet_irreducibles.as_ref().unwrap();
+        let mut decomposition: Vec<Partition> = Vec::new();
+        
+        // Start with all meet irreducibles
+        let mut candidates = meet_irreducibles.clone();
+        
+        // Greedily remove candidates that are not needed
+        for i in (0..candidates.len()).rev() {
+            let mut test_candidates = candidates.clone();
+            test_candidates.remove(i);
+            
+            // Check if the meet of remaining candidates still equals one
+            if !test_candidates.is_empty() {
+                let mut meet_result = test_candidates[0].clone();
+                for candidate in &test_candidates[1..] {
+                    meet_result = meet_result.meet(candidate).unwrap();
+                }
+                
+                // If meet still equals one, we can remove this candidate
+                if meet_result == self.one() {
+                    candidates.remove(i);
+                }
+            }
+        }
+        
+        candidates
+    }
 }
 
 // Implement Lattice trait
