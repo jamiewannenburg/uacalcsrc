@@ -86,8 +86,8 @@ mod test_infrastructure {
     fn build_java_command(wrapper_class: &str, args: &[&str]) -> Vec<String> {
         let separator = if cfg!(target_os = "windows") { ";" } else { ":" };
         let classpath = format!(
-            "java_wrapper/build/classes{}build/classes{}org{}jars/*",
-            separator, separator, separator
+            "java_wrapper/build/classes{}build/classes{}org{}jars/*{}jars/uacalc.jar",
+            separator, separator, separator, separator
         );
         
         let mut cmd = vec![
@@ -148,34 +148,11 @@ mod test_infrastructure {
         let start = Instant::now();
         
         // Use timeout for the command
-        let output = std::thread::scope(|s| {
-            let handle = s.spawn(|| {
-                Command::new(&java_cmd[0])
-                    .args(&java_cmd[1..])
-                    .stdout(Stdio::piped())
-                    .stderr(Stdio::piped())
-                    .output()
-            });
-            
-            // Wait for the command to complete or timeout
-            let start = Instant::now();
-            loop {
-                if handle.is_finished() {
-                    break;
-                }
-                if start.elapsed() > timeout {
-                    return Err(TestError::Timeout(timeout));
-                }
-                std::thread::sleep(Duration::from_millis(10));
-            }
-            
-            // Command completed
-            match handle.join() {
-                Ok(Ok(output)) => Ok(output),
-                Ok(Err(e)) => Err(TestError::JavaCliError(e.to_string())),
-                Err(_) => Err(TestError::JavaCliError("Thread join failed".to_string())),
-            }
-        })?;
+        let output = Command::new(&java_cmd[0])
+            .args(&java_cmd[1..])
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .output()?;
         
     let duration = start.elapsed();
     let exit_code = output.status.code().unwrap_or(-1);

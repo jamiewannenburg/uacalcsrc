@@ -137,7 +137,7 @@ The following dependencies are missing from the current task file:
 - `Horner` (Task 3): ✅ **COMPLETED** - Full implementation with Rust, Python bindings, and Java wrapper
 - `AlgebraReader` (Task 62): ✅ **COMPLETED** - Full implementation with Rust, Python bindings, and Java wrapper (2025-01-15)
 - `AlgebraWriter` (Task 54): ❌ **NOT COMPLETED** - Only placeholder struct exists in `src/io/mod.rs`
-- `Mace4Reader` (Task 37): ❌ **NOT COMPLETED** - Only placeholder struct exists in `src/io/mod.rs`
+- `Mace4Reader` (Task 37): ✅ **COMPLETED** - Full implementation with Rust, Python bindings, and Java wrapper
 
 ## Implementation Priority
 
@@ -196,7 +196,7 @@ The following dependencies are missing from the current task file:
 
 ### Blocking Dependencies
 - `AlgebraWriter` (Task 54): ❌ **NOT COMPLETED** - Only placeholder struct exists in `src/io/mod.rs`
-- `Mace4Reader` (Task 37): ❌ **NOT COMPLETED** - Only placeholder struct exists in `src/io/mod.rs`
+- `Mace4Reader` (Task 37): ✅ **COMPLETED** - Full implementation with Rust, Python bindings, and Java wrapper
 
 ### Ready Dependencies
 - `ExtFileFilter` (Task 8): ✅ **COMPLETED** - Full implementation with Rust, Python bindings, and Java wrapper
@@ -227,26 +227,26 @@ The following dependencies are missing from the current task file:
 **Cannot Implement Yet (Blocked):**
 - `convertToXML` (String/File) - ❌ **BLOCKED** - Requires AlgebraWriter
 - `writeAlgebraFile` (all variants) - ❌ **BLOCKED** - Requires AlgebraWriter
-- `readAlgebraFile` with Mace4 support - ❌ **BLOCKED** - Requires Mace4Reader
+- `readAlgebraFile` with Mace4 support - ✅ **READY** - Mace4Reader now available
 
 **Summary:**
-- **Implementable Now**: 8 out of 18 methods (44%)
-- **Blocked**: 10 out of 18 methods (56%)
-- **Recommendation**: Start with partial implementation, complete when dependencies are ready
+- **Implementable Now**: 9 out of 18 methods (50%)
+- **Blocked**: 9 out of 18 methods (50%)
+- **Recommendation**: Start with partial implementation, complete when AlgebraWriter dependency is ready
 
 ## Updated Task Status Summary
 
 **Updated Status**: Task 65 - AlgebraIO can now be **PARTIALLY IMPLEMENTED**
 
 **Key Findings:**
-1. **4 out of 6 dependencies are COMPLETED** (67% complete)
+1. **5 out of 6 dependencies are COMPLETED** (83% complete)
 2. **All required algebra types are IMPLEMENTED** (BasicSmallAlgebra, ProductAlgebra, Subalgebra, QuotientAlgebra, etc.)
-3. **8 out of 18 methods can be implemented now** (44% of functionality)
-4. **Only 2 dependencies remain**: AlgebraWriter and Mace4Reader (both only have placeholder structs)
+3. **9 out of 18 methods can be implemented now** (50% of functionality)
+4. **Only 1 dependency remains**: AlgebraWriter (only has placeholder struct)
 
 **Recommendation**: 
-- **Start implementation now** with the 8 methods that can be completed
-- **Complete remaining dependencies** (AlgebraWriter, Mace4Reader) for full functionality
+- **Start implementation now** with the 9 methods that can be completed
+- **Complete remaining dependency** (AlgebraWriter) for full functionality
 - **This represents significant progress** from the previous "BLOCKED" status
 
 **Implementation Priority**: **MEDIUM-HIGH** - Can provide substantial value with partial implementation

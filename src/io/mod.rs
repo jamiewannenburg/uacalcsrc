@@ -1,6 +1,9 @@
 mod algebra_reader;
 pub use algebra_reader::AlgebraReader;
 
+#[cfg(test)]
+mod mace4_reader_tests;
+
 pub struct AlgebraIO {
     // TODO: Implement algebra IO
 }
@@ -415,6 +418,516 @@ pub struct JSONChannel {
     // TODO: Implement JSON channel
 }
 
+use std::io::{BufRead, BufReader, Read};
+use std::collections::{HashMap, HashSet};
+use crate::alg::small_algebra::{SmallAlgebra, BasicSmallAlgebra};
+use crate::alg::algebra::Algebra;
+use crate::alg::op::{Operation, OperationSymbol};
+use crate::alg::op::operations;
+
+/// A reader for Mace4 model files that parses them into algebras.
+/// 
+/// This reader handles Mace4 model files and extracts operations while ignoring relations.
+/// It provides stateful parsing with line tracking and error handling.
+/// 
+/// # Examples
+/// ```
+/// use uacalc::io::Mace4Reader;
+/// use std::fs::File;
+/// 
+/// let file = File::open("resources/mace4/KR-8.model").unwrap();
+/// let mut reader = Mace4Reader::new(Box::new(file)).unwrap();
+/// let algebra = reader.parse_algebra().unwrap();
+/// ```
 pub struct Mace4Reader {
-    // TODO: Implement Mace4 reader
+    reader: BufReader<Box<dyn Read>>,
+    line: Option<String>,
+    lineno: usize,
+    index: usize,
+}
+
+impl Mace4Reader {
+    /// Creates a new Mace4Reader from an input stream.
+    /// 
+    /// # Arguments
+    /// * `stream` - The input stream to read from
+    /// 
+    /// # Returns
+    /// * `Ok(Mace4Reader)` - A new reader instance
+    /// * `Err(String)` - If the reader cannot be created
+    /// 
+    /// # Examples
+    /// ```
+    /// use uacalc::io::Mace4Reader;
+    /// use std::fs::File;
+    /// 
+    /// let file = File::open("resources/mace4/KR-8.model").unwrap();
+    /// let reader = Mace4Reader::new(Box::new(file)).unwrap();
+    /// ```
+    pub fn new(stream: Box<dyn Read>) -> Result<Self, String> {
+        Ok(Mace4Reader {
+            reader: BufReader::new(stream),
+            line: None,
+            lineno: 0,
+            index: 0,
+        })
+    }
+    
+    /// Creates a new Mace4Reader from an input stream (safe version).
+    /// 
+    /// # Arguments
+    /// * `stream` - The input stream to read from
+    /// 
+    /// # Returns
+    /// * `Ok(Mace4Reader)` - A new reader instance
+    /// * `Err(String)` - If the reader cannot be created
+    pub fn new_safe(stream: Box<dyn Read>) -> Result<Self, String> {
+        Self::new(stream)
+    }
+    
+    /// Peek at the current character without advancing the position.
+    /// 
+    /// # Returns
+    /// The current character, or 0 if at end of line, or '\n' if at end of file
+    fn peek_char(&self) -> char {
+        if let Some(ref line) = self.line {
+            if self.index < line.len() {
+                line.chars().nth(self.index).unwrap_or('\0')
+            } else {
+                '\n'
+            }
+        } else {
+            '\0'
+        }
+    }
+    
+    /// Advance to the next character, reading a new line if necessary.
+    /// 
+    /// # Returns
+    /// * `Ok(())` - If successful
+    /// * `Err(String)` - If an I/O error occurs
+    fn next_char(&mut self) -> Result<(), String> {
+        if let Some(ref line) = self.line {
+            if self.index < line.len() {
+                self.index += 1;
+            } else {
+                self.read_line()?;
+            }
+        }
+        Ok(())
+    }
+    
+    /// Read the next line from the input stream.
+    /// 
+    /// # Returns
+    /// * `Ok(())` - If successful
+    /// * `Err(String)` - If an I/O error occurs
+    fn read_line(&mut self) -> Result<(), String> {
+        let mut line = String::new();
+        match self.reader.read_line(&mut line) {
+            Ok(0) => {
+                self.line = None;
+                self.index = 0;
+            }
+            Ok(_) => {
+                self.line = Some(line.trim_end().to_string());
+                self.lineno += 1;
+                self.index = 0;
+            }
+            Err(e) => return Err(format!("I/O error: {}", e)),
+        }
+        Ok(())
+    }
+    
+    /// Get the next character, skipping whitespace.
+    /// 
+    /// # Returns
+    /// * `Ok(char)` - The next non-whitespace character
+    /// * `Err(String)` - If an I/O error occurs
+    fn get_char(&mut self) -> Result<char, String> {
+        self.eat_spaces()?;
+        let c = self.peek_char();
+        self.next_char()?;
+        Ok(c)
+    }
+    
+    /// Skip whitespace characters.
+    /// 
+    /// # Returns
+    /// * `Ok(())` - If successful
+    /// * `Err(String)` - If an I/O error occurs
+    fn eat_spaces(&mut self) -> Result<(), String> {
+        while self.peek_char().is_whitespace() {
+            self.next_char()?;
+        }
+        Ok(())
+    }
+    
+    /// Report an error with line and column information.
+    /// 
+    /// # Arguments
+    /// * `message` - The error message
+    /// 
+    /// # Returns
+    /// A BadAlgebraFileException with location information
+    fn error(&self, message: &str) -> BadAlgebraFileException {
+        BadAlgebraFileException::new(&format!("{} at line {} column {}", 
+            message, self.lineno, self.index + 1))
+    }
+    
+    /// Expect and consume a specific character.
+    /// 
+    /// # Arguments
+    /// * `expected` - The character to expect
+    /// 
+    /// # Returns
+    /// * `Ok(())` - If the character matches
+    /// * `Err(BadAlgebraFileException)` - If the character doesn't match
+    fn eat_char(&mut self, expected: char) -> Result<(), BadAlgebraFileException> {
+        let actual = self.get_char().map_err(|e| BadAlgebraFileException::new(&e))?;
+        if actual != expected {
+            return Err(self.error(&format!("Character '{}' is expected", expected)));
+        }
+        Ok(())
+    }
+    
+    /// Parse a number from the input.
+    /// 
+    /// # Returns
+    /// * `Ok(i32)` - The parsed number
+    /// * `Err(BadAlgebraFileException)` - If parsing fails
+    fn parse_number(&mut self) -> Result<i32, BadAlgebraFileException> {
+        let c = self.get_char().map_err(|e| BadAlgebraFileException::new(&e))?;
+        if !c.is_ascii_digit() {
+            return Err(self.error("Invalid number"));
+        }
+        
+        let mut value = (c as i32) - ('0' as i32);
+        
+        loop {
+            let c = self.peek_char();
+            if !c.is_ascii_digit() {
+                break;
+            }
+            
+            value = value * 10 + ((c as i32) - ('0' as i32));
+            if value > i32::MAX as i32 {
+                return Err(self.error("Too large integer"));
+            }
+            
+            self.next_char().map_err(|e| BadAlgebraFileException::new(&e))?;
+        }
+        
+        Ok(value)
+    }
+    
+    /// Check if a character is an ordinary character (letter, $, or _).
+    /// 
+    /// # Arguments
+    /// * `c` - The character to check
+    /// 
+    /// # Returns
+    /// `true` if the character is ordinary, `false` otherwise
+    pub fn is_ordinary_character(c: char) -> bool {
+        c.is_ascii_alphabetic() || c == '$' || c == '_'
+    }
+    
+    /// Check if a character is a special character.
+    /// 
+    /// # Arguments
+    /// * `c` - The character to check
+    /// 
+    /// # Returns
+    /// `true` if the character is special, `false` otherwise
+    pub fn is_special_character(c: char) -> bool {
+        const SPECIAL_CHARS: &str = "{+-*/\\^<>=`~?@&|!#';}";
+        SPECIAL_CHARS.contains(c)
+    }
+    
+    /// Parse a symbol from the input.
+    /// 
+    /// # Returns
+    /// * `Ok(String)` - The parsed symbol
+    /// * `Err(BadAlgebraFileException)` - If parsing fails
+    fn parse_symbol(&mut self) -> Result<String, BadAlgebraFileException> {
+        let mut result = String::new();
+        
+        let c = self.get_char().map_err(|e| BadAlgebraFileException::new(&e))?;
+        let is_ordinary = Self::is_ordinary_character(c);
+        
+        if !is_ordinary && !Self::is_special_character(c) {
+            return Err(self.error("Invalid symbol character"));
+        }
+        
+        result.push(c);
+        
+        loop {
+            let c = self.peek_char();
+            let should_continue = if is_ordinary {
+                Self::is_ordinary_character(c) || c.is_ascii_digit()
+            } else {
+                Self::is_special_character(c)
+            };
+            
+            if !should_continue {
+                break;
+            }
+            
+            result.push(c);
+            self.next_char().map_err(|e| BadAlgebraFileException::new(&e))?;
+        }
+        
+        Ok(result)
+    }
+    
+    /// Parse a number table (array of integers).
+    /// 
+    /// # Returns
+    /// * `Ok(Vec<i32>)` - The parsed table
+    /// * `Err(BadAlgebraFileException)` - If parsing fails
+    fn parse_number_table(&mut self) -> Result<Vec<i32>, BadAlgebraFileException> {
+        let mut table = Vec::new();
+        
+        self.eat_char('[')?;
+        self.eat_spaces().map_err(|e| BadAlgebraFileException::new(&e))?;
+        
+        if self.peek_char() != ']' {
+            loop {
+                table.push(self.parse_number()?);
+                
+                let c = self.get_char().map_err(|e| BadAlgebraFileException::new(&e))?;
+                if c == ']' {
+                    break;
+                } else if c != ',' {
+                    return Err(self.error("Comma is expected"));
+                }
+            }
+        }
+        
+        Ok(table)
+    }
+    
+    /// Eat a block of text between matching delimiters.
+    /// 
+    /// # Arguments
+    /// * `begin` - The opening delimiter
+    /// * `end` - The closing delimiter
+    /// 
+    /// # Returns
+    /// * `Ok(())` - If successful
+    /// * `Err(BadAlgebraFileException)` - If parsing fails
+    fn eat_block(&mut self, begin: char, end: char) -> Result<(), BadAlgebraFileException> {
+        self.eat_spaces().map_err(|e| BadAlgebraFileException::new(&e))?;
+        self.eat_char(begin)?;
+        
+        let mut depth = 1;
+        while depth > 0 {
+            self.eat_spaces().map_err(|e| BadAlgebraFileException::new(&e))?;
+            let c = self.peek_char();
+            
+            if c == begin {
+                depth += 1;
+            } else if c == end {
+                depth -= 1;
+            }
+            
+            self.next_char().map_err(|e| BadAlgebraFileException::new(&e))?;
+        }
+        
+        Ok(())
+    }
+    
+    /// Parse statistics from the input.
+    /// 
+    /// # Returns
+    /// * `Ok(HashMap<String, i32>)` - The parsed statistics
+    /// * `Err(BadAlgebraFileException)` - If parsing fails
+    fn parse_stats(&mut self) -> Result<HashMap<String, i32>, BadAlgebraFileException> {
+        let mut stats = HashMap::new();
+        
+        self.eat_char('[')?;
+        loop {
+            let key = self.parse_symbol()?;
+            self.eat_char('=')?;
+            let value = self.parse_number()?;
+            
+            stats.insert(key, value);
+            
+            let c = self.get_char().map_err(|e| BadAlgebraFileException::new(&e))?;
+            if c == ']' {
+                break;
+            } else if c != ',' {
+                return Err(self.error("Comma is expected"));
+            }
+        }
+        
+        Ok(stats)
+    }
+    
+    /// Parse the arity of an operation from its formal arguments.
+    /// 
+    /// # Returns
+    /// * `Ok(i32)` - The arity
+    /// * `Err(BadAlgebraFileException)` - If parsing fails
+    fn parse_arity(&mut self) -> Result<i32, BadAlgebraFileException> {
+        self.eat_spaces().map_err(|e| BadAlgebraFileException::new(&e))?;
+        let c = self.peek_char();
+        
+        if c != '(' {
+            return Ok(0);
+        }
+        
+        self.next_char().map_err(|e| BadAlgebraFileException::new(&e))?;
+        
+        let mut arity = 0;
+        loop {
+            let c = self.get_char().map_err(|e| BadAlgebraFileException::new(&e))?;
+            if c == '_' {
+                arity += 1;
+            } else if c == ')' {
+                break;
+            } else if c != ',' {
+                return Err(self.error("Invalid formal argument"));
+            }
+        }
+        
+        Ok(arity)
+    }
+    
+    /// Parse a single algebra from the input stream.
+    /// 
+    /// # Returns
+    /// * `Ok(Option<Box<dyn SmallAlgebra<UniverseItem = i32>>>)` - The parsed algebra, or None if end of stream
+    /// * `Err(BadAlgebraFileException)` - If parsing fails
+    /// 
+    /// # Examples
+    /// ```
+    /// use uacalc::io::Mace4Reader;
+    /// use std::fs::File;
+    /// 
+    /// let file = File::open("resources/mace4/KR-8.model").unwrap();
+    /// let mut reader = Mace4Reader::new(Box::new(file)).unwrap();
+    /// let algebra = reader.parse_algebra().unwrap();
+    /// ```
+    pub fn parse_algebra(&mut self) -> Result<Option<Box<dyn SmallAlgebra<UniverseItem = i32>>>, BadAlgebraFileException> {
+        // Find the interpretation line
+        loop {
+            self.read_line().map_err(|e| BadAlgebraFileException::new(&e))?;
+            
+            if self.line.is_none() {
+                return Ok(None);
+            }
+            
+            if let Some(ref line) = self.line {
+                if line.starts_with("interpretation(") {
+                    break;
+                }
+            }
+        }
+        
+        self.index = 0;
+        
+        let symbol = self.parse_symbol()?;
+        if symbol != "interpretation" {
+            return Err(self.error("Expected 'interpretation'"));
+        }
+        
+        self.eat_char('(')?;
+        let cardinality = self.parse_number()?;
+        let mut operations = Vec::new();
+        
+        self.eat_char(',')?;
+        let stats = self.parse_stats()?;
+        self.eat_char(',')?;
+        self.eat_char('[')?;
+        
+        if self.peek_char() != ']' {
+            loop {
+                let symbol = self.parse_symbol()?;
+                if symbol == "function" {
+                    self.eat_char('(')?;
+                    let op_name = self.parse_symbol()?;
+                    let arity = self.parse_arity()?;
+                    self.eat_char(',')?;
+                    let table = self.parse_number_table()?;
+                    self.eat_char(')')?;
+                    
+                    let op_sym = OperationSymbol::new_safe(&op_name, arity, false)
+                        .map_err(|e| self.error(&e))?;
+                    
+                    let operation = operations::make_int_operation(op_sym, cardinality, table)
+                        .map_err(|e| self.error(&e))?;
+                    
+                    operations.push(operation);
+                } else {
+                    self.eat_block('(', ')')?;
+                }
+                
+                let c = self.get_char().map_err(|e| BadAlgebraFileException::new(&e))?;
+                if c == ']' {
+                    break;
+                } else if c != ',' {
+                    return Err(self.error("Comma is expected"));
+                }
+            }
+        }
+        
+        self.eat_char(')')?;
+        self.eat_char('.')?;
+        
+        let mut name = "model".to_string();
+        if let Some(number) = stats.get("number") {
+            name.push_str(&number.to_string());
+        }
+        
+        // Create universe as integers 0..cardinality-1
+        let universe: HashSet<i32> = (0..cardinality).collect();
+        
+        let algebra = BasicSmallAlgebra::new(name, universe, operations);
+        Ok(Some(Box::new(algebra)))
+    }
+    
+    /// Parse a list of algebras from the input stream.
+    /// 
+    /// # Returns
+    /// * `Ok(Vec<Box<dyn SmallAlgebra<UniverseItem = i32>>>)` - The parsed algebras
+    /// * `Err(BadAlgebraFileException)` - If parsing fails
+    /// 
+    /// # Examples
+    /// ```
+    /// use uacalc::io::Mace4Reader;
+    /// use std::fs::File;
+    /// 
+    /// let file = File::open("resources/mace4/KR-8.model").unwrap();
+    /// let mut reader = Mace4Reader::new(Box::new(file)).unwrap();
+    /// let algebras = reader.parse_algebra_list().unwrap();
+    /// ```
+    pub fn parse_algebra_list(&mut self) -> Result<Vec<Box<dyn SmallAlgebra<UniverseItem = i32>>>, BadAlgebraFileException> {
+        let mut algebras = Vec::new();
+        
+        loop {
+            match self.parse_algebra()? {
+                Some(algebra) => algebras.push(algebra),
+                None => break,
+            }
+        }
+        
+        Ok(algebras)
+    }
+}
+
+impl std::fmt::Display for Mace4Reader {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Mace4Reader(line {}, index {})", self.lineno, self.index)
+    }
+}
+
+impl std::fmt::Debug for Mace4Reader {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Mace4Reader")
+            .field("lineno", &self.lineno)
+            .field("index", &self.index)
+            .field("has_line", &self.line.is_some())
+            .finish()
+    }
 }

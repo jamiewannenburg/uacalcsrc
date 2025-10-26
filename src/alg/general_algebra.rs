@@ -261,10 +261,15 @@ where
     }
     
     fn operations(&self) -> Vec<Box<dyn Operation>> {
-        // Try to clone operations, but be careful about infinite recursion
-        // For now, return empty vector to avoid the recursion issue
-        // This is a limitation that would need Arc<dyn Operation> to fix properly
-        Vec::new()
+        // Try to clone operations using clone_box() method
+        // This works for concrete types like IntOperation, BasicOperation, etc.
+        let mut cloned_ops = Vec::new();
+        for op in &self.operations {
+            // Try to clone the operation using clone_box()
+            // This will work for concrete types that implement Clone
+            cloned_ops.push(op.clone_box());
+        }
+        cloned_ops
     }
     
     fn get_operation(&self, sym: &OperationSymbol) -> Option<Box<dyn Operation>> {

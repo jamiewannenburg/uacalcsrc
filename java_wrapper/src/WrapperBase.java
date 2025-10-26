@@ -56,8 +56,8 @@ public abstract class WrapperBase {
                     // Handle --key=value format
                     String[] parts = key.split("=", 2);
                     options.put(parts[0], parts[1]);
-                } else if (i + 1 < args.length && !args[i + 1].startsWith("-")) {
-                    // Handle --key value format
+                } else if (i + 1 < args.length) {
+                    // Handle --key value format (always take next argument as value)
                     options.put(key, args[++i]);
                 } else {
                     options.put(key, "true");

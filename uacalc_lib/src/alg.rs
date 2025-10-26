@@ -5138,6 +5138,26 @@ impl PyBasicSmallAlgebra {
         self.inner.cardinality() == other.inner.cardinality()
     }
     
+    /// Get the operations of this algebra.
+    /// 
+    /// Returns:
+    ///     list: List of operation names and arities as tuples
+    fn operations(&self) -> Vec<(String, i32)> {
+        // Now that GeneralAlgebra::operations() returns actual operations, we can use it
+        self.inner.operations().iter().map(|op| {
+            (op.symbol().name().to_string(), op.arity())
+        }).collect()
+    }
+    
+    /// Get the number of operations in this algebra.
+    /// 
+    /// Returns:
+    ///     int: The number of operations
+    fn operations_count(&self) -> usize {
+        // Now that GeneralAlgebra::operations() returns actual operations, we can use it
+        self.inner.operations().len()
+    }
+    
     /// Get the congruence lattice (lazy initialization).
     /// 
     /// Returns:
