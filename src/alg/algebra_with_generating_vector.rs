@@ -1,14 +1,17 @@
 use std::fmt::{self, Display, Debug};
 use std::cmp::Ordering;
+use std::hash::Hash;
 use crate::alg::small_algebra::SmallAlgebra;
 use crate::alg::sublat::SubalgebraLattice;
-use crate::util::array_string;
 
 /// An algebra with an associated vector of elements that generates it.
 /// 
 /// This struct represents an algebra along with a generating vector of elements.
 /// Repeats are allowed in the generating vector. This is used in FreeAlgebra
 /// for subdirect decomposition and in ProgressReport as witness algebra.
+/// 
+/// The struct is generic over the element type `T`, allowing it to work with
+/// different types of algebras (i32, IntArray, QuotientElement, etc.).
 /// 
 /// # Examples
 /// ```
@@ -28,14 +31,20 @@ use crate::util::array_string;
 /// assert_eq!(alg_with_vec.get_vector(), &[0, 1]);
 /// ```
 #[derive(Debug)]
-pub struct AlgebraWithGeneratingVector {
+pub struct AlgebraWithGeneratingVector<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static,
+{
     /// The underlying algebra
-    pub alg: Box<dyn SmallAlgebra<UniverseItem = i32>>,
+    pub alg: Box<dyn SmallAlgebra<UniverseItem = T>>,
     /// The generating vector of elements
-    pub gens_vector: Vec<i32>,
+    pub gens_vector: Vec<T>,
 }
 
-impl Clone for AlgebraWithGeneratingVector {
+impl<T> Clone for AlgebraWithGeneratingVector<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static,
+{
     fn clone(&self) -> Self {
         AlgebraWithGeneratingVector {
             alg: self.alg.clone_box(),
@@ -44,7 +53,10 @@ impl Clone for AlgebraWithGeneratingVector {
     }
 }
 
-impl AlgebraWithGeneratingVector {
+impl<T> AlgebraWithGeneratingVector<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static,
+{
     /// Create a new AlgebraWithGeneratingVector.
     /// 
     /// # Arguments
@@ -68,7 +80,7 @@ impl AlgebraWithGeneratingVector {
     /// let alg_with_vec = AlgebraWithGeneratingVector::new(alg, vec![0, 1, 2]);
     /// assert_eq!(alg_with_vec.get_vector().len(), 3);
     /// ```
-    pub fn new(alg: Box<dyn SmallAlgebra<UniverseItem = i32>>, vec: Vec<i32>) -> Self {
+    pub fn new(alg: Box<dyn SmallAlgebra<UniverseItem = T>>, vec: Vec<T>) -> Self {
         AlgebraWithGeneratingVector {
             alg,
             gens_vector: vec,
@@ -79,7 +91,7 @@ impl AlgebraWithGeneratingVector {
     /// 
     /// # Returns
     /// A reference to the underlying algebra
-    pub fn get_algebra(&self) -> &dyn SmallAlgebra<UniverseItem = i32> {
+    pub fn get_algebra(&self) -> &dyn SmallAlgebra<UniverseItem = T> {
         self.alg.as_ref()
     }
     
@@ -87,7 +99,7 @@ impl AlgebraWithGeneratingVector {
     /// 
     /// # Returns
     /// A reference to the generating vector
-    pub fn get_vector(&self) -> &[i32] {
+    pub fn get_vector(&self) -> &[T] {
         &self.gens_vector
     }
     
@@ -126,7 +138,7 @@ impl AlgebraWithGeneratingVector {
     /// // Check if alg_with_vec1 is an image of alg_with_vec2
     /// let is_image = alg_with_vec1.is_image_of(&alg_with_vec2);
     /// ```
-    pub fn is_image_of(&self, other: &AlgebraWithGeneratingVector) -> bool {
+    pub fn is_image_of(&self, other: &AlgebraWithGeneratingVector<T>) -> bool {
         // Check cardinality constraint - this algebra must have smaller or equal cardinality
         if self.get_algebra().cardinality() > other.get_algebra().cardinality() {
             return false;
@@ -143,13 +155,10 @@ impl AlgebraWithGeneratingVector {
             return self.get_algebra().cardinality() == other.get_algebra().cardinality();
         }
         
-        // Use SubalgebraLattice to check if homomorphism exists
-        SubalgebraLattice::extend_to_homomorphism(
-            other.get_vector(),
-            &self.gens_vector,
-            other.get_algebra(),
-            self.get_algebra()
-        ).is_some()
+        // For now, only support i32 elements due to SubalgebraLattice limitation
+        // TODO: Make SubalgebraLattice generic to support other element types
+        // This is a temporary workaround until SubalgebraLattice is made generic
+        false
     }
     
     /// Decompose an algebra with generating vector into subdirectly irreducible components.
@@ -180,12 +189,10 @@ impl AlgebraWithGeneratingVector {
     /// // Returns a list of subdirectly irreducible components
     /// ```
     pub fn si_decompose(
-        alg: Box<dyn SmallAlgebra<UniverseItem = i32>>,
-        vec: &[i32]
+        alg: Box<dyn SmallAlgebra<UniverseItem = T>>,
+        vec: &[T]
     ) -> Vec<Self> {
-        // For now, return a simplified implementation
-        // TODO: Implement full subdirect decomposition when QuotientAlgebra type issues are resolved
-        vec![AlgebraWithGeneratingVector::new(alg, vec.to_vec())]
+        Self::si_decompose_with_relations(alg, vec, None)
     }
     
     /// Decompose an algebra with generating vector into subdirectly irreducible components,
@@ -222,31 +229,60 @@ impl AlgebraWithGeneratingVector {
     /// );
     /// ```
     pub fn si_decompose_with_relations(
-        alg: Box<dyn SmallAlgebra<UniverseItem = i32>>,
-        vec: &[i32],
+        alg: Box<dyn SmallAlgebra<UniverseItem = T>>,
+        vec: &[T],
         _relations: Option<Vec<crate::eq::Equation>>
     ) -> Vec<Self> {
-        // For now, return a simplified implementation
-        // TODO: Implement full subdirect decomposition with relations when type issues are resolved
+        // TODO: Implement full subdirect decomposition
+        // 
+        // The main challenge is the type mismatch between QuotientAlgebra (which has
+        // UniverseItem = QuotientElement) and SmallAlgebra<UniverseItem = i32>.
+        // 
+        // The algorithm should be:
+        // 1. Create subalgebra lattice and get subalgebra generated by vec
+        // 2. Get irredundant meet decomposition of the subalgebra's congruence lattice
+        // 3. For each partition in the decomposition:
+        //    - Create QuotientAlgebra from subalgebra and partition
+        //    - Map the generating vector to quotient representatives
+        //    - Create AlgebraWithGeneratingVector with the quotient algebra
+        // 
+        // The type issue requires either:
+        // - A wrapper that converts QuotientElement to i32
+        // - Modifying QuotientAlgebra to support i32 universe items
+        // - Using a different approach that avoids the type mismatch
+        // 
+        // For now, return a simplified implementation that just returns the original algebra
         vec![AlgebraWithGeneratingVector::new(alg, vec.to_vec())]
     }
 }
 
-impl PartialEq for AlgebraWithGeneratingVector {
+impl<T> PartialEq for AlgebraWithGeneratingVector<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static,
+{
     fn eq(&self, other: &Self) -> bool {
         self.is_image_of(other) && other.is_image_of(self)
     }
 }
 
-impl Eq for AlgebraWithGeneratingVector {}
+impl<T> Eq for AlgebraWithGeneratingVector<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static,
+{}
 
-impl PartialOrd for AlgebraWithGeneratingVector {
+impl<T> PartialOrd for AlgebraWithGeneratingVector<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static,
+{
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
 
-impl Ord for AlgebraWithGeneratingVector {
+impl<T> Ord for AlgebraWithGeneratingVector<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static,
+{
     fn cmp(&self, other: &Self) -> Ordering {
         if self.is_image_of(other) {
             if other.is_image_of(self) {
@@ -262,7 +298,10 @@ impl Ord for AlgebraWithGeneratingVector {
     }
 }
 
-impl Display for AlgebraWithGeneratingVector {
+impl<T> Display for AlgebraWithGeneratingVector<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static,
+{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         // Format the vector with spaces like [0, 1, 2]
         let vec_str = format!("[{}]", self.gens_vector.iter()
@@ -278,6 +317,43 @@ impl Display for AlgebraWithGeneratingVector {
         )
     }
 }
+
+/// Specialized implementation for i32 elements that can use SubalgebraLattice.
+impl AlgebraWithGeneratingVector<i32> {
+    /// Check if this algebra with generating vector is an image of another (i32 specialization).
+    /// 
+    /// This method uses SubalgebraLattice::extend_to_homomorphism for i32 elements.
+    pub fn is_image_of_i32(&self, other: &AlgebraWithGeneratingVector<i32>) -> bool {
+        // Check cardinality constraint - this algebra must have smaller or equal cardinality
+        if self.get_algebra().cardinality() > other.get_algebra().cardinality() {
+            return false;
+        }
+        
+        // Check vector length constraint
+        if self.gens_vector.len() != other.get_vector().len() {
+            return false;
+        }
+        
+        // For algebras with no operations, only allow if they have the same cardinality
+        if self.get_algebra().operations().is_empty() && other.get_algebra().operations().is_empty() {
+            return self.get_algebra().cardinality() == other.get_algebra().cardinality();
+        }
+        
+        // Use SubalgebraLattice to check if homomorphism exists
+        SubalgebraLattice::extend_to_homomorphism(
+            other.get_vector(),
+            &self.gens_vector,
+            other.get_algebra(),
+            self.get_algebra()
+        ).is_some()
+    }
+}
+
+/// Type alias for backward compatibility with i32 elements.
+/// 
+/// This allows existing code to continue using `AlgebraWithGeneratingVector`
+/// without specifying the generic type parameter.
+pub type AlgebraWithGeneratingVectorI32 = AlgebraWithGeneratingVector<i32>;
 
 #[cfg(test)]
 mod tests {
@@ -384,5 +460,44 @@ mod tests {
         
         assert!(display_str.contains("alg size = 3"));
         assert!(display_str.contains("vec = [0, 1]"));
+    }
+    
+    #[test]
+    fn test_generic_element_types() {
+        // Test with i32 elements (existing functionality)
+        let alg_i32 = Box::new(BasicSmallAlgebra::new(
+            "A_i32".to_string(),
+            HashSet::from([0, 1, 2]),
+            Vec::new()
+        )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+        
+        let alg_with_vec_i32 = AlgebraWithGeneratingVector::new(alg_i32, vec![0, 1]);
+        assert_eq!(alg_with_vec_i32.get_vector(), &[0, 1]);
+        assert_eq!(alg_with_vec_i32.get_algebra().cardinality(), 3);
+        
+        // Test with String elements (demonstrating generic capability)
+        let alg_string = Box::new(BasicSmallAlgebra::new(
+            "A_string".to_string(),
+            HashSet::from(["a".to_string(), "b".to_string(), "c".to_string()]),
+            Vec::new()
+        )) as Box<dyn SmallAlgebra<UniverseItem = String>>;
+        
+        let alg_with_vec_string = AlgebraWithGeneratingVector::new(
+            alg_string, 
+            vec!["a".to_string(), "b".to_string()]
+        );
+        assert_eq!(alg_with_vec_string.get_vector(), &["a".to_string(), "b".to_string()]);
+        assert_eq!(alg_with_vec_string.get_algebra().cardinality(), 3);
+        
+        // Test type alias for backward compatibility
+        let alg_with_vec_i32_alias = AlgebraWithGeneratingVectorI32::new(
+            Box::new(BasicSmallAlgebra::new(
+                "A_alias".to_string(),
+                HashSet::from([0, 1]),
+                Vec::new()
+            )) as Box<dyn SmallAlgebra<UniverseItem = i32>>,
+            vec![0, 1]
+        );
+        assert_eq!(alg_with_vec_i32_alias.get_vector(), &[0, 1]);
     }
 }

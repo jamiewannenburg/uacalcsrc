@@ -479,6 +479,10 @@ impl SmallAlgebra for ProductAlgebra {
         self.base.get_operation_ref(sym)
     }
     
+    fn get_operations_ref(&self) -> Vec<&dyn Operation> {
+        self.base.get_operations_ref()
+    }
+    
     fn clone_box(&self) -> Box<dyn SmallAlgebra<UniverseItem = Self::UniverseItem>> {
         Box::new(self.clone())
     }

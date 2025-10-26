@@ -747,6 +747,10 @@ impl SmallAlgebra for SubProductAlgebra {
         None // Simplified
     }
     
+    fn get_operations_ref(&self) -> Vec<&dyn Operation> {
+        Vec::new() // Simplified
+    }
+    
     fn clone_box(&self) -> Box<dyn SmallAlgebra<UniverseItem = Self::UniverseItem>> {
         Box::new(self.clone())
     }

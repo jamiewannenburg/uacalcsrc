@@ -856,7 +856,7 @@ impl SubalgebraLattice {
     /// 
     /// # Returns
     /// A Subalgebra object
-    pub fn sg_subalgebra(&self, s: &BasicSet) -> Subalgebra {
+    pub fn sg_subalgebra(&self, s: &BasicSet) -> Subalgebra<i32> {
         Subalgebra::new(
             format!("Subalgebra Of {}", self.alg.name()),
             self.alg.clone_box(),
@@ -871,7 +871,7 @@ impl SubalgebraLattice {
     /// 
     /// # Returns
     /// A Subalgebra object
-    pub fn sg_from_gens(&self, gens: &[i32]) -> Subalgebra {
+    pub fn sg_from_gens(&self, gens: &[i32]) -> Subalgebra<i32> {
         let basic_set = self.sg(gens);
         self.sg_subalgebra(&basic_set)
     }

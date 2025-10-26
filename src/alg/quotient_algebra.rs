@@ -698,6 +698,10 @@ impl SmallAlgebra for QuotientAlgebra {
         None
     }
     
+    fn get_operations_ref(&self) -> Vec<&dyn Operation> {
+        self.operations.iter().map(|op| op as &dyn Operation).collect()
+    }
+    
     fn clone_box(&self) -> Box<dyn SmallAlgebra<UniverseItem = Self::UniverseItem>> {
         Box::new(self.clone())
     }

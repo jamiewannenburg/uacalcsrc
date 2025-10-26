@@ -1,5 +1,6 @@
 use std::collections::{HashMap, HashSet};
 use std::fmt::{Debug, Display};
+use std::hash::Hash;
 use crate::alg::algebra::{Algebra, ProgressMonitor};
 use crate::alg::general_algebra::GeneralAlgebra;
 use crate::alg::small_algebra::{SmallAlgebra, AlgebraType};
@@ -27,7 +28,7 @@ use crate::util::horner;
 /// )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
 /// 
 /// // Create a subalgebra with universe {0, 1}
-/// let sub_alg = Subalgebra::new_safe(
+/// let sub_alg = Subalgebra::<i32>::new_safe(
 ///     "sub".to_string(),
 ///     super_alg,
 ///     vec![0, 1]
@@ -35,12 +36,15 @@ use crate::util::horner;
 /// 
 /// assert_eq!(sub_alg.cardinality(), 2);
 /// ```
-pub struct Subalgebra {
+pub struct Subalgebra<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
     /// The underlying general algebra
-    base: GeneralAlgebra<i32>,
+    base: GeneralAlgebra<T>,
     
     /// Reference to the super algebra
-    super_algebra: Box<dyn SmallAlgebra<UniverseItem = i32>>,
+    super_algebra: Box<dyn SmallAlgebra<UniverseItem = T>>,
     
     /// Sorted array of universe indices forming the subuniverse
     univ_array: Vec<i32>,
@@ -52,7 +56,10 @@ pub struct Subalgebra {
     sub: Option<Box<crate::alg::sublat::SubalgebraLattice>>,
 }
 
-impl Subalgebra {
+impl<T> Subalgebra<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
     /// Create a new subalgebra with the given super algebra and subuniverse.
     /// 
     /// # Arguments
@@ -85,7 +92,7 @@ impl Subalgebra {
     /// ```
     pub fn new_safe(
         name: String,
-        super_algebra: Box<dyn SmallAlgebra<UniverseItem = i32>>,
+        super_algebra: Box<dyn SmallAlgebra<UniverseItem = T>>,
         univ: Vec<i32>
     ) -> Result<Self, String> {
         // Validate inputs
@@ -139,7 +146,7 @@ impl Subalgebra {
     /// Panics if the subuniverse is empty or invalid
     pub fn new(
         name: String,
-        super_algebra: Box<dyn SmallAlgebra<UniverseItem = i32>>,
+        super_algebra: Box<dyn SmallAlgebra<UniverseItem = T>>,
         univ: Vec<i32>
     ) -> Self {
         Self::new_safe(name, super_algebra, univ).unwrap()
@@ -246,7 +253,7 @@ impl Subalgebra {
     /// 
     /// # Returns
     /// A reference to the super algebra
-    pub fn super_algebra(&self) -> &dyn SmallAlgebra<UniverseItem = i32> {
+    pub fn super_algebra(&self) -> &dyn SmallAlgebra<UniverseItem = T> {
         self.super_algebra.as_ref()
     }
     
@@ -264,10 +271,10 @@ impl Subalgebra {
     /// A reference to the congruence lattice
     pub fn con(&mut self) -> &crate::alg::conlat::CongruenceLattice {
         if self.con.is_none() {
-            // Create a wrapper that implements SmallAlgebra for this Subalgebra
-            use crate::alg::conlat::congruence_lattice::SmallAlgebraWrapper;
-            let wrapper = Box::new(SmallAlgebraWrapper::new(self.super_algebra.clone_box()));
-            self.con = Some(Box::new(crate::alg::conlat::CongruenceLattice::new(wrapper)));
+            // For now, we can't create a CongruenceLattice with generic types
+            // This is a limitation that would need to be addressed in a future task
+            // to make CongruenceLattice itself generic
+            panic!("CongruenceLattice not supported for generic Subalgebra types yet");
         }
         self.con.as_ref().unwrap()
     }
@@ -278,9 +285,10 @@ impl Subalgebra {
     /// A reference to the subalgebra lattice
     pub fn sub(&mut self) -> &crate::alg::sublat::SubalgebraLattice {
         if self.sub.is_none() {
-            // Create a wrapper that implements SmallAlgebra for this Subalgebra
-            let wrapper = Box::new(SmallAlgebraWrapper::new(self.super_algebra.clone_box()));
-            self.sub = Some(Box::new(crate::alg::sublat::SubalgebraLattice::new(wrapper)));
+            // For now, we can't create a SubalgebraLattice with generic types
+            // This is a limitation that would need to be addressed in a future task
+            // to make SubalgebraLattice itself generic
+            panic!("SubalgebraLattice not supported for generic Subalgebra types yet");
         }
         self.sub.as_ref().unwrap()
     }
@@ -292,16 +300,17 @@ impl Subalgebra {
     
     /// Create restricted operations that delegate to the super algebra.
     fn make_operations(&mut self) -> Result<(), String> {
-        let super_ops = self.super_algebra.operations();
-        let mut ops = Vec::with_capacity(super_ops.len());
+        // Access operations directly from the super algebra's GeneralAlgebra
+        // to avoid the infinite recursion limitation in operations()
+        let super_ops_ref = self.super_algebra.get_operations_ref();
+        let mut ops = Vec::with_capacity(super_ops_ref.len());
         
-        for super_op in super_ops {
-            let restricted_op = RestrictedOperation::new(
+        for super_op in super_ops_ref {
+            let restricted_op = RestrictedOperation::<T>::new(
                 super_op.symbol().clone(),
                 self.univ_array.len(),
                 super_op.arity(),
                 self.univ_array.clone(),
-                super_op,
                 self.super_algebra.clone_box(),
             );
             ops.push(Box::new(restricted_op) as Box<dyn Operation>);
@@ -313,14 +322,23 @@ impl Subalgebra {
     
     /// Create the universe set for this subalgebra.
     fn make_universe_internal(
-        _super_algebra: &Box<dyn SmallAlgebra<UniverseItem = i32>>,
+        super_algebra: &Box<dyn SmallAlgebra<UniverseItem = T>>,
         univ_array: &[i32]
-    ) -> HashSet<i32> {
-        univ_array.iter().copied().collect()
+    ) -> HashSet<T> {
+        let mut universe = HashSet::new();
+        for &idx in univ_array {
+            if let Some(elem) = super_algebra.get_element(idx as usize) {
+                universe.insert(elem);
+            }
+        }
+        universe
     }
 }
 
-impl Debug for Subalgebra {
+impl<T> Debug for Subalgebra<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Subalgebra")
             .field("name", &self.base.name)
@@ -330,7 +348,10 @@ impl Debug for Subalgebra {
     }
 }
 
-impl Clone for Subalgebra {
+impl<T> Clone for Subalgebra<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
     fn clone(&self) -> Self {
         // Create a new instance with the same parameters
         Subalgebra {
@@ -343,11 +364,17 @@ impl Clone for Subalgebra {
     }
 }
 
-impl Algebra for Subalgebra {
-    type UniverseItem = i32;
+impl<T> Algebra for Subalgebra<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
+    type UniverseItem = T;
     
     fn universe(&self) -> Box<dyn Iterator<Item = Self::UniverseItem>> {
-        Box::new(self.univ_array.clone().into_iter())
+        let elements: Vec<T> = self.univ_array.iter()
+            .filter_map(|&idx| self.super_algebra.get_element(idx as usize))
+            .collect();
+        Box::new(elements.into_iter())
     }
     
     fn cardinality(&self) -> i32 {
@@ -435,9 +462,16 @@ impl Algebra for Subalgebra {
     }
 }
 
-impl SmallAlgebra for Subalgebra {
+impl<T> SmallAlgebra for Subalgebra<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
     fn get_operation_ref(&self, sym: &OperationSymbol) -> Option<&dyn Operation> {
         self.base.get_operation_ref(sym)
+    }
+    
+    fn get_operations_ref(&self) -> Vec<&dyn Operation> {
+        self.base.get_operations_ref()
     }
     
     fn clone_box(&self) -> Box<dyn SmallAlgebra<UniverseItem = Self::UniverseItem>> {
@@ -450,24 +484,34 @@ impl SmallAlgebra for Subalgebra {
     
     fn get_element(&self, k: usize) -> Option<Self::UniverseItem> {
         if k < self.univ_array.len() {
-            Some(self.univ_array[k])
+            // Get the element from the super algebra at the index stored in univ_array[k]
+            self.super_algebra.get_element(self.univ_array[k] as usize)
         } else {
             None
         }
     }
     
     fn element_index(&self, elem: &Self::UniverseItem) -> Option<usize> {
-        self.index(*elem)
+        if let Some(super_idx) = self.super_algebra.element_index(elem) {
+            self.index(super_idx as i32)
+        } else {
+            None
+        }
     }
     
     fn get_universe_list(&self) -> Option<Vec<Self::UniverseItem>> {
-        Some(self.univ_array.clone())
+        let elements: Vec<T> = self.univ_array.iter()
+            .filter_map(|&idx| self.super_algebra.get_element(idx as usize))
+            .collect();
+        Some(elements)
     }
     
     fn get_universe_order(&self) -> Option<HashMap<Self::UniverseItem, usize>> {
         let mut order = HashMap::new();
-        for (i, &elem) in self.univ_array.iter().enumerate() {
-            order.insert(elem, i);
+        for (i, &idx) in self.univ_array.iter().enumerate() {
+            if let Some(elem) = self.super_algebra.get_element(idx as usize) {
+                order.insert(elem, i);
+            }
         }
         Some(order)
     }
@@ -489,7 +533,10 @@ impl SmallAlgebra for Subalgebra {
     }
 }
 
-impl Display for Subalgebra {
+impl<T> Display for Subalgebra<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "Subalgebra({}, cardinality: {})", self.base.name, self.cardinality())
     }
@@ -499,38 +546,44 @@ impl Display for Subalgebra {
 /// 
 /// This operation maps subalgebra indices to super algebra indices,
 /// applies the super algebra operation, then maps the result back.
-struct RestrictedOperation {
+struct RestrictedOperation<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
     symbol: OperationSymbol,
     size: usize,
     arity: i32,
     univ_array: Vec<i32>,
-    super_op: Box<dyn Operation>,
-    super_algebra: Box<dyn SmallAlgebra<UniverseItem = i32>>,
+    super_algebra: Box<dyn SmallAlgebra<UniverseItem = T>>,
     value_table: Option<Vec<i32>>,
 }
 
-impl RestrictedOperation {
+impl<T> RestrictedOperation<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
     fn new(
         symbol: OperationSymbol,
         size: usize,
         arity: i32,
         univ_array: Vec<i32>,
-        super_op: Box<dyn Operation>,
-        super_algebra: Box<dyn SmallAlgebra<UniverseItem = i32>>,
+        super_algebra: Box<dyn SmallAlgebra<UniverseItem = T>>,
     ) -> Self {
         RestrictedOperation {
             symbol,
             size,
             arity,
             univ_array,
-            super_op,
             super_algebra,
             value_table: None,
         }
     }
 }
 
-impl Operation for RestrictedOperation {
+impl<T> Operation for RestrictedOperation<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
     fn symbol(&self) -> &OperationSymbol {
         &self.symbol
     }
@@ -562,7 +615,9 @@ impl Operation for RestrictedOperation {
         }
         
         // Apply super algebra operation
-        let super_result = self.super_op.int_value_at(&super_args)?;
+        let super_op = self.super_algebra.get_operation_ref(&self.symbol)
+            .ok_or_else(|| format!("Operation {} not found in super algebra", self.symbol.name()))?;
+        let super_result = super_op.int_value_at(&super_args)?;
         
         // Map result back to subalgebra index
         match self.univ_array.binary_search(&super_result) {
@@ -625,27 +680,39 @@ impl Operation for RestrictedOperation {
     }
     
     fn is_idempotent(&self) -> Result<bool, String> {
-        self.super_op.is_idempotent()
+        let super_op = self.super_algebra.get_operation_ref(&self.symbol)
+            .ok_or_else(|| format!("Operation {} not found in super algebra", self.symbol.name()))?;
+        super_op.is_idempotent()
     }
     
     fn is_commutative(&self) -> Result<bool, String> {
-        self.super_op.is_commutative()
+        let super_op = self.super_algebra.get_operation_ref(&self.symbol)
+            .ok_or_else(|| format!("Operation {} not found in super algebra", self.symbol.name()))?;
+        super_op.is_commutative()
     }
     
     fn is_associative(&self) -> Result<bool, String> {
-        self.super_op.is_associative()
+        let super_op = self.super_algebra.get_operation_ref(&self.symbol)
+            .ok_or_else(|| format!("Operation {} not found in super algebra", self.symbol.name()))?;
+        super_op.is_associative()
     }
     
     fn is_totally_symmetric(&self) -> Result<bool, String> {
-        self.super_op.is_totally_symmetric()
+        let super_op = self.super_algebra.get_operation_ref(&self.symbol)
+            .ok_or_else(|| format!("Operation {} not found in super algebra", self.symbol.name()))?;
+        super_op.is_totally_symmetric()
     }
     
     fn is_maltsev(&self) -> Result<bool, String> {
-        self.super_op.is_maltsev()
+        let super_op = self.super_algebra.get_operation_ref(&self.symbol)
+            .ok_or_else(|| format!("Operation {} not found in super algebra", self.symbol.name()))?;
+        super_op.is_maltsev()
     }
     
     fn is_total(&self) -> Result<bool, String> {
-        self.super_op.is_total()
+        let super_op = self.super_algebra.get_operation_ref(&self.symbol)
+            .ok_or_else(|| format!("Operation {} not found in super algebra", self.symbol.name()))?;
+        super_op.is_total()
     }
     
     fn value_at(&self, args: &[i32]) -> Result<i32, String> {
@@ -658,14 +725,16 @@ impl Operation for RestrictedOperation {
             size: self.size,
             arity: self.arity,
             univ_array: self.univ_array.clone(),
-            super_op: self.super_op.clone_box(),
             super_algebra: self.super_algebra.clone_box(),
             value_table: None, // Don't clone the table
         })
     }
 }
 
-impl Debug for RestrictedOperation {
+impl<T> Debug for RestrictedOperation<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("RestrictedOperation")
             .field("symbol", &self.symbol)
@@ -676,7 +745,10 @@ impl Debug for RestrictedOperation {
     }
 }
 
-impl Display for RestrictedOperation {
+impl<T> Display for RestrictedOperation<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}(arity: {})", self.symbol, self.arity)
     }

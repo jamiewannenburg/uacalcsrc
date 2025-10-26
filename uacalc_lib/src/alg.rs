@@ -5634,7 +5634,7 @@ impl PyPowerAlgebra {
 /// Python wrapper for Subalgebra
 #[pyclass]
 pub struct PySubalgebra {
-    inner: uacalc::alg::Subalgebra,
+    inner: uacalc::alg::Subalgebra<i32>,
 }
 
 #[pymethods]

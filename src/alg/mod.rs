@@ -22,6 +22,10 @@ impl SmallAlgebra for SmallAlgebraWrapper {
         self.inner.get_operation_ref(sym)
     }
     
+    fn get_operations_ref(&self) -> Vec<&dyn Operation> {
+        self.inner.get_operations_ref()
+    }
+    
     fn clone_box(&self) -> Box<dyn SmallAlgebra<UniverseItem = Self::UniverseItem>> {
         Box::new(SmallAlgebraWrapper::new(self.inner.clone_box()))
     }
@@ -203,7 +207,7 @@ pub use subalgebra::Subalgebra;
 pub use product_algebra::ProductAlgebra;
 pub use quotient_algebra::QuotientAlgebra;
 pub use quotient_element::QuotientElement;
-pub use algebra_with_generating_vector::AlgebraWithGeneratingVector;
+pub use algebra_with_generating_vector::{AlgebraWithGeneratingVector, AlgebraWithGeneratingVectorI32};
 
 // Import ParameterizedOperation from op module (defined later in this file)
 pub use op::ParameterizedOperation;
@@ -985,6 +989,10 @@ impl SmallAlgebra for MatrixPowerAlgebra {
         self.power_algebra.get_operation_ref(sym)
     }
     
+    fn get_operations_ref(&self) -> Vec<&dyn Operation> {
+        self.power_algebra.get_operations_ref()
+    }
+    
     fn clone_box(&self) -> Box<dyn SmallAlgebra<UniverseItem = Self::UniverseItem>> {
         // We can't clone trait objects, so we'll create a new one
         // This is a limitation of the current design
@@ -1573,6 +1581,10 @@ impl SmallAlgebra for PowerAlgebra {
         self.product.get_operation_ref(sym)
     }
     
+    fn get_operations_ref(&self) -> Vec<&dyn Operation> {
+        self.product.get_operations_ref()
+    }
+    
     fn clone_box(&self) -> Box<dyn SmallAlgebra<UniverseItem = Self::UniverseItem>> {
         Box::new(self.clone())
     }
@@ -2041,6 +2053,10 @@ impl SmallAlgebra for ReductAlgebra {
             }
         }
         None
+    }
+    
+    fn get_operations_ref(&self) -> Vec<&dyn Operation> {
+        self.operations.iter().map(|op| op.as_ref()).collect()
     }
     
     fn clone_box(&self) -> Box<dyn SmallAlgebra<UniverseItem = Self::UniverseItem>> {
