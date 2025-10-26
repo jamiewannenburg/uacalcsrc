@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 use std::collections::HashSet;
-use std::fmt;
+use std::fmt::{self, Debug, Display};
 use std::hash::{Hash, Hasher};
 use crate::util::int_array::IntArrayTrait;
 use crate::util::array_string;
@@ -463,7 +463,6 @@ use crate::alg::subalgebra::Subalgebra;
 use crate::util::{ArrayIncrementor, SequenceGenerator, PermutationGenerator};
 use crate::lat::{Order, Lattice};
 use std::collections::HashMap;
-use once_cell::sync::Lazy;
 
 /// Maximum size for drawable lattices
 pub const MAX_DRAWABLE_SIZE: usize = 100;
@@ -491,9 +490,12 @@ pub const MAX_DRAWABLE_SIZE: usize = 100;
 /// let sub_lat = SubalgebraLattice::new_safe(alg).unwrap();
 /// assert_eq!(sub_lat.get_algebra().name(), "TestAlg");
 /// ```
-pub struct SubalgebraLattice {
+pub struct SubalgebraLattice<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
     /// The underlying algebra
-    alg: Box<dyn SmallAlgebra<UniverseItem = i32>>,
+    alg: Box<dyn SmallAlgebra<UniverseItem = T>>,
     /// Size of the algebra
     alg_size: i32,
     /// Number of operations
@@ -538,7 +540,10 @@ pub struct SubalgebraLattice {
     make_universe_k: i32,
 }
 
-impl Clone for SubalgebraLattice {
+impl<T> Clone for SubalgebraLattice<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
     fn clone(&self) -> Self {
         SubalgebraLattice {
             alg: self.alg.clone_box(),
@@ -565,7 +570,10 @@ impl Clone for SubalgebraLattice {
     }
 }
 
-impl SubalgebraLattice {
+impl<T> SubalgebraLattice<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
     /// Create a new SubalgebraLattice from an algebra.
     /// 
     /// # Arguments
@@ -590,7 +598,7 @@ impl SubalgebraLattice {
     /// let sub_lat = SubalgebraLattice::new_safe(alg).unwrap();
     /// assert_eq!(sub_lat.get_algebra().name(), "TestAlg");
     /// ```
-    pub fn new_safe(alg: Box<dyn SmallAlgebra<UniverseItem = i32>>) -> Result<Self, String> {
+    pub fn new_safe(alg: Box<dyn SmallAlgebra<UniverseItem = T>>) -> Result<Self, String> {
         let alg_size = alg.cardinality();
         if alg_size <= 0 {
             return Err("Algebra must have positive cardinality".to_string());
@@ -659,7 +667,7 @@ impl SubalgebraLattice {
     /// 
     /// # Panics
     /// Panics if the algebra is invalid
-    pub fn new(alg: Box<dyn SmallAlgebra<UniverseItem = i32>>) -> Self {
+    pub fn new(alg: Box<dyn SmallAlgebra<UniverseItem = T>>) -> Self {
         Self::new_safe(alg).unwrap()
     }
     
@@ -670,7 +678,7 @@ impl SubalgebraLattice {
     /// 
     /// # Returns
     /// A vector without duplicates
-    pub fn no_duplicates<T: PartialEq + Clone>(lst: Vec<T>) -> Vec<T> {
+    pub fn no_duplicates<U: PartialEq + Clone>(lst: Vec<U>) -> Vec<U> {
         if lst.is_empty() {
             return lst;
         }
@@ -693,7 +701,7 @@ impl SubalgebraLattice {
     /// 
     /// # Returns
     /// A reference to the algebra
-    pub fn get_algebra(&self) -> &dyn SmallAlgebra<UniverseItem = i32> {
+    pub fn get_algebra(&self) -> &dyn SmallAlgebra<UniverseItem = T> {
         self.alg.as_ref()
     }
     
@@ -856,7 +864,7 @@ impl SubalgebraLattice {
     /// 
     /// # Returns
     /// A Subalgebra object
-    pub fn sg_subalgebra(&self, s: &BasicSet) -> Subalgebra<i32> {
+    pub fn sg_subalgebra(&self, s: &BasicSet) -> Subalgebra<T> {
         Subalgebra::new(
             format!("Subalgebra Of {}", self.alg.name()),
             self.alg.clone_box(),
@@ -871,7 +879,7 @@ impl SubalgebraLattice {
     /// 
     /// # Returns
     /// A Subalgebra object
-    pub fn sg_from_gens(&self, gens: &[i32]) -> Subalgebra<i32> {
+    pub fn sg_from_gens(&self, gens: &[i32]) -> Subalgebra<T> {
         let basic_set = self.sg(gens);
         self.sg_subalgebra(&basic_set)
     }
@@ -1335,8 +1343,8 @@ impl SubalgebraLattice {
     pub fn extend_to_homomorphism(
         gens: &[i32],
         gens_b: &[i32],
-        a: &dyn SmallAlgebra<UniverseItem = i32>,
-        b: &dyn SmallAlgebra<UniverseItem = i32>
+        a: &dyn SmallAlgebra<UniverseItem = T>,
+        b: &dyn SmallAlgebra<UniverseItem = T>
     ) -> Option<HashMap<i32, i32>> {
         if gens.len() != gens_b.len() {
             return None;
@@ -1367,8 +1375,8 @@ impl SubalgebraLattice {
     /// Add constants from algebra to the homomorphism map.
     fn add_constants_to_map(
         homo: &mut HashMap<i32, i32>,
-        a: &dyn SmallAlgebra<UniverseItem = i32>,
-        b: &dyn SmallAlgebra<UniverseItem = i32>
+        a: &dyn SmallAlgebra<UniverseItem = T>,
+        b: &dyn SmallAlgebra<UniverseItem = T>
     ) -> bool {
         let empty_args: &[i32] = &[];
         
@@ -1396,8 +1404,8 @@ impl SubalgebraLattice {
     /// Extend a partial map to a homomorphism.
     fn extend_to_homomorphism_from_map(
         mut homo: HashMap<i32, i32>,
-        a: &dyn SmallAlgebra<UniverseItem = i32>,
-        b: &dyn SmallAlgebra<UniverseItem = i32>
+        a: &dyn SmallAlgebra<UniverseItem = T>,
+        b: &dyn SmallAlgebra<UniverseItem = T>
     ) -> Option<HashMap<i32, i32>> {
         let mut lst: Vec<i32> = homo.keys().cloned().collect();
         lst.sort();
@@ -1464,14 +1472,20 @@ impl SubalgebraLattice {
 }
 
 // Implement Order trait
-impl Order<BasicSet> for SubalgebraLattice {
+impl<T> Order<BasicSet> for SubalgebraLattice<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
     fn leq(&self, a: &BasicSet, b: &BasicSet) -> bool {
         a.leq(b)
     }
 }
 
 // Implement Lattice trait
-impl Lattice<BasicSet> for SubalgebraLattice {
+impl<T> Lattice<BasicSet> for SubalgebraLattice<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
     fn join_irreducibles(&self) -> Option<Vec<BasicSet>> {
         if let Some(ref jis) = self.join_irreducibles {
             Some(jis.clone())
@@ -1533,7 +1547,10 @@ impl Lattice<BasicSet> for SubalgebraLattice {
 }
 
 // Implement Algebra trait
-impl Algebra for SubalgebraLattice {
+impl<T> Algebra for SubalgebraLattice<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
     type UniverseItem = BasicSet;
     
     fn universe(&self) -> Box<dyn Iterator<Item = Self::UniverseItem>> {
@@ -1645,13 +1662,19 @@ impl Algebra for SubalgebraLattice {
     }
 }
 
-impl fmt::Display for SubalgebraLattice {
+impl<T> fmt::Display for SubalgebraLattice<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "SubalgebraLattice({})", self.alg.name())
     }
 }
 
-impl fmt::Debug for SubalgebraLattice {
+impl<T> fmt::Debug for SubalgebraLattice<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("SubalgebraLattice")
             .field("alg", &self.alg.name())

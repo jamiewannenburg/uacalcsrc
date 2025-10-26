@@ -94,21 +94,21 @@ mod subalgebra_lattice_tests {
     #[test]
     fn test_no_duplicates() {
         let lst = vec![1, 2, 2, 3, 3, 3, 4];
-        let result = SubalgebraLattice::no_duplicates(lst);
+        let result = SubalgebraLattice::<i32>::no_duplicates(lst);
         assert_eq!(result, vec![1, 2, 3, 4]);
     }
 
     #[test]
     fn test_empty_no_duplicates() {
         let lst: Vec<i32> = vec![];
-        let result = SubalgebraLattice::no_duplicates(lst);
+        let result = SubalgebraLattice::<i32>::no_duplicates(lst);
         assert!(result.is_empty());
     }
 
     #[test]
     fn test_single_no_duplicates() {
         let lst = vec![5];
-        let result = SubalgebraLattice::no_duplicates(lst);
+        let result = SubalgebraLattice::<i32>::no_duplicates(lst);
         assert_eq!(result, vec![5]);
     }
 

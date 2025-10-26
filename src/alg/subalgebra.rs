@@ -53,7 +53,7 @@ where
     con: Option<Box<crate::alg::conlat::CongruenceLattice>>,
     
     /// Lazy-initialized subalgebra lattice
-    sub: Option<Box<crate::alg::sublat::SubalgebraLattice>>,
+    sub: Option<Box<crate::alg::sublat::SubalgebraLattice<T>>>,
 }
 
 impl<T> Subalgebra<T>
@@ -283,12 +283,13 @@ where
     /// 
     /// # Returns
     /// A reference to the subalgebra lattice
-    pub fn sub(&mut self) -> &crate::alg::sublat::SubalgebraLattice {
+    pub fn sub(&mut self) -> &crate::alg::sublat::SubalgebraLattice<T> {
         if self.sub.is_none() {
-            // For now, we can't create a SubalgebraLattice with generic types
-            // This is a limitation that would need to be addressed in a future task
-            // to make SubalgebraLattice itself generic
-            panic!("SubalgebraLattice not supported for generic Subalgebra types yet");
+            // Create SubalgebraLattice with the same universe type
+            let sub_lat = crate::alg::sublat::SubalgebraLattice::new_safe(
+                self.super_algebra.clone_box()
+            ).unwrap();
+            self.sub = Some(Box::new(sub_lat));
         }
         self.sub.as_ref().unwrap()
     }

@@ -66,7 +66,7 @@ pub struct QuotientAlgebra {
     con: Option<Box<crate::alg::conlat::CongruenceLattice>>,
     
     /// Lazy-initialized subalgebra lattice
-    sub: Option<Box<crate::alg::sublat::SubalgebraLattice>>,
+    sub: Option<Box<crate::alg::sublat::SubalgebraLattice<i32>>>,
 }
 
 /// An operation on a quotient algebra.
@@ -516,7 +516,7 @@ impl QuotientAlgebra {
     /// # Note
     /// This method is not yet fully implemented for QuotientAlgebra.
     /// SubalgebraLattice currently only supports i32 universes.
-    pub fn sub(&mut self) -> &crate::alg::sublat::SubalgebraLattice {
+    pub fn sub(&mut self) -> &crate::alg::sublat::SubalgebraLattice<i32> {
         if self.sub.is_none() {
             // SubalgebraLattice currently only works with i32 universes
             // We need to enhance it to support other universe types

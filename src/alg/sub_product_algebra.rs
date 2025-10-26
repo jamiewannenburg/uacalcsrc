@@ -94,7 +94,7 @@ pub struct SubProductAlgebra {
     con: Option<Box<crate::alg::conlat::CongruenceLattice>>,
     
     /// Lazy-initialized subalgebra lattice
-    sub: Option<Box<crate::alg::sublat::SubalgebraLattice>>,
+    sub: Option<Box<crate::alg::sublat::SubalgebraLattice<i32>>>,
 }
 
 impl SubProductAlgebra {
@@ -432,7 +432,7 @@ impl SubProductAlgebra {
     /// # Note
     /// This method is not yet implemented for SubProductAlgebra.
     /// It requires a different approach due to IntArray universe type.
-    pub fn sub(&mut self) -> &crate::alg::sublat::SubalgebraLattice {
+    pub fn sub(&mut self) -> &crate::alg::sublat::SubalgebraLattice<i32> {
         if self.sub.is_none() {
             panic!("sub() method not yet implemented for SubProductAlgebra");
         }

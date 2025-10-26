@@ -147,7 +147,7 @@ where
     con: Option<Box<crate::alg::conlat::CongruenceLattice>>,
     
     /// Lazy-initialized subalgebra lattice
-    sub: Option<Box<crate::alg::sublat::SubalgebraLattice>>,
+    sub: Option<Box<crate::alg::sublat::SubalgebraLattice<i32>>>,
 }
 
 impl<T> BasicSmallAlgebra<T>
@@ -243,7 +243,7 @@ where
     /// # Note
     /// This method is only available for BasicSmallAlgebra<i32>.
     /// For other types, this will panic.
-    pub fn sub(&mut self) -> &crate::alg::sublat::SubalgebraLattice {
+    pub fn sub(&mut self) -> &crate::alg::sublat::SubalgebraLattice<i32> {
         if self.sub.is_none() {
             // Only works for i32 universe type
             panic!("sub() method only available for BasicSmallAlgebra<i32>");

@@ -3829,7 +3829,7 @@ impl PyBasicSet {
 /// Python wrapper for SubalgebraLattice
 #[pyclass]
 pub struct PySubalgebraLattice {
-    inner: std::cell::RefCell<uacalc::alg::sublat::SubalgebraLattice>,
+    inner: std::cell::RefCell<uacalc::alg::sublat::SubalgebraLattice<i32>>,
 }
 
 #[pymethods]

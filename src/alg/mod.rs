@@ -1690,7 +1690,7 @@ pub struct ReductAlgebra {
     pub con: Option<Box<crate::alg::conlat::CongruenceLattice>>,
     
     /// Lazy-initialized subalgebra lattice
-    pub sub: Option<Box<crate::alg::sublat::SubalgebraLattice>>,
+    pub sub: Option<Box<crate::alg::sublat::SubalgebraLattice<i32>>>,
     
     /// The similarity type of this algebra
     pub similarity_type: Option<SimilarityType>,
@@ -1874,11 +1874,11 @@ impl ReductAlgebra {
     /// 
     /// # Returns
     /// A reference to the subalgebra lattice
-    pub fn sub(&mut self) -> &crate::alg::sublat::SubalgebraLattice {
+    pub fn sub(&mut self) -> &crate::alg::sublat::SubalgebraLattice<i32> {
         if self.sub.is_none() {
             // Create a wrapper that implements SmallAlgebra for this ReductAlgebra
             let wrapper = Box::new(SmallAlgebraWrapper::new(self.super_algebra.clone_box()));
-            self.sub = Some(Box::new(crate::alg::sublat::SubalgebraLattice::new(wrapper)));
+            self.sub = Some(Box::new(crate::alg::sublat::SubalgebraLattice::new_safe(wrapper).unwrap()));
         }
         self.sub.as_ref().unwrap()
     }
