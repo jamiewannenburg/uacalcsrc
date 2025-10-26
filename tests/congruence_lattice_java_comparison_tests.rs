@@ -17,7 +17,7 @@ fn test_principals_count_size_3() {
         Vec::new()
     )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
     
-    let mut con_lat = CongruenceLattice::new_from_i32_algebra(alg);
+    let mut con_lat = CongruenceLattice::new(alg);
     let principals = con_lat.principals();
     
     // For size 3 with no operations, we expect 3 principal congruences
@@ -33,7 +33,7 @@ fn test_join_irreducibles_count_size_3() {
         Vec::new()
     )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
     
-    let mut con_lat = CongruenceLattice::new_from_i32_algebra(alg);
+    let mut con_lat = CongruenceLattice::new(alg);
     let jis = con_lat.join_irreducibles();
     
     // For size 3 with no operations, we expect 3 join irreducibles
@@ -49,7 +49,7 @@ fn test_cardinality_size_3() {
         Vec::new()
     )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
     
-    let mut con_lat = CongruenceLattice::new_from_i32_algebra(alg);
+    let mut con_lat = CongruenceLattice::new(alg);
     let card = con_lat.con_cardinality();
     
     // For size 3 with no operations, Bell number B_3 = 5
@@ -65,7 +65,7 @@ fn test_cardinality_size_2() {
         Vec::new()
     )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
     
-    let mut con_lat = CongruenceLattice::new_from_i32_algebra(alg);
+    let mut con_lat = CongruenceLattice::new(alg);
     let card = con_lat.con_cardinality();
     
     // For size 2 with no operations, Bell number B_2 = 2
@@ -81,7 +81,7 @@ fn test_is_distributive_size_3() {
         Vec::new()
     )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
     
-    let mut con_lat = CongruenceLattice::new_from_i32_algebra(alg);
+    let mut con_lat = CongruenceLattice::new(alg);
     let is_dist = con_lat.is_distributive();
     
     // For size 3 with no operations, lattice is not distributive
@@ -97,7 +97,7 @@ fn test_atoms_count_size_3() {
         Vec::new()
     )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
     
-    let mut con_lat = CongruenceLattice::new_from_i32_algebra(alg);
+    let mut con_lat = CongruenceLattice::new(alg);
     let atoms = con_lat.atoms();
     
     // For size 3 with no operations, we expect 3 atoms
@@ -113,7 +113,7 @@ fn test_principals_size_4() {
         Vec::new()
     )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
     
-    let mut con_lat = CongruenceLattice::new_from_i32_algebra(alg);
+    let mut con_lat = CongruenceLattice::new(alg);
     let principals = con_lat.principals();
     
     // For size 4 with no operations, we expect 6 principal congruences (C(4,2) = 6)

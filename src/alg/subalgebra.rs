@@ -50,7 +50,7 @@ where
     univ_array: Vec<i32>,
     
     /// Lazy-initialized congruence lattice
-    con: Option<Box<crate::alg::conlat::CongruenceLattice>>,
+    con: Option<Box<crate::alg::conlat::CongruenceLattice<T>>>,
     
     /// Lazy-initialized subalgebra lattice
     sub: Option<Box<crate::alg::sublat::SubalgebraLattice<T>>>,
@@ -269,7 +269,7 @@ where
     /// 
     /// # Returns
     /// A reference to the congruence lattice
-    pub fn con(&mut self) -> &crate::alg::conlat::CongruenceLattice {
+    pub fn con(&mut self) -> &crate::alg::conlat::CongruenceLattice<T> {
         if self.con.is_none() {
             // For now, we can't create a CongruenceLattice with generic types
             // This is a limitation that would need to be addressed in a future task

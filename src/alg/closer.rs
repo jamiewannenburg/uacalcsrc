@@ -7,6 +7,8 @@
 
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
+use std::hash::Hash;
+use std::fmt::Debug;
 use crate::alg::big_product_algebra::BigProductAlgebra;
 use crate::util::int_array::IntArray;
 use crate::terms::Term;
@@ -33,7 +35,10 @@ use crate::progress::ProgressReport;
 /// // let mut closer = Closer::new_safe(algebra, generators).unwrap();
 /// // let result = closer.sg_close();
 /// ```
-pub struct Closer<T> {
+pub struct Closer<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Send + Sync + 'static
+{
     /// The algebra we're working with
     algebra: Arc<BigProductAlgebra<T>>,
     

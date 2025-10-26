@@ -29,7 +29,7 @@ mod tests {
         let arr2 = IntArray::from_array(vec![3, 4, 5]).unwrap();
         let list = vec![arr1, arr2];
         
-        let result = SubProductAlgebra::transpose(&list);
+        let result = SubProductAlgebra::<i32>::transpose(&list);
         assert!(result.is_ok());
         
         let transposed = result.unwrap();

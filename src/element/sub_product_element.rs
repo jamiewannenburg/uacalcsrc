@@ -40,7 +40,7 @@ pub struct SubProductElement {
     /// The algebra this element belongs to (stored as a pointer/reference)
     /// Note: In Rust we can't easily store a reference with lifetime,
     /// so we store it as a raw pointer for simplicity in this partial implementation
-    algebra_ptr: *const SubProductAlgebra,
+    algebra_ptr: *const SubProductAlgebra<i32>,
 }
 
 // Safety: We ensure the algebra pointer remains valid during the element's lifetime
@@ -59,10 +59,10 @@ impl SubProductElement {
     /// 
     /// # Safety
     /// The algebra must remain valid for the lifetime of this element.
-    pub fn new(elt: IntArray, alg: &SubProductAlgebra) -> Self {
+    pub fn new(elt: IntArray, alg: &SubProductAlgebra<i32>) -> Self {
         SubProductElement {
             element: elt,
-            algebra_ptr: alg as *const SubProductAlgebra,
+            algebra_ptr: alg as *const SubProductAlgebra<i32>,
         }
     }
     
@@ -70,7 +70,7 @@ impl SubProductElement {
     /// 
     /// # Safety
     /// The algebra pointer must still be valid.
-    unsafe fn get_algebra_ref(&self) -> &SubProductAlgebra {
+    unsafe fn get_algebra_ref(&self) -> &SubProductAlgebra<i32> {
         &*self.algebra_ptr
     }
     

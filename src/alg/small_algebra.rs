@@ -144,7 +144,7 @@ where
     parent: Option<Box<dyn SmallAlgebra<UniverseItem = T>>>,
     
     /// Lazy-initialized congruence lattice
-    con: Option<Box<crate::alg::conlat::CongruenceLattice>>,
+    con: Option<Box<crate::alg::conlat::CongruenceLattice<T>>>,
     
     /// Lazy-initialized subalgebra lattice
     sub: Option<Box<crate::alg::sublat::SubalgebraLattice<i32>>>,
@@ -221,7 +221,7 @@ where
     /// 
     /// # Returns
     /// A reference to the congruence lattice
-    pub fn con(&mut self) -> &crate::alg::conlat::CongruenceLattice
+    pub fn con(&mut self) -> &crate::alg::conlat::CongruenceLattice<T>
     where
         T: 'static,
     {

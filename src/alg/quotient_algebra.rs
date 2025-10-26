@@ -1,5 +1,5 @@
 use std::collections::{HashMap, HashSet};
-use std::fmt::{self, Display};
+use std::fmt::{self, Debug, Display};
 use std::hash::Hash;
 use std::sync::{Arc, RwLock};
 use crate::alg::algebra::{Algebra, ProgressMonitor};
@@ -63,7 +63,7 @@ pub struct QuotientAlgebra {
     operations: Vec<QuotientOperation>,
     
     /// Lazy-initialized congruence lattice
-    con: Option<Box<crate::alg::conlat::CongruenceLattice>>,
+    con: Option<Box<crate::alg::conlat::CongruenceLattice<QuotientElement>>>,
     
     /// Lazy-initialized subalgebra lattice
     sub: Option<Box<crate::alg::sublat::SubalgebraLattice<i32>>>,
@@ -495,7 +495,7 @@ impl QuotientAlgebra {
     /// 
     /// # Returns
     /// A reference to the congruence lattice
-    pub fn con(&mut self) -> &crate::alg::conlat::CongruenceLattice {
+    pub fn con(&mut self) -> &crate::alg::conlat::CongruenceLattice<QuotientElement> {
         if self.con.is_none() {
             // Create congruence lattice using the type-erased wrapper
             use crate::alg::SmallAlgebraWrapper;

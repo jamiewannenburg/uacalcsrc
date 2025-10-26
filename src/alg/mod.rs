@@ -1,5 +1,6 @@
 use std::collections::{HashMap, HashSet};
 use std::fmt::{Debug, Display};
+use std::hash::Hash;
 use std::sync::Arc;
 use crate::util::int_array::IntArrayTrait;
 use crate::alg::op::{Operation, OperationSymbol, SimilarityType};
@@ -17,7 +18,10 @@ impl<T> SmallAlgebraWrapper<T> {
     }
 }
 
-impl<T> SmallAlgebra for SmallAlgebraWrapper<T> {
+impl<T> SmallAlgebra for SmallAlgebraWrapper<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
     fn get_operation_ref(&self, sym: &OperationSymbol) -> Option<&dyn Operation> {
         self.inner.get_operation_ref(sym)
     }
@@ -67,7 +71,10 @@ impl<T> SmallAlgebra for SmallAlgebraWrapper<T> {
     }
 }
 
-impl<T> Algebra for SmallAlgebraWrapper<T> {
+impl<T> Algebra for SmallAlgebraWrapper<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
     type UniverseItem = T;
     
     fn universe(&self) -> Box<dyn Iterator<Item = Self::UniverseItem>> {
@@ -159,7 +166,10 @@ impl<T> Algebra for SmallAlgebraWrapper<T> {
     }
 }
 
-impl<T> std::fmt::Display for SmallAlgebraWrapper<T> {
+impl<T> std::fmt::Display for SmallAlgebraWrapper<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "SmallAlgebraWrapper({})", self.inner.name())
     }
@@ -1687,7 +1697,7 @@ pub struct ReductAlgebra {
     pub operations: Vec<Box<dyn Operation>>,
     
     /// Lazy-initialized congruence lattice
-    pub con: Option<Box<crate::alg::conlat::CongruenceLattice>>,
+    pub con: Option<Box<crate::alg::conlat::CongruenceLattice<i32>>>,
     
     /// Lazy-initialized subalgebra lattice
     pub sub: Option<Box<crate::alg::sublat::SubalgebraLattice<i32>>>,
@@ -1860,7 +1870,7 @@ impl ReductAlgebra {
     /// 
     /// # Returns
     /// A reference to the congruence lattice
-    pub fn con(&mut self) -> &crate::alg::conlat::CongruenceLattice {
+    pub fn con(&mut self) -> &crate::alg::conlat::CongruenceLattice<i32> {
         if self.con.is_none() {
             // Create a wrapper that implements SmallAlgebra for this ReductAlgebra
             use crate::alg::SmallAlgebraWrapper;
