@@ -9,7 +9,7 @@ use std::sync::Arc;
 #[pyclass]
 #[derive(Clone)]
 pub struct PyEquation {
-    inner: Equation,
+    pub inner: Equation,
 }
 
 #[pymethods]

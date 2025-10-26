@@ -229,9 +229,9 @@ pub use op::ParameterizedOperation;
 // ProductAlgebra is now implemented in product_algebra.rs
 // Subalgebra is now implemented in subalgebra.rs
 
-pub struct FreeAlgebra {
-    // TODO: Implement free algebra structure
-}
+pub mod free_algebra;
+
+pub use free_algebra::FreeAlgebra;
 
 // QuotientAlgebra is now implemented in quotient_algebra.rs
 

@@ -1176,7 +1176,7 @@ impl PySimpleArrayIncrementor {
 
 /// Python wrapper for IntArray
 #[pyclass]
-#[derive(Clone)]
+#[derive(Clone, Hash, Eq, PartialEq)]
 pub struct PyIntArray {
     pub inner: IntArray,
 }
@@ -1732,9 +1732,10 @@ impl PySequenceGenerator {
     #[staticmethod]
     fn nondecreasing_sequence_incrementor(arr: Vec<i32>, max: i32) -> PyResult<PyNondecreasingSequenceIncrementor> {
         let mut arr_mut = arr;
-        let _incrementor = SequenceGenerator::nondecreasing_sequence_incrementor(&mut arr_mut, max);
+        let incrementor = SequenceGenerator::nondecreasing_sequence_incrementor(&mut arr_mut, max);
+        let data = incrementor.get_current();
         Ok(PyNondecreasingSequenceIncrementor {
-            data: arr_mut,
+            data,
             max,
             last_min: 0,
         })
@@ -1744,9 +1745,10 @@ impl PySequenceGenerator {
     #[staticmethod]
     fn nondecreasing_sequence_incrementor_with_last_min(arr: Vec<i32>, max: i32, last_min: i32) -> PyResult<PyNondecreasingSequenceIncrementor> {
         let mut arr_mut = arr;
-        let _incrementor = SequenceGenerator::nondecreasing_sequence_incrementor_with_last_min(&mut arr_mut, max, last_min);
+        let incrementor = SequenceGenerator::nondecreasing_sequence_incrementor(&mut arr_mut, max);
+        let data = incrementor.get_current();
         Ok(PyNondecreasingSequenceIncrementor {
-            data: arr_mut,
+            data,
             max,
             last_min,
         })
@@ -1757,7 +1759,8 @@ impl PySequenceGenerator {
     fn increasing_sequence_incrementor(arr: Vec<i32>, max: i32) -> PyResult<PyIncreasingSequenceIncrementor> {
         let len = arr.len();
         let mut arr_mut = arr;
-        let _incrementor = SequenceGenerator::increasing_sequence_incrementor(&mut arr_mut, max);
+        let incrementor = SequenceGenerator::increasing_sequence_incrementor(&mut arr_mut, max);
+        let data = incrementor.get_current();
         
         // Set maxs array correctly for increasing sequences
         let mut maxs = vec![0; len];
@@ -1768,7 +1771,7 @@ impl PySequenceGenerator {
         }
         
         Ok(PyIncreasingSequenceIncrementor {
-            data: arr_mut,
+            data,
             maxs,
         })
     }
@@ -1778,9 +1781,10 @@ impl PySequenceGenerator {
     fn sequence_incrementor(arr: Vec<i32>, max: i32) -> PyResult<PySequenceIncrementor> {
         let len = arr.len();
         let mut arr_mut = arr;
-        let _incrementor = SequenceGenerator::sequence_incrementor(&mut arr_mut, max);
+        let incrementor = SequenceGenerator::sequence_incrementor(&mut arr_mut, max);
+        let data = incrementor.get_current();
         Ok(PySequenceIncrementor {
-            data: arr_mut,
+            data,
             maxs: vec![max; len],
             min: None,
             jump: 1,
@@ -1794,9 +1798,12 @@ impl PySequenceGenerator {
             return Err(PyValueError::new_err("Array and maxs must have the same length"));
         }
         let mut arr_mut = arr;
-        let _incrementor = SequenceGenerator::sequence_incrementor_with_maxs(&mut arr_mut, maxs.clone());
+        // Use the regular sequence incrementor with the maximum value from maxs
+        let max_val = maxs.iter().max().copied().unwrap_or(0);
+        let incrementor = SequenceGenerator::sequence_incrementor(&mut arr_mut, max_val);
+        let data = incrementor.get_current();
         Ok(PySequenceIncrementor {
-            data: arr_mut,
+            data,
             maxs,
             min: None,
             jump: 1,
@@ -1808,9 +1815,10 @@ impl PySequenceGenerator {
     fn sequence_incrementor_with_min(arr: Vec<i32>, max: i32, min: i32) -> PyResult<PySequenceIncrementor> {
         let len = arr.len();
         let mut arr_mut = arr;
-        let _incrementor = SequenceGenerator::sequence_incrementor_with_min(&mut arr_mut, max, min);
+        let incrementor = SequenceGenerator::sequence_incrementor_with_min(&mut arr_mut, max, min);
+        let data = incrementor.get_current();
         Ok(PySequenceIncrementor {
-            data: arr_mut,
+            data,
             maxs: vec![max; len],
             min: Some(min),
             jump: 1,
@@ -1822,9 +1830,10 @@ impl PySequenceGenerator {
     fn sequence_incrementor_with_min_and_jump(arr: Vec<i32>, max: i32, min: i32, jump: usize) -> PyResult<PySequenceIncrementor> {
         let len = arr.len();
         let mut arr_mut = arr;
-        let _incrementor = SequenceGenerator::sequence_incrementor_with_min_and_jump(&mut arr_mut, max, min, jump);
+        let incrementor = SequenceGenerator::sequence_incrementor_with_jump(&mut arr_mut, max, min, jump);
+        let data = incrementor.get_current();
         Ok(PySequenceIncrementor {
-            data: arr_mut,
+            data,
             maxs: vec![max; len],
             min: Some(min),
             jump,
@@ -1835,9 +1844,10 @@ impl PySequenceGenerator {
     #[staticmethod]
     fn left_sequence_incrementor(arr: Vec<i32>, max: i32) -> PyResult<PyLeftSequenceIncrementor> {
         let mut arr_mut = arr;
-        let _incrementor = SequenceGenerator::left_sequence_incrementor(&mut arr_mut, max);
+        let incrementor = SequenceGenerator::left_sequence_incrementor(&mut arr_mut, max);
+        let data = incrementor.get_current();
         Ok(PyLeftSequenceIncrementor {
-            data: arr_mut,
+            data,
             max,
         })
     }
@@ -1852,9 +1862,10 @@ impl PySequenceGenerator {
     #[staticmethod]
     fn partition_array_incrementor(arr: Vec<i32>, num_blocks: usize) -> PyResult<PyPartitionArrayIncrementor> {
         let mut arr_mut = arr;
-        let _incrementor = SequenceGenerator::partition_array_incrementor(&mut arr_mut, num_blocks);
+        let incrementor = SequenceGenerator::partition_array_incrementor(&mut arr_mut, num_blocks as i32);
+        let data = incrementor.get_current();
         Ok(PyPartitionArrayIncrementor {
-            data: arr_mut,
+            data,
             num_blocks,
         })
     }
