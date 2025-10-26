@@ -98,7 +98,7 @@ where
     con: Option<Box<crate::alg::conlat::CongruenceLattice<IntArray>>>,
     
     /// Lazy-initialized subalgebra lattice
-    sub: Option<Box<crate::alg::sublat::SubalgebraLattice<i32>>>,
+    sub: Option<Box<crate::alg::sublat::SubalgebraLattice<IntArray>>>,
 }
 
 impl<T> SubProductAlgebra<T>
@@ -437,11 +437,25 @@ where
     /// A reference to the subalgebra lattice
     /// 
     /// # Note
-    /// This method is not yet implemented for SubProductAlgebra.
-    /// It requires a different approach due to IntArray universe type.
-    pub fn sub(&mut self) -> &crate::alg::sublat::SubalgebraLattice<i32> {
+    /// This method creates a SubalgebraLattice that works directly with IntArray
+    /// universe types, which is the natural type for SubProductAlgebra.
+    pub fn sub(&mut self) -> &crate::alg::sublat::SubalgebraLattice<IntArray> {
         if self.sub.is_none() {
-            panic!("sub() method not yet implemented for SubProductAlgebra");
+            // Create SubalgebraLattice with IntArray universe type
+            use crate::alg::SmallAlgebraWrapper;
+            
+            // Clone this algebra as a trait object for the SubalgebraLattice
+            let alg_box = Box::new(self.clone()) as Box<dyn SmallAlgebra<UniverseItem = IntArray>>;
+            let wrapper = Box::new(SmallAlgebraWrapper::<IntArray>::new(alg_box));
+            
+            match crate::alg::sublat::SubalgebraLattice::new_safe(wrapper) {
+                Ok(sub_lat) => {
+                    self.sub = Some(Box::new(sub_lat));
+                }
+                Err(e) => {
+                    panic!("Failed to create SubalgebraLattice for SubProductAlgebra: {}", e);
+                }
+            }
         }
         self.sub.as_ref().unwrap()
     }
