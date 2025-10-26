@@ -1469,6 +1469,57 @@ where
         
         Some(homo)
     }
+    
+    /// Try to extend a map to a homomorphism between two algebras using generic element types.
+    /// 
+    /// This method converts elements to indices internally and then uses the existing
+    /// index-based homomorphism algorithm.
+    /// 
+    /// # Arguments
+    /// * `gens` - Generators in source algebra
+    /// * `gens_b` - Images in target algebra
+    /// * `a` - Source algebra
+    /// * `b` - Target algebra
+    /// 
+    /// # Returns
+    /// * `Some(map)` - The homomorphism as a map from source elements to target elements
+    /// * `None` - If no homomorphism exists
+    pub fn extend_to_homomorphism_generic(
+        gens: &[T],
+        gens_b: &[T],
+        a: &dyn SmallAlgebra<UniverseItem = T>,
+        b: &dyn SmallAlgebra<UniverseItem = T>
+    ) -> Option<HashMap<T, T>> {
+        if gens.len() != gens_b.len() {
+            return None;
+        }
+        
+        // Convert elements to indices
+        let mut gens_indices = Vec::new();
+        let mut gens_b_indices = Vec::new();
+        
+        for (gen, gen_b) in gens.iter().zip(gens_b.iter()) {
+            let gen_idx = a.element_index(gen)?;
+            let gen_b_idx = b.element_index(gen_b)?;
+            gens_indices.push(gen_idx as i32);
+            gens_b_indices.push(gen_b_idx as i32);
+        }
+        
+        // Use the existing index-based method
+        let homo_indices = Self::extend_to_homomorphism(&gens_indices, &gens_b_indices, a, b)?;
+        
+        // Convert back to element-based map
+        let mut homo_elements = HashMap::new();
+        for (idx, target_idx) in homo_indices {
+            if let (Some(source_elem), Some(target_elem)) = (a.get_element(idx as usize), b.get_element(target_idx as usize)) {
+                homo_elements.insert(source_elem, target_elem);
+            } else {
+                return None;
+            }
+        }
+        
+        Some(homo_elements)
+    }
 }
 
 // Implement Order trait
