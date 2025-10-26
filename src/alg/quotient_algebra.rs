@@ -498,11 +498,11 @@ impl QuotientAlgebra {
     pub fn con(&mut self) -> &crate::alg::conlat::CongruenceLattice {
         if self.con.is_none() {
             // Create congruence lattice using the type-erased wrapper
-            use crate::alg::conlat::congruence_lattice::SmallAlgebraWrapper;
+            use crate::alg::SmallAlgebraWrapper;
             use crate::alg::quotient_element::QuotientElement;
             
             let alg_box = Box::new(self.clone()) as Box<dyn SmallAlgebra<UniverseItem = QuotientElement>>;
-            let wrapper = Box::new(SmallAlgebraWrapper::new(alg_box));
+            let wrapper = Box::new(SmallAlgebraWrapper::<QuotientElement>::new(alg_box));
             self.con = Some(Box::new(crate::alg::conlat::CongruenceLattice::new(wrapper)));
         }
         self.con.as_ref().unwrap()

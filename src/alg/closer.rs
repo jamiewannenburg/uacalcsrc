@@ -33,9 +33,9 @@ use crate::progress::ProgressReport;
 /// // let mut closer = Closer::new_safe(algebra, generators).unwrap();
 /// // let result = closer.sg_close();
 /// ```
-pub struct Closer {
+pub struct Closer<T> {
     /// The algebra we're working with
-    algebra: Arc<BigProductAlgebra>,
+    algebra: Arc<BigProductAlgebra<T>>,
     
     /// The generators
     generators: Vec<IntArray>,
@@ -62,7 +62,10 @@ pub struct Closer {
     max_size: Option<usize>,
 }
 
-impl Closer {
+impl<T> Closer<T>
+where
+    T: Clone + PartialEq + Eq + std::hash::Hash + std::fmt::Debug + Send + Sync + 'static
+{
     /// Create a new Closer with an algebra and generators.
     /// 
     /// # Arguments
@@ -83,7 +86,7 @@ impl Closer {
     /// // let closer = Closer::new_safe(algebra, generators).unwrap();
     /// ```
     pub fn new_safe(
-        algebra: Arc<BigProductAlgebra>,
+        algebra: Arc<BigProductAlgebra<T>>,
         generators: Vec<IntArray>
     ) -> Result<Self, String> {
         let mut closer = Closer {
@@ -114,7 +117,7 @@ impl Closer {
     /// * `Ok(Closer)` - Successfully created closer
     /// * `Err(String)` - If inputs are invalid
     pub fn new_with_term_map_safe(
-        algebra: Arc<BigProductAlgebra>,
+        algebra: Arc<BigProductAlgebra<T>>,
         generators: Vec<IntArray>,
         term_map: HashMap<IntArray, Box<dyn Term>>
     ) -> Result<Self, String> {
@@ -132,7 +135,7 @@ impl Closer {
     /// # Panics
     /// Panics if inputs are invalid
     pub fn new(
-        algebra: Arc<BigProductAlgebra>,
+        algebra: Arc<BigProductAlgebra<T>>,
         generators: Vec<IntArray>
     ) -> Self {
         Self::new_safe(algebra, generators).unwrap()
@@ -403,7 +406,10 @@ impl Closer {
     }
 }
 
-impl Clone for Closer {
+impl<T> Clone for Closer<T>
+where
+    T: Clone + PartialEq + Eq + std::hash::Hash + std::fmt::Debug + Send + Sync + 'static
+{
     fn clone(&self) -> Self {
         Closer {
             algebra: Arc::clone(&self.algebra),
@@ -434,13 +440,13 @@ mod tests {
         )) as Box<dyn crate::alg::SmallAlgebra<UniverseItem = i32>>;
         
         let algebra = Arc::new(
-            BigProductAlgebra::new_power_safe(alg1, 2).unwrap()
+            BigProductAlgebra::<i32>::new_power_safe(alg1, 2).unwrap()
         );
         
         let gen = IntArray::new(2).unwrap();
         let generators = vec![gen];
         
-        let closer = Closer::new_safe(algebra, generators).unwrap();
+        let closer = Closer::<i32>::new_safe(algebra, generators).unwrap();
         assert_eq!(closer.get_generators().len(), 1);
     }
     
@@ -453,7 +459,7 @@ mod tests {
         )) as Box<dyn crate::alg::SmallAlgebra<UniverseItem = i32>>;
         
         let algebra = Arc::new(
-            BigProductAlgebra::new_power_safe(alg1, 2).unwrap()
+            BigProductAlgebra::<i32>::new_power_safe(alg1, 2).unwrap()
         );
         
         let gen1 = IntArray::new(2).unwrap();
@@ -461,7 +467,7 @@ mod tests {
         let gen3 = IntArray::from_array(vec![1, 0]).unwrap();
         
         let generators = vec![gen1, gen2, gen3];
-        let mut closer = Closer::new_safe(algebra, generators).unwrap();
+        let mut closer = Closer::<i32>::new_safe(algebra, generators).unwrap();
         
         // Should have 2 generators after removing duplicates
         assert_eq!(closer.get_generators().len(), 2);

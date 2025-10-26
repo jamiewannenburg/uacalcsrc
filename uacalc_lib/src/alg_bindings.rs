@@ -7,7 +7,7 @@ use uacalc::util::int_array::{IntArray, IntArrayTrait};
 /// Python wrapper for Closer
 #[pyclass(name = "Closer")]
 pub struct PyCloser {
-    inner: Closer,
+    inner: Closer<i32>,
 }
 
 #[pymethods]
@@ -121,7 +121,7 @@ impl PyCloser {
 /// Python wrapper for BigProductAlgebra
 #[pyclass(name = "BigProductAlgebra")]
 pub struct PyBigProductAlgebra {
-    inner: Arc<BigProductAlgebra>,
+    inner: Arc<BigProductAlgebra<i32>>,
 }
 
 #[pymethods]
@@ -140,7 +140,7 @@ impl PyBigProductAlgebra {
             .map(|a| a.clone_box())
             .collect();
         
-        match BigProductAlgebra::new_safe(rust_algs) {
+        match BigProductAlgebra::<i32>::new_safe(rust_algs) {
             Ok(algebra) => Ok(PyBigProductAlgebra { inner: Arc::new(algebra) }),
             Err(e) => Err(PyValueError::new_err(e)),
         }
@@ -158,7 +158,7 @@ impl PyBigProductAlgebra {
     fn new_power(algebra: &PySmallAlgebra, power: usize) -> PyResult<Self> {
         let rust_alg = algebra.inner.clone_box();
         
-        match BigProductAlgebra::new_power_safe(rust_alg, power) {
+        match BigProductAlgebra::<i32>::new_power_safe(rust_alg, power) {
             Ok(algebra) => Ok(PyBigProductAlgebra { inner: Arc::new(algebra) }),
             Err(e) => Err(PyValueError::new_err(e)),
         }

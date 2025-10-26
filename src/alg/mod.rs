@@ -7,17 +7,17 @@ use crate::terms::Term;
 
 /// A wrapper for SmallAlgebra that can be put into an Arc
 #[derive(Debug)]
-pub struct SmallAlgebraWrapper {
-    inner: Box<dyn SmallAlgebra<UniverseItem = i32>>,
+pub struct SmallAlgebraWrapper<T> {
+    inner: Box<dyn SmallAlgebra<UniverseItem = T>>,
 }
 
-impl SmallAlgebraWrapper {
-    pub fn new(inner: Box<dyn SmallAlgebra<UniverseItem = i32>>) -> Self {
+impl<T> SmallAlgebraWrapper<T> {
+    pub fn new(inner: Box<dyn SmallAlgebra<UniverseItem = T>>) -> Self {
         SmallAlgebraWrapper { inner }
     }
 }
 
-impl SmallAlgebra for SmallAlgebraWrapper {
+impl<T> SmallAlgebra for SmallAlgebraWrapper<T> {
     fn get_operation_ref(&self, sym: &OperationSymbol) -> Option<&dyn Operation> {
         self.inner.get_operation_ref(sym)
     }
@@ -67,8 +67,8 @@ impl SmallAlgebra for SmallAlgebraWrapper {
     }
 }
 
-impl Algebra for SmallAlgebraWrapper {
-    type UniverseItem = i32;
+impl<T> Algebra for SmallAlgebraWrapper<T> {
+    type UniverseItem = T;
     
     fn universe(&self) -> Box<dyn Iterator<Item = Self::UniverseItem>> {
         self.inner.universe()
@@ -159,7 +159,7 @@ impl Algebra for SmallAlgebraWrapper {
     }
 }
 
-impl std::fmt::Display for SmallAlgebraWrapper {
+impl<T> std::fmt::Display for SmallAlgebraWrapper<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "SmallAlgebraWrapper({})", self.inner.name())
     }
@@ -1863,8 +1863,8 @@ impl ReductAlgebra {
     pub fn con(&mut self) -> &crate::alg::conlat::CongruenceLattice {
         if self.con.is_none() {
             // Create a wrapper that implements SmallAlgebra for this ReductAlgebra
-            use crate::alg::conlat::congruence_lattice::SmallAlgebraWrapper;
-            let wrapper = Box::new(SmallAlgebraWrapper::new(self.super_algebra.clone_box()));
+            use crate::alg::SmallAlgebraWrapper;
+            let wrapper = Box::new(SmallAlgebraWrapper::<i32>::new(self.super_algebra.clone_box()));
             self.con = Some(Box::new(crate::alg::conlat::CongruenceLattice::new(wrapper)));
         }
         self.con.as_ref().unwrap()
@@ -1877,7 +1877,7 @@ impl ReductAlgebra {
     pub fn sub(&mut self) -> &crate::alg::sublat::SubalgebraLattice<i32> {
         if self.sub.is_none() {
             // Create a wrapper that implements SmallAlgebra for this ReductAlgebra
-            let wrapper = Box::new(SmallAlgebraWrapper::new(self.super_algebra.clone_box()));
+            let wrapper = Box::new(SmallAlgebraWrapper::<i32>::new(self.super_algebra.clone_box()));
             self.sub = Some(Box::new(crate::alg::sublat::SubalgebraLattice::new_safe(wrapper).unwrap()));
         }
         self.sub.as_ref().unwrap()

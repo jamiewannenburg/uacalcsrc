@@ -227,9 +227,9 @@ where
     {
         if self.con.is_none() {
             // Create congruence lattice using the new wrapper
-            use crate::alg::conlat::congruence_lattice::SmallAlgebraWrapper;
+            use crate::alg::SmallAlgebraWrapper;
             let alg_box = Box::new(self.clone()) as Box<dyn SmallAlgebra<UniverseItem = T>>;
-            let wrapper = Box::new(SmallAlgebraWrapper::new(alg_box));
+            let wrapper = Box::new(SmallAlgebraWrapper::<T>::new(alg_box));
             self.con = Some(Box::new(crate::alg::conlat::CongruenceLattice::new(wrapper)));
         }
         self.con.as_ref().unwrap()

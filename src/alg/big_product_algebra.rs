@@ -7,6 +7,7 @@
 
 use std::collections::{HashMap, HashSet};
 use std::fmt;
+use std::hash::Hash;
 use crate::alg::{Algebra, SmallAlgebra, algebra::ProgressMonitor};
 use crate::alg::op::{Operation, OperationSymbol, SimilarityType};
 use crate::util::int_array::IntArray;
@@ -40,7 +41,10 @@ use crate::terms::{Term, NonVariableTerm};
 /// assert_eq!(product.get_number_of_factors(), 2);
 /// ```
 #[derive(Debug)]
-pub struct BigProductAlgebra {
+pub struct BigProductAlgebra<T>
+where
+    T: Clone + PartialEq + Eq + Hash + std::fmt::Debug + Send + Sync + 'static
+{
     /// Name of the algebra
     name: String,
     
@@ -48,7 +52,7 @@ pub struct BigProductAlgebra {
     description: Option<String>,
     
     /// The factor algebras
-    algebras: Vec<Box<dyn SmallAlgebra<UniverseItem = i32>>>,
+    algebras: Vec<Box<dyn SmallAlgebra<UniverseItem = T>>>,
     
     /// Sizes of each factor
     sizes: Vec<i32>,
@@ -66,7 +70,7 @@ pub struct BigProductAlgebra {
     cardinality: i32,
     
     /// Root algebras (for powers)
-    root_algebras: Option<Vec<Box<dyn SmallAlgebra<UniverseItem = i32>>>>,
+    root_algebras: Option<Vec<Box<dyn SmallAlgebra<UniverseItem = T>>>>,
     
     /// Powers (for powers)
     powers: Option<Vec<i32>>,
@@ -81,7 +85,10 @@ pub struct BigProductAlgebra {
     monitor: Option<Box<dyn ProgressMonitor>>,
 }
 
-impl BigProductAlgebra {
+impl<T> BigProductAlgebra<T>
+where
+    T: Clone + PartialEq + Eq + Hash + std::fmt::Debug + Send + Sync + 'static
+{
     /// Construct the direct product of a list of SmallAlgebras.
     /// 
     /// # Arguments
@@ -91,7 +98,7 @@ impl BigProductAlgebra {
     /// * `Ok(BigProductAlgebra)` - Successfully created product
     /// * `Err(String)` - If algebras are incompatible
     pub fn new_safe(
-        algebras: Vec<Box<dyn SmallAlgebra<UniverseItem = i32>>>
+        algebras: Vec<Box<dyn SmallAlgebra<UniverseItem = T>>>
     ) -> Result<Self, String> {
         Self::new_with_name_safe("".to_string(), algebras)
     }
@@ -107,7 +114,7 @@ impl BigProductAlgebra {
     /// * `Err(String)` - If algebras are incompatible
     pub fn new_with_name_safe(
         name: String,
-        algebras: Vec<Box<dyn SmallAlgebra<UniverseItem = i32>>>
+        algebras: Vec<Box<dyn SmallAlgebra<UniverseItem = T>>>
     ) -> Result<Self, String> {
         if algebras.is_empty() {
             return Err("Cannot create product of empty list of algebras".to_string());
@@ -151,7 +158,7 @@ impl BigProductAlgebra {
     /// * `Ok(BigProductAlgebra)` - Successfully created power
     /// * `Err(String)` - If power is invalid
     pub fn new_power_safe(
-        alg: Box<dyn SmallAlgebra<UniverseItem = i32>>,
+        alg: Box<dyn SmallAlgebra<UniverseItem = T>>,
         power: usize
     ) -> Result<Self, String> {
         Self::new_power_with_name_safe("".to_string(), alg, power)
@@ -169,7 +176,7 @@ impl BigProductAlgebra {
     /// * `Err(String)` - If power is invalid
     pub fn new_power_with_name_safe(
         name: String,
-        alg: Box<dyn SmallAlgebra<UniverseItem = i32>>,
+        alg: Box<dyn SmallAlgebra<UniverseItem = T>>,
         power: usize
     ) -> Result<Self, String> {
         if power == 0 {
@@ -185,7 +192,7 @@ impl BigProductAlgebra {
     /// Setup a product with powers.
     fn setup(
         name: String,
-        root_algs: Vec<Box<dyn SmallAlgebra<UniverseItem = i32>>>,
+        root_algs: Vec<Box<dyn SmallAlgebra<UniverseItem = T>>>,
         powers: Vec<i32>
     ) -> Result<Self, String> {
         if root_algs.len() != powers.len() {
@@ -311,7 +318,7 @@ impl BigProductAlgebra {
     /// 
     /// # Returns
     /// A reference to the list of factor algebras
-    pub fn factors(&self) -> &[Box<dyn SmallAlgebra<UniverseItem = i32>>] {
+    pub fn factors(&self) -> &[Box<dyn SmallAlgebra<UniverseItem = T>>] {
         &self.algebras
     }
     
@@ -319,7 +326,7 @@ impl BigProductAlgebra {
     /// 
     /// # Returns
     /// The list of root algebras, if this is a power
-    pub fn root_factors(&self) -> Option<&[Box<dyn SmallAlgebra<UniverseItem = i32>>]> {
+    pub fn root_factors(&self) -> Option<&[Box<dyn SmallAlgebra<UniverseItem = T>>]> {
         self.root_algebras.as_deref()
     }
     
@@ -434,7 +441,7 @@ impl BigProductAlgebra {
     /// # Returns
     /// * `Ok(Box<dyn SmallAlgebra>)` - The k-th factor algebra
     /// * `Err(String)` - If k is out of bounds
-    pub fn projection(&self, k: usize) -> Result<Box<dyn SmallAlgebra<UniverseItem = i32>>, String> {
+    pub fn projection(&self, k: usize) -> Result<Box<dyn SmallAlgebra<UniverseItem = T>>, String> {
         if k >= self.number_of_factors {
             return Err(format!("Factor index {} out of bounds (max: {})", k, self.number_of_factors - 1));
         }
@@ -500,7 +507,10 @@ impl BigProductAlgebra {
     }
 }
 
-impl Clone for BigProductAlgebra {
+impl<T> Clone for BigProductAlgebra<T>
+where
+    T: Clone + PartialEq + Eq + Hash + std::fmt::Debug + Send + Sync + 'static
+{
     fn clone(&self) -> Self {
         BigProductAlgebra {
             name: self.name.clone(),
@@ -520,13 +530,19 @@ impl Clone for BigProductAlgebra {
     }
 }
 
-impl fmt::Display for BigProductAlgebra {
+impl<T> fmt::Display for BigProductAlgebra<T>
+where
+    T: Clone + PartialEq + Eq + Hash + std::fmt::Debug + Send + Sync + 'static
+{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "BigProductAlgebra({})", self.name)
     }
 }
 
-impl Algebra for BigProductAlgebra {
+impl<T> Algebra for BigProductAlgebra<T>
+where
+    T: Clone + PartialEq + Eq + Hash + std::fmt::Debug + Send + Sync + 'static
+{
     type UniverseItem = IntArray;
     
     fn universe(&self) -> Box<dyn Iterator<Item = Self::UniverseItem>> {
@@ -684,7 +700,7 @@ mod tests {
             Vec::new()
         )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
         
-        let product = BigProductAlgebra::new_safe(vec![alg1, alg2]).unwrap();
+        let product = BigProductAlgebra::<i32>::new_safe(vec![alg1, alg2]).unwrap();
         assert_eq!(product.get_number_of_factors(), 2);
     }
     
@@ -696,7 +712,7 @@ mod tests {
             Vec::new()
         )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
         
-        let power = BigProductAlgebra::new_power_safe(alg, 3).unwrap();
+        let power = BigProductAlgebra::<i32>::new_power_safe(alg, 3).unwrap();
         assert_eq!(power.get_number_of_factors(), 3);
         assert!(power.is_power());
     }

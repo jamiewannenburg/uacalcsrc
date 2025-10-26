@@ -6,7 +6,8 @@
 
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
-use std::fmt::{self, Display};
+use std::fmt::{self, Display, Debug};
+use std::hash::Hash;
 use once_cell::sync::Lazy;
 
 use crate::alg::{SmallAlgebra, Algebra};
@@ -15,45 +16,6 @@ use crate::alg::conlat::{Partition, BinaryRelation};
 use crate::util::simple_list::SimpleList;
 use crate::util::int_array::{IntArray, IntArrayTrait};
 use crate::lat::{Lattice, Order};
-
-/// Type-erased interface for algebras that can have congruence lattices computed.
-/// 
-/// This trait provides the essential operations needed for computing congruences
-/// without constraining the universe type. It allows CongruenceLattice to work
-/// with algebras of any universe type (i32, IntArray, QuotientElement, etc.).
-pub trait CongruenceComputable: Send + Sync {
-    /// Get the cardinality of the algebra.
-    fn cardinality(&self) -> i32;
-    
-    /// Get the name of the algebra.
-    fn name(&self) -> &str;
-    
-    /// Get the number of operations.
-    fn num_operations(&self) -> usize;
-    
-    /// Evaluate an operation at the given arguments (as indices).
-    /// 
-    /// # Arguments
-    /// * `op_index` - The index of the operation to evaluate
-    /// * `args` - The argument indices
-    /// 
-    /// # Returns
-    /// * `Ok(result_index)` - The index of the result element
-    /// * `Err(msg)` - If evaluation fails
-    fn evaluate_operation(&self, op_index: usize, args: &[i32]) -> Result<i32, String>;
-    
-    /// Get the arity of an operation.
-    /// 
-    /// # Arguments
-    /// * `op_index` - The index of the operation
-    /// 
-    /// # Returns
-    /// The arity of the operation
-    fn operation_arity(&self, op_index: usize) -> i32;
-    
-    /// Clone this as a boxed trait object.
-    fn clone_box(&self) -> Box<dyn CongruenceComputable>;
-}
 
 /// Maximum lattice size for drawing
 pub const MAX_DRAWABLE_SIZE: usize = 150;
@@ -78,12 +40,15 @@ pub const MAX_DRAWABLE_INPUT_SIZE: usize = 2500;
 /// )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
 ///
 /// // Create the congruence lattice
-/// let con_lat = CongruenceLattice::new_from_i32_algebra(alg);
+/// let con_lat = CongruenceLattice::new(alg);
 /// assert_eq!(con_lat.alg_size(), 3);
 /// ```
-pub struct CongruenceLattice {
-    /// The algebra whose congruence lattice we're computing (type-erased)
-    pub alg: Box<dyn CongruenceComputable>,
+pub struct CongruenceLattice<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
+    /// The algebra whose congruence lattice we're computing
+    pub alg: Box<dyn SmallAlgebra<UniverseItem = T>>,
     
     /// Size of the algebra's universe
     pub alg_size: usize,
@@ -144,7 +109,10 @@ pub struct CongruenceLattice {
     principals_made: bool,
 }
 
-impl fmt::Debug for CongruenceLattice {
+impl<T> fmt::Debug for CongruenceLattice<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("CongruenceLattice")
             .field("alg_name", &self.alg.name())
@@ -155,7 +123,10 @@ impl fmt::Debug for CongruenceLattice {
     }
 }
 
-impl Clone for CongruenceLattice {
+impl<T> Clone for CongruenceLattice<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
     fn clone(&self) -> Self {
         CongruenceLattice {
             alg: self.alg.clone_box(),
@@ -182,28 +153,20 @@ impl Clone for CongruenceLattice {
     }
 }
 
-impl CongruenceLattice {
-    /// Create a new congruence lattice from an algebra with i32 universe (legacy constructor).
+impl<T> CongruenceLattice<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
+    /// Create a new congruence lattice from a SmallAlgebra.
     ///
     /// # Arguments
     /// * `alg` - The algebra to compute the congruence lattice for
     ///
     /// # Returns
     /// A new CongruenceLattice instance
-    pub fn new_from_i32_algebra(alg: Box<dyn SmallAlgebra<UniverseItem = i32>>) -> Self {
-        Self::new(Box::new(SmallAlgebraWrapper::new(alg)))
-    }
-    
-    /// Create a new congruence lattice from any SmallAlgebra.
-    ///
-    /// # Arguments
-    /// * `alg` - The type-erased algebra to compute the congruence lattice for
-    ///
-    /// # Returns
-    /// A new CongruenceLattice instance
-    pub fn new(alg: Box<dyn CongruenceComputable>) -> Self {
+    pub fn new(alg: Box<dyn SmallAlgebra<UniverseItem = T>>) -> Self {
         let alg_size = alg.cardinality() as usize;
-        let num_ops = alg.num_operations();
+        let num_ops = alg.operations().len();
         let zero_cong = Partition::zero(alg_size);
         let one_cong = Partition::one(alg_size);
         
@@ -232,59 +195,11 @@ impl CongruenceLattice {
     }
 }
 
-/// Wrapper that adapts a SmallAlgebra<UniverseItem=T> to CongruenceComputable.
-/// 
-/// This wrapper allows any SmallAlgebra to be used with CongruenceLattice by
-/// providing index-based operation evaluation.
-pub struct SmallAlgebraWrapper<T: Clone + std::hash::Hash + Eq + fmt::Debug + Display + Send + Sync + 'static> {
-    inner: Box<dyn SmallAlgebra<UniverseItem = T>>,
-}
 
-impl<T: Clone + std::hash::Hash + Eq + fmt::Debug + Display + Send + Sync + 'static> SmallAlgebraWrapper<T> {
-    pub fn new(alg: Box<dyn SmallAlgebra<UniverseItem = T>>) -> Self {
-        SmallAlgebraWrapper { inner: alg }
-    }
-}
-
-impl<T: Clone + std::hash::Hash + Eq + fmt::Debug + Display + Send + Sync + 'static> CongruenceComputable for SmallAlgebraWrapper<T> {
-    fn cardinality(&self) -> i32 {
-        self.inner.cardinality()
-    }
-    
-    fn name(&self) -> &str {
-        self.inner.name()
-    }
-    
-    fn num_operations(&self) -> usize {
-        self.inner.operations().len()
-    }
-    
-    fn evaluate_operation(&self, op_index: usize, args: &[i32]) -> Result<i32, String> {
-        let ops = self.inner.operations();
-        if op_index >= ops.len() {
-            return Err(format!("Operation index {} out of bounds", op_index));
-        }
-        
-        ops[op_index].int_value_at(args)
-    }
-    
-    fn operation_arity(&self, op_index: usize) -> i32 {
-        let ops = self.inner.operations();
-        if op_index >= ops.len() {
-            return 0;
-        }
-        
-        ops[op_index].arity()
-    }
-    
-    fn clone_box(&self) -> Box<dyn CongruenceComputable> {
-        Box::new(SmallAlgebraWrapper {
-            inner: self.inner.clone_box(),
-        })
-    }
-}
-
-impl CongruenceLattice {
+impl<T> CongruenceLattice<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
     /// Get the size of the algebra's universe.
     pub fn alg_size(&self) -> usize {
         self.alg_size
@@ -353,21 +268,30 @@ impl CongruenceLattice {
     }
 }
 
-impl fmt::Display for CongruenceLattice {
+impl<T> fmt::Display for CongruenceLattice<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "Con({})", self.alg.name())
     }
 }
 
 // Implement Order trait for Partition comparison
-impl Order<Partition> for CongruenceLattice {
+impl<T> Order<Partition> for CongruenceLattice<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
     fn leq(&self, a: &Partition, b: &Partition) -> bool {
         a.leq(b)
     }
 }
 
 // Core congruence computation methods
-impl CongruenceLattice {
+impl<T> CongruenceLattice<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
     /// Compute the principal congruence generated by elements a and b.
     ///
     /// # Arguments
@@ -435,7 +359,12 @@ impl CongruenceLattice {
             
             // For each operation f
             for op_index in 0..self.num_ops {
-                let arity = self.alg.operation_arity(op_index);
+                let ops = self.alg.operations();
+                if op_index >= ops.len() {
+                    continue;
+                }
+                
+                let arity = ops[op_index].arity();
                 if arity == 0 {
                     continue;
                 }
@@ -452,11 +381,11 @@ impl CongruenceLattice {
                     // Increment through all possible arguments, varying all positions except 'index'
                     loop {
                         arg[index as usize] = x as i32;
-                        let r_val = self.alg.evaluate_operation(op_index, &arg).unwrap_or(0);
+                        let r_val = ops[op_index].int_value_at(&arg).unwrap_or(0);
                         let r = Self::find_root(r_val as usize, &part);
                         
                         arg[index as usize] = y as i32;
-                        let s_val = self.alg.evaluate_operation(op_index, &arg).unwrap_or(0);
+                        let s_val = ops[op_index].int_value_at(&arg).unwrap_or(0);
                         let s = Self::find_root(s_val as usize, &part);
                         
                         if r != s {
@@ -1200,7 +1129,10 @@ impl CongruenceLattice {
 }
 
 // Implement Lattice trait
-impl Lattice<Partition> for CongruenceLattice {
+impl<T> Lattice<Partition> for CongruenceLattice<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
     fn join_irreducibles(&self) -> Option<Vec<Partition>> {
         self.join_irreducibles.clone()
     }
@@ -1252,7 +1184,10 @@ impl Lattice<Partition> for CongruenceLattice {
 }
 
 // Implement Algebra trait
-impl Algebra for CongruenceLattice {
+impl<T> Algebra for CongruenceLattice<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
     type UniverseItem = Partition;
     
     fn universe(&self) -> Box<dyn Iterator<Item = Self::UniverseItem>> {
@@ -1366,7 +1301,10 @@ impl Algebra for CongruenceLattice {
 }
 
 // Stub methods for functionality requiring unimplemented dependencies
-impl CongruenceLattice {
+impl<T> CongruenceLattice<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
     /// Compute the tolerance generated by two elements.
     ///
     /// This uses the algorithm from section 2.8 of Freese-McKenzie-Valeriote.
@@ -1381,18 +1319,9 @@ impl CongruenceLattice {
     /// * `Err(msg)` - If computation fails
     pub fn tg(&mut self, a: usize, b: usize) -> Result<Box<dyn BinaryRelation>, String> {
         use crate::alg::conlat::BasicBinaryRelation;
-        use crate::alg::{BigProductAlgebra, Algebra};
-        use std::sync::Arc;
+        use crate::util::int_array::IntArray;
         
-        // Create the square product A^2
-        let alg_for_product = self.alg.clone_box();
-        
-        // We need to create BigProductAlgebra, but we can't because we have a type-erased algebra
-        // For now, return an error indicating this requires a concrete algebra type
-        // TODO: Implement tolerance calculation properly once we have a way to construct products
-        // from type-erased algebras
-        
-        // As a workaround, we'll compute a simple tolerance relation
+        // For now, implement a simplified tolerance calculation
         // The tolerance Tg(a,b) contains all pairs (x,y) such that
         // for all operations f and all tuples with x,y in positions:
         // f(...,x,...) ≅ f(...,y,...) (mod the congruence generated by (a,b))

@@ -7,6 +7,7 @@
 
 use std::collections::{HashMap, HashSet};
 use std::fmt::{self, Debug, Display};
+use std::hash::Hash;
 use crate::alg::{Algebra, SmallAlgebra, AlgebraType, BigProductAlgebra};
 use crate::alg::algebra::ProgressMonitor;
 use crate::alg::op::{Operation, OperationSymbol, SimilarityType, AbstractIntOperation};
@@ -25,7 +26,7 @@ use crate::terms::{Term, VariableImp};
 /// use uacalc::util::int_array::IntArray;
 /// 
 /// // Create a big product algebra
-/// let product = BigProductAlgebra::new_safe(vec![alg1, alg2]).unwrap();
+/// let product = BigProductAlgebra::<i32>::new_safe(vec![alg1, alg2]).unwrap();
 /// 
 /// // Create generators
 /// let mut gens = vec![];
@@ -41,7 +42,10 @@ use crate::terms::{Term, VariableImp};
 /// ).unwrap();
 /// ```
 #[derive(Debug)]
-pub struct SubProductAlgebra {
+pub struct SubProductAlgebra<T>
+where
+    T: Clone + PartialEq + Eq + Hash + std::fmt::Debug + Send + Sync + 'static
+{
     /// Name of the algebra
     pub name: String,
     
@@ -49,7 +53,7 @@ pub struct SubProductAlgebra {
     pub description: Option<String>,
     
     /// The underlying product algebra
-    pub product_algebra: BigProductAlgebra,
+    pub product_algebra: BigProductAlgebra<T>,
     
     /// Generators as IntArray list
     pub gens: Vec<IntArray>,
@@ -91,13 +95,16 @@ pub struct SubProductAlgebra {
     monitor: Option<Box<dyn ProgressMonitor>>,
     
     /// Lazy-initialized congruence lattice
-    con: Option<Box<crate::alg::conlat::CongruenceLattice>>,
+    con: Option<Box<crate::alg::conlat::CongruenceLattice<IntArray>>>,
     
     /// Lazy-initialized subalgebra lattice
     sub: Option<Box<crate::alg::sublat::SubalgebraLattice<i32>>>,
 }
 
-impl SubProductAlgebra {
+impl<T> SubProductAlgebra<T>
+where
+    T: Clone + PartialEq + Eq + Hash + std::fmt::Debug + Send + Sync + 'static
+{
     /// Construct a SubProductAlgebra from a BigProductAlgebra and generators.
     /// 
     /// # Arguments
@@ -111,7 +118,7 @@ impl SubProductAlgebra {
     /// * `Err(String)` - If construction fails
     pub fn new_safe(
         name: String,
-        prod: BigProductAlgebra,
+        prod: BigProductAlgebra<T>,
         mut gens: Vec<IntArray>,
         find_terms: bool,
     ) -> Result<Self, String> {
@@ -132,7 +139,7 @@ impl SubProductAlgebra {
     /// * `Err(String)` - If construction fails
     pub fn new_full_safe(
         name: String,
-        mut prod: BigProductAlgebra,
+        mut prod: BigProductAlgebra<T>,
         mut gens: Vec<IntArray>,
         find_terms: bool,
         include_constants: bool,
@@ -254,7 +261,7 @@ impl SubProductAlgebra {
     /// * `Err(String)` - If construction fails
     pub fn new_with_universe_safe(
         name: String,
-        prod: BigProductAlgebra,
+        prod: BigProductAlgebra<T>,
         gens: Vec<IntArray>,
         univ_list: Vec<IntArray>,
     ) -> Result<Self, String> {
@@ -398,12 +405,12 @@ impl SubProductAlgebra {
     }
     
     /// Get the underlying product algebra.
-    pub fn get_product_algebra(&self) -> &BigProductAlgebra {
+    pub fn get_product_algebra(&self) -> &BigProductAlgebra<T> {
         &self.product_algebra
     }
     
     /// Get the super algebra (same as product algebra).
-    pub fn super_algebra(&self) -> &BigProductAlgebra {
+    pub fn super_algebra(&self) -> &BigProductAlgebra<T> {
         &self.product_algebra
     }
     
@@ -411,15 +418,15 @@ impl SubProductAlgebra {
     /// 
     /// # Returns
     /// A reference to the congruence lattice
-    pub fn con(&mut self) -> &crate::alg::conlat::CongruenceLattice {
+    pub fn con(&mut self) -> &crate::alg::conlat::CongruenceLattice<IntArray> {
         if self.con.is_none() {
             // Create congruence lattice using the type-erased wrapper
-            use crate::alg::conlat::congruence_lattice::SmallAlgebraWrapper;
+            use crate::alg::SmallAlgebraWrapper;
             
             // Clone this algebra as a trait object
             let alg_box = Box::new(self.clone()) as Box<dyn SmallAlgebra<UniverseItem = IntArray>>;
-            let wrapper = Box::new(SmallAlgebraWrapper::new(alg_box));
-            self.con = Some(Box::new(crate::alg::conlat::CongruenceLattice::new(wrapper)));
+            let wrapper = Box::new(SmallAlgebraWrapper::<IntArray>::new(alg_box));
+            self.con = Some(Box::new(crate::alg::conlat::CongruenceLattice::<IntArray>::new(wrapper)));
         }
         self.con.as_ref().unwrap()
     }
@@ -617,13 +624,19 @@ impl SubProductAlgebra {
     }
 }
 
-impl Display for SubProductAlgebra {
+impl<T> Display for SubProductAlgebra<T>
+where
+    T: Clone + PartialEq + Eq + Hash + std::fmt::Debug + Send + Sync + 'static
+{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "SubProductAlgebra(name={}, size={})", self.name, self.univ.len())
     }
 }
 
-impl Algebra for SubProductAlgebra {
+impl<T> Algebra for SubProductAlgebra<T>
+where
+    T: Clone + PartialEq + Eq + Hash + std::fmt::Debug + Send + Sync + 'static
+{
     type UniverseItem = IntArray;
     
     fn universe(&self) -> Box<dyn Iterator<Item = Self::UniverseItem>> {
@@ -717,7 +730,10 @@ impl Algebra for SubProductAlgebra {
     }
 }
 
-impl Clone for SubProductAlgebra {
+impl<T> Clone for SubProductAlgebra<T>
+where
+    T: Clone + PartialEq + Eq + Hash + std::fmt::Debug + Send + Sync + 'static
+{
     fn clone(&self) -> Self {
         SubProductAlgebra {
             name: self.name.clone(),
@@ -742,7 +758,10 @@ impl Clone for SubProductAlgebra {
     }
 }
 
-impl SmallAlgebra for SubProductAlgebra {
+impl<T> SmallAlgebra for SubProductAlgebra<T>
+where
+    T: Clone + PartialEq + Eq + Hash + std::fmt::Debug + Send + Sync + 'static
+{
     fn get_operation_ref(&self, sym: &OperationSymbol) -> Option<&dyn Operation> {
         None // Simplified
     }

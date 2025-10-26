@@ -255,7 +255,7 @@ where
         // Create congruence lattice for the subalgebra
         let sub_alg = Box::new(subalgebra) as Box<dyn SmallAlgebra<UniverseItem = T>>;
         let mut con_lat = crate::alg::conlat::CongruenceLattice::new(Box::new(
-            crate::alg::conlat::congruence_lattice::SmallAlgebraWrapper::new(sub_alg.clone_box())
+            crate::alg::SmallAlgebraWrapper::<i32>::new(sub_alg.clone_box())
         ));
         
         // Get irredundant meet decomposition
