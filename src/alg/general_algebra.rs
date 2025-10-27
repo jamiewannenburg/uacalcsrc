@@ -201,20 +201,26 @@ where
 {
     fn clone(&self) -> Self {
         // Create a new GeneralAlgebra with the same basic properties
+        // Clone operations using clone_box
+        let cloned_operations: Vec<Box<dyn Operation>> = self.operations
+            .iter()
+            .map(|op| op.clone_box())
+            .collect();
+        
         let mut new_alg = GeneralAlgebra {
             name: self.name.clone(),
             description: self.description.clone(),
             universe: self.universe.clone(),
-            operations: Vec::new(),
+            operations: cloned_operations,
             operations_map: None,
             similarity_type: self.similarity_type.clone(),
             monitor: None,
             size_cache: self.size_cache,
         };
         
-        // Try to clone operations, but if that fails due to recursion, 
-        // we'll just leave operations empty
-        // This is a limitation of the current design
+        // Rebuild the operations map
+        new_alg.rebuild_operations_map();
+        
         new_alg
     }
 }
@@ -261,21 +267,27 @@ where
     }
     
     fn operations(&self) -> Vec<Box<dyn Operation>> {
-        // Return empty vector to avoid infinite recursion
-        // This is a limitation of the current design
-        Vec::new()
+        // Clone all operations using clone_box
+        self.operations.iter().map(|op| op.clone_box()).collect()
     }
     
     fn get_operation(&self, sym: &OperationSymbol) -> Option<Box<dyn Operation>> {
-        // Try to find and clone the operation
-        // For now, return None to avoid infinite recursion
-        // This is a limitation of the current design
+        // Find and clone the operation
+        for op in &self.operations {
+            if op.symbol() == sym {
+                return Some(op.clone_box());
+            }
+        }
         None
     }
     
     fn get_operations_map(&self) -> HashMap<OperationSymbol, Box<dyn Operation>> {
-        // Return empty map to avoid infinite recursion
-        HashMap::new()
+        // Build map by cloning operations
+        let mut map = HashMap::new();
+        for op in &self.operations {
+            map.insert(op.symbol().clone(), op.clone_box());
+        }
+        map
     }
     
     fn name(&self) -> &str {

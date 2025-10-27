@@ -10,6 +10,7 @@ pub mod polymorphisms;
 pub mod subtrace;
 pub mod congruence_lattice;
 pub mod centrality_data;
+pub mod type_finder;
 
 pub use binary_relation::{
     BinaryRelation, MutableBinaryRelation, BinaryRelationCompare, 
@@ -21,3 +22,4 @@ pub use polymorphisms::Polymorphisms;
 pub use subtrace::Subtrace;
 pub use congruence_lattice::{CongruenceLattice, MAX_DRAWABLE_SIZE, MAX_DRAWABLE_INPUT_SIZE};
 pub use centrality_data::CentralityData;
+pub use type_finder::TypeFinder;

@@ -8,10 +8,144 @@
 use std::collections::{HashMap, HashSet};
 use std::fmt;
 use std::hash::Hash;
+use std::sync::Arc;
 use crate::alg::{Algebra, SmallAlgebra, algebra::ProgressMonitor};
 use crate::alg::op::{Operation, OperationSymbol, SimilarityType};
 use crate::util::int_array::IntArray;
 use crate::terms::{Term, NonVariableTerm};
+
+/// An operation on a BigProductAlgebra that applies componentwise.
+/// 
+/// Each operation on the product is defined by applying the corresponding
+/// operation from each factor algebra to the corresponding component.
+#[derive(Clone)]
+struct BigProductOperation {
+    symbol: OperationSymbol,
+    arity: i32,
+    number_of_factors: usize,
+    /// The operations from each factor algebra
+    op_list: Vec<Arc<dyn Operation>>,
+}
+
+impl BigProductOperation {
+    fn new(
+        symbol: OperationSymbol,
+        arity: i32,
+        number_of_factors: usize,
+        op_list: Vec<Arc<dyn Operation>>,
+    ) -> Self {
+        BigProductOperation {
+            symbol,
+            arity,
+            number_of_factors,
+            op_list,
+        }
+    }
+}
+
+impl fmt::Debug for BigProductOperation {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("BigProductOperation")
+            .field("symbol", &self.symbol)
+            .field("arity", &self.arity)
+            .field("number_of_factors", &self.number_of_factors)
+            .finish()
+    }
+}
+
+impl fmt::Display for BigProductOperation {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "BigProductOp({})", self.symbol)
+    }
+}
+
+impl Operation for BigProductOperation {
+    fn symbol(&self) -> &OperationSymbol {
+        &self.symbol
+    }
+    
+    fn arity(&self) -> i32 {
+        self.arity
+    }
+    
+    fn get_set_size(&self) -> i32 {
+        -1 // Product may be too large
+    }
+    
+    fn int_value_at(&self, _args: &[i32]) -> Result<i32, String> {
+        Err("BigProductOperation does not support int_value_at".to_string())
+    }
+    
+    fn value_at_arrays(&self, args: &[&[i32]]) -> Result<Vec<i32>, String> {
+        // args is a slice of IntArrays (each is &[i32])
+        // We need to apply the operation componentwise
+        let mut ans = vec![0; self.number_of_factors];
+        let mut arg_buf = vec![0; self.arity as usize];
+        
+        for j in 0..self.number_of_factors {
+            // Extract j-th component from each argument
+            for (index, &arg_array) in args.iter().enumerate() {
+                arg_buf[index] = arg_array[j];
+            }
+            // Apply the j-th operation
+            ans[j] = self.op_list[j].int_value_at(&arg_buf)?;
+        }
+        
+        Ok(ans)
+    }
+    
+    fn clone_box(&self) -> Box<dyn Operation> {
+        Box::new(self.clone())
+    }
+    
+    fn value_at(&self, args: &[i32]) -> Result<i32, String> {
+        Err("BigProductOperation does not support value_at".to_string())
+    }
+    
+    fn int_value_at_horner(&self, _arg: i32) -> Result<i32, String> {
+        Err("BigProductOperation does not support int_value_at_horner".to_string())
+    }
+    
+    fn make_table(&mut self) -> Result<(), String> {
+        Err("BigProductOperation does not support make_table".to_string())
+    }
+    
+    fn get_table(&self) -> Option<&[i32]> {
+        None
+    }
+    
+    fn get_table_force(&mut self, _make_table: bool) -> Result<&[i32], String> {
+        Err("BigProductOperation does not support get_table_force".to_string())
+    }
+    
+    fn is_table_based(&self) -> bool {
+        false
+    }
+    
+    fn is_idempotent(&self) -> Result<bool, String> {
+        Err("BigProductOperation does not support is_idempotent".to_string())
+    }
+    
+    fn is_associative(&self) -> Result<bool, String> {
+        Err("BigProductOperation does not support is_associative".to_string())
+    }
+    
+    fn is_commutative(&self) -> Result<bool, String> {
+        Err("BigProductOperation does not support is_commutative".to_string())
+    }
+    
+    fn is_totally_symmetric(&self) -> Result<bool, String> {
+        Err("BigProductOperation does not support is_totally_symmetric".to_string())
+    }
+    
+    fn is_maltsev(&self) -> Result<bool, String> {
+        Err("BigProductOperation does not support is_maltsev".to_string())
+    }
+    
+    fn is_total(&self) -> Result<bool, String> {
+        Err("BigProductOperation does not support is_total".to_string())
+    }
+}
 
 /// A product algebra that may be too large to be a SmallAlgebra.
 /// 
@@ -240,16 +374,43 @@ where
     /// 
     /// This creates operations on the product that apply componentwise.
     fn make_operations(&mut self) {
-        // For now, stub this out - in full implementation this would create
-        // product operations that apply componentwise
         self.operations = Vec::new();
         
         // Get operations from first algebra as a template
-        if !self.algebras.is_empty() {
-            let _first_ops = self.algebras[0].operations();
-            // For each operation in the first algebra, we would create a
-            // corresponding product operation
-            // TODO: Implement full operation creation
+        if self.algebras.is_empty() {
+            return;
+        }
+        
+        let first_ops = self.algebras[0].operations();
+        let k = first_ops.len();
+        
+        // For each operation in the first algebra
+        for i in 0..k {
+            let arity = first_ops[i].arity();
+            let symbol = first_ops[i].symbol().clone();
+            
+            // Collect the i-th operation from each factor algebra
+            let mut op_list = Vec::with_capacity(self.number_of_factors);
+            for j in 0..self.number_of_factors {
+                let ops = self.algebras[j].operations();
+                if i < ops.len() {
+                    // Use Arc to share operations between threads safely
+                    op_list.push(Arc::from(ops[i].clone_box()));
+                } else {
+                    // Factor missing operation - skip this product operation
+                    return;
+                }
+            }
+            
+            // Create the product operation
+            let prod_op = BigProductOperation::new(
+                symbol,
+                arity,
+                self.number_of_factors,
+                op_list,
+            );
+            
+            self.operations.push(Box::new(prod_op));
         }
     }
     
@@ -594,9 +755,7 @@ where
     
     fn operations(&self) -> Vec<Box<dyn Operation>> {
         // Return clones of operations
-        // For now, return empty vec since operations are not fully implemented
-        // TODO: Implement proper operation creation
-        Vec::new()
+        self.operations.iter().map(|op| op.clone_box()).collect()
     }
     
     fn get_operation(&self, _sym: &OperationSymbol) -> Option<Box<dyn Operation>> {
