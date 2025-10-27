@@ -369,6 +369,7 @@ impl PySubalgebra {
 2. **Remaining Work**: Add lattice methods once CongruenceLattice and SubalgebraLattice are available
 3. **Future Enhancement**: Implement congruenceAsAlgebra static methods once ProductAlgebra is available
 4. **Testing**: Add comprehensive unit tests for all implemented methods
+5. **Recursion/borrowing issue**: look at the two ignored rust test
 
 ### Acceptance Criteria
 - [x] Core public methods translated to Rust (18 of 26 - lattice methods excluded)

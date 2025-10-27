@@ -10,6 +10,7 @@ import java.util.*;
 import org.uacalc.alg.conlat.CentralityData;
 import org.uacalc.alg.conlat.BinaryRelation;
 import org.uacalc.alg.conlat.BasicBinaryRelation;
+import org.uacalc.alg.conlat.BasicPartition;
 import org.uacalc.alg.conlat.Partition;
 import org.uacalc.element.SubProductElement;
 import java_wrapper.src.WrapperBase;
@@ -97,7 +98,7 @@ public class CentralityDataWrapper extends WrapperBase {
         // Create simple binary relations for testing
         BasicBinaryRelation s = new BasicBinaryRelation(size);
         BasicBinaryRelation t = new BasicBinaryRelation(size);
-        Partition delta = new Partition(size);
+        BasicPartition delta = BasicPartition.zero(size);
         
         // Add some pairs for testing
         if (size >= 2) {
@@ -127,7 +128,7 @@ public class CentralityDataWrapper extends WrapperBase {
         
         BasicBinaryRelation s = new BasicBinaryRelation(size);
         BasicBinaryRelation t = new BasicBinaryRelation(size);
-        Partition delta = new Partition(size);
+        BasicPartition delta = BasicPartition.zero(size);
         
         if (size >= 2) {
             s.add(0, 1);
@@ -153,7 +154,7 @@ public class CentralityDataWrapper extends WrapperBase {
         
         BasicBinaryRelation s = new BasicBinaryRelation(size);
         BasicBinaryRelation t = new BasicBinaryRelation(size);
-        Partition delta = new Partition(size);
+        BasicPartition delta = BasicPartition.zero(size);
         
         if (size >= 2) {
             t.add(1, 2 % size);
@@ -180,19 +181,19 @@ public class CentralityDataWrapper extends WrapperBase {
         
         BasicBinaryRelation s = new BasicBinaryRelation(size);
         BasicBinaryRelation t = new BasicBinaryRelation(size);
-        Partition delta;
+        BasicPartition delta;
         
         if (is_one) {
-            delta = new Partition(new int[]{-(size)});
+            delta = new BasicPartition(new int[]{-(size)});
             for (int i = 1; i < size; i++) {
                 int[] old = delta.toArray();
                 int[] newArr = new int[old.length + 1];
                 System.arraycopy(old, 0, newArr, 0, old.length);
                 newArr[i] = 0;
-                delta = new Partition(newArr);
+                delta = new BasicPartition(newArr);
             }
         } else {
-            delta = new Partition(size);
+            delta = BasicPartition.zero(size);
         }
         
         CentralityData data = new CentralityData(s, t, delta);
@@ -215,7 +216,7 @@ public class CentralityDataWrapper extends WrapperBase {
         
         BasicBinaryRelation s1 = new BasicBinaryRelation(size);
         BasicBinaryRelation t1 = new BasicBinaryRelation(size);
-        Partition delta1 = new Partition(size);
+        BasicPartition delta1 = BasicPartition.zero(size);
         
         BasicBinaryRelation s2 = new BasicBinaryRelation(size);
         BasicBinaryRelation t2 = new BasicBinaryRelation(size);
@@ -226,7 +227,7 @@ public class CentralityDataWrapper extends WrapperBase {
         for (int i = 1; i < size; i++) {
             oneArray[i] = 0;
         }
-        Partition delta2 = new Partition(oneArray);
+        BasicPartition delta2 = new BasicPartition(oneArray);
         
         CentralityData data1 = new CentralityData(s1, t1, delta1);
         CentralityData data2 = new CentralityData(s2, t2, delta2);
@@ -251,7 +252,7 @@ public class CentralityDataWrapper extends WrapperBase {
         
         BasicBinaryRelation s = new BasicBinaryRelation(size);
         BasicBinaryRelation t = new BasicBinaryRelation(size);
-        Partition delta = new Partition(size);
+        BasicPartition delta = BasicPartition.zero(size);
         
         if (size >= 2) {
             s.add(0, 1);
@@ -282,7 +283,7 @@ public class CentralityDataWrapper extends WrapperBase {
         try {
             BasicBinaryRelation s = new BasicBinaryRelation(3);
             BasicBinaryRelation t = new BasicBinaryRelation(3);
-            Partition delta = new Partition(3);
+            BasicPartition delta = BasicPartition.zero(3);
             CentralityData data = new CentralityData(s, t, delta);
             results.add("PASS: Basic creation");
         } catch (Exception e) {
@@ -293,7 +294,7 @@ public class CentralityDataWrapper extends WrapperBase {
         try {
             BasicBinaryRelation s = new BasicBinaryRelation(3);
             BasicBinaryRelation t = new BasicBinaryRelation(3);
-            Partition delta = new Partition(3);
+            BasicPartition delta = BasicPartition.zero(3);
             CentralityData data = new CentralityData(s, t, delta);
             
             if (data.getLeft().universeSize() == 3 &&
@@ -311,13 +312,13 @@ public class CentralityDataWrapper extends WrapperBase {
         try {
             BasicBinaryRelation s1 = new BasicBinaryRelation(3);
             BasicBinaryRelation t1 = new BasicBinaryRelation(3);
-            Partition delta1 = new Partition(3);
+            BasicPartition delta1 = BasicPartition.zero(3);
             CentralityData data1 = new CentralityData(s1, t1, delta1);
             
             BasicBinaryRelation s2 = new BasicBinaryRelation(3);
             BasicBinaryRelation t2 = new BasicBinaryRelation(3);
             int[] oneArray = new int[]{-3, 0, 0};
-            Partition delta2 = new Partition(oneArray);
+            BasicPartition delta2 = new BasicPartition(oneArray);
             CentralityData data2 = new CentralityData(s2, t2, delta2);
             
             int cmp = data1.compareTo(data2);
@@ -330,7 +331,7 @@ public class CentralityDataWrapper extends WrapperBase {
         try {
             BasicBinaryRelation s = new BasicBinaryRelation(2);
             BasicBinaryRelation t = new BasicBinaryRelation(2);
-            Partition delta = new Partition(2);
+            BasicPartition delta = BasicPartition.zero(2);
             s.add(0, 1);
             CentralityData data = new CentralityData(s, t, delta);
             String str = data.toString();

@@ -1066,6 +1066,30 @@ impl PyCentralityData {
         self.delta.number_of_blocks()
     }
     
+    /// Get the left tolerance relation (S).
+    /// 
+    /// Returns:
+    ///     BasicBinaryRelation: The left tolerance relation
+    fn left(&self) -> PyBasicBinaryRelation {
+        PyBasicBinaryRelation { inner: self.left.clone() }
+    }
+    
+    /// Get the right tolerance relation (T).
+    /// 
+    /// Returns:
+    ///     BasicBinaryRelation: The right tolerance relation
+    fn right(&self) -> PyBasicBinaryRelation {
+        PyBasicBinaryRelation { inner: self.right.clone() }
+    }
+    
+    /// Get the delta partition.
+    /// 
+    /// Returns:
+    ///     Partition: The delta partition
+    fn delta(&self) -> PyPartition {
+        PyPartition { inner: self.delta.clone() }
+    }
+    
     /// Compare with another CentralityData.
     /// 
     /// Args:
