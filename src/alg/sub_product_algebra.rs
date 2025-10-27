@@ -173,7 +173,7 @@ where
         // Compute universe and terms if requested
         let (univ, term_map, terms, vars_map) = if find_terms {
             let term_map = Self::setup_gens_to_vars_map(&gens)?;
-            let vars_map = term_map.iter()
+            let vars_map: HashMap<VariableImp, IntArray> = term_map.iter()
                 .filter_map(|(ia, term)| {
                     if term.isa_variable() {
                         // Downcast to VariableImp
@@ -219,6 +219,11 @@ where
         // Create universe set
         let universe: HashSet<IntArray> = univ.iter().cloned().collect();
         
+        // Extract variables from vars_map
+        let variables = vars_map.as_ref().map(|vm| {
+            vm.keys().cloned().collect::<Vec<VariableImp>>()
+        });
+        
         let mut sub_prod = SubProductAlgebra {
             name,
             description: None,
@@ -230,7 +235,7 @@ where
             univ_hash_map,
             terms,
             term_map,
-            variables: None,
+            variables,
             vars_map,
             universe,
             operations: Vec::new(),
