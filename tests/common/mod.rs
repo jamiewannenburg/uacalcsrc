@@ -481,15 +481,11 @@ macro_rules! compare_with_java {
                 $config.default_timeout
             ).expect("Java CLI execution failed");
             
-            // Extract the "data" field from Java wrapper output
-            let java_data = extract_java_data(&java_output.stdout)
-                .expect("Failed to extract data from Java wrapper output");
-            
             let rust_result = $rust_fn();
             let rust_json = serde_json::to_string_pretty(&rust_result)
                 .expect("Failed to serialize Rust result to JSON");
             
-            compare_outputs(&rust_json, &java_data, Some($tolerance))
+            compare_outputs(&rust_json, &java_output, Some($tolerance))
                 .expect("Rust and Java outputs do not match");
         }
     };

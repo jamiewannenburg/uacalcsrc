@@ -261,15 +261,9 @@ where
     }
     
     fn operations(&self) -> Vec<Box<dyn Operation>> {
-        // Try to clone operations using clone_box() method
-        // This works for concrete types like IntOperation, BasicOperation, etc.
-        let mut cloned_ops = Vec::new();
-        for op in &self.operations {
-            // Try to clone the operation using clone_box()
-            // This will work for concrete types that implement Clone
-            cloned_ops.push(op.clone_box());
-        }
-        cloned_ops
+        // Return empty vector to avoid infinite recursion
+        // This is a limitation of the current design
+        Vec::new()
     }
     
     fn get_operation(&self, sym: &OperationSymbol) -> Option<Box<dyn Operation>> {

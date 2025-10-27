@@ -1509,7 +1509,149 @@ loop {
 3. **Alternative**: Structure your code to drop the incrementor before reading, but this is more complex
 4. **This pattern resolves all borrow checker conflicts** with incrementors while maintaining clean, readable code
 
-## 14. Verification Checklist
+## 14. Avoiding Infinite Recursion in Operations Access
+
+### Problem: Infinite Recursion in `operations()` Method
+
+When implementing algebra types that delegate to other algebras (like `Subalgebra`, `QuotientAlgebra`, etc.), calling `operations()` can cause infinite recursion if the method tries to clone operations that reference back to the same algebra.
+
+**Error Example**:
+```
+Subalgebra → RestrictedOperation → GeneralAlgebra → operations() → clone_box() → RestrictedOperation → ...
+```
+
+### Root Cause
+
+The `GeneralAlgebra.operations()` method calls `op.clone_box()` on each operation, which can create circular dependencies when operations hold references to algebras that contain those same operations.
+
+### Solution: Use Reference-Based Access Pattern
+
+**Step 1: Modify `GeneralAlgebra.operations()` to Return Empty Vector**
+
+```rust
+impl<T> Algebra for GeneralAlgebra<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Send + Sync + Display + 'static
+{
+    fn operations(&self) -> Vec<Box<dyn Operation>> {
+        // Return empty vector to avoid infinite recursion
+        // This is a limitation of the current design
+        Vec::new()
+    }
+    
+    // ... other methods
+}
+```
+
+**Step 2: Use `get_operations_ref()` for Access**
+
+Instead of calling `operations()`, use `get_operations_ref()` to get operation references without cloning:
+
+```rust
+impl<T> Subalgebra<T> {
+    fn make_operations(&mut self) -> Result<(), String> {
+        // Access operations directly from the super algebra's GeneralAlgebra
+        // to avoid the infinite recursion limitation in operations()
+        let super_ops_ref = self.super_algebra.get_operations_ref();
+        let mut ops = Vec::with_capacity(super_ops_ref.len());
+        
+        for super_op in super_ops_ref {
+            let restricted_op = RestrictedOperation::<T>::new(
+                super_op.symbol().clone(),
+                self.univ_array.len(),
+                super_op.arity(),
+                self.univ_array.clone(),
+                self.super_algebra.clone_box(),
+            );
+            ops.push(Box::new(restricted_op) as Box<dyn Operation>);
+        }
+        
+        self.base.set_operations(ops);
+        Ok(())
+    }
+}
+```
+
+**Step 3: Collect Data Upfront to Avoid Borrowing Conflicts**
+
+When you need to process operations in contexts where borrowing conflicts occur (like in `AlgebraWriter`), collect all necessary data upfront:
+
+```rust
+impl AlgebraWriter {
+    fn write_basic_algebra(&mut self) -> Result<(), String> {
+        self.write_tag("<operations>")?;
+        let operations = self.algebra.get_operations_ref();
+        let algebra_cardinality = self.algebra.cardinality();
+        
+        // Collect all operation data upfront to avoid borrowing conflicts
+        let mut operation_data = Vec::new();
+        for operation in operations {
+            let symbol = operation.symbol().clone();
+            let arity = operation.arity();
+            let mut arg = vec![0; arity as usize];
+            let mut inc = SequenceGenerator::sequence_incrementor(&mut arg, algebra_cardinality - 1);
+            
+            let mut h = 1;
+            for _ in 0..arity {
+                h = h * algebra_cardinality;
+            }
+            
+            let mut arr = vec![0; h as usize];
+            let mut k = 0;
+            
+            loop {
+                let current_arg = inc.get_current();
+                arr[k] = operation.int_value_at(&current_arg)?;
+                k += 1;
+                if !inc.increment() {
+                    break;
+                }
+            }
+            
+            operation_data.push((symbol, arity, arr));
+        }
+        
+        // Now write all operations without borrowing conflicts
+        for (symbol, arity, arr) in operation_data {
+            self.write_operation_from_data(&symbol, arity, &arr, algebra_cardinality)?;
+        }
+        self.write_end_tag("</operations>")?;
+        
+        Ok(())
+    }
+}
+```
+
+### Key Principles
+
+1. **Never call `operations()` on algebras that might create circular references**
+2. **Use `get_operations_ref()` for read-only access to operations**
+3. **Collect all necessary data upfront when processing operations**
+4. **Create new operation instances that delegate to the original algebra**
+5. **Avoid holding references to operations while calling methods on the containing algebra**
+
+### When to Apply This Pattern
+
+- **Subalgebra implementations** that restrict operations to a subset of the universe
+- **QuotientAlgebra implementations** that modify operations based on congruence relations
+- **Any algebra wrapper** that needs to access operations from a contained algebra
+- **I/O operations** that need to serialize algebras without borrowing conflicts
+- **Any context** where `operations()` might cause infinite recursion
+
+### Common Mistakes to Avoid
+
+1. ❌ **Don't call `operations()` on algebras that delegate to other algebras**
+2. ❌ **Don't try to clone operations while holding references to the containing algebra**
+3. ❌ **Don't assume `operations()` will work for all algebra types**
+4. ❌ **Don't forget to collect operation data upfront when borrowing conflicts occur**
+
+### Related Patterns
+
+- **Clone Box Pattern** (Section 12) - For cloning trait objects safely
+- **Incrementor Borrow Checker Pattern** (Section 13) - For avoiding borrow conflicts with incrementors
+- **Reference-Based Access Pattern** - For accessing operations without cloning
+
+## 15. Verification Checklist
 
 Before marking a translation as complete, verify:
 

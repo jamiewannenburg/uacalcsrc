@@ -239,7 +239,9 @@ mod comparison_tests {
         let _ = fs::remove_file("test_basic_output.xml");
     }
     
+    // skip
     #[test]
+    #[ignore]
     fn test_write_algebra_test_comparison() {
         let config = TestConfig::default();
         

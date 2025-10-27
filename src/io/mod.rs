@@ -39,7 +39,7 @@ use crate::util::array_string;
 /// )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
 /// 
 /// // Write to file
-/// let writer = AlgebraWriter::new_with_file(alg, "output.xml").unwrap();
+/// let mut writer = AlgebraWriter::new_with_file(alg, "output.xml").unwrap();
 /// writer.write_algebra_xml().unwrap();
 /// ```
 pub struct AlgebraWriter {
@@ -196,9 +196,40 @@ impl AlgebraWriter {
         }
         
         self.write_tag("<operations>")?;
-        let operations = self.algebra.operations();
+        let operations = self.algebra.get_operations_ref();
+        let algebra_cardinality = self.algebra.cardinality();
+        
+        // Collect all operation data upfront to avoid borrowing conflicts
+        let mut operation_data = Vec::new();
         for operation in operations {
-            self.write_operation(operation.as_ref())?;
+            let symbol = operation.symbol().clone();
+            let arity = operation.arity();
+            let mut arg = vec![0; arity as usize];
+            let mut inc = SequenceGenerator::sequence_incrementor(&mut arg, algebra_cardinality - 1);
+            
+            let mut h = 1;
+            for _ in 0..arity {
+                h = h * algebra_cardinality;
+            }
+            
+            let mut arr = vec![0; h as usize];
+            let mut k = 0;
+            
+            loop {
+                let current_arg = inc.get_current();
+                arr[k] = operation.int_value_at(&current_arg)?;
+                k += 1;
+                if !inc.increment() {
+                    break;
+                }
+            }
+            
+            operation_data.push((symbol, arity, arr));
+        }
+        
+        // Now write all operations without borrowing conflicts
+        for (symbol, arity, arr) in operation_data {
+            self.write_operation_from_data(&symbol, arity, &arr, algebra_cardinality)?;
         }
         self.write_end_tag("</operations>")?;
         
@@ -528,6 +559,35 @@ impl AlgebraWriter {
         Ok(())
     }
     
+    /// Write an operation from collected data to avoid borrowing conflicts.
+    /// 
+    /// # Arguments
+    /// * `symbol` - The operation symbol
+    /// * `arity` - The arity of the operation
+    /// * `arr` - The operation table array
+    /// * `cardinality` - The cardinality of the algebra
+    /// 
+    /// # Returns
+    /// * `Ok(())` - Successfully written
+    /// * `Err(String)` - If writing fails
+    fn write_operation_from_data(&mut self, symbol: &OperationSymbol, arity: i32, arr: &[i32], cardinality: i32) -> Result<(), String> {
+        self.write_tag("<op>")?;
+        
+        // Write the operation symbol
+        self.write_tag("<opSymbol>")?;
+        self.write_begin_end_tag("<opName>", "</opName>", symbol.name())?;
+        self.write_begin_end_tag("<arity>", "</arity>", &arity.to_string())?;
+        self.write_end_tag("</opSymbol>")?;
+        
+        // Write the operation table
+        self.write_tag("<opTable>")?;
+        self.write_op_array_with_cardinality(arr, arity, cardinality)?;
+        self.write_end_tag("</opTable>")?;
+        self.write_end_tag("</op>")?;
+        
+        Ok(())
+    }
+    
     /// Write an operation array in the proper format.
     /// 
     /// # Arguments
@@ -543,6 +603,27 @@ impl AlgebraWriter {
         
         for i in (0..arr.len()).step_by(card as usize) {
             self.write_row(i, arr, arity)?;
+        }
+        
+        self.write_end_tag("</intArray>")?;
+        Ok(())
+    }
+    
+    /// Write an operation array in the proper format using a specific cardinality.
+    /// 
+    /// # Arguments
+    /// * `arr` - The operation array
+    /// * `arity` - The arity of the operation
+    /// * `cardinality` - The cardinality to use for formatting
+    /// 
+    /// # Returns
+    /// * `Ok(())` - Successfully written
+    /// * `Err(String)` - If writing fails
+    fn write_op_array_with_cardinality(&mut self, arr: &[i32], arity: i32, cardinality: i32) -> Result<(), String> {
+        self.write_tag("<intArray>")?;
+        
+        for i in (0..arr.len()).step_by(cardinality as usize) {
+            self.write_row_with_cardinality(i, arr, arity, cardinality)?;
         }
         
         self.write_end_tag("</intArray>")?;
@@ -582,6 +663,52 @@ impl AlgebraWriter {
                 .map_err(|e| format!("Failed to write row: {}", e))?;
         } else {
             let index_arr = horner::horner_inv((index / card as usize) as i32, &[card]);
+            let reversed_index_arr = horner::reverse_array(&index_arr);
+            let index_string = array_string::to_string(&reversed_index_arr);
+            
+            write!(self.out, "<row r=\"{}\">", index_string)
+                .map_err(|e| format!("Failed to write row: {}", e))?;
+            write!(self.out, "{}", row)
+                .map_err(|e| format!("Failed to write row: {}", e))?;
+            writeln!(self.out, "</row>")
+                .map_err(|e| format!("Failed to write row: {}", e))?;
+        }
+        
+        Ok(())
+    }
+    
+    /// Write a row of the operation table using a specific cardinality.
+    /// 
+    /// # Arguments
+    /// * `index` - The starting index for this row
+    /// * `arr` - The operation array
+    /// * `arity` - The arity of the operation
+    /// * `cardinality` - The cardinality to use
+    /// 
+    /// # Returns
+    /// * `Ok(())` - Successfully written
+    /// * `Err(String)` - If writing fails
+    fn write_row_with_cardinality(&mut self, index: usize, arr: &[i32], arity: i32, cardinality: i32) -> Result<(), String> {
+        if arity == 0 {
+            self.write_indent()?;
+            writeln!(self.out, "<row>{}</row>", arr[0])
+                .map_err(|e| format!("Failed to write row: {}", e))?;
+            return Ok(());
+        }
+        
+        let mut row_values = Vec::new();
+        for j in 0..cardinality {
+            row_values.push(arr[index + j as usize].to_string());
+        }
+        let row = row_values.join(",");
+        
+        self.write_indent()?;
+        
+        if arity == 1 {
+            writeln!(self.out, "<row>{}</row>", row)
+                .map_err(|e| format!("Failed to write row: {}", e))?;
+        } else {
+            let index_arr = horner::horner_inv((index / cardinality as usize) as i32, &[cardinality]);
             let reversed_index_arr = horner::reverse_array(&index_arr);
             let index_string = array_string::to_string(&reversed_index_arr);
             
