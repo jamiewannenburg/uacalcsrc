@@ -2661,6 +2661,17 @@ pub struct MaltsevDecompositionIterator {
     // TODO: Implement Maltsev decomposition iterator
 }
 
-pub struct Malcev {
-    // TODO: Implement Malcev structure
-}
+pub mod malcev;
+
+// Re-export malcev functions for convenience
+pub use malcev::{
+    malcev_term, majority_term, minority_term, pixley_term,
+    nu_term, nu_term_idempotent, weak_nu_term, weak_majority_term,
+    semilattice_term, difference_term, jonsson_terms,
+    hagemann_mitschke_terms, gumm_terms, join_term,
+    sd_meet_terms, sd_terms, markovic_mckenzie_siggers_taylor_term,
+    weak_3_edge_term, is_congruence_dist_idempotent,
+    is_congruence_modular_idempotent, congruence_modular_variety,
+    jonsson_level, local_distributivity_level, day_quadruple,
+    cyclic_term_idempotent,
+};

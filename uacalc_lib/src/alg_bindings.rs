@@ -373,6 +373,9 @@ pub fn register_alg_bindings(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<(
     
     // Don't try to create aliases or delete - PyO3 already handles the name from #[pyclass(name = "...")]
     
+    // Register Malcev functions
+    crate::malcev_bindings::register_malcev_functions(_py, m)?;
+    
     Ok(())
 }
 
