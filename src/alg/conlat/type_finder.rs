@@ -441,10 +441,10 @@ where
                             // v is new; start over with it
                             return Ok(Some(v));
                         }
-                        
-                        if univ_hs.insert(v.clone()) {
-                            univ.push(v);
-                        }
+                    }
+                    
+                    if univ_hs.insert(v.clone()) {
+                        univ.push(v);
                     }
                     
                     if !inc.increment() {
@@ -639,7 +639,7 @@ where
             current_mark = universe.len();
         }
         
-        subtrace.set_matrix_universe(universe);
+        subtrace.set_matrix_universe(universe.clone());
         
         if join || meet {
             subtrace.set_type(5);

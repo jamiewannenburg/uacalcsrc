@@ -1,7 +1,7 @@
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
 use pyo3::types::PyList;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use uacalc::alg::*;
 use uacalc::alg::conlat::{BinaryRelation, MutableBinaryRelation};
 use uacalc::util::IntArrayTrait;
@@ -2010,6 +2010,14 @@ impl PySubtrace {
         self.inner.type_value()
     }
     
+    /// Get the TCT type classification (alias for type_value).
+    /// 
+    /// Returns:
+    ///     int: The type value (-1 if not set)
+    fn r#type(&self) -> i32 {
+        self.inner.type_value()
+    }
+    
     /// Check if this subtrace has involution.
     /// 
     /// Returns:
@@ -2241,13 +2249,9 @@ impl PyTypeFinder {
     /// 
     /// Raises:
     ///     ValueError: If computation fails
-    fn find_type_set(&mut self) -> PyResult<Vec<i32>> {
+    fn find_type_set(&mut self) -> PyResult<HashSet<i32>> {
         match self.inner.find_type_set() {
-            Ok(type_set) => {
-                let mut types: Vec<i32> = type_set.into_iter().collect();
-                types.sort();
-                Ok(types)
-            },
+            Ok(type_set) => Ok(type_set),
             Err(e) => Err(PyValueError::new_err(e)),
         }
     }
@@ -4607,6 +4611,17 @@ impl PyCongruenceLattice {
     /// Find a meet irreducible element.
     fn find_meet_irred(&mut self, a: &PyPartition, b: &PyPartition) -> Option<PyPartition> {
         self.inner.find_meet_irred(&a.inner, &b.inner).map(|p| PyPartition { inner: p })
+    }
+    
+    /// Get all join irreducible congruences.
+    /// 
+    /// Returns:
+    ///     List[Partition]: List of join irreducible congruences
+    fn join_irreducibles(&mut self) -> Vec<PyPartition> {
+        match self.inner.join_irreducibles() {
+            Some(jis) => jis.into_iter().map(|p| PyPartition { inner: p }).collect(),
+            None => Vec::new(),
+        }
     }
     
     /// Find a maximal chain in the lattice.
