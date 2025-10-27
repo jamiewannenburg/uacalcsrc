@@ -996,11 +996,19 @@ impl Algebra for MatrixPowerAlgebra {
 
 impl SmallAlgebra for MatrixPowerAlgebra {
     fn get_operation_ref(&self, sym: &OperationSymbol) -> Option<&dyn Operation> {
+        // Check matrix operations first
+        for op in &self.matrix_operations {
+            if op.symbol() == sym {
+                return Some(op.as_ref());
+            }
+        }
+        // Fall back to power algebra operations
         self.power_algebra.get_operation_ref(sym)
     }
     
     fn get_operations_ref(&self) -> Vec<&dyn Operation> {
-        self.power_algebra.get_operations_ref()
+        // Return matrix operations (they are the operations of this algebra)
+        self.matrix_operations.iter().map(|op| op.as_ref()).collect()
     }
     
     fn clone_box(&self) -> Box<dyn SmallAlgebra<UniverseItem = Self::UniverseItem>> {

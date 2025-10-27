@@ -1,12 +1,11 @@
 mod algebra_reader;
 pub use algebra_reader::AlgebraReader;
 
+pub mod algebra_io;
+pub use algebra_io::*;
+
 #[cfg(test)]
 mod mace4_reader_tests;
-
-pub struct AlgebraIO {
-    // TODO: Implement algebra IO
-}
 
 use std::io::{Write, BufWriter};
 use std::fs::File;

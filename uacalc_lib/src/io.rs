@@ -2,6 +2,7 @@ use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
 use std::fs::File;
 use std::path::Path;
+use uacalc::alg::SmallAlgebra;
 
 /// Python wrapper for Mace4Reader
 #[pyclass]
@@ -38,7 +39,10 @@ impl PyMace4Reader {
                     Ok(Some(algebra)) => {
                         let name = algebra.name().to_string();
                         let cardinality = algebra.cardinality();
-                        let operations = algebra.operations();
+                        let operations: Vec<Box<dyn uacalc::alg::op::Operation>> = algebra.get_operations_ref()
+                            .iter()
+                            .map(|op| op.clone_box())
+                            .collect();
                         
                         let universe: std::collections::HashSet<i32> = (0..cardinality).collect();
                         let basic_alg = uacalc::alg::small_algebra::BasicSmallAlgebra::new(name, universe, operations);
@@ -61,7 +65,10 @@ impl PyMace4Reader {
                     Ok(Some(algebra)) => {
                         let name = algebra.name().to_string();
                         let cardinality = algebra.cardinality();
-                        let operations = algebra.operations();
+                        let operations: Vec<Box<dyn uacalc::alg::op::Operation>> = algebra.get_operations_ref()
+                            .iter()
+                            .map(|op| op.clone_box())
+                            .collect();
                         
                         let universe: std::collections::HashSet<i32> = (0..cardinality).collect();
                         let basic_alg = uacalc::alg::small_algebra::BasicSmallAlgebra::new(name, universe, operations);
@@ -88,7 +95,10 @@ impl PyMace4Reader {
                         for algebra in algebras {
                             let name = algebra.name().to_string();
                             let cardinality = algebra.cardinality();
-                            let operations = algebra.operations();
+                            let operations: Vec<Box<dyn uacalc::alg::op::Operation>> = algebra.get_operations_ref()
+                            .iter()
+                            .map(|op| op.clone_box())
+                            .collect();
                             
                             let universe: std::collections::HashSet<i32> = (0..cardinality).collect();
                             let basic_alg = uacalc::alg::small_algebra::BasicSmallAlgebra::new(name, universe, operations);
@@ -114,7 +124,10 @@ impl PyMace4Reader {
                         for algebra in algebras {
                             let name = algebra.name().to_string();
                             let cardinality = algebra.cardinality();
-                            let operations = algebra.operations();
+                            let operations: Vec<Box<dyn uacalc::alg::op::Operation>> = algebra.get_operations_ref()
+                            .iter()
+                            .map(|op| op.clone_box())
+                            .collect();
                             
                             let universe: std::collections::HashSet<i32> = (0..cardinality).collect();
                             let basic_alg = uacalc::alg::small_algebra::BasicSmallAlgebra::new(name, universe, operations);
@@ -514,6 +527,182 @@ impl PyAlgebraWriter {
     }
 }
 
+/// Parse a line as int, returning -1 for comments
+#[pyfunction]
+fn parse_line(line: String) -> PyResult<i32> {
+    match uacalc::io::algebra_io::parse_line(&line) {
+        Ok(value) => Ok(value),
+        Err(e) => Err(PyValueError::new_err(e)),
+    }
+}
+
+/// Read an algebra from a file path
+#[pyfunction]
+fn read_algebra_file(path: String) -> PyResult<crate::alg::PyBasicSmallAlgebra> {
+    let file_path = Path::new(&path);
+    match uacalc::io::algebra_io::read_algebra_file(file_path) {
+        Ok(algebra) => {
+            let name = algebra.name().to_string();
+            let cardinality = algebra.cardinality();
+            // Use get_operations_ref() and clone to avoid infinite recursion limitation
+            let operations: Vec<Box<dyn uacalc::alg::op::Operation>> = algebra.get_operations_ref()
+                .iter()
+                .map(|op| op.clone_box())
+                .collect();
+            
+            let universe: std::collections::HashSet<i32> = (0..cardinality).collect();
+            let basic_alg = uacalc::alg::small_algebra::BasicSmallAlgebra::new(name, universe, operations);
+            Ok(crate::alg::PyBasicSmallAlgebra::from_inner(basic_alg))
+        }
+        Err(e) => Err(PyValueError::new_err(e.message().to_string())),
+    }
+}
+
+/// Read an algebra from a byte stream
+#[pyfunction]
+fn read_algebra_from_stream(data: Vec<u8>) -> PyResult<crate::alg::PyBasicSmallAlgebra> {
+    let cursor = std::io::Cursor::new(data);
+    match uacalc::io::algebra_io::read_algebra_from_stream(Box::new(cursor)) {
+        Ok(algebra) => {
+            let name = algebra.name().to_string();
+            let cardinality = algebra.cardinality();
+            let operations: Vec<Box<dyn uacalc::alg::op::Operation>> = algebra.get_operations_ref()
+                .iter()
+                .map(|op| op.clone_box())
+                .collect();
+            
+            let universe: std::collections::HashSet<i32> = (0..cardinality).collect();
+            let basic_alg = uacalc::alg::small_algebra::BasicSmallAlgebra::new(name, universe, operations);
+            Ok(crate::alg::PyBasicSmallAlgebra::from_inner(basic_alg))
+        }
+        Err(e) => Err(PyValueError::new_err(e.message().to_string())),
+    }
+}
+
+/// Read a list of algebras from a file path
+#[pyfunction]
+fn read_algebra_list_file(path: String) -> PyResult<Vec<crate::alg::PyBasicSmallAlgebra>> {
+    let file_path = Path::new(&path);
+    match uacalc::io::algebra_io::read_algebra_list_file(file_path) {
+        Ok(algebras) => {
+            let mut result = Vec::new();
+            for algebra in algebras {
+                let name = algebra.name().to_string();
+                let cardinality = algebra.cardinality();
+                let operations: Vec<Box<dyn uacalc::alg::op::Operation>> = algebra.get_operations_ref()
+                .iter()
+                .map(|op| op.clone_box())
+                .collect();
+                
+                let universe: std::collections::HashSet<i32> = (0..cardinality).collect();
+                let basic_alg = uacalc::alg::small_algebra::BasicSmallAlgebra::new(name, universe, operations);
+                result.push(crate::alg::PyBasicSmallAlgebra::from_inner(basic_alg));
+            }
+            Ok(result)
+        }
+        Err(e) => Err(PyValueError::new_err(e.message().to_string())),
+    }
+}
+
+/// Read a single algebra from a byte stream
+#[pyfunction]
+fn read_algebra_list_from_stream(data: Vec<u8>) -> PyResult<crate::alg::PyBasicSmallAlgebra> {
+    let cursor = std::io::Cursor::new(data);
+    match uacalc::io::algebra_io::read_algebra_list_from_stream(Box::new(cursor)) {
+        Ok(algebra) => {
+            let name = algebra.name().to_string();
+            let cardinality = algebra.cardinality();
+            let operations: Vec<Box<dyn uacalc::alg::op::Operation>> = algebra.get_operations_ref()
+                .iter()
+                .map(|op| op.clone_box())
+                .collect();
+            
+            let universe: std::collections::HashSet<i32> = (0..cardinality).collect();
+            let basic_alg = uacalc::alg::small_algebra::BasicSmallAlgebra::new(name, universe, operations);
+            Ok(crate::alg::PyBasicSmallAlgebra::from_inner(basic_alg))
+        }
+        Err(e) => Err(PyValueError::new_err(e.message().to_string())),
+    }
+}
+
+/// Convert a legacy .alg file to XML format
+#[pyfunction]
+fn convert_to_xml(path: String) -> PyResult<()> {
+    let file_path = Path::new(&path);
+    match uacalc::io::algebra_io::convert_to_xml(file_path) {
+        Ok(()) => Ok(()),
+        Err(e) => Err(PyValueError::new_err(e.message().to_string())),
+    }
+}
+
+/// Write an algebra to a file
+#[pyfunction]
+fn write_algebra_file(algebra: &crate::alg::PyBasicSmallAlgebra, path: String) -> PyResult<()> {
+    let file_path = Path::new(&path);
+    // Use clone_box() to properly clone operations, not .clone() which loses operations
+    let rust_algebra = algebra.inner.clone_box();
+    
+    match uacalc::io::algebra_io::write_algebra_file(rust_algebra, file_path) {
+        Ok(()) => Ok(()),
+        Err(e) => Err(PyValueError::new_err(e)),
+    }
+}
+
+/// Write an algebra to a file with optional old-style format
+#[pyfunction]
+fn write_algebra_file_with_style(algebra: &crate::alg::PyBasicSmallAlgebra, path: String, old_style: bool) -> PyResult<()> {
+    let file_path = Path::new(&path);
+    // Use clone_box() to properly clone operations, not .clone() which loses operations
+    let rust_algebra = algebra.inner.clone_box();
+    
+    match uacalc::io::algebra_io::write_algebra_file_with_style(rust_algebra, file_path, old_style) {
+        Ok(()) => Ok(()),
+        Err(e) => Err(PyValueError::new_err(e)),
+    }
+}
+
+/// Read a projective plane from a file path
+#[pyfunction]
+fn read_projective_plane(path: String) -> PyResult<crate::alg::PyBasicSmallAlgebra> {
+    let file_path = Path::new(&path);
+    match uacalc::io::algebra_io::read_projective_plane(file_path) {
+        Ok(algebra) => {
+            let name = algebra.name().to_string();
+            let cardinality = algebra.cardinality();
+            let operations: Vec<Box<dyn uacalc::alg::op::Operation>> = algebra.get_operations_ref()
+                .iter()
+                .map(|op| op.clone_box())
+                .collect();
+            
+            let universe: std::collections::HashSet<i32> = (0..cardinality).collect();
+            let basic_alg = uacalc::alg::small_algebra::BasicSmallAlgebra::new(name, universe, operations);
+            Ok(crate::alg::PyBasicSmallAlgebra::from_inner(basic_alg))
+        }
+        Err(e) => Err(PyValueError::new_err(e.message().to_string())),
+    }
+}
+
+/// Read a projective plane from a byte stream
+#[pyfunction]
+fn read_projective_plane_from_stream(data: Vec<u8>) -> PyResult<crate::alg::PyBasicSmallAlgebra> {
+    let cursor = std::io::Cursor::new(data);
+    match uacalc::io::algebra_io::read_projective_plane_from_stream(Box::new(cursor)) {
+        Ok(algebra) => {
+            let name = algebra.name().to_string();
+            let cardinality = algebra.cardinality();
+            let operations: Vec<Box<dyn uacalc::alg::op::Operation>> = algebra.get_operations_ref()
+                .iter()
+                .map(|op| op.clone_box())
+                .collect();
+            
+            let universe: std::collections::HashSet<i32> = (0..cardinality).collect();
+            let basic_alg = uacalc::alg::small_algebra::BasicSmallAlgebra::new(name, universe, operations);
+            Ok(crate::alg::PyBasicSmallAlgebra::from_inner(basic_alg))
+        }
+        Err(e) => Err(PyValueError::new_err(e.message().to_string())),
+    }
+}
+
 /// Register the io module
 pub fn register_io_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyMace4Reader>()?;
@@ -530,6 +719,18 @@ pub fn register_io_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> 
     
     m.add_class::<PyExtFileFilter>()?;
     m.add("ExtFileFilter", m.getattr("PyExtFileFilter")?)?;
+    
+    // Add algebra_io functions
+    m.add_function(wrap_pyfunction!(parse_line, m)?)?;
+    m.add_function(wrap_pyfunction!(read_algebra_file, m)?)?;
+    m.add_function(wrap_pyfunction!(read_algebra_from_stream, m)?)?;
+    m.add_function(wrap_pyfunction!(read_algebra_list_file, m)?)?;
+    m.add_function(wrap_pyfunction!(read_algebra_list_from_stream, m)?)?;
+    m.add_function(wrap_pyfunction!(convert_to_xml, m)?)?;
+    m.add_function(wrap_pyfunction!(write_algebra_file, m)?)?;
+    m.add_function(wrap_pyfunction!(write_algebra_file_with_style, m)?)?;
+    m.add_function(wrap_pyfunction!(read_projective_plane, m)?)?;
+    m.add_function(wrap_pyfunction!(read_projective_plane_from_stream, m)?)?;
     
     let module_dict = m.dict();
     module_dict.del_item("PyMace4Reader")?;

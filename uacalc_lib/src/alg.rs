@@ -5143,8 +5143,8 @@ impl PyBasicSmallAlgebra {
     /// Returns:
     ///     list: List of operation names and arities as tuples
     fn operations(&self) -> Vec<(String, i32)> {
-        // Now that GeneralAlgebra::operations() returns actual operations, we can use it
-        self.inner.operations().iter().map(|op| {
+        // Use get_operations_ref() to avoid infinite recursion limitation in operations()
+        self.inner.get_operations_ref().iter().map(|op| {
             (op.symbol().name().to_string(), op.arity())
         }).collect()
     }
@@ -5154,8 +5154,8 @@ impl PyBasicSmallAlgebra {
     /// Returns:
     ///     int: The number of operations
     fn operations_count(&self) -> usize {
-        // Now that GeneralAlgebra::operations() returns actual operations, we can use it
-        self.inner.operations().len()
+        // Use get_operations_ref() to avoid infinite recursion limitation in operations()
+        self.inner.get_operations_ref().len()
     }
     
     /// Get the congruence lattice (lazy initialization).
@@ -5651,10 +5651,12 @@ impl PyPowerAlgebra {
     /// Get the operations of this power algebra.
     /// 
     /// Returns:
-    ///     list: List of operations (placeholder - not implemented yet)
-    fn operations(&self) -> Vec<PyBasicOperation> {
-        // TODO: Implement proper operations conversion
-        Vec::new()
+    ///     list: List of operation names and arities as tuples
+    fn operations(&self) -> Vec<(String, i32)> {
+        // Use get_operations_ref() to avoid infinite recursion limitation in operations()
+        self.inner.get_operations_ref().iter().map(|op| {
+            (op.symbol().name().to_string(), op.arity())
+        }).collect()
     }
     
     /// Check if this power algebra is unary.
@@ -6109,7 +6111,7 @@ impl PyMatrixPowerAlgebra {
     /// Returns:
     ///     int: The number of operations
     fn operations_count(&self) -> usize {
-        self.inner.operations().len()
+        self.inner.get_operations_ref().len()
     }
     
     /// Python string representation
@@ -6292,7 +6294,7 @@ impl PyReductAlgebra {
     /// Returns:
     ///     int: The number of operations
     fn operations_count(&self) -> usize {
-        self.inner.operations().len()
+        self.inner.get_operations_ref().len()
     }
     
     /// Python string representation
@@ -6551,7 +6553,7 @@ impl PyFreeAlgebra {
     /// Returns:
     ///     int: The number of operations
     fn operations_count(&self) -> usize {
-        self.inner.operations().len()
+        self.inner.get_operations_ref().len()
     }
     
     /// Get the universe as a list.
