@@ -4834,7 +4834,7 @@ impl PyMaltsevProductDecomposition {
     #[new]
     fn new(algebra: &PyBasicSmallAlgebra, congruence: &PyPartition) -> PyResult<Self> {
         // Clone the algebra and congruence
-        let alg_box = algebra.get_inner().clone_box();
+        let alg_box = algebra.clone_box();
         let cong = congruence.inner.clone();
         
         match uacalc::alg::MaltsevProductDecomposition::new_safe(alg_box, cong) {
@@ -5422,6 +5422,17 @@ impl PyBasicSmallAlgebra {
     /// Create PyBasicSmallAlgebra from inner Rust type (not exposed to Python)
     pub fn from_inner(inner: uacalc::alg::BasicSmallAlgebra<i32>) -> Self {
         PyBasicSmallAlgebra { inner }
+    }
+    
+    /// Get the inner algebra (for internal use)
+    pub(crate) fn get_inner(&self) -> &uacalc::alg::BasicSmallAlgebra<i32> {
+        &self.inner
+    }
+    
+    /// Clone the inner algebra as a boxed trait object.
+    /// This is needed for the MaltsevProductDecomposition constructor.
+    pub(crate) fn clone_box(&self) -> Box<dyn SmallAlgebra<UniverseItem = i32>> {
+        Box::new(self.inner.clone()) as Box<dyn SmallAlgebra<UniverseItem = i32>>
     }
 }
 

@@ -11,6 +11,7 @@ import org.uacalc.alg.MaltsevProductDecomposition;
 import org.uacalc.alg.SmallAlgebra;
 import org.uacalc.alg.BasicAlgebra;
 import org.uacalc.alg.conlat.Partition;
+import org.uacalc.alg.conlat.BasicPartition;
 import java_wrapper.src.WrapperBase;
 
 /**
@@ -101,7 +102,7 @@ public class MaltsevProductDecompositionWrapper extends WrapperBase {
         
         // Create a congruence with blocks {0,1}, {2,3}
         int[] array = new int[]{-2, 0, -2, 2};
-        Partition cong = new Partition(array);
+        Partition cong = new BasicPartition(array);
         
         // Create decomposition
         MaltsevProductDecomposition decomp = new MaltsevProductDecomposition(alg, cong);
@@ -128,7 +129,7 @@ public class MaltsevProductDecompositionWrapper extends WrapperBase {
      */
     private void handleNew(Map<String, String> options) throws Exception {
         // Get algebra cardinality
-        int card = getIntArg(options, "cardinality");
+        int card = getIntArg(options, "cardinality", 4);
         
         // Get congruence array
         String arrayStr = getRequiredArg(options, "congruence");
@@ -140,7 +141,7 @@ public class MaltsevProductDecompositionWrapper extends WrapperBase {
         
         // Create algebra and congruence
         SmallAlgebra alg = new BasicAlgebra("TestAlg", card, new ArrayList<>());
-        Partition cong = new Partition(array);
+        Partition cong = new BasicPartition(array);
         
         // Store inputs
         this.inputAlgebra = alg;
@@ -171,7 +172,7 @@ public class MaltsevProductDecompositionWrapper extends WrapperBase {
         
         Map<String, Object> result = new HashMap<>();
         result.put("blocks", this.inputCongruence.numberOfBlocks());
-        result.put("size", this.inputCongruence.size());
+        result.put("size", this.inputCongruence.universeSize());
         result.put("status", "ok");
         
         handleSuccess(result);
@@ -188,7 +189,7 @@ public class MaltsevProductDecompositionWrapper extends WrapperBase {
         
         Map<String, Object> result = new HashMap<>();
         result.put("cardinality", this.inputAlgebra.cardinality());
-        result.put("name", this.inputAlgebra.name());
+        result.put("name", "TestAlg");
         result.put("status", "ok");
         
         handleSuccess(result);
@@ -199,7 +200,7 @@ public class MaltsevProductDecompositionWrapper extends WrapperBase {
      */
     private void handleGetBlockAlgebras(Map<String, String> options) throws Exception {
         // Get algebra cardinality
-        int card = getIntArg(options, "cardinality");
+        int card = getIntArg(options, "cardinality", 4);
         
         // Get congruence array
         String arrayStr = getRequiredArg(options, "congruence");
@@ -211,7 +212,7 @@ public class MaltsevProductDecompositionWrapper extends WrapperBase {
         
         // Create algebra and congruence
         SmallAlgebra alg = new BasicAlgebra("TestAlg", card, new ArrayList<>());
-        Partition cong = new Partition(array);
+        Partition cong = new BasicPartition(array);
         
         // Create decomposition
         MaltsevProductDecomposition decomp = new MaltsevProductDecomposition(alg, cong);
@@ -239,7 +240,7 @@ public class MaltsevProductDecompositionWrapper extends WrapperBase {
      */
     private void handleGetQuotientAlgebra(Map<String, String> options) throws Exception {
         // Get algebra cardinality
-        int card = getIntArg(options, "cardinality");
+        int card = getIntArg(options, "cardinality", 4);
         
         // Get congruence array
         String arrayStr = getRequiredArg(options, "congruence");
@@ -251,7 +252,7 @@ public class MaltsevProductDecompositionWrapper extends WrapperBase {
         
         // Create algebra and congruence
         SmallAlgebra alg = new BasicAlgebra("TestAlg", card, new ArrayList<>());
-        Partition cong = new Partition(array);
+        Partition cong = new BasicPartition(array);
         
         // Create decomposition
         MaltsevProductDecomposition decomp = new MaltsevProductDecomposition(alg, cong);
