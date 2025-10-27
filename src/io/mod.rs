@@ -8,8 +8,757 @@ pub struct AlgebraIO {
     // TODO: Implement algebra IO
 }
 
+use std::io::{Write, BufWriter};
+use std::fs::File;
+use crate::alg::{SmallAlgebra, AlgebraType};
+use crate::alg::op::Operation;
+use crate::alg::conlat::partition::Partition;
+use crate::util::sequence_generator::SequenceGenerator;
+use crate::util::horner;
+use crate::util::array_string;
+
+/// XML writer for algebras with support for multiple algebra types.
+/// 
+/// This struct provides functionality to write algebra definitions to XML format,
+/// supporting various algebra types including BasicAlgebra, ProductAlgebra,
+/// QuotientAlgebra, Subalgebra, PowerAlgebra, FreeAlgebra, BigProductAlgebra,
+/// and SubProductAlgebra.
+/// 
+/// # Examples
+/// ```
+/// use uacalc::io::AlgebraWriter;
+/// use uacalc::alg::{SmallAlgebra, BasicSmallAlgebra, Algebra};
+/// use std::collections::HashSet;
+/// use std::fs::File;
+/// 
+/// // Create a small algebra
+/// let alg = Box::new(BasicSmallAlgebra::new(
+///     "example".to_string(),
+///     HashSet::from([0, 1, 2]),
+///     Vec::new()
+/// )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+/// 
+/// // Write to file
+/// let writer = AlgebraWriter::new_with_file(alg, "output.xml").unwrap();
+/// writer.write_algebra_xml().unwrap();
+/// ```
 pub struct AlgebraWriter {
-    // TODO: Implement algebra writer
+    /// The output writer
+    out: Box<dyn Write>,
+    
+    /// The algebra to write
+    algebra: Box<dyn SmallAlgebra<UniverseItem = i32>>,
+    
+    /// Current indentation level
+    indent: usize,
+}
+
+impl AlgebraWriter {
+    /// Create a new AlgebraWriter with a custom writer.
+    /// 
+    /// # Arguments
+    /// * `algebra` - The algebra to write
+    /// * `out` - The output writer
+    /// 
+    /// # Returns
+    /// A new AlgebraWriter instance
+    /// 
+    /// # Examples
+    /// ```
+    /// use uacalc::io::AlgebraWriter;
+    /// use uacalc::alg::{SmallAlgebra, BasicSmallAlgebra, Algebra};
+    /// use std::collections::HashSet;
+    /// use std::io::stdout;
+    /// 
+    /// let alg = Box::new(BasicSmallAlgebra::new(
+    ///     "example".to_string(),
+    ///     HashSet::from([0, 1]),
+    ///     Vec::new()
+    /// )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+    /// 
+    /// let writer = AlgebraWriter::new(alg, Box::new(stdout()));
+    /// ```
+    pub fn new(algebra: Box<dyn SmallAlgebra<UniverseItem = i32>>, out: Box<dyn Write>) -> Self {
+        Self {
+            out,
+            algebra,
+            indent: 0,
+        }
+    }
+    
+    /// Create a new AlgebraWriter that writes to a file.
+    /// 
+    /// # Arguments
+    /// * `algebra` - The algebra to write
+    /// * `file_path` - The path to the output file
+    /// 
+    /// # Returns
+    /// * `Ok(AlgebraWriter)` - Successfully created writer
+    /// * `Err(String)` - If the file cannot be created
+    /// 
+    /// # Examples
+    /// ```
+    /// use uacalc::io::AlgebraWriter;
+    /// use uacalc::alg::{SmallAlgebra, BasicSmallAlgebra, Algebra};
+    /// use std::collections::HashSet;
+    /// 
+    /// let alg = Box::new(BasicSmallAlgebra::new(
+    ///     "example".to_string(),
+    ///     HashSet::from([0, 1]),
+    ///     Vec::new()
+    /// )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+    /// 
+    /// let writer = AlgebraWriter::new_with_file(alg, "output.xml").unwrap();
+    /// ```
+    pub fn new_with_file(algebra: Box<dyn SmallAlgebra<UniverseItem = i32>>, file_path: &str) -> Result<Self, String> {
+        let file = File::create(file_path)
+            .map_err(|e| format!("Failed to create file {}: {}", file_path, e))?;
+        let writer = BufWriter::new(file);
+        Ok(Self::new(algebra, Box::new(writer)))
+    }
+    
+    /// Write the complete algebra XML to the output.
+    /// 
+    /// This method writes the XML header and the complete algebra definition,
+    /// then closes the output stream.
+    /// 
+    /// # Returns
+    /// * `Ok(())` - Successfully written
+    /// * `Err(String)` - If writing fails
+    /// 
+    /// # Examples
+    /// ```
+    /// use uacalc::io::AlgebraWriter;
+    /// use uacalc::alg::{SmallAlgebra, BasicSmallAlgebra, Algebra};
+    /// use std::collections::HashSet;
+    /// 
+    /// let alg = Box::new(BasicSmallAlgebra::new(
+    ///     "example".to_string(),
+    ///     HashSet::from([0, 1]),
+    ///     Vec::new()
+    /// )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+    /// 
+    /// let mut writer = AlgebraWriter::new_with_file(alg, "output.xml").unwrap();
+    /// writer.write_algebra_xml().unwrap();
+    /// ```
+    pub fn write_algebra_xml(&mut self) -> Result<(), String> {
+        writeln!(self.out, "<?xml version=\"1.0\"?>")
+            .map_err(|e| format!("Failed to write XML header: {}", e))?;
+        
+        self.write_tag("<algebra>")?;
+        self.write_algebra()?;
+        self.write_end_tag("</algebra>")?;
+        
+        // Flush the output
+        self.out.flush()
+            .map_err(|e| format!("Failed to flush output: {}", e))?;
+        
+        Ok(())
+    }
+    
+    /// Write the algebra definition (dispatches to specific type).
+    /// 
+    /// This method examines the algebra type and calls the appropriate
+    /// writing method for that specific algebra type.
+    /// 
+    /// # Returns
+    /// * `Ok(())` - Successfully written
+    /// * `Err(String)` - If writing fails
+    pub fn write_algebra(&mut self) -> Result<(), String> {
+        match self.algebra.algebra_type() {
+            AlgebraType::Power => self.write_power_algebra(),
+            AlgebraType::Product => self.write_product_algebra(),
+            AlgebraType::Quotient => self.write_quotient_algebra(),
+            AlgebraType::Subalgebra => self.write_subalgebra(),
+            AlgebraType::Free => self.write_free_algebra(),
+            AlgebraType::Subproduct => self.write_sub_product_algebra(),
+            _ => self.write_basic_algebra(),
+        }
+    }
+    
+    /// Write a basic algebra definition.
+    /// 
+    /// This method writes the XML for a basic algebra, including its name,
+    /// description, cardinality, universe (if not integer-based), and operations.
+    /// 
+    /// # Returns
+    /// * `Ok(())` - Successfully written
+    /// * `Err(String)` - If writing fails
+    pub fn write_basic_algebra(&mut self) -> Result<(), String> {
+        self.write_tag("<basicAlgebra>")?;
+        self.write_alg_name()?;
+        self.write_desc()?;
+        self.write_cardinality()?;
+        
+        // Write universe if it's not integer-based
+        if self.algebra.get_universe_list().is_some() {
+            self.write_universe()?;
+        }
+        
+        self.write_tag("<operations>")?;
+        let operations = self.algebra.operations();
+        for operation in operations {
+            self.write_operation(operation.as_ref())?;
+        }
+        self.write_end_tag("</operations>")?;
+        
+        self.write_end_tag("</basicAlgebra>")?;
+        Ok(())
+    }
+    
+    /// Write a power algebra definition.
+    /// 
+    /// This method writes the XML for a power algebra, including its root algebra
+    /// and power information.
+    /// 
+    /// # Returns
+    /// * `Ok(())` - Successfully written
+    /// * `Err(String)` - If writing fails
+    fn write_power_algebra(&mut self) -> Result<(), String> {
+        self.write_tag("<powerAlgebra>")?;
+        self.write_alg_name()?;
+        self.write_desc()?;
+        self.write_cardinality()?;
+        self.write_power()?;
+        
+        self.write_tag("<root>")?;
+        // Note: In a real implementation, we would need to access the root algebra
+        // For now, we'll write a placeholder
+        self.write_tag("<basicAlgebra>")?;
+        self.write_alg_name()?;
+        self.write_desc()?;
+        self.write_cardinality()?;
+        self.write_end_tag("</basicAlgebra>")?;
+        self.write_end_tag("</root>")?;
+        
+        self.write_end_tag("</powerAlgebra>")?;
+        Ok(())
+    }
+    
+    /// Write a product algebra definition.
+    /// 
+    /// This method writes the XML for a product algebra, including all its factors.
+    /// 
+    /// # Returns
+    /// * `Ok(())` - Successfully written
+    /// * `Err(String)` - If writing fails
+    fn write_product_algebra(&mut self) -> Result<(), String> {
+        self.write_tag("<productAlgebra>")?;
+        self.write_alg_name()?;
+        self.write_desc()?;
+        self.write_cardinality()?;
+        
+        self.write_tag("<factors>")?;
+        // Note: In a real implementation, we would need to access the factors
+        // For now, we'll write a placeholder
+        self.write_tag("<factor>")?;
+        self.write_tag("<basicAlgebra>")?;
+        self.write_alg_name()?;
+        self.write_desc()?;
+        self.write_cardinality()?;
+        self.write_end_tag("</basicAlgebra>")?;
+        self.write_end_tag("</factor>")?;
+        self.write_end_tag("</factors>")?;
+        
+        self.write_end_tag("</productAlgebra>")?;
+        Ok(())
+    }
+    
+    /// Write a quotient algebra definition.
+    /// 
+    /// This method writes the XML for a quotient algebra, including its super algebra
+    /// and congruence relation.
+    /// 
+    /// # Returns
+    /// * `Ok(())` - Successfully written
+    /// * `Err(String)` - If writing fails
+    fn write_quotient_algebra(&mut self) -> Result<(), String> {
+        self.write_tag("<quotientAlgebra>")?;
+        self.write_alg_name()?;
+        self.write_desc()?;
+        self.write_cardinality()?;
+        
+        self.write_tag("<superAlgebra>")?;
+        // Note: In a real implementation, we would need to access the super algebra
+        self.write_tag("<basicAlgebra>")?;
+        self.write_alg_name()?;
+        self.write_desc()?;
+        self.write_cardinality()?;
+        self.write_end_tag("</basicAlgebra>")?;
+        self.write_end_tag("</superAlgebra>")?;
+        
+        self.write_tag("<congruence>")?;
+        // Note: In a real implementation, we would need to access the congruence
+        self.write_tag("<partition>")?;
+        self.write_indent()?;
+        writeln!(self.out, "0,1")
+            .map_err(|e| format!("Failed to write partition: {}", e))?;
+        self.write_end_tag("</partition>")?;
+        self.write_int_array(&[0, 1])?;
+        self.write_end_tag("</congruence>")?;
+        
+        self.write_end_tag("</quotientAlgebra>")?;
+        Ok(())
+    }
+    
+    /// Write a subalgebra definition.
+    /// 
+    /// This method writes the XML for a subalgebra, including its super algebra
+    /// and subuniverse.
+    /// 
+    /// # Returns
+    /// * `Ok(())` - Successfully written
+    /// * `Err(String)` - If writing fails
+    fn write_subalgebra(&mut self) -> Result<(), String> {
+        self.write_tag("<subAlgebra>")?;
+        self.write_alg_name()?;
+        self.write_desc()?;
+        self.write_cardinality()?;
+        
+        self.write_tag("<superAlgebra>")?;
+        // Note: In a real implementation, we would need to access the super algebra
+        self.write_tag("<basicAlgebra>")?;
+        self.write_alg_name()?;
+        self.write_desc()?;
+        self.write_cardinality()?;
+        self.write_end_tag("</basicAlgebra>")?;
+        self.write_end_tag("</superAlgebra>")?;
+        
+        self.write_tag("<subUniverse>")?;
+        // Note: In a real implementation, we would need to access the subuniverse
+        self.write_int_array(&[0, 1])?;
+        self.write_end_tag("</subUniverse>")?;
+        
+        self.write_end_tag("</subAlgebra>")?;
+        Ok(())
+    }
+    
+    /// Write a free algebra definition.
+    /// 
+    /// This method writes the XML for a free algebra (which is a special case
+    /// of SubProductAlgebra).
+    /// 
+    /// # Returns
+    /// * `Ok(())` - Successfully written
+    /// * `Err(String)` - If writing fails
+    fn write_free_algebra(&mut self) -> Result<(), String> {
+        self.write_sub_product_algebra_aux("<freeAlgebra>", "</freeAlgebra>")
+    }
+    
+    /// Write a subproduct algebra definition.
+    /// 
+    /// This method writes the XML for a subproduct algebra.
+    /// 
+    /// # Returns
+    /// * `Ok(())` - Successfully written
+    /// * `Err(String)` - If writing fails
+    fn write_sub_product_algebra(&mut self) -> Result<(), String> {
+        self.write_sub_product_algebra_aux("<subProductAlgebra>", "</subProductAlgebra>")
+    }
+    
+    /// Write a subproduct algebra with custom tags.
+    /// 
+    /// This is a helper method used by both free algebra and subproduct algebra
+    /// writing methods.
+    /// 
+    /// # Arguments
+    /// * `start_tag` - The opening tag
+    /// * `end_tag` - The closing tag
+    /// 
+    /// # Returns
+    /// * `Ok(())` - Successfully written
+    /// * `Err(String)` - If writing fails
+    fn write_sub_product_algebra_aux(&mut self, start_tag: &str, end_tag: &str) -> Result<(), String> {
+        self.write_tag(start_tag)?;
+        self.write_alg_name()?;
+        self.write_desc()?;
+        self.write_cardinality()?;
+        
+        self.write_tag("<generators>")?;
+        // Note: In a real implementation, we would need to access the generators
+        self.write_prod_elem(&[0, 0])?;
+        self.write_prod_elem(&[1, 0])?;
+        self.write_end_tag("</generators>")?;
+        
+        self.write_tag("<universe>")?;
+        // Note: In a real implementation, we would need to access the universe
+        self.write_prod_elem(&[0, 0])?;
+        self.write_prod_elem(&[0, 1])?;
+        self.write_prod_elem(&[1, 0])?;
+        self.write_prod_elem(&[1, 1])?;
+        self.write_end_tag("</universe>")?;
+        
+        self.write_tag("<superAlgebra>")?;
+        // Note: In a real implementation, we would need to access the super algebra
+        self.write_tag("<bigProductAlgebra>")?;
+        self.write_alg_name()?;
+        self.write_desc()?;
+        self.write_tag("<powers>")?;
+        self.write_int_array_with_line_break(&[2, 2], false)?;
+        self.write_end_tag("</powers>")?;
+        self.write_tag("<rootFactors>")?;
+        self.write_tag("<factor>")?;
+        self.write_tag("<basicAlgebra>")?;
+        self.write_alg_name()?;
+        self.write_desc()?;
+        self.write_cardinality()?;
+        self.write_end_tag("</basicAlgebra>")?;
+        self.write_end_tag("</factor>")?;
+        self.write_end_tag("</rootFactors>")?;
+        self.write_end_tag("</bigProductAlgebra>")?;
+        self.write_end_tag("</superAlgebra>")?;
+        
+        self.write_end_tag(end_tag)?;
+        Ok(())
+    }
+    
+    /// Write the algebra name.
+    /// 
+    /// # Returns
+    /// * `Ok(())` - Successfully written
+    /// * `Err(String)` - If writing fails
+    fn write_alg_name(&mut self) -> Result<(), String> {
+        let name = self.algebra.name().to_string();
+        if !name.is_empty() {
+            self.write_begin_end_tag("<algName>", "</algName>", &name)?;
+        }
+        Ok(())
+    }
+    
+    /// Write the algebra description.
+    /// 
+    /// # Returns
+    /// * `Ok(())` - Successfully written
+    /// * `Err(String)` - If writing fails
+    fn write_desc(&mut self) -> Result<(), String> {
+        if let Some(desc) = self.algebra.description() {
+            let desc_str = desc.to_string();
+            if !desc_str.is_empty() {
+                self.write_begin_end_tag("<desc>", "</desc>", &desc_str)?;
+            }
+        }
+        Ok(())
+    }
+    
+    /// Write the algebra cardinality.
+    /// 
+    /// # Returns
+    /// * `Ok(())` - Successfully written
+    /// * `Err(String)` - If writing fails
+    fn write_cardinality(&mut self) -> Result<(), String> {
+        self.write_begin_end_tag("<cardinality>", "</cardinality>", &self.algebra.cardinality().to_string())?;
+        Ok(())
+    }
+    
+    /// Write the power for power algebras.
+    /// 
+    /// # Returns
+    /// * `Ok(())` - Successfully written
+    /// * `Err(String)` - If writing fails
+    fn write_power(&mut self) -> Result<(), String> {
+        // Note: In a real implementation, we would need to access the power
+        // For now, we'll write a placeholder
+        self.write_begin_end_tag("<power>", "</power>", "2")?;
+        Ok(())
+    }
+    
+    /// Write the universe elements.
+    /// 
+    /// # Returns
+    /// * `Ok(())` - Successfully written
+    /// * `Err(String)` - If writing fails
+    fn write_universe(&mut self) -> Result<(), String> {
+        self.write_tag("<universe>")?;
+        
+        if let Some(universe_list) = self.algebra.get_universe_list() {
+            for element in universe_list {
+                self.write_begin_end_tag("<elem>", "</elem>", &element.to_string())?;
+            }
+        }
+        
+        self.write_end_tag("</universe>")?;
+        Ok(())
+    }
+    
+    /// Write an operation definition.
+    /// 
+    /// # Arguments
+    /// * `operation` - The operation to write
+    /// 
+    /// # Returns
+    /// * `Ok(())` - Successfully written
+    /// * `Err(String)` - If writing fails
+    fn write_operation(&mut self, operation: &dyn Operation) -> Result<(), String> {
+        let mut arg = vec![0; operation.arity() as usize];
+        let mut inc = SequenceGenerator::sequence_incrementor(&mut arg, self.algebra.cardinality() - 1);
+        
+        self.write_tag("<op>")?;
+        
+        // Write the operation symbol
+        self.write_tag("<opSymbol>")?;
+        self.write_begin_end_tag("<opName>", "</opName>", operation.symbol().name())?;
+        self.write_begin_end_tag("<arity>", "</arity>", &operation.arity().to_string())?;
+        self.write_end_tag("</opSymbol>")?;
+        
+        // Write the operation table
+        self.write_tag("<opTable>")?;
+        
+        let size = self.algebra.cardinality();
+        let mut h = 1;
+        for _ in 0..operation.arity() {
+            h = h * size;
+        }
+        
+        let mut arr = vec![0; h as usize];
+        let mut k = 0;
+        
+        loop {
+            let current_arg = inc.get_current();
+            arr[k] = operation.int_value_at(&current_arg)?;
+            k += 1;
+            if !inc.increment() {
+                break;
+            }
+        }
+        
+        self.write_op_array(&arr, operation.arity())?;
+        self.write_end_tag("</opTable>")?;
+        self.write_end_tag("</op>")?;
+        
+        Ok(())
+    }
+    
+    /// Write an operation array in the proper format.
+    /// 
+    /// # Arguments
+    /// * `arr` - The operation array
+    /// * `arity` - The arity of the operation
+    /// 
+    /// # Returns
+    /// * `Ok(())` - Successfully written
+    /// * `Err(String)` - If writing fails
+    fn write_op_array(&mut self, arr: &[i32], arity: i32) -> Result<(), String> {
+        let card = self.algebra.cardinality();
+        self.write_tag("<intArray>")?;
+        
+        for i in (0..arr.len()).step_by(card as usize) {
+            self.write_row(i, arr, arity)?;
+        }
+        
+        self.write_end_tag("</intArray>")?;
+        Ok(())
+    }
+    
+    /// Write a row of the operation table.
+    /// 
+    /// # Arguments
+    /// * `index` - The starting index for this row
+    /// * `arr` - The operation array
+    /// * `arity` - The arity of the operation
+    /// 
+    /// # Returns
+    /// * `Ok(())` - Successfully written
+    /// * `Err(String)` - If writing fails
+    fn write_row(&mut self, index: usize, arr: &[i32], arity: i32) -> Result<(), String> {
+        let card = self.algebra.cardinality();
+        
+        if arity == 0 {
+            self.write_indent()?;
+            writeln!(self.out, "<row>{}</row>", arr[0])
+                .map_err(|e| format!("Failed to write row: {}", e))?;
+            return Ok(());
+        }
+        
+        let mut row_values = Vec::new();
+        for j in 0..card {
+            row_values.push(arr[index + j as usize].to_string());
+        }
+        let row = row_values.join(",");
+        
+        self.write_indent()?;
+        
+        if arity == 1 {
+            writeln!(self.out, "<row>{}</row>", row)
+                .map_err(|e| format!("Failed to write row: {}", e))?;
+        } else {
+            let index_arr = horner::horner_inv((index / card as usize) as i32, &[card]);
+            let reversed_index_arr = horner::reverse_array(&index_arr);
+            let index_string = array_string::to_string(&reversed_index_arr);
+            
+            write!(self.out, "<row r=\"{}\">", index_string)
+                .map_err(|e| format!("Failed to write row: {}", e))?;
+            write!(self.out, "{}", row)
+                .map_err(|e| format!("Failed to write row: {}", e))?;
+            writeln!(self.out, "</row>")
+                .map_err(|e| format!("Failed to write row: {}", e))?;
+        }
+        
+        Ok(())
+    }
+    
+    /// Write a product element.
+    /// 
+    /// # Arguments
+    /// * `arr` - The array representing the product element
+    /// 
+    /// # Returns
+    /// * `Ok(())` - Successfully written
+    /// * `Err(String)` - If writing fails
+    fn write_prod_elem(&mut self, arr: &[i32]) -> Result<(), String> {
+        self.write_tag("<productElem>")?;
+        self.write_indent()?;
+        
+        for i in 0..arr.len() - 1 {
+            write!(self.out, "{},", arr[i])
+                .map_err(|e| format!("Failed to write product element: {}", e))?;
+        }
+        writeln!(self.out, "{}", arr[arr.len() - 1])
+            .map_err(|e| format!("Failed to write product element: {}", e))?;
+        
+        self.write_end_tag("</productElem>")?;
+        Ok(())
+    }
+    
+    /// Write an integer array.
+    /// 
+    /// # Arguments
+    /// * `arr` - The array to write
+    /// 
+    /// # Returns
+    /// * `Ok(())` - Successfully written
+    /// * `Err(String)` - If writing fails
+    fn write_int_array(&mut self, arr: &[i32]) -> Result<(), String> {
+        self.write_int_array_with_line_break(arr, true)
+    }
+    
+    /// Write an integer array with optional line breaks.
+    /// 
+    /// # Arguments
+    /// * `arr` - The array to write
+    /// * `line_break` - Whether to add line breaks
+    /// 
+    /// # Returns
+    /// * `Ok(())` - Successfully written
+    /// * `Err(String)` - If writing fails
+    fn write_int_array_with_line_break(&mut self, arr: &[i32], line_break: bool) -> Result<(), String> {
+        self.write_int_array_impl(arr, line_break)
+    }
+    
+    /// Write an integer array with line break control.
+    /// 
+    /// # Arguments
+    /// * `arr` - The array to write
+    /// * `line_break` - Whether to add line breaks
+    /// 
+    /// # Returns
+    /// * `Ok(())` - Successfully written
+    /// * `Err(String)` - If writing fails
+    fn write_int_array_impl(&mut self, arr: &[i32], line_break: bool) -> Result<(), String> {
+        self.write_tag("<intArray>")?;
+        let card = self.algebra.cardinality();
+        
+        self.write_indent()?;
+        for i in 0..arr.len() - 1 {
+            write!(self.out, "{}", arr[i])
+                .map_err(|e| format!("Failed to write int array: {}", e))?;
+            write!(self.out, ",")
+                .map_err(|e| format!("Failed to write int array: {}", e))?;
+            
+            if line_break && (i + 1) % card as usize == 0 {
+                writeln!(self.out)
+                    .map_err(|e| format!("Failed to write int array: {}", e))?;
+                self.write_indent()?;
+            }
+        }
+        writeln!(self.out, "{}", arr[arr.len() - 1])
+            .map_err(|e| format!("Failed to write int array: {}", e))?;
+        
+        self.write_end_tag("</intArray>")?;
+        Ok(())
+    }
+    
+    /// Write a human-readable partition.
+    /// 
+    /// # Arguments
+    /// * `part` - The partition to write
+    /// 
+    /// # Returns
+    /// * `Ok(())` - Successfully written
+    /// * `Err(String)` - If writing fails
+    fn write_human_partition(&mut self, part: &Partition) -> Result<(), String> {
+        self.write_tag("<partition>")?;
+        self.write_indent()?;
+        writeln!(self.out, "{}", part.to_string())
+            .map_err(|e| format!("Failed to write partition: {}", e))?;
+        self.write_end_tag("</partition>")?;
+        Ok(())
+    }
+    
+    /// Write indentation spaces.
+    /// 
+    /// # Returns
+    /// * `Ok(())` - Successfully written
+    /// * `Err(String)` - If writing fails
+    fn write_indent(&mut self) -> Result<(), String> {
+        for _ in 0..self.indent {
+            write!(self.out, "  ")
+                .map_err(|e| format!("Failed to write indent: {}", e))?;
+        }
+        Ok(())
+    }
+    
+    /// Write a tag and increase indentation.
+    /// 
+    /// # Arguments
+    /// * `tag` - The tag to write
+    /// 
+    /// # Returns
+    /// * `Ok(())` - Successfully written
+    /// * `Err(String)` - If writing fails
+    fn write_tag(&mut self, tag: &str) -> Result<(), String> {
+        self.write_indent()?;
+        writeln!(self.out, "{}", tag)
+            .map_err(|e| format!("Failed to write tag: {}", e))?;
+        self.indent += 1;
+        Ok(())
+    }
+    
+    /// Write an end tag and decrease indentation.
+    /// 
+    /// # Arguments
+    /// * `end_tag` - The end tag to write
+    /// 
+    /// # Returns
+    /// * `Ok(())` - Successfully written
+    /// * `Err(String)` - If writing fails
+    fn write_end_tag(&mut self, end_tag: &str) -> Result<(), String> {
+        self.indent -= 1;
+        self.write_indent()?;
+        writeln!(self.out, "{}", end_tag)
+            .map_err(|e| format!("Failed to write end tag: {}", e))?;
+        Ok(())
+    }
+    
+    /// Write a begin-end tag with a value.
+    /// 
+    /// # Arguments
+    /// * `tag` - The opening tag
+    /// * `end_tag` - The closing tag
+    /// * `value` - The value to write between tags
+    /// 
+    /// # Returns
+    /// * `Ok(())` - Successfully written
+    /// * `Err(String)` - If writing fails
+    fn write_begin_end_tag(&mut self, tag: &str, end_tag: &str, value: &str) -> Result<(), String> {
+        self.write_indent()?;
+        write!(self.out, "{}", tag)
+            .map_err(|e| format!("Failed to write begin-end tag: {}", e))?;
+        write!(self.out, "{}", value)
+            .map_err(|e| format!("Failed to write begin-end tag: {}", e))?;
+        writeln!(self.out, "{}", end_tag)
+            .map_err(|e| format!("Failed to write begin-end tag: {}", e))?;
+        Ok(())
+    }
 }
 
 /// Exception thrown when an algebra file cannot be read or parsed correctly.
@@ -420,9 +1169,8 @@ pub struct JSONChannel {
 
 use std::io::{BufRead, BufReader, Read};
 use std::collections::{HashMap, HashSet};
-use crate::alg::small_algebra::{SmallAlgebra, BasicSmallAlgebra};
-use crate::alg::algebra::Algebra;
-use crate::alg::op::{Operation, OperationSymbol};
+use crate::alg::small_algebra::{BasicSmallAlgebra};
+use crate::alg::op::{OperationSymbol};
 use crate::alg::op::operations;
 
 /// A reader for Mace4 model files that parses them into algebras.

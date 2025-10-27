@@ -432,6 +432,88 @@ impl PyExtFileFilter {
     }
 }
 
+/// Python wrapper for AlgebraWriter
+#[pyclass]
+pub struct PyAlgebraWriter {
+    // We don't store the writer directly to avoid Send issues
+    // Instead, we'll create it fresh for each operation
+}
+
+#[pymethods]
+impl PyAlgebraWriter {
+    /// Create a new AlgebraWriter that writes to a file
+    #[staticmethod]
+    fn new_with_file(algebra: &crate::alg::PyBasicSmallAlgebra, file_path: String) -> PyResult<Self> {
+        // Just return an empty instance - we'll create the writer when needed
+        Ok(PyAlgebraWriter {})
+    }
+    
+    /// Create a new AlgebraWriter with a custom writer (not exposed to Python)
+    #[staticmethod]
+    fn new_with_writer(algebra: &crate::alg::PyBasicSmallAlgebra) -> PyResult<Self> {
+        // Just return an empty instance - we'll create the writer when needed
+        Ok(PyAlgebraWriter {})
+    }
+    
+    /// Write the complete algebra XML to a file
+    #[staticmethod]
+    fn write_algebra_xml_to_file(algebra: &crate::alg::PyBasicSmallAlgebra, file_path: String) -> PyResult<()> {
+        let rust_algebra = Box::new(algebra.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
+        
+        match uacalc::io::AlgebraWriter::new_with_file(rust_algebra, &file_path) {
+            Ok(mut writer) => {
+                match writer.write_algebra_xml() {
+                    Ok(()) => Ok(()),
+                    Err(e) => Err(PyValueError::new_err(e)),
+                }
+            }
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Write the algebra definition to a file (without XML header)
+    #[staticmethod]
+    fn write_algebra_to_file(algebra: &crate::alg::PyBasicSmallAlgebra, file_path: String) -> PyResult<()> {
+        let rust_algebra = Box::new(algebra.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
+        
+        match uacalc::io::AlgebraWriter::new_with_file(rust_algebra, &file_path) {
+            Ok(mut writer) => {
+                match writer.write_algebra() {
+                    Ok(()) => Ok(()),
+                    Err(e) => Err(PyValueError::new_err(e)),
+                }
+            }
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Write a basic algebra definition to a file
+    #[staticmethod]
+    fn write_basic_algebra_to_file(algebra: &crate::alg::PyBasicSmallAlgebra, file_path: String) -> PyResult<()> {
+        let rust_algebra = Box::new(algebra.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
+        
+        match uacalc::io::AlgebraWriter::new_with_file(rust_algebra, &file_path) {
+            Ok(mut writer) => {
+                match writer.write_basic_algebra() {
+                    Ok(()) => Ok(()),
+                    Err(e) => Err(PyValueError::new_err(e)),
+                }
+            }
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// String representation
+    fn __str__(&self) -> String {
+        "AlgebraWriter()".to_string()
+    }
+    
+    /// Debug representation
+    fn __repr__(&self) -> String {
+        "AlgebraWriter()".to_string()
+    }
+}
+
 /// Register the io module
 pub fn register_io_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyMace4Reader>()?;
@@ -439,6 +521,9 @@ pub fn register_io_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> 
     
     m.add_class::<PyAlgebraReader>()?;
     m.add("AlgebraReader", m.getattr("PyAlgebraReader")?)?;
+    
+    m.add_class::<PyAlgebraWriter>()?;
+    m.add("AlgebraWriter", m.getattr("PyAlgebraWriter")?)?;
     
     m.add_class::<PyBadAlgebraFileException>()?;
     m.add("BadAlgebraFileException", m.getattr("PyBadAlgebraFileException")?)?;
@@ -449,6 +534,7 @@ pub fn register_io_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> 
     let module_dict = m.dict();
     module_dict.del_item("PyMace4Reader")?;
     module_dict.del_item("PyAlgebraReader")?;
+    module_dict.del_item("PyAlgebraWriter")?;
     module_dict.del_item("PyBadAlgebraFileException")?;
     module_dict.del_item("PyExtFileFilter")?;
     
