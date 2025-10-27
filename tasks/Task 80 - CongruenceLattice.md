@@ -254,7 +254,7 @@ pub struct CongruenceLattice {
 - `BigProductAlgebra` - ✅ **IMPLEMENTED** (Task 78) - **COMPLETED** - Full implementation available
 
 **Missing Dependencies (❌ Can be stubbed for initial implementation):**
-- `CentralityData` - ❌ **NOT IMPLEMENTED** (Task 26) - Used in centrality calculations (can be stubbed)
+- `CentralityData` - ✅ **COMPLETED** (Task 26) - Available for centrality calculations
 - `TypeFinder` - ❌ **NOT IMPLEMENTED** (Task 46) - Used in TCT type finding (can be stubbed)
 - `IO` - ❌ **NOT IMPLEMENTED** - Minimal usage, can be excluded
 
@@ -267,7 +267,7 @@ pub struct CongruenceLattice {
 
 **PHASE 2: Advanced Features (LATER)**
 - ✅ `BigProductAlgebra` (Task 78) - **COMPLETED** - Tolerance operations can now be implemented
-- Implement `CentralityData` (Task 26) for centrality calculations  
+- ✅ `CentralityData` (Task 26) - **COMPLETED** - Centrality calculations can now be implemented
 - Implement `TypeFinder` (Task 46) for TCT analysis
 
 #### Recommendations:
@@ -369,7 +369,7 @@ pub fn tg(&self, a: i32, b: i32) -> Result<Box<dyn BinaryRelation>, String> {
 
 **Optional Dependencies (Can be stubbed):**
 - `BigProductAlgebra` (Task 78) - ✅ **IMPLEMENTED** (tolerance methods can now be implemented)
-- `CentralityData` (Task 26) - ❌ **NOT IMPLEMENTED** (stub centrality methods)
+- `CentralityData` (Task 26) - ✅ **COMPLETED** (centrality methods can now be implemented)
 - `TypeFinder` (Task 46) - ❌ **NOT IMPLEMENTED** (stub TCT methods)
 
 ### Estimated Complexity
