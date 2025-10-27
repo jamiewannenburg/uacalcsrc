@@ -143,9 +143,9 @@ The wrapper should be created after these dependencies are implemented.
 - [x] **COMPLETED**: Rust tests pass with timeouts enabled
 - [x] **COMPLETED**: Python tests pass and match Java output
 - [x] **COMPLETED**: Code compiles without warnings
-- [x] **READY**: Lattice methods (con(), sub()) - CongruenceLattice and SubalgebraLattice are now available
-- [ ] **PENDING**: Full implementation including lattice methods
-- [ ] **PENDING**: Full documentation for all methods
+- [x] **COMPLETED**: Lattice methods (con(), sub()) - CongruenceLattice and SubalgebraLattice are now available
+- [x] **COMPLETED**: Full implementation including lattice methods
+- [x] **COMPLETED**: Full documentation for all methods
 
 ## Implemented Methods
 ✅ **Core Methods Implemented:**
@@ -174,5 +174,5 @@ The wrapper should be created after these dependencies are implemented.
 - `__hash__()` - Hash function
 
 ❌ **Deferred Methods (require lattice implementations):**
-- `con()` - Returns congruence lattice (lazy initialization)
-- `sub()` - Returns subalgebra lattice (lazy initialization)
+- `con()` - Returns congruence lattice (lazy initialization) ✅ **COMPLETED**
+- `sub()` - Returns subalgebra lattice (lazy initialization) ✅ **COMPLETED**

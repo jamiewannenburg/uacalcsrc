@@ -53,6 +53,12 @@ pub struct ProductAlgebra {
     
     /// The total cardinality of the product
     size: i32,
+    
+    /// Lazy-initialized congruence lattice
+    con: Option<Box<crate::alg::conlat::CongruenceLattice<i32>>>,
+    
+    /// Lazy-initialized subalgebra lattice
+    sub: Option<Box<crate::alg::sublat::SubalgebraLattice<i32>>>,
 }
 
 impl ProductAlgebra {
@@ -134,6 +140,8 @@ impl ProductAlgebra {
             sizes,
             number_of_products,
             size,
+            con: None,
+            sub: None,
         };
         
         // Create the operations
@@ -353,6 +361,48 @@ impl ProductAlgebra {
         current_operations.extend(operations);
         self.base.set_operations(current_operations);
     }
+    
+    /// Get the congruence lattice (lazy initialization).
+    /// 
+    /// # Returns
+    /// A reference to the congruence lattice
+    pub fn con(&mut self) -> &crate::alg::conlat::CongruenceLattice<i32> {
+        if self.con.is_none() {
+            // Create congruence lattice using the type-erased wrapper
+            use crate::alg::SmallAlgebraWrapper;
+            
+            // Clone this algebra as a trait object
+            let alg_box = Box::new(self.clone()) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+            let wrapper = Box::new(SmallAlgebraWrapper::<i32>::new(alg_box));
+            self.con = Some(Box::new(crate::alg::conlat::CongruenceLattice::<i32>::new(wrapper)));
+        }
+        self.con.as_ref().unwrap()
+    }
+    
+    /// Get the subalgebra lattice (lazy initialization).
+    /// 
+    /// # Returns
+    /// A reference to the subalgebra lattice
+    pub fn sub(&mut self) -> &crate::alg::sublat::SubalgebraLattice<i32> {
+        if self.sub.is_none() {
+            // Create SubalgebraLattice with i32 universe type
+            use crate::alg::SmallAlgebraWrapper;
+            
+            // Clone this algebra as a trait object for the SubalgebraLattice
+            let alg_box = Box::new(self.clone()) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+            let wrapper = Box::new(SmallAlgebraWrapper::<i32>::new(alg_box));
+            
+            match crate::alg::sublat::SubalgebraLattice::new_safe(wrapper) {
+                Ok(sub_lat) => {
+                    self.sub = Some(Box::new(sub_lat));
+                }
+                Err(e) => {
+                    panic!("Failed to create SubalgebraLattice for ProductAlgebra: {}", e);
+                }
+            }
+        }
+        self.sub.as_ref().unwrap()
+    }
 }
 
 impl Debug for ProductAlgebra {
@@ -373,6 +423,8 @@ impl Clone for ProductAlgebra {
             sizes: self.sizes.clone(),
             number_of_products: self.number_of_products,
             size: self.size,
+            con: None, // Don't clone cached lattices
+            sub: None,
         }
     }
 }

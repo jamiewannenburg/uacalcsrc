@@ -202,8 +202,8 @@ pub struct ProductAlgebra {
 - ✅ `AlgebraIO` - **COMPLETED** (Task 65 - implemented in `src/io/algebra_io.rs`)
 
 #### Ready for Implementation (All Dependencies Complete):
-1. **con()**: CongruenceLattice is now available (Task 80 - ✅ **COMPLETED**)
-2. **sub()**: SubalgebraLattice is now available (Task 76 - ✅ **COMPLETED**)
+1. ✅ **con()**: CongruenceLattice is now available (Task 80 - ✅ **COMPLETED**)
+2. ✅ **sub()**: SubalgebraLattice is now available (Task 76 - ✅ **COMPLETED**)
 3. **Sg()**: SubalgebraLattice is now available (Task 76 - ✅ **COMPLETED**)
 4. **sgClose()**: Returns empty list in Java, skipped
 5. **projectionKernel()**: Incomplete in Java source, skipped
@@ -246,8 +246,8 @@ pub struct ProductAlgebra {
 - ✅ All SmallAlgebra trait methods
 
 ### Deferred Methods (Lattice Dependencies)
-- ❌ con() - Requires CongruenceLattice (Task 80)
-- ❌ sub() - Requires SubalgebraLattice (Task 76)
+- ✅ con() - CongruenceLattice now available (Task 80) ✅ **COMPLETED**
+- ✅ sub() - SubalgebraLattice now available (Task 76) ✅ **COMPLETED**
 - ❌ Sg() - Requires SubalgebraLattice (Task 76)
 - ❌ sgClose() - Empty implementation in Java
 - ❌ projectionKernel() - Incomplete in Java
