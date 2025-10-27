@@ -4812,6 +4812,92 @@ impl PyCongruenceLattice {
     }
 }
 
+/// Python wrapper for MaltsevProductDecomposition
+#[pyclass]
+pub struct PyMaltsevProductDecomposition {
+    inner: uacalc::alg::MaltsevProductDecomposition,
+}
+
+#[pymethods]
+impl PyMaltsevProductDecomposition {
+    /// Create a new Maltsev product decomposition.
+    /// 
+    /// Args:
+    ///     algebra (BasicSmallAlgebra): The idempotent algebra to decompose
+    ///     congruence (Partition): A congruence relation on the algebra
+    /// 
+    /// Returns:
+    ///     MaltsevProductDecomposition: The decomposition
+    /// 
+    /// Raises:
+    ///     ValueError: If the algebra or congruence is invalid
+    #[new]
+    fn new(algebra: &PyBasicSmallAlgebra, congruence: &PyPartition) -> PyResult<Self> {
+        // Clone the algebra and congruence
+        let alg_box = algebra.get_inner().clone_box();
+        let cong = congruence.inner.clone();
+        
+        match uacalc::alg::MaltsevProductDecomposition::new_safe(alg_box, cong) {
+            Ok(inner) => Ok(PyMaltsevProductDecomposition { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Get the congruence relation.
+    /// 
+    /// Returns:
+    ///     Partition: The congruence partition
+    fn get_congruence(&self) -> PyPartition {
+        PyPartition {
+            inner: self.inner.get_congruence().clone(),
+        }
+    }
+    
+    /// Get the cardinality of the original algebra.
+    /// 
+    /// Returns:
+    ///     int: The cardinality
+    fn cardinality(&self) -> i32 {
+        self.inner.cardinality()
+    }
+    
+    /// Get the number of block algebras.
+    /// 
+    /// Returns:
+    ///     int: The number of block algebras
+    fn get_block_count(&self) -> usize {
+        self.inner.get_block_algebras().len()
+    }
+    
+    /// Get the cardinality of the quotient algebra.
+    /// 
+    /// Returns:
+    ///     int: The quotient algebra cardinality
+    fn get_quotient_cardinality(&self) -> i32 {
+        self.inner.get_quotient_algebra().cardinality()
+    }
+    
+    /// String representation of the decomposition.
+    /// 
+    /// Returns:
+    ///     str: String representation
+    fn __str__(&self) -> String {
+        format!("{}", self.inner)
+    }
+    
+    /// String representation for debugging.
+    /// 
+    /// Returns:
+    ///     str: Debug string representation
+    fn __repr__(&self) -> String {
+        format!(
+            "MaltsevProductDecomposition(blocks={}, quotient_card={})",
+            self.inner.get_block_algebras().len(),
+            self.inner.get_quotient_algebra().cardinality()
+        )
+    }
+}
+
 pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     // Register classes internally but only export clean names
     m.add_class::<PyOperationSymbol>()?;
@@ -4845,6 +4931,7 @@ pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     m.add_class::<PyParameterizedAlgebra>()?;
     m.add_class::<PyParameterizedOperation>()?;
     m.add_class::<PyReductAlgebra>()?;
+    m.add_class::<PyMaltsevProductDecomposition>()?;
     
     // Export only clean names (without Py prefix)
     m.add("OperationSymbol", m.getattr("PyOperationSymbol")?)?;
@@ -4877,6 +4964,7 @@ pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     m.add("ParameterizedOperation", m.getattr("PyParameterizedOperation")?)?;
     m.add("ReductAlgebra", m.getattr("PyReductAlgebra")?)?;
     m.add("CongruenceLattice", m.getattr("PyCongruenceLattice")?)?;
+    m.add("MaltsevProductDecomposition", m.getattr("PyMaltsevProductDecomposition")?)?;
     
     // Remove the Py* names from the module to avoid confusion
     let module_dict = m.dict();
@@ -4911,6 +4999,7 @@ pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     module_dict.del_item("PyParameterizedAlgebra")?;
     module_dict.del_item("PyParameterizedOperation")?;
     module_dict.del_item("PyReductAlgebra")?;
+    module_dict.del_item("PyMaltsevProductDecomposition")?;
     
     // Export cardinality constants
     m.add("CARDINALITY_UNKNOWN", uacalc::alg::CARDINALITY_UNKNOWN)?;

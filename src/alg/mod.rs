@@ -2653,12 +2653,12 @@ impl Display for UnaryTermsMonoid {
     }
 }
 
+pub mod maltsev_product_decomposition;
+
+pub use maltsev_product_decomposition::MaltsevProductDecomposition;
+
 pub struct MaltsevDecompositionIterator {
     // TODO: Implement Maltsev decomposition iterator
-}
-
-pub struct MaltsevProductDecomposition {
-    // TODO: Implement Maltsev product decomposition
 }
 
 pub struct Malcev {
