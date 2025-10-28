@@ -286,7 +286,7 @@ class TestTypeFinder(unittest.TestCase):
         
         # Test pair (0, 1) - need to create IntArray
         IntArray = uacalc_lib.util.IntArray
-        pair = IntArray([0, 1])
+        pair = IntArray.from_array([0, 1])
         is_subtrace = tf.is_subtrace(pair, ji)
         
         # Compare with Java wrapper
@@ -317,7 +317,7 @@ class TestTypeFinder(unittest.TestCase):
         
         # Test pair (0, 1) - need to create IntArray
         IntArray = uacalc_lib.util.IntArray
-        pair = IntArray([0, 1])
+        pair = IntArray.from_array([0, 1])
         is_subtrace = tf.is_subtrace(pair, ji)
         
         # Compare with Java wrapper
@@ -332,28 +332,36 @@ class TestTypeFinder(unittest.TestCase):
         for name, alg in self.loaded_algebras.items():
             with self.subTest(algebra=name):
                 tf = self.TypeFinder(alg)
-            tf.init()
+                tf.init()
                 
-            # Get join irreducibles
-            con = alg.con()
-            jis = con.join_irreducibles()
-            
-            if len(jis) > 1:
-                # Test multiple join irreducibles
-                for i, ji in enumerate(jis):
-                    with self.subTest(ji_index=i):
-                        # Test find_type
-                        type_result = tf.find_type(ji)
-                        self.assertIsInstance(type_result, int)
-                        self.assertTrue(1 <= type_result <= 5)
-                        
-                        # Test find_subtrace
-                        subtrace = tf.find_subtrace(ji)
-                        self.assertIsNotNone(subtrace)
-                        self.assertIsInstance(subtrace.first(), int)
-                        self.assertIsInstance(subtrace.second(), int)
-                        self.assertIsInstance(subtrace.has_involution(), bool)
-                        self.assertIsInstance(subtrace.type(), int)
+                # Get join irreducibles
+                con = alg.con()
+                jis = con.join_irreducibles()
+                
+                if len(jis) > 1:
+                    # Test multiple join irreducibles
+                    for i, ji in enumerate(jis):
+                        with self.subTest(ji_index=i):
+                            try:
+                                # Test find_type - catch ValueError if not join irreducible
+                                type_result = tf.find_type(ji)
+                                self.assertIsInstance(type_result, int)
+                                self.assertTrue(1 <= type_result <= 5)
+                                
+                                # Test find_subtrace - catch ValueError if not join irreducible
+                                subtrace = tf.find_subtrace(ji)
+                                self.assertIsNotNone(subtrace)
+                                self.assertIsInstance(subtrace.first(), int)
+                                self.assertIsInstance(subtrace.second(), int)
+                                self.assertIsInstance(subtrace.has_involution(), bool)
+                                self.assertIsInstance(subtrace.type(), int)
+                            except ValueError as e:
+                                if "is not join irreducible" in str(e):
+                                    # FAIL the test if join_irreducibles() returns non-join-irreducible partitions
+                                    self.fail(f"join_irreducibles() returned a non-join-irreducible partition {ji}: {e}")
+                                else:
+                                    # Re-raise other ValueError exceptions
+                                    raise
     
     def test_error_handling(self):
         """Test error handling for invalid inputs."""

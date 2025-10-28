@@ -638,12 +638,14 @@ where
                 if part2.leq(part) && part != part2 {
                     join = join.join(part2).unwrap();
                 }
-                if part == &join {
+                // Check if join equals part using a more robust method
+                if join.number_of_blocks() == part.number_of_blocks() && join.leq(part) && part.leq(&join) {
                     break;
                 }
             }
             
-            if part != &join {
+            // Check if part is not equal to join using a more robust method
+            if !(join.number_of_blocks() == part.number_of_blocks() && join.leq(part) && part.leq(&join)) {
                 jis.push(part.clone());
                 lower_covers.insert(part.clone(), join);
             }
