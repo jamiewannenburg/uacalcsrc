@@ -62,7 +62,7 @@ impl PyAbstractOperationNew {
 
     fn arity(&self) -> i32 { self.symbol.arity() }
     fn get_set_size(&self) -> i32 { self.set_size }
-    fn symbol(&self) -> PyOperationSymbol { PyOperationSymbol { inner: self.symbol.clone() } }
+    fn symbol(&self) -> PyOperationSymbol { PyOperationSymbol::from_inner(self.symbol.clone()) }
 
     fn int_value_at(&self, args: Vec<i32>) -> PyResult<i32> {
         if args.len() != self.arity() as usize {
@@ -128,7 +128,7 @@ impl PyAbstractOperationNew {
                     if arity == 0 {
                         all_args.push(Vec::new());
                     } else {
-                        PyAbstractIntOperationNew::generate_args_static(arity, self.set_size, &mut Vec::new(), &mut all_args);
+                        PyAbstractOperationNew::generate_args_static(arity, self.set_size, &mut Vec::new(), &mut all_args);
                     }
 
                     for args in all_args {

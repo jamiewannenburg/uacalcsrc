@@ -1,7 +1,6 @@
 use pyo3::prelude::*;
 
 pub mod alg;
-pub mod alg_bindings;
 pub mod element;
 pub mod eq;
 pub mod example;
@@ -19,7 +18,6 @@ fn uacalc_lib(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     // Algebra module
     let alg_module = PyModule::new_bound(_py, "alg")?;
     alg::register_alg_module(_py, &alg_module)?;
-    alg_bindings::register_alg_bindings(_py, &alg_module)?;
     m.add_submodule(&alg_module)?;
 
     // Element module

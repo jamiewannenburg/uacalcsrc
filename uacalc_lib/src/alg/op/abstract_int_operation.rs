@@ -1,6 +1,6 @@
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
-use uacalc::alg::op::AbstractIntOperation;
+use uacalc::alg::op::{Operation, AbstractIntOperation};
 
 /// Python wrapper for AbstractIntOperation
 #[pyclass]
@@ -37,7 +37,7 @@ impl PyAbstractIntOperation {
     ///     ValueError: If alg_size is invalid
     #[staticmethod]
     fn with_symbol(symbol: &super::operation_symbol::PyOperationSymbol, alg_size: i32) -> PyResult<Self> {
-        match AbstractIntOperation::new_with_symbol_safe(symbol.inner.clone(), alg_size) {
+        match AbstractIntOperation::new_with_symbol_safe(symbol.get_inner().clone(), alg_size) {
             Ok(inner) => Ok(PyAbstractIntOperation { inner }),
             Err(e) => Err(PyValueError::new_err(e)),
         }
@@ -54,11 +54,7 @@ impl PyAbstractIntOperation {
     }
 
     /// Get the operation symbol for this operation.
-    fn symbol(&self) -> super::operation_symbol::PyOperationSymbol {
-        super::operation_symbol::PyOperationSymbol {
-            inner: self.inner.symbol().clone()
-        }
-    }
+    fn symbol(&self) -> super::operation_symbol::PyOperationSymbol { super::operation_symbol::PyOperationSymbol::from_inner(self.inner.symbol().clone()) }
 
     /// Attempt to evaluate the operation (will fail with UnsupportedOperationException).
     ///

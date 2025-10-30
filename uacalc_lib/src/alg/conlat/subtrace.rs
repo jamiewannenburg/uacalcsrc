@@ -1,6 +1,7 @@
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
 use uacalc::util::IntArrayTrait;
+use uacalc::alg::conlat::Subtrace;
 
 /// Python wrapper for Subtrace
 #[pyclass]
@@ -236,4 +237,9 @@ impl PySubtrace {
     fn __ge__(&self, other: &PySubtrace) -> bool {
         self.inner >= other.inner
     }
+}
+
+impl PySubtrace {
+    pub(crate) fn from_inner(inner: Subtrace) -> Self { PySubtrace { inner } }
+    pub(crate) fn get_inner(&self) -> &Subtrace { &self.inner }
 }

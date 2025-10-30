@@ -4,6 +4,9 @@ use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
 use pyo3::types::PyList;
 use pyo3::Bound;
+use crate::alg::PyBasicSmallAlgebra;
+use crate::alg::conlat::partition::PyPartition;
+use crate::util::PyIntArray;
 
 /// Python wrapper for Homomorphism
 #[pyclass]
@@ -51,7 +54,7 @@ impl PyHomomorphism {
     ///     ValueError: If there's an error computing the kernel
     fn kernel(&self) -> PyResult<PyPartition> {
         match self.inner.kernel() {
-            Ok(partition) => Ok(PyPartition { inner: partition }),
+            Ok(partition) => Ok(PyPartition::from_inner(partition)),
             Err(e) => Err(PyValueError::new_err(e)),
         }
     }

@@ -40,7 +40,7 @@ impl PyPolymorphisms {
         let mut rust_pars = Vec::new();
         for item in pars.iter() {
             let py_partition: PyRef<crate::alg::conlat::partition::PyPartition> = item.extract()?;
-            rust_pars.push(py_partition.inner.clone());
+            rust_pars.push(py_partition.get_inner().clone());
         }
         match uacalc::alg::conlat::Polymorphisms::new_safe(arity, rust_pars, idempotent, fixed_values) {
             Ok(inner) => Ok(PyPolymorphisms { inner }),

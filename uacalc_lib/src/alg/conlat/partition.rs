@@ -194,4 +194,5 @@ impl PyPartition {
     pub(crate) fn get_inner(&self) -> &uacalc::alg::conlat::partition::Partition {
         &self.inner
     }
+    pub(crate) fn from_inner(inner: uacalc::alg::conlat::partition::Partition) -> Self { PyPartition { inner } }
 }

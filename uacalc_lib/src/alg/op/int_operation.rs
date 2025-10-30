@@ -1,3 +1,9 @@
+use pyo3::prelude::*;
+use pyo3::exceptions::PyValueError;
+use pyo3::types::{PyAny, PyList};
+use uacalc::alg::op::{IntOperation, Operation};
+use crate::alg::op::operation_symbol::PyOperationSymbol;
+
 /// Python wrapper for IntOperation
 #[pyclass]
 pub struct PyIntOperation {
@@ -19,7 +25,7 @@ impl PyIntOperation {
     fn new(symbol: &PyOperationSymbol, set_size: i32, table: &PyAny) -> PyResult<Self> {
         // Try to convert table to Vec<i32> - handles both lists and numpy arrays
         let table_vec: Vec<i32> = table.extract()?;
-        match IntOperation::new(symbol.inner.clone(), set_size, table_vec) {
+        match IntOperation::new(symbol.get_inner().clone(), set_size, table_vec) {
             Ok(inner) => Ok(PyIntOperation { inner }),
             Err(e) => Err(PyValueError::new_err(e)),
         }
@@ -333,11 +339,7 @@ impl PyIntOperation {
         self.inner.get_set_size()
     }
 
-    fn symbol(&self) -> PyOperationSymbol {
-        PyOperationSymbol {
-            inner: self.inner.symbol().clone()
-        }
-    }
+    fn symbol(&self) -> PyOperationSymbol { PyOperationSymbol::from_inner(self.inner.symbol().clone()) }
 
     fn value_at(&self, args: Vec<i32>) -> PyResult<i32> {
         match self.inner.value_at(&args) {

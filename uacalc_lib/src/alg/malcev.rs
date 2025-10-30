@@ -350,3 +350,4 @@ fn day_quadruple(_a: usize, _b: usize, _c: usize, _d: usize, _algebra: PyObject)
 fn cyclic_term_idempotent(_algebra: PyObject, _arity: usize) -> PyResult<bool> {
     Err(PyValueError::new_err("Cyclic term test not yet implemented"))
 }
+

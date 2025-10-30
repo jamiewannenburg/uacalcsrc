@@ -1,6 +1,6 @@
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
-use uacalc::alg::op::BasicOperation;
+use uacalc::alg::op::{Operation, BasicOperation};
 use crate::alg::PyOperationSymbol;
 
 /// Python wrapper for BasicOperation
@@ -55,27 +55,19 @@ impl PyBasicOperation {
     /// 
     /// Returns:
     ///     OperationSymbol: The operation symbol
-    fn symbol(&self) -> PyOperationSymbol {
-        PyOperationSymbol {
-            inner: self.inner.symbol().clone(),
-        }
-    }
+    fn symbol(&self) -> PyOperationSymbol { PyOperationSymbol::from_inner(self.inner.symbol().clone()) }
     
     /// Get the arity of the operation.
     /// 
     /// Returns:
     ///     int: The arity
-    fn arity(&self) -> i32 {
-        self.inner.arity()
-    }
+    fn arity(&self) -> i32 { self.inner.arity() }
     
     /// Get the set size.
     /// 
     /// Returns:
     ///     int: The set size
-    fn set_size(&self) -> i32 {
-        self.inner.set_size()
-    }
+    fn set_size(&self) -> i32 { self.inner.get_set_size() }
     
     /// Apply the operation to the given arguments.
     /// 
@@ -88,7 +80,7 @@ impl PyBasicOperation {
     /// Raises:
     ///     ValueError: If the arguments are invalid
     fn apply(&self, args: Vec<i32>) -> PyResult<i32> {
-        match self.inner.apply(&args) {
+        match self.inner.value_at(&args) {
             Ok(result) => Ok(result),
             Err(e) => Err(PyValueError::new_err(e)),
         }
@@ -98,9 +90,7 @@ impl PyBasicOperation {
     /// 
     /// Returns:
     ///     List[int]: The operation table
-    fn table(&self) -> Vec<i32> {
-        self.inner.table().clone()
-    }
+    fn table(&self) -> Vec<i32> { self.inner.get_table().map(|s| s.to_vec()).unwrap_or_default() }
     
     /// Python string representation.
     fn __str__(&self) -> String {
@@ -109,10 +99,10 @@ impl PyBasicOperation {
     
     /// Python repr representation.
     fn __repr__(&self) -> String {
-        format!("BasicOperation(symbol={}, arity={}, set_size={})", 
-                self.inner.symbol().name(), 
-                self.inner.arity(), 
-                self.inner.set_size())
+        format!("BasicOperation(symbol={}, arity={}, set_size={})",
+                self.inner.symbol().name(),
+                self.inner.arity(),
+                self.inner.get_set_size())
     }
     
     /// Python equality comparison.

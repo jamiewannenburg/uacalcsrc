@@ -1,7 +1,10 @@
+use pyo3::prelude::*;
+use crate::alg::PyBasicSmallAlgebra;
+
 /// Python wrapper for AlgebraWithGeneratingVector
 #[pyclass]
 pub struct PyAlgebraWithGeneratingVector {
-    inner: uacalc::alg::AlgebraWithGeneratingVector,
+    inner: uacalc::alg::AlgebraWithGeneratingVector<i32>,
 }
 
 #[pymethods]
@@ -18,7 +21,7 @@ impl PyAlgebraWithGeneratingVector {
     fn new(algebra: &PyBasicSmallAlgebra, vector: Vec<i32>) -> Self {
         PyAlgebraWithGeneratingVector {
             inner: uacalc::alg::AlgebraWithGeneratingVector::new(
-                algebra.inner.clone(),
+                Box::new(algebra.inner.clone()),
                 vector,
             ),
         }
@@ -28,19 +31,13 @@ impl PyAlgebraWithGeneratingVector {
     ///
     /// Returns:
     ///     BasicSmallAlgebra: The algebra
-    fn get_algebra(&self) -> PyBasicSmallAlgebra {
-        PyBasicSmallAlgebra {
-            inner: self.inner.get_algebra().clone(),
-        }
-    }
+    fn get_algebra_name(&self) -> String { self.inner.get_algebra().name().to_string() }
 
     /// Get the generating vector.
     ///
     /// Returns:
     ///     List[int]: The generating vector
-    fn get_vector(&self) -> Vec<i32> {
-        self.inner.get_vector().clone()
-    }
+    fn get_vector(&self) -> Vec<i32> { self.inner.get_vector().to_vec() }
 
     /// Python string representation.
     fn __str__(&self) -> String {
@@ -67,7 +64,7 @@ impl PyAlgebraWithGeneratingVector {
         use std::hash::{Hash, Hasher};
 
         let mut hasher = DefaultHasher::new();
-        self.inner.hash(&mut hasher);
+        self.inner.gens_vector.hash(&mut hasher);
         hasher.finish()
     }
 

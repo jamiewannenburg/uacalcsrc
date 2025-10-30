@@ -3,7 +3,6 @@ use pyo3::exceptions::PyValueError;
 use uacalc::alg::conlat::{BasicBinaryRelation, BinaryRelation};
 use uacalc::alg::conlat::partition::Partition;
 use uacalc::util::IntArrayTrait;
-use crate::alg::conlat::{PyBasicBinaryRelation, PyPartition};
 
 /// Python wrapper for CentralityData
 ///
@@ -31,7 +30,7 @@ impl PyCentralityData {
     /// Raises:
     ///     ValueError: If the relations have incompatible universe sizes
     #[new]
-    fn new(left: &crate::alg::conlat::basic_binary_relation::PyBasicBinaryRelation, right: &crate::alg::conlat::basic_binary_relation::PyBasicBinaryRelation, delta: &PyPartition) -> PyResult<Self> {
+    fn new(left: &crate::alg::conlat::basic_binary_relation::PyBasicBinaryRelation, right: &crate::alg::conlat::basic_binary_relation::PyBasicBinaryRelation, delta: &crate::alg::conlat::partition::PyPartition) -> PyResult<Self> {
         // Validate that all relations have the same universe size
         let s_size = left.get_inner().universe_size();
         let t_size = right.get_inner().universe_size();
@@ -72,7 +71,7 @@ impl PyCentralityData {
     /// Returns:
     ///     BasicBinaryRelation: The left tolerance relation
     fn left(&self) -> crate::alg::conlat::basic_binary_relation::PyBasicBinaryRelation {
-        crate::alg::conlat::basic_binary_relation::PyBasicBinaryRelation { inner: self.left.clone() }
+        crate::alg::conlat::basic_binary_relation::PyBasicBinaryRelation::from_inner(self.left.clone())
     }
 
     /// Get the right tolerance relation (T).
@@ -80,15 +79,15 @@ impl PyCentralityData {
     /// Returns:
     ///     BasicBinaryRelation: The right tolerance relation
     fn right(&self) -> crate::alg::conlat::basic_binary_relation::PyBasicBinaryRelation {
-        crate::alg::conlat::basic_binary_relation::PyBasicBinaryRelation { inner: self.right.clone() }
+        crate::alg::conlat::basic_binary_relation::PyBasicBinaryRelation::from_inner(self.right.clone())
     }
 
     /// Get the delta partition.
     ///
     /// Returns:
     ///     Partition: The delta partition
-    fn delta(&self) -> PyPartition {
-        PyPartition { inner: self.delta.clone() }
+    fn delta(&self) -> crate::alg::conlat::partition::PyPartition {
+        crate::alg::conlat::partition::PyPartition::from_inner(self.delta.clone())
     }
 
     /// Compare with another CentralityData.

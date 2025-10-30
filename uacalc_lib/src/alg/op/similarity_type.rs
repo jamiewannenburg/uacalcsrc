@@ -29,7 +29,7 @@ impl PySimilarityType {
         let ops: Vec<uacalc::alg::op::OperationSymbol> = operation_symbols
             .extract::<Vec<PyRef<PyOperationSymbol>>>()?
             .into_iter()
-            .map(|py_op| py_op.inner.clone())
+            .map(|py_op| py_op.get_inner())
             .collect();
 
         match uacalc::alg::op::SimilarityType::new_safe(ops) {
@@ -52,7 +52,7 @@ impl PySimilarityType {
     fn get_operation_symbols(&self) -> Vec<PyOperationSymbol> {
         self.inner.get_operation_symbols()
             .iter()
-            .map(|op| PyOperationSymbol { inner: op.clone() })
+            .map(|op| PyOperationSymbol::from_inner(op.clone()))
             .collect()
     }
 
@@ -65,7 +65,7 @@ impl PySimilarityType {
     fn get_sorted_operation_symbols(&self) -> Vec<PyOperationSymbol> {
         self.inner.get_sorted_operation_symbols()
             .into_iter()
-            .map(|op| PyOperationSymbol { inner: op })
+            .map(|op| PyOperationSymbol::from_inner(op))
             .collect()
     }
 

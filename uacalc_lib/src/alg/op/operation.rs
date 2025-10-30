@@ -25,12 +25,12 @@ impl PyBasicOperation {
     #[pyo3(signature = (symbol, set_size, table=None))]
     fn new(symbol: &PyOperationSymbol, set_size: i32, table: Option<Vec<i32>>) -> PyResult<Self> {
         if let Some(table_vec) = table {
-            match BasicOperation::new_with_table(symbol.inner.clone(), set_size, table_vec) {
+            match BasicOperation::new_with_table(symbol.get_inner().clone(), set_size, table_vec) {
                 Ok(inner) => Ok(PyBasicOperation { inner }),
                 Err(e) => Err(PyValueError::new_err(e)),
             }
         } else {
-            match BasicOperation::new_safe(symbol.inner.clone(), set_size) {
+            match BasicOperation::new_safe(symbol.get_inner().clone(), set_size) {
                 Ok(inner) => Ok(PyBasicOperation { inner }),
                 Err(e) => Err(PyValueError::new_err(e)),
             }
@@ -105,11 +105,7 @@ impl PyBasicOperation {
     ///
     /// Returns:
     ///     OperationSymbol: The operation symbol
-    fn symbol(&self) -> PyOperationSymbol {
-        PyOperationSymbol {
-            inner: self.inner.symbol().clone()
-        }
-    }
+    fn symbol(&self) -> PyOperationSymbol { PyOperationSymbol::from_inner(self.inner.symbol().clone()) }
 
     /// Evaluate the operation at the given arguments.
     ///

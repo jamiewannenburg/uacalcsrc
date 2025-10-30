@@ -2,7 +2,8 @@ use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
 use std::collections::HashMap;
 use uacalc::alg::*;
-use crate::alg::{PyBasicSmallAlgebra, PyPowerAlgebra};
+use crate::alg::PyBasicSmallAlgebra;
+use crate::alg::power_algebra::PyPowerAlgebra;
 use crate::util::PyIntArray;
 
 /// Python wrapper for MatrixPowerAlgebra
@@ -97,14 +98,14 @@ impl PyMatrixPowerAlgebra {
     fn get_power_algebra(&self) -> PyPowerAlgebra {
         // We can't return a reference to the power algebra since it's not cloneable
         // This is a limitation of the current design
-        PyPowerAlgebra { inner: uacalc::alg::PowerAlgebra::new_safe(
+        PyPowerAlgebra::from_inner(uacalc::alg::PowerAlgebra::new_safe(
             Box::new(uacalc::alg::BasicSmallAlgebra::new(
                 "Dummy".to_string(),
                 std::collections::HashSet::new(),
                 Vec::new()
             )) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>,
             1
-        ).unwrap()}
+        ).unwrap())
     }
 
     /// Get the power/exponent.

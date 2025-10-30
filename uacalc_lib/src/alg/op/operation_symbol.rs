@@ -198,4 +198,8 @@ impl PyOperationSymbol {
     pub(crate) fn get_inner(&self) -> uacalc::alg::op::OperationSymbol {
         self.inner.clone()
     }
+
+    pub(crate) fn from_inner(inner: uacalc::alg::op::OperationSymbol) -> Self {
+        PyOperationSymbol { inner }
+    }
 }

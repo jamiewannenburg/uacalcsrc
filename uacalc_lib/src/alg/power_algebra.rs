@@ -3,7 +3,7 @@ use pyo3::exceptions::PyValueError;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 use uacalc::alg::{Algebra, SmallAlgebra};
-use crate::alg::{PyBasicSmallAlgebra, PyCongruenceLattice, PySubalgebraLattice};
+use crate::alg::{PyBasicSmallAlgebra, PySubalgebraLattice};
 
 /// Python wrapper for PowerAlgebra
 #[pyclass]
@@ -219,12 +219,7 @@ impl PyPowerAlgebra {
     ///
     /// Returns:
     ///     CongruenceLattice: The congruence lattice
-    fn con(&mut self) -> PyCongruenceLattice {
-        let con_lat = self.inner.con();
-        PyCongruenceLattice {
-            inner: con_lat.clone(),
-        }
-    }
+    // con() not exposed in bindings currently
 
     /// Get the subalgebra lattice (lazy initialization).
     ///
@@ -232,8 +227,10 @@ impl PyPowerAlgebra {
     ///     SubalgebraLattice: The subalgebra lattice
     fn sub(&mut self) -> PySubalgebraLattice {
         let sub_lat = self.inner.sub();
-        PySubalgebraLattice {
-            inner: std::cell::RefCell::new(sub_lat.clone()),
-        }
+        PySubalgebraLattice::from_inner(sub_lat.clone())
     }
+}
+
+impl PyPowerAlgebra {
+    pub(crate) fn from_inner(inner: uacalc::alg::PowerAlgebra) -> Self { PyPowerAlgebra { inner } }
 }

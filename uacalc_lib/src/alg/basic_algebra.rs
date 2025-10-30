@@ -2,8 +2,7 @@ use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
 use std::collections::HashMap;
 use uacalc::alg::*;
-use crate::alg::conlat::PyCongruenceLattice;
-use crate::alg::sublat::PySubalgebraLattice;
+use crate::alg::PySubalgebraLattice;
 
 /// Python wrapper for BasicSmallAlgebra (for integer universes)
 #[pyclass]
@@ -250,12 +249,7 @@ impl PyBasicSmallAlgebra {
     ///
     /// Returns:
     ///     CongruenceLattice: The congruence lattice
-    fn con(&mut self) -> PyCongruenceLattice {
-        let con_lat = self.inner.con();
-        PyCongruenceLattice {
-            inner: con_lat.clone(),
-        }
-    }
+    // con() not exposed in bindings currently
 
     /// Get the subalgebra lattice (lazy initialization).
     ///
@@ -263,8 +257,6 @@ impl PyBasicSmallAlgebra {
     ///     SubalgebraLattice: The subalgebra lattice
     fn sub(&mut self) -> PySubalgebraLattice {
         let sub_lat = self.inner.sub();
-        PySubalgebraLattice {
-            inner: std::cell::RefCell::new(sub_lat.clone()),
-        }
+        PySubalgebraLattice::from_inner(sub_lat.clone())
     }
 }

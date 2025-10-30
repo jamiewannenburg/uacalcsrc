@@ -1,3 +1,6 @@
+use pyo3::prelude::*;
+use pyo3::exceptions::PyValueError;
+
 /// Python wrapper for BasicSet
 #[pyclass]
 pub struct PyBasicSet {
@@ -191,4 +194,9 @@ impl PyBasicSet {
     fn __ge__(&self, other: &PyBasicSet) -> bool {
         self.inner >= other.inner
     }
+}
+
+impl PyBasicSet {
+    pub(crate) fn get_inner(&self) -> &uacalc::alg::sublat::BasicSet { &self.inner }
+    pub(crate) fn from_inner(inner: uacalc::alg::sublat::BasicSet) -> Self { PyBasicSet { inner } }
 }

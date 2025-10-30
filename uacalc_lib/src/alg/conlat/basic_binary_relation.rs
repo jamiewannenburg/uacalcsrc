@@ -265,4 +265,5 @@ impl PyBasicBinaryRelation {
     pub(crate) fn get_inner(&self) -> &BasicBinaryRelation {
         &self.inner
     }
+    pub(crate) fn from_inner(inner: BasicBinaryRelation) -> Self { PyBasicBinaryRelation { inner } }
 }

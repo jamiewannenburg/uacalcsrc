@@ -5,7 +5,6 @@ use uacalc::alg::conlat::BasicBinaryRelation;
 use uacalc::alg::sublat::BasicSet;
 use uacalc::lat::{Lattice, Order};
 use crate::alg::PyBasicSmallAlgebra;
-use crate::alg::PyCongruenceLattice;
 use crate::alg::PyPartition;
 use crate::alg::PySubalgebraLattice;
 
@@ -62,8 +61,8 @@ impl PySubalgebra {
     /// Raises:
     ///     ValueError: If restriction fails
     fn restrict_partition(&self, par: &PyPartition) -> PyResult<PyPartition> {
-        match self.inner.restrict_partition(&par.inner) {
-            Ok(restricted) => Ok(PyPartition { inner: restricted }),
+        match self.inner.restrict_partition(par.get_inner()) {
+            Ok(restricted) => Ok(PyPartition::from_inner(restricted)),
             Err(e) => Err(PyValueError::new_err(e)),
         }
     }
@@ -155,12 +154,7 @@ impl PySubalgebra {
     ///
     /// Returns:
     ///     CongruenceLattice: The congruence lattice
-    fn con(&mut self) -> PyCongruenceLattice {
-        let con_lat = self.inner.con();
-        PyCongruenceLattice {
-            inner: con_lat.clone(),
-        }
-    }
+    // con() not exposed in bindings currently
 
     /// Get the subalgebra lattice (lazy initialization).
     ///
@@ -168,8 +162,6 @@ impl PySubalgebra {
     ///     SubalgebraLattice: The subalgebra lattice
     fn sub(&mut self) -> PySubalgebraLattice {
         let sub_lat = self.inner.sub();
-        PySubalgebraLattice {
-            inner: std::cell::RefCell::new(sub_lat.clone()),
-        }
+        PySubalgebraLattice::from_inner(sub_lat.clone())
     }
 }

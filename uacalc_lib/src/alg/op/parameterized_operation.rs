@@ -137,3 +137,9 @@ impl PyParameterizedOperation {
         format!("ParameterizedOperation({})", self.inner.to_string())
     }
 }
+
+impl PyParameterizedOperation {
+    pub(crate) fn get_inner(self) -> uacalc::alg::op::ParameterizedOperation {
+        self.inner
+    }
+}

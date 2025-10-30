@@ -26,7 +26,6 @@ pub mod small_algebra;
 pub use basic_algebra::PyBasicSmallAlgebra;
 pub use basic_operation::PyBasicOperation;
 pub use operation_symbol::PyOperationSymbol;
-pub use small_algebra::PySubalgebraLattice;
 pub use conlat::basic_binary_relation::PyBasicBinaryRelation;
 pub use conlat::centrality_data::PyCentralityData;
 pub use conlat::partition::PyPartition;
@@ -34,17 +33,6 @@ pub use op::similarity_type::PySimilarityType;
 pub use op::parameterized_operation::PyParameterizedOperation;
 pub use sublat::basic_set::PyBasicSet;
 pub use sublat::subalgebra_lattice::PySubalgebraLattice;
-
-// Re-export the main types that are used throughout the codebase
-pub use basic_algebra::PyBasicSmallAlgebra;
-pub use basic_operation::PyBasicOperation;
-pub use operation_symbol::PyOperationSymbol;
-pub use small_algebra::PySubalgebraLattice;
-pub use conlat::basic_binary_relation::PyBasicBinaryRelation;
-pub use conlat::centrality_data::PyCentralityData;
-pub use conlat::partition::PyPartition;
-pub use op::similarity_type::PySimilarityType;
-pub use op::parameterized_operation::PyParameterizedOperation;
 
 // Module registration function
 use pyo3::prelude::*;

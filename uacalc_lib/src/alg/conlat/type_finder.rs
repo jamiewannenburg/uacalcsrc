@@ -54,7 +54,7 @@ impl PyTypeFinder {
     /// Raises:
     ///     ValueError: If initialization fails
     fn init_with_alpha(&mut self, alpha: &crate::alg::PyPartition) -> PyResult<()> {
-        match self.inner.init_with_alpha(alpha.inner.clone()) {
+        match self.inner.init_with_alpha(alpha.get_inner().clone()) {
             Ok(()) => Ok(()),
             Err(e) => Err(PyValueError::new_err(e)),
         }
@@ -89,7 +89,7 @@ impl PyTypeFinder {
     /// Raises:
     ///     ValueError: If beta is not join irreducible or other error
     fn is_subtrace(&mut self, ia: &crate::util::PyIntArray, beta: &crate::alg::PyPartition) -> PyResult<bool> {
-        match self.inner.is_subtrace(&ia.inner, &beta.inner) {
+        match self.inner.is_subtrace(&ia.inner, &beta.get_inner()) {
             Ok(result) => Ok(result),
             Err(e) => Err(PyValueError::new_err(e)),
         }
@@ -106,8 +106,8 @@ impl PyTypeFinder {
     /// Raises:
     ///     ValueError: If beta is not join irreducible or computation fails
     fn find_subtrace(&mut self, beta: &crate::alg::PyPartition) -> PyResult<crate::alg::conlat::subtrace::PySubtrace> {
-        match self.inner.find_subtrace(&beta.inner) {
-            Ok(subtrace) => Ok(crate::alg::conlat::subtrace::PySubtrace { inner: subtrace }),
+        match self.inner.find_subtrace(&beta.get_inner()) {
+            Ok(subtrace) => Ok(crate::alg::conlat::subtrace::PySubtrace::from_inner(subtrace)),
             Err(e) => Err(PyValueError::new_err(e)),
         }
     }
@@ -124,8 +124,8 @@ impl PyTypeFinder {
     /// Raises:
     ///     ValueError: If beta is not join irreducible or computation fails
     fn find_subtrace_with_alpha(&mut self, beta: &crate::alg::PyPartition, alpha: &crate::alg::PyPartition) -> PyResult<crate::alg::conlat::subtrace::PySubtrace> {
-        match self.inner.find_subtrace_with_alpha(&beta.inner, &alpha.inner) {
-            Ok(subtrace) => Ok(crate::alg::conlat::subtrace::PySubtrace { inner: subtrace }),
+        match self.inner.find_subtrace_with_alpha(&beta.get_inner(), &alpha.get_inner()) {
+            Ok(subtrace) => Ok(crate::alg::conlat::subtrace::PySubtrace::from_inner(subtrace)),
             Err(e) => Err(PyValueError::new_err(e)),
         }
     }
@@ -142,7 +142,7 @@ impl PyTypeFinder {
     ///     ValueError: If computation fails
     fn find_subtrace_from_pair(&mut self, pair: &crate::util::PyIntArray) -> PyResult<crate::alg::conlat::subtrace::PySubtrace> {
         match self.inner.find_subtrace_from_pair(&pair.inner) {
-            Ok(subtrace) => Ok(crate::alg::conlat::subtrace::PySubtrace { inner: subtrace }),
+            Ok(subtrace) => Ok(crate::alg::conlat::subtrace::PySubtrace::from_inner(subtrace)),
             Err(e) => Err(PyValueError::new_err(e)),
         }
     }
@@ -158,7 +158,7 @@ impl PyTypeFinder {
     /// Raises:
     ///     ValueError: If beta is not join irreducible or computation fails
     fn find_type(&mut self, beta: &crate::alg::PyPartition) -> PyResult<i32> {
-        match self.inner.find_type(&beta.inner) {
+        match self.inner.find_type(&beta.get_inner()) {
             Ok(typ) => Ok(typ),
             Err(e) => Err(PyValueError::new_err(e)),
         }
@@ -176,7 +176,7 @@ impl PyTypeFinder {
     /// Raises:
     ///     ValueError: If beta is not join irreducible or computation fails
     fn find_type_with_alpha(&mut self, beta: &crate::alg::PyPartition, alpha: &crate::alg::PyPartition) -> PyResult<i32> {
-        match self.inner.find_type_with_alpha(&beta.inner, &alpha.inner) {
+        match self.inner.find_type_with_alpha(&beta.get_inner(), &alpha.get_inner()) {
             Ok(typ) => Ok(typ),
             Err(e) => Err(PyValueError::new_err(e)),
         }
@@ -193,7 +193,7 @@ impl PyTypeFinder {
     /// Raises:
     ///     ValueError: If computation fails
     fn find_type_from_subtrace(&self, subtrace: &crate::alg::conlat::subtrace::PySubtrace) -> PyResult<i32> {
-        match self.inner.find_type_from_subtrace(subtrace.inner.clone()) {
+        match self.inner.find_type_from_subtrace(subtrace.get_inner().clone()) {
             Ok(typ) => Ok(typ),
             Err(e) => Err(PyValueError::new_err(e)),
         }

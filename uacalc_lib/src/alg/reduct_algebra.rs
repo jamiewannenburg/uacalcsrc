@@ -5,6 +5,11 @@ use std::collections::HashMap;
 use uacalc::alg::*;
 use uacalc::terms::{VariableImp, Term};
 use crate::util::PyIntArray;
+
+use crate::alg::PyBasicSmallAlgebra;
+use crate::alg::PySubalgebraLattice;
+
+#[pyclass]
 pub struct PyReductAlgebra {
     inner: uacalc::alg::ReductAlgebra,
 }
@@ -187,12 +192,7 @@ impl PyReductAlgebra {
     /// 
     /// Returns:
     ///     CongruenceLattice: The congruence lattice
-    fn con(&mut self) -> PyCongruenceLattice {
-        let con_lat = self.inner.con();
-        PyCongruenceLattice {
-            inner: con_lat.clone(),
-        }
-    }
+    // con() not exposed in bindings currently
     
     /// Get the subalgebra lattice (lazy initialization).
     /// 
@@ -200,9 +200,7 @@ impl PyReductAlgebra {
     ///     SubalgebraLattice: The subalgebra lattice
     fn sub(&mut self) -> PySubalgebraLattice {
         let sub_lat = self.inner.sub();
-        PySubalgebraLattice {
-            inner: std::cell::RefCell::new(sub_lat.clone()),
-        }
+        PySubalgebraLattice::from_inner(sub_lat.clone())
     }
 }
 

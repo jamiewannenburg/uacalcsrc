@@ -11,6 +11,8 @@ use uacalc::alg::sublat::BasicSet;
 use uacalc::lat::{Lattice, Order};
 use crate::util::PyIntArray;
 use crate::eq::PyEquation;
+use crate::alg::PyBasicSmallAlgebra;
+use crate::alg::conlat::partition::PyPartition;
 
 /// Python wrapper for MaltsevProductDecomposition
 #[pyclass]
@@ -35,7 +37,7 @@ impl PyMaltsevProductDecomposition {
     fn new(algebra: &PyBasicSmallAlgebra, congruence: &PyPartition) -> PyResult<Self> {
         // Clone the algebra and congruence
         let alg_box = algebra.clone_box();
-        let cong = congruence.inner.clone();
+        let cong = congruence.get_inner().clone();
 
         match uacalc::alg::MaltsevProductDecomposition::new_safe(alg_box, cong) {
             Ok(inner) => Ok(PyMaltsevProductDecomposition { inner }),
@@ -47,11 +49,7 @@ impl PyMaltsevProductDecomposition {
     ///
     /// Returns:
     ///     Partition: The congruence partition
-    fn get_congruence(&self) -> PyPartition {
-        PyPartition {
-            inner: self.inner.get_congruence().clone(),
-        }
-    }
+    fn get_congruence(&self) -> PyPartition { PyPartition::from_inner(self.inner.get_congruence().clone()) }
 
     /// Get the cardinality of the original algebra.
     ///

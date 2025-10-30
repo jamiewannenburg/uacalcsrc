@@ -28,7 +28,7 @@ impl PyParameterizedAlgebra {
         description: String,
         ops: Vec<PyParameterizedOperation>,
     ) -> Self {
-        let rust_ops = ops.into_iter().map(|op| op.inner).collect();
+        let rust_ops = ops.into_iter().map(|op| op.get_inner()).collect();
         PyParameterizedAlgebra {
             inner: uacalc::alg::ParameterizedAlgebra::new(
                 parameter_names,

@@ -2,7 +2,7 @@ use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
 use std::sync::Arc;
 use uacalc::alg::{BigProductAlgebra, SmallAlgebra, Algebra};
-use crate::alg_bindings::PySmallAlgebra;
+use crate::alg::small_algebra::PySmallAlgebra;
 
 /// Python wrapper for BigProductAlgebra
 #[pyclass(name = "BigProductAlgebra")]

@@ -13,21 +13,346 @@ use uacalc::lat::{Lattice, Order};
 use crate::util::PyIntArray;
 use crate::eq::PyEquation;
 
-pub mod conlat;
-pub mod op;
+/// Python wrapper for OperationSymbol
+#[pyclass]
+pub struct PyOperationSymbol {
+    inner: uacalc::alg::op::OperationSymbol,
+}
 
-use self::conlat::basic_binary_relation::PyBasicBinaryRelation;
-use self::conlat::centrality_data::PyCentralityData;
-use self::conlat::polymorphisms::PyPolymorphisms;
-use self::conlat::subtrace::PySubtrace;
-use self::conlat::type_finder::PyTypeFinder;
-use self::op::abstract_int_operation::PyAbstractIntOperation;
-use self::op::abstract_operation::PyAbstractOperationNew;
-use self::op::int_operation::PyIntOperation;
-use self::op::operation::PyBasicOperation;
-use self::op::operation_symbol::PyOperationSymbol;
-use self::op::similarity_type::PySimilarityType;
+#[pymethods]
+impl PyOperationSymbol {
+    /// Create a new OperationSymbol with the given name and arity.
+    /// 
+    /// Args:
+    ///     name (str): The name of the operation symbol
+    ///     arity (int): The arity (number of operands) of the operation
+    ///     associative (bool, optional): Whether the operation is associative (only valid for binary operations). Defaults to False.
+    /// 
+    /// Raises:
+    ///     ValueError: If associative is True but arity is not 2.
+    #[new]
+    #[pyo3(signature = (name, arity, associative=false))]
+    fn new(name: &str, arity: i32, associative: bool) -> PyResult<Self> {
+        match uacalc::alg::op::OperationSymbol::new_safe(name, arity, associative) {
+            Ok(inner) => Ok(PyOperationSymbol { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Get the arity of this operation symbol.
+    /// 
+    /// Returns:
+    ///     int: The arity of the operation symbol
+    fn arity(&self) -> i32 {
+        self.inner.arity()
+    }
+    
+    /// Get the name of this operation symbol.
+    /// 
+    /// Returns:
+    ///     str: The name of the operation symbol
+    fn name(&self) -> &str {
+        self.inner.name()
+    }
+    
+    /// Check if this operation symbol is marked as associative.
+    /// 
+    /// Only binary operations (arity 2) can be associative.
+    /// 
+    /// Returns:
+    ///     bool: True if the operation is associative, False otherwise
+    fn is_associative(&self) -> bool {
+        self.inner.is_associative()
+    }
+    
+    /// Set whether this operation symbol is associative.
+    /// 
+    /// Args:
+    ///     assoc (bool): Whether the operation should be associative
+    /// 
+    /// Raises:
+    ///     ValueError: If assoc is True but the arity is not 2.
+    fn set_associative(&mut self, assoc: bool) -> PyResult<()> {
+        match self.inner.set_associative(assoc) {
+            Ok(()) => Ok(()),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Convert this operation symbol to a string representation.
+    /// 
+    /// Args:
+    ///     show_arity (bool, optional): Whether to include the arity in the string. Defaults to False.
+    /// 
+    /// Returns:
+    ///     str: String representation of the operation symbol
+    fn to_string_with_arity(&self, show_arity: Option<bool>) -> String {
+        self.inner.to_string_with_arity(show_arity.unwrap_or(false))
+    }
+    
+    /// Get an OperationSymbol in a uniform manner for consistent naming.
+    /// 
+    /// This method generates operation symbols with standardized names
+    /// based on arity, ensuring that similar algebras will have consistent
+    /// operation symbol naming.
+    /// 
+    /// Args:
+    ///     arity (int): The arity of the operation symbol to generate
+    /// 
+    /// Returns:
+    ///     OperationSymbol: A new OperationSymbol with a generated name based on the arity
+    #[staticmethod]
+    fn get_operation_symbol(arity: i32) -> Self {
+        PyOperationSymbol {
+            inner: uacalc::alg::op::OperationSymbol::get_operation_symbol(arity)
+        }
+    }
+    
+    /// Get the JOIN constant (binary operation).
+    #[staticmethod]
+    fn join() -> Self {
+        PyOperationSymbol {
+            inner: uacalc::alg::op::OperationSymbol::join().clone()
+        }
+    }
+    
+    /// Get the MEET constant (binary operation).
+    #[staticmethod]
+    fn meet() -> Self {
+        PyOperationSymbol {
+            inner: uacalc::alg::op::OperationSymbol::meet().clone()
+        }
+    }
+    
+    /// Get the PRODUCT constant (binary operation).
+    #[staticmethod]
+    fn product() -> Self {
+        PyOperationSymbol {
+            inner: uacalc::alg::op::OperationSymbol::product().clone()
+        }
+    }
+    
+    /// Get the INVERSE constant (unary operation).
+    #[staticmethod]
+    fn inverse() -> Self {
+        PyOperationSymbol {
+            inner: uacalc::alg::op::OperationSymbol::inverse().clone()
+        }
+    }
+    
+    /// Get the IDENTITY constant (nullary operation).
+    #[staticmethod]
+    fn identity() -> Self {
+        PyOperationSymbol {
+            inner: uacalc::alg::op::OperationSymbol::identity().clone()
+        }
+    }
+    
+    /// Python string representation.
+    fn __str__(&self) -> String {
+        self.inner.to_string()
+    }
+    
+    /// Python repr representation.
+    fn __repr__(&self) -> String {
+        format!("OperationSymbol(name='{}', arity={}, associative={})", 
+                self.inner.name(), self.inner.arity(), self.inner.is_associative())
+    }
+    
+    /// Python equality comparison.
+    fn __eq__(&self, other: &PyOperationSymbol) -> bool {
+        self.inner == other.inner
+    }
+    
+    /// Python hash function.
+    fn __hash__(&self) -> u64 {
+        use std::collections::hash_map::DefaultHasher;
+        use std::hash::{Hash, Hasher};
+        
+        let mut hasher = DefaultHasher::new();
+        self.inner.hash(&mut hasher);
+        hasher.finish()
+    }
+    
+    /// Python comparison (less than).
+    fn __lt__(&self, other: &PyOperationSymbol) -> bool {
+        self.inner < other.inner
+    }
+    
+    /// Python comparison (less than or equal).
+    fn __le__(&self, other: &PyOperationSymbol) -> bool {
+        self.inner <= other.inner
+    }
+    
+    /// Python comparison (greater than).
+    fn __gt__(&self, other: &PyOperationSymbol) -> bool {
+        self.inner > other.inner
+    }
+    
+    /// Python comparison (greater than or equal).
+    fn __ge__(&self, other: &PyOperationSymbol) -> bool {
+        self.inner >= other.inner
+    }
+}
 
+impl PyOperationSymbol {
+    /// Get the inner OperationSymbol (for internal use)
+    pub(crate) fn get_inner(&self) -> uacalc::alg::op::OperationSymbol {
+        self.inner.clone()
+    }
+}
+
+/// Python wrapper for SimilarityType
+#[pyclass]
+pub struct PySimilarityType {
+    inner: uacalc::alg::op::SimilarityType,
+}
+
+#[pymethods]
+impl PySimilarityType {
+    /// Create a new SimilarityType with the given operation symbols.
+    /// 
+    /// Args:
+    ///     operation_symbols (List[OperationSymbol]): List of operation symbols
+    ///     sort (bool, optional): Whether to sort the operation symbols. Defaults to False.
+    /// 
+    /// Returns:
+    ///     SimilarityType: A new SimilarityType instance
+    #[new]
+    #[pyo3(signature = (operation_symbols, sort=false))]
+    fn new(operation_symbols: &PyAny, sort: bool) -> PyResult<Self> {
+        let ops: Vec<uacalc::alg::op::OperationSymbol> = operation_symbols
+            .extract::<Vec<PyRef<PyOperationSymbol>>>()?
+            .into_iter()
+            .map(|py_op| py_op.inner.clone())
+            .collect();
+        
+        match uacalc::alg::op::SimilarityType::new_safe(ops) {
+            Ok(mut inner) => {
+                if sort {
+                    // Create a new instance with sorted symbols
+                    let sorted_ops = inner.get_sorted_operation_symbols();
+                    inner = uacalc::alg::op::SimilarityType::new(sorted_ops);
+                }
+                Ok(PySimilarityType { inner })
+            },
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Get the operation symbols in this similarity type.
+    /// 
+    /// Returns:
+    ///     List[OperationSymbol]: List of operation symbols
+    fn get_operation_symbols(&self) -> Vec<PyOperationSymbol> {
+        self.inner.get_operation_symbols()
+            .iter()
+            .map(|op| PyOperationSymbol { inner: op.clone() })
+            .collect()
+    }
+    
+    /// Get a sorted list of operation symbols.
+    /// 
+    /// The sorting is by lowest arity first, then by alphabetical order on the name.
+    /// 
+    /// Returns:
+    ///     List[OperationSymbol]: A sorted list of operation symbols
+    fn get_sorted_operation_symbols(&self) -> Vec<PyOperationSymbol> {
+        self.inner.get_sorted_operation_symbols()
+            .into_iter()
+            .map(|op| PyOperationSymbol { inner: op })
+            .collect()
+    }
+    
+    /// Calculate the computer input size for this similarity type.
+    /// 
+    /// If the result exceeds the maximum integer value, returns -1.
+    /// If there are no operations, returns the algebra size.
+    /// 
+    /// Args:
+    ///     alg_size (int): The algebra size
+    /// 
+    /// Returns:
+    ///     int: The input size if it fits in an i32, or -1 if it exceeds the maximum
+    fn input_size(&self, alg_size: i32) -> i32 {
+        self.inner.input_size(alg_size)
+    }
+    
+    /// Get a map from arity to the number of operations of that arity.
+    /// 
+    /// This method caches the result for performance.
+    /// 
+    /// Returns:
+    ///     Dict[int, int]: A dictionary mapping arity to count
+    fn get_arities_map(&mut self) -> std::collections::HashMap<i32, i32> {
+        self.inner.get_arities_map().clone().into_iter().collect()
+    }
+    
+    /// Get the maximum arity among all operation symbols.
+    /// 
+    /// This method caches the result for performance.
+    /// 
+    /// Returns:
+    ///     int: The maximum arity, or -1 if there are no operations
+    fn get_max_arity(&mut self) -> i32 {
+        self.inner.get_max_arity()
+    }
+    
+    /// Get the LATTICE_SIMILARITY_TYPE constant.
+    /// 
+    /// Returns:
+    ///     SimilarityType: The static lattice similarity type
+    #[staticmethod]
+    fn lattice_similarity_type() -> Self {
+        PySimilarityType {
+            inner: uacalc::alg::op::SimilarityType::lattice_similarity_type().clone()
+        }
+    }
+    
+    /// Get the GROUP_SIMILARITY_TYPE constant.
+    /// 
+    /// Returns:
+    ///     SimilarityType: The static group similarity type
+    #[staticmethod]
+    fn group_similarity_type() -> Self {
+        PySimilarityType {
+            inner: uacalc::alg::op::SimilarityType::group_similarity_type().clone()
+        }
+    }
+    
+    /// Generate a string representation of the arities.
+    /// 
+    /// Returns:
+    ///     str: A string describing the arities of operations in this similarity type
+    fn arities_string(&mut self) -> String {
+        self.inner.arities_string()
+    }
+    
+    /// Python string representation.
+    fn __str__(&self) -> String {
+        self.inner.to_string()
+    }
+    
+    /// Python repr representation.
+    fn __repr__(&self) -> String {
+        format!("SimilarityType({})", self.inner.to_string())
+    }
+    
+    /// Python equality comparison.
+    fn __eq__(&self, other: &PySimilarityType) -> bool {
+        self.inner == other.inner
+    }
+    
+    /// Python hash function.
+    fn __hash__(&self) -> u64 {
+        use std::collections::hash_map::DefaultHasher;
+        use std::hash::{Hash, Hasher};
+        
+        let mut hasher = DefaultHasher::new();
+        self.inner.hash(&mut hasher);
+        hasher.finish()
+    }
+}
 
 /// Python wrapper for PrintType
 #[pyclass]
@@ -520,28 +845,186 @@ impl PyPartition {
     }
     
     /// Convert this partition to a BasicBinaryRelation.
-    ///
+    /// 
     /// Since partitions represent equivalence relations, this method creates
     /// a BasicBinaryRelation containing all pairs (i, j) where i and j are
     /// in the same block of the partition.
-    ///
+    /// 
     /// Returns:
     ///     BasicBinaryRelation: A binary relation representing the partition
-    ///
+    /// 
     /// Raises:
     ///     ValueError: If conversion fails
-    fn to_binary_relation(&self) -> PyResult<crate::alg::conlat::basic_binary_relation::PyBasicBinaryRelation> {
+    fn to_binary_relation(&self) -> PyResult<PyBasicBinaryRelation> {
         // Get all pairs from the partition
         let pairs: Vec<uacalc::util::int_array::IntArray> = self.inner.get_pairs().into_iter().collect();
-
+        
         // Create BasicBinaryRelation from the pairs
         match uacalc::alg::conlat::BasicBinaryRelation::from_pairs(pairs, self.inner.universe_size()) {
-            Ok(inner) => Ok(crate::alg::conlat::basic_binary_relation::PyBasicBinaryRelation { inner }),
+            Ok(inner) => Ok(PyBasicBinaryRelation { inner }),
             Err(e) => Err(PyValueError::new_err(e)),
         }
     }
 }
 
+/// Python wrapper for Polymorphisms
+#[pyclass]
+pub struct PyPolymorphisms {
+    inner: uacalc::alg::conlat::Polymorphisms,
+}
+
+#[pymethods]
+impl PyPolymorphisms {
+    /// Create a new Polymorphisms instance with proper error handling.
+    /// 
+    /// Args:
+    ///     arity (int): The arity of the polymorphisms to calculate
+    ///     pars (List[Partition]): The collection of partitions
+    ///     idempotent (bool): Whether to only consider idempotent polymorphisms
+    ///     fixed_values (Optional[List[int]]): Fixed values for the polymorphisms (optional)
+    /// 
+    /// Returns:
+    ///     Polymorphisms: A new Polymorphisms instance
+    /// 
+    /// Raises:
+    ///     ValueError: If validation fails
+    #[new]
+    #[pyo3(signature = (arity, pars, idempotent, fixed_values=None))]
+    fn new(arity: usize, pars: &Bound<'_, PyList>, idempotent: bool, fixed_values: Option<Vec<i32>>) -> PyResult<Self> {
+        let mut rust_pars = Vec::new();
+        for item in pars.iter() {
+            let py_partition: PyRef<PyPartition> = item.extract()?;
+            rust_pars.push(py_partition.inner.clone());
+        }
+        match uacalc::alg::conlat::Polymorphisms::new_safe(arity, rust_pars, idempotent, fixed_values) {
+            Ok(inner) => Ok(PyPolymorphisms { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Get the number of partitions in this collection.
+    /// 
+    /// Returns:
+    ///     int: The number of partitions
+    fn num_partitions(&self) -> usize {
+        self.inner.num_partitions()
+    }
+    
+    /// Get the algebra size.
+    /// 
+    /// Returns:
+    ///     int: The size of the underlying algebra
+    fn get_alg_size(&self) -> usize {
+        self.inner.get_alg_size()
+    }
+    
+    /// Get the arity.
+    /// 
+    /// Returns:
+    ///     int: The arity of the polymorphisms
+    fn get_arity(&self) -> usize {
+        self.inner.get_arity()
+    }
+    
+    /// Check if idempotent polymorphisms are required.
+    /// 
+    /// Returns:
+    ///     bool: True if only idempotent polymorphisms are considered
+    fn is_idempotent(&self) -> bool {
+        self.inner.is_idempotent()
+    }
+    
+    /// Get the fixed values (if any).
+    /// 
+    /// Returns:
+    ///     Optional[List[int]]: The fixed values, or None if not set
+    fn get_fixed_values(&self) -> Option<Vec<i32>> {
+        self.inner.get_fixed_values().cloned()
+    }
+    
+    /// Get the table size.
+    /// 
+    /// Returns:
+    ///     int: The size of the operation table (alg_size^arity)
+    fn get_table_size(&self) -> usize {
+        self.inner.get_table_size()
+    }
+    
+    /// Initialize the graph structure for polymorphism calculations.
+    /// 
+    /// This method creates the graph structure that will be used for
+    /// calculating polymorphisms. The graph is initially empty.
+    /// 
+    /// Returns:
+    ///     None
+    /// 
+    /// Raises:
+    ///     ValueError: If initialization fails
+    fn make_graph(&mut self) -> PyResult<()> {
+        match self.inner.make_graph() {
+            Ok(()) => Ok(()),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Check if the graph has been initialized.
+    /// 
+    /// Returns:
+    ///     bool: True if the graph has been initialized
+    fn has_graph(&self) -> bool {
+        self.inner.has_graph()
+    }
+    
+    /// Set the partial operation table.
+    /// 
+    /// Args:
+    ///     table (List[int]): The operation table to set
+    /// 
+    /// Returns:
+    ///     None
+    /// 
+    /// Raises:
+    ///     ValueError: If validation fails
+    fn set_partial_op_table(&mut self, table: Vec<i32>) -> PyResult<()> {
+        match self.inner.set_partial_op_table(table) {
+            Ok(()) => Ok(()),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Get a reference to the partial operation table (if set).
+    /// 
+    /// Returns:
+    ///     Optional[List[int]]: The operation table, or None if not set
+    fn get_partial_op_table(&self) -> Option<Vec<i32>> {
+        self.inner.get_partial_op_table().cloned()
+    }
+    
+    /// Python string representation.
+    fn __str__(&self) -> String {
+        self.inner.to_string()
+    }
+    
+    /// Python repr representation.
+    fn __repr__(&self) -> String {
+        format!("Polymorphisms({})", self.inner.to_string())
+    }
+    
+    /// Python equality comparison.
+    fn __eq__(&self, other: &PyPolymorphisms) -> bool {
+        self.inner == other.inner
+    }
+    
+    /// Python hash function.
+    fn __hash__(&self) -> u64 {
+        use std::collections::hash_map::DefaultHasher;
+        use std::hash::{Hash, Hasher};
+        
+        let mut hasher = DefaultHasher::new();
+        self.inner.hash(&mut hasher);
+        hasher.finish()
+    }
+}
 
 /// Python wrapper for CentralityData
 /// 
@@ -557,19 +1040,19 @@ pub struct PyCentralityData {
 #[pymethods]
 impl PyCentralityData {
     /// Create a new CentralityData.
-    ///
+    /// 
     /// Args:
     ///     left (BasicBinaryRelation): The left tolerance relation (S)
     ///     right (BasicBinaryRelation): The right tolerance relation (T)
     ///     delta (Partition): The congruence delta
-    ///
+    /// 
     /// Returns:
     ///     CentralityData: A new CentralityData instance
-    ///
+    /// 
     /// Raises:
     ///     ValueError: If the relations have incompatible universe sizes
     #[new]
-    fn new(left: &crate::alg::conlat::basic_binary_relation::PyBasicBinaryRelation, right: &crate::alg::conlat::basic_binary_relation::PyBasicBinaryRelation, delta: &PyPartition) -> PyResult<Self> {
+    fn new(left: &PyBasicBinaryRelation, right: &PyBasicBinaryRelation, delta: &PyPartition) -> PyResult<Self> {
         // Validate that all relations have the same universe size
         let s_size = left.inner.universe_size();
         let t_size = right.inner.universe_size();
@@ -606,19 +1089,19 @@ impl PyCentralityData {
     }
     
     /// Get the left tolerance relation (S).
-    ///
+    /// 
     /// Returns:
     ///     BasicBinaryRelation: The left tolerance relation
-    fn left(&self) -> crate::alg::conlat::basic_binary_relation::PyBasicBinaryRelation {
-        crate::alg::conlat::basic_binary_relation::PyBasicBinaryRelation { inner: self.left.clone() }
+    fn left(&self) -> PyBasicBinaryRelation {
+        PyBasicBinaryRelation { inner: self.left.clone() }
     }
-
+    
     /// Get the right tolerance relation (T).
-    ///
+    /// 
     /// Returns:
     ///     BasicBinaryRelation: The right tolerance relation
-    fn right(&self) -> crate::alg::conlat::basic_binary_relation::PyBasicBinaryRelation {
-        crate::alg::conlat::basic_binary_relation::PyBasicBinaryRelation { inner: self.right.clone() }
+    fn right(&self) -> PyBasicBinaryRelation {
+        PyBasicBinaryRelation { inner: self.right.clone() }
     }
     
     /// Get the delta partition.
@@ -702,9 +1185,1182 @@ impl PyCentralityData {
     }
 }
 
+/// Python wrapper for BasicOperation
+#[pyclass]
+pub struct PyBasicOperation {
+    inner: BasicOperation,
+}
 
+#[pymethods]
+impl PyBasicOperation {
+    /// Create a new AbstractOperation with the given symbol and set size.
+    /// 
+    /// Args:
+    ///     symbol (OperationSymbol): The operation symbol
+    ///     set_size (int): The size of the set on which the operation is defined
+    /// 
+    /// Raises:
+    ///     ValueError: If set_size is invalid
+    #[new]
+    #[pyo3(signature = (symbol, set_size, table=None))]
+    fn new(symbol: &PyOperationSymbol, set_size: i32, table: Option<Vec<i32>>) -> PyResult<Self> {
+        if let Some(table_vec) = table {
+            match BasicOperation::new_with_table(symbol.inner.clone(), set_size, table_vec) {
+                Ok(inner) => Ok(PyBasicOperation { inner }),
+                Err(e) => Err(PyValueError::new_err(e)),
+            }
+        } else {
+            match BasicOperation::new_safe(symbol.inner.clone(), set_size) {
+                Ok(inner) => Ok(PyBasicOperation { inner }),
+                Err(e) => Err(PyValueError::new_err(e)),
+            }
+        }
+    }
+    
+    /// Create a simple binary operation for testing.
+    /// 
+    /// Args:
+    ///     name (str): The name of the operation
+    ///     set_size (int): The size of the set
+    /// 
+    /// Returns:
+    ///     AbstractOperation: A new AbstractOperation instance
+    #[staticmethod]
+    fn simple_binary_op(name: &str, set_size: i32) -> PyResult<Self> {
+        match BasicOperation::simple_binary_op(name, set_size) {
+            Ok(inner) => Ok(PyBasicOperation { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Create a simple unary operation for testing.
+    /// 
+    /// Args:
+    ///     name (str): The name of the operation
+    ///     set_size (int): The size of the set
+    /// 
+    /// Returns:
+    ///     AbstractOperation: A new AbstractOperation instance
+    #[staticmethod]
+    fn simple_unary_op(name: &str, set_size: i32) -> PyResult<Self> {
+        match BasicOperation::simple_unary_op(name, set_size) {
+            Ok(inner) => Ok(PyBasicOperation { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Create a simple nullary operation for testing.
+    /// 
+    /// Args:
+    ///     name (str): The name of the operation
+    ///     set_size (int): The size of the set
+    /// 
+    /// Returns:
+    ///     AbstractOperation: A new AbstractOperation instance
+    #[staticmethod]
+    fn simple_nullary_op(name: &str, set_size: i32) -> PyResult<Self> {
+        match BasicOperation::simple_nullary_op(name, set_size) {
+            Ok(inner) => Ok(PyBasicOperation { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Get the arity of this operation.
+    /// 
+    /// Returns:
+    ///     int: The number of arguments this operation takes
+    fn arity(&self) -> i32 {
+        self.inner.arity()
+    }
+    
+    /// Get the size of the set upon which the operation is defined.
+    /// 
+    /// Returns:
+    ///     int: The size of the underlying set
+    fn get_set_size(&self) -> i32 {
+        self.inner.get_set_size()
+    }
+    
+    /// Get the operation symbol for this operation.
+    /// 
+    /// Returns:
+    ///     OperationSymbol: The operation symbol
+    fn symbol(&self) -> PyOperationSymbol {
+        PyOperationSymbol {
+            inner: self.inner.symbol().clone()
+        }
+    }
+    
+    /// Evaluate the operation at the given arguments.
+    /// 
+    /// Args:
+    ///     args (List[int]): Arguments for the operation
+    /// 
+    /// Returns:
+    ///     int: The result of the operation
+    /// 
+    /// Raises:
+    ///     ValueError: If arguments are invalid
+    fn value_at(&self, args: Vec<i32>) -> PyResult<i32> {
+        match self.inner.value_at(&args) {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Evaluate the operation on arrays of arguments.
+    /// 
+    /// Args:
+    ///     args (List[List[int]]): Arrays of arguments
+    /// 
+    /// Returns:
+    ///     List[int]: Array of results
+    /// 
+    /// Raises:
+    ///     ValueError: If arguments are invalid
+    fn value_at_arrays(&self, args: Vec<Vec<i32>>) -> PyResult<Vec<i32>> {
+        let arg_refs: Vec<&[i32]> = args.iter().map(|v| v.as_slice()).collect();
+        match self.inner.value_at_arrays(&arg_refs) {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Integer version of the operation evaluation.
+    /// 
+    /// Args:
+    ///     args (List[int]): Integer arguments
+    /// 
+    /// Returns:
+    ///     int: The result of the operation
+    /// 
+    /// Raises:
+    ///     ValueError: If arguments are invalid
+    fn int_value_at(&self, args: Vec<i32>) -> PyResult<i32> {
+        match self.inner.int_value_at(&args) {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Fast table access using Horner encoding.
+    /// 
+    /// Args:
+    ///     arg (int): The Horner encoding of the actual args
+    /// 
+    /// Returns:
+    ///     int: The result of the operation
+    /// 
+    /// Raises:
+    ///     ValueError: If argument is invalid or table doesn't exist
+    fn int_value_at_horner(&self, arg: i32) -> PyResult<i32> {
+        match self.inner.int_value_at_horner(arg) {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Create a table for faster operation evaluation.
+    /// 
+    /// Raises:
+    ///     ValueError: If table creation fails
+    fn make_table(&mut self) -> PyResult<()> {
+        match self.inner.make_table() {
+            Ok(()) => Ok(()),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Get the table for this operation.
+    /// 
+    /// Returns:
+    ///     List[int] or None: The operation table or None if it doesn't exist
+    fn get_table(&self) -> Option<Vec<i32>> {
+        self.inner.get_table().map(|slice| slice.to_vec())
+    }
+    
+    /// Get the table, creating it if necessary.
+    /// 
+    /// Args:
+    ///     make_table (bool): Whether to create the table if it doesn't exist
+    /// 
+    /// Returns:
+    ///     List[int]: The operation table
+    /// 
+    /// Raises:
+    ///     ValueError: If table creation fails
+    fn get_table_force(&mut self, make_table: bool) -> PyResult<Vec<i32>> {
+        match self.inner.get_table_force(make_table) {
+            Ok(slice) => Ok(slice.to_vec()),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Check if this operation is table-based.
+    /// 
+    /// Returns:
+    ///     bool: True if the operation uses a precomputed table
+    fn is_table_based(&self) -> bool {
+        self.inner.is_table_based()
+    }
+    
+    /// Check if this operation is idempotent.
+    /// 
+    /// Returns:
+    ///     bool: True if f(x,x,...,x) = x for all x
+    /// 
+    /// Raises:
+    ///     ValueError: If the check fails
+    fn is_idempotent(&self) -> PyResult<bool> {
+        match self.inner.is_idempotent() {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Check if this operation is binary and associative.
+    /// 
+    /// Returns:
+    ///     bool: True if the operation is binary and associative
+    /// 
+    /// Raises:
+    ///     ValueError: If the check fails
+    fn is_associative(&self) -> PyResult<bool> {
+        match self.inner.is_associative() {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Check if this operation is binary and commutative.
+    /// 
+    /// Returns:
+    ///     bool: True if the operation is binary and commutative
+    /// 
+    /// Raises:
+    ///     ValueError: If the check fails
+    fn is_commutative(&self) -> PyResult<bool> {
+        match self.inner.is_commutative() {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Check if this operation is totally symmetric.
+    /// 
+    /// Returns:
+    ///     bool: True if the operation is invariant under all variable permutations
+    /// 
+    /// Raises:
+    ///     ValueError: If the check fails
+    fn is_totally_symmetric(&self) -> PyResult<bool> {
+        match self.inner.is_totally_symmetric() {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Check if this is a Maltsev operation.
+    /// 
+    /// Returns:
+    ///     bool: True if the operation is a Maltsev operation
+    /// 
+    /// Raises:
+    ///     ValueError: If the check fails
+    fn is_maltsev(&self) -> PyResult<bool> {
+        match self.inner.is_maltsev() {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Check if this operation is total.
+    /// 
+    /// Returns:
+    ///     bool: True if the operation is total
+    /// 
+    /// Raises:
+    ///     ValueError: If the check fails
+    fn is_total(&self) -> PyResult<bool> {
+        match self.inner.is_total() {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Python string representation.
+    fn __str__(&self) -> String {
+        self.inner.to_string()
+    }
+    
+    /// Python repr representation.
+    fn __repr__(&self) -> String {
+        format!("BasicOperation({})", self.inner.to_string())
+    }
+    
+    /// Python equality comparison.
+    fn __eq__(&self, other: &PyBasicOperation) -> bool {
+        self.inner == other.inner
+    }
+    
+    /// Python hash function.
+    fn __hash__(&self) -> u64 {
+        use std::collections::hash_map::DefaultHasher;
+        use std::hash::{Hash, Hasher};
+        
+        let mut hasher = DefaultHasher::new();
+        self.inner.hash(&mut hasher);
+        hasher.finish()
+    }
+    
+    /// Python comparison (less than).
+    fn __lt__(&self, other: &PyBasicOperation) -> bool {
+        self.inner < other.inner
+    }
+    
+    /// Python comparison (less than or equal).
+    fn __le__(&self, other: &PyBasicOperation) -> bool {
+        self.inner <= other.inner
+    }
+    
+    /// Python comparison (greater than).
+    fn __gt__(&self, other: &PyBasicOperation) -> bool {
+        self.inner > other.inner
+    }
+    
+    /// Python comparison (greater than or equal).
+    fn __ge__(&self, other: &PyBasicOperation) -> bool {
+        self.inner >= other.inner
+    }
+}
 
+/// Python wrapper for IntOperation
+#[pyclass]
+pub struct PyIntOperation {
+    inner: IntOperation,
+}
 
+#[pymethods]
+impl PyIntOperation {
+    /// Create a new IntOperation with the given parameters.
+    /// 
+    /// Args:
+    ///     symbol (OperationSymbol): The operation symbol
+    ///     set_size (int): The size of the set on which the operation is defined
+    ///     table (List[int] or numpy.ndarray): The precomputed table of operation results
+    /// 
+    /// Raises:
+    ///     ValueError: If parameters are invalid
+    #[new]
+    fn new(symbol: &PyOperationSymbol, set_size: i32, table: &PyAny) -> PyResult<Self> {
+        // Try to convert table to Vec<i32> - handles both lists and numpy arrays
+        let table_vec: Vec<i32> = table.extract()?;
+        match IntOperation::new(symbol.inner.clone(), set_size, table_vec) {
+            Ok(inner) => Ok(PyIntOperation { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Create a binary XOR operation for testing.
+    /// 
+    /// Args:
+    ///     name (str): The name of the operation
+    /// 
+    /// Returns:
+    ///     IntOperation: A new IntOperation implementing XOR on {0, 1}
+    #[staticmethod]
+    fn binary_xor(name: &str) -> PyResult<Self> {
+        match IntOperation::binary_xor(name) {
+            Ok(inner) => Ok(PyIntOperation { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Create a binary AND operation for testing.
+    /// 
+    /// Args:
+    ///     name (str): The name of the operation
+    /// 
+    /// Returns:
+    ///     IntOperation: A new IntOperation implementing AND on {0, 1}
+    #[staticmethod]
+    fn binary_and(name: &str) -> PyResult<Self> {
+        match IntOperation::binary_and(name) {
+            Ok(inner) => Ok(PyIntOperation { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Create a binary OR operation for testing.
+    /// 
+    /// Args:
+    ///     name (str): The name of the operation
+    /// 
+    /// Returns:
+    ///     IntOperation: A new IntOperation implementing OR on {0, 1}
+    #[staticmethod]
+    fn binary_or(name: &str) -> PyResult<Self> {
+        match IntOperation::binary_or(name) {
+            Ok(inner) => Ok(PyIntOperation { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Create a unary NOT operation for testing.
+    /// 
+    /// Args:
+    ///     name (str): The name of the operation
+    /// 
+    /// Returns:
+    ///     IntOperation: A new IntOperation implementing NOT on {0, 1}
+    #[staticmethod]
+    fn unary_not(name: &str) -> PyResult<Self> {
+        match IntOperation::unary_not(name) {
+            Ok(inner) => Ok(PyIntOperation { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Create a nullary constant operation for testing.
+    /// 
+    /// Args:
+    ///     name (str): The name of the operation
+    ///     constant_value (int): The constant value to return
+    /// 
+    /// Returns:
+    ///     IntOperation: A new IntOperation returning the constant value
+    #[staticmethod]
+    fn nullary_constant(name: &str, constant_value: i32) -> PyResult<Self> {
+        match IntOperation::nullary_constant(name, constant_value) {
+            Ok(inner) => Ok(PyIntOperation { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Create an IntOperation from a Python function (int_value_at style).
+    /// 
+    /// Args:
+    ///     name (str): The name of the operation
+    ///     arity (int): The arity (number of arguments) of the operation
+    ///     set_size (int): The size of the set on which the operation is defined
+    ///     int_value_at_fn (callable): A Python function that takes a list of integers and returns an integer
+    /// 
+    /// Returns:
+    ///     IntOperation: A new IntOperation that uses the provided function
+    /// 
+    /// Example:
+    ///     def my_op(args):
+    ///         return (args[0] + args[1]) % 3
+    ///     op = IntOperation.from_int_value_at("add_mod3", 2, 3, my_op)
+    #[staticmethod]
+    fn from_int_value_at(name: &str, arity: i32, set_size: i32, int_value_at_fn: PyObject) -> PyResult<Self> {
+        Python::with_gil(|py| {
+            // Create the operation table by evaluating the function for all possible inputs
+            let symbol = match uacalc::alg::op::OperationSymbol::new_safe(name, arity, false) {
+                Ok(sym) => sym,
+                Err(e) => return Err(PyValueError::new_err(e)),
+            };
+            
+            let table_size = if arity == 0 { 1 } else { (set_size as usize).pow(arity as u32) };
+            let mut table = Vec::with_capacity(table_size);
+            
+            // Generate all possible argument combinations and evaluate the function
+            fn generate_args(arity: i32, set_size: i32, current: &mut Vec<i32>, all_args: &mut Vec<Vec<i32>>) {
+                if current.len() == arity as usize {
+                    all_args.push(current.clone());
+                    return;
+                }
+                for i in 0..set_size {
+                    current.push(i);
+                    generate_args(arity, set_size, current, all_args);
+                    current.pop();
+                }
+            }
+            
+            let mut all_args = Vec::new();
+            if arity == 0 {
+                all_args.push(Vec::new());
+            } else {
+                generate_args(arity, set_size, &mut Vec::new(), &mut all_args);
+            }
+            
+            // Evaluate function for each argument combination
+            for args in all_args {
+                let py_args = PyList::new_bound(py, &args);
+                let result = int_value_at_fn.call1(py, (py_args,))?;
+                let result_int: i32 = result.extract(py)?;
+                
+                // Validate result is in range
+                if result_int < 0 || result_int >= set_size {
+                    return Err(PyValueError::new_err(format!(
+                        "Function returned {} which is out of range [0, {})", 
+                        result_int, set_size
+                    )));
+                }
+                
+                table.push(result_int);
+            }
+            
+            // Create IntOperation with computed table
+            match IntOperation::new(symbol, set_size, table) {
+                Ok(inner) => Ok(PyIntOperation { inner }),
+                Err(e) => Err(PyValueError::new_err(e)),
+            }
+        })
+    }
+    
+    /// Create an IntOperation from a Python function (value_at style for non-integer universes).
+    /// 
+    /// Args:
+    ///     name (str): The name of the operation
+    ///     arity (int): The arity (number of arguments) of the operation
+    ///     universe (list): The universe elements (e.g., ["a", "b", "c"])
+    ///     value_at_fn (callable): A Python function that takes a list of universe elements and returns a universe element
+    /// 
+    /// Returns:
+    ///     IntOperation: A new IntOperation that uses the provided function (with integer indices)
+    /// 
+    /// Example:
+    ///     def string_concat(args):
+    ///         return args[0] + args[1]
+    ///     op = IntOperation.from_value_at("concat", 2, ["a", "b", "c"], string_concat)
+    #[staticmethod]
+    fn from_value_at(name: &str, arity: i32, universe: Vec<PyObject>, value_at_fn: PyObject) -> PyResult<Self> {
+        Python::with_gil(|py| {
+            let set_size = universe.len() as i32;
+            
+            // Create the operation table by evaluating the function for all possible inputs
+            let symbol = match uacalc::alg::op::OperationSymbol::new_safe(name, arity, false) {
+                Ok(sym) => sym,
+                Err(e) => return Err(PyValueError::new_err(e)),
+            };
+            
+            let table_size = if arity == 0 { 1 } else { (set_size as usize).pow(arity as u32) };
+            let mut table = Vec::with_capacity(table_size);
+            
+            // Generate all possible argument combinations and evaluate the function
+            fn generate_indices(arity: i32, set_size: i32, current: &mut Vec<i32>, all_indices: &mut Vec<Vec<i32>>) {
+                if current.len() == arity as usize {
+                    all_indices.push(current.clone());
+                    return;
+                }
+                for i in 0..set_size {
+                    current.push(i);
+                    generate_indices(arity, set_size, current, all_indices);
+                    current.pop();
+                }
+            }
+            
+            let mut all_indices = Vec::new();
+            if arity == 0 {
+                all_indices.push(Vec::new());
+            } else {
+                generate_indices(arity, set_size, &mut Vec::new(), &mut all_indices);
+            }
+            
+            // Evaluate function for each argument combination
+            for indices in all_indices {
+                // Convert indices to universe elements
+                let mut universe_args = Vec::new();
+                for &idx in &indices {
+                    if idx < 0 || idx >= set_size {
+                        return Err(PyValueError::new_err("Index out of universe bounds"));
+                    }
+                    universe_args.push(universe[idx as usize].clone());
+                }
+                
+                let py_args = PyList::new_bound(py, &universe_args);
+                let result = value_at_fn.call1(py, (py_args,))?;
+                
+                // Find the index of the result in the universe
+                let mut result_index = None;
+                for (i, universe_elem) in universe.iter().enumerate() {
+                    if result.bind(py).eq(universe_elem)? {
+                        result_index = Some(i as i32);
+                        break;
+                    }
+                }
+                
+                match result_index {
+                    Some(idx) => table.push(idx),
+                    None => return Err(PyValueError::new_err(
+                        "Function returned a value not in the universe"
+                    )),
+                }
+            }
+            
+            // Create IntOperation with computed table
+            match IntOperation::new(symbol, set_size, table) {
+                Ok(inner) => Ok(PyIntOperation { inner }),
+                Err(e) => Err(PyValueError::new_err(e)),
+            }
+        })
+    }
+    
+    /// Create an IntOperation from a 2D array/matrix (for binary operations).
+    /// 
+    /// Args:
+    ///     name (str): The name of the operation
+    ///     operation_matrix (List[List[int]] or 2D numpy.ndarray): A 2D array where entry [i][j] gives the result of operation(i, j)
+    /// 
+    /// Returns:
+    ///     IntOperation: A new IntOperation based on the matrix
+    /// 
+    /// Example:
+    ///     # XOR operation matrix
+    ///     matrix = [[0, 1], [1, 0]]
+    ///     op = IntOperation.from_matrix("xor", matrix)
+    #[staticmethod]
+    fn from_matrix(name: &str, operation_matrix: &PyAny) -> PyResult<Self> {
+        Python::with_gil(|_py| {
+            // Extract the 2D matrix
+            let matrix: Vec<Vec<i32>> = operation_matrix.extract()?;
+            
+            if matrix.is_empty() {
+                return Err(PyValueError::new_err("Operation matrix cannot be empty"));
+            }
+            
+            let set_size = matrix.len() as i32;
+            
+            // Validate matrix is square and all rows have the same length
+            for (i, row) in matrix.iter().enumerate() {
+                if row.len() != set_size as usize {
+                    return Err(PyValueError::new_err(format!(
+                        "Row {} has length {} but expected {} (matrix must be square)",
+                        i, row.len(), set_size
+                    )));
+                }
+                
+                // Validate all values are in range
+                for (j, &value) in row.iter().enumerate() {
+                    if value < 0 || value >= set_size {
+                        return Err(PyValueError::new_err(format!(
+                            "Value {} at position [{}, {}] is out of range [0, {})",
+                            value, i, j, set_size
+                        )));
+                    }
+                }
+            }
+            
+            // Convert matrix to flat table (row-major order for binary operations)
+            let mut table = Vec::with_capacity((set_size * set_size) as usize);
+            for row in &matrix {
+                table.extend_from_slice(row);
+            }
+            
+            let symbol = match uacalc::alg::op::OperationSymbol::new_safe(name, 2, false) {
+                Ok(sym) => sym,
+                Err(e) => return Err(PyValueError::new_err(e)),
+            };
+            
+            match IntOperation::new(symbol, set_size, table) {
+                Ok(inner) => Ok(PyIntOperation { inner }),
+                Err(e) => Err(PyValueError::new_err(e)),
+            }
+        })
+    }
+    
+    // Include all the same methods as PyAbstractOperation
+    fn arity(&self) -> i32 {
+        self.inner.arity()
+    }
+    
+    fn get_set_size(&self) -> i32 {
+        self.inner.get_set_size()
+    }
+    
+    fn symbol(&self) -> PyOperationSymbol {
+        PyOperationSymbol {
+            inner: self.inner.symbol().clone()
+        }
+    }
+    
+    fn value_at(&self, args: Vec<i32>) -> PyResult<i32> {
+        match self.inner.value_at(&args) {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    fn value_at_arrays(&self, args: Vec<Vec<i32>>) -> PyResult<Vec<i32>> {
+        let arg_refs: Vec<&[i32]> = args.iter().map(|v| v.as_slice()).collect();
+        match self.inner.value_at_arrays(&arg_refs) {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    fn int_value_at(&self, args: Vec<i32>) -> PyResult<i32> {
+        match self.inner.int_value_at(&args) {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    fn int_value_at_horner(&self, arg: i32) -> PyResult<i32> {
+        match self.inner.int_value_at_horner(arg) {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    fn make_table(&mut self) -> PyResult<()> {
+        match self.inner.make_table() {
+            Ok(()) => Ok(()),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    fn get_table(&self) -> Option<Vec<i32>> {
+        self.inner.get_table().map(|slice| slice.to_vec())
+    }
+    
+    fn get_table_force(&mut self, make_table: bool) -> PyResult<Vec<i32>> {
+        match self.inner.get_table_force(make_table) {
+            Ok(slice) => Ok(slice.to_vec()),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    fn is_table_based(&self) -> bool {
+        self.inner.is_table_based()
+    }
+    
+    fn is_idempotent(&self) -> PyResult<bool> {
+        match self.inner.is_idempotent() {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    fn is_associative(&self) -> PyResult<bool> {
+        match self.inner.is_associative() {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    fn is_commutative(&self) -> PyResult<bool> {
+        match self.inner.is_commutative() {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    fn is_totally_symmetric(&self) -> PyResult<bool> {
+        match self.inner.is_totally_symmetric() {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    fn is_maltsev(&self) -> PyResult<bool> {
+        match self.inner.is_maltsev() {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    fn is_total(&self) -> PyResult<bool> {
+        match self.inner.is_total() {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    fn __str__(&self) -> String {
+        self.inner.to_string()
+    }
+    
+    fn __repr__(&self) -> String {
+        format!("IntOperation({})", self.inner.to_string())
+    }
+    
+    fn __eq__(&self, other: &PyIntOperation) -> bool {
+        self.inner == other.inner
+    }
+    
+    fn __hash__(&self) -> u64 {
+        use std::collections::hash_map::DefaultHasher;
+        use std::hash::{Hash, Hasher};
+        
+        let mut hasher = DefaultHasher::new();
+        self.inner.hash(&mut hasher);
+        hasher.finish()
+    }
+    
+    fn __lt__(&self, other: &PyIntOperation) -> bool {
+        self.inner < other.inner
+    }
+    
+    fn __le__(&self, other: &PyIntOperation) -> bool {
+        self.inner <= other.inner
+    }
+    
+    fn __gt__(&self, other: &PyIntOperation) -> bool {
+        self.inner > other.inner
+    }
+    
+    fn __ge__(&self, other: &PyIntOperation) -> bool {
+        self.inner >= other.inner
+    }
+}
+
+/// Python wrapper for AbstractIntOperation
+#[pyclass]
+pub struct PyAbstractIntOperation {
+    inner: AbstractIntOperation,
+}
+
+#[pymethods]
+impl PyAbstractIntOperation {
+    /// Create a new AbstractIntOperation with name, arity, and algebra size.
+    /// 
+    /// Args:
+    ///     name (str): The name of the operation
+    ///     arity (int): The arity (number of arguments) of the operation
+    ///     alg_size (int): The size of the algebra set
+    /// 
+    /// Raises:
+    ///     ValueError: If parameters are invalid
+    #[new]
+    fn new(name: &str, arity: i32, alg_size: i32) -> PyResult<Self> {
+        match AbstractIntOperation::new_safe(name, arity, alg_size) {
+            Ok(inner) => Ok(PyAbstractIntOperation { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Create a new AbstractIntOperation with an existing OperationSymbol.
+    /// 
+    /// Args:
+    ///     symbol (OperationSymbol): The operation symbol
+    ///     alg_size (int): The size of the algebra set
+    /// 
+    /// Raises:
+    ///     ValueError: If alg_size is invalid
+    #[staticmethod]
+    fn with_symbol(symbol: &PyOperationSymbol, alg_size: i32) -> PyResult<Self> {
+        match AbstractIntOperation::new_with_symbol_safe(symbol.inner.clone(), alg_size) {
+            Ok(inner) => Ok(PyAbstractIntOperation { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Get the arity of this operation.
+    fn arity(&self) -> i32 {
+        self.inner.arity()
+    }
+    
+    /// Get the size of the set upon which the operation is defined.
+    fn get_set_size(&self) -> i32 {
+        self.inner.get_set_size()
+    }
+    
+    /// Get the operation symbol for this operation.
+    fn symbol(&self) -> PyOperationSymbol {
+        PyOperationSymbol {
+            inner: self.inner.symbol().clone()
+        }
+    }
+    
+    /// Attempt to evaluate the operation (will fail with UnsupportedOperationException).
+    /// 
+    /// Args:
+    ///     args (List[int]): Arguments for the operation
+    /// 
+    /// Raises:
+    ///     ValueError: Always raises since this method is not implemented
+    fn value_at(&self, args: Vec<i32>) -> PyResult<i32> {
+        match self.inner.value_at(&args) {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Attempt integer operation evaluation (will fail with UnsupportedOperationException).
+    /// 
+    /// Args:
+    ///     args (List[int]): Integer arguments
+    /// 
+    /// Raises:
+    ///     ValueError: Always raises since this method is not implemented
+    fn int_value_at(&self, args: Vec<i32>) -> PyResult<i32> {
+        match self.inner.int_value_at(&args) {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Check if this operation is total.
+    fn is_total(&self) -> PyResult<bool> {
+        match self.inner.is_total() {
+            Ok(result) => Ok(result),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Python string representation.
+    fn __str__(&self) -> String {
+        self.inner.to_string()
+    }
+    
+    /// Python repr representation.
+    fn __repr__(&self) -> String {
+        format!("AbstractIntOperation({})", self.inner.to_string())
+    }
+    
+    /// Python equality comparison.
+    fn __eq__(&self, other: &PyAbstractIntOperation) -> bool {
+        self.inner == other.inner
+    }
+    
+    /// Python hash function.
+    fn __hash__(&self) -> u64 {
+        use std::collections::hash_map::DefaultHasher;
+        use std::hash::{Hash, Hasher};
+        
+        let mut hasher = DefaultHasher::new();
+        self.inner.hash(&mut hasher);
+        hasher.finish()
+    }
+}
+
+/// Python wrapper for Subtrace
+#[pyclass]
+pub struct PySubtrace {
+    inner: Subtrace,
+}
+
+#[pymethods]
+impl PySubtrace {
+    /// Create a new Subtrace with given elements and involution flag.
+    /// 
+    /// Args:
+    ///     a (int): First element of the subtrace pair
+    ///     b (int): Second element of the subtrace pair
+    ///     has_involution (bool): Whether this subtrace has involution
+    /// 
+    /// Returns:
+    ///     Subtrace: A new Subtrace instance with type set to -1
+    #[new]
+    fn new(a: i32, b: i32, has_involution: bool) -> Self {
+        PySubtrace {
+            inner: Subtrace::new(a, b, has_involution)
+        }
+    }
+    
+    /// Create a new Subtrace with given elements, involution flag, and type.
+    /// 
+    /// Args:
+    ///     a (int): First element of the subtrace pair
+    ///     b (int): Second element of the subtrace pair
+    ///     has_involution (bool): Whether this subtrace has involution
+    ///     type_value (int): TCT type classification
+    /// 
+    /// Returns:
+    ///     Subtrace: A new Subtrace instance with the specified type
+    #[staticmethod]
+    fn new_with_type(a: i32, b: i32, has_involution: bool, type_value: i32) -> Self {
+        PySubtrace {
+            inner: Subtrace::new_with_type(a, b, has_involution, type_value)
+        }
+    }
+    
+    /// Get the first element of the subtrace pair.
+    /// 
+    /// Returns:
+    ///     int: The first element `a`
+    fn first(&self) -> i32 {
+        self.inner.first()
+    }
+    
+    /// Get the second element of the subtrace pair.
+    /// 
+    /// Returns:
+    ///     int: The second element `b`
+    fn second(&self) -> i32 {
+        self.inner.second()
+    }
+    
+    /// Get the TCT type classification.
+    /// 
+    /// Returns:
+    ///     int: The type value (-1 if not set)
+    fn type_value(&self) -> i32 {
+        self.inner.type_value()
+    }
+    
+    /// Get the TCT type classification (alias for type_value).
+    /// 
+    /// Returns:
+    ///     int: The type value (-1 if not set)
+    fn r#type(&self) -> i32 {
+        self.inner.type_value()
+    }
+    
+    /// Check if this subtrace has involution.
+    /// 
+    /// Returns:
+    ///     bool: True if the subtrace has involution, False otherwise
+    fn has_involution(&self) -> bool {
+        self.inner.has_involution()
+    }
+    
+    /// Set the TCT type classification.
+    /// 
+    /// Args:
+    ///     type_value (int): The type to set
+    fn set_type(&mut self, type_value: i32) {
+        self.inner.set_type(type_value);
+    }
+    
+    /// Get the subtrace universe.
+    /// 
+    /// Returns:
+    ///     List[List[int]] or None: The subtrace universe as list of pairs, or None if not set
+    fn get_subtrace_universe(&self) -> Option<Vec<Vec<i32>>> {
+        self.inner.get_subtrace_universe().map(|universe| {
+            universe.iter().map(|int_array| {
+                let mut vec = Vec::new();
+                for i in 0..int_array.universe_size() {
+                    vec.push(int_array.get(i).unwrap());
+                }
+                vec
+            }).collect()
+        })
+    }
+    
+    /// Set the subtrace universe.
+    /// 
+    /// Args:
+    ///     universe (List[List[int]]): The subtrace universe to set
+    /// 
+    /// Raises:
+    ///     ValueError: If any array doesn't have exactly 2 elements
+    fn set_subtrace_universe(&mut self, universe: Vec<Vec<i32>>) -> PyResult<()> {
+        let int_arrays: Result<Vec<_>, _> = universe.iter()
+            .map(|arr| {
+                if arr.len() != 2 {
+                    Err(format!("Each subtrace universe element must have exactly 2 elements, got {}", arr.len()))
+                } else {
+                    Ok(uacalc::util::int_array::IntArray::from_array(arr.clone()).unwrap())
+                }
+            })
+            .collect();
+        
+        match int_arrays {
+            Ok(arrays) => {
+                self.inner.set_subtrace_universe(arrays);
+                Ok(())
+            }
+            Err(e) => Err(PyValueError::new_err(e))
+        }
+    }
+    
+    /// Get the matrix universe.
+    /// 
+    /// Returns:
+    ///     List[List[int]] or None: The matrix universe as list of 4-tuples, or None if not set
+    fn get_matrix_universe(&self) -> Option<Vec<Vec<i32>>> {
+        self.inner.get_matrix_universe().map(|universe| {
+            universe.iter().map(|int_array| {
+                let mut vec = Vec::new();
+                for i in 0..int_array.universe_size() {
+                    vec.push(int_array.get(i).unwrap());
+                }
+                vec
+            }).collect()
+        })
+    }
+    
+    /// Set the matrix universe.
+    /// 
+    /// Args:
+    ///     universe (List[List[int]]): The matrix universe to set
+    /// 
+    /// Raises:
+    ///     ValueError: If any array doesn't have exactly 4 elements
+    fn set_matrix_universe(&mut self, universe: Vec<Vec<i32>>) -> PyResult<()> {
+        let int_arrays: Result<Vec<_>, _> = universe.iter()
+            .map(|arr| {
+                if arr.len() != 4 {
+                    Err(format!("Each matrix universe element must have exactly 4 elements, got {}", arr.len()))
+                } else {
+                    Ok(uacalc::util::int_array::IntArray::from_array(arr.clone()).unwrap())
+                }
+            })
+            .collect();
+        
+        match int_arrays {
+            Ok(arrays) => {
+                self.inner.set_matrix_universe(arrays);
+                Ok(())
+            }
+            Err(e) => Err(PyValueError::new_err(e))
+        }
+    }
+    
+    /// Get a string representation in brief format.
+    /// 
+    /// Args:
+    ///     brief (bool): If True, returns brief format [a, b], otherwise full format
+    /// 
+    /// Returns:
+    ///     str: String representation of the subtrace
+    fn to_string_brief(&self, brief: bool) -> String {
+        self.inner.to_string_brief(brief)
+    }
+    
+    /// Python string representation.
+    fn __str__(&self) -> String {
+        self.inner.to_string()
+    }
+    
+    /// Python repr representation.
+    fn __repr__(&self) -> String {
+        format!("Subtrace({}, {}, {}, {})", 
+                self.inner.first(), 
+                self.inner.second(), 
+                self.inner.has_involution(),
+                self.inner.type_value())
+    }
+    
+    /// Python equality comparison.
+    fn __eq__(&self, other: &PySubtrace) -> bool {
+        self.inner == other.inner
+    }
+    
+    /// Python hash function.
+    fn __hash__(&self) -> u64 {
+        use std::collections::hash_map::DefaultHasher;
+        use std::hash::{Hash, Hasher};
+        
+        let mut hasher = DefaultHasher::new();
+        self.inner.hash(&mut hasher);
+        hasher.finish()
+    }
+    
+    /// Python comparison (less than).
+    fn __lt__(&self, other: &PySubtrace) -> bool {
+        self.inner < other.inner
+    }
+    
+    /// Python comparison (less than or equal).
+    fn __le__(&self, other: &PySubtrace) -> bool {
+        self.inner <= other.inner
+    }
+    
+    /// Python comparison (greater than).
+    fn __gt__(&self, other: &PySubtrace) -> bool {
+        self.inner > other.inner
+    }
+    
+    /// Python comparison (greater than or equal).
+    fn __ge__(&self, other: &PySubtrace) -> bool {
+        self.inner >= other.inner
+    }
+}
 
 /// Python wrapper for TypeFinder
 #[pyclass]
@@ -2373,6 +4029,200 @@ impl PyOperations {
     }
 }
 
+/// Python wrapper for BasicSet
+#[pyclass]
+pub struct PyBasicSet {
+    inner: BasicSet,
+}
+
+#[pymethods]
+impl PyBasicSet {
+    /// Create a new BasicSet from a list of elements.
+    /// 
+    /// Args:
+    ///     elements (List[int]): List of integers to include in the set
+    /// 
+    /// Returns:
+    ///     BasicSet: A new BasicSet instance
+    /// 
+    /// Raises:
+    ///     ValueError: If elements contain invalid values
+    #[new]
+    fn new(elements: Vec<i32>) -> PyResult<Self> {
+        match BasicSet::new_safe(elements) {
+            Ok(inner) => Ok(PyBasicSet { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Get the elements of the set.
+    /// 
+    /// Returns:
+    ///     List[int]: The sorted elements of the set
+    fn elements(&self) -> Vec<i32> {
+        self.inner.elements().clone()
+    }
+    
+    /// Get the size of the set (number of elements).
+    /// 
+    /// Returns:
+    ///     int: The number of elements in the set
+    fn size(&self) -> usize {
+        self.inner.size()
+    }
+    
+    /// Get the universe size (same as size for BasicSet).
+    /// 
+    /// Returns:
+    ///     int: The number of elements in the set
+    fn universe_size(&self) -> usize {
+        self.inner.universe_size()
+    }
+    
+    /// Normalize the set by sorting elements and removing duplicates.
+    fn normalize(&mut self) {
+        self.inner.normalize();
+    }
+    
+    /// Check if this set is a subset of another set.
+    /// 
+    /// Args:
+    ///     other (BasicSet): The set to compare against
+    /// 
+    /// Returns:
+    ///     bool: True if this set is a subset of other
+    fn leq(&self, other: &PyBasicSet) -> bool {
+        self.inner.leq(&other.inner)
+    }
+    
+    /// Static method to check if one array is a subset of another.
+    /// 
+    /// Args:
+    ///     u (List[int]): First array (sorted)
+    ///     v (List[int]): Second array (sorted)
+    /// 
+    /// Returns:
+    ///     bool: True if u is a subset of v
+    #[staticmethod]
+    fn leq_static(u: Vec<i32>, v: Vec<i32>) -> bool {
+        BasicSet::leq_static(&u, &v)
+    }
+    
+    /// Check if the set contains a specific element.
+    /// 
+    /// Args:
+    ///     element (int): The element to search for
+    /// 
+    /// Returns:
+    ///     bool: True if the element is in the set
+    fn contains(&self, element: i32) -> bool {
+        self.inner.contains(element)
+    }
+    
+    /// Compute the set difference (this - other).
+    /// 
+    /// Args:
+    ///     other (BasicSet): The set to subtract
+    /// 
+    /// Returns:
+    ///     BasicSet: A new BasicSet containing elements in this set but not in other
+    fn set_difference(&self, other: &PyBasicSet) -> PyBasicSet {
+        PyBasicSet { inner: self.inner.set_difference(&other.inner) }
+    }
+    
+    /// Compute the intersection of this set with another.
+    /// 
+    /// Args:
+    ///     other (BasicSet): The set to intersect with
+    /// 
+    /// Returns:
+    ///     BasicSet: A new BasicSet containing elements in both sets
+    fn intersection(&self, other: &PyBasicSet) -> PyBasicSet {
+        PyBasicSet { inner: self.inner.intersection(&other.inner) }
+    }
+    
+    /// Static method to compute the intersection of two sets.
+    /// 
+    /// Args:
+    ///     set1 (BasicSet): First set
+    ///     set2 (BasicSet): Second set
+    /// 
+    /// Returns:
+    ///     BasicSet: A new BasicSet containing elements in both sets
+    #[staticmethod]
+    fn intersection_static(set1: &PyBasicSet, set2: &PyBasicSet) -> PyBasicSet {
+        PyBasicSet { inner: BasicSet::intersection_static(&set1.inner, &set2.inner) }
+    }
+    
+    /// Compute the union of this set with another.
+    /// 
+    /// Args:
+    ///     other (BasicSet): The set to union with
+    /// 
+    /// Returns:
+    ///     BasicSet: A new BasicSet containing elements from both sets
+    fn union(&self, other: &PyBasicSet) -> PyBasicSet {
+        PyBasicSet { inner: self.inner.union(&other.inner) }
+    }
+    
+    /// Static method to compute the union of two sets.
+    /// 
+    /// Args:
+    ///     set1 (BasicSet): First set
+    ///     set2 (BasicSet): Second set
+    /// 
+    /// Returns:
+    ///     BasicSet: A new BasicSet containing elements from both sets
+    #[staticmethod]
+    fn union_static(set1: &PyBasicSet, set2: &PyBasicSet) -> PyBasicSet {
+        PyBasicSet { inner: BasicSet::union_static(&set1.inner, &set2.inner) }
+    }
+    
+    /// Python string representation
+    fn __str__(&self) -> String {
+        self.inner.to_string()
+    }
+    
+    /// Python repr representation
+    fn __repr__(&self) -> String {
+        format!("BasicSet({})", self.inner.to_string())
+    }
+    
+    /// Python equality comparison
+    fn __eq__(&self, other: &PyBasicSet) -> bool {
+        self.inner == other.inner
+    }
+    
+    /// Python hash function
+    fn __hash__(&self) -> u64 {
+        use std::collections::hash_map::DefaultHasher;
+        use std::hash::{Hash, Hasher};
+        
+        let mut hasher = DefaultHasher::new();
+        self.inner.hash(&mut hasher);
+        hasher.finish()
+    }
+    
+    /// Python less than comparison
+    fn __lt__(&self, other: &PyBasicSet) -> bool {
+        self.inner < other.inner
+    }
+    
+    /// Python less than or equal comparison
+    fn __le__(&self, other: &PyBasicSet) -> bool {
+        self.inner <= other.inner
+    }
+    
+    /// Python greater than comparison
+    fn __gt__(&self, other: &PyBasicSet) -> bool {
+        self.inner > other.inner
+    }
+    
+    /// Python greater than or equal comparison
+    fn __ge__(&self, other: &PyBasicSet) -> bool {
+        self.inner >= other.inner
+    }
+}
 
 /// Python wrapper for SubalgebraLattice
 #[pyclass]
@@ -2721,6 +4571,141 @@ impl PyParameterizedAlgebra {
     }
 }
 
+/// Python wrapper for ParameterizedOperation
+#[pyclass]
+#[derive(Clone)]
+pub struct PyParameterizedOperation {
+    inner: uacalc::alg::op::ParameterizedOperation,
+}
+
+#[pymethods]
+impl PyParameterizedOperation {
+    /// Create a new ParameterizedOperation.
+    /// 
+    /// Args:
+    ///     name (str): Name of the operation
+    ///     symbol_name (str): Symbol name for the operation
+    ///     set_size_exp (str): Expression for set size
+    ///     parameter_names (list[str]): Names of the parameters
+    ///     arity_exp (str): Expression for arity
+    ///     description (str): Description of the operation
+    ///     default_value_exp (str): Expression for default value
+    ///     definition_exp (str): Expression for operation definition
+    #[new]
+    fn new(
+        name: String,
+        symbol_name: String,
+        set_size_exp: String,
+        parameter_names: Vec<String>,
+        arity_exp: String,
+        description: String,
+        default_value_exp: String,
+        definition_exp: String,
+    ) -> Self {
+        PyParameterizedOperation {
+            inner: uacalc::alg::op::ParameterizedOperation::new(
+                name,
+                symbol_name,
+                set_size_exp,
+                parameter_names,
+                arity_exp,
+                description,
+                default_value_exp,
+                definition_exp,
+            )
+        }
+    }
+    
+    /// Substitute parameter values in a parameterized string.
+    /// 
+    /// This is a simplified version that performs basic string substitution
+    /// without full expression parsing.
+    /// 
+    /// Args:
+    ///     parameterized_string (str): String containing parameter references
+    ///     parm_map (dict[str, str]): Map from parameter names to values
+    /// 
+    /// Returns:
+    ///     str: The string with parameters substituted
+    #[staticmethod]
+    fn sub_parm_values(parameterized_string: String, parm_map: HashMap<String, String>) -> String {
+        uacalc::alg::op::ParameterizedOperation::sub_parm_values(&parameterized_string, &parm_map)
+    }
+    
+    /// Get the operation name.
+    /// 
+    /// Returns:
+    ///     str: The name of the operation
+    fn get_name(&self) -> String {
+        self.inner.name.clone()
+    }
+    
+    /// Get the symbol name.
+    /// 
+    /// Returns:
+    ///     str: The symbol name
+    fn get_symbol_name(&self) -> String {
+        self.inner.symbol_name.clone()
+    }
+    
+    /// Get the set size expression.
+    /// 
+    /// Returns:
+    ///     str: The set size expression
+    fn get_set_size_exp(&self) -> String {
+        self.inner.set_size_exp.clone()
+    }
+    
+    /// Get the parameter names.
+    /// 
+    /// Returns:
+    ///     list[str]: List of parameter names
+    fn get_parameter_names(&self) -> Vec<String> {
+        self.inner.parameter_names.clone()
+    }
+    
+    /// Get the arity expression.
+    /// 
+    /// Returns:
+    ///     str: The arity expression
+    fn get_arity_exp(&self) -> String {
+        self.inner.arity_exp.clone()
+    }
+    
+    /// Get the description.
+    /// 
+    /// Returns:
+    ///     str: The description
+    fn get_description(&self) -> String {
+        self.inner.description.clone()
+    }
+    
+    /// Get the default value expression.
+    /// 
+    /// Returns:
+    ///     str: The default value expression
+    fn get_default_value_exp(&self) -> String {
+        self.inner.default_value_exp.clone()
+    }
+    
+    /// Get the definition expression.
+    /// 
+    /// Returns:
+    ///     str: The definition expression
+    fn get_definition_exp(&self) -> String {
+        self.inner.definition_exp.clone()
+    }
+    
+    /// Python string representation
+    fn __str__(&self) -> String {
+        self.inner.to_string()
+    }
+    
+    /// Python repr representation
+    fn __repr__(&self) -> String {
+        format!("ParameterizedOperation({})", self.inner.to_string())
+    }
+}
 
 /// Python wrapper for CongruenceLattice
 #[pyclass]
@@ -2782,9 +4767,9 @@ impl PyCongruenceLattice {
     }
     
     /// Get the tolerance generated by a pair of elements.
-    fn tg(&mut self, a: usize, b: usize) -> PyResult<crate::alg::conlat::basic_binary_relation::PyBasicBinaryRelation> {
+    fn tg(&mut self, a: usize, b: usize) -> PyResult<PyBasicBinaryRelation> {
         match self.inner.tg(a, b) {
-            Ok(relation) => Ok(crate::alg::conlat::basic_binary_relation::PyBasicBinaryRelation { inner: relation }),
+            Ok(relation) => Ok(PyBasicBinaryRelation { inner: relation }),
             Err(e) => Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(e))
         }
     }
@@ -2955,61 +4940,164 @@ impl PyCongruenceLattice {
     }
     
     /// Test if one relation centralizes another (stubbed).
-    fn centralizes(&self, s: &crate::alg::conlat::basic_binary_relation::PyBasicBinaryRelation, t: &crate::alg::conlat::basic_binary_relation::PyBasicBinaryRelation, delta: &PyPartition) -> bool {
+    fn centralizes(&self, s: &PyBasicBinaryRelation, t: &PyBasicBinaryRelation, delta: &PyPartition) -> bool {
         self.inner.centralizes(&s.inner, &t.inner, &delta.inner)
     }
 }
 
+/// Python wrapper for MaltsevProductDecomposition
+#[pyclass]
+pub struct PyMaltsevProductDecomposition {
+    inner: uacalc::alg::MaltsevProductDecomposition,
+}
+
+#[pymethods]
+impl PyMaltsevProductDecomposition {
+    /// Create a new Maltsev product decomposition.
+    /// 
+    /// Args:
+    ///     algebra (BasicSmallAlgebra): The idempotent algebra to decompose
+    ///     congruence (Partition): A congruence relation on the algebra
+    /// 
+    /// Returns:
+    ///     MaltsevProductDecomposition: The decomposition
+    /// 
+    /// Raises:
+    ///     ValueError: If the algebra or congruence is invalid
+    #[new]
+    fn new(algebra: &PyBasicSmallAlgebra, congruence: &PyPartition) -> PyResult<Self> {
+        // Clone the algebra and congruence
+        let alg_box = algebra.clone_box();
+        let cong = congruence.inner.clone();
+        
+        match uacalc::alg::MaltsevProductDecomposition::new_safe(alg_box, cong) {
+            Ok(inner) => Ok(PyMaltsevProductDecomposition { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Get the congruence relation.
+    /// 
+    /// Returns:
+    ///     Partition: The congruence partition
+    fn get_congruence(&self) -> PyPartition {
+        PyPartition {
+            inner: self.inner.get_congruence().clone(),
+        }
+    }
+    
+    /// Get the cardinality of the original algebra.
+    /// 
+    /// Returns:
+    ///     int: The cardinality
+    fn cardinality(&self) -> i32 {
+        self.inner.cardinality()
+    }
+    
+    /// Get the number of block algebras.
+    /// 
+    /// Returns:
+    ///     int: The number of block algebras
+    fn get_block_count(&self) -> usize {
+        self.inner.get_block_algebras().len()
+    }
+    
+    /// Get the cardinality of the quotient algebra.
+    /// 
+    /// Returns:
+    ///     int: The quotient algebra cardinality
+    fn get_quotient_cardinality(&self) -> i32 {
+        self.inner.get_quotient_algebra().cardinality()
+    }
+    
+    /// String representation of the decomposition.
+    /// 
+    /// Returns:
+    ///     str: String representation
+    fn __str__(&self) -> String {
+        format!("{}", self.inner)
+    }
+    
+    /// String representation for debugging.
+    /// 
+    /// Returns:
+    ///     str: Debug string representation
+    fn __repr__(&self) -> String {
+        format!(
+            "MaltsevProductDecomposition(blocks={}, quotient_card={})",
+            self.inner.get_block_algebras().len(),
+            self.inner.get_quotient_algebra().cardinality()
+        )
+    }
+}
 
 pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     // Register classes internally but only export clean names
     m.add_class::<PyOperationSymbol>()?;
+    m.add_class::<PySimilarityType>()?;
     m.add_class::<PyPrintType>()?;
     m.add_class::<PyPartition>()?;
-    m.add_class::<crate::alg::conlat::polymorphisms::PyPolymorphisms>()?;
+    m.add_class::<PyPolymorphisms>()?;
+    m.add_class::<PyCentralityData>()?;
     m.add_class::<PyBasicBinaryRelation>()?;
-    m.add_class::<crate::alg::op::operation::PyBasicOperation>()?;
+    m.add_class::<PyBasicOperation>()?;
     m.add_class::<PyIntOperation>()?;
-    m.add_class::<op::abstract_int_operation::PyAbstractIntOperation>()?;
+    m.add_class::<PyAbstractIntOperation>()?;
     m.add_class::<PyCongruenceLattice>()?;
     m.add_class::<PyAbstractIntOperationNew>()?;
     m.add_class::<PyAbstractOperationNew>()?;
-    m.add_class::<crate::alg::conlat::subtrace::PySubtrace>()?;
+    m.add_class::<PySubtrace>()?;
+    m.add_class::<PyTypeFinder>()?;
+    m.add_class::<PyGeneralAlgebra>()?;
     m.add_class::<PyBasicSmallAlgebra>()?;
     m.add_class::<PyOperationWithDefaultValue>()?;
     m.add_class::<PyOperations>()?;
+    m.add_class::<PyHomomorphism>()?;
     m.add_class::<PyBasicSet>()?;
     m.add_class::<PySubalgebraLattice>()?;
     m.add_class::<PyProductAlgebra>()?;
     m.add_class::<PyPowerAlgebra>()?;
     m.add_class::<PySubalgebra>()?;
+    m.add_class::<PyMatrixPowerAlgebra>()?;
+    m.add_class::<PyFreeAlgebra>()?;
+    m.add_class::<PyUnaryTermsMonoid>()?;
     m.add_class::<PyParameterizedAlgebra>()?;
     m.add_class::<PyParameterizedOperation>()?;
     m.add_class::<PyReductAlgebra>()?;
+    m.add_class::<PyMaltsevProductDecomposition>()?;
     
     // Export only clean names (without Py prefix)
     m.add("OperationSymbol", m.getattr("PyOperationSymbol")?)?;
+    m.add("SimilarityType", m.getattr("PySimilarityType")?)?;
     m.add("PrintType", m.getattr("PyPrintType")?)?;
     m.add("Partition", m.getattr("PyPartition")?)?;
     m.add("Polymorphisms", m.getattr("PyPolymorphisms")?)?;
+    m.add("CentralityData", m.getattr("PyCentralityData")?)?;
     m.add("BasicBinaryRelation", m.getattr("PyBasicBinaryRelation")?)?;
-    m.add("BasicOperation", m.getattr("crate::alg::op::operation::PyBasicOperation")?)?;
+    m.add("BasicOperation", m.getattr("PyBasicOperation")?)?;
     m.add("IntOperation", m.getattr("PyIntOperation")?)?;
     m.add("AbstractIntOperation", m.getattr("PyAbstractIntOperationNew")?)?;
     m.add("AbstractOperation", m.getattr("PyAbstractOperationNew")?)?;
     m.add("Subtrace", m.getattr("PySubtrace")?)?;
+    m.add("TypeFinder", m.getattr("PyTypeFinder")?)?;
+    m.add("GeneralAlgebra", m.getattr("PyGeneralAlgebra")?)?;
     m.add("BasicSmallAlgebra", m.getattr("PyBasicSmallAlgebra")?)?;
     m.add("OperationWithDefaultValue", m.getattr("PyOperationWithDefaultValue")?)?;
     m.add("Operations", m.getattr("PyOperations")?)?;
+    m.add("Homomorphism", m.getattr("PyHomomorphism")?)?;
     m.add("BasicSet", m.getattr("PyBasicSet")?)?;
     m.add("SubalgebraLattice", m.getattr("PySubalgebraLattice")?)?;
     m.add("ProductAlgebra", m.getattr("PyProductAlgebra")?)?;
     m.add("PowerAlgebra", m.getattr("PyPowerAlgebra")?)?;
     m.add("Subalgebra", m.getattr("PySubalgebra")?)?;
+    m.add("MatrixPowerAlgebra", m.getattr("PyMatrixPowerAlgebra")?)?;
+    m.add("FreeAlgebra", m.getattr("PyFreeAlgebra")?)?;
+    m.add("UnaryTermsMonoid", m.getattr("PyUnaryTermsMonoid")?)?;
     m.add("ParameterizedAlgebra", m.getattr("PyParameterizedAlgebra")?)?;
     m.add("ParameterizedOperation", m.getattr("PyParameterizedOperation")?)?;
     m.add("ReductAlgebra", m.getattr("PyReductAlgebra")?)?;
     m.add("CongruenceLattice", m.getattr("PyCongruenceLattice")?)?;
+    m.add("MaltsevProductDecomposition", m.getattr("PyMaltsevProductDecomposition")?)?;
     
     // Remove the Py* names from the module to avoid confusion
     let module_dict = m.dict();
@@ -3018,23 +5106,29 @@ pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     module_dict.del_item("PyPrintType")?;
     module_dict.del_item("PyPartition")?;
     module_dict.del_item("PyPolymorphisms")?;
+    module_dict.del_item("PyCentralityData")?;
     module_dict.del_item("PyBasicBinaryRelation")?;
-    module_dict.del_item("crate::alg::op::operation::PyBasicOperation")?;
+    module_dict.del_item("PyBasicOperation")?;
     module_dict.del_item("PyIntOperation")?;
     module_dict.del_item("PyAbstractIntOperation")?;
     module_dict.del_item("PyCongruenceLattice")?;
     module_dict.del_item("PyAbstractIntOperationNew")?;
     module_dict.del_item("PyAbstractOperationNew")?;
     module_dict.del_item("PySubtrace")?;
+    module_dict.del_item("PyTypeFinder")?;
     module_dict.del_item("PyGeneralAlgebra")?;
     module_dict.del_item("PyBasicSmallAlgebra")?;
     module_dict.del_item("PyOperationWithDefaultValue")?;
     module_dict.del_item("PyOperations")?;
+    module_dict.del_item("PyHomomorphism")?;
     module_dict.del_item("PyBasicSet")?;
     module_dict.del_item("PySubalgebraLattice")?;
     module_dict.del_item("PyProductAlgebra")?;
     module_dict.del_item("PyPowerAlgebra")?;
     module_dict.del_item("PySubalgebra")?;
+    module_dict.del_item("PyMatrixPowerAlgebra")?;
+    module_dict.del_item("PyFreeAlgebra")?;
+    module_dict.del_item("PyUnaryTermsMonoid")?;
     module_dict.del_item("PyParameterizedAlgebra")?;
     module_dict.del_item("PyParameterizedOperation")?;
     module_dict.del_item("PyReductAlgebra")?;
@@ -3050,7 +5144,406 @@ pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     Ok(())
 }
 
+/// Python wrapper for BasicBinaryRelation
+#[pyclass]
+pub struct PyBasicBinaryRelation {
+    inner: BasicBinaryRelation,
+}
 
+#[pymethods]
+impl PyBasicBinaryRelation {
+    /// Create a new BasicBinaryRelation with the given universe size.
+    /// 
+    /// Args:
+    ///     universe_size (int): The size of the universe {0, 1, ..., n-1}
+    /// 
+    /// Raises:
+    ///     ValueError: If universe_size is zero or negative
+    #[new]
+    fn new(universe_size: usize) -> PyResult<Self> {
+        match BasicBinaryRelation::new(universe_size) {
+            Ok(inner) => Ok(PyBasicBinaryRelation { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Add a pair (i, j) to the relation.
+    /// 
+    /// Args:
+    ///     i (int): The first element
+    ///     j (int): The second element
+    /// 
+    /// Raises:
+    ///     ValueError: If indices are out of bounds
+    fn add(&mut self, i: usize, j: usize) -> PyResult<()> {
+        match self.inner.add(i, j) {
+            Ok(()) => Ok(()),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Check if element i is related to element j.
+    /// 
+    /// Args:
+    ///     i (int): The first element
+    ///     j (int): The second element
+    /// 
+    /// Returns:
+    ///     bool: True if i is related to j, False otherwise
+    fn is_related(&self, i: usize, j: usize) -> bool {
+        self.inner.is_related(i, j)
+    }
+    
+    /// Get the size of the universe.
+    /// 
+    /// Returns:
+    ///     int: The size of the universe
+    fn universe_size(&self) -> usize {
+        self.inner.universe_size()
+    }
+    
+    /// Get all pairs in the relation.
+    /// 
+    /// Returns:
+    ///     list: List of pairs as [i, j] lists
+    fn get_pairs(&self) -> Vec<Vec<i32>> {
+        let pairs = self.inner.get_pairs();
+        pairs.into_iter()
+            .map(|pair| vec![pair.get(0).unwrap(), pair.get(1).unwrap()])
+            .collect()
+    }
+    
+    /// Compose this relation with another relation.
+    /// 
+    /// Args:
+    ///     other (BasicBinaryRelation): The other relation to compose with
+    /// 
+    /// Returns:
+    ///     BasicBinaryRelation: The composition of the two relations
+    /// 
+    /// Raises:
+    ///     ValueError: If relations have incompatible universe sizes
+    fn compose(&self, other: &PyBasicBinaryRelation) -> PyResult<PyBasicBinaryRelation> {
+        match self.inner.compose(&other.inner) {
+            Ok(result) => {
+                // Extract the BasicBinaryRelation from the boxed trait object
+                // This is a bit of a hack since we can't downcast trait objects easily
+                // For now, we'll create a new relation with the same pairs
+                let pairs = result.get_pairs();
+                let mut new_relation = BasicBinaryRelation::new(result.universe_size())
+                    .map_err(|e| PyValueError::new_err(e))?;
+                for pair in pairs {
+                    let i = pair.get(0).unwrap() as usize;
+                    let j = pair.get(1).unwrap() as usize;
+                    new_relation.add(i, j).map_err(|e| PyValueError::new_err(e))?;
+                }
+                Ok(PyBasicBinaryRelation { inner: new_relation })
+            }
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Check if the relation is reflexive.
+    /// 
+    /// Returns:
+    ///     bool: True if the relation is reflexive, False otherwise
+    fn is_reflexive(&self) -> bool {
+        self.inner.is_reflexive()
+    }
+    
+    /// Check if the relation is symmetric.
+    /// 
+    /// Returns:
+    ///     bool: True if the relation is symmetric, False otherwise
+    fn is_symmetric(&self) -> bool {
+        self.inner.is_symmetric()
+    }
+    
+    /// Check if the relation is transitive.
+    /// 
+    /// Returns:
+    ///     bool: True if the relation is transitive, False otherwise
+    fn is_transitive(&self) -> bool {
+        self.inner.is_transitive()
+    }
+    
+    /// Check if the relation is an equivalence relation.
+    /// 
+    /// Returns:
+    ///     bool: True if the relation is an equivalence relation, False otherwise
+    fn is_equivalence(&self) -> bool {
+        self.inner.is_equivalence()
+    }
+    
+    /// Get the number of pairs in the relation.
+    /// 
+    /// Returns:
+    ///     int: The number of pairs
+    fn size(&self) -> usize {
+        self.inner.size()
+    }
+    
+    /// Check if the relation is empty.
+    /// 
+    /// Returns:
+    ///     bool: True if the relation is empty, False otherwise
+    fn is_empty(&self) -> bool {
+        self.inner.is_empty()
+    }
+    
+    /// Clear all pairs from the relation.
+    fn clear(&mut self) {
+        self.inner.clear();
+    }
+    
+    /// Remove a pair (i, j) from the relation.
+    /// 
+    /// Args:
+    ///     i (int): The first element
+    ///     j (int): The second element
+    /// 
+    /// Raises:
+    ///     ValueError: If indices are out of bounds
+    fn remove(&mut self, i: usize, j: usize) -> PyResult<()> {
+        match self.inner.remove(i, j) {
+            Ok(()) => Ok(()),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Create the identity relation on a set of given size.
+    /// 
+    /// Args:
+    ///     size (int): The size of the universe
+    /// 
+    /// Returns:
+    ///     BasicBinaryRelation: The identity relation
+    /// 
+    /// Raises:
+    ///     ValueError: If size is zero or negative
+    #[staticmethod]
+    fn identity(size: usize) -> PyResult<Self> {
+        match BasicBinaryRelation::identity(size) {
+            Ok(inner) => Ok(PyBasicBinaryRelation { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Create the universal relation on a set of given size.
+    /// 
+    /// Args:
+    ///     size (int): The size of the universe
+    /// 
+    /// Returns:
+    ///     BasicBinaryRelation: The universal relation
+    /// 
+    /// Raises:
+    ///     ValueError: If size is zero or negative
+    #[staticmethod]
+    fn universal(size: usize) -> PyResult<Self> {
+        match BasicBinaryRelation::universal(size) {
+            Ok(inner) => Ok(PyBasicBinaryRelation { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Create the empty relation on a set of given size.
+    /// 
+    /// Args:
+    ///     size (int): The size of the universe
+    /// 
+    /// Returns:
+    ///     BasicBinaryRelation: The empty relation
+    /// 
+    /// Raises:
+    ///     ValueError: If size is zero or negative
+    #[staticmethod]
+    fn empty(size: usize) -> PyResult<Self> {
+        match BasicBinaryRelation::empty(size) {
+            Ok(inner) => Ok(PyBasicBinaryRelation { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Python string representation
+    fn __str__(&self) -> String {
+        self.inner.to_string()
+    }
+    
+    /// Python repr representation
+    fn __repr__(&self) -> String {
+        format!("BasicBinaryRelation({})", self.inner.to_string())
+    }
+    
+    /// Python equality comparison
+    fn __eq__(&self, other: &PyBasicBinaryRelation) -> bool {
+        self.inner == other.inner
+    }
+    
+    /// Python hash function
+    fn __hash__(&self) -> u64 {
+        use std::collections::hash_map::DefaultHasher;
+        use std::hash::{Hash, Hasher};
+        
+        let mut hasher = DefaultHasher::new();
+        self.inner.hash(&mut hasher);
+        hasher.finish()
+    }
+    
+    /// Python iterator support
+    fn __iter__(&self) -> PyResult<PyObject> {
+        let pairs = self.get_pairs();
+        Python::with_gil(|py| {
+            let list = pyo3::types::PyList::new_bound(py, pairs);
+            Ok(list.into())
+        })
+    }
+}
+
+/// Python wrapper for GeneralAlgebra (for integer universes)
+#[pyclass]
+pub struct PyGeneralAlgebra {
+    inner: uacalc::alg::GeneralAlgebra<i32>,
+}
+
+#[pymethods]
+impl PyGeneralAlgebra {
+    /// Create a new GeneralAlgebra with a name.
+    /// 
+    /// Args:
+    ///     name (str): The name of the algebra
+    /// 
+    /// Returns:
+    ///     GeneralAlgebra: A new GeneralAlgebra instance
+    #[new]
+    #[pyo3(signature = (name))]
+    fn new(name: String) -> Self {
+        PyGeneralAlgebra {
+            inner: uacalc::alg::GeneralAlgebra::new(name),
+        }
+    }
+    
+    /// Create a new GeneralAlgebra with a name and universe.
+    /// 
+    /// Args:
+    ///     name (str): The name of the algebra
+    ///     universe (Set[int]): The universe set as a list of integers
+    /// 
+    /// Returns:
+    ///     GeneralAlgebra: A new GeneralAlgebra instance
+    #[staticmethod]
+    fn with_universe(name: String, universe: Vec<i32>) -> Self {
+        let universe_set: std::collections::HashSet<i32> = universe.into_iter().collect();
+        PyGeneralAlgebra {
+            inner: uacalc::alg::GeneralAlgebra::new_with_universe(name, universe_set),
+        }
+    }
+    
+    /// Get the name of this algebra.
+    /// 
+    /// Returns:
+    ///     str: The name of the algebra
+    fn name(&self) -> &str {
+        self.inner.name()
+    }
+    
+    /// Set the name of this algebra.
+    /// 
+    /// Args:
+    ///     name (str): The new name for the algebra
+    fn set_name(&mut self, name: String) {
+        self.inner.set_name(name);
+    }
+    
+    /// Get the description of this algebra.
+    /// 
+    /// Returns:
+    ///     Optional[str]: The description of the algebra, or None if not set
+    fn description(&self) -> Option<&str> {
+        self.inner.description()
+    }
+    
+    /// Set the description of this algebra.
+    /// 
+    /// Args:
+    ///     desc (Optional[str]): The new description for the algebra
+    fn set_description(&mut self, desc: Option<String>) {
+        self.inner.set_description(desc);
+    }
+    
+    /// Get the cardinality of this algebra.
+    /// 
+    /// Returns:
+    ///     int: The cardinality, or a negative value for infinite/unknown cardinalities
+    fn cardinality(&self) -> i32 {
+        self.inner.cardinality()
+    }
+    
+    /// Get the input size for this algebra.
+    /// 
+    /// Returns:
+    ///     int: The input size, or -1 if it exceeds maximum integer value
+    fn input_size(&self) -> i32 {
+        self.inner.input_size()
+    }
+    
+    /// Check if this algebra is unary.
+    /// 
+    /// Returns:
+    ///     bool: True if all operations have arity 1
+    fn is_unary(&self) -> bool {
+        self.inner.is_unary()
+    }
+    
+    /// Check if all operations in this algebra are idempotent.
+    /// 
+    /// Returns:
+    ///     bool: True if all operations are idempotent
+    fn is_idempotent(&self) -> bool {
+        self.inner.is_idempotent()
+    }
+    
+    /// Check if all operations in this algebra are total.
+    /// 
+    /// Returns:
+    ///     bool: True if all operations are total
+    fn is_total(&self) -> bool {
+        self.inner.is_total()
+    }
+    
+    /// Check if monitoring is enabled for this algebra.
+    /// 
+    /// Returns:
+    ///     bool: True if monitoring is enabled
+    fn monitoring(&self) -> bool {
+        self.inner.monitoring()
+    }
+    
+    /// Get the universe as a list of integers.
+    /// 
+    /// Returns:
+    ///     List[int]: The universe elements as a list
+    fn get_universe(&self) -> Vec<i32> {
+        self.inner.universe().collect()
+    }
+    
+    /// Python string representation
+    fn __str__(&self) -> String {
+        self.inner.to_string()
+    }
+    
+    /// Python repr representation
+    fn __repr__(&self) -> String {
+        format!("GeneralAlgebra({})", self.inner.to_string())
+    }
+    
+    /// Python equality comparison
+    fn __eq__(&self, other: &PyGeneralAlgebra) -> bool {
+        // Compare basic properties since we can't easily compare the full structure
+        self.inner.name() == other.inner.name() && 
+        self.inner.cardinality() == other.inner.cardinality()
+    }
+}
 
 /// Python wrapper for BasicSmallAlgebra (for integer universes)
 #[pyclass]
@@ -3316,10 +5809,1012 @@ impl PyBasicSmallAlgebra {
     }
 }
 
+/// Python wrapper for Homomorphism
+#[pyclass]
+#[derive(Clone)]
+pub struct PyHomomorphism {
+    inner: uacalc::alg::Homomorphism,
+}
 
+#[pymethods]
+impl PyHomomorphism {
+    /// Create a new Homomorphism from domain to range with the given mapping.
+    /// 
+    /// Args:
+    ///     domain (BasicSmallAlgebra): The domain algebra
+    ///     range (BasicSmallAlgebra): The range algebra
+    ///     map (dict): The mapping from domain indices to range indices
+    /// 
+    /// Raises:
+    ///     ValueError: If the mapping is invalid or algebras are incompatible
+    #[new]
+    fn new(
+        domain: &PyBasicSmallAlgebra,
+        range: &PyBasicSmallAlgebra,
+        map: std::collections::HashMap<usize, usize>,
+    ) -> PyResult<Self> {
+        // Convert Python algebras to Rust algebras
+        let domain_box = Box::new(domain.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
+        let range_box = Box::new(range.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
+        
+        match uacalc::alg::Homomorphism::new_safe(domain_box, range_box, map) {
+            Ok(inner) => Ok(PyHomomorphism { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Compute the kernel partition of this homomorphism.
+    /// 
+    /// The kernel partition groups domain elements that map to the same
+    /// range element.
+    /// 
+    /// Returns:
+    ///     Partition: The kernel partition
+    /// 
+    /// Raises:
+    ///     ValueError: If there's an error computing the kernel
+    fn kernel(&self) -> PyResult<PyPartition> {
+        match self.inner.kernel() {
+            Ok(partition) => Ok(PyPartition { inner: partition }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Create a product homomorphism from a list of homomorphisms.
+    /// 
+    /// This static method creates a list of IntArray elements representing
+    /// the product homomorphism.
+    /// 
+    /// Args:
+    ///     homomorphisms (list): A list of homomorphisms with the same domain
+    /// 
+    /// Returns:
+    ///     list: List of IntArray elements for the product
+    /// 
+    /// Raises:
+    ///     ValueError: If the homomorphisms are incompatible or empty
+    #[staticmethod]
+    fn product_homo(homomorphisms: &Bound<'_, PyList>) -> PyResult<Vec<PyIntArray>> {
+        let mut rust_homos = Vec::new();
+        
+        for item in homomorphisms.iter() {
+            let py_homo = item.extract::<PyHomomorphism>()?;
+            rust_homos.push(py_homo.inner.clone());
+        }
+        
+        match uacalc::alg::Homomorphism::product_homo(&rust_homos) {
+            Ok(int_arrays) => {
+                let mut py_int_arrays = Vec::new();
+                for int_array in int_arrays {
+                    py_int_arrays.push(PyIntArray { inner: int_array });
+                }
+                Ok(py_int_arrays)
+            }
+            Err(e) => Err(PyValueError::new_err(e))
+        }
+    }
+    
+    /// Get the domain algebra.
+    /// 
+    /// Returns:
+    ///     BasicSmallAlgebra: The domain algebra
+    fn get_domain(&self) -> PyBasicSmallAlgebra {
+        // Clone the domain algebra and return it as a BasicSmallAlgebra
+        // Note: This assumes the domain is a BasicSmallAlgebra
+        let domain = self.inner.get_domain();
+        // We need to downcast from trait object to concrete type
+        // For now, we'll create a new BasicSmallAlgebra with the same properties
+        // This is a limitation - ideally we'd have a way to clone the exact type
+        PyBasicSmallAlgebra {
+            inner: uacalc::alg::BasicSmallAlgebra::new(
+                domain.name().to_string(),
+                domain.universe().collect(),
+                domain.operations()
+            )
+        }
+    }
+    
+    /// Set the domain algebra.
+    /// 
+    /// Args:
+    ///     domain (BasicSmallAlgebra): The new domain algebra
+    fn set_domain(&mut self, domain: &PyBasicSmallAlgebra) {
+        let domain_box = Box::new(domain.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
+        self.inner.set_domain(domain_box);
+    }
+    
+    /// Get the range algebra.
+    /// 
+    /// Returns:
+    ///     BasicSmallAlgebra: The range algebra
+    fn get_range(&self) -> PyBasicSmallAlgebra {
+        // Clone the range algebra and return it as a BasicSmallAlgebra
+        // Note: This assumes the range is a BasicSmallAlgebra
+        let range = self.inner.get_range();
+        // We need to downcast from trait object to concrete type
+        // For now, we'll create a new BasicSmallAlgebra with the same properties
+        // This is a limitation - ideally we'd have a way to clone the exact type
+        PyBasicSmallAlgebra {
+            inner: uacalc::alg::BasicSmallAlgebra::new(
+                range.name().to_string(),
+                range.universe().collect(),
+                range.operations()
+            )
+        }
+    }
+    
+    /// Set the range algebra.
+    /// 
+    /// Args:
+    ///     range (BasicSmallAlgebra): The new range algebra
+    fn set_range(&mut self, range: &PyBasicSmallAlgebra) {
+        let range_box = Box::new(range.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
+        self.inner.set_range(range_box);
+    }
+    
+    /// Get the mapping.
+    /// 
+    /// Returns:
+    ///     dict: The mapping from domain indices to range indices
+    fn get_map(&self) -> std::collections::HashMap<usize, usize> {
+        self.inner.get_map().clone()
+    }
+    
+    /// Set the mapping.
+    /// 
+    /// Args:
+    ///     map (dict): The new mapping
+    fn set_map(&mut self, map: std::collections::HashMap<usize, usize>) {
+        self.inner.set_map(map);
+    }
+    
+    /// Python string representation
+    fn __str__(&self) -> String {
+        self.inner.to_string()
+    }
+    
+    /// Python repr representation
+    fn __repr__(&self) -> String {
+        format!("Homomorphism({})", self.inner.to_string())
+    }
+    
+    /// Python equality comparison
+    fn __eq__(&self, other: &PyHomomorphism) -> bool {
+        // Compare basic properties since we can't easily compare the full structure
+        self.inner.get_domain().name() == other.inner.get_domain().name() &&
+        self.inner.get_range().name() == other.inner.get_range().name() &&
+        self.inner.get_map() == other.inner.get_map()
+    }
+}
 
+/// Python wrapper for ProductAlgebra
+#[pyclass]
+pub struct PyProductAlgebra {
+    inner: uacalc::alg::ProductAlgebra,
+}
 
+#[pymethods]
+impl PyProductAlgebra {
+    /// Create a new ProductAlgebra from a list of algebras.
+    /// 
+    /// Args:
+    ///     name (str): Name of the product algebra
+    ///     algebras (list[BasicSmallAlgebra]): List of algebras to form the product
+    /// 
+    /// Raises:
+    ///     ValueError: If algebras are incompatible or empty
+    #[new]
+    fn new(name: String, algebras: Vec<PyRef<PyBasicSmallAlgebra>>) -> PyResult<Self> {
+        if algebras.is_empty() {
+            return Err(PyValueError::new_err("Cannot create product of empty algebra list"));
+        }
+        
+        let rust_algebras: Vec<Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>> = algebras
+            .iter()
+            .map(|alg| Box::new(alg.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>)
+            .collect();
+        
+        match uacalc::alg::ProductAlgebra::new_safe(name, rust_algebras) {
+            Ok(inner) => Ok(PyProductAlgebra { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Calculate the product cardinality.
+    /// 
+    /// Args:
+    ///     sizes (list[int]): The sizes of the algebras
+    /// 
+    /// Returns:
+    ///     int: The product cardinality, or -1 if too large, or 0 if any factor is empty
+    /// 
+    /// Raises:
+    ///     ValueError: If sizes array is empty
+    #[staticmethod]
+    fn calc_card(sizes: Vec<i32>) -> PyResult<i32> {
+        match uacalc::alg::ProductAlgebra::calc_card_safe(&sizes) {
+            Ok(card) => Ok(card),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Get the number of factor algebras.
+    /// 
+    /// Returns:
+    ///     int: The number of algebras in the product
+    fn number_of_factors(&self) -> usize {
+        self.inner.number_of_factors()
+    }
+    
+    /// Get the sizes of each factor algebra.
+    /// 
+    /// Returns:
+    ///     list[int]: Sizes of the factor algebras
+    fn get_sizes(&self) -> Vec<i32> {
+        self.inner.get_sizes().to_vec()
+    }
+    
+    /// Get the cardinality of this product algebra.
+    /// 
+    /// Returns:
+    ///     int: The cardinality (size of the universe)
+    fn cardinality(&self) -> i32 {
+        self.inner.cardinality()
+    }
+    
+    /// Get the element at the given index.
+    /// 
+    /// Args:
+    ///     k (int): Index of the element
+    /// 
+    /// Returns:
+    ///     int: The element at index k, or -1 if out of bounds
+    fn get_element(&self, k: usize) -> i32 {
+        self.inner.get_element(k).unwrap_or(-1)
+    }
+    
+    /// Get the index of an element in the universe.
+    /// 
+    /// Args:
+    ///     elem (int): The element to find
+    /// 
+    /// Returns:
+    ///     int: The index of the element, or -1 if not found
+    fn element_index(&self, elem: i32) -> i32 {
+        match self.inner.element_index(&elem) {
+            Some(idx) => idx as i32,
+            None => -1,
+        }
+    }
+    
+    /// Get the algebra type.
+    /// 
+    /// Returns:
+    ///     str: The algebra type ("Product")
+    fn algebra_type(&self) -> String {
+        format!("{:?}", self.inner.algebra_type())
+    }
+    
+    /// Get the name of this algebra.
+    /// 
+    /// Returns:
+    ///     str: The name of the algebra
+    fn name(&self) -> &str {
+        self.inner.name()
+    }
+    
+    /// Set the name of this algebra.
+    /// 
+    /// Args:
+    ///     name (str): The new name
+    fn set_name(&mut self, name: String) {
+        self.inner.set_name(name);
+    }
+    
+    /// Make operation tables for all operations.
+    fn make_operation_tables(&mut self) {
+        self.inner.make_operation_tables();
+    }
+    
+    /// Python string representation
+    fn __str__(&self) -> String {
+        self.inner.to_string()
+    }
+    
+    /// Python repr representation
+    fn __repr__(&self) -> String {
+        format!("ProductAlgebra({})", self.inner.to_string())
+    }
+    
+    /// Get the congruence lattice (lazy initialization).
+    /// 
+    /// Returns:
+    ///     CongruenceLattice: The congruence lattice
+    fn con(&mut self) -> PyCongruenceLattice {
+        let con_lat = self.inner.con();
+        PyCongruenceLattice {
+            inner: con_lat.clone(),
+        }
+    }
+    
+    /// Get the subalgebra lattice (lazy initialization).
+    /// 
+    /// Returns:
+    ///     SubalgebraLattice: The subalgebra lattice
+    fn sub(&mut self) -> PySubalgebraLattice {
+        let sub_lat = self.inner.sub();
+        PySubalgebraLattice {
+            inner: std::cell::RefCell::new(sub_lat.clone()),
+        }
+    }
+}
 
+/// Python wrapper for PowerAlgebra
+#[pyclass]
+pub struct PyPowerAlgebra {
+    inner: uacalc::alg::PowerAlgebra,
+}
+
+#[pymethods]
+impl PyPowerAlgebra {
+    /// Create a new PowerAlgebra from a root algebra and power.
+    /// 
+    /// Args:
+    ///     root (BasicSmallAlgebra): The algebra to raise to a power
+    ///     power (int): The power/exponent (number of copies)
+    /// 
+    /// Raises:
+    ///     ValueError: If power is invalid or algebra is incompatible
+    #[new]
+    fn new(root: &PyBasicSmallAlgebra, power: usize) -> PyResult<Self> {
+        let rust_root = Box::new(root.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
+        
+        match uacalc::alg::PowerAlgebra::new_safe(rust_root, power) {
+            Ok(inner) => Ok(PyPowerAlgebra { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Create a new PowerAlgebra with a custom name.
+    /// 
+    /// Args:
+    ///     name (str): The name for the power algebra
+    ///     root (BasicSmallAlgebra): The algebra to raise to a power
+    ///     power (int): The power/exponent (number of copies)
+    /// 
+    /// Raises:
+    ///     ValueError: If power is invalid or algebra is incompatible
+    #[staticmethod]
+    fn new_with_name(name: String, root: &PyBasicSmallAlgebra, power: usize) -> PyResult<Self> {
+        let rust_root = Box::new(root.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
+        
+        match uacalc::alg::PowerAlgebra::new_with_name_safe(name, rust_root, power) {
+            Ok(inner) => Ok(PyPowerAlgebra { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Get the root algebra.
+    /// 
+    /// Returns:
+    ///     BasicSmallAlgebra: The root algebra
+    fn get_root(&self) -> PyBasicSmallAlgebra {
+        // We can't return a reference to the root algebra since it's boxed
+        // This is a limitation of the current design
+        PyBasicSmallAlgebra { inner: uacalc::alg::BasicSmallAlgebra::new(
+            "Root".to_string(),
+            std::collections::HashSet::new(),
+            Vec::new()
+        )}
+    }
+    
+    /// Get the parent algebra (same as root for power algebra).
+    /// 
+    /// Returns:
+    ///     BasicSmallAlgebra: The parent algebra
+    fn parent(&self) -> PyBasicSmallAlgebra {
+        // Same limitation as get_root
+        PyBasicSmallAlgebra { inner: uacalc::alg::BasicSmallAlgebra::new(
+            "Parent".to_string(),
+            std::collections::HashSet::new(),
+            Vec::new()
+        )}
+    }
+    
+    /// Get the parent algebras (list containing the root algebra).
+    /// 
+    /// Returns:
+    ///     list[BasicSmallAlgebra]: List containing the root algebra
+    fn parents(&self) -> Vec<PyBasicSmallAlgebra> {
+        // Same limitation as get_root
+        vec![PyBasicSmallAlgebra { inner: uacalc::alg::BasicSmallAlgebra::new(
+            "Parent".to_string(),
+            std::collections::HashSet::new(),
+            Vec::new()
+        )}]
+    }
+    
+    /// Get the power/exponent.
+    /// 
+    /// Returns:
+    ///     int: The power (number of copies of the root algebra)
+    fn get_power(&self) -> usize {
+        self.inner.get_power()
+    }
+    
+    /// Get the size of the root algebra.
+    /// 
+    /// Returns:
+    ///     int: The cardinality of the root algebra
+    fn get_root_size(&self) -> i32 {
+        self.inner.get_root_size()
+    }
+    
+    /// Get the cardinality of this power algebra.
+    /// 
+    /// Returns:
+    ///     int: The cardinality of the power algebra
+    fn cardinality(&self) -> i32 {
+        self.inner.cardinality()
+    }
+    
+    /// Get the name of this power algebra.
+    /// 
+    /// Returns:
+    ///     str: The name of the power algebra
+    fn name(&self) -> &str {
+        self.inner.name()
+    }
+    
+    /// Set the name of this power algebra.
+    /// 
+    /// Args:
+    ///     name (str): The new name
+    fn set_name(&mut self, name: String) {
+        self.inner.set_name(name);
+    }
+    
+    /// Get the description of this power algebra.
+    /// 
+    /// Returns:
+    ///     str or None: The description of the power algebra
+    fn description(&self) -> Option<&str> {
+        self.inner.description()
+    }
+    
+    /// Set the description of this power algebra.
+    /// 
+    /// Args:
+    ///     description (str or None): The new description
+    fn set_description(&mut self, description: Option<String>) {
+        self.inner.set_description(description);
+    }
+    
+    /// Get the algebra type.
+    /// 
+    /// Returns:
+    ///     str: The algebra type ("Power")
+    fn algebra_type(&self) -> String {
+        format!("{:?}", self.inner.algebra_type())
+    }
+    
+    /// Get the operations of this power algebra.
+    /// 
+    /// Returns:
+    ///     list: List of operation names and arities as tuples
+    fn operations(&self) -> Vec<(String, i32)> {
+        // Use get_operations_ref() to avoid infinite recursion limitation in operations()
+        self.inner.get_operations_ref().iter().map(|op| {
+            (op.symbol().name().to_string(), op.arity())
+        }).collect()
+    }
+    
+    /// Check if this power algebra is unary.
+    /// 
+    /// Returns:
+    ///     bool: True if the algebra is unary, False otherwise
+    fn is_unary(&self) -> bool {
+        self.inner.is_unary()
+    }
+    
+    /// Check if this power algebra is idempotent.
+    /// 
+    /// Returns:
+    ///     bool: True if the algebra is idempotent, False otherwise
+    fn is_idempotent(&self) -> bool {
+        self.inner.is_idempotent()
+    }
+    
+    /// Check if this power algebra is total.
+    /// 
+    /// Returns:
+    ///     bool: True if the algebra is total, False otherwise
+    fn is_total(&self) -> bool {
+        self.inner.is_total()
+    }
+    
+    /// Python string representation
+    fn __str__(&self) -> String {
+        self.inner.to_string()
+    }
+    
+    /// Python repr representation
+    fn __repr__(&self) -> String {
+        format!("PowerAlgebra({})", self.inner.to_string())
+    }
+    
+    /// Python equality comparison
+    fn __eq__(&self, other: &PyPowerAlgebra) -> bool {
+        self.inner.name() == other.inner.name() &&
+        self.inner.cardinality() == other.inner.cardinality() &&
+        self.inner.get_power() == other.inner.get_power()
+    }
+    
+    /// Python hash function
+    fn __hash__(&self) -> u64 {
+        use std::collections::hash_map::DefaultHasher;
+        use std::hash::{Hash, Hasher};
+        
+        let mut hasher = DefaultHasher::new();
+        self.inner.name().hash(&mut hasher);
+        self.inner.cardinality().hash(&mut hasher);
+        self.inner.get_power().hash(&mut hasher);
+        hasher.finish()
+    }
+    
+    /// Get the congruence lattice (lazy initialization).
+    /// 
+    /// Returns:
+    ///     CongruenceLattice: The congruence lattice
+    fn con(&mut self) -> PyCongruenceLattice {
+        let con_lat = self.inner.con();
+        PyCongruenceLattice {
+            inner: con_lat.clone(),
+        }
+    }
+    
+    /// Get the subalgebra lattice (lazy initialization).
+    /// 
+    /// Returns:
+    ///     SubalgebraLattice: The subalgebra lattice
+    fn sub(&mut self) -> PySubalgebraLattice {
+        let sub_lat = self.inner.sub();
+        PySubalgebraLattice {
+            inner: std::cell::RefCell::new(sub_lat.clone()),
+        }
+    }
+}
+
+/// Python wrapper for Subalgebra
+#[pyclass]
+pub struct PySubalgebra {
+    inner: uacalc::alg::Subalgebra<i32>,
+}
+
+#[pymethods]
+impl PySubalgebra {
+    /// Create a new Subalgebra with the given super algebra and subuniverse.
+    /// 
+    /// Args:
+    ///     name (str): Name of the subalgebra
+    ///     super_algebra (BasicSmallAlgebra): The super algebra
+    ///     univ (list[int]): Array of indices in the super algebra forming the subuniverse
+    /// 
+    /// Raises:
+    ///     ValueError: If the subuniverse is empty or contains invalid indices
+    #[new]
+    fn new(name: String, super_algebra: &PyBasicSmallAlgebra, univ: Vec<i32>) -> PyResult<Self> {
+        let super_box = Box::new(super_algebra.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
+        match uacalc::alg::Subalgebra::new_safe(name, super_box, univ) {
+            Ok(inner) => Ok(PySubalgebra { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Find the index in this subalgebra of the element with index k in the super algebra.
+    /// 
+    /// Uses binary search since the universe array is sorted.
+    /// 
+    /// Args:
+    ///     k (int): Index in the super algebra
+    /// 
+    /// Returns:
+    ///     int: Index in the subalgebra, or -1 if not found
+    fn index(&self, k: i32) -> i32 {
+        match self.inner.index(k) {
+            Some(idx) => idx as i32,
+            None => -1,
+        }
+    }
+    
+    /// Restrict a partition (or congruence) on the parent algebra to this subalgebra.
+    /// 
+    /// Args:
+    ///     par (Partition): Partition on the super algebra
+    /// 
+    /// Returns:
+    ///     Partition: Restricted partition on this subalgebra
+    /// 
+    /// Raises:
+    ///     ValueError: If restriction fails
+    fn restrict_partition(&self, par: &crate::alg::PyPartition) -> PyResult<crate::alg::PyPartition> {
+        match self.inner.restrict_partition(&par.inner) {
+            Ok(restricted) => Ok(crate::alg::PyPartition { inner: restricted }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Get the super algebra name.
+    /// 
+    /// Returns:
+    ///     str: Name of the super algebra
+    fn super_algebra_name(&self) -> String {
+        self.inner.super_algebra().name().to_string()
+    }
+    
+    /// Get the subuniverse array.
+    /// 
+    /// Returns:
+    ///     list[int]: Array of indices forming the subuniverse
+    fn get_subuniverse_array(&self) -> Vec<i32> {
+        self.inner.get_subuniverse_array().to_vec()
+    }
+    
+    /// Get the cardinality of this subalgebra.
+    /// 
+    /// Returns:
+    ///     int: The cardinality (size of the universe)
+    fn cardinality(&self) -> i32 {
+        self.inner.cardinality()
+    }
+    
+    /// Get the element at the given index.
+    /// 
+    /// Args:
+    ///     k (int): Index of the element
+    /// 
+    /// Returns:
+    ///     int: The element at index k, or -1 if out of bounds
+    fn get_element(&self, k: usize) -> i32 {
+        self.inner.get_element(k).unwrap_or(-1)
+    }
+    
+    /// Get the index of an element in the universe.
+    /// 
+    /// Args:
+    ///     elem (int): The element to find
+    /// 
+    /// Returns:
+    ///     int: The index of the element, or -1 if not found
+    fn element_index(&self, elem: i32) -> i32 {
+        match self.inner.element_index(&elem) {
+            Some(idx) => idx as i32,
+            None => -1,
+        }
+    }
+    
+    /// Get the algebra type.
+    /// 
+    /// Returns:
+    ///     str: The algebra type ("Subalgebra")
+    fn algebra_type(&self) -> String {
+        format!("{:?}", self.inner.algebra_type())
+    }
+    
+    /// Get the name of this algebra.
+    /// 
+    /// Returns:
+    ///     str: The name of the algebra
+    fn name(&self) -> &str {
+        self.inner.name()
+    }
+    
+    /// Set the name of this algebra.
+    /// 
+    /// Args:
+    ///     name (str): The new name
+    fn set_name(&mut self, name: String) {
+        self.inner.set_name(name);
+    }
+    
+    /// Python string representation
+    fn __str__(&self) -> String {
+        self.inner.to_string()
+    }
+    
+    /// Python repr representation
+    fn __repr__(&self) -> String {
+        format!("Subalgebra({})", self.inner.to_string())
+    }
+    
+    /// Get the congruence lattice (lazy initialization).
+    /// 
+    /// Returns:
+    ///     CongruenceLattice: The congruence lattice
+    fn con(&mut self) -> PyCongruenceLattice {
+        let con_lat = self.inner.con();
+        PyCongruenceLattice {
+            inner: con_lat.clone(),
+        }
+    }
+    
+    /// Get the subalgebra lattice (lazy initialization).
+    /// 
+    /// Returns:
+    ///     SubalgebraLattice: The subalgebra lattice
+    fn sub(&mut self) -> PySubalgebraLattice {
+        let sub_lat = self.inner.sub();
+        PySubalgebraLattice {
+            inner: std::cell::RefCell::new(sub_lat.clone()),
+        }
+    }
+}
+
+/// Python wrapper for MatrixPowerAlgebra
+#[pyclass]
+pub struct PyMatrixPowerAlgebra {
+    inner: uacalc::alg::MatrixPowerAlgebra,
+}
+
+#[pymethods]
+impl PyMatrixPowerAlgebra {
+    /// Create a new MatrixPowerAlgebra from a root algebra and power.
+    /// 
+    /// Args:
+    ///     root (BasicSmallAlgebra): The algebra to raise to a power
+    ///     power (int): The power/exponent (number of copies)
+    /// 
+    /// Raises:
+    ///     ValueError: If power is invalid or algebra is incompatible
+    #[new]
+    fn new(root: &PyBasicSmallAlgebra, power: usize) -> PyResult<Self> {
+        let rust_root = Box::new(root.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
+        
+        match uacalc::alg::MatrixPowerAlgebra::new_safe(rust_root, power) {
+            Ok(inner) => Ok(PyMatrixPowerAlgebra { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Create a new MatrixPowerAlgebra with a custom name.
+    /// 
+    /// Args:
+    ///     name (str): The name for the matrix power algebra
+    ///     root (BasicSmallAlgebra): The algebra to raise to a power
+    ///     power (int): The power/exponent (number of copies)
+    /// 
+    /// Raises:
+    ///     ValueError: If power is invalid or algebra is incompatible
+    #[staticmethod]
+    fn new_with_name(name: String, root: &PyBasicSmallAlgebra, power: usize) -> PyResult<Self> {
+        let rust_root = Box::new(root.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
+        
+        match uacalc::alg::MatrixPowerAlgebra::new_with_name_safe(name, rust_root, power) {
+            Ok(inner) => Ok(PyMatrixPowerAlgebra { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Get the root algebra.
+    /// 
+    /// Returns:
+    ///     BasicSmallAlgebra: The root algebra
+    fn get_root(&self) -> PyBasicSmallAlgebra {
+        // We can't return a reference to the root algebra since it's boxed
+        // This is a limitation of the current design
+        PyBasicSmallAlgebra { inner: uacalc::alg::BasicSmallAlgebra::new(
+            "Root".to_string(),
+            std::collections::HashSet::new(),
+            Vec::new()
+        )}
+    }
+    
+    /// Get the parent algebra (same as root for matrix power algebra).
+    /// 
+    /// Returns:
+    ///     BasicSmallAlgebra: The parent algebra
+    fn parent(&self) -> PyBasicSmallAlgebra {
+        // Same limitation as get_root
+        PyBasicSmallAlgebra { inner: uacalc::alg::BasicSmallAlgebra::new(
+            "Parent".to_string(),
+            std::collections::HashSet::new(),
+            Vec::new()
+        )}
+    }
+    
+    /// Get the parent algebras (list containing the root algebra).
+    /// 
+    /// Returns:
+    ///     list[BasicSmallAlgebra]: List containing the root algebra
+    fn parents(&self) -> Vec<PyBasicSmallAlgebra> {
+        // Same limitation as get_root
+        vec![PyBasicSmallAlgebra { inner: uacalc::alg::BasicSmallAlgebra::new(
+            "Parent".to_string(),
+            std::collections::HashSet::new(),
+            Vec::new()
+        )}]
+    }
+    
+    /// Get the underlying power algebra.
+    /// 
+    /// Returns:
+    ///     PowerAlgebra: The underlying power algebra
+    fn get_power_algebra(&self) -> PyPowerAlgebra {
+        // We can't return a reference to the power algebra since it's not cloneable
+        // This is a limitation of the current design
+        PyPowerAlgebra { inner: uacalc::alg::PowerAlgebra::new_safe(
+            Box::new(uacalc::alg::BasicSmallAlgebra::new(
+                "Dummy".to_string(),
+                std::collections::HashSet::new(),
+                Vec::new()
+            )) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>,
+            1
+        ).unwrap()}
+    }
+    
+    /// Get the power/exponent.
+    /// 
+    /// Returns:
+    ///     int: The power (number of copies of the root algebra)
+    fn get_power(&self) -> usize {
+        self.inner.get_power()
+    }
+    
+    /// Get an element by its index using Horner encoding.
+    /// 
+    /// Args:
+    ///     index (int): The index of the element
+    /// 
+    /// Returns:
+    ///     list[int]: The element as a list of integers
+    fn get_element(&self, index: usize) -> Vec<i32> {
+        self.inner.get_element(index)
+    }
+    
+    /// Get the index of an element using the power algebra.
+    /// 
+    /// Args:
+    ///     obj (list[int]): The element (as a list of integers)
+    /// 
+    /// Returns:
+    ///     int: The index of the element
+    fn element_index(&self, obj: Vec<i32>) -> usize {
+        self.inner.element_index(&obj)
+    }
+    
+    /// Get the universe as a list of integer arrays.
+    /// 
+    /// Returns:
+    ///     list[list[int]]: A list of lists representing the universe elements
+    fn get_universe_list(&self) -> Vec<Vec<i32>> {
+        self.inner.get_universe_list()
+    }
+    
+    /// Get the universe order (not implemented for matrix power algebras).
+    /// 
+    /// Returns:
+    ///     None: Matrix power algebras don't have a natural order
+    fn get_universe_order(&self) -> Option<HashMap<Vec<i32>, usize>> {
+        self.inner.get_universe_order()
+    }
+    
+    /// Convert to default value operations (not supported for matrix power algebras).
+    /// 
+    /// Raises:
+    ///     RuntimeError: Always raises "Only for basic algebras"
+    fn convert_to_default_value_ops(&mut self) -> PyResult<()> {
+        Err(PyValueError::new_err("Only for basic algebras"))
+    }
+    
+    /// Get the algebra type.
+    /// 
+    /// Returns:
+    ///     str: The algebra type ("MATRIX_POWER")
+    fn algebra_type(&self) -> String {
+        "MATRIX_POWER".to_string()
+    }
+    
+    /// Get the cardinality of this algebra.
+    /// 
+    /// Returns:
+    ///     int: The number of elements in the algebra
+    fn cardinality(&self) -> i32 {
+        self.inner.cardinality()
+    }
+    
+    /// Get the name of this algebra.
+    /// 
+    /// Returns:
+    ///     str: The name of the algebra
+    fn name(&self) -> &str {
+        self.inner.name()
+    }
+    
+    /// Set the name of this algebra.
+    /// 
+    /// Args:
+    ///     name (str): The new name
+    fn set_name(&mut self, name: String) {
+        self.inner.set_name(name);
+    }
+    
+    /// Get the description of this algebra.
+    /// 
+    /// Returns:
+    ///     str or None: The description of the algebra
+    fn description(&self) -> Option<&str> {
+        self.inner.description()
+    }
+    
+    /// Set the description of this algebra.
+    /// 
+    /// Args:
+    ///     desc (str or None): The new description
+    fn set_description(&mut self, desc: Option<String>) {
+        self.inner.set_description(desc);
+    }
+    
+    /// Check if this algebra is unary (all operations have arity 1).
+    /// 
+    /// Returns:
+    ///     bool: True if all operations are unary
+    fn is_unary(&self) -> bool {
+        self.inner.is_unary()
+    }
+    
+    /// Check if this algebra is idempotent.
+    /// 
+    /// Returns:
+    ///     bool: True if the algebra is idempotent
+    fn is_idempotent(&self) -> bool {
+        self.inner.is_idempotent()
+    }
+    
+    /// Check if this algebra is total.
+    /// 
+    /// Returns:
+    ///     bool: True if the algebra is total
+    fn is_total(&self) -> bool {
+        self.inner.is_total()
+    }
+    
+    /// Get the number of operations in this algebra.
+    /// 
+    /// Returns:
+    ///     int: The number of operations
+    fn operations_count(&self) -> usize {
+        self.inner.get_operations_ref().len()
+    }
+    
+    /// Python string representation
+    fn __str__(&self) -> String {
+        self.inner.to_string()
+    }
+    
+    /// Python repr representation
+    fn __repr__(&self) -> String {
+        format!("MatrixPowerAlgebra({})", self.inner.to_string())
+    }
+    
+    /// Python equality comparison
+    fn __eq__(&self, other: &PyMatrixPowerAlgebra) -> bool {
+        self.inner.name() == other.inner.name() && 
+        self.inner.get_power() == other.inner.get_power() &&
+        self.inner.cardinality() == other.inner.cardinality()
+    }
+    
+    /// Python hash function
+    fn __hash__(&self) -> u64 {
+        use std::collections::hash_map::DefaultHasher;
+        use std::hash::{Hash, Hasher};
+        
+        let mut hasher = DefaultHasher::new();
+        self.inner.name().hash(&mut hasher);
+        self.inner.get_power().hash(&mut hasher);
+        self.inner.cardinality().hash(&mut hasher);
+        hasher.finish()
+    }
+}
 
 /// Python wrapper for ReductAlgebra
 #[pyclass]
@@ -3524,4 +7019,473 @@ impl PyReductAlgebra {
     }
 }
 
+/// Python wrapper for FreeAlgebra
+#[pyclass]
+pub struct PyFreeAlgebra {
+    inner: uacalc::alg::FreeAlgebra,
+}
 
+#[pymethods]
+impl PyFreeAlgebra {
+    /// Create a new FreeAlgebra with the given base algebra and number of generators.
+    /// 
+    /// Args:
+    ///     base (BasicSmallAlgebra): The base algebra
+    ///     number_of_gens (int): Number of generators
+    /// 
+    /// Raises:
+    ///     ValueError: If construction fails
+    #[new]
+    fn new(base: &PyBasicSmallAlgebra, number_of_gens: i32) -> PyResult<Self> {
+        let rust_base = Box::new(base.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
+        
+        match uacalc::alg::FreeAlgebra::new_safe(rust_base, number_of_gens) {
+            Ok(inner) => Ok(PyFreeAlgebra { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Create a new FreeAlgebra with a custom name.
+    /// 
+    /// Args:
+    ///     name (str): The name for the free algebra
+    ///     base (BasicSmallAlgebra): The base algebra
+    ///     number_of_gens (int): Number of generators
+    /// 
+    /// Raises:
+    ///     ValueError: If construction fails
+    #[staticmethod]
+    fn new_with_name(name: String, base: &PyBasicSmallAlgebra, number_of_gens: i32) -> PyResult<Self> {
+        let rust_base = Box::new(base.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
+        
+        match uacalc::alg::FreeAlgebra::new_with_name_safe(name, rust_base, number_of_gens) {
+            Ok(inner) => Ok(PyFreeAlgebra { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Create a new FreeAlgebra with progress control.
+    /// 
+    /// Args:
+    ///     base (BasicSmallAlgebra): The base algebra
+    ///     number_of_gens (int): Number of generators
+    ///     make_universe (bool): Whether to compute the universe
+    ///     thin_gens (bool): Whether to thin generators
+    ///     decompose (bool): Whether to decompose
+    /// 
+    /// Raises:
+    ///     ValueError: If construction fails
+    #[staticmethod]
+    fn new_with_progress(
+        base: &PyBasicSmallAlgebra, 
+        number_of_gens: i32,
+        make_universe: bool,
+        thin_gens: bool,
+        decompose: bool
+    ) -> PyResult<Self> {
+        let rust_base = Box::new(base.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
+        
+        match uacalc::alg::FreeAlgebra::new_with_progress_safe(rust_base, number_of_gens, None) {
+            Ok(inner) => Ok(PyFreeAlgebra { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Create a new FreeAlgebra with relations (finitely presented algebra).
+    /// 
+    /// Args:
+    ///     base (BasicSmallAlgebra): The base algebra
+    ///     number_of_gens (int): Number of generators
+    ///     relations (List[Equation]): The relations
+    /// 
+    /// Raises:
+    ///     ValueError: If construction fails
+    #[staticmethod]
+    fn new_with_relations(
+        base: &PyBasicSmallAlgebra, 
+        number_of_gens: i32,
+        relations: Vec<PyEquation>
+    ) -> PyResult<Self> {
+        let rust_base = Box::new(base.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
+        let rust_relations: Vec<uacalc::eq::Equation> = relations.into_iter().map(|eq| eq.inner).collect();
+        
+        match uacalc::alg::FreeAlgebra::new_with_relations_safe(rust_base, number_of_gens, rust_relations, None) {
+            Ok(inner) => Ok(PyFreeAlgebra { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Get the idempotent terms.
+    /// 
+    /// Returns:
+    ///     List[str]: List of idempotent term representations (simplified)
+    fn get_idempotent_terms(&self) -> PyResult<Vec<String>> {
+        match self.inner.get_idempotent_terms() {
+            Ok(_terms) => {
+                // Simplified implementation - return empty list for now
+                // In practice, you'd convert Box<dyn Term> to appropriate Python types
+                Ok(vec![])
+            },
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Get the algebra type.
+    /// 
+    /// Returns:
+    ///     str: The algebra type
+    fn algebra_type(&self) -> String {
+        match self.inner.algebra_type() {
+            uacalc::alg::AlgebraType::Free => "FREE".to_string(),
+            _ => "UNKNOWN".to_string(),
+        }
+    }
+    
+    /// Switch x and y automorphism.
+    ///
+    /// Returns:
+    ///     Optional[PyBasicOperation]: The automorphism operation, or None if not applicable
+    fn switch_x_and_y_automorphism(&self) -> PyResult<Option<PyBasicOperation>> {
+        match self.inner.switch_x_and_y_automorphism() {
+            Ok(Some(op)) => {
+                // Convert Box<dyn Operation> to PyBasicOperation
+                // This is a simplified approach - in practice, you'd need proper type conversion
+                Ok(None) // Simplified for now
+            },
+            Ok(None) => Ok(None),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Find equation of A not B.
+    /// 
+    /// Args:
+    ///     a (FreeAlgebra): Algebra A
+    ///     b (BasicSmallAlgebra): Algebra B
+    /// 
+    /// Returns:
+    ///     Optional[Equation]: The equation, or None if not found
+    #[staticmethod]
+    fn find_equation_of_a_not_b(a: &PyFreeAlgebra, b: &PyBasicSmallAlgebra) -> PyResult<Option<PyEquation>> {
+        // Simplified implementation - return None for now
+        // The actual implementation would need proper type conversion between FreeAlgebra and SmallAlgebra
+        Ok(None)
+    }
+    
+    /// Get the cardinality of the algebra.
+    /// 
+    /// Returns:
+    ///     int: The cardinality
+    fn cardinality(&self) -> i32 {
+        self.inner.cardinality()
+    }
+    
+    /// Get the name of the algebra.
+    /// 
+    /// Returns:
+    ///     str: The name
+    fn name(&self) -> String {
+        self.inner.name().to_string()
+    }
+    
+    /// Set the name of the algebra.
+    /// 
+    /// Args:
+    ///     name (str): The new name
+    fn set_name(&mut self, name: String) {
+        self.inner.set_name(name);
+    }
+    
+    /// Check if this algebra is unary.
+    /// 
+    /// Returns:
+    ///     bool: True if the algebra is unary
+    fn is_unary(&self) -> bool {
+        self.inner.is_unary()
+    }
+    
+    /// Check if this algebra is idempotent.
+    /// 
+    /// Returns:
+    ///     bool: True if the algebra is idempotent
+    fn is_idempotent(&self) -> bool {
+        self.inner.is_idempotent()
+    }
+    
+    /// Check if this algebra is total.
+    /// 
+    /// Returns:
+    ///     bool: True if the algebra is total
+    fn is_total(&self) -> bool {
+        self.inner.is_total()
+    }
+    
+    /// Get the number of operations.
+    /// 
+    /// Returns:
+    ///     int: The number of operations
+    fn operations_count(&self) -> usize {
+        self.inner.get_operations_ref().len()
+    }
+    
+    /// Get the universe as a list.
+    /// 
+    /// Returns:
+    ///     List[IntArray]: The universe elements
+    fn get_universe_list(&self) -> Vec<PyIntArray> {
+        self.inner.universe()
+            .map(|item| PyIntArray { inner: item })
+            .collect()
+    }
+    
+    /// Get the universe order as a dictionary.
+    /// 
+    /// Returns:
+    ///     Dict[IntArray, int]: The universe order mapping
+    fn get_universe_order(&self) -> Option<HashMap<PyIntArray, usize>> {
+        // This is a simplified implementation
+        // The full implementation would need to handle IntArray as keys
+        None
+    }
+    
+    /// Get an element by its index.
+    /// 
+    /// Args:
+    ///     index (int): The index of the element
+    /// 
+    /// Returns:
+    ///     IntArray: The element at the given index
+    fn get_element(&self, index: usize) -> Option<PyIntArray> {
+        // This is a simplified implementation
+        // The full implementation would need to convert from IntArray
+        None
+    }
+    
+    /// Get the index of an element.
+    /// 
+    /// Args:
+    ///     element (IntArray): The element to find the index for
+    /// 
+    /// Returns:
+    ///     int: The index of the element
+    fn element_index(&self, element: &PyIntArray) -> Option<usize> {
+        // This is a simplified implementation
+        // The full implementation would need to search through the universe
+        None
+    }
+    
+    /// String representation of the algebra.
+    /// 
+    /// Returns:
+    ///     str: String representation
+    fn __str__(&self) -> String {
+        format!("{}", self.inner)
+    }
+    
+    /// String representation for debugging.
+    /// 
+    /// Returns:
+    ///     str: Debug string representation
+    fn __repr__(&self) -> String {
+        format!("FreeAlgebra(name='{}', cardinality={})", self.name(), self.cardinality())
+    }
+    
+    /// Equality comparison.
+    /// 
+    /// Args:
+    ///     other (FreeAlgebra): The other algebra to compare with
+    /// 
+    /// Returns:
+    ///     bool: True if equal
+    fn __eq__(&self, other: &PyFreeAlgebra) -> bool {
+        self.inner == other.inner
+    }
+    
+    /// Hash function for use in sets and dictionaries.
+    /// 
+    /// Returns:
+    ///     int: Hash value
+    fn __hash__(&self) -> u64 {
+        use std::collections::hash_map::DefaultHasher;
+        use std::hash::{Hash, Hasher};
+        
+        let mut hasher = DefaultHasher::new();
+        self.inner.hash(&mut hasher);
+        hasher.finish()
+    }
+
+    /// Length function for use with len().
+    /// 
+    /// Returns:
+    ///     int: Cardinality of the algebra
+    fn __len__(&self) -> usize {
+        self.inner.cardinality() as usize
+    }
+}
+
+/// Python wrapper for UnaryTermsMonoid
+#[pyclass]
+pub struct PyUnaryTermsMonoid {
+    inner: uacalc::alg::UnaryTermsMonoid,
+}
+
+#[pymethods]
+impl PyUnaryTermsMonoid {
+    /// Create a new UnaryTermsMonoid from a generating algebra.
+    /// 
+    /// Args:
+    ///     algebra (BasicSmallAlgebra): The generating algebra
+    /// 
+    /// Raises:
+    ///     ValueError: If construction fails
+    #[new]
+    fn new(algebra: &PyBasicSmallAlgebra) -> PyResult<Self> {
+        let rust_alg = Box::new(algebra.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
+        
+        match uacalc::alg::UnaryTermsMonoid::new_safe(rust_alg) {
+            Ok(inner) => Ok(PyUnaryTermsMonoid { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Create a new UnaryTermsMonoid with optional identity inclusion.
+    /// 
+    /// Args:
+    ///     algebra (BasicSmallAlgebra): The generating algebra
+    ///     include_id (bool): Whether to include the identity term
+    /// 
+    /// Raises:
+    ///     ValueError: If construction fails
+    #[staticmethod]
+    fn new_with_id(algebra: &PyBasicSmallAlgebra, include_id: bool) -> PyResult<Self> {
+        let rust_alg = Box::new(algebra.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
+        
+        match uacalc::alg::UnaryTermsMonoid::new_with_id_safe(rust_alg, include_id) {
+            Ok(inner) => Ok(PyUnaryTermsMonoid { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Get the algebra type.
+    /// 
+    /// Returns:
+    ///     str: The algebra type
+    fn algebra_type(&self) -> String {
+        match self.inner.algebra_type() {
+            uacalc::alg::AlgebraType::UnaryTermsMonoid => "UNARY_TERMS_MONOID".to_string(),
+            _ => "UNKNOWN".to_string(),
+        }
+    }
+    
+    /// Get the cardinality of the algebra.
+    /// 
+    /// Returns:
+    ///     int: The cardinality
+    fn cardinality(&self) -> i32 {
+        self.inner.cardinality()
+    }
+    
+    /// Get the name of the algebra.
+    /// 
+    /// Returns:
+    ///     str: The name
+    fn name(&self) -> String {
+        self.inner.name().to_string()
+    }
+    
+    /// Set the name of the algebra.
+    /// 
+    /// Args:
+    ///     name (str): The new name
+    fn set_name(&mut self, name: String) {
+        self.inner.set_name(name);
+    }
+    
+    /// Check if this algebra is unary.
+    /// 
+    /// Returns:
+    ///     bool: True if the algebra is unary
+    fn is_unary(&self) -> bool {
+        self.inner.is_unary()
+    }
+    
+    /// Check if this algebra is idempotent.
+    /// 
+    /// Returns:
+    ///     bool: True if the algebra is idempotent
+    fn is_idempotent(&self) -> bool {
+        self.inner.is_idempotent()
+    }
+    
+    /// Check if this algebra is total.
+    /// 
+    /// Returns:
+    ///     bool: True if the algebra is total
+    fn is_total(&self) -> bool {
+        self.inner.is_total()
+    }
+    
+    /// Get the number of operations.
+    /// 
+    /// Returns:
+    ///     int: The number of operations (1 for the product operation)
+    fn operations_count(&self) -> usize {
+        self.inner.get_operations_ref().len()
+    }
+    
+    /// Get the universe as a list.
+    /// 
+    /// Returns:
+    ///     List[IntArray]: The universe elements
+    fn get_universe_list(&self) -> Vec<PyIntArray> {
+        self.inner.universe()
+            .map(|item| PyIntArray { inner: item })
+            .collect()
+    }
+    
+    /// Get an element by its index.
+    /// 
+    /// Args:
+    ///     index (int): The index of the element
+    /// 
+    /// Returns:
+    ///     IntArray: The element at the given index (optional)
+    fn get_element(&self, index: usize) -> Option<PyIntArray> {
+        self.inner.get_element(index).map(|item| PyIntArray { inner: item })
+    }
+    
+    /// Get the index of an element.
+    /// 
+    /// Args:
+    ///     element (IntArray): The element to find the index for
+    /// 
+    /// Returns:
+    ///     int: The index of the element (optional)
+    fn element_index(&self, element: &PyIntArray) -> Option<usize> {
+        self.inner.element_index(&element.inner)
+    }
+    
+    /// String representation of the algebra.
+    /// 
+    /// Returns:
+    ///     str: String representation
+    fn __str__(&self) -> String {
+        format!("{}", self.inner)
+    }
+    
+    /// String representation for debugging.
+    /// 
+    /// Returns:
+    ///     str: Debug string representation
+    fn __repr__(&self) -> String {
+        format!("UnaryTermsMonoid(name='{}', cardinality={})", self.name(), self.cardinality())
+    }
+    
+    /// Length function for use with len().
+    /// 
+    /// Returns:
+    ///     int: Cardinality of the algebra
+    fn __len__(&self) -> usize {
+        self.inner.cardinality() as usize
+    }
+}
