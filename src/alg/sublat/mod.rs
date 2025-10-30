@@ -1363,10 +1363,10 @@ where
     ) -> bool {
         let empty_args: &[i32] = &[];
         
-        for op_a in a.operations() {
+        for op_a in a.get_operations_ref() {
             if op_a.arity() == 0 {
                 if let Ok(f_value) = op_a.int_value_at(empty_args) {
-                    if let Some(op_b) = b.get_operation(op_a.symbol()) {
+                    if let Some(op_b) = b.get_operation_ref(op_a.symbol()) {
                         if let Ok(g_value) = op_b.int_value_at(empty_args) {
                             if let Some(&existing) = homo.get(&f_value) {
                                 if existing != g_value {
@@ -1397,13 +1397,13 @@ where
         let mut current_mark = lst.len();
         
         while closed_mark < current_mark {
-            for op_a in a.operations() {
+            for op_a in a.get_operations_ref() {
                 let arity = op_a.arity();
                 if arity == 0 {
                     continue;
                 }
                 
-                if let Some(op_b) = b.get_operation(op_a.symbol()) {
+                if let Some(op_b) = b.get_operation_ref(op_a.symbol()) {
                     let arity_usize = arity as usize;
                     let mut arg_indices = vec![0_i32; arity_usize];
                     for i in 0..(arity - 1) {

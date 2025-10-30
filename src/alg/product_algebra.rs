@@ -334,7 +334,6 @@ impl ProductAlgebra {
                 symbol,
                 self.size,
                 arity,
-                i, // Store the operation index instead of the operations themselves
                 alg_clones,
                 self.sizes.clone(),
                 self.number_of_products,
@@ -606,7 +605,6 @@ struct ProductOperation {
     symbol: OperationSymbol,
     size: i32,
     arity: i32,
-    op_index: usize, // Index of the operation in each algebra's operation list
     algebras: Vec<Box<dyn SmallAlgebra<UniverseItem = i32>>>,
     sizes: Vec<i32>,
     number_of_products: usize,
@@ -618,7 +616,6 @@ impl ProductOperation {
         symbol: OperationSymbol,
         size: i32,
         arity: i32,
-        op_index: usize,
         algebras: Vec<Box<dyn SmallAlgebra<UniverseItem = i32>>>,
         sizes: Vec<i32>,
         number_of_products: usize,
@@ -627,7 +624,6 @@ impl ProductOperation {
             symbol,
             size,
             arity,
-            op_index,
             algebras,
             sizes,
             number_of_products,
@@ -669,12 +665,10 @@ impl Operation for ProductOperation {
         
         // Apply operations in each component algebra (reverse order for Horner)
         for i in (0..self.number_of_products).rev() {
-            // Get the operation from the algebra
-            let ops = self.algebras[i].operations();
-            if self.op_index >= ops.len() {
-                return Err(format!("Operation index {} out of range", self.op_index));
-            }
-            let op = &ops[self.op_index];
+            // Get the operation by symbol from the algebra using reference access
+            let op = self.algebras[i]
+                .get_operation_ref(&self.symbol)
+                .ok_or_else(|| format!("Operation {} not found in factor {}", self.symbol.name(), i))?;
             
             // Extract arguments for this component
             let mut component_args = Vec::with_capacity(args.len());
@@ -752,12 +746,11 @@ impl Operation for ProductOperation {
     
     fn is_idempotent(&self) -> Result<bool, String> {
         // A product is idempotent iff all components are idempotent
-        for alg in &self.algebras {
-            let ops = alg.operations();
-            if self.op_index >= ops.len() {
-                return Err(format!("Operation index {} out of range", self.op_index));
-            }
-            if !ops[self.op_index].is_idempotent()? {
+        for (i, alg) in self.algebras.iter().enumerate() {
+            let op = alg
+                .get_operation_ref(&self.symbol)
+                .ok_or_else(|| format!("Operation {} not found in factor {}", self.symbol.name(), i))?;
+            if !op.is_idempotent()? {
                 return Ok(false);
             }
         }
@@ -766,12 +759,11 @@ impl Operation for ProductOperation {
     
     fn is_commutative(&self) -> Result<bool, String> {
         // A product is commutative iff all components are commutative
-        for alg in &self.algebras {
-            let ops = alg.operations();
-            if self.op_index >= ops.len() {
-                return Err(format!("Operation index {} out of range", self.op_index));
-            }
-            if !ops[self.op_index].is_commutative()? {
+        for (i, alg) in self.algebras.iter().enumerate() {
+            let op = alg
+                .get_operation_ref(&self.symbol)
+                .ok_or_else(|| format!("Operation {} not found in factor {}", self.symbol.name(), i))?;
+            if !op.is_commutative()? {
                 return Ok(false);
             }
         }
@@ -780,12 +772,11 @@ impl Operation for ProductOperation {
     
     fn is_associative(&self) -> Result<bool, String> {
         // A product is associative iff all components are associative
-        for alg in &self.algebras {
-            let ops = alg.operations();
-            if self.op_index >= ops.len() {
-                return Err(format!("Operation index {} out of range", self.op_index));
-            }
-            if !ops[self.op_index].is_associative()? {
+        for (i, alg) in self.algebras.iter().enumerate() {
+            let op = alg
+                .get_operation_ref(&self.symbol)
+                .ok_or_else(|| format!("Operation {} not found in factor {}", self.symbol.name(), i))?;
+            if !op.is_associative()? {
                 return Ok(false);
             }
         }
@@ -794,12 +785,11 @@ impl Operation for ProductOperation {
     
     fn is_totally_symmetric(&self) -> Result<bool, String> {
         // A product is totally symmetric iff all components are totally symmetric
-        for alg in &self.algebras {
-            let ops = alg.operations();
-            if self.op_index >= ops.len() {
-                return Err(format!("Operation index {} out of range", self.op_index));
-            }
-            if !ops[self.op_index].is_totally_symmetric()? {
+        for (i, alg) in self.algebras.iter().enumerate() {
+            let op = alg
+                .get_operation_ref(&self.symbol)
+                .ok_or_else(|| format!("Operation {} not found in factor {}", self.symbol.name(), i))?;
+            if !op.is_totally_symmetric()? {
                 return Ok(false);
             }
         }
@@ -808,12 +798,11 @@ impl Operation for ProductOperation {
     
     fn is_maltsev(&self) -> Result<bool, String> {
         // A product is Maltsev iff all components are Maltsev
-        for alg in &self.algebras {
-            let ops = alg.operations();
-            if self.op_index >= ops.len() {
-                return Err(format!("Operation index {} out of range", self.op_index));
-            }
-            if !ops[self.op_index].is_maltsev()? {
+        for (i, alg) in self.algebras.iter().enumerate() {
+            let op = alg
+                .get_operation_ref(&self.symbol)
+                .ok_or_else(|| format!("Operation {} not found in factor {}", self.symbol.name(), i))?;
+            if !op.is_maltsev()? {
                 return Ok(false);
             }
         }
@@ -822,12 +811,11 @@ impl Operation for ProductOperation {
     
     fn is_total(&self) -> Result<bool, String> {
         // A product is total iff all components are total
-        for alg in &self.algebras {
-            let ops = alg.operations();
-            if self.op_index >= ops.len() {
-                return Err(format!("Operation index {} out of range", self.op_index));
-            }
-            if !ops[self.op_index].is_total()? {
+        for (i, alg) in self.algebras.iter().enumerate() {
+            let op = alg
+                .get_operation_ref(&self.symbol)
+                .ok_or_else(|| format!("Operation {} not found in factor {}", self.symbol.name(), i))?;
+            if !op.is_total()? {
                 return Ok(false);
             }
         }
@@ -848,7 +836,6 @@ impl Operation for ProductOperation {
             symbol: self.symbol.clone(),
             size: self.size,
             arity: self.arity,
-            op_index: self.op_index,
             algebras: cloned_algebras,
             sizes: self.sizes.clone(),
             number_of_products: self.number_of_products,
