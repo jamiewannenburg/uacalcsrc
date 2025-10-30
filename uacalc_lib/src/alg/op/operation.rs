@@ -8,7 +8,7 @@ use super::operation_symbol::PyOperationSymbol;
 /// Python wrapper for BasicOperation
 #[pyclass]
 pub struct PyBasicOperation {
-    inner: BasicOperation,
+    pub(crate) inner: BasicOperation,
 }
 
 #[pymethods]

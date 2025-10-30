@@ -29,24 +29,34 @@ pub use operation_symbol::PyOperationSymbol;
 pub use conlat::basic_binary_relation::PyBasicBinaryRelation;
 pub use conlat::centrality_data::PyCentralityData;
 pub use conlat::partition::PyPartition;
+pub use conlat::print_type::PyPrintType;
+pub use conlat::congruence_lattice::PyCongruenceLattice;
 pub use op::similarity_type::PySimilarityType;
 pub use op::parameterized_operation::PyParameterizedOperation;
+pub use op::operations::PyOperations;
+pub use op::operation_with_default_value::PyOperationWithDefaultValue;
 pub use sublat::basic_set::PyBasicSet;
 pub use sublat::subalgebra_lattice::PySubalgebraLattice;
 
 // Module registration function
 use pyo3::prelude::*;
+use crate::alg::homomorphism::PyHomomorphism;
 
 pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     // Register classes internally but only export clean names
     m.add_class::<PyOperationSymbol>()?;
     m.add_class::<PyBasicOperation>()?;
     m.add_class::<PyBasicSmallAlgebra>()?;
+    m.add_class::<PyOperations>()?;
+    m.add_class::<PyOperationWithDefaultValue>()?;
+    m.add_class::<PyHomomorphism>()?;
     m.add_class::<PySubalgebraLattice>()?;
     m.add_class::<PyBasicBinaryRelation>()?;
     m.add_class::<PyCentralityData>()?;
     m.add_class::<PySimilarityType>()?;
     m.add_class::<PyPartition>()?;
+    m.add_class::<PyPrintType>()?;
+    m.add_class::<PyCongruenceLattice>()?;
     m.add_class::<PyParameterizedOperation>()?;
     m.add_class::<PyBasicSet>()?;
 
@@ -54,11 +64,16 @@ pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     m.add("OperationSymbol", m.getattr("PyOperationSymbol")?)?;
     m.add("BasicOperation", m.getattr("PyBasicOperation")?)?;
     m.add("BasicSmallAlgebra", m.getattr("PyBasicSmallAlgebra")?)?;
+    m.add("Operations", m.getattr("PyOperations")?)?;
+    m.add("OperationWithDefaultValue", m.getattr("PyOperationWithDefaultValue")?)?;
+    m.add("Homomorphism", m.getattr("PyHomomorphism")?)?;
     m.add("SubalgebraLattice", m.getattr("PySubalgebraLattice")?)?;
     m.add("BasicBinaryRelation", m.getattr("PyBasicBinaryRelation")?)?;
     m.add("SimilarityType", m.getattr("PySimilarityType")?)?;
     m.add("CentralityData", m.getattr("PyCentralityData")?)?;
     m.add("Partition", m.getattr("PyPartition")?)?;
+    m.add("PrintType", m.getattr("PyPrintType")?)?;
+    m.add("CongruenceLattice", m.getattr("PyCongruenceLattice")?)?;
     m.add("ParameterizedOperation", m.getattr("PyParameterizedOperation")?)?;
     m.add("BasicSet", m.getattr("PyBasicSet")?)?;
 

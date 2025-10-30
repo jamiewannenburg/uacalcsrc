@@ -4,7 +4,7 @@ use pyo3::exceptions::PyValueError;
 /// Python wrapper for Partition
 #[pyclass]
 pub struct PyPartition {
-    inner: uacalc::alg::conlat::partition::Partition,
+    pub(crate) inner: uacalc::alg::conlat::partition::Partition,
 }
 
 #[pymethods]

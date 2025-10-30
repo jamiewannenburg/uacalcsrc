@@ -7,7 +7,7 @@ use crate::alg::op::operation_symbol::PyOperationSymbol;
 /// Python wrapper for IntOperation
 #[pyclass]
 pub struct PyIntOperation {
-    inner: IntOperation,
+    pub(crate) inner: IntOperation,
 }
 
 #[pymethods]

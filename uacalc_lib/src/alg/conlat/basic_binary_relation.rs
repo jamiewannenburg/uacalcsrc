@@ -7,7 +7,7 @@ use uacalc::util::IntArrayTrait;
 /// Python wrapper for BasicBinaryRelation
 #[pyclass]
 pub struct PyBasicBinaryRelation {
-    inner: BasicBinaryRelation,
+    pub(crate) inner: BasicBinaryRelation,
 }
 
 #[pymethods]
