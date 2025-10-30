@@ -37,7 +37,6 @@ mod subalgebra_lattice_tests {
     }
 
     #[test]
-    // TODO: This test hangs becuase of borrowing/infinite recursion issues
     fn test_sg_generation() {
         let alg = load_algebra("resources/algebras/cyclic3.ua");
         let sub_lat = SubalgebraLattice::new_safe(alg).unwrap();
@@ -48,8 +47,6 @@ mod subalgebra_lattice_tests {
     }
 
     #[test]
-    #[igonore]
-    // TODO: This test hangs becuase of borrowing/infinite recursion issues
     fn test_leq() {
         let alg = load_algebra("resources/algebras/cyclic3.ua");
         let sub_lat = SubalgebraLattice::new_safe(alg).unwrap();

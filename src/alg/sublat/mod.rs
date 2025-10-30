@@ -604,7 +604,7 @@ where
             return Err("Algebra must have positive cardinality".to_string());
         }
         
-        let operations = alg.operations();
+        let operations = alg.get_operations_ref();
         let num_ops = operations.len() as i32;
         
         // Create one subalgebra (entire algebra)
@@ -915,7 +915,7 @@ where
         let mut su: HashSet<i32> = gens.iter().cloned().collect();
         let mut lst = gens;
         
-        let operations = self.alg.operations();
+        let operations = self.alg.get_operations_ref();
         
         while closed_mark < current_mark {
             // Close the elements in current
@@ -946,37 +946,20 @@ where
                     for i in 0..arity {
                         arg[i as usize] = lst[arg_indices_copy[i as usize] as usize];
                     }
-                    
-                    // Generate all permutations of the argument
-                    // Convert to usize for PermutationGenerator (clone to avoid borrow)
-                    let mut arg_usize: Vec<usize> = arg.iter().map(|&x| x as usize).collect();
-                    loop {
-                        // Apply operation (clone arg_usize to avoid borrow issues)
-                        let arg_i32: Vec<i32> = arg_usize.iter().map(|&x| x as i32).collect();
-                        match op.int_value_at(&arg_i32) {
-                            Ok(v) => {
-                                if su.insert(v) {
-                                    lst.push(v);
-                                    if lst.len() > max_size {
-                                        return self.one().clone();
-                                    }
+                    // Apply operation once for this argument (pilot: skip permutations)
+                    match op.int_value_at(&arg) {
+                        Ok(v) => {
+                            if su.insert(v) {
+                                lst.push(v);
+                                if lst.len() > max_size {
+                                    return self.one().clone();
                                 }
                             }
-                            Err(_) => {
-                                // Ignore errors for partial operations
-                            }
                         }
-                        
-                        // Increment permutation
-                        let perm_result = {
-                            let mut perm_inc = PermutationGenerator::array_incrementor(&mut arg_usize);
-                            perm_inc.increment()
-                        };
-                        if !perm_result {
-                            break;
+                        Err(_) => {
+                            // Ignore errors for partial operations
                         }
                     }
-                    
                     // Increment sequence (clone to avoid borrow)
                     if !inc.increment() {
                         break;

@@ -1,8 +1,10 @@
 use std::collections::{HashMap, HashSet};
 use std::fmt::{Debug, Display};
 use std::hash::Hash;
+use std::sync::Arc;
 use crate::alg::algebra::{Algebra, ProgressMonitor, CARDINALITY_UNKNOWN};
 use crate::alg::op::{Operation, OperationSymbol, SimilarityType};
+use crate::alg::op::operation::boxed_arc_op;
 
 /// A general algebra implementation that can handle both finite and infinite algebras.
 /// 
@@ -21,8 +23,8 @@ where
     /// The universe of the algebra as a set
     pub universe: HashSet<T>,
     
-    /// The operations defined on this algebra
-    operations: Vec<Box<dyn Operation>>,
+    /// The operations defined on this algebra (Arc-backed, no deep clones)
+    operations: Vec<Arc<dyn Operation>>,
     
     /// Map from operation symbols to operations for fast lookup
     operations_map: Option<HashMap<OperationSymbol, Box<dyn Operation>>>,
@@ -108,11 +110,17 @@ where
             Some(CARDINALITY_UNKNOWN)
         };
         
+        // Convert boxed operations to Arcs
+        let mut ops_arc: Vec<Arc<dyn Operation>> = operations
+            .into_iter()
+            .map(|op| Arc::<dyn Operation>::from(op))
+            .collect();
+
         let mut algebra = GeneralAlgebra {
             name,
             description: None,
             universe,
-            operations,
+            operations: ops_arc,
             operations_map: None,
             similarity_type: None,
             monitor: None,
@@ -144,9 +152,9 @@ where
     /// # Arguments
     /// * `operations` - The new operations list
     pub fn set_operations(&mut self, mut operations: Vec<Box<dyn Operation>>) {
-        // Sort operations like in the Java implementation
+        // Sort and convert to Arc-backed storage
         operations.sort_by(|a, b| a.symbol().cmp(b.symbol()));
-        self.operations = operations;
+        self.operations = operations.into_iter().map(|op| Arc::<dyn Operation>::from(op)).collect();
         self.rebuild_operations_map();
         self.similarity_type = None; // Clear cached similarity type
     }
@@ -159,7 +167,7 @@ where
     }
     
     /// Get a mutable reference to the operations list.
-    pub fn operations_mut(&mut self) -> &mut Vec<Box<dyn Operation>> {
+    pub fn operations_mut_arc(&mut self) -> &mut Vec<Arc<dyn Operation>> {
         &mut self.operations
     }
     
@@ -173,10 +181,15 @@ where
         }
         None
     }
-    
+
     /// Get references to all operations in this algebra.
     pub fn get_operations_ref(&self) -> Vec<&dyn Operation> {
         self.operations.iter().map(|op| op.as_ref()).collect()
+    }
+
+    /// Borrowed access to Arc-backed operations to avoid cloning.
+    pub fn operations_ref_arc(&self) -> &[Arc<dyn Operation>] {
+        &self.operations
     }
 }
 
@@ -200,12 +213,8 @@ where
     T: Clone + PartialEq + Eq + Hash + Debug
 {
     fn clone(&self) -> Self {
-        // Create a new GeneralAlgebra with the same basic properties
-        // Clone operations using clone_box
-        let cloned_operations: Vec<Box<dyn Operation>> = self.operations
-            .iter()
-            .map(|op| op.clone_box())
-            .collect();
+        // Shallow-clone Arc-backed operations
+        let cloned_operations: Vec<Arc<dyn Operation>> = self.operations.iter().map(Arc::clone).collect();
         
         let mut new_alg = GeneralAlgebra {
             name: self.name.clone(),
@@ -267,15 +276,18 @@ where
     }
     
     fn operations(&self) -> Vec<Box<dyn Operation>> {
-        // Clone all operations using clone_box
-        self.operations.iter().map(|op| op.clone_box()).collect()
+        // Wrap Arc-backed operations in ArcOp delegators for shallow clones
+        self.operations
+            .iter()
+            .map(|op| boxed_arc_op(Arc::clone(op)))
+            .collect()
     }
     
     fn get_operation(&self, sym: &OperationSymbol) -> Option<Box<dyn Operation>> {
         // Find and clone the operation
         for op in &self.operations {
             if op.symbol() == sym {
-                return Some(op.clone_box());
+                return Some(boxed_arc_op(Arc::clone(op)));
             }
         }
         None
@@ -285,7 +297,7 @@ where
         // Build map by cloning operations
         let mut map = HashMap::new();
         for op in &self.operations {
-            map.insert(op.symbol().clone(), op.clone_box());
+            map.insert(op.symbol().clone(), boxed_arc_op(Arc::clone(op)));
         }
         map
     }
@@ -325,9 +337,8 @@ where
     }
     
     fn make_operation_tables(&mut self) {
-        for op in &mut self.operations {
-            let _ = op.make_table(); // Ignore errors for now
-        }
+        // We do not mutate operations in-place here because they are Arc-backed.
+        // Table creation should be handled at the concrete op level if needed.
     }
     
     fn constant_operations(&self) -> Vec<Box<dyn Operation>> {

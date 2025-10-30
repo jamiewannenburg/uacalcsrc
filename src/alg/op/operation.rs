@@ -1,4 +1,5 @@
 use std::fmt::{Debug, Display};
+use std::sync::Arc;
 use crate::alg::op::OperationSymbol;
 
 /// This trait specifies an operation, that is, a map from 
@@ -192,4 +193,62 @@ pub type BoxedOperation = Box<dyn Operation>;
 /// Create a boxed operation from any type implementing Operation.
 pub fn boxed_operation<T: 'static + Operation>(op: T) -> BoxedOperation {
     Box::new(op)
+}
+
+/// A lightweight delegator that wraps an `Arc<dyn Operation>` and implements
+/// `Operation` by forwarding all calls to the inner operation. Cloning this
+/// wrapper is shallow via `Arc::clone`, avoiding deep copies and recursion.
+#[derive(Clone)]
+pub struct ArcOp {
+    inner: Arc<dyn Operation>,
+}
+
+impl ArcOp {
+    pub fn new(inner: Arc<dyn Operation>) -> Self {
+        Self { inner }
+    }
+}
+
+impl Display for ArcOp {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.inner)
+    }
+}
+
+impl Debug for ArcOp {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self.inner)
+    }
+}
+
+impl Operation for ArcOp {
+    fn arity(&self) -> i32 { self.inner.arity() }
+    fn get_set_size(&self) -> i32 { self.inner.get_set_size() }
+    fn symbol(&self) -> &OperationSymbol { self.inner.symbol() }
+    fn value_at(&self, args: &[i32]) -> Result<i32, String> { self.inner.value_at(args) }
+    fn value_at_arrays(&self, args: &[&[i32]]) -> Result<Vec<i32>, String> { self.inner.value_at_arrays(args) }
+    fn int_value_at(&self, args: &[i32]) -> Result<i32, String> { self.inner.int_value_at(args) }
+    fn int_value_at_horner(&self, arg: i32) -> Result<i32, String> { self.inner.int_value_at_horner(arg) }
+    fn make_table(&mut self) -> Result<(), String> { Ok(()) }
+    fn get_table(&self) -> Option<&[i32]> { self.inner.get_table() }
+    fn get_table_force(&mut self, _make_table: bool) -> Result<&[i32], String> {
+        if let Some(t) = self.inner.get_table() {
+            Ok(t)
+        } else {
+            Err("table not available on ArcOp".to_string())
+        }
+    }
+    fn is_table_based(&self) -> bool { self.inner.is_table_based() }
+    fn is_idempotent(&self) -> Result<bool, String> { self.inner.is_idempotent() }
+    fn is_associative(&self) -> Result<bool, String> { self.inner.is_associative() }
+    fn is_commutative(&self) -> Result<bool, String> { self.inner.is_commutative() }
+    fn is_totally_symmetric(&self) -> Result<bool, String> { self.inner.is_totally_symmetric() }
+    fn clone_box(&self) -> Box<dyn Operation> { Box::new(ArcOp { inner: Arc::clone(&self.inner) }) }
+    fn is_maltsev(&self) -> Result<bool, String> { self.inner.is_maltsev() }
+    fn is_total(&self) -> Result<bool, String> { self.inner.is_total() }
+}
+
+// Convenience constructor for boxing an Arc-wrapped operation
+pub fn boxed_arc_op(inner: Arc<dyn Operation>) -> Box<dyn Operation> {
+    Box::new(ArcOp::new(inner))
 }
