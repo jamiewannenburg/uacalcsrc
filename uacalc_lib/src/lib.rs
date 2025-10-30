@@ -2,7 +2,6 @@ use pyo3::prelude::*;
 
 pub mod alg;
 pub mod alg_bindings;
-pub mod malcev_bindings;
 pub mod element;
 pub mod eq;
 pub mod example;

@@ -1,0 +1,8 @@
+# alg.rs renamed to alg.rs.backup.txt
+
+uacalc/src/alg.rs was renamed to uacalc/src/alg.rs.backup
+
+## Guidelines
+
+- Get your code from uacalc/src/alg.rs.backup
+- This was renamed so that it does not interfere with compilation

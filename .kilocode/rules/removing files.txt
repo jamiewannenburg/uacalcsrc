@@ -1,0 +1,7 @@
+# removing files.txt
+
+Don't remove files to help with compilation.
+
+## Guidelines
+
+- Instead rename file to old_file.backup

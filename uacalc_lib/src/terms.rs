@@ -3,6 +3,7 @@ use pyo3::exceptions::PyValueError;
 use pyo3::types::PyList;
 use uacalc::terms::{VariableImp, NonVariableTerm, Term, Variable};
 use std::collections::HashMap;
+use crate::alg::{PyBasicSmallAlgebra, PyOperationSymbol};
 
 /// Python wrapper for VariableImp
 #[pyclass]
@@ -84,7 +85,7 @@ impl PyVariableImp {
     /// 
     /// # Returns
     /// The value assigned to this variable
-    fn eval(&self, algebra: &crate::alg::PyBasicSmallAlgebra, var_map: HashMap<String, i32>) -> PyResult<i32> {
+    fn eval(&self, algebra: &PyBasicSmallAlgebra, var_map: HashMap<String, i32>) -> PyResult<i32> {
         self.inner.eval(&algebra.inner, &var_map)
             .map_err(|e| PyValueError::new_err(e))
     }
@@ -97,7 +98,7 @@ impl PyVariableImp {
     /// 
     /// # Returns
     /// The integer value assigned to this variable
-    fn int_eval(&self, algebra: &crate::alg::PyBasicSmallAlgebra, var_map: HashMap<String, i32>) -> PyResult<i32> {
+    fn int_eval(&self, algebra: &PyBasicSmallAlgebra, var_map: HashMap<String, i32>) -> PyResult<i32> {
         self.inner.int_eval(&algebra.inner, &var_map)
             .map_err(|e| PyValueError::new_err(e))
     }
@@ -145,7 +146,7 @@ impl PyNonVariableTerm {
     /// # Returns
     /// A new non-variable term
     #[new]
-    fn new(op_sym: &crate::alg::PyOperationSymbol, children: &Bound<'_, PyList>) -> PyResult<Self> {
+    fn new(op_sym: &PyOperationSymbol, children: &Bound<'_, PyList>) -> PyResult<Self> {
         // Convert Python children to Rust Box<dyn Term>
         let mut rust_children: Vec<Box<dyn Term>> = Vec::new();
         
@@ -176,7 +177,7 @@ impl PyNonVariableTerm {
     /// # Returns
     /// A constant term
     #[staticmethod]
-    fn make_constant_term(sym: &crate::alg::PyOperationSymbol) -> Self {
+    fn make_constant_term(sym: &PyOperationSymbol) -> Self {
         PyNonVariableTerm {
             inner: NonVariableTerm::make_constant_term(sym.get_inner()),
         }
@@ -210,7 +211,7 @@ impl PyNonVariableTerm {
     /// 
     /// # Returns
     /// The result of evaluating the term
-    fn eval(&self, algebra: &crate::alg::PyBasicSmallAlgebra, var_map: HashMap<String, i32>) -> PyResult<i32> {
+    fn eval(&self, algebra: &PyBasicSmallAlgebra, var_map: HashMap<String, i32>) -> PyResult<i32> {
         self.inner.eval(&algebra.inner, &var_map)
             .map_err(|e| PyValueError::new_err(e))
     }
@@ -223,7 +224,7 @@ impl PyNonVariableTerm {
     /// 
     /// # Returns
     /// The integer result of evaluating the term
-    fn int_eval(&self, algebra: &crate::alg::PyBasicSmallAlgebra, var_map: HashMap<String, i32>) -> PyResult<i32> {
+    fn int_eval(&self, algebra: &PyBasicSmallAlgebra, var_map: HashMap<String, i32>) -> PyResult<i32> {
         self.inner.int_eval(&algebra.inner, &var_map)
             .map_err(|e| PyValueError::new_err(e))
     }
@@ -256,7 +257,7 @@ impl PyTaylor {
     /// # Returns
     /// A new Taylor instance
     #[new]
-    fn new(op_sym: &crate::alg::PyOperationSymbol, inteqs: Vec<Vec<crate::util::PyIntArray>>) -> Self {
+    fn new(op_sym: &PyOperationSymbol, inteqs: Vec<Vec<crate::util::PyIntArray>>) -> Self {
         // Convert PyIntArray to IntArray
         let rust_inteqs: Vec<Vec<uacalc::util::int_array::IntArray>> = inteqs
             .iter()

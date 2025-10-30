@@ -1,4 +1,4 @@
-/* malcev_bindings.rs - Python bindings for Malcev functions
+/* malcev.rs - Python bindings for Malcev functions
  *
  * This module provides Python bindings for all the Malcev static functions.
  */
@@ -13,7 +13,7 @@ use pyo3::exceptions::PyValueError;
 pub fn register_malcev_functions(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     // Note: All functions return NotImplementedError for now
     // They will be implemented as the Rust implementation is completed
-    
+
     m.add_function(wrap_pyfunction!(malcev_term, m)?)?;
     m.add_function(wrap_pyfunction!(majority_term, m)?)?;
     m.add_function(wrap_pyfunction!(minority_term, m)?)?;
@@ -39,7 +39,7 @@ pub fn register_malcev_functions(_py: Python, m: &Bound<'_, PyModule>) -> PyResu
     m.add_function(wrap_pyfunction!(local_distributivity_level, m)?)?;
     m.add_function(wrap_pyfunction!(day_quadruple, m)?)?;
     m.add_function(wrap_pyfunction!(cyclic_term_idempotent, m)?)?;
-    
+
     Ok(())
 }
 
@@ -350,4 +350,3 @@ fn day_quadruple(_a: usize, _b: usize, _c: usize, _d: usize, _algebra: PyObject)
 fn cyclic_term_idempotent(_algebra: PyObject, _arity: usize) -> PyResult<bool> {
     Err(PyValueError::new_err("Cyclic term test not yet implemented"))
 }
-
