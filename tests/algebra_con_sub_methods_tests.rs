@@ -151,10 +151,8 @@ fn test_quotient_algebra_con_larger() {
 }
 
 #[test]
-#[ignore] // SubalgebraLattice currently only supports i32 universes
 fn test_subproduct_algebra_sub() {
     // Test that SubProductAlgebra.sub() works
-    // TODO: This test is ignored until SubalgebraLattice supports IntArray universes
     let alg1 = Box::new(BasicSmallAlgebra::new(
         "A1".to_string(),
         HashSet::from([0, 1]),
