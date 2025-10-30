@@ -74,8 +74,8 @@ pub struct QuotientAlgebra {
 /// This wraps an operation from the super algebra and lifts it to the quotient.
 #[derive(Debug)]
 struct QuotientOperation {
-    /// The original operation from the super algebra
-    super_operation: Box<dyn Operation>,
+    /// The original operation from the super algebra (Arc-backed, shallow clones)
+    super_operation: Arc<dyn Operation>,
     /// The representatives array
     representatives: Vec<usize>,
     /// The congruence partition
@@ -94,7 +94,7 @@ impl Display for QuotientOperation {
 
 impl QuotientOperation {
     fn new(
-        super_operation: Box<dyn Operation>,
+        super_operation: Arc<dyn Operation>,
         representatives: Vec<usize>,
         congruence: Partition,
         size: usize,
@@ -256,7 +256,7 @@ impl Operation for QuotientOperation {
 impl Clone for QuotientOperation {
     fn clone(&self) -> Self {
         QuotientOperation {
-            super_operation: self.super_operation.clone_box(),
+            super_operation: Arc::clone(&self.super_operation),
             representatives: self.representatives.clone(),
             congruence: self.congruence.clone(),
             size: self.size,
@@ -362,8 +362,10 @@ impl QuotientAlgebra {
         let super_ops = super_algebra.operations();
         let mut operations = Vec::new();
         for super_op in super_ops {
+            // Convert boxed operation to Arc-backed operation for shallow cloning
+            let op_arc: Arc<dyn Operation> = Arc::from(super_op);
             operations.push(QuotientOperation::new(
-                super_op,
+                op_arc,
                 representatives.clone(),
                 congruence.clone(),
                 size,
