@@ -2,6 +2,7 @@ use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
 use uacalc::alg::*;
 use crate::alg::{PyBasicSmallAlgebra, PySubalgebraLattice};
+use crate::alg::conlat::congruence_lattice::PyCongruenceLattice;
 
 /// Python wrapper for ProductAlgebra
 #[pyclass]
@@ -146,7 +147,10 @@ impl PyProductAlgebra {
     ///
     /// Returns:
     ///     CongruenceLattice: The congruence lattice
-    // con() not exposed in bindings currently
+    fn con(&mut self) -> PyCongruenceLattice {
+        let con_lat = self.inner.con();
+        PyCongruenceLattice { inner: con_lat.clone() }
+    }
 
     /// Get the subalgebra lattice (lazy initialization).
     ///

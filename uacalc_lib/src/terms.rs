@@ -3,7 +3,8 @@ use pyo3::exceptions::PyValueError;
 use pyo3::types::PyList;
 use uacalc::terms::{VariableImp, NonVariableTerm, Term, Variable};
 use std::collections::HashMap;
-use crate::alg::{PyBasicSmallAlgebra, PyOperationSymbol};
+use crate::alg::op::operation_symbol::PyOperationSymbol;
+use crate::alg::PyBasicSmallAlgebra;
 
 /// Python wrapper for VariableImp
 #[pyclass]

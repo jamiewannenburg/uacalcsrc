@@ -1,7 +1,9 @@
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
 use uacalc::alg::op::{Operation, BasicOperation};
-use crate::alg::PyOperationSymbol;
+use crate::alg::op::operation_symbol::PyOperationSymbol;
+use crate::alg::op::operation_symbol as op_mod_symbol;
+use pyo3::types::PyAny;
 
 /// Python wrapper for BasicOperation
 #[pyclass]
@@ -21,14 +23,23 @@ impl PyBasicOperation {
     ///     ValueError: If set_size is invalid
     #[new]
     #[pyo3(signature = (symbol, set_size, table=None))]
-    fn new(symbol: &PyOperationSymbol, set_size: i32, table: Option<Vec<i32>>) -> PyResult<Self> {
+    fn new(symbol: &PyAny, set_size: i32, table: Option<Vec<i32>>) -> PyResult<Self> {
+        // Accept either root-level or op module OperationSymbol
+        let inner_sym = if let Ok(sym) = symbol.extract::<PyRef<PyOperationSymbol>>() {
+            sym.get_inner()
+        } else if let Ok(sym2) = symbol.extract::<PyRef<op_mod_symbol::PyOperationSymbol>>() {
+            sym2.get_inner()
+        } else {
+            return Err(PyValueError::new_err("Expected OperationSymbol"));
+        };
+
         if let Some(table_vec) = table {
-            match BasicOperation::new_with_table(symbol.get_inner(), set_size, table_vec) {
+            match BasicOperation::new_with_table(inner_sym, set_size, table_vec) {
                 Ok(inner) => Ok(PyBasicOperation { inner }),
                 Err(e) => Err(PyValueError::new_err(e)),
             }
         } else {
-            match BasicOperation::new_safe(symbol.get_inner(), set_size) {
+            match BasicOperation::new_safe(inner_sym, set_size) {
                 Ok(inner) => Ok(PyBasicOperation { inner }),
                 Err(e) => Err(PyValueError::new_err(e)),
             }

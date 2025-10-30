@@ -8,6 +8,7 @@ use crate::util::PyIntArray;
 
 use crate::alg::PyBasicSmallAlgebra;
 use crate::alg::PySubalgebraLattice;
+use crate::alg::conlat::congruence_lattice::PyCongruenceLattice;
 
 #[pyclass]
 pub struct PyReductAlgebra {
@@ -192,7 +193,10 @@ impl PyReductAlgebra {
     /// 
     /// Returns:
     ///     CongruenceLattice: The congruence lattice
-    // con() not exposed in bindings currently
+    fn con(&mut self) -> PyCongruenceLattice {
+        let con_lat = self.inner.con();
+        PyCongruenceLattice { inner: con_lat.clone() }
+    }
     
     /// Get the subalgebra lattice (lazy initialization).
     /// 

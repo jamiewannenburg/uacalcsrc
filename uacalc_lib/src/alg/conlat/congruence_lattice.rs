@@ -12,6 +12,18 @@ pub struct PyCongruenceLattice {
     pub(crate) inner: uacalc::alg::conlat::CongruenceLattice<i32>,
 }
 
+// Rust-visible constructor for internal use (separate from the #[new] Python ctor)
+impl PyCongruenceLattice {
+    pub fn from_algebra(algebra: &PyBasicSmallAlgebra) -> Self {
+        use uacalc::alg::SmallAlgebraWrapper;
+        PyCongruenceLattice {
+            inner: uacalc::alg::conlat::CongruenceLattice::new(
+                Box::new(SmallAlgebraWrapper::new(Box::new(algebra.inner.clone())))
+            ),
+        }
+    }
+}
+
 #[pymethods]
 impl PyCongruenceLattice {
     /// Create a new congruence lattice for an algebra.
@@ -97,6 +109,66 @@ impl PyCongruenceLattice {
     fn permutability_level(&mut self) -> i32 { self.inner.permutability_level() }
 
     fn cg(&mut self, a: usize, b: usize) -> PyPartition { PyPartition { inner: self.inner.cg(a, b) } }
+
+    fn complements(&mut self, partition: &PyPartition) -> Vec<PyPartition> {
+        self.inner
+            .complements(&partition.inner)
+            .into_iter()
+            .map(|p| PyPartition { inner: p })
+            .collect()
+    }
+
+    fn find_principal_chain(&mut self) -> Vec<PyPartition> {
+        self.inner
+            .find_principal_chain()
+            .into_iter()
+            .map(|p| PyPartition { inner: p })
+            .collect()
+    }
+
+    fn find_upper_cover(&mut self, congr: &PyPartition) -> Option<PyPartition> {
+        self.inner
+            .find_upper_cover(&congr.inner)
+            .map(|p| PyPartition { inner: p })
+    }
+
+    fn irredundant_meet_decomposition(&mut self) -> Vec<PyPartition> {
+        self.inner
+            .irredundant_meet_decomposition()
+            .into_iter()
+            .map(|p| PyPartition { inner: p })
+            .collect()
+    }
+
+    fn find_maximal_chain(&mut self) -> Vec<PyPartition> {
+        self.inner
+            .find_maximal_chain()
+            .into_iter()
+            .map(|p| PyPartition { inner: p })
+            .collect()
+    }
+
+    fn idempotent_polynomials(&mut self) -> PyResult<Vec<PyIntArray>> {
+        match self.inner.idempotent_polynomials() {
+            Ok(polynomials) => Ok(polynomials
+                .into_iter()
+                .map(|ia| PyIntArray { inner: ia })
+                .collect()),
+            Err(e) => Err(PyRuntimeError::new_err(e)),
+        }
+    }
+
+    fn delta(&mut self, alpha: &PyPartition, beta: &PyPartition) -> PyPartition {
+        PyPartition { inner: self.inner.delta(&alpha.inner, &beta.inner) }
+    }
+
+    fn commutator2(&mut self, alpha: &PyPartition, beta: &PyPartition) -> PyPartition {
+        PyPartition { inner: self.inner.commutator2(&alpha.inner, &beta.inner) }
+    }
+
+    fn centralizes(&self, s: &PyBasicBinaryRelation, t: &PyBasicBinaryRelation, delta: &PyPartition) -> bool {
+        self.inner.centralizes(&s.inner, &t.inner, &delta.inner)
+    }
 }
 
 

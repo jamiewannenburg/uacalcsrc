@@ -4,6 +4,7 @@ use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 use uacalc::alg::{Algebra, SmallAlgebra};
 use crate::alg::{PyBasicSmallAlgebra, PySubalgebraLattice};
+use crate::alg::conlat::congruence_lattice::PyCongruenceLattice;
 
 /// Python wrapper for PowerAlgebra
 #[pyclass]
@@ -219,7 +220,10 @@ impl PyPowerAlgebra {
     ///
     /// Returns:
     ///     CongruenceLattice: The congruence lattice
-    // con() not exposed in bindings currently
+    fn con(&mut self) -> PyCongruenceLattice {
+        let con_lat = self.inner.con();
+        PyCongruenceLattice { inner: con_lat.clone() }
+    }
 
     /// Get the subalgebra lattice (lazy initialization).
     ///

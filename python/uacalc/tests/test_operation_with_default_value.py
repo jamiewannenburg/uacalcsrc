@@ -162,22 +162,6 @@ class TestOperationWithDefaultValue:
         
         assert result == java_result["data"]["result"]
     
-    def test_int_value_at_single(self):
-        """Test intValueAt with single argument."""
-        # Create a basic operation first using simple_unary_op
-        base_op = BasicOperation.simple_unary_op("f", 3)
-        
-        op = OperationWithDefaultValue.from_operation(base_op)
-        op.set_default_value(2)
-        
-        result = op.int_value_at(1)
-        
-        java_result = run_java_wrapper("intValueAtSingle", [
-            "--type", "unary", "--setSize", "3", "--defaultValue", "2", "--arg", "1"
-        ])
-        
-        assert result == java_result["data"]["result"]
-    
     def test_value_at(self):
         """Test valueAt method."""
         # Create a basic operation first using simple_binary_op

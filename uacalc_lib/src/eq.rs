@@ -4,6 +4,7 @@ use uacalc::eq::{Equation, equations, Presentation};
 use uacalc::terms::Term;  // Import Term trait for clone_box method
 use std::collections::HashMap;
 use std::sync::Arc;
+use crate::alg::op::operation_symbol::PyOperationSymbol;
 
 /// Python wrapper for Equation
 #[pyclass]
@@ -148,7 +149,7 @@ fn convert_to_term(obj: &Bound<'_, PyAny>) -> PyResult<Box<dyn uacalc::terms::Te
 /// # Raises
 /// * `ValueError` - If the arity is not 2
 #[pyfunction]
-fn associative_law(op_symbol: &crate::alg::PyOperationSymbol) -> PyResult<PyEquation> {
+fn associative_law(op_symbol: &PyOperationSymbol) -> PyResult<PyEquation> {
     let equation = equations::associative_law(&op_symbol.get_inner())
         .map_err(|e| PyValueError::new_err(e))?;
     Ok(PyEquation { inner: equation })
@@ -167,7 +168,7 @@ fn associative_law(op_symbol: &crate::alg::PyOperationSymbol) -> PyResult<PyEqua
 /// # Raises
 /// * `ValueError` - If the arity is less than 1
 #[pyfunction]
-fn cyclic_law(op_symbol: &crate::alg::PyOperationSymbol) -> PyResult<PyEquation> {
+fn cyclic_law(op_symbol: &PyOperationSymbol) -> PyResult<PyEquation> {
     let equation = equations::cyclic_law(&op_symbol.get_inner())
         .map_err(|e| PyValueError::new_err(e))?;
     Ok(PyEquation { inner: equation })
@@ -186,7 +187,7 @@ fn cyclic_law(op_symbol: &crate::alg::PyOperationSymbol) -> PyResult<PyEquation>
 /// # Raises
 /// * `ValueError` - If the arity is less than 2
 #[pyfunction]
-fn first_second_symmetric_law(op_symbol: &crate::alg::PyOperationSymbol) -> PyResult<PyEquation> {
+fn first_second_symmetric_law(op_symbol: &PyOperationSymbol) -> PyResult<PyEquation> {
     let equation = equations::first_second_symmetric_law(&op_symbol.get_inner())
         .map_err(|e| PyValueError::new_err(e))?;
     Ok(PyEquation { inner: equation })

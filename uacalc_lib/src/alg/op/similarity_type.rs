@@ -5,7 +5,9 @@ use std::collections::HashMap;
 
 use uacalc::alg::op::SimilarityType;
 
-use super::operation_symbol::PyOperationSymbol;
+use super::operation_symbol as op_mod_symbol;
+use crate::alg as root_alg;
+use crate::alg::op::operation_symbol::PyOperationSymbol;
 
 /// Python wrapper for SimilarityType
 #[pyclass]
@@ -26,11 +28,14 @@ impl PySimilarityType {
     #[new]
     #[pyo3(signature = (operation_symbols, sort=false))]
     fn new(operation_symbols: &PyAny, sort: bool) -> PyResult<Self> {
-        let ops: Vec<uacalc::alg::op::OperationSymbol> = operation_symbols
-            .extract::<Vec<PyRef<PyOperationSymbol>>>()?
-            .into_iter()
-            .map(|py_op| py_op.get_inner())
-            .collect();
+        // Accept either root-level or local OperationSymbol wrappers
+        let ops: Vec<uacalc::alg::op::OperationSymbol> = if let Ok(v) = operation_symbols.extract::<Vec<PyRef<root_alg::PyOperationSymbol>>>() {
+            v.into_iter().map(|py_op| py_op.get_inner()).collect()
+        } else if let Ok(v) = operation_symbols.extract::<Vec<PyRef<op_mod_symbol::PyOperationSymbol>>>() {
+            v.into_iter().map(|py_op| py_op.get_inner()).collect()
+        } else {
+            return Err(PyValueError::new_err("Expected list of OperationSymbol"));
+        };
 
         match uacalc::alg::op::SimilarityType::new_safe(ops) {
             Ok(mut inner) => {
@@ -156,5 +161,13 @@ impl PySimilarityType {
         let mut hasher = DefaultHasher::new();
         self.inner.hash(&mut hasher);
         hasher.finish()
+    }
+
+}
+
+// Internal accessor for other bindings modules
+impl PySimilarityType {
+    pub(crate) fn get_inner(&self) -> SimilarityType {
+        self.inner.clone()
     }
 }

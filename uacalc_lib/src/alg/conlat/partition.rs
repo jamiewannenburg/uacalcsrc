@@ -1,5 +1,8 @@
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
+use uacalc::util::IntArrayTrait;
+use uacalc::alg::conlat::{BinaryRelation, MutableBinaryRelation};
+use crate::alg::conlat::basic_binary_relation::PyBasicBinaryRelation;
 
 /// Python wrapper for Partition
 #[pyclass]
@@ -104,10 +107,133 @@ impl PyPartition {
     /// 
     /// Returns:
     ///     int: The number of blocks
-    fn num_blocks(&self) -> usize {
+    fn number_of_blocks(&self) -> usize {
         self.inner.number_of_blocks()
     }
-    
+
+    /// Check if two elements are related (in the same block).
+    /// 
+    /// Args:
+    ///     i (int): First element
+    ///     j (int): Second element
+    /// 
+    /// Returns:
+    ///     bool: True if elements are in the same block
+    fn is_related(&self, i: usize, j: usize) -> bool {
+        self.inner.is_related(i, j)
+    }
+
+    /// Get the representative (root) of the block containing element i.
+    /// 
+    /// Args:
+    ///     i (int): Element index
+    /// 
+    /// Returns:
+    ///     int: Representative element index
+    fn representative(&self, i: usize) -> usize {
+        self.inner.representative(i)
+    }
+
+    /// Check if an element is a representative (root) of its block.
+    /// 
+    /// Args:
+    ///     i (int): Element index
+    /// 
+    /// Returns:
+    ///     bool: True if element is representative
+    fn is_representative(&self, i: usize) -> bool {
+        self.inner.is_representative(i)
+    }
+
+    /// Get all representatives of the partition.
+    /// 
+    /// Returns:
+    ///     List[int]: List of representative indices
+    fn representatives(&self) -> Vec<usize> {
+        self.inner.representatives()
+    }
+
+    /// Get the index of the block containing element i.
+    /// 
+    /// Args:
+    ///     i (int): Element index
+    /// 
+    /// Returns:
+    ///     int: Block index
+    /// 
+    /// Raises:
+    ///     ValueError: If element not found in representatives
+    fn block_index(&self, i: usize) -> PyResult<usize> {
+        match self.inner.block_index(i) {
+            Ok(idx) => Ok(idx),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+
+    /// Get the blocks of the partition as an array of arrays.
+    /// 
+    /// Returns:
+    ///     List[List[int]]: List of blocks, where each block is a list of element indices
+    fn get_blocks(&self) -> Vec<Vec<usize>> {
+        self.inner.get_blocks()
+    }
+
+    /// Join two blocks by their representatives.
+    /// 
+    /// Args:
+    ///     r (int): Representative of first block
+    ///     s (int): Representative of second block
+    /// 
+    /// Raises:
+    ///     ValueError: If r or s are not representatives or if r == s
+    fn join_blocks(&mut self, r: usize, s: usize) -> PyResult<()> {
+        if r == s {
+            return Err(PyValueError::new_err("Cannot join a block with itself"));
+        }
+        if !self.inner.is_representative(r) || !self.inner.is_representative(s) {
+            return Err(PyValueError::new_err("Both arguments must be representatives"));
+        }
+        self.inner.join_blocks(r, s);
+        Ok(())
+    }
+
+    /// Normalize the partition representation.
+    fn normalize(&mut self) {
+        self.inner.normalize();
+    }
+
+    /// Check if this is the zero partition (all elements in separate blocks).
+    /// 
+    /// Returns:
+    ///     bool: True if this is the zero partition
+    fn is_zero(&self) -> bool {
+        self.inner.is_zero()
+    }
+
+    /// Check if this partition is uniform (all blocks have the same size).
+    /// 
+    /// Returns:
+    ///     bool: True if all blocks have the same size
+    fn is_uniform(&self) -> bool {
+        self.inner.is_uniform()
+    }
+
+    /// Check if this partition is in initial lexicographic representative form.
+    /// 
+    /// Returns:
+    ///     bool: True if in initial lexicographic representative form
+    fn is_initial_lex_representative(&self) -> bool {
+        self.inner.is_initial_lex_representative()
+    }
+
+    /// Get the rank of the partition (universe size - number of blocks).
+    /// 
+    /// Returns:
+    ///     int: The rank
+    fn rank(&self) -> usize {
+        self.inner.rank()
+    }
+
     /// Get the array representation of the partition.
     /// 
     /// Returns:
@@ -186,6 +312,58 @@ impl PyPartition {
         let mut hasher = DefaultHasher::new();
         self.inner.hash(&mut hasher);
         hasher.finish()
+    }
+
+    /// Convert this partition to a BasicBinaryRelation.
+    fn to_binary_relation(&self) -> PyResult<PyBasicBinaryRelation> {
+        // Build a relation containing all pairs from the equivalence relation
+        let size = self.inner.universe_size();
+        let mut rel = uacalc::alg::conlat::basic_binary_relation::BasicBinaryRelation::new(size)
+            .map_err(|e| PyValueError::new_err(e))?;
+        let pairs = self.inner.get_pairs();
+        for pair in pairs {
+            let i = pair.get(0).unwrap_or(0) as usize;
+            let j = pair.get(1).unwrap_or(0) as usize;
+            rel.add(i, j).map_err(|e| PyValueError::new_err(e))?;
+        }
+        Ok(PyBasicBinaryRelation { inner: rel })
+    }
+
+    /// leq alias for 'le' method.
+    fn leq(&self, other: &PyPartition) -> bool {
+        self.le(other)
+    }
+
+    /// Convert to string with specified print type and maximum length.
+    /// Args:
+    ///   print_type (PyPrintType): The print type struct
+    ///   max_len (int, optional): The max length, or -1
+    /// Returns:
+    ///   str: String rep
+    fn to_string_with_type(&self, print_type: &crate::alg::conlat::print_type::PyPrintType, max_len: Option<i32>) -> String {
+        self.inner.to_string_with_type(print_type.inner, max_len.unwrap_or(-1))
+    }
+
+    /// Convert to string with maximum length.
+    fn to_string_with_max_len(&self, max_len: i32) -> String {
+        self.inner.to_string_with_max_len(max_len)
+    }
+
+    // Python comparison (less than).
+    fn __lt__(&self, other: &PyPartition) -> bool {
+        self.inner < other.inner
+    }
+    // Python comparison (less than or equal).
+    fn __le__(&self, other: &PyPartition) -> bool {
+        self.inner <= other.inner
+    }
+    // Python comparison (greater than).
+    fn __gt__(&self, other: &PyPartition) -> bool {
+        self.inner > other.inner
+    }
+    // Python comparison (greater than or equal).
+    fn __ge__(&self, other: &PyPartition) -> bool {
+        self.inner >= other.inner
     }
 }
 
