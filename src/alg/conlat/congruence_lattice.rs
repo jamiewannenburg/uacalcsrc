@@ -55,6 +55,8 @@ where
     
     /// Number of operations in the algebra
     pub num_ops: usize,
+    /// Cached, Arc-backed operations snapshot for this lattice
+    ops_arc: Vec<Arc<dyn Operation>>,
     
     /// The zero congruence (all elements in separate blocks)
     pub zero_cong: Partition,
@@ -132,6 +134,7 @@ where
             alg: self.alg.clone_box(),
             alg_size: self.alg_size,
             num_ops: self.num_ops,
+            ops_arc: self.ops_arc.iter().cloned().collect(),
             zero_cong: self.zero_cong.clone(),
             one_cong: self.one_cong.clone(),
             description: self.description.clone(),
@@ -166,7 +169,13 @@ where
     /// A new CongruenceLattice instance
     pub fn new(alg: Box<dyn SmallAlgebra<UniverseItem = T>>) -> Self {
         let alg_size = alg.cardinality() as usize;
-        let num_ops = alg.operations().len();
+        // Snapshot operations once to avoid re-entering operations() during computations
+        let ops_arc: Vec<Arc<dyn Operation>> = alg
+            .operations()
+            .into_iter()
+            .map(|op| Arc::<dyn Operation>::from(op))
+            .collect();
+        let num_ops = ops_arc.len();
         let zero_cong = Partition::zero(alg_size);
         let one_cong = Partition::one(alg_size);
         
@@ -174,6 +183,7 @@ where
             alg,
             alg_size,
             num_ops,
+            ops_arc,
             zero_cong,
             one_cong,
             description: None,
@@ -359,12 +369,8 @@ where
             
             // For each operation f
             for op_index in 0..self.num_ops {
-                let ops = self.alg.operations();
-                if op_index >= ops.len() {
-                    continue;
-                }
-                
-                let arity = ops[op_index].arity();
+                let op = &self.ops_arc[op_index];
+                let arity = op.arity();
                 if arity == 0 {
                     continue;
                 }
@@ -381,11 +387,11 @@ where
                     // Increment through all possible arguments, varying all positions except 'index'
                     loop {
                         arg[index as usize] = x as i32;
-                        let r_val = ops[op_index].int_value_at(&arg).unwrap_or(0);
+                        let r_val = op.int_value_at(&arg).unwrap_or(0);
                         let r = Self::find_root(r_val as usize, &part);
                         
                         arg[index as usize] = y as i32;
-                        let s_val = ops[op_index].int_value_at(&arg).unwrap_or(0);
+                        let s_val = op.int_value_at(&arg).unwrap_or(0);
                         let s = Self::find_root(s_val as usize, &part);
                         
                         if r != s {
