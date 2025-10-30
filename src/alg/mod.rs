@@ -1755,7 +1755,7 @@ pub struct ReductAlgebra {
     /// The universe of this algebra (same as super algebra)
     pub universe: HashSet<i32>,
     
-    /// The operations created from the terms (Arc-backed for shallow clones)
+    /// The operations created from the terms (Arc-backed)
     pub operations: Vec<Arc<dyn Operation>>,
     
     /// Lazy-initialized congruence lattice
@@ -1975,11 +1975,16 @@ impl ReductAlgebra {
             let wrapper = SmallAlgebraWrapper::new(cloned_alg);
             let alg_arc = Arc::new(wrapper);
             let interpretation = term.interpretation(alg_arc, &varlist, true)?;
-            // Store as Arc-backed operation to avoid deep clones
+            
             self.operations.push(Arc::from(interpretation));
         }
         
         Ok(())
+    }
+    
+    /// Borrowed access to Arc-backed operations to avoid cloning.
+    pub fn operations_ref_arc(&self) -> &[Arc<dyn Operation>] {
+        &self.operations
     }
 }
 
@@ -2016,7 +2021,7 @@ impl Algebra for ReductAlgebra {
     }
     
     fn operations(&self) -> Vec<Box<dyn Operation>> {
-        // Wrap Arc-backed operations in ArcOp delegators for shallow clones
+        // Return boxed Arc-backed delegators without deep cloning
         self.operations
             .iter()
             .map(|op| crate::alg::op::operation::boxed_arc_op(Arc::clone(op)))

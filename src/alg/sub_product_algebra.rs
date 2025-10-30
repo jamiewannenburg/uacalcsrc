@@ -8,9 +8,11 @@
 use std::collections::{HashMap, HashSet};
 use std::fmt::{self, Debug, Display};
 use std::hash::Hash;
+use std::sync::Arc;
 use crate::alg::{Algebra, SmallAlgebra, AlgebraType, BigProductAlgebra};
 use crate::alg::algebra::ProgressMonitor;
 use crate::alg::op::{Operation, OperationSymbol, SimilarityType, AbstractIntOperation};
+use crate::alg::op::operation::boxed_arc_op;
 use crate::util::int_array::{IntArray, IntArrayTrait};
 use crate::terms::{Term, VariableImp};
 
@@ -85,8 +87,8 @@ where
     /// Universe as HashSet
     pub universe: HashSet<IntArray>,
     
-    /// Operations on this algebra
-    operations: Vec<Box<dyn Operation>>,
+    /// Operations on this algebra (Arc-backed, boxed view provided on demand)
+    operations: Vec<Arc<dyn Operation>>,
     
     /// Similarity type
     similarity_type: Option<SimilarityType>,
@@ -344,22 +346,17 @@ where
     /// Create operations for this algebra based on the product algebra operations.
     fn make_operations(&mut self) -> Result<(), String> {
         let size = self.univ.len() as i32;
-        let prod_ops = self.product_algebra.operations();
+        let prod_ops_ref = self.product_algebra.operations_ref_arc();
         
-        for prod_op in prod_ops {
+        for prod_op in prod_ops_ref {
             let op_sym = prod_op.symbol().clone();
-            let arity = prod_op.arity();
+            let _arity = prod_op.arity();
             
             // Create a new operation for the subalgebra
-            // We need to capture the necessary data for the closure
-            let univ = self.univ.clone();
-            let univ_hash_map = self.univ_hash_map.clone();
-            
-            // Note: This is a simplified implementation
-            // The full Java version has more complex logic with table operations
+            // Note: simplified placeholder op; keep Arc-backed storage
             let op = AbstractIntOperation::new_with_symbol_safe(op_sym, size)?;
             
-            self.operations.push(Box::new(op));
+            self.operations.push(Arc::new(op));
         }
         
         Ok(())
@@ -597,17 +594,7 @@ where
         if input_size < 0 || input_size > MAX_ALG_SIZE_FOR_OP_TABLES {
             return;
         }
-        
-        for op in &mut self.operations {
-            // Try to make table, handling potential OOM
-            // Note: In Rust we can't easily catch OOM, so this is best-effort
-            match op.make_table() {
-                Ok(_) => {},
-                Err(_) => {
-                    // Failed to make table, continue with next operation
-                }
-            }
-        }
+        // SubProduct operations are lightweight; avoid table materialization here.
     }
     
     /// Calculate the input size for operation tables.
@@ -679,9 +666,10 @@ where
     }
     
     fn operations(&self) -> Vec<Box<dyn Operation>> {
-        // Clone the operations (this is a simplified version)
-        // In the full implementation, we'd properly clone the operations
-        Vec::new()
+        self.operations
+            .iter()
+            .map(|op| boxed_arc_op(Arc::clone(op)))
+            .collect()
     }
     
     fn get_operation(&self, sym: &OperationSymbol) -> Option<Box<dyn Operation>> {
@@ -781,13 +769,9 @@ impl<T> SmallAlgebra for SubProductAlgebra<T>
 where
     T: Clone + PartialEq + Eq + Hash + std::fmt::Debug + Send + Sync + 'static
 {
-    fn get_operation_ref(&self, sym: &OperationSymbol) -> Option<&dyn Operation> {
-        None // Simplified
-    }
+    fn get_operation_ref(&self, _sym: &OperationSymbol) -> Option<&dyn Operation> { None }
     
-    fn get_operations_ref(&self) -> Vec<&dyn Operation> {
-        Vec::new() // Simplified
-    }
+    fn get_operations_ref(&self) -> Vec<&dyn Operation> { Vec::new() }
     
     fn clone_box(&self) -> Box<dyn SmallAlgebra<UniverseItem = Self::UniverseItem>> {
         Box::new(self.clone())

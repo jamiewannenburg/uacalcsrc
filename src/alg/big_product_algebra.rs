@@ -11,6 +11,7 @@ use std::hash::Hash;
 use std::sync::Arc;
 use crate::alg::{Algebra, SmallAlgebra, algebra::ProgressMonitor};
 use crate::alg::op::{Operation, OperationSymbol, SimilarityType};
+use crate::alg::op::operation::boxed_arc_op;
 use crate::util::int_array::IntArray;
 use crate::terms::{Term, NonVariableTerm};
 
@@ -209,8 +210,8 @@ where
     /// Powers (for powers)
     powers: Option<Vec<i32>>,
     
-    /// Operations on this algebra
-    operations: Vec<Box<dyn Operation>>,
+    /// Operations on this algebra (Arc-backed, boxed view provided on demand)
+    operations: Vec<Arc<dyn Operation>>,
     
     /// Similarity type
     similarity_type: Option<SimilarityType>,
@@ -280,6 +281,11 @@ where
         product.make_operations();
         
         Ok(product)
+    }
+
+    /// Borrowed access to Arc-backed operations to avoid cloning.
+    pub fn operations_ref_arc(&self) -> &[Arc<dyn Operation>] {
+        &self.operations
     }
     
     /// Construct the direct power of a SmallAlgebra.
@@ -394,7 +400,8 @@ where
             for j in 0..self.number_of_factors {
                 let ops = self.algebras[j].operations();
                 if i < ops.len() {
-                    // Use Arc to share operations between threads safely
+                    // Wrap factor operation with Arc. Since Product/SmallAlgebra
+                    // return ArcOp-backed boxes, clone_box is shallow.
                     op_list.push(Arc::from(ops[i].clone_box()));
                 } else {
                     // Factor missing operation - skip this product operation
@@ -410,7 +417,7 @@ where
                 op_list,
             );
             
-            self.operations.push(Box::new(prod_op));
+            self.operations.push(Arc::new(prod_op));
         }
     }
     
@@ -509,9 +516,8 @@ where
     
     /// Make operation tables for all operations.
     pub fn make_operation_tables(&mut self) {
-        for op in &mut self.operations {
-            let _ = op.make_table();
-        }
+        // BigProductOperation is intentionally non-table-based (lazy)
+        // Do not attempt to build tables here.
         
         // Also make tables for factor algebras
         for alg in &mut self.algebras {
@@ -754,8 +760,11 @@ where
     }
     
     fn operations(&self) -> Vec<Box<dyn Operation>> {
-        // Return clones of operations
-        self.operations.iter().map(|op| op.clone_box()).collect()
+        // Return boxed Arc-backed delegators without deep cloning
+        self.operations
+            .iter()
+            .map(|op| boxed_arc_op(Arc::clone(op)))
+            .collect()
     }
     
     fn get_operation(&self, _sym: &OperationSymbol) -> Option<Box<dyn Operation>> {
