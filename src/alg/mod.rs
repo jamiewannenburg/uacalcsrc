@@ -1755,8 +1755,8 @@ pub struct ReductAlgebra {
     /// The universe of this algebra (same as super algebra)
     pub universe: HashSet<i32>,
     
-    /// The operations created from the terms
-    pub operations: Vec<Box<dyn Operation>>,
+    /// The operations created from the terms (Arc-backed for shallow clones)
+    pub operations: Vec<Arc<dyn Operation>>,
     
     /// Lazy-initialized congruence lattice
     pub con: Option<Box<crate::alg::conlat::CongruenceLattice<i32>>>,
@@ -1975,8 +1975,8 @@ impl ReductAlgebra {
             let wrapper = SmallAlgebraWrapper::new(cloned_alg);
             let alg_arc = Arc::new(wrapper);
             let interpretation = term.interpretation(alg_arc, &varlist, true)?;
-            
-            self.operations.push(interpretation);
+            // Store as Arc-backed operation to avoid deep clones
+            self.operations.push(Arc::from(interpretation));
         }
         
         Ok(())
@@ -2016,22 +2016,28 @@ impl Algebra for ReductAlgebra {
     }
     
     fn operations(&self) -> Vec<Box<dyn Operation>> {
-        // Since we can't easily clone trait objects, return references
-        // This is a limitation we'll need to address in a future iteration
-        Vec::new() // Placeholder - operations are stored internally
+        // Wrap Arc-backed operations in ArcOp delegators for shallow clones
+        self.operations
+            .iter()
+            .map(|op| crate::alg::op::operation::boxed_arc_op(Arc::clone(op)))
+            .collect()
     }
     
     fn get_operation(&self, sym: &OperationSymbol) -> Option<Box<dyn Operation>> {
-        // Linear search through operations
-        // We can't return a Box easily, so return by reference via a new trait method
-        // For now, we'll need to work around this limitation
-        None // This needs Arc<dyn Operation> to work properly
+        for op in &self.operations {
+            if op.symbol() == sym {
+                return Some(crate::alg::op::operation::boxed_arc_op(Arc::clone(op)));
+            }
+        }
+        None
     }
     
     fn get_operations_map(&self) -> HashMap<OperationSymbol, Box<dyn Operation>> {
-        // Since we can't easily clone operations, return empty map for now
-        // This is a limitation that would need Arc<dyn Operation> to fix properly
-        HashMap::new()
+        let mut map = HashMap::new();
+        for op in &self.operations {
+            map.insert(op.symbol().clone(), crate::alg::op::operation::boxed_arc_op(Arc::clone(op)));
+        }
+        map
     }
     
     fn name(&self) -> &str {

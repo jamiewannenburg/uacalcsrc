@@ -44,7 +44,7 @@ where
     base: GeneralAlgebra<T>,
     
     /// Reference to the super algebra
-    super_algebra: Box<dyn SmallAlgebra<UniverseItem = T>>,
+    super_algebra: std::sync::Arc<dyn SmallAlgebra<UniverseItem = T>>,
     
     /// Sorted array of universe indices forming the subuniverse
     univ_array: Vec<i32>,
@@ -123,7 +123,7 @@ where
         
         let mut subalgebra = Subalgebra {
             base,
-            super_algebra,
+            super_algebra: std::sync::Arc::from(super_algebra),
             univ_array,
             con: None,
             sub: None,
@@ -312,7 +312,7 @@ where
                 self.univ_array.len(),
                 super_op.arity(),
                 self.univ_array.clone(),
-                self.super_algebra.clone_box(),
+                std::sync::Arc::clone(&self.super_algebra),
             );
             ops.push(Box::new(restricted_op) as Box<dyn Operation>);
         }
@@ -357,7 +357,7 @@ where
         // Create a new instance with the same parameters
         Subalgebra {
             base: self.base.clone(),
-            super_algebra: self.super_algebra.clone_box(),
+            super_algebra: std::sync::Arc::clone(&self.super_algebra),
             univ_array: self.univ_array.clone(),
             con: None,
             sub: None,
@@ -555,7 +555,7 @@ where
     size: usize,
     arity: i32,
     univ_array: Vec<i32>,
-    super_algebra: Box<dyn SmallAlgebra<UniverseItem = T>>,
+    super_algebra: std::sync::Arc<dyn SmallAlgebra<UniverseItem = T>>,
     value_table: Option<Vec<i32>>,
 }
 
@@ -568,7 +568,7 @@ where
         size: usize,
         arity: i32,
         univ_array: Vec<i32>,
-        super_algebra: Box<dyn SmallAlgebra<UniverseItem = T>>,
+        super_algebra: std::sync::Arc<dyn SmallAlgebra<UniverseItem = T>>,
     ) -> Self {
         RestrictedOperation {
             symbol,
@@ -726,7 +726,7 @@ where
             size: self.size,
             arity: self.arity,
             univ_array: self.univ_array.clone(),
-            super_algebra: self.super_algebra.clone_box(),
+            super_algebra: std::sync::Arc::clone(&self.super_algebra),
             value_table: None, // Don't clone the table
         })
     }
