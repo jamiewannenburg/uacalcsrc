@@ -355,7 +355,14 @@ impl PySimpleListInner {
                     if !first {
                         result.push(' ');
                     }
-                    result.push_str(&elem.to_string());
+                    // Properly convert PyObject to Python string representation
+                    let elem_str = Python::with_gil(|py| {
+                        match elem.bind(py).str() {
+                            Ok(py_str) => py_str.to_string_lossy().to_string(),
+                            Err(_) => format!("{:?}", elem), // Fallback to debug representation
+                        }
+                    });
+                    result.push_str(&elem_str);
                     first = false;
                     current = rest;
                 }

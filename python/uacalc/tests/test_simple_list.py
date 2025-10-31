@@ -195,8 +195,26 @@ class TestSimpleList:
     
     def test_sub_list(self, test_harness: TestHarness):
         """Test sub_list method."""
-        # Skip this test due to issues with both Java wrapper (deadlock) and Rust implementation (Any object display)
-        pytest.skip("Skipping sub_list test due to implementation issues")
+        python_result = uacalc_lib.util.SimpleList.from_list(["a", "b", "c", "d"])
+        sub_list = python_result.sub_list(1, 3)
+        
+        # Compare with Java implementation
+        assert_java_python_equal(test_harness, "java_wrapper.src.util.SimpleListWrapper", ["sub_list", "--list", "a,b,c,d", "--start", "1", "--end", "3"], str(sub_list), "Sub list from index 1 to 3")
+        assert sub_list.size() == 2
+        assert sub_list.first() == "b"
+        assert str(sub_list) == "(b c)"
+        
+        # Test with different indices
+        sub_list2 = python_result.sub_list(0, 2)
+        assert sub_list2.size() == 2
+        assert sub_list2.first() == "a"
+        assert str(sub_list2) == "(a b)"
+        
+        # Test single element
+        sub_list3 = python_result.sub_list(1, 2)
+        assert sub_list3.size() == 1
+        assert sub_list3.first() == "b"
+        assert str(sub_list3) == "(b)"
     
     def test_to_array(self, test_harness: TestHarness):
         """Test to_list method (equivalent to toArray)."""
@@ -481,7 +499,7 @@ class TestSimpleListIntegration:
         flattened = outer.reverse()
         assert flattened.size() == 2
 
-@pytest.mark.skip(reason="Skipping large list creation test due to stack overflow")
+# @pytest.mark.skip(reason="Skipping large list creation test due to stack overflow")
 class TestSimpleListPerformance:
     """Performance tests for SimpleList operations."""
     
@@ -507,7 +525,7 @@ class TestSimpleListPerformance:
         for i in range(5000, 10000):
             other_list = other_list.cons(i)
         
-        combined = large_list.append(other_list)
+        combined = other_list.append(large_list)
         assert combined.size() == 10000
         
         # Test reverse
