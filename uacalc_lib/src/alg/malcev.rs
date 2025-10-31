@@ -5,6 +5,8 @@
 
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
+use crate::alg::PyBasicSmallAlgebra;
+use uacalc::alg::malcev;
 
 /// Python module for Malcev functions.
 ///
@@ -46,13 +48,17 @@ pub fn register_malcev_functions(_py: Python, m: &Bound<'_, PyModule>) -> PyResu
 /// Find a Malcev term for the algebra.
 ///
 /// # Arguments
-/// * `algebra` - The algebra to check
+/// * `algebra` - The algebra to check (BasicSmallAlgebra)
 ///
 /// # Returns
-/// The Malcev term if one exists, None otherwise
+/// The Malcev term as a string if one exists, None otherwise
 #[pyfunction]
-fn malcev_term(_algebra: PyObject) -> PyResult<Option<PyObject>> {
-    Err(PyValueError::new_err("Malcev term finding not yet implemented"))
+fn malcev_term(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<String>> {
+    match malcev::malcev_term(&algebra.inner) {
+        Ok(Some(term)) => Ok(Some(format!("{}", term))),
+        Ok(None) => Ok(None),
+        Err(e) => Err(PyValueError::new_err(e)),
+    }
 }
 
 /// Find a majority term for the algebra.
@@ -94,14 +100,18 @@ fn pixley_term(_algebra: PyObject) -> PyResult<Option<PyObject>> {
 /// Find a near unanimity term of the given arity.
 ///
 /// # Arguments
-/// * `algebra` - The algebra to check
+/// * `algebra` - The algebra to check (BasicSmallAlgebra)
 /// * `arity` - The arity of the NU term
 ///
 /// # Returns
-/// The NU term if one exists, None otherwise
+/// The NU term as a string if one exists, None otherwise
 #[pyfunction]
-fn nu_term(_algebra: PyObject, _arity: usize) -> PyResult<Option<PyObject>> {
-    Err(PyValueError::new_err("NU term finding not yet implemented"))
+fn nu_term(algebra: &PyBasicSmallAlgebra, arity: usize) -> PyResult<Option<String>> {
+    match malcev::nu_term(&algebra.inner, arity) {
+        Ok(Some(term)) => Ok(Some(format!("{}", term))),
+        Ok(None) => Ok(None),
+        Err(e) => Err(PyValueError::new_err(e)),
+    }
 }
 
 /// Test if an idempotent algebra has an NU term of the given arity.
