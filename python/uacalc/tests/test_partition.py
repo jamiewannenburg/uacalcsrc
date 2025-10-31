@@ -192,17 +192,19 @@ def run_java_wrapper_test_command():
     """Run Java wrapper test command and parse all JSON objects into a structured result."""
     import json
     import subprocess
+    from test_utils import build_java_command
     
-    # Use Windows-compatible script path
-    script_extension = ".bat" if platform.system() == "Windows" else ""
-    java_wrapper_path = project_root / "java_wrapper" / "build" / "scripts" / f"PartitionWrapper{script_extension}"
-
-    if not java_wrapper_path.exists():
-        pytest.skip(f"Java wrapper not found at {java_wrapper_path}")
-
-    cmd = [str(java_wrapper_path), "test"]
+    # Use build_java_command to build the proper Java command
+    wrapper_class = "java_wrapper.src.alg.conlat.PartitionWrapper"
+    cmd = build_java_command(wrapper_class, ["test"])
     try:
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+        result = subprocess.run(
+            cmd, 
+            capture_output=True, 
+            text=True, 
+            timeout=30,
+            cwd=project_root  # Run from project root so relative paths work
+        )
         if result.returncode != 0:
             pytest.fail(f"Java wrapper failed: {result.stderr}")
 
