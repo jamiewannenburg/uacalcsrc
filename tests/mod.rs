@@ -13,3 +13,4 @@ pub mod java_comparison_examples;
 pub mod unit_tests;
 pub mod taylor_tests;
 pub mod membership_tester_test;
+pub mod con_lyndon_f3_test;

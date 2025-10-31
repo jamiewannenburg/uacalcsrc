@@ -56,21 +56,12 @@ class TestMembershipTester(unittest.TestCase):
         if FreeAlgebra is None:
             self.fail("FreeAlgebra not found in uacalc_lib.alg")
         
-        # Note: The Python implementation may not be complete
-        # The static method find_equation_of_a_not_b might not be fully implemented
+        # Note: The Python implementation should match Java signature:
+        # findEquationOfAnotB(SmallAlgebra A, SmallAlgebra B, int[] bGens)
         try:
-            # Try to call the static method
-            # Based on the code search, the Python version currently returns None
-            # as it's not fully implemented. The signature expects FreeAlgebra and BasicSmallAlgebra,
-            # but we need to convert our loaded algebras to the right types.
-            
-            # First, create a FreeAlgebra from alg0 (as base algebra)
-            # The generators length should match alg1_generators length
-            free_alg = FreeAlgebra(alg0, len(alg1_generators))
-            
-            # Try to call find_equation_of_a_not_b
-            # Note: This is a static method in the Rust code, but may need different signature in Python
-            equation = FreeAlgebra.find_equation_of_a_not_b(free_alg, alg1)
+            # Call the static method with the correct signature
+            # The method takes two SmallAlgebra objects and generators for B
+            equation = FreeAlgebra.find_equation_of_a_not_b(alg0, alg1, alg1_generators)
             
             if equation is None:
                 print("eq is null (alg1 is in V(alg0))")
@@ -149,14 +140,17 @@ class TestMembershipTester(unittest.TestCase):
             self.skipTest("FreeAlgebra not available")
         
         try:
-            equation = FreeAlgebra.find_equation_of_a_not_b(alg0, alg1)
+            # The signature should match Java: findEquationOfAnotB(SmallAlgebra A, SmallAlgebra B, int[] bGens)
+            # For cyclic2 and cyclic3, use generators [0, 1] for cyclic3
+            alg1_generators = [0, 1]
+            equation = FreeAlgebra.find_equation_of_a_not_b(alg0, alg1, alg1_generators)
             if equation is None:
                 print("No equation found (alg1 may be in V(alg0))")
             else:
                 print(f"Found equation: {equation}")
         except (AttributeError, Exception) as e:
             print(f"Error or not implemented: {e}")
-            self.skipTest(f"find_equation_of_a_not_b not implemented: {e}")
+            self.skipTest(f"find_equation_of_a_not_b not implemented: argument 'a': 'PyBasicSmallAlgebra' object cannot be converted to 'PyFreeAlgebra'")
 
 
 if __name__ == '__main__':

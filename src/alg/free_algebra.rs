@@ -831,6 +831,14 @@ impl FreeAlgebra
     pub fn get_inner_mut(&mut self) -> &mut SubProductAlgebra<i32> {
         &mut self.inner
     }
+
+    /// Get the congruence lattice (lazy initialization).
+    /// 
+    /// # Returns
+    /// A reference to the congruence lattice
+    pub fn con(&mut self) -> &crate::alg::conlat::CongruenceLattice<IntArray> {
+        self.inner.con()
+    }
 }
 
 // Implement Algebra trait by delegating to inner

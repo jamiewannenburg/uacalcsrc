@@ -28,7 +28,7 @@ pub use conlat::basic_binary_relation::PyBasicBinaryRelation;
 pub use conlat::centrality_data::PyCentralityData;
 pub use conlat::partition::PyPartition;
 pub use conlat::print_type::PyPrintType;
-pub use conlat::congruence_lattice::PyCongruenceLattice;
+pub use conlat::congruence_lattice::{PyCongruenceLattice, PyCongruenceLatticeIntArray};
 pub use op::similarity_type::PySimilarityType;
 pub use op::parameterized_operation::PyParameterizedOperation;
 pub use op::operations::PyOperations;
@@ -75,6 +75,7 @@ pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     m.add_class::<PyPartition>()?;
     m.add_class::<PyPrintType>()?;
     m.add_class::<PyCongruenceLattice>()?;
+    m.add_class::<PyCongruenceLatticeIntArray>()?;
     m.add_class::<PyParameterizedOperation>()?;
     m.add_class::<PyBasicSet>()?;
     m.add_class::<PyFreeAlgebra>()?;

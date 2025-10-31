@@ -2,6 +2,7 @@ use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
 use uacalc::alg::{Algebra, SmallAlgebra};
 use crate::alg::{PyBasicSmallAlgebra, PyBasicOperation};
+use crate::alg::conlat::congruence_lattice::PyCongruenceLatticeIntArray;
 use crate::eq::PyEquation;
 use crate::util::PyIntArray;
 use std::collections::HashMap;
@@ -147,16 +148,22 @@ impl PyFreeAlgebra {
     /// Find equation of A not B.
     ///
     /// Args:
-    ///     a (FreeAlgebra): Algebra A
+    ///     a (BasicSmallAlgebra): Algebra A
     ///     b (BasicSmallAlgebra): Algebra B
+    ///     b_gens (List[int]): Generators for algebra B
     ///
     /// Returns:
     ///     Optional[Equation]: The equation, or None if not found
     #[staticmethod]
-    fn find_equation_of_a_not_b(a: &PyFreeAlgebra, b: &PyBasicSmallAlgebra) -> PyResult<Option<PyEquation>> {
-        // Simplified implementation - return None for now
-        // The actual implementation would need proper type conversion between FreeAlgebra and SmallAlgebra
-        Ok(None)
+    fn find_equation_of_a_not_b(a: &PyBasicSmallAlgebra, b: &PyBasicSmallAlgebra, b_gens: Vec<i32>) -> PyResult<Option<PyEquation>> {
+        let a_boxed = a.clone_box();
+        let b_boxed = b.clone_box();
+        
+        match uacalc::alg::FreeAlgebra::find_equation_of_a_not_b(a_boxed, b_boxed, b_gens) {
+            Ok(Some(eq)) => Ok(Some(PyEquation { inner: eq })),
+            Ok(None) => Ok(None),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
     }
 
     /// Get the cardinality of the algebra.
@@ -307,5 +314,16 @@ impl PyFreeAlgebra {
     ///     int: Cardinality of the algebra
     fn __len__(&self) -> usize {
         self.inner.cardinality() as usize
+    }
+
+    /// Get the congruence lattice (lazy initialization).
+    ///
+    /// Returns:
+    ///     CongruenceLatticeIntArray: The congruence lattice
+    fn con(&mut self) -> PyCongruenceLatticeIntArray {
+        let con_lat = self.inner.con();
+        PyCongruenceLatticeIntArray {
+            inner: con_lat.clone(),
+        }
     }
 }
