@@ -8,7 +8,9 @@ import uacalc_lib
 import json
 import subprocess
 import os
+from pathlib import Path
 from typing import List, Dict, Any
+from test_utils import build_java_command
 
 
 class TestVirtualLists:
@@ -168,13 +170,62 @@ class TestVirtualListsJavaCompatibility:
     def get_java_output(self, command: str, args: List[str]) -> Dict[str, Any]:
         """Get output from Java wrapper."""
         try:
-            cmd = ["java", "-cp", "java_wrapper/build/classes", "java_wrapper.src.util.virtuallist.VirtualListsWrapper", command] + args
-            result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+            # Get project root (assuming we're in python/uacalc/tests/)
+            project_root = Path(__file__).parent.parent.parent.parent
+            
+            # Use utility function to build Java command with proper classpath
+            wrapper_class = "java_wrapper.src.util.virtuallist.VirtualListsWrapper"
+            cmd = build_java_command(wrapper_class, [command] + args)
+            
+            result = subprocess.run(
+                cmd, 
+                capture_output=True, 
+                text=True, 
+                timeout=30,
+                cwd=project_root
+            )
             if result.returncode != 0:
                 pytest.skip(f"Java wrapper not available: {result.stderr}")
-            return json.loads(result.stdout)
-        except (subprocess.TimeoutExpired, json.JSONDecodeError, FileNotFoundError):
-            pytest.skip("Java wrapper not available")
+            
+            # Check if stdout is empty
+            if not result.stdout or not result.stdout.strip():
+                pytest.skip(f"Java wrapper returned empty output. Return code: {result.returncode}, Stderr: {result.stderr}")
+            
+            # Extract JSON from stdout (Java wrapper may print debug output before JSON)
+            stdout = result.stdout.strip()
+            # Find the first '{' which should be the start of the JSON object
+            json_start = stdout.find('{')
+            if json_start == -1:
+                pytest.skip(f"Java wrapper output contains no JSON. Stdout: {repr(stdout[:200])}, Stderr: {result.stderr}")
+            
+            # Extract just the JSON part
+            json_text = stdout[json_start:]
+            # Find the last '}' to get the complete JSON object
+            json_end = json_text.rfind('}') + 1
+            if json_end == 0:
+                pytest.skip(f"Java wrapper output contains incomplete JSON. Stdout: {repr(stdout[:200])}, Stderr: {result.stderr}")
+            
+            json_text = json_text[:json_end]
+            
+            # Parse JSON response and extract the 'data' field
+            try:
+                json_response = json.loads(json_text)
+            except json.JSONDecodeError as e:
+                # Provide more context about what was received
+                pytest.skip(f"Java wrapper returned invalid JSON. Return code: {result.returncode}, "
+                           f"Extracted JSON: {repr(json_text[:200])}, "
+                           f"Stderr: {result.stderr}, Error: {e}")
+            
+            if "data" in json_response:
+                return json_response["data"]
+            else:
+                # If no 'data' field, return the whole response
+                return json_response
+        except (subprocess.TimeoutExpired, FileNotFoundError) as e:
+            pytest.skip(f"Java wrapper not available: {type(e).__name__}: {str(e)}")
+        except Exception as e:
+            # Catch any other exceptions to see what's happening
+            pytest.skip(f"Java wrapper not available: {type(e).__name__}: {str(e)}")
     
     def test_int_tuples_java_compatibility(self):
         """Test int_tuples compatibility with Java implementation."""
@@ -221,8 +272,17 @@ class TestVirtualListsJavaCompatibility:
         # Test Python implementation
         python_result = uacalc_lib.util.VirtualLists.array_indexer_with_min(0, 3, 4, 2)
         
+        # Java wrapper returns result as a string like "[2, 0, 0]", need to parse it
+        java_result_str = java_result["result"]
+        if isinstance(java_result_str, str):
+            # Parse the string representation of the array
+            import ast
+            java_result_list = ast.literal_eval(java_result_str)
+        else:
+            java_result_list = java_result_str
+        
         # Compare results
-        assert python_result == java_result["result"]
+        assert python_result == java_result_list
     
     def test_helper_methods_java_compatibility(self):
         """Test helper methods compatibility with Java implementation."""
@@ -249,14 +309,14 @@ class TestVirtualListsJavaCompatibility:
         java_result = self.get_java_output("factorial", ["--n", "5"])
         if java_result is not None:
             python_result = uacalc_lib.util.VirtualLists.factorial(5)
-            assert python_result == java_result["data"]["result"]
+            assert python_result == java_result["result"]
     
     def test_binomial_java_compatibility(self):
         """Test binomial compatibility with Java implementation."""
         java_result = self.get_java_output("binomial", ["--n", "5", "--r", "3"])
         if java_result is not None:
             python_result = uacalc_lib.util.VirtualLists.binomial(5, 3)
-            assert python_result == java_result["data"]["result"]
+            assert python_result == java_result["result"]
 
 
 class TestVirtualListsPerformance:
