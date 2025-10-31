@@ -7,6 +7,7 @@ use uacalc::lat::{Lattice, Order};
 use crate::alg::PyBasicSmallAlgebra;
 use crate::alg::PyPartition;
 use crate::alg::PySubalgebraLattice;
+use crate::alg::conlat::congruence_lattice::PyCongruenceLattice;
 
 /// Python wrapper for Subalgebra
 #[pyclass]
@@ -154,7 +155,10 @@ impl PySubalgebra {
     ///
     /// Returns:
     ///     CongruenceLattice: The congruence lattice
-    // con() not exposed in bindings currently
+    fn con(&mut self) -> PyCongruenceLattice {
+        let con_lat = self.inner.con();
+        PyCongruenceLattice { inner: con_lat.clone() }
+    }
 
     /// Get the subalgebra lattice (lazy initialization).
     ///

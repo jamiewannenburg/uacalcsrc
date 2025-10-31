@@ -6,7 +6,6 @@ use crate::alg::general_algebra::GeneralAlgebra;
 use crate::alg::small_algebra::{SmallAlgebra, AlgebraType};
 use crate::alg::op::{Operation, OperationSymbol, SimilarityType};
 use crate::alg::conlat::partition::Partition;
-use crate::alg::SmallAlgebraWrapper;
 use crate::util::horner;
 
 /// A subalgebra of a SmallAlgebra with a restricted universe.
@@ -271,10 +270,13 @@ where
     /// A reference to the congruence lattice
     pub fn con(&mut self) -> &crate::alg::conlat::CongruenceLattice<T> {
         if self.con.is_none() {
-            // For now, we can't create a CongruenceLattice with generic types
-            // This is a limitation that would need to be addressed in a future task
-            // to make CongruenceLattice itself generic
-            panic!("CongruenceLattice not supported for generic Subalgebra types yet");
+            // Create congruence lattice using the type-erased wrapper
+            use crate::alg::SmallAlgebraWrapper;
+            
+            // Clone this algebra as a trait object
+            let alg_box = Box::new(self.clone()) as Box<dyn SmallAlgebra<UniverseItem = T>>;
+            let wrapper = Box::new(SmallAlgebraWrapper::<T>::new(alg_box));
+            self.con = Some(Box::new(crate::alg::conlat::CongruenceLattice::<T>::new(wrapper)));
         }
         self.con.as_ref().unwrap()
     }

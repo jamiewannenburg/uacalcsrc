@@ -94,9 +94,22 @@ class TestConSubMethods(unittest.TestCase):
         self.assertIsInstance(sub_lat.cardinality(), int)
 
     def test_subalgebra_con_method(self):
-        """Test Subalgebra con() method - SKIPPED due to CongruenceLattice limitations."""
-        # Skip this test as CongruenceLattice is not supported for generic Subalgebra types yet
-        self.skipTest("CongruenceLattice not supported for generic Subalgebra types yet")
+        """Test Subalgebra con() method."""
+        # Create a basic small algebra
+        super_alg = self.BasicSmallAlgebra("Super", [0, 1, 2])
+
+        # Create subalgebra with universe [0, 1]
+        sub_alg = self.Subalgebra("Sub", super_alg, [0, 1])
+
+        # Test con() method
+        con_lat = sub_alg.con()
+
+        # Verify it returns a CongruenceLattice
+        self.assertIsInstance(con_lat, self.CongruenceLattice)
+
+        # Verify basic properties
+        self.assertEqual(con_lat.alg_size(), 2)  # Subalgebra universe is [0, 1]
+
 
     def test_subalgebra_sub_method(self):
         """Test Subalgebra sub() method."""
