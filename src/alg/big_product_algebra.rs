@@ -99,7 +99,7 @@ impl Operation for BigProductOperation {
         Box::new(self.clone())
     }
     
-    fn value_at(&self, args: &[i32]) -> Result<i32, String> {
+    fn value_at(&self, _args: &[i32]) -> Result<i32, String> {
         Err("BigProductOperation does not support value_at".to_string())
     }
     
@@ -430,21 +430,34 @@ where
             return constants.clone();
         }
         
-        let constants = Vec::new();
-        let constant_to_symbol = HashMap::new();
-        let _hash: HashSet<IntArray> = HashSet::new();
+        // Build constants fresh each call (cache stored below)
+        // Collect all 0-ary operation values as constants
+        let mut constants_vec: Vec<IntArray> = Vec::new();
+        let mut constants_set: HashSet<IntArray> = HashSet::new();
+        let mut c2s: HashMap<IntArray, OperationSymbol> = HashMap::new();
         
         for op in &self.operations {
             if op.arity() == 0 {
-                // This is a constant - evaluate it
-                // TODO: Implement proper evaluation
+                // Evaluate the nullary operation on the product
+                // value_at_arrays expects a slice of argument arrays; for arity 0 this is empty.
+                match op.value_at_arrays(&[]) {
+                    Ok(vals) => {
+                        if let Ok(ia) = IntArray::from_array(vals) {
+                            if constants_set.insert(ia.clone()) {
+                                c2s.insert(ia.clone(), op.symbol().clone());
+                                constants_vec.push(ia);
+                            }
+                        }
+                    }
+                    Err(_) => { /* ignore malformed ops */ }
+                }
             }
         }
         
-        self.constants = Some(constants.clone());
-        self.constant_to_symbol = Some(constant_to_symbol);
+        self.constants = Some(constants_vec.clone());
+        self.constant_to_symbol = Some(c2s);
         
-        constants
+        constants_vec
     }
     
     /// Get the symbol for a constant.
@@ -810,7 +823,8 @@ where
     }
     
     fn make_operation_tables(&mut self) {
-        self.make_operation_tables();
+        // Delegate to inherent implementation (avoid recursion into this trait method)
+        BigProductAlgebra::<T>::make_operation_tables(self);
     }
     
     fn constant_operations(&self) -> Vec<Box<dyn Operation>> {
@@ -853,6 +867,8 @@ mod tests {
     use super::*;
     use crate::alg::BasicSmallAlgebra;
     use std::collections::HashSet;
+    use crate::alg::op::{OperationSymbol, Operation, BasicOperation};
+    use crate::util::int_array::IntArrayTrait;
     
     #[test]
     fn test_new_product() {
@@ -883,6 +899,54 @@ mod tests {
         let power = BigProductAlgebra::<i32>::new_power_safe(alg, 3).unwrap();
         assert_eq!(power.get_number_of_factors(), 3);
         assert!(power.is_power());
+    }
+
+    #[test]
+    fn test_constants_from_nullary_ops() {
+        // Build two small algebras each with a single nullary constant op
+        let set1: HashSet<i32> = HashSet::from([0, 1, 2]);
+        let set2: HashSet<i32> = HashSet::from([0, 1]);
+
+        let c_sym = OperationSymbol::new_safe("c", 0, false).unwrap();
+        let c1_val = 2; // constant in alg1
+        let c2_val = 1; // constant in alg2
+
+        let c1 = crate::alg::op::operations::make_int_operation(c_sym.clone(), 3, vec![c1_val]).unwrap();
+        let c2 = crate::alg::op::operations::make_int_operation(c_sym.clone(), 2, vec![c2_val]).unwrap();
+
+        let alg1 = Box::new(BasicSmallAlgebra::new("A1".to_string(), set1, vec![c1])) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+        let alg2 = Box::new(BasicSmallAlgebra::new("A2".to_string(), set2, vec![c2])) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+
+        let mut prod = BigProductAlgebra::<i32>::new_safe(vec![alg1, alg2]).unwrap();
+
+        let consts = prod.get_constants();
+        assert_eq!(consts.len(), 1);
+        let ia = &consts[0];
+        assert_eq!(ia.as_slice(), &[c1_val, c2_val]);
+
+        // Symbol mapping
+        let sym = prod.get_constant_symbol(ia).expect("symbol for constant");
+        assert_eq!(sym, c_sym);
+    }
+
+    #[test]
+    fn test_make_operation_tables_no_recursion() {
+        // Build a small product and call make_operation_tables; it should not recurse infinitely
+        let set1: HashSet<i32> = HashSet::from([0, 1]);
+        let set2: HashSet<i32> = HashSet::from([0, 1]);
+
+        // Include a simple unary op so factor tables can be made
+        let f_sym = OperationSymbol::new_safe("f", 1, false).unwrap();
+        let f1 = Box::new(BasicOperation::new_safe(f_sym.clone(), 2).unwrap()) as Box<dyn Operation>;
+        let f2 = Box::new(BasicOperation::new_safe(f_sym.clone(), 2).unwrap()) as Box<dyn Operation>;
+
+        let alg1 = Box::new(BasicSmallAlgebra::new("A1".to_string(), set1, vec![f1])) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+        let alg2 = Box::new(BasicSmallAlgebra::new("A2".to_string(), set2, vec![f2])) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+
+        let mut prod = BigProductAlgebra::<i32>::new_safe(vec![alg1, alg2]).unwrap();
+
+        // Should not panic or recurse; BigProductOperation itself remains non-table-based
+        prod.make_operation_tables();
     }
 }
 
