@@ -149,8 +149,61 @@ pub fn majority_term<T>(alg: &dyn SmallAlgebra<UniverseItem = T>) -> Result<Opti
 where
     T: Clone + std::fmt::Debug + std::fmt::Display + std::hash::Hash + Eq + Send + Sync + 'static
 {
-    // TODO: Implement majority term finding algorithm
-    Err("Majority term finding not yet implemented".to_string())
+    if alg.cardinality() == 1 {
+        return Ok(Some(Box::new(VariableImp::x())));
+    }
+    
+    // Convert to i32 algebra
+    let card = alg.cardinality();
+    let ops = alg.operations();
+    let universe_set: HashSet<i32> = (0..card).collect();
+    let i32_alg = BasicSmallAlgebra::new(
+        alg.name().to_string(),
+        universe_set,
+        ops,
+    );
+    
+    // Create free algebra with 2 generators (F(2))
+    let mut f2 = FreeAlgebra::new_safe(Box::new(i32_alg), 2)?;
+    use crate::alg::Algebra;
+    f2.make_operation_tables();
+    
+    // Create BigProductAlgebra (F(2)^3)
+    let f2_boxed: Box<dyn SmallAlgebra<UniverseItem = IntArray>> = 
+        Box::new(f2) as Box<dyn SmallAlgebra<UniverseItem = IntArray>>;
+    let f2_cubed = BigProductAlgebra::new_power_safe(f2_boxed, 3)?;
+    
+    // Create generators: (x,x,y), (x,y,x), (y,x,x)
+    let g0 = IntArray::from_array(vec![0, 0, 1])?;  // (x,x,y)
+    let g1 = IntArray::from_array(vec![0, 1, 0])?;  // (x,y,x)
+    let g2 = IntArray::from_array(vec![1, 0, 0])?;  // (y,x,x)
+    let gens = vec![g0.clone(), g1.clone(), g2.clone()];
+    
+    // Create term map
+    let mut term_map: HashMap<IntArray, Box<dyn Term>> = HashMap::new();
+    term_map.insert(g0.clone(), Box::new(VariableImp::x()));
+    term_map.insert(g1.clone(), Box::new(VariableImp::y()));
+    term_map.insert(g2.clone(), Box::new(VariableImp::z()));
+    
+    // The element we're looking for: (x,x,x) = [0,0,0]
+    let xxx = IntArray::from_array(vec![0, 0, 0])?;
+    
+    // Use Closer for term tracking during closure
+    let mut closer = Closer::new_with_term_map_safe(
+        Arc::new(f2_cubed),
+        gens,
+        term_map,
+    )?;
+    closer.set_element_to_find(Some(xxx.clone()));
+    
+    let closure = closer.sg_close()?;
+    if closure.contains(&xxx) {
+        if let Some(term) = closer.get_term_map().and_then(|tm| tm.get(&xxx).map(|t| t.clone_box())) {
+            return Ok(Some(term));
+        }
+    }
+    
+    Ok(None)
 }
 
 /// Find a minority term for the algebra.
@@ -169,8 +222,61 @@ pub fn minority_term<T>(alg: &dyn SmallAlgebra<UniverseItem = T>) -> Result<Opti
 where
     T: Clone + std::fmt::Debug + std::fmt::Display + std::hash::Hash + Eq + Send + Sync + 'static
 {
-    // TODO: Implement minority term finding algorithm
-    Err("Minority term finding not yet implemented".to_string())
+    if alg.cardinality() == 1 {
+        return Ok(Some(Box::new(VariableImp::x())));
+    }
+    
+    // Convert to i32 algebra
+    let card = alg.cardinality();
+    let ops = alg.operations();
+    let universe_set: HashSet<i32> = (0..card).collect();
+    let i32_alg = BasicSmallAlgebra::new(
+        alg.name().to_string(),
+        universe_set,
+        ops,
+    );
+    
+    // Create free algebra with 2 generators (F(2))
+    let mut f2 = FreeAlgebra::new_safe(Box::new(i32_alg), 2)?;
+    use crate::alg::Algebra;
+    f2.make_operation_tables();
+    
+    // Create BigProductAlgebra (F(2)^3)
+    let f2_boxed: Box<dyn SmallAlgebra<UniverseItem = IntArray>> = 
+        Box::new(f2) as Box<dyn SmallAlgebra<UniverseItem = IntArray>>;
+    let f2_cubed = BigProductAlgebra::new_power_safe(f2_boxed, 3)?;
+    
+    // Create generators: (x,x,y), (x,y,x), (y,x,x)
+    let g0 = IntArray::from_array(vec![0, 0, 1])?;  // (x,x,y)
+    let g1 = IntArray::from_array(vec![0, 1, 0])?;  // (x,y,x)
+    let g2 = IntArray::from_array(vec![1, 0, 0])?;  // (y,x,x)
+    let gens = vec![g0.clone(), g1.clone(), g2.clone()];
+    
+    // Create term map
+    let mut term_map: HashMap<IntArray, Box<dyn Term>> = HashMap::new();
+    term_map.insert(g0.clone(), Box::new(VariableImp::x()));
+    term_map.insert(g1.clone(), Box::new(VariableImp::y()));
+    term_map.insert(g2.clone(), Box::new(VariableImp::z()));
+    
+    // The element we're looking for: (y,y,y) = [1,1,1]
+    let yyy = IntArray::from_array(vec![1, 1, 1])?;
+    
+    // Use Closer for term tracking during closure
+    let mut closer = Closer::new_with_term_map_safe(
+        Arc::new(f2_cubed),
+        gens,
+        term_map,
+    )?;
+    closer.set_element_to_find(Some(yyy.clone()));
+    
+    let closure = closer.sg_close()?;
+    if closure.contains(&yyy) {
+        if let Some(term) = closer.get_term_map().and_then(|tm| tm.get(&yyy).map(|t| t.clone_box())) {
+            return Ok(Some(term));
+        }
+    }
+    
+    Ok(None)
 }
 
 /// Find a Pixley term for the algebra.
@@ -191,8 +297,65 @@ pub fn pixley_term<T>(alg: &dyn SmallAlgebra<UniverseItem = T>) -> Result<Option
 where
     T: Clone + std::fmt::Debug + std::fmt::Display + std::hash::Hash + Eq + Send + Sync + 'static
 {
-    // TODO: Implement Pixley term finding algorithm
-    Err("Pixley term finding not yet implemented".to_string())
+    if alg.cardinality() == 1 {
+        return Ok(Some(Box::new(VariableImp::x())));
+    }
+    
+    // For idempotent algebras, check if congruence distributive first
+    // (Pixley terms exist only in arithmetical varieties)
+    // TODO: Implement is_congruence_dist_idempotent check when available
+    
+    // Convert to i32 algebra
+    let card = alg.cardinality();
+    let ops = alg.operations();
+    let universe_set: HashSet<i32> = (0..card).collect();
+    let i32_alg = BasicSmallAlgebra::new(
+        alg.name().to_string(),
+        universe_set,
+        ops,
+    );
+    
+    // Create free algebra with 2 generators (F(2))
+    let mut f2 = FreeAlgebra::new_safe(Box::new(i32_alg), 2)?;
+    use crate::alg::Algebra;
+    f2.make_operation_tables();
+    
+    // Create BigProductAlgebra (F(2)^3)
+    let f2_boxed: Box<dyn SmallAlgebra<UniverseItem = IntArray>> = 
+        Box::new(f2) as Box<dyn SmallAlgebra<UniverseItem = IntArray>>;
+    let f2_cubed = BigProductAlgebra::new_power_safe(f2_boxed, 3)?;
+    
+    // Create generators: (x,x,y), (y,y,y), (y,x,x)
+    let g0 = IntArray::from_array(vec![0, 0, 1])?;  // (x,x,y)
+    let g1 = IntArray::from_array(vec![1, 1, 1])?;  // (y,y,y)
+    let g2 = IntArray::from_array(vec![1, 0, 0])?;  // (y,x,x)
+    let gens = vec![g0.clone(), g1.clone(), g2.clone()];
+    
+    // Create term map
+    let mut term_map: HashMap<IntArray, Box<dyn Term>> = HashMap::new();
+    term_map.insert(g0.clone(), Box::new(VariableImp::x()));
+    term_map.insert(g1.clone(), Box::new(VariableImp::y()));
+    term_map.insert(g2.clone(), Box::new(VariableImp::z()));
+    
+    // The element we're looking for: (x,x,x) = [0,0,0]
+    let xxx = IntArray::from_array(vec![0, 0, 0])?;
+    
+    // Use Closer for term tracking during closure
+    let mut closer = Closer::new_with_term_map_safe(
+        Arc::new(f2_cubed),
+        gens,
+        term_map,
+    )?;
+    closer.set_element_to_find(Some(xxx.clone()));
+    
+    let closure = closer.sg_close()?;
+    if closure.contains(&xxx) {
+        if let Some(term) = closer.get_term_map().and_then(|tm| tm.get(&xxx).map(|t| t.clone_box())) {
+            return Ok(Some(term));
+        }
+    }
+    
+    Ok(None)
 }
 
 /// Find a near unanimity (NU) term of the given arity.
@@ -775,6 +938,102 @@ mod tests {
             assert!(result.is_ok(), "nu_term should not error on cyclic3");
             if let Ok(Some(term)) = result {
                 println!("Found NU term for cyclic3: {}", term);
+            }
+        } else {
+            println!("Skipping test - cyclic3.ua not found");
+        }
+    }
+
+    #[test]
+    fn test_majority_term_with_trivial_algebra() {
+        // Test with cardinality 1 algebra (should return x)
+        let alg = BasicSmallAlgebra::new(
+            "TestAlgebra".to_string(),
+            HashSet::from([0]),
+            Vec::new()
+        );
+        
+        let result = majority_term(&alg);
+        assert!(result.is_ok());
+        if let Ok(Some(term)) = result {
+            assert!(term.isa_variable());
+        }
+    }
+
+    #[test]
+    fn test_majority_term_with_cyclic3() {
+        // Test majority term finding with cyclic3
+        if let Some(alg) = load_test_algebra("cyclic3") {
+            let result = majority_term(&alg);
+            assert!(result.is_ok(), "majority_term should not error on cyclic3");
+            if let Ok(Some(term)) = result {
+                println!("Found majority term for cyclic3: {}", term);
+            } else {
+                println!("No majority term found for cyclic3 (this is valid)");
+            }
+        } else {
+            println!("Skipping test - cyclic3.ua not found");
+        }
+    }
+
+    #[test]
+    fn test_minority_term_with_trivial_algebra() {
+        // Test with cardinality 1 algebra (should return x)
+        let alg = BasicSmallAlgebra::new(
+            "TestAlgebra".to_string(),
+            HashSet::from([0]),
+            Vec::new()
+        );
+        
+        let result = minority_term(&alg);
+        assert!(result.is_ok());
+        if let Ok(Some(term)) = result {
+            assert!(term.isa_variable());
+        }
+    }
+
+    #[test]
+    fn test_minority_term_with_cyclic3() {
+        // Test minority term finding with cyclic3
+        if let Some(alg) = load_test_algebra("cyclic3") {
+            let result = minority_term(&alg);
+            assert!(result.is_ok(), "minority_term should not error on cyclic3");
+            if let Ok(Some(term)) = result {
+                println!("Found minority term for cyclic3: {}", term);
+            } else {
+                println!("No minority term found for cyclic3 (this is valid)");
+            }
+        } else {
+            println!("Skipping test - cyclic3.ua not found");
+        }
+    }
+
+    #[test]
+    fn test_pixley_term_with_trivial_algebra() {
+        // Test with cardinality 1 algebra (should return x)
+        let alg = BasicSmallAlgebra::new(
+            "TestAlgebra".to_string(),
+            HashSet::from([0]),
+            Vec::new()
+        );
+        
+        let result = pixley_term(&alg);
+        assert!(result.is_ok());
+        if let Ok(Some(term)) = result {
+            assert!(term.isa_variable());
+        }
+    }
+
+    #[test]
+    fn test_pixley_term_with_cyclic3() {
+        // Test Pixley term finding with cyclic3
+        if let Some(alg) = load_test_algebra("cyclic3") {
+            let result = pixley_term(&alg);
+            assert!(result.is_ok(), "pixley_term should not error on cyclic3");
+            if let Ok(Some(term)) = result {
+                println!("Found Pixley term for cyclic3: {}", term);
+            } else {
+                println!("No Pixley term found for cyclic3 (this is valid)");
             }
         } else {
             println!("Skipping test - cyclic3.ua not found");

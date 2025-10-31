@@ -64,37 +64,49 @@ fn malcev_term(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<String>> {
 /// Find a majority term for the algebra.
 ///
 /// # Arguments
-/// * `algebra` - The algebra to check
+/// * `algebra` - The algebra to check (BasicSmallAlgebra)
 ///
 /// # Returns
-/// The majority term if one exists, None otherwise
+/// The majority term as a string if one exists, None otherwise
 #[pyfunction]
-fn majority_term(_algebra: PyObject) -> PyResult<Option<PyObject>> {
-    Err(PyValueError::new_err("Majority term finding not yet implemented"))
+fn majority_term(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<String>> {
+    match malcev::majority_term(&algebra.inner) {
+        Ok(Some(term)) => Ok(Some(format!("{}", term))),
+        Ok(None) => Ok(None),
+        Err(e) => Err(PyValueError::new_err(e)),
+    }
 }
 
 /// Find a minority term for the algebra.
 ///
 /// # Arguments
-/// * `algebra` - The algebra to check
+/// * `algebra` - The algebra to check (BasicSmallAlgebra)
 ///
 /// # Returns
-/// The minority term if one exists, None otherwise
+/// The minority term as a string if one exists, None otherwise
 #[pyfunction]
-fn minority_term(_algebra: PyObject) -> PyResult<Option<PyObject>> {
-    Err(PyValueError::new_err("Minority term finding not yet implemented"))
+fn minority_term(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<String>> {
+    match malcev::minority_term(&algebra.inner) {
+        Ok(Some(term)) => Ok(Some(format!("{}", term))),
+        Ok(None) => Ok(None),
+        Err(e) => Err(PyValueError::new_err(e)),
+    }
 }
 
 /// Find a Pixley term for the algebra.
 ///
 /// # Arguments
-/// * `algebra` - The algebra to check
+/// * `algebra` - The algebra to check (BasicSmallAlgebra)
 ///
 /// # Returns
-/// The Pixley term if one exists, None otherwise
+/// The Pixley term as a string if one exists, None otherwise
 #[pyfunction]
-fn pixley_term(_algebra: PyObject) -> PyResult<Option<PyObject>> {
-    Err(PyValueError::new_err("Pixley term finding not yet implemented"))
+fn pixley_term(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<String>> {
+    match malcev::pixley_term(&algebra.inner) {
+        Ok(Some(term)) => Ok(Some(format!("{}", term))),
+        Ok(None) => Ok(None),
+        Err(e) => Err(PyValueError::new_err(e)),
+    }
 }
 
 /// Find a near unanimity term of the given arity.
