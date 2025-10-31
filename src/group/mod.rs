@@ -216,7 +216,7 @@ impl PermutationGroup {
     /// * `p1` - Second permutation
     /// 
     /// # Returns
-    /// The product permutation p0 * p1
+    /// The product permutation p0 * p1, or an error if the permutations are invalid
     /// 
     /// # Examples
     /// ```
@@ -225,28 +225,28 @@ impl PermutationGroup {
     /// 
     /// let p0 = IntArray::from_array(vec![1, 0, 2]).unwrap();
     /// let p1 = IntArray::from_array(vec![2, 1, 0]).unwrap();
-    /// let result = PermutationGroup::prod(p0, p1);
+    /// let result = PermutationGroup::prod(p0, p1).unwrap();
     /// assert_eq!(result.as_slice(), &[2, 0, 1]);
     /// ```
-    pub fn prod(p0: IntArray, p1: IntArray) -> IntArray {
+    pub fn prod(p0: IntArray, p1: IntArray) -> Result<IntArray, String> {
         let arr0 = p0.as_slice();
         let arr1 = p1.as_slice();
         
         if arr0.len() != arr1.len() {
-            panic!("Permutations must have the same size");
+            return Err(format!("Permutations must have the same size: {} != {}", arr0.len(), arr1.len()));
         }
         
         let n = arr0.len();
         let mut arr = vec![0; n];
         
         for i in 0..n {
-            if arr1[i] as usize >= n {
-                panic!("Invalid permutation: index {} out of bounds for size {}", arr1[i], n);
+            if arr1[i] < 0 || arr1[i] as usize >= n {
+                return Err(format!("Invalid permutation: index {} out of bounds for size {}", arr1[i], n));
             }
             arr[i] = arr0[arr1[i] as usize];
         }
         
-        IntArray::from_array(arr).unwrap()
+        IntArray::from_array(arr).map_err(|e| format!("Failed to create IntArray: {}", e))
     }
     
     /// Create an inverse operation for the given algebra size.
@@ -275,7 +275,7 @@ impl PermutationGroup {
     /// * `a` - The permutation to invert
     /// 
     /// # Returns
-    /// The inverse permutation
+    /// The inverse permutation, or an error if the permutation is invalid
     /// 
     /// # Examples
     /// ```
@@ -283,22 +283,22 @@ impl PermutationGroup {
     /// use uacalc::util::int_array::{IntArray, IntArrayTrait};
     /// 
     /// let p = IntArray::from_array(vec![1, 0, 2]).unwrap();
-    /// let inv = PermutationGroup::inv(p);
+    /// let inv = PermutationGroup::inv(p).unwrap();
     /// assert_eq!(inv.as_slice(), &[1, 0, 2]);
     /// ```
-    pub fn inv(a: IntArray) -> IntArray {
+    pub fn inv(a: IntArray) -> Result<IntArray, String> {
         let arr0 = a.as_slice();
         let n = arr0.len();
         let mut arr = vec![0; n];
         
         for i in 0..n {
-            if arr0[i] as usize >= n {
-                panic!("Invalid permutation: index {} out of bounds for size {}", arr0[i], n);
+            if arr0[i] < 0 || arr0[i] as usize >= n {
+                return Err(format!("Invalid permutation: index {} out of bounds for size {}", arr0[i], n));
             }
             arr[arr0[i] as usize] = i as i32;
         }
         
-        IntArray::from_array(arr).unwrap()
+        IntArray::from_array(arr).map_err(|e| format!("Failed to create IntArray: {}", e))
     }
     
     /// Create an identity operation for the given algebra size and set size.
@@ -451,10 +451,12 @@ impl Operation for ProductOperation {
         }
         
         // Convert indices to IntArray and compute product
-        let p0 = IntArray::from_array(vec![args[0]]).unwrap();
-        let p1 = IntArray::from_array(vec![args[1]]).unwrap();
-        let result = PermutationGroup::prod(p0, p1);
-        Ok(result.get(0).unwrap())
+        let p0 = IntArray::from_array(vec![args[0]])
+            .map_err(|e| format!("Failed to create IntArray: {}", e))?;
+        let p1 = IntArray::from_array(vec![args[1]])
+            .map_err(|e| format!("Failed to create IntArray: {}", e))?;
+        let result = PermutationGroup::prod(p0, p1)?;
+        result.get(0).ok_or_else(|| "Empty result array".to_string())
     }
     
     fn value_at_arrays(&self, args: &[&[i32]]) -> Result<Vec<i32>, String> {
@@ -464,10 +466,12 @@ impl Operation for ProductOperation {
         
         let mut result = Vec::with_capacity(args[0].len());
         for i in 0..args[0].len() {
-            let p0 = IntArray::from_array(vec![args[0][i]]).unwrap();
-            let p1 = IntArray::from_array(vec![args[1][i]]).unwrap();
-            let prod = PermutationGroup::prod(p0, p1);
-            result.push(prod.get(0).unwrap());
+            let p0 = IntArray::from_array(vec![args[0][i]])
+                .map_err(|e| format!("Failed to create IntArray: {}", e))?;
+            let p1 = IntArray::from_array(vec![args[1][i]])
+                .map_err(|e| format!("Failed to create IntArray: {}", e))?;
+            let prod = PermutationGroup::prod(p0, p1)?;
+            result.push(prod.get(0).ok_or_else(|| "Empty result array".to_string())?);
         }
         Ok(result)
     }
@@ -559,9 +563,10 @@ impl Operation for InverseOperation {
         }
         
         // Convert index to IntArray and compute inverse
-        let a = IntArray::from_array(vec![args[0]]).unwrap();
-        let result = PermutationGroup::inv(a);
-        Ok(result.get(0).unwrap())
+        let a = IntArray::from_array(vec![args[0]])
+            .map_err(|e| format!("Failed to create IntArray: {}", e))?;
+        let result = PermutationGroup::inv(a)?;
+        result.get(0).ok_or_else(|| "Empty result array".to_string())
     }
     
     fn value_at_arrays(&self, args: &[&[i32]]) -> Result<Vec<i32>, String> {
@@ -571,9 +576,10 @@ impl Operation for InverseOperation {
         
         let mut result = Vec::with_capacity(args[0].len());
         for i in 0..args[0].len() {
-            let a = IntArray::from_array(vec![args[0][i]]).unwrap();
-            let inv = PermutationGroup::inv(a);
-            result.push(inv.get(0).unwrap());
+            let a = IntArray::from_array(vec![args[0][i]])
+                .map_err(|e| format!("Failed to create IntArray: {}", e))?;
+            let inv = PermutationGroup::inv(a)?;
+            result.push(inv.get(0).ok_or_else(|| "Empty result array".to_string())?);
         }
         Ok(result)
     }

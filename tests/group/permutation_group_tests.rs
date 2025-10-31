@@ -71,7 +71,7 @@ fn test_permutation_group_new_safe_mismatched_sizes() {
 fn test_permutation_group_prod() {
     let p0 = IntArray::from_array(vec![1, 0, 2]).unwrap();
     let p1 = IntArray::from_array(vec![2, 1, 0]).unwrap();
-    let result = PermutationGroup::prod(p0, p1);
+    let result = PermutationGroup::prod(p0, p1).unwrap();
     
     // p0 * p1: 0 -> p0[p1[0]] = p0[2] = 2, 1 -> p0[p1[1]] = p0[1] = 0, 2 -> p0[p1[2]] = p0[0] = 1
     assert_eq!(result.as_slice(), &[2, 0, 1]);
@@ -80,7 +80,7 @@ fn test_permutation_group_prod() {
 #[test]
 fn test_permutation_group_inv() {
     let p = IntArray::from_array(vec![1, 0, 2]).unwrap();
-    let inv = PermutationGroup::inv(p);
+    let inv = PermutationGroup::inv(p).unwrap();
     
     // Inverse of [1, 0, 2] is [1, 0, 2] (it's its own inverse)
     assert_eq!(inv.as_slice(), &[1, 0, 2]);
@@ -89,7 +89,7 @@ fn test_permutation_group_inv() {
 #[test]
 fn test_permutation_group_inv_complex() {
     let p = IntArray::from_array(vec![2, 0, 1]).unwrap();
-    let inv = PermutationGroup::inv(p);
+    let inv = PermutationGroup::inv(p).unwrap();
     
     // Inverse of [2, 0, 1] is [1, 2, 0]
     assert_eq!(inv.as_slice(), &[1, 2, 0]);
@@ -256,11 +256,11 @@ fn test_permutation_group_complex_permutations() {
     let p1 = IntArray::from_array(vec![2, 0, 1, 3]).unwrap();
     let p2 = IntArray::from_array(vec![1, 3, 0, 2]).unwrap();
     
-    let product = PermutationGroup::prod(p1.clone(), p2);
+    let product = PermutationGroup::prod(p1.clone(), p2).unwrap();
     // p1 * p2: 0 -> p1[p2[0]] = p1[1] = 0, 1 -> p1[p2[1]] = p1[3] = 3, 2 -> p1[p2[2]] = p1[0] = 2, 3 -> p1[p2[3]] = p1[2] = 1
     assert_eq!(product.as_slice(), &[0, 3, 2, 1]);
     
-    let inverse = PermutationGroup::inv(p1);
+    let inverse = PermutationGroup::inv(p1).unwrap();
     // Inverse of [2, 0, 1, 3] is [1, 2, 0, 3]
     assert_eq!(inverse.as_slice(), &[1, 2, 0, 3]);
 }
@@ -269,13 +269,13 @@ fn test_permutation_group_complex_permutations() {
 fn test_permutation_group_edge_cases() {
     // Test with single element
     let p = IntArray::from_array(vec![0]).unwrap();
-    let inv = PermutationGroup::inv(p.clone());
+    let inv = PermutationGroup::inv(p.clone()).unwrap();
     assert_eq!(inv.as_slice(), &[0]);
     
     let id = PermutationGroup::id(1);
     assert_eq!(id.as_slice(), &[0]);
     
     // Test product with single elements
-    let product = PermutationGroup::prod(p.clone(), p);
+    let product = PermutationGroup::prod(p.clone(), p).unwrap();
     assert_eq!(product.as_slice(), &[0]);
 }

@@ -103,22 +103,15 @@ class TestPermutationGroup:
         with pytest.raises(Exception):
             uacalc_lib.group.PyPermutationGroup.new_safe("TestGroup", [[1, 2, 0], [1, 2]])
 
-    @pytest.mark.skip(reason="Panic exceptions are not easily catchable in pytest")
     def test_permutation_operations_validation(self):
         """Test that permutation operations validate input correctly."""
-        # Test with invalid permutation - should raise an exception
-        try:
+        # Test with invalid permutation - mismatched sizes should raise an exception
+        with pytest.raises(Exception):
             uacalc_lib.group.PyPermutationGroup.prod([1, 2], [1, 2, 0])
-            assert False, "Expected an exception to be raised"
-        except Exception:
-            pass  # Expected
         
         # Test with invalid permutation for inverse - should raise an exception
-        try:
+        with pytest.raises(Exception):
             uacalc_lib.group.PyPermutationGroup.inv([1, 2])
-            assert False, "Expected an exception to be raised"
-        except Exception:
-            pass  # Expected
 
     def test_permutation_group_complex_operations(self):
         """Test complex permutation operations."""

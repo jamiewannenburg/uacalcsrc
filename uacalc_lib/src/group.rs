@@ -86,7 +86,8 @@ impl PyPermutationGroup {
         let arr1 = IntArray::from_array(p1).map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e))?;
         let arr2 = IntArray::from_array(p2).map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e))?;
         
-        let result = PermutationGroup::prod(arr1, arr2);
+        let result = PermutationGroup::prod(arr1, arr2)
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e))?;
         Ok(result.as_slice().to_vec())
     }
 
@@ -94,7 +95,8 @@ impl PyPermutationGroup {
     fn inv(p: Vec<i32>) -> PyResult<Vec<i32>> {
         let arr = IntArray::from_array(p).map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e))?;
         
-        let result = PermutationGroup::inv(arr);
+        let result = PermutationGroup::inv(arr)
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e))?;
         Ok(result.as_slice().to_vec())
     }
 
