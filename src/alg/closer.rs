@@ -10,8 +10,9 @@ use std::sync::Arc;
 use std::hash::Hash;
 use std::fmt::Debug;
 use crate::alg::big_product_algebra::BigProductAlgebra;
+use crate::alg::Algebra;
 use crate::util::int_array::IntArray;
-use crate::terms::Term;
+use crate::terms::{Term, NonVariableTerm};
 use crate::progress::ProgressReport;
 
 /// A class for finding the closure of generating sets in algebras.
@@ -290,7 +291,31 @@ where
         }
         
         // Add constants if any
-        // TODO: Get constants from algebra and add them
+        // Get constants from algebra and add them
+        let operations = self.algebra.as_ref().operations();
+        for op in &operations {
+            if op.arity() == 0i32 {
+                // Evaluate the nullary operation to get the constant value
+                match op.value_at_arrays(&[]) {
+                    Ok(vals) => {
+                        if let Ok(constant_arr) = IntArray::from_array(vals) {
+                            if su.insert(constant_arr.clone()) {
+                                self.ans.push(constant_arr.clone());
+                                // Add to term map if it exists
+                                if let Some(ref mut term_map) = self.term_map {
+                                    let symbol = op.symbol().clone();
+                                    let constant_term = Box::new(NonVariableTerm::make_constant_term(symbol)) as Box<dyn Term>;
+                                    term_map.insert(constant_arr, constant_term);
+                                }
+                            }
+                        }
+                    }
+                    Err(_) => {
+                        // Ignore malformed operations
+                    }
+                }
+            }
+        }
         
         let mut current_mark = self.ans.len();
         let mut pass = 0;
@@ -476,6 +501,44 @@ mod tests {
         
         // Should have 2 generators after removing duplicates
         assert_eq!(closer.get_generators().len(), 2);
+    }
+    
+    #[test]
+    fn test_constants_added_to_closure() {
+        use crate::alg::op::{OperationSymbol, operations};
+        
+        // Create a small algebra with a constant operation
+        let set: HashSet<i32> = HashSet::from([0, 1]);
+        let c_sym = OperationSymbol::new_safe("c", 0, false).unwrap();
+        let c_val = 1; // constant value
+        let c_op = operations::make_int_operation(c_sym.clone(), 2, vec![c_val]).unwrap();
+        
+        let alg1 = Box::new(BasicSmallAlgebra::new(
+            "A".to_string(),
+            set,
+            vec![c_op]
+        )) as Box<dyn crate::alg::SmallAlgebra<UniverseItem = i32>>;
+        
+        let algebra = Arc::new(
+            BigProductAlgebra::<i32>::new_power_safe(alg1, 2).unwrap()
+        );
+        
+        // Create generators
+        let gen = IntArray::from_array(vec![0, 0]).unwrap();
+        let generators = vec![gen];
+        
+        // Create closer and compute closure
+        let mut closer = Closer::<i32>::new_safe(algebra, generators).unwrap();
+        let result = closer.sg_close().unwrap();
+        
+        // The constant [1, 1] should be in the closure
+        let expected_constant = IntArray::from_array(vec![c_val, c_val]).unwrap();
+        assert!(result.contains(&expected_constant), 
+                "Constant {:?} should be in closure, got: {:?}", 
+                expected_constant, result);
+        
+        // The closure should include at least the generator and the constant
+        assert!(result.len() >= 2, "Closure should have at least generator and constant");
     }
 }
 

@@ -381,3 +381,5 @@ fn test_basic_set_constraints() {
     assert!(idempotent_set.is_idempotent());
     assert!(!set.is_idempotent());
 }
+
+

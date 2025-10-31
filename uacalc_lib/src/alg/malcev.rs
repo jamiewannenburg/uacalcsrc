@@ -351,3 +351,5 @@ fn cyclic_term_idempotent(_algebra: PyObject, _arity: usize) -> PyResult<bool> {
     Err(PyValueError::new_err("Cyclic term test not yet implemented"))
 }
 
+
+
