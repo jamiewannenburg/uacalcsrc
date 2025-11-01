@@ -38,7 +38,10 @@ class TestPool(unittest.TestCase):
         Pool = uacalc_lib.alg.Pool
         
         # Test with Java wrapper
-        java_result = run_java_wrapper("get_pool", [])
+        java_output = run_java_wrapper("java_wrapper.src.alg.parallel.PoolWrapper", ["get_pool"])
+        
+        # Parse the JSON output
+        java_result = java_output.parse_json()
         
         # Parse the nested JSON if needed
         if "data" in java_result and isinstance(java_result["data"], str):
@@ -57,7 +60,10 @@ class TestPool(unittest.TestCase):
         Pool = uacalc_lib.alg.Pool
         
         # Test with Java wrapper
-        java_result = run_java_wrapper("is_initialized", [])
+        java_output = run_java_wrapper("java_wrapper.src.alg.parallel.PoolWrapper", ["is_initialized"])
+        
+        # Parse the JSON output
+        java_result = java_output.parse_json()
         
         # Parse the nested JSON if needed
         if "data" in java_result and isinstance(java_result["data"], str):
@@ -76,7 +82,10 @@ class TestPool(unittest.TestCase):
         Pool = uacalc_lib.alg.Pool
         
         # Test with Java wrapper
-        java_result = run_java_wrapper("test", [])
+        java_output = run_java_wrapper("java_wrapper.src.alg.parallel.PoolWrapper", ["test"])
+        
+        # Parse the JSON output
+        java_result = java_output.parse_json()
         
         # Parse the nested JSON if needed
         if "data" in java_result and isinstance(java_result["data"], str):
