@@ -3,14 +3,13 @@
  * 
  * This module provides timing and progress tracking for closure operations,
  * replacing the UI-dependent `org.uacalc.alg.CloserTiming` from the Java implementation.
- * 
- * This is a partial/basic implementation that doesn't depend on BigProductAlgebra yet.
  */
 
 use std::sync::Arc;
 use std::sync::atomic::{AtomicI32, AtomicI64, Ordering};
 use std::time::Instant;
 use crate::progress::ProgressReport;
+use crate::alg::BigProductAlgebra;
 
 /// Timing information holder for closure operations.
 /// 
@@ -76,10 +75,73 @@ const SECOND_COUNT: u64 = 60_000_000;
 const THIRD_COUNT: u64 = 60_000_000;
 
 impl CloserTiming {
+    /// Create a new CloserTiming instance from a BigProductAlgebra.
+    /// 
+    /// This constructor extracts the number of factors and operation arities
+    /// from the provided algebra, matching the Java implementation.
+    /// 
+    /// # Arguments
+    /// * `algebra` - The BigProductAlgebra to get timing information for
+    /// * `report` - Optional progress reporter
+    /// 
+    /// # Returns
+    /// A new CloserTiming instance
+    /// 
+    /// # Examples
+    /// ```
+    /// use uacalc::alg::{CloserTiming, BigProductAlgebra, BasicSmallAlgebra};
+    /// use uacalc::progress::factory;
+    /// use std::collections::HashSet;
+    /// 
+    /// let alg1 = Box::new(BasicSmallAlgebra::new(
+    ///     "A1".to_string(),
+    ///     HashSet::from([0, 1]),
+    ///     Vec::new()
+    /// )) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
+    /// 
+    /// let product = BigProductAlgebra::<i32>::new_safe(vec![alg1]).unwrap();
+    /// let timing = CloserTiming::new_from_algebra(&product, Some(factory::console()));
+    /// ```
+    pub fn new_from_algebra<T>(
+        algebra: &BigProductAlgebra<T>,
+        report: Option<Arc<dyn ProgressReport>>,
+    ) -> Self
+    where
+        T: Clone + std::cmp::PartialEq + Eq + std::hash::Hash + std::fmt::Debug + Send + Sync + 'static,
+    {
+        let projs = algebra.get_number_of_factors() as u64;
+        let ops = algebra.operations_ref_arc();
+        let mut arities = Vec::with_capacity(ops.len());
+        
+        for op in ops {
+            arities.push(op.arity());
+        }
+        
+        CloserTiming {
+            report,
+            projs,
+            pass: 0,
+            next_pass_size: Arc::new(AtomicI32::new(0)),
+            curr_pass_size: 0,
+            last_pass_size: 0,
+            arities,
+            apps_needed: 0,
+            apps_this_pass: 0,
+            local_apps: Arc::new(AtomicI64::new(0)),
+            pass_start_time: None,
+            ms_per_app: 0.0,
+            update_time: true,
+            at_beginning: true,
+            start_nano_time: None,
+            real_init_count: 0,
+        }
+    }
+    
     /// Create a new CloserTiming instance.
     /// 
     /// This is a simplified constructor that takes arities and number of factors
     /// directly, instead of deriving them from a BigProductAlgebra.
+    /// This is kept for backward compatibility and testing purposes.
     /// 
     /// # Arguments
     /// * `arities` - The arities of operations in the algebra
@@ -416,6 +478,31 @@ mod tests {
         timing.update_pass(5);
         timing.increment_apps();
         // Should not panic with progress report
+    }
+    
+    #[test]
+    fn test_new_from_algebra() {
+        use crate::alg::{BigProductAlgebra, BasicSmallAlgebra};
+        use std::collections::HashSet;
+        
+        let alg1 = Box::new(BasicSmallAlgebra::new(
+            "A1".to_string(),
+            HashSet::from([0, 1]),
+            Vec::new()
+        )) as Box<dyn crate::alg::SmallAlgebra<UniverseItem = i32>>;
+        
+        let alg2 = Box::new(BasicSmallAlgebra::new(
+            "A2".to_string(),
+            HashSet::from([0, 1]),
+            Vec::new()
+        )) as Box<dyn crate::alg::SmallAlgebra<UniverseItem = i32>>;
+        
+        let product = BigProductAlgebra::<i32>::new_safe(vec![alg1, alg2]).unwrap();
+        let timing = CloserTiming::new_from_algebra(&product, None);
+        
+        assert_eq!(timing.get_pass(), 0);
+        assert_eq!(timing.get_num_factors(), 2);
+        // Operations may be empty for BasicSmallAlgebra, so we just check it doesn't panic
     }
 }
 

@@ -101,8 +101,8 @@ impl SingleClose {
     /// use uacalc::util::IntArray;
     /// use uacalc::terms::Term;
     /// 
-    /// let map = Arc::new(Mutex::new(HashMap::new()));
-    /// let univ_list = vec![];
+    /// let map: Arc<Mutex<HashMap<IntArray, Box<dyn Term>>>> = Arc::new(Mutex::new(HashMap::new()));
+    /// let univ_list: Vec<IntArray> = vec![];
     /// let elts_found = Arc::new(AtomicUsize::new(0));
     /// 
     /// // Note: Requires Operation implementation
@@ -223,8 +223,8 @@ impl SingleClose {
     /// use uacalc::util::IntArray;
     /// use uacalc::terms::Term;
     /// 
-    /// let map = Arc::new(Mutex::new(HashMap::new()));
-    /// let univ_list = vec![];
+    /// let map: Arc<Mutex<HashMap<IntArray, Box<dyn Term>>>> = Arc::new(Mutex::new(HashMap::new()));
+    /// let univ_list: Vec<IntArray> = vec![];
     /// let elts_found = Arc::new(AtomicUsize::new(0));
     /// 
     /// // Note: Requires Operation implementation

@@ -4,8 +4,8 @@
     <algName>example</algName>
     <cardinality>2</cardinality>
     <universe>
-      <elem>0</elem>
       <elem>1</elem>
+      <elem>0</elem>
     </universe>
     <operations>
     </operations>

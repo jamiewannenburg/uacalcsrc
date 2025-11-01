@@ -3,6 +3,7 @@ pub mod basic_operation;
 pub mod algebra_with_generating_vector;
 pub mod big_product_algebra;
 pub mod closer;
+pub mod closer_timing;
 pub mod free_algebra;
 pub mod general_algebra;
 pub mod homomorphism;
@@ -57,6 +58,8 @@ use crate::alg::op::int_operation::PyIntOperation;
 use crate::alg::op::abstract_int_operation::PyAbstractIntOperation;
 use crate::alg::op::abstract_operation::PyAbstractOperationNew;
 use crate::alg::parallel::PyPool;
+use crate::alg::closer::register_closer;
+use crate::alg::closer_timing::register_closer_timing;
 
 pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     // Register classes internally but only export clean names
@@ -93,6 +96,10 @@ pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     m.add_class::<PySubtrace>()?;
     m.add_class::<PyTypeFinder>()?;
     m.add_class::<PyPool>()?;
+
+    // Register closer module components
+    closer::register_closer(_py, m)?;
+    closer_timing::register_closer_timing(_py, m)?;
 
     // Export only clean names (without Py prefix)
     m.add("OperationSymbol", m.getattr("PyOperationSymbol")?)?;
@@ -131,6 +138,8 @@ pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     // Remove the Py* names from the module to avoid confusion
     let module_dict = m.dict();
     module_dict.del_item("PyPool")?;
+    module_dict.del_item("PyCloser")?;
+    module_dict.del_item("PyCloserTiming")?;
 
     // Register malcev module-level functions
     malcev::register_malcev_functions(_py, m)?;
