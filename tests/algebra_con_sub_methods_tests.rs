@@ -108,7 +108,7 @@ fn test_quotient_algebra_con() {
     // Create a congruence: {0,1}, {2,3}
     let congruence = Partition::new(vec![-2, 0, -2, 2]).unwrap();
     
-    let mut quot = QuotientAlgebra::new_safe(super_algebra, congruence).unwrap();
+    let mut quot = QuotientAlgebra::<i32>::new_safe(super_algebra, congruence).unwrap();
     
     // Test con() method
     let con_lat_ref = quot.con();
@@ -135,7 +135,7 @@ fn test_quotient_algebra_con_larger() {
     // Create a congruence: {0,1}, {2,3}, {4,5}
     let congruence = Partition::new(vec![-2, 0, -2, 2, -2, 4]).unwrap();
     
-    let mut quot = QuotientAlgebra::new_safe(super_algebra, congruence).unwrap();
+    let mut quot = QuotientAlgebra::<i32>::new_safe(super_algebra, congruence).unwrap();
     
     // Test con() method
     let con_lat_ref = quot.con();
@@ -239,7 +239,7 @@ fn test_congruence_lattice_operations_on_quotient() {
     // Create a congruence: {0,1}, {2,3}, {4,5}
     let congruence = Partition::new(vec![-2, 0, -2, 2, -2, 4]).unwrap();
     
-    let mut quot = QuotientAlgebra::new_safe(super_algebra, congruence).unwrap();
+    let mut quot = QuotientAlgebra::<i32>::new_safe(super_algebra, congruence).unwrap();
     
     // Get congruence lattice and clone it for mutation
     let mut con_lat = quot.con().clone();

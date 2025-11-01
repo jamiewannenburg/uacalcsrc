@@ -16,6 +16,9 @@ use crate::util::horner::horner_same_size;
 /// and θ is a congruence relation on A. The elements of the quotient algebra
 /// are equivalence classes represented by their canonical representatives.
 /// 
+/// # Type Parameters
+/// * `T` - The universe item type of the super algebra
+/// 
 /// # Examples
 /// ```
 /// use uacalc::alg::{QuotientAlgebra, SmallAlgebra, BasicSmallAlgebra, Partition, Algebra};
@@ -32,17 +35,20 @@ use crate::util::horner::horner_same_size;
 /// let congruence = Partition::new(vec![-2, 0, -2, 2]).unwrap();
 /// 
 /// // Create quotient algebra
-/// let quot = QuotientAlgebra::new_safe(super_algebra, congruence).unwrap();
+/// let quot = QuotientAlgebra::<i32>::new_safe(super_algebra, congruence).unwrap();
 /// 
 /// assert_eq!(quot.cardinality(), 2); // Two equivalence classes
 /// ```
 #[derive(Debug)]
-pub struct QuotientAlgebra {
+pub struct QuotientAlgebra<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
     /// The base general algebra structure
-    base: GeneralAlgebra<QuotientElement>,
+    base: GeneralAlgebra<QuotientElement<T>>,
     
     /// The super algebra
-    pub super_algebra: Box<dyn SmallAlgebra<UniverseItem = i32>>,
+    pub super_algebra: Box<dyn SmallAlgebra<UniverseItem = T>>,
     
     /// Representatives of congruence classes
     pub representatives: Vec<usize>,
@@ -51,10 +57,10 @@ pub struct QuotientAlgebra {
     pub congruence: Partition,
     
     /// Shared reference for QuotientElements
-    alg_ref: Arc<QuotientAlgebraRef>,
+    alg_ref: Arc<QuotientAlgebraRef<T>>,
     
     /// Cached universe as a vector (using RwLock for thread-safe interior mutability)
-    universe_list: RwLock<Option<Vec<QuotientElement>>>,
+    universe_list: RwLock<Option<Vec<QuotientElement<T>>>>,
     
     /// Cached universe order map (using RwLock for thread-safe interior mutability)
     universe_order: RwLock<Option<HashMap<usize, usize>>>,
@@ -63,10 +69,10 @@ pub struct QuotientAlgebra {
     operations: Vec<QuotientOperation>,
     
     /// Lazy-initialized congruence lattice
-    con: Option<Box<crate::alg::conlat::CongruenceLattice<QuotientElement>>>,
+    con: Option<Box<crate::alg::conlat::CongruenceLattice<QuotientElement<T>>>>,
     
     /// Lazy-initialized subalgebra lattice
-    sub: Option<Box<crate::alg::sublat::SubalgebraLattice<i32>>>,
+    sub: Option<Box<crate::alg::sublat::SubalgebraLattice<QuotientElement<T>>>>,
 }
 
 /// An operation on a quotient algebra.
@@ -265,7 +271,10 @@ impl Clone for QuotientOperation {
     }
 }
 
-impl QuotientAlgebra {
+impl<T> QuotientAlgebra<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
     /// Create a new QuotientAlgebra with default name.
     /// 
     /// # Arguments
@@ -288,12 +297,12 @@ impl QuotientAlgebra {
     /// )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
     /// 
     /// let congruence = Partition::new(vec![-2, 0, -2, 2]).unwrap();
-    /// let quot = QuotientAlgebra::new_safe(super_algebra, congruence).unwrap();
+    /// let quot = QuotientAlgebra::<i32>::new_safe(super_algebra, congruence).unwrap();
     /// 
     /// assert_eq!(quot.cardinality(), 2);
     /// ```
     pub fn new_safe(
-        super_algebra: Box<dyn SmallAlgebra<UniverseItem = i32>>,
+        super_algebra: Box<dyn SmallAlgebra<UniverseItem = T>>,
         congruence: Partition,
     ) -> Result<Self, String> {
         Self::new_with_name_safe("".to_string(), super_algebra, congruence)
@@ -322,7 +331,7 @@ impl QuotientAlgebra {
     /// )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
     /// 
     /// let congruence = Partition::new(vec![-2, 0, -2, 2]).unwrap();
-    /// let quot = QuotientAlgebra::new_with_name_safe(
+    /// let quot = QuotientAlgebra::<i32>::new_with_name_safe(
     ///     "A/θ".to_string(),
     ///     super_algebra,
     ///     congruence
@@ -332,7 +341,7 @@ impl QuotientAlgebra {
     /// ```
     pub fn new_with_name_safe(
         name: String,
-        super_algebra: Box<dyn SmallAlgebra<UniverseItem = i32>>,
+        super_algebra: Box<dyn SmallAlgebra<UniverseItem = T>>,
         congruence: Partition,
     ) -> Result<Self, String> {
         // Validate that congruence size matches super algebra size
@@ -348,7 +357,7 @@ impl QuotientAlgebra {
         let size = representatives.len();
         
         // Create shared reference for QuotientElements
-        let alg_ref = Arc::new(QuotientAlgebraRef {
+        let alg_ref = Arc::new(QuotientAlgebraRef::<T> {
             super_algebra: super_algebra.clone_box(),
             congruence: congruence.clone(),
             representatives: representatives.clone(),
@@ -397,7 +406,7 @@ impl QuotientAlgebra {
     /// # Panics
     /// Panics if the congruence is invalid or incompatible
     pub fn new(
-        super_algebra: Box<dyn SmallAlgebra<UniverseItem = i32>>,
+        super_algebra: Box<dyn SmallAlgebra<UniverseItem = T>>,
         congruence: Partition,
     ) -> Self {
         Self::new_safe(super_algebra, congruence).unwrap()
@@ -414,7 +423,7 @@ impl QuotientAlgebra {
     /// Panics if the congruence is invalid or incompatible
     pub fn new_with_name(
         name: String,
-        super_algebra: Box<dyn SmallAlgebra<UniverseItem = i32>>,
+        super_algebra: Box<dyn SmallAlgebra<UniverseItem = T>>,
         congruence: Partition,
     ) -> Self {
         Self::new_with_name_safe(name, super_algebra, congruence).unwrap()
@@ -433,7 +442,7 @@ impl QuotientAlgebra {
     /// 
     /// # Returns
     /// A reference to the super algebra
-    pub fn super_algebra(&self) -> &dyn SmallAlgebra<UniverseItem = i32> {
+    pub fn super_algebra(&self) -> &dyn SmallAlgebra<UniverseItem = T> {
         self.super_algebra.as_ref()
     }
     
@@ -483,7 +492,7 @@ impl QuotientAlgebra {
             let mut universe_order = HashMap::new();
             
             for i in 0..self.representatives.len() {
-                let elem = QuotientElement::new(self.alg_ref.clone(), i);
+                let elem = QuotientElement::<T>::new(self.alg_ref.clone(), i);
                 universe_order.insert(i, i);
                 universe_vec.push(elem);
             }
@@ -497,14 +506,14 @@ impl QuotientAlgebra {
     /// 
     /// # Returns
     /// A reference to the congruence lattice
-    pub fn con(&mut self) -> &crate::alg::conlat::CongruenceLattice<QuotientElement> {
+    pub fn con(&mut self) -> &crate::alg::conlat::CongruenceLattice<QuotientElement<T>> {
         if self.con.is_none() {
             // Create congruence lattice using the type-erased wrapper
             use crate::alg::SmallAlgebraWrapper;
             use crate::alg::quotient_element::QuotientElement;
             
-            let alg_box = Box::new(self.clone()) as Box<dyn SmallAlgebra<UniverseItem = QuotientElement>>;
-            let wrapper = Box::new(SmallAlgebraWrapper::<QuotientElement>::new(alg_box));
+            let alg_box = Box::new(self.clone()) as Box<dyn SmallAlgebra<UniverseItem = QuotientElement<T>>>;
+            let wrapper = Box::new(SmallAlgebraWrapper::<QuotientElement<T>>::new(alg_box));
             self.con = Some(Box::new(crate::alg::conlat::CongruenceLattice::new(wrapper)));
         }
         self.con.as_ref().unwrap()
@@ -514,21 +523,24 @@ impl QuotientAlgebra {
     /// 
     /// # Returns
     /// A reference to the subalgebra lattice
-    /// 
-    /// # Note
-    /// This method is not yet fully implemented for QuotientAlgebra.
-    /// SubalgebraLattice currently only supports i32 universes.
-    pub fn sub(&mut self) -> &crate::alg::sublat::SubalgebraLattice<i32> {
+    pub fn sub(&mut self) -> &crate::alg::sublat::SubalgebraLattice<QuotientElement<T>> {
         if self.sub.is_none() {
-            // SubalgebraLattice currently only works with i32 universes
-            // We need to enhance it to support other universe types
-            panic!("sub() method not yet fully implemented for QuotientAlgebra - SubalgebraLattice requires i32 universe");
+            // Create subalgebra lattice for quotient elements
+            use crate::alg::SmallAlgebraWrapper;
+            use crate::alg::quotient_element::QuotientElement;
+            
+            let alg_box = Box::new(self.clone()) as Box<dyn SmallAlgebra<UniverseItem = QuotientElement<T>>>;
+            let wrapper = Box::new(SmallAlgebraWrapper::<QuotientElement<T>>::new(alg_box));
+            self.sub = Some(Box::new(crate::alg::sublat::SubalgebraLattice::new_safe(wrapper).unwrap()));
         }
         self.sub.as_ref().unwrap()
     }
 }
 
-impl Clone for QuotientAlgebra {
+impl<T> Clone for QuotientAlgebra<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
     fn clone(&self) -> Self {
         QuotientAlgebra {
             base: self.base.clone(),
@@ -545,7 +557,10 @@ impl Clone for QuotientAlgebra {
     }
 }
 
-impl Display for QuotientAlgebra {
+impl<T> Display for QuotientAlgebra<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
@@ -557,8 +572,11 @@ impl Display for QuotientAlgebra {
     }
 }
 
-impl Algebra for QuotientAlgebra {
-    type UniverseItem = QuotientElement;
+impl<T> Algebra for QuotientAlgebra<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
+    type UniverseItem = QuotientElement<T>;
     
     fn universe(&self) -> Box<dyn Iterator<Item = Self::UniverseItem>> {
         self.ensure_universe_list();
@@ -690,7 +708,10 @@ impl Algebra for QuotientAlgebra {
     }
 }
 
-impl SmallAlgebra for QuotientAlgebra {
+impl<T> SmallAlgebra for QuotientAlgebra<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
     fn get_operation_ref(&self, sym: &OperationSymbol) -> Option<&dyn Operation> {
         for op in &self.operations {
             if op.symbol() == sym {
@@ -714,7 +735,7 @@ impl SmallAlgebra for QuotientAlgebra {
     
     fn get_element(&self, k: usize) -> Option<Self::UniverseItem> {
         if k < self.representatives.len() {
-            Some(QuotientElement::new(self.alg_ref.clone(), k))
+            Some(QuotientElement::<T>::new(self.alg_ref.clone(), k))
         } else {
             None
         }
@@ -731,15 +752,23 @@ impl SmallAlgebra for QuotientAlgebra {
     }
     
     fn get_universe_order(&self) -> Option<HashMap<Self::UniverseItem, usize>> {
-        // For QuotientElement, we can't use it as a hash key directly
-        // This would require implementing Hash for QuotientElement
-        // For now, return None (not implemented)
-        None
+        // QuotientElement implements Hash, so we can build the map
+        self.ensure_universe_list();
+        let universe = self.universe_list.read().unwrap();
+        if let Some(ref univ) = *universe {
+            let mut map = HashMap::new();
+            for (idx, elem) in univ.iter().enumerate() {
+                map.insert(elem.clone(), idx);
+            }
+            Some(map)
+        } else {
+            None
+        }
     }
     
     fn parent(&self) -> Option<&dyn SmallAlgebra<UniverseItem = Self::UniverseItem>> {
-        // QuotientAlgebra's parent is a SmallAlgebra<UniverseItem = i32>
-        // but we need SmallAlgebra<UniverseItem = QuotientElement>
+        // QuotientAlgebra's parent is a SmallAlgebra<UniverseItem = T>
+        // but we need SmallAlgebra<UniverseItem = QuotientElement<T>>
         // This is a type mismatch, so we return None
         None
     }
@@ -751,7 +780,8 @@ impl SmallAlgebra for QuotientAlgebra {
     
     fn reset_con_and_sub(&mut self) {
         // Reset any cached congruence and subalgebra lattices
-        // Not implemented in this partial version
+        self.con = None;
+        self.sub = None;
     }
     
     fn convert_to_default_value_ops(&mut self) {
@@ -763,6 +793,7 @@ impl SmallAlgebra for QuotientAlgebra {
 mod tests {
     use super::*;
     use crate::alg::small_algebra::BasicSmallAlgebra;
+    use std::collections::HashSet;
     
     #[test]
     fn test_quotient_algebra_creation() {
@@ -777,7 +808,7 @@ mod tests {
         let congruence = Partition::new(vec![-2, 0, -2, 2]).unwrap();
         
         // Create quotient algebra
-        let quot = QuotientAlgebra::new_safe(super_algebra, congruence).unwrap();
+        let quot = QuotientAlgebra::<i32>::new_safe(super_algebra, congruence).unwrap();
         
         assert_eq!(quot.cardinality(), 2);
         assert_eq!(quot.representatives.len(), 2);
@@ -792,7 +823,7 @@ mod tests {
         )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
         
         let congruence = Partition::new(vec![-2, 0, -2, 2]).unwrap();
-        let quot = QuotientAlgebra::new_safe(super_algebra, congruence).unwrap();
+        let quot = QuotientAlgebra::<i32>::new_safe(super_algebra, congruence).unwrap();
         
         let elem0 = quot.get_element(0).unwrap();
         assert_eq!(elem0.get_index(), 0);
@@ -813,7 +844,7 @@ mod tests {
         
         // Congruence: {0,1}, {2,3}
         let congruence = Partition::new(vec![-2, 0, -2, 2]).unwrap();
-        let quot = QuotientAlgebra::new_safe(super_algebra, congruence).unwrap();
+        let quot = QuotientAlgebra::<i32>::new_safe(super_algebra, congruence).unwrap();
         
         // Elements 0 and 1 should map to the same quotient element
         assert_eq!(quot.canonical_homomorphism(0).unwrap(), quot.canonical_homomorphism(1).unwrap());

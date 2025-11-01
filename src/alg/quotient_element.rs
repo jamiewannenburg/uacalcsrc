@@ -1,4 +1,4 @@
-use std::fmt::{self, Display};
+use std::fmt::{self, Debug, Display};
 use std::sync::Arc;
 use std::hash::{Hash, Hasher};
 use crate::alg::conlat::partition::Partition;
@@ -10,15 +10,21 @@ use crate::alg::small_algebra::SmallAlgebra;
 /// and an index within that algebra. The index refers to a position in the
 /// quotient algebra (not the super algebra).
 /// 
+/// # Type Parameters
+/// * `T` - The universe item type of the super algebra
+/// 
 /// # Examples
 /// ```
 /// // QuotientElement is typically created by QuotientAlgebra.get_element()
 /// // See QuotientAlgebra documentation for examples
 /// ```
 #[derive(Debug, Clone)]
-pub struct QuotientElement {
+pub struct QuotientElement<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
     /// The quotient algebra this element belongs to (shared reference)
-    pub(crate) alg: Arc<QuotientAlgebraRef>,
+    pub(crate) alg: Arc<QuotientAlgebraRef<T>>,
     /// The index in the quotient algebra (not super algebra)
     pub index: usize,
 }
@@ -26,16 +32,22 @@ pub struct QuotientElement {
 /// Internal reference type for QuotientAlgebra to avoid circular dependencies.
 /// This holds the minimal information needed by QuotientElement.
 #[derive(Debug)]
-pub struct QuotientAlgebraRef {
+pub struct QuotientAlgebraRef<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
     /// The super algebra
-    pub super_algebra: Box<dyn SmallAlgebra<UniverseItem = i32>>,
+    pub super_algebra: Box<dyn SmallAlgebra<UniverseItem = T>>,
     /// The congruence partition
     pub congruence: Partition,
     /// Representatives of congruence classes
     pub representatives: Vec<usize>,
 }
 
-impl QuotientElement {
+impl<T> QuotientElement<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
     /// Create a new QuotientElement.
     /// 
     /// # Arguments
@@ -49,7 +61,7 @@ impl QuotientElement {
     /// ```
     /// // QuotientElement is typically created by QuotientAlgebra.get_element()
     /// ```
-    pub fn new(alg: Arc<QuotientAlgebraRef>, index: usize) -> Self {
+    pub fn new(alg: Arc<QuotientAlgebraRef<T>>, index: usize) -> Self {
         QuotientElement { alg, index }
     }
     
@@ -57,7 +69,7 @@ impl QuotientElement {
     /// 
     /// # Returns
     /// A shared reference to the quotient algebra data
-    pub fn get_algebra(&self) -> &Arc<QuotientAlgebraRef> {
+    pub fn get_algebra(&self) -> &Arc<QuotientAlgebraRef<T>> {
         &self.alg
     }
     
@@ -65,7 +77,7 @@ impl QuotientElement {
     /// 
     /// # Returns
     /// A reference to the super algebra
-    pub fn super_algebra(&self) -> &dyn SmallAlgebra<UniverseItem = i32> {
+    pub fn super_algebra(&self) -> &dyn SmallAlgebra<UniverseItem = T> {
         self.alg.super_algebra.as_ref()
     }
     
@@ -97,7 +109,10 @@ impl QuotientElement {
     }
 }
 
-impl Display for QuotientElement {
+impl<T> Display for QuotientElement<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let index_in_super = self.get_index_in_super_algebra();
         if let Some(elem) = self.super_algebra().get_element(index_in_super) {
@@ -108,7 +123,10 @@ impl Display for QuotientElement {
     }
 }
 
-impl PartialEq for QuotientElement {
+impl<T> PartialEq for QuotientElement<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
     fn eq(&self, other: &Self) -> bool {
         // Two quotient elements are equal if they have the same index
         // and belong to the same algebra (by checking representatives)
@@ -117,9 +135,15 @@ impl PartialEq for QuotientElement {
     }
 }
 
-impl Eq for QuotientElement {}
+impl<T> Eq for QuotientElement<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{}
 
-impl Hash for QuotientElement {
+impl<T> Hash for QuotientElement<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
     fn hash<H: Hasher>(&self, state: &mut H) {
         // Hash based on index and representatives (which identifies the algebra)
         self.index.hash(state);
@@ -147,7 +171,7 @@ mod tests {
         let representatives = congruence.representatives();
         
         // Create quotient algebra reference
-        let alg_ref = Arc::new(QuotientAlgebraRef {
+        let alg_ref = Arc::new(QuotientAlgebraRef::<i32> {
             super_algebra,
             congruence,
             representatives,

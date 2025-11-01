@@ -46,7 +46,7 @@ pub struct MaltsevProductDecomposition {
     pub congruence: Partition,
     
     /// The quotient algebra A/θ (stores QuotientAlgebra directly)
-    pub quotient_algebra: QuotientAlgebra,
+    pub quotient_algebra: QuotientAlgebra<i32>,
     
     /// Block subalgebras (one for each block with more than one element)
     pub block_algebras: Vec<Subalgebra<i32>>,
@@ -98,7 +98,7 @@ impl MaltsevProductDecomposition {
         }
         
         // Create quotient algebra
-        let quotient_algebra = QuotientAlgebra::new_safe(
+        let quotient_algebra = QuotientAlgebra::<i32>::new_safe(
             algebra.clone_box(),
             congruence.clone(),
         )?;
@@ -211,7 +211,7 @@ impl MaltsevProductDecomposition {
     /// 
     /// # Returns
     /// A reference to the quotient algebra
-    pub fn get_quotient_algebra(&self) -> &QuotientAlgebra {
+    pub fn get_quotient_algebra(&self) -> &QuotientAlgebra<i32> {
         &self.quotient_algebra
     }
     
@@ -219,7 +219,7 @@ impl MaltsevProductDecomposition {
     /// 
     /// # Arguments
     /// * `quotient_algebra` - The new quotient algebra
-    pub fn set_quotient_algebra(&mut self, quotient_algebra: QuotientAlgebra) {
+    pub fn set_quotient_algebra(&mut self, quotient_algebra: QuotientAlgebra<i32>) {
         self.quotient_algebra = quotient_algebra;
     }
     

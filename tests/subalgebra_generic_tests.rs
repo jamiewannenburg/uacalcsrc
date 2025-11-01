@@ -120,15 +120,15 @@ fn test_subalgebra_quotient_element() {
     partition.join_blocks(2, 3); // Block 2: {2, 3}
     
     // Create a quotient algebra
-    let quotient = QuotientAlgebra::new_safe(
+    let quotient = QuotientAlgebra::<i32>::new_safe(
         super_alg,
         partition
     ).unwrap();
     
-    let super_alg_quotient = Box::new(quotient) as Box<dyn SmallAlgebra<UniverseItem = QuotientElement>>;
+    let super_alg_quotient = Box::new(quotient) as Box<dyn SmallAlgebra<UniverseItem = QuotientElement<i32>>>;
     
     // Create subalgebra with universe containing first quotient element
-    let sub_alg = Subalgebra::<QuotientElement>::new_safe(
+    let sub_alg = Subalgebra::<QuotientElement<i32>>::new_safe(
         "sub_quotient".to_string(),
         super_alg_quotient,
         vec![0] // Only first quotient element
@@ -142,7 +142,7 @@ fn test_subalgebra_quotient_element() {
     assert!(elem.is_some());
     
     // Test universe iteration
-    let universe: Vec<QuotientElement> = sub_alg.universe().collect();
+    let universe: Vec<QuotientElement<i32>> = sub_alg.universe().collect();
     assert_eq!(universe.len(), 1);
 }
 
