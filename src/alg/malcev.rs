@@ -513,8 +513,107 @@ pub fn weak_majority_term<T>(alg: &dyn SmallAlgebra<UniverseItem = T>) -> Result
 where
     T: Clone + std::fmt::Debug + std::fmt::Display + std::hash::Hash + Eq + Send + Sync + 'static
 {
-    // TODO: Implement weak majority term finding algorithm
-    Err("Weak majority term finding not yet implemented".to_string())
+    if alg.cardinality() == 1 {
+        return Ok(Some(Box::new(VariableImp::x())));
+    }
+    
+    let is_idempotent = alg.is_idempotent();
+    
+    // Convert to i32 algebra
+    let card = alg.cardinality();
+    let ops = alg.operations();
+    let universe_set: HashSet<i32> = (0..card).collect();
+    let i32_alg = BasicSmallAlgebra::new(
+        alg.name().to_string(),
+        universe_set,
+        ops,
+    );
+    
+    // Create free algebra with 2 generators (F(2))
+    let mut f2 = FreeAlgebra::new_safe(Box::new(i32_alg), 2)?;
+    use crate::alg::Algebra;
+    f2.make_operation_tables();
+    
+    // Create generators: (x,x,y), (x,y,x), (y,x,x)
+    let g0: IntArray;
+    let g1: IntArray;
+    let g2: IntArray;
+    let power: usize;
+    
+    if is_idempotent {
+        // For idempotent algebras, use F(2)^3
+        g0 = IntArray::from_array(vec![0, 0, 1])?;  // (x,x,y)
+        g1 = IntArray::from_array(vec![0, 1, 0])?;  // (x,y,x)
+        g2 = IntArray::from_array(vec![1, 0, 0])?;  // (y,x,x)
+        power = 3;
+    } else {
+        // For non-idempotent algebras, use F(2)^4
+        g0 = IntArray::from_array(vec![0, 0, 1, 0])?;  // (x,x,y,x)
+        g1 = IntArray::from_array(vec![0, 1, 0, 0])?;  // (x,y,x,x)
+        g2 = IntArray::from_array(vec![1, 0, 0, 0])?;  // (y,x,x,x)
+        power = 4;
+    }
+    
+    let gens = vec![g0.clone(), g1.clone(), g2.clone()];
+    
+    // Create term map
+    let mut term_map: HashMap<IntArray, Box<dyn Term>> = HashMap::new();
+    term_map.insert(g0.clone(), Box::new(VariableImp::x()));
+    term_map.insert(g1.clone(), Box::new(VariableImp::y()));
+    term_map.insert(g2.clone(), Box::new(VariableImp::z()));
+    
+    // Create BigProductAlgebra
+    let f2_boxed: Box<dyn SmallAlgebra<UniverseItem = IntArray>> = 
+        Box::new(f2) as Box<dyn SmallAlgebra<UniverseItem = IntArray>>;
+    let f2_power = BigProductAlgebra::new_power_safe(f2_boxed, power)?;
+    
+    // Use Closer for term tracking during closure
+    let mut closer = Closer::new_with_term_map_safe(
+        Arc::new(f2_power),
+        gens,
+        term_map,
+    )?;
+    
+    let closure = closer.sg_close()?;
+    
+    // Look for any element where all coordinates are equal
+    // For idempotent: any (a,a,a)
+    // For non-idempotent: any (a,a,a,x) where last coord is x (0)
+    use crate::util::int_array::IntArrayTrait;
+    let term_map_ref = closer.get_term_map();
+    for elem in &closure {
+        let size = elem.universe_size();
+        if size >= 3 {
+            // Check if first three coordinates are equal
+            if let (Some(v0), Some(v1), Some(v2)) = (elem.get(0), elem.get(1), elem.get(2)) {
+                if v0 == v1 && v1 == v2 {
+                    if is_idempotent {
+                        // For idempotent, any (a,a,a) works
+                        if let Some(tm) = term_map_ref {
+                            if let Some(term) = tm.get(elem).map(|t| t.clone_box()) {
+                                return Ok(Some(term));
+                            }
+                        }
+                    } else {
+                        // For non-idempotent, need last coord to be x (0)
+                        if size == 4 {
+                            if let Some(v3) = elem.get(3) {
+                                if v3 == 0 {
+                                    if let Some(tm) = term_map_ref {
+                                        if let Some(term) = tm.get(elem).map(|t| t.clone_box()) {
+                                            return Ok(Some(term));
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    Ok(None)
 }
 
 /// Find a semilattice term for the algebra.
@@ -711,7 +810,122 @@ where
     Err("Congruence distributivity test not yet implemented".to_string())
 }
 
+/// Find a Day quadruple in the square of the algebra.
+///
+/// Searches for a Day quadruple in all subalgebras of A^2.
+///
+/// # Arguments
+/// * `alg` - The algebra to check
+///
+/// # Returns
+/// * `Ok(Some([x0, x1, y0, y1]))` - A Day quadruple found with these coordinates
+/// * `Ok(None)` - No Day quadruple exists
+/// * `Err(String)` - If there's an error during computation
+pub fn find_day_quadruple_in_square<T>(
+    alg: &dyn SmallAlgebra<UniverseItem = T>,
+) -> Result<Option<Vec<usize>>, String>
+where
+    T: Clone + std::fmt::Debug + std::fmt::Display + std::hash::Hash + Eq + Send + Sync + 'static,
+{
+    let n = alg.cardinality() as usize;
+    
+    // Convert to i32 algebra
+    let card = alg.cardinality();
+    let ops = alg.operations();
+    let universe_set: HashSet<i32> = (0..card).collect();
+    let i32_alg = BasicSmallAlgebra::new(
+        alg.name().to_string(),
+        universe_set,
+        ops,
+    );
+    
+    // Create BigProductAlgebra A^2
+    let alg_boxed: Box<dyn SmallAlgebra<UniverseItem = i32>> = Box::new(i32_alg);
+    let sq = BigProductAlgebra::new_power_safe(alg_boxed, 2)?;
+    
+    // Loop through all combinations
+    for x0 in 0..n {
+        for x1 in 0..n {
+            for y0 in 0..n {
+                for y1 in (x1 + 1)..n {
+                    // Create the four generators for this combination
+                    let a_arr = IntArray::from_array(vec![x0 as i32, x1 as i32])?;
+                    let b_arr = IntArray::from_array(vec![x0 as i32, y1 as i32])?;
+                    let c_arr = IntArray::from_array(vec![y0 as i32, x1 as i32])?;
+                    let d_arr = IntArray::from_array(vec![y0 as i32, y1 as i32])?;
+                    
+                    let gens = vec![a_arr.clone(), b_arr.clone(), c_arr.clone(), d_arr.clone()];
+                    
+                    // Create SubProductAlgebra
+                    let mut sub = crate::alg::SubProductAlgebra::new_safe(
+                        "SubSquare".to_string(),
+                        sq.clone(),
+                        gens,
+                        false,
+                    )?;
+                    
+                    // Make operation tables (may be needed for congruence computation)
+                    sub.make_operation_tables();
+                    
+                    // Get element indices and check for Day quadruple
+                    let a_index = sub.element_index(&a_arr).ok_or_else(|| {
+                        format!("Element a = [{}, {}] not found in subalgebra", x0, x1)
+                    })?;
+                    let b_index = sub.element_index(&b_arr).ok_or_else(|| {
+                        format!("Element b = [{}, {}] not found in subalgebra", x0, y1)
+                    })?;
+                    let c_index = sub.element_index(&c_arr).ok_or_else(|| {
+                        format!("Element c = [{}, {}] not found in subalgebra", y0, x1)
+                    })?;
+                    let d_index = sub.element_index(&d_arr).ok_or_else(|| {
+                        format!("Element d = [{}, {}] not found in subalgebra", y0, y1)
+                    })?;
+                    
+                    // Create congruence lattice from subalgebra for Day quadruple check
+                    use crate::alg::SmallAlgebraWrapper;
+                    let alg_box = Box::new(sub.clone()) as Box<dyn SmallAlgebra<UniverseItem = IntArray>>;
+                    let wrapper = Box::new(SmallAlgebraWrapper::<IntArray>::new(alg_box));
+                    let mut con_lat = crate::alg::conlat::CongruenceLattice::<IntArray>::new(wrapper);
+                    
+                    // Compute the congruences:
+                    // cgcd = Cg(c, d)
+                    let cgcd = con_lat.cg(c_index, d_index);
+                    
+                    // cgab = Cg(a, b)
+                    let cgab = con_lat.cg(a_index, b_index);
+                    
+                    // cgac = Cg(a, c)
+                    let cgac = con_lat.cg(a_index, c_index);
+                    
+                    // cgbd = Cg(b, d)
+                    let cgbd = con_lat.cg(b_index, d_index);
+                    
+                    // cgab_cd = Cg(a,b) ∨ Cg(c,d)
+                    let cgab_cd = cgab.join(&cgcd)?;
+                    
+                    // cgac_bd = Cg(a,c) ∨ Cg(b,d)
+                    let cgac_bd = cgac.join(&cgbd)?;
+                    
+                    // Check if Cg(c,d) ∨ (Cg(a,b)∨Cg(c,d)) ∧ (Cg(a,c)∨Cg(b,d)) does NOT relate a and b
+                    let meet_result = cgab_cd.meet(&cgac_bd)?;
+                    let join_result = cgcd.join(&meet_result)?;
+                    
+                    if !join_result.is_related(a_index, b_index) {
+                        // Found a Day quadruple
+                        return Ok(Some(vec![x0, x1, y0, y1]));
+                    }
+                }
+            }
+        }
+    }
+    
+    Ok(None)
+}
+
 /// Test if an idempotent algebra is congruence modular.
+///
+/// Uses the polynomial-time algorithm from Freese-Valeriote that searches
+/// for a Day quadruple in the square of the algebra.
 ///
 /// # Arguments
 /// * `alg` - The idempotent algebra to check
@@ -724,8 +938,11 @@ pub fn is_congruence_modular_idempotent<T>(alg: &dyn SmallAlgebra<UniverseItem =
 where
     T: Clone + std::fmt::Debug + std::fmt::Display + std::hash::Hash + Eq + Send + Sync + 'static
 {
-    // TODO: Implement congruence modularity test for idempotent algebras
-    Err("Congruence modularity test not yet implemented".to_string())
+    match find_day_quadruple_in_square(alg) {
+        Ok(Some(_)) => Ok(false),  // Day quadruple found = not CM
+        Ok(None) => Ok(true),       // No Day quadruple = CM
+        Err(e) => Err(e),
+    }
 }
 
 /// Test if the variety generated by the algebra is congruence modular.
@@ -780,22 +997,56 @@ where
     Err("Local distributivity level computation not yet implemented".to_string())
 }
 
-/// Test if a Day quadruple exists in the square of the algebra.
+/// Check if a, b, c, d form a Day quadruple in the algebra.
+///
+/// A Day quadruple exists if the congruences Cg(c,d), Cg(a,b)∨Cg(c,d), and Cg(a,c)∨Cg(b,d)
+/// generate a nonmodular lattice.
+///
+/// This is a helper function that can be used with a congruence lattice.
+/// For most purposes, use `find_day_quadruple_in_square` instead.
 ///
 /// # Arguments
 /// * `a`, `b`, `c`, `d` - Four element indices
-/// * `alg` - The algebra
+/// * `con_lat` - The congruence lattice of the algebra (mutable for caching)
 ///
 /// # Returns
 /// * `Ok(true)` - A Day quadruple exists
 /// * `Ok(false)` - No Day quadruple exists
 /// * `Err(String)` - If there's an error during computation
-pub fn day_quadruple<T>(a: usize, b: usize, c: usize, d: usize, alg: &dyn SmallAlgebra<UniverseItem = T>) -> Result<bool, String>
-where
-    T: Clone + std::fmt::Debug + std::fmt::Display + std::hash::Hash + Eq + Send + Sync + 'static
+pub fn day_quadruple(
+    a: usize,
+    b: usize,
+    c: usize,
+    d: usize,
+    con_lat: &mut crate::alg::conlat::CongruenceLattice<IntArray>,
+) -> Result<bool, String>
 {
-    // TODO: Implement Day quadruple test
-    Err("Day quadruple test not yet implemented".to_string())
+    // Compute the congruences:
+    // cgcd = Cg(c, d)
+    let cgcd = con_lat.cg(c, d);
+    
+    // cgab = Cg(a, b)
+    let cgab = con_lat.cg(a, b);
+    
+    // cgac = Cg(a, c)
+    let cgac = con_lat.cg(a, c);
+    
+    // cgbd = Cg(b, d)
+    let cgbd = con_lat.cg(b, d);
+    
+    // cgab_cd = Cg(a,b) ∨ Cg(c,d)
+    let cgab_cd = cgab.join(&cgcd)?;
+    
+    // cgac_bd = Cg(a,c) ∨ Cg(b,d)
+    let cgac_bd = cgac.join(&cgbd)?;
+    
+    // Check if Cg(c,d) ∨ (Cg(a,b)∨Cg(c,d)) ∧ (Cg(a,c)∨Cg(b,d)) does NOT relate a and b
+    // This means: !(cgcd ∨ (cgab_cd ∧ cgac_bd)).isRelated(a, b)
+    let meet_result = cgab_cd.meet(&cgac_bd)?;
+    let join_result = cgcd.join(&meet_result)?;
+    
+    // A Day quadruple exists if a and b are NOT related in join_result
+    Ok(!join_result.is_related(a, b))
 }
 
 /// Test if the algebra admits a cyclic term of the given arity.
@@ -1037,6 +1288,40 @@ mod tests {
             }
         } else {
             println!("Skipping test - cyclic3.ua not found");
+        }
+    }
+
+    #[test]
+    fn test_is_congruence_modular_idempotent_with_trivial_algebra() {
+        // Test with cardinality 1 algebra (should be CM)
+        let alg = BasicSmallAlgebra::new(
+            "TestAlgebra".to_string(),
+            HashSet::from([0]),
+            Vec::new()
+        );
+        
+        let result = is_congruence_modular_idempotent(&alg);
+        assert!(result.is_ok(), "is_congruence_modular_idempotent should not error");
+        if let Ok(is_cm) = result {
+            // Trivial algebra should be CM
+            assert!(is_cm, "Trivial algebra should be congruence modular");
+        }
+    }
+
+    #[test]
+    fn test_find_day_quadruple_in_square_with_trivial_algebra() {
+        // Test with cardinality 1 algebra (should not find Day quadruple)
+        let alg = BasicSmallAlgebra::new(
+            "TestAlgebra".to_string(),
+            HashSet::from([0]),
+            Vec::new()
+        );
+        
+        let result = find_day_quadruple_in_square(&alg);
+        assert!(result.is_ok(), "find_day_quadruple_in_square should not error");
+        if let Ok(quad) = result {
+            // Trivial algebra should not have a Day quadruple
+            assert!(quad.is_none(), "Trivial algebra should not have a Day quadruple");
         }
     }
 }
