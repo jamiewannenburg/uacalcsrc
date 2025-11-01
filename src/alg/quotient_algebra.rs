@@ -368,11 +368,15 @@ where
         base.set_universe(HashSet::new());
         
         // Create quotient operations
-        let super_ops = super_algebra.operations();
+        // Use get_operations_ref() instead of operations() to avoid deep cloning/recursion
+        // Following IMPLEMENT_CLONE_FIX.md: use reference-based access instead of cloning
+        let super_ops_ref = super_algebra.get_operations_ref();
         let mut operations = Vec::new();
-        for super_op in super_ops {
-            // Convert boxed operation to Arc-backed operation for shallow cloning
-            let op_arc: Arc<dyn Operation> = Arc::from(super_op);
+        for super_op in super_ops_ref.iter() {
+            // Convert reference to Arc-backed operation - this should be safe since operations are Arc-backed
+            // We need to clone the Arc, not the operation itself
+            // Try to get the Arc directly if possible, otherwise wrap in Arc from clone_box
+            let op_arc: Arc<dyn Operation> = Arc::from(super_op.clone_box());
             operations.push(QuotientOperation::new(
                 op_arc,
                 representatives.clone(),

@@ -1966,12 +1966,7 @@ org.uacalc.ui.LatDrawer.drawLattice(new org.uacalc.lat.BasicLattice("", maxLevel
     final Partition cgcd = alg.con().Cg(c,d);
     final Partition cgab_cd = alg.con().Cg(a,b).join(cgcd);
     final Partition cgac_bd = alg.con().Cg(a,c).join(alg.con().Cg(b, d));
-    Partition meet_result = cgab_cd.meet(cgac_bd);
-    Partition join_result = cgcd.join(meet_result);
-    boolean isRelated = join_result.isRelated(a,b);
-    boolean result = !isRelated;
-    
-    return result;
+    return !cgcd.join(cgab_cd.meet(cgac_bd)).isRelated(a,b);
   }
 
   /**
