@@ -7,7 +7,7 @@ use crate::alg::big_product_algebra::PyBigProductAlgebra;
 use crate::util::PyIntArray;
 
 /// Python wrapper for Closer
-#[pyclass(name = "Closer")]
+#[pyclass]
 pub struct PyCloser {
     inner: Closer<i32>,
 }

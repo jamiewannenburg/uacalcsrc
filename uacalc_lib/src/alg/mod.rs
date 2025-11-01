@@ -102,6 +102,8 @@ pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     closer_timing::register_closer_timing(_py, m)?;
 
     // Export only clean names (without Py prefix)
+    m.add("Closer", m.getattr("PyCloser")?)?;
+    m.add("CloserTiming", m.getattr("PyCloserTiming")?)?;
     m.add("OperationSymbol", m.getattr("PyOperationSymbol")?)?;
     m.add("BasicOperation", m.getattr("PyBasicOperation")?)?;
     m.add("BasicSmallAlgebra", m.getattr("PyBasicSmallAlgebra")?)?;

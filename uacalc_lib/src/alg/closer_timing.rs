@@ -5,7 +5,7 @@ use uacalc::alg::CloserTiming;
 use crate::alg::big_product_algebra::PyBigProductAlgebra;
 
 /// Python wrapper for CloserTiming
-#[pyclass(name = "CloserTiming")]
+#[pyclass]
 pub struct PyCloserTiming {
     inner: CloserTiming,
 }

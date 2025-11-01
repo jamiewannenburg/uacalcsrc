@@ -6,11 +6,14 @@
  */
 
 use std::collections::{HashMap, HashSet};
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::hash::Hash;
 use std::fmt::Debug;
 use crate::alg::big_product_algebra::BigProductAlgebra;
 use crate::alg::Algebra;
+use crate::alg::parallel::SingleClose;
+use crate::alg::CloserTiming;
 use crate::util::int_array::{IntArray, IntArrayTrait};
 use crate::terms::{Term, NonVariableTerm};
 use crate::progress::ProgressReport;
@@ -502,6 +505,210 @@ where
     /// `true` if closure completed
     pub fn is_completed(&self) -> bool {
         self.completed
+    }
+    
+    /// Compute the closure using parallel processing with SingleClose.
+    /// 
+    /// This method uses SingleClose for parallel closure computation,
+    /// similar to Java's `sgCloseParallel` method.
+    /// 
+    /// # Returns
+    /// * `Ok(Vec<IntArray>)` - The closure (list of elements)
+    /// * `Err(String)` - If closure computation fails
+    pub fn sg_close_parallel(&mut self) -> Result<Vec<IntArray>, String> {
+        if let Some(ref report) = self.report {
+            report.add_start_line("subpower closing ...");
+        }
+        
+        // Initialize answer with generators
+        self.ans = self.generators.clone();
+        let mut su = HashSet::new();
+        for ia in &self.ans {
+            su.insert(ia.clone());
+        }
+        
+        // Add constants if any
+        let operations = self.algebra.as_ref().operations();
+        for op in &operations {
+            if op.arity() == 0i32 {
+                match op.value_at_arrays(&[]) {
+                    Ok(vals) => {
+                        if let Ok(constant_arr) = IntArray::from_array(vals) {
+                            if su.insert(constant_arr.clone()) {
+                                self.ans.push(constant_arr.clone());
+                                if let Some(ref mut term_map) = self.term_map {
+                                    let symbol = op.symbol().clone();
+                                    let constant_term = Box::new(NonVariableTerm::make_constant_term(symbol)) as Box<dyn Term>;
+                                    term_map.insert(constant_arr, constant_term);
+                                }
+                            }
+                        }
+                    }
+                    Err(_) => {}
+                }
+            }
+        }
+        
+        // Create thread-safe term map for parallel processing
+        let term_map_arc = if let Some(ref term_map) = self.term_map {
+            let mut concurrent_map: HashMap<IntArray, Box<dyn Term>> = HashMap::new();
+            for (k, v) in term_map {
+                concurrent_map.insert(k.clone(), v.clone_box());
+            }
+            Arc::new(Mutex::new(concurrent_map))
+        } else {
+            Arc::new(Mutex::new(HashMap::new()))
+        };
+        
+        // Initialize timing if report exists
+        let timing_arc = if let Some(ref report) = self.report {
+            Some(Arc::new(Mutex::new(CloserTiming::new_from_algebra(
+                &*self.algebra,
+                Some(Arc::clone(report))
+            ))))
+        } else {
+            None
+        };
+        
+        let mut closed_mark = 0;
+        let mut current_mark = self.ans.len();
+        let mut pass = 0;
+        let elts_found = Arc::new(AtomicUsize::new(self.ans.len()));
+        
+        // Main closure loop
+        while closed_mark < current_mark {
+            let status_str = format!("pass: {}, size: {}", pass, self.ans.len());
+            
+            if let Some(ref report) = self.report {
+                if let Some(ref timing) = timing_arc {
+                    if let Ok(mut t) = timing.lock() {
+                        t.update_pass(self.ans.len() as u32);
+                    }
+                }
+                report.set_pass(pass);
+                report.set_pass_size(self.ans.len());
+                if !self.suppress_output {
+                    report.add_line(&status_str);
+                }
+            } else if !self.suppress_output {
+                println!("{}", status_str);
+            }
+            
+            pass += 1;
+            
+            // Check max size
+            if let Some(max_size) = self.max_size {
+                if self.ans.len() >= max_size {
+                    break;
+                }
+            }
+            
+            // Apply operations using SingleClose
+            let operations = self.algebra.as_ref().operations();
+            let num_ops = operations.len();
+            
+            for i in 0..num_ops {
+                if i >= operations.len() {
+                    break;
+                }
+                
+                let op = &operations[i];
+                let arity = op.arity();
+                
+                if arity == 0 {
+                    continue;
+                }
+                
+                // Create SingleClose instance
+                let univ_list = self.ans.clone();
+                let op_arc = Arc::from(op.clone_box());
+                
+                match SingleClose::new(
+                    univ_list,
+                    Arc::clone(&term_map_arc),
+                    op_arc,
+                    closed_mark,
+                    current_mark - 1,
+                    Arc::clone(&elts_found),
+                ) {
+                    Ok(mut single_close) => {
+                        // Execute parallel closure step
+                        match single_close.do_one_step(
+                            self.report.as_ref().map(Arc::clone),
+                            timing_arc.as_ref().map(Arc::clone),
+                        ) {
+                            Ok(results) => {
+                                // Collect all new elements from all workers
+                                for worker_results in results {
+                                    for new_elt in worker_results {
+                                        if su.insert(new_elt.clone()) {
+                                            self.ans.push(new_elt.clone());
+                                            
+                                            // Check if we found the element we're looking for
+                                            if let Some(ref elt_to_find) = self.elt_to_find {
+                                                if new_elt == *elt_to_find {
+                                                    // Update term_map from concurrent map
+                                                    if let Ok(mut map_guard) = term_map_arc.lock() {
+                                                        if let Some(term) = map_guard.remove(&new_elt) {
+                                                            if let Some(ref mut term_map) = self.term_map {
+                                                                term_map.insert(new_elt, term);
+                                                            }
+                                                        }
+                                                    }
+                                                    return Ok(self.ans.clone());
+                                                }
+                                            }
+                                            
+                                            // Check max size
+                                            if let Some(max_size) = self.max_size {
+                                                if self.ans.len() >= max_size {
+                                                    break;
+                                                }
+                                            }
+                                            
+                                            current_mark = self.ans.len();
+                                        }
+                                    }
+                                }
+                            }
+                            Err(e) => {
+                                return Err(format!("SingleClose failed: {}", e));
+                            }
+                        }
+                    }
+                    Err(e) => {
+                        return Err(format!("Failed to create SingleClose: {}", e));
+                    }
+                }
+            }
+            
+            closed_mark = current_mark;
+            current_mark = self.ans.len();
+            
+            // Check if we've reached full cardinality (if applicable)
+            let algebra_cardinality = self.algebra.as_ref().cardinality();
+            if algebra_cardinality > 0 && current_mark >= algebra_cardinality as usize {
+                break;
+            }
+        }
+        
+        // Update term_map from concurrent map
+        if let Ok(map_guard) = term_map_arc.lock() {
+            if let Some(ref mut term_map) = self.term_map {
+                for (k, v) in map_guard.iter() {
+                    if !term_map.contains_key(k) {
+                        term_map.insert(k.clone(), v.clone_box());
+                    }
+                }
+            }
+        }
+        
+        if let Some(ref report) = self.report {
+            report.add_end_line(&format!("closing done, size = {}", self.ans.len()));
+        }
+        
+        self.completed = true;
+        Ok(self.ans.clone())
     }
 }
 
