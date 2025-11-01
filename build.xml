@@ -43,7 +43,7 @@
   </path>
 
   <target name="compile">
-    <javac srcdir="${src}" debug="${debug}">
+    <javac srcdir="${src}" debug="${debug}" excludes="board/geom/BSpline.java,tools/callgraph/**/*.java">
       <classpath refid="classpath"/>
     </javac>
   </target>

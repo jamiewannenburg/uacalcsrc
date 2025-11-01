@@ -236,18 +236,80 @@ impl SingleClose {
         report: Option<Arc<dyn ProgressReport>>,
         timing: Option<Arc<Mutex<CloserTiming>>>,
     ) -> Result<Vec<CloseResult>, String> {
-        // For now, implement serial version
-        // TODO: Implement parallel version using rayon or std::thread
-        
         self.results.clear();
         
-        for i in 0..self.increment {
-            let result = self.do_one_step_serial(
-                i,
+        // For small computations or single increment, use serial execution
+        if self.increment == 1 || self.too_small {
+            let result = self.do_one_step_serial(0, report.clone(), timing.clone())?;
+            self.results.push(result);
+        } else {
+            // Parallel execution using std::thread
+            // Clone necessary data for thread safety
+            let univ_list = Arc::new(self.univ_list.clone());
+            let map = Arc::clone(&self.map);
+            let op = Arc::clone(&self.op);
+            let min = self.min;
+            let max = self.max;
+            let elts_found = Arc::clone(&self.elts_found);
+            let too_small = self.too_small;
+            let increment = self.increment;
+            
+            // Create thread handles
+            let mut handles = Vec::new();
+            
+            // Spawn worker threads (all but the last one)
+            for i in 0..(increment - 1) {
+                let univ_list_clone = Arc::clone(&univ_list);
+                let map_clone = Arc::clone(&map);
+                let op_clone = Arc::clone(&op);
+                let report_clone = report.clone();
+                let timing_clone = timing.clone();
+                let elts_found_clone = Arc::clone(&elts_found);
+                let worker_array = self.arrays[i].clone();
+                
+                let handle = std::thread::spawn(move || {
+                    Self::do_one_step_serial_worker(
+                        univ_list_clone,
+                        map_clone,
+                        op_clone,
+                        worker_array,
+                        min,
+                        max,
+                        too_small,
+                        increment,
+                        report_clone,
+                        timing_clone,
+                        elts_found_clone,
+                    )
+                });
+                handles.push(handle);
+            }
+            
+            // Execute last worker on current thread
+            let last_array = self.arrays[increment - 1].clone();
+            let last_result = Self::do_one_step_serial_worker(
+                Arc::clone(&univ_list),
+                Arc::clone(&map),
+                Arc::clone(&op),
+                last_array,
+                min,
+                max,
+                too_small,
+                increment,
                 report.clone(),
                 timing.clone(),
+                Arc::clone(&elts_found),
             )?;
-            self.results.push(result);
+            self.results.push(last_result);
+            
+            // Wait for all threads to complete
+            for handle in handles {
+                match handle.join() {
+                    Ok(Ok(result)) => self.results.push(result),
+                    Ok(Err(e)) => return Err(e),
+                    Err(_) => return Err("Thread panicked".to_string()),
+                }
+            }
         }
         
         // Update size in progress report
@@ -258,21 +320,25 @@ impl SingleClose {
         Ok(self.results.clone())
     }
     
-    /// Perform one serial closure step.
-    /// 
-    /// This is called by each parallel worker to process its portion of the work.
-    fn do_one_step_serial(
-        &self,
-        worker_id: usize,
+    /// Static helper method for worker threads.
+    /// This is separated from the instance method to avoid borrowing issues.
+    fn do_one_step_serial_worker(
+        univ_list: Arc<Vec<IntArray>>,
+        map: Arc<Mutex<HashMap<IntArray, Box<dyn Term>>>>,
+        op: Arc<dyn Operation>,
+        mut arg_indices: Vec<i32>,
+        min: usize,
+        max: usize,
+        too_small: bool,
+        increment: usize,
         report: Option<Arc<dyn ProgressReport>>,
         timing: Option<Arc<Mutex<CloserTiming>>>,
+        elts_found: Arc<AtomicUsize>,
     ) -> Result<CloseResult, String> {
         let mut new_elts = Vec::new();
-        let arity = self.op.arity() as usize;
-        let mut arg_indices = self.arrays[worker_id].clone();
-        
-        let max_i32 = self.max as i32;
-        let min_i32 = self.min as i32;
+        let arity = op.arity() as usize;
+        let max_i32 = max as i32;
+        let min_i32 = min as i32;
         
         // Track whether we've processed the first combination
         let mut first = true;
@@ -282,14 +348,14 @@ impl SingleClose {
             let mut args = Vec::with_capacity(arity);
             for &idx in &arg_indices {
                 let idx_usize = idx as usize;
-                if idx_usize >= self.univ_list.len() {
-                    return Err(format!("Index {} out of bounds for universe list of size {}", idx, self.univ_list.len()));
+                if idx_usize >= univ_list.len() {
+                    return Err(format!("Index {} out of bounds for universe list of size {}", idx, univ_list.len()));
                 }
-                args.push(self.univ_list[idx_usize].as_slice());
+                args.push(univ_list[idx_usize].as_slice());
             }
             
             // Apply operation
-            let result_array = self.op.value_at_arrays(&args)?;
+            let result_array = op.value_at_arrays(&args)?;
             let v = IntArray::from_array(result_array)?;
             
             // Update timing if present
@@ -301,7 +367,7 @@ impl SingleClose {
             
             // Check if element is new
             let is_new = {
-                let map_guard = self.map.lock().unwrap();
+                let map_guard = map.lock().unwrap();
                 !map_guard.contains_key(&v)
             };
             
@@ -310,8 +376,8 @@ impl SingleClose {
                 let mut children: Vec<Box<dyn Term>> = Vec::new();
                 for &idx in &arg_indices {
                     let idx_usize = idx as usize;
-                    let map_guard = self.map.lock().unwrap();
-                    if let Some(term) = map_guard.get(&self.univ_list[idx_usize]) {
+                    let map_guard = map.lock().unwrap();
+                    if let Some(term) = map_guard.get(&univ_list[idx_usize]) {
                         children.push(term.clone_box());
                     } else {
                         return Err(format!("No term found for element at index {}", idx));
@@ -319,21 +385,21 @@ impl SingleClose {
                 }
                 
                 let term = Box::new(NonVariableTerm::new(
-                    self.op.symbol().clone(),
+                    op.symbol().clone(),
                     children,
                 )) as Box<dyn Term>;
                 
                 // Try to insert into map
-                let mut map_guard = self.map.lock().unwrap();
+                let mut map_guard = map.lock().unwrap();
                 if !map_guard.contains_key(&v) {
                     map_guard.insert(v.clone(), term);
                     drop(map_guard); // Release lock before updating counters
                     
                     new_elts.push(v);
-                    self.elts_found.fetch_add(1, Ordering::SeqCst);
+                    elts_found.fetch_add(1, Ordering::SeqCst);
                     
                     if let Some(ref rep) = report {
-                        rep.set_size(self.elts_found.load(Ordering::SeqCst));
+                        rep.set_size(elts_found.load(Ordering::SeqCst));
                     }
                     
                     if let Some(ref t) = timing {
@@ -347,10 +413,10 @@ impl SingleClose {
             // Increment to next combination
             // Create a temporary incrementor to update arg_indices
             let has_next = {
-                let mut worker_inc = if self.too_small {
+                let mut worker_inc = if too_small {
                     SequenceGenerator::sequence_incrementor_with_min(&mut arg_indices, max_i32, min_i32)
                 } else {
-                    SequenceGenerator::sequence_incrementor_with_min_and_jump(&mut arg_indices, max_i32, min_i32, self.increment)
+                    SequenceGenerator::sequence_incrementor_with_jump(&mut arg_indices, max_i32, min_i32, increment)
                 };
                 
                 // On first iteration, we already have the initial value, don't increment yet
@@ -368,6 +434,30 @@ impl SingleClose {
         }
         
         Ok(new_elts)
+    }
+    
+    /// Perform one serial closure step.
+    /// 
+    /// This is called for serial execution or as a wrapper for the worker method.
+    fn do_one_step_serial(
+        &self,
+        worker_id: usize,
+        report: Option<Arc<dyn ProgressReport>>,
+        timing: Option<Arc<Mutex<CloserTiming>>>,
+    ) -> Result<CloseResult, String> {
+        Self::do_one_step_serial_worker(
+            Arc::new(self.univ_list.clone()),
+            Arc::clone(&self.map),
+            Arc::clone(&self.op),
+            self.arrays[worker_id].clone(),
+            self.min,
+            self.max,
+            self.too_small,
+            self.increment,
+            report,
+            timing,
+            Arc::clone(&self.elts_found),
+        )
     }
     
     /// Get the computation size.

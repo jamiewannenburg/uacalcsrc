@@ -504,9 +504,18 @@ macro_rules! compare_with_java {
 /// ```
 /// 
 /// This function extracts the "data" field value, or returns the raw string if JSON parsing fails.
+/// It handles cases where debug output lines may precede the JSON.
 pub fn extract_java_data(java_output: &str) -> String {
+    // Find the first JSON object in the output (handles debug lines before JSON)
+    let json_start = java_output.find('{');
+    let json_str = if let Some(start) = json_start {
+        &java_output[start..]
+    } else {
+        java_output
+    };
+    
     // Try to parse the Java output as JSON
-    if let Ok(json) = serde_json::from_str::<serde_json::Value>(java_output) {
+    if let Ok(json) = serde_json::from_str::<serde_json::Value>(json_str) {
         // Extract the "data" field
         if let Some(data) = json.get("data") {
             match data {

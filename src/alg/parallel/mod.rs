@@ -46,6 +46,6 @@ impl Pool {
     }
 }
 
-pub struct SingleClose {
-    // TODO: Implement single close
-}
+pub mod single_close;
+
+pub use single_close::SingleClose;
