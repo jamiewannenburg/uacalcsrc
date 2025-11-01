@@ -170,10 +170,11 @@ where
     pub fn new(alg: Box<dyn SmallAlgebra<UniverseItem = T>>) -> Self {
         let alg_size = alg.cardinality() as usize;
         // Snapshot operations once to avoid re-entering operations() during computations
-        let ops_arc: Vec<Arc<dyn Operation>> = alg
-            .operations()
+        let ops_boxed = alg.operations();
+        
+        let ops_arc: Vec<Arc<dyn Operation>> = ops_boxed
             .into_iter()
-            .map(|op| Arc::<dyn Operation>::from(op))
+            .map(|op| Arc::from(op))
             .collect();
         let num_ops = ops_arc.len();
         let zero_cong = Partition::zero(alg_size);
@@ -387,12 +388,32 @@ where
                     // Increment through all possible arguments, varying all positions except 'index'
                     loop {
                         arg[index as usize] = x as i32;
-                        let r_val = op.int_value_at(&arg).unwrap_or(0);
-                        let r = Self::find_root(r_val as usize, &part);
+                        let r_val = match op.int_value_at(&arg) {
+                            Ok(val) => val as usize,
+                            Err(_) => {
+                                // Skip if operation fails (result not in subalgebra)
+                                if !Self::increment_arg(&mut arg, index as usize, self.alg_size - 1) {
+                                    break;
+                                }
+                                continue;
+                            }
+                        };
+                        // Use root function that modifies array (matches Java's BasicPartition.root())
+                        let r = Self::root_mut_in_array(r_val, &mut part);
                         
                         arg[index as usize] = y as i32;
-                        let s_val = op.int_value_at(&arg).unwrap_or(0);
-                        let s = Self::find_root(s_val as usize, &part);
+                        let s_val = match op.int_value_at(&arg) {
+                            Ok(val) => val as usize,
+                            Err(_) => {
+                                // Skip if operation fails (result not in subalgebra)
+                                if !Self::increment_arg(&mut arg, index as usize, self.alg_size - 1) {
+                                    break;
+                                }
+                                continue;
+                            }
+                        };
+                        // Use root function that modifies array (matches Java's BasicPartition.root())
+                        let s = Self::root_mut_in_array(s_val, &mut part);
                         
                         if r != s {
                             Self::join_blocks_in_array(r, s, &mut part);
@@ -400,6 +421,7 @@ where
                         }
                         
                         // Increment arg (excluding position 'index')
+                        // Use alg_size - 1 as max (matching Java: max = algSize - 1)
                         if !Self::increment_arg(&mut arg, index as usize, self.alg_size - 1) {
                             break;
                         }
@@ -411,7 +433,22 @@ where
         Partition::new(part).unwrap()
     }
     
-    /// Find the root of an element in a partition array.
+    /// Find the root of an element in a partition array with path compression.
+    /// Modifies the array during traversal (matches Java's BasicPartition.root()).
+    fn root_mut_in_array(i: usize, part: &mut [i32]) -> usize {
+        if i >= part.len() {
+            return i;
+        }
+        let j = part[i];
+        if j < 0 {
+            return i;
+        }
+        let r = Self::root_mut_in_array(j as usize, part);
+        part[i] = r as i32;
+        r
+    }
+    
+    /// Find the root of an element in a partition array (no modification).
     fn find_root(mut elem: usize, part: &[i32]) -> usize {
         while part[elem] >= 0 {
             elem = part[elem] as usize;

@@ -336,12 +336,21 @@ impl Partition {
             return Err("Partitions must have the same universe size".to_string());
         }
         
+        // Start with result as a copy of other (matching Java: ans = v)
         let mut result_array = other.array.clone();
         
+        // For each element i, if i is not a root in self (self.array[i] >= 0),
+        // join the blocks containing i and self.array[i] (parent) in the result
+        // (matching Java: if (u[i] >= 0) { join blocks for i and u[i] in ans })
+        // Note: Java's root() does path compression during traversal, so we use
+        // a mutable root function that matches Java's behavior
         for i in 0..self.array.len() {
             if self.array[i] >= 0 {
-                let r = self.root(i);
-                let s = other.root(i);
+                // i is not a root in self, so it has a parent self.array[i]
+                // Find roots of i and parent in the result array (with path compression like Java)
+                let r = Self::root_mut(i, &mut result_array);
+                let parent_idx = self.array[i] as usize;
+                let s = Self::root_mut(parent_idx, &mut result_array);
                 if r != s {
                     Self::join_blocks_static(r, s, &mut result_array);
                 }
@@ -374,7 +383,9 @@ impl Partition {
         let mut result_array = vec![-1; self.array.len()];
         
         for i in 0..self.array.len() {
-            let root_pair = (self.root(i), other.root(i));
+            let r1 = self.root(i);
+            let r2 = other.root(i);
+            let root_pair = (r1, r2);
             
             if let Some(&root_int) = ht.get(&root_pair) {
                 result_array[root_int] -= 1;
@@ -385,11 +396,13 @@ impl Partition {
             }
         }
         
-        Ok(Partition {
+        let mut result = Partition {
             array: result_array,
             block_count: -1,
             representatives: None,
-        })
+        };
+        result.normalize();
+        Ok(result)
     }
     
     /// Check if this partition is less than or equal to another partition.
@@ -524,6 +537,22 @@ impl Partition {
     }
     
     /// Static version of root finding for use with mutable arrays.
+    /// Find root with path compression (matches Java's root() behavior).
+    /// Modifies the array during traversal to compress paths.
+    fn root_mut(i: usize, part: &mut [i32]) -> usize {
+        if i >= part.len() {
+            return i;
+        }
+        
+        let j = part[i];
+        if j < 0 {
+            return i;
+        }
+        let r = Self::root_mut(j as usize, part);
+        part[i] = r as i32;
+        r
+    }
+    
     fn root_static(i: usize, part: &[i32]) -> usize {
         if i >= part.len() {
             return i;

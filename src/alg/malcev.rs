@@ -992,10 +992,6 @@ where
                     
                     let gens = vec![a_arr.clone(), b_arr.clone(), c_arr.clone(), d_arr.clone()];
                     
-                    // Debug: Check closure size before creating subalgebra
-                    let closure_before = sq.sg_close(gens.clone())?;
-                    eprintln!("DEBUG: Closure size for ({},{},{},{}) = {}", x0, x1, y0, y1, closure_before.len());
-                    
                     // Create SubProductAlgebra
                     // Note: Java doesn't call makeOperationTables() before computing congruences
                     let mut sub = crate::alg::SubProductAlgebra::new_safe(
@@ -1004,8 +1000,6 @@ where
                         gens,
                         false,
                     )?;
-                    
-                    eprintln!("DEBUG: SubProductAlgebra size after creation = {}", sub.cardinality());
                     
                     // Get element indices and check for Day quadruple
                     let a_index = sub.element_index(&a_arr).ok_or_else(|| {
@@ -1020,6 +1014,10 @@ where
                     let d_index = sub.element_index(&d_arr).ok_or_else(|| {
                         format!("Element d = [{}, {}] not found in subalgebra", y0, y1)
                     })?;
+                    
+                    // Note: Java's SubProductAlgebra constructor doesn't call makeOperationTables(),
+                    // but we may need it for proper congruence computation in Rust
+                    // sub.make_operation_tables();
                     
                     // Use sub.con() to get the cached congruence lattice (matches Java pattern exactly)
                     // Java: alg.con().Cg(...) - con() returns a reference that can be used for Cg()
@@ -1050,13 +1048,9 @@ where
                     let join_result = cgcd.join(&meet_result)?;
                     
                     let is_related = join_result.is_related(a_index, b_index);
-                    // Debug output (remove after fixing)
-                    eprintln!("DEBUG: x0={}, x1={}, y0={}, y1={}, a_idx={}, b_idx={}, c_idx={}, d_idx={}, is_related={}, sub_size={}", 
-                             x0, x1, y0, y1, a_index, b_index, c_index, d_index, is_related, sub.cardinality());
                     
                     if !is_related {
                         // Found a Day quadruple
-                        eprintln!("DEBUG: Found Day quadruple at ({},{},{},{})", x0, x1, y0, y1);
                         return Ok(Some(vec![x0, x1, y0, y1]));
                     }
                 }

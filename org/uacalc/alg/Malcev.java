@@ -1925,13 +1925,7 @@ org.uacalc.ui.LatDrawer.drawLattice(new org.uacalc.lat.BasicLattice("", maxLevel
             final int cIndex = sub.elementIndex(c);
             final int dIndex = sub.elementIndex(d);
             
-            // Debug output
-            System.err.println("DEBUG: x0=" + x0 + " x1=" + x1 + " y0=" + y0 + " y1=" + y1 +
-                              " aIdx=" + aIndex + " bIdx=" + bIndex + " cIdx=" + cIndex + 
-                              " dIdx=" + dIndex + " sub_size=" + sub.cardinality());
-            
             if (dayQuadruple(aIndex, bIndex, cIndex, dIndex, sub)) {
-              System.err.println("DEBUG: Found Day quadruple at (" + x0 + "," + x1 + "," + y0 + "," + y1 + ")");
               if (report != null) {
                 report.setWitnessAlgebra(new AlgebraWithGeneratingVector(sub, 
                                          new int[] {aIndex, bIndex, cIndex, dIndex}));
@@ -1972,11 +1966,11 @@ org.uacalc.ui.LatDrawer.drawLattice(new org.uacalc.lat.BasicLattice("", maxLevel
     final Partition cgcd = alg.con().Cg(c,d);
     final Partition cgab_cd = alg.con().Cg(a,b).join(cgcd);
     final Partition cgac_bd = alg.con().Cg(a,c).join(alg.con().Cg(b, d));
-    boolean result = !cgcd.join(cgab_cd.meet(cgac_bd)).isRelated(a,b);
-    // Debug output
-    System.err.println("DEBUG: dayQuadruple a=" + a + " b=" + b + " c=" + c + " d=" + d + 
-                      " isRelated=" + cgcd.join(cgab_cd.meet(cgac_bd)).isRelated(a,b) + 
-                      " result=" + result + " alg_size=" + alg.cardinality());
+    Partition meet_result = cgab_cd.meet(cgac_bd);
+    Partition join_result = cgcd.join(meet_result);
+    boolean isRelated = join_result.isRelated(a,b);
+    boolean result = !isRelated;
+    
     return result;
   }
 

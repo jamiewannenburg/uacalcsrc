@@ -83,6 +83,10 @@ impl Operation for BigProductOperation {
         let mut ans = vec![0; self.number_of_factors];
         let mut arg_buf = vec![0; self.arity as usize];
         
+        eprintln!("DEBUG_VALUE_AT: BigProductOperation.value_at_arrays - symbol={}, arity={}, num_factors={}, args={:?}", 
+                 self.symbol, self.arity, self.number_of_factors,
+                 args.iter().map(|a| a.to_vec()).collect::<Vec<_>>());
+        
         for j in 0..self.number_of_factors {
             // Extract j-th component from each argument
             for (index, &arg_array) in args.iter().enumerate() {
@@ -90,8 +94,10 @@ impl Operation for BigProductOperation {
             }
             // Apply the j-th operation
             ans[j] = self.op_list[j].int_value_at(&arg_buf)?;
+            eprintln!("DEBUG_VALUE_AT: Component {}: {:?} -> {}", j, arg_buf, ans[j]);
         }
         
+        eprintln!("DEBUG_VALUE_AT: Final result: {:?}", ans);
         Ok(ans)
     }
     
@@ -384,19 +390,24 @@ where
         
         // Get operations from first algebra as a template
         if self.algebras.is_empty() {
+            eprintln!("DEBUG_MAKE_OPS: No algebras!");
             return;
         }
         
+        eprintln!("DEBUG_MAKE_OPS: Making operations for product with {} factors", self.number_of_factors);
         let first_ops = self.algebras[0].operations();
         let k = first_ops.len();
+        eprintln!("DEBUG_MAKE_OPS: First algebra has {} operations", k);
         
         // For each operation in the first algebra
         for i in 0..k {
             let arity = first_ops[i].arity();
             let symbol = first_ops[i].symbol().clone();
+            let symbol_str = symbol.to_string();
             
             // Collect the i-th operation from each factor algebra
             let mut op_list = Vec::with_capacity(self.number_of_factors);
+            let mut all_factors_have_op = true;
             for j in 0..self.number_of_factors {
                 let ops = self.algebras[j].operations();
                 if i < ops.len() {
@@ -405,8 +416,14 @@ where
                     op_list.push(Arc::from(ops[i].clone_box()));
                 } else {
                     // Factor missing operation - skip this product operation
-                    return;
+                    all_factors_have_op = false;
+                    break;
                 }
+            }
+            
+            if !all_factors_have_op {
+                // Skip this operation if any factor doesn't have it
+                continue;
             }
             
             // Create the product operation
@@ -418,7 +435,10 @@ where
             );
             
             self.operations.push(Arc::new(prod_op));
+            eprintln!("DEBUG_MAKE_OPS: Created operation {} (arity={}) for product, total ops={}", 
+                     symbol_str, arity, self.operations.len());
         }
+        eprintln!("DEBUG_MAKE_OPS: Finished making operations, total={}", self.operations.len());
     }
     
     /// Get constants in this algebra.
@@ -692,7 +712,7 @@ where
     T: Clone + PartialEq + Eq + Hash + std::fmt::Debug + Send + Sync + 'static
 {
     fn clone(&self) -> Self {
-        BigProductAlgebra {
+        let mut cloned = BigProductAlgebra {
             name: self.name.clone(),
             description: self.description.clone(),
             algebras: self.algebras.iter().map(|a| a.clone_box()).collect(),
@@ -703,10 +723,13 @@ where
             cardinality: self.cardinality,
             root_algebras: self.root_algebras.as_ref().map(|v| v.iter().map(|a| a.clone_box()).collect()),
             powers: self.powers.clone(),
-            operations: Vec::new(), // Can't clone operations easily
+            operations: Vec::new(), // Will be populated by make_operations()
             similarity_type: None,
             monitor: None,
-        }
+        };
+        // Regenerate operations after cloning (since we cloned the algebras)
+        cloned.make_operations();
+        cloned
     }
 }
 
@@ -774,10 +797,13 @@ where
     
     fn operations(&self) -> Vec<Box<dyn Operation>> {
         // Return boxed Arc-backed delegators without deep cloning
-        self.operations
+        let ops: Vec<Box<dyn Operation>> = self.operations
             .iter()
             .map(|op| boxed_arc_op(Arc::clone(op)))
-            .collect()
+            .collect();
+        eprintln!("DEBUG_OPERATIONS: BigProductAlgebra.operations() returning {} operations (stored: {})", 
+                 ops.len(), self.operations.len());
+        ops
     }
     
     fn get_operation(&self, _sym: &OperationSymbol) -> Option<Box<dyn Operation>> {

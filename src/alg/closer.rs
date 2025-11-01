@@ -327,6 +327,8 @@ where
         // Main closure loop
         while closed_mark < current_mark {
             let status_str = format!("pass: {}, size: {}", pass, self.ans.len());
+            eprintln!("DEBUG_CLOSURE: Loop condition - closed_mark={}, current_mark={}, ans.len()={}", 
+                     closed_mark, current_mark, self.ans.len());
             
             if let Some(ref report) = self.report {
                 report.set_pass(pass);
@@ -351,6 +353,7 @@ where
             use crate::alg::Algebra;
             let operations = self.algebra.as_ref().operations();
             let num_ops = operations.len();
+            eprintln!("DEBUG_CLOSURE: Starting operations loop - num_ops={}", num_ops);
             
             for i in 0..num_ops {
                 if i >= operations.len() {
@@ -359,8 +362,10 @@ where
                 
                 let op = &operations[i];
                 let arity = op.arity();
+                eprintln!("DEBUG_CLOSURE: Processing op {} (index {}), arity={}", op.symbol(), i, arity);
                 
                 if arity == 0 {
+                    eprintln!("DEBUG_CLOSURE: Skipping nullary operation {}", op.symbol());
                     continue; // Skip nullary operations (constants handled separately)
                 }
                 
@@ -376,6 +381,8 @@ where
                 use crate::util::SequenceGenerator;
                 let current_mark_i32 = current_mark as i32;
                 let closed_mark_i32 = closed_mark as i32;
+                eprintln!("DEBUG_CLOSURE: Creating incrementor for op {}, arity={}, closed_mark={}, current_mark={}, max={}", 
+                         op.symbol(), arity, closed_mark, current_mark, current_mark_i32 - 1);
                 // Java uses sequenceIncrementor(array, currentMark-1, closedMark)
                 // But Rust's sequence_incrementor only takes 2 params, so we'll use sequence_incrementor_with_min
                 let mut inc = SequenceGenerator::sequence_incrementor_with_min(
@@ -385,111 +392,123 @@ where
                 );
                 
                 // Iterate through all combinations
+                // The incrementor already ensures at least one argument is >= closedMark,
+                // so we apply the operation to all combinations it generates (matching Java)
+                let mut combination_count = 0;
                 loop {
                     // Get current indices (use get_current to avoid borrow issues)
                     let indices = inc.get_current();
+                    combination_count += 1;
                     
-                    // Check if at least one index is in the new range [closed_mark, current_mark)
-                    let has_new_elem = indices.iter().any(|&idx| {
+                    // Collect arguments - check bounds to avoid out-of-range access
+                    // Note: The incrementor generates indices in range [0, original_current_mark-1],
+                    // but self.ans may have grown during the loop. All indices should still be valid
+                    // since they're < original_current_mark <= current self.ans.len()
+                    let mut args: Vec<&IntArray> = Vec::new();
+                    let mut all_in_bounds = true;
+                    for &idx in &indices {
                         let idx_usize = idx as usize;
-                        idx_usize >= closed_mark && idx_usize < current_mark
-                    });
-                    
-                    if has_new_elem {
-                        // Collect arguments
-                        let mut args: Vec<&IntArray> = Vec::new();
-                        for &idx in &indices {
-                            let idx_usize = idx as usize;
-                            if idx_usize < self.ans.len() {
-                                args.push(&self.ans[idx_usize]);
-                            }
+                        if idx_usize >= self.ans.len() {
+                            // Index out of bounds - this shouldn't happen if incrementor is working correctly,
+                            // but skip this combination if it does
+                            all_in_bounds = false;
+                            break;
                         }
+                        args.push(&self.ans[idx_usize]);
+                    }
+                    
+                    if all_in_bounds && args.len() == arity_usize {
+                        // Apply operation and compute result
+                        // Convert IntArray args to int arrays for operation
+                        let arg_vecs: Vec<Vec<i32>> = args.iter()
+                            .map(|&ia| ia.as_slice().to_vec())
+                            .collect();
+                        let arg_refs: Vec<&[i32]> = arg_vecs.iter()
+                            .map(|v| v.as_slice())
+                            .collect();
                         
-                        if args.len() == arity_usize {
-                            // Apply operation and compute result
-                            // Convert IntArray args to int arrays for operation
-                            // args is Vec<&IntArray>, iter() gives &(&IntArray) = &&IntArray
-                            // Use clone() or direct access
-                            let arg_vecs: Vec<Vec<i32>> = args.iter()
-                                .map(|&ia| ia.as_slice().to_vec())
-                                .collect();
-                            let arg_refs: Vec<&[i32]> = arg_vecs.iter()
-                                .map(|v| v.as_slice())
-                                .collect();
-                            
-                            // For product algebras, use value_at_arrays which returns an array
-                            match op.value_at_arrays(&arg_refs) {
-                                Ok(result_arr) => {
-                                    if let Ok(result_ia) = IntArray::from_array(result_arr) {
-                                        // Check if it's new
-                                        if su.insert(result_ia.clone()) {
-                                            // New element found - add to closure
-                                            self.ans.push(result_ia.clone());
-                                            
-                                            // Add to term map if it exists
-                                            if let Some(ref mut term_map) = self.term_map {
-                                                let mut children = Vec::new();
-                                                for &idx in &indices {
-                                                    let idx_usize = idx as usize;
-                                                    if idx_usize < self.ans.len() - 1 { // -1 because we just added result
-                                                        if let Some(term) = term_map.get(&self.ans[idx_usize]) {
-                                                            children.push(term.clone_box());
-                                                        }
+                        let args_str: Vec<String> = args.iter().map(|a| format!("{:?}", a.as_slice())).collect();
+                        eprintln!("DEBUG_CLOSURE: Applying op {} with args {:?} (indices {:?})", 
+                                 op.symbol(), args_str, indices);
+                        
+                        // For product algebras, use value_at_arrays which returns an array
+                        match op.value_at_arrays(&arg_refs) {
+                            Ok(result_arr) => {
+                                eprintln!("DEBUG_CLOSURE: value_at_arrays returned {:?}", result_arr);
+                                if let Ok(result_ia) = IntArray::from_array(result_arr) {
+                                    let was_new = su.insert(result_ia.clone());
+                                    eprintln!("DEBUG_CLOSURE: Result {:?} was_new={}, current_size={}", 
+                                             result_ia.as_slice(), was_new, self.ans.len());
+                                    // Check if it's new
+                                    if was_new {
+                                        // New element found - add to closure
+                                        self.ans.push(result_ia.clone());
+                                        eprintln!("DEBUG_CLOSURE: Added new element {:?}, closure size now {}", 
+                                                 result_ia.as_slice(), self.ans.len());
+                                        
+                                        // Add to term map if it exists
+                                        if let Some(ref mut term_map) = self.term_map {
+                                            let mut children = Vec::new();
+                                            for &idx in &indices {
+                                                let idx_usize = idx as usize;
+                                                // Use ans.len() - 1 because we just added result
+                                                if idx_usize < self.ans.len() - 1 {
+                                                    if let Some(term) = term_map.get(&self.ans[idx_usize]) {
+                                                        children.push(term.clone_box());
                                                     }
                                                 }
-                                                let symbol = op.symbol().clone();
-                                                let new_term = Box::new(NonVariableTerm::new(symbol, children)) as Box<dyn Term>;
-                                                term_map.insert(result_ia.clone(), new_term);
                                             }
-                                            
-                                            // Check if we found the element we're looking for
-                                            if let Some(ref elt_to_find) = self.elt_to_find {
-                                                if result_ia == *elt_to_find {
-                                                    // Found target element
-                                                    return Ok(self.ans.clone());
-                                                }
-                                            }
-                                            
-                                            // Check max size
-                                            if let Some(max_size) = self.max_size {
-                                                if self.ans.len() >= max_size {
-                                                    break;
-                                                }
-                                            }
-                                            
-                                            // Update current_mark since we added a new element
-                                            current_mark = self.ans.len();
+                                            let symbol = op.symbol().clone();
+                                            let new_term = Box::new(NonVariableTerm::new(symbol, children)) as Box<dyn Term>;
+                                            term_map.insert(result_ia.clone(), new_term);
                                         }
+                                        
+                                        // Check if we found the element we're looking for
+                                        if let Some(ref elt_to_find) = self.elt_to_find {
+                                            if result_ia == *elt_to_find {
+                                                // Found target element
+                                                return Ok(self.ans.clone());
+                                            }
+                                        }
+                                        
+                                        // Check max size
+                                        if let Some(max_size) = self.max_size {
+                                            if self.ans.len() >= max_size {
+                                                break;
+                                            }
+                                        }
+                                        // Don't update current_mark here - wait until end of pass
+                                        // (Java doesn't update currentMark during the loop)
                                     }
                                 }
-                                Err(e) => {
-                                    // Operation failed - continue to next combination
-                                    // This might happen for malformed operations
-                                    eprintln!("WARNING: Operation value_at_arrays failed: {}", e);
-                                }
+                            }
+                            Err(e) => {
+                                // Operation failed - continue to next combination
+                                // This might happen for malformed operations
+                                eprintln!("WARNING: Operation value_at_arrays failed: {}", e);
                             }
                         }
                     }
                     
                     // Increment for next iteration
                     if !inc.increment() {
+                        eprintln!("DEBUG_CLOSURE: Exhausted all combinations for op {}, processed {} combinations", 
+                                 op.symbol(), combination_count);
                         break; // All combinations exhausted
-                    }
-                    
-                    // Update current_mark in case new elements were added
-                    let new_current_mark = self.ans.len();
-                    if new_current_mark > current_mark {
-                        current_mark = new_current_mark;
-                        // Need to recreate incrementor with new bounds
-                        // But for now, continue with existing bounds
-                        // (Java doesn't recreate incrementor mid-loop)
                     }
                 }
             }
             
+            let old_closed_mark = closed_mark;
+            let old_current_mark = current_mark;
             closed_mark = current_mark;
             current_mark = self.ans.len();
+            eprintln!("DEBUG_CLOSURE: End of pass - closed_mark: {} -> {}, current_mark: {} -> {}, ans.len()={}, will_continue={}", 
+                     old_closed_mark, closed_mark, old_current_mark, current_mark, self.ans.len(), 
+                     closed_mark < current_mark);
         }
+        
+        eprintln!("DEBUG_CLOSURE: Exiting closure loop - final size={}", self.ans.len());
         
         if let Some(ref report) = self.report {
             report.add_end_line(&format!("closing done, size = {}", self.ans.len()));

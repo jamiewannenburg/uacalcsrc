@@ -11,7 +11,7 @@ use std::hash::Hash;
 use std::sync::Arc;
 use crate::alg::{Algebra, SmallAlgebra, AlgebraType, BigProductAlgebra};
 use crate::alg::algebra::ProgressMonitor;
-use crate::alg::op::{Operation, OperationSymbol, SimilarityType, AbstractIntOperation};
+use crate::alg::op::{Operation, OperationSymbol, SimilarityType};
 use crate::alg::op::operation::boxed_arc_op;
 use crate::util::int_array::{IntArray, IntArrayTrait};
 use crate::terms::{Term, VariableImp};
@@ -347,16 +347,169 @@ where
     fn make_operations(&mut self) -> Result<(), String> {
         let size = self.univ.len() as i32;
         let prod_ops_ref = self.product_algebra.operations_ref_arc();
+        let univ_ref = &self.univ;
+        let univ_hash_map_ref = &self.univ_hash_map;
         
         for prod_op in prod_ops_ref {
             let op_sym = prod_op.symbol().clone();
-            let _arity = prod_op.arity();
+            let arity = prod_op.arity();
+            let prod_op_clone = Arc::clone(prod_op);
             
-            // Create a new operation for the subalgebra
-            // Note: simplified placeholder op; keep Arc-backed storage
-            let op = AbstractIntOperation::new_with_symbol_safe(op_sym, size)?;
+            // Create a custom operation that delegates to the product algebra
+            // This matches Java's SubProductAlgebra.intValueAt logic:
+            // 1. Convert subalgebra indices to IntArray elements
+            // 2. Apply product algebra operation
+            // 3. Map result back to subalgebra index
+            #[derive(Clone)]
+            struct SubProductOpWrapper {
+                symbol: OperationSymbol,
+                arity: i32,
+                size: i32,
+                prod_op: Arc<dyn Operation>,
+                univ: Vec<IntArray>,
+                univ_hash_map: HashMap<IntArray, usize>,
+            }
             
-            self.operations.push(Arc::new(op));
+            impl Debug for SubProductOpWrapper {
+                fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                    f.debug_struct("SubProductOpWrapper")
+                        .field("symbol", &self.symbol)
+                        .field("arity", &self.arity)
+                        .field("size", &self.size)
+                        .finish()
+                }
+            }
+            
+            impl Display for SubProductOpWrapper {
+                fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                    write!(f, "SubProductOp({})", self.symbol)
+                }
+            }
+            
+            impl Operation for SubProductOpWrapper {
+                fn symbol(&self) -> &OperationSymbol {
+                    &self.symbol
+                }
+                
+                fn arity(&self) -> i32 {
+                    self.arity
+                }
+                
+                fn get_set_size(&self) -> i32 {
+                    self.size
+                }
+                
+                fn int_value_at(&self, args: &[i32]) -> Result<i32, String> {
+                    // Convert subalgebra indices to IntArray elements (matching Java's getElement)
+                    let mut elem_args = Vec::with_capacity(args.len());
+                    for &arg_idx in args {
+                        if arg_idx < 0 || arg_idx >= self.univ.len() as i32 {
+                            return Err(format!("Argument index {} out of range [0, {})", arg_idx, self.univ.len()));
+                        }
+                        elem_args.push(&self.univ[arg_idx as usize]);
+                    }
+                    
+                    // Apply product algebra operation (matching Java's opx.valueAt)
+                    let result_array = self.prod_op.value_at_arrays(&elem_args.iter().map(|x| x.as_slice()).collect::<Vec<_>>())?;
+                    let result_ia = IntArray::from_array(result_array)?;
+                    
+                    // Map result back to subalgebra index (matching Java's elementIndex)
+                    // If result is not in subalgebra, this is an error (operation not closed)
+                    // But during congruence computation, this might happen temporarily
+                    self.univ_hash_map.get(&result_ia)
+                        .map(|&idx| idx as i32)
+                        .ok_or_else(|| format!("Result {:?} not found in subalgebra universe (operation not closed)", result_ia))
+                }
+                
+                fn value_at_arrays(&self, args: &[&[i32]]) -> Result<Vec<i32>, String> {
+                    if args.is_empty() {
+                        return Ok(Vec::new());
+                    }
+                    let len = args[0].len();
+                    let mut result = Vec::with_capacity(len);
+                    for i in 0..len {
+                        let mut single_args = Vec::with_capacity(args.len());
+                        for arg_array in args {
+                            single_args.push(arg_array[i]);
+                        }
+                        result.push(self.int_value_at(&single_args)?);
+                    }
+                    Ok(result)
+                }
+                
+                fn value_at(&self, _args: &[i32]) -> Result<i32, String> {
+                    Err("SubProductOpWrapper does not support value_at".to_string())
+                }
+                
+                fn int_value_at_horner(&self, arg: i32) -> Result<i32, String> {
+                    use crate::util::horner;
+                    let args = horner::horner_inv_same_size(arg, self.size, self.arity as usize);
+                    self.int_value_at(&args)
+                }
+                
+                fn make_table(&mut self) -> Result<(), String> {
+                    // Tables will be made lazily if needed
+                    Ok(())
+                }
+                
+                fn get_table(&self) -> Option<&[i32]> {
+                    None
+                }
+                
+                fn get_table_force(&mut self, _make_table: bool) -> Result<&[i32], String> {
+                    Err("Table not available for SubProductOpWrapper".to_string())
+                }
+                
+                fn is_table_based(&self) -> bool {
+                    false
+                }
+                
+                fn is_idempotent(&self) -> Result<bool, String> {
+                    self.prod_op.is_idempotent()
+                }
+                
+                fn is_associative(&self) -> Result<bool, String> {
+                    self.prod_op.is_associative()
+                }
+                
+                fn is_commutative(&self) -> Result<bool, String> {
+                    self.prod_op.is_commutative()
+                }
+                
+                fn is_totally_symmetric(&self) -> Result<bool, String> {
+                    self.prod_op.is_totally_symmetric()
+                }
+                
+                fn is_maltsev(&self) -> Result<bool, String> {
+                    self.prod_op.is_maltsev()
+                }
+                
+                fn is_total(&self) -> Result<bool, String> {
+                    self.prod_op.is_total()
+                }
+                
+                fn clone_box(&self) -> Box<dyn Operation> {
+                    Box::new(SubProductOpWrapper {
+                        symbol: self.symbol.clone(),
+                        arity: self.arity,
+                        size: self.size,
+                        prod_op: Arc::clone(&self.prod_op),
+                        univ: self.univ.clone(),
+                        univ_hash_map: self.univ_hash_map.clone(),
+                    })
+                }
+            }
+            
+            let wrapper = SubProductOpWrapper {
+                symbol: op_sym,
+                arity,
+                size,
+                prod_op: prod_op_clone,
+                univ: univ_ref.clone(),
+                univ_hash_map: univ_hash_map_ref.clone(),
+            };
+            
+            self.operations.push(Arc::new(wrapper));
         }
         
         Ok(())
@@ -742,7 +895,8 @@ where
     T: Clone + PartialEq + Eq + Hash + std::fmt::Debug + Send + Sync + 'static
 {
     fn clone(&self) -> Self {
-        SubProductAlgebra {
+        // Clone operations using Arc::clone (cheap, no deep copy)
+        let mut cloned = SubProductAlgebra {
             name: self.name.clone(),
             description: self.description.clone(),
             product_algebra: self.product_algebra.clone(),
@@ -756,12 +910,14 @@ where
             variables: None,
             vars_map: None,
             universe: self.universe.clone(),
-            operations: Vec::new(), // Don't clone operations
+            operations: self.operations.iter().map(|op| Arc::clone(op)).collect(), // Clone Arc-backed operations
             similarity_type: None,
             monitor: None,
             con: None, // Don't clone cached lattices
             sub: None,
-        }
+        };
+        // Operations are already Arc-backed, so we can just clone the Vec of Arcs
+        cloned
     }
 }
 
@@ -769,9 +925,13 @@ impl<T> SmallAlgebra for SubProductAlgebra<T>
 where
     T: Clone + PartialEq + Eq + Hash + std::fmt::Debug + Send + Sync + 'static
 {
-    fn get_operation_ref(&self, _sym: &OperationSymbol) -> Option<&dyn Operation> { None }
+    fn get_operation_ref(&self, sym: &OperationSymbol) -> Option<&dyn Operation> {
+        self.operations.iter().find(|op| op.symbol() == sym).map(|arc| arc.as_ref())
+    }
     
-    fn get_operations_ref(&self) -> Vec<&dyn Operation> { Vec::new() }
+    fn get_operations_ref(&self) -> Vec<&dyn Operation> {
+        self.operations.iter().map(|arc| arc.as_ref() as &dyn Operation).collect()
+    }
     
     fn clone_box(&self) -> Box<dyn SmallAlgebra<UniverseItem = Self::UniverseItem>> {
         Box::new(self.clone())
