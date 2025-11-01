@@ -11,7 +11,7 @@ use std::hash::Hash;
 use std::fmt::Debug;
 use crate::alg::big_product_algebra::BigProductAlgebra;
 use crate::alg::Algebra;
-use crate::util::int_array::IntArray;
+use crate::util::int_array::{IntArray, IntArrayTrait};
 use crate::terms::{Term, NonVariableTerm};
 use crate::progress::ProgressReport;
 
@@ -362,55 +362,124 @@ where
                 }
                 
                 // Generate all argument combinations where at least one is from the new elements
+                // Use SequenceGenerator for proper incrementor behavior matching Java
                 let arity_usize = arity as usize;
-                let mut arg_indices = vec![0usize; arity_usize];
+                let mut arg_indices = vec![0i32; arity_usize];
                 if arity_usize > 0 {
-                    arg_indices[arity_usize - 1] = closed_mark;
+                    arg_indices[arity_usize - 1] = closed_mark as i32;
                 }
                 
-                // Simple incrementor - iterate through all combinations
+                // Use SequenceGenerator incrementor (matching Java pattern)
+                use crate::util::SequenceGenerator;
+                let current_mark_i32 = current_mark as i32;
+                let closed_mark_i32 = closed_mark as i32;
+                // Java uses sequenceIncrementor(array, currentMark-1, closedMark)
+                // But Rust's sequence_incrementor only takes 2 params, so we'll use sequence_incrementor_with_min
+                let mut inc = SequenceGenerator::sequence_incrementor_with_min(
+                    &mut arg_indices,
+                    current_mark_i32 - 1,
+                    closed_mark_i32
+                );
+                
+                // Iterate through all combinations
                 loop {
+                    // Get current indices (use get_current to avoid borrow issues)
+                    let indices = inc.get_current();
+                    
                     // Check if at least one index is in the new range [closed_mark, current_mark)
-                    let has_new_elem = arg_indices.iter().any(|&idx| idx >= closed_mark && idx < current_mark);
+                    let has_new_elem = indices.iter().any(|&idx| {
+                        let idx_usize = idx as usize;
+                        idx_usize >= closed_mark && idx_usize < current_mark
+                    });
                     
                     if has_new_elem {
                         // Collect arguments
                         let mut args: Vec<&IntArray> = Vec::new();
-                        for &idx in &arg_indices {
-                            if idx < self.ans.len() {
-                                args.push(&self.ans[idx]);
+                        for &idx in &indices {
+                            let idx_usize = idx as usize;
+                            if idx_usize < self.ans.len() {
+                                args.push(&self.ans[idx_usize]);
                             }
                         }
                         
                         if args.len() == arity_usize {
-                            // Apply operation (simplified - in full version would actually compute)
-                            // For now, just check if we've reached max size
-                            if let Some(max_size) = self.max_size {
-                                if self.ans.len() >= max_size {
-                                    break;
+                            // Apply operation and compute result
+                            // Convert IntArray args to int arrays for operation
+                            // args is Vec<&IntArray>, iter() gives &(&IntArray) = &&IntArray
+                            // Use clone() or direct access
+                            let arg_vecs: Vec<Vec<i32>> = args.iter()
+                                .map(|&ia| ia.as_slice().to_vec())
+                                .collect();
+                            let arg_refs: Vec<&[i32]> = arg_vecs.iter()
+                                .map(|v| v.as_slice())
+                                .collect();
+                            
+                            // For product algebras, use value_at_arrays which returns an array
+                            match op.value_at_arrays(&arg_refs) {
+                                Ok(result_arr) => {
+                                    if let Ok(result_ia) = IntArray::from_array(result_arr) {
+                                        // Check if it's new
+                                        if su.insert(result_ia.clone()) {
+                                            // New element found - add to closure
+                                            self.ans.push(result_ia.clone());
+                                            
+                                            // Add to term map if it exists
+                                            if let Some(ref mut term_map) = self.term_map {
+                                                let mut children = Vec::new();
+                                                for &idx in &indices {
+                                                    let idx_usize = idx as usize;
+                                                    if idx_usize < self.ans.len() - 1 { // -1 because we just added result
+                                                        if let Some(term) = term_map.get(&self.ans[idx_usize]) {
+                                                            children.push(term.clone_box());
+                                                        }
+                                                    }
+                                                }
+                                                let symbol = op.symbol().clone();
+                                                let new_term = Box::new(NonVariableTerm::new(symbol, children)) as Box<dyn Term>;
+                                                term_map.insert(result_ia.clone(), new_term);
+                                            }
+                                            
+                                            // Check if we found the element we're looking for
+                                            if let Some(ref elt_to_find) = self.elt_to_find {
+                                                if result_ia == *elt_to_find {
+                                                    // Found target element
+                                                    return Ok(self.ans.clone());
+                                                }
+                                            }
+                                            
+                                            // Check max size
+                                            if let Some(max_size) = self.max_size {
+                                                if self.ans.len() >= max_size {
+                                                    break;
+                                                }
+                                            }
+                                            
+                                            // Update current_mark since we added a new element
+                                            current_mark = self.ans.len();
+                                        }
+                                    }
+                                }
+                                Err(e) => {
+                                    // Operation failed - continue to next combination
+                                    // This might happen for malformed operations
+                                    eprintln!("WARNING: Operation value_at_arrays failed: {}", e);
                                 }
                             }
-                            
-                            // In full implementation: compute op.value_at(args) and add if new
-                            // For now, this is still a stub
                         }
                     }
                     
-                    // Increment indices (like odometer)
-                    let mut carry = true;
-                    for j in 0..arity_usize {
-                        if carry {
-                            arg_indices[j] += 1;
-                            if arg_indices[j] < current_mark {
-                                carry = false;
-                            } else {
-                                arg_indices[j] = 0;
-                            }
-                        }
-                    }
-                    
-                    if carry {
+                    // Increment for next iteration
+                    if !inc.increment() {
                         break; // All combinations exhausted
+                    }
+                    
+                    // Update current_mark in case new elements were added
+                    let new_current_mark = self.ans.len();
+                    if new_current_mark > current_mark {
+                        current_mark = new_current_mark;
+                        // Need to recreate incrementor with new bounds
+                        // But for now, continue with existing bounds
+                        // (Java doesn't recreate incrementor mid-loop)
                     }
                 }
             }
@@ -497,7 +566,7 @@ mod tests {
         let gen3 = IntArray::from_array(vec![1, 0]).unwrap();
         
         let generators = vec![gen1, gen2, gen3];
-        let mut closer = Closer::<i32>::new_safe(algebra, generators).unwrap();
+        let closer = Closer::<i32>::new_safe(algebra, generators).unwrap();
         
         // Should have 2 generators after removing duplicates
         assert_eq!(closer.get_generators().len(), 2);

@@ -41,6 +41,7 @@ pub fn register_malcev_functions(_py: Python, m: &Bound<'_, PyModule>) -> PyResu
     m.add_function(wrap_pyfunction!(local_distributivity_level, m)?)?;
     m.add_function(wrap_pyfunction!(day_quadruple, m)?)?;
     m.add_function(wrap_pyfunction!(find_day_quadruple_in_square, m)?)?;
+    m.add_function(wrap_pyfunction!(sd_meet_idempotent, m)?)?;
     m.add_function(wrap_pyfunction!(cyclic_term_idempotent, m)?)?;
 
     Ok(())
@@ -295,10 +296,13 @@ fn weak_3_edge_term(_algebra: PyObject) -> PyResult<Option<PyObject>> {
 /// * `algebra` - The idempotent algebra to check
 ///
 /// # Returns
-/// True if congruence distributive, False otherwise
+/// True if the algebra is congruence distributive, False otherwise
 #[pyfunction]
-fn is_congruence_dist_idempotent(_algebra: PyObject) -> PyResult<bool> {
-    Err(PyValueError::new_err("Congruence distributivity test not yet implemented"))
+fn is_congruence_dist_idempotent(algebra: &PyBasicSmallAlgebra) -> PyResult<bool> {
+    match malcev::is_congruence_dist_idempotent(&algebra.inner) {
+        Ok(result) => Ok(result),
+        Err(e) => Err(PyValueError::new_err(e)),
+    }
 }
 
 /// Test if an idempotent algebra is congruence modular.
@@ -365,6 +369,22 @@ fn local_distributivity_level(_a: usize, _b: usize, _c: usize, _algebra: PyObjec
 #[pyfunction]
 fn find_day_quadruple_in_square(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<Vec<usize>>> {
     match malcev::find_day_quadruple_in_square(&algebra.inner) {
+        Ok(Some(coords)) => Ok(Some(coords)),
+        Ok(None) => Ok(None),
+        Err(e) => Err(PyValueError::new_err(e)),
+    }
+}
+
+/// Find a witness for SD-meet failure in an idempotent algebra.
+///
+/// # Arguments
+/// * `algebra` - The idempotent algebra to check
+///
+/// # Returns
+/// A tuple [x, y] if a witness is found, None otherwise
+#[pyfunction]
+fn sd_meet_idempotent(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<Vec<usize>>> {
+    match malcev::sd_meet_idempotent(&algebra.inner) {
         Ok(Some(coords)) => Ok(Some(coords)),
         Ok(None) => Ok(None),
         Err(e) => Err(PyValueError::new_err(e)),

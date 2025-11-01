@@ -16,12 +16,12 @@ num-traits = "0.2"
 quick-xml = "0.31"
 # Test infrastructure dependencies
 tempfile = "3.0"
-tokio = { version = "1.0", features = ["full"], optional = true }
+tokio = { version = "1.0", features = ["full"] }
 thiserror = "1.0"
 
 [features]
 default = ["test-infrastructure"]
-test-infrastructure = ["tokio"]
+test-infrastructure = []
 
 [dev-dependencies]
 # Test dependencies

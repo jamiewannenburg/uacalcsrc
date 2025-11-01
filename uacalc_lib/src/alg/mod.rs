@@ -56,6 +56,7 @@ use crate::alg::conlat::type_finder::PyTypeFinder;
 use crate::alg::op::int_operation::PyIntOperation;
 use crate::alg::op::abstract_int_operation::PyAbstractIntOperation;
 use crate::alg::op::abstract_operation::PyAbstractOperationNew;
+use crate::alg::parallel::PyPool;
 
 pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     // Register classes internally but only export clean names
@@ -91,6 +92,7 @@ pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     m.add_class::<PyPolymorphisms>()?;
     m.add_class::<PySubtrace>()?;
     m.add_class::<PyTypeFinder>()?;
+    m.add_class::<PyPool>()?;
 
     // Export only clean names (without Py prefix)
     m.add("OperationSymbol", m.getattr("PyOperationSymbol")?)?;
@@ -124,6 +126,11 @@ pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     m.add("Polymorphisms", m.getattr("PyPolymorphisms")?)?;
     m.add("Subtrace", m.getattr("PySubtrace")?)?;
     m.add("TypeFinder", m.getattr("PyTypeFinder")?)?;
+    m.add("Pool", m.getattr("PyPool")?)?;
+    
+    // Remove the Py* names from the module to avoid confusion
+    let module_dict = m.dict();
+    module_dict.del_item("PyPool")?;
 
     // Register malcev module-level functions
     malcev::register_malcev_functions(_py, m)?;

@@ -97,6 +97,18 @@ public class MalcevWrapper extends WrapperBase {
                 handleIsCongruenceModular(options);
                 break;
                 
+            case "is_congruence_modular_idempotent":
+                handleIsCongruenceModularIdempotent(options);
+                break;
+                
+            case "is_congruence_dist_idempotent":
+                handleIsCongruenceDistIdempotent(options);
+                break;
+                
+            case "sd_meet_idempotent":
+                handleSdMeetIdempotent(options);
+                break;
+                
             default:
                 handleError("Unknown command: " + command, null);
         }
@@ -348,6 +360,63 @@ public class MalcevWrapper extends WrapperBase {
     }
     
     /**
+     * Test if an idempotent algebra is congruence modular.
+     */
+    private void handleIsCongruenceModularIdempotent(Map<String, String> options) throws Exception {
+        String algebraPath = getRequiredArg(options, "algebra");
+        
+        SmallAlgebra alg = loadAlgebra(algebraPath);
+        boolean isModular = Malcev.isCongruenceModularIdempotent(alg, null);
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("command", "is_congruence_modular_idempotent");
+        result.put("algebra", alg.getName());
+        result.put("is_modular", isModular);
+        
+        handleSuccess(result);
+    }
+    
+    /**
+     * Test if an idempotent algebra is congruence distributive.
+     */
+    private void handleIsCongruenceDistIdempotent(Map<String, String> options) throws Exception {
+        String algebraPath = getRequiredArg(options, "algebra");
+        
+        SmallAlgebra alg = loadAlgebra(algebraPath);
+        boolean isDist = Malcev.isCongruenceDistIdempotent(alg, null);
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("command", "is_congruence_dist_idempotent");
+        result.put("algebra", alg.getName());
+        result.put("is_distributive", isDist);
+        
+        handleSuccess(result);
+    }
+    
+    /**
+     * Find a witness for SD-meet failure in an idempotent algebra.
+     */
+    private void handleSdMeetIdempotent(Map<String, String> options) throws Exception {
+        String algebraPath = getRequiredArg(options, "algebra");
+        
+        SmallAlgebra alg = loadAlgebra(algebraPath);
+        org.uacalc.util.IntArray witness = Malcev.sdMeetIdempotent(alg, null);
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("command", "sd_meet_idempotent");
+        result.put("algebra", alg.getName());
+        
+        if (witness != null) {
+            result.put("witness_found", true);
+            result.put("witness", witness.toArray());
+        } else {
+            result.put("witness_found", false);
+        }
+        
+        handleSuccess(result);
+    }
+    
+    /**
      * Load an algebra from a file.
      */
     private SmallAlgebra loadAlgebra(String path) throws Exception {
@@ -370,7 +439,10 @@ public class MalcevWrapper extends WrapperBase {
             "semilattice_term --algebra <path> - Find a semilattice term",
             "difference_term --algebra <path> - Find a difference term",
             "jonsson_terms --algebra <path> - Find Jonsson terms",
-            "is_congruence_modular --algebra <path> - Test if variety is congruence modular"
+            "is_congruence_modular --algebra <path> - Test if variety is congruence modular",
+            "is_congruence_modular_idempotent --algebra <path> - Test if idempotent algebra is congruence modular",
+            "is_congruence_dist_idempotent --algebra <path> - Test if idempotent algebra is congruence distributive",
+            "sd_meet_idempotent --algebra <path> - Find SD-meet failure witness for idempotent algebra"
         };
         
         showUsage("Malcev", 

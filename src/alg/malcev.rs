@@ -793,7 +793,117 @@ where
     Err("Weak 3-edge term finding not yet implemented".to_string())
 }
 
+/// Find a witness for SD-meet failure in an idempotent algebra.
+///
+/// Uses Theorem 4.3 of Freese-Valeriote to test if the variety is congruence SD-meet.
+/// Returns coordinates [x, y] witnessing the failure, or None if SD-meet holds.
+///
+/// # Arguments
+/// * `alg` - The idempotent algebra to check
+///
+/// # Returns
+/// * `Ok(Some([x, y]))` - Found witness for SD-meet failure
+/// * `Ok(None)` - No failure found (SD-meet holds)
+/// * `Err(String)` - If there's an error during computation
+pub fn sd_meet_idempotent<T>(
+    alg: &dyn SmallAlgebra<UniverseItem = T>,
+) -> Result<Option<Vec<usize>>, String>
+where
+    T: Clone + std::fmt::Debug + std::fmt::Display + std::hash::Hash + Eq + Send + Sync + 'static,
+{
+    let n = alg.cardinality() as usize;
+    
+    // Convert to i32 algebra
+    let card = alg.cardinality();
+    let ops = alg.operations();
+    let universe_set: HashSet<i32> = (0..card).collect();
+    let i32_alg = BasicSmallAlgebra::new(
+        alg.name().to_string(),
+        universe_set,
+        ops,
+    );
+    
+    // Create BigProductAlgebra A^2
+    let alg_boxed: Box<dyn SmallAlgebra<UniverseItem = i32>> = Box::new(i32_alg);
+    let sq = BigProductAlgebra::new_power_safe(alg_boxed, 2)?;
+    
+    // Loop through all pairs (x, y) with x ≠ y
+    for x in 0..n {
+        for y in 0..n {
+            if x == y {
+                continue;
+            }
+            
+            // Create generators:
+            // a = (x, x)
+            // b = (x, y)
+            // c = (y, x)
+            let a_arr = IntArray::from_array(vec![x as i32, x as i32])?;
+            let b_arr = IntArray::from_array(vec![x as i32, y as i32])?;
+            let c_arr = IntArray::from_array(vec![y as i32, x as i32])?;
+            
+            let gens = vec![a_arr.clone(), b_arr.clone(), c_arr.clone()];
+            
+            // Create SubProductAlgebra
+            let mut sub = crate::alg::SubProductAlgebra::new_safe(
+                "SDMeetSub".to_string(),
+                sq.clone(),
+                gens,
+                false,
+            )?;
+            
+            sub.make_operation_tables();
+            
+            // Get element indices
+            let a_index = sub.element_index(&a_arr).ok_or_else(|| {
+                format!("Element a = [{}, {}] not found in subalgebra", x, x)
+            })?;
+            let b_index = sub.element_index(&b_arr).ok_or_else(|| {
+                format!("Element b = [{}, {}] not found in subalgebra", x, y)
+            })?;
+            let c_index = sub.element_index(&c_arr).ok_or_else(|| {
+                format!("Element c = [{}, {}] not found in subalgebra", y, x)
+            })?;
+            
+            // Create congruence lattice
+            use crate::alg::SmallAlgebraWrapper;
+            let alg_box = Box::new(sub.clone()) as Box<dyn SmallAlgebra<UniverseItem = IntArray>>;
+            let wrapper = Box::new(SmallAlgebraWrapper::<IntArray>::new(alg_box));
+            let mut con_lat = crate::alg::conlat::CongruenceLattice::<IntArray>::new(wrapper);
+            
+            // Compute congruences:
+            // alpha = Cg(a, c)
+            let alpha = con_lat.cg(a_index, c_index);
+            
+            // beta = Cg(a, b)
+            let beta = con_lat.cg(a_index, b_index);
+            
+            // gamma = Cg(b, c)
+            let gamma = con_lat.cg(b_index, c_index);
+            
+            // Check if !((((alpha ∧ beta) ∨ gamma) ∧ alpha) ∨ beta).isRelated(a, c)
+            // This is: !((alpha ∧ beta).join(gamma).meet(alpha).join(beta)).isRelated(a, c)
+            let alpha_meet_beta = alpha.meet(&beta)?;
+            let alpha_beta_join_gamma = alpha_meet_beta.join(&gamma)?;
+            let join_meet_alpha = alpha_beta_join_gamma.meet(&alpha)?;
+            let final_join = join_meet_alpha.join(&beta)?;
+            
+            if !final_join.is_related(a_index, c_index) {
+                // Found a witness for SD-meet failure
+                return Ok(Some(vec![x, y]));
+            }
+        }
+    }
+    
+    Ok(None)
+}
+
 /// Test if an idempotent algebra is congruence distributive.
+///
+/// Uses the polynomial-time algorithm from Freese-Valeriote:
+/// 1. Check for a Day quadruple (non-modularity witness)
+/// 2. Check for SD-meet failure
+/// Returns true only if both checks pass (no Day quadruple AND SD-meet holds).
 ///
 /// # Arguments
 /// * `alg` - The idempotent algebra to check
@@ -806,8 +916,30 @@ pub fn is_congruence_dist_idempotent<T>(alg: &dyn SmallAlgebra<UniverseItem = T>
 where
     T: Clone + std::fmt::Debug + std::fmt::Display + std::hash::Hash + Eq + Send + Sync + 'static
 {
-    // TODO: Implement congruence distributivity test for idempotent algebras
-    Err("Congruence distributivity test not yet implemented".to_string())
+    // First check for Day quadruple (non-modularity)
+    match find_day_quadruple_in_square(alg) {
+        Ok(Some(_)) => {
+            // Day quadruple found = not modular = not distributive
+            return Ok(false);
+        }
+        Err(e) => return Err(e),
+        Ok(None) => {
+            // No Day quadruple, continue to SD-meet check
+        }
+    }
+    
+    // Check for SD-meet failure
+    match sd_meet_idempotent(alg) {
+        Ok(Some(_)) => {
+            // SD-meet failure found = not distributive
+            Ok(false)
+        }
+        Ok(None) => {
+            // No Day quadruple and SD-meet holds = distributive
+            Ok(true)
+        }
+        Err(e) => Err(e),
+    }
 }
 
 /// Find a Day quadruple in the square of the algebra.
@@ -830,13 +962,17 @@ where
     let n = alg.cardinality() as usize;
     
     // Convert to i32 algebra
+    // Note: We need to ensure operations work with i32 universe
+    // Java uses the algebra directly without conversion, but Rust needs i32 for BigProductAlgebra
     let card = alg.cardinality();
     let ops = alg.operations();
+    // Convert operations to use integer tables to ensure they work correctly
+    let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
     let universe_set: HashSet<i32> = (0..card).collect();
     let i32_alg = BasicSmallAlgebra::new(
         alg.name().to_string(),
         universe_set,
-        ops,
+        int_ops,
     );
     
     // Create BigProductAlgebra A^2
@@ -856,7 +992,12 @@ where
                     
                     let gens = vec![a_arr.clone(), b_arr.clone(), c_arr.clone(), d_arr.clone()];
                     
+                    // Debug: Check closure size before creating subalgebra
+                    let closure_before = sq.sg_close(gens.clone())?;
+                    eprintln!("DEBUG: Closure size for ({},{},{},{}) = {}", x0, x1, y0, y1, closure_before.len());
+                    
                     // Create SubProductAlgebra
+                    // Note: Java doesn't call makeOperationTables() before computing congruences
                     let mut sub = crate::alg::SubProductAlgebra::new_safe(
                         "SubSquare".to_string(),
                         sq.clone(),
@@ -864,8 +1005,7 @@ where
                         false,
                     )?;
                     
-                    // Make operation tables (may be needed for congruence computation)
-                    sub.make_operation_tables();
+                    eprintln!("DEBUG: SubProductAlgebra size after creation = {}", sub.cardinality());
                     
                     // Get element indices and check for Day quadruple
                     let a_index = sub.element_index(&a_arr).ok_or_else(|| {
@@ -881,13 +1021,11 @@ where
                         format!("Element d = [{}, {}] not found in subalgebra", y0, y1)
                     })?;
                     
-                    // Create congruence lattice from subalgebra for Day quadruple check
-                    use crate::alg::SmallAlgebraWrapper;
-                    let alg_box = Box::new(sub.clone()) as Box<dyn SmallAlgebra<UniverseItem = IntArray>>;
-                    let wrapper = Box::new(SmallAlgebraWrapper::<IntArray>::new(alg_box));
-                    let mut con_lat = crate::alg::conlat::CongruenceLattice::<IntArray>::new(wrapper);
+                    // Use sub.con() to get the cached congruence lattice (matches Java pattern exactly)
+                    // Java: alg.con().Cg(...) - con() returns a reference that can be used for Cg()
+                    let con_lat = sub.con();
                     
-                    // Compute the congruences:
+                    // Compute the congruences (Java: alg.con().Cg(...))
                     // cgcd = Cg(c, d)
                     let cgcd = con_lat.cg(c_index, d_index);
                     
@@ -900,18 +1038,25 @@ where
                     // cgbd = Cg(b, d)
                     let cgbd = con_lat.cg(b_index, d_index);
                     
-                    // cgab_cd = Cg(a,b) ∨ Cg(c,d)
+                    // cgab_cd = Cg(a,b) ∨ Cg(c,d)  (Java: alg.con().Cg(a,b).join(cgcd))
                     let cgab_cd = cgab.join(&cgcd)?;
                     
-                    // cgac_bd = Cg(a,c) ∨ Cg(b,d)
+                    // cgac_bd = Cg(a,c) ∨ Cg(b,d)  (Java: alg.con().Cg(a,c).join(alg.con().Cg(b,d)))
                     let cgac_bd = cgac.join(&cgbd)?;
                     
-                    // Check if Cg(c,d) ∨ (Cg(a,b)∨Cg(c,d)) ∧ (Cg(a,c)∨Cg(b,d)) does NOT relate a and b
+                    // Check Day quadruple condition: !cgcd.join(cgab_cd.meet(cgac_bd)).isRelated(a,b)
+                    // Java: return !cgcd.join(cgab_cd.meet(cgac_bd)).isRelated(a,b);
                     let meet_result = cgab_cd.meet(&cgac_bd)?;
                     let join_result = cgcd.join(&meet_result)?;
                     
-                    if !join_result.is_related(a_index, b_index) {
+                    let is_related = join_result.is_related(a_index, b_index);
+                    // Debug output (remove after fixing)
+                    eprintln!("DEBUG: x0={}, x1={}, y0={}, y1={}, a_idx={}, b_idx={}, c_idx={}, d_idx={}, is_related={}, sub_size={}", 
+                             x0, x1, y0, y1, a_index, b_index, c_index, d_index, is_related, sub.cardinality());
+                    
+                    if !is_related {
                         // Found a Day quadruple
+                        eprintln!("DEBUG: Found Day quadruple at ({},{},{},{})", x0, x1, y0, y1);
                         return Ok(Some(vec![x0, x1, y0, y1]));
                     }
                 }
@@ -1322,6 +1467,40 @@ mod tests {
         if let Ok(quad) = result {
             // Trivial algebra should not have a Day quadruple
             assert!(quad.is_none(), "Trivial algebra should not have a Day quadruple");
+        }
+    }
+
+    #[test]
+    fn test_sd_meet_idempotent_with_trivial_algebra() {
+        // Test with cardinality 1 algebra (should not find SD-meet failure)
+        let alg = BasicSmallAlgebra::new(
+            "TestAlgebra".to_string(),
+            HashSet::from([0]),
+            Vec::new()
+        );
+        
+        let result = sd_meet_idempotent(&alg);
+        assert!(result.is_ok(), "sd_meet_idempotent should not error");
+        if let Ok(witness) = result {
+            // Trivial algebra should not have SD-meet failure
+            assert!(witness.is_none(), "Trivial algebra should not have SD-meet failure");
+        }
+    }
+
+    #[test]
+    fn test_is_congruence_dist_idempotent_with_trivial_algebra() {
+        // Test with cardinality 1 algebra (should be CD)
+        let alg = BasicSmallAlgebra::new(
+            "TestAlgebra".to_string(),
+            HashSet::from([0]),
+            Vec::new()
+        );
+        
+        let result = is_congruence_dist_idempotent(&alg);
+        assert!(result.is_ok(), "is_congruence_dist_idempotent should not error");
+        if let Ok(is_cd) = result {
+            // Trivial algebra should be congruence distributive
+            assert!(is_cd, "Trivial algebra should be congruence distributive");
         }
     }
 }

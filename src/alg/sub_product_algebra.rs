@@ -419,8 +419,8 @@ where
     /// Get the congruence lattice (lazy initialization).
     /// 
     /// # Returns
-    /// A reference to the congruence lattice
-    pub fn con(&mut self) -> &crate::alg::conlat::CongruenceLattice<IntArray> {
+    /// A mutable reference to the congruence lattice
+    pub fn con(&mut self) -> &mut crate::alg::conlat::CongruenceLattice<IntArray> {
         if self.con.is_none() {
             // Create congruence lattice using the type-erased wrapper
             use crate::alg::SmallAlgebraWrapper;
@@ -430,7 +430,7 @@ where
             let wrapper = Box::new(SmallAlgebraWrapper::<IntArray>::new(alg_box));
             self.con = Some(Box::new(crate::alg::conlat::CongruenceLattice::<IntArray>::new(wrapper)));
         }
-        self.con.as_ref().unwrap()
+        self.con.as_mut().unwrap()
     }
     
     /// Get the subalgebra lattice (lazy initialization).
