@@ -112,7 +112,7 @@ def test_multiple_algebras():
 
 def test_tg_tolerance():
     """Test tolerance generation (tg method)."""
-    alg = BasicSmallAlgebra("TestAlg", [0, 1, 2])
+    alg = BasicSmallAlgebra.new_with_constant_op("TestAlg", [0, 1, 2])
     con_lat = CongruenceLattice(alg)
     
     # Generate tolerance for elements 0 and 1
@@ -196,7 +196,7 @@ def test_find_maximal_chain():
 
 def test_idempotent_polynomials():
     """Test idempotent_polynomials method."""
-    alg = BasicSmallAlgebra("TestAlg", [0, 1, 2])
+    alg = BasicSmallAlgebra.new_with_constant_op("TestAlg", [0, 1, 2])
     con_lat = CongruenceLattice(alg)
     
     polynomials = con_lat.idempotent_polynomials()
@@ -268,7 +268,7 @@ def test_generic_type_support():
 
 def test_error_handling():
     """Test error handling for invalid inputs"""
-    alg = BasicSmallAlgebra('TestAlg', [0,1,2,3])
+    alg = BasicSmallAlgebra.new_with_constant_op('TestAlg', [0,1,2,3])
     conlat = CongruenceLattice(alg)
     
     # Should not raise

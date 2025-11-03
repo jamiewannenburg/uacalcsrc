@@ -179,16 +179,32 @@ where
     // Get F(2) info before moving it
     let f2_cardinality = f2.cardinality();
     
+    // Get the generator elements from F(2) and find their indices in the universe
+    // The generators are the first two elements in F(2)'s universe
+    let f2_generators = f2.get_inner().generators();
+    if f2_generators.len() < 2 {
+        return Err("F(2) should have at least 2 generators".to_string());
+    }
+    
+    // Find the indices of the generators in F(2)'s universe
+    let gen_x = &f2_generators[0];
+    let gen_y = &f2_generators[1];
+    
+    let idx_x = f2.get_inner().element_index(gen_x)
+        .ok_or("Generator x not found in F(2) universe")? as i32;
+    let idx_y = f2.get_inner().element_index(gen_y)
+        .ok_or("Generator y not found in F(2) universe")? as i32;
+    
     // Create BigProductAlgebra (F(2)^3)
     let f2_boxed: Box<dyn SmallAlgebra<UniverseItem = IntArray>> = 
         Box::new(f2) as Box<dyn SmallAlgebra<UniverseItem = IntArray>>;
     let f2_cubed = BigProductAlgebra::new_power_safe(f2_boxed, 3)?;
     
     // Create generators: (x,x,y), (x,y,x), (y,x,x)
-    // Use indices 0 and 1 from F(2)'s universe
-    let g0 = IntArray::from_array(vec![0, 0, 1])?;  // (x,x,y)
-    let g1 = IntArray::from_array(vec![0, 1, 0])?;  // (x,y,x)
-    let g2 = IntArray::from_array(vec![1, 0, 0])?;  // (y,x,x)
+    // Use the actual indices of generators x and y from F(2)
+    let g0 = IntArray::from_array(vec![idx_x, idx_x, idx_y])?;  // (x,x,y)
+    let g1 = IntArray::from_array(vec![idx_x, idx_y, idx_x])?;  // (x,y,x)
+    let g2 = IntArray::from_array(vec![idx_y, idx_x, idx_x])?;  // (y,x,x)
     let gens = vec![g0.clone(), g1.clone(), g2.clone()];
     
     // Create term map
@@ -197,11 +213,8 @@ where
     term_map.insert(g1.clone(), Box::new(VariableImp::y()));
     term_map.insert(g2.clone(), Box::new(VariableImp::z()));
     
-    // The element we're looking for: (x,x,x) = [0,0,0]
-    let xxx = IntArray::from_array(vec![0, 0, 0])?;
-    
-    // DEBUG: Print information about the closure setup
-    use crate::util::int_array::IntArrayTrait;
+    // The element we're looking for: (x,x,x)
+    let xxx = IntArray::from_array(vec![idx_x, idx_x, idx_x])?;
     
     // Use Closer for term tracking during closure
     let mut closer = Closer::new_with_term_map_safe(
@@ -212,10 +225,6 @@ where
     closer.set_element_to_find(Some(xxx.clone()));
     
     let closure = closer.sg_close()?;
-    
-    for (i, elem) in closure.iter().enumerate() {
-        eprintln!("  [{}]: {:?}", i, elem.as_slice());
-    }
     
     if closure.contains(&xxx) {
         if let Some(term) = closer.get_term_map().and_then(|tm| tm.get(&xxx).map(|t| t.clone_box())) {

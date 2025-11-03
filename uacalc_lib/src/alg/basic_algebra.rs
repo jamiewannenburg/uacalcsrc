@@ -49,6 +49,33 @@ impl PyBasicSmallAlgebra {
         }
     }
 
+    /// Create a new BasicSmallAlgebra with a constant operation.
+    ///
+    /// Args:
+    ///     name (str): The name of the algebra
+    ///     universe (Set[int]): The universe set as a list of integers
+    ///
+    /// Returns:
+    ///     BasicSmallAlgebra: A new BasicSmallAlgebra instance with a constant operation
+    #[staticmethod]
+    fn new_with_constant_op(name: String, universe: Vec<i32>) -> PyResult<Self> {
+        let universe_set: std::collections::HashSet<i32> = universe.into_iter().collect();
+        let set_size = universe_set.len() as i32;
+        let mut operations = Vec::new();
+        
+        if set_size > 0 {
+            // Create a constant operation that returns 0
+            match uacalc::alg::op::ops::make_constant_int_operation(set_size, 0) {
+                Ok(op) => operations.push(op),
+                Err(e) => return Err(PyValueError::new_err(format!("Failed to create constant operation: {}", e))),
+            }
+        }
+        
+        Ok(PyBasicSmallAlgebra {
+            inner: uacalc::alg::BasicSmallAlgebra::new(name, universe_set, operations),
+        })
+    }
+
     /// Get the name of this algebra.
     ///
     /// Returns:
