@@ -1,5 +1,6 @@
 use uacalc::alg::{Algebra, SmallAlgebra, BasicSmallAlgebra, AlgebraType, UnaryTermsMonoid};
 use uacalc::alg::op::{Operation, OperationSymbol};
+use uacalc::alg::op::operations;
 use std::collections::HashSet;
 
 #[cfg(test)]
@@ -9,11 +10,17 @@ mod unary_terms_monoid_tests {
     /// Create a simple test algebra for testing
     fn create_test_algebra() -> Box<dyn SmallAlgebra<UniverseItem = i32>> {
         let universe: HashSet<i32> = (0..3).collect();
-        let operations = Vec::new();
+        // Add at least one operation (needed for closure computation)
+        let mut ops: Vec<Box<dyn Operation>> = Vec::new();
+        let const_sym = OperationSymbol::new("c", 0, false);
+        let const_op = operations::make_int_operation(const_sym, 3, vec![0])
+            .expect("Failed to create constant operation");
+        ops.push(const_op);
+        
         Box::new(BasicSmallAlgebra::new(
             "TestAlgebra".to_string(),
             universe,
-            operations,
+            ops,
         )) as Box<dyn SmallAlgebra<UniverseItem = i32>>
     }
 
@@ -22,7 +29,9 @@ mod unary_terms_monoid_tests {
         let alg = create_test_algebra();
         let monoid = UnaryTermsMonoid::new_safe(alg);
         
-        assert!(monoid.is_ok());
+        if let Err(e) = &monoid {
+            panic!("Failed to create UnaryTermsMonoid: {}", e);
+        }
         let monoid = monoid.unwrap();
         assert_eq!(monoid.algebra_type(), AlgebraType::UnaryTermsMonoid);
         assert!(monoid.name().contains("UnaryTerms"));

@@ -1,20 +1,34 @@
 use uacalc::alg::{SubProductAlgebra, BigProductAlgebra, SmallAlgebra, BasicSmallAlgebra};
+use uacalc::alg::op::{OperationSymbol, Operation};
+use uacalc::alg::op::operations;
 use uacalc::util::int_array::IntArray;
 use std::collections::HashSet;
 
 #[test]
 fn test_sub_product_algebra_sub_method() {
-    // Create two small algebras
+    // Create two small algebras with operations
+    let mut ops1: Vec<Box<dyn Operation>> = Vec::new();
+    let const_sym1 = OperationSymbol::new("c1", 0, false);
+    let const_op1 = operations::make_int_operation(const_sym1, 2, vec![0])
+        .expect("Failed to create constant operation");
+    ops1.push(const_op1);
+    
     let alg1 = Box::new(BasicSmallAlgebra::new(
         "A1".to_string(),
         HashSet::from([0, 1]),
-        Vec::new()
+        ops1
     )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
 
+    let mut ops2: Vec<Box<dyn Operation>> = Vec::new();
+    let const_sym2 = OperationSymbol::new("c2", 0, false);
+    let const_op2 = operations::make_int_operation(const_sym2, 3, vec![0])
+        .expect("Failed to create constant operation");
+    ops2.push(const_op2);
+    
     let alg2 = Box::new(BasicSmallAlgebra::new(
         "A2".to_string(),
         HashSet::from([0, 1, 2]),
-        Vec::new()
+        ops2
     )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
 
     // Create big product algebra
@@ -50,11 +64,17 @@ fn test_sub_product_algebra_sub_method() {
 
 #[test]
 fn test_sub_product_algebra_sub_with_single_factor() {
-    // Create a single small algebra
+    // Create a single small algebra with operations
+    let mut ops: Vec<Box<dyn Operation>> = Vec::new();
+    let const_sym = OperationSymbol::new("c", 0, false);
+    let const_op = operations::make_int_operation(const_sym, 3, vec![0])
+        .expect("Failed to create constant operation");
+    ops.push(const_op);
+    
     let alg = Box::new(BasicSmallAlgebra::new(
         "Single".to_string(),
         HashSet::from([0, 1, 2]),
-        Vec::new()
+        ops
     )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
 
     // Create big product algebra with single factor
@@ -81,17 +101,29 @@ fn test_sub_product_algebra_sub_with_single_factor() {
 
 #[test]
 fn test_sub_product_algebra_sub_with_terms() {
-    // Create two small algebras
+    // Create two small algebras with operations
+    let mut ops1: Vec<Box<dyn Operation>> = Vec::new();
+    let const_sym1 = OperationSymbol::new("c1", 0, false);
+    let const_op1 = operations::make_int_operation(const_sym1, 2, vec![0])
+        .expect("Failed to create constant operation");
+    ops1.push(const_op1);
+    
     let alg1 = Box::new(BasicSmallAlgebra::new(
         "A1".to_string(),
         HashSet::from([0, 1]),
-        Vec::new()
+        ops1
     )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
 
+    let mut ops2: Vec<Box<dyn Operation>> = Vec::new();
+    let const_sym2 = OperationSymbol::new("c2", 0, false);
+    let const_op2 = operations::make_int_operation(const_sym2, 2, vec![0])
+        .expect("Failed to create constant operation");
+    ops2.push(const_op2);
+    
     let alg2 = Box::new(BasicSmallAlgebra::new(
         "A2".to_string(),
         HashSet::from([0, 1]),
-        Vec::new()
+        ops2
     )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
 
     // Create big product algebra

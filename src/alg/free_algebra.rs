@@ -1030,15 +1030,31 @@ impl Hash for FreeAlgebra {
 mod tests {
     use super::*;
     use crate::alg::BasicSmallAlgebra;
+    use crate::alg::op::{OperationSymbol, Operation};
+    use crate::alg::op::operations;
     use std::collections::HashSet;
 
     fn create_test_algebra() -> Box<dyn SmallAlgebra<UniverseItem = i32>> {
         let universe = HashSet::from([0, 1, 2]);
-        let operations = Vec::new();
+        
+        // Create operations - FreeAlgebra needs at least one operation for closure computation
+        let mut ops: Vec<Box<dyn Operation>> = Vec::new();
+        
+        // Add a binary operation (e.g., addition mod 3)
+        let add_sym = OperationSymbol::new("add", 2, false);
+        let add_table = vec![
+            0, 1, 2,  // 0 + 0, 0 + 1, 0 + 2
+            1, 2, 0,  // 1 + 0, 1 + 1, 1 + 2
+            2, 0, 1,  // 2 + 0, 2 + 1, 2 + 2
+        ];
+        let add_op = operations::make_int_operation(add_sym, 3, add_table)
+            .expect("Failed to create operation");
+        ops.push(add_op);
+        
         Box::new(BasicSmallAlgebra::new(
             "Test".to_string(),
             universe,
-            operations,
+            ops,
         )) as Box<dyn SmallAlgebra<UniverseItem = i32>>
     }
 

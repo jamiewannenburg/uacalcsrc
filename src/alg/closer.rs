@@ -270,6 +270,34 @@ where
     /// // let closure = closer.sg_close()?;
     /// ```
     pub fn sg_close(&mut self) -> Result<Vec<IntArray>, String> {
+        // Check if algebra is a power algebra and use specialized path
+        // BUT: Only use specialized path if root algebra has integer elements
+        // (not IntArray elements like free algebras)
+        if self.algebra.is_power() {
+            // Check if root algebra has integer elements by checking its type
+            // SubProductAlgebra (like FreeAlgebra) has IntArray elements, so use generic path
+            let root_factors = self.algebra.root_factors();
+            if let Some(ref factors) = root_factors {
+                if !factors.is_empty() {
+                    let root_alg = &factors[0];
+                    // Check if root algebra is a SubProductAlgebra or FreeAlgebra
+                    // These have IntArray elements, so we need to use value_at_arrays instead of int_value_at
+                    match root_alg.algebra_type() {
+                        crate::alg::AlgebraType::Free | 
+                        crate::alg::AlgebraType::Subproduct => {
+                            // Root algebra has IntArray elements, use generic path
+                            return self.sg_close_impl(0);
+                        }
+                        _ => {
+                            // Root algebra likely has integer elements, try specialized path
+                            return self.sg_close_power_impl(0);
+                        }
+                    }
+                }
+            }
+            // Fall through to specialized path if we can't determine
+            return self.sg_close_power_impl(0);
+        }
         self.sg_close_impl(0)
     }
     
@@ -286,6 +314,12 @@ where
             report.add_start_line("subpower closing ...");
         }
         
+        // Check that algebra has operations
+        let operations = self.algebra.as_ref().operations();
+        if operations.is_empty() {
+            return Err("Algebra has no operations for closure computation".to_string());
+        }
+        
         // Initialize answer with generators
         self.ans = self.generators.clone();
         let mut su = HashSet::new();
@@ -295,7 +329,6 @@ where
         
         // Add constants if any
         // Get constants from algebra and add them
-        let operations = self.algebra.as_ref().operations();
         for op in &operations {
             if op.arity() == 0i32 {
                 // Evaluate the nullary operation to get the constant value
@@ -327,8 +360,6 @@ where
         // Main closure loop
         while closed_mark < current_mark {
             let status_str = format!("pass: {}, size: {}", pass, self.ans.len());
-            eprintln!("DEBUG_CLOSURE: Loop condition - closed_mark={}, current_mark={}, ans.len()={}", 
-                     closed_mark, current_mark, self.ans.len());
             
             if let Some(ref report) = self.report {
                 report.set_pass(pass);
@@ -353,7 +384,13 @@ where
             use crate::alg::Algebra;
             let operations = self.algebra.as_ref().operations();
             let num_ops = operations.len();
-            eprintln!("DEBUG_CLOSURE: Starting operations loop - num_ops={}", num_ops);
+            
+            // Verify we have operations
+            if num_ops == 0 {
+                eprintln!("WARNING: No operations available for closure computation");
+                break;
+            }
+            
             
             for i in 0..num_ops {
                 if i >= operations.len() {
@@ -362,10 +399,8 @@ where
                 
                 let op = &operations[i];
                 let arity = op.arity();
-                eprintln!("DEBUG_CLOSURE: Processing op {} (index {}), arity={}", op.symbol(), i, arity);
                 
                 if arity == 0 {
-                    eprintln!("DEBUG_CLOSURE: Skipping nullary operation {}", op.symbol());
                     continue; // Skip nullary operations (constants handled separately)
                 }
                 
@@ -381,8 +416,6 @@ where
                 use crate::util::SequenceGenerator;
                 let current_mark_i32 = current_mark as i32;
                 let closed_mark_i32 = closed_mark as i32;
-                eprintln!("DEBUG_CLOSURE: Creating incrementor for op {}, arity={}, closed_mark={}, current_mark={}, max={}", 
-                         op.symbol(), arity, closed_mark, current_mark, current_mark_i32 - 1);
                 // Java uses sequenceIncrementor(array, currentMark-1, closedMark)
                 // But Rust's sequence_incrementor only takes 2 params, so we'll use sequence_incrementor_with_min
                 let mut inc = SequenceGenerator::sequence_incrementor_with_min(
@@ -428,23 +461,17 @@ where
                             .collect();
                         
                         let args_str: Vec<String> = args.iter().map(|a| format!("{:?}", a.as_slice())).collect();
-                        eprintln!("DEBUG_CLOSURE: Applying op {} with args {:?} (indices {:?})", 
-                                 op.symbol(), args_str, indices);
+                        
                         
                         // For product algebras, use value_at_arrays which returns an array
                         match op.value_at_arrays(&arg_refs) {
                             Ok(result_arr) => {
-                                eprintln!("DEBUG_CLOSURE: value_at_arrays returned {:?}", result_arr);
                                 if let Ok(result_ia) = IntArray::from_array(result_arr) {
                                     let was_new = su.insert(result_ia.clone());
-                                    eprintln!("DEBUG_CLOSURE: Result {:?} was_new={}, current_size={}", 
-                                             result_ia.as_slice(), was_new, self.ans.len());
                                     // Check if it's new
                                     if was_new {
                                         // New element found - add to closure
                                         self.ans.push(result_ia.clone());
-                                        eprintln!("DEBUG_CLOSURE: Added new element {:?}, closure size now {}", 
-                                                 result_ia.as_slice(), self.ans.len());
                                         
                                         // Add to term map if it exists
                                         if let Some(ref mut term_map) = self.term_map {
@@ -492,8 +519,6 @@ where
                     
                     // Increment for next iteration
                     if !inc.increment() {
-                        eprintln!("DEBUG_CLOSURE: Exhausted all combinations for op {}, processed {} combinations", 
-                                 op.symbol(), combination_count);
                         break; // All combinations exhausted
                     }
                 }
@@ -503,16 +528,290 @@ where
             let old_current_mark = current_mark;
             closed_mark = current_mark;
             current_mark = self.ans.len();
-            eprintln!("DEBUG_CLOSURE: End of pass - closed_mark: {} -> {}, current_mark: {} -> {}, ans.len()={}, will_continue={}", 
-                     old_closed_mark, closed_mark, old_current_mark, current_mark, self.ans.len(), 
-                     closed_mark < current_mark);
         }
         
-        eprintln!("DEBUG_CLOSURE: Exiting closure loop - final size={}", self.ans.len());
         
         if let Some(ref report) = self.report {
             report.add_end_line(&format!("closing done, size = {}", self.ans.len()));
         }
+        
+        // Sort universe lexicographically to match Java's ordering
+        // This ensures deterministic element-to-index mapping
+        self.ans.sort();
+        
+        self.completed = true;
+        Ok(self.ans.clone())
+    }
+    
+    /// Specialized closure computation for power algebras.
+    /// 
+    /// This matches Java's `sgClosePower` method and uses direct table access
+    /// for faster computation on power algebras.
+    /// 
+    /// # Arguments
+    /// * `closed_mark` - The index up to which elements are already closed
+    /// 
+    /// # Returns
+    /// * `Ok(Vec<IntArray>)` - The closure
+    /// * `Err(String)` - If computation fails
+    fn sg_close_power_impl(&mut self, closed_mark: usize) -> Result<Vec<IntArray>, String> {
+        if let Some(ref report) = self.report {
+            report.add_start_line("subpower closing ...");
+        }
+        
+        // Get root algebra from power algebra
+        let root_factors = self.algebra.root_factors()
+            .ok_or("Power algebra should have root factors".to_string())?;
+        if root_factors.is_empty() {
+            return Err("Power algebra has no root factors".to_string());
+        }
+        let root_alg = &root_factors[0];
+        
+        let alg_size = root_alg.cardinality();
+        
+        // Make sure operation tables are created (matching Java: alg.makeOperationTables())
+        // We can't mutate root_alg directly, but we can check if operations need tables
+        let root_ops = root_alg.operations();
+        let k = root_ops.len();
+        
+        // DEBUG: Check operations from both root and power algebra
+        let power_ops = self.algebra.operations();
+        
+        if k == 0 {
+            return Err("Root algebra has no operations".to_string());
+        }
+        
+        // Get operation tables - try to ensure tables exist
+        // Note: We can't mutate operations directly, but we check if they have tables
+        let mut op_tables: Vec<Option<&[i32]>> = Vec::with_capacity(k);
+        let mut arities = Vec::with_capacity(k);
+        let mut symbols = Vec::with_capacity(k);
+        
+        for i in 0..k {
+            let op = &root_ops[i];
+            let table = op.get_table();
+            arities.push(op.arity());
+            symbols.push(op.symbol().clone());
+            
+            op_tables.push(table);
+        }
+        
+        let power = self.algebra.get_number_of_factors();
+        
+        // Initialize answer with generators
+        self.ans = self.generators.clone();
+        let mut raw_list: Vec<Vec<i32>> = Vec::new();
+        for arr in &self.ans {
+            raw_list.push(arr.as_slice().to_vec());
+        }
+        let mut su = HashSet::new();
+        for ia in &self.ans {
+            su.insert(ia.clone());
+        }
+        
+        // Add constants if any
+        // Compute constants by evaluating nullary operations (since we have Arc, not &mut)
+        let mut constants_vec = Vec::new();
+        let ops = self.algebra.operations();
+        for op in ops {
+            if op.arity() == 0 {
+                match op.value_at_arrays(&[]) {
+                    Ok(vals) => {
+                        if let Ok(ia) = IntArray::from_array(vals) {
+                            constants_vec.push(ia);
+                        }
+                    }
+                    Err(e) => {
+                        eprintln!("DEBUG_CLOSURE_POWER: Error evaluating nullary op {}: {}", op.symbol().name(), e);
+                    }
+                }
+            }
+        }
+        
+        for arr in &constants_vec {
+            if su.insert(arr.clone()) {
+                self.ans.push(arr.clone());
+                raw_list.push(arr.as_slice().to_vec());
+                if let Some(ref mut term_map) = self.term_map {
+                    if let Some(ref c2s) = self.algebra.constant_to_symbol {
+                        if let Some(symbol) = c2s.get(arr) {
+                            let constant_term = Box::new(NonVariableTerm::make_constant_term(symbol.clone())) as Box<dyn Term>;
+                            term_map.insert(arr.clone(), constant_term);
+                        }
+                    }
+                }
+            }
+        }
+        
+        let mut current_mark = self.ans.len();
+        let mut pass = 0;
+        let mut closed_mark = closed_mark;
+        
+        // Main closure loop
+        while closed_mark < current_mark {
+            let status_str = format!("pass: {}, size: {}", pass, self.ans.len());
+            
+            if let Some(ref report) = self.report {
+                report.set_pass(pass);
+                report.set_pass_size(self.ans.len());
+                if !self.suppress_output {
+                    report.add_line(&status_str);
+                }
+            } else if !self.suppress_output {
+                println!("{}", status_str);
+            }
+            
+            if let Some(max_size) = self.max_size {
+                if self.ans.len() >= max_size {
+                    break;
+                }
+            }
+            
+            pass += 1;
+            
+            // Apply operations to expand the closure
+            use crate::util::SequenceGenerator;
+            
+            // Ensure we have operations to process
+            if k == 0 {
+                eprintln!("DEBUG_CLOSURE_POWER: WARNING - No operations to process!");
+                break;
+            }
+            
+            for i in 0..k {
+                let arity = arities[i] as usize;
+                if arity == 0 {
+                    continue; // Skip nullary operations
+                }
+                
+                let op_table = op_tables[i].as_ref();
+                let root_op = &root_ops[i];
+                
+                // Generate argument combinations
+                let mut arg_indices = vec![0i32; arity];
+                if arity > 0 {
+                    arg_indices[arity - 1] = closed_mark as i32;
+                }
+                
+                let current_mark_i32 = current_mark as i32;
+                let closed_mark_i32 = closed_mark as i32;
+                let mut inc = SequenceGenerator::sequence_incrementor_with_min(
+                    &mut arg_indices,
+                    current_mark_i32 - 1,
+                    closed_mark_i32,
+                );
+                
+                let mut combo_count = 0;
+                loop {
+                    let indices = inc.get_current();
+                    combo_count += 1;
+                    
+                    // DEBUG: Print first few combinations
+                    if combo_count <= 10 {
+                        if indices.len() == arity && indices.iter().all(|&idx| (idx as usize) < raw_list.len()) {
+                            let arg_values: Vec<Vec<i32>> = indices.iter().map(|&idx| raw_list[idx as usize].clone()).collect();
+                        }
+                    }
+                    
+                    // Compute result componentwise
+                    let mut v_raw = vec![0; power];
+                    
+                    if let Some(table) = op_table {
+                        // Fast path: use table directly with Horner encoding
+                        for j in 0..power {
+                            let mut factor = alg_size;
+                            let mut index = raw_list[indices[0] as usize][j];
+                            
+                            for r in 1..arity {
+                                index += factor * raw_list[indices[r] as usize][j];
+                                factor *= alg_size;
+                            }
+                            
+                            
+                            if (index as usize) < table.len() {
+                                v_raw[j] = table[index as usize];
+                            } else {
+                                return Err(format!("Table index {} out of bounds for table size {}", index, table.len()));
+                            }
+                        }
+                    } else {
+                        // Fallback: use int_value_at (when table is not available)
+                        for j in 0..power {
+                            let mut arg = vec![0; arity];
+                            for r in 0..arity {
+                                arg[r] = raw_list[indices[r] as usize][j];
+                            }
+                            
+                            
+                            match root_op.int_value_at(&arg) {
+                                Ok(val) => {
+                                    v_raw[j] = val;
+                                },
+                                Err(e) => {
+                                    eprintln!("WARNING: Operation {} int_value_at failed: {}", symbols[i].name(), e);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    
+                    if let Ok(v) = IntArray::from_array(v_raw) {
+                        if su.insert(v.clone()) {
+                            self.ans.push(v.clone());
+                            raw_list.push(v.as_slice().to_vec());
+                            
+                            // Add to term map if it exists
+                            if let Some(ref mut term_map) = self.term_map {
+                                let mut children = Vec::new();
+                                for &idx in &indices {
+                                    let idx_usize = idx as usize;
+                                    if idx_usize < self.ans.len() - 1 {
+                                        if let Some(term) = term_map.get(&self.ans[idx_usize]) {
+                                            children.push(term.clone_box());
+                                        }
+                                    }
+                                }
+                                let symbol = symbols[i].clone();
+                                let new_term = Box::new(NonVariableTerm::new(symbol, children)) as Box<dyn Term>;
+                                term_map.insert(v.clone(), new_term);
+                            }
+                            
+                            // Check if we found the element we're looking for
+                            if let Some(ref elt_to_find) = self.elt_to_find {
+                                if v == *elt_to_find {
+                                    return Ok(self.ans.clone());
+                                }
+                            }
+                            
+                            // Check max size
+                            if let Some(max_size) = self.max_size {
+                                if self.ans.len() >= max_size {
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Increment for next iteration
+                    if !inc.increment() {
+                        break;
+                    }
+                }
+            }
+            
+            let old_closed_mark = closed_mark;
+            let old_current_mark = current_mark;
+            closed_mark = current_mark;
+            current_mark = self.ans.len();
+        }
+        
+        if let Some(ref report) = self.report {
+            report.add_end_line(&format!("closing done, size = {}", self.ans.len()));
+        }
+        
+        // Sort universe lexicographically to match Java's ordering
+        // This ensures deterministic element-to-index mapping
+        self.ans.sort();
         
         self.completed = true;
         Ok(self.ans.clone())
@@ -725,6 +1024,10 @@ where
         if let Some(ref report) = self.report {
             report.add_end_line(&format!("closing done, size = {}", self.ans.len()));
         }
+        
+        // Sort universe lexicographically to match Java's ordering
+        // This ensures deterministic element-to-index mapping
+        self.ans.sort();
         
         self.completed = true;
         Ok(self.ans.clone())

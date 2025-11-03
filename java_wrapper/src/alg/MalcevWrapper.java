@@ -109,6 +109,26 @@ public class MalcevWrapper extends WrapperBase {
                 handleSdMeetIdempotent(options);
                 break;
                 
+            case "find_day_quadruple_in_square":
+                handleFindDayQuadrupleInSquare(options);
+                break;
+                
+            case "sd_terms":
+                handleSdTerms(options);
+                break;
+                
+            case "markovic_mckenzie_siggers_taylor_term":
+                handleMarkovicMcKenzieSiggersTaylorTerm(options);
+                break;
+                
+            case "join_term":
+                handleJoinTerm(options);
+                break;
+                
+            case "jonsson_level":
+                handleJonssonLevel(options);
+                break;
+                
             default:
                 handleError("Unknown command: " + command, null);
         }
@@ -417,6 +437,132 @@ public class MalcevWrapper extends WrapperBase {
     }
     
     /**
+     * Find a Day quadruple in the square of the algebra.
+     */
+    private void handleFindDayQuadrupleInSquare(Map<String, String> options) throws Exception {
+        String algebraPath = getRequiredArg(options, "algebra");
+        
+        SmallAlgebra alg = loadAlgebra(algebraPath);
+        org.uacalc.util.IntArray quadruple = Malcev.findDayQuadrupleInSquare(alg, null);
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("command", "find_day_quadruple_in_square");
+        result.put("algebra", alg.getName());
+        
+        if (quadruple != null) {
+            result.put("quadruple_found", true);
+            int[] coords = quadruple.toArray();
+            // Day quadruple is [x0, x1, y0, y1]
+            if (coords.length == 4) {
+                Map<String, Object> data = new HashMap<>();
+                data.put("x0", coords[0]);
+                data.put("x1", coords[1]);
+                data.put("y0", coords[2]);
+                data.put("y1", coords[3]);
+                result.put("data", data);
+            }
+            result.put("quadruple", coords);
+        } else {
+            result.put("quadruple_found", false);
+        }
+        
+        handleSuccess(result);
+    }
+    
+    /**
+     * Find SD (semidistributive) terms for the algebra.
+     */
+    private void handleSdTerms(Map<String, String> options) throws Exception {
+        String algebraPath = getRequiredArg(options, "algebra");
+        
+        SmallAlgebra alg = loadAlgebra(algebraPath);
+        List<Term> terms = Malcev.sdTerms(alg, null);
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("command", "sd_terms");
+        result.put("algebra", alg.getName());
+        
+        if (terms != null && !terms.isEmpty()) {
+            result.put("terms_found", true);
+            result.put("count", terms.size());
+            
+            List<String> termStrings = new ArrayList<>();
+            for (Term term : terms) {
+                termStrings.add(term.toString());
+            }
+            result.put("terms", termStrings);
+        } else {
+            result.put("terms_found", false);
+            result.put("count", 0);
+        }
+        
+        handleSuccess(result);
+    }
+    
+    /**
+     * Find a Markovic-McKenzie-Siggers-Taylor term for the algebra.
+     */
+    private void handleMarkovicMcKenzieSiggersTaylorTerm(Map<String, String> options) throws Exception {
+        String algebraPath = getRequiredArg(options, "algebra");
+        
+        SmallAlgebra alg = loadAlgebra(algebraPath);
+        Term term = Malcev.markovicMcKenzieSiggersTaylorTerm(alg);
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("command", "markovic_mckenzie_siggers_taylor_term");
+        result.put("algebra", alg.getName());
+        
+        if (term != null) {
+            result.put("term_found", true);
+            result.put("term", term.toString());
+        } else {
+            result.put("term_found", false);
+        }
+        
+        handleSuccess(result);
+    }
+    
+    /**
+     * Find a join term for the algebra.
+     */
+    private void handleJoinTerm(Map<String, String> options) throws Exception {
+        String algebraPath = getRequiredArg(options, "algebra");
+        
+        SmallAlgebra alg = loadAlgebra(algebraPath);
+        Term term = Malcev.joinTerm(alg);
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("command", "join_term");
+        result.put("algebra", alg.getName());
+        
+        if (term != null) {
+            result.put("term_found", true);
+            result.put("term", term.toString());
+        } else {
+            result.put("term_found", false);
+        }
+        
+        handleSuccess(result);
+    }
+    
+    /**
+     * Compute the Jonsson level for the algebra.
+     */
+    private void handleJonssonLevel(Map<String, String> options) throws Exception {
+        String algebraPath = getRequiredArg(options, "algebra");
+        
+        SmallAlgebra alg = loadAlgebra(algebraPath);
+        int level = Malcev.jonssonLevel(alg);
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("command", "jonsson_level");
+        result.put("algebra", alg.getName());
+        result.put("level", level);
+        
+        handleSuccess(result);
+    }
+    
+    /**
      * Load an algebra from a file.
      */
     private SmallAlgebra loadAlgebra(String path) throws Exception {
@@ -442,7 +588,12 @@ public class MalcevWrapper extends WrapperBase {
             "is_congruence_modular --algebra <path> - Test if variety is congruence modular",
             "is_congruence_modular_idempotent --algebra <path> - Test if idempotent algebra is congruence modular",
             "is_congruence_dist_idempotent --algebra <path> - Test if idempotent algebra is congruence distributive",
-            "sd_meet_idempotent --algebra <path> - Find SD-meet failure witness for idempotent algebra"
+            "sd_meet_idempotent --algebra <path> - Find SD-meet failure witness for idempotent algebra",
+            "find_day_quadruple_in_square --algebra <path> - Find a Day quadruple in the square of the algebra",
+            "sd_terms --algebra <path> - Find SD (semidistributive) terms",
+            "markovic_mckenzie_siggers_taylor_term --algebra <path> - Find a Markovic-McKenzie-Siggers-Taylor term",
+            "join_term --algebra <path> - Find a join term",
+            "jonsson_level --algebra <path> - Compute the Jonsson level"
         };
         
         showUsage("Malcev", 

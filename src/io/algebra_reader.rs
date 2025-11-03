@@ -438,6 +438,17 @@ impl AlgebraParser {
                 let arity = self.arity;
                 let cardinality = self.cardinality;
                 
+                // Validate inputs before processing
+                if cardinality <= 0 {
+                    return Err(format!("Invalid cardinality {} for operation {}", cardinality, op_name));
+                }
+                if arity < 0 {
+                    return Err(format!("Invalid arity {} for operation {}", arity, op_name));
+                }
+                if self.int_array.is_empty() {
+                    return Err(format!("Empty operation table for operation {}", op_name));
+                }
+                
                 // Apply left-right reverse transformation as in Java
                 let transformed_table = Horner::left_right_reverse(
                     &self.int_array, 

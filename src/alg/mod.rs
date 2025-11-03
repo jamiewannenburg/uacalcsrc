@@ -2402,13 +2402,47 @@ impl UnaryTermsMonoid {
         // Get the universe order map for lookups
         let univ_order = self.free_algebra.get_inner().get_universe_order();
         
-        let mut table = vec![vec![0; m]; m];
-        let mut tmp = vec![0; n as usize];
+        // Build a mapping from free algebra universe index to monoid term index
+        // Since unary_term_list is built from free_algebra.get_inner().terms in order,
+        // and free algebra's terms and universe are in the same order, we can build
+        // the mapping by evaluating each term to get its element
+        let mut free_to_monoid_map: HashMap<usize, usize> = HashMap::new();
         
-        // Wrap the generating algebra in an Arc for term operations
+        // Wrap the generating algebra in an Arc for term operations (reused later)
         use crate::alg::SmallAlgebraWrapper;
         let wrapper = SmallAlgebraWrapper::new(self.generating_algebra.clone_box());
         let alg_arc = Arc::new(wrapper);
+        
+        // For each term in unary_term_list, compute its element and find its index
+        for (monoid_idx, term) in self.unary_term_list.iter().enumerate() {
+            // Create a term operation to compute the element
+            if let Ok(term_op) = term.interpretation(alg_arc.clone(), &varlist, true) {
+                // Compute the element as IntArray by evaluating on all inputs
+                let mut elem_vec = Vec::with_capacity(n as usize);
+                let mut all_ok = true;
+                for r in 0..n {
+                    match term_op.int_value_at(&[r]) {
+                        Ok(val) => elem_vec.push(val),
+                        Err(_) => {
+                            all_ok = false;
+                            break;
+                        }
+                    }
+                }
+                if all_ok && elem_vec.len() == n as usize {
+                    if let Ok(elem_array) = crate::util::int_array::IntArray::from_array(elem_vec) {
+                        if let Some(free_idx) = univ_order.get(&elem_array) {
+                            free_to_monoid_map.insert(*free_idx, monoid_idx);
+                        }
+                    }
+                }
+            }
+        }
+        
+        let mut table = vec![vec![0; m]; m];
+        let mut tmp = vec![0; n as usize];
+        
+        // alg_arc already created above for mapping
         
         for (i, term0) in self.unary_term_list.iter().enumerate() {
             // Create term operation for term0
@@ -2425,13 +2459,17 @@ impl UnaryTermsMonoid {
                     tmp[r as usize] = val0;
                 }
                 
-                // Find the index of the resulting term
+                // Find the index of the resulting term in free algebra
                 let tmp_array = crate::util::int_array::IntArray::from_array(tmp.clone())?;
-                let idx = univ_order.get(&tmp_array)
+                let free_idx = univ_order.get(&tmp_array)
                     .ok_or_else(|| "Composition result not in universe".to_string())?;
                 
+                // Map from free algebra index to monoid term index
+                let monoid_idx = free_to_monoid_map.get(free_idx)
+                    .ok_or_else(|| format!("No mapping found for free algebra index {}", free_idx))?;
+                
                 // Note: table[j][i] not table[i][j] - this is intentional!
-                table[j][i] = *idx as i32;
+                table[j][i] = *monoid_idx as i32;
             }
         }
         
@@ -2484,7 +2522,7 @@ impl Algebra for UnaryTermsMonoid {
     }
     
     fn cardinality(&self) -> i32 {
-        self.free_algebra.cardinality()
+        self.unary_term_list.len() as i32
     }
     
     fn input_size(&self) -> i32 {
@@ -2625,19 +2663,143 @@ impl SmallAlgebra for UnaryTermsMonoid {
     }
     
     fn get_element(&self, k: usize) -> Option<Self::UniverseItem> {
-        self.free_algebra.get_element(k)
+        if k >= self.unary_term_list.len() {
+            return None;
+        }
+        
+        // Get the term at index k and compute its element
+        let term = &self.unary_term_list[k];
+        let n = self.generating_algebra.cardinality();
+        
+        // Get variable list
+        let varlist = if let Some(vars) = &self.free_algebra.get_inner().variables {
+            vars.iter().map(|v| v.to_string()).collect::<Vec<String>>()
+        } else {
+            return None;
+        };
+        
+        // Create term operation
+        use crate::alg::SmallAlgebraWrapper;
+        let wrapper = SmallAlgebraWrapper::new(self.generating_algebra.clone_box());
+        let alg_arc = Arc::new(wrapper);
+        
+        let term_op = match term.interpretation(alg_arc, &varlist, true) {
+            Ok(op) => op,
+            Err(_) => return None,
+        };
+        
+        // Compute element by evaluating on all inputs
+        let mut elem_vec = Vec::with_capacity(n as usize);
+        for r in 0..n {
+            match term_op.int_value_at(&[r]) {
+                Ok(val) => elem_vec.push(val),
+                Err(_) => return None,
+            }
+        }
+        
+        crate::util::int_array::IntArray::from_array(elem_vec).ok()
     }
     
     fn element_index(&self, elem: &Self::UniverseItem) -> Option<usize> {
-        self.free_algebra.element_index(elem)
+        // Search through unary_term_list to find the term that produces this element
+        let n = self.generating_algebra.cardinality();
+        
+        // Get variable list
+        let varlist = if let Some(vars) = &self.free_algebra.get_inner().variables {
+            vars.iter().map(|v| v.to_string()).collect::<Vec<String>>()
+        } else {
+            return None;
+        };
+        
+        // Create term operation wrapper
+        use crate::alg::SmallAlgebraWrapper;
+        let wrapper = SmallAlgebraWrapper::new(self.generating_algebra.clone_box());
+        let alg_arc = Arc::new(wrapper);
+        
+        for (idx, term) in self.unary_term_list.iter().enumerate() {
+            if let Ok(term_op) = term.interpretation(alg_arc.clone(), &varlist, true) {
+                // Compute element for this term
+                let mut elem_vec = Vec::with_capacity(n as usize);
+                let mut all_ok = true;
+                for r in 0..n {
+                    match term_op.int_value_at(&[r]) {
+                        Ok(val) => elem_vec.push(val),
+                        Err(_) => {
+                            all_ok = false;
+                            break;
+                        }
+                    }
+                }
+                if all_ok && elem_vec.len() == n as usize {
+                    if let Ok(term_elem) = crate::util::int_array::IntArray::from_array(elem_vec) {
+                        if &term_elem == elem {
+                            return Some(idx);
+                        }
+                    }
+                }
+            }
+        }
+        None
     }
     
     fn get_universe_list(&self) -> Option<Vec<Self::UniverseItem>> {
-        self.free_algebra.get_universe_list()
+        // Compute elements for all terms in unary_term_list
+        let n = self.generating_algebra.cardinality();
+        
+        // Get variable list
+        let varlist = if let Some(vars) = &self.free_algebra.get_inner().variables {
+            vars.iter().map(|v| v.to_string()).collect::<Vec<String>>()
+        } else {
+            return None;
+        };
+        
+        // Create term operation wrapper
+        use crate::alg::SmallAlgebraWrapper;
+        let wrapper = SmallAlgebraWrapper::new(self.generating_algebra.clone_box());
+        let alg_arc = Arc::new(wrapper);
+        
+        let mut universe = Vec::with_capacity(self.unary_term_list.len());
+        for term in &self.unary_term_list {
+            if let Ok(term_op) = term.interpretation(alg_arc.clone(), &varlist, true) {
+                // Compute element by evaluating on all inputs
+                let mut elem_vec = Vec::with_capacity(n as usize);
+                let mut all_ok = true;
+                for r in 0..n {
+                    match term_op.int_value_at(&[r]) {
+                        Ok(val) => elem_vec.push(val),
+                        Err(_) => {
+                            all_ok = false;
+                            break;
+                        }
+                    }
+                }
+                if all_ok && elem_vec.len() == n as usize {
+                    if let Ok(elem_array) = crate::util::int_array::IntArray::from_array(elem_vec) {
+                        universe.push(elem_array);
+                    } else {
+                        return None;
+                    }
+                } else {
+                    return None;
+                }
+            } else {
+                return None;
+            }
+        }
+        Some(universe)
     }
     
     fn get_universe_order(&self) -> Option<HashMap<Self::UniverseItem, usize>> {
-        self.free_algebra.get_universe_order()
+        // Build order map from unary_term_list
+        if let Some(universe) = self.get_universe_list() {
+            let mut order = HashMap::new();
+            for (idx, elem) in universe.iter().enumerate() {
+                order.insert(elem.clone(), idx);
+            }
+            Some(order)
+        } else {
+            None
+        }
     }
     
     fn parent(&self) -> Option<&dyn SmallAlgebra<UniverseItem = Self::UniverseItem>> {

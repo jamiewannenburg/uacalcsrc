@@ -197,13 +197,20 @@ fn difference_term(_algebra: PyObject) -> PyResult<Option<PyObject>> {
 /// Find Jonsson terms for the algebra.
 ///
 /// # Arguments
-/// * `algebra` - The algebra to check
+/// * `algebra` - The algebra to check (BasicSmallAlgebra)
 ///
 /// # Returns
-/// List of Jonsson terms if they exist, None otherwise
+/// List of Jonsson terms as strings if they exist, None otherwise
 #[pyfunction]
-fn jonsson_terms(_algebra: PyObject) -> PyResult<Option<Vec<PyObject>>> {
-    Err(PyValueError::new_err("Jonsson terms finding not yet implemented"))
+fn jonsson_terms(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<Vec<String>>> {
+    match malcev::jonsson_terms(&algebra.inner) {
+        Ok(Some(terms)) => {
+            let term_strings: Vec<String> = terms.iter().map(|t| format!("{}", t)).collect();
+            Ok(Some(term_strings))
+        },
+        Ok(None) => Ok(None),
+        Err(e) => Err(PyValueError::new_err(e)),
+    }
 }
 
 /// Find Hagemann-Mitschke terms for the algebra.
@@ -233,13 +240,17 @@ fn gumm_terms(_algebra: PyObject) -> PyResult<Option<Vec<PyObject>>> {
 /// Get a join term (Kearnes-Kiss) for the algebra.
 ///
 /// # Arguments
-/// * `algebra` - The algebra to check
+/// * `algebra` - The algebra to check (BasicSmallAlgebra)
 ///
 /// # Returns
-/// The join term if one exists, None otherwise
+/// The join term as a string if one exists, None otherwise
 #[pyfunction]
-fn join_term(_algebra: PyObject) -> PyResult<Option<PyObject>> {
-    Err(PyValueError::new_err("Join term finding not yet implemented"))
+fn join_term(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<String>> {
+    match malcev::join_term(&algebra.inner) {
+        Ok(Some(term)) => Ok(Some(format!("{}", term))),
+        Ok(None) => Ok(None),
+        Err(e) => Err(PyValueError::new_err(e)),
+    }
 }
 
 /// Find SD-meet terms for the algebra.
@@ -257,25 +268,36 @@ fn sd_meet_terms(_algebra: PyObject) -> PyResult<Option<Vec<PyObject>>> {
 /// Find SD terms for the algebra.
 ///
 /// # Arguments
-/// * `algebra` - The algebra to check
+/// * `algebra` - The algebra to check (BasicSmallAlgebra)
 ///
 /// # Returns
-/// List of SD terms if they exist, None otherwise
+/// List of SD terms as strings if they exist, None otherwise
 #[pyfunction]
-fn sd_terms(_algebra: PyObject) -> PyResult<Option<Vec<PyObject>>> {
-    Err(PyValueError::new_err("SD terms finding not yet implemented"))
+fn sd_terms(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<Vec<String>>> {
+    match malcev::sd_terms(&algebra.inner) {
+        Ok(Some(terms)) => {
+            let term_strings: Vec<String> = terms.iter().map(|t| format!("{}", t)).collect();
+            Ok(Some(term_strings))
+        },
+        Ok(None) => Ok(None),
+        Err(e) => Err(PyValueError::new_err(e)),
+    }
 }
 
 /// Find the Markovic-McKenzie-Siggers-Taylor term for the algebra.
 ///
 /// # Arguments
-/// * `algebra` - The algebra to check
+/// * `algebra` - The algebra to check (BasicSmallAlgebra)
 ///
 /// # Returns
-/// The MMST term if one exists, None otherwise
+/// The MMST term as a string if one exists, None otherwise
 #[pyfunction]
-fn markovic_mckenzie_siggers_taylor_term(_algebra: PyObject) -> PyResult<Option<PyObject>> {
-    Err(PyValueError::new_err("Markovic-McKenzie-Siggers-Taylor term finding not yet implemented"))
+fn markovic_mckenzie_siggers_taylor_term(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<String>> {
+    match malcev::markovic_mckenzie_siggers_taylor_term(&algebra.inner) {
+        Ok(Some(term)) => Ok(Some(format!("{}", term))),
+        Ok(None) => Ok(None),
+        Err(e) => Err(PyValueError::new_err(e)),
+    }
 }
 
 /// Find a weak 3-edge term for the algebra.
@@ -335,13 +357,16 @@ fn congruence_modular_variety(_algebra: PyObject) -> PyResult<bool> {
 /// Compute the Jonsson level of an algebra.
 ///
 /// # Arguments
-/// * `algebra` - The algebra
+/// * `algebra` - The algebra (BasicSmallAlgebra)
 ///
 /// # Returns
 /// The Jonsson level
 #[pyfunction]
-fn jonsson_level(_algebra: PyObject) -> PyResult<i32> {
-    Err(PyValueError::new_err("Jonsson level computation not yet implemented"))
+fn jonsson_level(algebra: &PyBasicSmallAlgebra) -> PyResult<i32> {
+    match malcev::jonsson_level(&algebra.inner) {
+        Ok(level) => Ok(level),
+        Err(e) => Err(PyValueError::new_err(e)),
+    }
 }
 
 /// Compute the local distributivity level for three elements.
@@ -419,6 +444,7 @@ fn day_quadruple(_a: usize, _b: usize, _c: usize, _d: usize, _algebra: PyObject)
 fn cyclic_term_idempotent(_algebra: PyObject, _arity: usize) -> PyResult<bool> {
     Err(PyValueError::new_err("Cyclic term test not yet implemented"))
 }
+
 
 
 

@@ -27,7 +27,7 @@ use std::sync::Arc;
 /// For now, this is a placeholder - in practice, algebras used with Malcev
 /// functions should already be i32-based (BasicSmallAlgebra<i32>).
 /// This function will be properly implemented when needed for non-i32 algebras.
-fn convert_to_i32_algebra<T>(alg: &dyn SmallAlgebra<UniverseItem = T>) -> Result<Box<dyn SmallAlgebra<UniverseItem = i32>>, String>
+fn convert_to_i32_algebra<T>(_alg: &dyn SmallAlgebra<UniverseItem = T>) -> Result<Box<dyn SmallAlgebra<UniverseItem = i32>>, String>
 where
     T: Clone + std::fmt::Debug + std::fmt::Display + std::hash::Hash + Eq + Send + Sync + 'static
 {
@@ -72,11 +72,12 @@ where
     // Extract operations and create a new BasicSmallAlgebra with i32 universe
     let card = alg.cardinality();
     let ops = alg.operations();
+    let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
     let universe_set: HashSet<i32> = (0..card).collect();
     let i32_alg = BasicSmallAlgebra::new(
         alg.name().to_string(),
         universe_set,
-        ops,
+        int_ops,
     );
     
     // Create free algebra with 2 generators (F(2))
@@ -156,11 +157,18 @@ where
     // Convert to i32 algebra
     let card = alg.cardinality();
     let ops = alg.operations();
+    
+    // Check if operations are empty
+    if ops.is_empty() {
+        return Err("Algebra has no operations".to_string());
+    }
+    
+    let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
     let universe_set: HashSet<i32> = (0..card).collect();
     let i32_alg = BasicSmallAlgebra::new(
         alg.name().to_string(),
         universe_set,
-        ops,
+        int_ops,
     );
     
     // Create free algebra with 2 generators (F(2))
@@ -168,12 +176,16 @@ where
     use crate::alg::Algebra;
     f2.make_operation_tables();
     
+    // Get F(2) info before moving it
+    let f2_cardinality = f2.cardinality();
+    
     // Create BigProductAlgebra (F(2)^3)
     let f2_boxed: Box<dyn SmallAlgebra<UniverseItem = IntArray>> = 
         Box::new(f2) as Box<dyn SmallAlgebra<UniverseItem = IntArray>>;
     let f2_cubed = BigProductAlgebra::new_power_safe(f2_boxed, 3)?;
     
     // Create generators: (x,x,y), (x,y,x), (y,x,x)
+    // Use indices 0 and 1 from F(2)'s universe
     let g0 = IntArray::from_array(vec![0, 0, 1])?;  // (x,x,y)
     let g1 = IntArray::from_array(vec![0, 1, 0])?;  // (x,y,x)
     let g2 = IntArray::from_array(vec![1, 0, 0])?;  // (y,x,x)
@@ -188,15 +200,23 @@ where
     // The element we're looking for: (x,x,x) = [0,0,0]
     let xxx = IntArray::from_array(vec![0, 0, 0])?;
     
+    // DEBUG: Print information about the closure setup
+    use crate::util::int_array::IntArrayTrait;
+    
     // Use Closer for term tracking during closure
     let mut closer = Closer::new_with_term_map_safe(
-        Arc::new(f2_cubed),
-        gens,
+        Arc::new(f2_cubed.clone()),
+        gens.clone(),
         term_map,
     )?;
     closer.set_element_to_find(Some(xxx.clone()));
     
     let closure = closer.sg_close()?;
+    
+    for (i, elem) in closure.iter().enumerate() {
+        eprintln!("  [{}]: {:?}", i, elem.as_slice());
+    }
+    
     if closure.contains(&xxx) {
         if let Some(term) = closer.get_term_map().and_then(|tm| tm.get(&xxx).map(|t| t.clone_box())) {
             return Ok(Some(term));
@@ -229,11 +249,18 @@ where
     // Convert to i32 algebra
     let card = alg.cardinality();
     let ops = alg.operations();
+    
+    // Check if operations are empty
+    if ops.is_empty() {
+        return Err("Algebra has no operations".to_string());
+    }
+    
+    let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
     let universe_set: HashSet<i32> = (0..card).collect();
     let i32_alg = BasicSmallAlgebra::new(
         alg.name().to_string(),
         universe_set,
-        ops,
+        int_ops,
     );
     
     // Create free algebra with 2 generators (F(2))
@@ -308,11 +335,18 @@ where
     // Convert to i32 algebra
     let card = alg.cardinality();
     let ops = alg.operations();
+    
+    // Check if operations are empty
+    if ops.is_empty() {
+        return Err("Algebra has no operations".to_string());
+    }
+    
+    let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
     let universe_set: HashSet<i32> = (0..card).collect();
     let i32_alg = BasicSmallAlgebra::new(
         alg.name().to_string(),
         universe_set,
-        ops,
+        int_ops,
     );
     
     // Create free algebra with 2 generators (F(2))
@@ -389,11 +423,18 @@ where
     // Convert to i32 algebra
     let card = alg.cardinality();
     let ops = alg.operations();
+    
+    // Check if operations are empty
+    if ops.is_empty() {
+        return Err("Algebra has no operations".to_string());
+    }
+    
+    let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
     let universe_set: HashSet<i32> = (0..card).collect();
     let i32_alg = BasicSmallAlgebra::new(
         alg.name().to_string(),
         universe_set,
-        ops,
+        int_ops,
     );
     
     // Create free algebra with 2 generators (F(2))
@@ -654,6 +695,114 @@ where
     Err("Difference term finding not yet implemented".to_string())
 }
 
+/// Helper function to convert a path of IntArrays to a list of Terms.
+fn path2_term_list(
+    path: &[IntArray],
+    term_map: &HashMap<IntArray, Box<dyn Term>>,
+) -> Vec<Box<dyn Term>> {
+    let mut ans = Vec::new();
+    for ia in path {
+        if let Some(term) = term_map.get(ia) {
+            ans.push(term.clone_box());
+        }
+    }
+    ans
+}
+
+/// Helper function to find a path from g0 to g2 in middleZero.
+/// Two triples are connected by an edge if either their first or third coordinates agree.
+/// When alvin_variant is true, it starts with changing the third coordinate; otherwise the first.
+fn jonsson_level_path(
+    middle_zero: &mut [IntArray],
+    g0: &IntArray,
+    g2: &IntArray,
+    alvin_variant: bool,
+) -> Option<Vec<IntArray>> {
+    use crate::util::int_array::IntArrayTrait;
+    
+    // Sort middle_zero for consistent processing
+    middle_zero.sort_by(|a, b| {
+        for i in 0..a.universe_size().min(b.universe_size()) {
+            if let (Some(va), Some(vb)) = (a.get(i), b.get(i)) {
+                if va < vb {
+                    return std::cmp::Ordering::Less;
+                } else if va > vb {
+                    return std::cmp::Ordering::Greater;
+                }
+            }
+        }
+        std::cmp::Ordering::Equal
+    });
+    
+    // Build equivalence classes: classes0 groups by first coordinate, classes2 by third coordinate
+    use std::collections::HashMap as StdHashMap;
+    let mut classes0: StdHashMap<i32, Vec<IntArray>> = StdHashMap::new();
+    let mut classes2: StdHashMap<i32, Vec<IntArray>> = StdHashMap::new();
+    
+    for ia in middle_zero.iter() {
+        if let Some(v0) = ia.get(0) {
+            classes0.entry(v0).or_insert_with(Vec::new).push(ia.clone());
+        }
+        if let Some(v2) = ia.get(2) {
+            classes2.entry(v2).or_insert_with(Vec::new).push(ia.clone());
+        }
+    }
+    
+    let mut levels: Vec<Vec<IntArray>> = Vec::new();
+    let mut parent_map: StdHashMap<IntArray, IntArray> = StdHashMap::new();
+    let mut visited: StdHashMap<IntArray, ()> = StdHashMap::new();
+    let mut current_level = vec![g0.clone()];
+    visited.insert(g0.clone(), ());
+    levels.push(current_level.clone());
+    
+    let mut even = alvin_variant;
+    
+    loop {
+        even = !even;
+        let mut next_level = Vec::new();
+        
+        for ia in &current_level {
+            let eqclass = if even {
+                ia.get(0).and_then(|v0| classes0.get(&v0))
+            } else {
+                ia.get(2).and_then(|v2| classes2.get(&v2))
+            };
+            
+            if let Some(class) = eqclass {
+                for ia2 in class {
+                    if !visited.contains_key(ia2) {
+                        parent_map.insert(ia2.clone(), ia.clone());
+                        visited.insert(ia2.clone(), ());
+                        next_level.push(ia2.clone());
+                    }
+                    if ia2 == g2 {
+                        // Reconstruct path from g2 back to g0
+                        let mut path = vec![g2.clone()];
+                        let mut current = parent_map.get(g2).cloned();
+                        while let Some(prev) = current {
+                            path.push(prev.clone());
+                            if prev == *g0 {
+                                break;
+                            }
+                            current = parent_map.get(&prev).cloned();
+                        }
+                        path.reverse();
+                        return Some(path);
+                    }
+                }
+            }
+        }
+        
+        if next_level.is_empty() {
+            break;
+        }
+        levels.push(next_level.clone());
+        current_level = next_level;
+    }
+    
+    None
+}
+
 /// Find Jonsson terms for the algebra.
 ///
 /// Jonsson terms are a sequence of terms satisfying certain conditions related to
@@ -670,8 +819,139 @@ pub fn jonsson_terms<T>(alg: &dyn SmallAlgebra<UniverseItem = T>) -> Result<Opti
 where
     T: Clone + std::fmt::Debug + std::fmt::Display + std::hash::Hash + Eq + Send + Sync + 'static
 {
-    // TODO: Implement Jonsson terms finding algorithm
-    Err("Jonsson terms finding not yet implemented".to_string())
+    let alvin_variant = false; // Use standard Jonsson variant
+    
+    // Check if idempotent - if so, verify congruence distributivity first
+    if alg.is_idempotent() {
+        if !is_congruence_dist_idempotent(alg)? {
+            return Ok(None);
+        }
+    }
+    
+    if alg.cardinality() == 1 {
+        let mut ans: Vec<Box<dyn Term>> = Vec::new();
+        ans.push(Box::new(VariableImp::x()) as Box<dyn Term>);
+        ans.push(Box::new(VariableImp::z()) as Box<dyn Term>);
+        return Ok(Some(ans));
+    }
+    
+    // Convert to i32 algebra
+    let card = alg.cardinality();
+    let ops = alg.operations();
+    
+    // Check if operations are empty
+    if ops.is_empty() {
+        return Err("Algebra has no operations".to_string());
+    }
+    
+    let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
+    let universe_set: HashSet<i32> = (0..card).collect();
+    let i32_alg = BasicSmallAlgebra::new(
+        alg.name().to_string(),
+        universe_set,
+        int_ops,
+    );
+    
+    // Create free algebra with 2 generators (F(2))
+    let mut f2 = FreeAlgebra::new_safe(Box::new(i32_alg), 2)?;
+    use crate::alg::Algebra;
+    f2.make_operation_tables();
+    
+    // Create generators: (x,x,y), (x,y,x), (y,x,x)
+    let g0 = IntArray::from_array(vec![0, 0, 1])?;
+    let g1 = IntArray::from_array(vec![0, 1, 0])?;
+    let g2 = IntArray::from_array(vec![1, 0, 0])?;
+    let gens = vec![g0.clone(), g1.clone(), g2.clone()];
+    
+    // Create term map
+    let mut term_map: HashMap<IntArray, Box<dyn Term>> = HashMap::new();
+    term_map.insert(g0.clone(), Box::new(VariableImp::x()));
+    term_map.insert(g1.clone(), Box::new(VariableImp::y()));
+    term_map.insert(g2.clone(), Box::new(VariableImp::z()));
+    
+    // Create BigProductAlgebra (F(2)^3)
+    let f2_boxed: Box<dyn SmallAlgebra<UniverseItem = IntArray>> = 
+        Box::new(f2) as Box<dyn SmallAlgebra<UniverseItem = IntArray>>;
+    let f2_cubed = BigProductAlgebra::new_power_safe(f2_boxed, 3)?;
+    
+    let zero = IntArray::from_array(vec![0, 0, 0])?;
+    let pixley = IntArray::from_array(vec![1, 0, 1])?;
+    
+    // Use Closer for term tracking during closure
+    let mut closer = Closer::new_with_term_map_safe(
+        Arc::new(f2_cubed),
+        gens,
+        term_map,
+    )?;
+    
+    let closure = closer.sg_close()?;
+    let term_map_ref = closer.get_term_map().ok_or("Term map missing")?;
+    
+    // Check for Pixley term (for alvin variant)
+    if alvin_variant && closure.contains(&pixley) {
+        if let Some(term) = term_map_ref.get(&pixley).map(|t| t.clone_box()) {
+            let mut ans: Vec<Box<dyn Term>> = Vec::new();
+            ans.push(Box::new(VariableImp::x()) as Box<dyn Term>);
+            ans.push(term);
+            ans.push(Box::new(VariableImp::z()) as Box<dyn Term>);
+            return Ok(Some(ans));
+        }
+    }
+    
+    // Check for majority term (zero)
+    if !alvin_variant && closure.contains(&zero) {
+        if let Some(term) = term_map_ref.get(&zero).map(|t| t.clone_box()) {
+            let mut ans: Vec<Box<dyn Term>> = Vec::new();
+            ans.push(Box::new(VariableImp::x()) as Box<dyn Term>);
+            ans.push(term);
+            ans.push(Box::new(VariableImp::z()) as Box<dyn Term>);
+            return Ok(Some(ans));
+        }
+    }
+    
+    // Find middle zero elements (where second coordinate is 0)
+    use crate::util::int_array::IntArrayTrait;
+    let mut middle_zero: Vec<IntArray> = closure.iter()
+        .filter(|ia| (*ia).get(1) == Some(0))
+        .cloned()
+        .collect();
+    
+    // Find paths
+    let path = jonsson_level_path(&mut middle_zero, &g0, &g2, false);
+    let path2 = jonsson_level_path(&mut middle_zero, &g0, &g2, true);
+    
+    if path.is_none() {
+        if let Some(p) = path2 {
+            let mut ans = path2_term_list(&p, term_map_ref);
+            if !alvin_variant {
+                ans.insert(0, ans[0].clone_box());
+            }
+            return Ok(Some(ans));
+        }
+        return Ok(None);
+    }
+    
+    if path2.is_none() || path.as_ref().unwrap().len() < path2.as_ref().unwrap().len() {
+        if let Some(p) = path {
+            let mut ans = path2_term_list(&p, term_map_ref);
+            if alvin_variant {
+                ans.insert(0, ans[0].clone_box());
+            }
+            return Ok(Some(ans));
+        }
+    }
+    
+    if let Some(p) = path2 {
+        let mut ans = path2_term_list(&p, term_map_ref);
+        if !alvin_variant {
+            ans.insert(0, ans[0].clone_box());
+        }
+        Ok(Some(ans))
+    } else if let Some(p) = path {
+        Ok(Some(path2_term_list(&p, term_map_ref)))
+    } else {
+        Ok(None)
+    }
 }
 
 /// Find Hagemann-Mitschke terms for the algebra.
@@ -721,8 +1001,55 @@ pub fn join_term<T>(alg: &dyn SmallAlgebra<UniverseItem = T>) -> Result<Option<B
 where
     T: Clone + std::fmt::Debug + std::fmt::Display + std::hash::Hash + Eq + Send + Sync + 'static
 {
-    // TODO: Implement join term finding algorithm
-    Err("Join term finding not yet implemented".to_string())
+    if alg.cardinality() == 1 {
+        return Ok(Some(Box::new(VariableImp::x()) as Box<dyn Term>));
+    }
+    
+    // Get the MMST term
+    let taylor = markovic_mckenzie_siggers_taylor_term(alg)?;
+    let taylor = match taylor {
+        Some(t) => t,
+        None => return Ok(None),
+    };
+    
+    // Create substitution maps (using variable names as keys)
+    let mut map: HashMap<String, Box<dyn Term>> = HashMap::new();
+    
+    // t0 = taylor(x, x, y, y)
+    map.insert("x0".to_string(), Box::new(VariableImp::x()) as Box<dyn Term>);
+    map.insert("x1".to_string(), Box::new(VariableImp::x()) as Box<dyn Term>);
+    map.insert("x2".to_string(), Box::new(VariableImp::y()) as Box<dyn Term>);
+    map.insert("x3".to_string(), Box::new(VariableImp::y()) as Box<dyn Term>);
+    let t0 = taylor.substitute(&map)?;
+    
+    // t1 = taylor(x, x, y, x)
+    map.clear();
+    map.insert("x0".to_string(), Box::new(VariableImp::x()) as Box<dyn Term>);
+    map.insert("x1".to_string(), Box::new(VariableImp::x()) as Box<dyn Term>);
+    map.insert("x2".to_string(), Box::new(VariableImp::y()) as Box<dyn Term>);
+    map.insert("x3".to_string(), Box::new(VariableImp::x()) as Box<dyn Term>);
+    let t1 = taylor.substitute(&map)?;
+    
+    // t2 = taylor(y, x, x, x)
+    map.clear();
+    map.insert("x0".to_string(), Box::new(VariableImp::y()) as Box<dyn Term>);
+    map.insert("x1".to_string(), Box::new(VariableImp::x()) as Box<dyn Term>);
+    map.insert("x2".to_string(), Box::new(VariableImp::x()) as Box<dyn Term>);
+    map.insert("x3".to_string(), Box::new(VariableImp::x()) as Box<dyn Term>);
+    let t2 = taylor.substitute(&map)?;
+    
+    // t3 = t2
+    let t3 = t2.clone_box();
+    
+    // Final substitution: taylor(t0, t1, t2, t3)
+    map.clear();
+    map.insert("x0".to_string(), t0);
+    map.insert("x1".to_string(), t1);
+    map.insert("x2".to_string(), t2);
+    map.insert("x3".to_string(), t3);
+    
+    let result = taylor.substitute(&map)?;
+    Ok(Some(result))
 }
 
 /// Find SD-meet terms for the algebra.
@@ -742,6 +1069,96 @@ where
     Err("SD-meet terms finding not yet implemented".to_string())
 }
 
+/// Helper function to find a path from g0 to g2 in subalg (for SD terms).
+/// Similar to jonsson_level_path but with different edge connectivity.
+fn sd_path(
+    subalg: &mut [IntArray],
+    g0: &IntArray,
+    g2: &IntArray,
+) -> Option<Vec<IntArray>> {
+    use crate::util::int_array::IntArrayTrait;
+    use std::collections::HashMap as StdHashMap;
+    
+    // Sort subalg lexicographically
+    subalg.sort();
+    
+    // Build equivalence classes: classes01 groups by (first, second) coordinates, classes2 by third coordinate
+    let mut classes01: StdHashMap<(i32, i32), Vec<IntArray>> = StdHashMap::new();
+    let mut classes2: StdHashMap<i32, Vec<IntArray>> = StdHashMap::new();
+    
+    for ia in subalg.iter() {
+        if let (Some(v0), Some(v1)) = (ia.get(0), ia.get(1)) {
+            classes01.entry((v0, v1)).or_insert_with(Vec::new).push(ia.clone());
+        }
+        if let Some(v2) = ia.get(2) {
+            classes2.entry(v2).or_insert_with(Vec::new).push(ia.clone());
+        }
+    }
+    
+    let mut levels: Vec<Vec<IntArray>> = Vec::new();
+    let mut parent_map: StdHashMap<IntArray, IntArray> = StdHashMap::new();
+    let mut visited: StdHashMap<IntArray, ()> = StdHashMap::new();
+    let mut current_level = vec![g0.clone()];
+    visited.insert(g0.clone(), ());
+    levels.push(current_level.clone());
+    
+    let mut even = false;
+    let mut first = true;
+    
+    loop {
+        even = !even;
+        let mut next_level = Vec::new();
+        
+        for ia in &current_level {
+            let eqclass = if even {
+                ia.get(0).and_then(|v0| {
+                    ia.get(1).and_then(|v1| classes01.get(&(v0, v1)))
+                })
+            } else {
+                ia.get(2).and_then(|v2| classes2.get(&v2))
+            };
+            
+            if let Some(class) = eqclass {
+                for ia2 in class {
+                    if !visited.contains_key(ia2) {
+                        parent_map.insert(ia2.clone(), ia.clone());
+                        visited.insert(ia2.clone(), ());
+                        next_level.push(ia2.clone());
+                    }
+                    if ia2 == g2 {
+                        // Reconstruct path
+                        let mut path = vec![g2.clone()];
+                        let mut current = parent_map.get(g2).cloned();
+                        while let Some(prev) = current {
+                            path.push(prev.clone());
+                            if prev == *g0 {
+                                break;
+                            }
+                            current = parent_map.get(&prev).cloned();
+                        }
+                        path.reverse();
+                        return Some(path);
+                    }
+                }
+            }
+        }
+        
+        if next_level.is_empty() {
+            if !first {
+                break;
+            } else {
+                first = false;
+                continue;
+            }
+        }
+        first = false;
+        levels.push(next_level.clone());
+        current_level = next_level;
+    }
+    
+    None
+}
+
 /// Find SD terms for the algebra.
 ///
 /// # Arguments
@@ -755,11 +1172,119 @@ pub fn sd_terms<T>(alg: &dyn SmallAlgebra<UniverseItem = T>) -> Result<Option<Ve
 where
     T: Clone + std::fmt::Debug + std::fmt::Display + std::hash::Hash + Eq + Send + Sync + 'static
 {
-    // TODO: Implement SD terms finding algorithm
-    Err("SD terms finding not yet implemented".to_string())
+    // For idempotent algebras, check SD-meet first
+    if alg.is_idempotent() {
+        // Note: Java checks sdIdempotent which checks SD-join, not SD-meet
+        // We'll skip this check for now and proceed directly
+    }
+    
+    if alg.cardinality() == 1 {
+        let mut ans: Vec<Box<dyn Term>> = Vec::new();
+        ans.push(Box::new(VariableImp::x()) as Box<dyn Term>);
+        ans.push(Box::new(VariableImp::z()) as Box<dyn Term>);
+        return Ok(Some(ans));
+    }
+    
+    // Convert to i32 algebra
+    let card = alg.cardinality();
+    let ops = alg.operations();
+    
+    // Check if operations are empty
+    if ops.is_empty() {
+        return Err("Algebra has no operations".to_string());
+    }
+    
+    let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
+    let universe_set: HashSet<i32> = (0..card).collect();
+    let i32_alg = BasicSmallAlgebra::new(
+        alg.name().to_string(),
+        universe_set,
+        int_ops,
+    );
+    
+    // Create free algebra with 2 generators (F(2))
+    let mut f2 = FreeAlgebra::new_safe(Box::new(i32_alg), 2)?;
+    use crate::alg::Algebra;
+    f2.make_operation_tables();
+    
+    // Create generators: (x,x,y), (x,y,x), (y,x,x)
+    let g0 = IntArray::from_array(vec![0, 0, 1])?;
+    let g1 = IntArray::from_array(vec![0, 1, 0])?;
+    let g2 = IntArray::from_array(vec![1, 0, 0])?;
+    let gens = vec![g0.clone(), g1.clone(), g2.clone()];
+    
+    // Create term map
+    let mut term_map: HashMap<IntArray, Box<dyn Term>> = HashMap::new();
+    term_map.insert(g0.clone(), Box::new(VariableImp::x()));
+    term_map.insert(g1.clone(), Box::new(VariableImp::y()));
+    term_map.insert(g2.clone(), Box::new(VariableImp::z()));
+    
+    // Create BigProductAlgebra (F(2)^3)
+    let f2_boxed: Box<dyn SmallAlgebra<UniverseItem = IntArray>> = 
+        Box::new(f2) as Box<dyn SmallAlgebra<UniverseItem = IntArray>>;
+    let f2_cubed = BigProductAlgebra::new_power_safe(f2_boxed, 3)?;
+    
+    let zero = IntArray::from_array(vec![0, 0, 0])?;
+    
+    // Use Closer for term tracking during closure
+    let mut closer = Closer::new_with_term_map_safe(
+        Arc::new(f2_cubed),
+        gens,
+        term_map,
+    )?;
+    
+    let closure = closer.sg_close()?;
+    let term_map_ref = closer.get_term_map().ok_or("Term map missing")?;
+    
+    // Check for majority term (zero)
+    if closure.contains(&zero) {
+        if let Some(term) = term_map_ref.get(&zero).map(|t| t.clone_box()) {
+            let mut ans: Vec<Box<dyn Term>> = Vec::new();
+            ans.push(Box::new(VariableImp::x()) as Box<dyn Term>);
+            ans.push(term);
+            ans.push(Box::new(VariableImp::z()) as Box<dyn Term>);
+            return Ok(Some(ans));
+        }
+    }
+    
+    // Try to find Jonsson terms (congruence distributive case)
+    use crate::util::int_array::IntArrayTrait;
+    let mut middle_zero: Vec<IntArray> = closure.iter()
+        .filter(|ia| (**ia).get(1) == Some(0))
+        .cloned()
+        .collect();
+    
+    let path = jonsson_level_path(&mut middle_zero, &g0, &g2, false);
+    let path2 = jonsson_level_path(&mut middle_zero, &g0, &g2, true);
+    
+    if path.is_some() || path2.is_some() {
+        // Found Jonsson terms - return them
+        if let Some(p) = path2 {
+            let mut ans = path2_term_list(&p, term_map_ref);
+            ans.insert(0, ans[0].clone_box());
+            return Ok(Some(ans));
+        } else if let Some(p) = path {
+            Ok(Some(path2_term_list(&p, term_map_ref)))
+        } else {
+            Ok(None)
+        }
+    } else {
+        // Try SD path
+        let mut sorted_subalg: Vec<IntArray> = closure.iter().cloned().collect();
+        let path3 = sd_path(&mut sorted_subalg, &g0, &g2);
+        if let Some(p) = path3 {
+            Ok(Some(path2_term_list(&p, term_map_ref)))
+        } else {
+            Ok(None)
+        }
+    }
 }
 
 /// Find the Markovic-McKenzie-Siggers-Taylor term for the algebra.
+///
+/// A MMST term is a 4-ary term t(x,y,z,u) satisfying:
+/// - t(y,x,x,x) = t(x,x,y,y)
+/// - t(x,x,y,x) = t(x,y,x,x)
 ///
 /// # Arguments
 /// * `alg` - The algebra to check
@@ -772,8 +1297,103 @@ pub fn markovic_mckenzie_siggers_taylor_term<T>(alg: &dyn SmallAlgebra<UniverseI
 where
     T: Clone + std::fmt::Debug + std::fmt::Display + std::hash::Hash + Eq + Send + Sync + 'static
 {
-    // TODO: Implement MMST term finding algorithm
-    Err("Markovic-McKenzie-Siggers-Taylor term finding not yet implemented".to_string())
+    if alg.cardinality() == 1 {
+        return Ok(Some(Box::new(VariableImp::x()) as Box<dyn Term>));
+    }
+    
+    let is_idempotent = alg.is_idempotent();
+    
+    // Convert to i32 algebra
+    let card = alg.cardinality();
+    let ops = alg.operations();
+    
+    // Check if operations are empty
+    if ops.is_empty() {
+        return Err("Algebra has no operations".to_string());
+    }
+    
+    let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
+    let universe_set: HashSet<i32> = (0..card).collect();
+    let i32_alg = BasicSmallAlgebra::new(
+        alg.name().to_string(),
+        universe_set,
+        int_ops,
+    );
+    
+    // Create free algebra with 2 generators (F(2))
+    let mut f2 = FreeAlgebra::new_safe(Box::new(i32_alg), 2)?;
+    use crate::alg::Algebra;
+    f2.make_operation_tables();
+    
+    // Create generators based on idempotency
+    let (g0, g1, g2, g3): (IntArray, IntArray, IntArray, IntArray);
+    let power: usize;
+    
+    if is_idempotent {
+        g0 = IntArray::from_array(vec![1, 0, 0, 0])?;
+        g1 = IntArray::from_array(vec![0, 0, 0, 1])?;
+        g2 = IntArray::from_array(vec![0, 1, 1, 0])?;
+        g3 = IntArray::from_array(vec![0, 1, 0, 0])?;
+        power = 4;
+    } else {
+        g0 = IntArray::from_array(vec![1, 0, 0, 0, 0])?;
+        g1 = IntArray::from_array(vec![0, 0, 0, 1, 0])?;
+        g2 = IntArray::from_array(vec![0, 1, 1, 0, 0])?;
+        g3 = IntArray::from_array(vec![0, 1, 0, 0, 0])?;
+        power = 5;
+    }
+    
+    let gens = vec![g0.clone(), g1.clone(), g2.clone(), g3.clone()];
+    
+    // Create term map
+    let mut term_map: HashMap<IntArray, Box<dyn Term>> = HashMap::new();
+    term_map.insert(g0.clone(), Box::new(VariableImp::new("x0")) as Box<dyn Term>);
+    term_map.insert(g1.clone(), Box::new(VariableImp::new("x1")) as Box<dyn Term>);
+    term_map.insert(g2.clone(), Box::new(VariableImp::new("x2")) as Box<dyn Term>);
+    term_map.insert(g3.clone(), Box::new(VariableImp::new("x3")) as Box<dyn Term>);
+    
+    // Create BigProductAlgebra (F(2)^power)
+    let f2_boxed: Box<dyn SmallAlgebra<UniverseItem = IntArray>> = 
+        Box::new(f2) as Box<dyn SmallAlgebra<UniverseItem = IntArray>>;
+    let f2_power = BigProductAlgebra::new_power_safe(f2_boxed, power)?;
+    
+    // Use Closer for closure (note: blocks/values not yet implemented, so we check manually)
+    let mut closer = Closer::new_with_term_map_safe(
+        Arc::new(f2_power),
+        gens,
+        term_map,
+    )?;
+    
+    // For now, use regular sg_close instead of sgClosePower since blocks aren't implemented
+    let closure = closer.sg_close()?;
+    let term_map_ref = closer.get_term_map().ok_or("Term map missing")?;
+    
+    use crate::util::int_array::IntArrayTrait;
+    
+    // Look for element satisfying MMST constraints:
+    // For idempotent: ia.get(0) == ia.get(1) && ia.get(2) == ia.get(3)
+    // For non-idempotent: same plus ia.get(4) == 0
+    for ia in &closure {
+        if let (Some(v0), Some(v1), Some(v2), Some(v3)) = (ia.get(0), ia.get(1), ia.get(2), ia.get(3)) {
+            if v0 == v1 && v2 == v3 {
+                if is_idempotent {
+                    if let Some(term) = term_map_ref.get(ia).map(|t| t.clone_box()) {
+                        return Ok(Some(term));
+                    }
+                } else {
+                    if let Some(v4) = ia.get(4) {
+                        if v4 == 0 {
+                            if let Some(term) = term_map_ref.get(ia).map(|t| t.clone_box()) {
+                                return Ok(Some(term));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    Ok(None)
 }
 
 /// Find a weak 3-edge term for the algebra.
@@ -1101,20 +1721,167 @@ where
     Err("Variety congruence modularity test not yet implemented".to_string())
 }
 
+/// Helper function to compute Jonsson level (auxiliary function).
+fn jonsson_level_aux(
+    middle_zero: &[IntArray],
+    g0: &IntArray,
+    g2: &IntArray,
+) -> i32 {
+    use crate::util::int_array::IntArrayTrait;
+    use std::collections::HashMap as StdHashMap;
+    use std::collections::HashSet as StdHashSet;
+    
+    let mut levels: Vec<Vec<IntArray>> = Vec::new();
+    let mut visited: StdHashSet<IntArray> = StdHashSet::new();
+    let mut current_level: Vec<(IntArray, Option<IntArray>)> = vec![(g0.clone(), None)];
+    visited.insert(g0.clone());
+    levels.push(vec![g0.clone()]);
+    
+    // Build equivalence classes
+    let mut classes0: StdHashMap<i32, Vec<IntArray>> = StdHashMap::new();
+    let mut classes2: StdHashMap<i32, Vec<IntArray>> = StdHashMap::new();
+    
+    for ia in middle_zero.iter() {
+        if let Some(v0) = ia.get(0) {
+            classes0.entry(v0).or_insert_with(Vec::new).push(ia.clone());
+        }
+        if let Some(v2) = ia.get(2) {
+            classes2.entry(v2).or_insert_with(Vec::new).push(ia.clone());
+        }
+    }
+    
+    let mut even = false;
+    
+    loop {
+        even = !even;
+        let mut next_level_items: Vec<(IntArray, Option<IntArray>)> = Vec::new();
+        let mut next_level: Vec<IntArray> = Vec::new();
+        
+        for (ia, _parent) in &current_level {
+            let eqclass = if even {
+                ia.get(0).and_then(|v0| classes0.get(&v0))
+            } else {
+                ia.get(2).and_then(|v2| classes2.get(&v2))
+            };
+            
+            if let Some(class) = eqclass {
+                for ia2 in class {
+                    if ia2 == g2 {
+                        return (levels.len()) as i32;
+                    }
+                    if !visited.contains(ia2) {
+                        visited.insert(ia2.clone());
+                        next_level_items.push((ia2.clone(), Some(ia.clone())));
+                        next_level.push(ia2.clone());
+                    }
+                }
+            }
+        }
+        
+        if next_level.is_empty() {
+            break;
+        }
+        levels.push(next_level.clone());
+        current_level = next_level_items;
+    }
+    
+    -1
+}
+
 /// Compute the Jonsson level of an algebra.
 ///
 /// # Arguments
 /// * `alg` - The algebra
 ///
 /// # Returns
-/// * `Ok(level)` - The Jonsson level
+/// * `Ok(level)` - The Jonsson level (minimal number of Jonsson terms minus 1)
 /// * `Err(String)` - If there's an error during computation
 pub fn jonsson_level<T>(alg: &dyn SmallAlgebra<UniverseItem = T>) -> Result<i32, String>
 where
     T: Clone + std::fmt::Debug + std::fmt::Display + std::hash::Hash + Eq + Send + Sync + 'static
 {
-    // TODO: Implement Jonsson level computation
-    Err("Jonsson level computation not yet implemented".to_string())
+    if alg.cardinality() == 1 {
+        return Ok(1);
+    }
+    
+    // Convert to i32 algebra
+    let card = alg.cardinality();
+    let ops = alg.operations();
+    
+    // Check if operations are empty
+    if ops.is_empty() {
+        return Err("Algebra has no operations".to_string());
+    }
+    
+    let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
+    let universe_set: HashSet<i32> = (0..card).collect();
+    let i32_alg = BasicSmallAlgebra::new(
+        alg.name().to_string(),
+        universe_set,
+        int_ops,
+    );
+    
+    // Create free algebra with 2 generators (F(2))
+    let mut f2 = FreeAlgebra::new_safe(Box::new(i32_alg), 2)?;
+    use crate::alg::Algebra;
+    f2.make_operation_tables();
+    
+    // Create generators: (x,x,y), (x,y,x), (y,x,x)
+    let g0 = IntArray::from_array(vec![0, 0, 1])?;
+    let g1 = IntArray::from_array(vec![0, 1, 0])?;
+    let g2 = IntArray::from_array(vec![1, 0, 0])?;
+    let gens = vec![g0.clone(), g1.clone(), g2.clone()];
+    
+    // Create term map
+    let mut term_map: HashMap<IntArray, Box<dyn Term>> = HashMap::new();
+    term_map.insert(g0.clone(), Box::new(VariableImp::x()));
+    term_map.insert(g1.clone(), Box::new(VariableImp::y()));
+    term_map.insert(g2.clone(), Box::new(VariableImp::z()));
+    
+    // Create BigProductAlgebra (F(2)^3)
+    let f2_boxed: Box<dyn SmallAlgebra<UniverseItem = IntArray>> = 
+        Box::new(f2) as Box<dyn SmallAlgebra<UniverseItem = IntArray>>;
+    let f2_cubed = BigProductAlgebra::new_power_safe(f2_boxed, 3)?;
+    
+    // Use Closer for closure
+    let mut closer = Closer::new_with_term_map_safe(
+        Arc::new(f2_cubed),
+        gens,
+        term_map,
+    )?;
+    
+    let closure = closer.sg_close()?;
+    
+    let zero = IntArray::from_array(vec![0, 0, 0])?;
+    if closure.contains(&zero) {
+        // Found majority term - level is 2
+        return Ok(2);
+    }
+    
+    // Find middle zero elements (where second coordinate is 0)
+    use crate::util::int_array::IntArrayTrait;
+    let mut middle_zero: Vec<IntArray> = closure.iter()
+        .filter(|ia| (**ia).get(1) == Some(0))
+        .cloned()
+        .collect();
+    
+    // Sort middle_zero
+    middle_zero.sort_by(|a, b| {
+        let size_a = a.universe_size();
+        let size_b = b.universe_size();
+        for i in 0..size_a.min(size_b) {
+            if let (Some(va), Some(vb)) = (a.get(i), b.get(i)) {
+                if va < vb {
+                    return std::cmp::Ordering::Less;
+                } else if va > vb {
+                    return std::cmp::Ordering::Greater;
+                }
+            }
+        }
+        std::cmp::Ordering::Equal
+    });
+    
+    Ok(jonsson_level_aux(&middle_zero, &g0, &g2))
 }
 
 /// Compute the local distributivity level for three elements.
@@ -1209,7 +1976,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::alg::{BasicSmallAlgebra, Algebra};
+    use crate::alg::BasicSmallAlgebra;
     use crate::io::AlgebraReader;
     use std::path::Path;
     use std::collections::HashSet;

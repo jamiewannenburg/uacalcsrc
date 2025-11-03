@@ -642,6 +642,10 @@ impl AlgebraWriter {
     fn write_row(&mut self, index: usize, arr: &[i32], arity: i32) -> Result<(), String> {
         let card = self.algebra.cardinality();
         
+        if card <= 0 {
+            return Err(format!("Invalid cardinality: {}", card));
+        }
+        
         if arity == 0 {
             self.write_indent()?;
             writeln!(self.out, "<row>{}</row>", arr[0])
@@ -688,6 +692,10 @@ impl AlgebraWriter {
     /// * `Ok(())` - Successfully written
     /// * `Err(String)` - If writing fails
     fn write_row_with_cardinality(&mut self, index: usize, arr: &[i32], arity: i32, cardinality: i32) -> Result<(), String> {
+        if cardinality <= 0 {
+            return Err(format!("Invalid cardinality: {}", cardinality));
+        }
+        
         if arity == 0 {
             self.write_indent()?;
             writeln!(self.out, "<row>{}</row>", arr[0])

@@ -206,7 +206,10 @@ where
             
             (univ, Some(term_map), Some(terms_vec), Some(vars_map))
         } else {
-            let univ = prod.sg_close(gens.clone())?;
+            let mut univ = prod.sg_close(gens.clone())?;
+            // Sort universe lexicographically to match Java's ordering
+            // This ensures deterministic element-to-index mapping
+            univ.sort();
             (univ, None, None, None)
         };
         
@@ -293,13 +296,21 @@ where
             sub: None,
         };
         
+        // Sort universe lexicographically to match Java's ordering
+        // This ensures deterministic element-to-index mapping
+        let mut sorted_univ = univ_list.clone();
+        sorted_univ.sort();
+        
+        // Update the universe list to be sorted
+        sub_prod.univ = sorted_univ.clone();
+        
         // Create element to index mapping
-        for (k, ia) in univ_list.iter().enumerate() {
+        for (k, ia) in sorted_univ.iter().enumerate() {
             sub_prod.univ_hash_map.insert(ia.clone(), k);
         }
         
         // Create universe set
-        sub_prod.universe = univ_list.iter().cloned().collect();
+        sub_prod.universe = sorted_univ.iter().cloned().collect();
         
         // Make operations
         sub_prod.make_operations()?;
@@ -410,15 +421,21 @@ where
                     }
                     
                     // Apply product algebra operation (matching Java's opx.valueAt)
-                    let result_array = self.prod_op.value_at_arrays(&elem_args.iter().map(|x| x.as_slice()).collect::<Vec<_>>())?;
+                    let elem_slices: Vec<&[i32]> = elem_args.iter().map(|x| x.as_slice()).collect();
+                    let result_array = self.prod_op.value_at_arrays(&elem_slices)?;
                     let result_ia = IntArray::from_array(result_array)?;
                     
                     // Map result back to subalgebra index (matching Java's elementIndex)
                     // If result is not in subalgebra, this is an error (operation not closed)
                     // But during congruence computation, this might happen temporarily
-                    self.univ_hash_map.get(&result_ia)
-                        .map(|&idx| idx as i32)
-                        .ok_or_else(|| format!("Result {:?} not found in subalgebra universe (operation not closed)", result_ia))
+                    match self.univ_hash_map.get(&result_ia) {
+                        Some(&idx) => {
+                            Ok(idx as i32)
+                        },
+                        None => {
+                            Err(format!("Result {:?} not found in subalgebra universe (operation not closed)", result_ia))
+                        }
+                    }
                 }
                 
                 fn value_at_arrays(&self, args: &[&[i32]]) -> Result<Vec<i32>, String> {

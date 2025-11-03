@@ -1,5 +1,7 @@
 use uacalc::alg::{SmallAlgebra, BasicSmallAlgebra};
 use uacalc::alg::conlat::{CongruenceLattice, BasicBinaryRelation, BinaryRelation};
+use uacalc::alg::op::{OperationSymbol, Operation};
+use uacalc::alg::op::operations;
 use std::collections::HashSet;
 
 #[test]
@@ -200,10 +202,19 @@ fn test_meet_irreducibles() {
 
 #[test]
 fn test_tg_tolerance() {
+    // Create an algebra with at least one operation (needed for power algebra creation)
+    let mut ops: Vec<Box<dyn Operation>> = Vec::new();
+    let size = 3;
+    // Add a simple constant operation (returns 0 for any input)
+    let const_sym = OperationSymbol::new("c", 0, false);
+    let const_op = operations::make_int_operation(const_sym, size, vec![0])
+        .expect("Failed to create constant operation");
+    ops.push(const_op);
+    
     let alg = Box::new(BasicSmallAlgebra::new(
         "TestAlg".to_string(),
         HashSet::from([0, 1, 2]),
-        Vec::new()
+        ops
     )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
     
     let mut con_lat = CongruenceLattice::new(alg);
@@ -309,10 +320,19 @@ fn test_find_maximal_chain() {
 
 #[test]
 fn test_idempotent_polynomials() {
+    // Create an algebra with at least one operation (needed for power algebra creation)
+    let mut ops: Vec<Box<dyn Operation>> = Vec::new();
+    let size = 3;
+    // Add a simple constant operation (returns 0 for any input)
+    let const_sym = OperationSymbol::new("c", 0, false);
+    let const_op = operations::make_int_operation(const_sym, size, vec![0])
+        .expect("Failed to create constant operation");
+    ops.push(const_op);
+    
     let alg = Box::new(BasicSmallAlgebra::new(
         "TestAlg".to_string(),
         HashSet::from([0, 1, 2]),
-        Vec::new()
+        ops
     )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
     
     let mut con_lat = CongruenceLattice::new(alg);

@@ -102,6 +102,9 @@ pub fn horner_inv_safe(k: i32, sizes: &[i32]) -> Result<Vec<i32>, String> {
 /// The decoded array
 pub fn horner_inv_with_dest(k: i32, sizes: &[i32], dest: Option<Vec<i32>>) -> Vec<i32> {
     let n = sizes.len();
+    if n == 0 {
+        return Vec::new();
+    }
     let mut ans = dest.unwrap_or_else(|| vec![0; n]);
     
     // Ensure the destination array has the right size
@@ -266,6 +269,9 @@ pub fn horner_integer_safe(args: &[i32], size: i32) -> Result<i32, String> {
 /// # Returns
 /// A new array with elements in reverse order
 pub fn reverse_array(arr: &[i32]) -> Vec<i32> {
+    if arr.is_empty() {
+        return Vec::new();
+    }
     let mut ans = vec![0; arr.len()];
     let max = arr.len() - 1;
     for i in 0..ans.len() {
@@ -285,11 +291,23 @@ pub fn reverse_array(arr: &[i32]) -> Vec<i32> {
 /// # Returns
 /// The transformed values array
 pub fn left_right_reverse(values: &[i32], alg_size: i32, arity: usize) -> Vec<i32> {
+    // Validate inputs to prevent hangs or panics
+    if alg_size <= 0 || arity == 0 {
+        // Return values unchanged if invalid inputs
+        return values.to_vec();
+    }
+    
     let mut ans = vec![0; values.len()];
     for i in 0..values.len() {
         let foo = reverse_array(&horner_inv_same_size(i as i32, alg_size, arity));
+        // Check that foo is not empty before calling horner_same_size
+        if foo.is_empty() {
+            continue;
+        }
         let i_prime = horner_same_size(&foo, alg_size);
-        ans[i_prime as usize] = values[i];
+        if (i_prime as usize) < ans.len() {
+            ans[i_prime as usize] = values[i];
+        }
     }
     ans
 }

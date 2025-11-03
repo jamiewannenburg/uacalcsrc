@@ -19,32 +19,44 @@ use crate::terms::{Term, NonVariableTerm};
 /// 
 /// Each operation on the product is defined by applying the corresponding
 /// operation from each factor algebra to the corresponding component.
-#[derive(Clone)]
-struct BigProductOperation {
+struct BigProductOperation<T>
+where
+    T: Clone + PartialEq + Eq + Hash + std::fmt::Debug + Send + Sync + 'static
+{
     symbol: OperationSymbol,
     arity: i32,
     number_of_factors: usize,
     /// The operations from each factor algebra
     op_list: Vec<Arc<dyn Operation>>,
+    /// The factor algebras (needed to convert indices to elements for IntArray universes)
+    factor_algebras: Vec<Box<dyn SmallAlgebra<UniverseItem = T>>>,
 }
 
-impl BigProductOperation {
+impl<T> BigProductOperation<T>
+where
+    T: Clone + PartialEq + Eq + Hash + std::fmt::Debug + Send + Sync + 'static
+{
     fn new(
         symbol: OperationSymbol,
         arity: i32,
         number_of_factors: usize,
         op_list: Vec<Arc<dyn Operation>>,
+        factor_algebras: Vec<Box<dyn SmallAlgebra<UniverseItem = T>>>,
     ) -> Self {
         BigProductOperation {
             symbol,
             arity,
             number_of_factors,
             op_list,
+            factor_algebras,
         }
     }
 }
 
-impl fmt::Debug for BigProductOperation {
+impl<T> fmt::Debug for BigProductOperation<T>
+where
+    T: Clone + PartialEq + Eq + Hash + std::fmt::Debug + Send + Sync + 'static
+{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("BigProductOperation")
             .field("symbol", &self.symbol)
@@ -54,13 +66,19 @@ impl fmt::Debug for BigProductOperation {
     }
 }
 
-impl fmt::Display for BigProductOperation {
+impl<T> fmt::Display for BigProductOperation<T>
+where
+    T: Clone + PartialEq + Eq + Hash + std::fmt::Debug + Send + Sync + 'static
+{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "BigProductOp({})", self.symbol)
     }
 }
 
-impl Operation for BigProductOperation {
+impl<T> Operation for BigProductOperation<T>
+where
+    T: Clone + PartialEq + Eq + Hash + std::fmt::Debug + Send + Sync + 'static
+{
     fn symbol(&self) -> &OperationSymbol {
         &self.symbol
     }
@@ -81,28 +99,73 @@ impl Operation for BigProductOperation {
         // args is a slice of IntArrays (each is &[i32])
         // We need to apply the operation componentwise
         let mut ans = vec![0; self.number_of_factors];
-        let mut arg_buf = vec![0; self.arity as usize];
         
-        eprintln!("DEBUG_VALUE_AT: BigProductOperation.value_at_arrays - symbol={}, arity={}, num_factors={}, args={:?}", 
-                 self.symbol, self.arity, self.number_of_factors,
-                 args.iter().map(|a| a.to_vec()).collect::<Vec<_>>());
-        
-        for j in 0..self.number_of_factors {
-            // Extract j-th component from each argument
-            for (index, &arg_array) in args.iter().enumerate() {
-                arg_buf[index] = arg_array[j];
+        // Special case for nullary operations (arity 0)
+        if self.arity == 0 {
+            // For nullary operations, apply the operation once per factor
+            for j in 0..self.number_of_factors {
+                ans[j] = self.op_list[j].int_value_at(&[])?;
             }
-            // Apply the j-th operation
-            ans[j] = self.op_list[j].int_value_at(&arg_buf)?;
-            eprintln!("DEBUG_VALUE_AT: Component {}: {:?} -> {}", j, arg_buf, ans[j]);
+            return Ok(ans);
         }
         
-        eprintln!("DEBUG_VALUE_AT: Final result: {:?}", ans);
+        // Check if factor algebras have IntArray elements
+        // Use algebra type as a heuristic
+        use crate::alg::AlgebraType;
+        let has_int_array_elements = matches!(
+            self.factor_algebras[0].algebra_type(), 
+            AlgebraType::Free | AlgebraType::Subproduct
+        );
+        
+        if has_int_array_elements {
+            // Factor algebras have IntArray elements
+            // Operations return indices, but we need to ensure these indices correspond
+            // to the sorted universe ordering. The operations should handle this correctly,
+            // but we verify by converting index -> element -> sorted index if needed.
+            for j in 0..self.number_of_factors {
+                // Extract indices for this component
+                let arg_indices: Vec<i32> = args.iter().map(|a| a[j]).collect();
+                
+                // Call int_value_at to get result index
+                let result_idx = self.op_list[j].int_value_at(&arg_indices)?;
+                
+                // Convert result index to element, then back to index in sorted universe
+                // This ensures we're using the correct sorted ordering
+                if let Some(result_elem) = self.factor_algebras[j].get_element(result_idx as usize) {
+                    // Now find the index of this element in the sorted universe
+                    if let Some(sorted_idx) = self.factor_algebras[j].element_index(&result_elem) {
+                        ans[j] = sorted_idx as i32;
+                    } else {
+                        // Element not found - should not happen, but handle gracefully
+                        ans[j] = result_idx;
+                    }
+                } else {
+                    // If get_element fails, use the original index
+                    // This can happen if the factor algebra doesn't implement get_element properly
+                    ans[j] = result_idx;
+                }
+            }
+        } else {
+            // Factor algebras have i32 elements - can use int_value_at directly
+            let mut arg_buf = vec![0; self.arity as usize];
+            for j in 0..self.number_of_factors {
+                // Extract j-th component from each argument
+                for (index, &arg_array) in args.iter().enumerate() {
+                    arg_buf[index] = arg_array[j];
+                }
+                // Apply the j-th operation
+                ans[j] = self.op_list[j].int_value_at(&arg_buf)?;
+            }
+        }
+        
         Ok(ans)
     }
     
     fn clone_box(&self) -> Box<dyn Operation> {
-        Box::new(self.clone())
+        // Cannot clone BigProductOperation easily because it contains Box<dyn SmallAlgebra>
+        // Instead, return an error or create a new one
+        // For now, we'll need to handle cloning differently
+        todo!("BigProductOperation::clone_box not yet implemented - operations should be Arc-backed")
     }
     
     fn value_at(&self, _args: &[i32]) -> Result<i32, String> {
@@ -385,19 +448,67 @@ where
     /// Make operations on the product algebra.
     /// 
     /// This creates operations on the product that apply componentwise.
+    /// For power algebras, uses operations from the root algebra with Arc references.
     fn make_operations(&mut self) {
         self.operations = Vec::new();
         
         // Get operations from first algebra as a template
         if self.algebras.is_empty() {
-            eprintln!("DEBUG_MAKE_OPS: No algebras!");
             return;
         }
         
-        eprintln!("DEBUG_MAKE_OPS: Making operations for product with {} factors", self.number_of_factors);
+        // For power algebras, get operations from root algebra using Arc references
+        // For regular products, get from first factor
+        if let Some(ref root_algs) = self.root_algebras {
+            // Power algebra - use root algebra operations with Arc refs
+            if let Some(root_alg) = root_algs.first() {
+                // Get operations from root algebra
+                let root_ops = root_alg.operations();
+                let k = root_ops.len();
+                
+                // Verify root algebra has operations
+                if k == 0 {
+                    eprintln!("WARNING: Root algebra has no operations for power algebra");
+                    return;
+                }
+                
+                // For each operation in the root algebra
+                for i in 0..k {
+                    let root_op = &root_ops[i];
+                    let arity = root_op.arity();
+                    let symbol = root_op.symbol().clone();
+                    
+                    // Create a list of Arc references to the same operation (for power)
+                    // Since all factors are the same, we use the same operation
+                    let mut op_list = Vec::with_capacity(self.number_of_factors);
+                    for _ in 0..self.number_of_factors {
+                        // Clone the operation box and wrap in Arc
+                        let op_box = root_ops[i].clone_box();
+                        op_list.push(Arc::from(op_box));
+                    }
+                    
+                    // Clone factor algebras for the operation
+                    let factor_algebras: Vec<Box<dyn SmallAlgebra<UniverseItem = T>>> = 
+                        self.algebras.iter().map(|a| a.clone_box()).collect();
+                    
+                    // Create the product operation
+                    let prod_op = BigProductOperation::new(
+                        symbol,
+                        arity,
+                        self.number_of_factors,
+                        op_list,
+                        factor_algebras,
+                    );
+                    
+                    self.operations.push(Arc::new(prod_op));
+                }
+                return; // Done with power algebra case
+            }
+        }
+        
+        // Regular product case - use original logic
         let first_ops = self.algebras[0].operations();
         let k = first_ops.len();
-        eprintln!("DEBUG_MAKE_OPS: First algebra has {} operations", k);
         
         // For each operation in the first algebra
         for i in 0..k {
@@ -426,19 +537,23 @@ where
                 continue;
             }
             
+            // Clone factor algebras for the operation
+            let factor_algebras: Vec<Box<dyn SmallAlgebra<UniverseItem = T>>> = 
+                self.algebras.iter().map(|a| a.clone_box()).collect();
+            
             // Create the product operation
             let prod_op = BigProductOperation::new(
                 symbol,
                 arity,
                 self.number_of_factors,
                 op_list,
+                factor_algebras,
             );
             
             self.operations.push(Arc::new(prod_op));
-            eprintln!("DEBUG_MAKE_OPS: Created operation {} (arity={}) for product, total ops={}", 
-                     symbol_str, arity, self.operations.len());
+            
         }
-        eprintln!("DEBUG_MAKE_OPS: Finished making operations, total={}", self.operations.len());
+        
     }
     
     /// Get constants in this algebra.
@@ -801,8 +916,7 @@ where
             .iter()
             .map(|op| boxed_arc_op(Arc::clone(op)))
             .collect();
-        eprintln!("DEBUG_OPERATIONS: BigProductAlgebra.operations() returning {} operations (stored: {})", 
-                 ops.len(), self.operations.len());
+        
         ops
     }
     
