@@ -145,8 +145,8 @@ impl PyCloser {
             .map(|e| e.inner.clone())
             .collect();
         
-        let generators = self.inner.get_generators();
-        self.inner.set_elements_to_find(rust_elts, generators);
+        let generators: Vec<IntArray> = self.inner.get_generators().iter().cloned().collect();
+        self.inner.set_elements_to_find(rust_elts, &generators);
         Ok(())
     }
 

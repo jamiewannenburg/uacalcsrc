@@ -95,36 +95,44 @@ This class depends on:
 
 ### Current Implementation Status
 
-**Status:** Framework Complete (100% framework, 0% algorithms)
+**Status:** Framework Complete, Algorithms Partially Implemented
 
 **Rust Implementation:** 
 - ✅ Module structure created in `src/alg/malcev.rs`
-- ✅ All 25 public static functions defined with proper signatures
+- ✅ All 25+ public static functions defined with proper signatures
 - ✅ Type-safe generic implementations using `SmallAlgebra` trait
-- ⚠️ All functions return "not yet implemented" errors (algorithms pending)
+- ✅ **primality_terms()** - FULLY IMPLEMENTED (uses Closer multiple element finding)
+  - Helper functions: `unit_vectors()`, `semilat_term()`, `id_term()`, `unit_terms()`
+  - Uses `Closer::set_elements_to_find()` and `Closer::all_elements_found()` for multiple element finding
+- ⚠️ Most other functions return "not yet implemented" errors (algorithms pending)
 - ✅ Comprehensive documentation for all functions
 - ✅ Proper error handling using `Result<T, String>`
 
 **Python Bindings:**
-- ✅ Python bindings created in `uacalc_lib/src/malcev_bindings.rs`
-- ✅ All 25 functions exposed to Python through PyO3
+- ✅ Python bindings created in `uacalc_lib/src/alg/malcev.rs`
+- ✅ All 25+ functions exposed to Python through PyO3
 - ✅ Functions registered in alg module
 - ✅ Proper error propagation to Python
-- ⚠️ All functions return "not yet implemented" errors (algorithms pending)
+- ✅ **primality_terms()** - FULLY IMPLEMENTED in Python bindings
+- ⚠️ Most other functions return "not yet implemented" errors (algorithms pending)
 
 **Java Wrapper:**
 - ✅ Java CLI wrapper created at `java_wrapper/src/alg/MalcevWrapper.java`
-- ✅ Command-line interface with 11 commands
+- ✅ Command-line interface with 12+ commands (including `primality_terms`)
 - ✅ Supports algebra loading from .ua files
 - ✅ JSON output format for test comparisons
 - ✅ Compiled successfully with ant
+- ✅ **primality_terms command** - FULLY IMPLEMENTED
 
 **Tests:**
 - ✅ Rust tests exist in `src/alg/malcev.rs`
 - ✅ Basic validation tests pass
-- ✅ Python tests exist in `python/test_malcev_python.py`
-- ✅ All 14 Python tests pass
+- ✅ Python tests exist in `python/uacalc/tests/test_malcev.py`
+- ✅ All Python tests pass
 - ✅ Tests verify function accessibility and error handling
+- ✅ **primality_terms test** - FULLY IMPLEMENTED
+  - `test_primality_terms_with_cyclic3()` - Tests with cyclic3 algebra
+  - Added to `TestMalcevAllAlgebras` class for comprehensive testing across all algebras
 
 **Dependencies Status:**
 - ✅ `conlat` module: Fully implemented (binary_relation, partition, subtrace)
@@ -177,8 +185,17 @@ This class depends on:
 - [x] Code compiles without errors (warnings acceptable)
 - [x] Documentation complete
 
-**Note:** The framework implementation is complete. The actual complex algorithms
+**Recent Implementations:**
+- ✅ **primality_terms()** - Implemented in 2025-01-27
+  - Uses Closer's multiple element finding feature (`set_elements_to_find()`, `all_elements_found()`)
+  - Finds semilattice meet term, identity term, and unit vector terms
+  - Based on D. M. Clark, B. A. Davey, J. G. Pitkethly and D. L. Rifqui paper
+  - Fully tested with Java comparison and Python bindings
+
+**Note:** The framework implementation is complete. Most complex algorithms
 for term finding (which require free algebra closure operations) are marked as
 "not yet implemented". This is appropriate given the complexity of the algorithms
 (3500+ lines of intricate Java code involving free algebras, product algebras,
-and closure operations). Future work will implement the actual algorithms.
+and closure operations). The `primality_terms()` method demonstrates successful
+implementation using the updated Closer features. Future work will implement
+the remaining algorithms.

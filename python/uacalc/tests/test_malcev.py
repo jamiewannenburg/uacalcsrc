@@ -80,6 +80,7 @@ class TestMalcevPython(unittest.TestCase):
         self.assertTrue(hasattr(uacalc_lib.alg, 'is_congruence_modular_idempotent'))
         self.assertTrue(hasattr(uacalc_lib.alg, 'congruence_modular_variety'))
         self.assertTrue(hasattr(uacalc_lib.alg, 'jonsson_level'))
+        self.assertTrue(hasattr(uacalc_lib.alg, 'primality_terms'))
         
     def test_malcev_term_with_cyclic3(self):
         """Test malcev_term with cyclic3 algebra."""
@@ -213,6 +214,36 @@ class TestMalcevPython(unittest.TestCase):
             # If it's still not implemented, that's okay for now
             if "not yet implemented" in str(e):
                 self.skipTest("nu_term not yet fully implemented")
+            else:
+                raise
+    
+    def test_primality_terms_with_cyclic3(self):
+        """Test primality_terms with cyclic3 algebra."""
+        algebra_path = get_algebra_path("cyclic3.ua")
+        if not os.path.exists(algebra_path):
+            self.skipTest(f"Algebra file {algebra_path} not found")
+        
+        # Load algebra
+        AlgebraReader = uacalc_lib.io.AlgebraReader
+        reader = AlgebraReader.new_from_file(algebra_path)
+        alg = reader.read_algebra_file()
+        
+        # Test primality_terms
+        try:
+            result = uacalc_lib.alg.primality_terms(alg)
+            # Should either return a list of terms or None, not raise an error
+            if result is not None:
+                self.assertIsInstance(result, list)
+                self.assertGreater(len(result), 0)
+                for term in result:
+                    self.assertIsInstance(term, str)
+                print(f"Found {len(result)} primality terms")
+            else:
+                print("No primality terms found (this is valid)")
+        except Exception as e:
+            # If it's still not implemented, that's okay for now
+            if "not yet implemented" in str(e):
+                self.skipTest("primality_terms not yet fully implemented")
             else:
                 raise
     
@@ -615,6 +646,7 @@ class TestMalcevAllAlgebras(unittest.TestCase):
         "sd_terms",
         "markovic_mckenzie_siggers_taylor_term",
         "join_term",
+        "primality_terms",
         "jonsson_level",
         "is_congruence_dist_idempotent",
         "is_congruence_modular_idempotent",
@@ -790,6 +822,24 @@ class TestMalcevAllAlgebras(unittest.TestCase):
                             print(f"  ✓ {property_name}: match ({python_count if python_terms_found else 0} terms)")
                     
                     elif property_name == "sd_terms":
+                        java_terms_found = java_data.get("terms_found", False)
+                        java_count = java_data.get("count", 0)
+                        python_terms_found = python_result is not None and len(python_result) > 0
+                        python_count = len(python_result) if python_result else 0
+                        
+                        if python_terms_found != java_terms_found or (python_terms_found and java_terms_found and python_count != java_count):
+                            mismatch = {
+                                'algebra': algebra_path,
+                                'property': property_name,
+                                'python': f"{python_count} terms" if python_terms_found else "None",
+                                'java': f"{java_count} terms" if java_terms_found else "None"
+                            }
+                            results['mismatches'].append(mismatch)
+                            print(f"  ✗ {property_name}: Python={python_count if python_terms_found else 'None'}, Java={java_count if java_terms_found else 'None'}")
+                        else:
+                            print(f"  ✓ {property_name}: match ({python_count if python_terms_found else 0} terms)")
+                    
+                    elif property_name == "primality_terms":
                         java_terms_found = java_data.get("terms_found", False)
                         java_count = java_data.get("count", 0)
                         python_terms_found = python_result is not None and len(python_result) > 0

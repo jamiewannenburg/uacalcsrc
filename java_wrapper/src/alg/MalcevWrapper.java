@@ -129,6 +129,10 @@ public class MalcevWrapper extends WrapperBase {
                 handleJonssonLevel(options);
                 break;
                 
+            case "primality_terms":
+                handlePrimalityTerms(options);
+                break;
+                
             default:
                 handleError("Unknown command: " + command, null);
         }
@@ -563,6 +567,36 @@ public class MalcevWrapper extends WrapperBase {
     }
     
     /**
+     * Find primality terms for the algebra.
+     */
+    private void handlePrimalityTerms(Map<String, String> options) throws Exception {
+        String algebraPath = getRequiredArg(options, "algebra");
+        
+        SmallAlgebra alg = loadAlgebra(algebraPath);
+        List<Term> terms = Malcev.primalityTerms(alg, null);
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("command", "primality_terms");
+        result.put("algebra", alg.getName());
+        
+        if (terms != null && !terms.isEmpty()) {
+            result.put("terms_found", true);
+            result.put("count", terms.size());
+            
+            List<String> termStrings = new ArrayList<>();
+            for (Term term : terms) {
+                termStrings.add(term.toString());
+            }
+            result.put("terms", termStrings);
+        } else {
+            result.put("terms_found", false);
+            result.put("count", 0);
+        }
+        
+        handleSuccess(result);
+    }
+    
+    /**
      * Load an algebra from a file.
      */
     private SmallAlgebra loadAlgebra(String path) throws Exception {
@@ -593,7 +627,8 @@ public class MalcevWrapper extends WrapperBase {
             "sd_terms --algebra <path> - Find SD (semidistributive) terms",
             "markovic_mckenzie_siggers_taylor_term --algebra <path> - Find a Markovic-McKenzie-Siggers-Taylor term",
             "join_term --algebra <path> - Find a join term",
-            "jonsson_level --algebra <path> - Compute the Jonsson level"
+            "jonsson_level --algebra <path> - Compute the Jonsson level",
+            "primality_terms --algebra <path> - Find primality terms"
         };
         
         showUsage("Malcev", 

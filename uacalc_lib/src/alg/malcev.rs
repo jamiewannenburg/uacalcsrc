@@ -43,6 +43,7 @@ pub fn register_malcev_functions(_py: Python, m: &Bound<'_, PyModule>) -> PyResu
     m.add_function(wrap_pyfunction!(find_day_quadruple_in_square, m)?)?;
     m.add_function(wrap_pyfunction!(sd_meet_idempotent, m)?)?;
     m.add_function(wrap_pyfunction!(cyclic_term_idempotent, m)?)?;
+    m.add_function(wrap_pyfunction!(primality_terms, m)?)?;
 
     Ok(())
 }
@@ -443,6 +444,29 @@ fn day_quadruple(_a: usize, _b: usize, _c: usize, _d: usize, _algebra: PyObject)
 #[pyfunction]
 fn cyclic_term_idempotent(_algebra: PyObject, _arity: usize) -> PyResult<bool> {
     Err(PyValueError::new_err("Cyclic term test not yet implemented"))
+}
+
+/// Find primality terms for the algebra.
+///
+/// This gives unary terms evaluating to the characteristic functions of the one element
+/// subsets of alg; a term which applied to these unit vectors gives the identity function;
+/// and a binary term giving a semilattice operation on {0, 1}.
+///
+/// # Arguments
+/// * `algebra` - The algebra to check (BasicSmallAlgebra)
+///
+/// # Returns
+/// List of primality terms as strings if they exist, None otherwise
+#[pyfunction]
+fn primality_terms(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<Vec<String>>> {
+    match malcev::primality_terms(&algebra.inner) {
+        Ok(Some(terms)) => {
+            let term_strings: Vec<String> = terms.iter().map(|t| format!("{}", t)).collect();
+            Ok(Some(term_strings))
+        },
+        Ok(None) => Ok(None),
+        Err(e) => Err(PyValueError::new_err(e)),
+    }
 }
 
 
