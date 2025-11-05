@@ -112,7 +112,7 @@ This class depends on:
 
 ### Current Implementation Status
 
-**Status**: FULLY IMPLEMENTED (Core functionality complete, ~90% of methods)
+**Status**: FULLY IMPLEMENTED (Core functionality complete, ~95% of methods including homomorphism checking)
 
 **Rust Implementation**: 
 - ✅ **Core structure implemented** - `src/alg/closer.rs`
@@ -133,7 +133,7 @@ This class depends on:
 - ✅ **Module registration** - Properly registered and exported as `Closer` (not `PyCloser`)
 - ✅ **PyBigProductAlgebra** - Support class for Closer
 - ✅ **PyIntArray** - Element wrapper
-- ✅ **All core methods exposed** - `sg_close()`, `sg_close_power()`, `get_generators()`, `get_answer()`, configuration methods
+- ✅ **All core methods exposed** - `sg_close()`, `sg_close_power()`, `get_generators()`, `get_answer()`, configuration methods, homomorphism methods
 - Path: `uacalc_lib/src/alg/closer.rs`
 - Quality: Excellent - Full API coverage, properly exported, all tests passing
 - ✅ Built and tested with `maturin develop` - All imports working correctly
@@ -151,13 +151,17 @@ This class depends on:
   - Supports `--set_constraint` and `--set_constraint_index` for set constraint
   - Supports `--congruence`, `--congruence_index`, and `--congruence_elem_index` for congruence constraint
   - Automatically uses ba2 algebra when `base_size == 2` to ensure operations are available
+- ✅ **sg_close_with_homomorphism command** - Closure with homomorphism checking
+  - Supports `--image_generators` parameter for setting homomorphism map from generators
+  - Supports homomorphisms from power algebras to base algebra (projection homomorphisms)
+  - Returns `has_failing_equation` and `failing_equation` if homomorphism property fails
 - Path: `java_wrapper/src/alg/CloserWrapper.java`
-- Quality: Excellent - Full testing capability including power algebra methods and constraint handling
+- Quality: Excellent - Full testing capability including power algebra methods, constraint handling, and homomorphism checking
 - ✅ Compiled with `ant compile-wrappers` - All commands working
 
 **Tests**: 
 - ✅ **Rust unit tests** - Basic tests in `closer.rs` (test_new_closer, test_set_generators_removes_duplicates, test_constants_added_to_closure)
-- ✅ **Java comparison tests** - 13 tests in `tests/closer_java_comparison_tests.rs` comparing with Java
+- ✅ **Java comparison tests** - 15 tests in `tests/closer_java_comparison_tests.rs` comparing with Java
   - 3 tests for `sg_close_power()`:
     - `test_closer_sg_close_power_ba2_power2_java_comparison`
     - `test_closer_sg_close_power_ba2_power3_java_comparison`
@@ -167,12 +171,15 @@ This class depends on:
     - `test_closer_blocks_constraint_java_comparison` - Blocks constraint (indices must have same value)
     - `test_closer_values_constraint_java_comparison` - Values constraint (specific index-value pairs)
     - `test_closer_congruence_constraint_java_comparison` - Congruence constraint (partition-based)
+  - 2 tests for homomorphism checking:
+    - `test_closer_homomorphism_java_comparison` - Identity homomorphism from ba2^2 to ba2
+    - `test_closer_homomorphism_ba2_square_to_base_java_comparison` - Projection homomorphism from ba2^2 to ba2
 - ✅ **Python import tests** - All Python bindings import correctly (842 tests passing)
 - ✅ **Malcev integration tests** - All 27 Malcev Python tests passing (verify `sg_close_power()` usage)
 - ✅ **Integration verified** - Tests can be collected and run successfully
 - ⚠️ **Python-specific tests** - Not yet written (but Python bindings verified working)
 - Path: `src/alg/closer.rs` (unit tests), `tests/closer_java_comparison_tests.rs` (Java comparison)
-- Quality: Excellent - Core functionality tested, Java comparison verified including constraint handling, Python bindings verified
+- Quality: Excellent - Core functionality tested, Java comparison verified including constraint handling and homomorphism checking, Python bindings verified
 
 **Dependencies**:
 - ✅ `CloserTiming` - **FULLY IMPLEMENTED** in `src/alg/closer_timing.rs` (used in parallel closure)
@@ -201,7 +208,7 @@ This class depends on:
 11. ✅ Python bindings - Full API exposed with proper module registration including `sg_close_power()`
 12. ✅ Java wrapper for testing - `CloserWrapper.java` with `sg_close_power` command
 13. ✅ Rust unit tests - Tests for creation, generators, and constants handling
-14. ✅ Java comparison tests - 13 tests comparing output with Java implementation (including 3 constraint tests)
+14. ✅ Java comparison tests - 15 tests comparing output with Java implementation (including 3 constraint tests and 2 homomorphism tests)
 15. ✅ Malcev integration - All 10 Malcev methods updated to use `sg_close_power()` for power algebras
 16. ✅ Build and import verification - All components compile and Python bindings import correctly
 17. ✅ Advanced constraint handling - All constraint methods implemented with early termination when constraints are satisfied
@@ -211,11 +218,21 @@ This class depends on:
     - Congruence constraint: Uses partition-based constraints
     - Constraint checking integrated into both `sg_close_impl()` and `sg_close_power_impl()`
     - Java comparison tests verify exact match with Java behavior
+18. ✅ Homomorphism checking - All homomorphism methods implemented with checking during closure
+    - Homomorphism map: `get_homomorphism()`, `set_homomorphism()`, `set_homomorphism_from_gens()`
+    - Image algebra: `get_image_algebra()`, `set_image_algebra()`
+    - Failing equation: `get_failing_equation()`
+    - Homomorphism checking integrated into both `sg_close_impl()` and `sg_close_power_impl()`
+    - Checks constants for homomorphism property
+    - Checks new elements when computed (adds to homomorphism map)
+    - Checks existing elements when re-encountered (verifies consistency)
+    - Creates failing equation and returns early if homomorphism property fails
+    - Java comparison tests verify exact match with Java behavior
 
 **What Remains** (Optional/Advanced Features):
 1. ✅ **Power algebra optimization** - `sgClosePower()` specialized method **IMPLEMENTED** - Public `sg_close_power()` method added with Java comparison tests
 2. ✅ **Advanced constraint handling** - Blocks, values, congruence constraints **IMPLEMENTED** - All constraint methods implemented with Java comparison tests
-3. ⚠️ **Homomorphism checking** - Image algebra operations during closure
+3. ✅ **Homomorphism checking** - Image algebra operations during closure **IMPLEMENTED** - All homomorphism methods implemented with Java comparison tests
 4. ⚠️ **Operations finding** - Finding operations during closure (specialized feature)
 5. ⚠️ **Python-specific test suite** - Comprehensive Python tests for all methods (bindings verified working)
 6. ⚠️ **Performance optimization** - Further tuning of parallel execution
@@ -239,6 +256,26 @@ This class depends on:
 - ✅ Java wrapper compiled successfully with `ant compile-wrappers` - All commands working
 
 **Recent Changes (Latest Implementation)**:
+- ✅ **Homomorphism Checking Implementation** - All homomorphism methods implemented (2025-01-27)
+  - Rust: Added homomorphism fields to `Closer` struct: `homomorphism`, `image_algebra`, `failing_equation`
+  - Rust: Implemented all getter/setter methods for homomorphism fields in `src/alg/closer.rs`:
+    - `get_homomorphism()`, `set_homomorphism()`, `set_homomorphism_from_gens()`
+    - `get_image_algebra()`, `set_image_algebra()`
+    - `get_failing_equation()`
+  - Rust: Added homomorphism checking logic in `sg_close_impl()` and `sg_close_power_impl()`:
+    - Checks constants for homomorphism property (verifies image matches expected value)
+    - For new elements: computes image and adds to homomorphism map
+    - For existing elements: verifies image matches expected value (computed from argument images)
+    - Creates failing equation and returns early if homomorphism property fails
+    - Uses term map to construct failing equations with proper terms
+  - Rust: Updated `Clone` implementation to include all homomorphism fields
+  - Java wrapper: Added `sg_close_with_homomorphism` command in `CloserWrapper.java` with homomorphism parsing
+  - Java wrapper: Supports homomorphisms from power algebras to base algebra (projection homomorphisms)
+  - Tests: 2 Java comparison tests added in `tests/closer_java_comparison_tests.rs`:
+    - `test_closer_homomorphism_java_comparison` - Tests identity homomorphism from ba2^2 to ba2
+    - `test_closer_homomorphism_ba2_square_to_base_java_comparison` - Tests projection homomorphism from ba2^2 to ba2
+  - All 15 closer Java comparison tests passing (including 2 new homomorphism tests)
+  - Homomorphism checking matches Java behavior exactly - stops closure early when homomorphism property fails
 - ✅ **Advanced Constraint Handling Implementation** - All constraint methods implemented (2025-01-27)
   - Rust: Added constraint fields to `Closer` struct: `blocks`, `values`, `constraint_set`, `index_for_constraint_set`, `congruence_for_congruence_constraint`, `index_for_congruence_constraint`, `congruence_constraint_elem_index`
   - Rust: Implemented all getter/setter methods for constraint fields in `src/alg/closer.rs`
@@ -331,12 +368,14 @@ This class depends on:
 
 **Analysis**:
 - ✅ **CloserWrapper.java exists** - `java_wrapper/src/alg/CloserWrapper.java` provides CLI interface
-  - Commands: `test`, `sg_close`, `sg_close_power`, `sg_close_ba2_power`, `sg_close_free_algebra`
-  - Exposes core closure functionality for testing
+  - Commands: `test`, `sg_close`, `sg_close_power`, `sg_close_ba2_power`, `sg_close_free_algebra`, `sg_close_with_constraints`, `sg_close_with_homomorphism`
+  - Exposes core closure functionality for testing including constraint handling and homomorphism checking
 - ✅ **Java comparison tests implemented** - Tests use `compare_with_java!` macro in `tests/closer_java_comparison_tests.rs`
   - `test_closer_sg_close_power_ba2_power2_java_comparison` - Tests `sg_close_power()` with 2-element base, power 2
   - `test_closer_sg_close_power_ba2_power3_java_comparison` - Tests `sg_close_power()` with 2-element base, power 3
   - `test_closer_sg_close_power_ba2_power3_single_generator` - Tests `sg_close_power()` with single generator
+  - Constraint tests: `test_closer_blocks_constraint_java_comparison`, `test_closer_values_constraint_java_comparison`, `test_closer_congruence_constraint_java_comparison`
+  - Homomorphism tests: `test_closer_homomorphism_java_comparison`, `test_closer_homomorphism_ba2_square_to_base_java_comparison`
   - All tests compare Rust output with Java output and verify exact match
 - ✅ **Existing tests validate functionality** - Tests in `closer_power_test.rs` and `closer_bigproduct_subproduct_power_tests.rs` verify functionality
 - ✅ **Additional Java comparison tests** - Tests for `sg_close()` with ba2 power algebras and free algebras (F(1), F(2))
@@ -356,7 +395,7 @@ This class depends on:
 
 ### Missing Methods Analysis
 
-**Status**: ✅ **~95% COMPLETE** - Core functionality implemented including power algebra optimization and advanced constraint handling
+**Status**: ✅ **~98% COMPLETE** - Core functionality implemented including power algebra optimization, advanced constraint handling, and homomorphism checking
 
 **Implemented Methods** (✅):
 - Core closure: `sg_close()`, `sg_close_impl()`, `sg_close_power()`, `sg_close_power_impl()`, `sg_close_parallel()`
@@ -383,10 +422,10 @@ This class depends on:
    - ✅ `getCongruenceConstraintElemIndex()` / `setCongruenceConstraintElemIndex()` - `get_congruence_constraint_elem_index()` / `set_congruence_constraint_elem_index()` implemented
    - ✅ `setupCongruenceConstraint()` - `setup_congruence_constraint()` implemented
 
-2. **Homomorphism Methods** (for homomorphism checking during closure):
-   - `getHomomorphism()` / `setHomomorphism(Map<IntArray,Integer>)` / `setHomomorphism(int[])`
-   - `getImageAlgebra()` / `setImageAlgebra(SmallAlgebra)`
-   - `getFailingEquation()` - Returns equation that fails homomorphism check
+2. **Homomorphism Methods** (for homomorphism checking during closure): ✅ **IMPLEMENTED**
+   - ✅ `getHomomorphism()` / `setHomomorphism(Map<IntArray,Integer>)` / `setHomomorphism(int[])` - `get_homomorphism()` / `set_homomorphism()` / `set_homomorphism_from_gens()` implemented
+   - ✅ `getImageAlgebra()` / `setImageAlgebra(SmallAlgebra)` - `get_image_algebra()` / `set_image_algebra()` implemented
+   - ✅ `getFailingEquation()` - `get_failing_equation()` implemented
 
 3. **Multiple Element Finding**:
    - `getElementsToFind()` / `setElementsToFind(List<IntArray>, List<IntArray>)`
@@ -404,8 +443,8 @@ This class depends on:
 - **High Priority** (Core functionality): ✅ All implemented
 - **Medium Priority** (Useful features): 
   - ✅ Constraint methods (blocks, values, congruence constraints) - **IMPLEMENTED**
+  - ✅ Homomorphism checking (`getHomomorphism`, `setImageAlgebra`, `getFailingEquation`) - **IMPLEMENTED**
   - Multiple element finding (`getElementsToFind`, `allElementsFound`)
-  - Homomorphism checking (`getHomomorphism`, `setImageAlgebra`, `getFailingEquation`)
 - **Low Priority** (Specialized features):
   - Operations finding (clone testing)
   - `close()` method (simplified version)

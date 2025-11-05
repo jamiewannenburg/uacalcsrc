@@ -79,6 +79,10 @@ public class CloserWrapper extends WrapperBase {
                 handleSgCloseWithConstraints(options);
                 break;
                 
+            case "sg_close_with_homomorphism":
+                handleSgCloseWithHomomorphism(options);
+                break;
+                
             default:
                 handleError("Unknown command: " + command, null);
         }
@@ -530,6 +534,97 @@ public class CloserWrapper extends WrapperBase {
     }
     
     /**
+     * Handle sg_close_with_homomorphism command - closure with homomorphism checking.
+     */
+    private void handleSgCloseWithHomomorphism(Map<String, String> options) throws Exception {
+        int baseSize = getIntArg(options, "base_size", 2);
+        int power = getIntArg(options, "power", 2);
+        
+        // Load ba2 algebra (ensures operations are available)
+        SmallAlgebra base = loadBa2();
+        BigProductAlgebra algebra = new BigProductAlgebra(base, power);
+        
+        // Parse generators
+        String gensStr = options.get("generators");
+        if (gensStr == null || gensStr.isEmpty()) {
+            handleError("generators parameter is required", null);
+            return;
+        }
+        List<IntArray> generators = parseGenerators(gensStr, power);
+        
+        // Create closer
+        Closer closer = new Closer(algebra, generators);
+        
+        // Enable term map (required for homomorphism checking)
+        closer.setTermMap(new HashMap<IntArray, org.uacalc.terms.Term>());
+        
+        // Parse image algebra generators
+        String imageGensStr = options.get("image_generators");
+        if (imageGensStr == null || imageGensStr.isEmpty()) {
+            handleError("image_generators parameter is required", null);
+            return;
+        }
+        String[] imageGenParts = imageGensStr.split(",");
+        int[] imageGens = new int[imageGenParts.length];
+        for (int i = 0; i < imageGenParts.length; i++) {
+            imageGens[i] = Integer.parseInt(imageGenParts[i].trim());
+        }
+        
+        // Set image algebra - for now, always use the base algebra as image
+        // This works for homomorphisms from A^n to A (projection homomorphisms)
+        // For homomorphisms from A^n to A^n, we would need a different approach
+        closer.setImageAlgebra(base);
+        
+        // Set homomorphism from generators
+        // Note: imageGens are indices into the image algebra universe
+        // For ba2 (size 2), valid indices are 0,1
+        // For ba2^2, we need indices 0-3 (representing [0,0], [0,1], [1,0], [1,1])
+        // The indices are computed using Horner encoding: [a,b] -> a + b*baseSize
+        // So for ba2^2: [0,0]=0, [0,1]=1, [1,0]=2, [1,1]=3
+        closer.setHomomorphism(imageGens);
+        
+        // Compute closure using power method for power algebras
+        // This ensures homomorphism checking works correctly
+        List<IntArray> result;
+        if (power > 1) {
+            result = closer.sgClosePower();
+        } else {
+            result = closer.sgClose();
+        }
+        
+        // Format result
+        List<List<Integer>> resultList = new ArrayList<>();
+        for (IntArray ia : result) {
+            List<Integer> elem = new ArrayList<>();
+            for (int i = 0; i < ia.universeSize(); i++) {
+                elem.add(ia.get(i));
+            }
+            resultList.add(elem);
+        }
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("command", "sg_close_with_homomorphism");
+        response.put("base_size", baseSize);
+        response.put("power", power);
+        response.put("generators_count", generators.size());
+        response.put("closure_size", result.size());
+        response.put("closure", resultList);
+        
+        // Check for failing equation
+        org.uacalc.eq.Equation failingEq = closer.getFailingEquation();
+        if (failingEq != null) {
+            response.put("failing_equation", failingEq.toString());
+            response.put("has_failing_equation", true);
+        } else {
+            response.put("has_failing_equation", false);
+        }
+        
+        response.put("status", "success");
+        
+        handleSuccess(response);
+    }
+    
+    /**
      * Show usage information for the Closer wrapper.
      */
     private void showUsage() {
@@ -540,6 +635,7 @@ public class CloserWrapper extends WrapperBase {
             "sg_close_ba2_power --power 3 --generators \"0,0,1;1,1,0\"",
             "sg_close_free_algebra --num_gens 1 --power 3 --generators \"0,0,1;1,1,0\"",
             "sg_close_with_constraints --base_size 2 --power 2 --generators \"0,0;0,1\" --blocks \"0,1\"",
+            "sg_close_with_homomorphism --base_size 2 --power 2 --generators \"0,0;0,1\" --image_generators \"0,1\"",
             "help"
         };
         

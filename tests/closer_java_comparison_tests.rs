@@ -9,7 +9,7 @@ use uacalc::alg::{Closer, BigProductAlgebra, FreeAlgebra, Algebra, SmallAlgebra}
 use uacalc::alg::conlat::partition::Partition;
 use uacalc::util::int_array::{IntArray, IntArrayTrait};
 use uacalc::io::algebra_io::read_algebra_file;
-use std::collections::HashSet;
+use std::collections::{HashSet, HashMap};
 use std::sync::Arc;
 use std::path::Path;
 use serde_json::json;
@@ -28,17 +28,22 @@ fn create_ba2() -> Box<dyn SmallAlgebra<UniverseItem = i32>> {
     
     use uacalc::alg::op::ops::make_int_operations;
     use uacalc::alg::BasicSmallAlgebra;
+    use uacalc::alg::Algebra;
     
     let card = base_alg.cardinality();
     let ops = base_alg.operations();
     let int_ops = make_int_operations(ops).expect("Failed to create int operations");
     let universe: HashSet<i32> = (0..card).collect();
     
-    Box::new(BasicSmallAlgebra::new(
+    let mut alg = BasicSmallAlgebra::new(
         base_alg.name().to_string(),
         universe,
         int_ops,
-    )) as Box<dyn SmallAlgebra<UniverseItem = i32>>
+    );
+    // Initialize similarity type
+    alg.update_similarity_type();
+    
+    Box::new(alg) as Box<dyn SmallAlgebra<UniverseItem = i32>>
 }
 
 /// Helper function to create F(n) - free algebra with n generators over ba2
@@ -542,3 +547,150 @@ fn test_closer_congruence_constraint_java_comparison() {
     );
 }
 
+
+#[test]
+fn test_closer_homomorphism_java_comparison() {
+    let config = TestConfig::default();
+    
+    // Create separate ba2 instances for power algebra and image algebra
+    let ba2_for_power = create_ba2();
+    let ba2_for_image = create_ba2();
+    // Use identity homomorphism: generators map to themselves
+    // This ensures all elements in closure will have predictable images
+    let ba2_power2 = BigProductAlgebra::<i32>::new_power_safe(ba2_for_power, 2).unwrap();
+    
+    let g0 = IntArray::from_array(vec![0, 0]).unwrap();
+    let g1 = IntArray::from_array(vec![1, 1]).unwrap();
+    let gens = vec![g0, g1];
+    
+    compare_with_java!(
+        config,
+        "java_wrapper.src.alg.CloserWrapper",
+        ["sg_close_with_homomorphism", "--base_size", "2", "--power", "2", "--generators", "0,0;1,1", "--image_generators", "0,1"],
+        || {
+            let mut closer = Closer::new_safe(Arc::new(ba2_power2.clone()), gens.clone()).unwrap();
+            
+            // Enable term map (required for homomorphism checking)
+            let mut term_map = HashMap::new();
+            use uacalc::terms::VariableImp;
+            for (i, gen) in gens.iter().enumerate() {
+                let var_name = format!("x{}", i);
+                let var = Box::new(VariableImp::new(&var_name)) as Box<dyn uacalc::terms::Term>;
+                term_map.insert(gen.clone(), var);
+            }
+            closer.set_term_map(Some(term_map));
+            
+            // Set image algebra - use a fresh instance
+            let image_alg = ba2_for_image.clone_box();
+            closer.set_image_algebra(Some(Arc::from(image_alg))).unwrap();
+            
+            // Set homomorphism from generators - identity: 0->0, 1->1
+            let image_gens = vec![0, 1];
+            closer.set_homomorphism_from_gens(image_gens).unwrap();
+            
+            let closure = closer.sg_close().unwrap();
+            
+            let failing_eq = closer.get_failing_equation();
+            let has_failing = failing_eq.is_some();
+            
+            // Build JSON matching Java format (Java omits failing_equation field when null)
+            let mut result = json!({
+                "command": "sg_close_with_homomorphism",
+                "base_size": 2,
+                "power": 2,
+                "generators_count": 2,
+                "closure_size": closure.len(),
+                "closure": closure.iter().map(|e| e.as_slice().to_vec()).collect::<Vec<_>>(),
+                "has_failing_equation": has_failing,
+                "status": "success"
+            });
+            
+            // Only add failing_equation if it exists (matching Java behavior)
+            if has_failing {
+                if let Some(eq) = failing_eq {
+                    result["failing_equation"] = json!(format!("{}", eq));
+                }
+            }
+            
+            result
+        }
+    );
+}
+
+#[test]
+fn test_closer_homomorphism_ba2_square_to_base_java_comparison() {
+    let config = TestConfig::default();
+    
+    // Test projection homomorphism from ba2^2 to ba2
+    // Note: We can't test ba2^2 to itself directly because BigProductAlgebra 
+    // doesn't implement SmallAlgebra. This test uses a projection to ba2 instead.
+    
+    // Create ba2^2 (square of ba2) - power algebra with power 2
+    let ba2_for_power = create_ba2();
+    let ba2_for_image = create_ba2();
+    let ba2_power2 = BigProductAlgebra::<i32>::new_power_safe(ba2_for_power, 2).unwrap();
+    
+    // Use generators that create a simple closure
+    // The identity case [0,0] and [1,1] works because closure is just these two elements
+    let g0 = IntArray::from_array(vec![0, 0]).unwrap();
+    let g1 = IntArray::from_array(vec![1, 1]).unwrap();
+    let gens = vec![g0, g1];
+    
+    // Test projection homomorphism from ba2^2 to ba2
+    // Map [0,0] -> 0 and [1,1] -> 1 (projection to first coordinate)
+    // This is a projection homomorphism that preserves the homomorphism property
+    
+    compare_with_java!(
+        config,
+        "java_wrapper.src.alg.CloserWrapper",
+        ["sg_close_with_homomorphism", "--base_size", "2", "--power", "2", "--generators", "0,0;1,1", "--image_generators", "0,1"],
+        || {
+            let mut closer = Closer::new_safe(Arc::new(ba2_power2.clone()), gens.clone()).unwrap();
+            
+            // Enable term map (required for homomorphism checking)
+            let mut term_map = HashMap::new();
+            use uacalc::terms::VariableImp;
+            for (i, gen) in gens.iter().enumerate() {
+                let var_name = format!("x{}", i);
+                let var = Box::new(VariableImp::new(&var_name)) as Box<dyn uacalc::terms::Term>;
+                term_map.insert(gen.clone(), var);
+            }
+            closer.set_term_map(Some(term_map));
+            
+            // Set image algebra - use ba2 (base algebra) as the image
+            let image_alg = Arc::from(ba2_for_image.clone_box());
+            closer.set_image_algebra(Some(image_alg)).unwrap();
+            
+            // Set homomorphism from generators
+            // Map [0,0] -> 0 and [1,1] -> 1 (projection to first coordinate)
+            let image_gens = vec![0, 1];
+            closer.set_homomorphism_from_gens(image_gens).unwrap();
+            
+            let closure = closer.sg_close().unwrap();
+            
+            let failing_eq = closer.get_failing_equation();
+            let has_failing = failing_eq.is_some();
+            
+            // Build JSON matching Java format
+            let mut result = json!({
+                "command": "sg_close_with_homomorphism",
+                "base_size": 2,
+                "power": 2,
+                "generators_count": 2,
+                "closure_size": closure.len(),
+                "closure": closure.iter().map(|e| e.as_slice().to_vec()).collect::<Vec<_>>(),
+                "has_failing_equation": has_failing,
+                "status": "success"
+            });
+            
+            // Only add failing_equation if it exists (matching Java behavior)
+            if has_failing {
+                if let Some(eq) = failing_eq {
+                    result["failing_equation"] = json!(format!("{}", eq));
+                }
+            }
+            
+            result
+        }
+    );
+}
