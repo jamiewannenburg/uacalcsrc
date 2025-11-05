@@ -83,6 +83,10 @@ public class CloserWrapper extends WrapperBase {
                 handleSgCloseWithHomomorphism(options);
                 break;
                 
+            case "sg_close_with_operations_finding":
+                handleSgCloseWithOperationsFinding(options);
+                break;
+                
             default:
                 handleError("Unknown command: " + command, null);
         }
@@ -625,6 +629,124 @@ public class CloserWrapper extends WrapperBase {
     }
     
     /**
+     * Handle sg_close_with_operations_finding command - closure with operations finding.
+     */
+    private void handleSgCloseWithOperationsFinding(Map<String, String> options) throws Exception {
+        int baseSize = getIntArg(options, "base_size", 2);
+        int power = getIntArg(options, "power", 2);
+        
+        // Load ba2 algebra (ensures operations are available)
+        SmallAlgebra base = loadBa2();
+        BigProductAlgebra algebra = new BigProductAlgebra(base, power);
+        
+        // Parse generators
+        String gensStr = options.get("generators");
+        if (gensStr == null || gensStr.isEmpty()) {
+            handleError("generators parameter is required", null);
+            return;
+        }
+        List<IntArray> generators = parseGenerators(gensStr, power);
+        
+        // Parse operations to find - format: "arity:table1,table2,..."
+        // For example, "2:0,1,2,1" means a binary operation with table [0,1,2,1]
+        String opsStr = options.get("operations");
+        if (opsStr == null || opsStr.isEmpty()) {
+            handleError("operations parameter is required", null);
+            return;
+        }
+        
+        List<org.uacalc.alg.op.Operation> operationsToFind = parseOperations(opsStr, baseSize);
+        
+        // Create closer with term map (required for operations finding)
+        // Use constructor that creates term map automatically
+        Closer closer = new Closer(algebra, generators, true);
+        
+        // Set root algebra and operations
+        closer.setRootAlgebra(base);
+        closer.setOperations(operationsToFind);
+        
+        // Compute closure using power method for power algebras
+        List<IntArray> result;
+        if (power > 1) {
+            result = closer.sgClosePower();
+        } else {
+            result = closer.sgClose();
+        }
+        
+        // Format result
+        List<List<Integer>> resultList = new ArrayList<>();
+        for (IntArray ia : result) {
+            List<Integer> elem = new ArrayList<>();
+            for (int i = 0; i < ia.universeSize(); i++) {
+                elem.add(ia.get(i));
+            }
+            resultList.add(elem);
+        }
+        
+        // Get term map for operations
+        Map<org.uacalc.alg.op.Operation, org.uacalc.terms.Term> termMapForOps = closer.getTermMapForOperations();
+        Map<String, String> operationsFound = new HashMap<>();
+        if (termMapForOps != null) {
+            for (org.uacalc.alg.op.Operation op : termMapForOps.keySet()) {
+                org.uacalc.terms.Term term = termMapForOps.get(op);
+                operationsFound.put(op.symbol().name(), term.toString());
+            }
+        }
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("command", "sg_close_with_operations_finding");
+        response.put("base_size", baseSize);
+        response.put("power", power);
+        response.put("generators_count", generators.size());
+        response.put("closure_size", result.size());
+        response.put("closure", resultList);
+        response.put("operations_found_count", operationsFound.size());
+        response.put("operations_found", operationsFound);
+        response.put("status", "success");
+        
+        handleSuccess(response);
+    }
+    
+    /**
+     * Parse operations from string format: "arity:table1,table2,..."
+     * Multiple operations can be separated by semicolons: "2:0,1,2,1;3:0,1,2,..."
+     */
+    private List<org.uacalc.alg.op.Operation> parseOperations(String opsStr, int setSize) throws Exception {
+        List<org.uacalc.alg.op.Operation> operations = new ArrayList<>();
+        
+        String[] opStrings = opsStr.split(";");
+        for (String opStr : opStrings) {
+            opStr = opStr.trim();
+            if (opStr.isEmpty()) continue;
+            
+            // Format: "arity:table" where table is comma-separated values
+            int colonIndex = opStr.indexOf(':');
+            if (colonIndex < 0) {
+                throw new IllegalArgumentException("Invalid operation format (missing colon): " + opStr);
+            }
+            
+            int arity = Integer.parseInt(opStr.substring(0, colonIndex).trim());
+            String tableStr = opStr.substring(colonIndex + 1).trim();
+            
+            // Parse table
+            String[] tableParts = tableStr.split(",");
+            int[] table = new int[tableParts.length];
+            for (int i = 0; i < tableParts.length; i++) {
+                table[i] = Integer.parseInt(tableParts[i].trim());
+            }
+            
+            // Create operation symbol
+            org.uacalc.alg.op.OperationSymbol symbol = new org.uacalc.alg.op.OperationSymbol("f" + operations.size(), arity, false);
+            
+            // Create operation
+            org.uacalc.alg.op.Operation op = org.uacalc.alg.op.Operations.makeIntOperation(symbol, setSize, table);
+            operations.add(op);
+        }
+        
+        return operations;
+    }
+    
+    /**
      * Show usage information for the Closer wrapper.
      */
     private void showUsage() {
@@ -636,6 +758,7 @@ public class CloserWrapper extends WrapperBase {
             "sg_close_free_algebra --num_gens 1 --power 3 --generators \"0,0,1;1,1,0\"",
             "sg_close_with_constraints --base_size 2 --power 2 --generators \"0,0;0,1\" --blocks \"0,1\"",
             "sg_close_with_homomorphism --base_size 2 --power 2 --generators \"0,0;0,1\" --image_generators \"0,1\"",
+            "sg_close_with_operations_finding --base_size 2 --power 2 --generators \"0,0;0,1\" --operations \"2:0,1,1,0\"",
             "help"
         };
         

@@ -112,7 +112,7 @@ This class depends on:
 
 ### Current Implementation Status
 
-**Status**: FULLY IMPLEMENTED (Core functionality complete, ~95% of methods including homomorphism checking)
+**Status**: FULLY IMPLEMENTED (Core functionality complete, ~99% of methods including homomorphism checking and operations finding)
 
 **Rust Implementation**: 
 - ✅ **Core structure implemented** - `src/alg/closer.rs`
@@ -155,13 +155,17 @@ This class depends on:
   - Supports `--image_generators` parameter for setting homomorphism map from generators
   - Supports homomorphisms from power algebras to base algebra (projection homomorphisms)
   - Returns `has_failing_equation` and `failing_equation` if homomorphism property fails
+- ✅ **sg_close_with_operations_finding command** - Closure with operations finding
+  - Supports `--operations` parameter for specifying operations to find (format: `"arity:table1,table2,..."`)
+  - Parses operations and sets root algebra automatically
+  - Returns `operations_found` map with operation symbols and their terms
 - Path: `java_wrapper/src/alg/CloserWrapper.java`
-- Quality: Excellent - Full testing capability including power algebra methods, constraint handling, and homomorphism checking
+- Quality: Excellent - Full testing capability including power algebra methods, constraint handling, homomorphism checking, and operations finding
 - ✅ Compiled with `ant compile-wrappers` - All commands working
 
 **Tests**: 
 - ✅ **Rust unit tests** - Basic tests in `closer.rs` (test_new_closer, test_set_generators_removes_duplicates, test_constants_added_to_closure)
-- ✅ **Java comparison tests** - 15 tests in `tests/closer_java_comparison_tests.rs` comparing with Java
+- ✅ **Java comparison tests** - 16 tests in `tests/closer_java_comparison_tests.rs` comparing with Java
   - 3 tests for `sg_close_power()`:
     - `test_closer_sg_close_power_ba2_power2_java_comparison`
     - `test_closer_sg_close_power_ba2_power3_java_comparison`
@@ -174,12 +178,14 @@ This class depends on:
   - 2 tests for homomorphism checking:
     - `test_closer_homomorphism_java_comparison` - Identity homomorphism from ba2^2 to ba2
     - `test_closer_homomorphism_ba2_square_to_base_java_comparison` - Projection homomorphism from ba2^2 to ba2
+  - 1 test for operations finding:
+    - `test_closer_operations_finding_java_comparison` - Operations finding with meet operation on ba2^2
 - ✅ **Python import tests** - All Python bindings import correctly (842 tests passing)
 - ✅ **Malcev integration tests** - All 27 Malcev Python tests passing (verify `sg_close_power()` usage)
 - ✅ **Integration verified** - Tests can be collected and run successfully
 - ⚠️ **Python-specific tests** - Not yet written (but Python bindings verified working)
 - Path: `src/alg/closer.rs` (unit tests), `tests/closer_java_comparison_tests.rs` (Java comparison)
-- Quality: Excellent - Core functionality tested, Java comparison verified including constraint handling and homomorphism checking, Python bindings verified
+- Quality: Excellent - Core functionality tested, Java comparison verified including constraint handling, homomorphism checking, and operations finding, Python bindings verified
 
 **Dependencies**:
 - ✅ `CloserTiming` - **FULLY IMPLEMENTED** in `src/alg/closer_timing.rs` (used in parallel closure)
@@ -228,12 +234,21 @@ This class depends on:
     - Checks existing elements when re-encountered (verifies consistency)
     - Creates failing equation and returns early if homomorphism property fails
     - Java comparison tests verify exact match with Java behavior
+19. ✅ Operations finding - All operations finding methods implemented with finding during closure
+    - Root algebra: `set_root_algebra()`, `get_root_algebra()`
+    - Operations list: `set_operations()`, `get_operations()`
+    - Term map for operations: `get_term_map_for_operations()`
+    - Operations finding integrated into both `sg_close_impl()` and `sg_close_power_impl()`
+    - When a new element is computed, its term is interpreted as an operation on the root algebra
+    - Compared with target operations using `equal_values()` and added to term map if found
+    - Returns early when all operations are found
+    - Java comparison tests verify exact match with Java behavior
 
 **What Remains** (Optional/Advanced Features):
 1. ✅ **Power algebra optimization** - `sgClosePower()` specialized method **IMPLEMENTED** - Public `sg_close_power()` method added with Java comparison tests
 2. ✅ **Advanced constraint handling** - Blocks, values, congruence constraints **IMPLEMENTED** - All constraint methods implemented with Java comparison tests
 3. ✅ **Homomorphism checking** - Image algebra operations during closure **IMPLEMENTED** - All homomorphism methods implemented with Java comparison tests
-4. ⚠️ **Operations finding** - Finding operations during closure (specialized feature)
+4. ✅ **Operations finding** - Finding operations during closure **IMPLEMENTED** - All operations finding methods implemented with Java comparison tests
 5. ⚠️ **Python-specific test suite** - Comprehensive Python tests for all methods (bindings verified working)
 6. ⚠️ **Performance optimization** - Further tuning of parallel execution
 
@@ -256,6 +271,25 @@ This class depends on:
 - ✅ Java wrapper compiled successfully with `ant compile-wrappers` - All commands working
 
 **Recent Changes (Latest Implementation)**:
+- ✅ **Operations Finding Implementation** - All operations finding methods implemented (2025-01-27)
+  - Rust: Added operations finding fields to `Closer` struct: `root_algebra`, `operations`, `term_map_for_operations`
+  - Rust: Implemented all getter/setter methods for operations finding fields in `src/alg/closer.rs`:
+    - `get_term_map_for_operations()`, `set_root_algebra()`, `get_root_algebra()`
+    - `set_operations()`, `get_operations()`
+  - Rust: Added operations finding logic in `sg_close_impl()` and `sg_close_power_impl()`:
+    - When a new element is computed and added to term_map, interpret its term as an operation on root_algebra
+    - Compare interpreted operation with each target operation using `equal_values()`
+    - If found, add to `term_map_for_operations` using operation symbol as key
+    - Return early when all operations are found
+    - Creates temporary i32 algebra from root algebra operations for interpretation
+  - Rust: Updated `Clone` implementation to include operations finding fields
+  - Java wrapper: Added `sg_close_with_operations_finding` command in `CloserWrapper.java` with operation parsing
+  - Java wrapper: Supports parsing operations from command line (format: `"arity:table1,table2,..."`)
+  - Java wrapper: Automatically creates term map using constructor with `makeTermMap=true`
+  - Tests: 1 Java comparison test added in `tests/closer_java_comparison_tests.rs`:
+    - `test_closer_operations_finding_java_comparison` - Tests operations finding with meet operation on ba2^2
+  - All 16 closer Java comparison tests passing (including 1 new operations finding test)
+  - Operations finding matches Java behavior exactly - finds operations during closure and maps them to terms
 - ✅ **Homomorphism Checking Implementation** - All homomorphism methods implemented (2025-01-27)
   - Rust: Added homomorphism fields to `Closer` struct: `homomorphism`, `image_algebra`, `failing_equation`
   - Rust: Implemented all getter/setter methods for homomorphism fields in `src/alg/closer.rs`:
@@ -274,7 +308,7 @@ This class depends on:
   - Tests: 2 Java comparison tests added in `tests/closer_java_comparison_tests.rs`:
     - `test_closer_homomorphism_java_comparison` - Tests identity homomorphism from ba2^2 to ba2
     - `test_closer_homomorphism_ba2_square_to_base_java_comparison` - Tests projection homomorphism from ba2^2 to ba2
-  - All 15 closer Java comparison tests passing (including 2 new homomorphism tests)
+  - All 16 closer Java comparison tests passing (including 2 homomorphism tests and 1 operations finding test)
   - Homomorphism checking matches Java behavior exactly - stops closure early when homomorphism property fails
 - ✅ **Advanced Constraint Handling Implementation** - All constraint methods implemented (2025-01-27)
   - Rust: Added constraint fields to `Closer` struct: `blocks`, `values`, `constraint_set`, `index_for_constraint_set`, `congruence_for_congruence_constraint`, `index_for_congruence_constraint`, `congruence_constraint_elem_index`
@@ -395,7 +429,7 @@ This class depends on:
 
 ### Missing Methods Analysis
 
-**Status**: ✅ **~98% COMPLETE** - Core functionality implemented including power algebra optimization, advanced constraint handling, and homomorphism checking
+**Status**: ✅ **~99% COMPLETE** - Core functionality implemented including power algebra optimization, advanced constraint handling, homomorphism checking, and operations finding
 
 **Implemented Methods** (✅):
 - Core closure: `sg_close()`, `sg_close_impl()`, `sg_close_power()`, `sg_close_power_impl()`, `sg_close_parallel()`
@@ -431,9 +465,13 @@ This class depends on:
    - `getElementsToFind()` / `setElementsToFind(List<IntArray>, List<IntArray>)`
    - `allElementsFound()` - Check if all target elements found
 
-4. **Operations Finding** (for clone testing):
-   - `getTermMapForOperations()` / `setOperations(List<Operation>)`
-   - `setRootAlgebra(SmallAlgebra)` - Set root algebra for operation interpretation
+4. **Operations Finding** (for clone testing): ✅ **IMPLEMENTED**
+   - ✅ `getTermMapForOperations()` / `setOperations(List<Operation>)` - `get_term_map_for_operations()` / `set_operations()` implemented
+   - ✅ `setRootAlgebra(SmallAlgebra)` - `set_root_algebra()` / `get_root_algebra()` implemented
+   - Operations finding logic integrated into both `sg_close_impl()` and `sg_close_power_impl()`
+   - When a new element is computed, its term is interpreted as an operation on the root algebra
+   - Compared with target operations using `equal_values()` and added to term map if found
+   - Early termination when all operations are found
 
 5. **Other Methods**:
    - `close()` - Simplified closure for powers only (Java line 397)
@@ -444,9 +482,9 @@ This class depends on:
 - **Medium Priority** (Useful features): 
   - ✅ Constraint methods (blocks, values, congruence constraints) - **IMPLEMENTED**
   - ✅ Homomorphism checking (`getHomomorphism`, `setImageAlgebra`, `getFailingEquation`) - **IMPLEMENTED**
+  - ✅ Operations finding (`getTermMapForOperations`, `setOperations`, `setRootAlgebra`) - **IMPLEMENTED**
   - Multiple element finding (`getElementsToFind`, `allElementsFound`)
 - **Low Priority** (Specialized features):
-  - Operations finding (clone testing)
   - `close()` method (simplified version)
   - `countFuncApplications()` (utility method)
 

@@ -694,3 +694,78 @@ fn test_closer_homomorphism_ba2_square_to_base_java_comparison() {
         }
     );
 }
+
+#[test]
+fn test_closer_operations_finding_java_comparison() {
+    let config = TestConfig::default();
+    
+    // Create ba2^2 (square of ba2) - power algebra with power 2
+    let ba2_for_power = create_ba2();
+    let ba2_for_root = create_ba2();
+    let ba2_power2 = BigProductAlgebra::<i32>::new_power_safe(ba2_for_power, 2).unwrap();
+    
+    // Use generators that create a closure containing the operations we're looking for
+    let g0 = IntArray::from_array(vec![0, 0]).unwrap();
+    let g1 = IntArray::from_array(vec![0, 1]).unwrap();
+    let gens = vec![g0, g1];
+    
+    // Create an operation to find - use meet operation from ba2
+    // For ba2, meet is binary: 0,0->0, 0,1->0, 1,0->0, 1,1->1
+    // Table: [0, 0, 0, 1]
+    use uacalc::alg::op::{OperationSymbol, Operation};
+    use uacalc::alg::op::ops::make_int_operation;
+    use std::sync::Arc;
+    
+    let meet_symbol = OperationSymbol::new("meet", 2, false);
+    let meet_table = vec![0, 0, 0, 1];
+    let meet_op = make_int_operation(meet_symbol, 2, meet_table).unwrap();
+    
+    let operations_to_find = vec![Arc::from(meet_op) as Arc<dyn Operation>];
+    
+    compare_with_java!(
+        config,
+        "java_wrapper.src.alg.CloserWrapper",
+        ["sg_close_with_operations_finding", "--base_size", "2", "--power", "2", "--generators", "0,0;0,1", "--operations", "2:0,0,0,1"],
+        || {
+            let mut closer = Closer::new_safe(Arc::new(ba2_power2.clone()), gens.clone()).unwrap();
+            
+            // Enable term map (required for operations finding)
+            let mut term_map = HashMap::new();
+            use uacalc::terms::VariableImp;
+            for (i, gen) in gens.iter().enumerate() {
+                let var_name = format!("x{}", i);
+                let var = Box::new(VariableImp::new(&var_name)) as Box<dyn uacalc::terms::Term>;
+                term_map.insert(gen.clone(), var);
+            }
+            closer.set_term_map(Some(term_map));
+            
+            // Set root algebra and operations
+            let root_alg = ba2_for_root.clone_box();
+            closer.set_root_algebra(Some(Arc::from(root_alg)));
+            closer.set_operations(Some(operations_to_find.clone()));
+            
+            let closure = closer.sg_close().unwrap();
+            
+            // Get term map for operations
+            let term_map_for_ops = closer.get_term_map_for_operations();
+            let mut operations_found = HashMap::new();
+            if let Some(ref map) = term_map_for_ops {
+                for (sym, term) in map.iter() {
+                    operations_found.insert(sym.name().to_string(), format!("{}", term));
+                }
+            }
+            
+            json!({
+                "command": "sg_close_with_operations_finding",
+                "base_size": 2,
+                "power": 2,
+                "generators_count": 2,
+                "closure_size": closure.len(),
+                "closure": closure.iter().map(|e| e.as_slice().to_vec()).collect::<Vec<_>>(),
+                "operations_found_count": operations_found.len(),
+                "operations_found": operations_found,
+                "status": "success"
+            })
+        }
+    );
+}
