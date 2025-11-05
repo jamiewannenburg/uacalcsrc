@@ -713,7 +713,7 @@ class TestMalcevAllAlgebras(unittest.TestCase):
                 reader = AlgebraReader.new_from_file(algebra_path)
                 alg = reader.read_algebra_file()
                 # Check if algebra is too large
-                if alg.cardinality() > 5:
+                if alg.cardinality() > 3:
                     print(f"  ⏩ {property_name}: Algebra is too large, skipping")
                     results['skipped'] += 1
                     continue

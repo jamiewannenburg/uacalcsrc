@@ -213,10 +213,6 @@ where
     
     let closure = closer.sg_close()?;
     
-    for (i, elem) in closure.iter().enumerate() {
-        eprintln!("  [{}]: {:?}", i, elem.as_slice());
-    }
-    
     if closure.contains(&xxx) {
         if let Some(term) = closer.get_term_map().and_then(|tm| tm.get(&xxx).map(|t| t.clone_box())) {
             return Ok(Some(term));

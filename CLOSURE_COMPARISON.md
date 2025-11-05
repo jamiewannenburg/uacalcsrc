@@ -90,3 +90,4 @@
    - Verify that cloned `IntOperation` instances have accessible tables
    - Check that `int_value_at` correctly uses the tables
 
+

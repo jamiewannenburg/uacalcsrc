@@ -267,3 +267,124 @@ This class depends on:
 3. **Memory Usage**: Large closures can consume significant memory
 4. **Thread Safety**: Parallel processing requires careful synchronization
 5. **Progress Tracking**: Real-time progress reporting for long-running operations
+
+### Java Comparison Testing Status
+
+**Status**: ⚠️ **NO JAVA COMPARISON TESTS IMPLEMENTED**
+
+**Analysis**:
+- ✅ **CloserWrapper.java exists** - `java_wrapper/src/alg/CloserWrapper.java` provides CLI interface
+  - Commands: `test`, `sg_close`
+  - Exposes core closure functionality for testing
+- ❌ **No Rust tests use `compare_with_java!` macro** - No tests compare Rust output with Java output
+- ⚠️ **Existing tests are Rust-only** - Tests in `closer_power_test.rs` and `closer_bigproduct_subproduct_power_tests.rs` verify functionality but don't validate against Java
+
+**Recommendations**:
+1. **Add Java comparison tests** using `compare_with_java!` macro for:
+   - `sg_close()` with various power algebras (ba2^n)
+   - `sg_close_power_impl()` for power algebra specialization
+   - `sg_close_parallel()` for parallel closure computation
+   - Different generator sets and configurations
+2. **Test coverage should include**:
+   - Small algebras (2-4 elements)
+   - Power algebras (2-3 power)
+   - Different operation types (meet, join, etc.)
+   - Edge cases (empty generators, single elements)
+
+### Missing Methods Analysis
+
+**Status**: ⚠️ **~85% COMPLETE** - Core functionality implemented, advanced features missing
+
+**Implemented Methods** (✅):
+- Core closure: `sg_close()`, `sg_close_impl()`, `sg_close_power_impl()`, `sg_close_parallel()`
+- Generators: `get_generators()`, `set_generators()`
+- Answer: `get_answer()`
+- Term map: `get_term_map()`, `set_term_map()`
+- Element finding: `get_element_to_find()`, `set_element_to_find()`
+- Progress: `set_progress_report()`
+- Output control: `set_suppress_output()`, `is_suppress_output()`
+- Max size: `get_max_size()`, `set_max_size()`
+- Completion: `is_completed()`
+- Constructors: `new()`, `new_safe()`, `new_with_term_map_safe()`
+
+**Missing Methods** (❌):
+
+1. **Constraint Methods** (for advanced element search):
+   - `getBlocks()` / `setBlocks(int[][])`
+   - `getValues()` / `setValues(int[][])`
+   - `getSetConstraint()` / `setConstraintSet(Set<Integer>)`
+   - `getIndexForConstraintSet()` / `setIndexForConstraintSet(int)`
+   - `getCongruenceForCongruenceConstraint()` / `setCongruenceForCongruenceConstraint(Partition)`
+   - `getIndexForCongruenceConstraint()` / `setIndexForCongruenceConstraint(int)`
+   - `getCongruenceConstraintElemIndex()` / `setCongruenceConstraintElemIndex(int)`
+   - `setupCongruenceConstraint(Partition, int, int)`
+
+2. **Homomorphism Methods** (for homomorphism checking during closure):
+   - `getHomomorphism()` / `setHomomorphism(Map<IntArray,Integer>)` / `setHomomorphism(int[])`
+   - `getImageAlgebra()` / `setImageAlgebra(SmallAlgebra)`
+   - `getFailingEquation()` - Returns equation that fails homomorphism check
+
+3. **Multiple Element Finding**:
+   - `getElementsToFind()` / `setElementsToFind(List<IntArray>, List<IntArray>)`
+   - `allElementsFound()` - Check if all target elements found
+
+4. **Operations Finding** (for clone testing):
+   - `getTermMapForOperations()` / `setOperations(List<Operation>)`
+   - `setRootAlgebra(SmallAlgebra)` - Set root algebra for operation interpretation
+
+5. **Other Methods**:
+   - `close()` - Simplified closure for powers only (Java line 397)
+   - `countFuncApplications(int, int)` - Count function applications needed
+
+**Priority Assessment**:
+- **High Priority** (Core functionality): ✅ All implemented
+- **Medium Priority** (Useful features): 
+  - Multiple element finding (`getElementsToFind`, `allElementsFound`)
+  - Homomorphism checking (`getHomomorphism`, `setImageAlgebra`, `getFailingEquation`)
+- **Low Priority** (Specialized features):
+  - Constraint methods (blocks, values, congruence constraints)
+  - Operations finding (clone testing)
+  - `close()` method (simplified version)
+  - `countFuncApplications()` (utility method)
+
+**Implementation Notes**:
+- Most missing methods are for **advanced/specialized use cases** beyond basic closure computation
+- Core closure algorithm (`sg_close`) is fully implemented and functional
+- Missing methods would require additional fields in `Closer` struct and logic in closure loops
+- Python bindings would need updates to expose any new methods
+
+## Fundamental Differences in Free Algebra Power Algebra Closure
+
+### Issue Identified
+
+When computing closures for power algebras of free algebras (e.g., `F(1)^2`, `F(2)^3`), there are significant differences between the Rust and Java implementations:
+
+1. **Cardinality Reporting**: 
+   - Rust reports `base_size: 3` for F(1), but Java reports `base_size: 4`
+   - Rust reports `base_size: 4` for F(2), but Java reports `base_size: 16`
+   - This suggests the free algebra cardinality computation or the power algebra's understanding of the base algebra differs
+
+2. **Closure Size Differences**:
+   - For `F(1)^2`: Rust finds 6 elements, Java finds 8
+   - For `F(1)^3`: Rust finds 6 elements, Java finds 8  
+   - For `F(2)^2`: Rust finds 4 elements, Java finds 16
+   - For `F(2)^3`: Rust finds 5 elements, Java finds 256
+
+3. **Root Cause Hypothesis**:
+   - Java uses `sgClosePower` for ALL power algebras, including those with free algebra roots
+   - Java's `sgClosePower` uses `algebra.factors().get(0)` to get the root algebra and calls `intValueAt` on operations
+   - For free algebras, `intValueAt` might work differently than expected, or the operation tables might not be correctly constructed
+   - The Rust implementation uses `int_value_at` as a fallback when tables don't exist, but this might not correctly handle free algebra operations
+
+4. **Current Status**:
+   - ✅ Fixed: Removed sorting to match Java's output order
+   - ✅ Fixed: Use power path for all power algebras (matching Java's behavior)
+   - ❌ **Unresolved**: Free algebra power algebra closure computation finds significantly fewer elements than Java
+   - The discrepancy suggests a deeper issue with how free algebra operations are evaluated in power algebras, or how the free algebra's universe is indexed
+
+### Next Steps
+
+1. Investigate free algebra cardinality computation in Rust vs Java
+2. Check if `int_value_at` correctly handles free algebra operations in power algebras
+3. Verify that operation tables for free algebras are correctly constructed before closure computation
+4. Compare the actual free algebra construction and operation tables between Rust and Java implementations

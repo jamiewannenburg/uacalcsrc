@@ -423,8 +423,8 @@ impl FreeAlgebra
                 s *= n;
             }
 
-            // Create a product algebra with the base algebra
-            let product_algebra = BigProductAlgebra::new_safe(vec![alg.clone_box()])?;
+            // Create a power algebra with s copies of the base algebra
+            let product_algebra = BigProductAlgebra::new_power_safe(alg.clone_box(), s as usize)?;
             let mut gens = Vec::with_capacity(number_of_gens);
             
             for _i in 0..number_of_gens {
@@ -906,7 +906,14 @@ impl Algebra for FreeAlgebra {
     }
 
     fn make_operation_tables(&mut self) {
-        self.inner.make_operation_tables();
+        // Free algebras should NOT create operation tables.
+        // They use SubProductOpWrapper operations that dynamically compute values
+        // by converting indices to IntArray elements and calling the product algebra.
+        // Creating IntOperation tables would be incorrect because:
+        // 1. Free algebras have IntArray universe items, not integer items
+        // 2. The operations need to work with IntArray elements, not just indices
+        // SubProductAlgebra.make_operation_tables() is already a no-op, but we're explicit here.
+        // Do nothing - keep the SubProductOpWrapper operations.
     }
 
     fn constant_operations(&self) -> Vec<Box<dyn Operation>> {
@@ -931,6 +938,16 @@ impl Algebra for FreeAlgebra {
 
     fn set_monitor(&mut self, monitor: Option<Box<dyn ProgressMonitor>>) {
         self.inner.set_monitor(monitor);
+    }
+}
+
+// Additional methods for FreeAlgebra (not part of traits)
+impl FreeAlgebra {
+    /// Borrowed access to Arc-backed operations to avoid cloning.
+    /// 
+    /// This is more efficient than `operations()` which creates boxes.
+    pub(crate) fn operations_ref_arc(&self) -> &[Arc<dyn Operation>] {
+        self.inner.operations_ref_arc()
     }
 }
 

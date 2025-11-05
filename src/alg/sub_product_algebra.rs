@@ -206,10 +206,8 @@ where
             
             (univ, Some(term_map), Some(terms_vec), Some(vars_map))
         } else {
-            let mut univ = prod.sg_close(gens.clone())?;
-            // Sort universe lexicographically to match Java's ordering
-            // This ensures deterministic element-to-index mapping
-            univ.sort();
+            // Don't sort - Java uses the order from sgClose
+            let univ = prod.sg_close(gens.clone())?;
             (univ, None, None, None)
         };
         
@@ -296,21 +294,16 @@ where
             sub: None,
         };
         
-        // Sort universe lexicographically to match Java's ordering
-        // This ensures deterministic element-to-index mapping
-        let mut sorted_univ = univ_list.clone();
-        sorted_univ.sort();
-        
-        // Update the universe list to be sorted
-        sub_prod.univ = sorted_univ.clone();
+        // Don't sort - preserve the order from the input (matching Java)
+        sub_prod.univ = univ_list.clone();
         
         // Create element to index mapping
-        for (k, ia) in sorted_univ.iter().enumerate() {
+        for (k, ia) in univ_list.iter().enumerate() {
             sub_prod.univ_hash_map.insert(ia.clone(), k);
         }
         
         // Create universe set
-        sub_prod.universe = sorted_univ.iter().cloned().collect();
+        sub_prod.universe = univ_list.iter().cloned().collect();
         
         // Make operations
         sub_prod.make_operations()?;
@@ -360,6 +353,7 @@ where
         let prod_ops_ref = self.product_algebra.operations_ref_arc();
         let univ_ref = &self.univ;
         let univ_hash_map_ref = &self.univ_hash_map;
+        let number_of_factors = self.product_algebra.get_number_of_factors();
         
         for prod_op in prod_ops_ref {
             let op_sym = prod_op.symbol().clone();
@@ -379,6 +373,7 @@ where
                 prod_op: Arc<dyn Operation>,
                 univ: Vec<IntArray>,
                 univ_hash_map: HashMap<IntArray, usize>,
+                number_of_factors: usize,
             }
             
             impl Debug for SubProductOpWrapper {
@@ -421,8 +416,24 @@ where
                     }
                     
                     // Apply product algebra operation (matching Java's opx.valueAt)
-                    let elem_slices: Vec<&[i32]> = elem_args.iter().map(|x| x.as_slice()).collect();
-                    let result_array = self.prod_op.value_at_arrays(&elem_slices)?;
+                    // Extract components based on product algebra's number_of_factors
+                    // If elements have different lengths, extract up to number_of_factors components
+                    let mut elem_slices: Vec<Vec<i32>> = Vec::with_capacity(elem_args.len());
+                    for elem in &elem_args {
+                        let elem_slice = elem.as_slice();
+                        let mut components = Vec::with_capacity(self.number_of_factors);
+                        for j in 0..self.number_of_factors {
+                            if j < elem_slice.len() {
+                                components.push(elem_slice[j]);
+                            } else {
+                                // Pad with 0 if element is shorter than expected
+                                components.push(0);
+                            }
+                        }
+                        elem_slices.push(components);
+                    }
+                    let elem_slice_refs: Vec<&[i32]> = elem_slices.iter().map(|v| v.as_slice()).collect();
+                    let result_array = self.prod_op.value_at_arrays(&elem_slice_refs)?;
                     let result_ia = IntArray::from_array(result_array)?;
                     
                     // Map result back to subalgebra index (matching Java's elementIndex)
@@ -513,6 +524,7 @@ where
                         prod_op: Arc::clone(&self.prod_op),
                         univ: self.univ.clone(),
                         univ_hash_map: self.univ_hash_map.clone(),
+                        number_of_factors: self.number_of_factors,
                     })
                 }
             }
@@ -524,6 +536,7 @@ where
                 prod_op: prod_op_clone,
                 univ: univ_ref.clone(),
                 univ_hash_map: univ_hash_map_ref.clone(),
+                number_of_factors,
             };
             
             self.operations.push(Arc::new(wrapper));
@@ -765,6 +778,13 @@ where
             return;
         }
         // SubProduct operations are lightweight; avoid table materialization here.
+    }
+    
+    /// Borrowed access to Arc-backed operations to avoid cloning.
+    /// 
+    /// This is more efficient than `operations()` which creates boxes.
+    pub(crate) fn operations_ref_arc(&self) -> &[Arc<dyn Operation>] {
+        &self.operations
     }
     
     /// Calculate the input size for operation tables.

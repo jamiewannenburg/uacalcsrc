@@ -271,28 +271,18 @@ where
     /// ```
     pub fn sg_close(&mut self) -> Result<Vec<IntArray>, String> {
         // Check if algebra is a power algebra and use specialized path
-        // BUT: Only use specialized path if root algebra has integer elements
-        // (not IntArray elements like free algebras)
+        // Java uses sgClosePower for ALL power algebras, including free algebras
         if self.algebra.is_power() {
-            // Check if root algebra has integer elements by checking its type
-            // SubProductAlgebra (like FreeAlgebra) has IntArray elements, so use generic path
+            // For power algebras, Java always uses sgClosePower after calling makeOperationTables
+            // We need to ensure operation tables exist, but we can't mutate the root algebra
+            // So we'll try the power path and fall back if needed
             let root_factors = self.algebra.root_factors();
             if let Some(ref factors) = root_factors {
                 if !factors.is_empty() {
-                    let root_alg = &factors[0];
-                    // Check if root algebra is a SubProductAlgebra or FreeAlgebra
-                    // These have IntArray elements, so we need to use value_at_arrays instead of int_value_at
-                    match root_alg.algebra_type() {
-                        crate::alg::AlgebraType::Free | 
-                        crate::alg::AlgebraType::Subproduct => {
-                            // Root algebra has IntArray elements, use generic path
-                            return self.sg_close_impl(0);
-                        }
-                        _ => {
-                            // Root algebra likely has integer elements, try specialized path
-                            return self.sg_close_power_impl(0);
-                        }
-                    }
+                    // Try to use power path like Java does
+                    // Java calls alg.makeOperationTables() first, but we can't mutate
+                    // So we'll try the power path and it will use int_value_at fallback if tables don't exist
+                    return self.sg_close_power_impl(0);
                 }
             }
             // Fall through to specialized path if we can't determine
@@ -535,9 +525,8 @@ where
             report.add_end_line(&format!("closing done, size = {}", self.ans.len()));
         }
         
-        // Sort universe lexicographically to match Java's ordering
-        // This ensures deterministic element-to-index mapping
-        self.ans.sort();
+        // Note: Java does NOT sort the results - it returns them in the order they were found
+        // We keep the order as-is to match Java's behavior
         
         self.completed = true;
         Ok(self.ans.clone())
@@ -809,9 +798,8 @@ where
             report.add_end_line(&format!("closing done, size = {}", self.ans.len()));
         }
         
-        // Sort universe lexicographically to match Java's ordering
-        // This ensures deterministic element-to-index mapping
-        self.ans.sort();
+        // Note: Java does NOT sort the results - it returns them in the order they were found
+        // We keep the order as-is to match Java's behavior
         
         self.completed = true;
         Ok(self.ans.clone())
@@ -1025,9 +1013,8 @@ where
             report.add_end_line(&format!("closing done, size = {}", self.ans.len()));
         }
         
-        // Sort universe lexicographically to match Java's ordering
-        // This ensures deterministic element-to-index mapping
-        self.ans.sort();
+        // Note: Java does NOT sort the results - it returns them in the order they were found
+        // We keep the order as-is to match Java's behavior
         
         self.completed = true;
         Ok(self.ans.clone())

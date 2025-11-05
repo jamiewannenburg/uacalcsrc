@@ -118,32 +118,14 @@ where
         );
         
         if has_int_array_elements {
-            // Factor algebras have IntArray elements
-            // Operations return indices, but we need to ensure these indices correspond
-            // to the sorted universe ordering. The operations should handle this correctly,
-            // but we verify by converting index -> element -> sorted index if needed.
+            // For factor algebras with IntArray elements (e.g., FreeAlgebra),
+            // SubProductOpWrapper.int_value_at handles index-to-element conversion internally.
+            // We call int_value_at directly - SubProductOpWrapper should handle conversion correctly.
             for j in 0..self.number_of_factors {
                 // Extract indices for this component
                 let arg_indices: Vec<i32> = args.iter().map(|a| a[j]).collect();
-                
-                // Call int_value_at to get result index
-                let result_idx = self.op_list[j].int_value_at(&arg_indices)?;
-                
-                // Convert result index to element, then back to index in sorted universe
-                // This ensures we're using the correct sorted ordering
-                if let Some(result_elem) = self.factor_algebras[j].get_element(result_idx as usize) {
-                    // Now find the index of this element in the sorted universe
-                    if let Some(sorted_idx) = self.factor_algebras[j].element_index(&result_elem) {
-                        ans[j] = sorted_idx as i32;
-                    } else {
-                        // Element not found - should not happen, but handle gracefully
-                        ans[j] = result_idx;
-                    }
-                } else {
-                    // If get_element fails, use the original index
-                    // This can happen if the factor algebra doesn't implement get_element properly
-                    ans[j] = result_idx;
-                }
+                // SubProductOpWrapper.int_value_at converts indices to elements internally
+                ans[j] = self.op_list[j].int_value_at(&arg_indices)?;
             }
         } else {
             // Factor algebras have i32 elements - can use int_value_at directly
@@ -463,12 +445,18 @@ where
             // Power algebra - use root algebra operations with Arc refs
             if let Some(root_alg) = root_algs.first() {
                 // Get operations from root algebra
+                // Note: Ideally we'd use operations_ref_arc() to avoid cloning,
+                // but SmallAlgebra trait doesn't expose it. For FreeAlgebra/SubProductAlgebra
+                // we could downcast, but for now we use operations() which creates boxes.
                 let root_ops = root_alg.operations();
                 let k = root_ops.len();
                 
-                // Verify root algebra has operations
+                // Verify root algebra has operations - this is critical
                 if k == 0 {
-                    eprintln!("WARNING: Root algebra has no operations for power algebra");
+                    eprintln!("ERROR: Root algebra has no operations for power algebra");
+                    // Don't leave operations empty - this would cause issues
+                    // Return early but operations will be empty, which will cause errors later
+                    // This is better than silently continuing with no operations
                     return;
                 }
                 
@@ -502,6 +490,11 @@ where
                     
                     self.operations.push(Arc::new(prod_op));
                 }
+                
+                // Verify we created operations
+                if self.operations.is_empty() {
+                    eprintln!("ERROR: Failed to create any operations for power algebra");
+                }
                 return; // Done with power algebra case
             }
         }
@@ -509,6 +502,13 @@ where
         // Regular product case - use original logic
         let first_ops = self.algebras[0].operations();
         let k = first_ops.len();
+        
+        // Verify first algebra has operations
+        if k == 0 {
+            eprintln!("ERROR: First factor algebra has no operations for product algebra");
+            // Don't leave operations empty
+            return;
+        }
         
         // For each operation in the first algebra
         for i in 0..k {

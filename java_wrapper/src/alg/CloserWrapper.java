@@ -7,8 +7,10 @@
 package java_wrapper.src.alg;
 
 import java.util.*;
+import java.io.*;
 import org.uacalc.alg.*;
 import org.uacalc.util.*;
+import org.uacalc.io.*;
 import java_wrapper.src.WrapperBase;
 
 /**
@@ -58,6 +60,14 @@ public class CloserWrapper extends WrapperBase {
                 
             case "sg_close":
                 handleSgClose(options);
+                break;
+                
+            case "sg_close_ba2_power":
+                handleSgCloseBa2Power(options);
+                break;
+                
+            case "sg_close_free_algebra":
+                handleSgCloseFreeAlgebra(options);
                 break;
                 
             default:
@@ -177,12 +187,141 @@ public class CloserWrapper extends WrapperBase {
     }
     
     /**
+     * Handle sg_close_ba2_power command - compute closure with ba2 power algebra.
+     */
+    private void handleSgCloseBa2Power(Map<String, String> options) throws Exception {
+        // Get parameters
+        int power = getIntArg(options, "power", 2);
+        String gensStr = getRequiredArg(options, "generators");
+        
+        // Load ba2 algebra
+        SmallAlgebra ba2 = loadBa2();
+        
+        // Create power algebra
+        BigProductAlgebra algebra = new BigProductAlgebra(ba2, power);
+        
+        // Parse generators
+        List<IntArray> generators = parseGenerators(gensStr, power);
+        
+        // Create closer and compute closure
+        Closer closer = new Closer(algebra, generators);
+        closer.setSuppressOutput(true);
+        
+        List<IntArray> result = closer.sgClose();
+        
+        // Format result
+        List<List<Integer>> resultList = new ArrayList<>();
+        for (IntArray ia : result) {
+            List<Integer> elem = new ArrayList<>();
+            for (int i = 0; i < ia.universeSize(); i++) {
+                elem.add(ia.get(i));
+            }
+            resultList.add(elem);
+        }
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("command", "sg_close_ba2_power");
+        response.put("power", power);
+        response.put("base_size", ba2.cardinality());
+        response.put("generators_count", generators.size());
+        response.put("closure_size", result.size());
+        response.put("closure", resultList);
+        response.put("status", "success");
+        
+        handleSuccess(response);
+    }
+    
+    /**
+     * Handle sg_close_free_algebra command - compute closure with free algebra.
+     */
+    private void handleSgCloseFreeAlgebra(Map<String, String> options) throws Exception {
+        // Get parameters
+        int numGens = getIntArg(options, "num_gens", 1);
+        int power = getIntArg(options, "power", 2);
+        String gensStr = getRequiredArg(options, "generators");
+        
+        // Load ba2 and create free algebra
+        SmallAlgebra ba2 = loadBa2();
+        FreeAlgebra freeAlg = new FreeAlgebra(ba2, numGens);
+        freeAlg.makeOperationTables();
+        
+        // Create power algebra from free algebra
+        BigProductAlgebra algebra = new BigProductAlgebra(freeAlg, power);
+        
+        // Parse generators
+        List<IntArray> generators = parseGenerators(gensStr, power);
+        
+        // Create closer and compute closure
+        Closer closer = new Closer(algebra, generators);
+        closer.setSuppressOutput(true);
+        
+        List<IntArray> result = closer.sgClose();
+        
+        // Format result
+        List<List<Integer>> resultList = new ArrayList<>();
+        for (IntArray ia : result) {
+            List<Integer> elem = new ArrayList<>();
+            for (int i = 0; i < ia.universeSize(); i++) {
+                elem.add(ia.get(i));
+            }
+            resultList.add(elem);
+        }
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("command", "sg_close_free_algebra");
+        response.put("num_gens", numGens);
+        response.put("power", power);
+        response.put("base_size", freeAlg.cardinality());
+        response.put("generators_count", generators.size());
+        response.put("closure_size", result.size());
+        response.put("closure", resultList);
+        response.put("status", "success");
+        
+        handleSuccess(response);
+    }
+    
+    /**
+     * Load ba2 algebra from resources/algebras/ba2.ua
+     */
+    private SmallAlgebra loadBa2() throws Exception {
+        // Try to find ba2.ua file
+        String[] possiblePaths = {
+            "resources/algebras/ba2.ua",
+            "algebras/ba2.ua",
+            "../resources/algebras/ba2.ua"
+        };
+        
+        File ba2File = null;
+        for (String path : possiblePaths) {
+            File f = new File(path);
+            if (f.exists()) {
+                ba2File = f;
+                break;
+            }
+        }
+        
+        if (ba2File == null) {
+            // Try loading from classpath
+            ClassLoader cl = Thread.currentThread().getContextClassLoader();
+            InputStream is = cl.getResourceAsStream("algebras/ba2.ua");
+            if (is != null) {
+                return AlgebraIO.readAlgebraFromStream(is);
+            }
+            throw new Exception("ba2.ua not found in any expected location");
+        }
+        
+        return AlgebraIO.readAlgebraFile(ba2File);
+    }
+    
+    /**
      * Show usage information for the Closer wrapper.
      */
     private void showUsage() {
         String[] examples = {
             "test --power 2",
             "sg_close --base_size 2 --power 2 --generators \"0,0;0,1\"",
+            "sg_close_ba2_power --power 3 --generators \"0,0,1;1,1,0\"",
+            "sg_close_free_algebra --num_gens 1 --power 3 --generators \"0,0,1;1,1,0\"",
             "help"
         };
         
