@@ -122,7 +122,7 @@ where
     )?;
     closer.set_element_to_find(Some(yx.clone()));
     
-    let closure = closer.sg_close()?;
+    let closure = closer.sg_close_power()?;
     if closure.contains(&yx) {
         if let Some(term) = closer.get_term_map().and_then(|tm| tm.get(&yx).map(|t| t.clone_box())) {
             return Ok(Some(term));
@@ -211,7 +211,7 @@ where
     )?;
     closer.set_element_to_find(Some(xxx.clone()));
     
-    let closure = closer.sg_close()?;
+    let closure = closer.sg_close_power()?;
     
     if closure.contains(&xxx) {
         if let Some(term) = closer.get_term_map().and_then(|tm| tm.get(&xxx).map(|t| t.clone_box())) {
@@ -292,7 +292,7 @@ where
     )?;
     closer.set_element_to_find(Some(yyy.clone()));
     
-    let closure = closer.sg_close()?;
+    let closure = closer.sg_close_power()?;
     if closure.contains(&yyy) {
         if let Some(term) = closer.get_term_map().and_then(|tm| tm.get(&yyy).map(|t| t.clone_box())) {
             return Ok(Some(term));
@@ -378,7 +378,7 @@ where
     )?;
     closer.set_element_to_find(Some(xxx.clone()));
     
-    let closure = closer.sg_close()?;
+    let closure = closer.sg_close_power()?;
     if closure.contains(&xxx) {
         if let Some(term) = closer.get_term_map().and_then(|tm| tm.get(&xxx).map(|t| t.clone_box())) {
             return Ok(Some(term));
@@ -477,7 +477,7 @@ where
     )?;
     closer.set_element_to_find(Some(zero.clone()));
     
-    let closure = closer.sg_close()?;
+    let closure = closer.sg_close_power()?;
     if closure.contains(&zero) {
         if let Some(term) = closer.get_term_map().and_then(|tm| tm.get(&zero).map(|t| t.clone_box())) {
             return Ok(Some(term));
@@ -611,7 +611,7 @@ where
         term_map,
     )?;
     
-    let closure = closer.sg_close()?;
+    let closure = closer.sg_close_power()?;
     
     // Look for any element where all coordinates are equal
     // For idempotent: any (a,a,a)
@@ -880,7 +880,7 @@ where
         term_map,
     )?;
     
-    let closure = closer.sg_close()?;
+    let closure = closer.sg_close_power()?;
     let term_map_ref = closer.get_term_map().ok_or("Term map missing")?;
     
     // Check for Pixley term (for alvin variant)
@@ -1229,7 +1229,7 @@ where
         term_map,
     )?;
     
-    let closure = closer.sg_close()?;
+    let closure = closer.sg_close_power()?;
     let term_map_ref = closer.get_term_map().ok_or("Term map missing")?;
     
     // Check for majority term (zero)
@@ -1360,8 +1360,8 @@ where
         term_map,
     )?;
     
-    // For now, use regular sg_close instead of sgClosePower since blocks aren't implemented
-    let closure = closer.sg_close()?;
+    // Use sg_close_power for power algebras (matches Java's sgClosePower)
+    let closure = closer.sg_close_power()?;
     let term_map_ref = closer.get_term_map().ok_or("Term map missing")?;
     
     use crate::util::int_array::IntArrayTrait;
@@ -1846,7 +1846,7 @@ where
         term_map,
     )?;
     
-    let closure = closer.sg_close()?;
+    let closure = closer.sg_close_power()?;
     
     let zero = IntArray::from_array(vec![0, 0, 0])?;
     if closure.contains(&zero) {

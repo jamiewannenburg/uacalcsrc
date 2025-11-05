@@ -5,6 +5,8 @@
  * implementing core closure functionality.
  */
 
+#![allow(unused_imports, dead_code, unused_variables)]
+
 use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, Mutex};
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -291,6 +293,28 @@ where
         self.sg_close_impl(0)
     }
     
+    /// Compute the closure using the specialized power algebra algorithm.
+    /// 
+    /// This method matches Java's `sgClosePower()` public method and uses
+    /// the optimized power algebra closure algorithm. It should be called
+    /// explicitly when you want to use the power algebra path even if
+    /// `sg_close()` would automatically choose it.
+    /// 
+    /// # Returns
+    /// * `Ok(Vec<IntArray>)` - The closure (list of elements)
+    /// * `Err(String)` - If closure computation fails
+    /// 
+    /// # Examples
+    /// ```ignore
+    /// use uacalc::alg::Closer;
+    /// 
+    /// // let mut closer = ...; // with a power algebra
+    /// // let closure = closer.sg_close_power()?;
+    /// ```
+    pub fn sg_close_power(&mut self) -> Result<Vec<IntArray>, String> {
+        self.sg_close_power_impl(0)
+    }
+    
     /// Implementation of closure computation.
     /// 
     /// # Arguments
@@ -566,8 +590,11 @@ where
         // DEBUG: Check operations from both root and power algebra
         let power_ops = self.algebra.operations();
         
+        // If there are no operations, just return the generators (matching Java behavior)
         if k == 0 {
-            return Err("Root algebra has no operations".to_string());
+            self.ans = self.generators.clone();
+            self.completed = true;
+            return Ok(self.ans.clone());
         }
         
         // Get operation tables - try to ensure tables exist

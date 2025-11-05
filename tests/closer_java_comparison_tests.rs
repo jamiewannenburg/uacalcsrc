@@ -283,3 +283,116 @@ fn test_closer_f2_power3_java_comparison() {
         }
     );
 }
+
+/// Helper function to create a trivial algebra with no operations (like Java's makeTestAlgebra)
+fn create_trivial_algebra(size: i32) -> Box<dyn SmallAlgebra<UniverseItem = i32>> {
+    use uacalc::alg::BasicSmallAlgebra;
+    use std::collections::HashSet;
+    
+    let universe: HashSet<i32> = (0..size).collect();
+    let ops = Vec::new(); // No operations
+    
+    Box::new(BasicSmallAlgebra::new(
+        "TestAlg".to_string(),
+        universe,
+        ops,
+    )) as Box<dyn SmallAlgebra<UniverseItem = i32>>
+}
+
+#[test]
+fn test_closer_sg_close_power_ba2_power2_java_comparison() {
+    let config = TestConfig::default();
+    
+    // Use trivial algebra (no operations) to match Java's makeTestAlgebra
+    let trivial_alg = create_trivial_algebra(2);
+    let alg_power2 = BigProductAlgebra::<i32>::new_power_safe(trivial_alg, 2).unwrap();
+    
+    let g0 = IntArray::from_array(vec![0, 0]).unwrap();
+    let g1 = IntArray::from_array(vec![0, 1]).unwrap();
+    let gens = vec![g0, g1];
+    
+    compare_with_java!(
+        config,
+        "java_wrapper.src.alg.CloserWrapper",
+        ["sg_close_power", "--base_size", "2", "--power", "2", "--generators", "0,0;0,1"],
+        || {
+            let mut closer = Closer::new_safe(Arc::new(alg_power2), gens.clone()).unwrap();
+            let closure = closer.sg_close_power().unwrap();
+            
+            json!({
+                "command": "sg_close_power",
+                "base_size": 2,
+                "power": 2,
+                "generators_count": 2,
+                "closure_size": closure.len(),
+                "closure": closure.iter().map(|e| e.as_slice().to_vec()).collect::<Vec<_>>(),
+                "status": "success"
+            })
+        }
+    );
+}
+
+#[test]
+fn test_closer_sg_close_power_ba2_power3_java_comparison() {
+    let config = TestConfig::default();
+    
+    // Use trivial algebra (no operations) to match Java's makeTestAlgebra
+    let trivial_alg = create_trivial_algebra(2);
+    let alg_power3 = BigProductAlgebra::<i32>::new_power_safe(trivial_alg, 3).unwrap();
+    
+    let g0 = IntArray::from_array(vec![0, 0, 1]).unwrap();
+    let g1 = IntArray::from_array(vec![1, 1, 0]).unwrap();
+    let gens = vec![g0, g1];
+    
+    compare_with_java!(
+        config,
+        "java_wrapper.src.alg.CloserWrapper",
+        ["sg_close_power", "--base_size", "2", "--power", "3", "--generators", "0,0,1;1,1,0"],
+        || {
+            let mut closer = Closer::new_safe(Arc::new(alg_power3), gens.clone()).unwrap();
+            let closure = closer.sg_close_power().unwrap();
+            
+            json!({
+                "command": "sg_close_power",
+                "base_size": 2,
+                "power": 3,
+                "generators_count": 2,
+                "closure_size": closure.len(),
+                "closure": closure.iter().map(|e| e.as_slice().to_vec()).collect::<Vec<_>>(),
+                "status": "success"
+            })
+        }
+    );
+}
+
+#[test]
+fn test_closer_sg_close_power_ba2_power3_single_generator() {
+    let config = TestConfig::default();
+    
+    // Use trivial algebra (no operations) to match Java's makeTestAlgebra
+    let trivial_alg = create_trivial_algebra(2);
+    let alg_power3 = BigProductAlgebra::<i32>::new_power_safe(trivial_alg, 3).unwrap();
+    
+    let g0 = IntArray::from_array(vec![0, 0, 0]).unwrap();
+    let gens = vec![g0];
+    
+    compare_with_java!(
+        config,
+        "java_wrapper.src.alg.CloserWrapper",
+        ["sg_close_power", "--base_size", "2", "--power", "3", "--generators", "0,0,0"],
+        || {
+            let mut closer = Closer::new_safe(Arc::new(alg_power3), gens.clone()).unwrap();
+            let closure = closer.sg_close_power().unwrap();
+            
+            json!({
+                "command": "sg_close_power",
+                "base_size": 2,
+                "power": 3,
+                "generators_count": 1,
+                "closure_size": closure.len(),
+                "closure": closure.iter().map(|e| e.as_slice().to_vec()).collect::<Vec<_>>(),
+                "status": "success"
+            })
+        }
+    );
+}

@@ -69,6 +69,22 @@ impl PyCloser {
         }
     }
 
+    /// Compute the closure using the specialized power algebra algorithm.
+    ///
+    /// This method matches Java's `sgClosePower()` public method and uses
+    /// the optimized power algebra closure algorithm.
+    ///
+    /// # Returns
+    /// List of IntArray elements in the closure
+    fn sg_close_power(&mut self) -> PyResult<Vec<PyIntArray>> {
+        match self.inner.sg_close_power() {
+            Ok(result) => Ok(result.iter()
+                .map(|ia| PyIntArray { inner: ia.clone() })
+                .collect()),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+
     /// Set whether to suppress output.
     ///
     /// # Arguments

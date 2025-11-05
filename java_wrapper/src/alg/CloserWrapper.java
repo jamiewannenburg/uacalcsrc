@@ -70,6 +70,10 @@ public class CloserWrapper extends WrapperBase {
                 handleSgCloseFreeAlgebra(options);
                 break;
                 
+            case "sg_close_power":
+                handleSgClosePower(options);
+                break;
+                
             default:
                 handleError("Unknown command: " + command, null);
         }
@@ -184,6 +188,50 @@ public class CloserWrapper extends WrapperBase {
         }
         
         return generators;
+    }
+    
+    /**
+     * Handle sg_close_power command - compute closure using sgClosePower method.
+     */
+    private void handleSgClosePower(Map<String, String> options) throws Exception {
+        // Get parameters
+        int baseSize = getIntArg(options, "base_size", 2);
+        int power = getIntArg(options, "power", 2);
+        String gensStr = getRequiredArg(options, "generators");
+        
+        // Create algebra
+        SmallAlgebra base = makeTestAlgebra(baseSize);
+        BigProductAlgebra algebra = new BigProductAlgebra(base, power);
+        
+        // Parse generators
+        List<IntArray> generators = parseGenerators(gensStr, power);
+        
+        // Create closer and compute closure using sgClosePower
+        Closer closer = new Closer(algebra, generators);
+        closer.setSuppressOutput(true);
+        
+        List<IntArray> result = closer.sgClosePower();
+        
+        // Format result
+        List<List<Integer>> resultList = new ArrayList<>();
+        for (IntArray ia : result) {
+            List<Integer> elem = new ArrayList<>();
+            for (int i = 0; i < ia.universeSize(); i++) {
+                elem.add(ia.get(i));
+            }
+            resultList.add(elem);
+        }
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("command", "sg_close_power");
+        response.put("base_size", baseSize);
+        response.put("power", power);
+        response.put("generators_count", generators.size());
+        response.put("closure_size", result.size());
+        response.put("closure", resultList);
+        response.put("status", "success");
+        
+        handleSuccess(response);
     }
     
     /**
@@ -320,6 +368,7 @@ public class CloserWrapper extends WrapperBase {
         String[] examples = {
             "test --power 2",
             "sg_close --base_size 2 --power 2 --generators \"0,0;0,1\"",
+            "sg_close_power --base_size 2 --power 2 --generators \"0,0;0,1\"",
             "sg_close_ba2_power --power 3 --generators \"0,0,1;1,1,0\"",
             "sg_close_free_algebra --num_gens 1 --power 3 --generators \"0,0,1;1,1,0\"",
             "help"
