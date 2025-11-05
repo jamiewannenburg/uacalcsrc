@@ -212,7 +212,7 @@ where
     closer.set_element_to_find(Some(xxx.clone()));
     
     let closure = closer.sg_close_power()?;
-    
+     
     if closure.contains(&xxx) {
         if let Some(term) = closer.get_term_map().and_then(|tm| tm.get(&xxx).map(|t| t.clone_box())) {
             return Ok(Some(term));
@@ -2231,6 +2231,212 @@ where
     ans.extend(unit_terms);
     
     Ok(Some(ans))
+}
+
+/// Find a k-edge term for the algebra.
+///
+/// A k-edge term is a term of arity k+1 that satisfies certain edge conditions.
+/// This is used to test for certain Mal'cev conditions related to edge terms.
+///
+/// # Arguments
+/// * `alg` - The algebra to check
+/// * `k` - The parameter k (edge term will have arity k+1)
+///
+/// # Returns
+/// * `Ok(Some(Term))` - A k-edge term if one exists
+/// * `Ok(None)` - No k-edge term exists
+/// * `Err(String)` - If there's an error during computation
+pub fn fixed_k_edge_term<T>(alg: &dyn SmallAlgebra<UniverseItem = T>, k: usize) -> Result<Option<Box<dyn Term>>, String>
+where
+    T: Clone + std::fmt::Debug + std::fmt::Display + std::hash::Hash + Eq + Send + Sync + 'static
+{
+    let arity = k + 1;
+    
+    if alg.cardinality() == 1 {
+        return Ok(Some(Box::new(VariableImp::new("x0"))));
+    }
+    
+    // Convert to i32 algebra
+    let card = alg.cardinality();
+    let ops = alg.operations();
+    
+    // Check if operations are empty
+    if ops.is_empty() {
+        return Err("Algebra has no operations".to_string());
+    }
+    
+    let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
+    let universe_set: HashSet<i32> = (0..card).collect();
+    let i32_alg = BasicSmallAlgebra::new(
+        alg.name().to_string(),
+        universe_set,
+        int_ops,
+    );
+    
+    // Create free algebra with 2 generators (F(2))
+    let mut f2 = FreeAlgebra::new_safe(Box::new(i32_alg), 2)?;
+    use crate::alg::Algebra;
+    f2.make_operation_tables();
+    
+    // Create generators
+    let mut gens = Vec::with_capacity(arity);
+    let mut term_map: HashMap<IntArray, Box<dyn Term>> = HashMap::new();
+    
+    for i in 0..arity {
+        let mut arr = vec![0; k];
+        if i == 0 {
+            arr[0] = 1;
+            if k > 1 {
+                arr[1] = 1;
+            }
+        } else {
+            if i - 1 < k {
+                arr[i - 1] = 1;
+            }
+        }
+        let ia = IntArray::from_array(arr)?;
+        gens.push(ia.clone());
+        
+        // Map to appropriate variable
+        let var: Box<dyn Term> = if arity > 3 {
+            Box::new(VariableImp::new(&format!("x{}", i)))
+        } else {
+            match i {
+                0 => Box::new(VariableImp::x()),
+                1 => Box::new(VariableImp::y()),
+                _ => Box::new(VariableImp::z()),
+            }
+        };
+        term_map.insert(ia, var);
+    }
+    
+    // Create BigProductAlgebra (F(2)^k)
+    let f2_boxed: Box<dyn SmallAlgebra<UniverseItem = IntArray>> = 
+        Box::new(f2) as Box<dyn SmallAlgebra<UniverseItem = IntArray>>;
+    let f2_power = BigProductAlgebra::new_power_safe(f2_boxed, k)?;
+    
+    // The element we're looking for: zero vector (x,x,...,x) = [0,0,...,0]
+    let zero = IntArray::from_array(vec![0; k])?;
+    
+    // Use Closer for term tracking during closure
+    let mut closer = Closer::new_with_term_map_safe(
+        Arc::new(f2_power),
+        gens,
+        term_map,
+    )?;
+    closer.set_element_to_find(Some(zero.clone()));
+    
+    let closure = closer.sg_close_power()?;
+    if closure.contains(&zero) {
+        if let Some(term) = closer.get_term_map().and_then(|tm| tm.get(&zero).map(|t| t.clone_box())) {
+            return Ok(Some(term));
+        }
+    }
+    
+    Ok(None)
+}
+
+/// Test if an algebra has a quasi weak near unanimity (QWNU) term of the given arity.
+///
+/// This uses Alexandr Kazda's local to global test for quasi weak near unanimity operations.
+/// See the paper A. Kazda "Deciding the existence of quasi weak near unanimity terms
+/// in finite algebras", 2020.
+///
+/// # Arguments
+/// * `alg` - The algebra to test
+/// * `arity` - The arity of the QWNU term (must be at least 2)
+///
+/// # Returns
+/// * `Ok(true)` - The algebra has a QWNU term of the given arity
+/// * `Ok(false)` - The algebra does not have a QWNU term
+/// * `Err(String)` - If there's an error during computation
+pub fn fixed_k_qwnu<T>(alg: &dyn SmallAlgebra<UniverseItem = T>, arity: usize) -> Result<bool, String>
+where
+    T: Clone + std::fmt::Debug + std::fmt::Display + std::hash::Hash + Eq + Send + Sync + 'static
+{
+    if arity < 2 {
+        return Err("arity must be at least 2".to_string());
+    }
+    
+    // Convert to i32 algebra
+    let card = alg.cardinality();
+    let ops = alg.operations();
+    
+    // Check if operations are empty
+    if ops.is_empty() {
+        return Err("Algebra has no operations".to_string());
+    }
+    
+    let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
+    let universe_set: HashSet<i32> = (0..card).collect();
+    let i32_alg = BasicSmallAlgebra::new(
+        alg.name().to_string(),
+        universe_set,
+        int_ops,
+    );
+    
+    // Create BigProductAlgebra (A^arity)
+    let alg_boxed: Box<dyn SmallAlgebra<UniverseItem = i32>> = Box::new(i32_alg);
+    let prod = BigProductAlgebra::new_power_safe(alg_boxed, arity)?;
+    
+    let size = card as usize;
+    
+    // For each pair (a, b) with a != b
+    for a in 0..size {
+        // Create generating matrix filled with a's (will be reset for each b)
+        let mut generating_matrix = vec![vec![a as i32; arity]; arity];
+        
+        for b in 0..size {
+            if a == b {
+                continue;
+            }
+            
+            // Reset generating matrix to all a's (since we modify it below)
+            for i in 0..arity {
+                for j in 0..arity {
+                    generating_matrix[i][j] = a as i32;
+                }
+            }
+            
+            // Set diagonal of generating matrix to b
+            for i in 0..arity {
+                generating_matrix[i][i] = b as i32;
+            }
+            
+            // Create generators from generating matrix rows
+            let mut gens = Vec::with_capacity(arity);
+            for i in 0..arity {
+                let arr = IntArray::from_array(generating_matrix[i].clone())?;
+                gens.push(arr);
+            }
+            
+            // Use Closer for closure computation
+            let mut closer = Closer::new_safe(
+                Arc::new(prod.clone()),
+                gens,
+            )?;
+            
+            let closure = closer.sg_close_power()?;
+            
+            // Look for an element of the form (q,q,...,q) in the closure
+            use crate::util::int_array::IntArrayTrait;
+            let mut found = false;
+            for elem in &closure {
+                if elem.is_constant() {
+                    found = true;
+                    break;
+                }
+            }
+            
+            if !found {
+                // No diagonal element found - no QWNU term exists
+                return Ok(false);
+            }
+        }
+    }
+    
+    // All pairs passed - QWNU term exists
+    Ok(true)
 }
 
 #[cfg(test)]

@@ -44,6 +44,8 @@ pub fn register_malcev_functions(_py: Python, m: &Bound<'_, PyModule>) -> PyResu
     m.add_function(wrap_pyfunction!(sd_meet_idempotent, m)?)?;
     m.add_function(wrap_pyfunction!(cyclic_term_idempotent, m)?)?;
     m.add_function(wrap_pyfunction!(primality_terms, m)?)?;
+    m.add_function(wrap_pyfunction!(fixed_k_edge_term, m)?)?;
+    m.add_function(wrap_pyfunction!(fixed_k_qwnu, m)?)?;
 
     Ok(())
 }
@@ -465,6 +467,39 @@ fn primality_terms(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<Vec<String>
             Ok(Some(term_strings))
         },
         Ok(None) => Ok(None),
+        Err(e) => Err(PyValueError::new_err(e)),
+    }
+}
+
+/// Find a k-edge term for the algebra.
+///
+/// # Arguments
+/// * `algebra` - The algebra to check (BasicSmallAlgebra)
+/// * `k` - The parameter k (edge term will have arity k+1)
+///
+/// # Returns
+/// The k-edge term as a string if one exists, None otherwise
+#[pyfunction]
+fn fixed_k_edge_term(algebra: &PyBasicSmallAlgebra, k: usize) -> PyResult<Option<String>> {
+    match malcev::fixed_k_edge_term(&algebra.inner, k) {
+        Ok(Some(term)) => Ok(Some(format!("{}", term))),
+        Ok(None) => Ok(None),
+        Err(e) => Err(PyValueError::new_err(e)),
+    }
+}
+
+/// Test if an algebra has a quasi weak near unanimity (QWNU) term of the given arity.
+///
+/// # Arguments
+/// * `algebra` - The algebra to test (BasicSmallAlgebra)
+/// * `arity` - The arity of the QWNU term (must be at least 2)
+///
+/// # Returns
+/// True if the algebra has a QWNU term of the given arity, False otherwise
+#[pyfunction]
+fn fixed_k_qwnu(algebra: &PyBasicSmallAlgebra, arity: usize) -> PyResult<bool> {
+    match malcev::fixed_k_qwnu(&algebra.inner, arity) {
+        Ok(result) => Ok(result),
         Err(e) => Err(PyValueError::new_err(e)),
     }
 }

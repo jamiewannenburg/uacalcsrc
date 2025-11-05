@@ -81,6 +81,8 @@ class TestMalcevPython(unittest.TestCase):
         self.assertTrue(hasattr(uacalc_lib.alg, 'congruence_modular_variety'))
         self.assertTrue(hasattr(uacalc_lib.alg, 'jonsson_level'))
         self.assertTrue(hasattr(uacalc_lib.alg, 'primality_terms'))
+        self.assertTrue(hasattr(uacalc_lib.alg, 'fixed_k_edge_term'))
+        self.assertTrue(hasattr(uacalc_lib.alg, 'fixed_k_qwnu'))
         
     def test_malcev_term_with_cyclic3(self):
         """Test malcev_term with cyclic3 algebra."""
@@ -629,6 +631,37 @@ class TestMalcevJavaComparison(unittest.TestCase):
                                f"Witness mismatch: Python={python_result}, Java={java_witness}")
         
         print(f"✓ sd_meet_idempotent: Python={python_witness_found}, Java={java_witness_found}")
+    
+    def test_fixed_k_edge_term(self):
+        """Test fixed_k_edge_term against Java."""
+        k = 2
+        python_result = uacalc_lib.alg.fixed_k_edge_term(self.alg, k)
+        java_output = self.run_java_wrapper("fixed_k_edge_term", [
+            "--algebra", self.algebra_path,
+            "--k", str(k)
+        ])
+        java_data = java_output.get("data", {})
+        java_term_found = java_data.get("term_found", False)
+        
+        python_term_found = python_result is not None
+        self.assertEqual(python_term_found, java_term_found,
+                        f"fixed_k_edge_term: Python={python_term_found}, Java={java_term_found}")
+        print(f"✓ fixed_k_edge_term (k={k}): Python={python_term_found}, Java={java_term_found}")
+    
+    def test_fixed_k_qwnu(self):
+        """Test fixed_k_qwnu against Java."""
+        arity = 3
+        python_result = uacalc_lib.alg.fixed_k_qwnu(self.alg, arity)
+        java_output = self.run_java_wrapper("fixed_k_qwnu", [
+            "--algebra", self.algebra_path,
+            "--arity", str(arity)
+        ])
+        java_data = java_output.get("data", {})
+        java_has_qwnu = java_data.get("has_qwnu", False)
+        
+        self.assertEqual(python_result, java_has_qwnu,
+                        f"fixed_k_qwnu: Python={python_result}, Java={java_has_qwnu}")
+        print(f"✓ fixed_k_qwnu (arity={arity}): Python={python_result}, Java={java_has_qwnu}")
 
 
 class TestMalcevAllAlgebras(unittest.TestCase):
@@ -651,6 +684,8 @@ class TestMalcevAllAlgebras(unittest.TestCase):
         "is_congruence_dist_idempotent",
         "is_congruence_modular_idempotent",
         "sd_meet_idempotent",
+        "fixed_k_edge_term",
+        "fixed_k_qwnu",
     ]
     
     def run_java_wrapper(self, command, args=None, timeout=10):
@@ -762,6 +797,10 @@ class TestMalcevAllAlgebras(unittest.TestCase):
                 java_args = ["--algebra", algebra_path]
                 if property_name == "nu_term":
                     java_args.extend(["--arity", "3"])
+                elif property_name == "fixed_k_edge_term":
+                    java_args.extend(["--k", "2"])
+                elif property_name == "fixed_k_qwnu":
+                    java_args.extend(["--arity", "3"])
                 
                 java_output = self.run_java_wrapper(property_name, java_args, timeout=10)
                 # If algebra is too large, skip comparison
@@ -779,6 +818,10 @@ class TestMalcevAllAlgebras(unittest.TestCase):
                     # Get Python result
                     if property_name == "nu_term":
                         python_result = uacalc_lib.alg.nu_term(alg, 3)
+                    elif property_name == "fixed_k_edge_term":
+                        python_result = uacalc_lib.alg.fixed_k_edge_term(alg, 2)
+                    elif property_name == "fixed_k_qwnu":
+                        python_result = uacalc_lib.alg.fixed_k_qwnu(alg, 3)
                     else:
                         python_result = getattr(uacalc_lib.alg, property_name)(alg)
                     
@@ -787,7 +830,7 @@ class TestMalcevAllAlgebras(unittest.TestCase):
                     
                     if property_name in ["malcev_term", "majority_term", "minority_term", 
                                          "pixley_term", "nu_term", "markovic_mckenzie_siggers_taylor_term", 
-                                         "join_term"]:
+                                         "join_term", "fixed_k_edge_term"]:
                         java_term_found = java_data.get("term_found", False)
                         python_term_found = python_result is not None
                         
@@ -933,6 +976,21 @@ class TestMalcevAllAlgebras(unittest.TestCase):
                             print(f"  ✗ {property_name}: Python={python_witness_found}, Java={java_witness_found}")
                         else:
                             print(f"  ✓ {property_name}: match")
+                    
+                    elif property_name == "fixed_k_qwnu":
+                        java_has_qwnu = java_data.get("has_qwnu", False)
+                        
+                        if python_result != java_has_qwnu:
+                            mismatch = {
+                                'algebra': algebra_path,
+                                'property': property_name,
+                                'python': python_result,
+                                'java': java_has_qwnu
+                            }
+                            results['mismatches'].append(mismatch)
+                            print(f"  ✗ {property_name}: Python={python_result}, Java={java_has_qwnu}")
+                        else:
+                            print(f"  ✓ {property_name}: match ({python_result})")
                     
                 except Exception as e:
                     print(f"  ⚠ {property_name}: Python error - {e}")

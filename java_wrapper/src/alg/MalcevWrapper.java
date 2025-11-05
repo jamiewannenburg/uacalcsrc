@@ -133,6 +133,14 @@ public class MalcevWrapper extends WrapperBase {
                 handlePrimalityTerms(options);
                 break;
                 
+            case "fixed_k_edge_term":
+                handleFixedKEdgeTerm(options);
+                break;
+                
+            case "fixed_k_qwnu":
+                handleFixedKQwnu(options);
+                break;
+                
             default:
                 handleError("Unknown command: " + command, null);
         }
@@ -597,6 +605,52 @@ public class MalcevWrapper extends WrapperBase {
     }
     
     /**
+     * Find a k-edge term for the algebra.
+     */
+    private void handleFixedKEdgeTerm(Map<String, String> options) throws Exception {
+        String algebraPath = getRequiredArg(options, "algebra");
+        String kStr = getRequiredArg(options, "k");
+        int k = Integer.parseInt(kStr);
+        
+        SmallAlgebra alg = loadAlgebra(algebraPath);
+        Term term = Malcev.fixedKEdgeTerm(alg, k, null);
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("command", "fixed_k_edge_term");
+        result.put("algebra", alg.getName());
+        result.put("k", k);
+        
+        if (term != null) {
+            result.put("term_found", true);
+            result.put("term", term.toString());
+        } else {
+            result.put("term_found", false);
+        }
+        
+        handleSuccess(result);
+    }
+    
+    /**
+     * Test if an algebra has a quasi weak near unanimity (QWNU) term of the given arity.
+     */
+    private void handleFixedKQwnu(Map<String, String> options) throws Exception {
+        String algebraPath = getRequiredArg(options, "algebra");
+        String arityStr = getRequiredArg(options, "arity");
+        int arity = Integer.parseInt(arityStr);
+        
+        SmallAlgebra alg = loadAlgebra(algebraPath);
+        boolean hasQwnu = Malcev.fixedKQwnu(alg, arity, null);
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("command", "fixed_k_qwnu");
+        result.put("algebra", alg.getName());
+        result.put("arity", arity);
+        result.put("has_qwnu", hasQwnu);
+        
+        handleSuccess(result);
+    }
+    
+    /**
      * Load an algebra from a file.
      */
     private SmallAlgebra loadAlgebra(String path) throws Exception {
@@ -628,7 +682,9 @@ public class MalcevWrapper extends WrapperBase {
             "markovic_mckenzie_siggers_taylor_term --algebra <path> - Find a Markovic-McKenzie-Siggers-Taylor term",
             "join_term --algebra <path> - Find a join term",
             "jonsson_level --algebra <path> - Compute the Jonsson level",
-            "primality_terms --algebra <path> - Find primality terms"
+            "primality_terms --algebra <path> - Find primality terms",
+            "fixed_k_edge_term --algebra <path> --k <k> - Find a k-edge term",
+            "fixed_k_qwnu --algebra <path> --arity <arity> - Test for quasi weak near unanimity term"
         };
         
         showUsage("Malcev", 
