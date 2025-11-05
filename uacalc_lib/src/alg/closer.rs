@@ -125,6 +125,39 @@ impl PyCloser {
         self.inner.is_completed()
     }
 
+    /// Get the elements to find.
+    ///
+    /// # Returns
+    /// List of IntArray elements to find, if set
+    fn get_elements_to_find(&self) -> Option<Vec<PyIntArray>> {
+        self.inner.get_elements_to_find()
+            .map(|elts| elts.iter()
+                .map(|ia| PyIntArray { inner: ia.clone() })
+                .collect())
+    }
+
+    /// Set the elements to find.
+    ///
+    /// # Arguments
+    /// * `elements` - List of IntArray elements to search for during closure
+    fn set_elements_to_find(&mut self, elements: Vec<PyIntArray>) -> PyResult<()> {
+        let rust_elts: Vec<IntArray> = elements.iter()
+            .map(|e| e.inner.clone())
+            .collect();
+        
+        let generators = self.inner.get_generators();
+        self.inner.set_elements_to_find(rust_elts, generators);
+        Ok(())
+    }
+
+    /// Check if all elements have been found.
+    ///
+    /// # Returns
+    /// True if all elements in elts_to_find have been found
+    fn all_elements_found(&self) -> bool {
+        self.inner.all_elements_found()
+    }
+
     fn __str__(&self) -> String {
         format!("Closer(generators: {}, answer_size: {})",
             self.inner.get_generators().len(),

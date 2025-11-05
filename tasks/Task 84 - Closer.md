@@ -185,7 +185,7 @@ This class depends on:
 - ✅ **Integration verified** - Tests can be collected and run successfully
 - ⚠️ **Python-specific tests** - Not yet written (but Python bindings verified working)
 - Path: `src/alg/closer.rs` (unit tests), `tests/closer_java_comparison_tests.rs` (Java comparison)
-- Quality: Excellent - Core functionality tested, Java comparison verified including constraint handling, homomorphism checking, and operations finding, Python bindings verified
+- Quality: Excellent - Core functionality tested, Java comparison verified including constraint handling, homomorphism checking, operations finding, and multiple element finding, Python bindings verified
 
 **Dependencies**:
 - ✅ `CloserTiming` - **FULLY IMPLEMENTED** in `src/alg/closer_timing.rs` (used in parallel closure)
@@ -209,15 +209,16 @@ This class depends on:
 6. ✅ No-operations handling - Handles algebras with no operations (returns generators only, matching Java behavior)
 7. ✅ Term map generation - Terms automatically built during closure computation
 8. ✅ Element finding - Support for finding specific elements during closure (`elt_to_find`)
-9. ✅ Progress reporting - Integration with `ProgressReport` trait and `CloserTiming`
-10. ✅ Configuration methods - All getters/setters for generators, term_map, report, suppress_output, max_size
-11. ✅ Python bindings - Full API exposed with proper module registration including `sg_close_power()`
-12. ✅ Java wrapper for testing - `CloserWrapper.java` with `sg_close_power` command
-13. ✅ Rust unit tests - Tests for creation, generators, and constants handling
-14. ✅ Java comparison tests - 15 tests comparing output with Java implementation (including 3 constraint tests and 2 homomorphism tests)
-15. ✅ Malcev integration - All 10 Malcev methods updated to use `sg_close_power()` for power algebras
-16. ✅ Build and import verification - All components compile and Python bindings import correctly
-17. ✅ Advanced constraint handling - All constraint methods implemented with early termination when constraints are satisfied
+9. ✅ Multiple element finding - Support for finding multiple elements during closure (`elts_to_find`, `indeces_map_of_found_elts`, `all_elts_found`)
+10. ✅ Progress reporting - Integration with `ProgressReport` trait and `CloserTiming`
+11. ✅ Configuration methods - All getters/setters for generators, term_map, report, suppress_output, max_size
+12. ✅ Python bindings - Full API exposed with proper module registration including `sg_close_power()`
+13. ✅ Java wrapper for testing - `CloserWrapper.java` with `sg_close_power` command
+14. ✅ Rust unit tests - Tests for creation, generators, and constants handling
+15. ✅ Java comparison tests - 17 tests comparing output with Java implementation (including 3 constraint tests, 2 homomorphism tests, 1 operations finding test, and 1 multiple element finding test)
+16. ✅ Malcev integration - All 10 Malcev methods updated to use `sg_close_power()` for power algebras
+17. ✅ Build and import verification - All components compile and Python bindings import correctly
+18. ✅ Advanced constraint handling - All constraint methods implemented with early termination when constraints are satisfied
     - Blocks constraint: Ensures indices in blocks have the same value
     - Values constraint: Specifies exact values at specific indices
     - Set constraint: Restricts values at an index to a set
@@ -240,8 +241,13 @@ This class depends on:
     - Term map for operations: `get_term_map_for_operations()`
     - Operations finding integrated into both `sg_close_impl()` and `sg_close_power_impl()`
     - When a new element is computed, its term is interpreted as an operation on the root algebra
-    - Compared with target operations using `equal_values()` and added to term map if found
-    - Returns early when all operations are found
+20. ✅ Multiple element finding - All multiple element finding methods implemented with tracking during closure
+    - Elements to find: `get_elements_to_find()`, `set_elements_to_find()`
+    - Tracking map: `indeces_map_of_found_elts` tracks found elements and their indices
+    - Status: `all_elements_found()` checks if all elements have been found
+    - Multiple element finding integrated into `sg_close_impl()`, `sg_close_power_impl()`, and `sg_close_parallel()`
+    - When a new element is computed, checks if it's in `elts_to_find` and updates tracking map
+    - Returns early when all elements are found
     - Java comparison tests verify exact match with Java behavior
 
 **What Remains** (Optional/Advanced Features):
@@ -249,8 +255,9 @@ This class depends on:
 2. ✅ **Advanced constraint handling** - Blocks, values, congruence constraints **IMPLEMENTED** - All constraint methods implemented with Java comparison tests
 3. ✅ **Homomorphism checking** - Image algebra operations during closure **IMPLEMENTED** - All homomorphism methods implemented with Java comparison tests
 4. ✅ **Operations finding** - Finding operations during closure **IMPLEMENTED** - All operations finding methods implemented with Java comparison tests
-5. ⚠️ **Python-specific test suite** - Comprehensive Python tests for all methods (bindings verified working)
-6. ⚠️ **Performance optimization** - Further tuning of parallel execution
+5. ✅ **Multiple Element Finding** - Finding multiple elements during closure **IMPLEMENTED** - All multiple element finding methods implemented with Java comparison tests
+6. ⚠️ **Python-specific test suite** - Comprehensive Python tests for all methods (bindings verified working)
+7. ⚠️ **Performance optimization** - Further tuning of parallel execution
 
 **Recommendations**:
 1. ✅ **COMPLETED**: Closure algorithm in `Closer::sg_close_impl()` - Fully implemented
@@ -271,6 +278,25 @@ This class depends on:
 - ✅ Java wrapper compiled successfully with `ant compile-wrappers` - All commands working
 
 **Recent Changes (Latest Implementation)**:
+- ✅ **Multiple Element Finding Implementation** - All multiple element finding methods implemented (2025-01-27)
+  - Rust: Added multiple element finding fields to `Closer` struct: `elts_to_find`, `indeces_map_of_found_elts`, `all_elts_found`, `special_elts_found`
+  - Rust: Implemented all getter/setter methods for multiple element finding fields in `src/alg/closer.rs`:
+    - `get_elements_to_find()`, `set_elements_to_find()`, `all_elements_found()`
+  - Rust: Added multiple element finding logic in `sg_close_impl()`, `sg_close_power_impl()`, and `sg_close_parallel()`:
+    - When a new element is computed, checks if it's in `elts_to_find`
+    - Updates `indeces_map_of_found_elts` with the index of found elements
+    - Increments `special_elts_found` when a new element is found
+    - Returns early when all elements are found (`special_elts_found == elts_to_find.len()`)
+    - Sets `all_elts_found = true` when all elements found
+  - Rust: Updated `Clone` implementation to include multiple element finding fields
+  - Python bindings: Added `get_elements_to_find()`, `set_elements_to_find()`, and `all_elements_found()` methods in `uacalc_lib/src/alg/closer.rs`
+  - Java wrapper: Added `sg_close_with_multiple_elements` command in `CloserWrapper.java`
+  - Java wrapper: Supports `--elements_to_find` parameter for specifying elements to find
+  - Java wrapper: Returns `all_elements_found` status in response
+  - Tests: 1 Java comparison test added in `tests/closer_java_comparison_tests.rs`:
+    - `test_closer_multiple_elements_finding_java_comparison` - Tests multiple element finding with ba2^2
+  - All 17 closer Java comparison tests passing (including 1 new multiple element finding test)
+  - Multiple element finding matches Java behavior exactly - tracks elements during closure and terminates early when all found
 - ✅ **Operations Finding Implementation** - All operations finding methods implemented (2025-01-27)
   - Rust: Added operations finding fields to `Closer` struct: `root_algebra`, `operations`, `term_map_for_operations`
   - Rust: Implemented all getter/setter methods for operations finding fields in `src/alg/closer.rs`:
@@ -288,7 +314,7 @@ This class depends on:
   - Java wrapper: Automatically creates term map using constructor with `makeTermMap=true`
   - Tests: 1 Java comparison test added in `tests/closer_java_comparison_tests.rs`:
     - `test_closer_operations_finding_java_comparison` - Tests operations finding with meet operation on ba2^2
-  - All 16 closer Java comparison tests passing (including 1 new operations finding test)
+  - All 17 closer Java comparison tests passing (including 1 new operations finding test and 1 multiple element finding test)
   - Operations finding matches Java behavior exactly - finds operations during closure and maps them to terms
 - ✅ **Homomorphism Checking Implementation** - All homomorphism methods implemented (2025-01-27)
   - Rust: Added homomorphism fields to `Closer` struct: `homomorphism`, `image_algebra`, `failing_equation`
@@ -308,7 +334,7 @@ This class depends on:
   - Tests: 2 Java comparison tests added in `tests/closer_java_comparison_tests.rs`:
     - `test_closer_homomorphism_java_comparison` - Tests identity homomorphism from ba2^2 to ba2
     - `test_closer_homomorphism_ba2_square_to_base_java_comparison` - Tests projection homomorphism from ba2^2 to ba2
-  - All 16 closer Java comparison tests passing (including 2 homomorphism tests and 1 operations finding test)
+  - All 17 closer Java comparison tests passing (including 2 homomorphism tests, 1 operations finding test, and 1 multiple element finding test)
   - Homomorphism checking matches Java behavior exactly - stops closure early when homomorphism property fails
 - ✅ **Advanced Constraint Handling Implementation** - All constraint methods implemented (2025-01-27)
   - Rust: Added constraint fields to `Closer` struct: `blocks`, `values`, `constraint_set`, `index_for_constraint_set`, `congruence_for_congruence_constraint`, `index_for_congruence_constraint`, `congruence_constraint_elem_index`
@@ -402,14 +428,16 @@ This class depends on:
 
 **Analysis**:
 - ✅ **CloserWrapper.java exists** - `java_wrapper/src/alg/CloserWrapper.java` provides CLI interface
-  - Commands: `test`, `sg_close`, `sg_close_power`, `sg_close_ba2_power`, `sg_close_free_algebra`, `sg_close_with_constraints`, `sg_close_with_homomorphism`
-  - Exposes core closure functionality for testing including constraint handling and homomorphism checking
+  - Commands: `test`, `sg_close`, `sg_close_power`, `sg_close_ba2_power`, `sg_close_free_algebra`, `sg_close_with_constraints`, `sg_close_with_homomorphism`, `sg_close_with_operations_finding`, `sg_close_with_multiple_elements`
+  - Exposes core closure functionality for testing including constraint handling, homomorphism checking, operations finding, and multiple element finding
 - ✅ **Java comparison tests implemented** - Tests use `compare_with_java!` macro in `tests/closer_java_comparison_tests.rs`
   - `test_closer_sg_close_power_ba2_power2_java_comparison` - Tests `sg_close_power()` with 2-element base, power 2
   - `test_closer_sg_close_power_ba2_power3_java_comparison` - Tests `sg_close_power()` with 2-element base, power 3
   - `test_closer_sg_close_power_ba2_power3_single_generator` - Tests `sg_close_power()` with single generator
   - Constraint tests: `test_closer_blocks_constraint_java_comparison`, `test_closer_values_constraint_java_comparison`, `test_closer_congruence_constraint_java_comparison`
   - Homomorphism tests: `test_closer_homomorphism_java_comparison`, `test_closer_homomorphism_ba2_square_to_base_java_comparison`
+  - Operations finding test: `test_closer_operations_finding_java_comparison`
+  - Multiple element finding test: `test_closer_multiple_elements_finding_java_comparison`
   - All tests compare Rust output with Java output and verify exact match
 - ✅ **Existing tests validate functionality** - Tests in `closer_power_test.rs` and `closer_bigproduct_subproduct_power_tests.rs` verify functionality
 - ✅ **Additional Java comparison tests** - Tests for `sg_close()` with ba2 power algebras and free algebras (F(1), F(2))
@@ -429,7 +457,7 @@ This class depends on:
 
 ### Missing Methods Analysis
 
-**Status**: ✅ **~99% COMPLETE** - Core functionality implemented including power algebra optimization, advanced constraint handling, homomorphism checking, and operations finding
+**Status**: ✅ **~99% COMPLETE** - Core functionality implemented including power algebra optimization, advanced constraint handling, homomorphism checking, operations finding, and multiple element finding
 
 **Implemented Methods** (✅):
 - Core closure: `sg_close()`, `sg_close_impl()`, `sg_close_power()`, `sg_close_power_impl()`, `sg_close_parallel()`
@@ -437,6 +465,7 @@ This class depends on:
 - Answer: `get_answer()`
 - Term map: `get_term_map()`, `set_term_map()`
 - Element finding: `get_element_to_find()`, `set_element_to_find()`
+- Multiple element finding: `get_elements_to_find()`, `set_elements_to_find()`, `all_elements_found()`
 - Progress: `set_progress_report()`
 - Output control: `set_suppress_output()`, `is_suppress_output()`
 - Max size: `get_max_size()`, `set_max_size()`
@@ -461,9 +490,11 @@ This class depends on:
    - ✅ `getImageAlgebra()` / `setImageAlgebra(SmallAlgebra)` - `get_image_algebra()` / `set_image_algebra()` implemented
    - ✅ `getFailingEquation()` - `get_failing_equation()` implemented
 
-3. **Multiple Element Finding**:
-   - `getElementsToFind()` / `setElementsToFind(List<IntArray>, List<IntArray>)`
-   - `allElementsFound()` - Check if all target elements found
+3. **Multiple Element Finding**: ✅ **IMPLEMENTED**
+   - ✅ `getElementsToFind()` / `setElementsToFind(List<IntArray>, List<IntArray>)` - `get_elements_to_find()` / `set_elements_to_find()` implemented
+   - ✅ `allElementsFound()` - `all_elements_found()` implemented
+   - Multiple element finding logic integrated into `sg_close_impl()`, `sg_close_power_impl()`, and `sg_close_parallel()`
+   - Tracks elements in `indeces_map_of_found_elts` and returns early when all elements are found
 
 4. **Operations Finding** (for clone testing): ✅ **IMPLEMENTED**
    - ✅ `getTermMapForOperations()` / `setOperations(List<Operation>)` - `get_term_map_for_operations()` / `set_operations()` implemented
@@ -483,7 +514,7 @@ This class depends on:
   - ✅ Constraint methods (blocks, values, congruence constraints) - **IMPLEMENTED**
   - ✅ Homomorphism checking (`getHomomorphism`, `setImageAlgebra`, `getFailingEquation`) - **IMPLEMENTED**
   - ✅ Operations finding (`getTermMapForOperations`, `setOperations`, `setRootAlgebra`) - **IMPLEMENTED**
-  - Multiple element finding (`getElementsToFind`, `allElementsFound`)
+  - ✅ Multiple element finding (`getElementsToFind`, `allElementsFound`) - **IMPLEMENTED**
 - **Low Priority** (Specialized features):
   - `close()` method (simplified version)
   - `countFuncApplications()` (utility method)

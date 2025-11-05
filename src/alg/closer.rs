@@ -66,6 +66,18 @@ where
     /// Element to find during closure
     elt_to_find: Option<IntArray>,
     
+    /// Multiple elements to find during closure
+    elts_to_find: Option<Vec<IntArray>>,
+    
+    /// Map from elements to their indices in the closure (for tracking found elements)
+    indeces_map_of_found_elts: Option<HashMap<IntArray, usize>>,
+    
+    /// Whether all elements have been found
+    all_elts_found: bool,
+    
+    /// Count of special elements found (elements in elts_to_find)
+    special_elts_found: usize,
+    
     /// Progress reporter
     report: Option<Arc<dyn ProgressReport>>,
     
@@ -151,6 +163,10 @@ where
             completed: false,
             term_map: None,
             elt_to_find: None,
+            elts_to_find: None,
+            indeces_map_of_found_elts: None,
+            all_elts_found: false,
+            special_elts_found: 0,
             report: None,
             suppress_output: false,
             max_size: None,
@@ -270,6 +286,75 @@ where
     /// The element to find, if set
     pub fn get_element_to_find(&self) -> Option<&IntArray> {
         self.elt_to_find.as_ref()
+    }
+    
+    /// Get the elements to find.
+    /// 
+    /// # Returns
+    /// A reference to the list of elements to find, if set
+    pub fn get_elements_to_find(&self) -> Option<&[IntArray]> {
+        self.elts_to_find.as_deref()
+    }
+    
+    /// Set the elements to find.
+    /// 
+    /// This takes a list of elements and removes duplicates, maintaining order,
+    /// before setting the elements to find. It also initializes the tracking map
+    /// and checks if any generators are already in the list.
+    /// 
+    /// # Arguments
+    /// * `elements` - The elements to search for during closure
+    /// * `generators` - The generators (to check if they're already found)
+    pub fn set_elements_to_find(&mut self, elements: Vec<IntArray>, generators: &[IntArray]) {
+        // Remove duplicates while maintaining order
+        let mut elts_to_find = Vec::new();
+        let mut seen = HashSet::new();
+        
+        for ia in elements {
+            if seen.insert(ia.clone()) {
+                elts_to_find.push(ia);
+            }
+        }
+        
+        self.elts_to_find = if elts_to_find.is_empty() {
+            None
+        } else {
+            Some(elts_to_find)
+        };
+        
+        // Initialize the tracking map with -1 (represented as usize::MAX)
+        if let Some(ref elts) = self.elts_to_find {
+            let mut map = HashMap::new();
+            for ia in elts {
+                map.insert(ia.clone(), usize::MAX);
+            }
+            
+            // Check if any generators are already in the list
+            self.special_elts_found = 0;
+            for (i, gen) in generators.iter().enumerate() {
+                if let Some(idx) = map.get_mut(gen) {
+                    if *idx == usize::MAX {
+                        *idx = i;
+                        self.special_elts_found += 1;
+                    }
+                }
+            }
+            
+            self.indeces_map_of_found_elts = Some(map);
+            self.all_elts_found = false;
+        } else {
+            self.indeces_map_of_found_elts = None;
+            self.all_elts_found = false;
+            self.special_elts_found = 0;
+        }
+    }
+    
+    /// Check if all elements have been found.
+    /// 
+    /// # Returns
+    /// `true` if all elements in `elts_to_find` have been found
+    pub fn all_elements_found(&self) -> bool {
+        self.all_elts_found
     }
     
     /// Set the progress reporter.
@@ -960,6 +1045,31 @@ where
                                             }
                                         }
                                         
+                                        // Check if we found one of the multiple elements we're looking for
+                                        if let (Some(ref elts_to_find), Some(ref mut indeces_map)) = (self.elts_to_find.as_ref(), self.indeces_map_of_found_elts.as_mut()) {
+                                            if let Some(idx) = indeces_map.get_mut(&result_ia) {
+                                                if *idx == usize::MAX {
+                                                    // Found a new element we're looking for
+                                                    let index = self.ans.len() - 1;
+                                                    *idx = index;
+                                                    self.special_elts_found += 1;
+                                                    
+                                                    if let Some(ref report) = self.report {
+                                                        report.add_line(&format!("found {}, at {}", result_ia, index));
+                                                    }
+                                                    
+                                                    if self.special_elts_found == elts_to_find.len() {
+                                                        // All elements found
+                                                        self.all_elts_found = true;
+                                                        if let Some(ref report) = self.report {
+                                                            report.add_end_line(&format!("closing done, found all {} elems", elts_to_find.len()));
+                                                        }
+                                                        return Ok(self.ans.clone());
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        
                                         // Check constraints if any are set
                                         // This matches Java's constraint checking logic (lines 1130-1147)
                                         let blocks_not_null = self.blocks.is_some();
@@ -1540,6 +1650,31 @@ where
                                 }
                             }
                             
+                            // Check if we found one of the multiple elements we're looking for
+                            if let (Some(ref elts_to_find), Some(ref mut indeces_map)) = (self.elts_to_find.as_ref(), self.indeces_map_of_found_elts.as_mut()) {
+                                if let Some(idx) = indeces_map.get_mut(&v) {
+                                    if *idx == usize::MAX {
+                                        // Found a new element we're looking for
+                                        let index = self.ans.len() - 1;
+                                        *idx = index;
+                                        self.special_elts_found += 1;
+                                        
+                                        if let Some(ref report) = self.report {
+                                            report.add_line(&format!("found {}, at {}", v, index));
+                                        }
+                                        
+                                        if self.special_elts_found == elts_to_find.len() {
+                                            // All elements found
+                                            self.all_elts_found = true;
+                                            if let Some(ref report) = self.report {
+                                                report.add_end_line(&format!("closing done, found all {} elems", elts_to_find.len()));
+                                            }
+                                            return Ok(self.ans.clone());
+                                        }
+                                    }
+                                }
+                            }
+                            
                             // Check constraints if any are set
                             // This matches Java's constraint checking logic (lines 1130-1147)
                             let blocks_not_null = self.blocks.is_some();
@@ -1845,6 +1980,38 @@ where
                                                 }
                                             }
                                             
+                                            // Check if we found one of the multiple elements we're looking for
+                                            if let (Some(ref elts_to_find), Some(ref mut indeces_map)) = (self.elts_to_find.as_ref(), self.indeces_map_of_found_elts.as_mut()) {
+                                                if let Some(idx) = indeces_map.get_mut(&new_elt) {
+                                                    if *idx == usize::MAX {
+                                                        // Found a new element we're looking for
+                                                        let index = self.ans.len() - 1;
+                                                        *idx = index;
+                                                        self.special_elts_found += 1;
+                                                        
+                                                        if let Some(ref report) = self.report {
+                                                            report.add_line(&format!("found {}, at {}", new_elt, index));
+                                                        }
+                                                        
+                                                        if self.special_elts_found == elts_to_find.len() {
+                                                            // All elements found - update term_map from concurrent map
+                                                            if let Ok(mut map_guard) = term_map_arc.lock() {
+                                                                if let Some(term) = map_guard.remove(&new_elt) {
+                                                                    if let Some(ref mut term_map) = self.term_map {
+                                                                        term_map.insert(new_elt, term);
+                                                                    }
+                                                                }
+                                                            }
+                                                            self.all_elts_found = true;
+                                                            if let Some(ref report) = self.report {
+                                                                report.add_end_line(&format!("closing done, found all {} elems", elts_to_find.len()));
+                                                            }
+                                                            return Ok(self.ans.clone());
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            
                                             // Check max size
                                             if let Some(max_size) = self.max_size {
                                                 if self.ans.len() >= max_size {
@@ -1913,6 +2080,10 @@ where
             completed: self.completed,
             term_map: None, // Can't clone term map easily
             elt_to_find: self.elt_to_find.clone(),
+            elts_to_find: self.elts_to_find.clone(),
+            indeces_map_of_found_elts: self.indeces_map_of_found_elts.clone(),
+            all_elts_found: self.all_elts_found,
+            special_elts_found: self.special_elts_found,
             report: self.report.as_ref().map(Arc::clone),
             suppress_output: self.suppress_output,
             max_size: self.max_size,

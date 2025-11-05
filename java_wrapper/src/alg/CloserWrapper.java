@@ -87,6 +87,10 @@ public class CloserWrapper extends WrapperBase {
                 handleSgCloseWithOperationsFinding(options);
                 break;
                 
+            case "sg_close_with_multiple_elements":
+                handleSgCloseWithMultipleElements(options);
+                break;
+                
             default:
                 handleError("Unknown command: " + command, null);
         }
@@ -747,6 +751,97 @@ public class CloserWrapper extends WrapperBase {
     }
     
     /**
+     * Handle sg_close_with_multiple_elements command - closure with multiple element finding.
+     */
+    private void handleSgCloseWithMultipleElements(Map<String, String> options) throws Exception {
+        int baseSize = getIntArg(options, "base_size", 2);
+        int power = getIntArg(options, "power", 2);
+        
+        // Load ba2 algebra (ensures operations are available)
+        SmallAlgebra base = loadBa2();
+        BigProductAlgebra algebra = new BigProductAlgebra(base, power);
+        
+        // Parse generators
+        String gensStr = options.get("generators");
+        if (gensStr == null || gensStr.isEmpty()) {
+            handleError("generators parameter is required", null);
+            return;
+        }
+        List<IntArray> generators = parseGenerators(gensStr, power);
+        
+        // Parse elements to find
+        String eltsStr = options.get("elements_to_find");
+        if (eltsStr == null || eltsStr.isEmpty()) {
+            handleError("elements_to_find parameter is required", null);
+            return;
+        }
+        List<IntArray> elementsToFind = parseGenerators(eltsStr, power);
+        
+        // Create closer with term map (required for tracking)
+        Closer closer = new Closer(algebra, generators, true);
+        
+        // Set elements to find
+        closer.setElementsToFind(elementsToFind, generators);
+        
+        // Compute closure using power method for power algebras
+        List<IntArray> result;
+        if (power > 1) {
+            result = closer.sgClosePower();
+        } else {
+            result = closer.sgClose();
+        }
+        
+        // Format result
+        List<List<Integer>> resultList = new ArrayList<>();
+        for (IntArray ia : result) {
+            List<Integer> elem = new ArrayList<>();
+            for (int i = 0; i < ia.universeSize(); i++) {
+                elem.add(ia.get(i));
+            }
+            resultList.add(elem);
+        }
+        
+        // Format elements to find
+        List<List<Integer>> elementsToFindList = new ArrayList<>();
+        for (IntArray ia : elementsToFind) {
+            List<Integer> elem = new ArrayList<>();
+            for (int i = 0; i < ia.universeSize(); i++) {
+                elem.add(ia.get(i));
+            }
+            elementsToFindList.add(elem);
+        }
+        
+        // Get indices of found elements
+        Map<IntArray, Integer> indicesMap = new HashMap<>();
+        if (closer.getElementsToFind() != null) {
+            // We need to check the indecesMapOfFoundElts - but it's private in Java
+            // So we'll check if elements are in the result and find their indices
+            List<IntArray> elts = closer.getElementsToFind();
+            for (IntArray elt : elts) {
+                for (int i = 0; i < result.size(); i++) {
+                    if (result.get(i).equals(elt)) {
+                        indicesMap.put(elt, i);
+                        break;
+                    }
+                }
+            }
+        }
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("command", "sg_close_with_multiple_elements");
+        response.put("base_size", baseSize);
+        response.put("power", power);
+        response.put("generators_count", generators.size());
+        response.put("closure_size", result.size());
+        response.put("closure", resultList);
+        response.put("elements_to_find", elementsToFindList);
+        response.put("all_elements_found", closer.allElementsFound());
+        response.put("status", "success");
+        
+        handleSuccess(response);
+    }
+    
+    /**
      * Show usage information for the Closer wrapper.
      */
     private void showUsage() {
@@ -759,6 +854,7 @@ public class CloserWrapper extends WrapperBase {
             "sg_close_with_constraints --base_size 2 --power 2 --generators \"0,0;0,1\" --blocks \"0,1\"",
             "sg_close_with_homomorphism --base_size 2 --power 2 --generators \"0,0;0,1\" --image_generators \"0,1\"",
             "sg_close_with_operations_finding --base_size 2 --power 2 --generators \"0,0;0,1\" --operations \"2:0,1,1,0\"",
+            "sg_close_with_multiple_elements --base_size 2 --power 2 --generators \"0,0;0,1\" --elements_to_find \"1,1;1,0\"",
             "help"
         };
         

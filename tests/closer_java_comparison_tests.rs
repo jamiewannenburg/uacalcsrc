@@ -769,3 +769,43 @@ fn test_closer_operations_finding_java_comparison() {
         }
     );
 }
+
+#[test]
+fn test_closer_multiple_elements_finding_java_comparison() {
+    let config = TestConfig::default();
+    
+    let ba2 = create_ba2();
+    let ba2_power2 = BigProductAlgebra::<i32>::new_power_safe(ba2, 2).unwrap();
+    
+    let g0 = IntArray::from_array(vec![0, 0]).unwrap();
+    let g1 = IntArray::from_array(vec![0, 1]).unwrap();
+    let gens = vec![g0, g1];
+    
+    // Elements to find: [1,1] and [1,0]
+    let e1 = IntArray::from_array(vec![1, 1]).unwrap();
+    let e2 = IntArray::from_array(vec![1, 0]).unwrap();
+    let elements_to_find = vec![e1, e2];
+    
+    compare_with_java!(
+        config,
+        "java_wrapper.src.alg.CloserWrapper",
+        ["sg_close_with_multiple_elements", "--power", "2", "--generators", "0,0;0,1", "--elements_to_find", "1,1;1,0"],
+        || {
+            let mut closer = Closer::new_safe(Arc::new(ba2_power2), gens.clone()).unwrap();
+            closer.set_elements_to_find(elements_to_find.clone(), &gens);
+            let closure = closer.sg_close_power().unwrap();
+            
+            json!({
+                "command": "sg_close_with_multiple_elements",
+                "power": 2,
+                "base_size": 2,
+                "generators_count": 2,
+                "closure_size": closure.len(),
+                "closure": closure.iter().map(|e| e.as_slice().to_vec()).collect::<Vec<_>>(),
+                "elements_to_find": elements_to_find.iter().map(|e| e.as_slice().to_vec()).collect::<Vec<_>>(),
+                "all_elements_found": closer.all_elements_found(),
+                "status": "success"
+            })
+        }
+    );
+}
