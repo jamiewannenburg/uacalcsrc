@@ -6,6 +6,7 @@
  */
 
 use uacalc::alg::{Closer, BigProductAlgebra, FreeAlgebra, Algebra, SmallAlgebra};
+use uacalc::alg::conlat::partition::Partition;
 use uacalc::util::int_array::{IntArray, IntArrayTrait};
 use uacalc::io::algebra_io::read_algebra_file;
 use std::collections::HashSet;
@@ -396,3 +397,148 @@ fn test_closer_sg_close_power_ba2_power3_single_generator() {
         }
     );
 }
+
+#[test]
+fn test_closer_blocks_constraint_java_comparison() {
+    let config = TestConfig::default();
+    
+    // Use ba2 algebra which has operations
+    let ba2 = create_ba2();
+    let alg_power2 = BigProductAlgebra::<i32>::new_power_safe(ba2, 2).unwrap();
+    
+    let g0 = IntArray::from_array(vec![0, 0]).unwrap();
+    let g1 = IntArray::from_array(vec![0, 1]).unwrap();
+    let gens = vec![g0, g1];
+    
+    compare_with_java!(
+        config,
+        "java_wrapper.src.alg.CloserWrapper",
+        ["sg_close_with_constraints", "--base_size", "2", "--power", "2", "--generators", "0,0;0,1", "--blocks", "0,1"],
+        || {
+            let mut closer = Closer::new_safe(Arc::new(alg_power2), gens.clone()).unwrap();
+            // Set blocks constraint: indices 0 and 1 must have the same value
+            closer.set_blocks(Some(vec![vec![0, 1]]));
+            let closure = closer.sg_close().unwrap();
+            
+            let found_element = closer.get_element_to_find().cloned();
+            let found_element_value = found_element.as_ref().map(|e| e.as_slice().to_vec());
+            
+            // Match Java format: only include found_element_value if found_element is true
+            let mut result = json!({
+                "command": "sg_close_with_constraints",
+                "base_size": 2,
+                "power": 2,
+                "generators_count": 2,
+                "closure_size": closure.len(),
+                "closure": closure.iter().map(|e| e.as_slice().to_vec()).collect::<Vec<_>>(),
+                "found_element": found_element.is_some(),
+                "status": "success"
+            });
+            
+            // Only add found_element_value if found_element is true (matching Java behavior)
+            if found_element.is_some() {
+                result["found_element_value"] = json!(found_element_value.unwrap());
+            }
+            
+            result
+        }
+    );
+}
+
+#[test]
+fn test_closer_values_constraint_java_comparison() {
+    let config = TestConfig::default();
+    
+    // Use ba2 algebra which has operations
+    let ba2 = create_ba2();
+    let alg_power2 = BigProductAlgebra::<i32>::new_power_safe(ba2, 2).unwrap();
+    
+    let g0 = IntArray::from_array(vec![0, 0]).unwrap();
+    let g1 = IntArray::from_array(vec![0, 1]).unwrap();
+    let gens = vec![g0, g1];
+    
+    compare_with_java!(
+        config,
+        "java_wrapper.src.alg.CloserWrapper",
+        ["sg_close_with_constraints", "--base_size", "2", "--power", "2", "--generators", "0,0;0,1", "--values", "0:1"],
+        || {
+            let mut closer = Closer::new_safe(Arc::new(alg_power2), gens.clone()).unwrap();
+            // Set values constraint: index 0 must equal 1
+            closer.set_values(Some(vec![(0, 1)]));
+            let closure = closer.sg_close().unwrap();
+            
+            let found_element = closer.get_element_to_find().cloned();
+            let found_element_value = found_element.as_ref().map(|e| e.as_slice().to_vec());
+            
+            // Match Java format: only include found_element_value if found_element is true
+            let mut result = json!({
+                "command": "sg_close_with_constraints",
+                "base_size": 2,
+                "power": 2,
+                "generators_count": 2,
+                "closure_size": closure.len(),
+                "closure": closure.iter().map(|e| e.as_slice().to_vec()).collect::<Vec<_>>(),
+                "found_element": found_element.is_some(),
+                "status": "success"
+            });
+            
+            // Only add found_element_value if found_element is true (matching Java behavior)
+            if found_element.is_some() {
+                result["found_element_value"] = json!(found_element_value.unwrap());
+            }
+            
+            result
+        }
+    );
+}
+
+#[test]
+fn test_closer_congruence_constraint_java_comparison() {
+    let config = TestConfig::default();
+    
+    // Use ba2 algebra which has operations
+    let ba2 = create_ba2();
+    let alg_power2 = BigProductAlgebra::<i32>::new_power_safe(ba2, 2).unwrap();
+    
+    let g0 = IntArray::from_array(vec![0, 0]).unwrap();
+    let g1 = IntArray::from_array(vec![0, 1]).unwrap();
+    let gens = vec![g0, g1];
+    
+    compare_with_java!(
+        config,
+        "java_wrapper.src.alg.CloserWrapper",
+        ["sg_close_with_constraints", "--base_size", "2", "--power", "2", "--generators", "0,0;0,1", "--congruence", "|0 1|", "--congruence_index", "0", "--congruence_elem_index", "0"],
+        || {
+            let mut closer = Closer::new_safe(Arc::new(alg_power2), gens.clone()).unwrap();
+            // Set congruence constraint: partition where 0 and 1 are in the same block
+            // This means index 0's value must be congruent to element 0 under this partition
+            // Use bar notation which is more compatible
+            let partition = Partition::from_string("|0 1|").unwrap();
+            closer.setup_congruence_constraint(partition, 0, 0);
+            let closure = closer.sg_close().unwrap();
+            
+            let found_element = closer.get_element_to_find().cloned();
+            let found_element_value = found_element.as_ref().map(|e| e.as_slice().to_vec());
+            
+            // Match Java format: only include found_element_value if found_element is true
+            let mut result = json!({
+                "command": "sg_close_with_constraints",
+                "base_size": 2,
+                "power": 2,
+                "generators_count": 2,
+                "closure_size": closure.len(),
+                "closure": closure.iter().map(|e| e.as_slice().to_vec()).collect::<Vec<_>>(),
+                "found_element": found_element.is_some(),
+                "status": "success"
+            });
+            
+            // Only add found_element_value if found_element is true (matching Java behavior)
+            if found_element.is_some() {
+                result["found_element_value"] = json!(found_element_value.unwrap());
+            }
+            
+            result
+        }
+    );
+}
+

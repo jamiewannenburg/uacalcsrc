@@ -16,6 +16,7 @@ use crate::alg::big_product_algebra::BigProductAlgebra;
 use crate::alg::Algebra;
 use crate::alg::parallel::SingleClose;
 use crate::alg::CloserTiming;
+use crate::alg::conlat::partition::Partition;
 use crate::util::int_array::{IntArray, IntArrayTrait};
 use crate::terms::{Term, NonVariableTerm};
 use crate::progress::ProgressReport;
@@ -71,6 +72,28 @@ where
     
     /// Maximum size (stop when reached)
     max_size: Option<usize>,
+    
+    /// Blocks constraint - array of arrays where each inner array is a block of indices
+    /// that must have the same value
+    blocks: Option<Vec<Vec<usize>>>,
+    
+    /// Values constraint - array of (index, value) pairs specifying array[index] = value
+    values: Option<Vec<(usize, i32)>>,
+    
+    /// Set constraint - set of possible values for a specific index
+    constraint_set: Option<HashSet<i32>>,
+    
+    /// Index for the set constraint
+    index_for_constraint_set: Option<usize>,
+    
+    /// Congruence for congruence constraint
+    congruence_for_congruence_constraint: Option<Partition>,
+    
+    /// Index for congruence constraint
+    index_for_congruence_constraint: Option<usize>,
+    
+    /// Element index for congruence constraint
+    congruence_constraint_elem_index: Option<usize>,
 }
 
 impl<T> Closer<T>
@@ -110,6 +133,13 @@ where
             report: None,
             suppress_output: false,
             max_size: None,
+            blocks: None,
+            values: None,
+            constraint_set: None,
+            index_for_constraint_set: None,
+            congruence_for_congruence_constraint: None,
+            index_for_congruence_constraint: None,
+            congruence_constraint_elem_index: None,
         };
         
         closer.set_generators(generators);
@@ -253,6 +283,117 @@ where
     /// The maximum size, if set
     pub fn get_max_size(&self) -> Option<usize> {
         self.max_size
+    }
+    
+    /// Get the blocks constraint.
+    /// 
+    /// Returns an array of arrays where each inner array is a block of indices
+    /// that must have the same value.
+    pub fn get_blocks(&self) -> Option<&Vec<Vec<usize>>> {
+        self.blocks.as_ref()
+    }
+    
+    /// Set the blocks constraint.
+    /// 
+    /// # Arguments
+    /// * `blocks` - Array of arrays where each inner array is a block of indices
+    ///              that must have the same value
+    pub fn set_blocks(&mut self, blocks: Option<Vec<Vec<usize>>>) {
+        self.blocks = blocks;
+    }
+    
+    /// Get the values constraint.
+    /// 
+    /// Returns an array of (index, value) pairs specifying array[index] = value.
+    pub fn get_values(&self) -> Option<&Vec<(usize, i32)>> {
+        self.values.as_ref()
+    }
+    
+    /// Set the values constraint.
+    /// 
+    /// # Arguments
+    /// * `values` - Array of (index, value) pairs specifying array[index] = value
+    pub fn set_values(&mut self, values: Option<Vec<(usize, i32)>>) {
+        self.values = values;
+    }
+    
+    /// Get the set constraint.
+    /// 
+    /// Returns the set of possible values for a specific index.
+    pub fn get_set_constraint(&self) -> Option<&HashSet<i32>> {
+        self.constraint_set.as_ref()
+    }
+    
+    /// Set the set constraint.
+    /// 
+    /// # Arguments
+    /// * `constraint_set` - Set of possible values for a specific index
+    pub fn set_constraint_set(&mut self, constraint_set: Option<HashSet<i32>>) {
+        self.constraint_set = constraint_set;
+    }
+    
+    /// Get the index for the set constraint.
+    pub fn get_index_for_constraint_set(&self) -> Option<usize> {
+        self.index_for_constraint_set
+    }
+    
+    /// Set the index for the set constraint.
+    /// 
+    /// # Arguments
+    /// * `index` - The index to apply the set constraint to
+    pub fn set_index_for_constraint_set(&mut self, index: Option<usize>) {
+        self.index_for_constraint_set = index;
+    }
+    
+    /// Get the congruence for congruence constraint.
+    pub fn get_congruence_for_congruence_constraint(&self) -> Option<&Partition> {
+        self.congruence_for_congruence_constraint.as_ref()
+    }
+    
+    /// Set the congruence for congruence constraint.
+    /// 
+    /// # Arguments
+    /// * `partition` - The partition to use for the congruence constraint
+    pub fn set_congruence_for_congruence_constraint(&mut self, partition: Option<Partition>) {
+        self.congruence_for_congruence_constraint = partition;
+    }
+    
+    /// Get the index for congruence constraint.
+    pub fn get_index_for_congruence_constraint(&self) -> Option<usize> {
+        self.index_for_congruence_constraint
+    }
+    
+    /// Set the index for congruence constraint.
+    /// 
+    /// # Arguments
+    /// * `index` - The index to apply the congruence constraint to
+    pub fn set_index_for_congruence_constraint(&mut self, index: Option<usize>) {
+        self.index_for_congruence_constraint = index;
+    }
+    
+    /// Get the element index for congruence constraint.
+    pub fn get_congruence_constraint_elem_index(&self) -> Option<usize> {
+        self.congruence_constraint_elem_index
+    }
+    
+    /// Set the element index for congruence constraint.
+    /// 
+    /// # Arguments
+    /// * `elem_index` - The element index for the congruence constraint
+    pub fn set_congruence_constraint_elem_index(&mut self, elem_index: Option<usize>) {
+        self.congruence_constraint_elem_index = elem_index;
+    }
+    
+    /// Setup a congruence constraint with all parameters at once.
+    /// 
+    /// # Arguments
+    /// * `partition` - The partition to use for the congruence constraint
+    /// * `index` - The index to apply the congruence constraint to
+    /// * `elem_index` - The element index for the congruence constraint
+    pub fn setup_congruence_constraint(&mut self, partition: Partition, index: usize, elem_index: usize) {
+        self.congruence_for_congruence_constraint = Some(partition);
+        self.index_for_congruence_constraint = Some(index);
+        self.congruence_constraint_elem_index = Some(elem_index);
     }
     
     /// Compute the closure of the generators.
@@ -508,6 +649,59 @@ where
                                         if let Some(ref elt_to_find) = self.elt_to_find {
                                             if result_ia == *elt_to_find {
                                                 // Found target element
+                                                if let Some(ref report) = self.report {
+                                                    report.add_end_line(&format!("closing done, found {}, at {}", elt_to_find, self.ans.len()));
+                                                }
+                                                return Ok(self.ans.clone());
+                                            }
+                                        }
+                                        
+                                        // Check constraints if any are set
+                                        // This matches Java's constraint checking logic (lines 1130-1147)
+                                        let blocks_not_null = self.blocks.is_some();
+                                        let values_not_null = self.values.is_some();
+                                        let constraint_congruence_not_null = self.congruence_for_congruence_constraint.is_some();
+                                        
+                                        if blocks_not_null || values_not_null || constraint_congruence_not_null {
+                                            let mut ok = true;
+                                            
+                                            // Check blocks constraint
+                                            if blocks_not_null {
+                                                if let Some(ref blocks) = self.blocks {
+                                                    if !result_ia.satisfies_blocks_constraint(blocks) {
+                                                        ok = false;
+                                                    }
+                                                }
+                                            }
+                                            
+                                            // Check values constraint
+                                            if ok && values_not_null {
+                                                if let Some(ref values) = self.values {
+                                                    if !result_ia.satisfies_values_constraint(values) {
+                                                        ok = false;
+                                                    }
+                                                }
+                                            }
+                                            
+                                            // Check congruence constraint
+                                            if ok && constraint_congruence_not_null {
+                                                if let (Some(ref partition), Some(index), Some(elem_index)) = (
+                                                    &self.congruence_for_congruence_constraint,
+                                                    self.index_for_congruence_constraint,
+                                                    self.congruence_constraint_elem_index
+                                                ) {
+                                                    if !result_ia.satisfies_congruence_constraint(index, partition, elem_index) {
+                                                        ok = false;
+                                                    }
+                                                }
+                                            }
+                                            
+                                            // If all constraints satisfied, set elt_to_find and return
+                                            if ok {
+                                                self.elt_to_find = Some(result_ia.clone());
+                                                if let Some(ref report) = self.report {
+                                                    report.add_end_line(&format!("closing done, found {}, at {}", result_ia, self.ans.len()));
+                                                }
                                                 return Ok(self.ans.clone());
                                             }
                                         }
@@ -804,6 +998,59 @@ where
                             // Check if we found the element we're looking for
                             if let Some(ref elt_to_find) = self.elt_to_find {
                                 if v == *elt_to_find {
+                                    if let Some(ref report) = self.report {
+                                        report.add_end_line(&format!("closing done, found {}, at {}", elt_to_find, self.ans.len()));
+                                    }
+                                    return Ok(self.ans.clone());
+                                }
+                            }
+                            
+                            // Check constraints if any are set
+                            // This matches Java's constraint checking logic (lines 1130-1147)
+                            let blocks_not_null = self.blocks.is_some();
+                            let values_not_null = self.values.is_some();
+                            let constraint_congruence_not_null = self.congruence_for_congruence_constraint.is_some();
+                            
+                            if blocks_not_null || values_not_null || constraint_congruence_not_null {
+                                let mut ok = true;
+                                
+                                // Check blocks constraint
+                                if blocks_not_null {
+                                    if let Some(ref blocks) = self.blocks {
+                                        if !v.satisfies_blocks_constraint(blocks) {
+                                            ok = false;
+                                        }
+                                    }
+                                }
+                                
+                                // Check values constraint
+                                if ok && values_not_null {
+                                    if let Some(ref values) = self.values {
+                                        if !v.satisfies_values_constraint(values) {
+                                            ok = false;
+                                        }
+                                    }
+                                }
+                                
+                                // Check congruence constraint
+                                if ok && constraint_congruence_not_null {
+                                    if let (Some(ref partition), Some(index), Some(elem_index)) = (
+                                        &self.congruence_for_congruence_constraint,
+                                        self.index_for_congruence_constraint,
+                                        self.congruence_constraint_elem_index
+                                    ) {
+                                        if !v.satisfies_congruence_constraint(index, partition, elem_index) {
+                                            ok = false;
+                                        }
+                                    }
+                                }
+                                
+                                // If all constraints satisfied, set elt_to_find and return
+                                if ok {
+                                    self.elt_to_find = Some(v.clone());
+                                    if let Some(ref report) = self.report {
+                                        report.add_end_line(&format!("closing done, found {}, at {}", v, self.ans.len()));
+                                    }
                                     return Ok(self.ans.clone());
                                 }
                             }
@@ -1072,6 +1319,13 @@ where
             report: self.report.as_ref().map(Arc::clone),
             suppress_output: self.suppress_output,
             max_size: self.max_size,
+            blocks: self.blocks.clone(),
+            values: self.values.clone(),
+            constraint_set: self.constraint_set.clone(),
+            index_for_constraint_set: self.index_for_constraint_set,
+            congruence_for_congruence_constraint: self.congruence_for_congruence_constraint.clone(),
+            index_for_congruence_constraint: self.index_for_congruence_constraint,
+            congruence_constraint_elem_index: self.congruence_constraint_elem_index,
         }
     }
 }

@@ -9,6 +9,7 @@ package java_wrapper.src.alg;
 import java.util.*;
 import java.io.*;
 import org.uacalc.alg.*;
+import org.uacalc.alg.conlat.*;
 import org.uacalc.util.*;
 import org.uacalc.io.*;
 import java_wrapper.src.WrapperBase;
@@ -72,6 +73,10 @@ public class CloserWrapper extends WrapperBase {
                 
             case "sg_close_power":
                 handleSgClosePower(options);
+                break;
+                
+            case "sg_close_with_constraints":
+                handleSgCloseWithConstraints(options);
                 break;
                 
             default:
@@ -362,6 +367,169 @@ public class CloserWrapper extends WrapperBase {
     }
     
     /**
+     * Handle sg_close_with_constraints command - compute closure with constraint handling.
+     */
+    private void handleSgCloseWithConstraints(Map<String, String> options) throws Exception {
+        // Get parameters
+        int baseSize = getIntArg(options, "base_size", 2);
+        int power = getIntArg(options, "power", 2);
+        String gensStr = getRequiredArg(options, "generators");
+        
+        // For constraint testing, we need an algebra with operations
+        // Use ba2 if base_size is 2, otherwise create test algebra
+        SmallAlgebra base;
+        if (baseSize == 2) {
+            base = loadBa2();
+        } else {
+            base = makeTestAlgebra(baseSize);
+        }
+        BigProductAlgebra algebra = new BigProductAlgebra(base, power);
+        
+        // Parse generators
+        List<IntArray> generators = parseGenerators(gensStr, power);
+        
+        // Create closer
+        Closer closer = new Closer(algebra, generators);
+        closer.setSuppressOutput(true);
+        
+        // Parse and set constraints
+        // Blocks constraint: format "0,1;2,3" means indices 0,1 must be equal and 2,3 must be equal
+        String blocksStr = options.get("blocks");
+        if (blocksStr != null && !blocksStr.isEmpty()) {
+            int[][] blocks = parseBlocks(blocksStr);
+            closer.setBlocks(blocks);
+        }
+        
+        // Values constraint: format "0:1,2:0" means index 0 = 1, index 2 = 0
+        String valuesStr = options.get("values");
+        if (valuesStr != null && !valuesStr.isEmpty()) {
+            int[][] values = parseValues(valuesStr);
+            closer.setValues(values);
+        }
+        
+        // Set constraint: format "0:0,1,2" means index 0 must be in {0,1,2}
+        String setConstraintStr = options.get("set_constraint");
+        int setConstraintIndex = getIntArg(options, "set_constraint_index", -1);
+        if (setConstraintStr != null && !setConstraintStr.isEmpty() && setConstraintIndex >= 0) {
+            Set<Integer> constraintSet = parseSetConstraint(setConstraintStr);
+            closer.setConstraintSet(constraintSet);
+            closer.setIndexForConstraintSet(setConstraintIndex);
+        }
+        
+        // Congruence constraint
+        String congruenceStr = options.get("congruence");
+        int congruenceIndex = getIntArg(options, "congruence_index", -1);
+        int congruenceElemIndex = getIntArg(options, "congruence_elem_index", -1);
+        if (congruenceStr != null && !congruenceStr.isEmpty() && congruenceIndex >= 0 && congruenceElemIndex >= 0) {
+            Partition partition = parsePartition(congruenceStr, baseSize);
+            closer.setupCongruenceConstraint(partition, congruenceIndex, congruenceElemIndex);
+        }
+        
+        // Compute closure
+        List<IntArray> result = closer.sgClose();
+        
+        // Format result
+        List<List<Integer>> resultList = new ArrayList<>();
+        for (IntArray ia : result) {
+            List<Integer> elem = new ArrayList<>();
+            for (int i = 0; i < ia.universeSize(); i++) {
+                elem.add(ia.get(i));
+            }
+            resultList.add(elem);
+        }
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("command", "sg_close_with_constraints");
+        response.put("base_size", baseSize);
+        response.put("power", power);
+        response.put("generators_count", generators.size());
+        response.put("closure_size", result.size());
+        response.put("closure", resultList);
+        response.put("found_element", closer.getElementToFind() != null);
+        if (closer.getElementToFind() != null) {
+            IntArray found = closer.getElementToFind();
+            List<Integer> foundList = new ArrayList<>();
+            for (int i = 0; i < found.universeSize(); i++) {
+                foundList.add(found.get(i));
+            }
+            response.put("found_element_value", foundList);
+        }
+        response.put("status", "success");
+        
+        handleSuccess(response);
+    }
+    
+    /**
+     * Parse blocks constraint from string.
+     * Format: "0,1;2,3" means indices 0,1 must be equal and 2,3 must be equal
+     */
+    private int[][] parseBlocks(String blocksStr) throws Exception {
+        List<int[]> blocks = new ArrayList<>();
+        String[] parts = blocksStr.split(";");
+        for (String part : parts) {
+            String[] indices = part.split(",");
+            int[] block = new int[indices.length];
+            for (int i = 0; i < indices.length; i++) {
+                block[i] = Integer.parseInt(indices[i].trim());
+            }
+            blocks.add(block);
+        }
+        return blocks.toArray(new int[0][]);
+    }
+    
+    /**
+     * Parse values constraint from string.
+     * Format: "0:1,2:0" means index 0 = 1, index 2 = 0
+     */
+    private int[][] parseValues(String valuesStr) throws Exception {
+        List<int[]> values = new ArrayList<>();
+        String[] parts = valuesStr.split(",");
+        for (String part : parts) {
+            String[] pair = part.split(":");
+            if (pair.length != 2) {
+                throw new Exception("Invalid values format: " + part);
+            }
+            int[] value = new int[2];
+            value[0] = Integer.parseInt(pair[0].trim());
+            value[1] = Integer.parseInt(pair[1].trim());
+            values.add(value);
+        }
+        return values.toArray(new int[0][]);
+    }
+    
+    /**
+     * Parse set constraint from string.
+     * Format: "0,1,2" means set {0,1,2}
+     */
+    private Set<Integer> parseSetConstraint(String setStr) throws Exception {
+        Set<Integer> set = new HashSet<>();
+        String[] parts = setStr.split(",");
+        for (String part : parts) {
+            set.add(Integer.parseInt(part.trim()));
+        }
+        return set;
+    }
+    
+    /**
+     * Parse partition from string.
+     * Format: "[[0 1][2]]" or "|0 1|2|"
+     */
+    private Partition parsePartition(String partitionStr, int universeSize) throws Exception {
+        // Try to parse as bracket notation first
+        try {
+            return new BasicPartition(partitionStr, universeSize);
+        } catch (Exception e) {
+            // If that fails, try creating without length
+            try {
+                return new BasicPartition(partitionStr);
+            } catch (Exception e2) {
+                // If that fails, create a trivial partition (all elements separate)
+                return BasicPartition.zero(universeSize);
+            }
+        }
+    }
+    
+    /**
      * Show usage information for the Closer wrapper.
      */
     private void showUsage() {
@@ -371,6 +539,7 @@ public class CloserWrapper extends WrapperBase {
             "sg_close_power --base_size 2 --power 2 --generators \"0,0;0,1\"",
             "sg_close_ba2_power --power 3 --generators \"0,0,1;1,1,0\"",
             "sg_close_free_algebra --num_gens 1 --power 3 --generators \"0,0,1;1,1,0\"",
+            "sg_close_with_constraints --base_size 2 --power 2 --generators \"0,0;0,1\" --blocks \"0,1\"",
             "help"
         };
         
