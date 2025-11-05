@@ -754,9 +754,18 @@ where
                                 let mut children = Vec::new();
                                 for &idx in &indices {
                                     let idx_usize = idx as usize;
-                                    if idx_usize < self.ans.len() - 1 {
-                                        if let Some(term) = term_map.get(&self.ans[idx_usize]) {
+                                    // Indices are valid into ans (they refer to elements before v was added)
+                                    // Since we just pushed v, ans.len() - 1 is the index of v itself
+                                    // The argument indices should all be < ans.len() - 1 (the old length)
+                                    // But we need to check ans.len() to be safe, and the indices should be valid
+                                    if idx_usize < self.ans.len() {
+                                        // Get the element from ans (indices are valid since they're from before we added v)
+                                        let arg_elem = &self.ans[idx_usize];
+                                        if let Some(term) = term_map.get(arg_elem) {
                                             children.push(term.clone_box());
+                                        } else {
+                                            // This shouldn't happen - all arguments should have terms
+                                            eprintln!("WARNING: No term found for argument at index {} (element: {:?})", idx_usize, arg_elem);
                                         }
                                     }
                                 }
