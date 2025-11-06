@@ -2916,6 +2916,10 @@ where
 
 /// Compute the local distributivity level for three elements.
 ///
+/// If α = Cg(a,c) ∧ Cg(a,b) and β = Cg(a,c) ∧ Cg(b,c), this gives the number
+/// of alternations of α and β to get from a to c in the join of α and β.
+/// It returns -1 if (a,c) is not in the join.
+///
 /// # Arguments
 /// * `a` - First element index
 /// * `b` - Second element index
@@ -2923,14 +2927,31 @@ where
 /// * `alg` - The algebra
 ///
 /// # Returns
-/// * `Ok(level)` - The local distributivity level
+/// * `Ok(level)` - The local distributivity level, or -1 if (a,c) is not in the join
 /// * `Err(String)` - If there's an error during computation
 pub fn local_distributivity_level<T>(a: usize, b: usize, c: usize, alg: &dyn SmallAlgebra<UniverseItem = T>) -> Result<i32, String>
 where
     T: Clone + std::fmt::Debug + std::fmt::Display + std::hash::Hash + Eq + Send + Sync + 'static
 {
-    // TODO: Implement local distributivity level computation
-    Err("Local distributivity level computation not yet implemented".to_string())
+    use crate::alg::conlat::{CongruenceLattice, Partition};
+    
+    // Create congruence lattice
+    use crate::alg::SmallAlgebraWrapper;
+    let alg_box = alg.clone_box();
+    let wrapper = Box::new(SmallAlgebraWrapper::<T>::new(alg_box));
+    let mut con_lat = CongruenceLattice::<T>::new(wrapper);
+    
+    // Get principal congruences
+    let cgab = con_lat.cg(a, b);
+    let cgac = con_lat.cg(a, c);
+    let cgbc = con_lat.cg(b, c);
+    
+    // Compute α = Cg(a,c) ∧ Cg(a,b) and β = Cg(a,c) ∧ Cg(b,c)
+    let alpha = cgac.meet(&cgab).map_err(|e| format!("Error computing meet: {}", e))?;
+    let beta = cgac.meet(&cgbc).map_err(|e| format!("Error computing meet: {}", e))?;
+    
+    // Compute permutability level
+    Ok(Partition::permutability_level(a, c, &alpha, &beta))
 }
 
 /// Check if a, b, c, d form a Day quadruple in the algebra.

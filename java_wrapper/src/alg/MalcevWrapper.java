@@ -133,6 +133,10 @@ public class MalcevWrapper extends WrapperBase {
                 handleJonssonLevel(options);
                 break;
                 
+            case "local_distributivity_level":
+                handleLocalDistributivityLevel(options);
+                break;
+                
             case "primality_terms":
                 handlePrimalityTerms(options);
                 break;
@@ -619,6 +623,33 @@ public class MalcevWrapper extends WrapperBase {
         Map<String, Object> result = new HashMap<>();
         result.put("command", "jonsson_level");
         result.put("algebra", alg.getName());
+        result.put("level", level);
+        
+        handleSuccess(result);
+    }
+    
+    /**
+     * Compute the local distributivity level for three elements.
+     */
+    private void handleLocalDistributivityLevel(Map<String, String> options) throws Exception {
+        String algebraPath = getRequiredArg(options, "algebra");
+        String aStr = getRequiredArg(options, "a");
+        String bStr = getRequiredArg(options, "b");
+        String cStr = getRequiredArg(options, "c");
+        
+        int a = Integer.parseInt(aStr);
+        int b = Integer.parseInt(bStr);
+        int c = Integer.parseInt(cStr);
+        
+        SmallAlgebra alg = loadAlgebra(algebraPath);
+        int level = Malcev.localDistributivityLevel(a, b, c, alg);
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("command", "local_distributivity_level");
+        result.put("algebra", alg.getName());
+        result.put("a", a);
+        result.put("b", b);
+        result.put("c", c);
         result.put("level", level);
         
         handleSuccess(result);

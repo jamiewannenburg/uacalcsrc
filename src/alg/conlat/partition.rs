@@ -1095,6 +1095,88 @@ impl Partition {
         }
         false
     }
+    
+    /// Compute the permutability level between two elements in two partitions.
+    ///
+    /// This returns the least `k` such that `(a,b)` is in the `k`-fold relational
+    /// product of `par0` and `par1`, with `par0` coming first and `k` counting
+    /// the total occurrences of `par0` or `par1`. It returns -1 if `(a,b)` is
+    /// not in the join.
+    ///
+    /// # Arguments
+    /// * `a` - First element index
+    /// * `b` - Second element index
+    /// * `par0` - First partition
+    /// * `par1` - Second partition
+    ///
+    /// # Returns
+    /// * The permutability level, or -1 if (a,b) is not in the join
+    pub fn permutability_level(a: usize, b: usize, par0: &Partition, par1: &Partition) -> i32 {
+        let size = par0.universe_size();
+        if par1.universe_size() != size {
+            return -1;
+        }
+        
+        let mut ans = 1;
+        let mut arr0 = par0.to_array();
+        let mut arr1 = par1.to_array();
+        
+        let r0b = Self::root_static(b, &arr0);
+        let r1b = Self::root_static(b, &arr1);
+        
+        // Check if a and b are already related in par0
+        if Self::root_static(a, &arr0) == r0b {
+            return ans;
+        }
+        
+        ans += 1;
+        
+        loop {
+            let mut bigger = false;
+            
+            // First pass: for all i in the same block as a in arr0
+            let r0a = Self::root_static(a, &arr0);
+            for i in 0..size {
+                if Self::root_static(i, &arr0) == r0a {
+                    // a and i are in the same block of arr0
+                    let r1i = Self::root_static(i, &arr1);
+                    if r1i == r1b {
+                        return ans;
+                    }
+                    let r1a = Self::root_static(a, &arr1);
+                    if r1i != r1a {
+                        bigger = true;
+                        Self::join_blocks_static(r1a, r1i, &mut arr1);
+                    }
+                }
+            }
+            
+            ans += 1;
+            
+            // Second pass: for all i in the same block as a in arr1
+            let r1a = Self::root_static(a, &arr1);
+            for i in 0..size {
+                if Self::root_static(i, &arr1) == r1a {
+                    // a and i are in the same block of arr1
+                    let r0i = Self::root_static(i, &arr0);
+                    if r0i == r0b {
+                        return ans;
+                    }
+                    let r0a = Self::root_static(a, &arr0);
+                    if r0i != r0a {
+                        bigger = true;
+                        Self::join_blocks_static(r0a, r0i, &mut arr0);
+                    }
+                }
+            }
+            
+            if !bigger {
+                return -1;
+            }
+            
+            ans += 1;
+        }
+    }
 }
 
 impl PartialEq for Partition {

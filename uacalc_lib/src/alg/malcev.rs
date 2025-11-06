@@ -417,10 +417,13 @@ fn jonsson_level(algebra: &PyBasicSmallAlgebra) -> PyResult<i32> {
 /// * `algebra` - The algebra
 ///
 /// # Returns
-/// The local distributivity level
+/// The local distributivity level, or -1 if (a,c) is not in the join
 #[pyfunction]
-fn local_distributivity_level(_a: usize, _b: usize, _c: usize, _algebra: PyObject) -> PyResult<i32> {
-    Err(PyValueError::new_err("Local distributivity level computation not yet implemented"))
+fn local_distributivity_level(a: usize, b: usize, c: usize, algebra: &PyBasicSmallAlgebra) -> PyResult<i32> {
+    match malcev::local_distributivity_level(a, b, c, &algebra.inner) {
+        Ok(level) => Ok(level),
+        Err(e) => Err(PyValueError::new_err(e)),
+    }
 }
 
 /// Find a Day quadruple in the square of the algebra.

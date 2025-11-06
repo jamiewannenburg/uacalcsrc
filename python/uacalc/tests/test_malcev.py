@@ -345,6 +345,27 @@ class TestMalcevPython(unittest.TestCase):
         self.assertIsInstance(result, int)
         self.assertGreaterEqual(result, -1)
         print(f"Jonsson level: {result}")
+    
+    def test_local_distributivity_level_with_cyclic3(self):
+        """Test local_distributivity_level with cyclic3 algebra."""
+        algebra_path = get_algebra_path("cyclic3.ua")
+        if not os.path.exists(algebra_path):
+            self.skipTest(f"Algebra file {algebra_path} not found")
+        
+        # Load algebra
+        AlgebraReader = uacalc_lib.io.AlgebraReader
+        reader = AlgebraReader.new_from_file(algebra_path)
+        alg = reader.read_algebra_file()
+        
+        # Test local_distributivity_level with elements 0, 1, 2
+        if alg.cardinality() >= 3:
+            result = uacalc_lib.alg.local_distributivity_level(0, 1, 2, alg)
+            # Should return an integer (-1 if not in join, or a level >= 1)
+            self.assertIsInstance(result, int)
+            self.assertGreaterEqual(result, -1)
+            print(f"Local distributivity level(0, 1, 2): {result}")
+        else:
+            self.skipTest(f"Algebra too small (size {alg.cardinality()})")
 
 
 class TestMalcevJavaComparison(unittest.TestCase):
@@ -607,6 +628,23 @@ class TestMalcevJavaComparison(unittest.TestCase):
                         f"Jonsson level mismatch: Python={python_result}, Java={java_level}")
         print(f"✓ jonsson_level: Python={python_result}, Java={java_level}")
     
+    def test_local_distributivity_level(self):
+        """Test local_distributivity_level against Java."""
+        # Test with elements 0, 1, 2
+        python_result = uacalc_lib.alg.local_distributivity_level(0, 1, 2, self.alg)
+        java_output = self.run_java_wrapper("local_distributivity_level", [
+            "--algebra", self.algebra_path,
+            "--a", "0",
+            "--b", "1",
+            "--c", "2"
+        ])
+        java_data = java_output.get("data", {})
+        java_level = java_data.get("level", -1)
+        
+        self.assertEqual(python_result, java_level,
+                        f"Local distributivity level mismatch: Python={python_result}, Java={java_level}")
+        print(f"✓ local_distributivity_level(0, 1, 2): Python={python_result}, Java={java_level}")
+    
     def test_is_congruence_dist_idempotent(self):
         """Test is_congruence_dist_idempotent against Java."""
         python_result = uacalc_lib.alg.is_congruence_dist_idempotent(self.alg)
@@ -833,6 +871,7 @@ class TestMalcevAllAlgebras(unittest.TestCase):
         "join_term",
         "primality_terms",
         "jonsson_level",
+        "local_distributivity_level",
         "is_congruence_dist_idempotent",
         "is_congruence_modular_idempotent",
         "sd_meet_idempotent",
@@ -961,6 +1000,15 @@ class TestMalcevAllAlgebras(unittest.TestCase):
                     java_args.extend(["--arity", "3"])
                 elif property_name == "weak_nu_term":
                     java_args.extend(["--arity", "3"])
+                elif property_name == "local_distributivity_level":
+                    # Need a, b, c parameters - use 0, 1, 2 if algebra is large enough
+                    if alg.cardinality() >= 3:
+                        java_args.extend(["--a", "0", "--b", "1", "--c", "2"])
+                    else:
+                        # Skip if algebra too small
+                        print(f"  ⏩ {property_name}: Algebra too small (size {alg.cardinality()}), skipping")
+                        results['skipped'] += 1
+                        continue
                 
                 java_output = self.run_java_wrapper(property_name, java_args, timeout=10)
                 # If algebra is too large, skip comparison
@@ -984,6 +1032,12 @@ class TestMalcevAllAlgebras(unittest.TestCase):
                         python_result = uacalc_lib.alg.fixed_k_qwnu(alg, 3)
                     elif property_name == "weak_nu_term":
                         python_result = uacalc_lib.alg.weak_nu_term(alg, 3)
+                    elif property_name == "local_distributivity_level":
+                        # Use elements 0, 1, 2 if algebra is large enough
+                        if alg.cardinality() >= 3:
+                            python_result = uacalc_lib.alg.local_distributivity_level(0, 1, 2, alg)
+                        else:
+                            python_result = None
                     else:
                         python_result = getattr(uacalc_lib.alg, property_name)(alg)
                     
@@ -1116,6 +1170,21 @@ class TestMalcevAllAlgebras(unittest.TestCase):
                             print(f"  ✓ {property_name}: match")
                     
                     elif property_name == "jonsson_level":
+                        java_level = java_data.get("level", -1)
+                        
+                        if python_result != java_level:
+                            mismatch = {
+                                'algebra': algebra_path,
+                                'property': property_name,
+                                'python': python_result,
+                                'java': java_level
+                            }
+                            results['mismatches'].append(mismatch)
+                            print(f"  ✗ {property_name}: Python={python_result}, Java={java_level}")
+                        else:
+                            print(f"  ✓ {property_name}: match (level={python_result})")
+                    
+                    elif property_name == "local_distributivity_level":
                         java_level = java_data.get("level", -1)
                         
                         if python_result != java_level:
