@@ -11,6 +11,7 @@
 use crate::alg::{SmallAlgebra, BigProductAlgebra, FreeAlgebra, BasicSmallAlgebra, Closer};
 use crate::terms::{Term, VariableImp};
 use crate::util::int_array::IntArray;
+use crate::util::sequence_generator::SequenceGenerator;
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
@@ -3008,9 +3009,12 @@ pub fn day_quadruple(
 
 /// Test if the algebra admits a cyclic term of the given arity.
 ///
+/// This implements an algorithm of Valeriote and Willard for testing if
+/// the idempotent algebra has a cyclic term of a given arity.
+///
 /// # Arguments
-/// * `alg` - The algebra
-/// * `arity` - The arity of the cyclic term
+/// * `alg` - The algebra (must be idempotent)
+/// * `arity` - The arity of the cyclic term (must be at least 2)
 ///
 /// # Returns
 /// * `Ok(true)` - A cyclic term exists
@@ -3020,8 +3024,143 @@ pub fn cyclic_term_idempotent<T>(alg: &dyn SmallAlgebra<UniverseItem = T>, arity
 where
     T: Clone + std::fmt::Debug + std::fmt::Display + std::hash::Hash + Eq + Send + Sync + 'static
 {
-    // TODO: Implement cyclic term test for idempotent algebras
-    Err("Cyclic term test not yet implemented".to_string())
+    if alg.cardinality() < 2 {
+        return Ok(true);
+    }
+    
+    if arity < 2 {
+        return Err("arity must be at least 2".to_string());
+    }
+    
+    // Convert to i32 algebra
+    let card = alg.cardinality();
+    let ops = alg.operations();
+    
+    if ops.is_empty() {
+        return Err("Algebra has no operations".to_string());
+    }
+    
+    let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
+    let universe_set: HashSet<i32> = (0..card).collect();
+    let i32_alg = BasicSmallAlgebra::new(
+        alg.name().to_string(),
+        universe_set,
+        int_ops,
+    );
+    
+    // Create BigProductAlgebra (A^arity)
+    let alg_boxed: Box<dyn SmallAlgebra<UniverseItem = i32>> = Box::new(i32_alg);
+    let big_prod = BigProductAlgebra::new_power_safe(alg_boxed, arity)?;
+    
+    // Create block array [0, 1, ..., arity-1]
+    let mut block = Vec::with_capacity(arity);
+    for i in 0..arity {
+        block.push(i);
+    }
+    
+    // Iterate through all possible vectors v of length arity with values from 0 to max
+    let max = card - 1;
+    let mut v = vec![0i32; arity];
+    let mut incr = SequenceGenerator::sequence_incrementor(&mut v, max);
+    
+    loop {
+        // Get current value from incrementor
+        let current_v = incr.get_current();
+        
+        // Check if v is "good for cyclic" (first entry is smallest and not constant)
+        if is_good_for_cyclic(&current_v) {
+            // Create cyclic generators from v
+            let gens = make_cyclic_gens(&current_v)?;
+            
+            // Use Closer with blocks constraint
+            let mut closer = Closer::new_safe(
+                Arc::new(big_prod.clone()),
+                gens,
+            )?;
+            closer.set_blocks(Some(vec![block.clone()]));
+            
+            let lst = closer.sg_close_power()?;
+            
+            // Check if the last element has all entries equal
+            if let Some(last) = lst.last() {
+                use crate::util::int_array::IntArrayTrait;
+                let arr = last.as_slice();
+                if arr.is_empty() {
+                    return Err("Empty closure result".to_string());
+                }
+                let c = arr[0];
+                for i in 1..arity {
+                    if arr[i] != c {
+                        return Ok(false);
+                    }
+                }
+            } else {
+                return Err("Closure result is empty".to_string());
+            }
+        }
+        
+        if !incr.increment() {
+            break;
+        }
+    }
+    
+    Ok(true)
+}
+
+/// Check if a vector is "good for cyclic".
+/// 
+/// A vector is good if the first entry is the smallest and the vector is not constant.
+/// 
+/// # Arguments
+/// * `v` - The vector to check
+/// 
+/// # Returns
+/// * `true` if the vector is good for cyclic
+fn is_good_for_cyclic(v: &[i32]) -> bool {
+    let n = v.len();
+    if n == 0 {
+        return false;
+    }
+    let a0 = v[0];
+    let mut ok = false;
+    for i in 1..n {
+        if a0 > v[i] {
+            return false;
+        }
+        if a0 < v[i] {
+            ok = true;
+        }
+    }
+    ok
+}
+
+/// Create cyclic generators from a vector v.
+/// 
+/// Creates k generators where the i-th generator is v shifted by i positions (mod k).
+/// 
+/// # Arguments
+/// * `v` - The base vector
+/// 
+/// # Returns
+/// * `Ok(Vec<IntArray>)` - The cyclic generators
+/// * `Err(String)` - If there's an error creating the generators
+fn make_cyclic_gens(v: &[i32]) -> Result<Vec<IntArray>, String> {
+    let k = v.len();
+    let mut ans = Vec::with_capacity(k);
+    
+    // First generator is v itself
+    ans.push(IntArray::from_array(v.to_vec())?);
+    
+    // Create k-1 more generators by shifting v
+    for i in 1..k {
+        let mut w = vec![0i32; k];
+        for j in 0..k {
+            w[j] = v[(j + i) % k];
+        }
+        ans.push(IntArray::from_array(w)?);
+    }
+    
+    Ok(ans)
 }
 
 /// Helper function to create unit vectors for dimension n.

@@ -149,6 +149,10 @@ public class MalcevWrapper extends WrapperBase {
                 handleFixedKQwnu(options);
                 break;
                 
+            case "cyclic_term_idempotent":
+                handleCyclicTermIdempotent(options);
+                break;
+                
             case "weak_nu_term":
                 handleWeakNuTerm(options);
                 break;
@@ -732,6 +736,26 @@ public class MalcevWrapper extends WrapperBase {
     }
     
     /**
+     * Test if an idempotent algebra has a cyclic term of the given arity.
+     */
+    private void handleCyclicTermIdempotent(Map<String, String> options) throws Exception {
+        String algebraPath = getRequiredArg(options, "algebra");
+        String arityStr = getRequiredArg(options, "arity");
+        int arity = Integer.parseInt(arityStr);
+        
+        SmallAlgebra alg = loadAlgebra(algebraPath);
+        boolean hasCyclicTerm = Malcev.cyclicTermIdempotent(alg, arity, null);
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("command", "cyclic_term_idempotent");
+        result.put("algebra", alg.getName());
+        result.put("arity", arity);
+        result.put("has_cyclic_term", hasCyclicTerm);
+        
+        handleSuccess(result);
+    }
+    
+    /**
      * Find a weak near unanimity term of the given arity.
      */
     private void handleWeakNuTerm(Map<String, String> options) throws Exception {
@@ -872,6 +896,7 @@ public class MalcevWrapper extends WrapperBase {
             "primality_terms --algebra <path> - Find primality terms",
             "fixed_k_edge_term --algebra <path> --k <k> - Find a k-edge term",
             "fixed_k_qwnu --algebra <path> --arity <arity> - Test for quasi weak near unanimity term",
+            "cyclic_term_idempotent --algebra <path> --arity <arity> - Test for cyclic term (idempotent algebras)",
             "weak_nu_term --algebra <path> --arity <arity> - Find a weak near unanimity term",
             "gumm_terms --algebra <path> - Find Gumm terms",
             "sd_meet_terms --algebra <path> - Find SD-meet terms",

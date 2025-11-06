@@ -83,6 +83,7 @@ class TestMalcevPython(unittest.TestCase):
         self.assertTrue(hasattr(uacalc_lib.alg, 'primality_terms'))
         self.assertTrue(hasattr(uacalc_lib.alg, 'fixed_k_edge_term'))
         self.assertTrue(hasattr(uacalc_lib.alg, 'fixed_k_qwnu'))
+        self.assertTrue(hasattr(uacalc_lib.alg, 'cyclic_term_idempotent'))
         self.assertTrue(hasattr(uacalc_lib.alg, 'weak_nu_term'))
         self.assertTrue(hasattr(uacalc_lib.alg, 'gumm_terms'))
         self.assertTrue(hasattr(uacalc_lib.alg, 'sd_meet_terms'))
@@ -724,6 +725,21 @@ class TestMalcevJavaComparison(unittest.TestCase):
         self.assertEqual(python_result, java_has_qwnu,
                         f"fixed_k_qwnu: Python={python_result}, Java={java_has_qwnu}")
         print(f"✓ fixed_k_qwnu (arity={arity}): Python={python_result}, Java={java_has_qwnu}")
+    
+    def test_cyclic_term_idempotent(self):
+        """Test cyclic_term_idempotent against Java."""
+        arity = 3
+        python_result = uacalc_lib.alg.cyclic_term_idempotent(self.alg, arity)
+        java_output = self.run_java_wrapper("cyclic_term_idempotent", [
+            "--algebra", self.algebra_path,
+            "--arity", str(arity)
+        ])
+        java_data = java_output.get("data", {})
+        java_has_cyclic_term = java_data.get("has_cyclic_term", False)
+        
+        self.assertEqual(python_result, java_has_cyclic_term,
+                        f"cyclic_term_idempotent: Python={python_result}, Java={java_has_cyclic_term}")
+        print(f"✓ cyclic_term_idempotent (arity={arity}): Python={python_result}, Java={java_has_cyclic_term}")
     
     def test_semilattice_term(self):
         """Test semilattice_term against Java."""

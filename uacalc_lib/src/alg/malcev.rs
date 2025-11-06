@@ -476,15 +476,21 @@ fn day_quadruple(_a: usize, _b: usize, _c: usize, _d: usize, _algebra: PyObject)
 
 /// Test if the algebra admits a cyclic term of the given arity.
 ///
+/// This implements an algorithm of Valeriote and Willard for testing if
+/// the idempotent algebra has a cyclic term of a given arity.
+///
 /// # Arguments
-/// * `algebra` - The algebra
-/// * `arity` - The arity of the cyclic term
+/// * `algebra` - The algebra (must be idempotent)
+/// * `arity` - The arity of the cyclic term (must be at least 2)
 ///
 /// # Returns
 /// True if a cyclic term exists, False otherwise
 #[pyfunction]
-fn cyclic_term_idempotent(_algebra: PyObject, _arity: usize) -> PyResult<bool> {
-    Err(PyValueError::new_err("Cyclic term test not yet implemented"))
+fn cyclic_term_idempotent(algebra: &PyBasicSmallAlgebra, arity: usize) -> PyResult<bool> {
+    match malcev::cyclic_term_idempotent(&algebra.inner, arity) {
+        Ok(result) => Ok(result),
+        Err(e) => Err(PyValueError::new_err(e)),
+    }
 }
 
 /// Find primality terms for the algebra.
