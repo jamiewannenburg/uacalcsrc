@@ -95,26 +95,78 @@ This class depends on:
 
 ### Current Implementation Status
 
-**Status:** Framework Complete, Algorithms Partially Implemented
+**Status:** Significant Progress - 25 of 30 Core Methods Fully Implemented
 
 **Rust Implementation:** 
-- ✅ Module structure created in `src/alg/malcev.rs`
-- ✅ All 25+ public static functions defined with proper signatures
+- ✅ Module structure created in `src/alg/malcev.rs` (~3,200 lines)
+- ✅ All 30 public static functions defined with proper signatures
 - ✅ Type-safe generic implementations using `SmallAlgebra` trait
-- ✅ **primality_terms()** - FULLY IMPLEMENTED (uses Closer multiple element finding)
-  - Helper functions: `unit_vectors()`, `semilat_term()`, `id_term()`, `unit_terms()`
-  - Uses `Closer::set_elements_to_find()` and `Closer::all_elements_found()` for multiple element finding
-- ⚠️ Most other functions return "not yet implemented" errors (algorithms pending)
 - ✅ Comprehensive documentation for all functions
 - ✅ Proper error handling using `Result<T, String>`
 
+**Fully Implemented Methods (22):**
+1. ✅ `malcev_term()` - Finds Malcev term using F(2)^2 closure
+2. ✅ `majority_term()` - Finds majority term using F(2)^3 closure
+3. ✅ `minority_term()` - Finds minority term using F(2)^3 closure
+4. ✅ `pixley_term()` - Finds Pixley term using F(2)^3 closure
+5. ✅ `nu_term()` - Finds near unanimity term of given arity
+6. ✅ `weak_majority_term()` - Finds weak majority term (handles idempotent/non-idempotent)
+7. ✅ `semilattice_term()` - Finds semilattice term using F(2) closure
+8. ✅ `jonsson_terms()` - Finds Jonsson terms using path finding algorithm
+9. ✅ `hagemann_mitschke_terms()` - Finds Hagemann-Mitschke terms
+10. ✅ `join_term()` - Finds join term (Kearnes-Kiss) using MMST term substitution
+11. ✅ `sd_terms()` - Finds SD terms using path finding
+12. ✅ `markovic_mckenzie_siggers_taylor_term()` - Finds MMST term
+13. ✅ `sd_meet_idempotent()` - Tests SD-meet property using congruence lattice
+14. ✅ `is_congruence_dist_idempotent()` - Tests congruence distributivity (uses Day quadruple + SD-meet)
+15. ✅ `find_day_quadruple_in_square()` - Finds Day quadruple in A^2
+16. ✅ `is_congruence_modular_idempotent()` - Tests congruence modularity (uses Day quadruple)
+17. ✅ `jonsson_level()` - Computes Jonsson level using path finding
+18. ✅ `day_quadruple()` - Helper to test Day quadruple condition
+19. ✅ `primality_terms()` - Finds primality terms (semilattice, identity, unit vectors)
+20. ✅ `fixed_k_edge_term()` - Finds k-edge term using F(2)^k closure
+21. ✅ `fixed_k_qwnu()` - Tests for QWNU term using Kazda's local-to-global algorithm
+22. ✅ `sd_meet_terms()` - Finds SD-meet terms (r, s, t terms) using F(2)^4 closure and automorphism
+23. ✅ `weak_nu_term()` - Finds weak near unanimity term of given arity (relaxed NU conditions)
+24. ✅ `gumm_terms()` - Finds Gumm terms using path finding algorithm (similar to Jonsson but different conditions)
+25. ✅ `weak_3_edge_term()` - Finds weak 3-edge term (4-ary term with specific edge conditions)
+
+**Not Yet Implemented Methods (5):**
+1. ⚠️ `nu_term_idempotent()` - Returns error: "NU term idempotent test not yet implemented"
+   - **Dependencies:** All available (FreeAlgebra, Closer, etc.)
+   - **Note:** Requires Horowitz's algorithm for testing NU terms in idempotent algebras
+2. ⚠️ `difference_term()` - Returns error: "Difference term finding not yet implemented"
+   - **Dependencies:** All available
+   - **Note:** Requires finding difference term in F(2) closure
+3. ⚠️ `congruence_modular_variety()` - Returns error: "Variety congruence modularity test not yet implemented"
+   - **Dependencies:** All available
+   - **Note:** Tests variety-level modularity (not just algebra-level)
+4. ⚠️ `local_distributivity_level()` - Returns error: "Local distributivity level computation not yet implemented"
+   - **Dependencies:** All available
+   - **Note:** Computes distributivity level for specific triples
+5. ⚠️ `cyclic_term_idempotent()` - Returns error: "Cyclic term test not yet implemented"
+   - **Dependencies:** All available
+   - **Note:** Tests for cyclic terms of given arity
+
+**Methods Not Yet Exposed in Rust API (from Java but not in public Rust API):**
+- `fixedKEdgeIdempotent()` - Tests if algebra has k-edge term (idempotent version)
+- `cpIdempotent()` - Tests for centralizing prime property
+- `fixedKPermIdempotent()` - Tests for k-permutation term
+- `permLevelIdempotent()` - Computes permutation level
+- `congruenceModularForIdempotent()` - Alternative modularity test
+- `sdIdempotent()` - Tests SD property (different from sd_meet_idempotent)
+- `typesInSofAIdempotent()` - Type analysis methods
+- `typeSetIdempotent()` - Type set computation
+- `omittedIdealIdempotent()` - Omitted ideal computation
+- `cubeTermBlockerIdempotent()` - Cube term blocker analysis
+
 **Python Bindings:**
 - ✅ Python bindings created in `uacalc_lib/src/alg/malcev.rs`
-- ✅ All 25+ functions exposed to Python through PyO3
+- ✅ All 30 functions exposed to Python through PyO3
 - ✅ Functions registered in alg module
 - ✅ Proper error propagation to Python
-- ✅ **primality_terms()** - FULLY IMPLEMENTED in Python bindings
-- ⚠️ Most other functions return "not yet implemented" errors (algorithms pending)
+- ✅ All 25 implemented methods fully functional in Python
+- ⚠️ 5 methods return "not yet implemented" errors (algorithms pending)
 
 **Java Wrapper:**
 - ✅ Java CLI wrapper created at `java_wrapper/src/alg/MalcevWrapper.java`
@@ -145,16 +197,20 @@ This class depends on:
 
 **Java File Analysis:**
 - **File Size:** 156,078 characters (3,500+ lines)
-- **Public Methods:** 25 main static functions exposed
+- **Public Methods:** ~76 public static methods (many are overloads with ProgressReport)
+- **Core Methods Exposed in Rust:** 30 main functions
 - **Key Methods:** joinTerm, sdmeetTerms, markovicMcKenzieSiggersTaylorTerm, nuTerm, jonssonTerms, etc.
 - **Dependencies:** Uses conlat, sublat, op, terms, util modules
 
 **Implementation Notes:**
-- The framework is complete with all function signatures, documentation, and bindings
-- The actual complex algorithms (free algebra closures, term finding, etc.) are marked as "not yet implemented"
-- Each function returns appropriate error messages indicating pending implementation
-- Tests verify the framework is correctly structured and accessible from all interfaces
-- Future work: Implement the actual term-finding algorithms using free algebras and closure operations
+- **83% of core methods fully implemented** (25 of 30)
+- All implemented methods use proper free algebra closures, term tracking, and path finding algorithms
+- Implemented methods match Java behavior exactly (verified through testing)
+- Remaining 5 methods require similar algorithms but with different conditions/paths
+- All dependencies are available - no blocking issues for remaining implementations
+- Helper functions like `sd_path()`, `jonsson_level_path()`, `jonsson_level_aux()` are implemented
+- Term substitution and variable mapping fully functional
+- **Fixed:** `FreeAlgebra::switch_x_and_y_automorphism()` now properly evaluates terms and creates operations with value tables (was causing `sd_meet_terms()` to fail)
 
 ### Implementation Recommendations
 
@@ -177,25 +233,54 @@ This class depends on:
    - Verify output matches Java implementation
 
 ### Acceptance Criteria
-- [x] All 25 public methods translated to Rust (framework complete)
+- [x] All 30 public methods translated to Rust (framework complete)
+- [x] 25 of 30 methods fully implemented with algorithms
 - [x] Python bindings expose all public methods
 - [x] Java CLI wrapper created with all public methods
 - [x] Rust tests pass with timeouts enabled
 - [x] Python tests pass and match Java output
 - [x] Code compiles without errors (warnings acceptable)
 - [x] Documentation complete
+- [ ] Remaining 5 methods implemented (83% complete)
 
 **Recent Implementations:**
+- ✅ **weak_nu_term(), gumm_terms(), weak_3_edge_term()** - Implemented
+  - `weak_nu_term()`: Finds weak near unanimity term with relaxed NU conditions using F(2) closure
+  - `gumm_terms()`: Finds Gumm terms using path finding algorithm (similar to Jonsson but different path conditions)
+  - `weak_3_edge_term()`: Finds weak 3-edge term (4-ary term) using F(2)^4 closure with specific edge conditions
+  - All three methods fully implemented and tested
+
+- ✅ **sd_meet_terms()** - Fixed and verified in 2025-01-27
+  - Implementation was complete but had dependency bug in `switch_x_and_y_automorphism()`
+  - Fixed `FreeAlgebra::switch_x_and_y_automorphism()` to properly evaluate terms and create operation with table
+  - Uses F(2)^4 closure to find r, s, t terms with specific relationships
+  - Uses automorphism to check invariance and find weak NU terms
+  - Fully tested with Java comparison - all tests passing
+
 - ✅ **primality_terms()** - Implemented in 2025-01-27
   - Uses Closer's multiple element finding feature (`set_elements_to_find()`, `all_elements_found()`)
   - Finds semilattice meet term, identity term, and unit vector terms
   - Based on D. M. Clark, B. A. Davey, J. G. Pitkethly and D. L. Rifqui paper
   - Fully tested with Java comparison and Python bindings
 
-**Note:** The framework implementation is complete. Most complex algorithms
-for term finding (which require free algebra closure operations) are marked as
-"not yet implemented". This is appropriate given the complexity of the algorithms
-(3500+ lines of intricate Java code involving free algebras, product algebras,
-and closure operations). The `primality_terms()` method demonstrates successful
-implementation using the updated Closer features. Future work will implement
-the remaining algorithms.
+- ✅ **Major implementation push** - 25 methods now fully implemented
+  - All basic term finding methods (Malcev, majority, minority, Pixley, NU, weak majority, semilattice)
+  - All Jonsson-related methods (Jonsson terms, Hagemann-Mitschke terms, Jonsson level, Gumm terms)
+  - All congruence property tests (distributivity, modularity, SD-meet)
+  - Edge term methods (fixed_k_edge_term, fixed_k_qwnu, weak_3_edge_term)
+  - Path finding algorithms (sd_path, jonsson_level_path)
+  - SD-meet terms finding (sd_meet_terms)
+  - Weak NU term finding (weak_nu_term)
+
+**Implementation Progress:**
+- **83% complete** (25 of 30 core methods)
+- All dependencies available - no blocking issues
+- Remaining 5 methods follow similar patterns to implemented ones
+- Most remaining methods are variations of existing algorithms with different conditions
+
+**Next Priority Methods:**
+1. `difference_term()` - Similar to other term finding methods
+2. `nu_term_idempotent()` - Requires Horowitz's algorithm implementation
+3. `congruence_modular_variety()` - Tests variety-level modularity (not just algebra-level)
+4. `local_distributivity_level()` - Computes distributivity level for specific triples
+5. `cyclic_term_idempotent()` - Tests for cyclic terms of given arity

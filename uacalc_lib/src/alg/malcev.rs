@@ -153,8 +153,12 @@ fn nu_term_idempotent(_algebra: PyObject, _arity: usize) -> PyResult<bool> {
 /// # Returns
 /// The weak NU term if one exists, None otherwise
 #[pyfunction]
-fn weak_nu_term(_algebra: PyObject, _arity: usize) -> PyResult<Option<PyObject>> {
-    Err(PyValueError::new_err("Weak NU term finding not yet implemented"))
+fn weak_nu_term(algebra: &PyBasicSmallAlgebra, arity: usize) -> PyResult<Option<String>> {
+    match malcev::weak_nu_term(&algebra.inner, arity) {
+        Ok(Some(term)) => Ok(Some(format!("{}", term))),
+        Ok(None) => Ok(None),
+        Err(e) => Err(PyValueError::new_err(e)),
+    }
 }
 
 /// Find a weak majority term for the algebra.
@@ -247,8 +251,15 @@ fn hagemann_mitschke_terms(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<Vec
 /// # Returns
 /// List of Gumm terms if they exist, None otherwise
 #[pyfunction]
-fn gumm_terms(_algebra: PyObject) -> PyResult<Option<Vec<PyObject>>> {
-    Err(PyValueError::new_err("Gumm terms finding not yet implemented"))
+fn gumm_terms(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<Vec<String>>> {
+    match malcev::gumm_terms(&algebra.inner) {
+        Ok(Some(terms)) => {
+            let term_strings: Vec<String> = terms.iter().map(|t| format!("{}", t)).collect();
+            Ok(Some(term_strings))
+        },
+        Ok(None) => Ok(None),
+        Err(e) => Err(PyValueError::new_err(e)),
+    }
 }
 
 /// Get a join term (Kearnes-Kiss) for the algebra.
@@ -275,8 +286,15 @@ fn join_term(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<String>> {
 /// # Returns
 /// List of SD-meet terms if they exist, None otherwise
 #[pyfunction]
-fn sd_meet_terms(_algebra: PyObject) -> PyResult<Option<Vec<PyObject>>> {
-    Err(PyValueError::new_err("SD-meet terms finding not yet implemented"))
+fn sd_meet_terms(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<Vec<String>>> {
+    match malcev::sd_meet_terms(&algebra.inner) {
+        Ok(Some(terms)) => {
+            let term_strings: Vec<String> = terms.iter().map(|t| format!("{}", t)).collect();
+            Ok(Some(term_strings))
+        },
+        Ok(None) => Ok(None),
+        Err(e) => Err(PyValueError::new_err(e)),
+    }
 }
 
 /// Find SD terms for the algebra.
@@ -322,8 +340,12 @@ fn markovic_mckenzie_siggers_taylor_term(algebra: &PyBasicSmallAlgebra) -> PyRes
 /// # Returns
 /// The weak 3-edge term if one exists, None otherwise
 #[pyfunction]
-fn weak_3_edge_term(_algebra: PyObject) -> PyResult<Option<PyObject>> {
-    Err(PyValueError::new_err("Weak 3-edge term finding not yet implemented"))
+fn weak_3_edge_term(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<String>> {
+    match malcev::weak_3_edge_term(&algebra.inner) {
+        Ok(Some(term)) => Ok(Some(format!("{}", term))),
+        Ok(None) => Ok(None),
+        Err(e) => Err(PyValueError::new_err(e)),
+    }
 }
 
 /// Test if an idempotent algebra is congruence distributive.

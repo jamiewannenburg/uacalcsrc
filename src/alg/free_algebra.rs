@@ -15,10 +15,11 @@ use crate::alg::{Algebra, SmallAlgebra, AlgebraType, BigProductAlgebra, SubProdu
 use crate::alg::algebra::ProgressMonitor;
 use crate::alg::algebra_with_generating_vector::AlgebraWithGeneratingVector;
 use crate::alg::closer::Closer;
-use crate::alg::op::{Operation, OperationSymbol, SimilarityType, AbstractIntOperation};
+use crate::alg::op::{Operation, OperationSymbol, SimilarityType};
+use crate::alg::op::ops::make_int_operation_str;
 use crate::util::int_array::{IntArray, IntArrayTrait};
 use crate::util::sequence_generator::SequenceGenerator;
-use crate::terms::{Term};
+use crate::terms::{Term, Variable};
 use crate::eq::Equation;
 use crate::progress::ProgressReport;
 
@@ -818,33 +819,60 @@ impl FreeAlgebra
         if let Some(ref variables) = self.inner.variables {
             if let Some(ref term_map) = self.inner.term_map {
                 // Create substitution map: swap first two variables
+                // Map variable names to their new indices
                 let mut subst_map = HashMap::new();
                 if variables.len() >= 2 {
-                    subst_map.insert(variables[0].clone(), 1);
-                    subst_map.insert(variables[1].clone(), 0);
+                    subst_map.insert(variables[0].get_name().to_string(), 1);
+                    subst_map.insert(variables[1].get_name().to_string(), 0);
                 }
                 for i in 2..variables.len() {
-                    subst_map.insert(variables[i].clone(), i as i32);
+                    subst_map.insert(variables[i].get_name().to_string(), i as i32);
                 }
                 
                 // Evaluate each element's term with the substitution
                 for i in 2..n {
                     if let Some(elem) = self.inner.get_element(i as usize) {
-                        if let Some(_term) = term_map.get(&elem) {
-                            // Evaluate the term with the substitution
-                            // For now, we'll use a simplified approach
-                            // The full implementation would use term.int_eval()
-                            arr[i as usize] = i; // Identity for now
+                        if let Some(term) = term_map.get(elem) {
+                            // Evaluate the term with the substitution on this free algebra
+                            // The substitution maps variable names to indices in the free algebra
+                            match term.eval_on_free_algebra(self, &subst_map) {
+                                Ok(result_index) => {
+                                    arr[i as usize] = result_index;
+                                }
+                                Err(e) => {
+                                    // If evaluation fails, fall back to identity
+                                    // This can happen if the term structure doesn't support evaluation
+                                    eprintln!("WARNING: Could not evaluate term for element {}: {}", i, e);
+                                    arr[i as usize] = i;
+                                }
+                            }
+                        } else {
+                            // No term found, use identity
+                            arr[i as usize] = i;
                         }
+                    } else {
+                        // Element not found, use identity
+                        arr[i as usize] = i;
                     }
                 }
+            } else {
+                // No term map, use identity for all elements >= 2
+                for i in 2..n {
+                    arr[i as usize] = i;
+                }
+            }
+        } else {
+            // No variables, use identity for all elements >= 2
+            for i in 2..n {
+                arr[i as usize] = i;
             }
         }
         
-        // Create the operation
-        let op = AbstractIntOperation::new("autoXY", 1, n);
+        // Create the operation with the computed mapping array
+        // This is a unary operation (arity 1) that maps each element to its image
+        let op = make_int_operation_str("autoXY", 1, n, arr)?;
         
-        Ok(Some(Box::new(op)))
+        Ok(Some(op))
     }
 
     /// Find an equation that holds in A but fails in B.

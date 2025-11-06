@@ -83,6 +83,10 @@ class TestMalcevPython(unittest.TestCase):
         self.assertTrue(hasattr(uacalc_lib.alg, 'primality_terms'))
         self.assertTrue(hasattr(uacalc_lib.alg, 'fixed_k_edge_term'))
         self.assertTrue(hasattr(uacalc_lib.alg, 'fixed_k_qwnu'))
+        self.assertTrue(hasattr(uacalc_lib.alg, 'weak_nu_term'))
+        self.assertTrue(hasattr(uacalc_lib.alg, 'gumm_terms'))
+        self.assertTrue(hasattr(uacalc_lib.alg, 'sd_meet_terms'))
+        self.assertTrue(hasattr(uacalc_lib.alg, 'weak_3_edge_term'))
         
     def test_malcev_term_with_cyclic3(self):
         """Test malcev_term with cyclic3 algebra."""
@@ -702,6 +706,90 @@ class TestMalcevJavaComparison(unittest.TestCase):
             self.assertEqual(python_count, java_count,
                            f"Term count mismatch: Python={python_count}, Java={java_count}")
         print(f"✓ hagemann_mitschke_terms: Python={python_count}, Java={java_count}")
+    
+    def test_weak_nu_term(self):
+        """Test weak_nu_term against Java."""
+        arity = 3
+        python_result = uacalc_lib.alg.weak_nu_term(self.alg, arity)
+        java_output = self.run_java_wrapper("weak_nu_term", [
+            "--algebra", self.algebra_path,
+            "--arity", str(arity)
+        ])
+        java_data = java_output.get("data", {})
+        java_term_found = java_data.get("term_found", False)
+        
+        python_term_found = python_result is not None
+        self.assertEqual(python_term_found, java_term_found,
+                        f"weak_nu_term: Python={python_term_found}, Java={java_term_found}")
+        print(f"✓ weak_nu_term (arity={arity}): Python={python_term_found}, Java={java_term_found}")
+    
+    def test_gumm_terms(self):
+        """Test gumm_terms against Java."""
+        python_result = uacalc_lib.alg.gumm_terms(self.alg)
+        java_output = self.run_java_wrapper("gumm_terms", ["--algebra", self.algebra_path])
+        java_data = java_output.get("data", {})
+        java_terms_found = java_data.get("terms_found", False)
+        java_count = java_data.get("num_terms", 0)
+    
+        python_terms_found = python_result is not None and len(python_result) > 0
+        python_count = len(python_result) if python_result else 0
+    
+        # Debug: print actual terms found
+        print(f"\nPython terms found: {python_terms_found}, count: {python_count}")
+        if python_result:
+            print("Python terms:")
+            for i, term in enumerate(python_result):
+                print(f"  [{i}]: {term}")
+        else:
+            print("Python result is None or empty")
+        
+        java_terms = java_data.get("terms", [])
+        print(f"\nJava terms found: {java_terms_found}, count: {java_count}")
+        if java_terms:
+            print("Java terms:")
+            for i, term in enumerate(java_terms):
+                print(f"  [{i}]: {term}")
+        else:
+            print("Java result is None or empty")
+    
+        # Both should agree on whether terms exist
+        self.assertEqual(python_terms_found, java_terms_found)
+        # If both found terms, count should match
+        if python_terms_found and java_terms_found:
+            self.assertEqual(python_count, java_count,
+                           f"Term count mismatch: Python={python_count}, Java={java_count}")
+        print(f"✓ gumm_terms: Python={python_count}, Java={java_count}")
+    
+    def test_sd_meet_terms(self):
+        """Test sd_meet_terms against Java."""
+        python_result = uacalc_lib.alg.sd_meet_terms(self.alg)
+        java_output = self.run_java_wrapper("sd_meet_terms", ["--algebra", self.algebra_path])
+        java_data = java_output.get("data", {})
+        java_terms_found = java_data.get("terms_found", False)
+        java_count = java_data.get("num_terms", 0)
+        
+        python_terms_found = python_result is not None and len(python_result) > 0
+        python_count = len(python_result) if python_result else 0
+        
+        # Both should agree on whether terms exist
+        self.assertEqual(python_terms_found, java_terms_found)
+        # If both found terms, count should match
+        if python_terms_found and java_terms_found:
+            self.assertEqual(python_count, java_count,
+                           f"Term count mismatch: Python={python_count}, Java={java_count}")
+        print(f"✓ sd_meet_terms: Python={python_count}, Java={java_count}")
+    
+    def test_weak_3_edge_term(self):
+        """Test weak_3_edge_term against Java."""
+        python_result = uacalc_lib.alg.weak_3_edge_term(self.alg)
+        java_output = self.run_java_wrapper("weak_3_edge_term", ["--algebra", self.algebra_path])
+        java_data = java_output.get("data", {})
+        java_term_found = java_data.get("term_found", False)
+        
+        python_term_found = python_result is not None
+        self.assertEqual(python_term_found, java_term_found,
+                        f"weak_3_edge_term: Python={python_term_found}, Java={java_term_found}")
+        print(f"✓ weak_3_edge_term: Python={python_term_found}, Java={java_term_found}")
 
 
 class TestMalcevAllAlgebras(unittest.TestCase):
@@ -728,6 +816,10 @@ class TestMalcevAllAlgebras(unittest.TestCase):
         "fixed_k_qwnu",
         "semilattice_term",
         "hagemann_mitschke_terms",
+        "weak_nu_term",
+        "gumm_terms",
+        "sd_meet_terms",
+        "weak_3_edge_term",
     ]
     
     def run_java_wrapper(self, command, args=None, timeout=10):
@@ -843,6 +935,8 @@ class TestMalcevAllAlgebras(unittest.TestCase):
                     java_args.extend(["--k", "2"])
                 elif property_name == "fixed_k_qwnu":
                     java_args.extend(["--arity", "3"])
+                elif property_name == "weak_nu_term":
+                    java_args.extend(["--arity", "3"])
                 
                 java_output = self.run_java_wrapper(property_name, java_args, timeout=10)
                 # If algebra is too large, skip comparison
@@ -864,6 +958,8 @@ class TestMalcevAllAlgebras(unittest.TestCase):
                         python_result = uacalc_lib.alg.fixed_k_edge_term(alg, 2)
                     elif property_name == "fixed_k_qwnu":
                         python_result = uacalc_lib.alg.fixed_k_qwnu(alg, 3)
+                    elif property_name == "weak_nu_term":
+                        python_result = uacalc_lib.alg.weak_nu_term(alg, 3)
                     else:
                         python_result = getattr(uacalc_lib.alg, property_name)(alg)
                     
@@ -872,7 +968,8 @@ class TestMalcevAllAlgebras(unittest.TestCase):
                     
                     if property_name in ["malcev_term", "majority_term", "minority_term", 
                                          "pixley_term", "nu_term", "markovic_mckenzie_siggers_taylor_term", 
-                                         "join_term", "fixed_k_edge_term", "semilattice_term"]:
+                                         "join_term", "fixed_k_edge_term", "semilattice_term",
+                                         "weak_nu_term", "weak_3_edge_term"]:
                         java_term_found = java_data.get("term_found", False)
                         python_term_found = python_result is not None
                         
@@ -927,6 +1024,24 @@ class TestMalcevAllAlgebras(unittest.TestCase):
                     elif property_name == "sd_terms":
                         java_terms_found = java_data.get("terms_found", False)
                         java_count = java_data.get("count", 0)
+                        python_terms_found = python_result is not None and len(python_result) > 0
+                        python_count = len(python_result) if python_result else 0
+                        
+                        if python_terms_found != java_terms_found or (python_terms_found and java_terms_found and python_count != java_count):
+                            mismatch = {
+                                'algebra': algebra_path,
+                                'property': property_name,
+                                'python': f"{python_count} terms" if python_terms_found else "None",
+                                'java': f"{java_count} terms" if java_terms_found else "None"
+                            }
+                            results['mismatches'].append(mismatch)
+                            print(f"  ✗ {property_name}: Python={python_count if python_terms_found else 'None'}, Java={java_count if java_terms_found else 'None'}")
+                        else:
+                            print(f"  ✓ {property_name}: match ({python_count if python_terms_found else 0} terms)")
+                    
+                    elif property_name in ["gumm_terms", "sd_meet_terms"]:
+                        java_terms_found = java_data.get("terms_found", False)
+                        java_count = java_data.get("num_terms", 0)
                         python_terms_found = python_result is not None and len(python_result) > 0
                         python_count = len(python_result) if python_result else 0
                         

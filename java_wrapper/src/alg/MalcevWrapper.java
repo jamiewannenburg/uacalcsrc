@@ -145,6 +145,22 @@ public class MalcevWrapper extends WrapperBase {
                 handleFixedKQwnu(options);
                 break;
                 
+            case "weak_nu_term":
+                handleWeakNuTerm(options);
+                break;
+                
+            case "gumm_terms":
+                handleGummTerms(options);
+                break;
+                
+            case "sd_meet_terms":
+                handleSdMeetTerms(options);
+                break;
+                
+            case "weak_3_edge_term":
+                handleWeak3EdgeTerm(options);
+                break;
+                
             default:
                 handleError("Unknown command: " + command, null);
         }
@@ -685,6 +701,111 @@ public class MalcevWrapper extends WrapperBase {
     }
     
     /**
+     * Find a weak near unanimity term of the given arity.
+     */
+    private void handleWeakNuTerm(Map<String, String> options) throws Exception {
+        String algebraPath = getRequiredArg(options, "algebra");
+        String arityStr = getRequiredArg(options, "arity");
+        int arity = Integer.parseInt(arityStr);
+        
+        SmallAlgebra alg = loadAlgebra(algebraPath);
+        Term term = Malcev.findWeakNUTerm(alg, arity, null);
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("command", "weak_nu_term");
+        result.put("algebra", alg.getName());
+        result.put("arity", arity);
+        
+        if (term != null) {
+            result.put("term_found", true);
+            result.put("term", term.toString());
+        } else {
+            result.put("term_found", false);
+        }
+        
+        handleSuccess(result);
+    }
+    
+    /**
+     * Find Gumm terms for the algebra.
+     */
+    private void handleGummTerms(Map<String, String> options) throws Exception {
+        String algebraPath = getRequiredArg(options, "algebra");
+        
+        SmallAlgebra alg = loadAlgebra(algebraPath);
+        List<Term> terms = Malcev.gummTerms(alg, null);
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("command", "gumm_terms");
+        result.put("algebra", alg.getName());
+        
+        if (terms != null && !terms.isEmpty()) {
+            result.put("terms_found", true);
+            List<String> termStrings = new ArrayList<>();
+            for (Term t : terms) {
+                termStrings.add(t.toString());
+            }
+            result.put("terms", termStrings);
+            result.put("num_terms", terms.size());
+        } else {
+            result.put("terms_found", false);
+        }
+        
+        handleSuccess(result);
+    }
+    
+    /**
+     * Find SD-meet terms for the algebra.
+     */
+    private void handleSdMeetTerms(Map<String, String> options) throws Exception {
+        String algebraPath = getRequiredArg(options, "algebra");
+        
+        SmallAlgebra alg = loadAlgebra(algebraPath);
+        List<Term> terms = Malcev.sdmeetTerms(alg, null);
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("command", "sd_meet_terms");
+        result.put("algebra", alg.getName());
+        
+        if (terms != null && !terms.isEmpty()) {
+            result.put("terms_found", true);
+            List<String> termStrings = new ArrayList<>();
+            for (Term t : terms) {
+                termStrings.add(t.toString());
+            }
+            result.put("terms", termStrings);
+            result.put("num_terms", terms.size());
+        } else {
+            result.put("terms_found", false);
+        }
+        
+        handleSuccess(result);
+    }
+    
+    /**
+     * Find a weak 3-edge term for the algebra.
+     */
+    private void handleWeak3EdgeTerm(Map<String, String> options) throws Exception {
+        String algebraPath = getRequiredArg(options, "algebra");
+        
+        SmallAlgebra alg = loadAlgebra(algebraPath);
+        Term term = Malcev.weak3EdgeTerm(alg, null);
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("command", "weak_3_edge_term");
+        result.put("algebra", alg.getName());
+        
+        if (term != null) {
+            result.put("term_found", true);
+            result.put("term", term.toString());
+        } else {
+            result.put("term_found", false);
+        }
+        
+        handleSuccess(result);
+    }
+    
+    /**
      * Load an algebra from a file.
      */
     private SmallAlgebra loadAlgebra(String path) throws Exception {
@@ -719,7 +840,11 @@ public class MalcevWrapper extends WrapperBase {
             "jonsson_level --algebra <path> - Compute the Jonsson level",
             "primality_terms --algebra <path> - Find primality terms",
             "fixed_k_edge_term --algebra <path> --k <k> - Find a k-edge term",
-            "fixed_k_qwnu --algebra <path> --arity <arity> - Test for quasi weak near unanimity term"
+            "fixed_k_qwnu --algebra <path> --arity <arity> - Test for quasi weak near unanimity term",
+            "weak_nu_term --algebra <path> --arity <arity> - Find a weak near unanimity term",
+            "gumm_terms --algebra <path> - Find Gumm terms",
+            "sd_meet_terms --algebra <path> - Find SD-meet terms",
+            "weak_3_edge_term --algebra <path> - Find a weak 3-edge term"
         };
         
         showUsage("Malcev", 
