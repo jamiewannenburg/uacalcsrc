@@ -386,8 +386,11 @@ fn is_congruence_modular_idempotent(algebra: &PyBasicSmallAlgebra) -> PyResult<b
 /// # Returns
 /// True if the variety is congruence modular, False otherwise
 #[pyfunction]
-fn congruence_modular_variety(_algebra: PyObject) -> PyResult<bool> {
-    Err(PyValueError::new_err("Variety congruence modularity test not yet implemented"))
+fn congruence_modular_variety(algebra: &PyBasicSmallAlgebra) -> PyResult<bool> {
+    match malcev::congruence_modular_variety(&algebra.inner) {
+        Ok(result) => Ok(result),
+        Err(e) => Err(PyValueError::new_err(e)),
+    }
 }
 
 /// Compute the Jonsson level of an algebra.

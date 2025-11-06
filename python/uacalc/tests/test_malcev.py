@@ -311,11 +311,22 @@ class TestMalcevPython(unittest.TestCase):
         else:
             print("No Jonsson terms found (this is valid)")
     
-    def test_congruence_modular_variety_not_implemented(self):
-        """Test that congruence_modular_variety returns not implemented error."""
-        with self.assertRaises(ValueError) as context:
-            uacalc_lib.alg.congruence_modular_variety(None)
-        self.assertIn("not yet implemented", str(context.exception))
+    def test_congruence_modular_variety_with_cyclic3(self):
+        """Test congruence_modular_variety with cyclic3 algebra."""
+        algebra_path = get_algebra_path("cyclic3.ua")
+        if not os.path.exists(algebra_path):
+            self.skipTest(f"Algebra file {algebra_path} not found")
+        
+        # Load algebra
+        AlgebraReader = uacalc_lib.io.AlgebraReader
+        reader = AlgebraReader.new_from_file(algebra_path)
+        alg = reader.read_algebra_file()
+        
+        # Test congruence_modular_variety
+        result = uacalc_lib.alg.congruence_modular_variety(alg)
+        # Should return a boolean
+        self.assertIsInstance(result, bool)
+        print(f"Variety is congruence modular: {result}")
     
     def test_jonsson_level_with_cyclic3(self):
         """Test jonsson_level with cyclic3 algebra."""
@@ -778,6 +789,19 @@ class TestMalcevJavaComparison(unittest.TestCase):
             self.assertEqual(python_count, java_count,
                            f"Term count mismatch: Python={python_count}, Java={java_count}")
         print(f"✓ sd_meet_terms: Python={python_count}, Java={java_count}")
+    
+    def test_congruence_modular_variety(self):
+        """Test congruence_modular_variety against Java."""
+        python_result = uacalc_lib.alg.congruence_modular_variety(self.alg)
+        java_output = self.run_java_wrapper("is_congruence_modular", ["--algebra", self.algebra_path])
+        java_data = java_output.get("data", {})
+        java_is_modular = java_data.get("is_modular", False)
+        
+        self.assertEqual(
+            python_result, java_is_modular,
+            f"congruence_modular_variety: Python={python_result}, Java={java_is_modular}"
+        )
+        print(f"✓ congruence_modular_variety: Python={python_result}, Java={java_is_modular}")
     
     def test_weak_3_edge_term(self):
         """Test weak_3_edge_term against Java."""
