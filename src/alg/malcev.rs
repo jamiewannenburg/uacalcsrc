@@ -887,7 +887,9 @@ where
 
 /// Find a difference term for the algebra.
 ///
-/// A difference term is a ternary term d(x,y,z) such that d(x,y,y) = x.
+/// A difference term is a ternary term d(x,y,z) such that:
+/// - d(x,x,y) = y
+/// - d(x,y,y) [theta,theta] x, where theta = Cg(x,y)
 ///
 /// # Arguments
 /// * `alg` - The algebra to check
@@ -900,8 +902,93 @@ pub fn difference_term<T>(alg: &dyn SmallAlgebra<UniverseItem = T>) -> Result<Op
 where
     T: Clone + std::fmt::Debug + std::fmt::Display + std::hash::Hash + Eq + Send + Sync + 'static
 {
-    // TODO: Implement difference term finding algorithm
-    Err("Difference term finding not yet implemented".to_string())
+    if alg.cardinality() == 1 {
+        return Ok(Some(Box::new(VariableImp::x())));
+    }
+    
+    // Convert the algebra to i32-based for use with FreeAlgebra
+    let card = alg.cardinality();
+    let ops = alg.operations();
+    let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
+    let universe_set: HashSet<i32> = (0..card).collect();
+    let i32_alg = BasicSmallAlgebra::new(
+        alg.name().to_string(),
+        universe_set,
+        int_ops,
+    );
+    
+    // Create free algebra with 2 generators (F(2))
+    let mut f2 = FreeAlgebra::new_safe(Box::new(i32_alg), 2)?;
+    use crate::alg::Algebra;
+    f2.make_operation_tables();
+    
+    // Create generators: (0,0), (0,1), (1,1) in F(2)^2
+    // These correspond to (x,x), (x,y), (y,y) in the free algebra
+    let g0 = IntArray::from_array(vec![0, 0])?;  // (x,x)
+    let g1 = IntArray::from_array(vec![0, 1])?;  // (x,y)
+    let g2 = IntArray::from_array(vec![1, 1])?;  // (y,y)
+    let gens = vec![g0.clone(), g1.clone(), g2.clone()];
+    
+    // Create term map
+    let mut term_map: HashMap<IntArray, Box<dyn Term>> = HashMap::new();
+    term_map.insert(g0.clone(), Box::new(VariableImp::x()));
+    term_map.insert(g1.clone(), Box::new(VariableImp::y()));
+    term_map.insert(g2.clone(), Box::new(VariableImp::z()));
+    
+    // Get congruence lattice from F(2)
+    // Compute theta = Cg(0,1) where 0 and 1 are the generators of F(2)
+    // FreeAlgebra::con() returns &, but we need &mut for cg() and commutator2().
+    // Use get_inner_mut() to access the inner SubProductAlgebra's con() which returns &mut.
+    let theta = {
+        let con_lat = f2.get_inner_mut().con();
+        con_lat.cg(0, 1)
+    };
+    
+    // Compute thetaPrime = [theta,theta] using commutator2
+    let theta_prime = {
+        let con_lat = f2.get_inner_mut().con();
+        con_lat.commutator2(&theta, &theta)
+    };
+    
+    // If thetaPrime relates 0 and 1, then d(x,y,z) = z is a difference term
+    if theta_prime.is_related(0, 1) {
+        return Ok(Some(Box::new(VariableImp::z())));
+    }
+    
+    // Otherwise, we need to find a difference term using closure
+    // Create BigProductAlgebra (F(2)^2)
+    let f2_boxed: Box<dyn SmallAlgebra<UniverseItem = IntArray>> = 
+        Box::new(f2) as Box<dyn SmallAlgebra<UniverseItem = IntArray>>;
+    let f2_pow = BigProductAlgebra::new_power_safe(f2_boxed, 2)?;
+    
+    // Create Closer with generators and term map
+    let mut closer = Closer::new_with_term_map_safe(
+        Arc::new(f2_pow),
+        gens,
+        term_map,
+    )?;
+    
+    // Set values constraint: [[0,1]] means index 0 should have value 1
+    // This corresponds to finding an element where the first coordinate is 1
+    closer.set_values(Some(vec![(0, 1)]));
+    
+    // Set congruence constraint: thetaPrime, coord 1, coord 0
+    // This means the second coordinate (index 1) should be [theta,theta] related to the first coordinate (index 0)
+    closer.setup_congruence_constraint(theta_prime, 1, 0);
+    
+    // Compute closure
+    let _closure = closer.sg_close_power()?;
+    
+    // Check if we found the element
+    if let Some(elt_to_find) = closer.get_element_to_find() {
+        if let Some(term_map_ref) = closer.get_term_map() {
+            if let Some(term) = term_map_ref.get(elt_to_find).map(|t| t.clone_box()) {
+                return Ok(Some(term));
+            }
+        }
+    }
+    
+    Ok(None)
 }
 
 /// Helper function to convert a path of IntArrays to a list of Terms.

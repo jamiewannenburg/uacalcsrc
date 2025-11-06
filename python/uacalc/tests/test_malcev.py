@@ -284,11 +284,25 @@ class TestMalcevPython(unittest.TestCase):
         else:
             print("No semilattice term found (this is valid)")
     
-    def test_difference_term_not_implemented(self):
-        """Test that difference_term returns not implemented error."""
-        with self.assertRaises(ValueError) as context:
-            uacalc_lib.alg.difference_term(None)
-        self.assertIn("not yet implemented", str(context.exception))
+    def test_difference_term_with_cyclic3(self):
+        """Test difference_term with cyclic3 algebra."""
+        algebra_path = get_algebra_path("cyclic3.ua")
+        if not os.path.exists(algebra_path):
+            self.skipTest(f"Algebra file {algebra_path} not found")
+        
+        # Load algebra
+        AlgebraReader = uacalc_lib.io.AlgebraReader
+        reader = AlgebraReader.new_from_file(algebra_path)
+        alg = reader.read_algebra_file()
+        
+        # Test difference_term
+        result = uacalc_lib.alg.difference_term(alg)
+        # Should return either a term (string) or None
+        if result is not None:
+            self.assertIsInstance(result, str)
+            print(f"Found difference term: {result}")
+        else:
+            print("No difference term found (this is valid)")
     
     def test_jonsson_terms_with_cyclic3(self):
         """Test jonsson_terms with cyclic3 algebra."""
@@ -504,6 +518,18 @@ class TestMalcevJavaComparison(unittest.TestCase):
         python_term_found = python_result is not None
         self.assertEqual(python_term_found, java_term_found)
         print(f"✓ pixley_term: Python={python_term_found}, Java={java_term_found}")
+    
+    def test_difference_term(self):
+        """Test difference_term against Java."""
+        python_result = uacalc_lib.alg.difference_term(self.alg)
+        java_output = self.run_java_wrapper("difference_term", ["--algebra", self.algebra_path])
+        java_data = java_output.get("data", {})
+        java_term_found = java_data.get("term_found", False)
+        
+        python_term_found = python_result is not None
+        self.assertEqual(python_term_found, java_term_found,
+                        f"difference_term: Python={python_term_found}, Java={java_term_found}")
+        print(f"✓ difference_term: Python={python_term_found}, Java={java_term_found}")
     
     def test_nu_term(self):
         """Test nu_term against Java."""

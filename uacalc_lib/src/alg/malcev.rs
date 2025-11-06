@@ -201,8 +201,12 @@ fn semilattice_term(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<String>> {
 /// # Returns
 /// The difference term if one exists, None otherwise
 #[pyfunction]
-fn difference_term(_algebra: PyObject) -> PyResult<Option<PyObject>> {
-    Err(PyValueError::new_err("Difference term finding not yet implemented"))
+fn difference_term(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<String>> {
+    match malcev::difference_term(&algebra.inner) {
+        Ok(Some(term)) => Ok(Some(format!("{}", term))),
+        Ok(None) => Ok(None),
+        Err(e) => Err(PyValueError::new_err(e)),
+    }
 }
 
 /// Find Jonsson terms for the algebra.

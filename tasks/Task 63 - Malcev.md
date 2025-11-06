@@ -95,7 +95,7 @@ This class depends on:
 
 ### Current Implementation Status
 
-**Status:** Significant Progress - 28 of 30 Core Methods Fully Implemented
+**Status:** Significant Progress - 29 of 30 Core Methods Fully Implemented
 
 **Rust Implementation:** 
 - ✅ Module structure created in `src/alg/malcev.rs` (~3,200 lines)
@@ -104,7 +104,7 @@ This class depends on:
 - ✅ Comprehensive documentation for all functions
 - ✅ Proper error handling using `Result<T, String>`
 
-**Fully Implemented Methods (28):**
+**Fully Implemented Methods (29):**
 1. ✅ `malcev_term()` - Finds Malcev term using F(2)^2 closure
 2. ✅ `majority_term()` - Finds majority term using F(2)^3 closure
 3. ✅ `minority_term()` - Finds minority term using F(2)^3 closure
@@ -143,14 +143,18 @@ This class depends on:
    - Tests if algebra has a cyclic term of specified arity
    - Uses F(2) closure to find cyclic term
    - Fully implemented with Java comparison tests
+29. ✅ `difference_term()` - Finds difference term for the algebra
+   - A difference term is a ternary term d(x,y,z) such that d(x,x,y) = y and d(x,y,y) [theta,theta] x
+   - Uses F(2) free algebra and computes theta = Cg(0,1) and thetaPrime = [theta,theta]
+   - If thetaPrime relates 0 and 1, returns z as the difference term
+   - Otherwise uses Closer with congruence and values constraints to find the term
+   - Uses `get_inner_mut().con()` to access mutable congruence lattice (avoids cloning issues)
+   - Fully implemented with Java comparison tests
 
-**Not Yet Implemented Methods (2):**
+**Not Yet Implemented Methods (1):**
 1. ⚠️ `nu_term_idempotent()` - Returns error: "NU term idempotent test not yet implemented"
    - **Dependencies:** All available (FreeAlgebra, Closer, etc.)
    - **Note:** Requires Horowitz's algorithm for testing NU terms in idempotent algebras
-2. ⚠️ `difference_term()` - Returns error: "Difference term finding not yet implemented"
-   - **Dependencies:** All available
-   - **Note:** Requires finding difference term in F(2) closure
 
 **Methods Not Yet Exposed in Rust API (from Java but not in public Rust API):**
 - `fixedKEdgeIdempotent()` - Tests if algebra has k-edge term (idempotent version)
@@ -169,16 +173,17 @@ This class depends on:
 - ✅ All 30 functions exposed to Python through PyO3
 - ✅ Functions registered in alg module
 - ✅ Proper error propagation to Python
-- ✅ All 28 implemented methods fully functional in Python
-- ⚠️ 2 methods return "not yet implemented" errors (algorithms pending)
+- ✅ All 29 implemented methods fully functional in Python
+- ⚠️ 1 method returns "not yet implemented" error (algorithm pending)
 
 **Java Wrapper:**
 - ✅ Java CLI wrapper created at `java_wrapper/src/alg/MalcevWrapper.java`
-- ✅ Command-line interface with 12+ commands (including `primality_terms`)
+- ✅ Command-line interface with 12+ commands (including `primality_terms`, `difference_term`)
 - ✅ Supports algebra loading from .ua files
 - ✅ JSON output format for test comparisons
 - ✅ Compiled successfully with ant
 - ✅ **primality_terms command** - FULLY IMPLEMENTED
+- ✅ **difference_term command** - FULLY IMPLEMENTED
 
 **Tests:**
 - ✅ Rust tests exist in `src/alg/malcev.rs`
@@ -192,6 +197,10 @@ This class depends on:
 - ✅ **congruence_modular_variety test** - FULLY IMPLEMENTED
   - `test_congruence_modular_variety_with_cyclic3()` - Tests with cyclic3 algebra
   - `test_congruence_modular_variety()` in `TestMalcevJavaComparison` - Java comparison test
+  - All tests passing with matching Java output
+- ✅ **difference_term test** - FULLY IMPLEMENTED
+  - `test_difference_term_with_cyclic3()` - Tests with cyclic3 algebra
+  - `test_difference_term()` in `TestMalcevJavaComparison` - Java comparison test
   - All tests passing with matching Java output
 
 **Dependencies Status:**
@@ -211,10 +220,10 @@ This class depends on:
 - **Dependencies:** Uses conlat, sublat, op, terms, util modules
 
 **Implementation Notes:**
-- **93% of core methods fully implemented** (28 of 30)
+- **97% of core methods fully implemented** (29 of 30)
 - All implemented methods use proper free algebra closures, term tracking, and path finding algorithms
 - Implemented methods match Java behavior exactly (verified through testing)
-- Remaining 2 methods require similar algorithms but with different conditions/paths
+- Remaining 1 method requires specialized algorithm (Horowitz's algorithm for NU term testing in idempotent algebras)
 - All dependencies are available - no blocking issues for remaining implementations
 - Helper functions like `sd_path()`, `jonsson_level_path()`, `jonsson_level_aux()` are implemented
 - Term substitution and variable mapping fully functional
@@ -242,14 +251,14 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All 30 public methods translated to Rust (framework complete)
-- [x] 28 of 30 methods fully implemented with algorithms
+- [x] 29 of 30 methods fully implemented with algorithms
 - [x] Python bindings expose all public methods
 - [x] Java CLI wrapper created with all public methods
 - [x] Rust tests pass with timeouts enabled
 - [x] Python tests pass and match Java output
 - [x] Code compiles without errors (warnings acceptable)
 - [x] Documentation complete
-- [ ] Remaining 2 methods implemented (93% complete)
+- [ ] Remaining 1 method implemented (97% complete)
 
 **Recent Implementations:**
 - ✅ **local_distributivity_level()** - Implemented in 2025-01-27
@@ -291,7 +300,16 @@ This class depends on:
   - Uses F(2) closure to find cyclic term
   - Fully tested with Java comparison and Python bindings
 
-- ✅ **Major implementation push** - 28 methods now fully implemented
+- ✅ **difference_term()** - Implemented in 2025-01-27
+  - Finds difference term d(x,y,z) such that d(x,x,y) = y and d(x,y,y) [theta,theta] x
+  - Uses F(2) free algebra and computes theta = Cg(0,1) and thetaPrime = [theta,theta] using commutator2
+  - If thetaPrime relates 0 and 1, returns z as the difference term
+  - Otherwise uses Closer with congruence constraint (thetaPrime, coord 1, coord 0) and values constraint
+  - Uses `get_inner_mut().con()` to access mutable congruence lattice (fixes regression with sd_meet_terms)
+  - Fully tested with Java comparison and Python bindings
+  - Fixed regression: Changed from cloning FreeAlgebra to using get_inner_mut() to maintain state consistency
+
+- ✅ **Major implementation push** - 29 methods now fully implemented
   - All basic term finding methods (Malcev, majority, minority, Pixley, NU, weak majority, semilattice)
   - All Jonsson-related methods (Jonsson terms, Hagemann-Mitschke terms, Jonsson level, Gumm terms)
   - All congruence property tests (distributivity, modularity, SD-meet, variety modularity)
@@ -301,11 +319,10 @@ This class depends on:
   - Weak NU term finding (weak_nu_term)
 
 **Implementation Progress:**
-- **93% complete** (28 of 30 core methods)
+- **97% complete** (29 of 30 core methods)
 - All dependencies available - no blocking issues
-- Remaining 2 methods follow similar patterns to implemented ones
-- Most remaining methods are variations of existing algorithms with different conditions
+- Remaining 1 method requires specialized algorithm (Horowitz's algorithm)
+- All term finding methods using F(2) closure patterns are now complete
 
 **Next Priority Methods:**
-1. `difference_term()` - Similar to other term finding methods
-2. `nu_term_idempotent()` - Requires Horowitz's algorithm implementation
+1. `nu_term_idempotent()` - Requires Horowitz's algorithm implementation for testing NU terms in idempotent algebras
