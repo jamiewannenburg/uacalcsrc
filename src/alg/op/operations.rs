@@ -489,15 +489,18 @@ pub fn ternary_discriminator(size: i32) -> Result<Box<dyn Operation>, String> {
     let table_size = (size as usize).pow(3);
     let mut value_table = Vec::with_capacity(table_size);
     
-    for x in 0..size {
-        for y in 0..size {
-            for z in 0..size {
-                if x == y {
-                    value_table.push(z);
-                } else {
-                    value_table.push(x);
-                }
-            }
+    // Build table using horner_inv_same_size to match IntOperation.horner_encode
+    // which uses reverse order (matching horner_same_size)
+    use crate::util::horner;
+    for k in 0..table_size {
+        let args = horner::horner_inv_same_size(k as i32, size, 3);
+        let x = args[0];
+        let y = args[1];
+        let z = args[2];
+        if x == y {
+            value_table.push(z);
+        } else {
+            value_table.push(x);
         }
     }
     

@@ -1,7 +1,6 @@
 use super::*;
 use std::collections::HashMap;
 use crate::io::AlgebraReader;
-use crate::alg::SmallAlgebra;
 
 #[test]
 fn test_variable_imp_creation() {
@@ -988,5 +987,87 @@ fn test_adjust_parens_extra_multiple_close() {
     
     let result = adjust_parens("f(x,y)))");
     assert_eq!(result, "f(x,y)");
+}
+
+// ==================== Java Comparison Tests ====================
+
+#[test]
+fn test_term_interpretation_vs_java() {
+    // Test that term interpretation matches Java implementation
+    // Specifically test bak(x,y,y) on baker2 algebra
+    use crate::common::*;
+    use crate::terms::string_to_term;
+    use std::sync::Arc;
+    use crate::alg::SmallAlgebraWrapper;
+    use crate::io::AlgebraReader;
+    use std::path::Path;
+    use serde_json::json;
+    
+    let path_str = "resources/algebras/baker2.ua";
+    let path = Path::new(path_str);
+    if !path.exists() {
+        println!("Skipping test - baker2.ua not found");
+        return;
+    }
+    
+    let config = TestConfig::default();
+    let term_str = "bak(x,y,y)";
+    let vars_list = vec!["x".to_string(), "y".to_string()];
+    let algebra_path = "resources/algebras/baker2.ua";
+    let vars_str = vars_list.join(",");
+    
+    compare_with_java!(
+        config,
+        "java_wrapper.src.terms.TermsWrapper",
+        [
+            "interpret_term",
+            "--algebra", algebra_path,
+            "--term", term_str,
+            "--vars", &vars_str,
+            "--use_all", "true"
+        ],
+        || {
+            // Parse term
+            let term = string_to_term(term_str).expect("Failed to parse term");
+            
+            // Load algebra
+            let reader = AlgebraReader::new_from_path(algebra_path)
+                .expect("Failed to create algebra reader");
+            let alg = reader.read_algebra_file()
+                .expect("Failed to read algebra file");
+            
+            // Interpret on the original algebra with use_all=true, varlist=[x,y]
+            let alg_arc: Arc<dyn crate::alg::SmallAlgebra<UniverseItem = i32>> = 
+                Arc::new(SmallAlgebraWrapper::new(Box::new(alg)));
+            
+            let op = term.interpretation(alg_arc.clone(), &vars_list, true)
+                .expect("Failed to interpret term");
+            
+            // Build operation table in the same order as Java
+            // Java iterates i from 0 to tableSize-1 and uses horner_inv to decode
+            let card = alg_arc.cardinality();
+            let arity = op.arity();
+            let table_size = (card as usize).pow(arity as u32);
+            let mut table = Vec::with_capacity(table_size);
+            
+            use crate::util::horner;
+            for i in 0..table_size {
+                let args = horner::horner_inv_same_size(i as i32, card, arity as usize);
+                let value = op.int_value_at(&args)
+                    .expect("Failed to evaluate operation");
+                table.push(value);
+            }
+            
+            json!({
+                "command": "interpret_term",
+                "algebra": alg_arc.name(),
+                "term": term_str,
+                "arity": op.arity(),
+                "set_size": op.get_set_size(),
+                "table": table,
+                "table_size": table.len()
+            })
+        }
+    );
 }
 

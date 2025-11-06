@@ -68,6 +68,10 @@ public class TermsWrapper extends WrapperBase {
                 handleFlatten(options);
                 break;
                 
+            case "interpret_term":
+                handleInterpretTerm(options);
+                break;
+                
             case "test":
                 handleTest(options);
                 break;
@@ -165,6 +169,68 @@ public class TermsWrapper extends WrapperBase {
             handleSuccess(data);
         } catch (Exception e) {
             handleError("Failed to flatten term: " + str, e);
+        }
+    }
+    
+    /**
+     * Handle interpret_term command - interpret a term on an algebra and return operation table.
+     * Args: --algebra <path> --term <term_string> --vars <comma-separated-vars> [--use_all]
+     */
+    private void handleInterpretTerm(Map<String, String> options) {
+        try {
+            String algebraPath = getRequiredArg(options, "algebra");
+            String termStr = getRequiredArg(options, "term");
+            String varsStr = getRequiredArg(options, "vars");
+            boolean useAll = getOptionalArg(options, "use_all", "true").equals("true");
+            
+            // Load algebra
+            org.uacalc.io.AlgebraReader reader = new org.uacalc.io.AlgebraReader(algebraPath);
+            org.uacalc.alg.SmallAlgebra alg = (org.uacalc.alg.SmallAlgebra) reader.readAlgebraFile();
+            
+            // Parse term
+            Term term = Terms.stringToTerm(termStr);
+            
+            // Parse variables
+            String[] varNames = varsStr.split(",");
+            List<Variable> varlist = new ArrayList<>();
+            for (String varName : varNames) {
+                varlist.add(new VariableImp(varName.trim()));
+            }
+            
+            // Interpret term
+            org.uacalc.alg.op.Operation op = term.interpretation(alg, varlist, useAll);
+            
+            // Build operation table
+            int arity = op.arity();
+            int setSize = op.getSetSize();
+            int tableSize = (int) Math.pow(setSize, arity);
+            List<Integer> table = new ArrayList<>();
+            
+            // Generate all argument combinations and evaluate
+            int[] args = new int[arity];
+            for (int i = 0; i < tableSize; i++) {
+                // Convert i to arguments using horner encoding
+                int temp = i;
+                for (int j = 0; j < arity; j++) {
+                    args[j] = temp % setSize;
+                    temp /= setSize;
+                }
+                table.add(op.intValueAt(args));
+            }
+            
+            Map<String, Object> data = new LinkedHashMap<>();
+            data.put("command", "interpret_term");
+            data.put("algebra", alg.getName());
+            data.put("term", termStr);
+            data.put("arity", arity);
+            data.put("set_size", setSize);
+            data.put("table", table);
+            data.put("table_size", table.size());
+            
+            handleSuccess(data);
+        } catch (Exception e) {
+            String termStr = getOptionalArg(options, "term", "unknown");
+            handleError("Failed to interpret term: " + termStr, e);
         }
     }
     
@@ -277,6 +343,7 @@ public class TermsWrapper extends WrapperBase {
             "is_valid_var_string --str \"x\"",
             "is_valid_op_name_string --str \"f\"",
             "flatten --str \"f(f(x,y),z)\"",
+            "interpret_term --algebra resources/algebras/baker2.ua --term \"bak(x,y,y)\" --vars \"x,y\" --use_all true",
             "test"
         };
         

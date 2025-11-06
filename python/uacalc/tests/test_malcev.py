@@ -264,11 +264,20 @@ class TestMalcevPython(unittest.TestCase):
         else:
             print("No weak majority term found (this is valid)")
     
-    def test_semilattice_term_not_implemented(self):
-        """Test that semilattice_term returns not implemented error."""
-        with self.assertRaises(ValueError) as context:
-            uacalc_lib.alg.semilattice_term(None)
-        self.assertIn("not yet implemented", str(context.exception))
+    def test_semilattice_term_with_trivial_algebra(self):
+        """Test semilattice_term with trivial algebra."""
+        # Create a trivial algebra for testing
+        BasicSmallAlgebra = uacalc_lib.alg.BasicSmallAlgebra
+        alg = BasicSmallAlgebra("Trivial", [0])
+        
+        # semilattice_term should return a term for trivial algebra
+        result = uacalc_lib.alg.semilattice_term(alg)
+        # Should return either a term (string) or None
+        if result is not None:
+            self.assertIsInstance(result, str)
+            print(f"Found semilattice term: {result}")
+        else:
+            print("No semilattice term found (this is valid)")
     
     def test_difference_term_not_implemented(self):
         """Test that difference_term returns not implemented error."""
@@ -662,6 +671,37 @@ class TestMalcevJavaComparison(unittest.TestCase):
         self.assertEqual(python_result, java_has_qwnu,
                         f"fixed_k_qwnu: Python={python_result}, Java={java_has_qwnu}")
         print(f"✓ fixed_k_qwnu (arity={arity}): Python={python_result}, Java={java_has_qwnu}")
+    
+    def test_semilattice_term(self):
+        """Test semilattice_term against Java."""
+        python_result = uacalc_lib.alg.semilattice_term(self.alg)
+        java_output = self.run_java_wrapper("semilattice_term", ["--algebra", self.algebra_path])
+        java_data = java_output.get("data", {})
+        java_term_found = java_data.get("term_found", False)
+        
+        python_term_found = python_result is not None
+        self.assertEqual(python_term_found, java_term_found,
+                        f"semilattice_term: Python={python_term_found}, Java={java_term_found}")
+        print(f"✓ semilattice_term: Python={python_term_found}, Java={java_term_found}")
+    
+    def test_hagemann_mitschke_terms(self):
+        """Test hagemann_mitschke_terms against Java."""
+        python_result = uacalc_lib.alg.hagemann_mitschke_terms(self.alg)
+        java_output = self.run_java_wrapper("hagemann_mitschke_terms", ["--algebra", self.algebra_path])
+        java_data = java_output.get("data", {})
+        java_terms_found = java_data.get("terms_found", False)
+        java_count = java_data.get("count", 0)
+        
+        python_terms_found = python_result is not None and len(python_result) > 0
+        python_count = len(python_result) if python_result else 0
+        
+        # Both should agree on whether terms exist
+        self.assertEqual(python_terms_found, java_terms_found)
+        # If both found terms, count should match
+        if python_terms_found and java_terms_found:
+            self.assertEqual(python_count, java_count,
+                           f"Term count mismatch: Python={python_count}, Java={java_count}")
+        print(f"✓ hagemann_mitschke_terms: Python={python_count}, Java={java_count}")
 
 
 class TestMalcevAllAlgebras(unittest.TestCase):
@@ -686,6 +726,8 @@ class TestMalcevAllAlgebras(unittest.TestCase):
         "sd_meet_idempotent",
         "fixed_k_edge_term",
         "fixed_k_qwnu",
+        "semilattice_term",
+        "hagemann_mitschke_terms",
     ]
     
     def run_java_wrapper(self, command, args=None, timeout=10):
@@ -830,7 +872,7 @@ class TestMalcevAllAlgebras(unittest.TestCase):
                     
                     if property_name in ["malcev_term", "majority_term", "minority_term", 
                                          "pixley_term", "nu_term", "markovic_mckenzie_siggers_taylor_term", 
-                                         "join_term", "fixed_k_edge_term"]:
+                                         "join_term", "fixed_k_edge_term", "semilattice_term"]:
                         java_term_found = java_data.get("term_found", False)
                         python_term_found = python_result is not None
                         
@@ -845,6 +887,24 @@ class TestMalcevAllAlgebras(unittest.TestCase):
                             print(f"  ✗ {property_name}: Python={python_term_found}, Java={java_term_found}")
                         else:
                             print(f"  ✓ {property_name}: match")
+                    
+                    elif property_name == "hagemann_mitschke_terms":
+                        java_terms_found = java_data.get("terms_found", False)
+                        java_count = java_data.get("count", 0)
+                        python_terms_found = python_result is not None and len(python_result) > 0
+                        python_count = len(python_result) if python_result else 0
+                        
+                        if python_terms_found != java_terms_found or (python_terms_found and java_terms_found and python_count != java_count):
+                            mismatch = {
+                                'algebra': algebra_path,
+                                'property': property_name,
+                                'python': f"{python_count} terms" if python_terms_found else "None",
+                                'java': f"{java_count} terms" if java_terms_found else "None"
+                            }
+                            results['mismatches'].append(mismatch)
+                            print(f"  ✗ {property_name}: Python={python_count if python_terms_found else 'None'}, Java={java_count if java_terms_found else 'None'}")
+                        else:
+                            print(f"  ✓ {property_name}: match ({python_count if python_terms_found else 0} terms)")
                     
                     elif property_name == "jonsson_terms":
                         java_terms_found = java_data.get("terms_found", False)

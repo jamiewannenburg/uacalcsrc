@@ -174,8 +174,8 @@ where
         
         // Compute universe and terms if requested
         let (univ, term_map, terms, vars_map) = if find_terms {
-            let term_map = Self::setup_gens_to_vars_map(&gens)?;
-            let vars_map: HashMap<VariableImp, IntArray> = term_map.iter()
+            let term_map_init = Self::setup_gens_to_vars_map(&gens)?;
+            let vars_map: HashMap<VariableImp, IntArray> = term_map_init.iter()
                 .filter_map(|(ia, term)| {
                     if term.isa_variable() {
                         // Downcast to VariableImp
@@ -189,22 +189,34 @@ where
                 })
                 .collect();
             
-            // Note: The Java version passes a termMap to sgClose, but the Rust version
-            // doesn't support this yet. We'll compute the universe without terms for now.
-            let univ = prod.sg_close(gens.clone())?;
+            // Use Closer directly to get updated term_map back
+            use std::sync::Arc;
+            use crate::alg::Closer;
+            let prod_arc = Arc::new(prod.clone());
+            let mut closer = Closer::new_safe(prod_arc, gens.clone())?;
+            closer.set_term_map(Some(term_map_init));
+            let univ = closer.sg_close()?;
+            
+            // Get the updated term_map from Closer
+            let term_map = closer.get_term_map()
+                .map(|tm| {
+                    let mut result = HashMap::new();
+                    for (k, v) in tm.iter() {
+                        result.insert(k.clone(), v.clone_box());
+                    }
+                    result
+                });
             
             let mut terms_vec = Vec::with_capacity(univ.len());
-            for ia in &univ {
-                if let Some(term) = term_map.get(ia) {
-                    terms_vec.push(term.clone_box());
-                } else {
-                    // If no term exists for this element, we'll skip it
-                    // This is a simplified implementation
-                    continue;
+            if let Some(ref tm) = term_map {
+                for ia in &univ {
+                    if let Some(term) = tm.get(ia) {
+                        terms_vec.push(term.clone_box());
+                    }
                 }
             }
             
-            (univ, Some(term_map), Some(terms_vec), Some(vars_map))
+            (univ, term_map, Some(terms_vec), Some(vars_map))
         } else {
             // Don't sort - Java uses the order from sgClose
             let univ = prod.sg_close(gens.clone())?;

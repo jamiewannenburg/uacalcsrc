@@ -93,6 +93,10 @@ public class MalcevWrapper extends WrapperBase {
                 handleJonssonTerms(options);
                 break;
                 
+            case "hagemann_mitschke_terms":
+                handleHagemannMitschkeTerms(options);
+                break;
+                
             case "is_congruence_modular":
                 handleIsCongruenceModular(options);
                 break;
@@ -355,6 +359,36 @@ public class MalcevWrapper extends WrapperBase {
         
         Map<String, Object> result = new HashMap<>();
         result.put("command", "jonsson_terms");
+        result.put("algebra", alg.getName());
+        
+        if (terms != null && !terms.isEmpty()) {
+            result.put("terms_found", true);
+            result.put("count", terms.size());
+            
+            List<String> termStrings = new ArrayList<>();
+            for (Term term : terms) {
+                termStrings.add(term.toString());
+            }
+            result.put("terms", termStrings);
+        } else {
+            result.put("terms_found", false);
+            result.put("count", 0);
+        }
+        
+        handleSuccess(result);
+    }
+    
+    /**
+     * Find Hagemann-Mitschke terms for the algebra.
+     */
+    private void handleHagemannMitschkeTerms(Map<String, String> options) throws Exception {
+        String algebraPath = getRequiredArg(options, "algebra");
+        
+        SmallAlgebra alg = loadAlgebra(algebraPath);
+        List<Term> terms = Malcev.hagemannMitschkeTerms(alg);
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("command", "hagemann_mitschke_terms");
         result.put("algebra", alg.getName());
         
         if (terms != null && !terms.isEmpty()) {
@@ -673,6 +707,7 @@ public class MalcevWrapper extends WrapperBase {
             "semilattice_term --algebra <path> - Find a semilattice term",
             "difference_term --algebra <path> - Find a difference term",
             "jonsson_terms --algebra <path> - Find Jonsson terms",
+            "hagemann_mitschke_terms --algebra <path> - Find Hagemann-Mitschke terms",
             "is_congruence_modular --algebra <path> - Test if variety is congruence modular",
             "is_congruence_modular_idempotent --algebra <path> - Test if idempotent algebra is congruence modular",
             "is_congruence_dist_idempotent --algebra <path> - Test if idempotent algebra is congruence distributive",

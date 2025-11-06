@@ -106,13 +106,12 @@ impl PyFreeAlgebra {
     /// Get the idempotent terms.
     ///
     /// Returns:
-    ///     List[str]: List of idempotent term representations (simplified)
+    ///     List[str]: List of idempotent term representations
     fn get_idempotent_terms(&self) -> PyResult<Vec<String>> {
         match self.inner.get_idempotent_terms() {
-            Ok(_terms) => {
-                // Simplified implementation - return empty list for now
-                // In practice, you'd convert Box<dyn Term> to appropriate Python types
-                Ok(vec![])
+            Ok(terms) => {
+                // Convert Box<dyn Term> to strings
+                Ok(terms.iter().map(|t| t.to_string()).collect())
             },
             Err(e) => Err(PyValueError::new_err(e)),
         }

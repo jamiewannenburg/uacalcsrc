@@ -141,15 +141,17 @@ impl IntOperation {
     }
 
     /// Compute Horner encoding for arguments.
+    /// This matches horner_same_size: iterates from last to first argument.
     fn horner_encode(&self, args: &[i32]) -> i32 {
-        let mut result = 0;
-        let base = self.set_size;
+        let arity = args.len();
+        let mut ans = 0;
+        let size = self.set_size;
         
-        for &arg in args {
-            result = result * base + arg;
+        for i in (0..arity).rev() {
+            ans = size * ans + args[i];
         }
         
-        result
+        ans
     }
 }
 

@@ -68,6 +68,25 @@ pub trait Term: Display + Debug + Send + Sync {
     /// * `Err(String)` - Error message if evaluation fails
     fn int_eval(&self, alg: &dyn SmallAlgebra<UniverseItem = i32>, map: &HashMap<String, i32>) -> Result<i32, String>;
     
+    /// Evaluates this term on a FreeAlgebra using indices.
+    /// 
+    /// This method evaluates the term on a FreeAlgebra by using indices into the
+    /// free algebra's universe. The operations of the free algebra work on indices,
+    /// and this method recursively evaluates the term using those operations.
+    /// 
+    /// # Arguments
+    /// * `free_alg` - The FreeAlgebra on which to evaluate the term
+    /// * `map` - A map from variable names to indices (i32) into the free algebra
+    /// 
+    /// # Returns
+    /// * `Ok(i32)` - The index result of evaluating the term
+    /// * `Err(String)` - Error message if evaluation fails
+    fn eval_on_free_algebra(
+        &self,
+        free_alg: &crate::alg::FreeAlgebra,
+        map: &HashMap<String, i32>,
+    ) -> Result<i32, String>;
+    
     /// Returns the interpretation of this term as an operation on the given algebra.
     /// 
     /// The `varlist` specifies the order of variables. If `use_all` is true,
@@ -88,6 +107,19 @@ pub trait Term: Display + Debug + Send + Sync {
         use_all: bool,
     ) -> Result<Box<dyn Operation>, String>;
     
+    /// Returns the interpretation of this term as an operation on a FreeAlgebra.
+    /// 
+    /// This method interprets the term on a FreeAlgebra (which has IntArray universe items).
+    /// It works by using the free algebra's operations which operate on indices into the
+    /// free algebra's universe. This matches Java's behavior where terms are interpreted
+    /// directly on FreeAlgebra.
+    /// 
+    /// # Arguments
+    /// * `free_alg` - The FreeAlgebra on which to interpret the term
+    /// * `varlist` - The ordered list of variable names
+    /// * `use_all` - If true, use all variables in varlist regardless of occurrence
+    /// 
+    /// # Returns
     /// Returns the interpretation using the variables in the order they occur.
     /// 
     /// # Arguments
@@ -100,6 +132,26 @@ pub trait Term: Display + Debug + Send + Sync {
         &self,
         alg: Arc<dyn SmallAlgebra<UniverseItem = i32>>,
     ) -> Result<Box<dyn TermOperation>, String>;
+    
+    /// Returns the interpretation of this term on a free algebra.
+    /// 
+    /// This method interprets the term on a free algebra, where operations
+    /// work on indices into the free algebra's universe.
+    /// 
+    /// # Arguments
+    /// * `free_alg` - The free algebra for interpretation
+    /// * `varlist` - The ordered list of variable names
+    /// * `use_all` - If true, use all variables in varlist regardless of occurrence
+    /// 
+    /// # Returns
+    /// * `Ok(Box<dyn Operation>)` - The operation that interprets this term (works on indices)
+    /// * `Err(String)` - Error message if interpretation fails
+    fn interpretation_on_free_algebra(
+        &self,
+        free_alg: &crate::alg::FreeAlgebra,
+        varlist: &[String],
+        use_all: bool,
+    ) -> Result<Box<dyn Operation>, String>;
     
     /// Returns the depth of the term tree.
     /// 
@@ -259,6 +311,17 @@ impl Term for VariableImp {
         self.eval(alg, map)
     }
     
+    fn eval_on_free_algebra(
+        &self,
+        _free_alg: &crate::alg::FreeAlgebra,
+        map: &HashMap<String, i32>,
+    ) -> Result<i32, String> {
+        // For a variable, just look up its value (index) in the assignment map
+        map.get(&self.name)
+            .copied()
+            .ok_or_else(|| format!("Variable {} not found in assignment map", self.name))
+    }
+    
     fn interpretation(
         &self,
         alg: Arc<dyn SmallAlgebra<UniverseItem = i32>>,
@@ -297,6 +360,42 @@ impl Term for VariableImp {
         let term: Box<dyn Term> = Box::new(self.clone());
         let interpretation = self.interpretation(alg.clone(), &varlist, true)?;
         Ok(Box::new(TermOperationImp::new(term, varlist, alg, interpretation)))
+    }
+    
+    fn interpretation_on_free_algebra(
+        &self,
+        free_alg: &crate::alg::FreeAlgebra,
+        varlist: &[String],
+        use_all: bool,
+    ) -> Result<Box<dyn Operation>, String> {
+        // For a variable, the interpretation on free algebra is just the projection
+        // The free algebra uses indices into its universe
+        let term_var_list = vec![self.name.clone()];
+        let arity = if use_all {
+            varlist.len()
+        } else {
+            term_var_list.len()
+        } as i32;
+        
+        let free_card = free_alg.get_inner().cardinality();
+        let symbol = OperationSymbol::new(&format!("Op_{}", self.name), arity, false);
+        
+        // Find this variable's index in the varlist
+        let index = varlist.iter().position(|v| v == &self.name)
+            .ok_or_else(|| format!("Variable {} not found in varlist", self.name))?;
+        
+        // Build value table - works on indices into the free algebra
+        let table_size = (free_card as usize).pow(arity as u32);
+        let mut table = Vec::with_capacity(table_size);
+        
+        use crate::util::horner;
+        for k in 0..table_size {
+            let args = horner::horner_inv_same_size(k as i32, free_card, arity as usize);
+            // The value is the argument at that position (index into free algebra)
+            table.push(args[index]);
+        }
+        
+        operations::make_int_operation(symbol, free_card, table)
     }
     
     fn depth(&self) -> i32 {
@@ -465,6 +564,28 @@ impl Term for NonVariableTerm {
         self.eval(alg, map)
     }
     
+    fn eval_on_free_algebra(
+        &self,
+        free_alg: &crate::alg::FreeAlgebra,
+        map: &HashMap<String, i32>,
+    ) -> Result<i32, String> {
+        // Get the operation from the free algebra using get_operation_ref
+        // The free algebra's operations work on indices into the free algebra
+        let op = free_alg.get_operation_ref(&self.leading_operation_symbol)
+            .ok_or_else(|| format!("Operation {} not found in free algebra", 
+                                  self.leading_operation_symbol.name()))?;
+        
+        // Recursively evaluate all children
+        let mut args = Vec::new();
+        for child in &self.children {
+            let value = child.eval_on_free_algebra(free_alg, map)?;
+            args.push(value);
+        }
+        
+        // Apply the operation to the evaluated arguments
+        op.int_value_at(&args)
+    }
+    
     fn interpretation(
         &self,
         alg: Arc<dyn SmallAlgebra<UniverseItem = i32>>,
@@ -521,6 +642,69 @@ impl Term for NonVariableTerm {
         }
         
         operations::make_int_operation(symbol, alg_size, table)
+    }
+    
+    fn interpretation_on_free_algebra(
+        &self,
+        free_alg: &crate::alg::FreeAlgebra,
+        varlist: &[String],
+        use_all: bool,
+    ) -> Result<Box<dyn Operation>, String> {
+        // Get the term's variable list
+        let term_var_list = self.get_variable_list();
+        
+        // Validate that varlist contains all variables in the term
+        for var in &term_var_list {
+            if !varlist.contains(var) {
+                return Err(format!("varlist must have all the variables of the term; missing: {}", var));
+            }
+        }
+        
+        // Determine the arity based on use_all flag
+        let arity = if use_all {
+            varlist.len()
+        } else {
+            term_var_list.len()
+        } as i32;
+        
+        // Build the actual variable list to use
+        let ans_var_list: Vec<String> = if use_all {
+            varlist.to_vec()
+        } else {
+            varlist.iter()
+                .filter(|v| term_var_list.contains(v))
+                .cloned()
+                .collect()
+        };
+        
+        let free_card = free_alg.get_inner().cardinality();
+        let symbol = OperationSymbol::new(&format!("{}", self), arity, false);
+        
+        // Build value table by evaluating the term on the free algebra
+        // We evaluate using the free algebra's operations which work on indices
+        let table_size = (free_card as usize).pow(arity as u32);
+        let mut table = Vec::with_capacity(table_size);
+        
+        use crate::util::horner;
+        // Get the free algebra's operations
+        let free_ops = free_alg.get_inner().operations_ref_arc();
+        
+        for k in 0..table_size {
+            let args = horner::horner_inv_same_size(k as i32, free_card, arity as usize);
+            
+            // Build variable assignment map (maps variable names to indices)
+            let mut var_map = HashMap::new();
+            for (i, var) in ans_var_list.iter().enumerate() {
+                var_map.insert(var.clone(), args[i]);
+            }
+            
+            // Evaluate the term on the free algebra using indices
+            // This recursively evaluates children and applies operations
+            let value = self.eval_on_free_algebra(free_alg, &var_map)?;
+            table.push(value);
+        }
+        
+        operations::make_int_operation(symbol, free_card, table)
     }
     
     fn interpretation_simple(

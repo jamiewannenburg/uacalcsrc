@@ -176,13 +176,17 @@ fn weak_majority_term(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<String>>
 /// Find a semilattice term for the algebra.
 ///
 /// # Arguments
-/// * `algebra` - The algebra to check
+/// * `algebra` - The algebra to check (BasicSmallAlgebra)
 ///
 /// # Returns
-/// The semilattice term if one exists, None otherwise
+/// The semilattice term as a string if one exists, None otherwise
 #[pyfunction]
-fn semilattice_term(_algebra: PyObject) -> PyResult<Option<PyObject>> {
-    Err(PyValueError::new_err("Semilattice term finding not yet implemented"))
+fn semilattice_term(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<String>> {
+    match malcev::semilattice_term(&algebra.inner) {
+        Ok(Some(term)) => Ok(Some(format!("{}", term))),
+        Ok(None) => Ok(None),
+        Err(e) => Err(PyValueError::new_err(e)),
+    }
 }
 
 /// Find a difference term for the algebra.
@@ -219,13 +223,20 @@ fn jonsson_terms(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<Vec<String>>>
 /// Find Hagemann-Mitschke terms for the algebra.
 ///
 /// # Arguments
-/// * `algebra` - The algebra to check
+/// * `algebra` - The algebra to check (BasicSmallAlgebra)
 ///
 /// # Returns
-/// List of Hagemann-Mitschke terms if they exist, None otherwise
+/// List of Hagemann-Mitschke terms as strings if they exist, None otherwise
 #[pyfunction]
-fn hagemann_mitschke_terms(_algebra: PyObject) -> PyResult<Option<Vec<PyObject>>> {
-    Err(PyValueError::new_err("Hagemann-Mitschke terms finding not yet implemented"))
+fn hagemann_mitschke_terms(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<Vec<String>>> {
+    match malcev::hagemann_mitschke_terms(&algebra.inner) {
+        Ok(Some(terms)) => {
+            let term_strings: Vec<String> = terms.iter().map(|t| format!("{}", t)).collect();
+            Ok(Some(term_strings))
+        },
+        Ok(None) => Ok(None),
+        Err(e) => Err(PyValueError::new_err(e)),
+    }
 }
 
 /// Find Gumm terms for the algebra.
