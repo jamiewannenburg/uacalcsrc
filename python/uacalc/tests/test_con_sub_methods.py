@@ -26,7 +26,7 @@ class TestConSubMethods(unittest.TestCase):
     def test_power_algebra_con_method(self):
         """Test PowerAlgebra con() method."""
         # Create a basic small algebra
-        root_alg = self.BasicAlgebra("TestRoot", [0, 1])
+        root_alg = self.BasicAlgebra("TestRoot", [0, 1] ,[])
         
         # Create power algebra
         power_alg = self.PowerAlgebra(root_alg, 2)
@@ -43,7 +43,7 @@ class TestConSubMethods(unittest.TestCase):
     def test_power_algebra_sub_method(self):
         """Test PowerAlgebra sub() method."""
         # Create a basic small algebra
-        root_alg = self.BasicAlgebra("TestRoot", [0, 1])
+        root_alg = self.BasicAlgebra("TestRoot", [0, 1] ,[])
         
         # Create power algebra
         power_alg = self.PowerAlgebra(root_alg, 2)
@@ -60,8 +60,8 @@ class TestConSubMethods(unittest.TestCase):
     def test_product_algebra_con_method(self):
         """Test ProductAlgebra con() method."""
         # Create two basic small algebras
-        alg1 = self.BasicAlgebra("A1", [0, 1])
-        alg2 = self.BasicAlgebra("A2", [0, 1])
+        alg1 = self.BasicAlgebra("A1", [0, 1] ,[])
+        alg2 = self.BasicAlgebra("A2", [0, 1] ,[])
         
         # Create product algebra
         product_alg = self.ProductAlgebra("A1 x A2", [alg1, alg2])
@@ -78,8 +78,8 @@ class TestConSubMethods(unittest.TestCase):
     def test_product_algebra_sub_method(self):
         """Test ProductAlgebra sub() method."""
         # Create two basic small algebras
-        alg1 = self.BasicAlgebra("A1", [0, 1])
-        alg2 = self.BasicAlgebra("A2", [0, 1])
+        alg1 = self.BasicAlgebra("A1", [0, 1] ,[])
+        alg2 = self.BasicAlgebra("A2", [0, 1] ,[])
         
         # Create product algebra
         product_alg = self.ProductAlgebra("A1 x A2", [alg1, alg2])
@@ -96,7 +96,7 @@ class TestConSubMethods(unittest.TestCase):
     def test_subalgebra_con_method(self):
         """Test Subalgebra con() method."""
         # Create a basic small algebra
-        super_alg = self.BasicAlgebra("Super", [0, 1, 2])
+        super_alg = self.BasicAlgebra("Super", [0, 1, 2] ,[])
 
         # Create subalgebra with universe [0, 1]
         sub_alg = self.Subalgebra("Sub", super_alg, [0, 1])
@@ -114,7 +114,7 @@ class TestConSubMethods(unittest.TestCase):
     def test_subalgebra_sub_method(self):
         """Test Subalgebra sub() method."""
         # Create a basic small algebra
-        super_alg = self.BasicAlgebra("Super", [0, 1, 2])
+        super_alg = self.BasicAlgebra("Super", [0, 1, 2] ,[])
         
         # Create subalgebra with universe [0, 1]
         sub_alg = self.Subalgebra("Sub", super_alg, [0, 1])
@@ -131,7 +131,7 @@ class TestConSubMethods(unittest.TestCase):
     def test_reduct_algebra_con_method(self):
         """Test ReductAlgebra con() method."""
         # Create a basic small algebra
-        super_alg = self.BasicAlgebra("Super", [0, 1])
+        super_alg = self.BasicAlgebra("Super", [0, 1] ,[])
         
         # Create reduct algebra (no terms for simplicity)
         reduct_alg = self.ReductAlgebra(super_alg, [])
@@ -148,7 +148,7 @@ class TestConSubMethods(unittest.TestCase):
     def test_reduct_algebra_sub_method(self):
         """Test ReductAlgebra sub() method."""
         # Create a basic small algebra
-        super_alg = self.BasicAlgebra("Super", [0, 1])
+        super_alg = self.BasicAlgebra("Super", [0, 1] ,[])
         
         # Create reduct algebra (no terms for simplicity)
         reduct_alg = self.ReductAlgebra(super_alg, [])
@@ -165,7 +165,7 @@ class TestConSubMethods(unittest.TestCase):
     def test_lazy_initialization(self):
         """Test that con() and sub() methods use lazy initialization."""
         # Create a power algebra
-        root_alg = self.BasicAlgebra("TestRoot", [0, 1])
+        root_alg = self.BasicAlgebra("TestRoot", [0, 1] ,[])
         power_alg = self.PowerAlgebra(root_alg, 2)
         
         # First call should create the lattice
@@ -182,7 +182,7 @@ class TestConSubMethods(unittest.TestCase):
     def test_lattice_properties(self):
         """Test basic properties of returned lattices."""
         # Create a power algebra
-        root_alg = self.BasicAlgebra("TestRoot", [0, 1])
+        root_alg = self.BasicAlgebra("TestRoot", [0, 1] ,[])
         power_alg = self.PowerAlgebra(root_alg, 2)
         
         # Test congruence lattice properties
@@ -196,7 +196,7 @@ class TestConSubMethods(unittest.TestCase):
     def test_error_handling(self):
         """Test error handling in con() and sub() methods."""
         # Create a power algebra
-        root_alg = self.BasicAlgebra("TestRoot", [0, 1])
+        root_alg = self.BasicAlgebra("TestRoot", [0, 1] ,[])
         power_alg = self.PowerAlgebra(root_alg, 2)
         
         # These methods should not raise exceptions for valid algebras

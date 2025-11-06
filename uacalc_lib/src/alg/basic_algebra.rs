@@ -1,7 +1,10 @@
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
+use pyo3::types::PyList;
 use std::collections::HashMap;
+use std::sync::Arc;
 use uacalc::alg::*;
+use uacalc::alg::op::{Operation, IntOperation, BasicOperation};
 use crate::alg::PySubalgebraLattice;
 use crate::alg::PyCongruenceLattice;
 
@@ -29,24 +32,64 @@ impl PyBasicAlgebra {
     }
 }
 
+/// Helper function to extract operations from a Python list
+fn extract_operations(ops_list: &Bound<'_, PyList>) -> PyResult<Vec<Box<dyn Operation>>> {
+    let mut rust_ops = Vec::new();
+    
+    for item in ops_list.iter() {
+        
+        // Try to extract as PyIntOperation
+        if let Ok(op) = item.extract::<PyRef<crate::alg::op::int_operation::PyIntOperation>>() {
+            rust_ops.push(Box::new(op.inner.clone()) as Box<dyn Operation>);
+        }
+        // Try to extract as PyBasicOperation
+        else if let Ok(op) = item.extract::<PyRef<crate::alg::op::operation::PyBasicOperation>>() {
+            rust_ops.push(Box::new(op.inner.clone()) as Box<dyn Operation>);
+        }
+        else {
+            return Err(PyValueError::new_err(
+                "Operations must be IntOperation or BasicOperation"
+            ));
+        }
+    }
+    
+    Ok(rust_ops)
+}
+
 #[pymethods]
 impl PyBasicAlgebra {
-    /// Create a new BasicAlgebra.
+    /// Create a new BasicAlgebra (matches Rust BasicAlgebra::new).
     ///
     /// Args:
     ///     name (str): The name of the algebra
-    ///     universe (Set[int]): The universe set as a list of integers
+    ///     universe (List[int]): The universe set as a list of integers
+    ///     operations (Optional[List[Operation]]): List of operations (optional, defaults to empty)
+    ///         Supported operation types: IntOperation, BasicOperation
     ///
     /// Returns:
     ///     BasicAlgebra: A new BasicAlgebra instance
+    ///
+    /// Raises:
+    ///     ValueError: If operations list contains unsupported types
     #[new]
-    #[pyo3(signature = (name, universe))]
-    fn new(name: String, universe: Vec<i32>) -> Self {
+    #[pyo3(signature = (name, universe, operations=None))]
+    fn new(
+        name: String,
+        universe: Vec<i32>,
+        operations: Option<&Bound<'_, PyList>>,
+    ) -> PyResult<Self> {
         let universe_set: std::collections::HashSet<i32> = universe.into_iter().collect();
-        let operations = Vec::new(); // Start with no operations
-        PyBasicAlgebra {
-            inner: uacalc::alg::BasicAlgebra::new(name, universe_set, operations),
-        }
+        
+        // Extract operations if provided
+        let ops = if let Some(ops_list) = operations {
+            extract_operations(ops_list)?
+        } else {
+            Vec::new()
+        };
+        
+        Ok(PyBasicAlgebra {
+            inner: uacalc::alg::BasicAlgebra::new(name, universe_set, ops),
+        })
     }
 
     /// Create a new BasicAlgebra with a constant operation.
@@ -256,12 +299,62 @@ impl PyBasicAlgebra {
     /// Get the operations of this algebra.
     ///
     /// Returns:
-    ///     list: List of operation names and arities as tuples
-    fn operations(&self) -> Vec<(String, i32)> {
-        // Use get_operations_ref() to avoid infinite recursion limitation in operations()
-        self.inner.get_operations_ref().iter().map(|op| {
-            (op.symbol().name().to_string(), op.arity())
-        }).collect()
+    ///     list: List of Operation objects (IntOperation or BasicOperation)
+    ///     
+    /// Note: This uses Arc references to avoid deep cloning through trait objects,
+    /// which can cause infinite recursion. Operations are reconstructed from their
+    /// symbol and table data, which is a shallow operation.
+    fn operations(&self, py: Python<'_>) -> PyResult<Vec<PyObject>> {
+        let ops_arc = self.inner.operations_ref_arc();
+        let mut result = Vec::new();
+        
+        for op_arc in ops_arc {
+            let symbol = op_arc.symbol().clone();
+            let set_size = op_arc.get_set_size();
+            
+            // Try to get the table - if available, we can reconstruct the operation
+            if let Some(table) = op_arc.get_table() {
+                let table_vec = table.to_vec();
+                
+                // Try to create as IntOperation first (most common case)
+                if let Ok(int_op) = IntOperation::new(symbol.clone(), set_size, table_vec.clone()) {
+                    let py_op = crate::alg::op::int_operation::PyIntOperation {
+                        inner: int_op,
+                    };
+                    result.push(Py::new(py, py_op)?.to_object(py));
+                    continue;
+                }
+                
+                // Try to create as BasicOperation
+                if let Ok(basic_op) = BasicOperation::new_with_table(symbol.clone(), set_size, table_vec) {
+                    let py_op = crate::alg::op::operation::PyBasicOperation {
+                        inner: basic_op,
+                    };
+                    result.push(Py::new(py, py_op)?.to_object(py));
+                    continue;
+                }
+            }
+            
+            // If no table is available, try to create a BasicOperation without a table
+            // This is a fallback for operations that don't have tables yet
+            if let Ok(basic_op) = BasicOperation::new_safe(symbol.clone(), set_size) {
+                let py_op = crate::alg::op::operation::PyBasicOperation {
+                    inner: basic_op,
+                };
+                result.push(Py::new(py, py_op)?.to_object(py));
+                continue;
+            }
+            
+            // If all else fails, return an error
+            return Err(PyValueError::new_err(format!(
+                "Operation {} (arity: {}, set_size: {}) could not be converted to Python binding",
+                symbol.name(),
+                symbol.arity(),
+                set_size
+            )));
+        }
+        
+        Ok(result)
     }
 
     /// Get the number of operations in this algebra.

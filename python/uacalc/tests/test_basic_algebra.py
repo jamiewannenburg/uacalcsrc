@@ -11,14 +11,15 @@ Note: This is a partial implementation that excludes con() and sub() methods
 import unittest
 import uacalc_lib
 
+BasicAlgebra = uacalc_lib.alg.BasicAlgebra
+IntOperation = uacalc_lib.alg.IntOperation
 
 class TestBasicAlgebra(unittest.TestCase):
     """Test BasicAlgebra functionality."""
-    
     def test_creation(self):
         """Test creating a BasicAlgebra."""
-        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
-        alg = BasicAlgebra("test", [0, 1, 2, 3, 4])
+        
+        alg = BasicAlgebra("test", [0, 1, 2, 3, 4] ,[])
         
         self.assertEqual(alg.name(), "test")
         self.assertEqual(alg.cardinality(), 5)
@@ -26,16 +27,16 @@ class TestBasicAlgebra(unittest.TestCase):
     
     def test_int_universe(self):
         """Test int_universe method."""
-        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
-        alg = BasicAlgebra("test", [0, 1, 2, 3, 4])
+
+        alg = BasicAlgebra("test", [0, 1, 2, 3, 4] ,[])
         
         # Initially, universe list is not cached so int_universe returns True
         self.assertTrue(alg.int_universe())
     
     def test_get_element(self):
         """Test getting elements by index."""
-        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
-        alg = BasicAlgebra("test", [0, 1, 2, 3, 4])
+
+        alg = BasicAlgebra("test", [0, 1, 2, 3, 4] ,[])
         
         # Get elements
         elem0 = alg.get_element(0)
@@ -54,8 +55,8 @@ class TestBasicAlgebra(unittest.TestCase):
     
     def test_element_index(self):
         """Test getting element indices."""
-        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
-        alg = BasicAlgebra("test", [0, 1, 2, 3, 4])
+
+        alg = BasicAlgebra("test", [0, 1, 2, 3, 4] ,[])
         
         # Get indices
         idx0 = alg.element_index(0)
@@ -74,8 +75,8 @@ class TestBasicAlgebra(unittest.TestCase):
     
     def test_get_universe_list(self):
         """Test getting the universe as a list."""
-        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
-        alg = BasicAlgebra("test", [0, 1, 2, 3, 4])
+
+        alg = BasicAlgebra("test", [0, 1, 2, 3, 4] ,[])
         
         universe_list = alg.get_universe_list()
         self.assertIsNotNone(universe_list)
@@ -87,8 +88,8 @@ class TestBasicAlgebra(unittest.TestCase):
     
     def test_get_universe_order(self):
         """Test getting the universe order map."""
-        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
-        alg = BasicAlgebra("test", [0, 1, 2, 3, 4])
+
+        alg = BasicAlgebra("test", [0, 1, 2, 3, 4] ,[])
         
         universe_order = alg.get_universe_order()
         self.assertIsNotNone(universe_order)
@@ -102,25 +103,25 @@ class TestBasicAlgebra(unittest.TestCase):
     
     def test_algebra_type(self):
         """Test algebra type."""
-        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
-        alg = BasicAlgebra("test", [0, 1, 2])
+
+        alg = BasicAlgebra("test", [0, 1, 2] ,[])
         
         self.assertEqual(alg.algebra_type(), "Basic")
     
     def test_cardinality(self):
         """Test cardinality with different sizes."""
-        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
+
         
-        alg3 = BasicAlgebra("test3", [0, 1, 2])
+        alg3 = BasicAlgebra("test3", [0, 1, 2] ,[])
         self.assertEqual(alg3.cardinality(), 3)
         
-        alg10 = BasicAlgebra("test10", list(range(10)))
+        alg10 = BasicAlgebra("test10", list(range(10 )),[])
         self.assertEqual(alg10.cardinality(), 10)
     
     def test_name_operations(self):
         """Test name getter and setter."""
-        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
-        alg = BasicAlgebra("original", [0, 1, 2, 3, 4])
+
+        alg = BasicAlgebra("original", [0, 1, 2, 3, 4] ,[])
         
         self.assertEqual(alg.name(), "original")
         
@@ -130,8 +131,8 @@ class TestBasicAlgebra(unittest.TestCase):
     
     def test_description_operations(self):
         """Test description getter and setter."""
-        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
-        alg = BasicAlgebra("test", [0, 1, 2, 3, 4])
+
+        alg = BasicAlgebra("test", [0, 1, 2, 3, 4] ,[])
         
         # Initially no description
         self.assertIsNone(alg.description())
@@ -146,8 +147,8 @@ class TestBasicAlgebra(unittest.TestCase):
     
     def test_reset_con_and_sub(self):
         """Test reset_con_and_sub method (partial implementation)."""
-        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
-        alg = BasicAlgebra("test", [0, 1, 2, 3, 4])
+
+        alg = BasicAlgebra("test", [0, 1, 2, 3, 4] ,[])
         
         # This should not raise an error (even though con/sub are not implemented)
         try:
@@ -157,8 +158,8 @@ class TestBasicAlgebra(unittest.TestCase):
     
     def test_convert_to_default_value_ops(self):
         """Test convert_to_default_value_ops method (partial implementation)."""
-        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
-        alg = BasicAlgebra("test", [0, 1, 2, 3, 4])
+
+        alg = BasicAlgebra("test", [0, 1, 2, 3, 4] ,[])
         
         # This should not raise an error (even though it's not fully implemented)
         try:
@@ -168,40 +169,40 @@ class TestBasicAlgebra(unittest.TestCase):
     
     def test_is_unary(self):
         """Test is_unary method."""
-        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
-        alg = BasicAlgebra("test", [0, 1, 2, 3, 4])
+
+        alg = BasicAlgebra("test", [0, 1, 2, 3, 4] ,[])
         
         # With no operations, it should be unary
         self.assertTrue(alg.is_unary())
     
     def test_is_idempotent(self):
         """Test is_idempotent method."""
-        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
-        alg = BasicAlgebra("test", [0, 1, 2, 3, 4])
+
+        alg = BasicAlgebra("test", [0, 1, 2, 3, 4] ,[])
         
         # With no operations, it should be idempotent
         self.assertTrue(alg.is_idempotent())
     
     def test_is_total(self):
         """Test is_total method."""
-        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
-        alg = BasicAlgebra("test", [0, 1, 2, 3, 4])
+
+        alg = BasicAlgebra("test", [0, 1, 2, 3, 4] ,[])
         
         # With no operations, it should be total
         self.assertTrue(alg.is_total())
     
     def test_monitoring(self):
         """Test monitoring method."""
-        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
-        alg = BasicAlgebra("test", [0, 1, 2, 3, 4])
+
+        alg = BasicAlgebra("test", [0, 1, 2, 3, 4] ,[])
         
         # Initially monitoring should be false
         self.assertFalse(alg.monitoring())
     
     def test_input_size(self):
         """Test input_size method."""
-        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
-        alg = BasicAlgebra("test", [0, 1, 2, 3, 4])
+
+        alg = BasicAlgebra("test", [0, 1, 2, 3, 4] ,[])
         
         # Input size should match cardinality for algebras with no operations
         input_size = alg.input_size()
@@ -209,8 +210,8 @@ class TestBasicAlgebra(unittest.TestCase):
     
     def test_str_representation(self):
         """Test string representation."""
-        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
-        alg = BasicAlgebra("test", [0, 1, 2])
+
+        alg = BasicAlgebra("test", [0, 1, 2] ,[])
         
         str_repr = str(alg)
         self.assertIsInstance(str_repr, str)
@@ -218,8 +219,8 @@ class TestBasicAlgebra(unittest.TestCase):
     
     def test_repr_representation(self):
         """Test repr representation."""
-        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
-        alg = BasicAlgebra("test", [0, 1, 2])
+
+        alg = BasicAlgebra("test", [0, 1, 2] ,[])
         
         repr_str = repr(alg)
         self.assertIsInstance(repr_str, str)
@@ -227,10 +228,10 @@ class TestBasicAlgebra(unittest.TestCase):
     
     def test_equality(self):
         """Test equality comparison."""
-        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
-        alg1 = BasicAlgebra("test", [0, 1, 2])
-        alg2 = BasicAlgebra("test", [0, 1, 2])
-        alg3 = BasicAlgebra("different", [0, 1, 2])
+
+        alg1 = BasicAlgebra("test", [0, 1, 2] ,[])
+        alg2 = BasicAlgebra("test", [0, 1, 2] ,[])
+        alg3 = BasicAlgebra("different", [0, 1, 2] ,[])
         
         # Same name and cardinality should be equal
         self.assertEqual(alg1, alg2)
@@ -238,6 +239,19 @@ class TestBasicAlgebra(unittest.TestCase):
         # Different name should not be equal
         self.assertNotEqual(alg1, alg3)
 
+    def test_operations(self):
+        """Test operations."""
+
+        op = IntOperation.from_int_value_at("add", 2, 3, lambda args: max(args[0], args[1]))
+        alg = BasicAlgebra("test", [0, 1, 2] ,[op])
+        print(alg.operations())
+        alg_op = alg.operations()[0]
+        self.assertEqual(alg_op.symbol().name(), "add")
+        self.assertEqual(alg_op.arity(), 2)
+        self.assertEqual(alg_op.get_set_size(), 3)
+        self.assertEqual(alg_op.int_value_at([0, 1]), 1)
+        self.assertEqual(alg_op.int_value_at([1, 2]), 2)
+        self.assertEqual(alg_op.int_value_at([2, 2]), 2)
 
 if __name__ == '__main__':
     unittest.main()

@@ -250,6 +250,12 @@ where
         }
         self.sub.as_ref().unwrap()
     }
+    
+    /// Borrowed access to Arc-backed operations to avoid cloning.
+    /// This provides shallow access to operations without deep cloning.
+    pub fn operations_ref_arc(&self) -> &[std::sync::Arc<dyn Operation>] {
+        self.base.operations_ref_arc()
+    }
 }
 
 impl<T> Debug for BasicAlgebra<T>

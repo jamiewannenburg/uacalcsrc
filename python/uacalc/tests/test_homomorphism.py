@@ -69,7 +69,7 @@ def run_java_wrapper(command, args):
 
 def create_mock_algebra(name, universe):
     """Create a mock BasicAlgebra for testing."""
-    return BasicAlgebra(name, universe)
+    return BasicAlgebra(name, universe ,[])
 
 
 class TestHomomorphism:
