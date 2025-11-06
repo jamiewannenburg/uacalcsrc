@@ -1,5 +1,5 @@
 use uacalc::alg::{
-    Subalgebra, BasicSmallAlgebra, SmallAlgebra, Algebra, 
+    Subalgebra, BasicAlgebra, SmallAlgebra, Algebra, 
     QuotientAlgebra, QuotientElement, ProductAlgebra
 };
 use uacalc::alg::conlat::partition::Partition;
@@ -15,7 +15,7 @@ fn test_subalgebra_i32() {
     universe.insert(2);
     universe.insert(3);
     
-    let super_alg = Box::new(BasicSmallAlgebra::new(
+    let super_alg = Box::new(BasicAlgebra::new(
         "super".to_string(),
         universe,
         Vec::new()
@@ -66,13 +66,13 @@ fn test_subalgebra_i32() {
 #[test]
 fn test_subalgebra_intarray() {
     // Create a ProductAlgebra with two factors of size 2
-    let factor1 = Box::new(BasicSmallAlgebra::new(
+    let factor1 = Box::new(BasicAlgebra::new(
         "factor1".to_string(),
         HashSet::from([0, 1]),
         Vec::new()
     )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
     
-    let factor2 = Box::new(BasicSmallAlgebra::new(
+    let factor2 = Box::new(BasicAlgebra::new(
         "factor2".to_string(),
         HashSet::from([0, 1]),
         Vec::new()
@@ -108,7 +108,7 @@ fn test_subalgebra_intarray() {
 #[test]
 fn test_subalgebra_quotient_element() {
     // Create a super algebra
-    let super_alg = Box::new(BasicSmallAlgebra::new(
+    let super_alg = Box::new(BasicAlgebra::new(
         "super".to_string(),
         HashSet::from([0, 1, 2, 3]),
         Vec::new()
@@ -150,7 +150,7 @@ fn test_subalgebra_quotient_element() {
 #[test]
 fn test_subalgebra_operations_preserve_type() {
     // Create a super algebra with operations
-    let super_alg = Box::new(BasicSmallAlgebra::new(
+    let super_alg = Box::new(BasicAlgebra::new(
         "super".to_string(),
         HashSet::from([0, 1, 2, 3]),
         Vec::new()
@@ -185,7 +185,7 @@ fn test_nested_subalgebras() {
         universe.insert(i);
     }
     
-    let super_alg = Box::new(BasicSmallAlgebra::new(
+    let super_alg = Box::new(BasicAlgebra::new(
         "super".to_string(),
         universe,
         Vec::new()
@@ -237,7 +237,7 @@ fn test_nested_subalgebras() {
 /// Test error handling for invalid subuniverse
 #[test]
 fn test_subalgebra_error_handling() {
-    let super_alg = Box::new(BasicSmallAlgebra::new(
+    let super_alg = Box::new(BasicAlgebra::new(
         "super".to_string(),
         HashSet::from([0, 1, 2, 3]),
         Vec::new()
@@ -266,7 +266,7 @@ fn test_subalgebra_error_handling() {
 #[test]
 fn test_type_safety() {
     // This test ensures that we can't accidentally mix different universe types
-    let int_alg = Box::new(BasicSmallAlgebra::new(
+    let int_alg = Box::new(BasicAlgebra::new(
         "int_alg".to_string(),
         HashSet::from([0, 1]),
         Vec::new()
@@ -306,7 +306,7 @@ fn test_subalgebra_with_operations() {
         universe.insert(i);
     }
     
-    let super_alg = Box::new(BasicSmallAlgebra::new(
+    let super_alg = Box::new(BasicAlgebra::new(
         "super".to_string(),
         universe,
         vec![op]
@@ -359,7 +359,7 @@ fn test_subalgebra_with_operations() {
 /// Test subalgebra cloning
 #[test]
 fn test_subalgebra_cloning() {
-    let super_alg = Box::new(BasicSmallAlgebra::new(
+    let super_alg = Box::new(BasicAlgebra::new(
         "super".to_string(),
         HashSet::from([0, 1, 2, 3]),
         Vec::new()
@@ -386,7 +386,7 @@ fn test_subalgebra_cloning() {
 /// Test subalgebra display formatting
 #[test]
 fn test_subalgebra_display() {
-    let super_alg = Box::new(BasicSmallAlgebra::new(
+    let super_alg = Box::new(BasicAlgebra::new(
         "super".to_string(),
         HashSet::from([0, 1, 2, 3]),
         Vec::new()
@@ -407,7 +407,7 @@ fn test_subalgebra_display() {
 /// Test subalgebra debug formatting
 #[test]
 fn test_subalgebra_debug() {
-    let super_alg = Box::new(BasicSmallAlgebra::new(
+    let super_alg = Box::new(BasicAlgebra::new(
         "super".to_string(),
         HashSet::from([0, 1, 2, 3]),
         Vec::new()

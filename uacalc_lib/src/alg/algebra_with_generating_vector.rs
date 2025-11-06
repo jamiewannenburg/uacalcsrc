@@ -1,5 +1,5 @@
 use pyo3::prelude::*;
-use crate::alg::PyBasicSmallAlgebra;
+use crate::alg::PyBasicAlgebra;
 
 /// Python wrapper for AlgebraWithGeneratingVector
 #[pyclass]
@@ -12,13 +12,13 @@ impl PyAlgebraWithGeneratingVector {
     /// Create a new AlgebraWithGeneratingVector.
     ///
     /// Args:
-    ///     algebra (BasicSmallAlgebra): The algebra
+    ///     algebra (BasicAlgebra): The algebra
     ///     vector (List[int]): The generating vector
     ///
     /// Returns:
     ///     AlgebraWithGeneratingVector: A new AlgebraWithGeneratingVector instance
     #[new]
-    fn new(algebra: &PyBasicSmallAlgebra, vector: Vec<i32>) -> Self {
+    fn new(algebra: &PyBasicAlgebra, vector: Vec<i32>) -> Self {
         PyAlgebraWithGeneratingVector {
             inner: uacalc::alg::AlgebraWithGeneratingVector::new(
                 Box::new(algebra.inner.clone()),
@@ -30,7 +30,7 @@ impl PyAlgebraWithGeneratingVector {
     /// Get the algebra.
     ///
     /// Returns:
-    ///     BasicSmallAlgebra: The algebra
+    ///     BasicAlgebra: The algebra
     fn get_algebra_name(&self) -> String { self.inner.get_algebra().name().to_string() }
 
     /// Get the generating vector.

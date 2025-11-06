@@ -72,7 +72,7 @@ pub struct Mace4Reader {
 
 ### Dependencies Status
 - ✅ `SmallAlgebra` - **IMPLEMENTED** (trait in `src/alg/small_algebra.rs`)
-- ✅ `BasicAlgebra` - **IMPLEMENTED** as `BasicSmallAlgebra` (struct in `src/alg/small_algebra.rs`)
+- ✅ `BasicAlgebra` - **IMPLEMENTED** as `BasicAlgebra` (struct in `src/alg/small_algebra.rs`)
 - ✅ `Operation` - **IMPLEMENTED** (trait in `src/alg/op/operation.rs`)
 - ✅ `Operations` - **IMPLEMENTED** (module in `src/alg/op/operations.rs`)
 - ✅ `BadAlgebraFileException` - **IMPLEMENTED** (struct in `src/io/mod.rs`)
@@ -101,7 +101,7 @@ pub struct Mace4Reader {
 ## Implementation Priority
 **✅ READY TO IMPLEMENT** - All dependencies are now available:
 1. `SmallAlgebra` trait ✅ **IMPLEMENTED** (src/alg/small_algebra.rs)
-2. `BasicSmallAlgebra` struct ✅ **IMPLEMENTED** (equivalent to Java BasicAlgebra)
+2. `BasicAlgebra` struct ✅ **IMPLEMENTED** (equivalent to Java BasicAlgebra)
 3. `Operation` trait ✅ **IMPLEMENTED** (src/alg/op/operation.rs)
 4. `Operations` utility module ✅ **IMPLEMENTED** (src/alg/op/operations.rs)
 5. `BadAlgebraFileException` struct ✅ **IMPLEMENTED** (src/io/mod.rs)
@@ -118,7 +118,7 @@ pub struct Mace4Reader {
 - **Status**: ✅ **COMPLETED**
 - **Location**: uacalc_lib/src/io.rs (PyMace4Reader)
 - **Quality**: High - All public methods exposed with proper error handling
-- **Notes**: Static methods to avoid Send trait issues, proper conversion to PyBasicSmallAlgebra
+- **Notes**: Static methods to avoid Send trait issues, proper conversion to PyBasicAlgebra
 
 ### Java Wrapper
 - **Status**: ✅ **COMPLETED**
@@ -134,14 +134,14 @@ pub struct Mace4Reader {
 
 ### Dependencies Status
 - ✅ `SmallAlgebra` - **IMPLEMENTED** (trait in src/alg/small_algebra.rs)
-- ✅ `BasicAlgebra` - **IMPLEMENTED** as `BasicSmallAlgebra` (struct in src/alg/small_algebra.rs)
+- ✅ `BasicAlgebra` - **IMPLEMENTED** as `BasicAlgebra` (struct in src/alg/small_algebra.rs)
 - ✅ `Operation` - **IMPLEMENTED** (trait in src/alg/op/operation.rs)
 - ✅ `Operations` - **IMPLEMENTED** (module in src/alg/op/operations.rs)
 - ✅ `BadAlgebraFileException` - **IMPLEMENTED** (struct in src/io/mod.rs)
 
 ### Ready Dependencies
 - `SmallAlgebra` trait
-- `BasicSmallAlgebra` struct (equivalent to Java BasicAlgebra)
+- `BasicAlgebra` struct (equivalent to Java BasicAlgebra)
 - `Operation` trait
 - `Operations` utility module
 - `BadAlgebraFileException` struct

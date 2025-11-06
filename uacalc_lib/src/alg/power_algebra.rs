@@ -3,7 +3,7 @@ use pyo3::exceptions::PyValueError;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 use uacalc::alg::{Algebra, SmallAlgebra};
-use crate::alg::{PyBasicSmallAlgebra, PySubalgebraLattice};
+use crate::alg::{PyBasicAlgebra, PySubalgebraLattice};
 use crate::alg::conlat::congruence_lattice::PyCongruenceLattice;
 
 /// Python wrapper for PowerAlgebra
@@ -17,13 +17,13 @@ impl PyPowerAlgebra {
     /// Create a new PowerAlgebra from a root algebra and power.
     ///
     /// Args:
-    ///     root (BasicSmallAlgebra): The algebra to raise to a power
+    ///     root (BasicAlgebra): The algebra to raise to a power
     ///     power (int): The power/exponent (number of copies)
     ///
     /// Raises:
     ///     ValueError: If power is invalid or algebra is incompatible
     #[new]
-    fn new(root: &PyBasicSmallAlgebra, power: usize) -> PyResult<Self> {
+    fn new(root: &PyBasicAlgebra, power: usize) -> PyResult<Self> {
         let rust_root = Box::new(root.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
 
         match uacalc::alg::PowerAlgebra::new_safe(rust_root, power) {
@@ -36,13 +36,13 @@ impl PyPowerAlgebra {
     ///
     /// Args:
     ///     name (str): The name for the power algebra
-    ///     root (BasicSmallAlgebra): The algebra to raise to a power
+    ///     root (BasicAlgebra): The algebra to raise to a power
     ///     power (int): The power/exponent (number of copies)
     ///
     /// Raises:
     ///     ValueError: If power is invalid or algebra is incompatible
     #[staticmethod]
-    fn new_with_name(name: String, root: &PyBasicSmallAlgebra, power: usize) -> PyResult<Self> {
+    fn new_with_name(name: String, root: &PyBasicAlgebra, power: usize) -> PyResult<Self> {
         let rust_root = Box::new(root.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
 
         match uacalc::alg::PowerAlgebra::new_with_name_safe(name, rust_root, power) {
@@ -54,11 +54,11 @@ impl PyPowerAlgebra {
     /// Get the root algebra.
     ///
     /// Returns:
-    ///     BasicSmallAlgebra: The root algebra
-    fn get_root(&self) -> PyBasicSmallAlgebra {
+    ///     BasicAlgebra: The root algebra
+    fn get_root(&self) -> PyBasicAlgebra {
         // We can't return a reference to the root algebra since it's boxed
         // This is a limitation of the current design
-        PyBasicSmallAlgebra { inner: uacalc::alg::BasicSmallAlgebra::new(
+        PyBasicAlgebra { inner: uacalc::alg::BasicAlgebra::new(
             "Root".to_string(),
             std::collections::HashSet::new(),
             Vec::new()
@@ -68,10 +68,10 @@ impl PyPowerAlgebra {
     /// Get the parent algebra (same as root for power algebra).
     ///
     /// Returns:
-    ///     BasicSmallAlgebra: The parent algebra
-    fn parent(&self) -> PyBasicSmallAlgebra {
+    ///     BasicAlgebra: The parent algebra
+    fn parent(&self) -> PyBasicAlgebra {
         // Same limitation as get_root
-        PyBasicSmallAlgebra { inner: uacalc::alg::BasicSmallAlgebra::new(
+        PyBasicAlgebra { inner: uacalc::alg::BasicAlgebra::new(
             "Parent".to_string(),
             std::collections::HashSet::new(),
             Vec::new()
@@ -81,10 +81,10 @@ impl PyPowerAlgebra {
     /// Get the parent algebras (list containing the root algebra).
     ///
     /// Returns:
-    ///     list[BasicSmallAlgebra]: List containing the root algebra
-    fn parents(&self) -> Vec<PyBasicSmallAlgebra> {
+    ///     list[BasicAlgebra]: List containing the root algebra
+    fn parents(&self) -> Vec<PyBasicAlgebra> {
         // Same limitation as get_root
-        vec![PyBasicSmallAlgebra { inner: uacalc::alg::BasicSmallAlgebra::new(
+        vec![PyBasicAlgebra { inner: uacalc::alg::BasicAlgebra::new(
             "Parent".to_string(),
             std::collections::HashSet::new(),
             Vec::new()

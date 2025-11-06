@@ -1,6 +1,6 @@
 use uacalc::io::algebra_io::*;
 use uacalc::alg::{Algebra, SmallAlgebra};
-use uacalc::alg::small_algebra::BasicSmallAlgebra;
+use uacalc::alg::small_algebra::BasicAlgebra;
 use uacalc::alg::op::{OperationSymbol, operations};
 use std::collections::HashSet;
 use std::path::Path;
@@ -85,7 +85,7 @@ fn test_write_and_read_algebra_xml() {
     let op = operations::make_int_operation(op_sym, 2, values).unwrap();
     
     let universe: HashSet<i32> = HashSet::from([0, 1]);
-    let alg = Box::new(BasicSmallAlgebra::new(
+    let alg = Box::new(BasicAlgebra::new(
         "test_alg".to_string(),
         universe,
         vec![op]
@@ -116,7 +116,7 @@ fn test_write_algebra_old_style() {
     let op = operations::make_int_operation(op_sym, 2, values).unwrap();
     
     let universe: HashSet<i32> = HashSet::from([0, 1]);
-    let alg = Box::new(BasicSmallAlgebra::new(
+    let alg = Box::new(BasicAlgebra::new(
         "test_alg".to_string(),
         universe,
         vec![op]

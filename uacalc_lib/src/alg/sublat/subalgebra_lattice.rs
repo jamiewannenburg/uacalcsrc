@@ -1,7 +1,7 @@
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
 use uacalc::lat::{Lattice, Order};
-use crate::alg::PyBasicSmallAlgebra;
+use crate::alg::PyBasicAlgebra;
 use crate::alg::PyBasicSet;
 
 /// Python wrapper for SubalgebraLattice
@@ -12,10 +12,10 @@ pub struct PySubalgebraLattice {
 
 #[pymethods]
 impl PySubalgebraLattice {
-    /// Create a new SubalgebraLattice from a BasicSmallAlgebra.
+    /// Create a new SubalgebraLattice from a BasicAlgebra.
     ///
     /// Args:
-    ///     algebra (BasicSmallAlgebra): The algebra to compute subalgebras for
+    ///     algebra (BasicAlgebra): The algebra to compute subalgebras for
     ///
     /// Returns:
     ///     SubalgebraLattice: A new SubalgebraLattice instance
@@ -23,7 +23,7 @@ impl PySubalgebraLattice {
     /// Raises:
     ///     ValueError: If the algebra is invalid or initialization fails
     #[new]
-    fn new(algebra: &PyBasicSmallAlgebra) -> PyResult<Self> {
+    fn new(algebra: &PyBasicAlgebra) -> PyResult<Self> {
         let alg_box: Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>> =
             Box::new(algebra.inner.clone());
 

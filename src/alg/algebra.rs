@@ -222,7 +222,7 @@ pub fn boxed_algebra<T: 'static + Algebra>(alg: T) -> BoxedAlgebra<T::UniverseIt
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::alg::{GeneralAlgebra, BasicSmallAlgebra, AlgebraType};
+    use crate::alg::{GeneralAlgebra, BasicAlgebra, AlgebraType};
     use crate::alg::small_algebra::SmallAlgebra;
     use crate::alg::op::{OperationSymbol};
     use std::collections::HashSet;
@@ -334,7 +334,7 @@ mod tests {
         assert!(algebra.is_total());
     }
 
-    /// Test BasicSmallAlgebra creation
+    /// Test BasicAlgebra creation
     #[test]
     fn test_basic_small_algebra_creation() {
         let mut universe = HashSet::new();
@@ -343,7 +343,7 @@ mod tests {
         universe.insert(2);
         
         let operations = Vec::new(); // No operations for now
-        let algebra = BasicSmallAlgebra::new("SmallTest".to_string(), universe, operations);
+        let algebra = BasicAlgebra::new("SmallTest".to_string(), universe, operations);
         
         assert_eq!(algebra.name(), "SmallTest");
         assert_eq!(algebra.cardinality(), 3);

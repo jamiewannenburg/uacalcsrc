@@ -1,7 +1,7 @@
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
 use uacalc::alg::*;
-use crate::alg::{PyBasicSmallAlgebra, PySubalgebraLattice};
+use crate::alg::{PyBasicAlgebra, PySubalgebraLattice};
 use crate::alg::conlat::congruence_lattice::PyCongruenceLattice;
 
 /// Python wrapper for ProductAlgebra
@@ -16,12 +16,12 @@ impl PyProductAlgebra {
     ///
     /// Args:
     ///     name (str): Name of the product algebra
-    ///     algebras (list[BasicSmallAlgebra]): List of algebras to form the product
+    ///     algebras (list[BasicAlgebra]): List of algebras to form the product
     ///
     /// Raises:
     ///     ValueError: If algebras are incompatible or empty
     #[new]
-    fn new(name: String, algebras: Vec<PyRef<PyBasicSmallAlgebra>>) -> PyResult<Self> {
+    fn new(name: String, algebras: Vec<PyRef<PyBasicAlgebra>>) -> PyResult<Self> {
         if algebras.is_empty() {
             return Err(PyValueError::new_err("Cannot create product of empty algebra list"));
         }

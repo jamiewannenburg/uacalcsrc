@@ -1,4 +1,4 @@
-use uacalc::alg::{SmallAlgebra, BasicSmallAlgebra};
+use uacalc::alg::{SmallAlgebra, BasicAlgebra};
 use uacalc::alg::conlat::{CongruenceLattice, BasicBinaryRelation, BinaryRelation};
 use uacalc::alg::op::{OperationSymbol, Operation};
 use uacalc::alg::op::operations;
@@ -6,7 +6,7 @@ use std::collections::HashSet;
 
 #[test]
 fn test_new_congruence_lattice() {
-    let alg = Box::new(BasicSmallAlgebra::new(
+    let alg = Box::new(BasicAlgebra::new(
         "TestAlg".to_string(),
         HashSet::from([0, 1, 2]),
         Vec::new()
@@ -18,7 +18,7 @@ fn test_new_congruence_lattice() {
 
 #[test]
 fn test_zero_and_one() {
-    let alg = Box::new(BasicSmallAlgebra::new(
+    let alg = Box::new(BasicAlgebra::new(
         "TestAlg".to_string(),
         HashSet::from([0, 1, 2]),
         Vec::new()
@@ -35,7 +35,7 @@ fn test_zero_and_one() {
 
 #[test]
 fn test_principal_congruence() {
-    let alg = Box::new(BasicSmallAlgebra::new(
+    let alg = Box::new(BasicAlgebra::new(
         "TestAlg".to_string(),
         HashSet::from([0, 1, 2]),
         Vec::new()
@@ -54,7 +54,7 @@ fn test_principal_congruence() {
 
 #[test]
 fn test_cardinality() {
-    let alg = Box::new(BasicSmallAlgebra::new(
+    let alg = Box::new(BasicAlgebra::new(
         "TestAlg".to_string(),
         HashSet::from([0, 1, 2]),
         Vec::new()
@@ -69,7 +69,7 @@ fn test_cardinality() {
 
 #[test]
 fn test_principals() {
-    let alg = Box::new(BasicSmallAlgebra::new(
+    let alg = Box::new(BasicAlgebra::new(
         "TestAlg".to_string(),
         HashSet::from([0, 1, 2, 3]),
         Vec::new()
@@ -85,7 +85,7 @@ fn test_principals() {
 
 #[test]
 fn test_join_irreducibles() {
-    let alg = Box::new(BasicSmallAlgebra::new(
+    let alg = Box::new(BasicAlgebra::new(
         "TestAlg".to_string(),
         HashSet::from([0, 1, 2]),
         Vec::new()
@@ -101,7 +101,7 @@ fn test_join_irreducibles() {
 
 #[test]
 fn test_atoms() {
-    let alg = Box::new(BasicSmallAlgebra::new(
+    let alg = Box::new(BasicAlgebra::new(
         "TestAlg".to_string(),
         HashSet::from([0, 1, 2]),
         Vec::new()
@@ -117,7 +117,7 @@ fn test_atoms() {
 
 #[test]
 fn test_is_distributive() {
-    let alg = Box::new(BasicSmallAlgebra::new(
+    let alg = Box::new(BasicAlgebra::new(
         "TestAlg".to_string(),
         HashSet::from([0, 1, 2]),
         Vec::new()
@@ -132,7 +132,7 @@ fn test_is_distributive() {
 
 #[test]
 fn test_find_principal_chain() {
-    let alg = Box::new(BasicSmallAlgebra::new(
+    let alg = Box::new(BasicAlgebra::new(
         "TestAlg".to_string(),
         HashSet::from([0, 1, 2]),
         Vec::new()
@@ -149,7 +149,7 @@ fn test_find_principal_chain() {
 
 #[test]
 fn test_complements() {
-    let alg = Box::new(BasicSmallAlgebra::new(
+    let alg = Box::new(BasicAlgebra::new(
         "TestAlg".to_string(),
         HashSet::from([0, 1, 2]),
         Vec::new()
@@ -166,7 +166,7 @@ fn test_complements() {
 
 #[test]
 fn test_universe_generation() {
-    let alg = Box::new(BasicSmallAlgebra::new(
+    let alg = Box::new(BasicAlgebra::new(
         "TestAlg".to_string(),
         HashSet::from([0, 1, 2]),
         Vec::new()
@@ -186,7 +186,7 @@ fn test_universe_generation() {
 
 #[test]
 fn test_meet_irreducibles() {
-    let alg = Box::new(BasicSmallAlgebra::new(
+    let alg = Box::new(BasicAlgebra::new(
         "TestAlg".to_string(),
         HashSet::from([0, 1, 2]),
         Vec::new()
@@ -211,7 +211,7 @@ fn test_tg_tolerance() {
         .expect("Failed to create constant operation");
     ops.push(const_op);
     
-    let alg = Box::new(BasicSmallAlgebra::new(
+    let alg = Box::new(BasicAlgebra::new(
         "TestAlg".to_string(),
         HashSet::from([0, 1, 2]),
         ops
@@ -228,7 +228,7 @@ fn test_tg_tolerance() {
 
 #[test]
 fn test_generating_pair() {
-    let alg = Box::new(BasicSmallAlgebra::new(
+    let alg = Box::new(BasicAlgebra::new(
         "TestAlg".to_string(),
         HashSet::from([0, 1, 2]),
         Vec::new()
@@ -246,7 +246,7 @@ fn test_generating_pair() {
 
 #[test]
 fn test_find_coatom_above() {
-    let alg = Box::new(BasicSmallAlgebra::new(
+    let alg = Box::new(BasicAlgebra::new(
         "TestAlg".to_string(),
         HashSet::from([0, 1, 2]),
         Vec::new()
@@ -264,7 +264,7 @@ fn test_find_coatom_above() {
 
 #[test]
 fn test_find_join_irred() {
-    let alg = Box::new(BasicSmallAlgebra::new(
+    let alg = Box::new(BasicAlgebra::new(
         "TestAlg".to_string(),
         HashSet::from([0, 1, 2]),
         Vec::new()
@@ -283,7 +283,7 @@ fn test_find_join_irred() {
 
 #[test]
 fn test_find_meet_irred() {
-    let alg = Box::new(BasicSmallAlgebra::new(
+    let alg = Box::new(BasicAlgebra::new(
         "TestAlg".to_string(),
         HashSet::from([0, 1, 2]),
         Vec::new()
@@ -302,7 +302,7 @@ fn test_find_meet_irred() {
 
 #[test]
 fn test_find_maximal_chain() {
-    let alg = Box::new(BasicSmallAlgebra::new(
+    let alg = Box::new(BasicAlgebra::new(
         "TestAlg".to_string(),
         HashSet::from([0, 1, 2]),
         Vec::new()
@@ -329,7 +329,7 @@ fn test_idempotent_polynomials() {
         .expect("Failed to create constant operation");
     ops.push(const_op);
     
-    let alg = Box::new(BasicSmallAlgebra::new(
+    let alg = Box::new(BasicAlgebra::new(
         "TestAlg".to_string(),
         HashSet::from([0, 1, 2]),
         ops
@@ -346,7 +346,7 @@ fn test_idempotent_polynomials() {
 
 #[test]
 fn test_delta_stubbed() {
-    let alg = Box::new(BasicSmallAlgebra::new(
+    let alg = Box::new(BasicAlgebra::new(
         "TestAlg".to_string(),
         HashSet::from([0, 1, 2]),
         Vec::new()
@@ -365,7 +365,7 @@ fn test_delta_stubbed() {
 
 #[test]
 fn test_commutator2_stubbed() {
-    let alg = Box::new(BasicSmallAlgebra::new(
+    let alg = Box::new(BasicAlgebra::new(
         "TestAlg".to_string(),
         HashSet::from([0, 1, 2]),
         Vec::new()
@@ -384,7 +384,7 @@ fn test_commutator2_stubbed() {
 
 #[test]
 fn test_centralizes_stubbed() {
-    let alg = Box::new(BasicSmallAlgebra::new(
+    let alg = Box::new(BasicAlgebra::new(
         "TestAlg".to_string(),
         HashSet::from([0, 1, 2]),
         Vec::new()

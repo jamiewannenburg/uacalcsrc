@@ -3,7 +3,7 @@
 
 #[cfg(test)]
 mod tests {
-    use uacalc::alg::{SubProductAlgebra, BigProductAlgebra, BasicSmallAlgebra, SmallAlgebra};
+    use uacalc::alg::{SubProductAlgebra, BigProductAlgebra, BasicAlgebra, SmallAlgebra};
     use uacalc::element::SubProductElement;
     use uacalc::util::int_array::IntArray;
     use std::collections::HashSet;

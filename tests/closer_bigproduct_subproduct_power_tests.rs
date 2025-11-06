@@ -28,14 +28,14 @@ fn create_ba2() -> Box<dyn SmallAlgebra<UniverseItem = i32>> {
     let base_alg = read_algebra_file(alg_file).expect("Failed to load ba2.ua");
     
     use uacalc::alg::op::ops::make_int_operations;
-    use uacalc::alg::BasicSmallAlgebra;
+    use uacalc::alg::BasicAlgebra;
     
     let card = base_alg.cardinality();
     let ops = base_alg.operations();
     let int_ops = make_int_operations(ops).expect("Failed to create int operations");
     let universe: HashSet<i32> = (0..card).collect();
     
-    Box::new(BasicSmallAlgebra::new(
+    Box::new(BasicAlgebra::new(
         base_alg.name().to_string(),
         universe,
         int_ops,

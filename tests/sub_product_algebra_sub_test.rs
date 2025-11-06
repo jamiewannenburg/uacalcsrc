@@ -1,4 +1,4 @@
-use uacalc::alg::{SubProductAlgebra, BigProductAlgebra, SmallAlgebra, BasicSmallAlgebra};
+use uacalc::alg::{SubProductAlgebra, BigProductAlgebra, SmallAlgebra, BasicAlgebra};
 use uacalc::alg::op::{OperationSymbol, Operation};
 use uacalc::alg::op::operations;
 use uacalc::util::int_array::IntArray;
@@ -13,7 +13,7 @@ fn test_sub_product_algebra_sub_method() {
         .expect("Failed to create constant operation");
     ops1.push(const_op1);
     
-    let alg1 = Box::new(BasicSmallAlgebra::new(
+    let alg1 = Box::new(BasicAlgebra::new(
         "A1".to_string(),
         HashSet::from([0, 1]),
         ops1
@@ -25,7 +25,7 @@ fn test_sub_product_algebra_sub_method() {
         .expect("Failed to create constant operation");
     ops2.push(const_op2);
     
-    let alg2 = Box::new(BasicSmallAlgebra::new(
+    let alg2 = Box::new(BasicAlgebra::new(
         "A2".to_string(),
         HashSet::from([0, 1, 2]),
         ops2
@@ -71,7 +71,7 @@ fn test_sub_product_algebra_sub_with_single_factor() {
         .expect("Failed to create constant operation");
     ops.push(const_op);
     
-    let alg = Box::new(BasicSmallAlgebra::new(
+    let alg = Box::new(BasicAlgebra::new(
         "Single".to_string(),
         HashSet::from([0, 1, 2]),
         ops
@@ -108,7 +108,7 @@ fn test_sub_product_algebra_sub_with_terms() {
         .expect("Failed to create constant operation");
     ops1.push(const_op1);
     
-    let alg1 = Box::new(BasicSmallAlgebra::new(
+    let alg1 = Box::new(BasicAlgebra::new(
         "A1".to_string(),
         HashSet::from([0, 1]),
         ops1
@@ -120,7 +120,7 @@ fn test_sub_product_algebra_sub_with_terms() {
         .expect("Failed to create constant operation");
     ops2.push(const_op2);
     
-    let alg2 = Box::new(BasicSmallAlgebra::new(
+    let alg2 = Box::new(BasicAlgebra::new(
         "A2".to_string(),
         HashSet::from([0, 1]),
         ops2

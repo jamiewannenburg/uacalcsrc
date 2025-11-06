@@ -1,7 +1,7 @@
 // CongruenceLattice Java comparison tests
 // These tests compare Rust CongruenceLattice output to Java implementation
 
-use uacalc::alg::{SmallAlgebra, BasicSmallAlgebra};
+use uacalc::alg::{SmallAlgebra, BasicAlgebra};
 use uacalc::alg::conlat::CongruenceLattice;
 use std::collections::HashSet;
 
@@ -11,7 +11,7 @@ use std::collections::HashSet;
 
 #[test]
 fn test_principals_count_size_3() {
-    let alg = Box::new(BasicSmallAlgebra::new(
+    let alg = Box::new(BasicAlgebra::new(
         "TestAlg".to_string(),
         HashSet::from([0, 1, 2]),
         Vec::new()
@@ -27,7 +27,7 @@ fn test_principals_count_size_3() {
 
 #[test]
 fn test_join_irreducibles_count_size_3() {
-    let alg = Box::new(BasicSmallAlgebra::new(
+    let alg = Box::new(BasicAlgebra::new(
         "TestAlg".to_string(),
         HashSet::from([0, 1, 2]),
         Vec::new()
@@ -43,7 +43,7 @@ fn test_join_irreducibles_count_size_3() {
 
 #[test]
 fn test_cardinality_size_3() {
-    let alg = Box::new(BasicSmallAlgebra::new(
+    let alg = Box::new(BasicAlgebra::new(
         "TestAlg".to_string(),
         HashSet::from([0, 1, 2]),
         Vec::new()
@@ -59,7 +59,7 @@ fn test_cardinality_size_3() {
 
 #[test]
 fn test_cardinality_size_2() {
-    let alg = Box::new(BasicSmallAlgebra::new(
+    let alg = Box::new(BasicAlgebra::new(
         "TestAlg".to_string(),
         HashSet::from([0, 1]),
         Vec::new()
@@ -75,7 +75,7 @@ fn test_cardinality_size_2() {
 
 #[test]
 fn test_is_distributive_size_3() {
-    let alg = Box::new(BasicSmallAlgebra::new(
+    let alg = Box::new(BasicAlgebra::new(
         "TestAlg".to_string(),
         HashSet::from([0, 1, 2]),
         Vec::new()
@@ -91,7 +91,7 @@ fn test_is_distributive_size_3() {
 
 #[test]
 fn test_atoms_count_size_3() {
-    let alg = Box::new(BasicSmallAlgebra::new(
+    let alg = Box::new(BasicAlgebra::new(
         "TestAlg".to_string(),
         HashSet::from([0, 1, 2]),
         Vec::new()
@@ -107,7 +107,7 @@ fn test_atoms_count_size_3() {
 
 #[test]
 fn test_principals_size_4() {
-    let alg = Box::new(BasicSmallAlgebra::new(
+    let alg = Box::new(BasicAlgebra::new(
         "TestAlg".to_string(),
         HashSet::from([0, 1, 2, 3]),
         Vec::new()

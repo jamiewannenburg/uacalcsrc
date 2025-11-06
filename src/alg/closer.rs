@@ -963,10 +963,10 @@ where
                                                     // This is a workaround - ideally root_algebra would already be i32-based
                                                     use crate::alg::op::ops::make_int_operations;
                                                     if let Ok(int_ops) = make_int_operations(root_ops) {
-                                                        use crate::alg::BasicSmallAlgebra;
+                                                        use crate::alg::BasicAlgebra;
                                                         use std::collections::HashSet;
                                                         let universe: HashSet<i32> = (0..root_cardinality).collect();
-                                                        let i32_alg = BasicSmallAlgebra::new(
+                                                        let i32_alg = BasicAlgebra::new(
                                                             root_algebra.name().to_string(),
                                                             universe,
                                                             int_ops,
@@ -1569,10 +1569,10 @@ where
                                         // Create a temporary i32 algebra from the root algebra's operations
                                         use crate::alg::op::ops::make_int_operations;
                                         if let Ok(int_ops) = make_int_operations(root_ops) {
-                                            use crate::alg::BasicSmallAlgebra;
+                                            use crate::alg::BasicAlgebra;
                                             use std::collections::HashSet;
                                             let universe: HashSet<i32> = (0..root_cardinality).collect();
-                                            let i32_alg = BasicSmallAlgebra::new(
+                                            let i32_alg = BasicAlgebra::new(
                                                 root_algebra.name().to_string(),
                                                 universe,
                                                 int_ops,
@@ -2107,12 +2107,12 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::alg::BasicSmallAlgebra;
+    use crate::alg::BasicAlgebra;
     use std::collections::HashSet;
     
     #[test]
     fn test_new_closer() {
-        let alg1 = Box::new(BasicSmallAlgebra::new(
+        let alg1 = Box::new(BasicAlgebra::new(
             "A".to_string(),
             HashSet::from([0, 1]),
             Vec::new()
@@ -2131,7 +2131,7 @@ mod tests {
     
     #[test]
     fn test_set_generators_removes_duplicates() {
-        let alg1 = Box::new(BasicSmallAlgebra::new(
+        let alg1 = Box::new(BasicAlgebra::new(
             "A".to_string(),
             HashSet::from([0, 1]),
             Vec::new()
@@ -2162,7 +2162,7 @@ mod tests {
         let c_val = 1; // constant value
         let c_op = operations::make_int_operation(c_sym.clone(), 2, vec![c_val]).unwrap();
         
-        let alg1 = Box::new(BasicSmallAlgebra::new(
+        let alg1 = Box::new(BasicAlgebra::new(
             "A".to_string(),
             set,
             vec![c_op]

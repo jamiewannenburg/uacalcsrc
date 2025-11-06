@@ -11,7 +11,7 @@ use uacalc::alg::sublat::BasicSet;
 use uacalc::lat::{Lattice, Order};
 use crate::util::PyIntArray;
 use crate::eq::PyEquation;
-use crate::alg::PyBasicSmallAlgebra;
+use crate::alg::PyBasicAlgebra;
 use crate::alg::conlat::partition::PyPartition;
 
 /// Python wrapper for MaltsevProductDecomposition
@@ -25,7 +25,7 @@ impl PyMaltsevProductDecomposition {
     /// Create a new Maltsev product decomposition.
     ///
     /// Args:
-    ///     algebra (BasicSmallAlgebra): The idempotent algebra to decompose
+    ///     algebra (BasicAlgebra): The idempotent algebra to decompose
     ///     congruence (Partition): A congruence relation on the algebra
     ///
     /// Returns:
@@ -34,7 +34,7 @@ impl PyMaltsevProductDecomposition {
     /// Raises:
     ///     ValueError: If the algebra or congruence is invalid
     #[new]
-    fn new(algebra: &PyBasicSmallAlgebra, congruence: &PyPartition) -> PyResult<Self> {
+    fn new(algebra: &PyBasicAlgebra, congruence: &PyPartition) -> PyResult<Self> {
         // Clone the algebra and congruence
         let alg_box = algebra.clone_box();
         let cong = congruence.get_inner().clone();

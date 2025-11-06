@@ -65,7 +65,7 @@ fn test_variable_imp_get_variable_list() {
 }
 
 // Helper function to create a simple test algebra
-fn create_test_algebra() -> crate::alg::BasicSmallAlgebra<i32> {
+fn create_test_algebra() -> crate::alg::BasicAlgebra<i32> {
     use crate::alg::op::OperationSymbol;
     use crate::alg::op::operations;
     use std::collections::HashSet;
@@ -92,7 +92,7 @@ fn create_test_algebra() -> crate::alg::BasicSmallAlgebra<i32> {
     ops.push(add_op);
     
     // Create the algebra
-    crate::alg::BasicSmallAlgebra::new("TestAlgebra".to_string(), universe, ops)
+    crate::alg::BasicAlgebra::new("TestAlgebra".to_string(), universe, ops)
 }
 
 #[test]

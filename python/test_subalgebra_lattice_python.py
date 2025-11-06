@@ -17,7 +17,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 try:
     import uacalc_lib
     SubalgebraLattice = uacalc_lib.alg.SubalgebraLattice
-    BasicSmallAlgebra = uacalc_lib.alg.BasicSmallAlgebra
+    BasicAlgebra = uacalc_lib.alg.BasicAlgebra
     BasicSet = uacalc_lib.alg.BasicSet
     AlgebraReader = uacalc_lib.io.AlgebraReader
 except ImportError as e:
@@ -64,7 +64,7 @@ def test_basic_creation():
     # Test that the classes are available
     print(f"  ✓ Python: SubalgebraLattice class available: {SubalgebraLattice}")
     print(f"  ✓ Python: BasicSet class available: {BasicSet}")
-    print(f"  ✓ Python: BasicSmallAlgebra class available: {BasicSmallAlgebra}")
+    print(f"  ✓ Python: BasicAlgebra class available: {BasicAlgebra}")
     print("  ⊙ Full test requires AlgebraReader (not yet exposed)")
     assert True  # Test passes if we reach here
     

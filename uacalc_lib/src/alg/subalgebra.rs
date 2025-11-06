@@ -4,7 +4,7 @@ use uacalc::alg::*;
 use uacalc::alg::conlat::BasicBinaryRelation;
 use uacalc::alg::sublat::BasicSet;
 use uacalc::lat::{Lattice, Order};
-use crate::alg::PyBasicSmallAlgebra;
+use crate::alg::PyBasicAlgebra;
 use crate::alg::PyPartition;
 use crate::alg::PySubalgebraLattice;
 use crate::alg::conlat::congruence_lattice::PyCongruenceLattice;
@@ -21,13 +21,13 @@ impl PySubalgebra {
     ///
     /// Args:
     ///     name (str): Name of the subalgebra
-    ///     super_algebra (BasicSmallAlgebra): The super algebra
+    ///     super_algebra (BasicAlgebra): The super algebra
     ///     univ (list[int]): Array of indices in the super algebra forming the subuniverse
     ///
     /// Raises:
     ///     ValueError: If the subuniverse is empty or contains invalid indices
     #[new]
-    fn new(name: String, super_algebra: &PyBasicSmallAlgebra, univ: Vec<i32>) -> PyResult<Self> {
+    fn new(name: String, super_algebra: &PyBasicAlgebra, univ: Vec<i32>) -> PyResult<Self> {
         let super_box = Box::new(super_algebra.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
         match uacalc::alg::Subalgebra::new_safe(name, super_box, univ) {
             Ok(inner) => Ok(PySubalgebra { inner }),

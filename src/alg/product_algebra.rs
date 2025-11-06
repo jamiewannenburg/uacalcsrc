@@ -14,17 +14,17 @@ use crate::util::horner;
 /// 
 /// # Examples
 /// ```
-/// use uacalc::alg::{ProductAlgebra, SmallAlgebra, BasicSmallAlgebra, Algebra};
+/// use uacalc::alg::{ProductAlgebra, SmallAlgebra, BasicAlgebra, Algebra};
 /// use std::collections::HashSet;
 /// 
 /// // Create two small algebras
-/// let alg1 = Box::new(BasicSmallAlgebra::new(
+/// let alg1 = Box::new(BasicAlgebra::new(
 ///     "A1".to_string(),
 ///     HashSet::from([0, 1]),
 ///     Vec::new()
 /// )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
 /// 
-/// let alg2 = Box::new(BasicSmallAlgebra::new(
+/// let alg2 = Box::new(BasicAlgebra::new(
 ///     "A2".to_string(),
 ///     HashSet::from([0, 1]),
 ///     Vec::new()
@@ -74,16 +74,16 @@ impl ProductAlgebra {
     /// 
     /// # Examples
     /// ```
-    /// use uacalc::alg::{ProductAlgebra, SmallAlgebra, BasicSmallAlgebra, Algebra};
+    /// use uacalc::alg::{ProductAlgebra, SmallAlgebra, BasicAlgebra, Algebra};
     /// use std::collections::HashSet;
     /// 
-    /// let alg1 = Box::new(BasicSmallAlgebra::new(
+    /// let alg1 = Box::new(BasicAlgebra::new(
     ///     "A1".to_string(),
     ///     HashSet::from([0, 1, 2]),
     ///     Vec::new()
     /// )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
     /// 
-    /// let alg2 = Box::new(BasicSmallAlgebra::new(
+    /// let alg2 = Box::new(BasicAlgebra::new(
     ///     "A2".to_string(),
     ///     HashSet::from([0, 1]),
     ///     Vec::new()
@@ -258,16 +258,16 @@ impl ProductAlgebra {
     /// 
     /// # Examples
     /// ```
-    /// use uacalc::alg::{ProductAlgebra, SmallAlgebra, BasicSmallAlgebra, Algebra};
+    /// use uacalc::alg::{ProductAlgebra, SmallAlgebra, BasicAlgebra, Algebra};
     /// use std::collections::HashSet;
     /// 
-    /// let alg1 = Box::new(BasicSmallAlgebra::new(
+    /// let alg1 = Box::new(BasicAlgebra::new(
     ///     "A1".to_string(),
     ///     HashSet::from([0, 1]),
     ///     Vec::new()
     /// )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
     /// 
-    /// let alg2 = Box::new(BasicSmallAlgebra::new(
+    /// let alg2 = Box::new(BasicAlgebra::new(
     ///     "A2".to_string(),
     ///     HashSet::from([0, 1, 2]),
     ///     Vec::new()

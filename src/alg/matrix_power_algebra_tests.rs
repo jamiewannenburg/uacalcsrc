@@ -6,7 +6,7 @@ including unit tests, integration tests, and comparison tests with Java implemen
 
 use std::collections::HashSet;
 use serde_json::json;
-use crate::alg::{MatrixPowerAlgebra, SmallAlgebra, BasicSmallAlgebra, Algebra, AlgebraType};
+use crate::alg::{MatrixPowerAlgebra, SmallAlgebra, BasicAlgebra, Algebra, AlgebraType};
 use crate::common::{TestConfig, compare_with_java, run_java_cli_with_timeout, compare_outputs};
 
 #[cfg(test)]
@@ -27,7 +27,7 @@ mod tests {
             "java_wrapper.src.alg.MatrixPowerAlgebraWrapper",
             ["create_with_name", "--root_name", "TestRoot", "--root_size", "2", "--power", "3"],
             || {
-                let alg = Box::new(BasicSmallAlgebra::new(
+                let alg = Box::new(BasicAlgebra::new(
                     "TestRoot".to_string(),
                     HashSet::from([0, 1]),
                     Vec::new()
@@ -59,7 +59,7 @@ mod tests {
             "java_wrapper.src.alg.MatrixPowerAlgebraWrapper",
             ["create_with_name", "--root_name", "SimpleRoot", "--root_size", "2", "--power", "2"],
             || {
-                let alg = Box::new(BasicSmallAlgebra::new(
+                let alg = Box::new(BasicAlgebra::new(
                     "SimpleRoot".to_string(),
                     HashSet::from([0, 1]),
                     Vec::new()
@@ -87,7 +87,7 @@ mod tests {
             "java_wrapper.src.alg.MatrixPowerAlgebraWrapper",
             ["get_power"],
             || {
-                let alg = Box::new(BasicSmallAlgebra::new(
+                let alg = Box::new(BasicAlgebra::new(
                     "TestRoot".to_string(),
                     HashSet::from([0, 1]),
                     Vec::new()
@@ -113,7 +113,7 @@ mod tests {
             "java_wrapper.src.alg.MatrixPowerAlgebraWrapper",
             ["cardinality"],
             || {
-                let alg = Box::new(BasicSmallAlgebra::new(
+                let alg = Box::new(BasicAlgebra::new(
                     "TestRoot".to_string(),
                     HashSet::from([0, 1, 2]),
                     Vec::new()
@@ -139,7 +139,7 @@ mod tests {
             "java_wrapper.src.alg.MatrixPowerAlgebraWrapper",
             ["get_element", "--index", "0"],
             || {
-                let alg = Box::new(BasicSmallAlgebra::new(
+                let alg = Box::new(BasicAlgebra::new(
                     "TestRoot".to_string(),
                     HashSet::from([0, 1]),
                     Vec::new()
@@ -168,7 +168,7 @@ mod tests {
             "java_wrapper.src.alg.MatrixPowerAlgebraWrapper",
             ["element_index"],
             || {
-                let alg = Box::new(BasicSmallAlgebra::new(
+                let alg = Box::new(BasicAlgebra::new(
                     "TestRoot".to_string(),
                     HashSet::from([0, 1]),
                     Vec::new()
@@ -197,7 +197,7 @@ mod tests {
             "java_wrapper.src.alg.MatrixPowerAlgebraWrapper",
             ["algebra_type"],
             || {
-                let alg = Box::new(BasicSmallAlgebra::new(
+                let alg = Box::new(BasicAlgebra::new(
                     "TestRoot".to_string(),
                     HashSet::from([0, 1]),
                     Vec::new()
@@ -223,7 +223,7 @@ mod tests {
             "java_wrapper.src.alg.MatrixPowerAlgebraWrapper",
             ["name"],
             || {
-                let alg = Box::new(BasicSmallAlgebra::new(
+                let alg = Box::new(BasicAlgebra::new(
                     "TestRoot".to_string(),
                     HashSet::from([0, 1]),
                     Vec::new()
@@ -253,7 +253,7 @@ mod tests {
             "java_wrapper.src.alg.MatrixPowerAlgebraWrapper",
             ["set_name", "--name", "NewName"],
             || {
-                let alg = Box::new(BasicSmallAlgebra::new(
+                let alg = Box::new(BasicAlgebra::new(
                     "TestRoot".to_string(),
                     HashSet::from([0, 1]),
                     Vec::new()
@@ -280,7 +280,7 @@ mod tests {
             "java_wrapper.src.alg.MatrixPowerAlgebraWrapper",
             ["is_unary"],
             || {
-                let alg = Box::new(BasicSmallAlgebra::new(
+                let alg = Box::new(BasicAlgebra::new(
                     "TestRoot".to_string(),
                     HashSet::from([0, 1]),
                     Vec::new()
@@ -306,7 +306,7 @@ mod tests {
             "java_wrapper.src.alg.MatrixPowerAlgebraWrapper",
             ["is_idempotent"],
             || {
-                let alg = Box::new(BasicSmallAlgebra::new(
+                let alg = Box::new(BasicAlgebra::new(
                     "TestRoot".to_string(),
                     HashSet::from([0, 1]),
                     Vec::new()
@@ -332,7 +332,7 @@ mod tests {
             "java_wrapper.src.alg.MatrixPowerAlgebraWrapper",
             ["is_total"],
             || {
-                let alg = Box::new(BasicSmallAlgebra::new(
+                let alg = Box::new(BasicAlgebra::new(
                     "TestRoot".to_string(),
                     HashSet::from([0, 1]),
                     Vec::new()
@@ -358,7 +358,7 @@ mod tests {
             "java_wrapper.src.alg.MatrixPowerAlgebraWrapper",
             ["operations_count"],
             || {
-                let alg = Box::new(BasicSmallAlgebra::new(
+                let alg = Box::new(BasicAlgebra::new(
                     "TestRoot".to_string(),
                     HashSet::from([0, 1]),
                     Vec::new()
@@ -384,7 +384,7 @@ mod tests {
             "java_wrapper.src.alg.MatrixPowerAlgebraWrapper",
             ["get_universe_list"],
             || {
-                let alg = Box::new(BasicSmallAlgebra::new(
+                let alg = Box::new(BasicAlgebra::new(
                     "TestRoot".to_string(),
                     HashSet::from([0, 1]),
                     Vec::new()
@@ -411,7 +411,7 @@ mod tests {
             "java_wrapper.src.alg.MatrixPowerAlgebraWrapper",
             ["get_universe_order"],
             || {
-                let alg = Box::new(BasicSmallAlgebra::new(
+                let alg = Box::new(BasicAlgebra::new(
                     "TestRoot".to_string(),
                     HashSet::from([0, 1]),
                     Vec::new()
@@ -438,7 +438,7 @@ mod tests {
             "java_wrapper.src.alg.MatrixPowerAlgebraWrapper",
             ["convert_to_default_value_ops"],
             || {
-                let alg = Box::new(BasicSmallAlgebra::new(
+                let alg = Box::new(BasicAlgebra::new(
                     "TestRoot".to_string(),
                     HashSet::from([0, 1]),
                     Vec::new()
@@ -469,7 +469,7 @@ mod tests {
             "java_wrapper.src.alg.MatrixPowerAlgebraWrapper",
             ["test"],
             || {
-                let alg = Box::new(BasicSmallAlgebra::new(
+                let alg = Box::new(BasicAlgebra::new(
                     "TestRoot".to_string(),
                     HashSet::from([0, 1]),
                     Vec::new()
@@ -496,7 +496,7 @@ mod tests {
     // Unit tests without Java comparison
     #[test]
     fn test_matrix_power_algebra_creation_unit() {
-        let alg = Box::new(BasicSmallAlgebra::new(
+        let alg = Box::new(BasicAlgebra::new(
             "TestRoot".to_string(),
             HashSet::from([0, 1, 2]),
             Vec::new()
@@ -511,7 +511,7 @@ mod tests {
 
     #[test]
     fn test_matrix_power_algebra_with_name() {
-        let alg = Box::new(BasicSmallAlgebra::new(
+        let alg = Box::new(BasicAlgebra::new(
             "TestRoot".to_string(),
             HashSet::from([0, 1]),
             Vec::new()
@@ -530,7 +530,7 @@ mod tests {
 
     #[test]
     fn test_matrix_power_algebra_auto_name() {
-        let alg = Box::new(BasicSmallAlgebra::new(
+        let alg = Box::new(BasicAlgebra::new(
             "TestRoot".to_string(),
             HashSet::from([0, 1]),
             Vec::new()
@@ -545,7 +545,7 @@ mod tests {
 
     #[test]
     fn test_get_element_horner_encoding() {
-        let alg = Box::new(BasicSmallAlgebra::new(
+        let alg = Box::new(BasicAlgebra::new(
             "TestRoot".to_string(),
             HashSet::from([0, 1]),
             Vec::new()
@@ -562,7 +562,7 @@ mod tests {
 
     #[test]
     fn test_element_index_roundtrip() {
-        let alg = Box::new(BasicSmallAlgebra::new(
+        let alg = Box::new(BasicAlgebra::new(
             "TestRoot".to_string(),
             HashSet::from([0, 1, 2]),
             Vec::new()
@@ -580,7 +580,7 @@ mod tests {
 
     #[test]
     fn test_matrix_power_algebra_operations() {
-        let alg = Box::new(BasicSmallAlgebra::new(
+        let alg = Box::new(BasicAlgebra::new(
             "TestRoot".to_string(),
             HashSet::from([0, 1]),
             Vec::new()
@@ -603,14 +603,14 @@ mod tests {
 
     #[test]
     fn test_error_handling() {
-        let alg = Box::new(BasicSmallAlgebra::new(
+        let alg = Box::new(BasicAlgebra::new(
             "TestRoot".to_string(),
             HashSet::from([0, 1]),
             Vec::new()
         )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
         
         // Test power = 0 (should fail)
-        let alg2 = Box::new(BasicSmallAlgebra::new(
+        let alg2 = Box::new(BasicAlgebra::new(
             "TestRoot2".to_string(),
             HashSet::from([0, 1]),
             Vec::new()
@@ -622,7 +622,7 @@ mod tests {
 
     #[test]
     fn test_display_and_debug() {
-        let alg = Box::new(BasicSmallAlgebra::new(
+        let alg = Box::new(BasicAlgebra::new(
             "TestRoot".to_string(),
             HashSet::from([0, 1]),
             Vec::new()

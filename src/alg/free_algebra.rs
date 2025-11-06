@@ -1186,7 +1186,7 @@ impl Hash for FreeAlgebra {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::alg::BasicSmallAlgebra;
+    use crate::alg::BasicAlgebra;
     use crate::alg::op::{OperationSymbol, Operation};
     use crate::alg::op::operations;
     use std::collections::HashSet;
@@ -1208,7 +1208,7 @@ mod tests {
             .expect("Failed to create operation");
         ops.push(add_op);
         
-        Box::new(BasicSmallAlgebra::new(
+        Box::new(BasicAlgebra::new(
             "Test".to_string(),
             universe,
             ops,

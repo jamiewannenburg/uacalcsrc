@@ -30,12 +30,12 @@ use crate::util::array_incrementor::ArrayIncrementor;
 /// 
 /// # Examples
 /// ```
-/// use uacalc::alg::{SmallAlgebra, BasicSmallAlgebra};
+/// use uacalc::alg::{SmallAlgebra, BasicAlgebra};
 /// use uacalc::alg::conlat::TypeFinder;
 /// use std::collections::HashSet;
 /// 
 /// // Create a simple algebra
-/// let alg = Box::new(BasicSmallAlgebra::new(
+/// let alg = Box::new(BasicAlgebra::new(
 ///     "A".to_string(),
 ///     HashSet::from([0, 1, 2]),
 ///     Vec::new()
@@ -107,11 +107,11 @@ where
     /// 
     /// # Examples
     /// ```
-    /// use uacalc::alg::{SmallAlgebra, BasicSmallAlgebra};
+    /// use uacalc::alg::{SmallAlgebra, BasicAlgebra};
     /// use uacalc::alg::conlat::TypeFinder;
     /// use std::collections::HashSet;
     /// 
-    /// let alg = Box::new(BasicSmallAlgebra::new(
+    /// let alg = Box::new(BasicAlgebra::new(
     ///     "A".to_string(),
     ///     HashSet::from([0, 1]),
     ///     Vec::new()
@@ -657,12 +657,12 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::alg::{BasicSmallAlgebra};
+    use crate::alg::{BasicAlgebra};
     use std::collections::HashSet;
     
     #[test]
     fn test_new() {
-        let alg = Box::new(BasicSmallAlgebra::new(
+        let alg = Box::new(BasicAlgebra::new(
             "A".to_string(),
             HashSet::from([0, 1, 2]),
             Vec::new()
@@ -674,7 +674,7 @@ mod tests {
     
     #[test]
     fn test_init() {
-        let alg = Box::new(BasicSmallAlgebra::new(
+        let alg = Box::new(BasicAlgebra::new(
             "A".to_string(),
             HashSet::from([0, 1]),
             Vec::new()

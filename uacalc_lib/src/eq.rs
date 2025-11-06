@@ -83,12 +83,12 @@ impl PyEquation {
     /// Find where this equation fails in the given algebra.
     /// 
     /// # Arguments
-    /// * `algebra` - The algebra to check (BasicSmallAlgebra from Python)
+    /// * `algebra` - The algebra to check (BasicAlgebra from Python)
     /// 
     /// # Returns
     /// * List of variable values where the equation fails
     /// * None if the equation holds in the algebra
-    fn find_failure(&self, algebra: &crate::alg::PyBasicSmallAlgebra) -> PyResult<Option<Vec<i32>>> {
+    fn find_failure(&self, algebra: &crate::alg::PyBasicAlgebra) -> PyResult<Option<Vec<i32>>> {
         let alg_arc: Arc<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>> = Arc::new(algebra.inner.clone());
         self.inner.find_failure(alg_arc)
             .map_err(|e| PyValueError::new_err(e))
@@ -97,12 +97,12 @@ impl PyEquation {
     /// Find where this equation fails in the given algebra as a variable map.
     /// 
     /// # Arguments
-    /// * `algebra` - The algebra to check (BasicSmallAlgebra from Python)
+    /// * `algebra` - The algebra to check (BasicAlgebra from Python)
     /// 
     /// # Returns
     /// * Dictionary from variable names to values where the equation fails
     /// * None if the equation holds in the algebra
-    fn find_failure_map(&self, algebra: &crate::alg::PyBasicSmallAlgebra) -> PyResult<Option<HashMap<String, i32>>> {
+    fn find_failure_map(&self, algebra: &crate::alg::PyBasicAlgebra) -> PyResult<Option<HashMap<String, i32>>> {
         let alg_arc: Arc<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>> = Arc::new(algebra.inner.clone());
         self.inner.find_failure_map(alg_arc)
             .map_err(|e| PyValueError::new_err(e))

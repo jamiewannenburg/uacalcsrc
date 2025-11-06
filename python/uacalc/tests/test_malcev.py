@@ -258,8 +258,8 @@ class TestMalcevPython(unittest.TestCase):
     def test_weak_majority_term_with_trivial_algebra(self):
         """Test weak_majority_term with trivial algebra."""
         # Create a trivial algebra for testing
-        BasicSmallAlgebra = uacalc_lib.alg.BasicSmallAlgebra
-        alg = BasicSmallAlgebra("Trivial", [0])
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
+        alg = BasicAlgebra("Trivial", [0])
         
         # weak_majority_term is implemented and should return a term for trivial algebra
         result = uacalc_lib.alg.weak_majority_term(alg)
@@ -273,8 +273,8 @@ class TestMalcevPython(unittest.TestCase):
     def test_semilattice_term_with_trivial_algebra(self):
         """Test semilattice_term with trivial algebra."""
         # Create a trivial algebra for testing
-        BasicSmallAlgebra = uacalc_lib.alg.BasicSmallAlgebra
-        alg = BasicSmallAlgebra("Trivial", [0])
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
+        alg = BasicAlgebra("Trivial", [0])
         
         # semilattice_term should return a term for trivial algebra
         result = uacalc_lib.alg.semilattice_term(alg)

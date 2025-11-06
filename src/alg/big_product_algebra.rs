@@ -206,17 +206,17 @@ where
 /// 
 /// # Examples
 /// ```
-/// use uacalc::alg::{BigProductAlgebra, SmallAlgebra, BasicSmallAlgebra};
+/// use uacalc::alg::{BigProductAlgebra, SmallAlgebra, BasicAlgebra};
 /// use std::collections::HashSet;
 /// 
 /// // Create two small algebras
-/// let alg1 = Box::new(BasicSmallAlgebra::new(
+/// let alg1 = Box::new(BasicAlgebra::new(
 ///     "A1".to_string(),
 ///     HashSet::from([0, 1]),
 ///     Vec::new()
 /// )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
 /// 
-/// let alg2 = Box::new(BasicSmallAlgebra::new(
+/// let alg2 = Box::new(BasicAlgebra::new(
 ///     "A2".to_string(),
 ///     HashSet::from([0, 1, 2]),
 ///     Vec::new()
@@ -1005,20 +1005,20 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::alg::BasicSmallAlgebra;
+    use crate::alg::BasicAlgebra;
     use std::collections::HashSet;
     use crate::alg::op::{OperationSymbol, Operation, BasicOperation};
     use crate::util::int_array::IntArrayTrait;
     
     #[test]
     fn test_new_product() {
-        let alg1 = Box::new(BasicSmallAlgebra::new(
+        let alg1 = Box::new(BasicAlgebra::new(
             "A1".to_string(),
             HashSet::from([0, 1]),
             Vec::new()
         )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
         
-        let alg2 = Box::new(BasicSmallAlgebra::new(
+        let alg2 = Box::new(BasicAlgebra::new(
             "A2".to_string(),
             HashSet::from([0, 1, 2]),
             Vec::new()
@@ -1030,7 +1030,7 @@ mod tests {
     
     #[test]
     fn test_new_power() {
-        let alg = Box::new(BasicSmallAlgebra::new(
+        let alg = Box::new(BasicAlgebra::new(
             "A".to_string(),
             HashSet::from([0, 1]),
             Vec::new()
@@ -1054,8 +1054,8 @@ mod tests {
         let c1 = crate::alg::op::operations::make_int_operation(c_sym.clone(), 3, vec![c1_val]).unwrap();
         let c2 = crate::alg::op::operations::make_int_operation(c_sym.clone(), 2, vec![c2_val]).unwrap();
 
-        let alg1 = Box::new(BasicSmallAlgebra::new("A1".to_string(), set1, vec![c1])) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
-        let alg2 = Box::new(BasicSmallAlgebra::new("A2".to_string(), set2, vec![c2])) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+        let alg1 = Box::new(BasicAlgebra::new("A1".to_string(), set1, vec![c1])) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+        let alg2 = Box::new(BasicAlgebra::new("A2".to_string(), set2, vec![c2])) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
 
         let mut prod = BigProductAlgebra::<i32>::new_safe(vec![alg1, alg2]).unwrap();
 
@@ -1080,8 +1080,8 @@ mod tests {
         let f1 = Box::new(BasicOperation::new_safe(f_sym.clone(), 2).unwrap()) as Box<dyn Operation>;
         let f2 = Box::new(BasicOperation::new_safe(f_sym.clone(), 2).unwrap()) as Box<dyn Operation>;
 
-        let alg1 = Box::new(BasicSmallAlgebra::new("A1".to_string(), set1, vec![f1])) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
-        let alg2 = Box::new(BasicSmallAlgebra::new("A2".to_string(), set2, vec![f2])) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+        let alg1 = Box::new(BasicAlgebra::new("A1".to_string(), set1, vec![f1])) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+        let alg2 = Box::new(BasicAlgebra::new("A2".to_string(), set2, vec![f2])) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
 
         let mut prod = BigProductAlgebra::<i32>::new_safe(vec![alg1, alg2]).unwrap();
 

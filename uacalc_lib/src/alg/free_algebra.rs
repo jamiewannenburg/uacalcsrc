@@ -1,7 +1,7 @@
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
 use uacalc::alg::{Algebra, SmallAlgebra};
-use crate::alg::{PyBasicSmallAlgebra, PyBasicOperation};
+use crate::alg::{PyBasicAlgebra, PyBasicOperation};
 use crate::alg::conlat::congruence_lattice::PyCongruenceLatticeIntArray;
 use crate::eq::PyEquation;
 use crate::util::PyIntArray;
@@ -18,13 +18,13 @@ impl PyFreeAlgebra {
     /// Create a new FreeAlgebra with the given base algebra and number of generators.
     ///
     /// Args:
-    ///     base (BasicSmallAlgebra): The base algebra
+    ///     base (BasicAlgebra): The base algebra
     ///     number_of_gens (int): Number of generators
     ///
     /// Raises:
     ///     ValueError: If construction fails
     #[new]
-    fn new(base: &PyBasicSmallAlgebra, number_of_gens: i32) -> PyResult<Self> {
+    fn new(base: &PyBasicAlgebra, number_of_gens: i32) -> PyResult<Self> {
         let rust_base = Box::new(base.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
 
         match uacalc::alg::FreeAlgebra::new_safe(rust_base, number_of_gens) {
@@ -37,13 +37,13 @@ impl PyFreeAlgebra {
     ///
     /// Args:
     ///     name (str): The name for the free algebra
-    ///     base (BasicSmallAlgebra): The base algebra
+    ///     base (BasicAlgebra): The base algebra
     ///     number_of_gens (int): Number of generators
     ///
     /// Raises:
     ///     ValueError: If construction fails
     #[staticmethod]
-    fn new_with_name(name: String, base: &PyBasicSmallAlgebra, number_of_gens: i32) -> PyResult<Self> {
+    fn new_with_name(name: String, base: &PyBasicAlgebra, number_of_gens: i32) -> PyResult<Self> {
         let rust_base = Box::new(base.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
 
         match uacalc::alg::FreeAlgebra::new_with_name_safe(name, rust_base, number_of_gens) {
@@ -55,7 +55,7 @@ impl PyFreeAlgebra {
     /// Create a new FreeAlgebra with progress control.
     ///
     /// Args:
-    ///     base (BasicSmallAlgebra): The base algebra
+    ///     base (BasicAlgebra): The base algebra
     ///     number_of_gens (int): Number of generators
     ///     make_universe (bool): Whether to compute the universe
     ///     thin_gens (bool): Whether to thin generators
@@ -65,7 +65,7 @@ impl PyFreeAlgebra {
     ///     ValueError: If construction fails
     #[staticmethod]
     fn new_with_progress(
-        base: &PyBasicSmallAlgebra,
+        base: &PyBasicAlgebra,
         number_of_gens: i32,
         make_universe: bool,
         thin_gens: bool,
@@ -82,7 +82,7 @@ impl PyFreeAlgebra {
     /// Create a new FreeAlgebra with relations (finitely presented algebra).
     ///
     /// Args:
-    ///     base (BasicSmallAlgebra): The base algebra
+    ///     base (BasicAlgebra): The base algebra
     ///     number_of_gens (int): Number of generators
     ///     relations (List[Equation]): The relations
     ///
@@ -90,7 +90,7 @@ impl PyFreeAlgebra {
     ///     ValueError: If construction fails
     #[staticmethod]
     fn new_with_relations(
-        base: &PyBasicSmallAlgebra,
+        base: &PyBasicAlgebra,
         number_of_gens: i32,
         relations: Vec<PyEquation>
     ) -> PyResult<Self> {
@@ -147,14 +147,14 @@ impl PyFreeAlgebra {
     /// Find equation of A not B.
     ///
     /// Args:
-    ///     a (BasicSmallAlgebra): Algebra A
-    ///     b (BasicSmallAlgebra): Algebra B
+    ///     a (BasicAlgebra): Algebra A
+    ///     b (BasicAlgebra): Algebra B
     ///     b_gens (List[int]): Generators for algebra B
     ///
     /// Returns:
     ///     Optional[Equation]: The equation, or None if not found
     #[staticmethod]
-    fn find_equation_of_a_not_b(a: &PyBasicSmallAlgebra, b: &PyBasicSmallAlgebra, b_gens: Vec<i32>) -> PyResult<Option<PyEquation>> {
+    fn find_equation_of_a_not_b(a: &PyBasicAlgebra, b: &PyBasicAlgebra, b_gens: Vec<i32>) -> PyResult<Option<PyEquation>> {
         let a_boxed = a.clone_box();
         let b_boxed = b.clone_box();
         

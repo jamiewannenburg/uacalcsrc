@@ -11,7 +11,7 @@ use quick_xml::Reader;
 use quick_xml::events::Event;
 
 use crate::alg::Algebra;
-use crate::alg::BasicSmallAlgebra;
+use crate::alg::BasicAlgebra;
 use crate::alg::op::Operation;
 use crate::alg::op::operations as Operations;
 use crate::util::horner as Horner;
@@ -92,7 +92,7 @@ impl AlgebraReader {
     /// 
     /// # Returns
     /// The algebra on success, error message on failure
-    pub fn read_algebra_file(&self) -> Result<BasicSmallAlgebra<i32>, String> {
+    pub fn read_algebra_file(&self) -> Result<BasicAlgebra<i32>, String> {
         let data = if let Some(ref path) = self.file_path {
             std::fs::read(path).map_err(|e| format!("Failed to read file: {}", e))?
         } else if let Some(ref data) = self.input_data {
@@ -108,7 +108,7 @@ impl AlgebraReader {
     /// 
     /// # Returns
     /// The algebra on success, error message on failure
-    pub fn read_algebra_from_stream(&self) -> Result<BasicSmallAlgebra<i32>, String> {
+    pub fn read_algebra_from_stream(&self) -> Result<BasicAlgebra<i32>, String> {
         self.read_algebra_file()
     }
     
@@ -116,7 +116,7 @@ impl AlgebraReader {
     /// 
     /// # Returns
     /// List of algebras on success, error message on failure
-    pub fn read_algebra_list_file(&self) -> Result<Vec<BasicSmallAlgebra<i32>>, String> {
+    pub fn read_algebra_list_file(&self) -> Result<Vec<BasicAlgebra<i32>>, String> {
         let data = if let Some(ref path) = self.file_path {
             std::fs::read(path).map_err(|e| format!("Failed to read file: {}", e))?
         } else if let Some(ref data) = self.input_data {
@@ -132,12 +132,12 @@ impl AlgebraReader {
     /// 
     /// # Returns
     /// List of algebras on success, error message on failure
-    pub fn read_algebra_list_from_stream(&self) -> Result<Vec<BasicSmallAlgebra<i32>>, String> {
+    pub fn read_algebra_list_from_stream(&self) -> Result<Vec<BasicAlgebra<i32>>, String> {
         self.read_algebra_list_file()
     }
     
     /// Parse a single algebra from XML data.
-    fn parse_single_algebra(&self, data: &[u8]) -> Result<BasicSmallAlgebra<i32>, String> {
+    fn parse_single_algebra(&self, data: &[u8]) -> Result<BasicAlgebra<i32>, String> {
         let algebras = self.parse_algebra_list(data)?;
         if algebras.is_empty() {
             Err("No algebras found in file".to_string())
@@ -147,7 +147,7 @@ impl AlgebraReader {
     }
     
     /// Parse a list of algebras from XML data.
-    fn parse_algebra_list(&self, data: &[u8]) -> Result<Vec<BasicSmallAlgebra<i32>>, String> {
+    fn parse_algebra_list(&self, data: &[u8]) -> Result<Vec<BasicAlgebra<i32>>, String> {
         let mut reader = Reader::from_reader(data);
         reader.trim_text(true);
         
@@ -208,8 +208,8 @@ struct AlgebraParser {
     ops: Vec<Box<dyn Operation>>,
     
     // Algebra tracking
-    algebra: Option<BasicSmallAlgebra<i32>>,
-    algebra_list: Vec<BasicSmallAlgebra<i32>>,
+    algebra: Option<BasicAlgebra<i32>>,
+    algebra_list: Vec<BasicAlgebra<i32>>,
     alg_type: i32,
     
     // Tag stack for context
@@ -470,10 +470,10 @@ impl AlgebraParser {
                     .map(|s| s.clone())
                     .unwrap_or_else(|| "unnamed".to_string());
                 
-                // Create BasicSmallAlgebra with integer universe {0, 1, ..., cardinality-1}
+                // Create BasicAlgebra with integer universe {0, 1, ..., cardinality-1}
                 let universe: HashSet<i32> = (0..self.cardinality).collect();
                 let ops = std::mem::take(&mut self.ops);
-                let algebra = BasicSmallAlgebra::new(
+                let algebra = BasicAlgebra::new(
                     name.clone(),
                     universe,
                     ops

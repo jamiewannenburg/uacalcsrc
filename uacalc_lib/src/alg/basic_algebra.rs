@@ -5,20 +5,20 @@ use uacalc::alg::*;
 use crate::alg::PySubalgebraLattice;
 use crate::alg::PyCongruenceLattice;
 
-/// Python wrapper for BasicSmallAlgebra (for integer universes)
+/// Python wrapper for BasicAlgebra (for integer universes)
 #[pyclass]
-pub struct PyBasicSmallAlgebra {
-    pub(crate) inner: uacalc::alg::BasicSmallAlgebra<i32>,
+pub struct PyBasicAlgebra {
+    pub(crate) inner: uacalc::alg::BasicAlgebra<i32>,
 }
 
-impl PyBasicSmallAlgebra {
-    /// Create PyBasicSmallAlgebra from inner Rust type (not exposed to Python)
-    pub fn from_inner(inner: uacalc::alg::BasicSmallAlgebra<i32>) -> Self {
-        PyBasicSmallAlgebra { inner }
+impl PyBasicAlgebra {
+    /// Create PyBasicAlgebra from inner Rust type (not exposed to Python)
+    pub fn from_inner(inner: uacalc::alg::BasicAlgebra<i32>) -> Self {
+        PyBasicAlgebra { inner }
     }
 
     /// Get the inner algebra (for internal use)
-    pub(crate) fn get_inner(&self) -> &uacalc::alg::BasicSmallAlgebra<i32> {
+    pub(crate) fn get_inner(&self) -> &uacalc::alg::BasicAlgebra<i32> {
         &self.inner
     }
 
@@ -30,33 +30,33 @@ impl PyBasicSmallAlgebra {
 }
 
 #[pymethods]
-impl PyBasicSmallAlgebra {
-    /// Create a new BasicSmallAlgebra.
+impl PyBasicAlgebra {
+    /// Create a new BasicAlgebra.
     ///
     /// Args:
     ///     name (str): The name of the algebra
     ///     universe (Set[int]): The universe set as a list of integers
     ///
     /// Returns:
-    ///     BasicSmallAlgebra: A new BasicSmallAlgebra instance
+    ///     BasicAlgebra: A new BasicAlgebra instance
     #[new]
     #[pyo3(signature = (name, universe))]
     fn new(name: String, universe: Vec<i32>) -> Self {
         let universe_set: std::collections::HashSet<i32> = universe.into_iter().collect();
         let operations = Vec::new(); // Start with no operations
-        PyBasicSmallAlgebra {
-            inner: uacalc::alg::BasicSmallAlgebra::new(name, universe_set, operations),
+        PyBasicAlgebra {
+            inner: uacalc::alg::BasicAlgebra::new(name, universe_set, operations),
         }
     }
 
-    /// Create a new BasicSmallAlgebra with a constant operation.
+    /// Create a new BasicAlgebra with a constant operation.
     ///
     /// Args:
     ///     name (str): The name of the algebra
     ///     universe (Set[int]): The universe set as a list of integers
     ///
     /// Returns:
-    ///     BasicSmallAlgebra: A new BasicSmallAlgebra instance with a constant operation
+    ///     BasicAlgebra: A new BasicAlgebra instance with a constant operation
     #[staticmethod]
     fn new_with_constant_op(name: String, universe: Vec<i32>) -> PyResult<Self> {
         let universe_set: std::collections::HashSet<i32> = universe.into_iter().collect();
@@ -71,8 +71,8 @@ impl PyBasicSmallAlgebra {
             }
         }
         
-        Ok(PyBasicSmallAlgebra {
-            inner: uacalc::alg::BasicSmallAlgebra::new(name, universe_set, operations),
+        Ok(PyBasicAlgebra {
+            inner: uacalc::alg::BasicAlgebra::new(name, universe_set, operations),
         })
     }
 
@@ -243,11 +243,11 @@ impl PyBasicSmallAlgebra {
 
     /// Python repr representation
     fn __repr__(&self) -> String {
-        format!("BasicSmallAlgebra({})", self.inner.to_string())
+        format!("BasicAlgebra({})", self.inner.to_string())
     }
 
     /// Python equality comparison
-    fn __eq__(&self, other: &PyBasicSmallAlgebra) -> bool {
+    fn __eq__(&self, other: &PyBasicAlgebra) -> bool {
         // Compare basic properties since we can't easily compare the full structure
         self.inner.name() == other.inner.name() &&
         self.inner.cardinality() == other.inner.cardinality()

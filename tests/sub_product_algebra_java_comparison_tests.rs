@@ -5,7 +5,7 @@
  * as the Java implementation.
  */
 
-use uacalc::alg::{SubProductAlgebra, BigProductAlgebra, SmallAlgebra, BasicSmallAlgebra};
+use uacalc::alg::{SubProductAlgebra, BigProductAlgebra, SmallAlgebra, BasicAlgebra};
 use uacalc::util::int_array::{IntArray, IntArrayTrait};
 use std::collections::HashSet;
 use serde_json::json;
@@ -27,7 +27,7 @@ fn create_simple_algebra(name: &str, size: usize) -> Box<dyn SmallAlgebra<Univer
         .expect("Failed to create constant operation");
     ops.push(const_op);
     
-    Box::new(BasicSmallAlgebra::new(
+    Box::new(BasicAlgebra::new(
         name.to_string(),
         universe,
         ops

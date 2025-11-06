@@ -2,7 +2,7 @@ use std::fs::File;
 use std::io::{BufRead, BufReader, Read, Write};
 use std::path::Path;
 use crate::alg::{SmallAlgebra, Algebra};
-use crate::alg::small_algebra::BasicSmallAlgebra;
+use crate::alg::small_algebra::BasicAlgebra;
 use crate::alg::op::{Operation, OperationSymbol, operations};
 use crate::io::{AlgebraReader, AlgebraWriter, Mace4Reader, ExtFileFilter, BadAlgebraFileException};
 use crate::util::horner;
@@ -153,7 +153,7 @@ fn read_alg_format(path: &Path) -> Result<Box<dyn SmallAlgebra<UniverseItem = i3
         .to_string();
     
     let universe: HashSet<i32> = (0..size).collect();
-    let alg = BasicSmallAlgebra::new(name, universe, operations);
+    let alg = BasicAlgebra::new(name, universe, operations);
     Ok(Box::new(alg))
 }
 
@@ -401,11 +401,11 @@ pub fn convert_to_xml(path: &Path) -> Result<(), BadAlgebraFileException> {
 /// # Examples
 /// ```
 /// use uacalc::io::algebra_io::write_algebra_file;
-/// use uacalc::alg::{SmallAlgebra, BasicSmallAlgebra, Algebra};
+/// use uacalc::alg::{SmallAlgebra, BasicAlgebra, Algebra};
 /// use std::collections::HashSet;
 /// use std::path::Path;
 /// 
-/// let alg = Box::new(BasicSmallAlgebra::new(
+/// let alg = Box::new(BasicAlgebra::new(
 ///     "test".to_string(),
 ///     HashSet::from([0, 1, 2]),
 ///     Vec::new()
@@ -433,11 +433,11 @@ pub fn write_algebra_file(alg: Box<dyn SmallAlgebra<UniverseItem = i32>>, path: 
 /// # Examples
 /// ```
 /// use uacalc::io::algebra_io::write_algebra_file_with_style;
-/// use uacalc::alg::{SmallAlgebra, BasicSmallAlgebra, Algebra};
+/// use uacalc::alg::{SmallAlgebra, BasicAlgebra, Algebra};
 /// use std::collections::HashSet;
 /// use std::path::Path;
 /// 
-/// let alg = Box::new(BasicSmallAlgebra::new(
+/// let alg = Box::new(BasicAlgebra::new(
 ///     "test".to_string(),
 ///     HashSet::from([0, 1, 2]),
 ///     Vec::new()

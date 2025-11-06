@@ -154,13 +154,13 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::alg::small_algebra::BasicSmallAlgebra;
+    use crate::alg::small_algebra::BasicAlgebra;
     use std::collections::HashSet;
     
     #[test]
     fn test_quotient_element_creation() {
         // Create a simple super algebra
-        let super_algebra = Box::new(BasicSmallAlgebra::new(
+        let super_algebra = Box::new(BasicAlgebra::new(
             "A".to_string(),
             HashSet::from([0, 1, 2, 3]),
             Vec::new()

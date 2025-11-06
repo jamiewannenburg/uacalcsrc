@@ -166,9 +166,9 @@ pub struct AlgebraFromMinimalSets {
 
 ### Critical Issues
 
-1. **Missing BasicAlgebra**: The Java class extends `BasicAlgebra`, but Rust only has `BasicSmallAlgebra`. Need to either:
+1. **Missing BasicAlgebra**: The Java class extends `BasicAlgebra`, but Rust only has `BasicAlgebra`. Need to either:
    - Implement `BasicAlgebra` as a separate class, or
-   - Modify `AlgebraFromMinimalSets` to extend `BasicSmallAlgebra` instead
+   - Modify `AlgebraFromMinimalSets` to extend `BasicAlgebra` instead
 
 2. **Inheritance vs Composition**: Java uses inheritance, but Rust uses composition. Need to design proper composition structure.
 
@@ -176,7 +176,7 @@ pub struct AlgebraFromMinimalSets {
 
 ### Recommendations
 
-1. **IMMEDIATE**: Implement `BasicAlgebra` class or modify design to use `BasicSmallAlgebra`
+1. **IMMEDIATE**: Implement `BasicAlgebra` class or modify design to use `BasicAlgebra`
 2. **NEXT**: Implement the core `AlgebraFromMinimalSets` struct with proper composition
 3. **THEN**: Add Python bindings and Java wrapper
 4. **FINALLY**: Add comprehensive tests

@@ -104,7 +104,7 @@ pub struct BasicSet {
 
 ### Dependencies Status:
 - **IntArray**: ✅ Complete - Fully implemented with comprehensive tests
-- **SmallAlgebra**: ✅ Complete - Trait and BasicSmallAlgebra implementation ready
+- **SmallAlgebra**: ✅ Complete - Trait and BasicAlgebra implementation ready
 - **ArrayString**: ✅ Complete - Full utility functions implemented
 
 ### Implementation Details:

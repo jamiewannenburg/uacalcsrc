@@ -1,4 +1,4 @@
-use uacalc::alg::{Algebra, SmallAlgebra, BasicSmallAlgebra, AlgebraType, UnaryTermsMonoid};
+use uacalc::alg::{Algebra, SmallAlgebra, BasicAlgebra, AlgebraType, UnaryTermsMonoid};
 use uacalc::alg::op::{Operation, OperationSymbol};
 use uacalc::alg::op::operations;
 use std::collections::HashSet;
@@ -17,7 +17,7 @@ mod unary_terms_monoid_tests {
             .expect("Failed to create constant operation");
         ops.push(const_op);
         
-        Box::new(BasicSmallAlgebra::new(
+        Box::new(BasicAlgebra::new(
             "TestAlgebra".to_string(),
             universe,
             ops,

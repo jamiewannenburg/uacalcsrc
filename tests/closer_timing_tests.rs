@@ -26,17 +26,17 @@ fn test_ms_to_string_compatibility() {
 
 #[test]
 fn test_update_pass_compatibility() {
-    use uacalc::alg::{CloserTiming, BigProductAlgebra, BasicSmallAlgebra};
+    use uacalc::alg::{CloserTiming, BigProductAlgebra, BasicAlgebra};
     use std::collections::HashSet;
     
     // Create a simple product algebra for testing
-    let alg1 = Box::new(BasicSmallAlgebra::new(
+    let alg1 = Box::new(BasicAlgebra::new(
         "A1".to_string(),
         HashSet::from([0, 1]),
         Vec::new()
     )) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
     
-    let alg2 = Box::new(BasicSmallAlgebra::new(
+    let alg2 = Box::new(BasicAlgebra::new(
         "A2".to_string(),
         HashSet::from([0, 1]),
         Vec::new()
@@ -54,9 +54,9 @@ fn test_update_pass_compatibility() {
 
 #[test]
 fn test_increment_next_pass_size_compatibility() {
-    use uacalc::alg::{CloserTiming, BigProductAlgebra, BasicSmallAlgebra};
+    use uacalc::alg::{CloserTiming, BigProductAlgebra, BasicAlgebra};
     use std::collections::HashSet;
-    let alg1 = Box::new(BasicSmallAlgebra::new(
+    let alg1 = Box::new(BasicAlgebra::new(
         "A1".to_string(),
         HashSet::from([0, 1]),
         Vec::new()

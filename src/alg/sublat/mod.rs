@@ -476,11 +476,11 @@ pub const MAX_DRAWABLE_SIZE: usize = 100;
 /// # Examples
 /// ```
 /// use uacalc::alg::sublat::SubalgebraLattice;
-/// use uacalc::alg::{SmallAlgebra, BasicSmallAlgebra};
+/// use uacalc::alg::{SmallAlgebra, BasicAlgebra};
 /// use std::collections::HashSet;
 /// 
 /// // Create a small algebra
-/// let alg = Box::new(BasicSmallAlgebra::new(
+/// let alg = Box::new(BasicAlgebra::new(
 ///     "TestAlg".to_string(),
 ///     HashSet::from([0, 1, 2]),
 ///     Vec::new()
@@ -586,10 +586,10 @@ where
     /// # Examples
     /// ```
     /// use uacalc::alg::sublat::SubalgebraLattice;
-    /// use uacalc::alg::{SmallAlgebra, BasicSmallAlgebra};
+    /// use uacalc::alg::{SmallAlgebra, BasicAlgebra};
     /// use std::collections::HashSet;
     /// 
-    /// let alg = Box::new(BasicSmallAlgebra::new(
+    /// let alg = Box::new(BasicAlgebra::new(
     ///     "TestAlg".to_string(),
     ///     HashSet::from([0, 1]),
     ///     Vec::new()
@@ -814,10 +814,10 @@ where
     /// # Examples
     /// ```
     /// use uacalc::alg::sublat::SubalgebraLattice;
-    /// use uacalc::alg::{SmallAlgebra, BasicSmallAlgebra};
+    /// use uacalc::alg::{SmallAlgebra, BasicAlgebra};
     /// use std::collections::HashSet;
     /// 
-    /// let alg = Box::new(BasicSmallAlgebra::new(
+    /// let alg = Box::new(BasicAlgebra::new(
     ///     "TestAlg".to_string(),
     ///     HashSet::from([0, 1, 2]),
     ///     Vec::new()

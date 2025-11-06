@@ -91,7 +91,7 @@ pub struct ParameterizedAlgebra {
 - **Tests**: ✅ IMPLEMENTED - Tests in `tests/parameterized_algebra_tests.rs` and `python/uacalc/tests/test_parameterized_algebra.py`
 
 **Dependency Status**:
-- **BasicAlgebra**: ✅ READY - Implemented as `BasicSmallAlgebra<T>` in `src/alg/small_algebra.rs`
+- **BasicAlgebra**: ✅ READY - Implemented as `BasicAlgebra<T>` in `src/alg/small_algebra.rs`
 - **ParameterizedOperation**: ✅ IMPLEMENTED - Full struct exists in `src/alg/op/mod.rs`
 
 **Partial Implementation Notes**:

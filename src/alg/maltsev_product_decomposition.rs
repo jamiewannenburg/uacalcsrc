@@ -18,11 +18,11 @@ use crate::alg::subalgebra::Subalgebra;
 /// 
 /// # Examples
 /// ```
-/// use uacalc::alg::{MaltsevProductDecomposition, SmallAlgebra, BasicSmallAlgebra, Partition, Algebra};
+/// use uacalc::alg::{MaltsevProductDecomposition, SmallAlgebra, BasicAlgebra, Partition, Algebra};
 /// use std::collections::HashSet;
 /// 
 /// // Create a simple algebra with 4 elements
-/// let algebra = Box::new(BasicSmallAlgebra::new(
+/// let algebra = Box::new(BasicAlgebra::new(
 ///     "A".to_string(),
 ///     HashSet::from([0, 1, 2, 3]),
 ///     Vec::new()
@@ -65,10 +65,10 @@ impl MaltsevProductDecomposition {
     /// 
     /// # Examples
     /// ```
-    /// use uacalc::alg::{MaltsevProductDecomposition, SmallAlgebra, BasicSmallAlgebra, Partition, Algebra};
+    /// use uacalc::alg::{MaltsevProductDecomposition, SmallAlgebra, BasicAlgebra, Partition, Algebra};
     /// use std::collections::HashSet;
     /// 
-    /// let algebra = Box::new(BasicSmallAlgebra::new(
+    /// let algebra = Box::new(BasicAlgebra::new(
     ///     "A".to_string(),
     ///     HashSet::from([0, 1, 2, 3]),
     ///     Vec::new()
@@ -140,10 +140,10 @@ impl MaltsevProductDecomposition {
     /// 
     /// # Examples
     /// ```
-    /// use uacalc::alg::{MaltsevProductDecomposition, SmallAlgebra, BasicSmallAlgebra, Partition};
+    /// use uacalc::alg::{MaltsevProductDecomposition, SmallAlgebra, BasicAlgebra, Partition};
     /// use std::collections::HashSet;
     /// 
-    /// let algebra = Box::new(BasicSmallAlgebra::new(
+    /// let algebra = Box::new(BasicAlgebra::new(
     ///     "A".to_string(),
     ///     HashSet::from([0, 1, 2, 3]),
     ///     Vec::new()

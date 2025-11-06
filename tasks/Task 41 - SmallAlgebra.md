@@ -143,8 +143,8 @@ pub enum AlgebraType {
 **Completed Components:**
 - ✅ SmallAlgebra trait implemented in `src/alg/small_algebra.rs`
 - ✅ AlgebraType enum with all 13 algebra types
-- ✅ BasicSmallAlgebra concrete implementation
-- ✅ Python bindings available through uacalc_lib (`PyBasicSmallAlgebra`)
+- ✅ BasicAlgebra concrete implementation
+- ✅ Python bindings available through uacalc_lib (`PyBasicAlgebra`)
 - ✅ Integration with Algebra trait verified
 - ⚠️ Lattice methods use placeholder implementations (pending CongruenceLattice/SubalgebraLattice)
 - ⚠️ Limited test coverage (no dedicated SmallAlgebra tests)

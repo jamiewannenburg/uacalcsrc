@@ -207,10 +207,10 @@ pub trait Algebra {
 **Completed Components:**
 - ✅ Algebra trait implemented in `src/alg/algebra.rs` with all 28 methods
 - ✅ GeneralAlgebra implementation in `src/alg/general_algebra.rs` 
-- ✅ BasicSmallAlgebra implementation in `src/alg/small_algebra.rs`
-- ✅ Python bindings in `uacalc_lib/src/alg.rs` with PyGeneralAlgebra and PyBasicSmallAlgebra
+- ✅ BasicAlgebra implementation in `src/alg/small_algebra.rs`
+- ✅ Python bindings in `uacalc_lib/src/alg.rs` with PyGeneralAlgebra and PyBasicAlgebra
 - ✅ Java CLI wrappers: GeneralAlgebraWrapper and SimpleAlgebraWrapper
-- ✅ All classes accessible through Python: `uacalc_lib.alg.GeneralAlgebra`, `uacalc_lib.alg.BasicSmallAlgebra`
+- ✅ All classes accessible through Python: `uacalc_lib.alg.GeneralAlgebra`, `uacalc_lib.alg.BasicAlgebra`
 - ✅ Cardinality constants exported: CARDINALITY_UNKNOWN, CARDINALITY_FINITE, etc.
 - ✅ Compilation successful with no errors
 - ✅ Runtime functionality verified through testing (20 tests passing)

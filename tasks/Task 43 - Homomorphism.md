@@ -270,7 +270,7 @@ The Homomorphism class needs to implement:
 
 #### Tests (⚠️ Partial)
 - **Rust Tests:** 4/9 passing (tests not requiring Java comparison pass)
-- **Python Tests:** Created but need BasicSmallAlgebra constructor fix
+- **Python Tests:** Created but need BasicAlgebra constructor fix
 - **Test Files:**
   - `tests/alg/homomorphism_tests.rs` - Rust tests
   - `python/uacalc/tests/test_homomorphism.py` - Python tests

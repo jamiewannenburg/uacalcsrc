@@ -194,7 +194,7 @@ This class depends on:
 - `CongruenceLattice` - NOT IMPLEMENTED (Task 80)
 - `SubalgebraLattice` - NOT IMPLEMENTED (Task 76) 
 - `GeneralAlgebra` - PARTIALLY IMPLEMENTED (generic version exists, but PolinLikeAlgebra needs specific version)
-- `SmallAlgebra` - IMPLEMENTED (trait exists with BasicSmallAlgebra concrete implementation)
+- `SmallAlgebra` - IMPLEMENTED (trait exists with BasicAlgebra concrete implementation)
 
 **Ready Dependencies:**
 - `Operation` trait - IMPLEMENTED

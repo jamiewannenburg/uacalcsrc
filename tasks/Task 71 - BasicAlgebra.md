@@ -143,10 +143,10 @@ pub struct BasicAlgebra {
 ### Implementation Status: ✅ **COMPLETED** (100%)
 
 **Completed Components:**
-- ✅ BasicSmallAlgebra fully implemented in `src/alg/small_algebra.rs` (Rust equivalent of BasicAlgebra)
+- ✅ BasicAlgebra fully implemented in `src/alg/small_algebra.rs` (Rust equivalent of BasicAlgebra)
 - ✅ Thread-safe caching using `RwLock` for universe list and order
 - ✅ All public methods implemented including con/sub lattice methods
-- ✅ Python bindings in `uacalc_lib/src/alg.rs` with complete PyBasicSmallAlgebra class
+- ✅ Python bindings in `uacalc_lib/src/alg.rs` with complete PyBasicAlgebra class
 - ✅ Java wrapper in `java_wrapper/src/alg/BasicAlgebraWrapper.java` with all commands
 - ✅ Comprehensive Rust test suite (15 tests) - ALL PASSING
 - ✅ Python test suite created in `python/uacalc/tests/test_basic_algebra.py`
@@ -155,7 +155,7 @@ pub struct BasicAlgebra {
 **Implementation Details:**
 - **Interior Mutability**: Uses `std::sync::RwLock` for thread-safe lazy caching
 - **Implemented Methods**:
-  - `new()` - Constructor for creating BasicSmallAlgebra
+  - `new()` - Constructor for creating BasicAlgebra
   - `get_element()` - Get element by index
   - `element_index()` - Get index of element
   - `get_universe_list()` - Get universe as vector
@@ -189,4 +189,4 @@ pub struct BasicAlgebra {
 2. Complete convert_to_default_value_ops() implementation
 3. Add integration tests with Java wrapper
 
-**Note**: Implemented as `BasicSmallAlgebra` in Rust to better reflect its dual inheritance from both `GeneralAlgebra` and `SmallAlgebra` interfaces.
+**Note**: Implemented as `BasicAlgebra` in Rust to better reflect its dual inheritance from both `GeneralAlgebra` and `SmallAlgebra` interfaces.

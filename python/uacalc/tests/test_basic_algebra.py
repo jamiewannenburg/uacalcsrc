@@ -1,7 +1,7 @@
 """
-Tests for BasicSmallAlgebra (BasicAlgebra in Java).
+Tests for BasicAlgebra (BasicAlgebra in Java).
 
-This module tests the BasicSmallAlgebra class which represents small algebras
+This module tests the BasicAlgebra class which represents small algebras
 with a map from {0, ..., n-1} to the elements of the algebra.
 
 Note: This is a partial implementation that excludes con() and sub() methods
@@ -12,13 +12,13 @@ import unittest
 import uacalc_lib
 
 
-class TestBasicSmallAlgebra(unittest.TestCase):
-    """Test BasicSmallAlgebra functionality."""
+class TestBasicAlgebra(unittest.TestCase):
+    """Test BasicAlgebra functionality."""
     
     def test_creation(self):
-        """Test creating a BasicSmallAlgebra."""
-        BasicSmallAlgebra = uacalc_lib.alg.BasicSmallAlgebra
-        alg = BasicSmallAlgebra("test", [0, 1, 2, 3, 4])
+        """Test creating a BasicAlgebra."""
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
+        alg = BasicAlgebra("test", [0, 1, 2, 3, 4])
         
         self.assertEqual(alg.name(), "test")
         self.assertEqual(alg.cardinality(), 5)
@@ -26,16 +26,16 @@ class TestBasicSmallAlgebra(unittest.TestCase):
     
     def test_int_universe(self):
         """Test int_universe method."""
-        BasicSmallAlgebra = uacalc_lib.alg.BasicSmallAlgebra
-        alg = BasicSmallAlgebra("test", [0, 1, 2, 3, 4])
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
+        alg = BasicAlgebra("test", [0, 1, 2, 3, 4])
         
         # Initially, universe list is not cached so int_universe returns True
         self.assertTrue(alg.int_universe())
     
     def test_get_element(self):
         """Test getting elements by index."""
-        BasicSmallAlgebra = uacalc_lib.alg.BasicSmallAlgebra
-        alg = BasicSmallAlgebra("test", [0, 1, 2, 3, 4])
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
+        alg = BasicAlgebra("test", [0, 1, 2, 3, 4])
         
         # Get elements
         elem0 = alg.get_element(0)
@@ -54,8 +54,8 @@ class TestBasicSmallAlgebra(unittest.TestCase):
     
     def test_element_index(self):
         """Test getting element indices."""
-        BasicSmallAlgebra = uacalc_lib.alg.BasicSmallAlgebra
-        alg = BasicSmallAlgebra("test", [0, 1, 2, 3, 4])
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
+        alg = BasicAlgebra("test", [0, 1, 2, 3, 4])
         
         # Get indices
         idx0 = alg.element_index(0)
@@ -74,8 +74,8 @@ class TestBasicSmallAlgebra(unittest.TestCase):
     
     def test_get_universe_list(self):
         """Test getting the universe as a list."""
-        BasicSmallAlgebra = uacalc_lib.alg.BasicSmallAlgebra
-        alg = BasicSmallAlgebra("test", [0, 1, 2, 3, 4])
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
+        alg = BasicAlgebra("test", [0, 1, 2, 3, 4])
         
         universe_list = alg.get_universe_list()
         self.assertIsNotNone(universe_list)
@@ -87,8 +87,8 @@ class TestBasicSmallAlgebra(unittest.TestCase):
     
     def test_get_universe_order(self):
         """Test getting the universe order map."""
-        BasicSmallAlgebra = uacalc_lib.alg.BasicSmallAlgebra
-        alg = BasicSmallAlgebra("test", [0, 1, 2, 3, 4])
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
+        alg = BasicAlgebra("test", [0, 1, 2, 3, 4])
         
         universe_order = alg.get_universe_order()
         self.assertIsNotNone(universe_order)
@@ -102,25 +102,25 @@ class TestBasicSmallAlgebra(unittest.TestCase):
     
     def test_algebra_type(self):
         """Test algebra type."""
-        BasicSmallAlgebra = uacalc_lib.alg.BasicSmallAlgebra
-        alg = BasicSmallAlgebra("test", [0, 1, 2])
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
+        alg = BasicAlgebra("test", [0, 1, 2])
         
         self.assertEqual(alg.algebra_type(), "Basic")
     
     def test_cardinality(self):
         """Test cardinality with different sizes."""
-        BasicSmallAlgebra = uacalc_lib.alg.BasicSmallAlgebra
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
         
-        alg3 = BasicSmallAlgebra("test3", [0, 1, 2])
+        alg3 = BasicAlgebra("test3", [0, 1, 2])
         self.assertEqual(alg3.cardinality(), 3)
         
-        alg10 = BasicSmallAlgebra("test10", list(range(10)))
+        alg10 = BasicAlgebra("test10", list(range(10)))
         self.assertEqual(alg10.cardinality(), 10)
     
     def test_name_operations(self):
         """Test name getter and setter."""
-        BasicSmallAlgebra = uacalc_lib.alg.BasicSmallAlgebra
-        alg = BasicSmallAlgebra("original", [0, 1, 2, 3, 4])
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
+        alg = BasicAlgebra("original", [0, 1, 2, 3, 4])
         
         self.assertEqual(alg.name(), "original")
         
@@ -130,8 +130,8 @@ class TestBasicSmallAlgebra(unittest.TestCase):
     
     def test_description_operations(self):
         """Test description getter and setter."""
-        BasicSmallAlgebra = uacalc_lib.alg.BasicSmallAlgebra
-        alg = BasicSmallAlgebra("test", [0, 1, 2, 3, 4])
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
+        alg = BasicAlgebra("test", [0, 1, 2, 3, 4])
         
         # Initially no description
         self.assertIsNone(alg.description())
@@ -146,8 +146,8 @@ class TestBasicSmallAlgebra(unittest.TestCase):
     
     def test_reset_con_and_sub(self):
         """Test reset_con_and_sub method (partial implementation)."""
-        BasicSmallAlgebra = uacalc_lib.alg.BasicSmallAlgebra
-        alg = BasicSmallAlgebra("test", [0, 1, 2, 3, 4])
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
+        alg = BasicAlgebra("test", [0, 1, 2, 3, 4])
         
         # This should not raise an error (even though con/sub are not implemented)
         try:
@@ -157,8 +157,8 @@ class TestBasicSmallAlgebra(unittest.TestCase):
     
     def test_convert_to_default_value_ops(self):
         """Test convert_to_default_value_ops method (partial implementation)."""
-        BasicSmallAlgebra = uacalc_lib.alg.BasicSmallAlgebra
-        alg = BasicSmallAlgebra("test", [0, 1, 2, 3, 4])
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
+        alg = BasicAlgebra("test", [0, 1, 2, 3, 4])
         
         # This should not raise an error (even though it's not fully implemented)
         try:
@@ -168,40 +168,40 @@ class TestBasicSmallAlgebra(unittest.TestCase):
     
     def test_is_unary(self):
         """Test is_unary method."""
-        BasicSmallAlgebra = uacalc_lib.alg.BasicSmallAlgebra
-        alg = BasicSmallAlgebra("test", [0, 1, 2, 3, 4])
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
+        alg = BasicAlgebra("test", [0, 1, 2, 3, 4])
         
         # With no operations, it should be unary
         self.assertTrue(alg.is_unary())
     
     def test_is_idempotent(self):
         """Test is_idempotent method."""
-        BasicSmallAlgebra = uacalc_lib.alg.BasicSmallAlgebra
-        alg = BasicSmallAlgebra("test", [0, 1, 2, 3, 4])
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
+        alg = BasicAlgebra("test", [0, 1, 2, 3, 4])
         
         # With no operations, it should be idempotent
         self.assertTrue(alg.is_idempotent())
     
     def test_is_total(self):
         """Test is_total method."""
-        BasicSmallAlgebra = uacalc_lib.alg.BasicSmallAlgebra
-        alg = BasicSmallAlgebra("test", [0, 1, 2, 3, 4])
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
+        alg = BasicAlgebra("test", [0, 1, 2, 3, 4])
         
         # With no operations, it should be total
         self.assertTrue(alg.is_total())
     
     def test_monitoring(self):
         """Test monitoring method."""
-        BasicSmallAlgebra = uacalc_lib.alg.BasicSmallAlgebra
-        alg = BasicSmallAlgebra("test", [0, 1, 2, 3, 4])
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
+        alg = BasicAlgebra("test", [0, 1, 2, 3, 4])
         
         # Initially monitoring should be false
         self.assertFalse(alg.monitoring())
     
     def test_input_size(self):
         """Test input_size method."""
-        BasicSmallAlgebra = uacalc_lib.alg.BasicSmallAlgebra
-        alg = BasicSmallAlgebra("test", [0, 1, 2, 3, 4])
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
+        alg = BasicAlgebra("test", [0, 1, 2, 3, 4])
         
         # Input size should match cardinality for algebras with no operations
         input_size = alg.input_size()
@@ -209,8 +209,8 @@ class TestBasicSmallAlgebra(unittest.TestCase):
     
     def test_str_representation(self):
         """Test string representation."""
-        BasicSmallAlgebra = uacalc_lib.alg.BasicSmallAlgebra
-        alg = BasicSmallAlgebra("test", [0, 1, 2])
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
+        alg = BasicAlgebra("test", [0, 1, 2])
         
         str_repr = str(alg)
         self.assertIsInstance(str_repr, str)
@@ -218,19 +218,19 @@ class TestBasicSmallAlgebra(unittest.TestCase):
     
     def test_repr_representation(self):
         """Test repr representation."""
-        BasicSmallAlgebra = uacalc_lib.alg.BasicSmallAlgebra
-        alg = BasicSmallAlgebra("test", [0, 1, 2])
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
+        alg = BasicAlgebra("test", [0, 1, 2])
         
         repr_str = repr(alg)
         self.assertIsInstance(repr_str, str)
-        self.assertIn("BasicSmallAlgebra", repr_str)
+        self.assertIn("BasicAlgebra", repr_str)
     
     def test_equality(self):
         """Test equality comparison."""
-        BasicSmallAlgebra = uacalc_lib.alg.BasicSmallAlgebra
-        alg1 = BasicSmallAlgebra("test", [0, 1, 2])
-        alg2 = BasicSmallAlgebra("test", [0, 1, 2])
-        alg3 = BasicSmallAlgebra("different", [0, 1, 2])
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
+        alg1 = BasicAlgebra("test", [0, 1, 2])
+        alg2 = BasicAlgebra("test", [0, 1, 2])
+        alg3 = BasicAlgebra("different", [0, 1, 2])
         
         # Same name and cardinality should be equal
         self.assertEqual(alg1, alg2)

@@ -53,11 +53,11 @@ class TestMaltsevProductDecomposition(unittest.TestCase):
     def test_basic_creation(self):
         """Test basic creation of MaltsevProductDecomposition."""
         # Create a basic algebra with 4 elements
-        BasicSmallAlgebra = uacalc_lib.alg.BasicSmallAlgebra
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
         Partition = uacalc_lib.alg.Partition
         MaltsevProductDecomposition = uacalc_lib.alg.MaltsevProductDecomposition
         
-        algebra = BasicSmallAlgebra("TestAlgebra", [0, 1, 2, 3])
+        algebra = BasicAlgebra("TestAlgebra", [0, 1, 2, 3])
         
         # Create a congruence with blocks {0,1}, {2,3}
         congruence = Partition([-2, 0, -2, 2])
@@ -80,11 +80,11 @@ class TestMaltsevProductDecomposition(unittest.TestCase):
     
     def test_single_block_congruence(self):
         """Test decomposition with single block congruence."""
-        BasicSmallAlgebra = uacalc_lib.alg.BasicSmallAlgebra
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
         Partition = uacalc_lib.alg.Partition
         MaltsevProductDecomposition = uacalc_lib.alg.MaltsevProductDecomposition
         
-        algebra = BasicSmallAlgebra("TestAlgebra", [0, 1, 2])
+        algebra = BasicAlgebra("TestAlgebra", [0, 1, 2])
         
         # Create a congruence with one block {0,1,2}
         congruence = Partition([-3, 0, 0])
@@ -107,11 +107,11 @@ class TestMaltsevProductDecomposition(unittest.TestCase):
     
     def test_zero_congruence(self):
         """Test decomposition with zero congruence (all singleton blocks)."""
-        BasicSmallAlgebra = uacalc_lib.alg.BasicSmallAlgebra
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
         Partition = uacalc_lib.alg.Partition
         MaltsevProductDecomposition = uacalc_lib.alg.MaltsevProductDecomposition
         
-        algebra = BasicSmallAlgebra("TestAlgebra", [0, 1, 2])
+        algebra = BasicAlgebra("TestAlgebra", [0, 1, 2])
         
         # Create zero congruence (all singleton blocks)
         congruence = Partition([-1, -1, -1])
@@ -134,11 +134,11 @@ class TestMaltsevProductDecomposition(unittest.TestCase):
     
     def test_get_congruence(self):
         """Test getting the congruence partition."""
-        BasicSmallAlgebra = uacalc_lib.alg.BasicSmallAlgebra
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
         Partition = uacalc_lib.alg.Partition
         MaltsevProductDecomposition = uacalc_lib.alg.MaltsevProductDecomposition
         
-        algebra = BasicSmallAlgebra("TestAlgebra", [0, 1, 2, 3])
+        algebra = BasicAlgebra("TestAlgebra", [0, 1, 2, 3])
         congruence = Partition([-2, 0, -2, 2])
         orig_blocks = congruence.number_of_blocks()
         
@@ -157,11 +157,11 @@ class TestMaltsevProductDecomposition(unittest.TestCase):
     
     def test_invalid_congruence_size(self):
         """Test that creating decomposition with mismatched sizes raises error."""
-        BasicSmallAlgebra = uacalc_lib.alg.BasicSmallAlgebra
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
         Partition = uacalc_lib.alg.Partition
         MaltsevProductDecomposition = uacalc_lib.alg.MaltsevProductDecomposition
         
-        algebra = BasicSmallAlgebra("TestAlgebra", [0, 1, 2, 3])
+        algebra = BasicAlgebra("TestAlgebra", [0, 1, 2, 3])
         
         # Create congruence with wrong size (5 elements)
         congruence = Partition([-2, 0, -2, 2, -1])
@@ -174,11 +174,11 @@ class TestMaltsevProductDecomposition(unittest.TestCase):
     
     def test_str_repr(self):
         """Test string and repr methods."""
-        BasicSmallAlgebra = uacalc_lib.alg.BasicSmallAlgebra
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
         Partition = uacalc_lib.alg.Partition
         MaltsevProductDecomposition = uacalc_lib.alg.MaltsevProductDecomposition
         
-        algebra = BasicSmallAlgebra("TestAlgebra", [0, 1, 2, 3])
+        algebra = BasicAlgebra("TestAlgebra", [0, 1, 2, 3])
         congruence = Partition([-2, 0, -2, 2])
         decomp = MaltsevProductDecomposition(algebra, congruence)
         
@@ -194,11 +194,11 @@ class TestMaltsevProductDecomposition(unittest.TestCase):
     
     def test_larger_algebra(self):
         """Test decomposition with larger algebra."""
-        BasicSmallAlgebra = uacalc_lib.alg.BasicSmallAlgebra
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
         Partition = uacalc_lib.alg.Partition
         MaltsevProductDecomposition = uacalc_lib.alg.MaltsevProductDecomposition
         
-        algebra = BasicSmallAlgebra("TestAlgebra", [0, 1, 2, 3, 4, 5])
+        algebra = BasicAlgebra("TestAlgebra", [0, 1, 2, 3, 4, 5])
         
         # Create congruence with blocks {0,1,2}, {3,4}, {5}
         congruence = Partition([-3, 0, 0, -2, 3, -1])

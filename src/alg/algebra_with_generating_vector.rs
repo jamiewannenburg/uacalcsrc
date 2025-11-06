@@ -17,11 +17,11 @@ use crate::alg::quotient_element::QuotientElement;
 /// 
 /// # Examples
 /// ```
-/// use uacalc::alg::{AlgebraWithGeneratingVector, SmallAlgebra, BasicSmallAlgebra};
+/// use uacalc::alg::{AlgebraWithGeneratingVector, SmallAlgebra, BasicAlgebra};
 /// use std::collections::HashSet;
 /// 
 /// // Create a small algebra
-/// let alg = Box::new(BasicSmallAlgebra::new(
+/// let alg = Box::new(BasicAlgebra::new(
 ///     "A".to_string(),
 ///     HashSet::from([0, 1, 2]),
 ///     Vec::new()
@@ -70,10 +70,10 @@ where
     /// 
     /// # Examples
     /// ```
-    /// use uacalc::alg::{AlgebraWithGeneratingVector, SmallAlgebra, BasicSmallAlgebra};
+    /// use uacalc::alg::{AlgebraWithGeneratingVector, SmallAlgebra, BasicAlgebra};
     /// use std::collections::HashSet;
     /// 
-    /// let alg = Box::new(BasicSmallAlgebra::new(
+    /// let alg = Box::new(BasicAlgebra::new(
     ///     "A".to_string(),
     ///     HashSet::from([0, 1, 2]),
     ///     Vec::new()
@@ -119,16 +119,16 @@ where
     /// 
     /// # Examples
     /// ```
-    /// use uacalc::alg::{AlgebraWithGeneratingVector, SmallAlgebra, BasicSmallAlgebra};
+    /// use uacalc::alg::{AlgebraWithGeneratingVector, SmallAlgebra, BasicAlgebra};
     /// use std::collections::HashSet;
     /// 
-    /// let alg1 = Box::new(BasicSmallAlgebra::new(
+    /// let alg1 = Box::new(BasicAlgebra::new(
     ///     "A1".to_string(),
     ///     HashSet::from([0, 1]),
     ///     Vec::new()
     /// )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
     /// 
-    /// let alg2 = Box::new(BasicSmallAlgebra::new(
+    /// let alg2 = Box::new(BasicAlgebra::new(
     ///     "A2".to_string(),
     ///     HashSet::from([0, 1, 2]),
     ///     Vec::new()
@@ -182,10 +182,10 @@ where
     /// 
     /// # Examples
     /// ```
-    /// use uacalc::alg::{AlgebraWithGeneratingVector, SmallAlgebra, BasicSmallAlgebra};
+    /// use uacalc::alg::{AlgebraWithGeneratingVector, SmallAlgebra, BasicAlgebra};
     /// use std::collections::HashSet;
     /// 
-    /// let alg = Box::new(BasicSmallAlgebra::new(
+    /// let alg = Box::new(BasicAlgebra::new(
     ///     "A".to_string(),
     ///     HashSet::from([0, 1, 2]),
     ///     Vec::new()
@@ -218,11 +218,11 @@ where
     /// 
     /// # Examples
     /// ```
-    /// use uacalc::alg::{AlgebraWithGeneratingVector, SmallAlgebra, BasicSmallAlgebra};
+    /// use uacalc::alg::{AlgebraWithGeneratingVector, SmallAlgebra, BasicAlgebra};
     /// use uacalc::eq::Equation;
     /// use std::collections::HashSet;
     /// 
-    /// let alg = Box::new(BasicSmallAlgebra::new(
+    /// let alg = Box::new(BasicAlgebra::new(
     ///     "A".to_string(),
     ///     HashSet::from([0, 1, 2]),
     ///     Vec::new()
@@ -485,12 +485,12 @@ pub type AlgebraWithGeneratingVectorI32 = AlgebraWithGeneratingVector<i32>;
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::alg::small_algebra::BasicSmallAlgebra;
+    use crate::alg::small_algebra::BasicAlgebra;
     use std::collections::HashSet;
     
     #[test]
     fn test_algebra_with_generating_vector_creation() {
-        let alg = Box::new(BasicSmallAlgebra::new(
+        let alg = Box::new(BasicAlgebra::new(
             "TestAlg".to_string(),
             HashSet::from([0, 1, 2]),
             Vec::new()
@@ -504,7 +504,7 @@ mod tests {
     
     #[test]
     fn test_is_image_of_same_algebra() {
-        let alg = Box::new(BasicSmallAlgebra::new(
+        let alg = Box::new(BasicAlgebra::new(
             "TestAlg".to_string(),
             HashSet::from([0, 1]),
             Vec::new()
@@ -520,13 +520,13 @@ mod tests {
     
     #[test]
     fn test_is_image_of_different_cardinality() {
-        let alg1 = Box::new(BasicSmallAlgebra::new(
+        let alg1 = Box::new(BasicAlgebra::new(
             "Alg1".to_string(),
             HashSet::from([0, 1]),
             Vec::new()
         )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
         
-        let alg2 = Box::new(BasicSmallAlgebra::new(
+        let alg2 = Box::new(BasicAlgebra::new(
             "Alg2".to_string(),
             HashSet::from([0, 1, 2]),
             Vec::new()
@@ -541,7 +541,7 @@ mod tests {
     
     #[test]
     fn test_equality() {
-        let alg = Box::new(BasicSmallAlgebra::new(
+        let alg = Box::new(BasicAlgebra::new(
             "TestAlg".to_string(),
             HashSet::from([0, 1]),
             Vec::new()
@@ -555,13 +555,13 @@ mod tests {
     
     #[test]
     fn test_ordering() {
-        let alg1 = Box::new(BasicSmallAlgebra::new(
+        let alg1 = Box::new(BasicAlgebra::new(
             "Alg1".to_string(),
             HashSet::from([0, 1]),
             Vec::new()
         )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
         
-        let alg2 = Box::new(BasicSmallAlgebra::new(
+        let alg2 = Box::new(BasicAlgebra::new(
             "Alg2".to_string(),
             HashSet::from([0, 1, 2]),
             Vec::new()
@@ -576,7 +576,7 @@ mod tests {
     
     #[test]
     fn test_display() {
-        let alg = Box::new(BasicSmallAlgebra::new(
+        let alg = Box::new(BasicAlgebra::new(
             "TestAlg".to_string(),
             HashSet::from([0, 1, 2]),
             Vec::new()
@@ -592,7 +592,7 @@ mod tests {
     #[test]
     fn test_generic_element_types() {
         // Test with i32 elements (existing functionality)
-        let alg_i32 = Box::new(BasicSmallAlgebra::new(
+        let alg_i32 = Box::new(BasicAlgebra::new(
             "A_i32".to_string(),
             HashSet::from([0, 1, 2]),
             Vec::new()
@@ -603,7 +603,7 @@ mod tests {
         assert_eq!(alg_with_vec_i32.get_algebra().cardinality(), 3);
         
         // Test with String elements (demonstrating generic capability)
-        let alg_string = Box::new(BasicSmallAlgebra::new(
+        let alg_string = Box::new(BasicAlgebra::new(
             "A_string".to_string(),
             HashSet::from(["a".to_string(), "b".to_string(), "c".to_string()]),
             Vec::new()
@@ -618,7 +618,7 @@ mod tests {
         
         // Test type alias for backward compatibility
         let alg_with_vec_i32_alias = AlgebraWithGeneratingVectorI32::new(
-            Box::new(BasicSmallAlgebra::new(
+            Box::new(BasicAlgebra::new(
                 "A_alias".to_string(),
                 HashSet::from([0, 1]),
                 Vec::new()

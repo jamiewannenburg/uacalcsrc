@@ -155,7 +155,7 @@ pub struct MaltsevDecompositionIterator {
 ### Available Dependencies
 - **SmallAlgebra trait** - ✅ **COMPLETED** - Has `is_idempotent()` method
 - **Partition class** - ✅ **COMPLETED** - Full implementation with all required methods
-- **BasicSmallAlgebra** - ✅ **COMPLETED** - Concrete implementation of SmallAlgebra
+- **BasicAlgebra** - ✅ **COMPLETED** - Concrete implementation of SmallAlgebra
 - **CongruenceLattice** - ✅ **COMPLETED** - Full implementation with `findUpperCover()` method
 - **Subalgebra** - ✅ **COMPLETED** - Full implementation with `restrictPartition()` method
 - **QuotientAlgebra** - ✅ **COMPLETED** - Full implementation

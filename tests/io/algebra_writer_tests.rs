@@ -3,7 +3,7 @@
  */
 
 use uacalc::io::{AlgebraReader, AlgebraWriter};
-use uacalc::alg::{Algebra, BasicSmallAlgebra};
+use uacalc::alg::{Algebra, BasicAlgebra};
 use uacalc::alg::op::{OperationSymbol, BasicOperation};
 use std::path::Path;
 use std::fs;
@@ -14,7 +14,7 @@ fn test_write_basic_algebra() {
     // Create a simple 2-element algebra
     let universe: HashSet<i32> = [0, 1].iter().cloned().collect();
     let operations = Vec::new();
-    let algebra = BasicSmallAlgebra::new("test_algebra".to_string(), universe, operations);
+    let algebra = BasicAlgebra::new("test_algebra".to_string(), universe, operations);
     
     // Write to a temporary file
     let output_path = "test_output_basic.xml";
@@ -36,7 +36,7 @@ fn test_write_algebra_xml() {
     // Create a simple 2-element algebra
     let universe: HashSet<i32> = [0, 1].iter().cloned().collect();
     let operations = Vec::new();
-    let algebra = BasicSmallAlgebra::new("test_xml".to_string(), universe, operations);
+    let algebra = BasicAlgebra::new("test_xml".to_string(), universe, operations);
     
     // Write to a temporary file
     let output_path = "test_output_xml.xml";
@@ -63,7 +63,7 @@ fn test_write_algebra_with_operations() {
     let operation = BasicOperation::new(symbol, 2);
     
     let operations = vec![Box::new(operation) as Box<dyn uacalc::alg::op::Operation>];
-    let algebra = BasicSmallAlgebra::new("test_with_ops".to_string(), universe, operations);
+    let algebra = BasicAlgebra::new("test_with_ops".to_string(), universe, operations);
     
     // Write to a temporary file
     let output_path = "test_output_with_ops.xml";
@@ -111,7 +111,7 @@ fn test_write_nonexistent_file() {
     // Try to write to a directory that doesn't exist
     let universe: HashSet<i32> = [0, 1].iter().cloned().collect();
     let operations = Vec::new();
-    let algebra = BasicSmallAlgebra::new("test_error".to_string(), universe, operations);
+    let algebra = BasicAlgebra::new("test_error".to_string(), universe, operations);
     
     let output_path = "nonexistent_directory/test_output.xml";
     let result = AlgebraWriter::new_with_file(Box::new(algebra), output_path);
@@ -150,7 +150,7 @@ fn test_write_algebra_with_description() {
     // Create an algebra with description
     let universe: HashSet<i32> = [0, 1].iter().cloned().collect();
     let operations = Vec::new();
-    let mut algebra = BasicSmallAlgebra::new("test_desc".to_string(), universe, operations);
+    let mut algebra = BasicAlgebra::new("test_desc".to_string(), universe, operations);
     algebra.set_description(Some("Test algebra with description".to_string()));
     
     // Write to a temporary file
@@ -181,7 +181,7 @@ mod comparison_tests {
         // Create a test algebra
         let universe: HashSet<i32> = [0, 1].iter().cloned().collect();
         let operations = Vec::new();
-        let algebra = BasicSmallAlgebra::new("test_comparison".to_string(), universe, operations);
+        let algebra = BasicAlgebra::new("test_comparison".to_string(), universe, operations);
         
         let output_path = "test_comparison_output.xml";
         let mut writer = AlgebraWriter::new_with_file(Box::new(algebra), output_path)

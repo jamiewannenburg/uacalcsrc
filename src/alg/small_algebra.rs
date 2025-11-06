@@ -124,7 +124,7 @@ pub trait SmallAlgebra: Algebra {
 /// 
 /// This provides a concrete implementation of the SmallAlgebra trait for
 /// finite algebras that can be indexed by integers.
-pub struct BasicSmallAlgebra<T> 
+pub struct BasicAlgebra<T> 
 where 
     T: Clone + PartialEq + Eq + Hash + Debug + Send + Sync + Display + 'static
 {
@@ -150,11 +150,11 @@ where
     sub: Option<Box<crate::alg::sublat::SubalgebraLattice<i32>>>,
 }
 
-impl<T> BasicSmallAlgebra<T>
+impl<T> BasicAlgebra<T>
 where 
     T: Clone + PartialEq + Eq + Hash + Debug + Send + Sync + Display + 'static
 {
-    /// Create a new BasicSmallAlgebra.
+    /// Create a new BasicAlgebra.
     /// 
     /// # Arguments
     /// * `name` - The name of the algebra
@@ -162,7 +162,7 @@ where
     /// * `operations` - The operations on this algebra
     /// 
     /// # Returns
-    /// A new BasicSmallAlgebra instance
+    /// A new BasicAlgebra instance
     pub fn new(
         name: String,
         universe: HashSet<T>,
@@ -173,7 +173,7 @@ where
         // Initialize the similarity type so that input_size() and other methods work
         base.update_similarity_type();
         
-        BasicSmallAlgebra {
+        BasicAlgebra {
             base,
             algebra_type: AlgebraType::Basic,
             universe_list: RwLock::new(None),
@@ -241,23 +241,23 @@ where
     /// A reference to the subalgebra lattice
     /// 
     /// # Note
-    /// This method is only available for BasicSmallAlgebra<i32>.
+    /// This method is only available for BasicAlgebra<i32>.
     /// For other types, this will panic.
     pub fn sub(&mut self) -> &crate::alg::sublat::SubalgebraLattice<i32> {
         if self.sub.is_none() {
             // Only works for i32 universe type
-            panic!("sub() method only available for BasicSmallAlgebra<i32>");
+            panic!("sub() method only available for BasicAlgebra<i32>");
         }
         self.sub.as_ref().unwrap()
     }
 }
 
-impl<T> Debug for BasicSmallAlgebra<T>
+impl<T> Debug for BasicAlgebra<T>
 where 
     T: Clone + PartialEq + Eq + Hash + Debug + Send + Sync + Display + 'static
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("BasicSmallAlgebra")
+        f.debug_struct("BasicAlgebra")
             .field("base", &self.base)
             .field("algebra_type", &self.algebra_type)
             .field("has_universe_list", &self.universe_list.read().unwrap().is_some())
@@ -266,12 +266,12 @@ where
     }
 }
 
-impl<T> Clone for BasicSmallAlgebra<T>
+impl<T> Clone for BasicAlgebra<T>
 where 
     T: Clone + PartialEq + Eq + Hash + Debug + Send + Sync + Display + 'static
 {
     fn clone(&self) -> Self {
-        BasicSmallAlgebra {
+        BasicAlgebra {
             base: self.base.clone(),
             algebra_type: self.algebra_type.clone(),
             universe_list: RwLock::new(self.universe_list.read().unwrap().clone()),
@@ -284,7 +284,7 @@ where
     }
 }
 
-impl<T> Algebra for BasicSmallAlgebra<T>
+impl<T> Algebra for BasicAlgebra<T>
 where 
     T: Clone + PartialEq + Eq + Hash + Debug + Send + Sync + Display + 'static
 {
@@ -379,7 +379,7 @@ where
     }
 }
 
-impl<T> SmallAlgebra for BasicSmallAlgebra<T>
+impl<T> SmallAlgebra for BasicAlgebra<T>
 where 
     T: Clone + PartialEq + Eq + Hash + Debug + Send + Sync + Display + 'static
 {
@@ -392,7 +392,7 @@ where
     }
     
     fn clone_box(&self) -> Box<dyn SmallAlgebra<UniverseItem = Self::UniverseItem>> {
-        // Create a new BasicSmallAlgebra with the same properties
+        // Create a new BasicAlgebra with the same properties
         // Key insight: Preserve operations by forcing them to have tables first,
         // then reconstruct from those tables.
         let universe: HashSet<T> = self.base.universe().collect();
@@ -464,7 +464,7 @@ where
             new_base.set_operations(operations_to_add);
         }
         
-        Box::new(BasicSmallAlgebra {
+        Box::new(BasicAlgebra {
             base: new_base,
             algebra_type: self.algebra_type.clone(),
             universe_list: RwLock::new(self.universe_list.read().unwrap().clone()),
@@ -539,11 +539,11 @@ where
     }
 }
 
-impl<T> Display for BasicSmallAlgebra<T>
+impl<T> Display for BasicAlgebra<T>
 where 
     T: Clone + PartialEq + Eq + Hash + Debug + Send + Sync + Display + 'static
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "BasicSmallAlgebra({})", self.base)
+        write!(f, "BasicAlgebra({})", self.base)
     }
 }

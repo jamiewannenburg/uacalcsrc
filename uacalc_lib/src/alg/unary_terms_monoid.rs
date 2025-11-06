@@ -1,7 +1,7 @@
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
 use uacalc::alg::*;
-use crate::alg::PyBasicSmallAlgebra;
+use crate::alg::PyBasicAlgebra;
 use crate::util::PyIntArray;
 
 /// Python wrapper for UnaryTermsMonoid
@@ -15,12 +15,12 @@ impl PyUnaryTermsMonoid {
     /// Create a new UnaryTermsMonoid from a generating algebra.
     ///
     /// Args:
-    ///     algebra (BasicSmallAlgebra): The generating algebra
+    ///     algebra (BasicAlgebra): The generating algebra
     ///
     /// Raises:
     ///     ValueError: If construction fails
     #[new]
-    fn new(algebra: &PyBasicSmallAlgebra) -> PyResult<Self> {
+    fn new(algebra: &PyBasicAlgebra) -> PyResult<Self> {
         let rust_alg = Box::new(algebra.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
 
         match uacalc::alg::UnaryTermsMonoid::new_safe(rust_alg) {
@@ -32,13 +32,13 @@ impl PyUnaryTermsMonoid {
     /// Create a new UnaryTermsMonoid with optional identity inclusion.
     ///
     /// Args:
-    ///     algebra (BasicSmallAlgebra): The generating algebra
+    ///     algebra (BasicAlgebra): The generating algebra
     ///     include_id (bool): Whether to include the identity term
     ///
     /// Raises:
     ///     ValueError: If construction fails
     #[staticmethod]
-    fn new_with_id(algebra: &PyBasicSmallAlgebra, include_id: bool) -> PyResult<Self> {
+    fn new_with_id(algebra: &PyBasicAlgebra, include_id: bool) -> PyResult<Self> {
         let rust_alg = Box::new(algebra.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
 
         match uacalc::alg::UnaryTermsMonoid::new_with_id_safe(rust_alg, include_id) {

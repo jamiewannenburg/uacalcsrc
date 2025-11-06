@@ -24,16 +24,16 @@ fn test_power_algebra_finds_000() {
     
     let base_alg = read_algebra_file(alg_file).expect("Failed to load ba2.ua");
     
-    // Convert to BasicSmallAlgebra if needed, or use make_int_operations
+    // Convert to BasicAlgebra if needed, or use make_int_operations
     use uacalc::alg::op::ops::make_int_operations;
-    use uacalc::alg::BasicSmallAlgebra;
+    use uacalc::alg::BasicAlgebra;
     use std::collections::HashSet;
     
     let card = base_alg.cardinality();
     let ops = base_alg.operations();
     let int_ops = make_int_operations(ops).expect("Failed to create int operations");
     let universe: HashSet<i32> = (0..card).collect();
-    let i32_alg = BasicSmallAlgebra::new(
+    let i32_alg = BasicAlgebra::new(
         base_alg.name().to_string(),
         universe,
         int_ops,

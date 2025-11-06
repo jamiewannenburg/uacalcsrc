@@ -25,13 +25,13 @@ class TestMatrixPowerAlgebra(unittest.TestCase):
 
     def setUp(self):
         """Set up test fixtures."""
-        self.BasicSmallAlgebra = uacalc_lib.alg.BasicSmallAlgebra
+        self.BasicAlgebra = uacalc_lib.alg.BasicAlgebra
         self.MatrixPowerAlgebra = uacalc_lib.alg.MatrixPowerAlgebra
 
     def test_matrix_power_algebra_creation(self):
         """Test MatrixPowerAlgebra creation."""
         # Create a basic small algebra
-        root_alg = self.BasicSmallAlgebra("TestRoot", [0, 1])
+        root_alg = self.BasicAlgebra("TestRoot", [0, 1])
         
         # Create matrix power algebra
         matrix_power = self.MatrixPowerAlgebra(root_alg, 3)
@@ -43,7 +43,7 @@ class TestMatrixPowerAlgebra(unittest.TestCase):
 
     def test_matrix_power_algebra_creation_with_name(self):
         """Test MatrixPowerAlgebra creation with custom name."""
-        root_alg = self.BasicSmallAlgebra("TestRoot", [0, 1])
+        root_alg = self.BasicAlgebra("TestRoot", [0, 1])
         
         matrix_power = self.MatrixPowerAlgebra.new_with_name("MyMatrixPower", root_alg, 2)
         
@@ -53,7 +53,7 @@ class TestMatrixPowerAlgebra(unittest.TestCase):
 
     def test_get_power(self):
         """Test get_power method."""
-        root_alg = self.BasicSmallAlgebra("TestRoot", [0, 1])
+        root_alg = self.BasicAlgebra("TestRoot", [0, 1])
         matrix_power = self.MatrixPowerAlgebra(root_alg, 4)
         
         java_result = run_java_wrapper("java_wrapper.src.alg.MatrixPowerAlgebraWrapper", ["get_power"])
@@ -61,7 +61,7 @@ class TestMatrixPowerAlgebra(unittest.TestCase):
 
     def test_cardinality(self):
         """Test cardinality method."""
-        root_alg = self.BasicSmallAlgebra("TestRoot", [0, 1, 2])
+        root_alg = self.BasicAlgebra("TestRoot", [0, 1, 2])
         matrix_power = self.MatrixPowerAlgebra(root_alg, 2)
         
         java_result = run_java_wrapper("java_wrapper.src.alg.MatrixPowerAlgebraWrapper", ["cardinality"])
@@ -69,7 +69,7 @@ class TestMatrixPowerAlgebra(unittest.TestCase):
 
     def test_get_element(self):
         """Test get_element method."""
-        root_alg = self.BasicSmallAlgebra("TestRoot", [0, 1])
+        root_alg = self.BasicAlgebra("TestRoot", [0, 1])
         matrix_power = self.MatrixPowerAlgebra(root_alg, 2)
         
         # Test first element
@@ -83,7 +83,7 @@ class TestMatrixPowerAlgebra(unittest.TestCase):
 
     def test_element_index(self):
         """Test element_index method."""
-        root_alg = self.BasicSmallAlgebra("TestRoot", [0, 1])
+        root_alg = self.BasicAlgebra("TestRoot", [0, 1])
         matrix_power = self.MatrixPowerAlgebra(root_alg, 2)
         
         # Test roundtrip
@@ -97,7 +97,7 @@ class TestMatrixPowerAlgebra(unittest.TestCase):
 
     def test_algebra_type(self):
         """Test algebra_type method."""
-        root_alg = self.BasicSmallAlgebra("TestRoot", [0, 1])
+        root_alg = self.BasicAlgebra("TestRoot", [0, 1])
         matrix_power = self.MatrixPowerAlgebra(root_alg, 2)
         
         java_result = run_java_wrapper("java_wrapper.src.alg.MatrixPowerAlgebraWrapper", ["algebra_type"])
@@ -105,7 +105,7 @@ class TestMatrixPowerAlgebra(unittest.TestCase):
 
     def test_name_operations(self):
         """Test name getter and setter."""
-        root_alg = self.BasicSmallAlgebra("TestRoot", [0, 1])
+        root_alg = self.BasicAlgebra("TestRoot", [0, 1])
         matrix_power = self.MatrixPowerAlgebra.new_with_name("MyMatrixPower", root_alg, 2)
         
         # Test getter
@@ -118,7 +118,7 @@ class TestMatrixPowerAlgebra(unittest.TestCase):
 
     def test_set_name(self):
         """Test set_name method."""
-        root_alg = self.BasicSmallAlgebra("TestRoot", [0, 1])
+        root_alg = self.BasicAlgebra("TestRoot", [0, 1])
         matrix_power = self.MatrixPowerAlgebra(root_alg, 2)
         
         java_result = run_java_wrapper("java_wrapper.src.alg.MatrixPowerAlgebraWrapper", ["set_name", "--name", "NewName"])
@@ -126,7 +126,7 @@ class TestMatrixPowerAlgebra(unittest.TestCase):
 
     def test_is_unary(self):
         """Test is_unary method."""
-        root_alg = self.BasicSmallAlgebra("TestRoot", [0, 1])
+        root_alg = self.BasicAlgebra("TestRoot", [0, 1])
         matrix_power = self.MatrixPowerAlgebra(root_alg, 2)
         
         java_result = run_java_wrapper("java_wrapper.src.alg.MatrixPowerAlgebraWrapper", ["is_unary"])
@@ -134,7 +134,7 @@ class TestMatrixPowerAlgebra(unittest.TestCase):
 
     def test_is_idempotent(self):
         """Test is_idempotent method."""
-        root_alg = self.BasicSmallAlgebra("TestRoot", [0, 1])
+        root_alg = self.BasicAlgebra("TestRoot", [0, 1])
         matrix_power = self.MatrixPowerAlgebra(root_alg, 2)
         
         java_result = run_java_wrapper("java_wrapper.src.alg.MatrixPowerAlgebraWrapper", ["is_idempotent"])
@@ -142,7 +142,7 @@ class TestMatrixPowerAlgebra(unittest.TestCase):
 
     def test_is_total(self):
         """Test is_total method."""
-        root_alg = self.BasicSmallAlgebra("TestRoot", [0, 1])
+        root_alg = self.BasicAlgebra("TestRoot", [0, 1])
         matrix_power = self.MatrixPowerAlgebra(root_alg, 2)
         
         java_result = run_java_wrapper("java_wrapper.src.alg.MatrixPowerAlgebraWrapper", ["is_total"])
@@ -150,7 +150,7 @@ class TestMatrixPowerAlgebra(unittest.TestCase):
 
     def test_operations_count(self):
         """Test operations_count method."""
-        root_alg = self.BasicSmallAlgebra("TestRoot", [0, 1])
+        root_alg = self.BasicAlgebra("TestRoot", [0, 1])
         matrix_power = self.MatrixPowerAlgebra(root_alg, 2)
         
         java_result = run_java_wrapper("java_wrapper.src.alg.MatrixPowerAlgebraWrapper", ["operations_count"])
@@ -158,7 +158,7 @@ class TestMatrixPowerAlgebra(unittest.TestCase):
 
     def test_get_universe_list(self):
         """Test get_universe_list method."""
-        root_alg = self.BasicSmallAlgebra("TestRoot", [0, 1])
+        root_alg = self.BasicAlgebra("TestRoot", [0, 1])
         matrix_power = self.MatrixPowerAlgebra(root_alg, 2)
         
         universe_list = matrix_power.get_universe_list()
@@ -171,7 +171,7 @@ class TestMatrixPowerAlgebra(unittest.TestCase):
 
     def test_get_universe_order(self):
         """Test get_universe_order method."""
-        root_alg = self.BasicSmallAlgebra("TestRoot", [0, 1])
+        root_alg = self.BasicAlgebra("TestRoot", [0, 1])
         matrix_power = self.MatrixPowerAlgebra(root_alg, 2)
         
         universe_order = matrix_power.get_universe_order()
@@ -182,7 +182,7 @@ class TestMatrixPowerAlgebra(unittest.TestCase):
 
     def test_convert_to_default_value_ops(self):
         """Test convert_to_default_value_ops method (should fail)."""
-        root_alg = self.BasicSmallAlgebra("TestRoot", [0, 1])
+        root_alg = self.BasicAlgebra("TestRoot", [0, 1])
         matrix_power = self.MatrixPowerAlgebra(root_alg, 2)
         
         # This should raise an exception
@@ -191,7 +191,7 @@ class TestMatrixPowerAlgebra(unittest.TestCase):
 
     def test_basic_functionality(self):
         """Test basic functionality with Java comparison."""
-        root_alg = self.BasicSmallAlgebra("TestRoot", [0, 1])
+        root_alg = self.BasicAlgebra("TestRoot", [0, 1])
         matrix_power = self.MatrixPowerAlgebra.new_with_name("TestMatrixPower", root_alg, 3)
         
         java_result = run_java_wrapper("java_wrapper.src.alg.MatrixPowerAlgebraWrapper", ["test"])
@@ -203,7 +203,7 @@ class TestMatrixPowerAlgebra(unittest.TestCase):
 
     def test_horner_encoding_roundtrip(self):
         """Test Horner encoding roundtrip."""
-        root_alg = self.BasicSmallAlgebra("TestRoot", [0, 1, 2])
+        root_alg = self.BasicAlgebra("TestRoot", [0, 1, 2])
         matrix_power = self.MatrixPowerAlgebra(root_alg, 2)
         
         # Test roundtrip for all elements
@@ -214,7 +214,7 @@ class TestMatrixPowerAlgebra(unittest.TestCase):
 
     def test_matrix_operations(self):
         """Test that matrix-specific operations are present."""
-        root_alg = self.BasicSmallAlgebra("TestRoot", [0, 1])
+        root_alg = self.BasicAlgebra("TestRoot", [0, 1])
         matrix_power = self.MatrixPowerAlgebra(root_alg, 2)
         
         # Should have matrix-specific operations
@@ -223,7 +223,7 @@ class TestMatrixPowerAlgebra(unittest.TestCase):
 
     def test_error_handling(self):
         """Test error handling."""
-        root_alg = self.BasicSmallAlgebra("TestRoot", [0, 1])
+        root_alg = self.BasicAlgebra("TestRoot", [0, 1])
         
         # Test with power = 0 (should fail)
         with self.assertRaises(Exception):
@@ -231,7 +231,7 @@ class TestMatrixPowerAlgebra(unittest.TestCase):
 
     def test_display_representation(self):
         """Test string representation."""
-        root_alg = self.BasicSmallAlgebra("TestRoot", [0, 1])
+        root_alg = self.BasicAlgebra("TestRoot", [0, 1])
         matrix_power = self.MatrixPowerAlgebra.new_with_name("DisplayTest", root_alg, 2)
         
         # Test string representation
@@ -244,8 +244,8 @@ class TestMatrixPowerAlgebra(unittest.TestCase):
 
     def test_equality_and_hash(self):
         """Test equality and hash functions."""
-        root_alg1 = self.BasicSmallAlgebra("TestRoot", [0, 1])
-        root_alg2 = self.BasicSmallAlgebra("TestRoot", [0, 1])
+        root_alg1 = self.BasicAlgebra("TestRoot", [0, 1])
+        root_alg2 = self.BasicAlgebra("TestRoot", [0, 1])
         
         matrix_power1 = self.MatrixPowerAlgebra.new_with_name("Test", root_alg1, 2)
         matrix_power2 = self.MatrixPowerAlgebra.new_with_name("Test", root_alg2, 2)
@@ -258,7 +258,7 @@ class TestMatrixPowerAlgebra(unittest.TestCase):
 
     def test_different_powers(self):
         """Test with different powers."""
-        root_alg = self.BasicSmallAlgebra("TestRoot", [0, 1])
+        root_alg = self.BasicAlgebra("TestRoot", [0, 1])
         
         # Test power 1
         matrix_power1 = self.MatrixPowerAlgebra(root_alg, 1)
@@ -275,17 +275,17 @@ class TestMatrixPowerAlgebra(unittest.TestCase):
     def test_different_root_sizes(self):
         """Test with different root algebra sizes."""
         # Test with size 2
-        root_alg2 = self.BasicSmallAlgebra("TestRoot", [0, 1])
+        root_alg2 = self.BasicAlgebra("TestRoot", [0, 1])
         matrix_power2 = self.MatrixPowerAlgebra(root_alg2, 2)
         self.assertEqual(matrix_power2.cardinality(), 4)
         
         # Test with size 3
-        root_alg3 = self.BasicSmallAlgebra("TestRoot", [0, 1, 2])
+        root_alg3 = self.BasicAlgebra("TestRoot", [0, 1, 2])
         matrix_power3 = self.MatrixPowerAlgebra(root_alg3, 2)
         self.assertEqual(matrix_power3.cardinality(), 9)
         
         # Test with size 4
-        root_alg4 = self.BasicSmallAlgebra("TestRoot", [0, 1, 2, 3])
+        root_alg4 = self.BasicAlgebra("TestRoot", [0, 1, 2, 3])
         matrix_power4 = self.MatrixPowerAlgebra(root_alg4, 2)
         self.assertEqual(matrix_power4.cardinality(), 16)
 

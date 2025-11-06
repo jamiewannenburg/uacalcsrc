@@ -28,12 +28,12 @@ pub const MAX_DRAWABLE_INPUT_SIZE: usize = 2500;
 ///
 /// # Examples
 /// ```
-/// use uacalc::alg::{SmallAlgebra, BasicSmallAlgebra};
+/// use uacalc::alg::{SmallAlgebra, BasicAlgebra};
 /// use uacalc::alg::conlat::CongruenceLattice;
 /// use std::collections::HashSet;
 ///
 /// // Create a simple algebra
-/// let alg = Box::new(BasicSmallAlgebra::new(
+/// let alg = Box::new(BasicAlgebra::new(
 ///     "A".to_string(),
 ///     HashSet::from([0, 1, 2]),
 ///     Vec::new()
@@ -314,11 +314,11 @@ where
     ///
     /// # Examples
     /// ```
-    /// use uacalc::alg::{SmallAlgebra, BasicSmallAlgebra};
+    /// use uacalc::alg::{SmallAlgebra, BasicAlgebra};
     /// use uacalc::alg::conlat::CongruenceLattice;
     /// use std::collections::HashSet;
     ///
-    /// let alg = Box::new(BasicSmallAlgebra::new(
+    /// let alg = Box::new(BasicAlgebra::new(
     ///     "A".to_string(),
     ///     HashSet::from([0, 1, 2]),
     ///     Vec::new()
@@ -1124,11 +1124,11 @@ where
     ///
     /// # Examples
     /// ```
-    /// use uacalc::alg::{SmallAlgebra, BasicSmallAlgebra};
+    /// use uacalc::alg::{SmallAlgebra, BasicAlgebra};
     /// use uacalc::alg::conlat::CongruenceLattice;
     /// use std::collections::HashSet;
     ///
-    /// let alg = Box::new(BasicSmallAlgebra::new(
+    /// let alg = Box::new(BasicAlgebra::new(
     ///     "A".to_string(),
     ///     HashSet::from([0, 1, 2]),
     ///     Vec::new()

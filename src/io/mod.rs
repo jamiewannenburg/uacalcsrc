@@ -26,12 +26,12 @@ use crate::util::array_string;
 /// # Examples
 /// ```
 /// use uacalc::io::AlgebraWriter;
-/// use uacalc::alg::{SmallAlgebra, BasicSmallAlgebra, Algebra};
+/// use uacalc::alg::{SmallAlgebra, BasicAlgebra, Algebra};
 /// use std::collections::HashSet;
 /// use std::fs::File;
 /// 
 /// // Create a small algebra
-/// let alg = Box::new(BasicSmallAlgebra::new(
+/// let alg = Box::new(BasicAlgebra::new(
 ///     "example".to_string(),
 ///     HashSet::from([0, 1, 2]),
 ///     Vec::new()
@@ -65,11 +65,11 @@ impl AlgebraWriter {
     /// # Examples
     /// ```
     /// use uacalc::io::AlgebraWriter;
-    /// use uacalc::alg::{SmallAlgebra, BasicSmallAlgebra, Algebra};
+    /// use uacalc::alg::{SmallAlgebra, BasicAlgebra, Algebra};
     /// use std::collections::HashSet;
     /// use std::io::stdout;
     /// 
-    /// let alg = Box::new(BasicSmallAlgebra::new(
+    /// let alg = Box::new(BasicAlgebra::new(
     ///     "example".to_string(),
     ///     HashSet::from([0, 1]),
     ///     Vec::new()
@@ -98,10 +98,10 @@ impl AlgebraWriter {
     /// # Examples
     /// ```
     /// use uacalc::io::AlgebraWriter;
-    /// use uacalc::alg::{SmallAlgebra, BasicSmallAlgebra, Algebra};
+    /// use uacalc::alg::{SmallAlgebra, BasicAlgebra, Algebra};
     /// use std::collections::HashSet;
     /// 
-    /// let alg = Box::new(BasicSmallAlgebra::new(
+    /// let alg = Box::new(BasicAlgebra::new(
     ///     "example".to_string(),
     ///     HashSet::from([0, 1]),
     ///     Vec::new()
@@ -128,10 +128,10 @@ impl AlgebraWriter {
     /// # Examples
     /// ```
     /// use uacalc::io::AlgebraWriter;
-    /// use uacalc::alg::{SmallAlgebra, BasicSmallAlgebra, Algebra};
+    /// use uacalc::alg::{SmallAlgebra, BasicAlgebra, Algebra};
     /// use std::collections::HashSet;
     /// 
-    /// let alg = Box::new(BasicSmallAlgebra::new(
+    /// let alg = Box::new(BasicAlgebra::new(
     ///     "example".to_string(),
     ///     HashSet::from([0, 1]),
     ///     Vec::new()
@@ -1303,7 +1303,7 @@ pub struct JSONChannel {
 
 use std::io::{BufRead, BufReader, Read};
 use std::collections::{HashMap, HashSet};
-use crate::alg::small_algebra::{BasicSmallAlgebra};
+use crate::alg::small_algebra::{BasicAlgebra};
 use crate::alg::op::{OperationSymbol};
 use crate::alg::op::operations;
 
@@ -1765,7 +1765,7 @@ impl Mace4Reader {
         // Create universe as integers 0..cardinality-1
         let universe: HashSet<i32> = (0..cardinality).collect();
         
-        let algebra = BasicSmallAlgebra::new(name, universe, operations);
+        let algebra = BasicAlgebra::new(name, universe, operations);
         Ok(Some(Box::new(algebra)))
     }
     

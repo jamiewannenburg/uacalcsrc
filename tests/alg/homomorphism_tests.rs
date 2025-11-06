@@ -4,17 +4,17 @@ These tests verify that the Rust implementation matches the Java implementation
 by comparing outputs with the Java CLI wrapper.
 */
 
-use uacalc::alg::{Homomorphism, SmallAlgebra, BasicSmallAlgebra};
+use uacalc::alg::{Homomorphism, SmallAlgebra, BasicAlgebra};
 use uacalc::alg::conlat::partition::Partition;
 use std::collections::{HashMap, HashSet};
 
-/// Helper function to create a mock BasicSmallAlgebra for testing
+/// Helper function to create a mock BasicAlgebra for testing
 fn create_mock_algebra(name: &str, universe: Vec<i32>) -> Box<dyn SmallAlgebra<UniverseItem = i32>> {
     let name = name.to_string();
     let universe_set: HashSet<i32> = universe.into_iter().collect();
     let operations = Vec::new(); // Empty operations for testing
     
-    Box::new(BasicSmallAlgebra::new(name, universe_set, operations)) as Box<dyn SmallAlgebra<UniverseItem = i32>>
+    Box::new(BasicAlgebra::new(name, universe_set, operations)) as Box<dyn SmallAlgebra<UniverseItem = i32>>
 }
 
 #[test]

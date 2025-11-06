@@ -216,7 +216,7 @@
 - ✅ **Python Test Suite**: Comprehensive tests for variable evaluation in Python
 
 ### Python Bindings Implementation
-- **eval() Method**: Accepts `BasicSmallAlgebra` and variable assignment map
+- **eval() Method**: Accepts `BasicAlgebra` and variable assignment map
 - **int_eval() Method**: Same as eval for integer algebras
 - **Algebra Loading**: Tests load algebras from `.ua` files using `AlgebraReader`
 - **Test Coverage**: Variable creation, properties, equality, hashing, and evaluation

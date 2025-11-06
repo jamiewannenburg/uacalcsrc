@@ -53,10 +53,10 @@ class TestFreeAlgebra:
         """Create a base algebra for testing."""
         # Access the classes through the module
         alg_module = uacalc_lib.alg
-        BasicSmallAlgebra = getattr(alg_module, 'BasicSmallAlgebra')
+        BasicAlgebra = getattr(alg_module, 'BasicAlgebra')
         
         universe = [0, 1, 2]
-        return BasicSmallAlgebra.new_with_constant_op('Test', universe)
+        return BasicAlgebra.new_with_constant_op('Test', universe)
 
     def test_free_algebra_creation(self, test_config, base_algebra):
         """Test FreeAlgebra creation."""
@@ -203,13 +203,13 @@ class TestFreeAlgebra:
         # Access the classes through the module
         alg_module = uacalc_lib.alg
         FreeAlgebra = getattr(alg_module, 'FreeAlgebra')
-        BasicSmallAlgebra = getattr(alg_module, 'BasicSmallAlgebra')
+        BasicAlgebra = getattr(alg_module, 'BasicAlgebra')
         
         # Create two base algebras (not FreeAlgebras)
         # The signature matches Java: findEquationOfAnotB(SmallAlgebra A, SmallAlgebra B, int[] bGens)
         # where A is the base algebra to create a FreeAlgebra over, not a FreeAlgebra itself
         base_alg_a = base_algebra  # This is the base algebra A
-        base_alg_b = BasicSmallAlgebra.new_with_constant_op('Test2', [0, 1, 2])  # This is algebra B
+        base_alg_b = BasicAlgebra.new_with_constant_op('Test2', [0, 1, 2])  # This is algebra B
         
         # Create b_gens array - generators for algebra B (default: [0, 1, 2] for size 3)
         b_gens = [0, 1, 2]
@@ -299,10 +299,10 @@ class TestFreeAlgebra:
         # Access the classes through the module
         alg_module = uacalc_lib.alg
         FreeAlgebra = getattr(alg_module, 'FreeAlgebra')
-        BasicSmallAlgebra = getattr(alg_module, 'BasicSmallAlgebra')
+        BasicAlgebra = getattr(alg_module, 'BasicAlgebra')
         
         # Test with invalid generator count
-        base_algebra = BasicSmallAlgebra.new_with_constant_op('Test', [0, 1, 2])
+        base_algebra = BasicAlgebra.new_with_constant_op('Test', [0, 1, 2])
         
         # This should not raise an exception (simplified implementation)
         free_alg = FreeAlgebra(base_algebra, 0)

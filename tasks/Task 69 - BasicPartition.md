@@ -249,10 +249,10 @@ pub struct PyBasicPartition {
 ### ✅ DEPENDENCIES STATUS
 
 #### Critical Dependencies (All Complete)
-- **SmallAlgebra**: ✅ **COMPLETE** (`src/alg/small_algebra.rs`) - BasicSmallAlgebra implemented
+- **SmallAlgebra**: ✅ **COMPLETE** (`src/alg/small_algebra.rs`) - BasicAlgebra implemented
 - **Operation**: ✅ **COMPLETE** (`src/alg/op/operation.rs`) - Full Operation trait implemented
 - **Operations**: ✅ **COMPLETE** (`src/alg/op/operations.rs`) - Operations class implemented
-- **BasicAlgebra**: ✅ **COMPLETE** (`src/alg/small_algebra.rs`) - Implemented as BasicSmallAlgebra
+- **BasicAlgebra**: ✅ **COMPLETE** (`src/alg/small_algebra.rs`) - Implemented as BasicAlgebra
 - **Horner**: ✅ **COMPLETE** (`src/util/horner.rs`) - Full Horner encoding/decoding
 
 #### Optional Dependencies
@@ -290,7 +290,7 @@ The `PartitionWrapper.java` is comprehensive and includes:
 - **JSON Output**: Structured output for programmatic use
 
 ### Dependency Status
-- **✅ COMPLETE**: SmallAlgebra, Operation, Operations, Horner, BasicAlgebra (as BasicSmallAlgebra)
+- **✅ COMPLETE**: SmallAlgebra, Operation, Operations, Horner, BasicAlgebra (as BasicAlgebra)
 - **✅ READY**: All critical dependencies available
 - **⚠️ Optional**: Terms and lattice classes for advanced features (not required for core functionality)
 
@@ -316,7 +316,7 @@ The `PartitionWrapper.java` is comprehensive and includes:
 - [x] **Code compiles** without warnings
 - [x] **Documentation** complete
 - [x] **Core dependencies** completed (SmallAlgebra, Operation, Operations, Horner)
-- [x] **BasicAlgebra dependency** completed (Task 71) - Implemented as BasicSmallAlgebra
+- [x] **BasicAlgebra dependency** completed (Task 71) - Implemented as BasicAlgebra
 - [x] **Polymorphism methods** working correctly
 - [x] **String parsing** supports all formats
 - [x] **Performance** acceptable for large partitions

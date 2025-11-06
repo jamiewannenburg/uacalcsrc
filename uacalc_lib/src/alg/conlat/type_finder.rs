@@ -13,12 +13,12 @@ impl PyTypeFinder {
     /// Create a new TypeFinder for the given algebra.
     ///
     /// Args:
-    ///     alg (BasicSmallAlgebra): The algebra to analyze
+    ///     alg (BasicAlgebra): The algebra to analyze
     ///
     /// Raises:
     ///     ValueError: If initialization fails
     #[new]
-    fn new(alg: &crate::alg::PyBasicSmallAlgebra) -> PyResult<Self> {
+    fn new(alg: &crate::alg::PyBasicAlgebra) -> PyResult<Self> {
         let rust_alg = Box::new(alg.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
 
         match uacalc::alg::conlat::TypeFinder::new(rust_alg) {

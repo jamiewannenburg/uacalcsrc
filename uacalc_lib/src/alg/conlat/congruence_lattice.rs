@@ -1,7 +1,7 @@
 use pyo3::prelude::*;
 use pyo3::exceptions::PyRuntimeError;
 
-use crate::alg::basic_algebra::PyBasicSmallAlgebra;
+use crate::alg::basic_algebra::PyBasicAlgebra;
 use crate::alg::conlat::partition::PyPartition;
 use crate::alg::conlat::basic_binary_relation::PyBasicBinaryRelation;
 use crate::util::PyIntArray;
@@ -14,7 +14,7 @@ pub struct PyCongruenceLattice {
 
 // Rust-visible constructor for internal use (separate from the #[new] Python ctor)
 impl PyCongruenceLattice {
-    pub fn from_algebra(algebra: &PyBasicSmallAlgebra) -> Self {
+    pub fn from_algebra(algebra: &PyBasicAlgebra) -> Self {
         use uacalc::alg::SmallAlgebraWrapper;
         PyCongruenceLattice {
             inner: uacalc::alg::conlat::CongruenceLattice::new(
@@ -28,7 +28,7 @@ impl PyCongruenceLattice {
 impl PyCongruenceLattice {
     /// Create a new congruence lattice for an algebra.
     #[new]
-    fn new(algebra: &PyBasicSmallAlgebra) -> Self {
+    fn new(algebra: &PyBasicAlgebra) -> Self {
         use uacalc::alg::SmallAlgebraWrapper;
         PyCongruenceLattice {
             inner: uacalc::alg::conlat::CongruenceLattice::new(

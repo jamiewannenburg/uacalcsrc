@@ -18,14 +18,14 @@ try:
     import uacalc_lib
     # Note: SubProductAlgebra may not be exposed yet in Python bindings
     # This test will be updated when bindings are available
-    BasicSmallAlgebra = uacalc_lib.alg.BasicSmallAlgebra
+    BasicAlgebra = uacalc_lib.alg.BasicAlgebra
     BigProductAlgebra = uacalc_lib.alg.BigProductAlgebra #uacalc_lib.alg.SubProductAlgebra #uacalc_lib.alg.BigProductAlgebra
 except (ImportError, AttributeError) as e:
     print(f"Error importing uacalc_lib: {e}")
     print("Make sure to run 'maturin develop' first")
     import traceback
     traceback.print_exc()
-    pytest.skip("uacalc_lib module BasicSmallAlgebra or BigProductAlgebra not available", allow_module_level=True)
+    pytest.skip("uacalc_lib module BasicAlgebra or BigProductAlgebra not available", allow_module_level=True)
     sys.exit(1)
 
 

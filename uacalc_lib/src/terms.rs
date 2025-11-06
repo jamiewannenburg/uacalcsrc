@@ -4,7 +4,7 @@ use pyo3::types::PyList;
 use uacalc::terms::{VariableImp, NonVariableTerm, Term, Variable};
 use std::collections::HashMap;
 use crate::alg::op::operation_symbol::PyOperationSymbol;
-use crate::alg::PyBasicSmallAlgebra;
+use crate::alg::PyBasicAlgebra;
 
 /// Python wrapper for VariableImp
 #[pyclass]
@@ -81,12 +81,12 @@ impl PyVariableImp {
     /// Evaluate this variable using the given variable assignment
     /// 
     /// # Arguments
-    /// * `algebra` - The algebra in which to evaluate (a BasicSmallAlgebra from Python)
+    /// * `algebra` - The algebra in which to evaluate (a BasicAlgebra from Python)
     /// * `var_map` - A dictionary mapping variable names to integer values
     /// 
     /// # Returns
     /// The value assigned to this variable
-    fn eval(&self, algebra: &PyBasicSmallAlgebra, var_map: HashMap<String, i32>) -> PyResult<i32> {
+    fn eval(&self, algebra: &PyBasicAlgebra, var_map: HashMap<String, i32>) -> PyResult<i32> {
         self.inner.eval(&algebra.inner, &var_map)
             .map_err(|e| PyValueError::new_err(e))
     }
@@ -99,7 +99,7 @@ impl PyVariableImp {
     /// 
     /// # Returns
     /// The integer value assigned to this variable
-    fn int_eval(&self, algebra: &PyBasicSmallAlgebra, var_map: HashMap<String, i32>) -> PyResult<i32> {
+    fn int_eval(&self, algebra: &PyBasicAlgebra, var_map: HashMap<String, i32>) -> PyResult<i32> {
         self.inner.int_eval(&algebra.inner, &var_map)
             .map_err(|e| PyValueError::new_err(e))
     }
@@ -207,12 +207,12 @@ impl PyNonVariableTerm {
     /// Evaluate this term using the given algebra and variable assignment
     /// 
     /// # Arguments
-    /// * `algebra` - The algebra in which to evaluate (a BasicSmallAlgebra from Python)
+    /// * `algebra` - The algebra in which to evaluate (a BasicAlgebra from Python)
     /// * `var_map` - A dictionary mapping variable names to integer values
     /// 
     /// # Returns
     /// The result of evaluating the term
-    fn eval(&self, algebra: &PyBasicSmallAlgebra, var_map: HashMap<String, i32>) -> PyResult<i32> {
+    fn eval(&self, algebra: &PyBasicAlgebra, var_map: HashMap<String, i32>) -> PyResult<i32> {
         self.inner.eval(&algebra.inner, &var_map)
             .map_err(|e| PyValueError::new_err(e))
     }
@@ -225,7 +225,7 @@ impl PyNonVariableTerm {
     /// 
     /// # Returns
     /// The integer result of evaluating the term
-    fn int_eval(&self, algebra: &PyBasicSmallAlgebra, var_map: HashMap<String, i32>) -> PyResult<i32> {
+    fn int_eval(&self, algebra: &PyBasicAlgebra, var_map: HashMap<String, i32>) -> PyResult<i32> {
         self.inner.int_eval(&algebra.inner, &var_map)
             .map_err(|e| PyValueError::new_err(e))
     }

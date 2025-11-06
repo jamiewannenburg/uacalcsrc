@@ -27,7 +27,7 @@ fn create_ba2() -> Box<dyn SmallAlgebra<UniverseItem = i32>> {
     let base_alg = read_algebra_file(alg_file).expect("Failed to load ba2.ua");
     
     use uacalc::alg::op::ops::make_int_operations;
-    use uacalc::alg::BasicSmallAlgebra;
+    use uacalc::alg::BasicAlgebra;
     use uacalc::alg::Algebra;
     
     let card = base_alg.cardinality();
@@ -35,7 +35,7 @@ fn create_ba2() -> Box<dyn SmallAlgebra<UniverseItem = i32>> {
     let int_ops = make_int_operations(ops).expect("Failed to create int operations");
     let universe: HashSet<i32> = (0..card).collect();
     
-    let mut alg = BasicSmallAlgebra::new(
+    let mut alg = BasicAlgebra::new(
         base_alg.name().to_string(),
         universe,
         int_ops,
@@ -292,13 +292,13 @@ fn test_closer_f2_power3_java_comparison() {
 
 /// Helper function to create a trivial algebra with no operations (like Java's makeTestAlgebra)
 fn create_trivial_algebra(size: i32) -> Box<dyn SmallAlgebra<UniverseItem = i32>> {
-    use uacalc::alg::BasicSmallAlgebra;
+    use uacalc::alg::BasicAlgebra;
     use std::collections::HashSet;
     
     let universe: HashSet<i32> = (0..size).collect();
     let ops = Vec::new(); // No operations
     
-    Box::new(BasicSmallAlgebra::new(
+    Box::new(BasicAlgebra::new(
         "TestAlg".to_string(),
         universe,
         ops,

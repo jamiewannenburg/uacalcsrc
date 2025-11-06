@@ -2,7 +2,7 @@
 // These tests verify that congruence and subalgebra lattices work correctly
 // for BigProductAlgebra, SubProductAlgebra, and QuotientAlgebra
 
-use uacalc::alg::{SmallAlgebra, BasicSmallAlgebra, Algebra};
+use uacalc::alg::{SmallAlgebra, BasicAlgebra, Algebra};
 use uacalc::alg::{BigProductAlgebra, SubProductAlgebra, QuotientAlgebra};
 use uacalc::alg::conlat::Partition;
 use uacalc::alg::op::{OperationSymbol, Operation};
@@ -10,9 +10,9 @@ use uacalc::alg::op::operations;
 use uacalc::util::int_array::IntArray;
 use std::collections::HashSet;
 
-/// Helper function to create a BasicSmallAlgebra with operations.
+/// Helper function to create a BasicAlgebra with operations.
 /// The algebra needs at least one operation for closure computation in con() and sub() methods.
-fn create_algebra_with_ops(name: &str, universe: HashSet<i32>) -> BasicSmallAlgebra<i32> {
+fn create_algebra_with_ops(name: &str, universe: HashSet<i32>) -> BasicAlgebra<i32> {
     let mut ops: Vec<Box<dyn Operation>> = Vec::new();
     
     let size = universe.len() as i32;
@@ -29,12 +29,12 @@ fn create_algebra_with_ops(name: &str, universe: HashSet<i32>) -> BasicSmallAlge
         .expect("Failed to create operation");
     ops.push(add_op);
     
-    BasicSmallAlgebra::new(name.to_string(), universe, ops)
+    BasicAlgebra::new(name.to_string(), universe, ops)
 }
 
 #[test]
 fn test_basic_algebra_con() {
-    // Baseline test - BasicSmallAlgebra con() should work
+    // Baseline test - BasicAlgebra con() should work
     let mut alg = create_algebra_with_ops("A", HashSet::from([0, 1, 2]));
     
     let con_lat_ref = alg.con();

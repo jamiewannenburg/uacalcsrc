@@ -5,7 +5,7 @@ import pytest
 import uacalc_lib
 
 # Type aliases for convenience
-BasicSmallAlgebra = uacalc_lib.alg.BasicSmallAlgebra
+BasicAlgebra = uacalc_lib.alg.BasicAlgebra
 CongruenceLattice = uacalc_lib.alg.CongruenceLattice
 Partition = uacalc_lib.alg.Partition
 BasicBinaryRelation = uacalc_lib.alg.BasicBinaryRelation
@@ -14,7 +14,7 @@ BasicBinaryRelation = uacalc_lib.alg.BasicBinaryRelation
 def test_congruence_lattice_creation():
     """Test basic CongruenceLattice creation."""
     # Create a simple algebra
-    alg = BasicSmallAlgebra("TestAlg", [0, 1, 2])
+    alg = BasicAlgebra("TestAlg", [0, 1, 2])
     
     # Create congruence lattice
     con_lat = CongruenceLattice(alg)
@@ -25,7 +25,7 @@ def test_congruence_lattice_creation():
 
 def test_alg_size():
     """Test alg_size method."""
-    alg = BasicSmallAlgebra("TestAlg", [0, 1, 2])
+    alg = BasicAlgebra("TestAlg", [0, 1, 2])
     con_lat = CongruenceLattice(alg)
     
     assert con_lat.alg_size() == 3
@@ -33,7 +33,7 @@ def test_alg_size():
 
 def test_zero_and_one():
     """Test zero and one congruence methods."""
-    alg = BasicSmallAlgebra("TestAlg", [0, 1, 2])
+    alg = BasicAlgebra("TestAlg", [0, 1, 2])
     con_lat = CongruenceLattice(alg)
     
     zero = con_lat.zero()
@@ -48,7 +48,7 @@ def test_zero_and_one():
 
 def test_cardinality():
     """Test con_cardinality method."""
-    alg = BasicSmallAlgebra("TestAlg", [0, 1, 2])
+    alg = BasicAlgebra("TestAlg", [0, 1, 2])
     con_lat = CongruenceLattice(alg)
     
     cardinality = con_lat.con_cardinality()
@@ -58,7 +58,7 @@ def test_cardinality():
 
 def test_cardinality_size_4():
     """Test cardinality for a 4-element algebra."""
-    alg = BasicSmallAlgebra("TestAlg", [0, 1, 2, 3])
+    alg = BasicAlgebra("TestAlg", [0, 1, 2, 3])
     con_lat = CongruenceLattice(alg)
     
     cardinality = con_lat.con_cardinality()
@@ -68,7 +68,7 @@ def test_cardinality_size_4():
 
 def test_is_distributive():
     """Test is_distributive method."""
-    alg = BasicSmallAlgebra("TestAlg", [0, 1, 2])
+    alg = BasicAlgebra("TestAlg", [0, 1, 2])
     con_lat = CongruenceLattice(alg)
     
     is_dist = con_lat.is_distributive()
@@ -78,7 +78,7 @@ def test_is_distributive():
 
 def test_get_description():
     """Test get_description method."""
-    alg = BasicSmallAlgebra("TestAlg", [0, 1, 2])
+    alg = BasicAlgebra("TestAlg", [0, 1, 2])
     con_lat = CongruenceLattice(alg)
     
     desc = con_lat.get_description()
@@ -88,7 +88,7 @@ def test_get_description():
 
 def test_string_representation():
     """Test __str__ and __repr__ methods."""
-    alg = BasicSmallAlgebra("TestAlg", [0, 1, 2])
+    alg = BasicAlgebra("TestAlg", [0, 1, 2])
     con_lat = CongruenceLattice(alg)
     
     str_repr = str(con_lat)
@@ -100,8 +100,8 @@ def test_string_representation():
 
 def test_multiple_algebras():
     """Test creating multiple congruence lattices."""
-    alg1 = BasicSmallAlgebra("Alg1", [0, 1, 2])
-    alg2 = BasicSmallAlgebra("Alg2", [0, 1, 2, 3])
+    alg1 = BasicAlgebra("Alg1", [0, 1, 2])
+    alg2 = BasicAlgebra("Alg2", [0, 1, 2, 3])
     
     con_lat1 = CongruenceLattice(alg1)
     con_lat2 = CongruenceLattice(alg2)
@@ -112,7 +112,7 @@ def test_multiple_algebras():
 
 def test_tg_tolerance():
     """Test tolerance generation (tg method)."""
-    alg = BasicSmallAlgebra.new_with_constant_op("TestAlg", [0, 1, 2])
+    alg = BasicAlgebra.new_with_constant_op("TestAlg", [0, 1, 2])
     con_lat = CongruenceLattice(alg)
     
     # Generate tolerance for elements 0 and 1
@@ -124,7 +124,7 @@ def test_tg_tolerance():
 
 def test_generating_pair():
     """Test generating_pair method."""
-    alg = BasicSmallAlgebra("TestAlg", [0, 1, 2])
+    alg = BasicAlgebra("TestAlg", [0, 1, 2])
     con_lat = CongruenceLattice(alg)
     
     zero = con_lat.zero()
@@ -138,7 +138,7 @@ def test_generating_pair():
 
 def test_find_coatom_above():
     """Test find_coatom_above method."""
-    alg = BasicSmallAlgebra("TestAlg", [0, 1, 2])
+    alg = BasicAlgebra("TestAlg", [0, 1, 2])
     con_lat = CongruenceLattice(alg)
     
     zero = con_lat.zero()
@@ -151,7 +151,7 @@ def test_find_coatom_above():
 
 def test_find_join_irred():
     """Test find_join_irred method."""
-    alg = BasicSmallAlgebra("TestAlg", [0, 1, 2])
+    alg = BasicAlgebra("TestAlg", [0, 1, 2])
     con_lat = CongruenceLattice(alg)
     
     zero = con_lat.zero()
@@ -166,7 +166,7 @@ def test_find_join_irred():
 
 def test_find_meet_irred():
     """Test find_meet_irred method."""
-    alg = BasicSmallAlgebra("TestAlg", [0, 1, 2])
+    alg = BasicAlgebra("TestAlg", [0, 1, 2])
     con_lat = CongruenceLattice(alg)
     
     zero = con_lat.zero()
@@ -181,7 +181,7 @@ def test_find_meet_irred():
 
 def test_find_maximal_chain():
     """Test find_maximal_chain method."""
-    alg = BasicSmallAlgebra("TestAlg", [0, 1, 2])
+    alg = BasicAlgebra("TestAlg", [0, 1, 2])
     con_lat = CongruenceLattice(alg)
     
     chain = con_lat.find_maximal_chain()
@@ -196,7 +196,7 @@ def test_find_maximal_chain():
 
 def test_idempotent_polynomials():
     """Test idempotent_polynomials method."""
-    alg = BasicSmallAlgebra.new_with_constant_op("TestAlg", [0, 1, 2])
+    alg = BasicAlgebra.new_with_constant_op("TestAlg", [0, 1, 2])
     con_lat = CongruenceLattice(alg)
     
     polynomials = con_lat.idempotent_polynomials()
@@ -209,7 +209,7 @@ def test_idempotent_polynomials():
 
 def test_delta():
     """Test delta method (stubbed)."""
-    alg = BasicSmallAlgebra("TestAlg", [0, 1, 2])
+    alg = BasicAlgebra("TestAlg", [0, 1, 2])
     con_lat = CongruenceLattice(alg)
     
     zero_partition = con_lat.zero()
@@ -223,7 +223,7 @@ def test_delta():
 
 def test_commutator2():
     """Test commutator2 method (stubbed)."""
-    alg = BasicSmallAlgebra("TestAlg", [0, 1, 2])
+    alg = BasicAlgebra("TestAlg", [0, 1, 2])
     con_lat = CongruenceLattice(alg)
     
     zero_partition = con_lat.zero()
@@ -237,7 +237,7 @@ def test_commutator2():
 
 def test_centralizes():
     """Test centralizes method (stubbed)."""
-    alg = BasicSmallAlgebra("TestAlg", [0, 1, 2])
+    alg = BasicAlgebra("TestAlg", [0, 1, 2])
     con_lat = CongruenceLattice(alg)
     
     # Convert zero and one partitions to binary relations
@@ -259,7 +259,7 @@ def test_generic_type_support():
     """Test that CongruenceLattice works with algebras of different sizes."""
     for size in [2, 3, 4, 5]:
         elements = list(range(size))
-        alg = BasicSmallAlgebra(f"Alg{size}", elements)
+        alg = BasicAlgebra(f"Alg{size}", elements)
         con_lat = CongruenceLattice(alg)
         
         assert con_lat.alg_size() == size
@@ -268,7 +268,7 @@ def test_generic_type_support():
 
 def test_error_handling():
     """Test error handling for invalid inputs"""
-    alg = BasicSmallAlgebra.new_with_constant_op('TestAlg', [0,1,2,3])
+    alg = BasicAlgebra.new_with_constant_op('TestAlg', [0,1,2,3])
     conlat = CongruenceLattice(alg)
     
     # Should not raise
@@ -283,7 +283,7 @@ def test_error_handling():
 def test_principals():
     """Test getting principal congruences"""
     # Create a 3-element algebra with projection
-    alg = BasicSmallAlgebra('TestAlg', [0, 1, 2])
+    alg = BasicAlgebra('TestAlg', [0, 1, 2])
     conlat = CongruenceLattice(alg)
     
     # Get principals
@@ -300,7 +300,7 @@ def test_principals():
 
 def test_atoms():
     """Test getting atoms of the lattice"""
-    alg = BasicSmallAlgebra('TestAlg', [0, 1, 2])
+    alg = BasicAlgebra('TestAlg', [0, 1, 2])
     conlat = CongruenceLattice(alg)
     
     atoms = conlat.atoms()
@@ -317,7 +317,7 @@ def test_atoms():
 
 def test_meet_irreducibles_method():
     """Test getting meet irreducible congruences"""
-    alg = BasicSmallAlgebra('TestAlg', [0, 1, 2])
+    alg = BasicAlgebra('TestAlg', [0, 1, 2])
     conlat = CongruenceLattice(alg)
     
     mis = conlat.meet_irreducibles()
@@ -330,7 +330,7 @@ def test_meet_irreducibles_method():
 
 def test_universe():
     """Test getting all congruences"""
-    alg = BasicSmallAlgebra('TestAlg', [0, 1, 2])
+    alg = BasicAlgebra('TestAlg', [0, 1, 2])
     conlat = CongruenceLattice(alg)
     
     universe = conlat.universe()
@@ -349,7 +349,7 @@ def test_universe():
 
 def test_permutability_level():
     """Test getting permutability level"""
-    alg = BasicSmallAlgebra('TestAlg', [0, 1, 2])
+    alg = BasicAlgebra('TestAlg', [0, 1, 2])
     conlat = CongruenceLattice(alg)
     
     level = conlat.permutability_level()
@@ -361,7 +361,7 @@ def test_permutability_level():
 
 def test_cg():
     """Test computing principal congruence"""
-    alg = BasicSmallAlgebra('TestAlg', [0, 1, 2, 3])
+    alg = BasicAlgebra('TestAlg', [0, 1, 2, 3])
     conlat = CongruenceLattice(alg)
     
     # Compute Cg(0, 1)
@@ -378,7 +378,7 @@ def test_cg():
 
 def test_complements():
     """Test getting complements"""
-    alg = BasicSmallAlgebra('TestAlg', [0, 1, 2, 3])
+    alg = BasicAlgebra('TestAlg', [0, 1, 2, 3])
     conlat = CongruenceLattice(alg)
     
     zero = conlat.zero()
@@ -393,7 +393,7 @@ def test_complements():
 
 def test_find_principal_chain():
     """Test finding a principal chain"""
-    alg = BasicSmallAlgebra('TestAlg', [0, 1, 2, 3])
+    alg = BasicAlgebra('TestAlg', [0, 1, 2, 3])
     conlat = CongruenceLattice(alg)
     
     chain = conlat.find_principal_chain()
@@ -409,7 +409,7 @@ def test_find_principal_chain():
 
 def test_find_upper_cover():
     """Test finding upper cover"""
-    alg = BasicSmallAlgebra('TestAlg', [0, 1, 2, 3])
+    alg = BasicAlgebra('TestAlg', [0, 1, 2, 3])
     conlat = CongruenceLattice(alg)
     
     zero = conlat.zero()
@@ -422,7 +422,7 @@ def test_find_upper_cover():
 
 def test_irredundant_meet_decomposition():
     """Test getting irredundant meet decomposition"""
-    alg = BasicSmallAlgebra('TestAlg', [0, 1, 2])
+    alg = BasicAlgebra('TestAlg', [0, 1, 2])
     conlat = CongruenceLattice(alg)
     
     decomp = conlat.irredundant_meet_decomposition()
@@ -435,7 +435,7 @@ def test_irredundant_meet_decomposition():
 
 def test_join_irreducibles():
     """Test getting join irreducibles"""
-    alg = BasicSmallAlgebra('TestAlg', [0, 1, 2])
+    alg = BasicAlgebra('TestAlg', [0, 1, 2])
     conlat = CongruenceLattice(alg)
     
     jis = conlat.join_irreducibles()

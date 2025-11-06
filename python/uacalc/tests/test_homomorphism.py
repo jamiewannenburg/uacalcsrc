@@ -12,7 +12,7 @@ import platform
 # Import clean class names (Py* names are not available)
 import uacalc_lib
 Homomorphism = uacalc_lib.alg.Homomorphism
-BasicSmallAlgebra = uacalc_lib.alg.BasicSmallAlgebra
+BasicAlgebra = uacalc_lib.alg.BasicAlgebra
 
 # Get the project root directory
 project_root = Path(__file__).parent.parent.parent.parent
@@ -68,8 +68,8 @@ def run_java_wrapper(command, args):
 
 
 def create_mock_algebra(name, universe):
-    """Create a mock BasicSmallAlgebra for testing."""
-    return BasicSmallAlgebra(name, universe)
+    """Create a mock BasicAlgebra for testing."""
+    return BasicAlgebra(name, universe)
 
 
 class TestHomomorphism:

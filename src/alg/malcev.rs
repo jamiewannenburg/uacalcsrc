@@ -8,7 +8,7 @@
  * Based on org.uacalc.alg.Malcev.java
  */
 
-use crate::alg::{SmallAlgebra, BigProductAlgebra, FreeAlgebra, BasicSmallAlgebra, Closer};
+use crate::alg::{SmallAlgebra, BigProductAlgebra, FreeAlgebra, BasicAlgebra, Closer};
 use crate::terms::{Term, VariableImp};
 use crate::util::int_array::IntArray;
 use crate::util::sequence_generator::SequenceGenerator;
@@ -26,7 +26,7 @@ use std::sync::Arc;
 
 /// Helper function to convert a generic algebra to i32 algebra for term finding.
 /// For now, this is a placeholder - in practice, algebras used with Malcev
-/// functions should already be i32-based (BasicSmallAlgebra<i32>).
+/// functions should already be i32-based (BasicAlgebra<i32>).
 /// This function will be properly implemented when needed for non-i32 algebras.
 fn convert_to_i32_algebra<T>(_alg: &dyn SmallAlgebra<UniverseItem = T>) -> Result<Box<dyn SmallAlgebra<UniverseItem = i32>>, String>
 where
@@ -70,12 +70,12 @@ where
     }
     
     // Convert the algebra to i32-based for use with FreeAlgebra
-    // Extract operations and create a new BasicSmallAlgebra with i32 universe
+    // Extract operations and create a new BasicAlgebra with i32 universe
     let card = alg.cardinality();
     let ops = alg.operations();
     let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
     let universe_set: HashSet<i32> = (0..card).collect();
-    let i32_alg = BasicSmallAlgebra::new(
+    let i32_alg = BasicAlgebra::new(
         alg.name().to_string(),
         universe_set,
         int_ops,
@@ -166,7 +166,7 @@ where
     
     let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
     let universe_set: HashSet<i32> = (0..card).collect();
-    let i32_alg = BasicSmallAlgebra::new(
+    let i32_alg = BasicAlgebra::new(
         alg.name().to_string(),
         universe_set,
         int_ops,
@@ -254,7 +254,7 @@ where
     
     let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
     let universe_set: HashSet<i32> = (0..card).collect();
-    let i32_alg = BasicSmallAlgebra::new(
+    let i32_alg = BasicAlgebra::new(
         alg.name().to_string(),
         universe_set,
         int_ops,
@@ -340,7 +340,7 @@ where
     
     let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
     let universe_set: HashSet<i32> = (0..card).collect();
-    let i32_alg = BasicSmallAlgebra::new(
+    let i32_alg = BasicAlgebra::new(
         alg.name().to_string(),
         universe_set,
         int_ops,
@@ -428,7 +428,7 @@ where
     
     let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
     let universe_set: HashSet<i32> = (0..card).collect();
-    let i32_alg = BasicSmallAlgebra::new(
+    let i32_alg = BasicAlgebra::new(
         alg.name().to_string(),
         universe_set,
         int_ops,
@@ -518,7 +518,7 @@ where
     
     let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
     let universe_set: HashSet<i32> = (0..card).collect();
-    let i32_alg = BasicSmallAlgebra::new(
+    let i32_alg = BasicAlgebra::new(
         alg.name().to_string(),
         universe_set,
         int_ops,
@@ -640,7 +640,7 @@ where
     
     let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
     let universe_set: HashSet<i32> = (0..card).collect();
-    let i32_alg = BasicSmallAlgebra::new(
+    let i32_alg = BasicAlgebra::new(
         alg.name().to_string(),
         universe_set,
         int_ops,
@@ -781,7 +781,7 @@ where
     let card = alg.cardinality();
     let ops = alg.operations();
     let universe_set: HashSet<i32> = (0..card).collect();
-    let i32_alg = BasicSmallAlgebra::new(
+    let i32_alg = BasicAlgebra::new(
         alg.name().to_string(),
         universe_set,
         ops,
@@ -906,7 +906,7 @@ where
     let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
     let universe_set: HashSet<i32> = (0..card).collect();
     let alg_name = alg.name().to_string();
-    let i32_alg = BasicSmallAlgebra::new(
+    let i32_alg = BasicAlgebra::new(
         alg_name.clone(),
         universe_set.clone(),
         int_ops,
@@ -926,7 +926,7 @@ where
     // We need to recreate the operations since ops was consumed
     let ops_for_interp = alg.operations();
     let int_ops_for_interp = crate::alg::op::ops::make_int_operations(ops_for_interp)?;
-    let i32_alg_for_interpretation = BasicSmallAlgebra::new(
+    let i32_alg_for_interpretation = BasicAlgebra::new(
         alg_name,
         universe_set,
         int_ops_for_interp,
@@ -1002,7 +1002,7 @@ where
     let ops = alg.operations();
     let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
     let universe_set: HashSet<i32> = (0..card).collect();
-    let i32_alg = BasicSmallAlgebra::new(
+    let i32_alg = BasicAlgebra::new(
         alg.name().to_string(),
         universe_set,
         int_ops,
@@ -1233,7 +1233,7 @@ where
     
     let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
     let universe_set: HashSet<i32> = (0..card).collect();
-    let i32_alg = BasicSmallAlgebra::new(
+    let i32_alg = BasicAlgebra::new(
         alg.name().to_string(),
         universe_set,
         int_ops,
@@ -1374,7 +1374,7 @@ where
     
     let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
     let universe_set: HashSet<i32> = (0..card).collect();
-    let i32_alg = BasicSmallAlgebra::new(
+    let i32_alg = BasicAlgebra::new(
         alg.name().to_string(),
         universe_set,
         int_ops,
@@ -1726,7 +1726,7 @@ where
     
     let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
     let universe_set: HashSet<i32> = (0..card).collect();
-    let i32_alg = BasicSmallAlgebra::new(
+    let i32_alg = BasicAlgebra::new(
         alg.name().to_string(),
         universe_set,
         int_ops,
@@ -1939,7 +1939,7 @@ where
     
     let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
     let universe_set: HashSet<i32> = (0..card).collect();
-    let i32_alg = BasicSmallAlgebra::new(
+    let i32_alg = BasicAlgebra::new(
         alg.name().to_string(),
         universe_set,
         int_ops,
@@ -2202,7 +2202,7 @@ where
     
     let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
     let universe_set: HashSet<i32> = (0..card).collect();
-    let i32_alg = BasicSmallAlgebra::new(
+    let i32_alg = BasicAlgebra::new(
         alg.name().to_string(),
         universe_set,
         int_ops,
@@ -2320,7 +2320,7 @@ where
     
     let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
     let universe_set: HashSet<i32> = (0..card).collect();
-    let i32_alg = BasicSmallAlgebra::new(
+    let i32_alg = BasicAlgebra::new(
         alg.name().to_string(),
         universe_set,
         int_ops,
@@ -2435,7 +2435,7 @@ where
     
     let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
     let universe_set: HashSet<i32> = (0..card).collect();
-    let i32_alg = BasicSmallAlgebra::new(
+    let i32_alg = BasicAlgebra::new(
         alg.name().to_string(),
         universe_set,
         int_ops,
@@ -2582,7 +2582,7 @@ where
     
     let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
     let universe_set: HashSet<i32> = (0..card).collect();
-    let i32_alg = BasicSmallAlgebra::new(
+    let i32_alg = BasicAlgebra::new(
         alg.name().to_string(),
         universe_set,
         int_ops,
@@ -2734,7 +2734,7 @@ where
     // Convert operations to use integer tables to ensure they work correctly
     let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
     let universe_set: HashSet<i32> = (0..card).collect();
-    let i32_alg = BasicSmallAlgebra::new(
+    let i32_alg = BasicAlgebra::new(
         alg.name().to_string(),
         universe_set,
         int_ops,
@@ -2876,7 +2876,7 @@ where
     let ops = alg.operations();
     let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
     let universe_set: HashSet<i32> = (0..card).collect();
-    let i32_alg = BasicSmallAlgebra::new(
+    let i32_alg = BasicAlgebra::new(
         alg.name().to_string(),
         universe_set,
         int_ops,
@@ -3035,7 +3035,7 @@ where
     
     let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
     let universe_set: HashSet<i32> = (0..card).collect();
-    let i32_alg = BasicSmallAlgebra::new(
+    let i32_alg = BasicAlgebra::new(
         alg.name().to_string(),
         universe_set,
         int_ops,
@@ -3231,7 +3231,7 @@ where
     
     let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
     let universe_set: HashSet<i32> = (0..card).collect();
-    let i32_alg = BasicSmallAlgebra::new(
+    let i32_alg = BasicAlgebra::new(
         alg.name().to_string(),
         universe_set,
         int_ops,
@@ -3376,7 +3376,7 @@ where
     let ops = alg.operations();
     let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
     let universe_set: HashSet<i32> = (0..card).collect();
-    let i32_alg = BasicSmallAlgebra::new(
+    let i32_alg = BasicAlgebra::new(
         alg.name().to_string(),
         universe_set,
         int_ops,
@@ -3432,7 +3432,7 @@ where
     let ops = alg.operations();
     let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
     let universe_set: HashSet<i32> = (0..card).collect();
-    let i32_alg = BasicSmallAlgebra::new(
+    let i32_alg = BasicAlgebra::new(
         alg.name().to_string(),
         universe_set,
         int_ops,
@@ -3489,7 +3489,7 @@ where
     let ops = alg.operations();
     let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
     let universe_set: HashSet<i32> = (0..card).collect();
-    let i32_alg = BasicSmallAlgebra::new(
+    let i32_alg = BasicAlgebra::new(
         alg.name().to_string(),
         universe_set,
         int_ops,
@@ -3650,7 +3650,7 @@ where
     
     let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
     let universe_set: HashSet<i32> = (0..card).collect();
-    let i32_alg = BasicSmallAlgebra::new(
+    let i32_alg = BasicAlgebra::new(
         alg.name().to_string(),
         universe_set,
         int_ops,
@@ -3752,7 +3752,7 @@ where
     
     let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
     let universe_set: HashSet<i32> = (0..card).collect();
-    let i32_alg = BasicSmallAlgebra::new(
+    let i32_alg = BasicAlgebra::new(
         alg.name().to_string(),
         universe_set,
         int_ops,
@@ -3825,13 +3825,13 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::alg::BasicSmallAlgebra;
+    use crate::alg::BasicAlgebra;
     use crate::io::AlgebraReader;
     use std::path::Path;
     use std::collections::HashSet;
 
     /// Helper to load an algebra from a test file (skip if not found)
-    fn load_test_algebra(name: &str) -> Option<BasicSmallAlgebra<i32>> {
+    fn load_test_algebra(name: &str) -> Option<BasicAlgebra<i32>> {
         let path_str = format!("resources/algebras/{}.ua", name);
         let path = Path::new(&path_str);
         if !path.exists() {
@@ -3845,7 +3845,7 @@ mod tests {
     #[test]
     fn test_malcev_term_with_trivial_algebra() {
         // Test with cardinality 1 algebra (should return x)
-        let alg = BasicSmallAlgebra::new(
+        let alg = BasicAlgebra::new(
             "TestAlgebra".to_string(),
             HashSet::from([0]),
             Vec::new()
@@ -3892,7 +3892,7 @@ mod tests {
 
     #[test]
     fn test_nu_term_arity_validation() {
-        let alg = BasicSmallAlgebra::new(
+        let alg = BasicAlgebra::new(
             "TestAlgebra".to_string(),
             HashSet::from([0, 1]),
             Vec::new()
@@ -3906,7 +3906,7 @@ mod tests {
     #[test]
     fn test_nu_term_with_trivial_algebra() {
         // Test with cardinality 1 algebra
-        let alg = BasicSmallAlgebra::new(
+        let alg = BasicAlgebra::new(
             "TestAlgebra".to_string(),
             HashSet::from([0]),
             Vec::new()
@@ -3953,7 +3953,7 @@ mod tests {
     #[test]
     fn test_majority_term_with_trivial_algebra() {
         // Test with cardinality 1 algebra (should return x)
-        let alg = BasicSmallAlgebra::new(
+        let alg = BasicAlgebra::new(
             "TestAlgebra".to_string(),
             HashSet::from([0]),
             Vec::new()
@@ -3985,7 +3985,7 @@ mod tests {
     #[test]
     fn test_minority_term_with_trivial_algebra() {
         // Test with cardinality 1 algebra (should return x)
-        let alg = BasicSmallAlgebra::new(
+        let alg = BasicAlgebra::new(
             "TestAlgebra".to_string(),
             HashSet::from([0]),
             Vec::new()
@@ -4017,7 +4017,7 @@ mod tests {
     #[test]
     fn test_pixley_term_with_trivial_algebra() {
         // Test with cardinality 1 algebra (should return x)
-        let alg = BasicSmallAlgebra::new(
+        let alg = BasicAlgebra::new(
             "TestAlgebra".to_string(),
             HashSet::from([0]),
             Vec::new()
@@ -4049,7 +4049,7 @@ mod tests {
     #[test]
     fn test_is_congruence_modular_idempotent_with_trivial_algebra() {
         // Test with cardinality 1 algebra (should be CM)
-        let alg = BasicSmallAlgebra::new(
+        let alg = BasicAlgebra::new(
             "TestAlgebra".to_string(),
             HashSet::from([0]),
             Vec::new()
@@ -4066,7 +4066,7 @@ mod tests {
     #[test]
     fn test_find_day_quadruple_in_square_with_trivial_algebra() {
         // Test with cardinality 1 algebra (should not find Day quadruple)
-        let alg = BasicSmallAlgebra::new(
+        let alg = BasicAlgebra::new(
             "TestAlgebra".to_string(),
             HashSet::from([0]),
             Vec::new()
@@ -4083,7 +4083,7 @@ mod tests {
     #[test]
     fn test_sd_meet_idempotent_with_trivial_algebra() {
         // Test with cardinality 1 algebra (should not find SD-meet failure)
-        let alg = BasicSmallAlgebra::new(
+        let alg = BasicAlgebra::new(
             "TestAlgebra".to_string(),
             HashSet::from([0]),
             Vec::new()
@@ -4100,7 +4100,7 @@ mod tests {
     #[test]
     fn test_is_congruence_dist_idempotent_with_trivial_algebra() {
         // Test with cardinality 1 algebra (should be CD)
-        let alg = BasicSmallAlgebra::new(
+        let alg = BasicAlgebra::new(
             "TestAlgebra".to_string(),
             HashSet::from([0]),
             Vec::new()
@@ -4134,7 +4134,7 @@ mod tests {
             let ops = alg.operations();
             let int_ops = make_int_operations(ops).expect("Failed to create int operations");
             let universe: HashSet<i32> = (0..card).collect();
-            let i32_alg = BasicSmallAlgebra::new(
+            let i32_alg = BasicAlgebra::new(
                 alg.name().to_string(),
                 universe.clone(),
                 int_ops,
@@ -4159,7 +4159,7 @@ mod tests {
             let ops_for_interp = alg.operations();
             let int_ops_for_interp = make_int_operations(ops_for_interp)
                 .expect("Failed to create int operations");
-            let i32_alg_for_interpretation = BasicSmallAlgebra::new(
+            let i32_alg_for_interpretation = BasicAlgebra::new(
                 alg.name().to_string(),
                 universe,
                 int_ops_for_interp,

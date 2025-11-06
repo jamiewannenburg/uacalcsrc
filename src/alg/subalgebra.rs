@@ -16,11 +16,11 @@ use crate::util::horner;
 /// 
 /// # Examples
 /// ```
-/// use uacalc::alg::{BasicSmallAlgebra, SmallAlgebra, Subalgebra, Algebra};
+/// use uacalc::alg::{BasicAlgebra, SmallAlgebra, Subalgebra, Algebra};
 /// use std::collections::HashSet;
 /// 
 /// // Create a super algebra with universe {0, 1, 2, 3}
-/// let super_alg = Box::new(BasicSmallAlgebra::new(
+/// let super_alg = Box::new(BasicAlgebra::new(
 ///     "super".to_string(),
 ///     HashSet::from([0, 1, 2, 3]),
 ///     Vec::new()
@@ -72,10 +72,10 @@ where
     /// 
     /// # Examples
     /// ```
-    /// use uacalc::alg::{BasicSmallAlgebra, SmallAlgebra, Subalgebra, Algebra};
+    /// use uacalc::alg::{BasicAlgebra, SmallAlgebra, Subalgebra, Algebra};
     /// use std::collections::HashSet;
     /// 
-    /// let super_alg = Box::new(BasicSmallAlgebra::new(
+    /// let super_alg = Box::new(BasicAlgebra::new(
     ///     "super".to_string(),
     ///     HashSet::from([0, 1, 2]),
     ///     Vec::new()
@@ -164,10 +164,10 @@ where
     /// 
     /// # Examples
     /// ```
-    /// use uacalc::alg::{BasicSmallAlgebra, SmallAlgebra, Subalgebra, Algebra};
+    /// use uacalc::alg::{BasicAlgebra, SmallAlgebra, Subalgebra, Algebra};
     /// use std::collections::HashSet;
     /// 
-    /// let super_alg = Box::new(BasicSmallAlgebra::new(
+    /// let super_alg = Box::new(BasicAlgebra::new(
     ///     "super".to_string(),
     ///     HashSet::from([0, 1, 2, 3]),
     ///     Vec::new()
@@ -201,11 +201,11 @@ where
     /// 
     /// # Examples
     /// ```
-    /// use uacalc::alg::{BasicSmallAlgebra, SmallAlgebra, Subalgebra, Algebra};
+    /// use uacalc::alg::{BasicAlgebra, SmallAlgebra, Subalgebra, Algebra};
     /// use uacalc::alg::conlat::partition::Partition;
     /// use std::collections::HashSet;
     /// 
-    /// let super_alg = Box::new(BasicSmallAlgebra::new(
+    /// let super_alg = Box::new(BasicAlgebra::new(
     ///     "super".to_string(),
     ///     HashSet::from([0, 1, 2, 3]),
     ///     Vec::new()

@@ -144,7 +144,7 @@ The following dependencies are missing from the current task file:
 ### Priority: **READY FOR IMPLEMENTATION**
 - **Reason**: All dependencies are now completed
 - **Available Dependencies**: ExtFileFilter, BadAlgebraFileException, Horner, AlgebraReader, AlgebraWriter, Mace4Reader
-- **Available Algebra Types**: BasicSmallAlgebra, ProductAlgebra, Subalgebra, QuotientAlgebra, SubProductAlgebra, BigProductAlgebra
+- **Available Algebra Types**: BasicAlgebra, ProductAlgebra, Subalgebra, QuotientAlgebra, SubProductAlgebra, BigProductAlgebra
 - **Recommendation**: Can implement full functionality now as all dependencies are complete
 
 ## Next Steps
@@ -202,7 +202,7 @@ The following dependencies are missing from the current task file:
 - `Mace4Reader` (Task 37): ✅ **COMPLETED** - Full implementation with Rust, Python bindings, and Java wrapper
 
 ### Available Algebra Types
-- `BasicSmallAlgebra`: ✅ **IMPLEMENTED** - Full implementation
+- `BasicAlgebra`: ✅ **IMPLEMENTED** - Full implementation
 - `ProductAlgebra`: ✅ **IMPLEMENTED** - Full implementation  
 - `Subalgebra`: ✅ **IMPLEMENTED** - Full implementation
 - `QuotientAlgebra`: ✅ **IMPLEMENTED** - Full implementation
@@ -245,7 +245,7 @@ The following dependencies are missing from the current task file:
 
 **Key Findings:**
 1. **All 6 dependencies are COMPLETED** (100% complete)
-2. **All required algebra types are IMPLEMENTED** (BasicSmallAlgebra, ProductAlgebra, Subalgebra, QuotientAlgebra, etc.)
+2. **All required algebra types are IMPLEMENTED** (BasicAlgebra, ProductAlgebra, Subalgebra, QuotientAlgebra, etc.)
 3. **All 18 methods can be implemented now** (100% of functionality)
 4. **No remaining dependencies**: All dependencies are complete
 

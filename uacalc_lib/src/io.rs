@@ -3,7 +3,7 @@ use pyo3::exceptions::PyValueError;
 use std::fs::File;
 use std::path::Path;
 use uacalc::alg::SmallAlgebra;
-use crate::alg::PyBasicSmallAlgebra;
+use crate::alg::PyBasicAlgebra;
 
 /// Python wrapper for Mace4Reader
 #[pyclass]
@@ -30,7 +30,7 @@ impl PyMace4Reader {
     
     /// Parse a single algebra from a file path
     #[staticmethod]
-    fn parse_algebra_from_file(file_path: String) -> PyResult<Option<PyBasicSmallAlgebra>> {
+    fn parse_algebra_from_file(file_path: String) -> PyResult<Option<PyBasicAlgebra>> {
         let file = File::open(&file_path)
             .map_err(|e| PyValueError::new_err(format!("Failed to open file {}: {}", file_path, e)))?;
         
@@ -46,8 +46,8 @@ impl PyMace4Reader {
                             .collect();
                         
                         let universe: std::collections::HashSet<i32> = (0..cardinality).collect();
-                        let basic_alg = uacalc::alg::small_algebra::BasicSmallAlgebra::new(name, universe, operations);
-                        Ok(Some(PyBasicSmallAlgebra::from_inner(basic_alg)))
+                        let basic_alg = uacalc::alg::small_algebra::BasicAlgebra::new(name, universe, operations);
+                        Ok(Some(PyBasicAlgebra::from_inner(basic_alg)))
                     }
                     Ok(None) => Ok(None),
                     Err(e) => Err(PyValueError::new_err(e.message().to_string())),
@@ -58,7 +58,7 @@ impl PyMace4Reader {
     }
     
     /// Parse a single algebra from input data
-    fn parse_algebra_from_stream(&self, data: Vec<u8>) -> PyResult<Option<PyBasicSmallAlgebra>> {
+    fn parse_algebra_from_stream(&self, data: Vec<u8>) -> PyResult<Option<PyBasicAlgebra>> {
         let cursor = std::io::Cursor::new(data);
         match uacalc::io::Mace4Reader::new_safe(Box::new(cursor)) {
             Ok(mut reader) => {
@@ -72,8 +72,8 @@ impl PyMace4Reader {
                             .collect();
                         
                         let universe: std::collections::HashSet<i32> = (0..cardinality).collect();
-                        let basic_alg = uacalc::alg::small_algebra::BasicSmallAlgebra::new(name, universe, operations);
-                        Ok(Some(PyBasicSmallAlgebra::from_inner(basic_alg)))
+                        let basic_alg = uacalc::alg::small_algebra::BasicAlgebra::new(name, universe, operations);
+                        Ok(Some(PyBasicAlgebra::from_inner(basic_alg)))
                     }
                     Ok(None) => Ok(None),
                     Err(e) => Err(PyValueError::new_err(e.message().to_string())),
@@ -84,7 +84,7 @@ impl PyMace4Reader {
     }
     
     /// Parse a list of algebras from a file path
-    fn parse_algebra_list_from_file(&self, file_path: String) -> PyResult<Vec<PyBasicSmallAlgebra>> {
+    fn parse_algebra_list_from_file(&self, file_path: String) -> PyResult<Vec<PyBasicAlgebra>> {
         let file = File::open(&file_path)
             .map_err(|e| PyValueError::new_err(format!("Failed to open file {}: {}", file_path, e)))?;
         
@@ -102,8 +102,8 @@ impl PyMace4Reader {
                             .collect();
                             
                             let universe: std::collections::HashSet<i32> = (0..cardinality).collect();
-                            let basic_alg = uacalc::alg::small_algebra::BasicSmallAlgebra::new(name, universe, operations);
-                            result.push(PyBasicSmallAlgebra::from_inner(basic_alg));
+                            let basic_alg = uacalc::alg::small_algebra::BasicAlgebra::new(name, universe, operations);
+                            result.push(PyBasicAlgebra::from_inner(basic_alg));
                         }
                         Ok(result)
                     }
@@ -115,7 +115,7 @@ impl PyMace4Reader {
     }
     
     /// Parse a list of algebras from input data
-    fn parse_algebra_list_from_stream(&self, data: Vec<u8>) -> PyResult<Vec<PyBasicSmallAlgebra>> {
+    fn parse_algebra_list_from_stream(&self, data: Vec<u8>) -> PyResult<Vec<PyBasicAlgebra>> {
         let cursor = std::io::Cursor::new(data);
         match uacalc::io::Mace4Reader::new_safe(Box::new(cursor)) {
             Ok(mut reader) => {
@@ -131,8 +131,8 @@ impl PyMace4Reader {
                             .collect();
                             
                             let universe: std::collections::HashSet<i32> = (0..cardinality).collect();
-                            let basic_alg = uacalc::alg::small_algebra::BasicSmallAlgebra::new(name, universe, operations);
-                            result.push(PyBasicSmallAlgebra::from_inner(basic_alg));
+                            let basic_alg = uacalc::alg::small_algebra::BasicAlgebra::new(name, universe, operations);
+                            result.push(PyBasicAlgebra::from_inner(basic_alg));
                         }
                         Ok(result)
                     }
@@ -192,7 +192,7 @@ impl PyAlgebraReader {
     }
     
     /// Read a single algebra from the file path stored in this reader
-    fn read_algebra_file(&self) -> PyResult<Option<PyBasicSmallAlgebra>> {
+    fn read_algebra_file(&self) -> PyResult<Option<PyBasicAlgebra>> {
         if let Some(ref file_path) = self.file_path {
             Self::read_algebra_from_file(file_path.clone())
         } else {
@@ -202,12 +202,12 @@ impl PyAlgebraReader {
     
     /// Read a single algebra from a file path
     #[staticmethod]
-    fn read_algebra_from_file(file_path: String) -> PyResult<Option<PyBasicSmallAlgebra>> {
+    fn read_algebra_from_file(file_path: String) -> PyResult<Option<PyBasicAlgebra>> {
         let path = Path::new(&file_path);
         match uacalc::io::AlgebraReader::new_from_file(path) {
             Ok(reader) => {
                 match reader.read_algebra_file() {
-                    Ok(algebra) => Ok(Some(PyBasicSmallAlgebra::from_inner(algebra))),
+                    Ok(algebra) => Ok(Some(PyBasicAlgebra::from_inner(algebra))),
                     Err(e) => Err(PyValueError::new_err(e)),
                 }
             }
@@ -216,11 +216,11 @@ impl PyAlgebraReader {
     }
     
     /// Read a single algebra from input data
-    fn read_algebra_from_stream(&self, data: Vec<u8>) -> PyResult<Option<PyBasicSmallAlgebra>> {
+    fn read_algebra_from_stream(&self, data: Vec<u8>) -> PyResult<Option<PyBasicAlgebra>> {
         match uacalc::io::AlgebraReader::new_from_stream(data) {
             Ok(reader) => {
                 match reader.read_algebra_from_stream() {
-                    Ok(algebra) => Ok(Some(PyBasicSmallAlgebra::from_inner(algebra))),
+                    Ok(algebra) => Ok(Some(PyBasicAlgebra::from_inner(algebra))),
                     Err(e) => Err(PyValueError::new_err(e)),
                 }
             }
@@ -229,14 +229,14 @@ impl PyAlgebraReader {
     }
     
     /// Read a list of algebras from a file path
-    fn read_algebra_list_from_file(&self, file_path: String) -> PyResult<Vec<PyBasicSmallAlgebra>> {
+    fn read_algebra_list_from_file(&self, file_path: String) -> PyResult<Vec<PyBasicAlgebra>> {
         let path = Path::new(&file_path);
         match uacalc::io::AlgebraReader::new_from_file(path) {
             Ok(reader) => {
                 match reader.read_algebra_list_file() {
                     Ok(algebras) => {
                         let result = algebras.into_iter()
-                            .map(|alg| PyBasicSmallAlgebra::from_inner(alg))
+                            .map(|alg| PyBasicAlgebra::from_inner(alg))
                             .collect();
                         Ok(result)
                     }
@@ -248,13 +248,13 @@ impl PyAlgebraReader {
     }
     
     /// Read a list of algebras from input data
-    fn read_algebra_list_from_stream(&self, data: Vec<u8>) -> PyResult<Vec<PyBasicSmallAlgebra>> {
+    fn read_algebra_list_from_stream(&self, data: Vec<u8>) -> PyResult<Vec<PyBasicAlgebra>> {
         match uacalc::io::AlgebraReader::new_from_stream(data) {
             Ok(reader) => {
                 match reader.read_algebra_list_from_stream() {
                     Ok(algebras) => {
                         let result = algebras.into_iter()
-                            .map(|alg| PyBasicSmallAlgebra::from_inner(alg))
+                            .map(|alg| PyBasicAlgebra::from_inner(alg))
                             .collect();
                         Ok(result)
                     }
@@ -457,21 +457,21 @@ pub struct PyAlgebraWriter {
 impl PyAlgebraWriter {
     /// Create a new AlgebraWriter that writes to a file
     #[staticmethod]
-    fn new_with_file(algebra: &PyBasicSmallAlgebra, file_path: String) -> PyResult<Self> {
+    fn new_with_file(algebra: &PyBasicAlgebra, file_path: String) -> PyResult<Self> {
         // Just return an empty instance - we'll create the writer when needed
         Ok(PyAlgebraWriter {})
     }
     
     /// Create a new AlgebraWriter with a custom writer (not exposed to Python)
     #[staticmethod]
-    fn new_with_writer(algebra: &PyBasicSmallAlgebra) -> PyResult<Self> {
+    fn new_with_writer(algebra: &PyBasicAlgebra) -> PyResult<Self> {
         // Just return an empty instance - we'll create the writer when needed
         Ok(PyAlgebraWriter {})
     }
     
     /// Write the complete algebra XML to a file
     #[staticmethod]
-    fn write_algebra_xml_to_file(algebra: &PyBasicSmallAlgebra, file_path: String) -> PyResult<()> {
+    fn write_algebra_xml_to_file(algebra: &PyBasicAlgebra, file_path: String) -> PyResult<()> {
         let rust_algebra = Box::new(algebra.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
         
         match uacalc::io::AlgebraWriter::new_with_file(rust_algebra, &file_path) {
@@ -487,7 +487,7 @@ impl PyAlgebraWriter {
     
     /// Write the algebra definition to a file (without XML header)
     #[staticmethod]
-    fn write_algebra_to_file(algebra: &PyBasicSmallAlgebra, file_path: String) -> PyResult<()> {
+    fn write_algebra_to_file(algebra: &PyBasicAlgebra, file_path: String) -> PyResult<()> {
         let rust_algebra = Box::new(algebra.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
         
         match uacalc::io::AlgebraWriter::new_with_file(rust_algebra, &file_path) {
@@ -503,7 +503,7 @@ impl PyAlgebraWriter {
     
     /// Write a basic algebra definition to a file
     #[staticmethod]
-    fn write_basic_algebra_to_file(algebra: &PyBasicSmallAlgebra, file_path: String) -> PyResult<()> {
+    fn write_basic_algebra_to_file(algebra: &PyBasicAlgebra, file_path: String) -> PyResult<()> {
         let rust_algebra = Box::new(algebra.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
         
         match uacalc::io::AlgebraWriter::new_with_file(rust_algebra, &file_path) {
@@ -539,7 +539,7 @@ fn parse_line(line: String) -> PyResult<i32> {
 
 /// Read an algebra from a file path
 #[pyfunction]
-fn read_algebra_file(path: String) -> PyResult<PyBasicSmallAlgebra> {
+fn read_algebra_file(path: String) -> PyResult<PyBasicAlgebra> {
     let file_path = Path::new(&path);
     match uacalc::io::algebra_io::read_algebra_file(file_path) {
         Ok(algebra) => {
@@ -552,8 +552,8 @@ fn read_algebra_file(path: String) -> PyResult<PyBasicSmallAlgebra> {
                 .collect();
             
             let universe: std::collections::HashSet<i32> = (0..cardinality).collect();
-            let basic_alg = uacalc::alg::small_algebra::BasicSmallAlgebra::new(name, universe, operations);
-            Ok(PyBasicSmallAlgebra::from_inner(basic_alg))
+            let basic_alg = uacalc::alg::small_algebra::BasicAlgebra::new(name, universe, operations);
+            Ok(PyBasicAlgebra::from_inner(basic_alg))
         }
         Err(e) => Err(PyValueError::new_err(e.message().to_string())),
     }
@@ -561,7 +561,7 @@ fn read_algebra_file(path: String) -> PyResult<PyBasicSmallAlgebra> {
 
 /// Read an algebra from a byte stream
 #[pyfunction]
-fn read_algebra_from_stream(data: Vec<u8>) -> PyResult<PyBasicSmallAlgebra> {
+fn read_algebra_from_stream(data: Vec<u8>) -> PyResult<PyBasicAlgebra> {
     let cursor = std::io::Cursor::new(data);
     match uacalc::io::algebra_io::read_algebra_from_stream(Box::new(cursor)) {
         Ok(algebra) => {
@@ -573,8 +573,8 @@ fn read_algebra_from_stream(data: Vec<u8>) -> PyResult<PyBasicSmallAlgebra> {
                 .collect();
             
             let universe: std::collections::HashSet<i32> = (0..cardinality).collect();
-            let basic_alg = uacalc::alg::small_algebra::BasicSmallAlgebra::new(name, universe, operations);
-            Ok(PyBasicSmallAlgebra::from_inner(basic_alg))
+            let basic_alg = uacalc::alg::small_algebra::BasicAlgebra::new(name, universe, operations);
+            Ok(PyBasicAlgebra::from_inner(basic_alg))
         }
         Err(e) => Err(PyValueError::new_err(e.message().to_string())),
     }
@@ -582,7 +582,7 @@ fn read_algebra_from_stream(data: Vec<u8>) -> PyResult<PyBasicSmallAlgebra> {
 
 /// Read a list of algebras from a file path
 #[pyfunction]
-fn read_algebra_list_file(path: String) -> PyResult<Vec<PyBasicSmallAlgebra>> {
+fn read_algebra_list_file(path: String) -> PyResult<Vec<PyBasicAlgebra>> {
     let file_path = Path::new(&path);
     match uacalc::io::algebra_io::read_algebra_list_file(file_path) {
         Ok(algebras) => {
@@ -596,8 +596,8 @@ fn read_algebra_list_file(path: String) -> PyResult<Vec<PyBasicSmallAlgebra>> {
                 .collect();
                 
                 let universe: std::collections::HashSet<i32> = (0..cardinality).collect();
-                let basic_alg = uacalc::alg::small_algebra::BasicSmallAlgebra::new(name, universe, operations);
-                result.push(PyBasicSmallAlgebra::from_inner(basic_alg));
+                let basic_alg = uacalc::alg::small_algebra::BasicAlgebra::new(name, universe, operations);
+                result.push(PyBasicAlgebra::from_inner(basic_alg));
             }
             Ok(result)
         }
@@ -607,7 +607,7 @@ fn read_algebra_list_file(path: String) -> PyResult<Vec<PyBasicSmallAlgebra>> {
 
 /// Read a single algebra from a byte stream
 #[pyfunction]
-fn read_algebra_list_from_stream(data: Vec<u8>) -> PyResult<PyBasicSmallAlgebra> {
+fn read_algebra_list_from_stream(data: Vec<u8>) -> PyResult<PyBasicAlgebra> {
     let cursor = std::io::Cursor::new(data);
     match uacalc::io::algebra_io::read_algebra_list_from_stream(Box::new(cursor)) {
         Ok(algebra) => {
@@ -619,8 +619,8 @@ fn read_algebra_list_from_stream(data: Vec<u8>) -> PyResult<PyBasicSmallAlgebra>
                 .collect();
             
             let universe: std::collections::HashSet<i32> = (0..cardinality).collect();
-            let basic_alg = uacalc::alg::small_algebra::BasicSmallAlgebra::new(name, universe, operations);
-            Ok(PyBasicSmallAlgebra::from_inner(basic_alg))
+            let basic_alg = uacalc::alg::small_algebra::BasicAlgebra::new(name, universe, operations);
+            Ok(PyBasicAlgebra::from_inner(basic_alg))
         }
         Err(e) => Err(PyValueError::new_err(e.message().to_string())),
     }
@@ -638,7 +638,7 @@ fn convert_to_xml(path: String) -> PyResult<()> {
 
 /// Write an algebra to a file
 #[pyfunction]
-fn write_algebra_file(algebra: &PyBasicSmallAlgebra, path: String) -> PyResult<()> {
+fn write_algebra_file(algebra: &PyBasicAlgebra, path: String) -> PyResult<()> {
     let file_path = Path::new(&path);
     // Use clone_box() to properly clone operations, not .clone() which loses operations
     let rust_algebra = algebra.inner.clone_box();
@@ -651,7 +651,7 @@ fn write_algebra_file(algebra: &PyBasicSmallAlgebra, path: String) -> PyResult<(
 
 /// Write an algebra to a file with optional old-style format
 #[pyfunction]
-fn write_algebra_file_with_style(algebra: &PyBasicSmallAlgebra, path: String, old_style: bool) -> PyResult<()> {
+fn write_algebra_file_with_style(algebra: &PyBasicAlgebra, path: String, old_style: bool) -> PyResult<()> {
     let file_path = Path::new(&path);
     // Use clone_box() to properly clone operations, not .clone() which loses operations
     let rust_algebra = algebra.inner.clone_box();
@@ -664,7 +664,7 @@ fn write_algebra_file_with_style(algebra: &PyBasicSmallAlgebra, path: String, ol
 
 /// Read a projective plane from a file path
 #[pyfunction]
-fn read_projective_plane(path: String) -> PyResult<PyBasicSmallAlgebra> {
+fn read_projective_plane(path: String) -> PyResult<PyBasicAlgebra> {
     let file_path = Path::new(&path);
     match uacalc::io::algebra_io::read_projective_plane(file_path) {
         Ok(algebra) => {
@@ -676,8 +676,8 @@ fn read_projective_plane(path: String) -> PyResult<PyBasicSmallAlgebra> {
                 .collect();
             
             let universe: std::collections::HashSet<i32> = (0..cardinality).collect();
-            let basic_alg = uacalc::alg::small_algebra::BasicSmallAlgebra::new(name, universe, operations);
-            Ok(PyBasicSmallAlgebra::from_inner(basic_alg))
+            let basic_alg = uacalc::alg::small_algebra::BasicAlgebra::new(name, universe, operations);
+            Ok(PyBasicAlgebra::from_inner(basic_alg))
         }
         Err(e) => Err(PyValueError::new_err(e.message().to_string())),
     }
@@ -685,7 +685,7 @@ fn read_projective_plane(path: String) -> PyResult<PyBasicSmallAlgebra> {
 
 /// Read a projective plane from a byte stream
 #[pyfunction]
-fn read_projective_plane_from_stream(data: Vec<u8>) -> PyResult<PyBasicSmallAlgebra> {
+fn read_projective_plane_from_stream(data: Vec<u8>) -> PyResult<PyBasicAlgebra> {
     let cursor = std::io::Cursor::new(data);
     match uacalc::io::algebra_io::read_projective_plane_from_stream(Box::new(cursor)) {
         Ok(algebra) => {
@@ -697,8 +697,8 @@ fn read_projective_plane_from_stream(data: Vec<u8>) -> PyResult<PyBasicSmallAlge
                 .collect();
             
             let universe: std::collections::HashSet<i32> = (0..cardinality).collect();
-            let basic_alg = uacalc::alg::small_algebra::BasicSmallAlgebra::new(name, universe, operations);
-            Ok(PyBasicSmallAlgebra::from_inner(basic_alg))
+            let basic_alg = uacalc::alg::small_algebra::BasicAlgebra::new(name, universe, operations);
+            Ok(PyBasicAlgebra::from_inner(basic_alg))
         }
         Err(e) => Err(PyValueError::new_err(e.message().to_string())),
     }

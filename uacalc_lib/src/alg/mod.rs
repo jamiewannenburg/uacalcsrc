@@ -23,7 +23,7 @@ pub mod sublat;
 pub mod small_algebra;
 
 // Re-export the main types that are used throughout the codebase
-pub use basic_algebra::PyBasicSmallAlgebra;
+pub use basic_algebra::PyBasicAlgebra;
 pub use op::operation::PyBasicOperation;
 pub use conlat::basic_binary_relation::PyBasicBinaryRelation;
 pub use conlat::centrality_data::PyCentralityData;
@@ -65,7 +65,7 @@ pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     // Register classes internally but only export clean names
     m.add_class::<PyOperationSymbol>()?;
     m.add_class::<PyBasicOperation>()?;
-    m.add_class::<PyBasicSmallAlgebra>()?;
+    m.add_class::<PyBasicAlgebra>()?;
     m.add_class::<PyIntOperation>()?;
     m.add_class::<PyAbstractIntOperation>()?;
     m.add_class::<PyAbstractOperationNew>()?;
@@ -106,7 +106,7 @@ pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     m.add("CloserTiming", m.getattr("PyCloserTiming")?)?;
     m.add("OperationSymbol", m.getattr("PyOperationSymbol")?)?;
     m.add("BasicOperation", m.getattr("PyBasicOperation")?)?;
-    m.add("BasicSmallAlgebra", m.getattr("PyBasicSmallAlgebra")?)?;
+    m.add("BasicAlgebra", m.getattr("PyBasicAlgebra")?)?;
     m.add("IntOperation", m.getattr("PyIntOperation")?)?;
     m.add("AbstractIntOperation", m.getattr("PyAbstractIntOperation")?)?;
     m.add("AbstractOperation", m.getattr("PyAbstractOperationNew")?)?;

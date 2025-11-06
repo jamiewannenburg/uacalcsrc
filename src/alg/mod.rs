@@ -212,7 +212,7 @@ pub use algebra::{
 
 // Re-export concrete algebra implementations
 pub use general_algebra::GeneralAlgebra;
-pub use small_algebra::{SmallAlgebra, BasicSmallAlgebra, AlgebraType};
+pub use small_algebra::{SmallAlgebra, BasicAlgebra, AlgebraType};
 pub use subalgebra::Subalgebra;
 pub use product_algebra::ProductAlgebra;
 pub use quotient_algebra::QuotientAlgebra;
@@ -224,7 +224,7 @@ pub use op::ParameterizedOperation;
 
 // PowerAlgebra is implemented in this file (mod.rs)
 
-// BasicAlgebra is now implemented as BasicSmallAlgebra
+// BasicAlgebra is now implemented as BasicAlgebra
 // GeneralAlgebra is now implemented in general_algebra.rs
 // ProductAlgebra is now implemented in product_algebra.rs
 // Subalgebra is now implemented in subalgebra.rs
@@ -288,17 +288,17 @@ impl Homomorphism {
     /// 
     /// # Examples
     /// ```
-    /// use uacalc::alg::{Homomorphism, SmallAlgebra, BasicSmallAlgebra};
+    /// use uacalc::alg::{Homomorphism, SmallAlgebra, BasicAlgebra};
     /// use std::collections::{HashMap, HashSet};
     /// 
     /// // Create mock algebras
-    /// let domain = Box::new(BasicSmallAlgebra::new(
+    /// let domain = Box::new(BasicAlgebra::new(
     ///     "domain".to_string(),
     ///     HashSet::from([0, 1]),
     ///     Vec::new()
     /// )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
     /// 
-    /// let range = Box::new(BasicSmallAlgebra::new(
+    /// let range = Box::new(BasicAlgebra::new(
     ///     "range".to_string(),
     ///     HashSet::from([0, 1]),
     ///     Vec::new()
@@ -367,17 +367,17 @@ impl Homomorphism {
     /// 
     /// # Examples
     /// ```
-    /// use uacalc::alg::{Homomorphism, SmallAlgebra, BasicSmallAlgebra};
+    /// use uacalc::alg::{Homomorphism, SmallAlgebra, BasicAlgebra};
     /// use std::collections::{HashMap, HashSet};
     /// 
     /// // Create mock algebras
-    /// let domain = Box::new(BasicSmallAlgebra::new(
+    /// let domain = Box::new(BasicAlgebra::new(
     ///     "domain".to_string(),
     ///     HashSet::from([0, 1, 2]),
     ///     Vec::new()
     /// )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
     /// 
-    /// let range = Box::new(BasicSmallAlgebra::new(
+    /// let range = Box::new(BasicAlgebra::new(
     ///     "range".to_string(),
     ///     HashSet::from([0, 1]),
     ///     Vec::new()
@@ -434,24 +434,24 @@ impl Homomorphism {
     /// 
     /// # Examples
     /// ```
-    /// use uacalc::alg::{Homomorphism, SmallAlgebra, BasicSmallAlgebra};
+    /// use uacalc::alg::{Homomorphism, SmallAlgebra, BasicAlgebra};
     /// use uacalc::util::int_array::IntArrayTrait;
     /// use std::collections::{HashMap, HashSet};
     /// 
     /// // Create mock algebras
-    /// let domain = Box::new(BasicSmallAlgebra::new(
+    /// let domain = Box::new(BasicAlgebra::new(
     ///     "domain".to_string(),
     ///     HashSet::from([0, 1]),
     ///     Vec::new()
     /// )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
     /// 
-    /// let range1 = Box::new(BasicSmallAlgebra::new(
+    /// let range1 = Box::new(BasicAlgebra::new(
     ///     "range1".to_string(),
     ///     HashSet::from([0, 1]),
     ///     Vec::new()
     /// )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
     /// 
-    /// let range2 = Box::new(BasicSmallAlgebra::new(
+    /// let range2 = Box::new(BasicAlgebra::new(
     ///     "range2".to_string(),
     ///     HashSet::from([0, 1]),
     ///     Vec::new()
@@ -580,11 +580,11 @@ pub struct AlgebraFromMinimalSets {
 /// 
 /// # Examples
 /// ```
-/// use uacalc::alg::{MatrixPowerAlgebra, SmallAlgebra, BasicSmallAlgebra, Algebra};
+/// use uacalc::alg::{MatrixPowerAlgebra, SmallAlgebra, BasicAlgebra, Algebra};
 /// use std::collections::HashSet;
 /// 
 /// // Create a small algebra
-/// let alg = Box::new(BasicSmallAlgebra::new(
+/// let alg = Box::new(BasicAlgebra::new(
 ///     "A".to_string(),
 ///     HashSet::from([0, 1]),
 ///     Vec::new()
@@ -626,10 +626,10 @@ impl MatrixPowerAlgebra {
     /// 
     /// # Examples
     /// ```
-    /// use uacalc::alg::{MatrixPowerAlgebra, SmallAlgebra, BasicSmallAlgebra, Algebra};
+    /// use uacalc::alg::{MatrixPowerAlgebra, SmallAlgebra, BasicAlgebra, Algebra};
     /// use std::collections::HashSet;
     /// 
-    /// let alg = Box::new(BasicSmallAlgebra::new(
+    /// let alg = Box::new(BasicAlgebra::new(
     ///     "A".to_string(),
     ///     HashSet::from([0, 1, 2]),
     ///     Vec::new()
@@ -658,10 +658,10 @@ impl MatrixPowerAlgebra {
     /// 
     /// # Examples
     /// ```
-    /// use uacalc::alg::{MatrixPowerAlgebra, SmallAlgebra, BasicSmallAlgebra, Algebra};
+    /// use uacalc::alg::{MatrixPowerAlgebra, SmallAlgebra, BasicAlgebra, Algebra};
     /// use std::collections::HashSet;
     /// 
-    /// let alg = Box::new(BasicSmallAlgebra::new(
+    /// let alg = Box::new(BasicAlgebra::new(
     ///     "A".to_string(),
     ///     HashSet::from([0, 1]),
     ///     Vec::new()
@@ -702,7 +702,7 @@ impl MatrixPowerAlgebra {
         
         // Create matrix power algebra
         // We need to create a new root algebra since we can't clone the original
-        let new_root = Box::new(BasicSmallAlgebra::new(
+        let new_root = Box::new(BasicAlgebra::new(
             "MatrixPowerRoot".to_string(),
             std::collections::HashSet::new(),
             Vec::new()
@@ -792,10 +792,10 @@ impl MatrixPowerAlgebra {
     /// 
     /// # Examples
     /// ```
-    /// use uacalc::alg::{MatrixPowerAlgebra, SmallAlgebra, BasicSmallAlgebra, Algebra};
+    /// use uacalc::alg::{MatrixPowerAlgebra, SmallAlgebra, BasicAlgebra, Algebra};
     /// use std::collections::HashSet;
     /// 
-    /// let alg = Box::new(BasicSmallAlgebra::new(
+    /// let alg = Box::new(BasicAlgebra::new(
     ///     "A".to_string(),
     ///     HashSet::from([0, 1]),
     ///     Vec::new()
@@ -1014,7 +1014,7 @@ impl SmallAlgebra for MatrixPowerAlgebra {
     fn clone_box(&self) -> Box<dyn SmallAlgebra<UniverseItem = Self::UniverseItem>> {
         // We can't clone trait objects, so we'll create a new one
         // This is a limitation of the current design
-        let alg = Box::new(BasicSmallAlgebra::new(
+        let alg = Box::new(BasicAlgebra::new(
             "ClonedRoot".to_string(),
             std::collections::HashSet::new(),
             Vec::new()
@@ -1246,11 +1246,11 @@ pub struct PolinLikeAlgebra {
 /// 
 /// # Examples
 /// ```
-/// use uacalc::alg::{PowerAlgebra, SmallAlgebra, BasicSmallAlgebra, Algebra};
+/// use uacalc::alg::{PowerAlgebra, SmallAlgebra, BasicAlgebra, Algebra};
 /// use std::collections::HashSet;
 /// 
 /// // Create a small algebra
-/// let alg = Box::new(BasicSmallAlgebra::new(
+/// let alg = Box::new(BasicAlgebra::new(
 ///     "A".to_string(),
 ///     HashSet::from([0, 1]),
 ///     Vec::new()
@@ -1295,10 +1295,10 @@ impl PowerAlgebra {
     /// 
     /// # Examples
     /// ```
-    /// use uacalc::alg::{PowerAlgebra, SmallAlgebra, BasicSmallAlgebra, Algebra};
+    /// use uacalc::alg::{PowerAlgebra, SmallAlgebra, BasicAlgebra, Algebra};
     /// use std::collections::HashSet;
     /// 
-    /// let alg = Box::new(BasicSmallAlgebra::new(
+    /// let alg = Box::new(BasicAlgebra::new(
     ///     "A".to_string(),
     ///     HashSet::from([0, 1, 2]),
     ///     Vec::new()
@@ -1353,10 +1353,10 @@ impl PowerAlgebra {
     /// 
     /// # Examples
     /// ```
-    /// use uacalc::alg::{PowerAlgebra, SmallAlgebra, BasicSmallAlgebra, Algebra};
+    /// use uacalc::alg::{PowerAlgebra, SmallAlgebra, BasicAlgebra, Algebra};
     /// use std::collections::HashSet;
     /// 
-    /// let alg = Box::new(BasicSmallAlgebra::new(
+    /// let alg = Box::new(BasicAlgebra::new(
     ///     "A".to_string(),
     ///     HashSet::from([0, 1]),
     ///     Vec::new()
@@ -1706,7 +1706,7 @@ impl SmallAlgebra for PowerAlgebra {
 /// 
 /// # Examples
 /// ```
-/// use uacalc::alg::{ReductAlgebra, SmallAlgebra, BasicSmallAlgebra, Algebra};
+/// use uacalc::alg::{ReductAlgebra, SmallAlgebra, BasicAlgebra, Algebra};
 /// use uacalc::terms::{VariableImp, NonVariableTerm, Term};
 /// use uacalc::alg::op::{OperationSymbol, BasicOperation, Operation};
 /// use std::collections::HashSet;
@@ -1714,7 +1714,7 @@ impl SmallAlgebra for PowerAlgebra {
 /// // Create a small algebra with operation f
 /// let f_sym = OperationSymbol::new("f", 2, false);
 /// let f_op = Box::new(BasicOperation::new(f_sym.clone(), 2)) as Box<dyn Operation>;
-/// let alg = Box::new(BasicSmallAlgebra::new(
+/// let alg = Box::new(BasicAlgebra::new(
 ///     "A".to_string(),
 ///     HashSet::from([0, 1]),
 ///     vec![f_op]
@@ -1781,14 +1781,14 @@ impl ReductAlgebra {
     /// 
     /// # Examples
     /// ```
-    /// use uacalc::alg::{ReductAlgebra, SmallAlgebra, BasicSmallAlgebra, Algebra};
+    /// use uacalc::alg::{ReductAlgebra, SmallAlgebra, BasicAlgebra, Algebra};
     /// use uacalc::terms::{VariableImp, NonVariableTerm, Term};
     /// use uacalc::alg::op::{OperationSymbol, BasicOperation, Operation};
     /// use std::collections::HashSet;
     /// 
     /// let f_sym = OperationSymbol::new("f", 2, false);
     /// let f_op = Box::new(BasicOperation::new(f_sym.clone(), 2)) as Box<dyn Operation>;
-    /// let alg = Box::new(BasicSmallAlgebra::new(
+    /// let alg = Box::new(BasicAlgebra::new(
     ///     "A".to_string(),
     ///     HashSet::from([0, 1]),
     ///     vec![f_op]
@@ -1821,14 +1821,14 @@ impl ReductAlgebra {
     /// 
     /// # Examples
     /// ```
-    /// use uacalc::alg::{ReductAlgebra, SmallAlgebra, BasicSmallAlgebra, Algebra};
+    /// use uacalc::alg::{ReductAlgebra, SmallAlgebra, BasicAlgebra, Algebra};
     /// use uacalc::terms::{VariableImp, NonVariableTerm, Term};
     /// use uacalc::alg::op::{OperationSymbol, BasicOperation, Operation};
     /// use std::collections::HashSet;
     /// 
     /// let f_sym = OperationSymbol::new("f", 2, false);
     /// let f_op = Box::new(BasicOperation::new(f_sym.clone(), 2)) as Box<dyn Operation>;
-    /// let alg = Box::new(BasicSmallAlgebra::new(
+    /// let alg = Box::new(BasicAlgebra::new(
     ///     "A".to_string(),
     ///     HashSet::from([0, 1]),
     ///     vec![f_op]
@@ -2145,7 +2145,7 @@ impl SmallAlgebra for ReductAlgebra {
     fn clone_box(&self) -> Box<dyn SmallAlgebra<UniverseItem = Self::UniverseItem>> {
         // We can't clone trait objects, so we'll create a new one
         // This is a limitation of the current design
-        let alg = Box::new(BasicSmallAlgebra::new(
+        let alg = Box::new(BasicAlgebra::new(
             "ClonedSuper".to_string(),
             std::collections::HashSet::new(),
             Vec::new()
@@ -2202,7 +2202,7 @@ impl Clone for ReductAlgebra {
     fn clone(&self) -> Self {
         // We can't clone the super_algebra trait object, so we'll create a new one
         // This is a limitation of the current design
-        let alg = Box::new(BasicSmallAlgebra::new(
+        let alg = Box::new(BasicAlgebra::new(
             "ClonedSuper".to_string(),
             std::collections::HashSet::new(),
             Vec::new()
@@ -2243,11 +2243,11 @@ pub use sub_product_algebra::SubProductAlgebra;
 /// 
 /// # Examples
 /// ```ignore
-/// use uacalc::alg::{UnaryTermsMonoid, SmallAlgebra, BasicSmallAlgebra};
+/// use uacalc::alg::{UnaryTermsMonoid, SmallAlgebra, BasicAlgebra};
 /// use std::collections::HashSet;
 /// 
 /// // Create a generating algebra
-/// let alg = Box::new(BasicSmallAlgebra::new(
+/// let alg = Box::new(BasicAlgebra::new(
 ///     "A".to_string(),
 ///     HashSet::from([0, 1, 2]),
 ///     Vec::new()

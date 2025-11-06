@@ -4,7 +4,7 @@ use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
 use pyo3::types::PyList;
 use pyo3::Bound;
-use crate::alg::PyBasicSmallAlgebra;
+use crate::alg::PyBasicAlgebra;
 use crate::alg::conlat::partition::PyPartition;
 use crate::util::PyIntArray;
 
@@ -20,16 +20,16 @@ impl PyHomomorphism {
     /// Create a new Homomorphism from domain to range with the given mapping.
     ///
     /// Args:
-    ///     domain (BasicSmallAlgebra): The domain algebra
-    ///     range (BasicSmallAlgebra): The range algebra
+    ///     domain (BasicAlgebra): The domain algebra
+    ///     range (BasicAlgebra): The range algebra
     ///     map (dict): The mapping from domain indices to range indices
     ///
     /// Raises:
     ///     ValueError: If the mapping is invalid or algebras are incompatible
     #[new]
     fn new(
-        domain: &PyBasicSmallAlgebra,
-        range: &PyBasicSmallAlgebra,
+        domain: &PyBasicAlgebra,
+        range: &PyBasicAlgebra,
         map: std::collections::HashMap<usize, usize>,
     ) -> PyResult<Self> {
         // Convert Python algebras to Rust algebras
@@ -96,16 +96,16 @@ impl PyHomomorphism {
     /// Get the domain algebra.
     ///
     /// Returns:
-    ///     BasicSmallAlgebra: The domain algebra
-    fn get_domain(&self) -> PyBasicSmallAlgebra {
-        // Clone the domain algebra and return it as a BasicSmallAlgebra
-        // Note: This assumes the domain is a BasicSmallAlgebra
+    ///     BasicAlgebra: The domain algebra
+    fn get_domain(&self) -> PyBasicAlgebra {
+        // Clone the domain algebra and return it as a BasicAlgebra
+        // Note: This assumes the domain is a BasicAlgebra
         let domain = self.inner.get_domain();
         // We need to downcast from trait object to concrete type
-        // For now, we'll create a new BasicSmallAlgebra with the same properties
+        // For now, we'll create a new BasicAlgebra with the same properties
         // This is a limitation - ideally we'd have a way to clone the exact type
-        PyBasicSmallAlgebra {
-            inner: uacalc::alg::BasicSmallAlgebra::new(
+        PyBasicAlgebra {
+            inner: uacalc::alg::BasicAlgebra::new(
                 domain.name().to_string(),
                 domain.universe().collect(),
                 domain.operations()
@@ -116,8 +116,8 @@ impl PyHomomorphism {
     /// Set the domain algebra.
     ///
     /// Args:
-    ///     domain (BasicSmallAlgebra): The new domain algebra
-    fn set_domain(&mut self, domain: &PyBasicSmallAlgebra) {
+    ///     domain (BasicAlgebra): The new domain algebra
+    fn set_domain(&mut self, domain: &PyBasicAlgebra) {
         let domain_box = Box::new(domain.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
         self.inner.set_domain(domain_box);
     }
@@ -125,16 +125,16 @@ impl PyHomomorphism {
     /// Get the range algebra.
     ///
     /// Returns:
-    ///     BasicSmallAlgebra: The range algebra
-    fn get_range(&self) -> PyBasicSmallAlgebra {
-        // Clone the range algebra and return it as a BasicSmallAlgebra
-        // Note: This assumes the range is a BasicSmallAlgebra
+    ///     BasicAlgebra: The range algebra
+    fn get_range(&self) -> PyBasicAlgebra {
+        // Clone the range algebra and return it as a BasicAlgebra
+        // Note: This assumes the range is a BasicAlgebra
         let range = self.inner.get_range();
         // We need to downcast from trait object to concrete type
-        // For now, we'll create a new BasicSmallAlgebra with the same properties
+        // For now, we'll create a new BasicAlgebra with the same properties
         // This is a limitation - ideally we'd have a way to clone the exact type
-        PyBasicSmallAlgebra {
-            inner: uacalc::alg::BasicSmallAlgebra::new(
+        PyBasicAlgebra {
+            inner: uacalc::alg::BasicAlgebra::new(
                 range.name().to_string(),
                 range.universe().collect(),
                 range.operations()
@@ -145,8 +145,8 @@ impl PyHomomorphism {
     /// Set the range algebra.
     ///
     /// Args:
-    ///     range (BasicSmallAlgebra): The new range algebra
-    fn set_range(&mut self, range: &PyBasicSmallAlgebra) {
+    ///     range (BasicAlgebra): The new range algebra
+    fn set_range(&mut self, range: &PyBasicAlgebra) {
         let range_box = Box::new(range.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
         self.inner.set_range(range_box);
     }

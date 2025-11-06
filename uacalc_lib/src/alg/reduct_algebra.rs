@@ -6,7 +6,7 @@ use uacalc::alg::*;
 use uacalc::terms::{VariableImp, Term};
 use crate::util::PyIntArray;
 
-use crate::alg::PyBasicSmallAlgebra;
+use crate::alg::PyBasicAlgebra;
 use crate::alg::PySubalgebraLattice;
 use crate::alg::conlat::congruence_lattice::PyCongruenceLattice;
 
@@ -27,7 +27,7 @@ impl PyReductAlgebra {
     /// Create a new ReductAlgebra from a super algebra and list of terms.
     /// 
     /// Args:
-    ///     super_algebra (BasicSmallAlgebra): The super algebra that this reduct is based on
+    ///     super_algebra (BasicAlgebra): The super algebra that this reduct is based on
     ///     term_list (List[Term]): The list of terms that define the operations
     /// 
     /// Returns:
@@ -36,7 +36,7 @@ impl PyReductAlgebra {
     /// Raises:
     ///     ValueError: If the terms are invalid or algebra is incompatible
     #[new]
-    fn new(super_algebra: &PyBasicSmallAlgebra, term_list: &PyList) -> PyResult<Self> {
+    fn new(super_algebra: &PyBasicAlgebra, term_list: &PyList) -> PyResult<Self> {
         // Convert Python list of terms to Rust Vec<Box<dyn Term>>
         let mut rust_terms: Vec<Box<dyn uacalc::terms::Term>> = Vec::new();
         
@@ -220,12 +220,12 @@ impl PyUnaryTermsMonoid {
     /// Create a new UnaryTermsMonoid from a generating algebra.
     /// 
     /// Args:
-    ///     algebra (BasicSmallAlgebra): The generating algebra
+    ///     algebra (BasicAlgebra): The generating algebra
     /// 
     /// Raises:
     ///     ValueError: If construction fails
     #[new]
-    fn new(algebra: &PyBasicSmallAlgebra) -> PyResult<Self> {
+    fn new(algebra: &PyBasicAlgebra) -> PyResult<Self> {
         let rust_alg = Box::new(algebra.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
         
         match uacalc::alg::UnaryTermsMonoid::new_safe(rust_alg) {
@@ -237,13 +237,13 @@ impl PyUnaryTermsMonoid {
     /// Create a new UnaryTermsMonoid with optional identity inclusion.
     /// 
     /// Args:
-    ///     algebra (BasicSmallAlgebra): The generating algebra
+    ///     algebra (BasicAlgebra): The generating algebra
     ///     include_id (bool): Whether to include the identity term
     /// 
     /// Raises:
     ///     ValueError: If construction fails
     #[staticmethod]
-    fn new_with_id(algebra: &PyBasicSmallAlgebra, include_id: bool) -> PyResult<Self> {
+    fn new_with_id(algebra: &PyBasicAlgebra, include_id: bool) -> PyResult<Self> {
         let rust_alg = Box::new(algebra.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
         
         match uacalc::alg::UnaryTermsMonoid::new_with_id_safe(rust_alg, include_id) {

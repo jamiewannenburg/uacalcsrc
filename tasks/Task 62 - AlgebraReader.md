@@ -47,7 +47,7 @@ Translate the Java class `org.uacalc.io.AlgebraReader` to Rust with Python bindi
 
 **Detailed Status:**
 1. **SmallAlgebra trait** (Task 41) - ✅ **COMPLETED** - Full implementation in `src/alg/small_algebra.rs`
-2. **BasicSmallAlgebra struct** (Task 71) - ✅ **COMPLETED** - Full implementation, equivalent to Java BasicAlgebra
+2. **BasicAlgebra struct** (Task 71) - ✅ **COMPLETED** - Full implementation, equivalent to Java BasicAlgebra
 3. **Algebra trait** - ✅ **COMPLETED** - Core interface in `src/alg/algebra.rs`
 4. **GeneralAlgebra struct** - ✅ **COMPLETED** - Base implementation in `src/alg/general_algebra.rs`
 5. **Operation trait** (Task 12) - ✅ **COMPLETED** - Interface in `src/alg/op/operation.rs`
@@ -60,7 +60,7 @@ Translate the Java class `org.uacalc.io.AlgebraReader` to Rust with Python bindi
 12. **BadAlgebraFileException struct** (Task 7) - ✅ **COMPLETED** - Exception in `src/io/mod.rs`
 
 **Algebra Types Available:**
-- **BasicSmallAlgebra** - ✅ **COMPLETED** - Full implementation
+- **BasicAlgebra** - ✅ **COMPLETED** - Full implementation
 - **ProductAlgebra** - ✅ **COMPLETED** - Full implementation
 - **Subalgebra** - ✅ **COMPLETED** - Core functionality implemented
 - **QuotientAlgebra** - ✅ **COMPLETED** - Full implementation

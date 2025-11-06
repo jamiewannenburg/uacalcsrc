@@ -1,4 +1,4 @@
-use uacalc::alg::{Algebra, SmallAlgebra, BasicSmallAlgebra, AlgebraType};
+use uacalc::alg::{Algebra, SmallAlgebra, BasicAlgebra, AlgebraType};
 use std::collections::HashSet;
 use serde_json::json;
 
@@ -11,7 +11,7 @@ mod basic_algebra_tests {
         // Create a simple algebra with integer universe
         let universe: HashSet<i32> = (0..5).collect();
         let operations = Vec::new();
-        let alg = BasicSmallAlgebra::new("test".to_string(), universe, operations);
+        let alg = BasicAlgebra::new("test".to_string(), universe, operations);
         
         assert_eq!(alg.name(), "test");
         assert_eq!(alg.cardinality(), 5);
@@ -23,7 +23,7 @@ mod basic_algebra_tests {
         // Create algebra with integer universe
         let universe: HashSet<i32> = (0..5).collect();
         let operations = Vec::new();
-        let alg = BasicSmallAlgebra::new("test".to_string(), universe, operations);
+        let alg = BasicAlgebra::new("test".to_string(), universe, operations);
         
         // Initially, universe list is not cached so int_universe returns true
         assert!(alg.int_universe());
@@ -34,7 +34,7 @@ mod basic_algebra_tests {
         // Create algebra
         let universe: HashSet<i32> = (0..5).collect();
         let operations = Vec::new();
-        let alg = BasicSmallAlgebra::new("test".to_string(), universe, operations);
+        let alg = BasicAlgebra::new("test".to_string(), universe, operations);
         
         // Get elements
         assert!(alg.get_element(0).is_some());
@@ -50,7 +50,7 @@ mod basic_algebra_tests {
         // Create algebra
         let universe: HashSet<i32> = (0..5).collect();
         let operations = Vec::new();
-        let alg = BasicSmallAlgebra::new("test".to_string(), universe, operations);
+        let alg = BasicAlgebra::new("test".to_string(), universe, operations);
         
         // Get indices
         let elem0 = alg.get_element(0).unwrap();
@@ -68,7 +68,7 @@ mod basic_algebra_tests {
         // Create algebra
         let universe: HashSet<i32> = (0..5).collect();
         let operations = Vec::new();
-        let alg = BasicSmallAlgebra::new("test".to_string(), universe, operations);
+        let alg = BasicAlgebra::new("test".to_string(), universe, operations);
         
         // Get universe list
         let universe_list = alg.get_universe_list();
@@ -81,7 +81,7 @@ mod basic_algebra_tests {
         // Create algebra
         let universe: HashSet<i32> = (0..5).collect();
         let operations = Vec::new();
-        let alg = BasicSmallAlgebra::new("test".to_string(), universe, operations);
+        let alg = BasicAlgebra::new("test".to_string(), universe, operations);
         
         // Get universe order
         let universe_order = alg.get_universe_order();
@@ -94,7 +94,7 @@ mod basic_algebra_tests {
         // Create algebra
         let universe: HashSet<i32> = (0..5).collect();
         let operations = Vec::new();
-        let alg = BasicSmallAlgebra::new("test".to_string(), universe, operations);
+        let alg = BasicAlgebra::new("test".to_string(), universe, operations);
         
         // Access universe list to cache it
         let _ = alg.get_universe_list();
@@ -110,7 +110,7 @@ mod basic_algebra_tests {
         // Create algebra
         let universe: HashSet<i32> = (0..3).collect();
         let operations = Vec::new();
-        let alg = BasicSmallAlgebra::new("test".to_string(), universe, operations);
+        let alg = BasicAlgebra::new("test".to_string(), universe, operations);
         
         assert_eq!(alg.algebra_type(), AlgebraType::Basic);
     }
@@ -119,11 +119,11 @@ mod basic_algebra_tests {
     fn test_cardinality() {
         // Create algebras of different sizes
         let universe3: HashSet<i32> = (0..3).collect();
-        let alg3 = BasicSmallAlgebra::new("test3".to_string(), universe3, Vec::new());
+        let alg3 = BasicAlgebra::new("test3".to_string(), universe3, Vec::new());
         assert_eq!(alg3.cardinality(), 3);
         
         let universe10: HashSet<i32> = (0..10).collect();
-        let alg10 = BasicSmallAlgebra::new("test10".to_string(), universe10, Vec::new());
+        let alg10 = BasicAlgebra::new("test10".to_string(), universe10, Vec::new());
         assert_eq!(alg10.cardinality(), 10);
     }
 
@@ -132,7 +132,7 @@ mod basic_algebra_tests {
         // Create algebra
         let universe: HashSet<i32> = (0..5).collect();
         let operations = Vec::new();
-        let mut alg = BasicSmallAlgebra::new("original".to_string(), universe, operations);
+        let mut alg = BasicAlgebra::new("original".to_string(), universe, operations);
         
         assert_eq!(alg.name(), "original");
         
@@ -146,7 +146,7 @@ mod basic_algebra_tests {
         // Create algebra
         let universe: HashSet<i32> = (0..5).collect();
         let operations = Vec::new();
-        let mut alg = BasicSmallAlgebra::new("test".to_string(), universe, operations);
+        let mut alg = BasicAlgebra::new("test".to_string(), universe, operations);
         
         // Initially no description
         assert!(alg.description().is_none());
@@ -165,7 +165,7 @@ mod basic_algebra_tests {
         // Create algebra
         let universe: HashSet<i32> = (0..5).collect();
         let operations = Vec::new();
-        let mut alg = BasicSmallAlgebra::new("test".to_string(), universe, operations);
+        let mut alg = BasicAlgebra::new("test".to_string(), universe, operations);
         
         // This should not panic (even though con/sub are not implemented)
         alg.reset_con_and_sub();
@@ -176,7 +176,7 @@ mod basic_algebra_tests {
         // Create algebra
         let universe: HashSet<i32> = (0..5).collect();
         let operations = Vec::new();
-        let mut alg = BasicSmallAlgebra::new("test".to_string(), universe, operations);
+        let mut alg = BasicAlgebra::new("test".to_string(), universe, operations);
         
         // This should not panic (even though it's not fully implemented)
         alg.convert_to_default_value_ops();
@@ -187,7 +187,7 @@ mod basic_algebra_tests {
         // Create algebra
         let universe: HashSet<i32> = (0..5).collect();
         let operations = Vec::new();
-        let alg = BasicSmallAlgebra::new("test".to_string(), universe, operations);
+        let alg = BasicAlgebra::new("test".to_string(), universe, operations);
         
         // Clone it
         let alg_clone = alg.clone();
@@ -202,10 +202,10 @@ mod basic_algebra_tests {
         // Create algebra
         let universe: HashSet<i32> = (0..3).collect();
         let operations = Vec::new();
-        let alg = BasicSmallAlgebra::new("test".to_string(), universe, operations);
+        let alg = BasicAlgebra::new("test".to_string(), universe, operations);
         
         let display_string = format!("{}", alg);
-        assert!(display_string.contains("BasicSmallAlgebra"));
+        assert!(display_string.contains("BasicAlgebra"));
     }
 }
 

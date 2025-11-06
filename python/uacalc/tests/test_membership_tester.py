@@ -150,7 +150,7 @@ class TestMembershipTester(unittest.TestCase):
                 print(f"Found equation: {equation}")
         except (AttributeError, Exception) as e:
             print(f"Error or not implemented: {e}")
-            self.skipTest(f"find_equation_of_a_not_b not implemented: argument 'a': 'PyBasicSmallAlgebra' object cannot be converted to 'PyFreeAlgebra'")
+            self.skipTest(f"find_equation_of_a_not_b not implemented: argument 'a': 'PyBasicAlgebra' object cannot be converted to 'PyFreeAlgebra'")
 
 
 if __name__ == '__main__':

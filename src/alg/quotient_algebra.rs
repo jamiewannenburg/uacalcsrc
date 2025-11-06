@@ -21,11 +21,11 @@ use crate::util::horner::horner_same_size;
 /// 
 /// # Examples
 /// ```
-/// use uacalc::alg::{QuotientAlgebra, SmallAlgebra, BasicSmallAlgebra, Partition, Algebra};
+/// use uacalc::alg::{QuotientAlgebra, SmallAlgebra, BasicAlgebra, Partition, Algebra};
 /// use std::collections::HashSet;
 /// 
 /// // Create a super algebra with 4 elements
-/// let super_algebra = Box::new(BasicSmallAlgebra::new(
+/// let super_algebra = Box::new(BasicAlgebra::new(
 ///     "A".to_string(),
 ///     HashSet::from([0, 1, 2, 3]),
 ///     Vec::new()
@@ -287,10 +287,10 @@ where
     /// 
     /// # Examples
     /// ```
-    /// use uacalc::alg::{QuotientAlgebra, SmallAlgebra, BasicSmallAlgebra, Partition, Algebra};
+    /// use uacalc::alg::{QuotientAlgebra, SmallAlgebra, BasicAlgebra, Partition, Algebra};
     /// use std::collections::HashSet;
     /// 
-    /// let super_algebra = Box::new(BasicSmallAlgebra::new(
+    /// let super_algebra = Box::new(BasicAlgebra::new(
     ///     "A".to_string(),
     ///     HashSet::from([0, 1, 2, 3]),
     ///     Vec::new()
@@ -321,10 +321,10 @@ where
     /// 
     /// # Examples
     /// ```
-    /// use uacalc::alg::{QuotientAlgebra, SmallAlgebra, BasicSmallAlgebra, Partition, Algebra};
+    /// use uacalc::alg::{QuotientAlgebra, SmallAlgebra, BasicAlgebra, Partition, Algebra};
     /// use std::collections::HashSet;
     /// 
-    /// let super_algebra = Box::new(BasicSmallAlgebra::new(
+    /// let super_algebra = Box::new(BasicAlgebra::new(
     ///     "A".to_string(),
     ///     HashSet::from([0, 1, 2, 3]),
     ///     Vec::new()
@@ -796,13 +796,13 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::alg::small_algebra::BasicSmallAlgebra;
+    use crate::alg::small_algebra::BasicAlgebra;
     use std::collections::HashSet;
     
     #[test]
     fn test_quotient_algebra_creation() {
         // Create a super algebra with 4 elements
-        let super_algebra = Box::new(BasicSmallAlgebra::new(
+        let super_algebra = Box::new(BasicAlgebra::new(
             "A".to_string(),
             HashSet::from([0, 1, 2, 3]),
             Vec::new()
@@ -820,7 +820,7 @@ mod tests {
     
     #[test]
     fn test_quotient_algebra_get_element() {
-        let super_algebra = Box::new(BasicSmallAlgebra::new(
+        let super_algebra = Box::new(BasicAlgebra::new(
             "A".to_string(),
             HashSet::from([0, 1, 2, 3]),
             Vec::new()
@@ -840,7 +840,7 @@ mod tests {
     
     #[test]
     fn test_canonical_homomorphism() {
-        let super_algebra = Box::new(BasicSmallAlgebra::new(
+        let super_algebra = Box::new(BasicAlgebra::new(
             "A".to_string(),
             HashSet::from([0, 1, 2, 3]),
             Vec::new()

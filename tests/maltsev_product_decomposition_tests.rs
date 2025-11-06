@@ -1,4 +1,4 @@
-use uacalc::alg::{Algebra, SmallAlgebra, BasicSmallAlgebra, MaltsevProductDecomposition, Partition};
+use uacalc::alg::{Algebra, SmallAlgebra, BasicAlgebra, MaltsevProductDecomposition, Partition};
 use std::collections::HashSet;
 
 #[cfg(test)]
@@ -10,7 +10,7 @@ mod maltsev_product_decomposition_tests {
         // Create a simple algebra with 4 elements
         let universe: HashSet<i32> = (0..4).collect();
         let operations = Vec::new();
-        let algebra = Box::new(BasicSmallAlgebra::new(
+        let algebra = Box::new(BasicAlgebra::new(
             "TestAlgebra".to_string(),
             universe,
             operations,
@@ -34,7 +34,7 @@ mod maltsev_product_decomposition_tests {
         // Create algebra with 3 elements
         let universe: HashSet<i32> = (0..3).collect();
         let operations = Vec::new();
-        let algebra = Box::new(BasicSmallAlgebra::new(
+        let algebra = Box::new(BasicAlgebra::new(
             "TestAlgebra".to_string(),
             universe,
             operations,
@@ -58,7 +58,7 @@ mod maltsev_product_decomposition_tests {
         // Create algebra with 3 elements
         let universe: HashSet<i32> = (0..3).collect();
         let operations = Vec::new();
-        let algebra = Box::new(BasicSmallAlgebra::new(
+        let algebra = Box::new(BasicAlgebra::new(
             "TestAlgebra".to_string(),
             universe,
             operations,
@@ -82,7 +82,7 @@ mod maltsev_product_decomposition_tests {
         // Create algebra and congruence
         let universe: HashSet<i32> = (0..4).collect();
         let operations = Vec::new();
-        let algebra = Box::new(BasicSmallAlgebra::new(
+        let algebra = Box::new(BasicAlgebra::new(
             "TestAlgebra".to_string(),
             universe,
             operations,
@@ -105,7 +105,7 @@ mod maltsev_product_decomposition_tests {
         // Create algebra
         let universe: HashSet<i32> = (0..5).collect();
         let operations = Vec::new();
-        let algebra = Box::new(BasicSmallAlgebra::new(
+        let algebra = Box::new(BasicAlgebra::new(
             "TestAlgebra".to_string(),
             universe,
             operations,
@@ -127,7 +127,7 @@ mod maltsev_product_decomposition_tests {
         // Create algebra with 4 elements
         let universe: HashSet<i32> = (0..4).collect();
         let operations = Vec::new();
-        let algebra = Box::new(BasicSmallAlgebra::new(
+        let algebra = Box::new(BasicAlgebra::new(
             "TestAlgebra".to_string(),
             universe,
             operations,
@@ -147,7 +147,7 @@ mod maltsev_product_decomposition_tests {
         // Create algebra and decomposition
         let universe: HashSet<i32> = (0..4).collect();
         let operations = Vec::new();
-        let algebra = Box::new(BasicSmallAlgebra::new(
+        let algebra = Box::new(BasicAlgebra::new(
             "TestAlgebra".to_string(),
             universe,
             operations,
@@ -167,7 +167,7 @@ mod maltsev_product_decomposition_tests {
         // Create algebra with 6 elements
         let universe: HashSet<i32> = (0..6).collect();
         let operations = Vec::new();
-        let algebra = Box::new(BasicSmallAlgebra::new(
+        let algebra = Box::new(BasicAlgebra::new(
             "TestAlgebra".to_string(),
             universe,
             operations,
@@ -197,7 +197,7 @@ mod maltsev_product_decomposition_tests {
         // Create initial algebra and congruence
         let universe: HashSet<i32> = (0..4).collect();
         let operations = Vec::new();
-        let algebra = Box::new(BasicSmallAlgebra::new(
+        let algebra = Box::new(BasicAlgebra::new(
             "TestAlgebra".to_string(),
             universe.clone(),
             operations,
@@ -214,7 +214,7 @@ mod maltsev_product_decomposition_tests {
         assert_eq!(decomp.get_congruence().number_of_blocks(), 1);
         
         // Test set_algebra
-        let new_algebra = Box::new(BasicSmallAlgebra::new(
+        let new_algebra = Box::new(BasicAlgebra::new(
             "NewAlgebra".to_string(),
             universe,
             Vec::new(),

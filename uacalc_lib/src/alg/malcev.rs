@@ -5,7 +5,7 @@
 
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
-use crate::alg::PyBasicSmallAlgebra;
+use crate::alg::PyBasicAlgebra;
 use uacalc::alg::malcev;
 
 /// Python module for Malcev functions.
@@ -53,12 +53,12 @@ pub fn register_malcev_functions(_py: Python, m: &Bound<'_, PyModule>) -> PyResu
 /// Find a Malcev term for the algebra.
 ///
 /// # Arguments
-/// * `algebra` - The algebra to check (BasicSmallAlgebra)
+/// * `algebra` - The algebra to check (BasicAlgebra)
 ///
 /// # Returns
 /// The Malcev term as a string if one exists, None otherwise
 #[pyfunction]
-fn malcev_term(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<String>> {
+fn malcev_term(algebra: &PyBasicAlgebra) -> PyResult<Option<String>> {
     match malcev::malcev_term(&algebra.inner) {
         Ok(Some(term)) => Ok(Some(format!("{}", term))),
         Ok(None) => Ok(None),
@@ -69,12 +69,12 @@ fn malcev_term(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<String>> {
 /// Find a majority term for the algebra.
 ///
 /// # Arguments
-/// * `algebra` - The algebra to check (BasicSmallAlgebra)
+/// * `algebra` - The algebra to check (BasicAlgebra)
 ///
 /// # Returns
 /// The majority term as a string if one exists, None otherwise
 #[pyfunction]
-fn majority_term(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<String>> {
+fn majority_term(algebra: &PyBasicAlgebra) -> PyResult<Option<String>> {
     match malcev::majority_term(&algebra.inner) {
         Ok(Some(term)) => Ok(Some(format!("{}", term))),
         Ok(None) => Ok(None),
@@ -85,12 +85,12 @@ fn majority_term(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<String>> {
 /// Find a minority term for the algebra.
 ///
 /// # Arguments
-/// * `algebra` - The algebra to check (BasicSmallAlgebra)
+/// * `algebra` - The algebra to check (BasicAlgebra)
 ///
 /// # Returns
 /// The minority term as a string if one exists, None otherwise
 #[pyfunction]
-fn minority_term(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<String>> {
+fn minority_term(algebra: &PyBasicAlgebra) -> PyResult<Option<String>> {
     match malcev::minority_term(&algebra.inner) {
         Ok(Some(term)) => Ok(Some(format!("{}", term))),
         Ok(None) => Ok(None),
@@ -101,12 +101,12 @@ fn minority_term(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<String>> {
 /// Find a Pixley term for the algebra.
 ///
 /// # Arguments
-/// * `algebra` - The algebra to check (BasicSmallAlgebra)
+/// * `algebra` - The algebra to check (BasicAlgebra)
 ///
 /// # Returns
 /// The Pixley term as a string if one exists, None otherwise
 #[pyfunction]
-fn pixley_term(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<String>> {
+fn pixley_term(algebra: &PyBasicAlgebra) -> PyResult<Option<String>> {
     match malcev::pixley_term(&algebra.inner) {
         Ok(Some(term)) => Ok(Some(format!("{}", term))),
         Ok(None) => Ok(None),
@@ -117,13 +117,13 @@ fn pixley_term(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<String>> {
 /// Find a near unanimity term of the given arity.
 ///
 /// # Arguments
-/// * `algebra` - The algebra to check (BasicSmallAlgebra)
+/// * `algebra` - The algebra to check (BasicAlgebra)
 /// * `arity` - The arity of the NU term
 ///
 /// # Returns
 /// The NU term as a string if one exists, None otherwise
 #[pyfunction]
-fn nu_term(algebra: &PyBasicSmallAlgebra, arity: usize) -> PyResult<Option<String>> {
+fn nu_term(algebra: &PyBasicAlgebra, arity: usize) -> PyResult<Option<String>> {
     match malcev::nu_term(&algebra.inner, arity) {
         Ok(Some(term)) => Ok(Some(format!("{}", term))),
         Ok(None) => Ok(None),
@@ -140,7 +140,7 @@ fn nu_term(algebra: &PyBasicSmallAlgebra, arity: usize) -> PyResult<Option<Strin
 /// # Returns
 /// True if the algebra has an NU term, False otherwise
 #[pyfunction]
-fn nu_term_idempotent(algebra: &PyBasicSmallAlgebra, arity: usize) -> PyResult<bool> {
+fn nu_term_idempotent(algebra: &PyBasicAlgebra, arity: usize) -> PyResult<bool> {
     match malcev::nu_term_idempotent(&algebra.inner, arity) {
         Ok(result) => Ok(result),
         Err(e) => Err(PyValueError::new_err(e)),
@@ -156,7 +156,7 @@ fn nu_term_idempotent(algebra: &PyBasicSmallAlgebra, arity: usize) -> PyResult<b
 /// # Returns
 /// The weak NU term if one exists, None otherwise
 #[pyfunction]
-fn weak_nu_term(algebra: &PyBasicSmallAlgebra, arity: usize) -> PyResult<Option<String>> {
+fn weak_nu_term(algebra: &PyBasicAlgebra, arity: usize) -> PyResult<Option<String>> {
     match malcev::weak_nu_term(&algebra.inner, arity) {
         Ok(Some(term)) => Ok(Some(format!("{}", term))),
         Ok(None) => Ok(None),
@@ -167,12 +167,12 @@ fn weak_nu_term(algebra: &PyBasicSmallAlgebra, arity: usize) -> PyResult<Option<
 /// Find a weak majority term for the algebra.
 ///
 /// # Arguments
-/// * `algebra` - The algebra to check (BasicSmallAlgebra)
+/// * `algebra` - The algebra to check (BasicAlgebra)
 ///
 /// # Returns
 /// The weak majority term as a string if one exists, None otherwise
 #[pyfunction]
-fn weak_majority_term(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<String>> {
+fn weak_majority_term(algebra: &PyBasicAlgebra) -> PyResult<Option<String>> {
     match malcev::weak_majority_term(&algebra.inner) {
         Ok(Some(term)) => Ok(Some(format!("{}", term))),
         Ok(None) => Ok(None),
@@ -183,12 +183,12 @@ fn weak_majority_term(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<String>>
 /// Find a semilattice term for the algebra.
 ///
 /// # Arguments
-/// * `algebra` - The algebra to check (BasicSmallAlgebra)
+/// * `algebra` - The algebra to check (BasicAlgebra)
 ///
 /// # Returns
 /// The semilattice term as a string if one exists, None otherwise
 #[pyfunction]
-fn semilattice_term(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<String>> {
+fn semilattice_term(algebra: &PyBasicAlgebra) -> PyResult<Option<String>> {
     match malcev::semilattice_term(&algebra.inner) {
         Ok(Some(term)) => Ok(Some(format!("{}", term))),
         Ok(None) => Ok(None),
@@ -204,7 +204,7 @@ fn semilattice_term(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<String>> {
 /// # Returns
 /// The difference term if one exists, None otherwise
 #[pyfunction]
-fn difference_term(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<String>> {
+fn difference_term(algebra: &PyBasicAlgebra) -> PyResult<Option<String>> {
     match malcev::difference_term(&algebra.inner) {
         Ok(Some(term)) => Ok(Some(format!("{}", term))),
         Ok(None) => Ok(None),
@@ -215,12 +215,12 @@ fn difference_term(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<String>> {
 /// Find Jonsson terms for the algebra.
 ///
 /// # Arguments
-/// * `algebra` - The algebra to check (BasicSmallAlgebra)
+/// * `algebra` - The algebra to check (BasicAlgebra)
 ///
 /// # Returns
 /// List of Jonsson terms as strings if they exist, None otherwise
 #[pyfunction]
-fn jonsson_terms(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<Vec<String>>> {
+fn jonsson_terms(algebra: &PyBasicAlgebra) -> PyResult<Option<Vec<String>>> {
     match malcev::jonsson_terms(&algebra.inner) {
         Ok(Some(terms)) => {
             let term_strings: Vec<String> = terms.iter().map(|t| format!("{}", t)).collect();
@@ -234,12 +234,12 @@ fn jonsson_terms(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<Vec<String>>>
 /// Find Hagemann-Mitschke terms for the algebra.
 ///
 /// # Arguments
-/// * `algebra` - The algebra to check (BasicSmallAlgebra)
+/// * `algebra` - The algebra to check (BasicAlgebra)
 ///
 /// # Returns
 /// List of Hagemann-Mitschke terms as strings if they exist, None otherwise
 #[pyfunction]
-fn hagemann_mitschke_terms(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<Vec<String>>> {
+fn hagemann_mitschke_terms(algebra: &PyBasicAlgebra) -> PyResult<Option<Vec<String>>> {
     match malcev::hagemann_mitschke_terms(&algebra.inner) {
         Ok(Some(terms)) => {
             let term_strings: Vec<String> = terms.iter().map(|t| format!("{}", t)).collect();
@@ -258,7 +258,7 @@ fn hagemann_mitschke_terms(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<Vec
 /// # Returns
 /// List of Gumm terms if they exist, None otherwise
 #[pyfunction]
-fn gumm_terms(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<Vec<String>>> {
+fn gumm_terms(algebra: &PyBasicAlgebra) -> PyResult<Option<Vec<String>>> {
     match malcev::gumm_terms(&algebra.inner) {
         Ok(Some(terms)) => {
             let term_strings: Vec<String> = terms.iter().map(|t| format!("{}", t)).collect();
@@ -272,12 +272,12 @@ fn gumm_terms(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<Vec<String>>> {
 /// Get a join term (Kearnes-Kiss) for the algebra.
 ///
 /// # Arguments
-/// * `algebra` - The algebra to check (BasicSmallAlgebra)
+/// * `algebra` - The algebra to check (BasicAlgebra)
 ///
 /// # Returns
 /// The join term as a string if one exists, None otherwise
 #[pyfunction]
-fn join_term(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<String>> {
+fn join_term(algebra: &PyBasicAlgebra) -> PyResult<Option<String>> {
     match malcev::join_term(&algebra.inner) {
         Ok(Some(term)) => Ok(Some(format!("{}", term))),
         Ok(None) => Ok(None),
@@ -293,7 +293,7 @@ fn join_term(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<String>> {
 /// # Returns
 /// List of SD-meet terms if they exist, None otherwise
 #[pyfunction]
-fn sd_meet_terms(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<Vec<String>>> {
+fn sd_meet_terms(algebra: &PyBasicAlgebra) -> PyResult<Option<Vec<String>>> {
     match malcev::sd_meet_terms(&algebra.inner) {
         Ok(Some(terms)) => {
             let term_strings: Vec<String> = terms.iter().map(|t| format!("{}", t)).collect();
@@ -307,12 +307,12 @@ fn sd_meet_terms(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<Vec<String>>>
 /// Find SD terms for the algebra.
 ///
 /// # Arguments
-/// * `algebra` - The algebra to check (BasicSmallAlgebra)
+/// * `algebra` - The algebra to check (BasicAlgebra)
 ///
 /// # Returns
 /// List of SD terms as strings if they exist, None otherwise
 #[pyfunction]
-fn sd_terms(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<Vec<String>>> {
+fn sd_terms(algebra: &PyBasicAlgebra) -> PyResult<Option<Vec<String>>> {
     match malcev::sd_terms(&algebra.inner) {
         Ok(Some(terms)) => {
             let term_strings: Vec<String> = terms.iter().map(|t| format!("{}", t)).collect();
@@ -326,12 +326,12 @@ fn sd_terms(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<Vec<String>>> {
 /// Find the Markovic-McKenzie-Siggers-Taylor term for the algebra.
 ///
 /// # Arguments
-/// * `algebra` - The algebra to check (BasicSmallAlgebra)
+/// * `algebra` - The algebra to check (BasicAlgebra)
 ///
 /// # Returns
 /// The MMST term as a string if one exists, None otherwise
 #[pyfunction]
-fn markovic_mckenzie_siggers_taylor_term(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<String>> {
+fn markovic_mckenzie_siggers_taylor_term(algebra: &PyBasicAlgebra) -> PyResult<Option<String>> {
     match malcev::markovic_mckenzie_siggers_taylor_term(&algebra.inner) {
         Ok(Some(term)) => Ok(Some(format!("{}", term))),
         Ok(None) => Ok(None),
@@ -347,7 +347,7 @@ fn markovic_mckenzie_siggers_taylor_term(algebra: &PyBasicSmallAlgebra) -> PyRes
 /// # Returns
 /// The weak 3-edge term if one exists, None otherwise
 #[pyfunction]
-fn weak_3_edge_term(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<String>> {
+fn weak_3_edge_term(algebra: &PyBasicAlgebra) -> PyResult<Option<String>> {
     match malcev::weak_3_edge_term(&algebra.inner) {
         Ok(Some(term)) => Ok(Some(format!("{}", term))),
         Ok(None) => Ok(None),
@@ -363,7 +363,7 @@ fn weak_3_edge_term(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<String>> {
 /// # Returns
 /// True if the algebra is congruence distributive, False otherwise
 #[pyfunction]
-fn is_congruence_dist_idempotent(algebra: &PyBasicSmallAlgebra) -> PyResult<bool> {
+fn is_congruence_dist_idempotent(algebra: &PyBasicAlgebra) -> PyResult<bool> {
     match malcev::is_congruence_dist_idempotent(&algebra.inner) {
         Ok(result) => Ok(result),
         Err(e) => Err(PyValueError::new_err(e)),
@@ -378,7 +378,7 @@ fn is_congruence_dist_idempotent(algebra: &PyBasicSmallAlgebra) -> PyResult<bool
 /// # Returns
 /// True if the algebra is congruence modular, False otherwise
 #[pyfunction]
-fn is_congruence_modular_idempotent(algebra: &PyBasicSmallAlgebra) -> PyResult<bool> {
+fn is_congruence_modular_idempotent(algebra: &PyBasicAlgebra) -> PyResult<bool> {
     match malcev::is_congruence_modular_idempotent(&algebra.inner) {
         Ok(result) => Ok(result),
         Err(e) => Err(PyValueError::new_err(e)),
@@ -393,7 +393,7 @@ fn is_congruence_modular_idempotent(algebra: &PyBasicSmallAlgebra) -> PyResult<b
 /// # Returns
 /// True if the variety is congruence modular, False otherwise
 #[pyfunction]
-fn congruence_modular_variety(algebra: &PyBasicSmallAlgebra) -> PyResult<bool> {
+fn congruence_modular_variety(algebra: &PyBasicAlgebra) -> PyResult<bool> {
     match malcev::congruence_modular_variety(&algebra.inner) {
         Ok(result) => Ok(result),
         Err(e) => Err(PyValueError::new_err(e)),
@@ -403,12 +403,12 @@ fn congruence_modular_variety(algebra: &PyBasicSmallAlgebra) -> PyResult<bool> {
 /// Compute the Jonsson level of an algebra.
 ///
 /// # Arguments
-/// * `algebra` - The algebra (BasicSmallAlgebra)
+/// * `algebra` - The algebra (BasicAlgebra)
 ///
 /// # Returns
 /// The Jonsson level
 #[pyfunction]
-fn jonsson_level(algebra: &PyBasicSmallAlgebra) -> PyResult<i32> {
+fn jonsson_level(algebra: &PyBasicAlgebra) -> PyResult<i32> {
     match malcev::jonsson_level(&algebra.inner) {
         Ok(level) => Ok(level),
         Err(e) => Err(PyValueError::new_err(e)),
@@ -426,7 +426,7 @@ fn jonsson_level(algebra: &PyBasicSmallAlgebra) -> PyResult<i32> {
 /// # Returns
 /// The local distributivity level, or -1 if (a,c) is not in the join
 #[pyfunction]
-fn local_distributivity_level(a: usize, b: usize, c: usize, algebra: &PyBasicSmallAlgebra) -> PyResult<i32> {
+fn local_distributivity_level(a: usize, b: usize, c: usize, algebra: &PyBasicAlgebra) -> PyResult<i32> {
     match malcev::local_distributivity_level(a, b, c, &algebra.inner) {
         Ok(level) => Ok(level),
         Err(e) => Err(PyValueError::new_err(e)),
@@ -441,7 +441,7 @@ fn local_distributivity_level(a: usize, b: usize, c: usize, algebra: &PyBasicSma
 /// # Returns
 /// A tuple (x0, x1, y0, y1) if a Day quadruple is found, None otherwise
 #[pyfunction]
-fn find_day_quadruple_in_square(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<Vec<usize>>> {
+fn find_day_quadruple_in_square(algebra: &PyBasicAlgebra) -> PyResult<Option<Vec<usize>>> {
     match malcev::find_day_quadruple_in_square(&algebra.inner) {
         Ok(Some(coords)) => Ok(Some(coords)),
         Ok(None) => Ok(None),
@@ -457,7 +457,7 @@ fn find_day_quadruple_in_square(algebra: &PyBasicSmallAlgebra) -> PyResult<Optio
 /// # Returns
 /// A tuple [x, y] if a witness is found, None otherwise
 #[pyfunction]
-fn sd_meet_idempotent(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<Vec<usize>>> {
+fn sd_meet_idempotent(algebra: &PyBasicAlgebra) -> PyResult<Option<Vec<usize>>> {
     match malcev::sd_meet_idempotent(&algebra.inner) {
         Ok(Some(coords)) => Ok(Some(coords)),
         Ok(None) => Ok(None),
@@ -493,7 +493,7 @@ fn day_quadruple(_a: usize, _b: usize, _c: usize, _d: usize, _algebra: PyObject)
 /// # Returns
 /// True if a cyclic term exists, False otherwise
 #[pyfunction]
-fn cyclic_term_idempotent(algebra: &PyBasicSmallAlgebra, arity: usize) -> PyResult<bool> {
+fn cyclic_term_idempotent(algebra: &PyBasicAlgebra, arity: usize) -> PyResult<bool> {
     match malcev::cyclic_term_idempotent(&algebra.inner, arity) {
         Ok(result) => Ok(result),
         Err(e) => Err(PyValueError::new_err(e)),
@@ -507,12 +507,12 @@ fn cyclic_term_idempotent(algebra: &PyBasicSmallAlgebra, arity: usize) -> PyResu
 /// and a binary term giving a semilattice operation on {0, 1}.
 ///
 /// # Arguments
-/// * `algebra` - The algebra to check (BasicSmallAlgebra)
+/// * `algebra` - The algebra to check (BasicAlgebra)
 ///
 /// # Returns
 /// List of primality terms as strings if they exist, None otherwise
 #[pyfunction]
-fn primality_terms(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<Vec<String>>> {
+fn primality_terms(algebra: &PyBasicAlgebra) -> PyResult<Option<Vec<String>>> {
     match malcev::primality_terms(&algebra.inner) {
         Ok(Some(terms)) => {
             let term_strings: Vec<String> = terms.iter().map(|t| format!("{}", t)).collect();
@@ -526,13 +526,13 @@ fn primality_terms(algebra: &PyBasicSmallAlgebra) -> PyResult<Option<Vec<String>
 /// Find a k-edge term for the algebra.
 ///
 /// # Arguments
-/// * `algebra` - The algebra to check (BasicSmallAlgebra)
+/// * `algebra` - The algebra to check (BasicAlgebra)
 /// * `k` - The parameter k (edge term will have arity k+1)
 ///
 /// # Returns
 /// The k-edge term as a string if one exists, None otherwise
 #[pyfunction]
-fn fixed_k_edge_term(algebra: &PyBasicSmallAlgebra, k: usize) -> PyResult<Option<String>> {
+fn fixed_k_edge_term(algebra: &PyBasicAlgebra, k: usize) -> PyResult<Option<String>> {
     match malcev::fixed_k_edge_term(&algebra.inner, k) {
         Ok(Some(term)) => Ok(Some(format!("{}", term))),
         Ok(None) => Ok(None),
@@ -543,13 +543,13 @@ fn fixed_k_edge_term(algebra: &PyBasicSmallAlgebra, k: usize) -> PyResult<Option
 /// Test if an algebra has a quasi weak near unanimity (QWNU) term of the given arity.
 ///
 /// # Arguments
-/// * `algebra` - The algebra to test (BasicSmallAlgebra)
+/// * `algebra` - The algebra to test (BasicAlgebra)
 /// * `arity` - The arity of the QWNU term (must be at least 2)
 ///
 /// # Returns
 /// True if the algebra has a QWNU term of the given arity, False otherwise
 #[pyfunction]
-fn fixed_k_qwnu(algebra: &PyBasicSmallAlgebra, arity: usize) -> PyResult<bool> {
+fn fixed_k_qwnu(algebra: &PyBasicAlgebra, arity: usize) -> PyResult<bool> {
     match malcev::fixed_k_qwnu(&algebra.inner, arity) {
         Ok(result) => Ok(result),
         Err(e) => Err(PyValueError::new_err(e)),
