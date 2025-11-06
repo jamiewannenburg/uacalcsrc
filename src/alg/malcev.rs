@@ -1824,8 +1824,8 @@ where
             if v0 == v1 && v1 == v2 {
                 // Check if a is invariant under x <-> y automorphism
                 if let Some(ref auto) = auto_xy {
-                    // Apply automorphism to v0
-                    let auto_v0 = auto.int_value_at(&vec![v0])?;
+                    // Apply automorphism to v0 (unary operation, use int_value_at_horner)
+                    let auto_v0 = auto.int_value_at_horner(v0)?;
                     if v0 == auto_v0 {
                         // Found a weak NU term with s(x,x,y) = s(y,y,x)
                         if let Some(term) = term_map_ref.get(ia).map(|t| t.clone_box()) {
@@ -1858,9 +1858,9 @@ where
     for (a, aaa_ia) in &aaa_map {
         if let Some(aab_inner) = aab_map.get(a) {
             for (b, aab_ia) in aab_inner {
-                // Apply automorphism to b
+                // Apply automorphism to b (unary operation, use int_value_at_horner)
                 let c = if let Some(ref auto) = auto_xy {
-                    auto.int_value_at(&vec![*b])?
+                    auto.int_value_at_horner(*b)?
                 } else {
                     // If automorphism not available, try swapping 0 and 1
                     if *b == 0 {
@@ -4079,6 +4079,62 @@ mod tests {
         } else {
             println!("Skipping test - ba2.ua not found");
         }
+    }
+
+    #[test]
+    fn test_sd_meet_terms_with_z3_java_comparison() {
+        // Test sd_meet_terms with z3.ua comparing Rust vs Java
+        // This test is failing: Python=1 terms, Java=None
+        use crate::common::{TestConfig, compare_with_java, run_java_cli_with_timeout, compare_outputs};
+        use crate::alg::Algebra;
+        use serde_json::json;
+        
+        let config = TestConfig::default();
+        let algebra_path = "resources/algebras/z3.ua";
+        
+        if !std::path::Path::new(algebra_path).exists() {
+            println!("Skipping test - z3.ua not found");
+            return;
+        }
+        
+        // Load algebra
+        let reader = AlgebraReader::new_from_path(algebra_path).expect("Failed to read algebra");
+        let alg = reader.read_algebra_file().expect("Failed to parse algebra");
+        
+        compare_with_java!(
+            config,
+            "java_wrapper.src.alg.MalcevWrapper",
+            ["sd_meet_terms", "--algebra", algebra_path],
+            || {
+                let result = sd_meet_terms(&alg);
+                match result {
+                    Ok(Some(terms)) => {
+                        let term_strings: Vec<String> = terms.iter().map(|t| format!("{}", t)).collect();
+                        json!({
+                            "command": "sd_meet_terms",
+                            "algebra": alg.name(),
+                            "terms_found": true,
+                            "terms": term_strings,
+                            "num_terms": terms.len()
+                        })
+                    },
+                    Ok(None) => {
+                        json!({
+                            "command": "sd_meet_terms",
+                            "algebra": alg.name(),
+                            "terms_found": false
+                        })
+                    },
+                    Err(e) => {
+                        json!({
+                            "command": "sd_meet_terms",
+                            "algebra": alg.name(),
+                            "error": e
+                        })
+                    }
+                }
+            }
+        );
     }
 
     #[test]

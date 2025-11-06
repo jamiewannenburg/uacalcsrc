@@ -95,7 +95,7 @@ This class depends on:
 
 ### Current Implementation Status
 
-**Status:** Significant Progress - 27 of 30 Core Methods Fully Implemented
+**Status:** Significant Progress - 28 of 30 Core Methods Fully Implemented
 
 **Rust Implementation:** 
 - ✅ Module structure created in `src/alg/malcev.rs` (~3,200 lines)
@@ -104,7 +104,7 @@ This class depends on:
 - ✅ Comprehensive documentation for all functions
 - ✅ Proper error handling using `Result<T, String>`
 
-**Fully Implemented Methods (27):**
+**Fully Implemented Methods (28):**
 1. ✅ `malcev_term()` - Finds Malcev term using F(2)^2 closure
 2. ✅ `majority_term()` - Finds majority term using F(2)^3 closure
 3. ✅ `minority_term()` - Finds minority term using F(2)^3 closure
@@ -139,17 +139,18 @@ This class depends on:
    - Uses permutability_level algorithm to find alternation count
    - Returns -1 if (a,c) is not in the join
    - Fully implemented with Java comparison tests
+28. ✅ `cyclic_term_idempotent()` - Tests for cyclic terms of given arity
+   - Tests if algebra has a cyclic term of specified arity
+   - Uses F(2) closure to find cyclic term
+   - Fully implemented with Java comparison tests
 
-**Not Yet Implemented Methods (3):**
+**Not Yet Implemented Methods (2):**
 1. ⚠️ `nu_term_idempotent()` - Returns error: "NU term idempotent test not yet implemented"
    - **Dependencies:** All available (FreeAlgebra, Closer, etc.)
    - **Note:** Requires Horowitz's algorithm for testing NU terms in idempotent algebras
 2. ⚠️ `difference_term()` - Returns error: "Difference term finding not yet implemented"
    - **Dependencies:** All available
    - **Note:** Requires finding difference term in F(2) closure
-3. ⚠️ `cyclic_term_idempotent()` - Returns error: "Cyclic term test not yet implemented"
-   - **Dependencies:** All available
-   - **Note:** Tests for cyclic terms of given arity
 
 **Methods Not Yet Exposed in Rust API (from Java but not in public Rust API):**
 - `fixedKEdgeIdempotent()` - Tests if algebra has k-edge term (idempotent version)
@@ -168,8 +169,8 @@ This class depends on:
 - ✅ All 30 functions exposed to Python through PyO3
 - ✅ Functions registered in alg module
 - ✅ Proper error propagation to Python
-- ✅ All 26 implemented methods fully functional in Python
-- ⚠️ 4 methods return "not yet implemented" errors (algorithms pending)
+- ✅ All 28 implemented methods fully functional in Python
+- ⚠️ 2 methods return "not yet implemented" errors (algorithms pending)
 
 **Java Wrapper:**
 - ✅ Java CLI wrapper created at `java_wrapper/src/alg/MalcevWrapper.java`
@@ -210,10 +211,10 @@ This class depends on:
 - **Dependencies:** Uses conlat, sublat, op, terms, util modules
 
 **Implementation Notes:**
-- **87% of core methods fully implemented** (26 of 30)
+- **93% of core methods fully implemented** (28 of 30)
 - All implemented methods use proper free algebra closures, term tracking, and path finding algorithms
 - Implemented methods match Java behavior exactly (verified through testing)
-- Remaining 4 methods require similar algorithms but with different conditions/paths
+- Remaining 2 methods require similar algorithms but with different conditions/paths
 - All dependencies are available - no blocking issues for remaining implementations
 - Helper functions like `sd_path()`, `jonsson_level_path()`, `jonsson_level_aux()` are implemented
 - Term substitution and variable mapping fully functional
@@ -241,14 +242,14 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All 30 public methods translated to Rust (framework complete)
-- [x] 27 of 30 methods fully implemented with algorithms
+- [x] 28 of 30 methods fully implemented with algorithms
 - [x] Python bindings expose all public methods
 - [x] Java CLI wrapper created with all public methods
 - [x] Rust tests pass with timeouts enabled
 - [x] Python tests pass and match Java output
 - [x] Code compiles without errors (warnings acceptable)
 - [x] Documentation complete
-- [ ] Remaining 3 methods implemented (90% complete)
+- [ ] Remaining 2 methods implemented (93% complete)
 
 **Recent Implementations:**
 - ✅ **local_distributivity_level()** - Implemented in 2025-01-27
@@ -285,7 +286,12 @@ This class depends on:
   - Based on D. M. Clark, B. A. Davey, J. G. Pitkethly and D. L. Rifqui paper
   - Fully tested with Java comparison and Python bindings
 
-- ✅ **Major implementation push** - 26 methods now fully implemented
+- ✅ **cyclic_term_idempotent()** - Implemented
+  - Tests if algebra has a cyclic term of specified arity
+  - Uses F(2) closure to find cyclic term
+  - Fully tested with Java comparison and Python bindings
+
+- ✅ **Major implementation push** - 28 methods now fully implemented
   - All basic term finding methods (Malcev, majority, minority, Pixley, NU, weak majority, semilattice)
   - All Jonsson-related methods (Jonsson terms, Hagemann-Mitschke terms, Jonsson level, Gumm terms)
   - All congruence property tests (distributivity, modularity, SD-meet, variety modularity)
@@ -295,13 +301,11 @@ This class depends on:
   - Weak NU term finding (weak_nu_term)
 
 **Implementation Progress:**
-- **90% complete** (27 of 30 core methods)
+- **93% complete** (28 of 30 core methods)
 - All dependencies available - no blocking issues
-- Remaining 3 methods follow similar patterns to implemented ones
+- Remaining 2 methods follow similar patterns to implemented ones
 - Most remaining methods are variations of existing algorithms with different conditions
 
 **Next Priority Methods:**
 1. `difference_term()` - Similar to other term finding methods
 2. `nu_term_idempotent()` - Requires Horowitz's algorithm implementation
-3. `local_distributivity_level()` - Computes distributivity level for specific triples
-4. `cyclic_term_idempotent()` - Tests for cyclic terms of given arity
