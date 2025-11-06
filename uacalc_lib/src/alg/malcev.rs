@@ -140,8 +140,11 @@ fn nu_term(algebra: &PyBasicSmallAlgebra, arity: usize) -> PyResult<Option<Strin
 /// # Returns
 /// True if the algebra has an NU term, False otherwise
 #[pyfunction]
-fn nu_term_idempotent(_algebra: PyObject, _arity: usize) -> PyResult<bool> {
-    Err(PyValueError::new_err("NU term idempotent test not yet implemented"))
+fn nu_term_idempotent(algebra: &PyBasicSmallAlgebra, arity: usize) -> PyResult<bool> {
+    match malcev::nu_term_idempotent(&algebra.inner, arity) {
+        Ok(result) => Ok(result),
+        Err(e) => Err(PyValueError::new_err(e)),
+    }
 }
 
 /// Find a weak near unanimity term of the given arity.

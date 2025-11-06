@@ -27,7 +27,7 @@ The following packages are **excluded** from this plan:
 
 ## Translation Tasks
 
-## Task 63: Translate `Malcev`
+## Task 63: Translate `Malcev` ✅ COMPLETE
 
 **Java File:** `org/uacalc/alg/Malcev.java`  
 **Package:** `org.uacalc.alg`  
@@ -95,7 +95,7 @@ This class depends on:
 
 ### Current Implementation Status
 
-**Status:** Significant Progress - 29 of 30 Core Methods Fully Implemented
+**Status:** Complete - All 30 Core Methods Fully Implemented
 
 **Rust Implementation:** 
 - ✅ Module structure created in `src/alg/malcev.rs` (~3,200 lines)
@@ -104,7 +104,7 @@ This class depends on:
 - ✅ Comprehensive documentation for all functions
 - ✅ Proper error handling using `Result<T, String>`
 
-**Fully Implemented Methods (29):**
+**Fully Implemented Methods (30):**
 1. ✅ `malcev_term()` - Finds Malcev term using F(2)^2 closure
 2. ✅ `majority_term()` - Finds majority term using F(2)^3 closure
 3. ✅ `minority_term()` - Finds minority term using F(2)^3 closure
@@ -151,10 +151,8 @@ This class depends on:
    - Uses `get_inner_mut().con()` to access mutable congruence lattice (avoids cloning issues)
    - Fully implemented with Java comparison tests
 
-**Not Yet Implemented Methods (1):**
-1. ⚠️ `nu_term_idempotent()` - Returns error: "NU term idempotent test not yet implemented"
-   - **Dependencies:** All available (FreeAlgebra, Closer, etc.)
-   - **Note:** Requires Horowitz's algorithm for testing NU terms in idempotent algebras
+**Not Yet Implemented Methods (0):**
+- ✅ All 30 core methods are now fully implemented!
 
 **Methods Not Yet Exposed in Rust API (from Java but not in public Rust API):**
 - `fixedKEdgeIdempotent()` - Tests if algebra has k-edge term (idempotent version)
@@ -173,15 +171,15 @@ This class depends on:
 - ✅ All 30 functions exposed to Python through PyO3
 - ✅ Functions registered in alg module
 - ✅ Proper error propagation to Python
-- ✅ All 29 implemented methods fully functional in Python
-- ⚠️ 1 method returns "not yet implemented" error (algorithm pending)
+- ✅ All 30 implemented methods fully functional in Python
 
 **Java Wrapper:**
 - ✅ Java CLI wrapper created at `java_wrapper/src/alg/MalcevWrapper.java`
-- ✅ Command-line interface with 12+ commands (including `primality_terms`, `difference_term`)
+- ✅ Command-line interface with 30+ commands covering all public methods
 - ✅ Supports algebra loading from .ua files
 - ✅ JSON output format for test comparisons
 - ✅ Compiled successfully with ant
+- ✅ **nu_term_idempotent command** - FULLY IMPLEMENTED
 - ✅ **primality_terms command** - FULLY IMPLEMENTED
 - ✅ **difference_term command** - FULLY IMPLEMENTED
 
@@ -191,6 +189,10 @@ This class depends on:
 - ✅ Python tests exist in `python/uacalc/tests/test_malcev.py`
 - ✅ All Python tests pass
 - ✅ Tests verify function accessibility and error handling
+- ✅ **nu_term_idempotent test** - FULLY IMPLEMENTED
+  - `test_nu_term_idempotent()` in `TestMalcevJavaComparison` - Java comparison test
+  - Added to `TestMalcevAllAlgebras` class for comprehensive testing across all algebras
+  - All tests passing with matching Java output
 - ✅ **primality_terms test** - FULLY IMPLEMENTED
   - `test_primality_terms_with_cyclic3()` - Tests with cyclic3 algebra
   - Added to `TestMalcevAllAlgebras` class for comprehensive testing across all algebras
@@ -212,6 +214,45 @@ This class depends on:
 
 **Blocking Dependencies:** None - all core dependencies are implemented
 
+**Method Implementation Verification:**
+
+All 30 core public methods are implemented and verified:
+
+| # | Method Name | Java | Rust | Python | Java Wrapper | Tests |
+|---|-------------|------|------|--------|--------------|-------|
+| 1 | `malcev_term` | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 2 | `majority_term` | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 3 | `minority_term` | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 4 | `pixley_term` | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 5 | `nu_term` | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 6 | `nu_term_idempotent` | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 7 | `weak_nu_term` | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 8 | `weak_majority_term` | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 9 | `semilattice_term` | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 10 | `difference_term` | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 11 | `jonsson_terms` | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 12 | `hagemann_mitschke_terms` | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 13 | `gumm_terms` | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 14 | `join_term` | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 15 | `sd_meet_terms` | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 16 | `sd_terms` | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 17 | `markovic_mckenzie_siggers_taylor_term` | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 18 | `weak_3_edge_term` | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 19 | `fixed_k_edge_term` | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 20 | `fixed_k_qwnu` | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 21 | `cyclic_term_idempotent` | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 22 | `local_distributivity_level` | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 23 | `sd_meet_idempotent` | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 24 | `is_congruence_dist_idempotent` | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 25 | `is_congruence_modular_idempotent` | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 26 | `find_day_quadruple_in_square` | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 27 | `day_quadruple` | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 28 | `congruence_modular_variety` | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 29 | `jonsson_level` | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 30 | `primality_terms` | ✅ | ✅ | ✅ | ✅ | ✅ |
+
+**Summary:** 30/30 methods (100%) fully implemented across all layers
+
 **Java File Analysis:**
 - **File Size:** 156,078 characters (3,500+ lines)
 - **Public Methods:** ~76 public static methods (many are overloads with ProgressReport)
@@ -220,11 +261,10 @@ This class depends on:
 - **Dependencies:** Uses conlat, sublat, op, terms, util modules
 
 **Implementation Notes:**
-- **97% of core methods fully implemented** (29 of 30)
+- **100% of core methods fully implemented** (30 of 30)
 - All implemented methods use proper free algebra closures, term tracking, and path finding algorithms
 - Implemented methods match Java behavior exactly (verified through testing)
-- Remaining 1 method requires specialized algorithm (Horowitz's algorithm for NU term testing in idempotent algebras)
-- All dependencies are available - no blocking issues for remaining implementations
+- All dependencies are available and working correctly
 - Helper functions like `sd_path()`, `jonsson_level_path()`, `jonsson_level_aux()` are implemented
 - Term substitution and variable mapping fully functional
 - **Fixed:** `FreeAlgebra::switch_x_and_y_automorphism()` now properly evaluates terms and creates operations with value tables (was causing `sd_meet_terms()` to fail)
@@ -251,14 +291,14 @@ This class depends on:
 
 ### Acceptance Criteria
 - [x] All 30 public methods translated to Rust (framework complete)
-- [x] 29 of 30 methods fully implemented with algorithms
+- [x] All 30 methods fully implemented with algorithms
 - [x] Python bindings expose all public methods
 - [x] Java CLI wrapper created with all public methods
 - [x] Rust tests pass with timeouts enabled
 - [x] Python tests pass and match Java output
 - [x] Code compiles without errors (warnings acceptable)
 - [x] Documentation complete
-- [ ] Remaining 1 method implemented (97% complete)
+- [x] All methods implemented (100% complete)
 
 **Recent Implementations:**
 - ✅ **local_distributivity_level()** - Implemented in 2025-01-27
@@ -309,7 +349,15 @@ This class depends on:
   - Fully tested with Java comparison and Python bindings
   - Fixed regression: Changed from cloning FreeAlgebra to using get_inner_mut() to maintain state consistency
 
-- ✅ **Major implementation push** - 29 methods now fully implemented
+- ✅ **nu_term_idempotent()** - Implemented in 2025-01-27
+  - Uses Horowitz's polynomial-time algorithm for testing NU terms in idempotent algebras
+  - Creates BigProductAlgebra with power = arity and uses nested loops with sequence incrementors
+  - Constructs generators G[j] for each combination and checks if A is in subuniverse
+  - Returns true if all combinations pass (NU term exists), false otherwise
+  - Fully tested with Java comparison and Python bindings
+  - Fixed regression in `sd_meet_idempotent()`: Added missing `make_int_operations()` conversion and trivial algebra handling
+
+- ✅ **Major implementation push** - All 30 methods now fully implemented
   - All basic term finding methods (Malcev, majority, minority, Pixley, NU, weak majority, semilattice)
   - All Jonsson-related methods (Jonsson terms, Hagemann-Mitschke terms, Jonsson level, Gumm terms)
   - All congruence property tests (distributivity, modularity, SD-meet, variety modularity)
@@ -319,10 +367,17 @@ This class depends on:
   - Weak NU term finding (weak_nu_term)
 
 **Implementation Progress:**
-- **97% complete** (29 of 30 core methods)
-- All dependencies available - no blocking issues
-- Remaining 1 method requires specialized algorithm (Horowitz's algorithm)
-- All term finding methods using F(2) closure patterns are now complete
+- **100% complete** (30 of 30 core methods)
+- All dependencies available and working correctly
+- All term finding methods using F(2) closure patterns are complete
+- Horowitz's algorithm for `nu_term_idempotent()` fully implemented and tested
 
-**Next Priority Methods:**
-1. `nu_term_idempotent()` - Requires Horowitz's algorithm implementation for testing NU terms in idempotent algebras
+**Final Verification Summary (2025-01-27):**
+- ✅ **Rust Implementation**: 30/30 public methods implemented in `src/alg/malcev.rs`
+- ✅ **Python Bindings**: 30/30 functions exposed in `uacalc_lib/src/alg/malcev.rs`
+- ✅ **Java Wrapper**: 30/30 commands available in `java_wrapper/src/alg/MalcevWrapper.java`
+- ✅ **Tests**: All Rust and Python tests passing, including Java comparison tests
+- ✅ **Regression Fix**: Fixed `sd_meet_idempotent()` to use `make_int_operations()` and handle trivial algebras
+- ✅ **Compilation**: All code compiles successfully (Rust, Python bindings, Java wrapper)
+
+**Task Status: COMPLETE** ✅

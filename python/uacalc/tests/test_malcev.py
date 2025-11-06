@@ -84,6 +84,7 @@ class TestMalcevPython(unittest.TestCase):
         self.assertTrue(hasattr(uacalc_lib.alg, 'fixed_k_edge_term'))
         self.assertTrue(hasattr(uacalc_lib.alg, 'fixed_k_qwnu'))
         self.assertTrue(hasattr(uacalc_lib.alg, 'cyclic_term_idempotent'))
+        self.assertTrue(hasattr(uacalc_lib.alg, 'nu_term_idempotent'))
         self.assertTrue(hasattr(uacalc_lib.alg, 'weak_nu_term'))
         self.assertTrue(hasattr(uacalc_lib.alg, 'gumm_terms'))
         self.assertTrue(hasattr(uacalc_lib.alg, 'sd_meet_terms'))
@@ -546,6 +547,21 @@ class TestMalcevJavaComparison(unittest.TestCase):
         self.assertEqual(python_term_found, java_term_found)
         print(f"✓ nu_term: Python={python_term_found}, Java={java_term_found}")
     
+    def test_nu_term_idempotent(self):
+        """Test nu_term_idempotent against Java."""
+        arity = 3
+        python_result = uacalc_lib.alg.nu_term_idempotent(self.alg, arity)
+        java_output = self.run_java_wrapper("nu_term_idempotent", [
+            "--algebra", self.algebra_path,
+            "--arity", str(arity)
+        ])
+        java_data = java_output.get("data", {})
+        java_has_nu_term = java_data.get("has_nu_term", False)
+        
+        self.assertEqual(python_result, java_has_nu_term,
+                        f"nu_term_idempotent: Python={python_result}, Java={java_has_nu_term}")
+        print(f"✓ nu_term_idempotent: Python={python_result}, Java={java_has_nu_term}")
+    
     def test_jonsson_terms(self):
         """Test jonsson_terms against Java."""
         python_result = uacalc_lib.alg.jonsson_terms(self.alg)
@@ -906,6 +922,7 @@ class TestMalcevAllAlgebras(unittest.TestCase):
         "minority_term",
         "pixley_term",
         "nu_term",
+        "nu_term_idempotent",
         "jonsson_terms",
         "find_day_quadruple_in_square",
         "sd_terms",
@@ -1036,6 +1053,8 @@ class TestMalcevAllAlgebras(unittest.TestCase):
                 java_args = ["--algebra", algebra_path]
                 if property_name == "nu_term":
                     java_args.extend(["--arity", "3"])
+                elif property_name == "nu_term_idempotent":
+                    java_args.extend(["--arity", "3"])
                 elif property_name == "fixed_k_edge_term":
                     java_args.extend(["--k", "2"])
                 elif property_name == "fixed_k_qwnu":
@@ -1068,6 +1087,8 @@ class TestMalcevAllAlgebras(unittest.TestCase):
                     # Get Python result
                     if property_name == "nu_term":
                         python_result = uacalc_lib.alg.nu_term(alg, 3)
+                    elif property_name == "nu_term_idempotent":
+                        python_result = uacalc_lib.alg.nu_term_idempotent(alg, 3)
                     elif property_name == "fixed_k_edge_term":
                         python_result = uacalc_lib.alg.fixed_k_edge_term(alg, 2)
                     elif property_name == "fixed_k_qwnu":
@@ -1299,6 +1320,21 @@ class TestMalcevAllAlgebras(unittest.TestCase):
                             }
                             results['mismatches'].append(mismatch)
                             print(f"  ✗ {property_name}: Python={python_result}, Java={java_has_qwnu}")
+                        else:
+                            print(f"  ✓ {property_name}: match ({python_result})")
+                    
+                    elif property_name == "nu_term_idempotent":
+                        java_has_nu_term = java_data.get("has_nu_term", False)
+                        
+                        if python_result != java_has_nu_term:
+                            mismatch = {
+                                'algebra': algebra_path,
+                                'property': property_name,
+                                'python': python_result,
+                                'java': java_has_nu_term
+                            }
+                            results['mismatches'].append(mismatch)
+                            print(f"  ✗ {property_name}: Python={python_result}, Java={java_has_nu_term}")
                         else:
                             print(f"  ✓ {property_name}: match ({python_result})")
                     

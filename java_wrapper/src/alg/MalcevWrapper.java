@@ -77,6 +77,10 @@ public class MalcevWrapper extends WrapperBase {
                 handleNuTerm(options);
                 break;
                 
+            case "nu_term_idempotent":
+                handleNuTermIdempotent(options);
+                break;
+                
             case "weak_majority_term":
                 handleWeakMajorityTerm(options);
                 break;
@@ -299,6 +303,25 @@ public class MalcevWrapper extends WrapperBase {
         } else {
             result.put("term_found", false);
         }
+        
+        handleSuccess(result);
+    }
+    
+    /**
+     * Test if an idempotent algebra has an NU term of the given arity.
+     */
+    private void handleNuTermIdempotent(Map<String, String> options) throws Exception {
+        String algebraPath = getRequiredArg(options, "algebra");
+        int arity = getIntArg(options, "arity", 3);
+        
+        SmallAlgebra alg = loadAlgebra(algebraPath);
+        boolean hasNuTerm = Malcev.nuTermIdempotent(alg, arity, null);
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("command", "nu_term_idempotent");
+        result.put("algebra", alg.getName());
+        result.put("arity", arity);
+        result.put("has_nu_term", hasNuTerm);
         
         handleSuccess(result);
     }
@@ -879,6 +902,7 @@ public class MalcevWrapper extends WrapperBase {
             "minority_term --algebra <path> - Find a minority term",
             "pixley_term --algebra <path> - Find a Pixley term",
             "nu_term --algebra <path> --arity <n> - Find a near unanimity term",
+            "nu_term_idempotent --algebra <path> --arity <n> - Test if idempotent algebra has an NU term",
             "weak_majority_term --algebra <path> - Find a weak majority term",
             "semilattice_term --algebra <path> - Find a semilattice term",
             "difference_term --algebra <path> - Find a difference term",
