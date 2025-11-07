@@ -14,6 +14,7 @@ import java.util.*;
 import org.uacalc.alg.*;
 import org.uacalc.alg.conlat.*;
 import org.uacalc.alg.op.*;
+import org.uacalc.io.*;
 import java_wrapper.src.WrapperBase;
 
 /**
@@ -151,14 +152,12 @@ public class CongruenceLatticeWrapper extends WrapperBase {
      * Get the cardinality of the congruence lattice
      */
     private void getConCardinality(Map<String, String> options) throws Exception {
-        int size = getIntArg(options, "size", 3);
-        
-        SmallAlgebra alg = new BasicAlgebra("TestAlg", size, new ArrayList<Operation>());
+        SmallAlgebra alg = loadAlgebra(options);
         CongruenceLattice conLat = new CongruenceLattice(alg);
         
         Map<String, Object> result = new HashMap<>();
         result.put("cardinality", conLat.cardinality());
-        result.put("alg_size", size);
+        result.put("alg_size", alg.cardinality());
         
         handleSuccess(result);
     }
@@ -167,14 +166,13 @@ public class CongruenceLatticeWrapper extends WrapperBase {
      * Test if the lattice is distributive
      */
     private void isDistributive(Map<String, String> options) throws Exception {
-        int size = getIntArg(options, "size", 3);
-        
-        SmallAlgebra alg = new BasicAlgebra("TestAlg", size, new ArrayList<Operation>());
+        SmallAlgebra alg = loadAlgebra(options);
         CongruenceLattice conLat = new CongruenceLattice(alg);
         
         Map<String, Object> result = new HashMap<>();
         result.put("is_distributive", conLat.isDistributive());
         result.put("cardinality", conLat.cardinality());
+        result.put("alg_size", alg.cardinality());
         
         handleSuccess(result);
     }
@@ -388,13 +386,35 @@ public class CongruenceLatticeWrapper extends WrapperBase {
     }
     
     /**
+     * Load an algebra from a file or create one from size.
+     */
+    private SmallAlgebra loadAlgebra(Map<String, String> options) throws Exception {
+        String algebraPath = options.get("algebra");
+        SmallAlgebra alg;
+        if (algebraPath != null && !algebraPath.isEmpty()) {
+            AlgebraReader reader = new AlgebraReader(algebraPath);
+            alg = reader.readAlgebraFile();
+            // Convert to default value ops if it's a BasicAlgebra (required for congruence computation)
+            if (alg.algebraType() == SmallAlgebra.AlgebraType.BASIC) {
+                ((BasicAlgebra)alg).convertToDefaultValueOps();
+            }
+        } else {
+            int size = getIntArg(options, "size", 3);
+            alg = new BasicAlgebra("TestAlg", size, new ArrayList<Operation>());
+        }
+        return alg;
+    }
+    
+    /**
      * Show usage information for the CongruenceLattice wrapper.
      */
     private void showUsage() {
         String[] examples = {
             "test_basic --size 3",
             "con_cardinality --size 4",
+            "con_cardinality --algebra path/to/algebra.ua",
             "is_distributive --size 3",
+            "is_distributive --algebra path/to/algebra.ua",
             "principals --size 3",
             "join_irreducibles --size 3",
             "atoms --size 3",

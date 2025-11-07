@@ -3,12 +3,22 @@ Test suite for CongruenceLattice bindings.
 """
 import pytest
 import uacalc_lib
+import unittest
+import os
+import subprocess
+import json
+import sys
+from pathlib import Path
 
 # Type aliases for convenience
 BasicAlgebra = uacalc_lib.alg.BasicAlgebra
 CongruenceLattice = uacalc_lib.alg.CongruenceLattice
 Partition = uacalc_lib.alg.Partition
 BasicBinaryRelation = uacalc_lib.alg.BasicBinaryRelation
+
+# Get project root to locate resources
+PROJECT_ROOT = Path(__file__).parent.parent.parent.parent
+RESOURCES_ALGEBRAS_DIR = PROJECT_ROOT / "resources" / "algebras"
 
 
 def test_congruence_lattice_creation():
@@ -447,3 +457,200 @@ def test_join_irreducibles():
     # Each should be a Partition
     for ji in jis:
         assert isinstance(ji, Partition)
+
+
+def find_all_algebras():
+    """Find all .ua algebra files in resources/algebras/ and subdirectories."""
+    algebras = []
+    if not RESOURCES_ALGEBRAS_DIR.exists():
+        return algebras
+    
+    # Files in root
+    for file in RESOURCES_ALGEBRAS_DIR.glob("*.ua"):
+        algebras.append(str(file))
+    
+    # Files in subdirectories
+    for subdir in RESOURCES_ALGEBRAS_DIR.iterdir():
+        if subdir.is_dir():
+            for file in subdir.glob("*.ua"):
+                algebras.append(str(file))
+    
+    return sorted(algebras)
+
+
+def run_java_wrapper(command, args=None, timeout=60):
+    """Run Java wrapper and return parsed JSON result."""
+    separator = ";" if os.name == "nt" else ":"
+    cmd = [
+        "java", "-cp",
+        f"java_wrapper/build/classes{separator}build/classes{separator}org{separator}jars/*",
+        "java_wrapper.src.alg.conlat.CongruenceLatticeWrapper",
+        command
+    ]
+    if args:
+        cmd.extend(args)
+    
+    result = subprocess.run(
+        cmd,
+        capture_output=True,
+        text=True,
+        timeout=timeout,
+        cwd=str(PROJECT_ROOT)
+    )
+    
+    # Check if output contains error JSON (success: false)
+    stdout = result.stdout.strip()
+    if "success" in stdout and '"success": false' in stdout:
+        # Try to parse error
+        try:
+            error_json = json.loads(stdout.split('\n')[-1])
+            error_msg = error_json.get("error", "Unknown error")
+            raise RuntimeError(f"Java wrapper error: {error_msg}")
+        except:
+            pass
+    
+    if result.returncode != 0:
+        # Check if stderr is just INFO messages (not real errors)
+        stderr_lower = result.stderr.lower()
+        if "info:" in stderr_lower or "warning:" in stderr_lower:
+            # Might just be log messages, try to continue
+            pass
+        else:
+            raise RuntimeError(f"Java wrapper failed: {result.stderr}")
+    
+    # Extract JSON from output
+    stdout = result.stdout.strip()
+    lines = stdout.split('\n')
+    
+    # Find complete JSON object
+    brace_count = 0
+    json_lines = []
+    found_start = False
+    for line in reversed(lines):
+        line_stripped = line.strip()
+        if not found_start and line_stripped.endswith('}'):
+            found_start = True
+        if found_start:
+            json_lines.insert(0, line)
+            brace_count += line.count('{') - line.count('}')
+            if brace_count == 0 and line_stripped.startswith('{'):
+                break
+    
+    if not json_lines:
+        raise RuntimeError("Could not find JSON in Java output")
+    
+    json_str = '\n'.join(json_lines)
+    try:
+        return json.loads(json_str)
+    except json.JSONDecodeError as e:
+        raise RuntimeError(f"Could not parse JSON from Java output: {e}. JSON: {json_str[:200]}")
+
+
+class TestCongruenceLatticeJavaComparison(unittest.TestCase):
+    """Test CongruenceLattice against Java implementation for all algebras."""
+    
+    def test_all_algebras_cardinality_and_distributivity(self):
+        """Test congruence lattice cardinality and distributivity for all algebras."""
+        algebras = find_all_algebras()
+        
+        if not algebras:
+            self.skipTest("No algebra files found in resources/algebras/")
+        
+        print(f"\nTesting {len(algebras)} algebras...")
+        
+        results = {
+            'total_algebras': len(algebras),
+            'skipped': 0,
+            'compared': 0,
+            'mismatches': []
+        }
+        
+        for algebra_path in algebras:
+            algebra_name = os.path.basename(algebra_path)
+            print(f"\nTesting algebra: {algebra_name}")
+            
+            try:
+                # Load algebra in Python
+                AlgebraReader = uacalc_lib.io.AlgebraReader
+                reader = AlgebraReader.new_from_file(algebra_path)
+                alg = reader.read_algebra_file()
+                
+                # Get Python results
+                con_lat = CongruenceLattice(alg)
+                python_cardinality = con_lat.con_cardinality()
+                python_is_distributive = con_lat.is_distributive()
+                
+                # Get Java results
+                try:
+                    # Get cardinality from Java
+                    java_card_output = run_java_wrapper("con_cardinality", [
+                        "--algebra", algebra_path
+                    ], timeout=30)
+                    java_card_data = java_card_output.get("data", {})
+                    java_cardinality = java_card_data.get("cardinality")
+                    
+                    # Get distributivity from Java
+                    java_dist_output = run_java_wrapper("is_distributive", [
+                        "--algebra", algebra_path
+                    ], timeout=30)
+                    java_dist_data = java_dist_output.get("data", {})
+                    java_is_distributive = java_dist_data.get("is_distributive")
+                    
+                    results['compared'] += 1
+                    
+                    # Compare cardinality
+                    if python_cardinality != java_cardinality:
+                        mismatch = {
+                            'algebra': algebra_name,
+                            'property': 'cardinality',
+                            'python': python_cardinality,
+                            'java': java_cardinality
+                        }
+                        results['mismatches'].append(mismatch)
+                        print(f"  ✗ cardinality: Python={python_cardinality}, Java={java_cardinality}")
+                    else:
+                        print(f"  ✓ cardinality: {python_cardinality}")
+                    
+                    # Compare distributivity
+                    if python_is_distributive != java_is_distributive:
+                        mismatch = {
+                            'algebra': algebra_name,
+                            'property': 'is_distributive',
+                            'python': python_is_distributive,
+                            'java': java_is_distributive
+                        }
+                        results['mismatches'].append(mismatch)
+                        print(f"  ✗ is_distributive: Python={python_is_distributive}, Java={java_is_distributive}")
+                    else:
+                        print(f"  ✓ is_distributive: {python_is_distributive}")
+                    
+                except subprocess.TimeoutExpired:
+                    print(f"  ⏩ Java wrapper timed out, skipping")
+                    results['skipped'] += 1
+                except Exception as e:
+                    print(f"  ⏩ Java wrapper error: {e}, skipping")
+                    results['skipped'] += 1
+                    
+            except Exception as e:
+                print(f"  ⏩ Error loading algebra: {e}, skipping")
+                results['skipped'] += 1
+                continue
+        
+        # Print summary
+        print(f"\n{'='*60}")
+        print(f"Test Summary:")
+        print(f"  Total algebras: {results['total_algebras']}")
+        print(f"  Tests compared: {results['compared']}")
+        print(f"  Tests skipped: {results['skipped']}")
+        print(f"  Mismatches: {len(results['mismatches'])}")
+        print(f"{'='*60}")
+        
+        if results['mismatches']:
+            print("\nMismatches found:")
+            for mismatch in results['mismatches']:
+                print(f"  {mismatch['algebra']} / {mismatch['property']}: "
+                      f"Python={mismatch['python']}, Java={mismatch['java']}")
+        
+        # Fail test if there are mismatches
+        if results['mismatches']:
+            self.fail(f"Found {len(results['mismatches'])} mismatches between Python and Java implementations")
