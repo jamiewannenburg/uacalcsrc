@@ -1,8 +1,0 @@
-# malcev_bindings.rs.txt
-
-malcev_bindings.rs was removed in a step, or moved to malcev_binding.rs.backup
-
-## Guidelines
-
-- Restore it from git if .backup is not found
-- Rename to malcev_bindings.rs.backup and use it instead
