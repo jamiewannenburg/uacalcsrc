@@ -3,14 +3,13 @@
 This program takes a lattice reduct and considers all possible dots (operations).
 
 It generates all possible dot operations for a given cardinality, checks if the
-resulting algebra is a simple chain, and prints examples that are not simple chains.
+resulting algebra is simple, and prints examples that are not simple.
 
 This is a translation of the old Jython API code to the new Python API.
 
-Note: This example demonstrates the operation creation and generation logic.
-Some functionality (like creating algebras with operations and checking if they
-are simple chains) may require additional API support. The example shows how
-to create custom operations using IntOperation.from_int_value_at().
+The program creates BasicAlgebra instances with operations and checks if they
+are simple by computing the congruence lattice. An algebra is simple if it has
+exactly 2 congruences (the zero and one congruences).
 """
 
 import uacalc_lib
@@ -187,44 +186,34 @@ def make_dots(cardinality, i=2, j=2, values=None):
                 yield val
 
 
-def add_arrow_and_meet(alg):
+def check_simple(alg):
     """
-    Add arrow and meet operations to the algebra.
+    Check if the algebra is simple.
     
-    Note: This is a placeholder. The original implementation would compute
-    arrow (implication) and meet operations from the join operation.
-    This functionality may need to be implemented or may be available through
-    the lattice operations in the API.
+    An algebra is simple if it has exactly 2 congruences: the zero (trivial)
+    congruence and the one (full) congruence.
+    
+    Args:
+        alg: BasicAlgebra instance
+        
+    Returns:
+        bool: True if the algebra is simple, False otherwise
     """
-    # In the original code, this would add arrow (implication) and meet operations
-    # For now, we return the algebra as-is
-    return alg
-
-
-def check_simple_chain(alg):
-    """
-    Check if the algebra is a simple chain.
+    # Get the congruence lattice
+    con_lat = alg.con()
     
-    A simple chain means the congruence lattice is a chain (totally ordered).
-    
-    Note: This is a placeholder implementation. A full implementation would:
-    1. Get the congruence lattice: con_lat = alg.con()
-    2. Get the universe of congruences: universe = con_lat.universe()
-    3. Check if the lattice is a chain (totally ordered)
-    
-    This requires the algebra to be created with operations first.
-    """
-    # Placeholder - would need full algebra with operations to check
-    return False
+    # An algebra is simple if it has exactly 2 congruences
+    # (the zero congruence and the one congruence)
+    con_cardinality = con_lat.cardinality()
+    return con_cardinality == 2
 
 
 def build_and_check_alg(cardinality, values):
     """
-    Build an algebra and check if it's a simple chain.
+    Build an algebra and check if it's simple.
     
-    Note: This function demonstrates the operation creation part. The actual
-    algebra construction with operations may require API extensions to support
-    creating BasicAlgebra with a list of operations at construction time.
+    Creates a BasicAlgebra with the join, neg, e, and dot operations,
+    then checks if it's simple by computing the congruence lattice.
     """
     # Create operations
     alg_join = join_op(cardinality)
@@ -237,23 +226,28 @@ def build_and_check_alg(cardinality, values):
     number = "".join(value_list)
     alg_name = f"Y_{{{cardinality}}}^{{{number}}}"
     
-    # For demonstration, we'll print the operations we created
-    # In a full implementation, these would be added to the algebra
-    print(f"Found example {number}")
-    print(f"  Algebra: {alg_name}")
-    print(f"  Cardinality: {cardinality}")
-    print(f"  Operations created: join, neg, e, dot")
-    print(f"  Dot operation values: {dict(values)}")
+    # Create universe as list of integers from 0 to cardinality-1
+    universe = list(range(cardinality))
     
-    # Note: To actually check if it's a simple chain, we would need to:
-    # 1. Create BasicAlgebra with these operations (requires API support)
-    # 2. Add arrow and meet operations (if needed)
-    # 3. Compute the congruence lattice
-    # 4. Check if the congruence lattice is a chain
+    # Create BasicAlgebra with operations
+    BasicAlgebra = uacalc_lib.alg.BasicAlgebra
+    alg = BasicAlgebra(alg_name, universe, [alg_join, alg_neg, alg_e, alg_dot])
     
-    # For now, we'll just print that we found an example
-    # In the original code, this would check: if not check_simple_chain(alg)
-    return True
+    # Get the congruence lattice and check if the algebra is simple
+    con_lat = alg.con()
+    con_cardinality = con_lat.cardinality()
+    is_simple = con_cardinality == 2
+    
+    # Only return True if the algebra is simple
+    if is_simple:
+        print(f"Found non-simple example {number}")
+        print(f"  Algebra: {alg_name}")
+        print(f"  Cardinality: {cardinality}")
+        print(f"  Congruence lattice size: {con_cardinality}")
+        print(f"  Dot operation values: {dict(values)}")
+        return True
+    
+    return False
 
 
 def main():
@@ -262,9 +256,7 @@ def main():
     
     print(f"Generating all possible dot operations for cardinality {cardinality}...")
     print("(This may take a while as it explores all possible dot operations)\n")
-    print("Note: This example demonstrates operation creation.")
-    print("Full simple-chain checking requires API support for creating")
-    print("algebras with operations.\n")
+    print("Checking if algebras are simple by computing congruence lattices.\n")
     
     found_count = 0
     for values in make_dots(cardinality):
@@ -272,11 +264,11 @@ def main():
             found_count += 1
             # Limit output for demonstration
             if found_count >= 5:
-                print("\n... (showing first 5 examples, there may be more)")
+                print("\n... (showing first 5 non-simple examples, there may be more)")
                 break
     
-    print(f"\nTotal examples shown: {found_count}")
-    print("(Run without the limit to see all examples)")
+    print(f"\nTotal simple examples shown: {found_count}")
+    print("(Run without the limit to see all non-simple examples)")
 
 
 if __name__ == "__main__":
