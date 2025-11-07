@@ -16,10 +16,14 @@ pub struct PyCongruenceLattice {
 impl PyCongruenceLattice {
     pub fn from_algebra(algebra: &PyBasicAlgebra) -> Self {
         use uacalc::alg::SmallAlgebraWrapper;
+        let mut con_lat = uacalc::alg::conlat::CongruenceLattice::new(
+            Box::new(SmallAlgebraWrapper::new(Box::new(algebra.inner.clone())))
+        );
+        // Ensure principals are computed when the lattice is created
+        // This ensures the lattice is "built" and ready to use
+        con_lat.make_principals();
         PyCongruenceLattice {
-            inner: uacalc::alg::conlat::CongruenceLattice::new(
-                Box::new(SmallAlgebraWrapper::new(Box::new(algebra.inner.clone())))
-            ),
+            inner: con_lat,
         }
     }
 }
@@ -30,10 +34,14 @@ impl PyCongruenceLattice {
     #[new]
     fn new(algebra: &PyBasicAlgebra) -> Self {
         use uacalc::alg::SmallAlgebraWrapper;
+        let mut con_lat = uacalc::alg::conlat::CongruenceLattice::new(
+            Box::new(SmallAlgebraWrapper::new(Box::new(algebra.inner.clone())))
+        );
+        // Ensure principals are computed when the lattice is created
+        // This ensures the lattice is "built" and ready to use
+        con_lat.make_principals();
         PyCongruenceLattice {
-            inner: uacalc::alg::conlat::CongruenceLattice::new(
-                Box::new(SmallAlgebraWrapper::new(Box::new(algebra.inner.clone())))
-            ),
+            inner: con_lat,
         }
     }
 

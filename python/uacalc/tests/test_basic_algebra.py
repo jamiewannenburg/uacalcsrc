@@ -253,6 +253,24 @@ class TestBasicAlgebra(unittest.TestCase):
         self.assertEqual(alg_op.int_value_at([1, 2]), 2)
         self.assertEqual(alg_op.int_value_at([2, 2]), 2)
 
+    def test_con(self):
+        """Test con method."""
+        # Four element diamond semilattice
+        def meet_int_value_at(args):
+            if 0 in args:
+                return 0
+            elif set(args) == {0, 1}:
+                return 0
+            elif 1 in args:
+                return 1
+            else:
+                return 2
+        op = IntOperation.from_int_value_at("meet", 2, 4, meet_int_value_at)
+        alg = BasicAlgebra("test", list(range(4)) ,[op])
+        con = alg.con()
+        self.assertEqual(con.alg_size(), 4)
+        self.assertGreaterEqual(con.con_cardinality(), 2)
+
 if __name__ == '__main__':
     unittest.main()
 
