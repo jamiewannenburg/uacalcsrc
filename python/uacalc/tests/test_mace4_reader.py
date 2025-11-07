@@ -55,53 +55,59 @@ class TestMace4Reader(unittest.TestCase):
         self.assertEqual(algebra.cardinality(), 8)
         operations = algebra.operations()
         self.assertEqual(len(operations), 6)
-        # Check that operations are tuples of (name, arity)
+        # Check that operations are Operation objects (IntOperation or BasicOperation)
         for op in operations:
-            self.assertIsInstance(op, tuple)
-            self.assertEqual(len(op), 2)
-            self.assertIsInstance(op[0], str)  # name
-            self.assertIsInstance(op[1], int)  # arity
+            # Operations should have arity() and symbol() methods
+            self.assertTrue(hasattr(op, 'arity'))
+            self.assertTrue(hasattr(op, 'symbol'))
+            # Check that we can access name and arity
+            self.assertIsInstance(op.symbol().name(), str)  # name
+            self.assertIsInstance(op.arity(), int)  # arity
     
     def test_parse_algebra_with_multiple_operations(self):
         """Test parsing an algebra with multiple operations."""
         Mace4Reader = uacalc_lib.io.Mace4Reader
-        
+    
         # Use the real Mace4 file which has multiple operations
         algebra = Mace4Reader.parse_algebra_from_file("resources/mace4/KR-8.model")
-        
+    
         self.assertIsNotNone(algebra)
         self.assertEqual(algebra.name(), "model1")
         self.assertEqual(algebra.cardinality(), 8)
         operations = algebra.operations()
         self.assertEqual(len(operations), 6)  # KR-8.model has 6 operations
-        # Check that operations are tuples of (name, arity)
+        # Check that operations are Operation objects (IntOperation or BasicOperation)
         for op in operations:
-            self.assertIsInstance(op, tuple)
-            self.assertEqual(len(op), 2)
-            self.assertIsInstance(op[0], str)  # name
-            self.assertIsInstance(op[1], int)  # arity
+            # Operations should have arity() and symbol() methods
+            self.assertTrue(hasattr(op, 'arity'))
+            self.assertTrue(hasattr(op, 'symbol'))
+            # Check that we can access name and arity
+            self.assertIsInstance(op.symbol().name(), str)  # name
+            self.assertIsInstance(op.arity(), int)  # arity
     
     def test_parse_algebra_list(self):
         """Test parsing a list of algebras."""
         Mace4Reader = uacalc_lib.io.Mace4Reader
-        
+    
         # Use the real Mace4 file which contains multiple algebras
         reader = Mace4Reader.new_from_file("resources/mace4/KR-8.model")
         algebras = reader.parse_algebra_list_from_file("resources/mace4/KR-8.model")
-        
+    
         self.assertGreater(len(algebras), 1)  # KR-8.model contains multiple algebras
-        
+    
         # Check first algebra
         self.assertEqual(algebras[0].name(), "model1")
         self.assertEqual(algebras[0].cardinality(), 8)
         operations = algebras[0].operations()
         self.assertEqual(len(operations), 6)
-        # Check that operations are tuples of (name, arity)
+        # Check that operations are Operation objects (IntOperation or BasicOperation)
         for op in operations:
-            self.assertIsInstance(op, tuple)
-            self.assertEqual(len(op), 2)
-            self.assertIsInstance(op[0], str)  # name
-            self.assertIsInstance(op[1], int)  # arity
+            # Operations should have arity() and symbol() methods
+            self.assertTrue(hasattr(op, 'arity'))
+            self.assertTrue(hasattr(op, 'symbol'))
+            # Check that we can access name and arity
+            self.assertIsInstance(op.symbol().name(), str)  # name
+            self.assertIsInstance(op.arity(), int)  # arity
     
     def test_parse_algebra_error_handling(self):
         """Test error handling with invalid input."""
