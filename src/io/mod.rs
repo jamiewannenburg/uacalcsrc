@@ -38,7 +38,7 @@ use crate::util::array_string;
 /// )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
 /// 
 /// // Write to file
-/// let mut writer = AlgebraWriter::new_with_file(alg, "output.xml").unwrap();
+/// let mut writer = AlgebraWriter::new_with_file(alg, "tests/.scratch/output.xml").unwrap();
 /// writer.write_algebra_xml().unwrap();
 /// ```
 pub struct AlgebraWriter {
@@ -107,7 +107,7 @@ impl AlgebraWriter {
     ///     Vec::new()
     /// )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
     /// 
-    /// let writer = AlgebraWriter::new_with_file(alg, "output.xml").unwrap();
+    /// let writer = AlgebraWriter::new_with_file(alg, "tests/.scratch/output.xml").unwrap();
     /// ```
     pub fn new_with_file(algebra: Box<dyn SmallAlgebra<UniverseItem = i32>>, file_path: &str) -> Result<Self, String> {
         let file = File::create(file_path)
@@ -137,7 +137,7 @@ impl AlgebraWriter {
     ///     Vec::new()
     /// )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
     /// 
-    /// let mut writer = AlgebraWriter::new_with_file(alg, "output.xml").unwrap();
+    /// let mut writer = AlgebraWriter::new_with_file(alg, "tests/.scratch/output.xml").unwrap();
     /// writer.write_algebra_xml().unwrap();
     /// ```
     pub fn write_algebra_xml(&mut self) -> Result<(), String> {
