@@ -119,6 +119,29 @@ impl PyBasicAlgebra {
         })
     }
 
+    /// Create a BasicAlgebra from a GeneralAlgebra.
+    ///
+    /// This constructor converts a GeneralAlgebra (which can have arbitrary Python objects
+    /// as universe elements) to a BasicAlgebra (which requires integer universe elements).
+    ///
+    /// Args:
+    ///     general_algebra (GeneralAlgebra): The GeneralAlgebra to convert
+    ///
+    /// Returns:
+    ///     BasicAlgebra: A new BasicAlgebra instance with the same name, universe (as integers),
+    ///                   and operations (converted to IntOperation)
+    ///
+    /// Raises:
+    ///     ValueError: If universe elements cannot be converted to integers, or if operations
+    ///                  cannot be converted to IntOperation
+    #[staticmethod]
+    fn from_general_algebra(
+        py: Python<'_>,
+        general_algebra: &Bound<'_, crate::alg::general_algebra::PyGeneralAlgebra>
+    ) -> PyResult<Self> {
+        general_algebra.borrow().to_basic_algebra(py)
+    }
+
     /// Get the name of this algebra.
     ///
     /// Returns:

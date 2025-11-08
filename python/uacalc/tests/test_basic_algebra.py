@@ -270,6 +270,90 @@ class TestBasicAlgebra(unittest.TestCase):
         con = alg.con()
         self.assertEqual(con.alg_size(), 4)
         self.assertGreaterEqual(con.con_cardinality(), 2)
+    
+    def test_from_general_algebra_with_integer_universe(self):
+        """Test creating BasicAlgebra from GeneralAlgebra with integer universe."""
+        GeneralAlgebra = uacalc_lib.alg.GeneralAlgebra
+        
+        universe = [0, 1, 2, 3]
+        general_alg = GeneralAlgebra("TestInt", universe)
+        
+        # Convert to BasicAlgebra
+        basic_alg = BasicAlgebra.from_general_algebra(general_alg)
+        
+        # Verify properties
+        self.assertEqual(basic_alg.name(), "TestInt")
+        self.assertEqual(basic_alg.cardinality(), 4)
+        self.assertEqual(basic_alg.algebra_type(), "Basic")
+        
+        # Check universe
+        basic_universe = basic_alg.get_universe()
+        self.assertEqual(len(basic_universe), 4)
+        self.assertEqual(set(basic_universe), {0, 1, 2, 3})
+    
+    def test_from_general_algebra_with_string_universe(self):
+        """Test creating BasicAlgebra from GeneralAlgebra with string universe."""
+        GeneralAlgebra = uacalc_lib.alg.GeneralAlgebra
+        AbstractOperation = uacalc_lib.alg.AbstractOperation
+        
+        universe = ["red", "green", "blue"]
+        general_alg = GeneralAlgebra("TestString", universe)
+        
+        # Convert to BasicAlgebra
+        basic_alg = BasicAlgebra.from_general_algebra(general_alg)
+        
+        # Verify properties
+        self.assertEqual(basic_alg.name(), "TestString")
+        self.assertEqual(basic_alg.cardinality(), 3)
+        self.assertEqual(basic_alg.algebra_type(), "Basic")
+        
+        # Check universe - should be integers (indices)
+        basic_universe = basic_alg.get_universe()
+        self.assertEqual(len(basic_universe), 3)
+        self.assertEqual(set(basic_universe), {0, 1, 2})
+    
+    def test_from_general_algebra_with_operations(self):
+        """Test creating BasicAlgebra from GeneralAlgebra with operations."""
+        GeneralAlgebra = uacalc_lib.alg.GeneralAlgebra
+        AbstractOperation = uacalc_lib.alg.AbstractOperation
+        
+        universe = [0, 1, 2]
+        
+        # Create a binary operation: (a + b) mod 3
+        def add_mod3(args):
+            return (args[0] + args[1]) % 3
+        
+        op = AbstractOperation.from_int_value_at_function("add_mod3", 2, 3, add_mod3)
+        general_alg = GeneralAlgebra("TestWithOps", universe, [op])
+        
+        # Convert to BasicAlgebra
+        basic_alg = BasicAlgebra.from_general_algebra(general_alg)
+        
+        # Verify properties
+        self.assertEqual(basic_alg.name(), "TestWithOps")
+        self.assertEqual(basic_alg.cardinality(), 3)
+        self.assertEqual(basic_alg.operations_count(), 1)
+        
+        # Check operations
+        basic_ops = basic_alg.operations()
+        self.assertEqual(len(basic_ops), 1)
+        self.assertEqual(basic_ops[0].arity(), 2)
+        
+        # Verify operation works correctly
+        self.assertEqual(basic_ops[0].int_value_at([0, 1]), 1)
+        self.assertEqual(basic_ops[0].int_value_at([1, 2]), 0)
+        self.assertEqual(basic_ops[0].int_value_at([2, 2]), 1)
+    
+    def test_from_general_algebra_preserves_name(self):
+        """Test that from_general_algebra preserves the algebra name."""
+        GeneralAlgebra = uacalc_lib.alg.GeneralAlgebra
+        
+        general_alg = GeneralAlgebra("MyAlgebra", [0, 1, 2])
+        basic_alg = BasicAlgebra.from_general_algebra(general_alg)
+        
+        self.assertEqual(basic_alg.name(), "MyAlgebra")
+        self.assertEqual(general_alg.name(), "MyAlgebra")  # Original unchanged
+
 
 if __name__ == '__main__':
     unittest.main()
