@@ -467,8 +467,296 @@ class TestGeneralAlgebra(unittest.TestCase):
         self.assertEqual(binary.int_value_at([0, 1]), 1)
         self.assertEqual(binary.int_value_at([1, 2]), 0)
         self.assertEqual(binary.int_value_at([2, 2]), 1)
+    
+    def test_powerset_boolean_algebra_three_generators(self):
+        """Test building a GeneralAlgebra for powerset boolean algebra with three generators."""
+        # Universe: all subsets of {0, 1, 2}
+        # There are 2^3 = 8 subsets
+        base_set = {0, 1, 2}
+        universe = []
+        # Generate all subsets
+        for i in range(8):
+            subset = frozenset(j for j in range(3) if (i >> j) & 1)
+            universe.append(subset)
+        
+        # Intersection operation (binary) - works directly with frozensets
+        def intersection(args):
+            subset1, subset2 = args[0], args[1]
+            return subset1 & subset2
+        
+        # Union operation (binary) - works directly with frozensets
+        def union(args):
+            subset1, subset2 = args[0], args[1]
+            return subset1 | subset2
+        
+        # Complement operation (unary) - works directly with frozensets
+        def complement(args):
+            subset = args[0]
+            return base_set - subset
+        
+        # Create operations using value_at (works with actual universe elements)
+        intersection_op = AbstractOperation.from_value_at_function("intersection", 2, universe, intersection)
+        union_op = AbstractOperation.from_value_at_function("union", 2, universe, union)
+        complement_op = AbstractOperation.from_value_at_function("complement", 1, universe, complement)
+        
+        # Create algebra
+        alg = GeneralAlgebra("PowersetBoolean3", universe, [intersection_op, union_op, complement_op])
+        
+        # Verify properties
+        self.assertEqual(alg.name(), "PowersetBoolean3")
+        self.assertEqual(alg.cardinality(), 8)
+        self.assertEqual(alg.operations_count(), 3)
+        
+        # Verify operations
+        ops = alg.get_operations()
+        self.assertEqual(len(ops), 3)
+        
+        # Define test subsets
+        empty_set = frozenset()
+        zero_set = frozenset({0})
+        one_set = frozenset({1})
+        zero_one_set = frozenset({0, 1})
+        one_two_set = frozenset({1, 2})
+        
+        # Identify intersection: {0} ∩ {1} = ∅
+        intersection_op_obj = None
+        for op in ops:
+            if op.arity() == 2:
+                result = op.value_at([zero_set, one_set])
+                if result == empty_set:
+                    intersection_op_obj = op
+                    break
+        
+        # Identify union: {0} ∪ {1} = {0, 1}
+        union_op_obj = None
+        for op in ops:
+            if op.arity() == 2:
+                result = op.value_at([zero_set, one_set])
+                if result == zero_one_set:
+                    union_op_obj = op
+                    break
+        
+        # Identify complement: complement of {0} = {1, 2}
+        complement_op_obj = None
+        for op in ops:
+            if op.arity() == 1:
+                result = op.value_at([zero_set])
+                if result == one_two_set:
+                    complement_op_obj = op
+                    break
+        
+        self.assertIsNotNone(intersection_op_obj, "Could not identify intersection operation")
+        self.assertIsNotNone(union_op_obj, "Could not identify union operation")
+        self.assertIsNotNone(complement_op_obj, "Could not identify complement operation")
+        
+        # Test intersection: {0} ∩ {1} = ∅
+        self.assertEqual(intersection_op_obj.value_at([zero_set, one_set]), empty_set)
+        
+        # Test union: {0} ∪ {1} = {0, 1}
+        self.assertEqual(union_op_obj.value_at([zero_set, one_set]), zero_one_set)
+        
+        # Test complement: complement of {0} = {1, 2}
+        self.assertEqual(complement_op_obj.value_at([zero_set]), one_two_set)
+        
+        # Test intersection with itself (idempotent): {0} ∩ {0} = {0}
+        self.assertEqual(intersection_op_obj.value_at([zero_set, zero_set]), zero_set)
+        
+        # Test union with empty set: {0} ∪ ∅ = {0}
+        self.assertEqual(union_op_obj.value_at([zero_set, empty_set]), zero_set)
+        
+        # Test complement of complement: complement(complement({0})) = {0}
+        comp_result = complement_op_obj.value_at([zero_set])
+        self.assertEqual(complement_op_obj.value_at([comp_result]), zero_set)
 
+        # Check that this algebra can be converted to a BasicAlgebra
+        basic_alg = alg.to_basic_algebra()
+        self.assertEqual(basic_alg.name(), "PowersetBoolean3")
+        self.assertEqual(basic_alg.cardinality(), 8)
+        self.assertEqual(basic_alg.operations_count(), 3)
+        
+        # Check that the operations are the same
+        basic_ops = basic_alg.operations()
+        self.assertEqual(len(basic_ops), 3)
+    
+    def test_binary_relation_algebra_two_elements(self):
+        """Test building a GeneralAlgebra for binary relation algebra on a two element set."""
+        # Universe: all binary relations on {0, 1}
+        # A binary relation is a subset of {0,1} × {0,1}
+        # There are 2^4 = 16 relations
+        base_set = {0, 1}
+        universe = []
+        # Generate all relations (all subsets of the 4-element set of pairs)
+        for i in range(16):
+            relation = frozenset(
+                (j // 2, j % 2) for j in range(4) if (i >> j) & 1
+            )
+            universe.append(relation)
+        
+        # Composition operation (binary): R ∘ S = {(a,c) | ∃b: (a,b) ∈ R and (b,c) ∈ S}
+        def composition(args):
+            R, S = args[0], args[1]
+            return frozenset(
+                (a, c) for a in base_set for c in base_set
+                if any((a, b) in R and (b, c) in S for b in base_set)
+            )
+        
+        # Union operation (binary)
+        def union(args):
+            R, S = args[0], args[1]
+            return R | S
+        
+        # Intersection operation (binary)
+        def intersection(args):
+            R, S = args[0], args[1]
+            return R & S
+        
+        # Complement operation (unary)
+        def complement(args):
+            R = args[0]
+            full_relation = frozenset((a, b) for a in base_set for b in base_set)
+            return full_relation - R
+        
+        # Transpose/Converse operation (unary): R^T = {(b,a) | (a,b) ∈ R}
+        def transpose(args):
+            R = args[0]
+            return frozenset((b, a) for (a, b) in R)
+        
+        # Create operations using value_at (works with actual universe elements)
+        composition_op = AbstractOperation.from_value_at_function("composition", 2, universe, composition)
+        union_op = AbstractOperation.from_value_at_function("union", 2, universe, union)
+        intersection_op = AbstractOperation.from_value_at_function("intersection", 2, universe, intersection)
+        complement_op = AbstractOperation.from_value_at_function("complement", 1, universe, complement)
+        transpose_op = AbstractOperation.from_value_at_function("transpose", 1, universe, transpose)
+        
+        # Create algebra
+        alg = GeneralAlgebra("BinaryRelation2", universe, [
+            composition_op, union_op, intersection_op, complement_op, transpose_op
+        ])
+        
+        # Verify properties
+        self.assertEqual(alg.name(), "BinaryRelation2")
+        self.assertEqual(alg.cardinality(), 16)
+        self.assertEqual(alg.operations_count(), 5)
+        
+        # Verify operations
+        ops = alg.get_operations()
+        self.assertEqual(len(ops), 5)
+        
+        # Find operations by arity
+        binary_ops = [op for op in ops if op.arity() == 2]
+        unary_ops = [op for op in ops if op.arity() == 1]
+        self.assertEqual(len(binary_ops), 3)  # composition, union, intersection
+        self.assertEqual(len(unary_ops), 2)  # complement, transpose
+        
+        # Define test relations
+        # Identity relation: {(0,0), (1,1)}
+        identity_relation = frozenset({(0, 0), (1, 1)})
+        
+        # Empty relation
+        empty_relation = frozenset()
+        
+        # Full relation: all 4 pairs
+        full_relation = frozenset((a, b) for a in base_set for b in base_set)
+        
+        # Simple relation {(0,1)}
+        simple_relation = frozenset({(0, 1)})
+        
+        # Find composition operation: R ∘ I = R (for any R)
+        composition_op_obj = None
+        for op in binary_ops:
+            result = op.value_at([simple_relation, identity_relation])
+            if result == simple_relation:
+                composition_op_obj = op
+                break
+        
+        self.assertIsNotNone(composition_op_obj, "Could not identify composition operation")
+        
+        # Find transpose operation: transpose of {(0,1)} is {(1,0)}
+        transpose_result_relation = frozenset({(1, 0)})
+        transpose_op_obj = None
+        for op in unary_ops:
+            result = op.value_at([simple_relation])
+            if result == transpose_result_relation:
+                transpose_op_obj = op
+                break
+        
+        self.assertIsNotNone(transpose_op_obj, "Could not identify transpose operation")
+        
+        # Find complement operation: complement of empty is full
+        complement_op_obj = None
+        for op in unary_ops:
+            result = op.value_at([empty_relation])
+            if result == full_relation:
+                complement_op_obj = op
+                break
+        
+        self.assertIsNotNone(complement_op_obj, "Could not identify complement operation")
+        
+        # Find union operation: empty ∪ R = R
+        union_op_obj = None
+        for op in binary_ops:
+            # Check if this is not the composition operation we already found
+            if composition_op_obj is None or op.value_at([simple_relation, identity_relation]) != simple_relation:
+                result = op.value_at([empty_relation, simple_relation])
+                if result == simple_relation:
+                    union_op_obj = op
+                    break
+        
+        self.assertIsNotNone(union_op_obj, "Could not identify union operation")
+        
+        # Find intersection operation: empty ∩ R = empty
+        intersection_op_obj = None
+        for op in binary_ops:
+            # Check if this is neither composition nor union
+            is_composition = composition_op_obj is not None and op.value_at([simple_relation, identity_relation]) == simple_relation
+            is_union = union_op_obj is not None and op.value_at([empty_relation, simple_relation]) == simple_relation
+            if not is_composition and not is_union:
+                result = op.value_at([empty_relation, simple_relation])
+                if result == empty_relation:
+                    intersection_op_obj = op
+                    break
+        
+        self.assertIsNotNone(intersection_op_obj, "Could not identify intersection operation")
+        
+        # Additional tests
+        # Test transpose of transpose: (R^T)^T = R
+        transposed = transpose_op_obj.value_at([simple_relation])
+        self.assertEqual(transpose_op_obj.value_at([transposed]), simple_relation)
+        
+        # Test complement of complement: (R^c)^c = R
+        complemented = complement_op_obj.value_at([simple_relation])
+        self.assertEqual(complement_op_obj.value_at([complemented]), simple_relation)
+        
+        # Test composition with identity: R ∘ I = R
+        self.assertEqual(composition_op_obj.value_at([simple_relation, identity_relation]), simple_relation)
+        
+        # Test union: R ∪ R = R (idempotent)
+        self.assertEqual(union_op_obj.value_at([simple_relation, simple_relation]), simple_relation)
+        
+        # Test intersection: R ∩ R = R (idempotent)
+        self.assertEqual(intersection_op_obj.value_at([simple_relation, simple_relation]), simple_relation)
 
+        # Check that this algebra can be converted to a BasicAlgebra
+        basic_alg = alg.to_basic_algebra()
+        self.assertEqual(basic_alg.name(), "BinaryRelation2")
+        self.assertEqual(basic_alg.cardinality(), 16)
+        self.assertEqual(basic_alg.operations_count(), 5)
+        
+        # Check that the operations are the same
+        basic_ops = basic_alg.operations()
+        self.assertEqual(len(basic_ops), 5)
+
+        
+        # Check that this algebra can be converted to a BasicAlgebra
+        basic_alg = alg.to_basic_algebra()
+        self.assertEqual(basic_alg.name(), "BinaryRelation2")
+        self.assertEqual(basic_alg.cardinality(), 16)
+        self.assertEqual(basic_alg.operations_count(), 5)
+        
+        # Check that the operations are the same
+        basic_ops = basic_alg.operations()
+        self.assertEqual(len(basic_ops), 5)
+    
 if __name__ == '__main__':
     unittest.main()
 

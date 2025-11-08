@@ -113,6 +113,104 @@ impl PyAbstractOperationNew {
         }
     }
 
+    /// Evaluate the operation with actual universe elements (not indices).
+    ///
+    /// Args:
+    ///     args (List[Any]): List of universe elements (not indices)
+    ///
+    /// Returns:
+    ///     Any: The result as a universe element (not an index)
+    ///
+    /// Raises:
+    ///     ValueError: If arguments are invalid or result is not in universe
+    fn value_at(&self, args: Vec<PyObject>) -> PyResult<PyObject> {
+        if args.len() != self.arity() as usize {
+            return Err(PyValueError::new_err(format!("Expected {} arguments, got {}", self.arity(), args.len())));
+        }
+
+        Python::with_gil(|py| {
+            match &self.evaluation_mode {
+                AbstractOperationEvaluationMode::IntFunction(_) => {
+                    // For integer functions, convert universe elements to indices
+                    // First, we need to find the indices - but we don't have the universe stored
+                    // So we'll need to extract as integers
+                    let mut int_args = Vec::new();
+                    for arg in &args {
+                        let int_val: i32 = arg.bind(py).extract()?;
+                        if int_val < 0 || int_val >= self.set_size {
+                            return Err(PyValueError::new_err(format!("Argument {} is out of bounds [0, {})", int_val, self.set_size)));
+                        }
+                        int_args.push(int_val);
+                    }
+                    let result_idx = self.int_value_at(int_args)?;
+                    // Return as integer
+                    Ok(result_idx.into_py(py))
+                }
+                AbstractOperationEvaluationMode::ValueFunction(func, universe) => {
+                    // Verify all arguments are in the universe
+                    for arg in &args {
+                        let mut found = false;
+                        for universe_elem in universe.iter() {
+                            if arg.bind(py).eq(universe_elem.bind(py))? {
+                                found = true;
+                                break;
+                            }
+                        }
+                        if !found {
+                            return Err(PyValueError::new_err("Argument not in universe"));
+                        }
+                    }
+                    
+                    // Call the function with the actual universe elements
+                    let py_args = PyList::new_bound(py, &args);
+                    let result = func.call1(py, (py_args,))?;
+                    
+                    // Verify result is in universe
+                    for universe_elem in universe.iter() {
+                        if result.bind(py).eq(universe_elem.bind(py))? {
+                            return Ok(result);
+                        }
+                    }
+                    
+                    Err(PyValueError::new_err("Function returned a value not in the universe"))
+                }
+                AbstractOperationEvaluationMode::IntTable(_) => {
+                    // For integer tables, convert to indices and look up
+                    let mut int_args = Vec::new();
+                    for arg in &args {
+                        let int_val: i32 = arg.bind(py).extract()?;
+                        if int_val < 0 || int_val >= self.set_size {
+                            return Err(PyValueError::new_err(format!("Argument {} is out of bounds [0, {})", int_val, self.set_size)));
+                        }
+                        int_args.push(int_val);
+                    }
+                    let result_idx = self.int_value_at(int_args)?;
+                    Ok(result_idx.into_py(py))
+                }
+                AbstractOperationEvaluationMode::ValueTable(table, universe) => {
+                    // Convert universe elements to indices
+                    let mut int_args = Vec::new();
+                    for arg in &args {
+                        let mut found_idx = None;
+                        for (i, universe_elem) in universe.iter().enumerate() {
+                            if arg.bind(py).eq(universe_elem.bind(py))? {
+                                found_idx = Some(i as i32);
+                                break;
+                            }
+                        }
+                        match found_idx {
+                            Some(idx) => int_args.push(idx),
+                            None => return Err(PyValueError::new_err("Argument not in universe")),
+                        }
+                    }
+                    let result_idx = self.int_value_at(int_args)?;
+                    // Return the universe element at that index
+                    Ok(universe[result_idx as usize].clone())
+                }
+            }
+        })
+    }
+
     fn make_table(&mut self) -> PyResult<()> {
         match &self.evaluation_mode {
             AbstractOperationEvaluationMode::IntTable(_) | AbstractOperationEvaluationMode::ValueTable(_, _) => Ok(()),
