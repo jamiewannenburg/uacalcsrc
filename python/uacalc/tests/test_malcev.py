@@ -14,6 +14,7 @@ import subprocess
 import json
 import sys
 import time
+import platform
 from pathlib import Path
 
 try:
@@ -402,9 +403,10 @@ class TestMalcevJavaComparison(unittest.TestCase):
     
     def run_java_wrapper(self, command, args=None, timeout=60):
         """Run Java wrapper and return parsed JSON result."""
+        separator = ";" if platform.system() == "Windows" else ":"
+        classpath = f"java_wrapper/build/classes{separator}build/classes{separator}org{separator}jars/*"
         cmd = [
-            "java", "-cp",
-            "java_wrapper/build/classes:build/classes:org:jars/*",
+            "java", "-cp", classpath,
             "java_wrapper.src.alg.MalcevWrapper",
             command
         ]

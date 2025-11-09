@@ -10,6 +10,7 @@ import subprocess
 import json
 import sys
 import os
+import platform
 
 # Add project root to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..')))
@@ -115,9 +116,11 @@ class TestParameterizedAlgebra(unittest.TestCase):
     def run_java_wrapper(self, command, args):
         """Run Java wrapper command."""
         try:
+            separator = ";" if platform.system() == "Windows" else ":"
+            classpath = f"java_wrapper/build/classes{separator}build/classes{separator}org{separator}jars/*"
             cmd = [
                 "java",
-                "-cp", "java_wrapper/build/classes:build/classes:org:jars/*",
+                "-cp", classpath,
                 "java_wrapper.src.alg.ParameterizedAlgebraWrapper",
                 command
             ] + args
@@ -213,9 +216,11 @@ class TestParameterizedOperation(unittest.TestCase):
     def run_java_wrapper(self, command, args):
         """Run Java wrapper command."""
         try:
+            separator = ";" if platform.system() == "Windows" else ":"
+            classpath = f"java_wrapper/build/classes{separator}build/classes{separator}org{separator}jars/*"
             cmd = [
                 "java",
-                "-cp", "java_wrapper/build/classes:build/classes:org:jars/*",
+                "-cp", classpath,
                 "java_wrapper.src.alg.op.ParameterizedOperationWrapper",
                 command
             ] + args

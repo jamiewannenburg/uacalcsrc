@@ -9,6 +9,7 @@ to ensure correctness and compatibility.
 import subprocess
 import json
 import sys
+import platform
 from pathlib import Path
 import pytest
 # Add parent directory to path
@@ -32,9 +33,10 @@ except (ImportError, AttributeError) as e:
 def run_java_wrapper(command_args):
     """Run the Java wrapper and return parsed JSON output."""
     try:
+        separator = ";" if platform.system() == "Windows" else ":"
+        classpath = f"java_wrapper/build/classes{separator}build/classes{separator}org{separator}jars/*"
         cmd = [
-            "java", "-cp",
-            "java_wrapper/build/classes:build/classes:org:jars/*",
+            "java", "-cp", classpath,
             "java_wrapper.src.alg.SubProductAlgebraWrapper"
         ] + command_args
         

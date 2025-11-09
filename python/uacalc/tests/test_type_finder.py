@@ -9,14 +9,17 @@ import unittest
 import os
 import json
 import subprocess
+import platform
 import uacalc_lib
 from conftest import load_test_algebra
 
 
 def run_java_wrapper(command, args):
     """Run the Java TypeFinder wrapper and return parsed JSON output."""
+    separator = ";" if platform.system() == "Windows" else ":"
+    classpath = f"java_wrapper/build/classes{separator}build/classes{separator}org{separator}jars/*"
     cmd = [
-        "java", "-cp", "java_wrapper/build/classes:build/classes:org:jars/*",
+        "java", "-cp", classpath,
         "java_wrapper.src.alg.conlat.TypeFinderWrapper",
         command
     ] + args

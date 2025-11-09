@@ -4,13 +4,16 @@ import json
 import subprocess
 import sys
 import unittest
+import platform
 import uacalc_lib
 
 
 def run_java_wrapper(command, args):
     """Run Java wrapper and return parsed JSON output."""
+    separator = ";" if platform.system() == "Windows" else ":"
+    classpath = f"java_wrapper/build/classes{separator}build/classes{separator}org{separator}jars/*"
     cmd = [
-        "java", "-cp", "java_wrapper/build/classes:build/classes:org:jars/*",
+        "java", "-cp", classpath,
         "java_wrapper.src.lat.OrderedSetsWrapper", command
     ] + args
     

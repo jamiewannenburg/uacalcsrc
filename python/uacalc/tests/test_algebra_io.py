@@ -216,9 +216,11 @@ class TestAlgebraIO(unittest.TestCase):
     
     def run_java_wrapper(self, command, args):
         """Run Java wrapper and return parsed JSON output."""
+        import platform
+        separator = ";" if platform.system() == "Windows" else ":"
+        classpath = f"java_wrapper/build/classes{separator}build/classes{separator}org{separator}jars/*"
         cmd = [
-            "java", "-cp", 
-            "java_wrapper/build/classes:build/classes:org:jars/*",
+            "java", "-cp", classpath,
             "java_wrapper.src.io.AlgebraIOWrapper",
             command
         ] + args

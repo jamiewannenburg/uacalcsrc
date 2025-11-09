@@ -8,6 +8,7 @@ import unittest
 import json
 import subprocess
 import os
+import platform
 import uacalc_lib
 
 
@@ -24,8 +25,10 @@ class TestBasicSet(unittest.TestCase):
         if init_elements is not None and command != "new":
             args = args + ["--elements", init_elements]
         
+        separator = ";" if platform.system() == "Windows" else ":"
+        classpath = f"java_wrapper/build/classes{separator}build/classes{separator}org{separator}jars/*"
         cmd = [
-            "java", "-cp", "java_wrapper/build/classes:build/classes:org:jars/*",
+            "java", "-cp", classpath,
             "sublat.BasicSetWrapper", command
         ] + args
         
