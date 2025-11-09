@@ -182,6 +182,19 @@ impl OperationSymbol {
     pub fn identity() -> &'static OperationSymbol {
         &IDENTITY
     }
+    
+    /// Reset the operation symbol counter for a given arity.
+    /// 
+    /// This is primarily used for testing to ensure deterministic behavior
+    /// when comparing with Java implementations that run in fresh processes.
+    /// 
+    /// # Arguments
+    /// * `arity` - The arity whose counter should be reset
+    #[doc(hidden)]
+    pub fn reset_operation_symbol_counter(arity: i32) {
+        let mut map = CURRENT_SYM_INDEX_MAP.lock().unwrap();
+        map.remove(&arity);
+    }
 }
 
 impl std::fmt::Display for OperationSymbol {

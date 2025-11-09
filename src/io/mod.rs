@@ -28,7 +28,7 @@ use crate::util::array_string;
 /// use uacalc::io::AlgebraWriter;
 /// use uacalc::alg::{SmallAlgebra, BasicAlgebra, Algebra};
 /// use std::collections::HashSet;
-/// use std::fs::File;
+/// use std::fs;
 /// 
 /// // Create a small algebra
 /// let alg = Box::new(BasicAlgebra::new(
@@ -36,6 +36,9 @@ use crate::util::array_string;
 ///     HashSet::from([0, 1, 2]),
 ///     Vec::new()
 /// )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+/// 
+/// // Create directory if it doesn't exist
+/// fs::create_dir_all("tests/.scratch").unwrap();
 /// 
 /// // Write to file
 /// let mut writer = AlgebraWriter::new_with_file(alg, "tests/.scratch/output.xml").unwrap();
@@ -100,12 +103,16 @@ impl AlgebraWriter {
     /// use uacalc::io::AlgebraWriter;
     /// use uacalc::alg::{SmallAlgebra, BasicAlgebra, Algebra};
     /// use std::collections::HashSet;
+    /// use std::fs;
     /// 
     /// let alg = Box::new(BasicAlgebra::new(
     ///     "example".to_string(),
     ///     HashSet::from([0, 1]),
     ///     Vec::new()
     /// )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+    /// 
+    /// // Create directory if it doesn't exist
+    /// fs::create_dir_all("tests/.scratch").unwrap();
     /// 
     /// let writer = AlgebraWriter::new_with_file(alg, "tests/.scratch/output.xml").unwrap();
     /// ```
@@ -130,12 +137,16 @@ impl AlgebraWriter {
     /// use uacalc::io::AlgebraWriter;
     /// use uacalc::alg::{SmallAlgebra, BasicAlgebra, Algebra};
     /// use std::collections::HashSet;
+    /// use std::fs;
     /// 
     /// let alg = Box::new(BasicAlgebra::new(
     ///     "example".to_string(),
     ///     HashSet::from([0, 1]),
     ///     Vec::new()
     /// )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+    /// 
+    /// // Create directory if it doesn't exist
+    /// fs::create_dir_all("tests/.scratch").unwrap();
     /// 
     /// let mut writer = AlgebraWriter::new_with_file(alg, "tests/.scratch/output.xml").unwrap();
     /// writer.write_algebra_xml().unwrap();

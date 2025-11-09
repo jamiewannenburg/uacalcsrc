@@ -170,11 +170,21 @@ mod subalgebra_lattice_tests {
         assert_eq!(generated.size(), 3);
     }
     
+    fn get_classpath_separator() -> &'static str {
+        if cfg!(target_os = "windows") {
+            ";"
+        } else {
+            ":"
+        }
+    }
+
     #[test]
     fn test_java_wrapper_available() {
         // Test that the Java wrapper can be invoked
+        let sep = get_classpath_separator();
+        let classpath = format!("java_wrapper/build/classes{}build/classes{}org{}jars/*", sep, sep, sep);
         let output = std::process::Command::new("java")
-            .args(&["-cp", "java_wrapper/build/classes:build/classes:org:jars/*",
+            .args(&["-cp", &classpath,
                    "java_wrapper.src.alg.sublat.SubalgebraLatticeWrapper",
                    "help"])
             .output()
@@ -186,8 +196,10 @@ mod subalgebra_lattice_tests {
     
     #[test]
     fn test_java_wrapper_new() {
+        let sep = get_classpath_separator();
+        let classpath = format!("java_wrapper/build/classes{}build/classes{}org{}jars/*", sep, sep, sep);
         let output = std::process::Command::new("java")
-            .args(&["-cp", "java_wrapper/build/classes:build/classes:org:jars/*",
+            .args(&["-cp", &classpath,
                    "java_wrapper.src.alg.sublat.SubalgebraLatticeWrapper",
                    "new", "--algebra", "resources/algebras/cyclic3.ua"])
             .output()
@@ -201,8 +213,10 @@ mod subalgebra_lattice_tests {
     
     #[test]
     fn test_java_wrapper_no_duplicates() {
+        let sep = get_classpath_separator();
+        let classpath = format!("java_wrapper/build/classes{}build/classes{}org{}jars/*", sep, sep, sep);
         let output = std::process::Command::new("java")
-            .args(&["-cp", "java_wrapper/build/classes:build/classes:org:jars/*",
+            .args(&["-cp", &classpath,
                    "java_wrapper.src.alg.sublat.SubalgebraLatticeWrapper",
                    "no_duplicates", "--list", "1,2,2,3,3,3"])
             .output()

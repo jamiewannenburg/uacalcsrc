@@ -424,6 +424,10 @@ fn test_operation_symbol_comprehensive() {
         "java_wrapper.src.alg.op.OperationSymbolWrapper",
         ["test"],
         || {
+            // Reset the counter for arity 2 to ensure deterministic behavior
+            // This matches the Java side which runs in a fresh process
+            OperationSymbol::reset_operation_symbol_counter(2);
+            
             // Test basic creation
             let sym1 = OperationSymbol::new("f", 2, false);
             

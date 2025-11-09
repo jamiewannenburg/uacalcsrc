@@ -260,30 +260,76 @@ pub fn compare_outputs(
     }
 }
 
+/// Normalize checkmark characters in JSON values to handle Windows encoding issues.
+/// On Windows, checkmarks (✓) from Java output may be read as question marks (?).
+/// This function normalizes both to a common value for comparison.
+fn normalize_checkmarks(value: &Value) -> Value {
+    match value {
+        Value::String(s) => {
+            // Normalize checkmarks and question marks in test result strings
+            // On Windows, checkmarks (✓) from Java output may be read as question marks (?)
+            // We normalize both to "OK" when they appear at the start of test result strings
+            let normalized = if s.starts_with('✓') || s.starts_with('✔') {
+                // Replace leading checkmark with "OK"
+                // Use char-based slicing to handle multi-byte UTF-8 characters
+                let rest: String = s.chars().skip(1).collect();
+                if rest.is_empty() {
+                    "OK".to_string()
+                } else {
+                    format!("OK{}", rest)
+                }
+            } else if s.starts_with('?') && s.len() > 1 && s.chars().nth(1) == Some(' ') {
+                // Replace leading '?' (corrupted checkmark) with "OK"
+                // '?' is a single-byte character, so byte indexing is safe
+                format!("OK{}", &s[1..])
+            } else {
+                s.clone()
+            }
+            .replace('✗', "FAIL");
+            Value::String(normalized)
+        }
+        Value::Array(arr) => {
+            Value::Array(arr.iter().map(normalize_checkmarks).collect())
+        }
+        Value::Object(obj) => {
+            let mut normalized_obj = serde_json::Map::new();
+            for (k, v) in obj {
+                normalized_obj.insert(k.clone(), normalize_checkmarks(v));
+            }
+            Value::Object(normalized_obj)
+        }
+        _ => value.clone(),
+    }
+}
+
 /// Compare JSON outputs with optional numerical tolerance.
 fn compare_json_outputs(
     rust_json: &Value,
     java_json: &Value,
     tolerance: Option<f64>,
 ) -> TestResult<()> {
-    if rust_json == java_json {
+    // Normalize checkmarks before comparison to handle Windows encoding issues
+    let normalized_rust = normalize_checkmarks(rust_json);
+    let normalized_java = normalize_checkmarks(java_json);
+    
+    if normalized_rust == normalized_java {
         return Ok(());
     }
     
     // If tolerance is specified, try numerical comparison
     if let Some(tol) = tolerance {
-        // Try direct numeric comparison first
+        // Try direct numeric comparison first (on normalized values)
         if let (Some(rust_num), Some(java_num)) = (
-            rust_json.as_f64(),
-            java_json.as_f64(),
+            normalized_rust.as_f64(),
+            normalized_java.as_f64(),
         ) {
             if (rust_num - java_num).abs() <= tol {
                 return Ok(());
             }
         }
         
-        // Try comparing numeric fields in objects
-        if let (Some(rust_obj), Some(java_obj)) = (rust_json.as_object(), java_json.as_object()) {
+        // Try comparing numeric fields in objects (on normalized values)
+        if let (Some(rust_obj), Some(java_obj)) = (normalized_rust.as_object(), normalized_java.as_object()) {
             if rust_obj.len() == java_obj.len() {
                 let mut all_numeric_fields_match = true;
                 for (key, rust_val) in rust_obj {
@@ -311,8 +357,8 @@ fn compare_json_outputs(
     
     Err(TestError::ComparisonError(format!(
         "JSON outputs differ:\nRust: {}\nJava: {}",
-        serde_json::to_string_pretty(rust_json).unwrap_or_default(),
-        serde_json::to_string_pretty(java_json).unwrap_or_default()
+        serde_json::to_string_pretty(&normalized_rust).unwrap_or_default(),
+        serde_json::to_string_pretty(&normalized_java).unwrap_or_default()
     )))
 }
 
