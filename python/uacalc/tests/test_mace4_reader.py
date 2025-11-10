@@ -90,24 +90,25 @@ class TestMace4Reader(unittest.TestCase):
         Mace4Reader = uacalc_lib.io.Mace4Reader
     
         # Use the real Mace4 file which contains multiple algebras
-        reader = Mace4Reader.new_from_file("resources/mace4/KR-8.model")
-        algebras = reader.parse_algebra_list_from_file("resources/mace4/KR-8.model")
+        algebras = Mace4Reader.parse_algebra_list_from_file("resources/mace4/KR-8-expl.model")
+        algebras = list(algebras)
+        self.assertGreaterEqual(len(algebras), 2)  # KR-8-expl.model contains at least 2 algebras
     
-        self.assertGreater(len(algebras), 1)  # KR-8.model contains multiple algebras
-    
-        # Check first algebra
-        self.assertEqual(algebras[0].name(), "model1")
-        self.assertEqual(algebras[0].cardinality(), 8)
-        operations = algebras[0].operations()
-        self.assertEqual(len(operations), 6)
-        # Check that operations are Operation objects (IntOperation or BasicOperation)
-        for op in operations:
-            # Operations should have arity() and symbol() methods
-            self.assertTrue(hasattr(op, 'arity'))
-            self.assertTrue(hasattr(op, 'symbol'))
-            # Check that we can access name and arity
-            self.assertIsInstance(op.symbol().name(), str)  # name
-            self.assertIsInstance(op.arity(), int)  # arity
+        # Check algebras
+        for alg in algebras:
+            # Names should start with "model" (e.g., "model1", "model3")
+            self.assertTrue(alg.name().startswith("model"), f"Expected name to start with 'model', got '{alg.name()}'")
+            self.assertEqual(alg.cardinality(), 8)
+            operations = alg.operations()
+            self.assertEqual(len(operations), 6)
+            # Check that operations are Operation objects (IntOperation or BasicOperation)
+            for op in operations:
+                # Operations should have arity() and symbol() methods
+                self.assertTrue(hasattr(op, 'arity'))
+                self.assertTrue(hasattr(op, 'symbol'))
+                # Check that we can access name and arity
+                self.assertIsInstance(op.symbol().name(), str)  # name
+                self.assertIsInstance(op.arity(), int)  # arity
     
     def test_parse_algebra_error_handling(self):
         """Test error handling with invalid input."""

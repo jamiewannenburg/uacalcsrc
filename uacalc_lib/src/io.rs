@@ -2,8 +2,71 @@ use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
 use std::fs::File;
 use std::path::Path;
+use std::cell::RefCell;
 use uacalc::alg::SmallAlgebra;
 use crate::alg::PyBasicAlgebra;
+
+/// Python iterator for parsing algebras from a Mace4 file lazily
+#[pyclass(unsendable)]
+pub struct PyMace4AlgebraIterator {
+    file_path: String,
+    reader: RefCell<Option<uacalc::io::Mace4Reader>>,
+}
+
+#[pymethods]
+impl PyMace4AlgebraIterator {
+    fn __iter__(slf: PyRef<Self>) -> PyRef<Self> {
+        slf
+    }
+    
+    fn __next__(&mut self, py: Python) -> PyResult<Option<PyBasicAlgebra>> {
+        let mut reader_opt = self.reader.borrow_mut();
+        
+        // Lazy initialization: create reader on first call
+        if reader_opt.is_none() {
+            let file = File::open(&self.file_path)
+                .map_err(|e| PyValueError::new_err(format!("Failed to open file {}: {}", self.file_path, e)))?;
+            
+            match uacalc::io::Mace4Reader::new_safe(Box::new(file)) {
+                Ok(reader) => {
+                    *reader_opt = Some(reader);
+                }
+                Err(e) => return Err(PyValueError::new_err(e)),
+            }
+        }
+        
+        // Parse the next algebra
+        if let Some(ref mut reader) = *reader_opt {
+            match reader.parse_algebra() {
+                Ok(Some(algebra)) => {
+                    let name = algebra.name().to_string();
+                    let cardinality = algebra.cardinality();
+                    let operations: Vec<Box<dyn uacalc::alg::op::Operation>> = algebra.get_operations_ref()
+                        .iter()
+                        .map(|op| op.clone_box())
+                        .collect();
+                    
+                    let universe: std::collections::HashSet<i32> = (0..cardinality).collect();
+                    let basic_alg = uacalc::alg::small_algebra::BasicAlgebra::new(name, universe, operations);
+                    Ok(Some(PyBasicAlgebra::from_inner(basic_alg)))
+                }
+                Ok(None) => Ok(None),
+                Err(e) => Err(PyValueError::new_err(e.message().to_string())),
+            }
+        } else {
+            Ok(None)
+        }
+    }
+}
+
+impl PyMace4AlgebraIterator {
+    fn new(file_path: String) -> Self {
+        Self {
+            file_path,
+            reader: RefCell::new(None),
+        }
+    }
+}
 
 /// Python wrapper for Mace4Reader
 #[pyclass]
@@ -83,35 +146,10 @@ impl PyMace4Reader {
         }
     }
     
-    /// Parse a list of algebras from a file path
-    fn parse_algebra_list_from_file(&self, file_path: String) -> PyResult<Vec<PyBasicAlgebra>> {
-        let file = File::open(&file_path)
-            .map_err(|e| PyValueError::new_err(format!("Failed to open file {}: {}", file_path, e)))?;
-        
-        match uacalc::io::Mace4Reader::new_safe(Box::new(file)) {
-            Ok(mut reader) => {
-                match reader.parse_algebra_list() {
-                    Ok(algebras) => {
-                        let mut result = Vec::new();
-                        for algebra in algebras {
-                            let name = algebra.name().to_string();
-                            let cardinality = algebra.cardinality();
-                            let operations: Vec<Box<dyn uacalc::alg::op::Operation>> = algebra.get_operations_ref()
-                            .iter()
-                            .map(|op| op.clone_box())
-                            .collect();
-                            
-                            let universe: std::collections::HashSet<i32> = (0..cardinality).collect();
-                            let basic_alg = uacalc::alg::small_algebra::BasicAlgebra::new(name, universe, operations);
-                            result.push(PyBasicAlgebra::from_inner(basic_alg));
-                        }
-                        Ok(result)
-                    }
-                    Err(e) => Err(PyValueError::new_err(e.message().to_string())),
-                }
-            }
-            Err(e) => Err(PyValueError::new_err(e)),
-        }
+    /// Parse a list of algebras from a file path, yielding them lazily
+    #[staticmethod]
+    fn parse_algebra_list_from_file(file_path: String) -> PyResult<PyMace4AlgebraIterator> {
+        Ok(PyMace4AlgebraIterator::new(file_path))
     }
     
     /// Parse a list of algebras from input data

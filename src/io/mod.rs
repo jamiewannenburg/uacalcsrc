@@ -1423,7 +1423,15 @@ impl Mace4Reader {
                 self.index = 0;
             }
             Ok(_) => {
-                self.line = Some(line.trim_end().to_string());
+                // Strip comments (everything after %)
+                let trimmed = line.trim_end();
+                let comment_pos = trimmed.find('%');
+                let cleaned = if let Some(pos) = comment_pos {
+                    trimmed[..pos].trim_end()
+                } else {
+                    trimmed
+                };
+                self.line = Some(cleaned.to_string());
                 self.lineno += 1;
                 self.index = 0;
             }
