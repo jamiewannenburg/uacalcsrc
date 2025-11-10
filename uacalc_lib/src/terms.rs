@@ -104,6 +104,45 @@ impl PyVariableImp {
             .map_err(|e| PyValueError::new_err(e))
     }
     
+    /// Returns the interpretation of this term as an operation.
+    /// 
+    /// The interpretation is the operation on the algebra that corresponds to this term.
+    /// 
+    /// # Arguments
+    /// * `algebra` - The algebra for interpretation
+    /// * `varlist` - The ordered list of variable names
+    /// * `use_all` - If true, use all variables in varlist regardless of occurrence
+    /// 
+    /// # Returns
+    /// An IntOperation that interprets this term
+    fn interpretation(
+        &self,
+        algebra: &PyBasicAlgebra,
+        varlist: Vec<String>,
+        use_all: bool,
+    ) -> PyResult<crate::alg::op::int_operation::PyIntOperation> {
+        use std::sync::Arc;
+        use uacalc::alg::op::IntOperation;
+        
+        let alg_arc: Arc<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>> = 
+            Arc::new(algebra.inner.clone());
+        
+        let op = self.inner.interpretation(alg_arc, &varlist, use_all)
+            .map_err(|e| PyValueError::new_err(e))?;
+        
+        // Extract table and symbol from the operation to create PyIntOperation
+        let table = op.get_table()
+            .ok_or_else(|| PyValueError::new_err("Operation has no table"))?
+            .to_vec();
+        let symbol = op.symbol().clone();
+        let set_size = op.get_set_size();
+        
+        let int_op = IntOperation::new(symbol, set_size, table)
+            .map_err(|e| PyValueError::new_err(e))?;
+        
+        Ok(crate::alg::op::int_operation::PyIntOperation { inner: int_op })
+    }
+    
     /// Python string representation
     fn __str__(&self) -> String {
         format!("{}", self.inner)
@@ -228,6 +267,45 @@ impl PyNonVariableTerm {
     fn int_eval(&self, algebra: &PyBasicAlgebra, var_map: HashMap<String, i32>) -> PyResult<i32> {
         self.inner.int_eval(&algebra.inner, &var_map)
             .map_err(|e| PyValueError::new_err(e))
+    }
+    
+    /// Returns the interpretation of this term as an operation.
+    /// 
+    /// The interpretation is the operation on the algebra that corresponds to this term.
+    /// 
+    /// # Arguments
+    /// * `algebra` - The algebra for interpretation
+    /// * `varlist` - The ordered list of variable names
+    /// * `use_all` - If true, use all variables in varlist regardless of occurrence
+    /// 
+    /// # Returns
+    /// An IntOperation that interprets this term
+    fn interpretation(
+        &self,
+        algebra: &PyBasicAlgebra,
+        varlist: Vec<String>,
+        use_all: bool,
+    ) -> PyResult<crate::alg::op::int_operation::PyIntOperation> {
+        use std::sync::Arc;
+        use uacalc::alg::op::IntOperation;
+        
+        let alg_arc: Arc<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>> = 
+            Arc::new(algebra.inner.clone());
+        
+        let op = self.inner.interpretation(alg_arc, &varlist, use_all)
+            .map_err(|e| PyValueError::new_err(e))?;
+        
+        // Extract table and symbol from the operation to create PyIntOperation
+        let table = op.get_table()
+            .ok_or_else(|| PyValueError::new_err("Operation has no table"))?
+            .to_vec();
+        let symbol = op.symbol().clone();
+        let set_size = op.get_set_size();
+        
+        let int_op = IntOperation::new(symbol, set_size, table)
+            .map_err(|e| PyValueError::new_err(e))?;
+        
+        Ok(crate::alg::op::int_operation::PyIntOperation { inner: int_op })
     }
     
     /// Python string representation

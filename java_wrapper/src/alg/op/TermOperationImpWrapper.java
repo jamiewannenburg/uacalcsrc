@@ -82,6 +82,18 @@ public class TermOperationImpWrapper extends WrapperBase {
                 handleTest(options);
                 break;
                 
+            case "create_from_term":
+                handleCreateFromTerm(options);
+                break;
+                
+            case "get_table":
+                handleGetTable(options);
+                break;
+                
+            case "value_at":
+                handleValueAt(options);
+                break;
+                
             default:
                 handleError("Unknown command: " + command, null);
         }
@@ -191,11 +203,10 @@ public class TermOperationImpWrapper extends WrapperBase {
     
     /**
      * Evaluate the term operation at given arguments.
-     * Args: --algebra_path <path> --var <name> --args <comma-separated-ints>
+     * Args: --algebra_path <path> [--var <name> | --term <term_string> --vars <vars>] --args <comma-separated-ints>
      */
     private void handleIntValueAt(Map<String, String> options) throws Exception {
         String algebraPath = getRequiredArg(options, "algebra_path");
-        String varName = getRequiredArg(options, "var");
         String argsStr = getRequiredArg(options, "args");
         
         // Parse arguments
@@ -205,15 +216,34 @@ public class TermOperationImpWrapper extends WrapperBase {
             args[i] = Integer.parseInt(argStrs[i].trim());
         }
         
-        // Load the algebra and create term operation
+        // Load the algebra
         AlgebraReader reader = new AlgebraReader(algebraPath);
         SmallAlgebra alg = (SmallAlgebra) reader.readAlgebraFile();
         
-        Variable var = new VariableImp(varName);
+        Term term;
         List<Variable> variables = new ArrayList<>();
-        variables.add(var);
         
-        TermOperationImp termOp = new TermOperationImp(var, variables, alg);
+        // Check if using term string or simple variable
+        if (options.containsKey("term") && options.containsKey("vars")) {
+            // Use term string
+            String termStr = getRequiredArg(options, "term");
+            String varsStr = getRequiredArg(options, "vars");
+            
+            term = Terms.stringToTerm(termStr);
+            
+            String[] varNames = varsStr.split(",");
+            for (String varName : varNames) {
+                variables.add(new VariableImp(varName.trim()));
+            }
+        } else {
+            // Use simple variable
+            String varName = getRequiredArg(options, "var");
+            Variable var = new VariableImp(varName);
+            variables.add(var);
+            term = var;
+        }
+        
+        TermOperationImp termOp = new TermOperationImp(term, variables, alg);
         
         // Evaluate
         int value = termOp.intValueAt(args);
@@ -356,14 +386,159 @@ public class TermOperationImpWrapper extends WrapperBase {
     }
     
     /**
+     * Create TermOperationImp from a term string (supports NonVariableTerm).
+     * Args: --algebra_path <path> --term <term_string> --vars <comma-separated-vars>
+     */
+    private void handleCreateFromTerm(Map<String, String> options) throws Exception {
+        String algebraPath = getRequiredArg(options, "algebra_path");
+        String termStr = getRequiredArg(options, "term");
+        String varsStr = getRequiredArg(options, "vars");
+        
+        // Load the algebra
+        AlgebraReader reader = new AlgebraReader(algebraPath);
+        SmallAlgebra alg = (SmallAlgebra) reader.readAlgebraFile();
+        
+        // Parse term string
+        Term term = Terms.stringToTerm(termStr);
+        
+        // Parse variable names
+        String[] varNames = varsStr.split(",");
+        List<Variable> variables = new ArrayList<>();
+        for (String varName : varNames) {
+            variables.add(new VariableImp(varName.trim()));
+        }
+        
+        // Create the term operation
+        TermOperationImp termOp = new TermOperationImp(term, variables, alg);
+        
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("command", "create_from_term");
+        result.put("algebra_path", algebraPath);
+        result.put("term_string", termStr);
+        result.put("variables", Arrays.asList(varNames));
+        result.put("arity", termOp.arity());
+        result.put("set_size", termOp.getSetSize());
+        result.put("term_string_result", termOp.toString());
+        result.put("status", "success");
+        
+        handleSuccess(result);
+    }
+    
+    /**
+     * Get the operation table for a term operation.
+     * Args: --algebra_path <path> --term <term_string> --vars <comma-separated-vars>
+     */
+    private void handleGetTable(Map<String, String> options) throws Exception {
+        String algebraPath = getRequiredArg(options, "algebra_path");
+        String termStr = getRequiredArg(options, "term");
+        String varsStr = getRequiredArg(options, "vars");
+        
+        // Load the algebra
+        AlgebraReader reader = new AlgebraReader(algebraPath);
+        SmallAlgebra alg = (SmallAlgebra) reader.readAlgebraFile();
+        
+        // Parse term string
+        Term term = Terms.stringToTerm(termStr);
+        
+        // Parse variable names
+        String[] varNames = varsStr.split(",");
+        List<Variable> variables = new ArrayList<>();
+        for (String varName : varNames) {
+            variables.add(new VariableImp(varName.trim()));
+        }
+        
+        // Create the term operation
+        TermOperationImp termOp = new TermOperationImp(term, variables, alg);
+        
+        // Get the table (force creation if needed)
+        int[] table = termOp.getTable(true);
+        
+        // Convert to list for JSON
+        List<Integer> tableList = new ArrayList<>();
+        if (table != null) {
+            for (int val : table) {
+                tableList.add(val);
+            }
+        }
+        
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("command", "get_table");
+        result.put("term_string", termStr);
+        result.put("arity", termOp.arity());
+        result.put("set_size", termOp.getSetSize());
+        result.put("table_size", tableList.size());
+        result.put("table", tableList);
+        result.put("status", "success");
+        
+        handleSuccess(result);
+    }
+    
+    /**
+     * Evaluate the term operation at given arguments (valueAt method).
+     * Args: --algebra_path <path> --term <term_string> --vars <comma-separated-vars> --args <comma-separated-ints>
+     */
+    private void handleValueAt(Map<String, String> options) throws Exception {
+        String algebraPath = getRequiredArg(options, "algebra_path");
+        String termStr = getRequiredArg(options, "term");
+        String varsStr = getRequiredArg(options, "vars");
+        String argsStr = getRequiredArg(options, "args");
+        
+        // Parse arguments
+        String[] argStrs = argsStr.split(",");
+        List<Integer> argsList = new ArrayList<>();
+        for (String argStr : argStrs) {
+            argsList.add(Integer.parseInt(argStr.trim()));
+        }
+        
+        // Load the algebra
+        AlgebraReader reader = new AlgebraReader(algebraPath);
+        SmallAlgebra alg = (SmallAlgebra) reader.readAlgebraFile();
+        
+        // Parse term string
+        Term term = Terms.stringToTerm(termStr);
+        
+        // Parse variable names
+        String[] varNames = varsStr.split(",");
+        List<Variable> variables = new ArrayList<>();
+        for (String varName : varNames) {
+            variables.add(new VariableImp(varName.trim()));
+        }
+        
+        // Create the term operation
+        TermOperationImp termOp = new TermOperationImp(term, variables, alg);
+        
+        // Convert List<Integer> to int[] for intValueAt
+        int[] argsArray = new int[argsList.size()];
+        for (int i = 0; i < argsList.size(); i++) {
+            argsArray[i] = argsList.get(i);
+        }
+        
+        // Evaluate using intValueAt (more reliable than valueAt)
+        int value = termOp.intValueAt(argsArray);
+        
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("command", "value_at");
+        result.put("term_string", termStr);
+        result.put("args", argsList);
+        result.put("value", value);
+        result.put("value_type", "Integer");
+        result.put("status", "success");
+        
+        handleSuccess(result);
+    }
+    
+    /**
      * Show usage information for the TermOperationImp wrapper.
      */
     private void showUsage() {
         String[] examples = {
             "create_simple --algebra_path resources/algebras/cyclic3.ua --var x",
+            "create_from_term --algebra_path resources/algebras/baker2.ua --term bak(x,y,z) --vars x,y,z",
             "get_term --algebra_path resources/algebras/cyclic3.ua --var x",
             "get_ordered_variables --algebra_path resources/algebras/cyclic3.ua --vars x,y",
             "int_value_at --algebra_path resources/algebras/cyclic3.ua --var x --args 1",
+            "value_at --algebra_path resources/algebras/baker2.ua --term bak(x,y,z) --vars x,y,z --args 0,0,0",
+            "get_table --algebra_path resources/algebras/baker2.ua --term bak(x,y,z) --vars x,y,z",
             "arity --algebra_path resources/algebras/cyclic3.ua --var x",
             "to_string --algebra_path resources/algebras/cyclic3.ua --var x",
             "test [--algebra_path <path>]"
