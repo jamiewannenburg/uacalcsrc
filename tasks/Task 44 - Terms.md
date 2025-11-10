@@ -134,9 +134,15 @@ pub mod terms {
 - **Edge Case Tests**: Invalid inputs, boundary conditions
 
 ### 5. Python Bindings
-- **Module Functions**: Expose as module-level functions
-- **Error Handling**: Convert Rust errors to Python exceptions
-- **Type Safety**: Proper parameter validation
+- ✅ **Module Functions**: All functions exposed as module-level functions in `uacalc_lib.terms`
+- ✅ **Error Handling**: Rust errors converted to Python `ValueError` exceptions
+- ✅ **Type Safety**: Proper parameter validation and type conversion
+- ✅ **Return Types**: `string_to_term` returns `VariableImp` or `NonVariableTerm` based on input
+- ✅ **Testing**: Comprehensive test suite with:
+  - Basic functionality tests
+  - Java wrapper comparison tests
+  - Algebra evaluation tests (baker2, cyclic3)
+  - Edge case and error handling tests
 
 ## Task Status
 
@@ -145,9 +151,18 @@ pub mod terms {
 
 ### Implementation Status
 - ✅ **Rust Implementation**: Complete in `src/terms/mod.rs`
-- ✅ **Python Bindings**: Complete in `uacalc_lib/src/terms.rs`
+- ✅ **Python Bindings**: Complete in `uacalc_lib/src/terms.rs` - All 4 public methods exposed:
+  - `string_to_term(s: String) -> PyResult<PyObject>` - Returns VariableImp or NonVariableTerm
+  - `is_valid_var_string(s: String) -> bool`
+  - `is_valid_op_name_string(s: String) -> bool`
+  - `flatten(term: &Bound<'_, PyAny>) -> PyResult<PyObject>`
 - ✅ **Java Wrapper**: Complete in `java_wrapper/src/terms/TermsWrapper.java`
-- ✅ **Tests**: Comprehensive test suites in both Rust and Python
+- ✅ **Python Tests**: Comprehensive test suite in `python/uacalc/tests/test_terms.py`:
+  - `TestTermsStringToTerm` - Tests parsing with Java comparison
+  - `TestTermsValidation` - Tests validation functions with Java comparison
+  - `TestTermsFlatten` - Tests flattening with Java comparison
+  - `TestTermsWithAlgebra` - Tests with baker2 and other algebras from resources
+- ✅ **Rust Tests**: Unit tests in `src/terms/mod.rs`
 - ✅ **Dependencies**: All required dependencies are available
 
 ### Next Steps
@@ -160,9 +175,45 @@ pub mod terms {
 ### Acceptance Criteria
 - [x] All dependencies implemented and available
 - [x] All public methods translated to Rust
-- [x] Python bindings expose all public methods  
+- [x] Python bindings expose all public methods (`string_to_term`, `is_valid_var_string`, `is_valid_op_name_string`, `flatten`)
 - [x] Java CLI wrapper created with all public methods
 - [x] Rust tests pass with timeouts enabled
-- [x] Python tests pass and match Java output
+- [x] Python tests pass and match Java output:
+  - `TestTermsStringToTerm` - 7 tests including Java comparison
+  - `TestTermsValidation` - 6 tests including Java comparison
+  - `TestTermsFlatten` - 3 tests including Java comparison
+  - `TestTermsWithAlgebra` - 2 tests using baker2 algebra
+- [x] Tests use algebras from resources folder (baker2, cyclic3)
 - [x] Code compiles without warnings
 - [x] Documentation complete
+
+### Test Coverage Details
+
+**Python Test Suite** (`python/uacalc/tests/test_terms.py`):
+- **TestTermsStringToTerm**: Tests `string_to_term` function
+  - Simple variable parsing (`x`)
+  - Compound term parsing (`f(x,y)`)
+  - Nested term parsing (`f(g(x),y)`)
+  - Invalid string error handling
+  - Java wrapper comparison for simple and compound terms
+  - Evaluation with baker2 algebra
+  - Nested term evaluation with baker2
+
+- **TestTermsValidation**: Tests validation functions
+  - `is_valid_var_string` with valid/invalid cases
+  - `is_valid_op_name_string` with valid/invalid cases
+  - Java wrapper comparison for both functions
+
+- **TestTermsFlatten**: Tests `flatten` function
+  - Flattening variables (unchanged)
+  - Flattening simple terms
+  - Java wrapper comparison
+
+- **TestTermsWithAlgebra**: Tests Terms functions with loaded algebras
+  - `string_to_term` with baker2 algebra evaluation
+  - Dynamic operation name extraction from algebra
+
+**Java Wrapper Comparison**:
+- All tests include comparison with Java wrapper output
+- JSON-based comparison for structured data
+- Graceful error handling when Java wrapper unavailable

@@ -186,26 +186,16 @@ def make_dots(cardinality, i=2, j=2, values=None):
                 yield val
 
 
-def check_simple(alg):
-    """
-    Check if the algebra is simple.
-    
-    An algebra is simple if it has exactly 2 congruences: the zero (trivial)
-    congruence and the one (full) congruence.
-    
-    Args:
-        alg: BasicAlgebra instance
-        
-    Returns:
-        bool: True if the algebra is simple, False otherwise
-    """
-    # Get the congruence lattice
-    con_lat = alg.con()
-    
-    # An algebra is simple if it has exactly 2 congruences
-    # (the zero congruence and the one congruence)
-    con_cardinality = con_lat.cardinality()
-    return con_cardinality == 2
+def add_arrow_and_meet(alg):
+    """Add arrow and meet operations to the algebra using terms."""
+    Variable = uacalc_lib.terms.VariableImp,
+    meet_term = uacalc_lib.terms.string_to_term('neg(join(neg(x),neg(y)))')
+    meet_op = meet_term.interpretation(alg, [Variable('x'),Variable('y')], True)
+    # meet_op = uacalc_lib.terms.TermOperationImp("meet",meet_term,[Variable('x'),Variable('y')],alg)
+    arrow_term = uacalc_lib.terms.string_to_term('neg(dot(x,neg(y)))')
+    arrow_op = arrow_term.interpretation(alg, [Variable('x'),Variable('y')], True)
+    # arrow_op = uacalc_lib.terms.TermOperationImp("arrow",arrow_term,[Variable('x'),Variable('y')],alg)
+    return alg.add_operation(meet_op).add_operation(arrow_op)
 
 
 def build_and_check_alg(cardinality, values):
@@ -232,6 +222,9 @@ def build_and_check_alg(cardinality, values):
     # Create BasicAlgebra with operations
     BasicAlgebra = uacalc_lib.alg.BasicAlgebra
     alg = BasicAlgebra(alg_name, universe, [alg_join, alg_neg, alg_e, alg_dot])
+
+    # Add arrow and meet operations
+    alg = add_arrow_and_meet(alg)
     
     # Get the congruence lattice and check if the algebra is simple
     con_lat = alg.con()
