@@ -49,11 +49,7 @@ This class depends on:
 - `org.uacalc.alg.SmallAlgebra` (Task 71 - BasicAlgebra)
 - `org.uacalc.terms.*` (Term, Variable, etc.)
 - `org.uacalc.alg.op.AbstractOperation` (Task 11)
-<<<<<<< Current (Your changes)
-- `org.uacalc.alg.op.TermOperation` (Task 25)
-=======
 - `org.uacalc.alg.op.TermOperation` (Task 25) - ✅ **COMPLETED**
->>>>>>> Incoming (Background Agent changes)
 - `org.uacalc.alg.op.Operation` (Task 12)
 
 ### Rust Implementation Strategy
@@ -141,17 +137,6 @@ pub struct TermOperationImp {
 - **Edge Cases**: Test with empty variable lists, null terms, etc.
 
 ### Acceptance Criteria
-<<<<<<< Current (Your changes)
-- [ ] All public methods translated to Rust
-- [ ] Python bindings expose all public methods
-- [ ] Java CLI wrapper created with all public methods
-- [ ] Rust tests pass with timeouts enabled
-- [ ] Python tests pass and match Java output
-- [ ] Code compiles without warnings
-- [ ] Documentation complete
-- [ ] All dependencies properly implemented
-- [ ] Delegation pattern correctly implemented
-=======
 - [x] All public methods translated to Rust
 - [ ] Python bindings expose all public methods (deferred - requires full term interpretation)
 - [ ] Java CLI wrapper created with all public methods (deferred - requires UACalc dependencies)
@@ -199,4 +184,3 @@ pub struct TermOperationImp {
 - Full testing requires the term interpretation system to be complete
 - The core structure is sound and ready for integration when dependencies are fully implemented
 - Java wrapper needs UACalc JAR dependencies to compile and run
->>>>>>> Incoming (Background Agent changes)
