@@ -51,12 +51,13 @@
 ### Current Implementation Status
 ✅ **FULLY IMPLEMENTED** - All dependencies complete and functionality working
 
-**Completion: ~95%**
+**Completion: ~98%**
 - ✅ Core struct with operation symbol and children
 - ✅ All Term trait methods implemented (16 methods)
 - ✅ Evaluation methods work with algebras (recursive)
 - ✅ Comprehensive test suite (38 tests in src/terms/tests.rs)
 - ✅ Python bindings created and working (PyNonVariableTerm)
+- ✅ Python test suite (17 tests in python/uacalc/tests/test_non_variable_term.py)
 - ✅ interpretation() methods implemented using TermOperationImp
 - ✅ substitute() method fully implemented with recursive support
 - ✅ Java wrapper created (TermsWrapper.java)
@@ -118,10 +119,13 @@
 - **Error Tests**: Test error conditions and edge cases
 - **Performance Tests**: Test with large terms and deep nesting
 
-#### 2. Python Tests
-- **API Tests**: Test all methods through Python bindings
-- **Compatibility Tests**: Compare results with Java implementation
-- **Error Handling Tests**: Test error conditions in Python context
+#### 2. Python Tests ✅ **COMPLETED** (2025-01-27)
+- ✅ **API Tests**: Test all methods through Python bindings (17 tests in test_non_variable_term.py)
+- ✅ **Compatibility Tests**: Compare results with Java implementation (baker2 algebra interpretation)
+- ✅ **Error Handling Tests**: Test error conditions in Python context (missing variables)
+- ✅ **Evaluation Tests**: Test eval() and int_eval() with multiple algebras (cyclic2, cyclic3, baker2, n5)
+- ✅ **Nested Term Tests**: Test complex nested term structures and evaluation
+- ✅ **Basic Property Tests**: Test depth, length, variable lists, string representation
 
 #### 3. Java Wrapper Tests
 - **Method Coverage**: Test all 29 public methods through CLI
@@ -172,7 +176,7 @@
 4. ✅ **Add Java wrapper** for testing - COMPLETED
 5. 📊 **Expand test suite** with more complex scenarios - PARTIALLY COMPLETE
 6. ✅ **Enhance Python bindings** to support NonVariableTerm children - COMPLETED
-7. 🔧 **Add comprehensive Python tests** for NonVariableTerm - PENDING
+7. ✅ **Add comprehensive Python tests** for NonVariableTerm - COMPLETED (2025-01-27)
 
 ### Recent Improvements (2025-01-27)
 - ✅ Implemented `interpretation(alg, varlist, use_all)` - evaluates term recursively
@@ -189,6 +193,12 @@
 - ✅ Python bindings support constant terms, variable children, and nested NonVariableTerm children
 - ✅ **Java wrapper created** - TermsWrapper.java provides CLI access to all methods
 - ✅ **Comprehensive test coverage** - 38 Rust tests covering all functionality
+- ✅ **Python tests created** - Comprehensive test suite with 17 tests in `test_non_variable_term.py` (2025-01-27)
+  - Tests basic creation, properties, and string representation
+  - Tests evaluation with multiple algebras (cyclic2, cyclic3, baker2, n5)
+  - Tests nested term structures and evaluation
+  - Tests Java comparison for interpretation (baker2 algebra)
+  - All 17 tests passing
 
 ### Acceptance Criteria (UPDATED 2025-01-27)
 - [x] Core dependencies implemented
@@ -197,7 +207,7 @@
 - [x] ✅ Python bindings expose interpretation methods (via Rust implementation)
 - [x] ✅ Java CLI wrapper created (TermsWrapper.java)
 - [x] Rust tests pass (38 tests)
-- [x] ✅ Python tests ready for execution
+- [x] ✅ Python tests created and passing (17 tests in test_non_variable_term.py)
 - [x] Code compiles without errors
 - [x] Term evaluation works correctly
 - [x] ✅ Term interpretation works via TermOperationImp
