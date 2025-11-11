@@ -184,6 +184,7 @@ pub mod conlat;
 pub mod general_algebra;
 pub mod op;
 pub mod parallel;
+pub mod polin_like_algebra;
 pub mod product_algebra;
 pub mod quotient_algebra;
 pub mod quotient_element;
@@ -216,6 +217,7 @@ pub use small_algebra::{SmallAlgebra, BasicAlgebra, AlgebraType};
 pub use subalgebra::Subalgebra;
 pub use product_algebra::ProductAlgebra;
 pub use quotient_algebra::QuotientAlgebra;
+pub use polin_like_algebra::PolinLikeAlgebra;
 pub use quotient_element::QuotientElement;
 pub use algebra_with_generating_vector::{AlgebraWithGeneratingVector, AlgebraWithGeneratingVectorI32};
 
@@ -1234,9 +1236,7 @@ impl std::fmt::Display for ParameterizedAlgebra {
     }
 }
 
-pub struct PolinLikeAlgebra {
-    // TODO: Implement Polin-like algebra
-}
+// PolinLikeAlgebra is now implemented in polin_like_algebra.rs and re-exported above
 
 /// A power algebra representing the direct power of a SmallAlgebra.
 /// 

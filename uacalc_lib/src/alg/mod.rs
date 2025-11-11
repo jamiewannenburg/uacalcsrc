@@ -10,6 +10,7 @@ pub mod homomorphism;
 pub mod malcev;
 pub mod maltsev_product_decomposition;
 pub mod parameterized_algebra;
+pub mod polin_like_algebra;
 pub mod matrix_power_algebra;
 pub mod power_algebra;
 pub mod product_algebra;
@@ -48,6 +49,7 @@ use crate::alg::matrix_power_algebra::PyMatrixPowerAlgebra;
 use crate::alg::subalgebra::PySubalgebra;
 use crate::alg::reduct_algebra::PyReductAlgebra;
 use crate::alg::unary_terms_monoid::PyUnaryTermsMonoid;
+use crate::alg::polin_like_algebra::PyPolinLikeAlgebra;
 use crate::alg::parameterized_algebra::PyParameterizedAlgebra;
 use crate::alg::maltsev_product_decomposition::PyMaltsevProductDecomposition;
 use crate::alg::general_algebra::PyGeneralAlgebra;
@@ -89,6 +91,7 @@ pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     m.add_class::<PySubalgebra>()?;
     m.add_class::<PyReductAlgebra>()?;
     m.add_class::<PyUnaryTermsMonoid>()?;
+    m.add_class::<PyPolinLikeAlgebra>()?;
     m.add_class::<PyParameterizedAlgebra>()?;
     m.add_class::<PyMaltsevProductDecomposition>()?;
     m.add_class::<PyGeneralAlgebra>()?;
@@ -129,6 +132,7 @@ pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     m.add("Subalgebra", m.getattr("PySubalgebra")?)?;
     m.add("ReductAlgebra", m.getattr("PyReductAlgebra")?)?;
     m.add("UnaryTermsMonoid", m.getattr("PyUnaryTermsMonoid")?)?;
+    m.add("PolinLikeAlgebra", m.getattr("PyPolinLikeAlgebra")?)?;
     m.add("ParameterizedAlgebra", m.getattr("PyParameterizedAlgebra")?)?;
     m.add("MaltsevProductDecomposition", m.getattr("PyMaltsevProductDecomposition")?)?;
     m.add("GeneralAlgebra", m.getattr("PyGeneralAlgebra")?)?;
@@ -142,6 +146,7 @@ pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     module_dict.del_item("PyPool")?;
     module_dict.del_item("PyCloser")?;
     module_dict.del_item("PyCloserTiming")?;
+    module_dict.del_item("PyPolinLikeAlgebra")?;
 
     // Register malcev module-level functions
     malcev::register_malcev_functions(_py, m)?;

@@ -840,6 +840,105 @@ class alg:
     class ProductAlgebra: ...
     class PowerAlgebra: ...
     class MatrixPowerAlgebra: ...
+    
+    class PolinLikeAlgebra:
+        """Python wrapper for PolinLikeAlgebra.
+        
+        A Polin-like algebra constructed from a homomorphism between two algebras.
+        The universe is the disjoint union of the bottom algebra and top algebra,
+        with elements ordered as botAlg elements first, then topAlg elements.
+        """
+        def __init__(
+            self,
+            name: str,
+            top_alg: "alg.BasicAlgebra",
+            bot_alg: "alg.BasicAlgebra",
+            map: Optional["alg.BasicOperation"] = None,
+            top_const_index: int = 0,
+            bot_const_index: int = 0,
+        ) -> None: ...
+        """Create a new PolinLikeAlgebra from two algebras and an optional homomorphism map.
+        
+        Args:
+            name: Name of the algebra
+            top_alg: The top algebra (A in f: A → B)
+            bot_alg: The bottom algebra (B in f: A → B)
+            map: Optional homomorphism map from topAlg to botAlg (None = identity)
+            top_const_index: Index of the top constant
+            bot_const_index: Index of the bottom constant
+            
+        Raises:
+            ValueError: If construction fails
+        """
+        def cardinality(self) -> int: ...
+        """Get the cardinality of this algebra.
+        
+        Returns:
+            The cardinality (size of the universe)
+        """
+        def get_element(self, k: int) -> int: ...
+        """Get the element at the given index.
+        
+        Args:
+            k: Index of the element
+            
+        Returns:
+            The element at index k, or -1 if out of bounds
+        """
+        def element_index(self, elem: int) -> int: ...
+        """Get the index of an element in the universe.
+        
+        Args:
+            elem: The element to find
+            
+        Returns:
+            The index of the element, or -1 if not found
+        """
+        def algebra_type(self) -> str: ...
+        """Get the algebra type.
+        
+        Returns:
+            The algebra type ("PolinLike")
+        """
+        def name(self) -> str: ...
+        """Get the name of this algebra.
+        
+        Returns:
+            The name of the algebra
+        """
+        def set_name(self, name: str) -> None: ...
+        """Set the name of this algebra.
+        
+        Args:
+            name: The new name
+        """
+        def top_algebra_name(self) -> str: ...
+        """Get the top algebra name.
+        
+        Returns:
+            Name of the top algebra
+        """
+        def bottom_algebra_name(self) -> str: ...
+        """Get the bottom algebra name.
+        
+        Returns:
+            Name of the bottom algebra
+        """
+        def con(self) -> "alg.CongruenceLattice": ...
+        """Get the congruence lattice (lazy initialization).
+        
+        Returns:
+            The congruence lattice
+        """
+        def sub(self) -> "alg.SubalgebraLattice": ...
+        """Get the subalgebra lattice (lazy initialization).
+        
+        Returns:
+            The subalgebra lattice
+        """
+        def __str__(self) -> str: ...
+        def __repr__(self) -> str: ...
+    
     class Subalgebra: ...
     class ReductAlgebra: ...
     class UnaryTermsMonoid: ...
