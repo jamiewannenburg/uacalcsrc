@@ -74,7 +74,7 @@ def extract_names_from_pyi() -> Dict[str, Set[str]]:
         match = module_pattern.match(line)
         if match:
             module_name = match.group(1)
-            if module_name in ['element', 'types', 'example', 'terms', 'lat', 'io', 'eq', 'group', 'fplat', 'alg', 'util']:
+            if module_name in ['element', 'types', 'example', 'terms', 'lat', 'io', 'eq', 'group', 'fplat', 'alg', 'util', 'general_algebra', 'parallel']:
                 current_module = module_name
                 exports[current_module] = set()
             continue

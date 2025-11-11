@@ -8,9 +8,160 @@ from typing_extensions import Protocol
 
 # Type aliases for common UACalc types
 Element = Union[int, str, Tuple[Any, ...]]
-Operation = Any  # TODO: Define proper Operation type
-Algebra = Any    # TODO: Define proper Algebra type
-Lattice = Any    # TODO: Define proper Lattice type
+
+# ============================================================================
+# PROTOCOL DEFINITIONS
+# ============================================================================
+
+class Operation(Protocol):
+    """Protocol for operation types in universal algebra.
+    
+    This protocol defines the interface that all operations must implement.
+    Operations are maps from the direct product of some number (arity) of a set
+    to the set itself.
+    """
+    def arity(self) -> int: ...
+    """Returns the arity (number of arguments) of this operation."""
+    
+    def get_set_size(self) -> int: ...
+    """Returns the size of the set upon which the operation is defined."""
+    
+    def symbol(self) -> "alg.OperationSymbol": ...
+    """Returns the operation symbol for this operation."""
+    
+    def int_value_at(self, args: List[int]) -> int: ...
+    """Evaluates the operation at the given integer arguments.
+    
+    Args:
+        args: List of integer arguments
+        
+    Returns:
+        The result of the operation as an integer
+    """
+    
+    def get_table(self) -> Optional[List[int]]: ...
+    """Returns the operation table if available, None otherwise.
+    
+    Returns:
+        The operation table as a list of integers, or None if not available
+    """
+
+class Algebra(Protocol):
+    """Protocol for algebra types in universal algebra.
+    
+    An algebra consists of a universe (set) and a collection of operations
+    defined on that set. This protocol defines the interface that all algebras
+    must implement.
+    """
+    def cardinality(self) -> int: ...
+    """Returns the cardinality of the algebra.
+    
+    For finite algebras, returns the actual size. For infinite or unknown
+    cardinalities, returns a negative constant.
+    
+    Returns:
+        Positive integer for finite algebras, negative constant otherwise
+    """
+    
+    def input_size(self) -> int: ...
+    """Returns the input size of the algebra.
+    
+    This is the sum of the cardinality raised to the power of each
+    operation's arity. Returns -1 if the size exceeds maximum integer value.
+    
+    Returns:
+        The input size or -1 if it exceeds maximum integer value
+    """
+    
+    def is_unary(self) -> bool: ...
+    """Checks if this algebra is unary (has only unary operations).
+    
+    Returns:
+        True if all operations have arity 1, False otherwise
+    """
+    
+    def name(self) -> str: ...
+    """Returns the name of this algebra."""
+    
+    def operations(self) -> List[Operation]: ...
+    """Returns a list of all operations in this algebra.
+    
+    Returns:
+        List of Operation instances
+    """
+
+class Lattice(Protocol):
+    """Protocol for lattice types.
+    
+    A lattice is a partially ordered set with join and meet operations.
+    This protocol extends Algebra and defines the fundamental operations
+    of lattice theory.
+    """
+    def join_irreducibles(self) -> Optional[List[Any]]: ...
+    """Returns the list of join irreducible elements, if available.
+    
+    A join irreducible element is one that cannot be expressed as the join
+    of two strictly smaller elements.
+    
+    Returns:
+        List of join irreducible elements, or None if not available
+    """
+    
+    def meet_irreducibles(self) -> Optional[List[Any]]: ...
+    """Returns the list of meet irreducible elements, if available.
+    
+    A meet irreducible element is one that cannot be expressed as the meet
+    of two strictly larger elements.
+    
+    Returns:
+        List of meet irreducible elements, or None if not available
+    """
+    
+    def atoms(self) -> Optional[List[Any]]: ...
+    """Returns the list of atoms (minimal non-zero elements), if available.
+    
+    An atom is an element that covers only the bottom element (if it exists).
+    
+    Returns:
+        List of atoms, or None if not available
+    """
+    
+    def coatoms(self) -> Optional[List[Any]]: ...
+    """Returns the list of coatoms (maximal non-one elements), if available.
+    
+    A coatom is an element that is covered only by the top element (if it exists).
+    
+    Returns:
+        List of coatoms, or None if not available
+    """
+    
+    def join(self, a: Any, b: Any) -> Any: ...
+    """Returns the join (least upper bound) of two elements.
+    
+    The join operation finds the smallest element that is greater than
+    or equal to both a and b.
+    
+    Args:
+        a: First element
+        b: Second element
+        
+    Returns:
+        The join of a and b
+    """
+    
+    def meet(self, a: Any, b: Any) -> Any: ...
+    """Returns the meet (greatest lower bound) of two elements.
+    
+    The meet operation finds the largest element that is less than
+    or equal to both a and b.
+    
+    Args:
+        a: First element
+        b: Second element
+        
+    Returns:
+        The meet of a and b
+    """
 
 # Module-level exports
 __version__: str
@@ -449,35 +600,21 @@ class eq:
 
 class group:
     """Group module for group theory operations."""
+    pass
+
+# ============================================================================
+# PARALLEL MODULE
+# ============================================================================
+
+class parallel:
+    """Parallel module for parallel processing utilities."""
     
-    class PermutationGroup:
-        """Python wrapper for PermutationGroup."""
-        def __init__(self, name: str, generators: List[List[int]]) -> None: ...
+    class Pool:
+        """Python wrapper for Pool."""
         @staticmethod
-        def new_with_universe(
-            name: str,
-            generators: List[List[int]],
-            universe: List[List[int]],
-        ) -> "group.PermutationGroup": ...
+        def fj_pool() -> str: ...
         @staticmethod
-        def new_safe(name: str, generators: List[List[int]]) -> "group.PermutationGroup": ...
-        @staticmethod
-        def new_with_universe_safe(
-            name: str,
-            generators: List[List[int]],
-            universe: List[List[int]],
-        ) -> "group.PermutationGroup": ...
-        @staticmethod
-        def prod(p1: List[int], p2: List[int]) -> List[int]: ...
-        @staticmethod
-        def inv(p: List[int]) -> List[int]: ...
-        @staticmethod
-        def id(set_size: int) -> List[int]: ...
-        def get_name(self) -> str: ...
-        def get_generators(self) -> List[List[int]]: ...
-        def get_universe_list(self) -> Optional[List[List[int]]]: ...
-        def get_underlying_set_size(self) -> int: ...
-        def get_identity(self) -> Optional[List[int]]: ...
+        def is_initialized() -> bool: ...
         def __str__(self) -> str: ...
         def __repr__(self) -> str: ...
 
@@ -502,6 +639,43 @@ class fplat:
         def leq(self, a: "terms.VariableImp", b: "terms.VariableImp") -> bool: ...
         def __str__(self) -> str: ...
         def __repr__(self) -> str: ...
+
+# ============================================================================
+# GENERAL_ALGEBRA MODULE
+# ============================================================================
+
+class general_algebra:
+    """General algebra module for algebras with arbitrary universe elements."""
+    
+    class GeneralAlgebra:
+        """Python wrapper for GeneralAlgebra."""
+        def __init__(
+            self,
+            name: str,
+            universe: List[Any],
+            operations: Optional[List[Any]] = None,
+        ) -> None: ...
+        @staticmethod
+        def with_name(name: str) -> "general_algebra.GeneralAlgebra": ...
+        def name(self) -> str: ...
+        def set_name(self, name: str) -> None: ...
+        def description(self) -> Optional[str]: ...
+        def set_description(self, desc: Optional[str]) -> None: ...
+        def cardinality(self) -> int: ...
+        def input_size(self) -> int: ...
+        def is_unary(self) -> bool: ...
+        def is_idempotent(self) -> bool: ...
+        def is_total(self) -> bool: ...
+        def monitoring(self) -> bool: ...
+        def get_universe(self) -> List[Any]: ...
+        def get_operations(self) -> List[Any]: ...
+        def add_operation(self, operation: Any) -> None: ...
+        def get_operation(self, index: int) -> Any: ...
+        def operations_count(self) -> int: ...
+        def __str__(self) -> str: ...
+        def __repr__(self) -> str: ...
+        def __eq__(self, other: object) -> bool: ...
+        def __hash__(self) -> int: ...
 
 # ============================================================================
 # ALG MODULE
