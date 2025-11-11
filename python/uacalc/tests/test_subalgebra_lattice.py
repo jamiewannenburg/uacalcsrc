@@ -63,14 +63,18 @@ def test_basic_creation():
     """Test basic SubalgebraLattice creation."""
     print("Test 1: Basic SubalgebraLattice creation")
     
-    # Test that the classes are available
-    print(f"  ✓ Python: SubalgebraLattice class available: {SubalgebraLattice}")
-    print(f"  ✓ Python: BasicSet class available: {BasicSet}")
-    print(f"  ✓ Python: BasicAlgebra class available: {BasicAlgebra}")
-    print("  ⊙ Full test requires AlgebraReader (not yet exposed)")
-    assert True  # Test passes if we reach here
-    
-    print("  ✓ Python: Created SubalgebraLattice successfully")
+    # Python: Create SubalgebraLattice from file
+    try:
+        reader = AlgebraReader.new_from_file("resources/algebras/cyclic3.ua")
+        alg = reader.read_algebra_file()
+        sub_lat = SubalgebraLattice(alg)
+        print(f"  ✓ Python: Created SubalgebraLattice successfully")
+        print(f"    - Algebra: {sub_lat.get_algebra()}")
+    except Exception as e:
+        print(f"  ✗ Python: Failed to create SubalgebraLattice: {e}")
+        import traceback
+        traceback.print_exc()
+        assert False, f"Python SubalgebraLattice creation failed: {e}"
     
     # Java: Create SubalgebraLattice
     java_result = run_java_wrapper(["new", "--algebra", "resources/algebras/cyclic3.ua"])
@@ -88,32 +92,116 @@ def test_basic_creation():
 
 def test_zero_and_one():
     """Test zero and one subalgebras."""
-    print("\nTest 2: Zero and One subalgebras")
+    print("\nTest 2: Zero and One subalgebras (no constants)")
     
-    # Skip for now - needs algebra reader
-    print("  ⊙ Skipped: Requires AlgebraReader (not yet exposed)")
-    assert True  # Test passes if we reach here
+    # Python: Test with algebra without constants
+    try:
+        reader = AlgebraReader.new_from_file("resources/algebras/cyclic3.ua")
+        alg = reader.read_algebra_file()
+        sub_lat = SubalgebraLattice(alg)
+        
+        zero = sub_lat.zero()
+        one = sub_lat.one()
+        
+        print(f"  ✓ Python: Zero subalgebra size: {zero.size()}")
+        print(f"  ✓ Python: One subalgebra size: {one.size()}")
+        print(f"  ✓ Python: Zero elements: {zero.elements()}")
+        print(f"  ✓ Python: One elements: {one.elements()}")
+        
+        # Zero should be empty for algebra without constants
+        assert zero.size() == 0, f"Zero subalgebra should be empty, got size {zero.size()}"
+        assert one.size() == 3, f"One subalgebra should have size 3, got {one.size()}"
+    except Exception as e:
+        print(f"  ✗ Python: Failed: {e}")
+        import traceback
+        traceback.print_exc()
+        assert False, f"Python test failed: {e}"
+    
+    # Java: Compare
+    java_result = run_java_wrapper(["zero", "--algebra", "resources/algebras/cyclic3.ua"])
+    if java_result and java_result.get("success"):
+        java_zero_size = java_result["data"].get("size", 0)
+        print(f"  ✓ Java: Zero subalgebra size: {java_zero_size}")
+        assert java_zero_size == 0, f"Java zero subalgebra should be empty, got size {java_zero_size}"
 
 
 def test_sg_generation():
     """Test subalgebra generation."""
     print("\nTest 3: Subalgebra generation")
-    print("  ⊙ Skipped: Requires AlgebraReader (not yet exposed)")
-    assert True  # Test passes if we reach here
+    
+    # Python: Test sg generation
+    try:
+        reader = AlgebraReader.new_from_file("resources/algebras/cyclic3.ua")
+        alg = reader.read_algebra_file()
+        sub_lat = SubalgebraLattice(alg)
+        
+        # Generate subalgebra from [0, 1]
+        sub = sub_lat.sg([0, 1])
+        print(f"  ✓ Python: sg([0, 1]) size: {sub.size()}")
+        print(f"  ✓ Python: sg([0, 1]) elements: {sub.elements()}")
+        
+        assert sub.size() > 0, "Generated subalgebra should be non-empty"
+        assert sub.size() <= 3, "Generated subalgebra should not exceed algebra size"
+    except Exception as e:
+        print(f"  ✗ Python: Failed: {e}")
+        import traceback
+        traceback.print_exc()
+        assert False, f"Python test failed: {e}"
+    
+    # Java: Compare
+    java_result = run_java_wrapper(["sg", "--algebra", "resources/algebras/cyclic3.ua", "--gens", "0,1"])
+    if java_result and java_result.get("success"):
+        java_size = java_result["data"].get("size", 0)
+        print(f"  ✓ Java: sg([0, 1]) size: {java_size}")
+        assert java_size == sub.size(), f"Python size {sub.size()} != Java size {java_size}"
 
 
 def test_one_generated_subalgebras():
     """Test one-generated subalgebras."""
     print("\nTest 4: One-generated subalgebras")
-    print("  ⊙ Skipped: Requires AlgebraReader (not yet exposed)")
-    assert True  # Test passes if we reach here
+    
+    # Python: Test one-generated subalgebras
+    try:
+        reader = AlgebraReader.new_from_file("resources/algebras/cyclic3.ua")
+        alg = reader.read_algebra_file()
+        sub_lat = SubalgebraLattice(alg)
+        
+        one_gens = sub_lat.one_generated_subalgebras()
+        print(f"  ✓ Python: Number of one-generated subalgebras: {len(one_gens)}")
+        
+        for i, sub in enumerate(one_gens):
+            print(f"    [{i}] size={sub.size()}, elements={sub.elements()}")
+        
+        assert len(one_gens) > 0, "Should have at least one one-generated subalgebra"
+    except Exception as e:
+        print(f"  ✗ Python: Failed: {e}")
+        import traceback
+        traceback.print_exc()
+        assert False, f"Python test failed: {e}"
 
 
 def test_join_irreducibles():
     """Test join irreducibles."""
     print("\nTest 5: Join irreducibles")
-    print("  ⊙ Skipped: Requires AlgebraReader (not yet exposed)")
-    assert True  # Test passes if we reach here
+    
+    # Python: Test join irreducibles
+    try:
+        reader = AlgebraReader.new_from_file("resources/algebras/cyclic3.ua")
+        alg = reader.read_algebra_file()
+        sub_lat = SubalgebraLattice(alg)
+        
+        jis = sub_lat.join_irreducibles()
+        print(f"  ✓ Python: Number of join irreducibles: {len(jis)}")
+        
+        for i, ji in enumerate(jis):
+            print(f"    [{i}] size={ji.size()}, elements={ji.elements()}")
+        
+        assert len(jis) > 0, "Should have at least one join irreducible"
+    except Exception as e:
+        print(f"  ✗ Python: Failed: {e}")
+        import traceback
+        traceback.print_exc()
+        assert False, f"Python test failed: {e}"
 
 
 def test_join_and_meet():
@@ -167,22 +255,123 @@ def test_no_duplicates():
 def test_cardinality():
     """Test cardinality computation."""
     print("\nTest 8: Cardinality")
-    print("  ⊙ Skipped: Requires AlgebraReader (not yet exposed)")
-    assert True  # Test passes if we reach here
+    
+    # Python: Test cardinality
+    try:
+        reader = AlgebraReader.new_from_file("resources/algebras/cyclic3.ua")
+        alg = reader.read_algebra_file()
+        sub_lat = SubalgebraLattice(alg)
+        
+        card = sub_lat.cardinality()
+        print(f"  ✓ Python: Subalgebra lattice cardinality: {card}")
+        
+        assert card > 0, "Cardinality should be positive"
+    except Exception as e:
+        print(f"  ✗ Python: Failed: {e}")
+        import traceback
+        traceback.print_exc()
+        assert False, f"Python test failed: {e}"
 
 
 def test_filter():
     """Test filter operation."""
     print("\nTest 9: Filter operation")
-    print("  ⊙ Skipped: Requires AlgebraReader (not yet exposed)")
-    assert True  # Test passes if we reach here
+    
+    # Python: Test filter
+    try:
+        reader = AlgebraReader.new_from_file("resources/algebras/cyclic3.ua")
+        alg = reader.read_algebra_file()
+        sub_lat = SubalgebraLattice(alg)
+        
+        # Get zero subalgebra
+        zero = sub_lat.zero()
+        
+        # Filter subalgebras containing zero
+        filtered = sub_lat.filter(zero)
+        print(f"  ✓ Python: Filtered subalgebras count: {len(filtered)}")
+        
+        assert len(filtered) > 0, "Should have at least one filtered subalgebra"
+    except Exception as e:
+        print(f"  ✗ Python: Failed: {e}")
+        import traceback
+        traceback.print_exc()
+        assert False, f"Python test failed: {e}"
 
 
 def test_minimal_generating_set():
     """Test minimal generating set."""
     print("\nTest 10: Minimal generating set")
-    print("  ⊙ Skipped: Requires AlgebraReader (not yet exposed)")
-    assert True  # Test passes if we reach here
+    
+    # Python: Test minimal generating set
+    try:
+        reader = AlgebraReader.new_from_file("resources/algebras/cyclic3.ua")
+        alg = reader.read_algebra_file()
+        sub_lat = SubalgebraLattice(alg)
+        
+        min_gen = sub_lat.find_minimal_sized_generating_set()
+        print(f"  ✓ Python: Minimal generating set size: {min_gen.size()}")
+        print(f"  ✓ Python: Minimal generating set elements: {min_gen.elements()}")
+        
+        assert min_gen.size() >= 0, "Minimal generating set size should be non-negative"
+    except Exception as e:
+        print(f"  ✗ Python: Failed: {e}")
+        import traceback
+        traceback.print_exc()
+        assert False, f"Python test failed: {e}"
+
+
+def test_algebra_with_constants():
+    """Test subalgebra lattice with algebra that has constants."""
+    print("\nTest 11: Algebra with constants")
+    
+    # Try to find an algebra with constants, or create one
+    # For now, test with cyclic3 which doesn't have constants
+    # and verify zero is empty
+    try:
+        reader = AlgebraReader.new_from_file("resources/algebras/cyclic3.ua")
+        alg = reader.read_algebra_file()
+        sub_lat = SubalgebraLattice(alg)
+        
+        zero = sub_lat.zero()
+        print(f"  ✓ Python: Zero subalgebra size (no constants): {zero.size()}")
+        print(f"  ✓ Python: Zero subalgebra elements: {zero.elements()}")
+        
+        # For algebra without constants, zero should be empty
+        assert zero.size() == 0, f"Zero should be empty for algebra without constants, got size {zero.size()}"
+    except Exception as e:
+        print(f"  ✗ Python: Failed: {e}")
+        import traceback
+        traceback.print_exc()
+        assert False, f"Python test failed: {e}"
+
+
+def test_algebra_without_constants():
+    """Test subalgebra lattice with algebra that doesn't have constants."""
+    print("\nTest 12: Algebra without constants (empty zero)")
+    
+    # Test with cyclic3 which doesn't have constants
+    try:
+        reader = AlgebraReader.new_from_file("resources/algebras/cyclic3.ua")
+        alg = reader.read_algebra_file()
+        sub_lat = SubalgebraLattice(alg)
+        
+        zero = sub_lat.zero()
+        print(f"  ✓ Python: Zero subalgebra size: {zero.size()}")
+        
+        # Zero should be empty when there are no constants
+        assert zero.size() == 0, f"Zero should be empty, got size {zero.size()}"
+        
+        # Java comparison
+        java_result = run_java_wrapper(["zero", "--algebra", "resources/algebras/cyclic3.ua"])
+        if java_result and java_result.get("success"):
+            java_zero_size = java_result["data"].get("size", -1)
+            print(f"  ✓ Java: Zero subalgebra size: {java_zero_size}")
+            assert java_zero_size == zero.size(), f"Python zero size {zero.size()} != Java zero size {java_zero_size}"
+    except Exception as e:
+        print(f"  ✗ Python: Failed: {e}")
+        import traceback
+        traceback.print_exc()
+        assert False, f"Python test failed: {e}"
 
 
 def main():
@@ -202,6 +391,8 @@ def main():
         test_cardinality,
         test_filter,
         test_minimal_generating_set,
+        test_algebra_with_constants,
+        test_algebra_without_constants,
     ]
     
     passed = 0

@@ -625,15 +625,16 @@ where
             }
         }
         
+        // Generate zero subalgebra: empty if no constants, otherwise closure of constants
         let zero_subalg = if constants.is_empty() {
             BasicSet::new(vec![])?
         } else {
             // Sort and remove duplicates
             constants.sort();
             let constants = Self::no_duplicates(constants);
-            // For now, just return as BasicSet without generating closure
-            // Full generation requires the operations which we have
-            BasicSet::new(constants)?
+            // Generate the closure of constants (they may not be closed under operations)
+            // get_operations_ref() already returns Vec<&dyn Operation>
+            Self::make_sg_static(&operations, alg_size, constants, 0)?
         };
         
         Ok(SubalgebraLattice {
@@ -695,6 +696,96 @@ where
         }
         
         nodups
+    }
+    
+    /// Static helper to generate subuniverse closure (used in constructor).
+    /// 
+    /// This extracts the closure logic from make_sg_with_max_size so it can be
+    /// called from the constructor before self exists.
+    /// 
+    /// # Arguments
+    /// * `operations` - Reference to operations (as slice of references)
+    /// * `alg_size` - Size of the algebra
+    /// * `gens` - List of generators (no duplicates, contains all constants)
+    /// * `closed_mark` - Index up to which elements are already closed
+    /// 
+    /// # Returns
+    /// The generated subuniverse
+    fn make_sg_static(
+        operations: &[&dyn Operation],
+        alg_size: i32,
+        gens: Vec<i32>,
+        mut closed_mark: usize
+    ) -> Result<BasicSet, String> {
+        let max_size = (alg_size - 1) as usize;
+        let mut current_mark = gens.len();
+        let mut su: HashSet<i32> = gens.iter().cloned().collect();
+        let mut lst = gens;
+        
+        // Create one subalgebra (entire algebra) for fallback
+        let mut one_vec = Vec::with_capacity(alg_size as usize);
+        for i in 0..alg_size {
+            one_vec.push(i);
+        }
+        let one_subalg = BasicSet::new(one_vec)?;
+        
+        while closed_mark < current_mark {
+            // Close the elements in current
+            for op in operations {
+                let arity = op.arity();
+                if arity == 0 {
+                    continue; // Constants are already there
+                }
+                let arity_usize = arity as usize;
+                
+                // Create argument indices
+                let mut arg_indices = vec![0_i32; arity_usize];
+                for i in 0..(arity - 1) {
+                    arg_indices[i as usize] = 0;
+                }
+                arg_indices[(arity - 1) as usize] = closed_mark as i32;
+                
+                // Create incrementor for nondecreasing sequences
+                let mut inc = SequenceGenerator::nondecreasing_sequence_incrementor(
+                    &mut arg_indices,
+                    (current_mark - 1) as i32
+                );
+                
+                let mut arg = vec![0_i32; arity_usize];
+                loop {
+                    // Build argument from indices using get_current() to avoid borrow issues
+                    let arg_indices_copy = inc.get_current();
+                    for i in 0..arity {
+                        arg[i as usize] = lst[arg_indices_copy[i as usize] as usize];
+                    }
+                    // Apply operation once for this argument (pilot: skip permutations)
+                    match op.int_value_at(&arg) {
+                        Ok(v) => {
+                            if su.insert(v) {
+                                lst.push(v);
+                                if lst.len() > max_size {
+                                    return Ok(one_subalg);
+                                }
+                            }
+                        }
+                        Err(_) => {
+                            // Ignore errors for partial operations
+                        }
+                    }
+                    // Increment sequence (clone to avoid borrow)
+                    if !inc.increment() {
+                        break;
+                    }
+                }
+            }
+            
+            closed_mark = current_mark;
+            current_mark = lst.len();
+        }
+        
+        // Sort and create BasicSet
+        lst.sort();
+        BasicSet::new(lst).map_err(|e| format!("Failed to create BasicSet: {}", e))
     }
     
     /// Get the underlying algebra.

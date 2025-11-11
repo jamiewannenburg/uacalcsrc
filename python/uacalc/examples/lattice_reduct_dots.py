@@ -252,7 +252,7 @@ def build_and_check_alg(cardinality, values):
         if result:
             return False
 
-    # Get the congruence lattice and check if the algebra is simple
+    # Get the congruence lattice and check if the algebra is simple (it should be by construction)
     con_lat = alg.con()
     con_cardinality = con_lat.cardinality()
     is_simple = con_cardinality == 2
@@ -279,7 +279,8 @@ def main():
     """Main function to run the example."""
     cardinality = 6
     
-    print(f"Generating all possible dot operations for cardinality {cardinality}...")
+    print(f"This builds totally ordered algebras that generate covers of V(C_4) in the subvariety lattice of De Morgan monoids.")
+    print(f"Generating all viable dot operations for cardinality {cardinality}...")
     print("(This may take a while as it explores all possible dot operations)\n")
     print("Checking if algebras are simple crls with one proper subalgebra.\n")
     
@@ -287,13 +288,8 @@ def main():
     for values in make_dots(cardinality):
         if build_and_check_alg(cardinality, values):
             found_count += 1
-            # Limit output for demonstration
-            if found_count >= 3:
-                print("\n... (showing first 3 simple crls with one proper subalgebra, there may be more)")
-                break
     
     print(f"\nTotal examples shown: {found_count}")
-    print("(Run without the limit to see all simple crls with one proper subalgebra)")
 
 
 if __name__ == "__main__":

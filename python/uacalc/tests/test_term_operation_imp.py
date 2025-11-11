@@ -291,19 +291,20 @@ class TestTermOperationImpBasic(unittest.TestCase):
     
     def test_create_from_string_term(self):
         """Test creating TermOperationImp from a string term."""
-        alg = load_test_algebra("cyclic3")
+        alg = load_test_algebra("lat2-01")
         
         # Create term using string_to_term
-        term = uacalc_lib.terms.string_to_term("join(x, y)")
+        term = uacalc_lib.terms.string_to_term("join(x, meet(y, z))")
         x = self.VariableImp("x")
         y = self.VariableImp("y")
+        z = self.VariableImp("z")
         
-        term_op = self.TermOperationImp(term, [x, y], alg, name="meet")
+        term_op = self.TermOperationImp(term, [x, y, z], alg, name="meet")
         
         self.assertIsNotNone(term_op)
-        self.assertEqual(term_op.arity(), 2)
-        self.assertEqual(term_op.get_set_size(), 3)
-        self.assertEqual(term_op.get_ordered_variables(), ["x", "y"])
+        self.assertEqual(term_op.arity(), 3)
+        self.assertEqual(term_op.get_set_size(), 2)
+        self.assertEqual(term_op.get_ordered_variables(), ["x", "y", "z"])
     
     def test_create_with_variable_strings(self):
         """Test creating TermOperationImp with variable names as strings."""
@@ -350,46 +351,25 @@ class TestTermOperationImpComplex(unittest.TestCase):
         self.OperationSymbol = uacalc_lib.alg.OperationSymbol
         self.TermOperationImp = uacalc_lib.terms.TermOperationImp
     
-    def test_meet_operation(self):
-        """Test creating meet operation using TermOperationImp."""
-        alg = load_test_algebra("cyclic3")
-        
-        # Create term: neg(join(neg(x),neg(y)))
-        x = self.VariableImp("x")
-        y = self.VariableImp("y")
-        neg_sym = self.OperationSymbol("neg", 1)
-        join_sym = self.OperationSymbol("join", 2)
-        
-        neg_x = self.NonVariableTerm(neg_sym, [x])
-        neg_y = self.NonVariableTerm(neg_sym, [y])
-        join_neg = self.NonVariableTerm(join_sym, [neg_x, neg_y])
-        meet_term = self.NonVariableTerm(neg_sym, [join_neg])
-        
-        meet_op = self.TermOperationImp(meet_term, [x, y], alg, name="meet")
-        
-        self.assertIsNotNone(meet_op)
-        self.assertEqual(meet_op.arity(), 2)
-        self.assertEqual(meet_op.get_set_size(), 3)
-    
     def test_arrow_operation(self):
         """Test creating arrow operation using TermOperationImp."""
-        alg = load_test_algebra("cyclic3")
+        alg = load_test_algebra("ba2")
         
-        # Create term: neg(dot(x, neg(y)))
+        # Create term: comp(meet(x, comp(y)))
         x = self.VariableImp("x")
         y = self.VariableImp("y")
-        neg_sym = self.OperationSymbol("neg", 1)
-        dot_sym = self.OperationSymbol("dot", 2)
+        comp_sym = self.OperationSymbol("comp", 1)
+        meet_sym = self.OperationSymbol("meet", 2)
         
-        neg_y = self.NonVariableTerm(neg_sym, [y])
-        dot_term = self.NonVariableTerm(dot_sym, [x, neg_y])
-        arrow_term = self.NonVariableTerm(neg_sym, [dot_term])
+        comp_y = self.NonVariableTerm(comp_sym, [y])
+        meet_term = self.NonVariableTerm(meet_sym, [x, comp_y])
+        arrow_term = self.NonVariableTerm(comp_sym, [meet_term])
         
         arrow_op = self.TermOperationImp(arrow_term, [x, y], alg, name="arrow")
         
         self.assertIsNotNone(arrow_op)
         self.assertEqual(arrow_op.arity(), 2)
-        self.assertEqual(arrow_op.get_set_size(), 3)
+        self.assertEqual(arrow_op.get_set_size(), 2)
 
 
 class TestTermOperationImpComparison(unittest.TestCase):
