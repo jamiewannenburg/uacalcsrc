@@ -46,9 +46,21 @@ fn extract_operations(ops_list: &Bound<'_, PyList>) -> PyResult<Vec<Box<dyn Oper
         else if let Ok(op) = item.extract::<PyRef<crate::alg::op::operation::PyBasicOperation>>() {
             rust_ops.push(Box::new(op.inner.clone()) as Box<dyn Operation>);
         }
+        // Try to extract as PyTermOperationImp
+        else if let Ok(term_op) = item.extract::<PyRef<crate::alg::op::term_operation_imp::PyTermOperationImp>>() {
+            // Convert TermOperationImp to IntOperation by extracting its table
+            let table = term_op.inner.get_table()
+                .ok_or_else(|| PyValueError::new_err("TermOperationImp has no table"))?
+                .to_vec();
+            let symbol = term_op.inner.symbol().clone();
+            let set_size = term_op.inner.get_set_size();
+            let int_op = IntOperation::new(symbol, set_size, table)
+                .map_err(|e| PyValueError::new_err(e))?;
+            rust_ops.push(Box::new(int_op) as Box<dyn Operation>);
+        }
         else {
             return Err(PyValueError::new_err(
-                "Operations must be IntOperation or BasicOperation"
+                "Operations must be IntOperation, BasicOperation, or TermOperationImp"
             ));
         }
     }
@@ -404,7 +416,9 @@ impl PyBasicAlgebra {
     /// Returns:
     ///     SubalgebraLattice: The subalgebra lattice
     fn sub(&mut self) -> PySubalgebraLattice {
-        let sub_lat = self.inner.sub();
-        PySubalgebraLattice::from_inner(sub_lat.clone())
+        // Initialize the subalgebra lattice in the inner algebra and get a reference
+        let sub_lat_ref = self.inner.sub();
+        // Clone the subalgebra lattice and wrap it for Python
+        PySubalgebraLattice::from_inner(sub_lat_ref.clone())
     }
 }

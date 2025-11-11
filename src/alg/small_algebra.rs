@@ -245,8 +245,30 @@ where
     /// For other types, this will panic.
     pub fn sub(&mut self) -> &crate::alg::sublat::SubalgebraLattice<i32> {
         if self.sub.is_none() {
-            // Only works for i32 universe type
-            panic!("sub() method only available for BasicAlgebra<i32>");
+            // Only works for i32 universe type - check at runtime
+            use std::any::TypeId;
+            if TypeId::of::<T>() != TypeId::of::<i32>() {
+                panic!("sub() method only available for BasicAlgebra<i32>");
+            }
+            
+            // Create SubalgebraLattice for i32 universe type
+            use crate::alg::SmallAlgebraWrapper;
+            // SAFETY: We've verified that T = i32 above, so BasicAlgebra<T> = BasicAlgebra<i32>.
+            // We transmute the concrete type (not the trait object) which is safe when T = i32.
+            let cloned = self.clone();
+            let i32_alg: BasicAlgebra<i32> = unsafe {
+                std::mem::transmute(cloned)
+            };
+            let alg_box = Box::new(i32_alg) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+            let wrapper = Box::new(SmallAlgebraWrapper::<i32>::new(alg_box));
+            match crate::alg::sublat::SubalgebraLattice::new_safe(wrapper) {
+                Ok(sub_lat) => {
+                    self.sub = Some(Box::new(sub_lat));
+                }
+                Err(e) => {
+                    panic!("Failed to create SubalgebraLattice: {}", e);
+                }
+            }
         }
         self.sub.as_ref().unwrap()
     }

@@ -5,6 +5,7 @@ use uacalc::terms::{VariableImp, NonVariableTerm, Term, Variable};
 use std::collections::HashMap;
 use crate::alg::op::operation_symbol::PyOperationSymbol;
 use crate::alg::PyBasicAlgebra;
+use crate::alg::op::term_operation_imp::PyTermOperationImp;
 
 /// Python wrapper for VariableImp
 #[pyclass]
@@ -703,17 +704,20 @@ pub fn register_terms_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<(
     m.add_class::<PyVariableImp>()?;
     m.add_class::<PyNonVariableTerm>()?;
     m.add_class::<PyTaylor>()?;
+    m.add_class::<PyTermOperationImp>()?;
     
     // Export only clean names (without Py prefix)
     m.add("VariableImp", m.getattr("PyVariableImp")?)?;
     m.add("NonVariableTerm", m.getattr("PyNonVariableTerm")?)?;
     m.add("Taylor", m.getattr("PyTaylor")?)?;
+    m.add("TermOperationImp", m.getattr("PyTermOperationImp")?)?;
     
     // Remove the Py* names from the module to avoid confusion
     let module_dict = m.dict();
     module_dict.del_item("PyVariableImp")?;
     module_dict.del_item("PyNonVariableTerm")?;
     module_dict.del_item("PyTaylor")?;
+    module_dict.del_item("PyTermOperationImp")?;
     
     // Register utility functions
     m.add_function(wrap_pyfunction!(string_to_term, m)?)?;

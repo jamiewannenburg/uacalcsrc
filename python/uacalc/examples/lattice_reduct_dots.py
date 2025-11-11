@@ -18,19 +18,6 @@ import uacalc_lib
 def join_op(cardinality):
     """Make join such that 0 is at the bottom and cardinality-1 at the top."""
     def join_func(args):
-        if 6 in args:
-            return 6
-        elif set([4, 5]) == set(args):
-            return 6
-        elif 5 in args:
-            return 5
-        elif 4 in args:
-            return 4
-        elif 3 in args:
-            return 3
-        elif set([1, 2]) == set(args):
-            return 3
-        else:
             return max(args)
     
     return uacalc_lib.alg.IntOperation.from_int_value_at("join", 2, cardinality, join_func)
@@ -188,15 +175,48 @@ def make_dots(cardinality, i=2, j=2, values=None):
 
 def add_arrow_and_meet(alg):
     """Add arrow and meet operations to the algebra using terms."""
-    Variable = uacalc_lib.terms.VariableImp,
+    Variable = uacalc_lib.terms.VariableImp
+    TermOperationImp = uacalc_lib.terms.TermOperationImp
+    
+    # Create meet operation: neg(join(neg(x),neg(y)))
     meet_term = uacalc_lib.terms.string_to_term('neg(join(neg(x),neg(y)))')
-    meet_op = meet_term.interpretation(alg, [Variable('x'),Variable('y')], True)
-    # meet_op = uacalc_lib.terms.TermOperationImp("meet",meet_term,[Variable('x'),Variable('y')],alg)
+    x = Variable('x')
+    y = Variable('y')
+    meet_op = TermOperationImp(meet_term, [x, y], alg, name="meet")
+    
+    # Create arrow operation: neg(dot(x,neg(y)))
     arrow_term = uacalc_lib.terms.string_to_term('neg(dot(x,neg(y)))')
-    arrow_op = arrow_term.interpretation(alg, [Variable('x'),Variable('y')], True)
-    # arrow_op = uacalc_lib.terms.TermOperationImp("arrow",arrow_term,[Variable('x'),Variable('y')],alg)
-    return alg.add_operation(meet_op).add_operation(arrow_op)
+    arrow_op = TermOperationImp(arrow_term, [x, y], alg, name="arrow")
+    
+    # Get existing operations and add new ones
+    existing_ops = alg.operations()
+    all_ops = existing_ops + [meet_op, arrow_op]
+    
+    # Create new algebra with all operations
+    BasicAlgebra = uacalc_lib.alg.BasicAlgebra
+    universe = alg.get_universe()
+    return BasicAlgebra(alg.name(), universe, all_ops)
 
+Equation = uacalc_lib.eq.Equation
+string_to_term = uacalc_lib.terms.string_to_term
+Variable = uacalc_lib.terms.VariableImp
+
+crl_axioms = [
+    # commutative monoid operations
+    Equation(string_to_term('dot(x,y)'), string_to_term('dot(y,x)'), ['x','y']),
+    Equation(string_to_term('dot(x,e())'), string_to_term('x'), ['x']),
+    Equation(string_to_term('dot(x,dot(y,z))'), string_to_term('dot(dot(x,y),z)'), ['x','y','z']),
+    # crl axioms
+    Equation(string_to_term('join(x,arrow(y,dot(y,x)))'), string_to_term('arrow(y,dot(y,x))'), ['x','y']),
+    Equation(string_to_term('join(dot(x,arrow(x,y)),y)'), string_to_term('y'), ['x','y']),
+    Equation(string_to_term('join(dot(x,meet(y,z)),meet(dot(x,y),dot(x,z)))'), string_to_term('meet(dot(x,y),dot(x,z))'), ['x','y','z']),
+    Equation(string_to_term('meet(arrow(x,y),arrow(x,z))'), string_to_term('arrow(x,meet(y,z))'), ['x','y','z']),
+]
+icrl_axioms = crl_axioms + [
+    # involution
+    Equation(string_to_term('x'), string_to_term('neg(neg(x))'), ['x']),
+    Equation(string_to_term('neg(x)'), string_to_term('arrow(x,neg(e()))'), ['x']),
+]
 
 def build_and_check_alg(cardinality, values):
     """
@@ -226,42 +246,54 @@ def build_and_check_alg(cardinality, values):
     # Add arrow and meet operations
     alg = add_arrow_and_meet(alg)
     
+    # Check if the algebra satisfies the ICRLAxioms
+    for axiom in icrl_axioms:
+        result = axiom.find_failure_map(alg)
+        if result:
+            return False
+
     # Get the congruence lattice and check if the algebra is simple
     con_lat = alg.con()
     con_cardinality = con_lat.cardinality()
     is_simple = con_cardinality == 2
     
-    # Only return True if the algebra is simple
-    if is_simple:
-        print(f"Found non-simple example {number}")
-        print(f"  Algebra: {alg_name}")
-        print(f"  Cardinality: {cardinality}")
-        print(f"  Congruence lattice size: {con_cardinality}")
-        print(f"  Dot operation values: {dict(values)}")
-        return True
-    
-    return False
+    # If algebra is not simple return False
+    if not is_simple:
+        return False
+
+    # Check if the subalgebra lattice has only 2 elements
+    sub_lat = alg.sub()
+    sub_cardinality = sub_lat.cardinality()
+    print(f"Subalgebra lattice cardinality: {sub_cardinality}")
+    if sub_cardinality != 2:
+        return False
+
+    print(f"Found simple crl with one proper subalgebra: {number}")
+    print(f"  Algebra: {alg_name}")
+    print(f"  Cardinality: {cardinality}")
+    print(f"  Dot operation values: {dict(values)}")
+    return True
 
 
 def main():
     """Main function to run the example."""
-    cardinality = 7
+    cardinality = 6
     
     print(f"Generating all possible dot operations for cardinality {cardinality}...")
     print("(This may take a while as it explores all possible dot operations)\n")
-    print("Checking if algebras are simple by computing congruence lattices.\n")
+    print("Checking if algebras are simple crls with one proper subalgebra.\n")
     
     found_count = 0
     for values in make_dots(cardinality):
         if build_and_check_alg(cardinality, values):
             found_count += 1
             # Limit output for demonstration
-            if found_count >= 5:
-                print("\n... (showing first 5 non-simple examples, there may be more)")
+            if found_count >= 3:
+                print("\n... (showing first 3 simple crls with one proper subalgebra, there may be more)")
                 break
     
-    print(f"\nTotal simple examples shown: {found_count}")
-    print("(Run without the limit to see all non-simple examples)")
+    print(f"\nTotal examples shown: {found_count}")
+    print("(Run without the limit to see all simple crls with one proper subalgebra)")
 
 
 if __name__ == "__main__":

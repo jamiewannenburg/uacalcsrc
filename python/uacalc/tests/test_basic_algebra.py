@@ -271,6 +271,30 @@ class TestBasicAlgebra(unittest.TestCase):
         self.assertEqual(con.alg_size(), 4)
         self.assertGreaterEqual(con.con_cardinality(), 2)
     
+    def test_sub(self):
+        """Test sub method."""
+        SubalgebraLattice = uacalc_lib.alg.SubalgebraLattice
+        
+        # Create a simple algebra with a binary operation
+        def join_int_value_at(args):
+            return max(args[0], args[1])
+        op = IntOperation.from_int_value_at("join", 2, 3, join_int_value_at)
+        alg = BasicAlgebra("test", list(range(3)), [op])
+        
+        # Test sub() method
+        sub_lat = alg.sub()
+        
+        # Verify it returns a SubalgebraLattice
+        self.assertIsInstance(sub_lat, SubalgebraLattice)
+        
+        # Verify basic properties - should have at least 2 subalgebras (zero and one)
+        self.assertGreaterEqual(sub_lat.cardinality(), 2)
+        
+        # Test that we can call sub() multiple times
+        sub_lat2 = alg.sub()
+        self.assertIsInstance(sub_lat2, SubalgebraLattice)
+        self.assertEqual(sub_lat2.cardinality(), sub_lat.cardinality())
+    
     def test_from_general_algebra_with_integer_universe(self):
         """Test creating BasicAlgebra from GeneralAlgebra with integer universe."""
         GeneralAlgebra = uacalc_lib.alg.GeneralAlgebra
