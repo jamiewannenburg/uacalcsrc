@@ -9,6 +9,7 @@ pub mod general_algebra;
 pub mod homomorphism;
 pub mod malcev;
 pub mod maltsev_product_decomposition;
+pub mod maltsev_decomposition_iterator;
 pub mod parameterized_algebra;
 pub mod polin_like_algebra;
 pub mod matrix_power_algebra;
@@ -52,6 +53,7 @@ use crate::alg::unary_terms_monoid::PyUnaryTermsMonoid;
 use crate::alg::polin_like_algebra::PyPolinLikeAlgebra;
 use crate::alg::parameterized_algebra::PyParameterizedAlgebra;
 use crate::alg::maltsev_product_decomposition::PyMaltsevProductDecomposition;
+use crate::alg::maltsev_decomposition_iterator::PyMaltsevDecompositionIterator;
 use crate::alg::general_algebra::PyGeneralAlgebra;
 use crate::alg::conlat::polymorphisms::PyPolymorphisms;
 use crate::alg::conlat::subtrace::PySubtrace;
@@ -94,6 +96,7 @@ pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     m.add_class::<PyPolinLikeAlgebra>()?;
     m.add_class::<PyParameterizedAlgebra>()?;
     m.add_class::<PyMaltsevProductDecomposition>()?;
+    m.add_class::<PyMaltsevDecompositionIterator>()?;
     m.add_class::<PyGeneralAlgebra>()?;
     m.add_class::<PyPolymorphisms>()?;
     m.add_class::<PySubtrace>()?;
@@ -135,6 +138,7 @@ pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     m.add("PolinLikeAlgebra", m.getattr("PyPolinLikeAlgebra")?)?;
     m.add("ParameterizedAlgebra", m.getattr("PyParameterizedAlgebra")?)?;
     m.add("MaltsevProductDecomposition", m.getattr("PyMaltsevProductDecomposition")?)?;
+    m.add("MaltsevDecompositionIterator", m.getattr("PyMaltsevDecompositionIterator")?)?;
     m.add("GeneralAlgebra", m.getattr("PyGeneralAlgebra")?)?;
     m.add("Polymorphisms", m.getattr("PyPolymorphisms")?)?;
     m.add("Subtrace", m.getattr("PySubtrace")?)?;
@@ -147,6 +151,7 @@ pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     module_dict.del_item("PyCloser")?;
     module_dict.del_item("PyCloserTiming")?;
     module_dict.del_item("PyPolinLikeAlgebra")?;
+    module_dict.del_item("PyMaltsevDecompositionIterator")?;
 
     // Register malcev module-level functions
     malcev::register_malcev_functions(_py, m)?;

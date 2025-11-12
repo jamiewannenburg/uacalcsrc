@@ -944,6 +944,50 @@ class alg:
     class UnaryTermsMonoid: ...
     class ParameterizedAlgebra: ...
     class MaltsevProductDecomposition: ...
+    
+    class MaltsevDecompositionIterator:
+        """Python wrapper for MaltsevDecompositionIterator.
+        
+        An iterator over sections (quotients of subalgebras) of an idempotent algebra.
+        This iterator is used in variety analysis to decompose algebras into their
+        Maltsev decomposition components.
+        """
+        def __init__(self, algebra: "alg.BasicAlgebra") -> None: ...
+        """Create a new MaltsevDecompositionIterator for an idempotent algebra.
+        
+        Args:
+            algebra: An idempotent algebra to decompose
+            
+        Raises:
+            ValueError: If the algebra is not idempotent
+        """
+        def has_next(self) -> bool: ...
+        """Check if there are more elements in the iterator.
+        
+        Returns:
+            True if there are more elements, False otherwise
+        """
+        def __iter__(self) -> "alg.MaltsevDecompositionIterator": ...
+        """Python iterator protocol - returns self."""
+        def __next__(self) -> Optional[Dict[str, int]]: ...
+        """Python iterator protocol - get next element.
+        
+        Returns a dictionary with the algebra's cardinality (matching Java behavior).
+        The dictionary has the form: {"cardinality": <int>}
+        
+        Returns:
+            A dictionary with "cardinality" key containing the algebra's cardinality,
+            or None if the iterator is exhausted
+        """
+        def remove(self) -> None: ...
+        """Remove the last element (not supported).
+        
+        Raises:
+            ValueError: Always raises this exception (UnsupportedOperationException)
+        """
+        def __str__(self) -> str: ...
+        def __repr__(self) -> str: ...
+    
     class GeneralAlgebra: ...
     class Polymorphisms: ...
     class Subtrace: ...

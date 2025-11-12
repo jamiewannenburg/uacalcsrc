@@ -2830,8 +2830,443 @@ pub mod maltsev_product_decomposition;
 
 pub use maltsev_product_decomposition::MaltsevProductDecomposition;
 
+use std::cell::RefCell;
+
+/// An iterator for idempotent algebras giving sections, that is, quotients 
+/// of subalgebras of the given algebra. If P is a robust property in the sense of 
+/// Freese and McKenzie, then the variety of the algebra has P if and only if 
+/// each of these sections does.
+/// 
+/// # Examples
+/// ```
+/// use uacalc::alg::{MaltsevDecompositionIterator, SmallAlgebra, BasicAlgebra, Algebra};
+/// use std::collections::HashSet;
+/// 
+/// // Create an idempotent algebra
+/// let alg = Box::new(BasicAlgebra::new(
+///     "A".to_string(),
+///     HashSet::from([0, 1, 2]),
+///     Vec::new()
+/// )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+/// 
+/// // Create iterator (will fail if algebra is not idempotent)
+/// // let iter = MaltsevDecompositionIterator::new_safe(alg).unwrap();
+/// ```
 pub struct MaltsevDecompositionIterator {
-    // TODO: Implement Maltsev decomposition iterator
+    /// The algebra being decomposed
+    algebra: RefCell<Box<dyn SmallAlgebra<UniverseItem = i32>>>,
+    /// The lower congruence partition
+    lower: Option<Partition>,
+    /// The upper congruence partition
+    upper: Option<Partition>,
+    /// The blocks of the upper partition
+    blocks: Option<Vec<Vec<usize>>>,
+    /// Number of blocks in the current upper partition
+    num_blocks: usize,
+    /// Current block index
+    block_index: usize,
+    /// Whether there are more elements
+    has_next: bool,
+}
+
+impl MaltsevDecompositionIterator {
+    /// Create a new MaltsevDecompositionIterator for an idempotent algebra.
+    /// 
+    /// # Arguments
+    /// * `algebra` - An idempotent algebra to decompose
+    /// 
+    /// # Returns
+    /// * `Ok(MaltsevDecompositionIterator)` - Successfully created iterator
+    /// * `Err(String)` - If the algebra is not idempotent
+    /// 
+    /// # Examples
+    /// ```
+    /// use uacalc::alg::{MaltsevDecompositionIterator, SmallAlgebra, BasicAlgebra, Algebra};
+    /// use std::collections::HashSet;
+    /// 
+    /// let alg = Box::new(BasicAlgebra::new(
+    ///     "A".to_string(),
+    ///     HashSet::from([0, 1, 2]),
+    ///     Vec::new()
+    /// )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+    /// 
+    /// // Will fail if algebra is not idempotent
+    /// // let iter = MaltsevDecompositionIterator::new_safe(alg).unwrap();
+    /// ```
+    pub fn new_safe(
+        algebra: Box<dyn SmallAlgebra<UniverseItem = i32>>
+    ) -> Result<Self, String> {
+        // Validate that algebra is idempotent
+        if !algebra.is_idempotent() {
+            return Err(format!("Algebra must be idempotent, but {} is not", algebra.name()));
+        }
+        
+        // Initialize upper partition to zero
+        // We need to clone the algebra to call con() since it requires &mut self
+        // and we can't get that from a trait object directly
+        let alg_clone = algebra.clone_box();
+        let upper = {
+            // Create a temporary wrapper to get mutable access
+            use crate::alg::SmallAlgebraWrapper;
+            let wrapper = Box::new(SmallAlgebraWrapper::<i32>::new(alg_clone));
+            let mut con_lat = crate::alg::conlat::CongruenceLattice::new(wrapper);
+            con_lat.zero()
+        };
+        
+        let alg_ref = RefCell::new(algebra);
+        
+        let mut iterator = MaltsevDecompositionIterator {
+            algebra: alg_ref,
+            lower: None,
+            upper: Some(upper),
+            blocks: None,
+            num_blocks: 0,
+            block_index: 0,
+            has_next: true,
+        };
+        
+        // Initialize state
+        iterator.reset_congs()?;
+        
+        Ok(iterator)
+    }
+    
+    /// Create a new iterator (panicking version for compatibility).
+    /// 
+    /// # Panics
+    /// Panics if the algebra is not idempotent
+    pub fn new(algebra: Box<dyn SmallAlgebra<UniverseItem = i32>>) -> Self {
+        Self::new_safe(algebra).unwrap()
+    }
+    
+    /// Check if there are more elements in the iterator.
+    /// 
+    /// # Returns
+    /// `true` if there are more elements, `false` otherwise
+    pub fn has_next(&self) -> bool {
+        self.has_next
+    }
+    
+    /// Reset the congruence partitions to the next level.
+    /// 
+    /// # Returns
+    /// * `Ok(())` - Successfully reset
+    /// * `Err(String)` - If there's an error
+    fn reset_congs(&mut self) -> Result<(), String> {
+        let upper = self.upper.as_ref().ok_or("Upper partition not initialized")?;
+        
+        // Clone algebra to get mutable access for con()
+        let alg_clone = {
+            let alg = self.algebra.borrow();
+            alg.clone_box()
+        };
+        
+        // Create congruence lattice to check if we've reached the top
+        use crate::alg::SmallAlgebraWrapper;
+        let wrapper = Box::new(SmallAlgebraWrapper::<i32>::new(alg_clone));
+        let mut con_lat = crate::alg::conlat::CongruenceLattice::new(wrapper);
+        let one = con_lat.one();
+        
+        if upper == &one {
+            self.has_next = false;
+            return Ok(());
+        }
+        
+        // Set lower to current upper
+        self.lower = Some(upper.clone());
+        
+        // Find upper cover
+        let upper_cover = con_lat.find_upper_cover(upper)
+            .ok_or("Could not find upper cover")?;
+        
+        // Update state
+        self.upper = Some(upper_cover.clone());
+        self.blocks = Some(upper_cover.get_blocks());
+        self.num_blocks = upper_cover.number_of_blocks();
+        self.block_index = 0;
+        
+        Ok(())
+    }
+    
+    /// Get the next algebra in the decomposition.
+    /// 
+    /// # Returns
+    /// * `Ok(Box<dyn SmallAlgebra>)` - The next algebra
+    /// * `Err(String)` - If there's an error or no more elements
+    fn get_next_algebra(&self) -> Result<Box<dyn SmallAlgebra<UniverseItem = i32>>, String> {
+        let blocks = self.blocks.as_ref().ok_or("Blocks not initialized")?;
+        let lower = self.lower.as_ref().ok_or("Lower partition not initialized")?;
+        
+        if self.block_index >= blocks.len() {
+            return Err("Block index out of range".to_string());
+        }
+        
+        let block = &blocks[self.block_index];
+        
+        // Convert block from Vec<usize> to Vec<i32> for Subalgebra
+        let block_i32: Vec<i32> = block.iter().map(|&x| x as i32).collect();
+        
+        // Clone the algebra for Subalgebra construction
+        let alg_clone = {
+            let alg = self.algebra.borrow();
+            alg.clone_box()
+        };
+        
+        // Create subalgebra
+        let subalg = Subalgebra::new_safe(
+            format!("Sub_{}", self.block_index),
+            alg_clone,
+            block_i32
+        )?;
+        
+        // Restrict partition to subalgebra
+        let restricted_par = subalg.restrict_partition(lower)?;
+        
+        // Create quotient algebra
+        let quotient = QuotientAlgebra::new_safe(
+            Box::new(subalg),
+            restricted_par
+        )?;
+        
+        // Wrap in QuotientAlgebraWrapper to convert UniverseItem from QuotientElement<i32> to i32
+        Ok(Box::new(QuotientAlgebraWrapper { inner: quotient }) as Box<dyn SmallAlgebra<UniverseItem = i32>>)
+    }
+    
+    /// Remove the last element (not supported).
+    /// 
+    /// # Panics
+    /// Always panics with UnsupportedOperationException message
+    pub fn remove(&mut self) {
+        panic!("UnsupportedOperationException: remove() not supported");
+    }
+}
+
+impl Iterator for MaltsevDecompositionIterator {
+    type Item = Box<dyn SmallAlgebra<UniverseItem = i32>>;
+    
+    fn next(&mut self) -> Option<Self::Item> {
+        if !self.has_next {
+            return None;
+        }
+        
+        match self.get_next_algebra() {
+            Ok(alg) => {
+                self.block_index += 1;
+                if self.block_index >= self.num_blocks {
+                    // Reset to next congruence level
+                    if let Err(_) = self.reset_congs() {
+                        self.has_next = false;
+                    }
+                }
+                Some(alg)
+            }
+            Err(_) => {
+                self.has_next = false;
+                None
+            }
+        }
+    }
+}
+
+// Type-erased wrapper to convert QuotientAlgebra<QuotientElement<i32>> to SmallAlgebra<i32>
+// This is needed because QuotientAlgebra has UniverseItem = QuotientElement<T>, not T
+struct QuotientAlgebraWrapper {
+    inner: QuotientAlgebra<i32>,
+}
+
+impl SmallAlgebra for QuotientAlgebraWrapper {
+    fn get_operation_ref(&self, sym: &OperationSymbol) -> Option<&dyn Operation> {
+        self.inner.get_operation_ref(sym)
+    }
+    
+    fn get_operations_ref(&self) -> Vec<&dyn Operation> {
+        self.inner.get_operations_ref()
+    }
+    
+    fn clone_box(&self) -> Box<dyn SmallAlgebra<UniverseItem = i32>> {
+        Box::new(QuotientAlgebraWrapper { inner: self.inner.clone() })
+    }
+    
+    fn algebra_type(&self) -> AlgebraType {
+        self.inner.algebra_type()
+    }
+    
+    fn get_element(&self, k: usize) -> Option<i32> {
+        // Convert QuotientElement<i32> to i32 by getting the representative
+        self.inner.get_element(k).map(|qe| {
+            // Get the representative element from the super algebra
+            let rep_idx = qe.index;
+            if rep_idx < self.inner.representatives.len() {
+                self.inner.representatives[rep_idx] as i32
+            } else {
+                k as i32 // Fallback
+            }
+        })
+    }
+    
+    fn element_index(&self, elem: &i32) -> Option<usize> {
+        // Find which quotient element contains this i32 value
+        for (idx, &rep) in self.inner.representatives.iter().enumerate() {
+            if rep == *elem as usize {
+                return Some(idx);
+            }
+        }
+        None
+    }
+    
+    fn get_universe_list(&self) -> Option<Vec<i32>> {
+        // Convert QuotientElement list to i32 list
+        self.inner.get_universe_list().map(|list| {
+            list.iter().map(|qe| {
+                let rep_idx = qe.index;
+                if rep_idx < self.inner.representatives.len() {
+                    self.inner.representatives[rep_idx] as i32
+                } else {
+                    0
+                }
+            }).collect()
+        })
+    }
+    
+    fn get_universe_order(&self) -> Option<HashMap<i32, usize>> {
+        self.inner.get_universe_order().map(|map| {
+            let mut result = HashMap::new();
+            for (qe, &idx) in map.iter() {
+                let rep_idx = qe.index;
+                if rep_idx < self.inner.representatives.len() {
+                    result.insert(self.inner.representatives[rep_idx] as i32, idx);
+                }
+            }
+            result
+        })
+    }
+    
+    fn parent(&self) -> Option<&dyn SmallAlgebra<UniverseItem = i32>> {
+        // Return the super algebra which has UniverseItem = i32
+        Some(self.inner.super_algebra.as_ref())
+    }
+    
+    fn parents(&self) -> Option<Vec<&dyn SmallAlgebra<UniverseItem = i32>>> {
+        Some(vec![self.inner.super_algebra.as_ref()])
+    }
+    
+    fn reset_con_and_sub(&mut self) {
+        self.inner.reset_con_and_sub()
+    }
+    
+    fn convert_to_default_value_ops(&mut self) {
+        self.inner.convert_to_default_value_ops()
+    }
+}
+
+impl Algebra for QuotientAlgebraWrapper {
+    type UniverseItem = i32;
+    
+    fn universe(&self) -> Box<dyn Iterator<Item = i32>> {
+        if let Some(list) = self.get_universe_list() {
+            Box::new(list.into_iter())
+        } else {
+            Box::new(std::iter::empty())
+        }
+    }
+    
+    fn cardinality(&self) -> i32 {
+        self.inner.cardinality()
+    }
+    
+    fn input_size(&self) -> i32 {
+        self.inner.input_size()
+    }
+    
+    fn is_unary(&self) -> bool {
+        self.inner.is_unary()
+    }
+    
+    fn iterator(&self) -> Box<dyn Iterator<Item = i32>> {
+        self.universe()
+    }
+    
+    fn operations(&self) -> Vec<Box<dyn Operation>> {
+        self.inner.operations()
+    }
+    
+    fn get_operation(&self, sym: &OperationSymbol) -> Option<Box<dyn Operation>> {
+        self.inner.get_operation(sym)
+    }
+    
+    fn get_operations_map(&self) -> HashMap<OperationSymbol, Box<dyn Operation>> {
+        self.inner.get_operations_map()
+    }
+    
+    fn name(&self) -> &str {
+        self.inner.name()
+    }
+    
+    fn set_name(&mut self, name: String) {
+        self.inner.set_name(name)
+    }
+    
+    fn description(&self) -> Option<&str> {
+        self.inner.description()
+    }
+    
+    fn set_description(&mut self, desc: Option<String>) {
+        self.inner.set_description(desc)
+    }
+    
+    fn similarity_type(&self) -> &SimilarityType {
+        self.inner.similarity_type()
+    }
+    
+    fn update_similarity_type(&mut self) {
+        self.inner.update_similarity_type()
+    }
+    
+    fn is_similar_to(&self, other: &dyn Algebra<UniverseItem = i32>) -> bool {
+        // We can't directly delegate because of type mismatch
+        // Compare similarity types instead
+        self.similarity_type() == other.similarity_type()
+    }
+    
+    fn make_operation_tables(&mut self) {
+        self.inner.make_operation_tables()
+    }
+    
+    fn constant_operations(&self) -> Vec<Box<dyn Operation>> {
+        self.inner.constant_operations()
+    }
+    
+    fn is_idempotent(&self) -> bool {
+        self.inner.is_idempotent()
+    }
+    
+    fn is_total(&self) -> bool {
+        self.inner.is_total()
+    }
+    
+    fn monitoring(&self) -> bool {
+        self.inner.monitoring()
+    }
+    
+    fn get_monitor(&self) -> Option<&dyn ProgressMonitor> {
+        self.inner.get_monitor()
+    }
+    
+    fn set_monitor(&mut self, monitor: Option<Box<dyn ProgressMonitor>>) {
+        self.inner.set_monitor(monitor)
+    }
+}
+
+impl Display for QuotientAlgebraWrapper {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "QuotientAlgebraWrapper({})", self.inner)
+    }
+}
+
+impl Debug for QuotientAlgebraWrapper {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "QuotientAlgebraWrapper({:?})", self.inner)
+    }
 }
 
 pub mod malcev;
