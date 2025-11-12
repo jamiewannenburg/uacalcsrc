@@ -218,12 +218,17 @@ class TestUnaryTermsMonoid:
         # Now test Python implementation with the same algebra
         # We need to load the algebra in Python
         alg_module = uacalc_lib.alg
-        AlgebraIO = getattr(alg_module, 'AlgebraIO')
+        io_module = uacalc_lib.io
+        AlgebraReader = getattr(io_module, 'AlgebraReader')
         UnaryTermsMonoid = getattr(alg_module, 'UnaryTermsMonoid')
         
         try:
             # Try to read the algebra file
-            base_alg = AlgebraIO.read_algebra_file(alg_file)
+            reader = AlgebraReader.new_from_file(alg_file)
+            base_alg_opt = reader.read_algebra_file()
+            if base_alg_opt is None:
+                pytest.skip(f"Could not load algebra from {alg_file}")
+            base_alg = base_alg_opt
             python_monoid = UnaryTermsMonoid(base_alg)
             
             # Compare results

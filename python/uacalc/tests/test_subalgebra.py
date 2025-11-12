@@ -134,8 +134,6 @@ def test_congruence_as_algebra():
         print(f"  ✓ Results match between Python and Java")
     else:
         print("  ⚠ Java: Could not run Java wrapper, skipping comparison")
-    
-    return True
 
 
 def test_congruence_as_algebra_with_name():
@@ -203,8 +201,6 @@ def test_congruence_as_algebra_with_name():
         print(f"  ✓ Results match between Python and Java")
     else:
         print("  ⚠ Java: Could not run Java wrapper, skipping comparison")
-    
-    return True
 
 
 def test_congruence_as_algebra_with_file():
@@ -245,8 +241,6 @@ def test_congruence_as_algebra_with_file():
         import traceback
         traceback.print_exc()
         assert False, f"Python congruence_as_algebra failed: {e}"
-    
-    return True
 
 
 def test_congruence_as_algebra_one_partition():
@@ -277,8 +271,6 @@ def test_congruence_as_algebra_one_partition():
         import traceback
         traceback.print_exc()
         assert False, f"Python congruence_as_algebra failed: {e}"
-    
-    return True
 
 
 def main():

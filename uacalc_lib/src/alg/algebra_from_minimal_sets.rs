@@ -204,9 +204,9 @@ impl PyAlgebraFromMinimalSets {
     ///     k (int): The index of the element to retrieve
     ///
     /// Returns:
-    ///     int: The element at index k, or -1 if k is out of bounds
-    fn get_element(&self, k: usize) -> i32 {
-        self.inner.get_element(k).unwrap_or(-1)
+    ///     int: The element at index k, or None if k is out of bounds
+    fn get_element(&self, k: usize) -> Option<i32> {
+        self.inner.get_element(k)
     }
     
     /// Get the index of an element in the universe.
@@ -215,12 +215,9 @@ impl PyAlgebraFromMinimalSets {
     ///     elem (int): The element to find the index for
     ///
     /// Returns:
-    ///     int: The index of the element, or -1 if not found
-    fn element_index(&self, elem: i32) -> i32 {
-        match self.inner.element_index(&elem) {
-            Some(idx) => idx as i32,
-            None => -1,
-        }
+    ///     int: The index of the element, or None if not found
+    fn element_index(&self, elem: i32) -> Option<usize> {
+        self.inner.element_index(&elem)
     }
     
     /// Python string representation

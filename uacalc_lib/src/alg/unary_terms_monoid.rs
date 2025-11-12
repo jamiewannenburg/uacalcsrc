@@ -119,7 +119,9 @@ impl PyUnaryTermsMonoid {
     /// Returns:
     ///     List[IntArray]: The universe elements
     fn get_universe_list(&self) -> Vec<PyIntArray> {
-        self.inner.universe()
+        self.inner.get_universe_list()
+            .unwrap_or_default()
+            .into_iter()
             .map(|item| PyIntArray { inner: item })
             .collect()
     }
