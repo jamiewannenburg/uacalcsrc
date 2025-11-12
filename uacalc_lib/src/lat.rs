@@ -1,7 +1,15 @@
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
+use pyo3::types::PyDict;
 use uacalc::lat::*;
 use uacalc::alg::algebra::Algebra;
+
+/// Internal enum to hold either type of BasicLattice
+/// Made public(crate) so it can be used in other modules
+pub(crate) enum BasicLatticeInner {
+    Partition(std::sync::Arc<std::sync::Mutex<uacalc::lat::BasicLattice<uacalc::alg::conlat::Partition>>>),
+    BasicSet(std::sync::Arc<std::sync::Mutex<uacalc::lat::BasicLattice<uacalc::alg::sublat::BasicSet>>>),
+}
 
 /// Python wrapper for DivisibilityOrder
 #[pyclass]
@@ -541,6 +549,185 @@ fn py_dual(_lat: &PyAny) -> PyResult<PyObject> {
     Err(PyValueError::new_err("dual requires BasicLattice which is not yet implemented"))
 }
 
+/// Python wrapper for LatticeGraphData
+#[pyclass]
+pub struct PyLatticeGraphData {
+    inner: uacalc::lat::LatticeGraphData,
+}
+
+#[pymethods]
+impl PyLatticeGraphData {
+    /// Get the nodes in the graph
+    fn nodes(&self) -> Vec<(usize, String, String)> {
+        self.inner.nodes.iter()
+            .map(|n| (n.id, n.label.clone(), n.element.clone()))
+            .collect()
+    }
+    
+    /// Get the edges in the graph
+    fn edges(&self) -> Vec<(usize, usize, Option<String>)> {
+        self.inner.edges.iter()
+            .map(|e| (e.source, e.target, e.label.clone()))
+            .collect()
+    }
+    
+    /// Get node labels as a dictionary
+    fn node_labels(&self) -> std::collections::HashMap<usize, String> {
+        self.inner.node_labels.clone()
+    }
+    
+    /// Get edge labels as a dictionary
+    fn edge_labels(&self) -> Option<std::collections::HashMap<(usize, usize), String>> {
+        self.inner.edge_labels.clone()
+    }
+    
+    /// Convert to NetworkX DiGraph if networkx is available
+    fn to_networkx(&self, py: Python) -> PyResult<PyObject> {
+        match py.import("networkx") {
+            Ok(nx) => {
+                let graph = nx.getattr("DiGraph")?.call0()?;
+                
+                // Add nodes with attributes
+                // NetworkX add_node(node, **attr) accepts keyword arguments for attributes
+                for node in &self.inner.nodes {
+                    // Add node first, then set attributes via nodes dict
+                    graph.call_method1("add_node", (node.id,))?;
+                    // Set node attributes via the nodes view
+                    if let Ok(nodes_view) = graph.getattr("nodes") {
+                        if let Ok(node_attrs) = nodes_view.call_method1("__getitem__", (node.id,)) {
+                            if let Ok(node_dict) = node_attrs.downcast::<PyDict>() {
+                                node_dict.set_item("label", node.label.clone())?;
+                            }
+                        }
+                    }
+                }
+                
+                // Add edges with attributes
+                // NetworkX add_edge(u, v, **attr) accepts keyword arguments for attributes
+                for edge in &self.inner.edges {
+                    graph.call_method1("add_edge", (edge.source, edge.target))?;
+                    // Set edge attributes if label exists
+                    if let Some(ref label) = edge.label {
+                        if let Ok(edges_view) = graph.getattr("edges") {
+                            if let Ok(edge_attrs) = edges_view.call_method1("__getitem__", ((edge.source, edge.target),)) {
+                                if let Ok(edge_dict) = edge_attrs.downcast::<PyDict>() {
+                                    edge_dict.set_item("label", label.clone())?;
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                Ok(graph.into())
+            }
+            Err(_) => Err(PyValueError::new_err("networkx not installed. Install with: pip install uacalc[drawing]"))
+        }
+    }
+    
+    /// Convert to DOT format (Graphviz)
+    fn to_dot(&self) -> String {
+        self.inner.to_dot()
+    }
+    
+    /// Convert to Mermaid format
+    fn to_mermaid(&self) -> String {
+        self.inner.to_mermaid()
+    }
+    
+    /// Python string representation
+    fn __str__(&self) -> String {
+        format!("LatticeGraphData(nodes: {}, edges: {})", self.inner.nodes.len(), self.inner.edges.len())
+    }
+    
+    /// Python repr representation
+    fn __repr__(&self) -> String {
+        format!("LatticeGraphData(nodes: {}, edges: {})", self.inner.nodes.len(), self.inner.edges.len())
+    }
+}
+
+/// Python wrapper for BasicLattice
+/// This is a type-erased wrapper that can hold BasicLattice<Partition> or BasicLattice<BasicSet>
+#[pyclass]
+pub struct PyBasicLattice {
+    pub(crate) inner: BasicLatticeInner,
+}
+
+#[pymethods]
+impl PyBasicLattice {
+    /// Create a BasicLattice from a CongruenceLattice
+    #[new]
+    #[pyo3(signature = (name, con_lat, label=true))]
+    fn new(name: String, con_lat: &Bound<'_, PyAny>, label: bool) -> PyResult<Self> {
+        // Try to extract PyCongruenceLattice
+        use crate::alg::conlat::congruence_lattice::PyCongruenceLattice;
+        use uacalc::lat::Lattice;
+        if let Ok(py_con_lat) = con_lat.extract::<PyRef<'_, PyCongruenceLattice>>() {
+            // Create BasicLattice from the Rust CongruenceLattice using new_from_lattice
+            // since PyCongruenceLattice uses CongruenceLattice<i32> which implements Lattice<Partition>
+            match uacalc::lat::BasicLattice::new_from_lattice(
+                name,
+                &py_con_lat.inner as &dyn Lattice<uacalc::alg::conlat::Partition>,
+            ) {
+                Ok(basic_lat) => {
+                    Ok(PyBasicLattice {
+                        inner: BasicLatticeInner::Partition(std::sync::Arc::new(std::sync::Mutex::new(basic_lat))),
+                    })
+                }
+                Err(e) => Err(PyValueError::new_err(format!("Failed to create BasicLattice: {}", e))),
+            }
+        } else {
+            Err(PyValueError::new_err("BasicLattice creation requires a CongruenceLattice instance"))
+        }
+    }
+    
+    /// Get cardinality
+    fn cardinality(&self) -> usize {
+        match &self.inner {
+            BasicLatticeInner::Partition(inner) => inner.lock().unwrap().cardinality(),
+            BasicLatticeInner::BasicSet(inner) => inner.lock().unwrap().cardinality(),
+        }
+    }
+    
+    /// Get the name
+    fn name(&self) -> String {
+        match &self.inner {
+            BasicLatticeInner::Partition(inner) => inner.lock().unwrap().name().to_string(),
+            BasicLatticeInner::BasicSet(inner) => inner.lock().unwrap().name().to_string(),
+        }
+    }
+    
+    /// Convert to graph data
+    fn to_graph_data(&self) -> PyResult<PyLatticeGraphData> {
+        let graph_data = match &self.inner {
+            BasicLatticeInner::Partition(inner) => {
+                let inner = inner.lock().unwrap();
+                inner.to_graph_data()
+            }
+            BasicLatticeInner::BasicSet(inner) => {
+                let inner = inner.lock().unwrap();
+                inner.to_graph_data()
+            }
+        };
+        Ok(PyLatticeGraphData { inner: graph_data })
+    }
+    
+    /// Convert to NetworkX DiGraph if networkx is available
+    fn to_networkx(&self, py: Python) -> PyResult<PyObject> {
+        let graph_data = self.to_graph_data()?;
+        graph_data.to_networkx(py)
+    }
+    
+    /// Python string representation
+    fn __str__(&self) -> String {
+        format!("BasicLattice({})", self.name())
+    }
+    
+    /// Python repr representation
+    fn __repr__(&self) -> String {
+        format!("BasicLattice({})", self.name())
+    }
+}
+
 pub fn register_lat_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     // Register classes internally but only export clean names
     m.add_class::<PyDivisibilityOrder>()?;
@@ -550,6 +737,8 @@ pub fn register_lat_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     m.add_class::<PyBooleanLattice>()?;
     m.add_class::<PyMeetLattice>()?;
     m.add_class::<PyJoinLattice>()?;
+    m.add_class::<PyBasicLattice>()?;
+    m.add_class::<PyLatticeGraphData>()?;
     
     // Export only clean names (without Py prefix)
     m.add("DivisibilityOrder", m.getattr("PyDivisibilityOrder")?)?;
@@ -583,6 +772,10 @@ pub fn register_lat_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     m.add("con_to_small_lattice", m.getattr("py_con_to_small_lattice")?)?;
     m.add("dual", m.getattr("py_dual")?)?;
     
+    // Export clean names for new classes
+    m.add("BasicLattice", m.getattr("PyBasicLattice")?)?;
+    m.add("LatticeGraphData", m.getattr("PyLatticeGraphData")?)?;
+    
     // Remove the Py* names from the module to avoid confusion
     let module_dict = m.dict();
     module_dict.del_item("PyDivisibilityOrder")?;
@@ -592,6 +785,8 @@ pub fn register_lat_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     module_dict.del_item("PyBooleanLattice")?;
     module_dict.del_item("PyMeetLattice")?;
     module_dict.del_item("PyJoinLattice")?;
+    module_dict.del_item("PyBasicLattice")?;
+    module_dict.del_item("PyLatticeGraphData")?;
     
     // Remove the py_* function names from the module to avoid confusion
     module_dict.del_item("py_lattice_from_meet")?;

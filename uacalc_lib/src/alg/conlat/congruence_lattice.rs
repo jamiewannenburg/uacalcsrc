@@ -185,6 +185,52 @@ impl PyCongruenceLattice {
     fn cardinality(&mut self) -> usize {
         self.con_cardinality()
     }
+
+    /// Get the BasicLattice view of this congruence lattice.
+    ///
+    /// Args:
+    ///     make_if_null (bool, optional): Create the BasicLattice if it doesn't exist. Defaults to True.
+    ///
+    /// Returns:
+    ///     BasicLattice: The BasicLattice view, or None if creation fails
+    fn get_basic_lattice(&mut self, make_if_null: Option<bool>) -> PyResult<Option<crate::lat::PyBasicLattice>> {
+        use uacalc::lat::Lattice;
+        use crate::lat::PyBasicLattice;
+        let make = make_if_null.unwrap_or(true);
+        
+        // Ensure universe is computed
+        let _ = self.inner.con_cardinality();
+        
+        // Convert CongruenceLattice<i32> to BasicLattice using new_from_lattice
+        // CongruenceLattice<i32> implements Lattice<Partition>
+        match uacalc::lat::BasicLattice::new_from_lattice(
+            "CongruenceLattice".to_string(),
+            &self.inner as &dyn Lattice<uacalc::alg::conlat::Partition>,
+        ) {
+            Ok(basic_lat) => {
+                // Wrap in Arc<Mutex> for thread safety
+                use crate::lat::BasicLatticeInner;
+                Ok(Some(PyBasicLattice {
+                    inner: BasicLatticeInner::Partition(std::sync::Arc::new(std::sync::Mutex::new(basic_lat))),
+                }))
+            }
+            Err(e) => {
+                if make {
+                    Err(pyo3::exceptions::PyRuntimeError::new_err(format!("Failed to create BasicLattice: {}", e)))
+                } else {
+                    Ok(None)
+                }
+            }
+        }
+    }
+
+    /// Get the BasicLattice view (default: create if null).
+    ///
+    /// Returns:
+    ///     BasicLattice: The BasicLattice view, or None if creation fails
+    fn get_basic_lattice_default(&mut self) -> PyResult<Option<crate::lat::PyBasicLattice>> {
+        self.get_basic_lattice(Some(true))
+    }
 }
 
 /// Python wrapper for CongruenceLattice<IntArray>

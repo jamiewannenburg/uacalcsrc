@@ -253,6 +253,61 @@ impl PySubalgebraLattice {
     fn __repr__(&self) -> String {
         self.__str__()
     }
+
+    /// Get the BasicLattice view of this subalgebra lattice.
+    ///
+    /// Args:
+    ///     make_if_null (bool, optional): Create the BasicLattice if it doesn't exist. Defaults to True.
+    ///
+    /// Returns:
+    ///     BasicLattice: The BasicLattice view, or None if creation fails
+    fn get_basic_lattice(&mut self, make_if_null: Option<bool>) -> PyResult<Option<crate::lat::PyBasicLattice>> {
+        use uacalc::lat::Lattice;
+        use crate::lat::PyBasicLattice;
+        use crate::lat::BasicLatticeInner;
+        let make = make_if_null.unwrap_or(true);
+        
+        // Get the inner SubalgebraLattice (mutable borrow to compute universe)
+        let mut inner = self.inner.borrow_mut();
+        
+        // Ensure universe is computed
+        let _ = inner.universe_mut();
+        
+        // Create BasicLattice from the lattice using new_from_lattice
+        // SubalgebraLattice implements Lattice<BasicSet>
+        // We need to use a reference that outlives the borrow, so we'll create the lattice
+        // while still holding the borrow, then release it
+        let result = uacalc::lat::BasicLattice::new_from_lattice(
+            "SubalgebraLattice".to_string(),
+            &*inner as &dyn Lattice<uacalc::alg::sublat::BasicSet>,
+        );
+        
+        // Release the borrow before creating the PyBasicLattice
+        drop(inner);
+        
+        match result {
+            Ok(basic_lat) => {
+                Ok(Some(PyBasicLattice {
+                    inner: BasicLatticeInner::BasicSet(std::sync::Arc::new(std::sync::Mutex::new(basic_lat))),
+                }))
+            }
+            Err(e) => {
+                if make {
+                    Err(pyo3::exceptions::PyRuntimeError::new_err(format!("Failed to create BasicLattice: {}", e)))
+                } else {
+                    Ok(None)
+                }
+            }
+        }
+    }
+
+    /// Get the BasicLattice view (default: create if null).
+    ///
+    /// Returns:
+    ///     BasicLattice: The BasicLattice view, or None if creation fails
+    fn get_basic_lattice_default(&mut self) -> PyResult<Option<crate::lat::PyBasicLattice>> {
+        self.get_basic_lattice(Some(true))
+    }
 }
 
 impl PySubalgebraLattice {

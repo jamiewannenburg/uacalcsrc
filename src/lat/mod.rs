@@ -64,9 +64,13 @@ pub mod small_lattice;
 pub use lattice::Lattice;
 pub use small_lattice::{SmallLattice, DiamondLattice, BooleanLattice};
 
-pub struct BasicLattice {
-    // TODO: Implement basic lattice
-}
+pub mod ordered_set;
+pub mod graph_data;
+pub mod basic_lattice;
+
+pub use ordered_set::{OrderedSet, POElem, Edge};
+pub use graph_data::{LatticeGraphData, GraphNode, GraphEdge};
+pub use basic_lattice::BasicLattice;
 
 /// Utility functions for creating and manipulating lattices.
 /// 

@@ -109,6 +109,10 @@ where
     
     /// Have principals been made?
     principals_made: bool,
+    
+    /// Cached BasicLattice view of this congruence lattice (for visualization)
+    /// Only populated when T = Partition
+    basic_lat: Option<crate::lat::BasicLattice<Partition>>,
 }
 
 impl<T> fmt::Debug for CongruenceLattice<T>
@@ -152,7 +156,43 @@ where
             permutability_level_witnesses: None,
             size_computed: 0,
             principals_made: false,
+            basic_lat: None,
         }
+    }
+}
+
+impl CongruenceLattice<Partition> {
+    /// Get the BasicLattice view of this congruence lattice.
+    ///
+    /// # Arguments
+    /// * `make_if_null` - If true, create the BasicLattice if it doesn't exist
+    ///
+    /// # Returns
+    /// * `Some(BasicLattice)` - The BasicLattice if available or created
+    /// * `None` - If make_if_null is false and BasicLattice doesn't exist
+    pub fn get_basic_lattice(&mut self, make_if_null: bool) -> Option<crate::lat::BasicLattice<Partition>> {
+        if self.basic_lat.is_none() && make_if_null {
+            // Create BasicLattice with TCT labeling
+            match crate::lat::BasicLattice::new_from_congruence_lattice(
+                "CongruenceLattice".to_string(),
+                self,
+                true, // label with TCT types
+            ) {
+                Ok(basic_lat) => {
+                    self.basic_lat = Some(basic_lat);
+                }
+                Err(e) => {
+                    eprintln!("Failed to create BasicLattice: {}", e);
+                    return None;
+                }
+            }
+        }
+        self.basic_lat.clone()
+    }
+    
+    /// Get the BasicLattice view (default: create if null).
+    pub fn get_basic_lattice_default(&mut self) -> Option<crate::lat::BasicLattice<Partition>> {
+        self.get_basic_lattice(true)
     }
 }
 
@@ -202,6 +242,7 @@ where
             permutability_level_witnesses: None,
             size_computed: 0,
             principals_made: false,
+            basic_lat: None,
         }
     }
 }

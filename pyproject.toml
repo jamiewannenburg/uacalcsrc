@@ -44,6 +44,9 @@ test = [
     "pytest-xdist>=3.0",
     "mypy>=1.0.0",
 ]
+drawing = [
+    "networkx>=3.0",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["python/uacalc/tests"]
