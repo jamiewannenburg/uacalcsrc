@@ -314,30 +314,30 @@ impl PySubalgebra {
 **Status Date:** 2025-10-23
 
 ### Component Status
-- **Rust Implementation**: ✅ **PARTIALLY IMPLEMENTED** - Core struct and methods implemented in `src/alg/subalgebra.rs`
+- **Rust Implementation**: ✅ **MOSTLY IMPLEMENTED** - Core struct and methods implemented in `src/alg/subalgebra.rs`
   - ✅ Constructors (new, new_safe)
   - ✅ Core methods (index, restrict_partition, super_algebra, get_subuniverse_array)
   - ✅ Element access (element_index, get_element)
   - ✅ SmallAlgebra trait implementation
   - ✅ RestrictedOperation for delegating to super algebra
-  - ❌ Congruence lattice methods (con) - SKIPPED (requires CongruenceLattice)
-  - ❌ Subalgebra lattice methods (sub) - SKIPPED (requires SubalgebraLattice)
+  - ✅ Congruence lattice methods (con) - **IMPLEMENTED** (CongruenceLattice available)
+  - ✅ Subalgebra lattice methods (sub) - **IMPLEMENTED** (SubalgebraLattice available)
   - ❌ Static congruenceAsAlgebra methods - SKIPPED (requires ProductAlgebra)
 - **Python Bindings**: ✅ **IMPLEMENTED** - PySubalgebra in `uacalc_lib/src/alg.rs`
   - ✅ All core methods exposed
   - ✅ Partition restriction support
-  - ❌ Lattice methods not exposed (dependencies missing)
+  - ✅ Lattice methods (con, sub) - **SHOULD BE EXPOSED** (dependencies now available)
 - **Java Wrapper**: ✅ **IMPLEMENTED** - SubalgebraWrapper in `java_wrapper/src/alg/SubalgebraWrapper.java`
   - ✅ All core commands (create, index, restrict_partition, etc.)
   - ✅ Test command for basic functionality
-  - ❌ Lattice-related commands not implemented (dependencies missing)
+  - ⚠️ Lattice-related commands (con, sub) - **SHOULD BE IMPLEMENTED** (dependencies now available)
 - **Tests**: ⚠️ **PARTIAL** - Compilation tests pass, specific tests not yet added
 
 ### Dependency Analysis
 
 **READY DEPENDENCIES** (All complete):
-- `CongruenceLattice` (Task 80) - ✅ **COMPLETED** - Available for `con()` method
-- `SubalgebraLattice` (Task 76) - ✅ **COMPLETED** - Available for `sub()` method
+- `CongruenceLattice` (Task 80) - ✅ **COMPLETED** - Available for `con()` method - **NOW IMPLEMENTED**
+- `SubalgebraLattice` (Task 76) - ✅ **COMPLETED** - Available for `sub()` method - **NOW IMPLEMENTED**
 - `ProductAlgebra` (Task 73) - ✅ **COMPLETED** - Available for static `congruenceAsAlgebra()` methods
 
 **READY DEPENDENCIES** (Available for use):
@@ -372,7 +372,7 @@ impl PySubalgebra {
 5. **Recursion/borrowing issue**: look at the two ignored rust test
 
 ### Acceptance Criteria
-- [x] Core public methods translated to Rust (18 of 26 - lattice methods excluded)
+- [x] Core public methods translated to Rust (20 of 26 - lattice methods now included)
 - [x] Python bindings expose all core methods  
 - [x] Java CLI wrapper created with core commands
 - [x] Code compiles successfully (with minor warnings)
@@ -380,10 +380,10 @@ impl PySubalgebra {
 - [ ] Python tests pass and match Java output - **Tests not yet written**
 - [x] Code compiles without errors
 - [x] Documentation complete for implemented methods
-- [ ] Lattice methods (con, sub) - **DEFERRED** pending dependencies
-- [ ] Static congruenceAsAlgebra methods - **DEFERRED** pending ProductAlgebra
+- [x] Lattice methods (con, sub) - **IMPLEMENTED** - Dependencies now available
+- [ ] Static congruenceAsAlgebra methods - **DEFERRED** - ProductAlgebra available but static methods not yet implemented
 
-### Implemented Methods (18 of 26)
+### Implemented Methods (20 of 26)
 - ✅ Constructors (4): new, new_safe, from name+algebra+universe
 - ✅ index - Find element in subalgebra
 - ✅ restrict_partition - Restrict partition to subalgebra
@@ -394,13 +394,13 @@ impl PySubalgebra {
 - ✅ cardinality - Get size
 - ✅ algebra_type - Return AlgebraType::Subalgebra
 - ✅ make_operation_tables - Build operation tables
+- ✅ con() - CongruenceLattice method (now implemented)
+- ✅ sub() - SubalgebraLattice method (now implemented)
 - ✅ All SmallAlgebra trait methods
 - ✅ All Algebra trait methods
 
-### Deferred Methods (6 of 26)
-- ✅ con() - CongruenceLattice (now implemented)
-- ✅ sub() - SubalgebraLattice (now implemented)
-- ❌ congruenceAsAlgebra (static, 2 variants) - Requires ProductAlgebra (Task 73)
+### Deferred Methods (4 of 26)
+- ❌ congruenceAsAlgebra (static, 2 variants) - Requires ProductAlgebra (Task 73) - **Note: ProductAlgebra is available, but static methods not yet implemented**
 - ❌ get_universe_list - Returns None (can be implemented later)
 - ❌ get_universe_order - Returns None (can be implemented later)
 - ❌ convert_to_default_value_ops - Panics (only for basic algebras)
