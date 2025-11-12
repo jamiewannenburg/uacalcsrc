@@ -1074,7 +1074,183 @@ class alg:
         def __eq__(self, other: object) -> bool: ...
     
     class Subalgebra: ...
-    class ReductAlgebra: ...
+    
+    class ReductAlgebra:
+        """Python wrapper for ReductAlgebra.
+        
+        A reduct of a SmallAlgebra to a list of Terms. This creates a new algebra
+        by interpreting terms from the super algebra, effectively restricting the
+        operations to those defined by the terms.
+        """
+        def __init__(
+            self,
+            super_algebra: "alg.BasicAlgebra",
+            term_list: List[Union[str, "terms.VariableImp", "terms.NonVariableTerm"]],
+        ) -> None: ...
+        """Create a new ReductAlgebra from a super algebra and list of terms.
+        
+        Args:
+            super_algebra: The super algebra that this reduct is based on
+            term_list: The list of terms that define the operations (can be strings for variables)
+            
+        Raises:
+            ValueError: If the terms are invalid or algebra is incompatible
+        """
+        def name(self) -> str: ...
+        """Get the name of this algebra.
+        
+        Returns:
+            The name of the algebra
+        """
+        def set_name(self, name: str) -> None: ...
+        """Set the name of this algebra.
+        
+        Args:
+            name: The new name
+        """
+        def cardinality(self) -> int: ...
+        """Get the cardinality of this algebra.
+        
+        Returns:
+            The cardinality (same as super algebra)
+        """
+        def algebra_type(self) -> str: ...
+        """Get the algebra type.
+        
+        Returns:
+            The algebra type ("Reduct")
+        """
+        def get_universe_list(self) -> Optional[List[int]]: ...
+        """Get the universe as a list.
+        
+        Returns:
+            List of universe elements (same as super algebra)
+        """
+        def get_universe_order(self) -> Optional[Dict[int, int]]: ...
+        """Get the universe order as a dictionary.
+        
+        Returns:
+            Dictionary mapping elements to their indices
+        """
+        def get_element(self, index: int) -> Optional[int]: ...
+        """Get an element by its index.
+        
+        Args:
+            index: The index of the element
+            
+        Returns:
+            The element at the given index, or None if out of bounds
+        """
+        def element_index(self, element: int) -> Optional[int]: ...
+        """Get the index of an element.
+        
+        Args:
+            element: The element to find the index for
+            
+        Returns:
+            The index of the element, or None if not found
+        """
+        def is_unary(self) -> bool: ...
+        """Check if this algebra is unary.
+        
+        Returns:
+            True if all operations have arity 1, False otherwise
+        """
+        def is_idempotent(self) -> bool: ...
+        """Check if this algebra is idempotent.
+        
+        Returns:
+            True if all operations are idempotent, False otherwise
+        """
+        def is_total(self) -> bool: ...
+        """Check if this algebra is total.
+        
+        Returns:
+            True if all operations are total, False otherwise
+        """
+        def operations_count(self) -> int: ...
+        """Get the number of operations in this algebra.
+        
+        Returns:
+            The number of operations (non-variable terms)
+        """
+        def make_operation_tables(self) -> None: ...
+        """Make operation tables from the terms.
+        
+        This method interprets each term in the super algebra to create
+        operations for this reduct algebra.
+        
+        Raises:
+            ValueError: If term interpretation fails
+        """
+        def con(self) -> "alg.CongruenceLattice": ...
+        """Get the congruence lattice (lazy initialization).
+        
+        Returns:
+            The congruence lattice of this reduct algebra
+        """
+        def sub(self) -> "alg.SubalgebraLattice": ...
+        """Get the subalgebra lattice (lazy initialization).
+        
+        Returns:
+            The subalgebra lattice of this reduct algebra
+        """
+        def super_algebra(self) -> "alg.BasicAlgebra": ...
+        """Get the super algebra.
+        
+        Note: Currently returns an error as this requires storing the original
+        algebra reference. This is a limitation that may be addressed in the future.
+        
+        Returns:
+            The super algebra
+            
+        Raises:
+            ValueError: Currently always raises (not yet fully implemented)
+        """
+        @staticmethod
+        def congruence_as_algebra(
+            alg: "alg.BasicAlgebra",
+            cong: "alg.Partition",
+        ) -> "alg.BasicAlgebra": ...
+        """Create a congruence as an algebra (static method).
+        
+        This gives the congruence as a subalgebra of A^2.
+        
+        Args:
+            alg: The algebra
+            cong: The congruence partition
+            
+        Returns:
+            The congruence as an algebra
+            
+        Raises:
+            ValueError: Currently always raises (not yet implemented in Rust)
+        """
+        @staticmethod
+        def congruence_as_algebra_with_name(
+            name: str,
+            alg: "alg.BasicAlgebra",
+            cong: "alg.Partition",
+        ) -> "alg.BasicAlgebra": ...
+        """Create a congruence as an algebra with a name (static method).
+        
+        This gives the congruence as a subalgebra of A^2.
+        
+        Args:
+            name: The name for the algebra
+            alg: The algebra
+            cong: The congruence partition
+            
+        Returns:
+            The congruence as an algebra
+            
+        Raises:
+            ValueError: Currently always raises (not yet implemented in Rust)
+        """
+        def __str__(self) -> str: ...
+        def __repr__(self) -> str: ...
+        def __eq__(self, other: object) -> bool: ...
+        def __hash__(self) -> int: ...
     
     class UnaryTermsMonoid:
         """Python wrapper for UnaryTermsMonoid.

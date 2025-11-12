@@ -206,6 +206,65 @@ impl PyReductAlgebra {
         let sub_lat = self.inner.sub();
         PySubalgebraLattice::from_inner(sub_lat.clone())
     }
+    
+    /// Get the super algebra.
+    /// 
+    /// Returns:
+    ///     BasicAlgebra: The super algebra (as BasicAlgebra for now)
+    fn super_algebra(&self) -> PyResult<PyBasicAlgebra> {
+        // Since we can't easily convert Box<dyn SmallAlgebra> back to PyBasicAlgebra,
+        // we'll need to clone the inner algebra if it's a BasicAlgebra
+        // For now, this is a limitation - we'd need to store the original PyBasicAlgebra
+        // or have a way to convert back
+        // This is a placeholder that will need proper implementation
+        Err(PyValueError::new_err("super_algebra() not yet fully implemented - need to store original algebra reference"))
+    }
+    
+    /// Make operation tables from the terms.
+    /// 
+    /// This method interprets each term in the super algebra to create
+    /// operations for this reduct algebra.
+    fn make_operation_tables(&mut self) -> PyResult<()> {
+        match self.inner.make_operation_tables() {
+            Ok(()) => Ok(()),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Create a congruence as an algebra (static method).
+    /// 
+    /// This gives the congruence as a subalgebra of A^2.
+    /// 
+    /// Args:
+    ///     alg (BasicAlgebra): The algebra
+    ///     cong (Partition): The congruence partition
+    /// 
+    /// Returns:
+    ///     SmallAlgebra: The congruence as an algebra
+    #[staticmethod]
+    fn congruence_as_algebra(alg: &PyBasicAlgebra, cong: &crate::alg::PyPartition) -> PyResult<PyBasicAlgebra> {
+        // This would require implementing the static method in Rust first
+        // For now, return an error indicating it's not yet implemented
+        Err(PyValueError::new_err("congruence_as_algebra() static method not yet implemented in Rust"))
+    }
+    
+    /// Create a congruence as an algebra with a name (static method).
+    /// 
+    /// This gives the congruence as a subalgebra of A^2.
+    /// 
+    /// Args:
+    ///     name (str): The name for the algebra
+    ///     alg (BasicAlgebra): The algebra
+    ///     cong (Partition): The congruence partition
+    /// 
+    /// Returns:
+    ///     SmallAlgebra: The congruence as an algebra
+    #[staticmethod]
+    fn congruence_as_algebra_with_name(name: String, alg: &PyBasicAlgebra, cong: &crate::alg::PyPartition) -> PyResult<PyBasicAlgebra> {
+        // This would require implementing the static method in Rust first
+        // For now, return an error indicating it's not yet implemented
+        Err(PyValueError::new_err("congruence_as_algebra_with_name() static method not yet implemented in Rust"))
+    }
 }
 
 
