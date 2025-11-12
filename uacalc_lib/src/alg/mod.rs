@@ -1,5 +1,6 @@
 pub mod basic_algebra;
 pub mod basic_operation;
+pub mod algebra_from_minimal_sets;
 pub mod algebra_with_generating_vector;
 pub mod big_product_algebra;
 pub mod closer;
@@ -43,6 +44,7 @@ pub use crate::alg::op::operation_symbol::PyOperationSymbol;
 // Module registration function
 use pyo3::prelude::*;
 use crate::alg::homomorphism::PyHomomorphism;
+use crate::alg::algebra_from_minimal_sets::PyAlgebraFromMinimalSets;
 use crate::alg::free_algebra::PyFreeAlgebra;
 use crate::alg::product_algebra::PyProductAlgebra;
 use crate::alg::power_algebra::PyPowerAlgebra;
@@ -76,6 +78,7 @@ pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     m.add_class::<PyOperations>()?;
     m.add_class::<PyOperationWithDefaultValue>()?;
     m.add_class::<PyHomomorphism>()?;
+    m.add_class::<PyAlgebraFromMinimalSets>()?;
     m.add_class::<PySubalgebraLattice>()?;
     m.add_class::<PyBasicBinaryRelation>()?;
     m.add_class::<PyCentralityData>()?;
@@ -119,6 +122,7 @@ pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     m.add("Operations", m.getattr("PyOperations")?)?;
     m.add("OperationWithDefaultValue", m.getattr("PyOperationWithDefaultValue")?)?;
     m.add("Homomorphism", m.getattr("PyHomomorphism")?)?;
+    m.add("AlgebraFromMinimalSets", m.getattr("PyAlgebraFromMinimalSets")?)?;
     m.add("SubalgebraLattice", m.getattr("PySubalgebraLattice")?)?;
     m.add("BasicBinaryRelation", m.getattr("PyBasicBinaryRelation")?)?;
     m.add("SimilarityType", m.getattr("PySimilarityType")?)?;

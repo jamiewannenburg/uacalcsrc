@@ -176,6 +176,7 @@ where
 }
 
 pub mod algebra;
+pub mod algebra_from_minimal_sets;
 pub mod algebra_with_generating_vector;
 pub mod big_product_algebra;
 pub mod closer;
@@ -202,6 +203,7 @@ pub use conlat::partition::{Partition, PrintType};
 // Re-export CloserTiming and Closer
 pub use closer_timing::CloserTiming;
 pub use closer::Closer;
+pub use algebra_from_minimal_sets::AlgebraFromMinimalSets;
 pub use big_product_algebra::BigProductAlgebra;
 
 // Re-export algebra types
@@ -568,9 +570,7 @@ pub struct Algebras {
     // TODO: Implement algebras collection
 }
 
-pub struct AlgebraFromMinimalSets {
-    // TODO: Implement algebra from minimal sets
-}
+// AlgebraFromMinimalSets is now implemented in algebra_from_minimal_sets.rs
 
 // AlgebraWithGeneratingVector is now implemented in algebra_with_generating_vector.rs
 

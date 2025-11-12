@@ -939,6 +939,140 @@ class alg:
         def __str__(self) -> str: ...
         def __repr__(self) -> str: ...
     
+    class AlgebraFromMinimalSets:
+        """Python wrapper for AlgebraFromMinimalSets.
+        
+        An algebra constructed from a minimal algebra (permutational algebra B).
+        The algebra is built by extending the minimal algebra with additional
+        elements and operations based on maps and connecting points.
+        """
+        def __init__(self, min_algebra: "alg.BasicAlgebra") -> None: ...
+        """Create a new AlgebraFromMinimalSets with default size (3 * minAlgSize - 2).
+        
+        Args:
+            min_algebra: The minimal algebra B
+            
+        Raises:
+            ValueError: If there's an error creating the algebra
+        """
+        @staticmethod
+        def new_with_size(
+            min_algebra: "alg.BasicAlgebra",
+            alg_size: int,
+            maps: Optional[List[List[int]]] = None,
+        ) -> "alg.AlgebraFromMinimalSets": ...
+        """Create a new AlgebraFromMinimalSets with explicit size and maps.
+        
+        Args:
+            min_algebra: The minimal algebra B
+            alg_size: The size of the constructed algebra
+            maps: Optional list of maps (if None, default maps are created)
+            
+        Returns:
+            AlgebraFromMinimalSets: A new AlgebraFromMinimalSets instance
+            
+        Raises:
+            ValueError: If there's an error creating the algebra
+        """
+        @staticmethod
+        def new_with_name(
+            min_algebra: "alg.BasicAlgebra",
+            name: Optional[str] = None,
+        ) -> "alg.AlgebraFromMinimalSets": ...
+        """Create a new AlgebraFromMinimalSets with a name.
+        
+        Args:
+            min_algebra: The minimal algebra B
+            name: Optional name for the algebra
+            
+        Returns:
+            AlgebraFromMinimalSets: A new AlgebraFromMinimalSets instance
+            
+        Raises:
+            ValueError: If there's an error creating the algebra
+        """
+        @staticmethod
+        def new_with_connecting_pts(
+            min_algebra: "alg.BasicAlgebra",
+            name: Optional[str] = None,
+            connect_pts: Optional[List[int]] = None,
+        ) -> "alg.AlgebraFromMinimalSets": ...
+        """Create a new AlgebraFromMinimalSets with connecting points.
+        
+        Args:
+            min_algebra: The minimal algebra B
+            name: Optional name for the algebra
+            connect_pts: Optional connecting points [a, b]
+            
+        Returns:
+            AlgebraFromMinimalSets: A new AlgebraFromMinimalSets instance
+            
+        Raises:
+            ValueError: If there's an error creating the algebra
+        """
+        @staticmethod
+        def new_full(
+            min_algebra: "alg.BasicAlgebra",
+            alg_size: int,
+            name: Optional[str] = None,
+            maps: Optional[List[List[int]]] = None,
+            connect_pts: Optional[List[int]] = None,
+        ) -> "alg.AlgebraFromMinimalSets": ...
+        """Create a new AlgebraFromMinimalSets with all parameters.
+        
+        Args:
+            min_algebra: A permutational algebra (the minimal algebra B)
+            alg_size: The size of the constructed algebra
+            name: Optional name for the algebra
+            maps: Optional list of maps (if None, default maps are created)
+            connect_pts: Optional connecting points [a, b]
+            
+        Returns:
+            AlgebraFromMinimalSets: A new AlgebraFromMinimalSets instance
+            
+        Raises:
+            ValueError: If there's an error creating the algebra
+        """
+        def name(self) -> str: ...
+        """Get the name of this algebra.
+        
+        Returns:
+            The name of the algebra
+        """
+        def set_name(self, name: str) -> None: ...
+        """Set the name of this algebra.
+        
+        Args:
+            name: The new name for the algebra
+        """
+        def cardinality(self) -> int: ...
+        """Get the cardinality of this algebra.
+        
+        Returns:
+            The cardinality of the algebra
+        """
+        def get_element(self, k: int) -> int: ...
+        """Get the k-th element of the universe.
+        
+        Args:
+            k: The index of the element to retrieve
+            
+        Returns:
+            The element at index k, or -1 if k is out of bounds
+        """
+        def element_index(self, elem: int) -> int: ...
+        """Get the index of an element in the universe.
+        
+        Args:
+            elem: The element to find the index for
+            
+        Returns:
+            The index of the element, or -1 if not found
+        """
+        def __str__(self) -> str: ...
+        def __repr__(self) -> str: ...
+        def __eq__(self, other: object) -> bool: ...
+    
     class Subalgebra: ...
     class ReductAlgebra: ...
     class UnaryTermsMonoid: ...
