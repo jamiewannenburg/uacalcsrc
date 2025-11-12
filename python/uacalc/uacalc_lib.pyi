@@ -409,6 +409,86 @@ class lat:
         def __str__(self) -> str: ...
         def __repr__(self) -> str: ...
     
+    class BasicLattice:
+        """Basic lattice implementation for visualization and computation.
+        
+        A BasicLattice wraps a poset (OrderedSet) and provides lattice operations
+        (join, meet) along with methods for visualization via graph data structures.
+        Primarily used for drawing and visualization of lattices.
+        """
+        def __init__(
+            self,
+            name: str,
+            con_lat: "alg.CongruenceLattice",
+            label: bool = True,
+        ) -> None: ...
+        """Create a BasicLattice from a CongruenceLattice.
+        
+        Args:
+            name: Name for the lattice
+            con_lat: The congruence lattice to convert
+            label: Whether to include TCT (Type Classification Theory) labeling
+        """
+        def cardinality(self) -> int: ...
+        """Get the cardinality of this lattice.
+        
+        Returns:
+            The number of elements in the lattice
+        """
+        def name(self) -> str: ...
+        """Get the name of this lattice.
+        
+        Returns:
+            The name of the lattice
+        """
+        def to_graph_data(self) -> "lat.LatticeGraphData": ...
+        """Convert this lattice to graph data for visualization.
+        
+        Returns:
+            LatticeGraphData containing nodes and edges for the lattice diagram
+        """
+        def to_networkx(self) -> Any: ...
+        """Convert this lattice to a NetworkX DiGraph (requires networkx).
+        
+        Returns:
+            A NetworkX DiGraph representing the lattice structure
+            
+        Raises:
+            ImportError: If networkx is not installed
+        """
+        def __str__(self) -> str: ...
+        def __repr__(self) -> str: ...
+    
+    class LatticeGraphData:
+        """Graph data structure for lattice visualization.
+        
+        This class represents a lattice as a graph with nodes and edges,
+        suitable for conversion to various visualization formats (DOT, Mermaid, NetworkX).
+        """
+        def to_dot(self) -> str: ...
+        """Convert to Graphviz DOT format.
+        
+        Returns:
+            A string in DOT format representing the lattice graph
+        """
+        def to_mermaid(self) -> str: ...
+        """Convert to Mermaid diagram format.
+        
+        Returns:
+            A string in Mermaid format representing the lattice graph
+        """
+        def to_networkx(self) -> Any: ...
+        """Convert to NetworkX DiGraph (requires networkx).
+        
+        Returns:
+            A NetworkX DiGraph representing the lattice structure
+            
+        Raises:
+            ImportError: If networkx is not installed
+        """
+        def __str__(self) -> str: ...
+        def __repr__(self) -> str: ...
+    
     # Module-level functions
     @staticmethod
     def maximals_divisibility(elems: List[int]) -> List[int]: ...
