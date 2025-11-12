@@ -1075,7 +1075,118 @@ class alg:
     
     class Subalgebra: ...
     class ReductAlgebra: ...
-    class UnaryTermsMonoid: ...
+    
+    class UnaryTermsMonoid:
+        """Python wrapper for UnaryTermsMonoid.
+        
+        The monoid or semigroup of unary terms constructed from a generating algebra.
+        This creates a monoid where the elements are unary terms and the operation
+        is composition of term operations.
+        """
+        def __init__(self, algebra: "alg.BasicAlgebra") -> None: ...
+        """Create a new UnaryTermsMonoid from a generating algebra.
+        
+        Args:
+            algebra: The generating algebra
+            
+        Raises:
+            ValueError: If construction fails
+        """
+        @staticmethod
+        def new_with_id(algebra: "alg.BasicAlgebra", include_id: bool) -> "alg.UnaryTermsMonoid": ...
+        """Create a new UnaryTermsMonoid with optional identity inclusion.
+        
+        Args:
+            algebra: The generating algebra
+            include_id: Whether to include the identity term
+            
+        Returns:
+            UnaryTermsMonoid: A new UnaryTermsMonoid instance
+            
+        Raises:
+            ValueError: If construction fails
+        """
+        def algebra_type(self) -> str: ...
+        """Get the algebra type.
+        
+        Returns:
+            The algebra type ("UNARY_TERMS_MONOID")
+        """
+        def cardinality(self) -> int: ...
+        """Get the cardinality of this monoid.
+        
+        Returns:
+            The cardinality (number of unary terms)
+        """
+        def name(self) -> str: ...
+        """Get the name of this monoid.
+        
+        Returns:
+            The name of the monoid
+        """
+        def set_name(self, name: str) -> None: ...
+        """Set the name of this monoid.
+        
+        Args:
+            name: The new name
+        """
+        def is_unary(self) -> bool: ...
+        """Check if this algebra is unary.
+        
+        Returns:
+            True if the algebra is unary, False otherwise
+        """
+        def is_idempotent(self) -> bool: ...
+        """Check if this algebra is idempotent.
+        
+        Returns:
+            True if the algebra is idempotent, False otherwise
+        """
+        def is_total(self) -> bool: ...
+        """Check if this algebra is total.
+        
+        Returns:
+            True if the algebra is total, False otherwise
+        """
+        def operations_count(self) -> int: ...
+        """Get the number of operations.
+        
+        Returns:
+            The number of operations (1 for the product operation)
+        """
+        def get_universe_list(self) -> List["util.IntArray"]: ...
+        """Get the universe as a list of elements.
+        
+        Returns:
+            List of IntArray elements representing the unary terms
+        """
+        def get_element(self, index: int) -> Optional["util.IntArray"]: ...
+        """Get an element by its index.
+        
+        Args:
+            index: The index of the element
+            
+        Returns:
+            The element at the given index, or None if out of bounds
+        """
+        def element_index(self, element: "util.IntArray") -> Optional[int]: ...
+        """Get the index of an element in the universe.
+        
+        Args:
+            element: The element to find the index for
+            
+        Returns:
+            The index of the element, or None if not found
+        """
+        def __str__(self) -> str: ...
+        def __repr__(self) -> str: ...
+        def __len__(self) -> int: ...
+        """Get the cardinality of the monoid (for use with len()).
+        
+        Returns:
+            The cardinality of the monoid
+        """
+    
     class ParameterizedAlgebra: ...
     class MaltsevProductDecomposition: ...
     
