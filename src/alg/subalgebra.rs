@@ -301,6 +301,104 @@ where
         self.base.make_operation_tables();
     }
     
+    /// Create a congruence as an algebra (static method).
+    /// 
+    /// This gives the congruence as a subalgebra of A².
+    /// 
+    /// # Arguments
+    /// * `alg` - The algebra
+    /// * `cong` - The congruence partition
+    /// 
+    /// # Returns
+    /// * `Ok(Box<dyn SmallAlgebra>)` - The congruence as an algebra
+    /// * `Err(String)` - If creation fails
+    pub fn congruence_as_algebra(
+        alg: Box<dyn SmallAlgebra<UniverseItem = i32>>,
+        cong: &Partition
+    ) -> Result<Box<dyn SmallAlgebra<UniverseItem = i32>>, String> {
+        Self::congruence_as_algebra_subalgebra("".to_string(), alg, cong)
+            .map(|sub| Box::new(sub) as Box<dyn SmallAlgebra<UniverseItem = i32>>)
+    }
+    
+    /// Create a congruence as an algebra with a name (static method).
+    /// 
+    /// This gives the congruence as a subalgebra of A².
+    /// 
+    /// # Arguments
+    /// * `name` - Name for the algebra
+    /// * `alg` - The algebra
+    /// * `cong` - The congruence partition
+    /// 
+    /// # Returns
+    /// * `Ok(Box<dyn SmallAlgebra>)` - The congruence as an algebra
+    /// * `Err(String)` - If creation fails
+    pub fn congruence_as_algebra_with_name(
+        name: String,
+        alg: Box<dyn SmallAlgebra<UniverseItem = i32>>,
+        cong: &Partition
+    ) -> Result<Box<dyn SmallAlgebra<UniverseItem = i32>>, String> {
+        Self::congruence_as_algebra_subalgebra(name, alg, cong)
+            .map(|sub| Box::new(sub) as Box<dyn SmallAlgebra<UniverseItem = i32>>)
+    }
+    
+    /// Internal helper that returns Subalgebra directly (for Python bindings).
+    /// 
+    /// This gives the congruence as a subalgebra of A².
+    /// 
+    /// # Arguments
+    /// * `name` - Name for the algebra
+    /// * `alg` - The algebra (must have UniverseItem = i32)
+    /// * `cong` - The congruence partition
+    /// 
+    /// # Returns
+    /// * `Ok(Subalgebra<i32>)` - The congruence as an algebra
+    /// * `Err(String)` - If creation fails
+    pub fn congruence_as_algebra_subalgebra(
+        name: String,
+        alg: Box<dyn SmallAlgebra<UniverseItem = i32>>,
+        cong: &Partition
+    ) -> Result<Subalgebra<i32>, String> {
+        let n = alg.cardinality();
+        if n < 0 {
+            return Err("Algebra has unknown cardinality".to_string());
+        }
+        let n = n as usize;
+        
+        // Collect all pairs (i, j) where cong.is_related(i, j)
+        let mut univ_pairs = Vec::new();
+        for i in 0..n {
+            for j in 0..n {
+                if cong.is_related(i, j) {
+                    univ_pairs.push(vec![i as i32, j as i32]);
+                }
+            }
+        }
+        
+        // Encode pairs using Horner encoding
+        let size = univ_pairs.len();
+        let mut univ_arr = Vec::with_capacity(size);
+        for pair in &univ_pairs {
+            let encoded = horner::horner_same_size(pair, n as i32);
+            univ_arr.push(encoded);
+        }
+        univ_arr.sort();
+        
+        // Create ProductAlgebra with two copies of the algebra
+        let alg1 = alg.clone_box();
+        let alg2 = alg.clone_box();
+        let product = crate::alg::ProductAlgebra::new_safe(
+            format!("{}_product", name),
+            vec![alg1, alg2]
+        )?;
+        
+        // Create Subalgebra of the product with the encoded pairs as universe
+        Subalgebra::<i32>::new_safe(
+            name,
+            Box::new(product),
+            univ_arr
+        )
+    }
+    
     /// Create restricted operations that delegate to the super algebra.
     fn make_operations(&mut self) -> Result<(), String> {
         // Access operations directly from the super algebra's GeneralAlgebra
@@ -503,20 +601,13 @@ where
     }
     
     fn get_universe_list(&self) -> Option<Vec<Self::UniverseItem>> {
-        let elements: Vec<T> = self.univ_array.iter()
-            .filter_map(|&idx| self.super_algebra.get_element(idx as usize))
-            .collect();
-        Some(elements)
+        // Returns None to match Java behavior (returns null)
+        None
     }
     
     fn get_universe_order(&self) -> Option<HashMap<Self::UniverseItem, usize>> {
-        let mut order = HashMap::new();
-        for (i, &idx) in self.univ_array.iter().enumerate() {
-            if let Some(elem) = self.super_algebra.get_element(idx as usize) {
-                order.insert(elem, i);
-            }
-        }
-        Some(order)
+        // Returns None to match Java behavior (returns null)
+        None
     }
     
     fn parent(&self) -> Option<&dyn SmallAlgebra<UniverseItem = Self::UniverseItem>> {

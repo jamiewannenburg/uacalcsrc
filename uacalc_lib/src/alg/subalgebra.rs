@@ -168,4 +168,53 @@ impl PySubalgebra {
         let sub_lat = self.inner.sub();
         PySubalgebraLattice::from_inner(sub_lat.clone())
     }
+    
+    /// Create a congruence as an algebra (static method).
+    /// 
+    /// This gives the congruence as a subalgebra of A².
+    /// 
+    /// Args:
+    ///     alg (BasicAlgebra): The algebra
+    ///     cong (Partition): The congruence partition
+    /// 
+    /// Returns:
+    ///     Subalgebra: The congruence as an algebra
+    /// 
+    /// Raises:
+    ///     ValueError: If creation fails
+    #[staticmethod]
+    fn congruence_as_algebra(alg: &PyBasicAlgebra, cong: &PyPartition) -> PyResult<PySubalgebra> {
+        let alg_box = Box::new(alg.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
+        match uacalc::alg::Subalgebra::<i32>::congruence_as_algebra_subalgebra("".to_string(), alg_box, cong.get_inner()) {
+            Ok(subalgebra) => Ok(PySubalgebra { inner: subalgebra }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
+    /// Create a congruence as an algebra with a name (static method).
+    /// 
+    /// This gives the congruence as a subalgebra of A².
+    /// 
+    /// Args:
+    ///     name (str): The name for the algebra
+    ///     alg (BasicAlgebra): The algebra
+    ///     cong (Partition): The congruence partition
+    /// 
+    /// Returns:
+    ///     Subalgebra: The congruence as an algebra
+    /// 
+    /// Raises:
+    ///     ValueError: If creation fails
+    #[staticmethod]
+    fn congruence_as_algebra_with_name(
+        name: String,
+        alg: &PyBasicAlgebra,
+        cong: &PyPartition
+    ) -> PyResult<PySubalgebra> {
+        let alg_box = Box::new(alg.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
+        match uacalc::alg::Subalgebra::<i32>::congruence_as_algebra_subalgebra(name, alg_box, cong.get_inner()) {
+            Ok(subalgebra) => Ok(PySubalgebra { inner: subalgebra }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
 }

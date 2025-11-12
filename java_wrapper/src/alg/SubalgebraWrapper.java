@@ -93,6 +93,14 @@ public class SubalgebraWrapper extends WrapperBase {
                 handleTest(options);
                 break;
                 
+            case "congruence_as_algebra":
+                handleCongruenceAsAlgebra(options);
+                break;
+                
+            case "congruence_as_algebra_with_name":
+                handleCongruenceAsAlgebraWithName(options);
+                break;
+                
             default:
                 handleError("Unknown command: " + command, null);
         }
@@ -410,6 +418,69 @@ public class SubalgebraWrapper extends WrapperBase {
     }
     
     /**
+     * Handle congruence_as_algebra static method.
+     * Usage: congruence_as_algebra --super_size 4 --partition "0,0,1,1"
+     */
+    private void handleCongruenceAsAlgebra(Map<String, String> options) throws Exception {
+        int superSize = getIntArg(options, "super_size", 4);
+        String partitionStr = getRequiredArg(options, "partition");
+        
+        // Create super algebra
+        SmallAlgebra superAlg = new BasicAlgebra("super", superSize, new ArrayList<>());
+        
+        // Parse partition
+        String[] parElements = partitionStr.split(",");
+        int[] parArr = new int[parElements.length];
+        for (int i = 0; i < parElements.length; i++) {
+            parArr[i] = Integer.parseInt(parElements[i].trim());
+        }
+        Partition cong = new BasicPartition(parArr);
+        
+        // Call static method
+        SmallAlgebra resultAlg = Subalgebra.congruenceAsAlgebra(superAlg, cong);
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("command", "congruence_as_algebra");
+        result.put("name", resultAlg.getName());
+        result.put("cardinality", resultAlg.cardinality());
+        result.put("algebra_type", resultAlg.algebraType().toString());
+        
+        handleSuccess(result);
+    }
+    
+    /**
+     * Handle congruence_as_algebra_with_name static method.
+     * Usage: congruence_as_algebra_with_name --name "CongAlg" --super_size 4 --partition "0,0,1,1"
+     */
+    private void handleCongruenceAsAlgebraWithName(Map<String, String> options) throws Exception {
+        String name = getRequiredArg(options, "name");
+        int superSize = getIntArg(options, "super_size", 4);
+        String partitionStr = getRequiredArg(options, "partition");
+        
+        // Create super algebra
+        SmallAlgebra superAlg = new BasicAlgebra("super", superSize, new ArrayList<>());
+        
+        // Parse partition
+        String[] parElements = partitionStr.split(",");
+        int[] parArr = new int[parElements.length];
+        for (int i = 0; i < parElements.length; i++) {
+            parArr[i] = Integer.parseInt(parElements[i].trim());
+        }
+        Partition cong = new BasicPartition(parArr);
+        
+        // Call static method
+        SmallAlgebra resultAlg = Subalgebra.congruenceAsAlgebra(name, superAlg, cong);
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("command", "congruence_as_algebra_with_name");
+        result.put("name", resultAlg.getName());
+        result.put("cardinality", resultAlg.cardinality());
+        result.put("algebra_type", resultAlg.algebraType().toString());
+        
+        handleSuccess(result);
+    }
+    
+    /**
      * Show usage information for the Subalgebra wrapper.
      */
     private void showUsage() {
@@ -423,6 +494,8 @@ public class SubalgebraWrapper extends WrapperBase {
             "get_element --super_size 4 --universe 0,1,2 --index 1",
             "cardinality --super_size 4 --universe 0,1,2",
             "algebra_type --super_size 4 --universe 0,1",
+            "congruence_as_algebra --super_size 4 --partition \"0,0,1,1\"",
+            "congruence_as_algebra_with_name --name \"CongAlg\" --super_size 4 --partition \"0,0,1,1\"",
             "test"
         };
         

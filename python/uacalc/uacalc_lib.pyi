@@ -1073,7 +1073,163 @@ class alg:
         def __repr__(self) -> str: ...
         def __eq__(self, other: object) -> bool: ...
     
-    class Subalgebra: ...
+    class Subalgebra:
+        """Python wrapper for Subalgebra.
+        
+        A subalgebra of a SmallAlgebra with a restricted universe.
+        This struct represents a subalgebra by maintaining a reference to the
+        super algebra and a sorted array of universe indices that form the
+        subuniverse. All operations are restricted to this subuniverse.
+        """
+        def __init__(
+            self,
+            name: str,
+            super_algebra: "alg.BasicAlgebra",
+            univ: List[int],
+        ) -> None: ...
+        """Create a new Subalgebra with the given super algebra and subuniverse.
+        
+        Args:
+            name: Name of the subalgebra
+            super_algebra: The super algebra
+            univ: Array of indices in the super algebra forming the subuniverse
+            
+        Raises:
+            ValueError: If the subuniverse is empty or contains invalid indices
+        """
+        def index(self, k: int) -> int: ...
+        """Find the index in this subalgebra of the element with index k in the super algebra.
+        
+        Uses binary search since the universe array is sorted.
+        
+        Args:
+            k: Index in the super algebra
+            
+        Returns:
+            Index in the subalgebra, or -1 if not found
+        """
+        def restrict_partition(self, par: "alg.Partition") -> "alg.Partition": ...
+        """Restrict a partition (or congruence) on the parent algebra to this subalgebra.
+        
+        Args:
+            par: Partition on the super algebra
+            
+        Returns:
+            Restricted partition on this subalgebra
+            
+        Raises:
+            ValueError: If restriction fails
+        """
+        def super_algebra_name(self) -> str: ...
+        """Get the super algebra name.
+        
+        Returns:
+            Name of the super algebra
+        """
+        def get_subuniverse_array(self) -> List[int]: ...
+        """Get the subuniverse array.
+        
+        Returns:
+            Array of indices forming the subuniverse
+        """
+        def cardinality(self) -> int: ...
+        """Get the cardinality of this subalgebra.
+        
+        Returns:
+            The cardinality (size of the universe)
+        """
+        def get_element(self, k: int) -> int: ...
+        """Get the element at the given index.
+        
+        Args:
+            k: Index of the element
+            
+        Returns:
+            The element at index k, or -1 if out of bounds
+        """
+        def element_index(self, elem: int) -> int: ...
+        """Get the index of an element in the universe.
+        
+        Args:
+            elem: The element to find
+            
+        Returns:
+            The index of the element, or -1 if not found
+        """
+        def algebra_type(self) -> str: ...
+        """Get the algebra type.
+        
+        Returns:
+            The algebra type ("Subalgebra")
+        """
+        def name(self) -> str: ...
+        """Get the name of this algebra.
+        
+        Returns:
+            The name of the algebra
+        """
+        def set_name(self, name: str) -> None: ...
+        """Set the name of this algebra.
+        
+        Args:
+            name: The new name
+        """
+        def con(self) -> "alg.CongruenceLattice": ...
+        """Get the congruence lattice (lazy initialization).
+        
+        Returns:
+            The congruence lattice
+        """
+        def sub(self) -> "alg.SubalgebraLattice": ...
+        """Get the subalgebra lattice (lazy initialization).
+        
+        Returns:
+            The subalgebra lattice
+        """
+        @staticmethod
+        def congruence_as_algebra(
+            alg: "alg.BasicAlgebra",
+            cong: "alg.Partition",
+        ) -> "alg.Subalgebra": ...
+        """Create a congruence as an algebra (static method).
+        
+        This gives the congruence as a subalgebra of A².
+        
+        Args:
+            alg: The algebra
+            cong: The congruence partition
+            
+        Returns:
+            The congruence as an algebra
+            
+        Raises:
+            ValueError: If creation fails
+        """
+        @staticmethod
+        def congruence_as_algebra_with_name(
+            name: str,
+            alg: "alg.BasicAlgebra",
+            cong: "alg.Partition",
+        ) -> "alg.Subalgebra": ...
+        """Create a congruence as an algebra with a name (static method).
+        
+        This gives the congruence as a subalgebra of A².
+        
+        Args:
+            name: The name for the algebra
+            alg: The algebra
+            cong: The congruence partition
+            
+        Returns:
+            The congruence as an algebra
+            
+        Raises:
+            ValueError: If creation fails
+        """
+        def __str__(self) -> str: ...
+        """Python string representation."""
+        def __repr__(self) -> str: ...
+        """Python repr representation."""
     
     class ReductAlgebra:
         """Python wrapper for ReductAlgebra.
