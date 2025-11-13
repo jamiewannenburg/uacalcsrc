@@ -19,6 +19,7 @@ pub fn register_algebras_functions(_py: Python, m: &Bound<'_, PyModule>) -> PyRe
     m.add_function(wrap_pyfunction!(is_homomorphism, m)?)?;
     m.add_function(wrap_pyfunction!(jonsson_terms, m)?)?;
     m.add_function(wrap_pyfunction!(jonsson_level, m)?)?;
+    m.add_function(wrap_pyfunction!(find_nuf, m)?)?;
     m.add_function(wrap_pyfunction!(matrix_power, m)?)?;
 
     Ok(())
@@ -118,6 +119,35 @@ fn jonsson_terms(algebra: &PyBasicAlgebra) -> PyResult<Option<Vec<String>>> {
 fn jonsson_level(algebra: &PyBasicAlgebra) -> PyResult<i32> {
     match algebras::jonsson_level(&algebra.inner) {
         Ok(level) => Ok(level),
+        Err(e) => Err(PyValueError::new_err(e)),
+    }
+}
+
+/// Find a near unanimity term (NUF) of the given arity.
+///
+/// This will find a near unanimity term of the given arity if one exists;
+/// otherwise it returns None.
+///
+/// A near unanimity term of arity n is a term t(x₀, x₁, ..., xₙ₋₁) such that:
+/// - t(y,x,x,...,x) = x
+/// - t(x,y,x,...,x) = x
+/// - ...
+/// - t(x,x,x,...,y) = x
+///
+/// # Arguments
+/// * `algebra` - The algebra to check (BasicAlgebra)
+/// * `arity` - The arity of the NU term (must be at least 3)
+///
+/// # Returns
+/// The NU term as a string if one exists, None otherwise
+///
+/// # Raises
+/// `ValueError` if arity is less than 3 or there's an error during computation
+#[pyfunction]
+fn find_nuf(algebra: &PyBasicAlgebra, arity: usize) -> PyResult<Option<String>> {
+    match algebras::find_nuf(&algebra.inner, arity) {
+        Ok(Some(term)) => Ok(Some(format!("{}", term))),
+        Ok(None) => Ok(None),
         Err(e) => Err(PyValueError::new_err(e)),
     }
 }

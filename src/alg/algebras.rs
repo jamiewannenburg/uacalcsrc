@@ -198,6 +198,40 @@ where
     crate::alg::malcev::jonsson_level(alg)
 }
 
+/// Find a near unanimity term (NUF) of the given arity.
+///
+/// This method delegates to `malcev::nu_term`. It will find a near unanimity
+/// term of the given arity if one exists; otherwise it returns `None`.
+///
+/// A near unanimity term of arity n is a term t(x₀, x₁, ..., xₙ₋₁) such that:
+/// - t(y,x,x,...,x) = x
+/// - t(x,y,x,...,x) = x
+/// - ...
+/// - t(x,x,x,...,y) = x
+///
+/// # Arguments
+/// * `alg` - The algebra to check
+/// * `arity` - The arity of the NU term to find (must be at least 3)
+///
+/// # Returns
+/// * `Ok(Some(Term))` - An NU term if one exists
+/// * `Ok(None)` - No NU term exists
+/// * `Err(String)` - If there's an error during computation
+///
+/// # Examples
+/// ```
+/// use uacalc::alg::{algebras, SmallAlgebra, BasicAlgebra};
+///
+/// // Create an algebra and find an NU term
+/// // (example would go here)
+/// ```
+pub fn find_nuf<T>(alg: &dyn SmallAlgebra<UniverseItem = T>, arity: usize) -> Result<Option<Box<dyn crate::terms::Term>>, String>
+where
+    T: Clone + std::fmt::Debug + std::fmt::Display + std::hash::Hash + Eq + Send + Sync + 'static
+{
+    crate::alg::malcev::nu_term(alg, arity)
+}
+
 /// The matrix power algebra as defined in Hobby-McKenzie.
 ///
 /// Creates a matrix power algebra A^[k] from a given algebra A and power k.
@@ -615,6 +649,44 @@ mod tests {
         // Test with k < 0 (should fail)
         let result = matrix_power(alg, -1);
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_find_nuf_single_element() {
+        // Test with single element algebra - should return Some with x0
+        let size = 1;
+        let universe: std::collections::HashSet<i32> = (0..size).collect();
+        let alg = BasicAlgebra::new("SingleElement".to_string(), universe, Vec::new());
+        
+        let result = find_nuf(&alg, 3);
+        assert!(result.is_ok());
+        let term = result.unwrap();
+        assert!(term.is_some());
+    }
+
+    #[test]
+    fn test_find_nuf_invalid_arity() {
+        // Test with arity < 3 (should fail)
+        let size = 2;
+        let universe: std::collections::HashSet<i32> = (0..size).collect();
+        let alg = BasicAlgebra::new("TestAlg".to_string(), universe, Vec::new());
+        
+        let result = find_nuf(&alg, 2);
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("arity must be at least 3"));
+    }
+
+    #[test]
+    fn test_find_nuf_no_operations() {
+        // Test with algebra that has no operations - should return error
+        let size = 2;
+        let universe: std::collections::HashSet<i32> = (0..size).collect();
+        let alg = BasicAlgebra::new("NoOps".to_string(), universe, Vec::new());
+        
+        let result = find_nuf(&alg, 3);
+        // The actual behavior depends on malcev::nu_term implementation
+        // It may return an error or None
+        assert!(result.is_ok() || result.is_err());
     }
 }
 

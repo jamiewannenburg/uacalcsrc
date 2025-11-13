@@ -1737,6 +1737,30 @@ class alg:
     """
     
     @staticmethod
+    def find_nuf(algebra: "alg.BasicAlgebra", arity: int) -> Optional[str]: ...
+    """Find a near unanimity term (NUF) of the given arity.
+    
+    This will find a near unanimity term of the given arity if one exists;
+    otherwise it returns None.
+    
+    A near unanimity term of arity n is a term t(x₀, x₁, ..., xₙ₋₁) such that:
+    - t(y,x,x,...,x) = x
+    - t(x,y,x,...,x) = x
+    - ...
+    - t(x,x,x,...,y) = x
+    
+    Args:
+        algebra: The algebra to check (BasicAlgebra)
+        arity: The arity of the NU term (must be at least 3)
+        
+    Returns:
+        The NU term as a string if one exists, None otherwise
+        
+    Raises:
+        ValueError: If arity is less than 3 or there's an error during computation
+    """
+    
+    @staticmethod
     def matrix_power(alg: "alg.BasicAlgebra", k: int) -> "alg.BasicAlgebra": ...
     """The matrix power algebra as defined in Hobby-McKenzie.
     

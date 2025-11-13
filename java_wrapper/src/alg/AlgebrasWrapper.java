@@ -75,6 +75,10 @@ public class AlgebrasWrapper extends WrapperBase {
                 handleMatrixPower(options);
                 break;
                 
+            case "findNUF":
+                handleFindNUF(options);
+                break;
+                
             default:
                 handleError("Unknown command: " + command, null);
         }
@@ -374,6 +378,53 @@ public class AlgebrasWrapper extends WrapperBase {
     }
     
     /**
+     * Handle findNUF command - find a near unanimity term of the given arity.
+     */
+    private void handleFindNUF(Map<String, String> options) throws Exception {
+        // Get algebra file path
+        String algFile = options.get("algebra");
+        if (algFile == null || algFile.isEmpty()) {
+            handleError("Required argument missing: algebra", null);
+            return;
+        }
+        
+        // Load algebra from file
+        File file = new File(algFile);
+        if (!file.exists()) {
+            handleError("Algebra file not found: " + algFile, null);
+            return;
+        }
+        SmallAlgebra alg = AlgebraIO.readAlgebraFile(file);
+        
+        // Get arity
+        int arity = getIntArg(options, "arity", 3);
+        if (arity < 3) {
+            handleError("Arity must be at least 3", null);
+            return;
+        }
+        
+        // Call Java method
+        Term term = Algebras.findNUF(alg, arity);
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("command", "findNUF");
+        response.put("algebra", alg.getName());
+        response.put("algebra_size", alg.cardinality());
+        response.put("arity", arity);
+        
+        if (term != null) {
+            response.put("term_found", true);
+            response.put("term", term.toString());
+        } else {
+            response.put("term_found", false);
+            response.put("term", null);
+        }
+        response.put("status", "success");
+        
+        handleSuccess(response);
+    }
+    
+    /**
      * Show usage information for the Algebras wrapper.
      */
     private void showUsage() {
@@ -386,6 +437,7 @@ public class AlgebrasWrapper extends WrapperBase {
             "isHomomorphism --size 2 --map \"0,1\"",
             "jonssonTerms --algebra algebras/ba2.ua",
             "jonssonLevel --algebra algebras/ba2.ua",
+            "findNUF --algebra algebras/ba2.ua --arity 3",
             "help"
         };
         

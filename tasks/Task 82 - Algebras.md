@@ -103,7 +103,7 @@ pub fn make_random_algebra_safe(
 ## Implementation Status
 
 ### Current State
-- **Completion**: 22% (5/23 methods implemented)
+- **Completion**: 26% (6/23 methods implemented)
 - **Rust Implementation**: Started for methods checked below
 - **Python Bindings**: Started for methods checked below
 - **Java Wrapper**: Started for methods checked below
@@ -186,7 +186,7 @@ All 23 public static methods from `org/uacalc/alg/Algebras.java`:
 - [ ] `unaryCloneAlgFromPartitions(List<Partition> pars, List<Partition> decomp)` - Creates unary clone algebra from partitions (WARNING: not complete in Java)
 - [ ] `unaryCloneAlgFromPartitions(List<Partition> pars, Partition eta0, Partition eta1)` - Creates unary clone algebra with eta partitions
 - [ ] `unaryClone(List<Partition> pars, Partition eta0, Partition eta1)` - Computes unary clone set (returns NavigableSet<IntArray>)
-- [ ] `findNUF(SmallAlgebra alg, int arity)` - Finds near unanimity term (delegates to Malcev.nuTerm)
+- [x] `findNUF(SmallAlgebra alg, int arity)` - Finds near unanimity term (delegates to Malcev.nuTerm) ✅
 - [x] `jonssonTerms(SmallAlgebra alg)` - Returns Jonsson terms for distributive variety (delegates to Malcev.jonssonTerms) ✅
 - [x] `jonssonLevel(SmallAlgebra alg)` - Returns minimal number of Jonsson terms (delegates to Malcev.jonssonLevel) ✅
 - [x] `isEndomorphism(Operation endo, SmallAlgebra alg)` - Tests if operation is endomorphism ✅
@@ -232,3 +232,28 @@ All 23 public static methods from `org/uacalc/alg/Algebras.java`:
 - **Type Stubs**: `python/uacalc/uacalc_lib.pyi` - Added `matrix_power()` method signature with documentation
 
 - **Note**: The implementation uses the existing `make_binary_left_shift()` function which is currently a placeholder. The Java version uses Horner encoding for proper vector operations, but the placeholder should work for basic functionality.
+
+### findNUF (Completed)
+- **Rust Implementation**: `src/alg/algebras.rs` - `find_nuf()` function
+  - Delegates to `malcev::nu_term()` to find a near unanimity term of the given arity
+  - Returns `Result<Option<Box<dyn Term>>, String>`
+  - Handles single element algebras (returns x0 variable)
+  - Validates arity >= 3
+  
+- **Python Bindings**: `uacalc_lib/src/alg/algebras.rs` - `find_nuf()` pyfunction
+  - Exposed as module-level function in Python
+  - Takes PyBasicAlgebra and int arity, returns Optional[str]
+  - Converts term to string representation
+  
+- **Java Wrapper**: `java_wrapper/src/alg/AlgebrasWrapper.java` - `handleFindNUF()` method
+  - Command: `findNUF --algebra <file> --arity <arity>`
+  - Returns JSON with term_found boolean and term string (if found)
+  - Validates arity >= 3
+  
+- **Tests**:
+  - Rust: `src/alg/algebras.rs` - 3 test cases (single element, invalid arity, no operations)
+  - Python: `python/uacalc/tests/test_algebras.py` - 4 test cases (single element, invalid arity, no operations, with algebra file)
+  
+- **Type Stubs**: `python/uacalc/uacalc_lib.pyi` - Added `find_nuf()` method signature with documentation
+
+- **Note**: The implementation delegates to the existing `malcev::nu_term()` function, which is already fully implemented and tested. This follows the same pattern as the Java implementation which delegates to `Malcev.nuTerm()`.

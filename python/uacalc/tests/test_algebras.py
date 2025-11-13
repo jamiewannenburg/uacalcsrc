@@ -35,7 +35,31 @@ def run_java_wrapper(command, args):
         if result.returncode != 0:
             pytest.fail(f"Java wrapper failed: {result.stderr}")
         
-        return json.loads(result.stdout)
+        # Extract JSON from output (may have progress messages before JSON)
+        output = result.stdout
+        # Find the first '{' that starts a JSON object
+        json_start = output.find('{')
+        if json_start == -1:
+            pytest.fail(f"No JSON found in output: {output[:200]}")
+        
+        # Extract from the first '{' to the end
+        json_str = output[json_start:]
+        # Find the matching closing brace
+        brace_count = 0
+        json_end = -1
+        for i, char in enumerate(json_str):
+            if char == '{':
+                brace_count += 1
+            elif char == '}':
+                brace_count -= 1
+                if brace_count == 0:
+                    json_end = i + 1
+                    break
+        
+        if json_end == -1:
+            pytest.fail(f"Invalid JSON in output: {json_str[:200]}")
+        
+        return json.loads(json_str[:json_end])
     except subprocess.TimeoutExpired:
         pytest.fail("Java wrapper timed out")
     except json.JSONDecodeError as e:
@@ -468,4 +492,88 @@ class TestAlgebras:
         assert java_result["data"]["result_size"] == 9
         assert java_result["data"]["result_size"] == result.cardinality(), \
             "Python and Java should match"
+    
+    def test_find_nuf_single_element(self):
+        """Test find_nuf with single element algebra."""
+        import uacalc_lib
+        
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
+        find_nuf = uacalc_lib.alg.find_nuf
+        
+        # Create single element algebra
+        alg = BasicAlgebra("SingleElement", [0], [])
+        
+        # Test Python implementation
+        result = find_nuf(alg, 3)
+        assert result is not None, "Single element algebra should have an NU term"
+        assert isinstance(result, str), "Result should be a string"
+    
+    def test_find_nuf_invalid_arity(self):
+        """Test find_nuf with invalid arity (should raise error)."""
+        import uacalc_lib
+        
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
+        find_nuf = uacalc_lib.alg.find_nuf
+        
+        alg = BasicAlgebra("TestAlg", [0, 1], [])
+        
+        # Test with arity < 3 (should fail)
+        with pytest.raises(Exception):  # ValueError or similar
+            find_nuf(alg, 2)
+    
+    def test_find_nuf_no_operations(self):
+        """Test find_nuf with algebra that has no operations."""
+        import uacalc_lib
+        
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
+        find_nuf = uacalc_lib.alg.find_nuf
+        
+        # Create algebra with no operations
+        alg = BasicAlgebra("NoOps", [0, 1], [])
+        
+        # Test Python implementation
+        # The actual behavior depends on malcev::nu_term implementation
+        # It may return None or raise an error
+        try:
+            result = find_nuf(alg, 3)
+            assert result is None or isinstance(result, str)
+        except ValueError:
+            # It's acceptable for it to raise an error when there are no operations
+            pass
+    
+    def test_find_nuf_with_algebra_file(self):
+        """Test find_nuf with a real algebra file if available."""
+        import uacalc_lib
+        from pathlib import Path
+        
+        project_root = Path(__file__).parent.parent.parent.parent
+        algebra_path = project_root / "resources" / "algebras" / "ba2.ua"
+        
+        if not algebra_path.exists():
+            pytest.skip(f"Algebra file {algebra_path} not found")
+        
+        AlgebraReader = uacalc_lib.io.AlgebraReader
+        reader = AlgebraReader.new_from_file(str(algebra_path))
+        alg = reader.read_algebra_file()
+        
+        find_nuf = uacalc_lib.alg.find_nuf
+        
+        # Test Python implementation
+        result = find_nuf(alg, 3)
+        # Result may be None or a string term
+        assert result is None or isinstance(result, str)
+        
+        # Compare with Java wrapper
+        java_result = run_java_wrapper("findNUF", [
+            "--algebra", str(algebra_path),
+            "--arity", "3"
+        ])
+        
+        assert java_result["success"] == True
+        java_term_found = java_result["data"].get("term_found", False)
+        python_term_found = result is not None
+        
+        # Both should agree on whether term exists
+        assert python_term_found == java_term_found, \
+            f"Term existence mismatch: Python={python_term_found}, Java={java_term_found}"
 
