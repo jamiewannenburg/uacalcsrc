@@ -1,0 +1,144 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - main
+      - rust-again
+  pull_request:
+    branches:
+      - main
+      - rust-again
+
+permissions:
+  contents: read
+
+jobs:
+  rust-tests:
+    name: Rust Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Run Rust tests (main crate)
+        run: cargo test --all-features
+
+      - name: Run Rust tests (Python bindings)
+        run: cargo test -p uacalc_lib --all-features
+
+      - name: Install cargo-tarpaulin
+        run: cargo install cargo-tarpaulin
+
+      - name: Generate Rust coverage
+        run: |
+          cargo tarpaulin --out Xml --out Html --output-dir coverage/rust --all-features
+        continue-on-error: true
+
+      - name: Upload Rust coverage
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rust-coverage
+          path: coverage/rust/
+          retention-days: 30
+
+  python-tests:
+    name: Python Tests (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '8'
+
+      - name: Install Ant
+        run: sudo apt-get update && sudo apt-get install -y ant
+
+      - name: Build Java wrappers
+        run: ant compile-wrappers
+
+      - name: Install Maturin
+        run: pip install maturin
+
+      - name: Build Python bindings
+        run: maturin develop --release
+
+      - name: Install test dependencies
+        run: pip install -e ".[test]"
+
+      - name: Run Python tests
+        run: |
+          python -m pytest python/uacalc/tests \
+            --cov=uacalc_lib \
+            --cov-report=html:coverage/python/html \
+            --cov-report=term \
+            --cov-report=xml:coverage/python/coverage.xml \
+            -v
+
+      - name: Upload Python coverage
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: python-coverage-${{ matrix.python-version }}
+          path: coverage/python/
+          retention-days: 30
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: python-test-results-${{ matrix.python-version }}
+          path: |
+            .pytest_cache/
+          retention-days: 7
+
+  test-summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    needs: [rust-tests, python-tests]
+    if: always()
+    steps:
+      - name: Check test results
+        run: |
+          echo "## Test Results Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- Rust tests: ${{ needs.rust-tests.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Python tests: ${{ needs.python-tests.result }}" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ needs.rust-tests.result }}" != "success" ] || [ "${{ needs.python-tests.result }}" != "success" ]; then
+            exit 1
+          fi
+

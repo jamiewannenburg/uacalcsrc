@@ -10,6 +10,37 @@ Currently the java code is mirrored in rust and bindings are exposed to python v
 
 ------------------
 
+## Installation
+
+Pre-built wheels are available for installation without compilation from [GitHub Releases](https://github.com/jamiewannenburg/uacalcsrc/releases):
+
+```bash
+# Install from GitHub Release (replace v0.1.0 with the latest version)
+pip install https://github.com/jamiewannenburg/uacalcsrc/releases/download/v0.0.1/uacalc-0.0.1-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+```
+
+**Note**: Replace `v0.0.1` with the latest release version and choose the appropriate wheel file for your platform and Python version. Available wheels support:
+- **Linux**: x86_64 and aarch64 (manylinux2014)
+- **macOS**: x86_64 and arm64 (universal2)
+- **Windows**: x86_64
+
+For development or if no pre-built wheel is available for your platform, see the [Quick Start](#quick-start) section below.
+
+------------------
+
+## Documentation
+
+📚 **API Documentation**: [View Rust/Python API Documentation](https://jamiewannenburg.github.io/uacalcsrc/)
+
+The documentation is automatically generated from Rust doc comments and includes:
+- Complete Rust API reference
+- Python bindings documentation
+- Code examples and usage patterns
+
+Documentation is built automatically on each push to the main branch and deployed to GitHub Pages.
+
+------------------
+
 ## Quick Start
 
 ### Prerequisites
