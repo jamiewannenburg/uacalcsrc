@@ -86,6 +86,18 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-
 
+      - name: Install Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '8'
+
+      - name: Install Ant
+        run: sudo apt-get update && sudo apt-get install -y ant
+
+      - name: Build Java wrappers
+        run: ant compile-wrappers
+
       - name: Run Rust tests (main crate)
         run: cargo test --all-features
 
