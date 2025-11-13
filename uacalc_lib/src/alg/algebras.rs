@@ -10,6 +10,7 @@ use crate::alg::homomorphism::PyHomomorphism;
 use crate::alg::op::int_operation::PyIntOperation;
 use crate::alg::op::similarity_type::PySimilarityType;
 use crate::alg::conlat::partition::PyPartition;
+use crate::util::PyIntArray;
 use uacalc::alg::op::Operation;
 use uacalc::alg::algebras;
 
@@ -35,6 +36,7 @@ pub fn register_algebras_functions(_py: Python, m: &Bound<'_, PyModule>) -> PyRe
     m.add_function(wrap_pyfunction!(full_transformation_semigroup, m)?)?;
     m.add_function(wrap_pyfunction!(quasi_critical_congruences, m)?)?;
     m.add_function(wrap_pyfunction!(quasi_critical, m)?)?;
+    m.add_function(wrap_pyfunction!(unary_clone, m)?)?;
 
     Ok(())
 }
@@ -491,6 +493,43 @@ fn quasi_critical(py: Python, a: &PyBasicAlgebra) -> PyResult<Option<PyObject>> 
             Ok(Some(py_dict.into()))
         },
         Ok(None) => Ok(None),
+        Err(e) => Err(PyValueError::new_err(e)),
+    }
+}
+
+/// Compute the unary clone set from partitions.
+///
+/// This function computes the set of all unary operations (represented as IntArray)
+/// that respect every partition in `pars` and also respect the partitions `eta0` and `eta1`,
+/// which meet and join to 0 and 1 and permute.
+///
+/// # Arguments
+/// * `pars` - List of partitions that the operations must respect
+/// * `eta0` - First eta partition
+/// * `eta1` - Second eta partition
+///
+/// # Returns
+/// Set of IntArray objects representing unary operations
+///
+/// # Raises
+/// `ValueError` if there's an error (e.g., empty partitions list or mismatched sizes)
+#[pyfunction]
+fn unary_clone(
+    pars: Vec<PyRef<'_, PyPartition>>,
+    eta0: &PyPartition,
+    eta1: &PyPartition,
+) -> PyResult<Vec<PyIntArray>> {
+    let pars_rust: Vec<uacalc::alg::conlat::partition::Partition> = pars.iter()
+        .map(|p| p.inner.clone())
+        .collect();
+    
+    match algebras::unary_clone(&pars_rust, &eta0.inner, &eta1.inner) {
+        Ok(clone_set) => {
+            let py_arrays: Vec<PyIntArray> = clone_set.into_iter()
+                .map(|ia| PyIntArray { inner: ia })
+                .collect();
+            Ok(py_arrays)
+        },
         Err(e) => Err(PyValueError::new_err(e)),
     }
 }

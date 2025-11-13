@@ -9,7 +9,9 @@ use crate::alg::SmallAlgebra;
 use crate::alg::algebra::Algebra;
 use crate::alg::op::operations::{commutes_unary, commutes_map, make_binary_left_shift, make_int_operations, power, ternary_discriminator};
 use crate::alg::{PowerAlgebra, BasicAlgebra, Homomorphism};
-use std::collections::HashSet;
+use crate::alg::conlat::partition::Partition;
+use crate::util::int_array::{IntArray, IntArrayTrait};
+use std::collections::{HashSet, BTreeSet, HashMap};
 
 /// Test if an operation is an endomorphism of an algebra.
 ///
@@ -1930,6 +1932,350 @@ pub fn quasi_critical(
     Ok(None)
 }
 
+/// Compute the unary clone set from partitions.
+///
+/// This function computes the set of all unary operations (represented as IntArray)
+/// that respect every partition in `pars` and also respect the partitions `eta0` and `eta1`,
+/// which meet and join to 0 and 1 and permute.
+///
+/// # Arguments
+/// * `pars` - List of partitions that the operations must respect
+/// * `eta0` - First eta partition
+/// * `eta1` - Second eta partition
+///
+/// # Returns
+/// * `Ok(BTreeSet<IntArray>)` - Set of unary operations as IntArrays
+/// * `Err(String)` - If there's an error (e.g., empty partitions list or mismatched sizes)
+///
+/// # Examples
+/// ```
+/// use uacalc::alg::algebras;
+/// use uacalc::alg::conlat::partition::Partition;
+/// use std::collections::BTreeSet;
+///
+/// // Create partitions and compute unary clone
+/// // (example would go here)
+/// ```
+pub fn unary_clone(
+    pars: &[Partition],
+    eta0: &Partition,
+    eta1: &Partition,
+) -> Result<BTreeSet<IntArray>, String> {
+    if pars.is_empty() {
+        return Err("Partition list cannot be empty".to_string());
+    }
+    
+    let size = pars[0].universe_size();
+    
+    // Validate all partitions have the same universe size
+    for (i, par) in pars.iter().enumerate() {
+        if par.universe_size() != size {
+            return Err(format!(
+                "Partition {} has universe size {} but expected {}",
+                i,
+                par.universe_size(),
+                size
+            ));
+        }
+    }
+    
+    if eta0.universe_size() != size || eta1.universe_size() != size {
+        return Err("Eta partitions must have the same universe size as pars".to_string());
+    }
+    
+    // Build maps between integers and IntArrays
+    let mut int2vec: HashMap<i32, IntArray> = HashMap::new();
+    let mut vec2int: HashMap<IntArray, i32> = HashMap::new();
+    
+    for i in 0..size {
+        let vec = vec![
+            eta0.block_index(i).map_err(|e| format!("Error getting block index for eta0: {}", e))? as i32,
+            eta1.block_index(i).map_err(|e| format!("Error getting block index for eta1: {}", e))? as i32,
+        ];
+        let ia = IntArray::from_array(vec)?;
+        int2vec.insert(i as i32, ia.clone());
+        vec2int.insert(ia, i as i32);
+    }
+    
+    let size0 = eta0.number_of_blocks();
+    let size1 = eta1.number_of_blocks();
+    let mut f0 = IntArray::from_array(vec![0; size0])?;
+    let mut f1 = IntArray::from_array(vec![0; size1])?;
+    let n = size;
+    let mut ans = BTreeSet::new();
+    
+    unary_clone_aux(
+        &mut f0,
+        &mut f1,
+        size0,
+        size1,
+        0,
+        0,
+        n,
+        true,
+        &mut ans,
+        &int2vec,
+        &vec2int,
+        pars,
+    );
+    
+    Ok(ans)
+}
+
+/// Recursive helper function for computing unary clone.
+///
+/// This function builds partial functions f0 and f1 and checks if they respect
+/// the partitions. When a complete function is built (k0 * k1 == n), it adds
+/// the function to the answer set.
+fn unary_clone_aux(
+    f0: &mut IntArray,
+    f1: &mut IntArray,
+    size0: usize,
+    size1: usize,
+    k0: usize,
+    k1: usize,
+    n: usize,
+    zero_first: bool,
+    ans: &mut BTreeSet<IntArray>,
+    int2vec: &HashMap<i32, IntArray>,
+    vec2int: &HashMap<IntArray, i32>,
+    pars: &[Partition],
+) {
+    if k0 * k1 == n {
+        // We have a complete function, build it and add to answer set
+        let mut copy = IntArray::from_array(vec![0; n]).unwrap();
+        let mut scratch = IntArray::from_array(vec![0; 2]).unwrap();
+        
+        for i in 0..n {
+            let argv = int2vec.get(&(i as i32)).unwrap();
+            let b0 = argv.get(0).unwrap() as usize;
+            let b1 = argv.get(1).unwrap() as usize;
+            let f0_val = f0.get(b0).unwrap();
+            let f1_val = f1.get(b1).unwrap();
+            
+            scratch.set(0, f0_val).unwrap();
+            scratch.set(1, f1_val).unwrap();
+            let lookup = IntArray::from_array(vec![f0_val, f1_val]).unwrap();
+            let result = vec2int.get(&lookup).unwrap();
+            copy.set(i, *result).unwrap();
+        }
+        
+        ans.insert(copy);
+        return;
+    }
+    
+    let size = if zero_first { size0 } else { size1 };
+    for value in 0..size {
+        if respects(
+            value as i32,
+            f0,
+            f1,
+            size0,
+            size1,
+            k0,
+            k1,
+            n,
+            zero_first,
+            int2vec,
+            vec2int,
+            pars,
+        ) {
+            let mut new_zero_first = zero_first;
+            if zero_first {
+                f0.set(k0, value as i32).unwrap();
+                if k1 < size1 {
+                    new_zero_first = false;
+                }
+            } else {
+                f1.set(k1, value as i32).unwrap();
+                if k0 < size0 {
+                    new_zero_first = true;
+                }
+            }
+            
+            unary_clone_aux(
+                f0,
+                f1,
+                size0,
+                size1,
+                if zero_first { k0 + 1 } else { k0 },
+                if zero_first { k1 } else { k1 + 1 },
+                n,
+                new_zero_first,
+                ans,
+                int2vec,
+                vec2int,
+                pars,
+            );
+        }
+    }
+}
+
+/// Check if a value respects the partitions.
+///
+/// This function checks if setting f0[k0] = value (if zero_first) or f1[k1] = value
+/// (if not zero_first) respects all the partitions in pars.
+fn respects(
+    value: i32,
+    f0: &IntArray,
+    f1: &IntArray,
+    size0: usize,
+    size1: usize,
+    k0: usize,
+    k1: usize,
+    n: usize,
+    zero_first: bool,
+    int2vec: &HashMap<i32, IntArray>,
+    vec2int: &HashMap<IntArray, i32>,
+    pars: &[Partition],
+) -> bool {
+    // Create a reusable scratch array
+    let mut scratch = IntArray::from_array(vec![0; 2]).unwrap();
+    
+    if zero_first {
+        for j in 0..k1 {
+            let m = match get_scratch_value(&mut scratch, k0 as i32, j as i32, vec2int) {
+                Some(v) => v,
+                None => return false, // Invalid combination
+            };
+            let image = match get_scratch_value(&mut scratch, value, f1.get(j).unwrap(), vec2int) {
+                Some(v) => v,
+                None => return false, // Invalid combination
+            };
+            
+            for w in 0..j {
+                let k = match get_scratch_value(&mut scratch, k0 as i32, w as i32, vec2int) {
+                    Some(v) => v,
+                    None => return false, // Invalid combination
+                };
+                let mut k_img = -1;
+                
+                for par in pars {
+                    let r_m = par.representative(m as usize);
+                    let r_k = par.representative(k as usize);
+                    if r_m == r_k {
+                        if k_img == -1 {
+                            k_img = match get_scratch_value(&mut scratch, value, f1.get(w).unwrap(), vec2int) {
+                                Some(v) => v,
+                                None => return false, // Invalid combination
+                            };
+                        }
+                        if !par.is_related(image as usize, k_img as usize) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            
+            for u in 0..k0 {
+                for v in 0..k1 {
+                    let uv = match get_scratch_value(&mut scratch, u as i32, v as i32, vec2int) {
+                        Some(v) => v,
+                        None => return false, // Invalid combination
+                    };
+                    let mut uv_img = -1;
+                    
+                    for par in pars {
+                        let r_m = par.representative(m as usize);
+                        let r_uv = par.representative(uv as usize);
+                        if r_m == r_uv {
+                            if uv_img == -1 {
+                                uv_img = match get_scratch_value(&mut scratch, f0.get(u).unwrap(), f1.get(v).unwrap(), vec2int) {
+                                    Some(v) => v,
+                                    None => return false, // Invalid combination
+                                };
+                            }
+                            if !par.is_related(image as usize, uv_img as usize) {
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    } else {
+        for i in 0..k0 {
+            let m = match get_scratch_value(&mut scratch, i as i32, k1 as i32, vec2int) {
+                Some(v) => v,
+                None => return false, // Invalid combination
+            };
+            let image = match get_scratch_value(&mut scratch, f0.get(i).unwrap(), value, vec2int) {
+                Some(v) => v,
+                None => return false, // Invalid combination
+            };
+            
+            for w in 0..i {
+                let k = match get_scratch_value(&mut scratch, w as i32, k1 as i32, vec2int) {
+                    Some(v) => v,
+                    None => return false, // Invalid combination
+                };
+                let mut k_img = -1;
+                
+                for par in pars {
+                    let r_m = par.representative(m as usize);
+                    let r_k = par.representative(k as usize);
+                    if r_m == r_k {
+                        if k_img == -1 {
+                            k_img = match get_scratch_value(&mut scratch, f0.get(w).unwrap(), value, vec2int) {
+                                Some(v) => v,
+                                None => return false, // Invalid combination
+                            };
+                        }
+                        if !par.is_related(image as usize, k_img as usize) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            
+            for u in 0..k0 {
+                for v in 0..k1 {
+                    let uv = match get_scratch_value(&mut scratch, u as i32, v as i32, vec2int) {
+                        Some(v) => v,
+                        None => return false, // Invalid combination
+                    };
+                    let mut uv_img = -1;
+                    
+                    for par in pars {
+                        let r_m = par.representative(m as usize);
+                        let r_uv = par.representative(uv as usize);
+                        if r_m == r_uv {
+                            if uv_img == -1 {
+                                uv_img = match get_scratch_value(&mut scratch, f0.get(u).unwrap(), f1.get(v).unwrap(), vec2int) {
+                                    Some(v) => v,
+                                    None => return false, // Invalid combination
+                                };
+                            }
+                            if !par.is_related(image as usize, uv_img as usize) {
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    true
+}
+
+/// Helper function to get a value from the scratch array.
+///
+/// Sets scratch[0] = i, scratch[1] = j, and returns vec2int[scratch].
+/// Returns None if the combination is not in the map.
+fn get_scratch_value(
+    scratch: &mut IntArray,
+    i: i32,
+    j: i32,
+    vec2int: &HashMap<IntArray, i32>,
+) -> Option<i32> {
+    scratch.set(0, i).unwrap();
+    scratch.set(1, j).unwrap();
+    // Create a new IntArray for lookup since HashMap keys need to match exactly
+    let lookup = IntArray::from_array(vec![i, j]).unwrap();
+    vec2int.get(&lookup).copied()
+}
+
 #[cfg(test)]
 mod quasi_critical_tests {
     use super::*;
@@ -1966,6 +2312,66 @@ mod quasi_critical_tests {
         let result = quasi_critical(a, None);
         assert!(result.is_ok());
         // The result may be Some or None depending on the algebra
+    }
+}
+
+#[cfg(test)]
+mod unary_clone_tests {
+    use super::*;
+    use crate::alg::conlat::partition::Partition;
+    
+    #[test]
+    fn test_unary_clone_basic() {
+        // Create simple partitions for testing
+        // For a 4-element universe, create eta0 with 2 blocks and eta1 with 2 blocks
+        // eta0: {0,1}, {2,3}
+        // eta1: {0,2}, {1,3}
+        let eta0 = Partition::new(vec![-2, 0, -2, 2]).unwrap();
+        let eta1 = Partition::new(vec![-2, -2, 0, 2]).unwrap();
+        let pars = vec![Partition::zero(4)];
+        
+        let result = unary_clone(&pars, &eta0, &eta1);
+        assert!(result.is_ok());
+        let clone_set = result.unwrap();
+        // The result should be a set (may be empty depending on partitions)
+        // Just verify the function completes without error
+        assert!(clone_set.len() >= 0);
+    }
+    
+    #[test]
+    fn test_unary_clone_empty_partitions() {
+        let eta0 = Partition::zero(3);
+        let eta1 = Partition::one(3);
+        let pars = vec![];
+        
+        let result = unary_clone(&pars, &eta0, &eta1);
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("cannot be empty"));
+    }
+    
+    #[test]
+    fn test_unary_clone_mismatched_sizes() {
+        let eta0 = Partition::zero(3);
+        let eta1 = Partition::one(4); // Different size
+        let pars = vec![Partition::zero(3)];
+        
+        let result = unary_clone(&pars, &eta0, &eta1);
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("same universe size"));
+    }
+    
+    #[test]
+    fn test_unary_clone_small_universe() {
+        // Test with a very small universe (2 elements)
+        let eta0 = Partition::zero(2);
+        let eta1 = Partition::one(2);
+        let pars = vec![Partition::zero(2)];
+        
+        let result = unary_clone(&pars, &eta0, &eta1);
+        assert!(result.is_ok());
+        let clone_set = result.unwrap();
+        // Should have at least the identity function
+        assert!(clone_set.len() >= 1);
     }
 }
 

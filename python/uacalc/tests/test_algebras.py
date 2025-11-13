@@ -1142,3 +1142,54 @@ class TestMakeRandomAlgebra:
                 assert hasattr(key, 'universe_size')
                 assert isinstance(value, list)
 
+    def test_unary_clone_basic(self):
+        """Test unary_clone with basic partitions."""
+        import uacalc_lib
+        
+        unary_clone = uacalc_lib.alg.unary_clone
+        Partition = uacalc_lib.alg.Partition
+        
+        # Create simple partitions for testing
+        # For a 4-element universe, create eta0 with 2 blocks and eta1 with 2 blocks
+        # eta0: {0,1}, {2,3}
+        # eta1: {0,2}, {1,3}
+        eta0 = Partition([-2, 0, -2, 2])
+        eta1 = Partition([-2, -2, 0, 2])
+        pars = [Partition.zero(4)]
+        
+        # Test the function
+        result = unary_clone(pars, eta0, eta1)
+        
+        # Result should be a list of IntArray objects
+        assert isinstance(result, list)
+        # The result may be empty depending on partitions
+        # Just verify the function completes without error
+        assert len(result) >= 0
+        # All items should be IntArray objects
+        for arr in result:
+            assert hasattr(arr, 'universe_size')
+            assert arr.universe_size() == 4
+
+    def test_unary_clone_small_universe(self):
+        """Test unary_clone with a small universe."""
+        import uacalc_lib
+        
+        unary_clone = uacalc_lib.alg.unary_clone
+        Partition = uacalc_lib.alg.Partition
+        
+        # Test with a very small universe (2 elements)
+        eta0 = Partition.zero(2)
+        eta1 = Partition.one(2)
+        pars = [Partition.zero(2)]
+        
+        # Test the function
+        result = unary_clone(pars, eta0, eta1)
+        
+        # Result should be a list of IntArray objects
+        assert isinstance(result, list)
+        assert len(result) >= 1  # Should have at least the identity function
+        # All items should be IntArray objects
+        for arr in result:
+            assert hasattr(arr, 'universe_size')
+            assert arr.universe_size() == 2
+

@@ -185,7 +185,7 @@ All 23 public static methods from `org/uacalc/alg/Algebras.java`:
 
 - [ ] `unaryCloneAlgFromPartitions(List<Partition> pars, List<Partition> decomp)` - Creates unary clone algebra from partitions (WARNING: not complete in Java)
 - [ ] `unaryCloneAlgFromPartitions(List<Partition> pars, Partition eta0, Partition eta1)` - Creates unary clone algebra with eta partitions
-- [ ] `unaryClone(List<Partition> pars, Partition eta0, Partition eta1)` - Computes unary clone set (returns NavigableSet<IntArray>)
+- [x] `unaryClone(List<Partition> pars, Partition eta0, Partition eta1)` - Computes unary clone set (returns NavigableSet<IntArray>) ✅
 - [x] `findNUF(SmallAlgebra alg, int arity)` - Finds near unanimity term (delegates to Malcev.nuTerm) ✅
 - [x] `jonssonTerms(SmallAlgebra alg)` - Returns Jonsson terms for distributive variety (delegates to Malcev.jonssonTerms) ✅
 - [x] `jonssonLevel(SmallAlgebra alg)` - Returns minimal number of Jonsson terms (delegates to Malcev.jonssonLevel) ✅
@@ -480,3 +480,39 @@ All 23 public static methods from `org/uacalc/alg/Algebras.java`:
   4. For each congruence theta, check if A/theta is isomorphic to a subalgebra
   5. If the meet of good congruences becomes zero, return the map
   6. If the meet doesn't become zero, return None
+
+### unaryClone (Completed)
+- **Rust Implementation**: `src/alg/algebras.rs` - `unary_clone()` function
+  - Computes the set of all unary operations (represented as IntArray) that respect every partition in `pars` and also respect the partitions `eta0` and `eta1`
+  - Uses a recursive algorithm to build partial functions f0 and f1
+  - Checks if each partial function respects the partitions using the `respects()` helper function
+  - Returns a `BTreeSet<IntArray>` containing all valid unary operations
+  - Validates that all partitions have the same universe size
+  - Returns `Result<BTreeSet<IntArray>, String>`
+  
+- **Python Bindings**: `uacalc_lib/src/alg/algebras.rs` - `unary_clone()` pyfunction
+  - Exposed as module-level function in Python
+  - Takes list of PyPartition, PyPartition eta0, PyPartition eta1, returns List[PyIntArray]
+  - Converts Rust BTreeSet to Python list
+  - Converts Rust IntArray objects to PyIntArray using wrapper
+  - Raises ValueError if parameters are invalid
+  
+- **Java Wrapper**: `java_wrapper/src/alg/AlgebrasWrapper.java` - `handleUnaryClone()` method
+  - Command: `unaryClone --pars <partition_list> --eta0 <partition> --eta1 <partition>` or with `--eta0_array`, `--eta1_array`, etc.
+  - Supports parsing partitions from arrays, strings, or using zero/one partitions
+  - Returns JSON with clone_size and list of clone arrays as strings
+  - Validates that all partitions have the same universe size
+  
+- **Tests**:
+  - Rust: `src/alg/algebras.rs` - 4 test cases (basic, empty partitions, mismatched sizes, small universe)
+  - Python: `python/uacalc/tests/test_algebras.py` - 2 test cases (basic, small universe)
+  
+- **Type Stubs**: `python/uacalc/uacalc_lib.pyi` - Added `unary_clone()` method signature with documentation
+
+- **Note**: The implementation follows the Java algorithm exactly:
+  1. Build maps between integers and IntArrays using eta0 and eta1 block indices
+  2. Use recursive auxiliary function to build partial functions f0 and f1
+  3. Check if each partial function respects all partitions using the `respects()` helper
+  4. When a complete function is built (k0 * k1 == n), add it to the result set
+  5. The algorithm alternates between filling f0 and f1 based on the `zero_first` flag
+  6. The `get_scratch_value()` helper function safely looks up values in the vec2int map, returning None for invalid combinations

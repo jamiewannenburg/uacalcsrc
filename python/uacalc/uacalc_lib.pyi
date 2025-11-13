@@ -1983,6 +1983,26 @@ class alg:
     Raises:
         ValueError: If there's an error during computation
     """
+    
+    @staticmethod
+    def unary_clone(pars: List["alg.Partition"], eta0: "alg.Partition", eta1: "alg.Partition") -> List["util.IntArray"]: ...
+    """Compute the unary clone set from partitions.
+    
+    This function computes the set of all unary operations (represented as IntArray)
+    that respect every partition in `pars` and also respect the partitions `eta0` and `eta1`,
+    which meet and join to 0 and 1 and permute.
+    
+    Args:
+        pars: List of partitions that the operations must respect
+        eta0: First eta partition
+        eta1: Second eta partition
+        
+    Returns:
+        List of IntArray objects representing unary operations
+        
+    Raises:
+        ValueError: If there's an error (e.g., empty partitions list or mismatched sizes)
+    """
 
 # ============================================================================
 # UTIL MODULE (Partial - will be expanded)

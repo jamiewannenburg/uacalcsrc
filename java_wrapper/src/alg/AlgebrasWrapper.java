@@ -123,6 +123,10 @@ public class AlgebrasWrapper extends WrapperBase {
                 handleQuasiCritical(options);
                 break;
                 
+            case "unaryClone":
+                handleUnaryClone(options);
+                break;
+                
             default:
                 handleError("Unknown command: " + command, null);
         }
@@ -1027,5 +1031,117 @@ public class AlgebrasWrapper extends WrapperBase {
         response.put("status", "success");
         
         handleSuccess(response);
+    }
+    
+    /**
+     * Handle unaryClone command - compute unary clone set from partitions.
+     */
+    private void handleUnaryClone(Map<String, String> options) throws Exception {
+        // Get partitions list
+        List<org.uacalc.alg.conlat.Partition> pars = getPartitionListArg(options, "pars");
+        
+        // Get eta0 partition
+        org.uacalc.alg.conlat.Partition eta0 = getPartitionArg(options, "eta0");
+        
+        // Get eta1 partition
+        org.uacalc.alg.conlat.Partition eta1 = getPartitionArg(options, "eta1");
+        
+        // Call Java method
+        java.util.NavigableSet<org.uacalc.util.IntArray> cloneSet = Algebras.unaryClone(pars, eta0, eta1);
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("command", "unaryClone");
+        response.put("clone_size", cloneSet != null ? cloneSet.size() : 0);
+        
+        if (cloneSet != null && !cloneSet.isEmpty()) {
+            List<String> arrayStrings = new ArrayList<>();
+            for (org.uacalc.util.IntArray ia : cloneSet) {
+                arrayStrings.add(ia.toString());
+            }
+            response.put("clone_arrays", arrayStrings);
+        }
+        
+        response.put("status", "success");
+        
+        handleSuccess(response);
+    }
+    
+    /**
+     * Get a partition from command line arguments.
+     */
+    private org.uacalc.alg.conlat.Partition getPartitionArg(Map<String, String> options, String key) throws Exception {
+        String arrayStr = getOptionalArg(options, key + "_array", null);
+        if (arrayStr != null) {
+            int[] array = parseIntArray(arrayStr);
+            return new org.uacalc.alg.conlat.BasicPartition(array);
+        }
+        
+        String str = getOptionalArg(options, key + "_str", null);
+        if (str != null) {
+            String lengthStr = getOptionalArg(options, key + "_length", null);
+            Integer length = lengthStr != null ? Integer.parseInt(lengthStr) : null;
+            if (length != null) {
+                return new org.uacalc.alg.conlat.BasicPartition(str, length);
+            } else {
+                return new org.uacalc.alg.conlat.BasicPartition(str);
+            }
+        }
+        
+        // Default to zero partition of size 3
+        int size = getIntArg(options, key + "_size", 3);
+        return org.uacalc.alg.conlat.BasicPartition.zero(size);
+    }
+    
+    /**
+     * Get a list of partitions from command line arguments.
+     */
+    private List<org.uacalc.alg.conlat.Partition> getPartitionListArg(Map<String, String> options, String key) throws Exception {
+        String value = options.get(key);
+        if (value == null) {
+            // Default partitions for testing
+            return Arrays.asList(
+                org.uacalc.alg.conlat.BasicPartition.zero(3)
+            );
+        }
+        
+        // Parse partition strings
+        List<org.uacalc.alg.conlat.Partition> partitions = new ArrayList<>();
+        String[] parts = value.split(",");
+        for (String part : parts) {
+            part = part.trim();
+            if (part.equals("zero")) {
+                int size = getIntArg(options, "size", 3);
+                partitions.add(org.uacalc.alg.conlat.BasicPartition.zero(size));
+            } else if (part.equals("one")) {
+                int size = getIntArg(options, "size", 3);
+                partitions.add(org.uacalc.alg.conlat.BasicPartition.one(size));
+            } else {
+                // Try to parse as partition string
+                try {
+                    partitions.add(new org.uacalc.alg.conlat.BasicPartition(part));
+                } catch (Exception e) {
+                    throw new Exception("Invalid partition format: " + part);
+                }
+            }
+        }
+        
+        return partitions;
+    }
+    
+    /**
+     * Parse an integer array from string representation.
+     */
+    private int[] parseIntArray(String arrayStr) throws Exception {
+        arrayStr = arrayStr.trim();
+        if (arrayStr.startsWith("[") && arrayStr.endsWith("]")) {
+            arrayStr = arrayStr.substring(1, arrayStr.length() - 1);
+        }
+        
+        String[] parts = arrayStr.split(",");
+        int[] array = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) {
+            array[i] = Integer.parseInt(parts[i].trim());
+        }
+        return array;
     }
 }
