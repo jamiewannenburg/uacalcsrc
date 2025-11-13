@@ -90,7 +90,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '8'
+          java-version: '11'
 
       - name: Install Ant
         run: sudo apt-get update && sudo apt-get install -y ant
@@ -145,7 +145,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '8'
+          java-version: '11'
 
       - name: Install Ant
         run: sudo apt-get update && sudo apt-get install -y ant
