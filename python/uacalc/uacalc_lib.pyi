@@ -1661,6 +1661,46 @@ class alg:
     
     class Closer: ...
     class CloserTiming: ...
+    
+    # Module-level functions for algebra operations
+    @staticmethod
+    def is_endomorphism(endo: "alg.IntOperation", alg: "alg.BasicAlgebra") -> bool: ...
+    """Test if an operation is an endomorphism of an algebra.
+    
+    An endomorphism is a unary operation that commutes with all operations
+    of the algebra. This means that for any operation f and endomorphism e,
+    we have: e(f(x1, x2, ..., xn)) = f(e(x1), e(x2), ..., e(xn))
+    
+    Args:
+        endo: The operation to test (must be unary, IntOperation)
+        alg: The algebra to test against (BasicAlgebra)
+        
+    Returns:
+        True if the operation is an endomorphism, False otherwise
+        
+    Raises:
+        ValueError: If the operation is not unary or there's an error
+    """
+    
+    @staticmethod
+    def is_homomorphism(map: List[int], alg0: "alg.BasicAlgebra", alg1: "alg.BasicAlgebra") -> bool: ...
+    """Test if a map is a homomorphism from one algebra to another.
+    
+    A homomorphism is a map h: A -> B such that for any operation f in alg0
+    and corresponding operation g in alg1 (with the same symbol), we have:
+    h(f(x1, x2, ..., xn)) = g(h(x1), h(x2), ..., h(xn))
+    
+    Args:
+        map: A list of integers defining the map from elements of alg0 to elements of alg1
+        alg0: The source algebra (BasicAlgebra)
+        alg1: The target algebra (BasicAlgebra)
+        
+    Returns:
+        True if the map is a homomorphism, False otherwise
+        
+    Raises:
+        ValueError: If there's an error (e.g., map size mismatch, missing operation)
+    """
 
 # ============================================================================
 # UTIL MODULE (Partial - will be expanded)

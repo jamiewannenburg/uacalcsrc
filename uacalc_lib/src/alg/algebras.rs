@@ -16,6 +16,7 @@ use uacalc::alg::algebras;
 /// as module-level functions in Python.
 pub fn register_algebras_functions(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(is_endomorphism, m)?)?;
+    m.add_function(wrap_pyfunction!(is_homomorphism, m)?)?;
 
     Ok(())
 }
@@ -37,6 +38,30 @@ pub fn register_algebras_functions(_py: Python, m: &Bound<'_, PyModule>) -> PyRe
 #[pyfunction]
 fn is_endomorphism(endo: &PyIntOperation, alg: &PyBasicAlgebra) -> PyResult<bool> {
     match algebras::is_endomorphism(&endo.inner as &dyn Operation, &alg.inner) {
+        Ok(result) => Ok(result),
+        Err(e) => Err(PyValueError::new_err(e)),
+    }
+}
+
+/// Test if a map is a homomorphism from one algebra to another.
+///
+/// A homomorphism is a map h: A -> B such that for any operation f in alg0
+/// and corresponding operation g in alg1 (with the same symbol), we have:
+/// h(f(x1, x2, ..., xn)) = g(h(x1), h(x2), ..., h(xn))
+///
+/// # Arguments
+/// * `map` - A list of integers defining the map from elements of alg0 to elements of alg1
+/// * `alg0` - The source algebra (BasicAlgebra)
+/// * `alg1` - The target algebra (BasicAlgebra)
+///
+/// # Returns
+/// `True` if the map is a homomorphism, `False` otherwise
+///
+/// # Raises
+/// `ValueError` if there's an error (e.g., map size mismatch, missing operation)
+#[pyfunction]
+fn is_homomorphism(map: Vec<i32>, alg0: &PyBasicAlgebra, alg1: &PyBasicAlgebra) -> PyResult<bool> {
+    match algebras::is_homomorphism(&map, &alg0.inner, &alg1.inner) {
         Ok(result) => Ok(result),
         Err(e) => Err(PyValueError::new_err(e)),
     }

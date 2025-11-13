@@ -58,6 +58,10 @@ public class AlgebrasWrapper extends WrapperBase {
                 handleIsEndomorphism(options);
                 break;
                 
+            case "isHomomorphism":
+                handleIsHomomorphism(options);
+                break;
+                
             default:
                 handleError("Unknown command: " + command, null);
         }
@@ -161,12 +165,88 @@ public class AlgebrasWrapper extends WrapperBase {
     
     
     /**
+     * Handle isHomomorphism command - test if a map is a homomorphism.
+     */
+    private void handleIsHomomorphism(Map<String, String> options) throws Exception {
+        // Get algebra files or create test algebras
+        String alg0File = options.get("algebra0");
+        String alg1File = options.get("algebra1");
+        SmallAlgebra alg0;
+        SmallAlgebra alg1;
+        
+        if (alg0File != null && !alg0File.isEmpty() && alg1File != null && !alg1File.isEmpty()) {
+            // Load algebras from files
+            File file0 = new File(alg0File);
+            File file1 = new File(alg1File);
+            if (!file0.exists()) {
+                handleError("Algebra file not found: " + alg0File, null);
+                return;
+            }
+            if (!file1.exists()) {
+                handleError("Algebra file not found: " + alg1File, null);
+                return;
+            }
+            alg0 = AlgebraIO.readAlgebraFile(file0);
+            alg1 = AlgebraIO.readAlgebraFile(file1);
+        } else {
+            // Create simple test algebras
+            int size = getIntArg(options, "size", 2);
+            alg0 = makeTestAlgebra(size);
+            alg1 = makeTestAlgebra(size);
+        }
+        
+        // Get map - can be specified as comma-separated values
+        String mapSpec = options.get("map");
+        if (mapSpec == null || mapSpec.isEmpty()) {
+            handleError("Required argument missing: map", null);
+            return;
+        }
+        
+        int[] map = parseMap(mapSpec, alg0.cardinality());
+        
+        // Call Java method
+        boolean result = Algebras.isHomomorphism(map, alg0, alg1);
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("command", "isHomomorphism");
+        response.put("result", result);
+        response.put("algebra0_size", alg0.cardinality());
+        response.put("algebra1_size", alg1.cardinality());
+        response.put("map_size", map.length);
+        response.put("status", "success");
+        
+        handleSuccess(response);
+    }
+    
+    /**
+     * Parse a map from string specification.
+     * Format: comma-separated values
+     * Example: "0,1" for identity map on 2-element set
+     */
+    private int[] parseMap(String mapSpec, int expectedSize) throws Exception {
+        String[] parts = mapSpec.split(",");
+        int[] map = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) {
+            map[i] = Integer.parseInt(parts[i].trim());
+        }
+        
+        if (map.length != expectedSize) {
+            throw new IllegalArgumentException(
+                "Map size " + map.length + " does not match algebra size " + expectedSize);
+        }
+        
+        return map;
+    }
+    
+    /**
      * Show usage information for the Algebras wrapper.
      */
     private void showUsage() {
         String[] examples = {
             "isEndomorphism --algebra algebras/ba2.ua --operation \"1:0,1\"",
             "isEndomorphism --size 2 --operation \"1:0,1\"",
+            "isHomomorphism --algebra0 algebras/ba2.ua --algebra1 algebras/ba2.ua --map \"0,1\"",
+            "isHomomorphism --size 2 --map \"0,1\"",
             "help"
         };
         

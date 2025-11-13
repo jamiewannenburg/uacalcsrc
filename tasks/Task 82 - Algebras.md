@@ -3,7 +3,6 @@
 **Java File:** `org/uacalc/alg/Algebras.java`  
 **Package:** `org.uacalc.alg`  
 **Rust Module:** `alg::Algebras`  
-**Dependencies:** 15+ (many critical dependencies missing)  
 **Estimated Public Methods:** ~23
 
 ## Java Class Analysis
@@ -61,8 +60,6 @@
 - `Horner` - ✅ **COMPLETED** - Horner encoding (Task 3)
 - `ArrayIncrementor` - ✅ **COMPLETED** - Array incrementor (Task 14)
 - `SequenceGenerator` - ✅ **COMPLETED** - Sequence generator (Task 15)
-
-**UI Dependencies (can be made optional):**
 - `ProgressReport` - ✅ **COMPLETED** - Progress reporting interface (implemented as trait in `src/progress.rs`)
 
 ## Rust Implementation Recommendations
@@ -98,12 +95,7 @@ pub fn make_random_algebra_safe(
 }
 ```
 
-### 4. Dependencies Resolution
-- **Cannot implement until dependencies are complete**: This class has too many critical dependencies
-- **Priority order**: Implement in dependency order (Tasks 1-84 before this)
-- **Mock implementations**: Consider creating mock implementations for testing
-
-### 5. Java Wrapper Suitability
+### 4. Java Wrapper Suitability
 - **Suitable for testing**: Yes, once dependencies are implemented
 - **All methods can be exposed**: All 23 public methods can be wrapped
 - **Complex parameter types**: Will need careful handling of collections and complex objects
@@ -111,10 +103,12 @@ pub fn make_random_algebra_safe(
 ## Implementation Status
 
 ### Current State
-- **Rust Implementation**: Not started (blocked by dependencies)
-- **Python Bindings**: Not created (blocked by dependencies)
-- **Java Wrapper**: Not created (blocked by dependencies)
-- **Tests**: Not created (blocked by dependencies)
+- **Completion**: 8% (2/23 methods implemented)
+- **Rust Implementation**: Started for methods checked below
+- **Python Bindings**: Started for methods checked below
+- **Java Wrapper**: Started for methods checked below
+- **Tests**: Started for methods checked below
+- **Type Stubs**: Started for methods checked below
 
 ### Dependency Analysis
 
@@ -140,18 +134,32 @@ pub fn make_random_algebra_safe(
 - `Homomorphism` (Task 43) - ✅ **COMPLETED** - Fully implemented in `src/alg/homomorphism.rs`
 - `ProgressReport` - ✅ **COMPLETED** - Progress reporting trait in `src/progress.rs`
 
+## Compiling
+
+### Rust
+- Check quickly before build `RUSTFLAGS="-A warnings" cargo check`
+- Build with `RUSTFLAGS="-A warnings" cargo build`
+
+### Java Wrapper
+- Use `ant compile-wrappers`
+
+### Python bindings
+- Use `source venv/bin/activate && RUSTFLAGS="-A warnings" maturin develop`
+
 ## Testing Strategy
 
 ### Rust Tests
 - Test all 23 public methods
-- Use mock implementations for dependencies initially
 - Test error conditions and edge cases
 - Compare against Java implementation
+- Use `RUSTFLAGS="-A warnings" cargo test`
 
 ### Python Tests
 - Expose all methods through Python bindings
 - Test parameter validation
+- Compare against Java implementation
 - Test return value types
+- Use `source venv/bin/activate && pytest`
 
 ### Java Wrapper
 - Create comprehensive CLI wrapper
@@ -159,23 +167,17 @@ pub fn make_random_algebra_safe(
 - Handle complex parameter types (collections, objects)
 - Output results in JSON format for comparison
 
+### Type stubs
+- Create type stubs in `python/uacalc/uacalc_lib.pyi` for the Algebras class and methods
+
 ## Acceptance Criteria
 - [ ] All 23 public methods translated to Rust
 - [ ] Python bindings expose all public methods
 - [ ] Java CLI wrapper created with all public methods
 - [ ] Rust tests pass with timeouts enabled
 - [ ] Python tests pass and match Java output
-- [ ] Code compiles without warnings
+- [ ] Code compiles without errors
 - [ ] Documentation complete
-- [ ] **All blocking dependencies implemented first**
-
-## Current Implementation Status
-- **Status**: ✅ READY (All dependencies complete)
-- **Completion**: 0% (0/23 methods implemented)
-- **Rust Implementation**: ❌ Not started
-- **Python Bindings**: ❌ Not started
-- **Java Wrapper**: ❌ Not started
-- **Tests**: ❌ Not started
 
 ## Public Methods List
 
@@ -188,7 +190,7 @@ All 23 public static methods from `org/uacalc/alg/Algebras.java`:
 - [ ] `jonssonTerms(SmallAlgebra alg)` - Returns Jonsson terms for distributive variety (delegates to Malcev.jonssonTerms)
 - [ ] `jonssonLevel(SmallAlgebra alg)` - Returns minimal number of Jonsson terms (delegates to Malcev.jonssonLevel)
 - [x] `isEndomorphism(Operation endo, SmallAlgebra alg)` - Tests if operation is endomorphism ✅
-- [ ] `isHomomorphism(int[] map, SmallAlgebra alg0, SmallAlgebra alg1)` - Tests if map is homomorphism
+- [x] `isHomomorphism(int[] map, SmallAlgebra alg0, SmallAlgebra alg1)` - Tests if map is homomorphism ✅
 - [ ] `matrixPower(SmallAlgebra alg, int k)` - Creates matrix power algebra
 - [ ] `fullTransformationSemigroup(int n, boolean includeConstants, boolean includeId)` - Creates transformation semigroup
 - [ ] `findInClone(List<Operation> ops, SmallAlgebra A, ProgressReport report)` - Finds operations in clone

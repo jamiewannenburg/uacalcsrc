@@ -149,4 +149,109 @@ class TestAlgebras:
         # The Java test algebra uses first projection, so swap may or may not be an endomorphism
         # We just verify the call works
         assert "result" in java_result["data"]
+    
+    def test_is_homomorphism_identity(self):
+        """Test is_homomorphism with identity map."""
+        import uacalc_lib
+        
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
+        OperationSymbol = uacalc_lib.alg.OperationSymbol
+        Operations = uacalc_lib.alg.Operations
+        is_homomorphism = uacalc_lib.alg.is_homomorphism
+        
+        # Create two identical algebras with a binary operation (first projection)
+        sym = OperationSymbol("f", 2, False)
+        table = [0, 0, 1, 1]  # f(0,0)=0, f(0,1)=0, f(1,0)=1, f(1,1)=1
+        op = Operations.make_int_operation(sym, 2, table)
+        alg0 = BasicAlgebra("Alg0", [0, 1], [op])
+        alg1 = BasicAlgebra("Alg1", [0, 1], [op])
+        
+        # Identity map: 0 -> 0, 1 -> 1
+        map = [0, 1]
+        
+        # Test Python implementation
+        result = is_homomorphism(map, alg0, alg1)
+        assert result == True, "Identity map should be a homomorphism"
+        
+        # Compare with Java wrapper
+        java_result = run_java_wrapper("isHomomorphism", [
+            "--size", "2",
+            "--map", "0,1"
+        ])
+        
+        assert java_result["success"] == True
+        assert java_result["data"]["result"] == True
+        assert java_result["data"]["result"] == result, "Python and Java should match"
+    
+    def test_is_homomorphism_constant(self):
+        """Test is_homomorphism with constant map."""
+        import uacalc_lib
+        
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
+        OperationSymbol = uacalc_lib.alg.OperationSymbol
+        Operations = uacalc_lib.alg.Operations
+        is_homomorphism = uacalc_lib.alg.is_homomorphism
+        
+        # Create two algebras with constant operation
+        const_sym = OperationSymbol("const", 2, False)
+        const_table = [0, 0, 0, 0]  # always returns 0
+        const_op = Operations.make_int_operation(const_sym, 2, const_table)
+        alg0 = BasicAlgebra("Alg0", [0, 1], [const_op])
+        alg1 = BasicAlgebra("Alg1", [0, 1], [const_op])
+        
+        # Constant map: 0 -> 0, 1 -> 0
+        map = [0, 0]
+        
+        # Test Python implementation
+        result = is_homomorphism(map, alg0, alg1)
+        assert result == True, "Constant map should be a homomorphism for constant operation"
+    
+    def test_is_homomorphism_non_homomorphism(self):
+        """Test is_homomorphism with map that is not a homomorphism."""
+        import uacalc_lib
+        
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
+        OperationSymbol = uacalc_lib.alg.OperationSymbol
+        Operations = uacalc_lib.alg.Operations
+        is_homomorphism = uacalc_lib.alg.is_homomorphism
+        
+        # Alg0: f(x,y) = x (first projection)
+        sym0 = OperationSymbol("f", 2, False)
+        table0 = [0, 0, 1, 1]  # f(0,0)=0, f(0,1)=0, f(1,0)=1, f(1,1)=1
+        op0 = Operations.make_int_operation(sym0, 2, table0)
+        alg0 = BasicAlgebra("Alg0", [0, 1], [op0])
+        
+        # Alg1: f(x,y) = y (second projection)
+        sym1 = OperationSymbol("f", 2, False)
+        table1 = [0, 1, 0, 1]  # f(0,0)=0, f(0,1)=1, f(1,0)=0, f(1,1)=1
+        op1 = Operations.make_int_operation(sym1, 2, table1)
+        alg1 = BasicAlgebra("Alg1", [0, 1], [op1])
+        
+        # Identity map: 0 -> 0, 1 -> 1
+        map = [0, 1]
+        
+        # Test Python implementation
+        # Identity map is NOT a homomorphism from first projection to second projection
+        # f(0,1) = 0 in alg0, so h(f(0,1)) = h(0) = 0
+        # f(h(0), h(1)) = f(0, 1) = 1 in alg1
+        # 0 != 1, so not a homomorphism
+        result = is_homomorphism(map, alg0, alg1)
+        assert result == False, "Identity map should not be a homomorphism for different operations"
+    
+    def test_is_homomorphism_wrong_map_size(self):
+        """Test is_homomorphism with wrong map size (should raise error)."""
+        import uacalc_lib
+        
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
+        is_homomorphism = uacalc_lib.alg.is_homomorphism
+        
+        alg0 = BasicAlgebra("Alg0", [0, 1], [])
+        alg1 = BasicAlgebra("Alg1", [0, 1], [])
+        
+        # Map with wrong size
+        map = [0]  # Should be size 2
+        
+        # Test Python implementation - should raise ValueError
+        with pytest.raises(Exception):  # ValueError or similar
+            is_homomorphism(map, alg0, alg1)
 
