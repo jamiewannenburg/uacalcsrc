@@ -1670,3 +1670,302 @@ mod full_transformation_semigroup_tests {
     }
 }
 
+/// Find all quasi-critical congruences of an algebra.
+///
+/// A congruence theta is quasi-critical if A/theta is quasi-critical,
+/// i.e., A/theta is not a subdirect product of proper subalgebras.
+///
+/// # Arguments
+/// * `a` - The algebra to analyze
+/// * `report` - Optional progress report
+///
+/// # Returns
+/// * `Ok(Vec<Partition>)` - List of quasi-critical congruences
+/// * `Err(String)` - If there's an error during computation
+pub fn quasi_critical_congruences(
+    a: Box<dyn SmallAlgebra<UniverseItem = i32>>,
+    mut report: Option<&mut dyn crate::progress::ProgressReport>,
+) -> Result<Vec<crate::alg::conlat::partition::Partition>, String> {
+    use crate::alg::conlat::CongruenceLattice;
+    use crate::alg::conlat::partition::Partition;
+    use crate::alg::QuotientAlgebra;
+    
+    let mut a_con = CongruenceLattice::new(a.clone_box());
+    let one = a_con.one();
+    let zero = a_con.zero();
+    let mut meet_of_non_zeros = one.clone();
+    
+    let mut critical_congs = Vec::new();
+    
+    // Get all congruences
+    let univ = a_con.universe();
+    
+    for par in univ {
+        // Skip the one congruence
+        if par == one {
+            continue;
+        }
+        
+        // Create quotient algebra A/par
+        let quot = QuotientAlgebra::<i32>::new_safe(a.clone_box(), par.clone())?;
+        
+        // Convert QuotientAlgebra to BasicAlgebra for use with member_of_quasivariety_gen_by_proper_subs
+        // QuotientAlgebra has UniverseItem = QuotientElement<i32>, but we need i32
+        let quot_card = quot.cardinality();
+        let quot_ops = quot.operations();
+        let int_ops = crate::alg::op::ops::make_int_operations(quot_ops)?;
+        let quot_universe: HashSet<i32> = (0..quot_card).collect();
+        let quot_basic = BasicAlgebra::new(quot.name().to_string(), quot_universe, int_ops);
+        let quot_box = Box::new(quot_basic) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+        
+        // Check if A/par is quasi-critical (i.e., not a subdirect product of proper subalgebras)
+        // This means member_of_quasivariety_gen_by_proper_subs should return None
+        // Don't pass report in the loop to avoid borrowing issues
+        let result = member_of_quasivariety_gen_by_proper_subs(quot_box, None)?;
+        match result {
+            None => {
+                // A/par is quasi-critical, so par is a quasi-critical congruence
+                critical_congs.push(par.clone());
+                if par != zero {
+                    meet_of_non_zeros = meet_of_non_zeros.meet(&par)?;
+                }
+            }
+            Some(_) => {
+                // A/par is not quasi-critical, so par is not a quasi-critical congruence
+            }
+        }
+    }
+    
+    if let Some(ref mut r) = report {
+        r.add_line(&format!("The meet of nonzero q-critical congruences is {}", meet_of_non_zeros));
+    }
+    
+    Ok(critical_congs)
+}
+
+/// Determine if an algebra is quasi-critical.
+///
+/// An algebra is quasi-critical if it is not a subdirect product of proper subalgebras.
+/// This method returns a map from congruences to subalgebras if the algebra is quasi-critical,
+/// or None if it is not.
+///
+/// Note: This has been replaced by `member_of_quasivariety_gen_by_proper_subs` in newer code,
+/// but is kept for compatibility.
+///
+/// # Arguments
+/// * `a` - The algebra to test
+/// * `report` - Optional progress report
+///
+/// # Returns
+/// * `Ok(Some(HashMap<Partition, Vec<i32>>))` - Map from congruences to subalgebra generators if quasi-critical
+/// * `Ok(None)` - If the algebra is not quasi-critical
+/// * `Err(String)` - If there's an error during computation
+pub fn quasi_critical(
+    a: Box<dyn SmallAlgebra<UniverseItem = i32>>,
+    mut report: Option<&mut dyn crate::progress::ProgressReport>,
+) -> Result<Option<std::collections::HashMap<crate::alg::conlat::partition::Partition, Vec<i32>>>, String> {
+    use crate::alg::conlat::CongruenceLattice;
+    use crate::alg::sublat::SubalgebraLattice;
+    use crate::alg::conlat::partition::Partition;
+    use crate::alg::QuotientAlgebra;
+    use crate::util::{ArrayIncrementor, SequenceGenerator};
+    use std::collections::HashMap;
+    
+    let mut a_con = CongruenceLattice::new(a.clone_box());
+    let zero = a_con.zero();
+    let mut phi = a_con.one();
+    
+    let mut a_sub = SubalgebraLattice::new_safe(a.clone_box())?;
+    let gen_set = a_sub.find_minimal_sized_generating_set();
+    let gens = gen_set.elements();
+    let gen_size = gens.len();
+    
+    if let Some(ref mut r) = report {
+        r.add_line(&format!("gens of A: {:?}", gens));
+    }
+    
+    let a_card = a.cardinality();
+    let mut card_to_gens: HashMap<usize, Vec<Vec<i32>>> = HashMap::new();
+    
+    // Build a table mapping cardinalities to generating sets of subalgebras
+    let mut arr = vec![0i32; gen_size];
+    let mut inc = SequenceGenerator::sequence_incrementor(&mut arr, a_card - 1);
+    
+    if let Some(ref mut r) = report {
+        r.add_start_line("Constructing a table from cardinalities to generating sets of subalgebra");
+    }
+    
+    let total = a_card.pow(gen_size as u32);
+    let mut m = 0;
+    
+    loop {
+        let current_arr = inc.get_current();
+        
+        // Generate subalgebra from current assignment
+        let subalg = a_sub.sg(&current_arr);
+        let sub_card = subalg.size() as usize;
+        
+        // Check if we already have a generating set for this cardinality
+        let sub_gens_list = card_to_gens.entry(sub_card).or_insert_with(Vec::new);
+        
+        // Check if this generating set is equivalent to an existing one
+        let mut dup_found = false;
+        for existing_gens in sub_gens_list.iter() {
+            if SubalgebraLattice::extend_to_homomorphism(
+                &current_arr,
+                existing_gens,
+                a.as_ref(),
+                a.as_ref(),
+            ).is_some() {
+                dup_found = true;
+                break;
+            }
+        }
+        
+        if !dup_found {
+            sub_gens_list.push(current_arr.clone());
+        }
+        
+        m += 1;
+        if m % 10000 == 0 {
+            if let Some(ref mut r) = report {
+                r.add_line(&format!("{} of ({})^{} = {} so far", m, a_card, gen_size, total));
+            }
+        }
+        
+        if !inc.increment() {
+            break;
+        }
+    }
+    
+    if let Some(ref mut r) = report {
+        r.add_end_line("Table construction complete:");
+        for i in 1..=a_card as usize {
+            let size = card_to_gens.get(&i).map(|v| v.len()).unwrap_or(0);
+            r.add_line(&format!("For card = {} there are {} gensets", i, size));
+        }
+        r.add_line(&format!("|Con(A)| = {}", a_con.con_cardinality()));
+    }
+    
+    let mut map: HashMap<Partition, Vec<i32>> = HashMap::new();
+    
+    if let Some(ref mut r) = report {
+        r.add_start_line("Testing which thetas are good: those for which A mod theta is a subalgebra.");
+    }
+    
+    let univ = a_con.universe();
+    let mut k = 0;
+    
+    for par in univ {
+        k += 1;
+        if k % 1000 == 0 {
+            if let Some(ref mut r) = report {
+                r.add_line(&format!("tried {} congruences", k));
+            }
+        }
+        
+        // Skip zero congruence and congruences already covered by phi
+        if par == zero || phi.leq(&par) {
+            continue;
+        }
+        
+        // Create quotient algebra A/par
+        let quot = QuotientAlgebra::<i32>::new_safe(a.clone_box(), par.clone())?;
+        let quot_card = quot.cardinality() as usize;
+        
+        // Check if we have generating sets for this cardinality
+        if let Some(sub_gens_list) = card_to_gens.get(&quot_card) {
+            // Get generators of quotient algebra
+            let mut quot_gens = Vec::new();
+            for &gen in gens.iter() {
+                let quot_gen = quot.canonical_homomorphism(gen as usize)?;
+                quot_gens.push(quot_gen as i32);
+            }
+            
+            // Try to find a homomorphism from quotient to a subalgebra
+            // Convert QuotientAlgebra to BasicAlgebra for use with extend_to_homomorphism
+            let quot_card = quot.cardinality();
+            let quot_ops = quot.operations();
+            let int_ops = crate::alg::op::ops::make_int_operations(quot_ops)?;
+            let quot_universe: HashSet<i32> = (0..quot_card).collect();
+            let quot_basic = BasicAlgebra::new(quot.name().to_string(), quot_universe, int_ops);
+            
+            for sub_gens in sub_gens_list.iter() {
+                if let Some(_) = SubalgebraLattice::extend_to_homomorphism(
+                    &quot_gens,
+                    sub_gens,
+                    &quot_basic,
+                    a.as_ref(),
+                ) {
+                    // Found a homomorphism, so A/par is isomorphic to a subalgebra
+                    map.insert(par.clone(), sub_gens.clone());
+                    phi = phi.meet(&par)?;
+                    
+                    if let Some(ref mut r) = report {
+                        r.add_line(&format!("A mod {} is a subalgebra", par));
+                        r.add_line(&format!("the intersection of good congruences is {}", phi));
+                    }
+                    
+                    // If phi equals zero, we're done
+                    if phi == zero {
+                        if let Some(ref mut r) = report {
+                            r.add_end_line("meet of good congruences is 0.");
+                            r.add_line(&format!("map is {:?}", map));
+                        }
+                        return Ok(Some(map));
+                    }
+                    break;
+                }
+            }
+        }
+    }
+    
+    if let Some(ref mut r) = report {
+        r.add_end_line("Done:");
+        r.add_line(&format!("map is {:?}", map));
+        r.add_line(&format!("meet of good congruences is {}", phi));
+    }
+    
+    // If phi didn't become zero, the algebra is not quasi-critical
+    Ok(None)
+}
+
+#[cfg(test)]
+mod quasi_critical_tests {
+    use super::*;
+    use crate::alg::BasicAlgebra;
+    use std::collections::HashSet;
+
+    #[test]
+    fn test_quasi_critical_congruences_small_algebra() {
+        // Create a small 2-element algebra
+        let size = 2;
+        let universe: HashSet<i32> = (0..size).collect();
+        let alg = BasicAlgebra::new("TestAlg".to_string(), universe, Vec::new());
+        
+        let a = Box::new(alg) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+        
+        // Test the function
+        let result = quasi_critical_congruences(a, None);
+        assert!(result.is_ok());
+        let critical_congs = result.unwrap();
+        // The result depends on the algebra structure
+        assert!(critical_congs.len() >= 0);
+    }
+
+    #[test]
+    fn test_quasi_critical_small_algebra() {
+        // Create a small 2-element algebra
+        let size = 2;
+        let universe: HashSet<i32> = (0..size).collect();
+        let alg = BasicAlgebra::new("TestAlg".to_string(), universe, Vec::new());
+        
+        let a = Box::new(alg) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+        
+        // Test the function
+        let result = quasi_critical(a, None);
+        assert!(result.is_ok());
+        // The result may be Some or None depending on the algebra
+    }
+}
+

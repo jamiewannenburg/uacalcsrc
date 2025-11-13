@@ -9,6 +9,7 @@ use crate::alg::PyBasicAlgebra;
 use crate::alg::homomorphism::PyHomomorphism;
 use crate::alg::op::int_operation::PyIntOperation;
 use crate::alg::op::similarity_type::PySimilarityType;
+use crate::alg::conlat::partition::PyPartition;
 use uacalc::alg::op::Operation;
 use uacalc::alg::algebras;
 
@@ -32,6 +33,8 @@ pub fn register_algebras_functions(_py: Python, m: &Bound<'_, PyModule>) -> PyRe
     m.add_function(wrap_pyfunction!(make_random_algebra_with_arities, m)?)?;
     m.add_function(wrap_pyfunction!(make_random_algebra_with_arities_and_seed, m)?)?;
     m.add_function(wrap_pyfunction!(full_transformation_semigroup, m)?)?;
+    m.add_function(wrap_pyfunction!(quasi_critical_congruences, m)?)?;
+    m.add_function(wrap_pyfunction!(quasi_critical, m)?)?;
 
     Ok(())
 }
@@ -421,6 +424,73 @@ fn make_random_algebra_with_arities_and_seed(n: i32, arities: Vec<i32>, seed: Op
 fn full_transformation_semigroup(n: i32, include_constants: bool, include_id: bool) -> PyResult<PyBasicAlgebra> {
     match algebras::full_transformation_semigroup(n, include_constants, include_id) {
         Ok(result) => Ok(PyBasicAlgebra { inner: result }),
+        Err(e) => Err(PyValueError::new_err(e)),
+    }
+}
+
+/// Find all quasi-critical congruences of an algebra.
+///
+/// A congruence theta is quasi-critical if A/theta is quasi-critical,
+/// i.e., A/theta is not a subdirect product of proper subalgebras.
+///
+/// # Arguments
+/// * `a` - The algebra to analyze (BasicAlgebra)
+///
+/// # Returns
+/// List of Partition objects representing quasi-critical congruences
+///
+/// # Raises
+/// `ValueError` if there's an error during computation
+#[pyfunction]
+fn quasi_critical_congruences(a: &PyBasicAlgebra) -> PyResult<Vec<PyPartition>> {
+    let a_box = Box::new(a.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
+    
+    match algebras::quasi_critical_congruences(a_box, None) {
+        Ok(partitions) => {
+            let py_partitions: Vec<PyPartition> = partitions.into_iter()
+                .map(|p| PyPartition::from_inner(p))
+                .collect();
+            Ok(py_partitions)
+        },
+        Err(e) => Err(PyValueError::new_err(e)),
+    }
+}
+
+/// Determine if an algebra is quasi-critical.
+///
+/// An algebra is quasi-critical if it is not a subdirect product of proper subalgebras.
+/// This method returns a dictionary mapping congruences to subalgebra generators if
+/// the algebra is quasi-critical, or None if it is not.
+///
+/// Note: This has been replaced by `member_of_quasivariety_gen_by_proper_subs` in newer code,
+/// but is kept for compatibility.
+///
+/// # Arguments
+/// * `a` - The algebra to test (BasicAlgebra)
+///
+/// # Returns
+/// Dictionary mapping Partition objects to lists of generator indices if quasi-critical, None otherwise
+///
+/// # Raises
+/// `ValueError` if there's an error during computation
+#[pyfunction]
+fn quasi_critical(py: Python, a: &PyBasicAlgebra) -> PyResult<Option<PyObject>> {
+    use pyo3::types::PyDict;
+    
+    let a_box = Box::new(a.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
+    
+    match algebras::quasi_critical(a_box, None) {
+        Ok(Some(map)) => {
+            let py_dict = PyDict::new(py);
+            for (partition, gens) in map {
+                let py_partition = PyPartition::from_inner(partition);
+                // Convert PyPartition to PyObject for use as dict key
+                let py_partition_obj = Py::new(py, py_partition)?.into_py(py);
+                py_dict.set_item(py_partition_obj, gens)?;
+            }
+            Ok(Some(py_dict.into()))
+        },
+        Ok(None) => Ok(None),
         Err(e) => Err(PyValueError::new_err(e)),
     }
 }

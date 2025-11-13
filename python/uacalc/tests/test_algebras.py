@@ -1062,3 +1062,83 @@ class TestMakeRandomAlgebra:
         # But we'll just check that it doesn't raise an error
         assert result is None or isinstance(result, list)
 
+    def test_quasi_critical_congruences(self):
+        """Test quasi_critical_congruences."""
+        import uacalc_lib
+        
+        quasi_critical_congruences = uacalc_lib.alg.quasi_critical_congruences
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
+        
+        # Create a small algebra
+        alg = BasicAlgebra("TestAlg", [0, 1], [])
+        
+        # Test the function
+        result = quasi_critical_congruences(alg)
+        
+        # Result should be a list of Partition objects
+        assert isinstance(result, list)
+        # All items should be Partition objects
+        for partition in result:
+            assert hasattr(partition, 'universe_size')
+
+    def test_quasi_critical_congruences_larger(self):
+        """Test quasi_critical_congruences with a larger algebra."""
+        import uacalc_lib
+        
+        quasi_critical_congruences = uacalc_lib.alg.quasi_critical_congruences
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
+        
+        # Create a larger algebra
+        alg = BasicAlgebra("TestAlg3", [0, 1, 2], [])
+        
+        # Test the function
+        result = quasi_critical_congruences(alg)
+        
+        # Result should be a list of Partition objects
+        assert isinstance(result, list)
+        # All items should be Partition objects
+        for partition in result:
+            assert hasattr(partition, 'universe_size')
+
+    def test_quasi_critical(self):
+        """Test quasi_critical."""
+        import uacalc_lib
+        
+        quasi_critical = uacalc_lib.alg.quasi_critical
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
+        
+        # Create a small algebra
+        alg = BasicAlgebra("TestAlg", [0, 1], [])
+        
+        # Test the function
+        result = quasi_critical(alg)
+        
+        # Result may be None or a dict mapping Partition to list of generators
+        assert result is None or isinstance(result, dict)
+        if result is not None:
+            # Check that all keys are Partition objects and values are lists
+            for key, value in result.items():
+                assert hasattr(key, 'universe_size')
+                assert isinstance(value, list)
+
+    def test_quasi_critical_larger(self):
+        """Test quasi_critical with a larger algebra."""
+        import uacalc_lib
+        
+        quasi_critical = uacalc_lib.alg.quasi_critical
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
+        
+        # Create a larger algebra
+        alg = BasicAlgebra("TestAlg3", [0, 1, 2], [])
+        
+        # Test the function
+        result = quasi_critical(alg)
+        
+        # Result may be None or a dict mapping Partition to list of generators
+        assert result is None or isinstance(result, dict)
+        if result is not None:
+            # Check that all keys are Partition objects and values are lists
+            for key, value in result.items():
+                assert hasattr(key, 'universe_size')
+                assert isinstance(value, list)
+

@@ -115,6 +115,14 @@ public class AlgebrasWrapper extends WrapperBase {
                 handleMakeRandomAlgebraWithAritiesAndSeed(options);
                 break;
                 
+            case "quasiCriticalCongruences":
+                handleQuasiCriticalCongruences(options);
+                break;
+                
+            case "quasiCritical":
+                handleQuasiCritical(options);
+                break;
+                
             default:
                 handleError("Unknown command: " + command, null);
         }
@@ -916,11 +924,108 @@ public class AlgebrasWrapper extends WrapperBase {
             "makeRandomAlgebraWithSeed --n 3 --seed 12345",
             "makeRandomAlgebraWithArities --n 3 --arities \"2,1\"",
             "makeRandomAlgebraWithAritiesAndSeed --n 3 --arities \"2,1\" --seed 12345",
+            "quasiCriticalCongruences --algebra algebras/lat3.ua",
+            "quasiCriticalCongruences --size 3",
+            "quasiCritical --algebra algebras/lat3.ua",
+            "quasiCritical --size 3",
             "help"
         };
         
         showUsage("Algebras", 
                  "CLI wrapper for org.uacalc.alg.Algebras operations", 
                  examples);
+    }
+    
+    /**
+     * Handle quasiCriticalCongruences command - find all quasi-critical congruences of an algebra.
+     */
+    private void handleQuasiCriticalCongruences(Map<String, String> options) throws Exception {
+        // Get algebra A file path or create test algebra
+        String algAFile = options.get("algebra");
+        SmallAlgebra algA;
+        
+        if (algAFile != null && !algAFile.isEmpty()) {
+            File file = new File(algAFile);
+            if (!file.exists()) {
+                handleError("Algebra file not found: " + algAFile, null);
+                return;
+            }
+            algA = AlgebraIO.readAlgebraFile(file);
+        } else {
+            int size = getIntArg(options, "size", 2);
+            algA = makeTestAlgebra(size);
+        }
+        
+        // Call Java method
+        List<org.uacalc.alg.conlat.Partition> criticalCongs = Algebras.quasiCriticalCongruences(algA, null);
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("command", "quasiCriticalCongruences");
+        response.put("algebra", algA.getName());
+        response.put("algebra_size", algA.cardinality());
+        response.put("critical_congruences_count", criticalCongs != null ? criticalCongs.size() : 0);
+        
+        if (criticalCongs != null && !criticalCongs.isEmpty()) {
+            List<String> congStrings = new ArrayList<>();
+            for (org.uacalc.alg.conlat.Partition par : criticalCongs) {
+                congStrings.add(par.toString());
+            }
+            response.put("critical_congruences", congStrings);
+        } else {
+            response.put("critical_congruences", new ArrayList<>());
+        }
+        
+        response.put("status", "success");
+        
+        handleSuccess(response);
+    }
+    
+    /**
+     * Handle quasiCritical command - determine if an algebra is quasi-critical.
+     */
+    private void handleQuasiCritical(Map<String, String> options) throws Exception {
+        // Get algebra A file path or create test algebra
+        String algAFile = options.get("algebra");
+        SmallAlgebra algA;
+        
+        if (algAFile != null && !algAFile.isEmpty()) {
+            File file = new File(algAFile);
+            if (!file.exists()) {
+                handleError("Algebra file not found: " + algAFile, null);
+                return;
+            }
+            algA = AlgebraIO.readAlgebraFile(file);
+        } else {
+            int size = getIntArg(options, "size", 2);
+            algA = makeTestAlgebra(size);
+        }
+        
+        // Call Java method
+        Map<org.uacalc.alg.conlat.Partition, org.uacalc.util.IntArray> map = Algebras.quasiCritical(algA, null);
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("command", "quasiCritical");
+        response.put("algebra", algA.getName());
+        response.put("algebra_size", algA.cardinality());
+        response.put("is_quasi_critical", map != null);
+        
+        if (map != null && !map.isEmpty()) {
+            response.put("congruences_count", map.size());
+            List<Map<String, Object>> congMaps = new ArrayList<>();
+            for (Map.Entry<org.uacalc.alg.conlat.Partition, org.uacalc.util.IntArray> entry : map.entrySet()) {
+                Map<String, Object> congMap = new HashMap<>();
+                congMap.put("congruence", entry.getKey().toString());
+                congMap.put("generators", entry.getValue().getArray());
+                congMaps.add(congMap);
+            }
+            response.put("congruences", congMaps);
+        } else {
+            response.put("congruences_count", 0);
+            response.put("congruences", new ArrayList<>());
+        }
+        
+        response.put("status", "success");
+        
+        handleSuccess(response);
     }
 }

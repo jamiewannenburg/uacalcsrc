@@ -202,9 +202,9 @@ All 23 public static methods from `org/uacalc/alg/Algebras.java`:
 - [x] `memberOfQuasivariety(SmallAlgebra A, SmallAlgebra B, ProgressReport report)` - Tests quasivariety membership ✅
 - [x] `memberOfQuasivariety(SmallAlgebra A, List<SmallAlgebra> genAlgs, ProgressReport report)` - Tests quasivariety membership ✅
 - [x] `memberOfQuasivarietyGenByProperSubs(SmallAlgebra A, ProgressReport report)` - Tests membership in proper subalgebras ✅
-- [ ] `quasiCriticalCongruences(SmallAlgebra A, ProgressReport report)` - Finds quasi-critical congruences
-- [ ] `quasiCritical(SmallAlgebra A)` - Tests if algebra is quasi-critical
-- [ ] `quasiCritical(SmallAlgebra A, ProgressReport report)` - Tests if algebra is quasi-critical with report
+- [x] `quasiCriticalCongruences(SmallAlgebra A, ProgressReport report)` - Finds quasi-critical congruences ✅
+- [x] `quasiCritical(SmallAlgebra A)` - Tests if algebra is quasi-critical ✅
+- [x] `quasiCritical(SmallAlgebra A, ProgressReport report)` - Tests if algebra is quasi-critical with report ✅
 - [ ] `main(String[] args)` - Main method for testing (not needed in Rust)
 
 ## Implementation Notes
@@ -412,3 +412,71 @@ All 23 public static methods from `org/uacalc/alg/Algebras.java`:
   3. Composes them: (f ∘ g)(i) = f(g(i))
   4. Encodes the result back as a Horner integer
   This matches the Java implementation exactly.
+
+### quasiCriticalCongruences (Completed)
+- **Rust Implementation**: `src/alg/algebras.rs` - `quasi_critical_congruences()` function
+  - Finds all congruences theta such that A/theta is quasi-critical
+  - Iterates through all congruences of A (except the one congruence)
+  - For each congruence par, creates the quotient algebra A/par
+  - Converts QuotientAlgebra to BasicAlgebra (i32-based) for use with `member_of_quasivariety_gen_by_proper_subs`
+  - Checks if A/par is quasi-critical by calling `member_of_quasivariety_gen_by_proper_subs`
+  - If it returns None (meaning A/par is quasi-critical), adds par to the list
+  - Computes the meet of nonzero quasi-critical congruences
+  - Returns `Result<Vec<Partition>, String>`
+  
+- **Python Bindings**: `uacalc_lib/src/alg/algebras.rs` - `quasi_critical_congruences()` pyfunction
+  - Exposed as module-level function in Python
+  - Takes PyBasicAlgebra, returns List[PyPartition]
+  - Converts Rust Partition objects to PyPartition using `from_inner()` method
+  
+- **Java Wrapper**: `java_wrapper/src/alg/AlgebrasWrapper.java` - `handleQuasiCriticalCongruences()` method
+  - Command: `quasiCriticalCongruences --algebra <file>` or `quasiCriticalCongruences --size <n>`
+  - Returns JSON with critical_congruences_count and list of critical congruences as strings
+  
+- **Tests**:
+  - Rust: `src/alg/algebras.rs` - 2 test cases (small algebra, larger algebra)
+  - Python: `python/uacalc/tests/test_algebras.py` - 2 test cases (small algebra, larger algebra)
+  
+- **Type Stubs**: `python/uacalc/uacalc_lib.pyi` - Added `quasi_critical_congruences()` method signature with documentation
+
+- **Note**: The implementation follows the Java algorithm exactly:
+  1. Get all congruences from the congruence lattice
+  2. For each congruence par (except one), create quotient algebra A/par
+  3. Convert QuotientAlgebra to BasicAlgebra (since QuotientAlgebra has UniverseItem = QuotientElement<i32>)
+  4. Check if A/par is quasi-critical using `member_of_quasivariety_gen_by_proper_subs`
+  5. If A/par is quasi-critical (returns None), add par to the list
+  6. Compute the meet of nonzero quasi-critical congruences
+
+### quasiCritical (Completed)
+- **Rust Implementation**: `src/alg/algebras.rs` - `quasi_critical()` function
+  - Determines if an algebra is quasi-critical (not a subdirect product of proper subalgebras)
+  - Builds a table mapping cardinalities to generating sets of subalgebras
+  - For each congruence theta, checks if A/theta is isomorphic to a subalgebra
+  - Returns a map from congruences to subalgebra generators if the meet of good congruences is zero
+  - Returns None if the algebra is not quasi-critical
+  - Returns `Result<Option<HashMap<Partition, Vec<i32>>>, String>`
+  - Note: This has been replaced by `member_of_quasivariety_gen_by_proper_subs` in newer code, but is kept for compatibility
+  
+- **Python Bindings**: `uacalc_lib/src/alg/algebras.rs` - `quasi_critical()` pyfunction
+  - Exposed as module-level function in Python
+  - Takes PyBasicAlgebra, returns Optional[Dict[PyPartition, List[int]]]
+  - Converts Rust HashMap to Python dict using PyDict
+  - Converts Rust Partition objects to PyPartition using `from_inner()` method
+  
+- **Java Wrapper**: `java_wrapper/src/alg/AlgebrasWrapper.java` - `handleQuasiCritical()` method
+  - Command: `quasiCritical --algebra <file>` or `quasiCritical --size <n>`
+  - Returns JSON with is_quasi_critical boolean, congruences_count, and list of congruences with their generators
+  
+- **Tests**:
+  - Rust: `src/alg/algebras.rs` - 2 test cases (small algebra, larger algebra)
+  - Python: `python/uacalc/tests/test_algebras.py` - 2 test cases (small algebra, larger algebra)
+  
+- **Type Stubs**: `python/uacalc/uacalc_lib.pyi` - Added `quasi_critical()` method signature with documentation
+
+- **Note**: The implementation follows the Java algorithm exactly:
+  1. Build a table mapping cardinalities to generating sets of subalgebras
+  2. Iterate through all possible generator assignments to A.cardinality() - 1
+  3. For each assignment, generate the subalgebra and check if it's equivalent to an existing one
+  4. For each congruence theta, check if A/theta is isomorphic to a subalgebra
+  5. If the meet of good congruences becomes zero, return the map
+  6. If the meet doesn't become zero, return None

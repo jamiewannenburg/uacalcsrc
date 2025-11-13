@@ -1945,6 +1945,44 @@ class alg:
     Raises:
         ValueError: If there's an error during computation
     """
+    
+    @staticmethod
+    def quasi_critical_congruences(a: "alg.BasicAlgebra") -> List["alg.Partition"]: ...
+    """Find all quasi-critical congruences of an algebra.
+    
+    A congruence theta is quasi-critical if A/theta is quasi-critical,
+    i.e., A/theta is not a subdirect product of proper subalgebras.
+    
+    Args:
+        a: The algebra to analyze (BasicAlgebra)
+        
+    Returns:
+        List of Partition objects representing quasi-critical congruences
+        
+    Raises:
+        ValueError: If there's an error during computation
+    """
+    
+    @staticmethod
+    def quasi_critical(a: "alg.BasicAlgebra") -> Optional[Dict["alg.Partition", List[int]]]: ...
+    """Determine if an algebra is quasi-critical.
+    
+    An algebra is quasi-critical if it is not a subdirect product of proper subalgebras.
+    This method returns a dictionary mapping congruences to subalgebra generators if
+    the algebra is quasi-critical, or None if it is not.
+    
+    Note: This has been replaced by `member_of_quasivariety_gen_by_proper_subs` in newer code,
+    but is kept for compatibility.
+    
+    Args:
+        a: The algebra to test (BasicAlgebra)
+        
+    Returns:
+        Dictionary mapping Partition objects to lists of generator indices if quasi-critical, None otherwise
+        
+    Raises:
+        ValueError: If there's an error during computation
+    """
 
 # ============================================================================
 # UTIL MODULE (Partial - will be expanded)
