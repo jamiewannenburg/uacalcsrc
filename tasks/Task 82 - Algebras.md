@@ -192,7 +192,7 @@ All 23 public static methods from `org/uacalc/alg/Algebras.java`:
 - [x] `isEndomorphism(Operation endo, SmallAlgebra alg)` - Tests if operation is endomorphism ✅
 - [x] `isHomomorphism(int[] map, SmallAlgebra alg0, SmallAlgebra alg1)` - Tests if map is homomorphism ✅
 - [x] `matrixPower(SmallAlgebra alg, int k)` - Creates matrix power algebra ✅
-- [ ] `fullTransformationSemigroup(int n, boolean includeConstants, boolean includeId)` - Creates transformation semigroup
+- [x] `fullTransformationSemigroup(int n, boolean includeConstants, boolean includeId)` - Creates transformation semigroup
 - [ ] `findInClone(List<Operation> ops, SmallAlgebra A, ProgressReport report)` - Finds operations in clone
 - [x] `makeRandomAlgebra(int n, SimilarityType simType)` - Creates random algebra ✅
 - [x] `makeRandomAlgebra(int n, SimilarityType simType, long seed)` - Creates random algebra with seed ✅
