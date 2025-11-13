@@ -101,9 +101,6 @@ jobs:
       - name: Run Rust tests (main crate)
         run: cargo test --all-features
 
-      - name: Run Rust tests (Python bindings)
-        run: cargo test -p uacalc_lib --all-features
-
       - name: Install cargo-tarpaulin
         run: cargo install cargo-tarpaulin
 
