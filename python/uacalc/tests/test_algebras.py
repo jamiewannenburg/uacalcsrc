@@ -359,4 +359,113 @@ class TestAlgebras:
         
         assert python_result == java_level, \
             f"Jonsson level mismatch: Python={python_result}, Java={java_level}"
+    
+    def test_matrix_power_basic(self):
+        """Test matrix_power with a simple algebra."""
+        import uacalc_lib
+        
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
+        matrix_power = uacalc_lib.alg.matrix_power
+        
+        # Create a simple 2-element algebra
+        alg = BasicAlgebra("A", [0, 1], [])
+        
+        # Create matrix power A^[2]
+        result = matrix_power(alg, 2)
+        
+        # Should have cardinality 2^2 = 4
+        assert result.cardinality() == 4, f"Expected cardinality 4, got {result.cardinality()}"
+        
+        # Check name
+        assert "^[2]" in result.name() or "2-matrix power" in result.name(), \
+            f"Name should contain power info: {result.name()}"
+        
+        # Compare with Java wrapper
+        java_result = run_java_wrapper("matrixPower", [
+            "--size", "2",
+            "--k", "2"
+        ])
+        
+        assert java_result["success"] == True
+        assert java_result["data"]["result_size"] == 4
+        assert java_result["data"]["result_size"] == result.cardinality(), \
+            "Python and Java should match"
+    
+    def test_matrix_power_with_operations(self):
+        """Test matrix_power with an algebra that has operations."""
+        import uacalc_lib
+        
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
+        OperationSymbol = uacalc_lib.alg.OperationSymbol
+        Operations = uacalc_lib.alg.Operations
+        matrix_power = uacalc_lib.alg.matrix_power
+        
+        # Create a 2-element algebra with a binary operation
+        sym = OperationSymbol("f", 2, False)
+        table = [0, 0, 1, 1]  # f(x,y) = x (first projection)
+        op = Operations.make_int_operation(sym, 2, table)
+        alg = BasicAlgebra("TestAlg", [0, 1], [op])
+        
+        # Create matrix power A^[3]
+        result = matrix_power(alg, 3)
+        
+        # Should have cardinality 2^3 = 8
+        assert result.cardinality() == 8, f"Expected cardinality 8, got {result.cardinality()}"
+        
+        # Verify the algebra was created successfully
+        assert result.name() is not None, "Matrix power should have a name"
+        
+        # Compare with Java wrapper
+        java_result = run_java_wrapper("matrixPower", [
+            "--size", "2",
+            "--k", "3"
+        ])
+        
+        assert java_result["success"] == True
+        assert java_result["data"]["result_size"] == 8
+        assert java_result["data"]["operations_count"] > 0
+    
+    def test_matrix_power_invalid_power(self):
+        """Test matrix_power with invalid power (should raise error)."""
+        import uacalc_lib
+        
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
+        matrix_power = uacalc_lib.alg.matrix_power
+        
+        alg = BasicAlgebra("A", [0, 1], [])
+        
+        # Test with k = 0 (should fail)
+        with pytest.raises(Exception):  # ValueError or similar
+            matrix_power(alg, 0)
+        
+        # Test with k < 0 (should fail)
+        with pytest.raises(Exception):  # ValueError or similar
+            matrix_power(alg, -1)
+    
+    def test_matrix_power_larger_algebra(self):
+        """Test matrix_power with a larger algebra."""
+        import uacalc_lib
+        
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
+        matrix_power = uacalc_lib.alg.matrix_power
+        
+        # Create a 3-element algebra
+        alg = BasicAlgebra("B", [0, 1, 2], [])
+        
+        # Create matrix power B^[2]
+        result = matrix_power(alg, 2)
+        
+        # Should have cardinality 3^2 = 9
+        assert result.cardinality() == 9, f"Expected cardinality 9, got {result.cardinality()}"
+        
+        # Compare with Java wrapper
+        java_result = run_java_wrapper("matrixPower", [
+            "--size", "3",
+            "--k", "2"
+        ])
+        
+        assert java_result["success"] == True
+        assert java_result["data"]["result_size"] == 9
+        assert java_result["data"]["result_size"] == result.cardinality(), \
+            "Python and Java should match"
 

@@ -6,7 +6,10 @@
 
 use crate::alg::op::Operation;
 use crate::alg::SmallAlgebra;
-use crate::alg::op::operations::{commutes_unary, commutes_map};
+use crate::alg::algebra::Algebra;
+use crate::alg::op::operations::{commutes_unary, commutes_map, make_binary_left_shift, make_int_operations, power};
+use crate::alg::{PowerAlgebra, BasicAlgebra};
+use std::collections::HashSet;
 
 /// Test if an operation is an endomorphism of an algebra.
 ///
@@ -193,6 +196,76 @@ where
     T: Clone + std::fmt::Debug + std::fmt::Display + std::hash::Hash + Eq + Send + Sync + 'static
 {
     crate::alg::malcev::jonsson_level(alg)
+}
+
+/// The matrix power algebra as defined in Hobby-McKenzie.
+///
+/// Creates a matrix power algebra A^[k] from a given algebra A and power k.
+/// This is a BasicAlgebra that contains:
+/// - All operations from the power algebra A^k
+/// - A binary left shift operation
+///
+/// # Arguments
+/// * `alg` - The root algebra to raise to a power
+/// * `k` - The power/exponent (number of copies)
+///
+/// # Returns
+/// * `Ok(BasicAlgebra)` - Successfully created matrix power algebra
+/// * `Err(String)` - If there's an error during creation
+///
+/// # Examples
+/// ```
+/// use uacalc::alg::{algebras, SmallAlgebra, BasicAlgebra};
+/// use std::collections::HashSet;
+///
+/// let alg = Box::new(BasicAlgebra::new(
+///     "A".to_string(),
+///     HashSet::from([0, 1]),
+///     Vec::new()
+/// )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+///
+/// let matrix_power = algebras::matrix_power(alg, 2).unwrap();
+/// assert_eq!(matrix_power.cardinality(), 4); // 2^2 = 4
+/// ```
+pub fn matrix_power(
+    alg: Box<dyn SmallAlgebra<UniverseItem = i32>>,
+    k: i32,
+) -> Result<BasicAlgebra<i32>, String> {
+    if k <= 0 {
+        return Err("Power k must be positive".to_string());
+    }
+    
+    let root_size = alg.cardinality();
+    if root_size < 0 {
+        return Err("Cannot create matrix power of algebra with unknown cardinality".to_string());
+    }
+    
+    // Create PowerAlgebra
+    let pow = PowerAlgebra::new_safe(alg.clone_box(), k as usize)?;
+    
+    // Get operations from power algebra
+    let mut ops = pow.operations();
+    
+    // Add binary left shift operation
+    let binary_left_shift = make_binary_left_shift(k, root_size)?;
+    ops.push(binary_left_shift);
+    
+    // Convert to int operations (not power ops)
+    let ops2 = make_int_operations(ops)?;
+    
+    // Create name
+    let name = if !alg.name().is_empty() {
+        format!("{}^[{}]", alg.name(), k)
+    } else {
+        format!("{}-matrix power", k)
+    };
+    
+    // Create universe
+    let alg_size = power(root_size, k);
+    let universe: HashSet<i32> = (0..alg_size).collect();
+    
+    // Create BasicAlgebra
+    Ok(BasicAlgebra::new(name, universe, ops2))
 }
 
 #[cfg(test)]
@@ -468,6 +541,80 @@ mod tests {
         // The actual behavior depends on malcev::jonsson_level implementation
         // It may return an error or a specific value
         assert!(result.is_ok() || result.is_err());
+    }
+
+    #[test]
+    fn test_matrix_power_basic() {
+        // Create a simple 2-element algebra
+        let size = 2;
+        let universe: std::collections::HashSet<i32> = (0..size).collect();
+        let alg = Box::new(BasicAlgebra::new(
+            "A".to_string(),
+            universe,
+            Vec::new()
+        )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+        
+        // Create matrix power A^[2]
+        let result = matrix_power(alg, 2);
+        assert!(result.is_ok());
+        let matrix_power_alg = result.unwrap();
+        
+        // Should have cardinality 2^2 = 4
+        assert_eq!(matrix_power_alg.cardinality(), 4);
+        
+        // Check name
+        assert!(matrix_power_alg.name().contains("^[2]") || matrix_power_alg.name().contains("2-matrix power"));
+    }
+
+    #[test]
+    fn test_matrix_power_with_operations() {
+        // Create a 2-element algebra with a binary operation
+        let size = 2;
+        let universe: std::collections::HashSet<i32> = (0..size).collect();
+        let mut ops = Vec::new();
+        
+        // Create a simple binary operation: f(x,y) = x (first projection)
+        let sym = OperationSymbol::new_safe("f", 2, false).unwrap();
+        let table = vec![0, 0, 1, 1];
+        let op = operations::make_int_operation(sym, size, table).unwrap();
+        ops.push(op);
+        
+        let alg = Box::new(BasicAlgebra::new(
+            "TestAlg".to_string(),
+            universe,
+            ops
+        )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+        
+        // Create matrix power A^[3]
+        let result = matrix_power(alg, 3);
+        assert!(result.is_ok());
+        let matrix_power_alg = result.unwrap();
+        
+        // Should have cardinality 2^3 = 8
+        assert_eq!(matrix_power_alg.cardinality(), 8);
+        
+        // Should have operations (from power algebra + binary left shift)
+        let ops_count = matrix_power_alg.get_operations_ref().len();
+        assert!(ops_count > 0);
+    }
+
+    #[test]
+    fn test_matrix_power_invalid_power() {
+        let size = 2;
+        let universe: std::collections::HashSet<i32> = (0..size).collect();
+        let alg = Box::new(BasicAlgebra::new(
+            "A".to_string(),
+            universe,
+            Vec::new()
+        )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+        
+        // Test with k = 0 (should fail)
+        let result = matrix_power(alg.clone_box(), 0);
+        assert!(result.is_err());
+        
+        // Test with k < 0 (should fail)
+        let result = matrix_power(alg, -1);
+        assert!(result.is_err());
     }
 }
 

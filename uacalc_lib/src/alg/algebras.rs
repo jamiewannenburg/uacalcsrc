@@ -19,6 +19,7 @@ pub fn register_algebras_functions(_py: Python, m: &Bound<'_, PyModule>) -> PyRe
     m.add_function(wrap_pyfunction!(is_homomorphism, m)?)?;
     m.add_function(wrap_pyfunction!(jonsson_terms, m)?)?;
     m.add_function(wrap_pyfunction!(jonsson_level, m)?)?;
+    m.add_function(wrap_pyfunction!(matrix_power, m)?)?;
 
     Ok(())
 }
@@ -117,6 +118,32 @@ fn jonsson_terms(algebra: &PyBasicAlgebra) -> PyResult<Option<Vec<String>>> {
 fn jonsson_level(algebra: &PyBasicAlgebra) -> PyResult<i32> {
     match algebras::jonsson_level(&algebra.inner) {
         Ok(level) => Ok(level),
+        Err(e) => Err(PyValueError::new_err(e)),
+    }
+}
+
+/// The matrix power algebra as defined in Hobby-McKenzie.
+///
+/// Creates a matrix power algebra A^[k] from a given algebra A and power k.
+/// This is a BasicAlgebra that contains:
+/// - All operations from the power algebra A^k
+/// - A binary left shift operation
+///
+/// # Arguments
+/// * `alg` - The root algebra to raise to a power (BasicAlgebra)
+/// * `k` - The power/exponent (number of copies)
+///
+/// # Returns
+/// A BasicAlgebra representing the matrix power algebra
+///
+/// # Raises
+/// `ValueError` if k is not positive or there's an error during creation
+#[pyfunction]
+fn matrix_power(alg: &PyBasicAlgebra, k: i32) -> PyResult<PyBasicAlgebra> {
+    let rust_alg = Box::new(alg.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
+    
+    match algebras::matrix_power(rust_alg, k) {
+        Ok(result) => Ok(PyBasicAlgebra { inner: result }),
         Err(e) => Err(PyValueError::new_err(e)),
     }
 }

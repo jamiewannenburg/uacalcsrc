@@ -71,6 +71,10 @@ public class AlgebrasWrapper extends WrapperBase {
                 handleJonssonLevel(options);
                 break;
                 
+            case "matrixPower":
+                handleMatrixPower(options);
+                break;
+                
             default:
                 handleError("Unknown command: " + command, null);
         }
@@ -325,12 +329,59 @@ public class AlgebrasWrapper extends WrapperBase {
     }
     
     /**
+     * Handle matrixPower command - create a matrix power algebra.
+     */
+    private void handleMatrixPower(Map<String, String> options) throws Exception {
+        // Get algebra file path or create test algebra
+        String algFile = options.get("algebra");
+        SmallAlgebra alg;
+        
+        if (algFile != null && !algFile.isEmpty()) {
+            // Load algebra from file
+            File file = new File(algFile);
+            if (!file.exists()) {
+                handleError("Algebra file not found: " + algFile, null);
+                return;
+            }
+            alg = AlgebraIO.readAlgebraFile(file);
+        } else {
+            // Create a simple test algebra
+            int size = getIntArg(options, "size", 2);
+            alg = makeTestAlgebra(size);
+        }
+        
+        // Get power k
+        int k = getIntArg(options, "k", 2);
+        if (k <= 0) {
+            handleError("Power k must be positive", null);
+            return;
+        }
+        
+        // Call Java method
+        SmallAlgebra result = Algebras.matrixPower(alg, k);
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("command", "matrixPower");
+        response.put("input_algebra", alg.getName());
+        response.put("input_size", alg.cardinality());
+        response.put("power", k);
+        response.put("result_algebra", result.getName());
+        response.put("result_size", result.cardinality());
+        response.put("operations_count", result.operations().size());
+        response.put("status", "success");
+        
+        handleSuccess(response);
+    }
+    
+    /**
      * Show usage information for the Algebras wrapper.
      */
     private void showUsage() {
         String[] examples = {
             "isEndomorphism --algebra algebras/ba2.ua --operation \"1:0,1\"",
             "isEndomorphism --size 2 --operation \"1:0,1\"",
+            "matrixPower --size 2 --k 3",
+            "matrixPower --algebra algebras/ba2.ua --k 2",
             "isHomomorphism --algebra0 algebras/ba2.ua --algebra1 algebras/ba2.ua --map \"0,1\"",
             "isHomomorphism --size 2 --map \"0,1\"",
             "jonssonTerms --algebra algebras/ba2.ua",

@@ -1735,6 +1735,26 @@ class alg:
     Returns:
         The Jonsson level (minimal number of Jonsson terms minus 1), or -1 if not distributive
     """
+    
+    @staticmethod
+    def matrix_power(alg: "alg.BasicAlgebra", k: int) -> "alg.BasicAlgebra": ...
+    """The matrix power algebra as defined in Hobby-McKenzie.
+    
+    Creates a matrix power algebra A^[k] from a given algebra A and power k.
+    This is a BasicAlgebra that contains:
+    - All operations from the power algebra A^k
+    - A binary left shift operation
+    
+    Args:
+        alg: The root algebra to raise to a power (BasicAlgebra)
+        k: The power/exponent (number of copies)
+        
+    Returns:
+        A BasicAlgebra representing the matrix power algebra
+        
+    Raises:
+        ValueError: If k is not positive or there's an error during creation
+    """
 
 # ============================================================================
 # UTIL MODULE (Partial - will be expanded)
