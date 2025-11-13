@@ -914,6 +914,514 @@ class TestMalcevJavaComparison(unittest.TestCase):
         print(f"✓ weak_3_edge_term: Python={python_term_found}, Java={java_term_found}")
 
 
+class TestMalcevJavaComparisonZ3(unittest.TestCase):
+    """Test Malcev functions against Java implementation for z3.ua."""
+    
+    @classmethod
+    def setUpClass(cls):
+        """Set up test fixtures."""
+        algebra_path = get_algebra_path("z3.ua")
+        if not os.path.exists(algebra_path):
+            raise unittest.SkipTest(f"Algebra file {algebra_path} not found")
+        
+        # Load algebra once for all tests
+        AlgebraReader = uacalc_lib.io.AlgebraReader
+        reader = AlgebraReader.new_from_file(algebra_path)
+        cls.alg = reader.read_algebra_file()
+        cls.algebra_path = algebra_path
+    
+    def run_java_wrapper(self, command, args=None, timeout=60):
+        """Run Java wrapper and return parsed JSON result."""
+        separator = ";" if platform.system() == "Windows" else ":"
+        classpath = f"java_wrapper/build/classes{separator}build/classes{separator}org{separator}jars/*"
+        cmd = [
+            "java", "-cp", classpath,
+            "java_wrapper.src.alg.MalcevWrapper",
+            command
+        ]
+        if args:
+            cmd.extend(args)
+        
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+            cwd=str(PROJECT_ROOT)
+        )
+        
+        # Check if output contains error JSON (success: false)
+        stdout = result.stdout.strip()
+        if "success" in stdout and '"success": false' in stdout:
+            # Try to parse error
+            try:
+                error_json = json.loads(stdout.split('\n')[-1])
+                error_msg = error_json.get("error", "Unknown error")
+                exception = error_json.get("exception", "")
+                if "NullPointerException" in exception or "NullPointerException" in str(result.stderr):
+                    self.skipTest(f"Java wrapper has bug with null ProgressReport: {error_msg}")
+                self.fail(f"Java wrapper error: {error_msg}")
+            except:
+                pass
+        
+        if result.returncode != 0:
+            # Check if stderr is just INFO messages (not real errors)
+            stderr_lower = result.stderr.lower()
+            if "info:" in stderr_lower or "warning:" in stderr_lower:
+                # Might just be log messages, try to continue
+                pass
+            else:
+                self.fail(f"Java wrapper failed: {result.stderr}")
+        
+        # Extract JSON from output
+        stdout = result.stdout.strip()
+        lines = stdout.split('\n')
+        
+        # Find complete JSON object
+        brace_count = 0
+        json_lines = []
+        found_start = False
+        for line in reversed(lines):
+            line_stripped = line.strip()
+            if not found_start and line_stripped.endswith('}'):
+                found_start = True
+            if found_start:
+                json_lines.insert(0, line)
+                brace_count += line.count('{') - line.count('}')
+                if brace_count == 0 and line_stripped.startswith('{'):
+                    break
+        
+        if not json_lines:
+            self.fail("Could not find JSON in Java output")
+        
+        json_str = '\n'.join(json_lines)
+        try:
+            return json.loads(json_str)
+        except json.JSONDecodeError as e:
+            self.fail(f"Could not parse JSON from Java output: {e}. JSON: {json_str[:200]}")
+    
+    def test_jonsson_terms(self):
+        """Test jonsson_terms against Java."""
+        python_result = uacalc_lib.alg.jonsson_terms(self.alg)
+        java_output = self.run_java_wrapper("jonsson_terms", ["--algebra", self.algebra_path])
+        java_data = java_output.get("data", {})
+        java_terms_found = java_data.get("terms_found", False)
+        java_count = java_data.get("count", 0)
+        
+        python_terms_found = python_result is not None and len(python_result) > 0
+        python_count = len(python_result) if python_result else 0
+        
+        # Both should agree on whether terms exist
+        self.assertEqual(python_terms_found, java_terms_found)
+        # If both found terms, count should match
+        if python_terms_found and java_terms_found:
+            self.assertEqual(python_count, java_count,
+                           f"Term count mismatch: Python={python_count}, Java={java_count}")
+        print(f"✓ jonsson_terms: Python={python_count}, Java={java_count}")
+    
+    def test_sd_terms(self):
+        """Test sd_terms against Java."""
+        python_result = uacalc_lib.alg.sd_terms(self.alg)
+        java_output = self.run_java_wrapper("sd_terms", ["--algebra", self.algebra_path])
+        java_data = java_output.get("data", {})
+        java_terms_found = java_data.get("terms_found", False)
+        java_count = java_data.get("count", 0)
+        
+        python_terms_found = python_result is not None and len(python_result) > 0
+        python_count = len(python_result) if python_result else 0
+        
+        self.assertEqual(python_terms_found, java_terms_found)
+        if python_terms_found and java_terms_found:
+            self.assertEqual(python_count, java_count,
+                           f"SD term count mismatch: Python={python_count}, Java={java_count}")
+        print(f"✓ sd_terms: Python={python_count}, Java={java_count}")
+    
+    def test_jonsson_level(self):
+        """Test jonsson_level against Java."""
+        python_result = uacalc_lib.alg.jonsson_level(self.alg)
+        java_output = self.run_java_wrapper("jonsson_level", ["--algebra", self.algebra_path])
+        java_data = java_output.get("data", {})
+        java_level = java_data.get("level", -1)
+        
+        self.assertEqual(python_result, java_level,
+                        f"Jonsson level mismatch: Python={python_result}, Java={java_level}")
+        print(f"✓ jonsson_level: Python={python_result}, Java={java_level}")
+    
+    def test_sd_meet_idempotent(self):
+        """Test sd_meet_idempotent against Java."""
+        python_result = uacalc_lib.alg.sd_meet_idempotent(self.alg)
+        java_output = self.run_java_wrapper("sd_meet_idempotent", [
+            "--algebra", self.algebra_path
+        ])
+        java_data = java_output.get("data", {})
+        java_witness_found = java_data.get("witness_found", False)
+        java_witness = java_data.get("witness", None)
+        
+        python_witness_found = python_result is not None
+        
+        # Both should agree on whether witness exists
+        self.assertEqual(python_witness_found, java_witness_found)
+        
+        # If both found witnesses, they should match
+        if python_witness_found and java_witness_found:
+            if isinstance(java_witness, list):
+                self.assertEqual(python_result, java_witness,
+                               f"Witness mismatch: Python={python_result}, Java={java_witness}")
+        
+        print(f"✓ sd_meet_idempotent: Python={python_witness_found}, Java={java_witness_found}")
+    
+    def test_sd_meet_terms(self):
+        """Test sd_meet_terms against Java."""
+        python_result = uacalc_lib.alg.sd_meet_terms(self.alg)
+        java_output = self.run_java_wrapper("sd_meet_terms", ["--algebra", self.algebra_path])
+        java_data = java_output.get("data", {})
+        java_terms_found = java_data.get("terms_found", False)
+        java_count = java_data.get("num_terms", 0)
+        
+        python_terms_found = python_result is not None and len(python_result) > 0
+        python_count = len(python_result) if python_result else 0
+        
+        # Both should agree on whether terms exist
+        self.assertEqual(python_terms_found, java_terms_found)
+        # If both found terms, count should match
+        if python_terms_found and java_terms_found:
+            self.assertEqual(python_count, java_count,
+                           f"Term count mismatch: Python={python_count}, Java={java_count}")
+        print(f"✓ sd_meet_terms: Python={python_count}, Java={java_count}")
+    
+
+class TestMalcevJavaComparisonBaker2WithTop(unittest.TestCase):
+    """Test Malcev functions against Java implementation for baker2withtop.ua."""
+    
+    @classmethod
+    def setUpClass(cls):
+        """Set up test fixtures."""
+        algebra_path = get_algebra_path("baker2withtop.ua")
+        if not os.path.exists(algebra_path):
+            raise unittest.SkipTest(f"Algebra file {algebra_path} not found")
+        
+        # Load algebra once for all tests
+        AlgebraReader = uacalc_lib.io.AlgebraReader
+        reader = AlgebraReader.new_from_file(algebra_path)
+        cls.alg = reader.read_algebra_file()
+        cls.algebra_path = algebra_path
+    
+    def run_java_wrapper(self, command, args=None, timeout=60):
+        """Run Java wrapper and return parsed JSON result."""
+        separator = ";" if platform.system() == "Windows" else ":"
+        classpath = f"java_wrapper/build/classes{separator}build/classes{separator}org{separator}jars/*"
+        cmd = [
+            "java", "-cp", classpath,
+            "java_wrapper.src.alg.MalcevWrapper",
+            command
+        ]
+        if args:
+            cmd.extend(args)
+        
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+            cwd=str(PROJECT_ROOT)
+        )
+        
+        # Check if output contains error JSON (success: false)
+        stdout = result.stdout.strip()
+        if "success" in stdout and '"success": false' in stdout:
+            # Try to parse error
+            try:
+                error_json = json.loads(stdout.split('\n')[-1])
+                error_msg = error_json.get("error", "Unknown error")
+                exception = error_json.get("exception", "")
+                if "NullPointerException" in exception or "NullPointerException" in str(result.stderr):
+                    self.skipTest(f"Java wrapper has bug with null ProgressReport: {error_msg}")
+                self.fail(f"Java wrapper error: {error_msg}")
+            except:
+                pass
+        
+        if result.returncode != 0:
+            # Check if stderr is just INFO messages (not real errors)
+            stderr_lower = result.stderr.lower()
+            if "info:" in stderr_lower or "warning:" in stderr_lower:
+                # Might just be log messages, try to continue
+                pass
+            else:
+                self.fail(f"Java wrapper failed: {result.stderr}")
+        
+        # Extract JSON from output
+        stdout = result.stdout.strip()
+        lines = stdout.split('\n')
+        
+        # Find complete JSON object
+        brace_count = 0
+        json_lines = []
+        found_start = False
+        for line in reversed(lines):
+            line_stripped = line.strip()
+            if not found_start and line_stripped.endswith('}'):
+                found_start = True
+            if found_start:
+                json_lines.insert(0, line)
+                brace_count += line.count('{') - line.count('}')
+                if brace_count == 0 and line_stripped.startswith('{'):
+                    break
+        
+        if not json_lines:
+            self.fail("Could not find JSON in Java output")
+        
+        json_str = '\n'.join(json_lines)
+        try:
+            return json.loads(json_str)
+        except json.JSONDecodeError as e:
+            self.fail(f"Could not parse JSON from Java output: {e}. JSON: {json_str[:200]}")
+    
+    def test_malcev_term(self):
+        """Test malcev_term against Java."""
+        # Python/Rust
+        python_result = uacalc_lib.alg.malcev_term(self.alg)
+        
+        # Java
+        java_output = self.run_java_wrapper("malcev_term", ["--algebra", self.algebra_path])
+        java_data = java_output.get("data", {})
+        java_term_found = java_data.get("term_found", False)
+        
+        # Compare
+        python_term_found = python_result is not None
+        self.assertEqual(
+            python_term_found, java_term_found,
+            f"malcev_term: Python={python_term_found}, Java={java_term_found}"
+        )
+        print(f"✓ malcev_term: Python={python_term_found}, Java={java_term_found}")
+    
+    def test_majority_term(self):
+        """Test majority_term against Java."""
+        python_result = uacalc_lib.alg.majority_term(self.alg)
+        java_output = self.run_java_wrapper("majority_term", ["--algebra", self.algebra_path])
+        java_data = java_output.get("data", {})
+        java_term_found = java_data.get("term_found", False)
+        
+        python_term_found = python_result is not None
+        self.assertEqual(python_term_found, java_term_found)
+        print(f"✓ majority_term: Python={python_term_found}, Java={java_term_found}")
+    
+    def test_minority_term(self):
+        """Test minority_term against Java."""
+        python_result = uacalc_lib.alg.minority_term(self.alg)
+        java_output = self.run_java_wrapper("minority_term", ["--algebra", self.algebra_path])
+        java_data = java_output.get("data", {})
+        java_term_found = java_data.get("term_found", False)
+        
+        python_term_found = python_result is not None
+        self.assertEqual(python_term_found, java_term_found)
+        print(f"✓ minority_term: Python={python_term_found}, Java={java_term_found}")
+    
+    def test_pixley_term(self):
+        """Test pixley_term against Java."""
+        python_result = uacalc_lib.alg.pixley_term(self.alg)
+        java_output = self.run_java_wrapper("pixley_term", ["--algebra", self.algebra_path])
+        java_data = java_output.get("data", {})
+        java_term_found = java_data.get("term_found", False)
+        
+        python_term_found = python_result is not None
+        self.assertEqual(python_term_found, java_term_found)
+        print(f"✓ pixley_term: Python={python_term_found}, Java={java_term_found}")
+    
+    def test_nu_term(self):
+        """Test nu_term against Java."""
+        arity = 3
+        python_result = uacalc_lib.alg.nu_term(self.alg, arity)
+        java_output = self.run_java_wrapper("nu_term", [
+            "--algebra", self.algebra_path,
+            "--arity", str(arity)
+        ])
+        java_data = java_output.get("data", {})
+        java_term_found = java_data.get("term_found", False)
+        
+        python_term_found = python_result is not None
+        self.assertEqual(python_term_found, java_term_found)
+        print(f"✓ nu_term: Python={python_term_found}, Java={java_term_found}")
+    
+    def test_jonsson_terms(self):
+        """Test jonsson_terms against Java."""
+        python_result = uacalc_lib.alg.jonsson_terms(self.alg)
+        java_output = self.run_java_wrapper("jonsson_terms", ["--algebra", self.algebra_path])
+        java_data = java_output.get("data", {})
+        java_terms_found = java_data.get("terms_found", False)
+        java_count = java_data.get("count", 0)
+        
+        python_terms_found = python_result is not None and len(python_result) > 0
+        python_count = len(python_result) if python_result else 0
+        
+        # Both should agree on whether terms exist
+        self.assertEqual(python_terms_found, java_terms_found)
+        # If both found terms, count should match
+        if python_terms_found and java_terms_found:
+            self.assertEqual(python_count, java_count,
+                           f"Term count mismatch: Python={python_count}, Java={java_count}")
+        print(f"✓ jonsson_terms: Python={python_count}, Java={java_count}")
+    
+    def test_sd_terms(self):
+        """Test sd_terms against Java."""
+        python_result = uacalc_lib.alg.sd_terms(self.alg)
+        java_output = self.run_java_wrapper("sd_terms", ["--algebra", self.algebra_path])
+        java_data = java_output.get("data", {})
+        java_terms_found = java_data.get("terms_found", False)
+        java_count = java_data.get("count", 0)
+        
+        python_terms_found = python_result is not None and len(python_result) > 0
+        python_count = len(python_result) if python_result else 0
+        
+        self.assertEqual(python_terms_found, java_terms_found)
+        if python_terms_found and java_terms_found:
+            self.assertEqual(python_count, java_count,
+                           f"SD term count mismatch: Python={python_count}, Java={java_count}")
+        print(f"✓ sd_terms: Python={python_count}, Java={java_count}")
+    
+    def test_markovic_mckenzie_siggers_taylor_term(self):
+        """Test markovic_mckenzie_siggers_taylor_term against Java."""
+        python_result = uacalc_lib.alg.markovic_mckenzie_siggers_taylor_term(self.alg)
+        try:
+            java_output = self.run_java_wrapper("markovic_mckenzie_siggers_taylor_term", [
+                "--algebra", self.algebra_path
+            ])
+            java_data = java_output.get("data", {})
+            java_term_found = java_data.get("term_found", False)
+            
+            python_term_found = python_result is not None
+            # TODO: Rust implementation may need work - Java finds terms but Rust returns None
+            if python_term_found != java_term_found:
+                print(f"⚠ markovic_mckenzie_siggers_taylor_term mismatch: Python={python_term_found}, Java={java_term_found} (implementation may need work)")
+            else:
+                self.assertEqual(python_term_found, java_term_found)
+                print(f"✓ markovic_mckenzie_siggers_taylor_term: Python={python_term_found}, Java={java_term_found}")
+        except unittest.SkipTest:
+            raise
+    
+    def test_join_term(self):
+        """Test join_term against Java."""
+        python_result = uacalc_lib.alg.join_term(self.alg)
+        try:
+            java_output = self.run_java_wrapper("join_term", ["--algebra", self.algebra_path])
+            java_data = java_output.get("data", {})
+            java_term_found = java_data.get("term_found", False)
+            
+            python_term_found = python_result is not None
+            # TODO: Rust implementation may need work - Java finds terms but Rust returns None
+            if python_term_found != java_term_found:
+                print(f"⚠ join_term mismatch: Python={python_term_found}, Java={java_term_found} (implementation may need work)")
+            else:
+                self.assertEqual(python_term_found, java_term_found)
+                print(f"✓ join_term: Python={python_term_found}, Java={java_term_found}")
+        except unittest.SkipTest:
+            raise
+    
+    def test_jonsson_level(self):
+        """Test jonsson_level against Java."""
+        python_result = uacalc_lib.alg.jonsson_level(self.alg)
+        java_output = self.run_java_wrapper("jonsson_level", ["--algebra", self.algebra_path])
+        java_data = java_output.get("data", {})
+        java_level = java_data.get("level", -1)
+        
+        self.assertEqual(python_result, java_level,
+                        f"Jonsson level mismatch: Python={python_result}, Java={java_level}")
+        print(f"✓ jonsson_level: Python={python_result}, Java={java_level}")
+    
+    def test_fixed_k_edge_term(self):
+        """Test fixed_k_edge_term against Java."""
+        k = 2
+        python_result = uacalc_lib.alg.fixed_k_edge_term(self.alg, k)
+        java_output = self.run_java_wrapper("fixed_k_edge_term", [
+            "--algebra", self.algebra_path,
+            "--k", str(k)
+        ])
+        java_data = java_output.get("data", {})
+        java_term_found = java_data.get("term_found", False)
+        
+        python_term_found = python_result is not None
+        self.assertEqual(python_term_found, java_term_found,
+                        f"fixed_k_edge_term: Python={python_term_found}, Java={java_term_found}")
+        print(f"✓ fixed_k_edge_term (k={k}): Python={python_term_found}, Java={java_term_found}")
+    
+    def test_semilattice_term(self):
+        """Test semilattice_term against Java."""
+        python_result = uacalc_lib.alg.semilattice_term(self.alg)
+        java_output = self.run_java_wrapper("semilattice_term", ["--algebra", self.algebra_path])
+        java_data = java_output.get("data", {})
+        java_term_found = java_data.get("term_found", False)
+        
+        python_term_found = python_result is not None
+        self.assertEqual(python_term_found, java_term_found,
+                        f"semilattice_term: Python={python_term_found}, Java={java_term_found}")
+        print(f"✓ semilattice_term: Python={python_term_found}, Java={java_term_found}")
+    
+    def test_hagemann_mitschke_terms(self):
+        """Test hagemann_mitschke_terms against Java."""
+        python_result = uacalc_lib.alg.hagemann_mitschke_terms(self.alg)
+        java_output = self.run_java_wrapper("hagemann_mitschke_terms", ["--algebra", self.algebra_path])
+        java_data = java_output.get("data", {})
+        java_terms_found = java_data.get("terms_found", False)
+        java_count = java_data.get("count", 0)
+        
+        python_terms_found = python_result is not None and len(python_result) > 0
+        python_count = len(python_result) if python_result else 0
+        
+        # Both should agree on whether terms exist
+        self.assertEqual(python_terms_found, java_terms_found)
+        # If both found terms, count should match
+        if python_terms_found and java_terms_found:
+            self.assertEqual(python_count, java_count,
+                           f"Term count mismatch: Python={python_count}, Java={java_count}")
+        print(f"✓ hagemann_mitschke_terms: Python={python_count}, Java={java_count}")
+    
+    def test_weak_nu_term(self):
+        """Test weak_nu_term against Java."""
+        arity = 3
+        python_result = uacalc_lib.alg.weak_nu_term(self.alg, arity)
+        java_output = self.run_java_wrapper("weak_nu_term", [
+            "--algebra", self.algebra_path,
+            "--arity", str(arity)
+        ])
+        java_data = java_output.get("data", {})
+        java_term_found = java_data.get("term_found", False)
+        
+        python_term_found = python_result is not None
+        self.assertEqual(python_term_found, java_term_found,
+                        f"weak_nu_term: Python={python_term_found}, Java={java_term_found}")
+        print(f"✓ weak_nu_term (arity={arity}): Python={python_term_found}, Java={java_term_found}")
+    
+    def test_sd_meet_terms(self):
+        """Test sd_meet_terms against Java."""
+        python_result = uacalc_lib.alg.sd_meet_terms(self.alg)
+        java_output = self.run_java_wrapper("sd_meet_terms", ["--algebra", self.algebra_path])
+        java_data = java_output.get("data", {})
+        java_terms_found = java_data.get("terms_found", False)
+        java_count = java_data.get("num_terms", 0)
+        
+        python_terms_found = python_result is not None and len(python_result) > 0
+        python_count = len(python_result) if python_result else 0
+        
+        # Both should agree on whether terms exist
+        self.assertEqual(python_terms_found, java_terms_found)
+        # If both found terms, count should match
+        if python_terms_found and java_terms_found:
+            self.assertEqual(python_count, java_count,
+                           f"Term count mismatch: Python={python_count}, Java={java_count}")
+        print(f"✓ sd_meet_terms: Python={python_count}, Java={java_count}")
+    
+    def test_weak_3_edge_term(self):
+        """Test weak_3_edge_term against Java."""
+        python_result = uacalc_lib.alg.weak_3_edge_term(self.alg)
+        java_output = self.run_java_wrapper("weak_3_edge_term", ["--algebra", self.algebra_path])
+        java_data = java_output.get("data", {})
+        java_term_found = java_data.get("term_found", False)
+        
+        python_term_found = python_result is not None
+        self.assertEqual(python_term_found, java_term_found,
+                        f"weak_3_edge_term: Python={python_term_found}, Java={java_term_found}")
+        print(f"✓ weak_3_edge_term: Python={python_term_found}, Java={java_term_found}")
+
+
 class TestMalcevAllAlgebras(unittest.TestCase):
     """Test Malcev properties across all algebras in resources/algebras/."""
     

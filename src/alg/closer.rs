@@ -1315,14 +1315,21 @@ where
         
         // Add constants if any
         // Compute constants by evaluating nullary operations (since we have Arc, not &mut)
+        // Track operation symbols for constants so we can create terms even if constant_to_symbol isn't populated
+        use crate::alg::op::OperationSymbol;
         let mut constants_vec = Vec::new();
+        let mut constant_to_symbol_local: HashMap<IntArray, OperationSymbol> = HashMap::new();
         let ops = self.algebra.operations();
         for op in ops {
             if op.arity() == 0 {
                 match op.value_at_arrays(&[]) {
                     Ok(vals) => {
                         if let Ok(ia) = IntArray::from_array(vals) {
-                            constants_vec.push(ia);
+                            // Only add if we haven't seen this constant before
+                            if !constant_to_symbol_local.contains_key(&ia) {
+                                constants_vec.push(ia.clone());
+                                constant_to_symbol_local.insert(ia, op.symbol().clone());
+                            }
                         }
                     }
                     Err(e) => {
@@ -1337,11 +1344,24 @@ where
                 self.ans.push(arr.clone());
                 raw_list.push(arr.as_slice().to_vec());
                 if let Some(ref mut term_map) = self.term_map {
-                    if let Some(ref c2s) = self.algebra.constant_to_symbol {
-                        if let Some(symbol) = c2s.get(arr) {
-                            let constant_term = Box::new(NonVariableTerm::make_constant_term(symbol.clone())) as Box<dyn Term>;
-                            term_map.insert(arr.clone(), constant_term);
-                        }
+                    // Try to get symbol from local map first, then fall back to algebra's constant_to_symbol
+                    let symbol_opt = constant_to_symbol_local.get(arr)
+                        .or_else(|| {
+                            self.algebra.constant_to_symbol.as_ref()
+                                .and_then(|c2s| c2s.get(arr))
+                        })
+                        .cloned();
+                    
+                    if let Some(symbol) = symbol_opt {
+                        let constant_term = Box::new(NonVariableTerm::make_constant_term(symbol)) as Box<dyn Term>;
+                        term_map.insert(arr.clone(), constant_term);
+                    } else {
+                        // This shouldn't happen, but if it does, we should still add a term
+                        // to avoid the "No term found" error later. Create a dummy constant term.
+                        eprintln!("WARNING: No symbol found for constant {:?}, creating dummy term", arr);
+                        // We can't create a term without a symbol, so we'll skip adding to term_map
+                        // But this means we'll get an error later if this constant is used as an argument
+                        // The proper fix would be to ensure constant_to_symbol is always populated
                     }
                 }
             }
@@ -1478,6 +1498,14 @@ where
                     // Compute result componentwise
                     let mut v_raw = vec![0; power];
                     
+                    // Validate all indices are in bounds before accessing raw_list
+                    for &idx in &indices {
+                        let idx_usize = idx as usize;
+                        if idx_usize >= raw_list.len() {
+                            return Err(format!("Index {} out of bounds for raw_list (length: {})", idx_usize, raw_list.len()));
+                        }
+                    }
+                    
                     if let Some(table) = op_table {
                         // Fast path: use table directly with Horner encoding
                         for j in 0..power {
@@ -1525,13 +1553,12 @@ where
                             // Add to term map if it exists
                             if let Some(ref mut term_map) = self.term_map {
                                 let mut children = Vec::new();
+                                // current_mark is the length before we added v, so all indices should be < current_mark
+                                // This matches Java's behavior: argIndeces[r] is in [0, currentMark-1]
                                 for &idx in &indices {
                                     let idx_usize = idx as usize;
-                                    // Indices are valid into ans (they refer to elements before v was added)
-                                    // Since we just pushed v, ans.len() - 1 is the index of v itself
-                                    // The argument indices should all be < ans.len() - 1 (the old length)
-                                    // But we need to check ans.len() to be safe, and the indices should be valid
-                                    if idx_usize < self.ans.len() {
+                                    // Check against current_mark (old length), not self.ans.len() (new length)
+                                    if idx_usize < current_mark {
                                         // Get the element from ans (indices are valid since they're from before we added v)
                                         let arg_elem = &self.ans[idx_usize];
                                         if let Some(term) = term_map.get(arg_elem) {
@@ -1539,8 +1566,18 @@ where
                                         } else {
                                             // This shouldn't happen - all arguments should have terms
                                             eprintln!("WARNING: No term found for argument at index {} (element: {:?})", idx_usize, arg_elem);
+                                            // fail gracefully
+                                            return Err(format!("No term found for argument at index {} (element: {:?})", idx_usize, arg_elem));
                                         }
+                                    } else {
+                                        // Index out of bounds - this should never happen with correct sequence generation
+                                        // but if it does, we should fail rather than create an incomplete term
+                                        return Err(format!("Index {} out of bounds (current_mark: {})", idx_usize, current_mark));
                                     }
+                                }
+                                // Ensure we have the correct number of children (should match arity)
+                                if children.len() != arity {
+                                    return Err(format!("Expected {} children but got {} for term construction", arity, children.len()));
                                 }
                                 let symbol = symbols[i].clone();
                                 let new_term = Box::new(NonVariableTerm::new(symbol, children)) as Box<dyn Term>;
@@ -1616,7 +1653,8 @@ where
                                         let mut img_args = Vec::new();
                                         for &idx in &indices {
                                             let idx_usize = idx as usize;
-                                            if idx_usize < self.ans.len() {
+                                            // Check against current_mark (old length), not self.ans.len() (new length)
+                                            if idx_usize < current_mark {
                                                 if let Some(img) = homomorphism.get(&self.ans[idx_usize]) {
                                                     img_args.push(*img);
                                                 } else {
@@ -1740,7 +1778,8 @@ where
                                         let mut img_args = Vec::new();
                                         for &idx in &indices {
                                             let idx_usize = idx as usize;
-                                            if idx_usize < self.ans.len() {
+                                            // Check against current_mark (old length), not self.ans.len() (new length)
+                                            if idx_usize < current_mark {
                                                 if let Some(img) = homomorphism.get(&self.ans[idx_usize]) {
                                                     img_args.push(*img);
                                                 } else {
@@ -1766,7 +1805,8 @@ where
                                                             let mut children = Vec::new();
                                                             for &idx in &indices {
                                                                 let idx_usize = idx as usize;
-                                                                if idx_usize < self.ans.len() {
+                                                                // Check against current_mark (old length), not self.ans.len() (new length)
+                                                                if idx_usize < current_mark {
                                                                     if let Some(term) = term_map.get(&self.ans[idx_usize]) {
                                                                         children.push(term.clone_box());
                                                                     }
