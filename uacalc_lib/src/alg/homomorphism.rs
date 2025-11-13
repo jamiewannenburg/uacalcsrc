@@ -185,3 +185,13 @@ impl PyHomomorphism {
         self.inner.get_map() == other.inner.get_map()
     }
 }
+
+impl PyHomomorphism {
+    /// Create a PyHomomorphism from an existing Homomorphism.
+    /// 
+    /// This is used internally when converting Rust Homomorphism objects
+    /// to Python objects.
+    pub fn from_inner(inner: uacalc::alg::Homomorphism) -> Self {
+        PyHomomorphism { inner }
+    }
+}
