@@ -91,6 +91,10 @@ public class AlgebrasWrapper extends WrapperBase {
                 handleMemberOfQuasivarietyList(options);
                 break;
                 
+            case "memberOfQuasivarietyGenByProperSubs":
+                handleMemberOfQuasivarietyGenByProperSubs(options);
+                break;
+                
             default:
                 handleError("Unknown command: " + command, null);
         }
@@ -626,6 +630,55 @@ public class AlgebrasWrapper extends WrapperBase {
     }
     
     /**
+     * Handle memberOfQuasivarietyGenByProperSubs command - test if algebra A can be embedded into a product of proper subalgebras of A.
+     */
+    private void handleMemberOfQuasivarietyGenByProperSubs(Map<String, String> options) throws Exception {
+        // Get algebra A file path or create test algebra
+        String algAFile = options.get("algebra");
+        SmallAlgebra algA;
+        
+        if (algAFile != null && !algAFile.isEmpty()) {
+            File file = new File(algAFile);
+            if (!file.exists()) {
+                handleError("Algebra A file not found: " + algAFile, null);
+                return;
+            }
+            algA = AlgebraIO.readAlgebraFile(file);
+        } else {
+            int size = getIntArg(options, "size", 2);
+            algA = makeTestAlgebra(size);
+        }
+        
+        // Call Java method
+        List<Homomorphism> homos = Algebras.memberOfQuasivarietyGenByProperSubs(algA, null);
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("command", "memberOfQuasivarietyGenByProperSubs");
+        response.put("algebra", algA.getName());
+        response.put("algebra_size", algA.cardinality());
+        response.put("can_be_embedded", homos != null);
+        
+        if (homos != null) {
+            response.put("homomorphisms_count", homos.size());
+            List<Map<String, Object>> homoMaps = new ArrayList<>();
+            for (Homomorphism homo : homos) {
+                Map<String, Object> homoMap = new HashMap<>();
+                homoMap.put("domain", homo.getDomain().getName());
+                homoMap.put("range", homo.getRange().getName());
+                homoMap.put("map", homo.getMap());
+                homoMaps.add(homoMap);
+            }
+            response.put("homomorphisms", homoMaps);
+        } else {
+            response.put("homomorphisms_count", 0);
+        }
+        
+        response.put("status", "success");
+        
+        handleSuccess(response);
+    }
+    
+    /**
      * Show usage information for the Algebras wrapper.
      */
     private void showUsage() {
@@ -640,6 +693,8 @@ public class AlgebrasWrapper extends WrapperBase {
             "jonssonLevel --algebra algebras/ba2.ua",
             "findNUF --algebra algebras/ba2.ua --arity 3",
             "ternaryDiscriminatorAlgebra --card 3",
+            "memberOfQuasivarietyGenByProperSubs --algebra algebras/lat3.ua",
+            "memberOfQuasivarietyGenByProperSubs --size 3",
             "help"
         };
         

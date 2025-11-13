@@ -103,7 +103,7 @@ pub fn make_random_algebra_safe(
 ## Implementation Status
 
 ### Current State
-- **Completion**: 30% (7/23 methods implemented)
+- **Completion**: 35% (8/23 methods implemented)
 - **Rust Implementation**: Started for methods checked below
 - **Python Bindings**: Started for methods checked below
 - **Java Wrapper**: Started for methods checked below
@@ -201,7 +201,7 @@ All 23 public static methods from `org/uacalc/alg/Algebras.java`:
 - [x] `ternaryDiscriminatorAlgebra(int card)` - Creates ternary discriminator algebra ✅
 - [x] `memberOfQuasivariety(SmallAlgebra A, SmallAlgebra B, ProgressReport report)` - Tests quasivariety membership ✅
 - [x] `memberOfQuasivariety(SmallAlgebra A, List<SmallAlgebra> genAlgs, ProgressReport report)` - Tests quasivariety membership ✅
-- [ ] `memberOfQuasivarietyGenByProperSubs(SmallAlgebra A, ProgressReport report)` - Tests membership in proper subalgebras
+- [x] `memberOfQuasivarietyGenByProperSubs(SmallAlgebra A, ProgressReport report)` - Tests membership in proper subalgebras ✅
 - [ ] `quasiCriticalCongruences(SmallAlgebra A, ProgressReport report)` - Finds quasi-critical congruences
 - [ ] `quasiCritical(SmallAlgebra A)` - Tests if algebra is quasi-critical
 - [ ] `quasiCritical(SmallAlgebra A, ProgressReport report)` - Tests if algebra is quasi-critical with report
@@ -317,3 +317,42 @@ All 23 public static methods from `org/uacalc/alg/Algebras.java`:
   5. If successful, compute kernel and if not already covered by phi, add it and update phi
   6. If phi becomes zero, return the list of homomorphisms
   7. If phi doesn't become zero after checking all algebras, return None
+
+### memberOfQuasivarietyGenByProperSubs (Completed)
+- **Rust Implementation**: `src/alg/algebras.rs` - `member_of_quasivariety_gen_by_proper_subs()` function
+  - Tests if algebra A can be embedded into a product of proper subalgebras of A
+  - Uses CongruenceLattice to get zero and one partitions
+  - Uses SubalgebraLattice to find minimal generating set and extend homomorphisms
+  - Iterates through all possible generator assignments to A.cardinality() - 1 (to ensure proper subalgebras)
+  - Computes kernel of each homomorphism and updates phi (meet of kernels)
+  - Only considers homomorphisms with non-zero kernels (proper subalgebras)
+  - Returns Some(Vec<Homomorphism>) if phi becomes zero (A can be embedded), None otherwise
+  - Returns `Result<Option<Vec<Homomorphism>>, String>`
+  - Handles single element algebras by returning None early (no proper subalgebras)
+  
+- **Python Bindings**: `uacalc_lib/src/alg/algebras.rs` - `member_of_quasivariety_gen_by_proper_subs()` pyfunction
+  - Exposed as module-level function in Python
+  - Takes PyBasicAlgebra, returns Optional[List[PyHomomorphism]]
+  - Converts Rust Homomorphism objects to PyHomomorphism using `from_inner()` method
+  
+- **Java Wrapper**: `java_wrapper/src/alg/AlgebrasWrapper.java` - `handleMemberOfQuasivarietyGenByProperSubs()` method
+  - Command: `memberOfQuasivarietyGenByProperSubs --algebra <file>` or `memberOfQuasivarietyGenByProperSubs --size <n>`
+  - Returns JSON with can_be_embedded boolean, homomorphisms_count, and list of homomorphisms with their maps
+  
+- **Tests**:
+  - Rust: `src/alg/algebras.rs` - 3 test cases (small algebra, larger algebra, single element algebra)
+  - Python: `python/uacalc/tests/test_algebras.py` - 3 test cases (small algebra, larger algebra, single element algebra)
+  
+- **Type Stubs**: `python/uacalc/uacalc_lib.pyi` - Added `member_of_quasivariety_gen_by_proper_subs()` method signature with documentation
+
+- **Note**: The implementation follows the Java algorithm exactly, with the key difference being:
+  1. Only uses A itself (not a list of generating algebras)
+  2. Iterates through assignments to A.cardinality() - 1 (not A.cardinality()) to ensure proper subalgebras
+  3. Checks that kernel is not zero (to ensure it's a proper subalgebra)
+  4. Extends homomorphisms from A to A (not A to B)
+  5. Returns early for single element algebras (no proper subalgebras exist)
+
+Prompt:
+Read @Task 82 - Algebras.md. Implement memberOfQuasivarietyGenByProperSubs rust/wrapper/binding/rust test/python test/type stubs. Check if this should make use of an already implemented feature. Make sure everything compiles and all tests pass. Then update the task file with what was implemented.
+To compile wrapper use `ant compile-wrappers`.
+To compile bindings first activate the venv environment and use maturin. You may suppress rust warnings using RUSTFLAGS.
