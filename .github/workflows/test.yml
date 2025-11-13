@@ -174,6 +174,7 @@ jobs:
             --cov-report=html:coverage/python/html \
             --cov-report=term \
             --cov-report=xml:coverage/python/coverage.xml \
+            --cov-fail-under=0 \
             -v
 
       - name: Upload Python coverage

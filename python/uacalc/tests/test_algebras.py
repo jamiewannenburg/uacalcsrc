@@ -1293,8 +1293,8 @@ class TestMakeRandomAlgebra:
         import uacalc_lib
         
         BasicAlgebra = uacalc_lib.alg.BasicAlgebra
-        IntOperation = uacalc_lib.alg.op.IntOperation
-        OperationSymbol = uacalc_lib.alg.op.OperationSymbol
+        IntOperation = uacalc_lib.alg.IntOperation
+        OperationSymbol = uacalc_lib.alg.OperationSymbol
         find_in_clone = uacalc_lib.alg.find_in_clone
         
         # Create a simple algebra with one binary operation (meet)
@@ -1320,8 +1320,8 @@ class TestMakeRandomAlgebra:
         import uacalc_lib
         
         BasicAlgebra = uacalc_lib.alg.BasicAlgebra
-        IntOperation = uacalc_lib.alg.op.IntOperation
-        OperationSymbol = uacalc_lib.alg.op.OperationSymbol
+        IntOperation = uacalc_lib.alg.IntOperation
+        OperationSymbol = uacalc_lib.alg.OperationSymbol
         find_in_clone = uacalc_lib.alg.find_in_clone
         
         size = 2
