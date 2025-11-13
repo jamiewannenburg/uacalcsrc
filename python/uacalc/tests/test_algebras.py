@@ -254,4 +254,109 @@ class TestAlgebras:
         # Test Python implementation - should raise ValueError
         with pytest.raises(Exception):  # ValueError or similar
             is_homomorphism(map, alg0, alg1)
+    
+    def test_jonsson_terms_single_element(self):
+        """Test jonsson_terms with single element algebra."""
+        import uacalc_lib
+        
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
+        jonsson_terms = uacalc_lib.alg.jonsson_terms
+        
+        # Create single element algebra
+        alg = BasicAlgebra("SingleElement", [0], [])
+        
+        # Test Python implementation
+        result = jonsson_terms(alg)
+        assert result is not None, "Single element algebra should have Jonsson terms"
+        assert len(result) == 2, "Single element algebra should have 2 Jonsson terms"
+    
+    def test_jonsson_level_single_element(self):
+        """Test jonsson_level with single element algebra."""
+        import uacalc_lib
+        
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
+        jonsson_level = uacalc_lib.alg.jonsson_level
+        
+        # Create single element algebra
+        alg = BasicAlgebra("SingleElement", [0], [])
+        
+        # Test Python implementation
+        result = jonsson_level(alg)
+        assert result == 1, "Single element algebra should have Jonsson level 1"
+    
+    def test_jonsson_terms_with_algebra_file(self):
+        """Test jonsson_terms with a real algebra file if available."""
+        import uacalc_lib
+        import os
+        from pathlib import Path
+        
+        project_root = Path(__file__).parent.parent.parent.parent
+        algebra_path = project_root / "resources" / "algebras" / "ba2.ua"
+        
+        if not algebra_path.exists():
+            pytest.skip(f"Algebra file {algebra_path} not found")
+        
+        AlgebraReader = uacalc_lib.io.AlgebraReader
+        reader = AlgebraReader.new_from_file(str(algebra_path))
+        alg = reader.read_algebra_file()
+        
+        jonsson_terms = uacalc_lib.alg.jonsson_terms
+        
+        # Test Python implementation
+        result = jonsson_terms(alg)
+        # Result may be None or a list of terms
+        assert result is None or isinstance(result, list)
+        
+        # Compare with Java wrapper
+        java_result = run_java_wrapper("jonssonTerms", [
+            "--algebra", str(algebra_path)
+        ])
+        
+        assert java_result["success"] == True
+        java_terms_found = java_result["data"].get("terms_found", False)
+        python_terms_found = result is not None and len(result) > 0
+        
+        # Both should agree on whether terms exist
+        assert python_terms_found == java_terms_found, \
+            f"Terms existence mismatch: Python={python_terms_found}, Java={java_terms_found}"
+        
+        # If both found terms, count should match
+        if python_terms_found and java_terms_found:
+            java_count = java_result["data"].get("count", 0)
+            python_count = len(result)
+            assert python_count == java_count, \
+                f"Term count mismatch: Python={python_count}, Java={java_count}"
+    
+    def test_jonsson_level_with_algebra_file(self):
+        """Test jonsson_level with a real algebra file if available."""
+        import uacalc_lib
+        import os
+        from pathlib import Path
+        
+        project_root = Path(__file__).parent.parent.parent.parent
+        algebra_path = project_root / "resources" / "algebras" / "ba2.ua"
+        
+        if not algebra_path.exists():
+            pytest.skip(f"Algebra file {algebra_path} not found")
+        
+        AlgebraReader = uacalc_lib.io.AlgebraReader
+        reader = AlgebraReader.new_from_file(str(algebra_path))
+        alg = reader.read_algebra_file()
+        
+        jonsson_level = uacalc_lib.alg.jonsson_level
+        
+        # Test Python implementation
+        python_result = jonsson_level(alg)
+        assert isinstance(python_result, int)
+        
+        # Compare with Java wrapper
+        java_result = run_java_wrapper("jonssonLevel", [
+            "--algebra", str(algebra_path)
+        ])
+        
+        assert java_result["success"] == True
+        java_level = java_result["data"].get("level", -1)
+        
+        assert python_result == java_level, \
+            f"Jonsson level mismatch: Python={python_result}, Java={java_level}"
 

@@ -11,6 +11,7 @@ import java.io.*;
 import org.uacalc.alg.*;
 import org.uacalc.alg.op.*;
 import org.uacalc.io.*;
+import org.uacalc.terms.*;
 import java_wrapper.src.WrapperBase;
 
 /**
@@ -60,6 +61,14 @@ public class AlgebrasWrapper extends WrapperBase {
                 
             case "isHomomorphism":
                 handleIsHomomorphism(options);
+                break;
+                
+            case "jonssonTerms":
+                handleJonssonTerms(options);
+                break;
+                
+            case "jonssonLevel":
+                handleJonssonLevel(options);
                 break;
                 
             default:
@@ -239,6 +248,83 @@ public class AlgebrasWrapper extends WrapperBase {
     }
     
     /**
+     * Handle jonssonTerms command - find Jonsson terms for an algebra.
+     */
+    private void handleJonssonTerms(Map<String, String> options) throws Exception {
+        // Get algebra file path
+        String algFile = options.get("algebra");
+        if (algFile == null || algFile.isEmpty()) {
+            handleError("Required argument missing: algebra", null);
+            return;
+        }
+        
+        // Load algebra from file
+        File file = new File(algFile);
+        if (!file.exists()) {
+            handleError("Algebra file not found: " + algFile, null);
+            return;
+        }
+        SmallAlgebra alg = AlgebraIO.readAlgebraFile(file);
+        
+        // Call Java method
+        List<Term> terms = Algebras.jonssonTerms(alg);
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("command", "jonssonTerms");
+        response.put("algebra", alg.getName());
+        response.put("algebra_size", alg.cardinality());
+        
+        if (terms != null && !terms.isEmpty()) {
+            response.put("terms_found", true);
+            response.put("count", terms.size());
+            
+            List<String> termStrings = new ArrayList<>();
+            for (Term term : terms) {
+                termStrings.add(term.toString());
+            }
+            response.put("terms", termStrings);
+        } else {
+            response.put("terms_found", false);
+            response.put("count", 0);
+        }
+        response.put("status", "success");
+        
+        handleSuccess(response);
+    }
+    
+    /**
+     * Handle jonssonLevel command - get Jonsson level for an algebra.
+     */
+    private void handleJonssonLevel(Map<String, String> options) throws Exception {
+        // Get algebra file path
+        String algFile = options.get("algebra");
+        if (algFile == null || algFile.isEmpty()) {
+            handleError("Required argument missing: algebra", null);
+            return;
+        }
+        
+        // Load algebra from file
+        File file = new File(algFile);
+        if (!file.exists()) {
+            handleError("Algebra file not found: " + algFile, null);
+            return;
+        }
+        SmallAlgebra alg = AlgebraIO.readAlgebraFile(file);
+        
+        // Call Java method
+        int level = Algebras.jonssonLevel(alg);
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("command", "jonssonLevel");
+        response.put("algebra", alg.getName());
+        response.put("algebra_size", alg.cardinality());
+        response.put("level", level);
+        response.put("status", "success");
+        
+        handleSuccess(response);
+    }
+    
+    /**
      * Show usage information for the Algebras wrapper.
      */
     private void showUsage() {
@@ -247,6 +333,8 @@ public class AlgebrasWrapper extends WrapperBase {
             "isEndomorphism --size 2 --operation \"1:0,1\"",
             "isHomomorphism --algebra0 algebras/ba2.ua --algebra1 algebras/ba2.ua --map \"0,1\"",
             "isHomomorphism --size 2 --map \"0,1\"",
+            "jonssonTerms --algebra algebras/ba2.ua",
+            "jonssonLevel --algebra algebras/ba2.ua",
             "help"
         };
         

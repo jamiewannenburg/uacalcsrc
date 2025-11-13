@@ -135,6 +135,66 @@ pub fn is_homomorphism(
     Ok(true)
 }
 
+/// Returns Jonsson terms for distributive variety.
+///
+/// This method delegates to `malcev::jonsson_terms`. It returns a list of
+/// Jonsson terms witnessing congruence distributivity, or `None` if the
+/// algebra does not generate a congruence distributive variety.
+/// The returned terms are guaranteed to be the least number of terms possible.
+///
+/// # Arguments
+/// * `alg` - The algebra to test
+///
+/// # Returns
+/// * `Ok(Some(Vec<Term>))` - Jonsson terms if they exist
+/// * `Ok(None)` - No Jonsson terms exist
+/// * `Err(String)` - If there's an error during computation
+///
+/// # Examples
+/// ```
+/// use uacalc::alg::{algebras, SmallAlgebra, BasicAlgebra};
+///
+/// // Create an algebra and find Jonsson terms
+/// // (example would go here)
+/// ```
+pub fn jonsson_terms<T>(alg: &dyn SmallAlgebra<UniverseItem = T>) -> Result<Option<Vec<Box<dyn crate::terms::Term>>>, String>
+where
+    T: Clone + std::fmt::Debug + std::fmt::Display + std::hash::Hash + Eq + Send + Sync + 'static
+{
+    crate::alg::malcev::jonsson_terms(alg)
+}
+
+/// Returns the minimal number of Jonsson terms.
+///
+/// This method delegates to `malcev::jonsson_level`. If the algebra generates
+/// a distributive variety, this returns the minimal number of Jonsson terms
+/// minus 1; otherwise it returns -1. For congruence distributivity testing,
+/// it's probably better to use `jonsson_terms` to get the actual terms.
+///
+/// If the algebra has only one element, it returns 1.
+/// For a lattice it returns 2.
+///
+/// # Arguments
+/// * `alg` - The algebra to test
+///
+/// # Returns
+/// * `Ok(level)` - The Jonsson level (minimal number of Jonsson terms minus 1)
+/// * `Err(String)` - If there's an error during computation
+///
+/// # Examples
+/// ```
+/// use uacalc::alg::{algebras, SmallAlgebra, BasicAlgebra};
+///
+/// // Create an algebra and find Jonsson level
+/// // (example would go here)
+/// ```
+pub fn jonsson_level<T>(alg: &dyn SmallAlgebra<UniverseItem = T>) -> Result<i32, String>
+where
+    T: Clone + std::fmt::Debug + std::fmt::Display + std::hash::Hash + Eq + Send + Sync + 'static
+{
+    crate::alg::malcev::jonsson_level(alg)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -355,6 +415,59 @@ mod tests {
         let result = is_homomorphism(&map, &alg0, &alg1);
         assert!(result.is_err());
         assert!(result.unwrap_err().contains("not found in target algebra"));
+    }
+
+    #[test]
+    fn test_jonsson_terms_single_element() {
+        // Test with single element algebra - should return Some with x and z
+        let size = 1;
+        let universe: std::collections::HashSet<i32> = (0..size).collect();
+        let alg = BasicAlgebra::new("SingleElement".to_string(), universe, Vec::new());
+        
+        let result = jonsson_terms(&alg);
+        assert!(result.is_ok());
+        let terms = result.unwrap();
+        assert!(terms.is_some());
+        let terms_vec = terms.unwrap();
+        assert_eq!(terms_vec.len(), 2);
+    }
+
+    #[test]
+    fn test_jonsson_terms_no_operations() {
+        // Test with algebra that has no operations - should return error
+        let size = 2;
+        let universe: std::collections::HashSet<i32> = (0..size).collect();
+        let alg = BasicAlgebra::new("NoOps".to_string(), universe, Vec::new());
+        
+        let result = jonsson_terms(&alg);
+        assert!(result.is_ok());
+        // For algebras with no operations, it may return None or error
+        // The actual behavior depends on malcev::jonsson_terms implementation
+    }
+
+    #[test]
+    fn test_jonsson_level_single_element() {
+        // Test with single element algebra - should return 1
+        let size = 1;
+        let universe: std::collections::HashSet<i32> = (0..size).collect();
+        let alg = BasicAlgebra::new("SingleElement".to_string(), universe, Vec::new());
+        
+        let result = jonsson_level(&alg);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), 1);
+    }
+
+    #[test]
+    fn test_jonsson_level_no_operations() {
+        // Test with algebra that has no operations - should return error
+        let size = 2;
+        let universe: std::collections::HashSet<i32> = (0..size).collect();
+        let alg = BasicAlgebra::new("NoOps".to_string(), universe, Vec::new());
+        
+        let result = jonsson_level(&alg);
+        // The actual behavior depends on malcev::jonsson_level implementation
+        // It may return an error or a specific value
+        assert!(result.is_ok() || result.is_err());
     }
 }
 

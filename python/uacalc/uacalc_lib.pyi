@@ -1701,6 +1701,40 @@ class alg:
     Raises:
         ValueError: If there's an error (e.g., map size mismatch, missing operation)
     """
+    
+    @staticmethod
+    def jonsson_terms(algebra: "alg.BasicAlgebra") -> Optional[List[str]]: ...
+    """Find Jonsson terms for the algebra.
+    
+    This returns a list of Jonsson terms witnessing congruence distributivity,
+    or None if the algebra does not generate a congruence distributive variety.
+    The returned terms are guaranteed to be the least number of terms possible.
+    
+    Args:
+        algebra: The algebra to check (BasicAlgebra)
+        
+    Returns:
+        List of Jonsson terms as strings if they exist, None otherwise
+    """
+    
+    @staticmethod
+    def jonsson_level(algebra: "alg.BasicAlgebra") -> int: ...
+    """Get the Jonsson level for the algebra.
+    
+    If the algebra generates a distributive variety, this returns the minimal
+    number of Jonsson terms minus 1; otherwise it returns -1.
+    For congruence distributivity testing, it's probably better to use
+    jonsson_terms to get the actual terms.
+    
+    If the algebra has only one element, it returns 1.
+    For a lattice it returns 2.
+    
+    Args:
+        algebra: The algebra to check (BasicAlgebra)
+        
+    Returns:
+        The Jonsson level (minimal number of Jonsson terms minus 1), or -1 if not distributive
+    """
 
 # ============================================================================
 # UTIL MODULE (Partial - will be expanded)

@@ -103,7 +103,7 @@ pub fn make_random_algebra_safe(
 ## Implementation Status
 
 ### Current State
-- **Completion**: 8% (2/23 methods implemented)
+- **Completion**: 17% (4/23 methods implemented)
 - **Rust Implementation**: Started for methods checked below
 - **Python Bindings**: Started for methods checked below
 - **Java Wrapper**: Started for methods checked below
@@ -187,8 +187,8 @@ All 23 public static methods from `org/uacalc/alg/Algebras.java`:
 - [ ] `unaryCloneAlgFromPartitions(List<Partition> pars, Partition eta0, Partition eta1)` - Creates unary clone algebra with eta partitions
 - [ ] `unaryClone(List<Partition> pars, Partition eta0, Partition eta1)` - Computes unary clone set (returns NavigableSet<IntArray>)
 - [ ] `findNUF(SmallAlgebra alg, int arity)` - Finds near unanimity term (delegates to Malcev.nuTerm)
-- [ ] `jonssonTerms(SmallAlgebra alg)` - Returns Jonsson terms for distributive variety (delegates to Malcev.jonssonTerms)
-- [ ] `jonssonLevel(SmallAlgebra alg)` - Returns minimal number of Jonsson terms (delegates to Malcev.jonssonLevel)
+- [x] `jonssonTerms(SmallAlgebra alg)` - Returns Jonsson terms for distributive variety (delegates to Malcev.jonssonTerms) ✅
+- [x] `jonssonLevel(SmallAlgebra alg)` - Returns minimal number of Jonsson terms (delegates to Malcev.jonssonLevel) ✅
 - [x] `isEndomorphism(Operation endo, SmallAlgebra alg)` - Tests if operation is endomorphism ✅
 - [x] `isHomomorphism(int[] map, SmallAlgebra alg0, SmallAlgebra alg1)` - Tests if map is homomorphism ✅
 - [ ] `matrixPower(SmallAlgebra alg, int k)` - Creates matrix power algebra

@@ -17,6 +17,8 @@ use uacalc::alg::algebras;
 pub fn register_algebras_functions(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(is_endomorphism, m)?)?;
     m.add_function(wrap_pyfunction!(is_homomorphism, m)?)?;
+    m.add_function(wrap_pyfunction!(jonsson_terms, m)?)?;
+    m.add_function(wrap_pyfunction!(jonsson_level, m)?)?;
 
     Ok(())
 }
@@ -63,6 +65,58 @@ fn is_endomorphism(endo: &PyIntOperation, alg: &PyBasicAlgebra) -> PyResult<bool
 fn is_homomorphism(map: Vec<i32>, alg0: &PyBasicAlgebra, alg1: &PyBasicAlgebra) -> PyResult<bool> {
     match algebras::is_homomorphism(&map, &alg0.inner, &alg1.inner) {
         Ok(result) => Ok(result),
+        Err(e) => Err(PyValueError::new_err(e)),
+    }
+}
+
+/// Find Jonsson terms for the algebra.
+///
+/// This returns a list of Jonsson terms witnessing congruence distributivity,
+/// or None if the algebra does not generate a congruence distributive variety.
+/// The returned terms are guaranteed to be the least number of terms possible.
+///
+/// # Arguments
+/// * `algebra` - The algebra to check (BasicAlgebra)
+///
+/// # Returns
+/// List of Jonsson terms as strings if they exist, None otherwise
+///
+/// # Raises
+/// `ValueError` if there's an error during computation
+#[pyfunction]
+fn jonsson_terms(algebra: &PyBasicAlgebra) -> PyResult<Option<Vec<String>>> {
+    match algebras::jonsson_terms(&algebra.inner) {
+        Ok(Some(terms)) => {
+            let term_strings: Vec<String> = terms.iter().map(|t| format!("{}", t)).collect();
+            Ok(Some(term_strings))
+        },
+        Ok(None) => Ok(None),
+        Err(e) => Err(PyValueError::new_err(e)),
+    }
+}
+
+/// Get the Jonsson level for the algebra.
+///
+/// If the algebra generates a distributive variety, this returns the minimal
+/// number of Jonsson terms minus 1; otherwise it returns -1.
+/// For congruence distributivity testing, it's probably better to use
+/// `jonsson_terms` to get the actual terms.
+///
+/// If the algebra has only one element, it returns 1.
+/// For a lattice it returns 2.
+///
+/// # Arguments
+/// * `algebra` - The algebra to check (BasicAlgebra)
+///
+/// # Returns
+/// The Jonsson level (minimal number of Jonsson terms minus 1), or -1 if not distributive
+///
+/// # Raises
+/// `ValueError` if there's an error during computation
+#[pyfunction]
+fn jonsson_level(algebra: &PyBasicAlgebra) -> PyResult<i32> {
+    match algebras::jonsson_level(&algebra.inner) {
+        Ok(level) => Ok(level),
         Err(e) => Err(PyValueError::new_err(e)),
     }
 }
