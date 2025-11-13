@@ -576,4 +576,107 @@ class TestAlgebras:
         # Both should agree on whether term exists
         assert python_term_found == java_term_found, \
             f"Term existence mismatch: Python={python_term_found}, Java={java_term_found}"
+    
+    def test_ternary_discriminator_algebra_basic(self):
+        """Test ternary_discriminator_algebra with basic cardinality."""
+        import uacalc_lib
+        
+        ternary_discriminator_algebra = uacalc_lib.alg.ternary_discriminator_algebra
+        
+        # Create ternary discriminator algebra with cardinality 3
+        result = ternary_discriminator_algebra(3)
+        
+        # Check basic properties
+        assert result.cardinality() == 3, f"Expected cardinality 3, got {result.cardinality()}"
+        assert result.name() == "Disc-3", f"Expected name 'Disc-3', got '{result.name()}'"
+        
+        # Should have exactly one operation (the discriminator)
+        ops = result.operations()
+        assert len(ops) == 1, f"Expected 1 operation, got {len(ops)}"
+        
+        # Check that the operation is ternary
+        disc_op = ops[0]
+        assert disc_op.arity() == 3, f"Expected arity 3, got {disc_op.arity()}"
+        assert disc_op.symbol().name() == "disc", f"Expected name 'disc', got '{disc_op.symbol().name()}'"
+        
+        # Compare with Java wrapper
+        java_result = run_java_wrapper("ternaryDiscriminatorAlgebra", [
+            "--card", "3"
+        ])
+        
+        assert java_result["success"] == True
+        assert java_result["data"]["result_size"] == 3
+        assert java_result["data"]["result_size"] == result.cardinality(), \
+            "Python and Java should match"
+        assert java_result["data"]["operations_count"] == 1
+        assert java_result["data"]["operation_arity"] == 3
+    
+    def test_ternary_discriminator_algebra_discriminator_property(self):
+        """Test that the discriminator operation has the correct property."""
+        import uacalc_lib
+        
+        ternary_discriminator_algebra = uacalc_lib.alg.ternary_discriminator_algebra
+        
+        # Create ternary discriminator algebra
+        alg = ternary_discriminator_algebra(3)
+        ops = alg.operations()
+        disc_op = ops[0]
+        
+        # Test discriminator property: d(x,y,z) = z if x = y, otherwise x
+        # d(0,0,1) = 1 (since 0 == 0)
+        assert disc_op.int_value_at([0, 0, 1]) == 1
+        
+        # d(0,1,2) = 0 (since 0 != 1)
+        assert disc_op.int_value_at([0, 1, 2]) == 0
+        
+        # d(1,1,0) = 0 (since 1 == 1)
+        assert disc_op.int_value_at([1, 1, 0]) == 0
+        
+        # d(2,1,0) = 2 (since 2 != 1)
+        assert disc_op.int_value_at([2, 1, 0]) == 2
+    
+    def test_ternary_discriminator_algebra_invalid_cardinality(self):
+        """Test ternary_discriminator_algebra with invalid cardinality (should raise error)."""
+        import uacalc_lib
+        
+        ternary_discriminator_algebra = uacalc_lib.alg.ternary_discriminator_algebra
+        
+        # Test with card = 0 (should fail)
+        with pytest.raises(Exception):  # ValueError or similar
+            ternary_discriminator_algebra(0)
+        
+        # Test with card < 0 (should fail)
+        with pytest.raises(Exception):  # ValueError or similar
+            ternary_discriminator_algebra(-1)
+    
+    def test_ternary_discriminator_algebra_larger(self):
+        """Test ternary_discriminator_algebra with larger cardinality."""
+        import uacalc_lib
+        
+        ternary_discriminator_algebra = uacalc_lib.alg.ternary_discriminator_algebra
+        
+        # Create ternary discriminator algebra with cardinality 5
+        result = ternary_discriminator_algebra(5)
+        
+        assert result.cardinality() == 5, f"Expected cardinality 5, got {result.cardinality()}"
+        assert result.name() == "Disc-5", f"Expected name 'Disc-5', got '{result.name()}'"
+        
+        ops = result.operations()
+        assert len(ops) == 1
+        
+        disc_op = ops[0]
+        # Test a few values
+        assert disc_op.int_value_at([0, 0, 4]) == 4
+        assert disc_op.int_value_at([0, 1, 4]) == 0
+        assert disc_op.int_value_at([3, 3, 2]) == 2
+        
+        # Compare with Java wrapper
+        java_result = run_java_wrapper("ternaryDiscriminatorAlgebra", [
+            "--card", "5"
+        ])
+        
+        assert java_result["success"] == True
+        assert java_result["data"]["result_size"] == 5
+        assert java_result["data"]["result_size"] == result.cardinality(), \
+            "Python and Java should match"
 

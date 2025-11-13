@@ -1779,6 +1779,25 @@ class alg:
     Raises:
         ValueError: If k is not positive or there's an error during creation
     """
+    
+    @staticmethod
+    def ternary_discriminator_algebra(card: int) -> "alg.BasicAlgebra": ...
+    """Create a ternary discriminator algebra.
+    
+    A ternary discriminator algebra is an algebra with a single ternary operation
+    called the discriminator. The discriminator operation d(x,y,z) satisfies:
+    - d(x,y,z) = z if x = y
+    - d(x,y,z) = x if x ≠ y
+    
+    Args:
+        card: The cardinality of the algebra (size of the universe)
+        
+    Returns:
+        A BasicAlgebra representing the ternary discriminator algebra
+        
+    Raises:
+        ValueError: If cardinality is not positive or there's an error during creation
+    """
 
 # ============================================================================
 # UTIL MODULE (Partial - will be expanded)

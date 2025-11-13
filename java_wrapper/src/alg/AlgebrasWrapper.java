@@ -79,6 +79,10 @@ public class AlgebrasWrapper extends WrapperBase {
                 handleFindNUF(options);
                 break;
                 
+            case "ternaryDiscriminatorAlgebra":
+                handleTernaryDiscriminatorAlgebra(options);
+                break;
+                
             default:
                 handleError("Unknown command: " + command, null);
         }
@@ -425,6 +429,39 @@ public class AlgebrasWrapper extends WrapperBase {
     }
     
     /**
+     * Handle ternaryDiscriminatorAlgebra command - create a ternary discriminator algebra.
+     */
+    private void handleTernaryDiscriminatorAlgebra(Map<String, String> options) throws Exception {
+        // Get cardinality
+        int card = getIntArg(options, "card", 3);
+        if (card <= 0) {
+            handleError("Cardinality must be positive", null);
+            return;
+        }
+        
+        // Call Java method
+        SmallAlgebra result = Algebras.ternaryDiscriminatorAlgebra(card);
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("command", "ternaryDiscriminatorAlgebra");
+        response.put("cardinality", card);
+        response.put("result_algebra", result.getName());
+        response.put("result_size", result.cardinality());
+        response.put("operations_count", result.operations().size());
+        
+        // Check that it has exactly one operation (the discriminator)
+        if (result.operations().size() == 1) {
+            Operation discOp = result.operations().get(0);
+            response.put("operation_arity", discOp.arity());
+            response.put("operation_name", discOp.symbol().name());
+        }
+        
+        response.put("status", "success");
+        
+        handleSuccess(response);
+    }
+    
+    /**
      * Show usage information for the Algebras wrapper.
      */
     private void showUsage() {
@@ -438,6 +475,7 @@ public class AlgebrasWrapper extends WrapperBase {
             "jonssonTerms --algebra algebras/ba2.ua",
             "jonssonLevel --algebra algebras/ba2.ua",
             "findNUF --algebra algebras/ba2.ua --arity 3",
+            "ternaryDiscriminatorAlgebra --card 3",
             "help"
         };
         

@@ -103,7 +103,7 @@ pub fn make_random_algebra_safe(
 ## Implementation Status
 
 ### Current State
-- **Completion**: 26% (6/23 methods implemented)
+- **Completion**: 30% (7/23 methods implemented)
 - **Rust Implementation**: Started for methods checked below
 - **Python Bindings**: Started for methods checked below
 - **Java Wrapper**: Started for methods checked below
@@ -198,7 +198,7 @@ All 23 public static methods from `org/uacalc/alg/Algebras.java`:
 - [ ] `makeRandomAlgebra(int n, SimilarityType simType, long seed)` - Creates random algebra with seed
 - [ ] `makeRandomAlgebra(int n, int[] arities)` - Creates random algebra with arities
 - [ ] `makeRandomAlgebra(int n, int[] arities, long seed)` - Creates random algebra with arities and seed
-- [ ] `ternaryDiscriminatorAlgebra(int card)` - Creates ternary discriminator algebra
+- [x] `ternaryDiscriminatorAlgebra(int card)` - Creates ternary discriminator algebra ✅
 - [ ] `memberOfQuasivariety(SmallAlgebra A, SmallAlgebra B, ProgressReport report)` - Tests quasivariety membership
 - [ ] `memberOfQuasivariety(SmallAlgebra A, List<SmallAlgebra> genAlgs, ProgressReport report)` - Tests quasivariety membership
 - [ ] `memberOfQuasivarietyGenByProperSubs(SmallAlgebra A, ProgressReport report)` - Tests membership in proper subalgebras
@@ -257,3 +257,28 @@ All 23 public static methods from `org/uacalc/alg/Algebras.java`:
 - **Type Stubs**: `python/uacalc/uacalc_lib.pyi` - Added `find_nuf()` method signature with documentation
 
 - **Note**: The implementation delegates to the existing `malcev::nu_term()` function, which is already fully implemented and tested. This follows the same pattern as the Java implementation which delegates to `Malcev.nuTerm()`.
+
+### ternaryDiscriminatorAlgebra (Completed)
+- **Rust Implementation**: `src/alg/algebras.rs` - `ternary_discriminator_algebra()` function
+  - Creates a ternary discriminator operation using `operations::ternary_discriminator()`
+  - Creates a BasicAlgebra with the discriminator operation as the only operation
+  - Validates that cardinality is positive
+  - Returns a BasicAlgebra<i32> with name "Disc-{card}"
+  
+- **Python Bindings**: `uacalc_lib/src/alg/algebras.rs` - `ternary_discriminator_algebra()` pyfunction
+  - Exposed as module-level function in Python
+  - Takes int card, returns PyBasicAlgebra
+  - Raises ValueError if cardinality is not positive
+  
+- **Java Wrapper**: `java_wrapper/src/alg/AlgebrasWrapper.java` - `handleTernaryDiscriminatorAlgebra()` method
+  - Command: `ternaryDiscriminatorAlgebra --card <card>`
+  - Returns JSON with result algebra information including operation details
+  - Validates that cardinality is positive
+  
+- **Tests**:
+  - Rust: `src/alg/algebras.rs` - 4 test cases (basic, discriminator property, invalid cardinality, larger cardinality)
+  - Python: `python/uacalc/tests/test_algebras.py` - 4 test cases (basic, discriminator property, invalid cardinality, larger cardinality)
+  
+- **Type Stubs**: `python/uacalc/uacalc_lib.pyi` - Added `ternary_discriminator_algebra()` method signature with documentation
+
+- **Note**: The implementation uses the existing `ternary_discriminator()` function from `operations.rs`, which is already fully implemented and tested. This follows the same pattern as the Java implementation which delegates to `Operations.ternaryDiscriminator()`.

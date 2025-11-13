@@ -7,7 +7,7 @@
 use crate::alg::op::Operation;
 use crate::alg::SmallAlgebra;
 use crate::alg::algebra::Algebra;
-use crate::alg::op::operations::{commutes_unary, commutes_map, make_binary_left_shift, make_int_operations, power};
+use crate::alg::op::operations::{commutes_unary, commutes_map, make_binary_left_shift, make_int_operations, power, ternary_discriminator};
 use crate::alg::{PowerAlgebra, BasicAlgebra};
 use std::collections::HashSet;
 
@@ -300,6 +300,50 @@ pub fn matrix_power(
     
     // Create BasicAlgebra
     Ok(BasicAlgebra::new(name, universe, ops2))
+}
+
+/// Create a ternary discriminator algebra.
+///
+/// A ternary discriminator algebra is an algebra with a single ternary operation
+/// called the discriminator. The discriminator operation d(x,y,z) satisfies:
+/// - d(x,y,z) = z if x = y
+/// - d(x,y,z) = x if x ≠ y
+///
+/// # Arguments
+/// * `card` - The cardinality of the algebra (size of the universe)
+///
+/// # Returns
+/// * `Ok(BasicAlgebra)` - Successfully created ternary discriminator algebra
+/// * `Err(String)` - If there's an error during creation (e.g., invalid cardinality)
+///
+/// # Examples
+/// ```
+/// use uacalc::alg::algebras;
+///
+/// let alg = algebras::ternary_discriminator_algebra(3).unwrap();
+/// assert_eq!(alg.cardinality(), 3);
+/// assert_eq!(alg.name(), "Disc-3");
+/// ```
+pub fn ternary_discriminator_algebra(card: i32) -> Result<BasicAlgebra<i32>, String> {
+    if card <= 0 {
+        return Err(format!("Cardinality must be positive, got {}", card));
+    }
+    
+    // Create the ternary discriminator operation
+    let disc_op = ternary_discriminator(card)?;
+    
+    // Create universe set
+    let universe: HashSet<i32> = (0..card).collect();
+    
+    // Create operations vector
+    let mut ops = Vec::new();
+    ops.push(disc_op);
+    
+    // Create name
+    let name = format!("Disc-{}", card);
+    
+    // Create BasicAlgebra
+    Ok(BasicAlgebra::new(name, universe, ops))
 }
 
 #[cfg(test)]
@@ -687,6 +731,74 @@ mod tests {
         // The actual behavior depends on malcev::nu_term implementation
         // It may return an error or None
         assert!(result.is_ok() || result.is_err());
+    }
+
+    #[test]
+    fn test_ternary_discriminator_algebra_basic() {
+        // Test basic creation of ternary discriminator algebra
+        let result = ternary_discriminator_algebra(3);
+        assert!(result.is_ok());
+        let alg = result.unwrap();
+        
+        assert_eq!(alg.cardinality(), 3);
+        assert_eq!(alg.name(), "Disc-3");
+        
+        // Should have exactly one operation (the discriminator)
+        let ops = alg.get_operations_ref();
+        assert_eq!(ops.len(), 1);
+        
+        // Check that the operation is ternary
+        let disc_op = ops[0];
+        assert_eq!(disc_op.arity(), 3);
+        assert_eq!(disc_op.symbol().name(), "disc");
+    }
+
+    #[test]
+    fn test_ternary_discriminator_algebra_discriminator_property() {
+        // Test that the discriminator operation has the correct property
+        let alg = ternary_discriminator_algebra(3).unwrap();
+        let ops = alg.get_operations_ref();
+        let disc_op = ops[0];
+        
+        // Test discriminator property: d(x,y,z) = z if x = y, otherwise x
+        // d(0,0,1) = 1 (since 0 == 0)
+        assert_eq!(disc_op.int_value_at(&[0, 0, 1]).unwrap(), 1);
+        
+        // d(0,1,2) = 0 (since 0 != 1)
+        assert_eq!(disc_op.int_value_at(&[0, 1, 2]).unwrap(), 0);
+        
+        // d(1,1,0) = 0 (since 1 == 1)
+        assert_eq!(disc_op.int_value_at(&[1, 1, 0]).unwrap(), 0);
+        
+        // d(2,1,0) = 2 (since 2 != 1)
+        assert_eq!(disc_op.int_value_at(&[2, 1, 0]).unwrap(), 2);
+    }
+
+    #[test]
+    fn test_ternary_discriminator_algebra_invalid_cardinality() {
+        // Test with invalid cardinality (should fail)
+        let result = ternary_discriminator_algebra(0);
+        assert!(result.is_err());
+        
+        let result = ternary_discriminator_algebra(-1);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_ternary_discriminator_algebra_larger() {
+        // Test with larger cardinality
+        let alg = ternary_discriminator_algebra(5).unwrap();
+        assert_eq!(alg.cardinality(), 5);
+        assert_eq!(alg.name(), "Disc-5");
+        
+        let ops = alg.get_operations_ref();
+        assert_eq!(ops.len(), 1);
+        
+        let disc_op = ops[0];
+        // Test a few values
+        assert_eq!(disc_op.int_value_at(&[0, 0, 4]).unwrap(), 4);
+        assert_eq!(disc_op.int_value_at(&[0, 1, 4]).unwrap(), 0);
+        assert_eq!(disc_op.int_value_at(&[3, 3, 2]).unwrap(), 2);
     }
 }
 

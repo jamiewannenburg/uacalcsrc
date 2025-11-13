@@ -21,6 +21,7 @@ pub fn register_algebras_functions(_py: Python, m: &Bound<'_, PyModule>) -> PyRe
     m.add_function(wrap_pyfunction!(jonsson_level, m)?)?;
     m.add_function(wrap_pyfunction!(find_nuf, m)?)?;
     m.add_function(wrap_pyfunction!(matrix_power, m)?)?;
+    m.add_function(wrap_pyfunction!(ternary_discriminator_algebra, m)?)?;
 
     Ok(())
 }
@@ -173,6 +174,29 @@ fn matrix_power(alg: &PyBasicAlgebra, k: i32) -> PyResult<PyBasicAlgebra> {
     let rust_alg = Box::new(alg.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
     
     match algebras::matrix_power(rust_alg, k) {
+        Ok(result) => Ok(PyBasicAlgebra { inner: result }),
+        Err(e) => Err(PyValueError::new_err(e)),
+    }
+}
+
+/// Create a ternary discriminator algebra.
+///
+/// A ternary discriminator algebra is an algebra with a single ternary operation
+/// called the discriminator. The discriminator operation d(x,y,z) satisfies:
+/// - d(x,y,z) = z if x = y
+/// - d(x,y,z) = x if x ≠ y
+///
+/// # Arguments
+/// * `card` - The cardinality of the algebra (size of the universe)
+///
+/// # Returns
+/// A BasicAlgebra representing the ternary discriminator algebra
+///
+/// # Raises
+/// `ValueError` if cardinality is not positive or there's an error during creation
+#[pyfunction]
+fn ternary_discriminator_algebra(card: i32) -> PyResult<PyBasicAlgebra> {
+    match algebras::ternary_discriminator_algebra(card) {
         Ok(result) => Ok(PyBasicAlgebra { inner: result }),
         Err(e) => Err(PyValueError::new_err(e)),
     }
