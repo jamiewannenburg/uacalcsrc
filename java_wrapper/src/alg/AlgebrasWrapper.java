@@ -131,6 +131,10 @@ public class AlgebrasWrapper extends WrapperBase {
                 handleUnaryCloneAlgFromPartitions(options);
                 break;
                 
+            case "findInClone":
+                handleFindInClone(options);
+                break;
+                
             default:
                 handleError("Unknown command: " + command, null);
         }
@@ -1105,6 +1109,114 @@ public class AlgebrasWrapper extends WrapperBase {
             }
             response.put("operations", operations);
         }
+        
+        handleSuccess(response);
+    }
+    
+    /**
+     * Handle findInClone command - find operations in the clone of an algebra.
+     */
+    private void handleFindInClone(Map<String, String> options) throws Exception {
+        // Get algebra
+        SmallAlgebra alg;
+        String algFile = getOptionalArg(options, "algebra", null);
+        if (algFile != null) {
+            File file = new File(algFile);
+            if (!file.exists()) {
+                handleError("Algebra file not found: " + algFile, null);
+                return;
+            }
+            alg = AlgebraIO.readAlgebraFile(file);
+        } else {
+            int size = getIntArg(options, "size", 2);
+            alg = makeTestAlgebra(size);
+        }
+        
+        // Get operations list
+        String opsStr = getOptionalArg(options, "operations", null);
+        if (opsStr == null || opsStr.isEmpty()) {
+            handleError("operations parameter is required", null);
+            return;
+        }
+        
+        // Parse operations from string format: "arity:table1,table2,...;arity2:table3,..."
+        // Or from file: "file:path/to/file"
+        List<Operation> ops = new ArrayList<>();
+        if (opsStr.startsWith("file:")) {
+            // Load operations from file
+            String filePath = opsStr.substring(5);
+            File opsFile = new File(filePath);
+            if (!opsFile.exists()) {
+                handleError("Operations file not found: " + filePath, null);
+                return;
+            }
+            // For now, we'll use a simple format: each line is "name,arity,table"
+            // This is a simplified parser - in practice, you might want to use AlgebraIO
+            try (BufferedReader reader = new BufferedReader(new FileReader(opsFile))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    line = line.trim();
+                    if (line.isEmpty() || line.startsWith("#")) continue;
+                    String[] parts = line.split(",");
+                    if (parts.length >= 3) {
+                        String name = parts[0];
+                        int arity = Integer.parseInt(parts[1]);
+                        int[] table = parseIntArray(parts[2]);
+                        OperationSymbol sym = new OperationSymbol(name, arity, false);
+                        Operation op = Operations.makeIntOperation(sym, alg.cardinality(), table);
+                        ops.add(op);
+                    }
+                }
+            }
+        } else {
+            // Parse operations from string format
+            // Format: "arity:table1,table2,...;arity2:table3,..."
+            String[] groups = opsStr.split(";");
+            for (String group : groups) {
+                String[] parts = group.split(":");
+                if (parts.length == 2) {
+                    int arity = Integer.parseInt(parts[0].trim());
+                    String[] tableStrs = parts[1].split(",");
+                    for (String tableStr : tableStrs) {
+                        int[] table = parseIntArray(tableStr.trim());
+                        OperationSymbol sym = new OperationSymbol("op_" + ops.size(), arity, false);
+                        Operation op = Operations.makeIntOperation(sym, alg.cardinality(), table);
+                        ops.add(op);
+                    }
+                }
+            }
+        }
+        
+        if (ops.isEmpty()) {
+            handleError("No operations provided", null);
+            return;
+        }
+        
+        // Call Java method
+        Map<OperationSymbol, Term> map = Algebras.findInClone(ops, alg, null);
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("command", "findInClone");
+        response.put("algebra", alg.getName());
+        response.put("algebra_size", alg.cardinality());
+        response.put("operations_count", ops.size());
+        response.put("found_count", map != null ? map.size() : 0);
+        
+        if (map != null && !map.isEmpty()) {
+            List<Map<String, Object>> foundOps = new ArrayList<>();
+            for (Map.Entry<OperationSymbol, Term> entry : map.entrySet()) {
+                Map<String, Object> opInfo = new HashMap<>();
+                opInfo.put("symbol_name", entry.getKey().name());
+                opInfo.put("symbol_arity", entry.getKey().arity());
+                opInfo.put("term", entry.getValue().toString());
+                foundOps.add(opInfo);
+            }
+            response.put("found_operations", foundOps);
+        } else {
+            response.put("found_operations", new ArrayList<>());
+        }
+        
+        response.put("status", "success");
         
         handleSuccess(response);
     }

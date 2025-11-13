@@ -2004,6 +2004,24 @@ class alg:
         ValueError: If there's an error (e.g., empty partitions list or mismatched sizes)
     """
 
+    def find_in_clone(ops: List["alg.op.IntOperation"], alg: "alg.BasicAlgebra") -> Dict["alg.op.OperationSymbol", str]: ...
+    """Find operations in the clone of an algebra.
+    
+    This function tests if the given operations are in the clone of the algebra A
+    and returns a mapping from OperationSymbols to terms (as strings), which will
+    have entries for those operations which are in the clone.
+    
+    Args:
+        ops: A list of operations on the set of A (IntOperation objects)
+        alg: The algebra A (BasicAlgebra)
+        
+    Returns:
+        Dictionary mapping OperationSymbol objects to term strings for operations found in the clone
+        
+    Raises:
+        ValueError: If there's an error (e.g., empty operations list)
+    """
+    
     def unary_clone_alg_from_partitions(pars: List["alg.Partition"], eta0: "alg.Partition", eta1: "alg.Partition") -> "alg.BasicAlgebra": ...
     """Make the unary algebra whose operations are the clone of unary operations.
     

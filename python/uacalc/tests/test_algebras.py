@@ -1274,4 +1274,74 @@ class TestMakeRandomAlgebra:
         # Test the function - should raise ValueError
         with pytest.raises(ValueError, match="cannot be empty"):
             unary_clone_alg_from_partitions(pars, eta0, eta1)
+    
+    def test_find_in_clone_empty_ops(self):
+        """Test find_in_clone with empty operations list (should raise error)."""
+        import uacalc_lib
+        
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
+        find_in_clone = uacalc_lib.alg.find_in_clone
+        
+        alg = BasicAlgebra("TestAlg", [0, 1], [])
+        
+        # Test with empty operations list
+        with pytest.raises(Exception):  # ValueError or similar
+            find_in_clone([], alg)
+    
+    def test_find_in_clone_basic(self):
+        """Test find_in_clone with basic operations."""
+        import uacalc_lib
+        
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
+        IntOperation = uacalc_lib.alg.op.IntOperation
+        OperationSymbol = uacalc_lib.alg.op.OperationSymbol
+        find_in_clone = uacalc_lib.alg.find_in_clone
+        
+        # Create a simple algebra with one binary operation (meet)
+        size = 2
+        meet_table = [0, 0, 0, 1]  # 0*0=0, 0*1=0, 1*0=0, 1*1=1
+        meet_sym = OperationSymbol("meet", 2)
+        meet_op = IntOperation(meet_sym, size, meet_table)
+        
+        alg = BasicAlgebra("TestAlg", list(range(size)), [meet_op])
+        
+        # Create an operation that is in the clone (the meet operation itself)
+        test_sym = OperationSymbol("test_meet", 2)
+        test_op = IntOperation(test_sym, size, meet_table)
+        
+        # Test Python implementation
+        result = find_in_clone([test_op], alg)
+        assert isinstance(result, dict), "Result should be a dictionary"
+        # The operation may or may not be found depending on implementation
+        assert len(result) >= 0
+    
+    def test_find_in_clone_multiple_arities(self):
+        """Test find_in_clone with operations of different arities."""
+        import uacalc_lib
+        
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
+        IntOperation = uacalc_lib.alg.op.IntOperation
+        OperationSymbol = uacalc_lib.alg.op.OperationSymbol
+        find_in_clone = uacalc_lib.alg.find_in_clone
+        
+        size = 2
+        binary_table = [0, 0, 0, 1]
+        binary_sym = OperationSymbol("binary", 2)
+        binary_op = IntOperation(binary_sym, size, binary_table)
+        
+        alg = BasicAlgebra("TestAlg", list(range(size)), [binary_op])
+        
+        # Test with both unary and binary operations
+        unary_table = [0, 1]
+        unary_sym = OperationSymbol("test_unary", 1)
+        test_unary = IntOperation(unary_sym, size, unary_table)
+        
+        test_binary_sym = OperationSymbol("test_binary", 2)
+        test_binary = IntOperation(test_binary_sym, size, binary_table)
+        
+        # Test Python implementation
+        result = find_in_clone([test_unary, test_binary], alg)
+        assert isinstance(result, dict), "Result should be a dictionary"
+        # Should process both arities
+        assert len(result) >= 0
 

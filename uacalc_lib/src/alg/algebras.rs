@@ -38,6 +38,7 @@ pub fn register_algebras_functions(_py: Python, m: &Bound<'_, PyModule>) -> PyRe
     m.add_function(wrap_pyfunction!(quasi_critical, m)?)?;
     m.add_function(wrap_pyfunction!(unary_clone, m)?)?;
     m.add_function(wrap_pyfunction!(unary_clone_alg_from_partitions, m)?)?;
+    m.add_function(wrap_pyfunction!(find_in_clone, m)?)?;
 
     Ok(())
 }
@@ -564,6 +565,47 @@ fn unary_clone_alg_from_partitions(
     
     match algebras::unary_clone_alg_from_partitions(&pars_rust, &eta0.inner, &eta1.inner) {
         Ok(alg) => Ok(PyBasicAlgebra { inner: alg }),
+        Err(e) => Err(PyValueError::new_err(e)),
+    }
+}
+
+/// Find operations in the clone of an algebra.
+///
+/// This function tests if the given operations are in the clone of the algebra A
+/// and returns a mapping from OperationSymbols to terms (as strings), which will
+/// have entries for those operations which are in the clone.
+///
+/// # Arguments
+/// * `ops` - A list of operations on the set of A (IntOperation objects)
+/// * `alg` - The algebra A (BasicAlgebra)
+///
+/// # Returns
+/// Dictionary mapping OperationSymbol objects to term strings for operations found in the clone
+///
+/// # Raises
+/// `ValueError` if there's an error (e.g., empty operations list)
+#[pyfunction]
+fn find_in_clone(py: Python, ops: Vec<PyRef<PyIntOperation>>, alg: &PyBasicAlgebra) -> PyResult<PyObject> {
+    use pyo3::types::PyDict;
+    use std::sync::Arc;
+    use crate::alg::op::operation_symbol::PyOperationSymbol;
+    
+    // Convert Python operations to Arc<dyn Operation>
+    let rust_ops: Vec<Arc<dyn Operation>> = ops.iter()
+        .map(|op| Arc::new(op.inner.clone()) as Arc<dyn Operation>)
+        .collect();
+    
+    match algebras::find_in_clone(&rust_ops, &alg.inner, None) {
+        Ok(map) => {
+            let py_dict = PyDict::new(py);
+            for (sym, term) in map {
+                let py_sym = PyOperationSymbol::from_inner(sym);
+                let term_str = format!("{}", term);
+                let py_sym_obj = Py::new(py, py_sym)?.into_py(py);
+                py_dict.set_item(py_sym_obj, term_str)?;
+            }
+            Ok(py_dict.into())
+        },
         Err(e) => Err(PyValueError::new_err(e)),
     }
 }

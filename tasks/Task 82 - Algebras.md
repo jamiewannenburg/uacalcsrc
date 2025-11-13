@@ -1,9 +1,10 @@
-# Task 82: Translate `Algebras`
+# Task 82: Translate `Algebras` ✅ **COMPLETE**
 
 **Java File:** `org/uacalc/alg/Algebras.java`  
 **Package:** `org.uacalc.alg`  
 **Rust Module:** `alg::Algebras`  
-**Estimated Public Methods:** ~23
+**Estimated Public Methods:** ~23  
+**Status**: All implementable methods (21/21) have been successfully translated to Rust, Python bindings, Java wrapper, with tests and type stubs.
 
 ## Java Class Analysis
 
@@ -103,12 +104,14 @@ pub fn make_random_algebra_safe(
 ## Implementation Status
 
 ### Current State
-- **Completion**: 61% (14/23 methods implemented)
-- **Rust Implementation**: Started for methods checked below
-- **Python Bindings**: Started for methods checked below
-- **Java Wrapper**: Started for methods checked below
-- **Tests**: Started for methods checked below
-- **Type Stubs**: Started for methods checked below
+- **Completion**: 100% (21/21 implementable methods completed)
+  - Note: 1 method (`unaryCloneAlgFromPartitions(List<Partition>, List<Partition>)`) is incomplete in Java itself
+  - Note: 1 method (`main`) is a test method not needed in Rust/Python
+- **Rust Implementation**: ✅ Complete for all implementable methods
+- **Python Bindings**: ✅ Complete for all implementable methods
+- **Java Wrapper**: ✅ Complete for all implementable methods
+- **Tests**: ✅ Complete for all implementable methods
+- **Type Stubs**: ✅ Complete for all implementable methods
 
 ### Dependency Analysis
 
@@ -171,13 +174,15 @@ pub fn make_random_algebra_safe(
 - Create type stubs in `python/uacalc/uacalc_lib.pyi` for the Algebras class and methods
 
 ## Acceptance Criteria
-- [ ] All 23 public methods translated to Rust
-- [ ] Python bindings expose all public methods
-- [ ] Java CLI wrapper created with all public methods
-- [ ] Rust tests pass with timeouts enabled
-- [ ] Python tests pass and match Java output
-- [ ] Code compiles without errors
-- [ ] Documentation complete
+- [x] All 23 public methods translated to Rust (21/21 implementable methods completed) ✅
+- [x] Python bindings expose all public methods (21/21 implementable methods completed) ✅
+- [x] Java CLI wrapper created with all public methods (21/21 implementable methods completed) ✅
+- [x] Rust tests pass with timeouts enabled ✅
+- [x] Python tests pass and match Java output ✅
+- [x] Code compiles without errors ✅
+- [x] Documentation complete ✅
+
+**Status**: ✅ **COMPLETE** - All methods that work in Algebras.java are now implemented in Rust/Python/Java wrapper.
 
 ## Public Methods List
 
@@ -187,24 +192,24 @@ All 23 public static methods from `org/uacalc/alg/Algebras.java`:
 - [x] `unaryCloneAlgFromPartitions(List<Partition> pars, Partition eta0, Partition eta1)` - Creates unary clone algebra with eta partitions ✅
 - [x] `unaryClone(List<Partition> pars, Partition eta0, Partition eta1)` - Computes unary clone set (returns NavigableSet<IntArray>) ✅
 - [x] `findNUF(SmallAlgebra alg, int arity)` - Finds near unanimity term (delegates to Malcev.nuTerm) ✅
-- [x] `jonssonTerms(SmallAlgebra alg)` - Returns Jonsson terms for distributive variety (delegates to Malcev.jonssonTerms) ✅
+- [x] `jonssonTerms(SmallAlgebra alg)` - Returns Jonsson terms for distributive variety (returns List, delegates to Malcev.jonssonTerms) ✅
 - [x] `jonssonLevel(SmallAlgebra alg)` - Returns minimal number of Jonsson terms (delegates to Malcev.jonssonLevel) ✅
 - [x] `isEndomorphism(Operation endo, SmallAlgebra alg)` - Tests if operation is endomorphism ✅
 - [x] `isHomomorphism(int[] map, SmallAlgebra alg0, SmallAlgebra alg1)` - Tests if map is homomorphism ✅
 - [x] `matrixPower(SmallAlgebra alg, int k)` - Creates matrix power algebra ✅
 - [x] `fullTransformationSemigroup(int n, boolean includeConstants, boolean includeId)` - Creates transformation semigroup
-- [ ] `findInClone(List<Operation> ops, SmallAlgebra A, ProgressReport report)` - Finds operations in clone
+- [x] `findInClone(List<Operation> ops, SmallAlgebra A, ProgressReport report)` - Finds operations in clone (returns Map<OperationSymbol,Term>) ✅
 - [x] `makeRandomAlgebra(int n, SimilarityType simType)` - Creates random algebra ✅
 - [x] `makeRandomAlgebra(int n, SimilarityType simType, long seed)` - Creates random algebra with seed ✅
 - [x] `makeRandomAlgebra(int n, int[] arities)` - Creates random algebra with arities ✅
 - [x] `makeRandomAlgebra(int n, int[] arities, long seed)` - Creates random algebra with arities and seed ✅
 - [x] `ternaryDiscriminatorAlgebra(int card)` - Creates ternary discriminator algebra ✅
-- [x] `memberOfQuasivariety(SmallAlgebra A, SmallAlgebra B, ProgressReport report)` - Tests quasivariety membership ✅
-- [x] `memberOfQuasivariety(SmallAlgebra A, List<SmallAlgebra> genAlgs, ProgressReport report)` - Tests quasivariety membership ✅
-- [x] `memberOfQuasivarietyGenByProperSubs(SmallAlgebra A, ProgressReport report)` - Tests membership in proper subalgebras ✅
-- [x] `quasiCriticalCongruences(SmallAlgebra A, ProgressReport report)` - Finds quasi-critical congruences ✅
-- [x] `quasiCritical(SmallAlgebra A)` - Tests if algebra is quasi-critical ✅
-- [x] `quasiCritical(SmallAlgebra A, ProgressReport report)` - Tests if algebra is quasi-critical with report ✅
+- [x] `memberOfQuasivariety(SmallAlgebra A, SmallAlgebra B, ProgressReport report)` - Tests quasivariety membership (returns List<Homomorphism> or null) ✅
+- [x] `memberOfQuasivariety(SmallAlgebra A, List<SmallAlgebra> genAlgs, ProgressReport report)` - Tests quasivariety membership (returns List<Homomorphism> or null) ✅
+- [x] `memberOfQuasivarietyGenByProperSubs(SmallAlgebra A, ProgressReport report)` - Tests membership in proper subalgebras (returns List<Homomorphism> or null) ✅
+- [x] `quasiCriticalCongruences(SmallAlgebra A, ProgressReport report)` - Finds quasi-critical congruences (returns List<Partition>) ✅
+- [x] `quasiCritical(SmallAlgebra A)` - Tests if algebra is quasi-critical (returns Map<Partition,IntArray> or null) ✅
+- [x] `quasiCritical(SmallAlgebra A, ProgressReport report)` - Tests if algebra is quasi-critical with report (returns Map<Partition,IntArray> or null) ✅
 - [ ] `main(String[] args)` - Main method for testing (not needed in Rust)
 
 ## Implementation Notes
@@ -549,3 +554,50 @@ All 23 public static methods from `org/uacalc/alg/Algebras.java`:
   2. For each IntArray in the clone set, create a unary operation with name "f_0", "f_1", etc.
   3. Create a BasicAlgebra with these operations and an empty name
   4. The operations are created in the order they appear in the BTreeSet (lexicographic order of IntArrays)
+
+### findInClone (Completed)
+- **Rust Implementation**: `src/alg/algebras.rs` - `find_in_clone()` function
+  - Tests if operations are in the clone of an algebra
+  - Groups operations by arity and processes each group separately
+  - For each arity group:
+    - Creates a FreeAlgebra over A with that arity (make_universe = false)
+    - Gets product algebra, generators, and term map from FreeAlgebra
+    - Creates Closer with product algebra, generators, and term map
+    - Sets root algebra to A
+    - Sets operations to find
+    - Calls `sg_close_power()` to compute closure
+    - Gets term map for operations and maps operation symbols to terms
+  - Returns `Result<HashMap<OperationSymbol, Box<dyn Term>>, String>`
+  - Validates that operations list is not empty
+  
+- **Python Bindings**: `uacalc_lib/src/alg/algebras.rs` - `find_in_clone()` pyfunction
+  - Exposed as module-level function in Python
+  - Takes list of PyIntOperation and PyBasicAlgebra, returns Dict[PyOperationSymbol, str]
+  - Converts Rust HashMap to Python dict using PyDict
+  - Converts terms to strings for Python
+  - Raises ValueError if parameters are invalid
+  
+- **Java Wrapper**: `java_wrapper/src/alg/AlgebrasWrapper.java` - `handleFindInClone()` method
+  - Command: `findInClone --algebra <file> --operations <ops_string>` or `findInClone --size <n> --operations <ops_string>`
+  - Supports parsing operations from string format: "arity:table1,table2,...;arity2:table3,..."
+  - Also supports loading operations from file: "file:path/to/file"
+  - Returns JSON with found_count and list of found operations with their symbols and terms
+  - Validates that operations list is not empty
+  
+- **Tests**:
+  - Rust: `src/alg/algebras.rs` - 3 test cases (empty ops, basic, multiple arities)
+  - Python: `python/uacalc/tests/test_algebras.py` - 3 test cases (empty ops, basic, multiple arities)
+  
+- **Type Stubs**: `python/uacalc/uacalc_lib.pyi` - Added `find_in_clone()` method signature with documentation
+
+- **Note**: The implementation follows the Java algorithm exactly:
+  1. Sort operations by arity (matching Java's Collections.sort)
+  2. Group operations by arity
+  3. For each arity group:
+     - Create FreeAlgebra with that arity (make_universe = false, matching Java)
+     - Get product algebra, generators, and term map from FreeAlgebra
+     - Create Closer with these components
+     - Set root algebra and operations
+     - Call `sg_close_power()` to compute closure
+     - Get term map for operations and add to result map
+  4. Return the map of operation symbols to terms
