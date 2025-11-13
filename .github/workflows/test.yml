@@ -9,14 +9,61 @@ on:
     branches:
       - main
       - rust-again
+  workflow_dispatch:
+    inputs:
+      python-versions:
+        description: 'Python versions to test (comma-separated, e.g., "3.8,3.11" or "all" for all versions)'
+        required: false
+        default: 'all'
+        type: string
+      skip-rust-tests:
+        description: 'Skip Rust tests'
+        required: false
+        default: false
+        type: boolean
+      skip-python-tests:
+        description: 'Skip Python tests'
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
 
 jobs:
+  setup:
+    name: Setup Test Matrix
+    runs-on: ubuntu-latest
+    outputs:
+      python-versions: ${{ steps.set-matrix.outputs.python-versions }}
+    steps:
+      - name: Set Python versions matrix
+        id: set-matrix
+        run: |
+          if [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
+            # Default to all versions for push/PR
+            echo 'python-versions=["3.8","3.9","3.10","3.11","3.12"]' >> $GITHUB_OUTPUT
+          elif [ "${{ inputs.python-versions }}" = "all" ] || [ -z "${{ inputs.python-versions }}" ]; then
+            echo 'python-versions=["3.8","3.9","3.10","3.11","3.12"]' >> $GITHUB_OUTPUT
+          else
+            # Convert comma-separated string to JSON array
+            VERSIONS="${{ inputs.python-versions }}"
+            IFS=',' read -ra VERSION_ARRAY <<< "$VERSIONS"
+            JSON_VERSIONS="["
+            for i in "${!VERSION_ARRAY[@]}"; do
+              if [ $i -gt 0 ]; then
+                JSON_VERSIONS+=","
+              fi
+              JSON_VERSIONS+="\"${VERSION_ARRAY[i]}\""
+            done
+            JSON_VERSIONS+="]"
+            echo "python-versions=$JSON_VERSIONS" >> $GITHUB_OUTPUT
+          fi
+
   rust-tests:
     name: Rust Tests
     runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'workflow_dispatch' || !inputs.skip-rust-tests }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -64,10 +111,12 @@ jobs:
   python-tests:
     name: Python Tests (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'workflow_dispatch' || !inputs.skip-python-tests }}
+    needs: setup
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        python-version: ${{ fromJSON(needs.setup.outputs.python-versions) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -138,7 +187,18 @@ jobs:
           echo "## Test Results Summary" >> $GITHUB_STEP_SUMMARY
           echo "- Rust tests: ${{ needs.rust-tests.result }}" >> $GITHUB_STEP_SUMMARY
           echo "- Python tests: ${{ needs.python-tests.result }}" >> $GITHUB_STEP_SUMMARY
-          if [ "${{ needs.rust-tests.result }}" != "success" ] || [ "${{ needs.python-tests.result }}" != "success" ]; then
+          
+          # Check if any job failed (but allow skipped jobs)
+          RUST_RESULT="${{ needs.rust-tests.result }}"
+          PYTHON_RESULT="${{ needs.python-tests.result }}"
+          
+          if [ "$RUST_RESULT" = "failure" ] || [ "$PYTHON_RESULT" = "failure" ]; then
+            echo "❌ Some tests failed" >> $GITHUB_STEP_SUMMARY
             exit 1
+          elif [ "$RUST_RESULT" = "cancelled" ] || [ "$PYTHON_RESULT" = "cancelled" ]; then
+            echo "⚠️ Some tests were cancelled" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          else
+            echo "✅ All tests passed or were skipped" >> $GITHUB_STEP_SUMMARY
           fi
 
