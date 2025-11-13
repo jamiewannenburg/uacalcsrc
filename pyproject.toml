@@ -43,6 +43,7 @@ test = [
     "pytest-benchmark>=4.0",
     "pytest-xdist>=3.0",
     "mypy>=1.0.0",
+    "psutil>=5.9.0",
 ]
 drawing = [
     "networkx>=3.0",
