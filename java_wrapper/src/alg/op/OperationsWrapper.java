@@ -882,8 +882,8 @@ public class OperationsWrapper extends WrapperBase {
         
         Map<String, Object> data = new HashMap<>();
         data.put("symbolName", "composition");
-        data.put("arity", 1);
-        data.put("setSize", n);
+        data.put("arity", op.arity());  // Use actual arity from operation (should be 2)
+        data.put("setSize", op.getSetSize());  // Use actual set size from operation (should be pow)
         data.put("n", n);
         data.put("pow", pow);
         

@@ -503,6 +503,81 @@ pub fn ternary_discriminator_algebra(card: i32) -> Result<BasicAlgebra<i32>, Str
     Ok(BasicAlgebra::new(name, universe, ops))
 }
 
+/// Create the full transformation semigroup on n elements.
+///
+/// The transformation semigroup consists of all functions from {0..n-1} to {0..n-1}.
+/// Each transformation is encoded as a Horner integer.
+///
+/// # Arguments
+/// * `n` - The size of the underlying set (must be at most 9)
+/// * `include_constants` - Whether to include constant transformations (one for each element)
+/// * `include_id` - Whether to include the identity transformation
+///
+/// # Returns
+/// * `Ok(BasicAlgebra)` - The transformation semigroup algebra
+/// * `Err(String)` - If n > 9 or there's an error during creation
+///
+/// # Examples
+/// ```
+/// use uacalc::alg::{algebras, Algebra};
+///
+/// let alg = algebras::full_transformation_semigroup(3, true, true).unwrap();
+/// assert_eq!(alg.cardinality(), 27); // 3^3 = 27
+/// ```
+pub fn full_transformation_semigroup(
+    n: i32,
+    include_constants: bool,
+    include_id: bool,
+) -> Result<BasicAlgebra<i32>, String> {
+    use crate::util::horner;
+    use crate::alg::op::operations::{make_composition_op, make_constant_int_operation};
+    
+    if n > 9 {
+        return Err("n can be at most 9".to_string());
+    }
+    if n <= 0 {
+        return Err("n must be positive".to_string());
+    }
+    
+    // Compute pow = n^n
+    let mut pow = n;
+    for _i in 1..n {
+        pow = pow * n;
+    }
+    
+    let mut ops = Vec::new();
+    
+    // Add composition operation
+    ops.push(make_composition_op(n, pow)?);
+    
+    // Add constant transformations if requested
+    if include_constants {
+        for i in 0..n {
+            // Create constant transformation: f(x) = i for all x
+            let ci = vec![i; n as usize];
+            let c = horner::horner_same_size(&ci, n);
+            ops.push(make_constant_int_operation(pow, c)?);
+        }
+    }
+    
+    // Add identity transformation if requested
+    if include_id {
+        // Create identity transformation: f(x) = x
+        let id: Vec<i32> = (0..n).collect();
+        let idx = horner::horner_same_size(&id, n);
+        ops.push(make_constant_int_operation(pow, idx)?);
+    }
+    
+    // Create universe set
+    let universe: HashSet<i32> = (0..pow).collect();
+    
+    // Create name
+    let name = format!("Trans{}", n);
+    
+    // Create BasicAlgebra
+    Ok(BasicAlgebra::new(name, universe, ops))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1442,6 +1517,156 @@ mod member_of_quasivariety_gen_by_proper_subs_tests {
         let result = member_of_quasivariety_gen_by_proper_subs(a, None);
         assert!(result.is_ok());
         // For a single element algebra, there are no proper subalgebras, so result should be None
+    }
+}
+
+#[cfg(test)]
+mod full_transformation_semigroup_tests {
+    use super::*;
+    use crate::util::horner;
+
+    #[test]
+    fn test_full_transformation_semigroup_basic() {
+        // Test basic creation with n=2
+        let result = full_transformation_semigroup(2, false, false);
+        assert!(result.is_ok());
+        let alg = result.unwrap();
+        
+        // Should have cardinality 2^2 = 4
+        assert_eq!(alg.cardinality(), 4);
+        assert_eq!(alg.name(), "Trans2");
+        
+        // Should have one operation (composition)
+        let ops = alg.get_operations_ref();
+        assert_eq!(ops.len(), 1);
+        assert_eq!(ops[0].arity(), 2);
+        assert_eq!(ops[0].symbol().name(), "composition");
+    }
+
+    #[test]
+    fn test_full_transformation_semigroup_with_constants() {
+        // Test with constants included
+        let result = full_transformation_semigroup(2, true, false);
+        assert!(result.is_ok());
+        let alg = result.unwrap();
+        
+        // Should have cardinality 4
+        assert_eq!(alg.cardinality(), 4);
+        
+        // Should have 1 composition + 2 constants = 3 operations
+        let ops = alg.get_operations_ref();
+        assert_eq!(ops.len(), 3);
+        
+        // Check that constants are correct
+        // Constant 0: f(x) = 0 for all x, encoded as [0,0] = 0*2 + 0 = 0
+        // Constant 1: f(x) = 1 for all x, encoded as [1,1] = 1*2 + 1 = 3
+        let const0 = ops[1].int_value_at(&[]).unwrap();
+        let const1 = ops[2].int_value_at(&[]).unwrap();
+        assert_eq!(const0, 0);
+        assert_eq!(const1, 3);
+    }
+
+    #[test]
+    fn test_full_transformation_semigroup_with_id() {
+        // Test with identity included
+        let result = full_transformation_semigroup(2, false, true);
+        assert!(result.is_ok());
+        let alg = result.unwrap();
+        
+        // Should have cardinality 4
+        assert_eq!(alg.cardinality(), 4);
+        
+        // Should have 1 composition + 1 identity = 2 operations
+        let ops = alg.get_operations_ref();
+        assert_eq!(ops.len(), 2);
+        
+        // Check that identity is correct
+        // Identity: f(x) = x, encoded as [0,1]
+        // horner_same_size([0,1], 2) = 2*0 + 1 = 1, then 2*1 + 0 = 2
+        // So identity is encoded as 2
+        let id = ops[1].int_value_at(&[]).unwrap();
+        assert_eq!(id, 2);
+    }
+
+    #[test]
+    fn test_full_transformation_semigroup_with_all() {
+        // Test with both constants and identity
+        let result = full_transformation_semigroup(2, true, true);
+        assert!(result.is_ok());
+        let alg = result.unwrap();
+        
+        // Should have cardinality 4
+        assert_eq!(alg.cardinality(), 4);
+        
+        // Should have 1 composition + 2 constants + 1 identity = 4 operations
+        let ops = alg.get_operations_ref();
+        assert_eq!(ops.len(), 4);
+    }
+
+    #[test]
+    fn test_full_transformation_semigroup_composition() {
+        // Test that composition works correctly
+        let alg = full_transformation_semigroup(2, false, false).unwrap();
+        let ops = alg.get_operations_ref();
+        let comp_op = ops[0];
+        
+        // For n=2, we have 4 transformations:
+        // 0: [0,0] -> horner = 2*0 + 0 = 0
+        // 1: [1,0] -> horner = 2*0 + 1 = 1, then 2*1 + 0 = 2 (swap)
+        // 2: [0,1] -> horner = 2*0 + 1 = 1, then 2*1 + 0 = 2 (identity)
+        // 3: [1,1] -> horner = 2*0 + 1 = 1, then 2*1 + 1 = 3
+        
+        // Actually, let's decode to verify:
+        // 0 -> [0,0]
+        // 1 -> [1,0] (swap)
+        // 2 -> [0,1] (identity)
+        // 3 -> [1,1]
+        
+        // Compose identity with itself: id ∘ id = id
+        // Identity is encoded as 2
+        let id_id = comp_op.int_value_at(&[2, 2]).unwrap();
+        assert_eq!(id_id, 2);
+        
+        // Test a simpler composition: [0,0] ∘ [0,1] (identity)
+        // [0,0] means f(0)=0, f(1)=0
+        // [0,1] (identity) means g(0)=0, g(1)=1
+        // (f ∘ g)(0) = f(g(0)) = f(0) = 0
+        // (f ∘ g)(1) = f(g(1)) = f(1) = 0
+        // So result is [0,0] = 0
+        let comp = comp_op.int_value_at(&[0, 2]).unwrap();
+        assert_eq!(comp, 0);
+    }
+
+    #[test]
+    fn test_full_transformation_semigroup_n3() {
+        // Test with n=3
+        let result = full_transformation_semigroup(3, true, true);
+        assert!(result.is_ok());
+        let alg = result.unwrap();
+        
+        // Should have cardinality 3^3 = 27
+        assert_eq!(alg.cardinality(), 27);
+        assert_eq!(alg.name(), "Trans3");
+        
+        // Should have 1 composition + 3 constants + 1 identity = 5 operations
+        let ops = alg.get_operations_ref();
+        assert_eq!(ops.len(), 5);
+    }
+
+    #[test]
+    fn test_full_transformation_semigroup_invalid_n() {
+        // Test with n > 9 (should fail)
+        let result = full_transformation_semigroup(10, false, false);
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("at most 9"));
+        
+        // Test with n = 0 (should fail)
+        let result = full_transformation_semigroup(0, false, false);
+        assert!(result.is_err());
+        
+        // Test with n < 0 (should fail)
+        let result = full_transformation_semigroup(-1, false, false);
+        assert!(result.is_err());
     }
 }
 

@@ -31,6 +31,7 @@ pub fn register_algebras_functions(_py: Python, m: &Bound<'_, PyModule>) -> PyRe
     m.add_function(wrap_pyfunction!(make_random_algebra_with_seed, m)?)?;
     m.add_function(wrap_pyfunction!(make_random_algebra_with_arities, m)?)?;
     m.add_function(wrap_pyfunction!(make_random_algebra_with_arities_and_seed, m)?)?;
+    m.add_function(wrap_pyfunction!(full_transformation_semigroup, m)?)?;
 
     Ok(())
 }
@@ -396,6 +397,29 @@ fn make_random_algebra_with_arities(n: i32, arities: Vec<i32>) -> PyResult<PyBas
 #[pyo3(signature = (n, arities, seed=None))]
 fn make_random_algebra_with_arities_and_seed(n: i32, arities: Vec<i32>, seed: Option<i64>) -> PyResult<PyBasicAlgebra> {
     match algebras::make_random_algebra_with_arities_and_seed(n, &arities, seed) {
+        Ok(result) => Ok(PyBasicAlgebra { inner: result }),
+        Err(e) => Err(PyValueError::new_err(e)),
+    }
+}
+
+/// Create the full transformation semigroup on n elements.
+///
+/// The transformation semigroup consists of all functions from {0..n-1} to {0..n-1}.
+/// Each transformation is encoded as a Horner integer.
+///
+/// # Arguments
+/// * `n` - The size of the underlying set (must be at most 9)
+/// * `include_constants` - Whether to include constant transformations (one for each element)
+/// * `include_id` - Whether to include the identity transformation
+///
+/// # Returns
+/// A BasicAlgebra representing the transformation semigroup algebra
+///
+/// # Raises
+/// `ValueError` if n > 9 or there's an error during creation
+#[pyfunction]
+fn full_transformation_semigroup(n: i32, include_constants: bool, include_id: bool) -> PyResult<PyBasicAlgebra> {
+    match algebras::full_transformation_semigroup(n, include_constants, include_id) {
         Ok(result) => Ok(PyBasicAlgebra { inner: result }),
         Err(e) => Err(PyValueError::new_err(e)),
     }

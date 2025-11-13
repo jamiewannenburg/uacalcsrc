@@ -214,13 +214,63 @@ pub fn make_module_operation(modulus: i32, coeffs: &[i32]) -> Result<Box<dyn Ope
     make_int_operation(sym, modulus, table)
 }
 
-/// Make a composition operation (placeholder): unary op f(x) = (x + pow) mod n.
+/// Make a composition operation for transformation semigroups.
+///
+/// Creates a binary operation that composes two transformations.
+/// Each transformation is encoded as a Horner integer representing a function from {0..n-1} to {0..n-1}.
+/// The operation composes two transformations: comp(f, g) = f ∘ g, where (f ∘ g)(x) = f(g(x)).
+///
+/// # Arguments
+/// * `n` - The size of the underlying set {0..n-1}
+/// * `pow` - The size of the transformation semigroup (should be n^n)
+///
+/// # Returns
+/// A binary operation on the transformation semigroup
 pub fn make_composition_op(n: i32, pow: i32) -> Result<Box<dyn Operation>, String> {
-    if n <= 0 { return Err("Set size must be positive".to_string()); }
-    let sym = OperationSymbol::new_safe("composition", 1, false)?;
-    let mut table = Vec::with_capacity(n as usize);
-    for i in 0..n { table.push((i + pow).rem_euclid(n)); }
-    make_int_operation(sym, n, table)
+    use crate::util::horner;
+    
+    if n <= 0 {
+        return Err("Set size must be positive".to_string());
+    }
+    if pow <= 0 {
+        return Err("Transformation semigroup size must be positive".to_string());
+    }
+    
+    let sym = OperationSymbol::new_safe("composition", 2, false)?;
+    
+    // Create the operation table
+    // For each pair (f, g) of transformations, compute f ∘ g
+    let table_size = (pow as usize) * (pow as usize);
+    let mut value_table = Vec::with_capacity(table_size);
+    
+    for f_encoded in 0..pow {
+        for g_encoded in 0..pow {
+            // Decode the transformations
+            let f = horner::horner_inv_same_size(f_encoded, n, n as usize);
+            let g = horner::horner_inv_same_size(g_encoded, n, n as usize);
+            
+            // Compose: (f ∘ g)(i) = f(g(i))
+            let mut comp = vec![0i32; n as usize];
+            for i in 0..n as usize {
+                comp[i] = f[g[i] as usize];
+            }
+            
+            // Encode the composition
+            let comp_encoded = horner::horner_same_size(&comp, n);
+            
+            // Clamp the result to [0, pow) to handle cases where pow != n^n
+            // This matches Java behavior which doesn't validate pow = n^n
+            let clamped_value = if comp_encoded >= pow {
+                comp_encoded % pow
+            } else {
+                comp_encoded
+            };
+            
+            value_table.push(clamped_value);
+        }
+    }
+    
+    make_int_operation(sym, pow, value_table)
 }
 
 // =============================================================================

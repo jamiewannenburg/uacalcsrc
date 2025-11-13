@@ -103,7 +103,7 @@ pub fn make_random_algebra_safe(
 ## Implementation Status
 
 ### Current State
-- **Completion**: 52% (12/23 methods implemented)
+- **Completion**: 57% (13/23 methods implemented)
 - **Rust Implementation**: Started for methods checked below
 - **Python Bindings**: Started for methods checked below
 - **Java Wrapper**: Started for methods checked below
@@ -377,3 +377,38 @@ All 23 public static methods from `org/uacalc/alg/Algebras.java`:
 - **Type Stubs**: `python/uacalc/uacalc_lib.pyi` - Added all 4 method signatures with documentation
 
 - **Note**: The implementation uses the existing `make_random_operations_with_seed()` function from `operations.rs`, which is already fully implemented and tested. This follows the same pattern as the Java implementation which delegates to `Operations.makeRandomOperations()`. The seed parameter uses `Option<i64>` in Rust (None means no seed), matching Java's -1 convention.
+
+### fullTransformationSemigroup (Completed)
+- **Rust Implementation**: `src/alg/algebras.rs` - `full_transformation_semigroup()` function
+  - Creates the full transformation semigroup on n elements (all functions from {0..n-1} to {0..n-1})
+  - Each transformation is encoded as a Horner integer
+  - Computes pow = n^n (the number of transformations)
+  - Creates a binary composition operation using `make_composition_op(n, pow)`
+  - Optionally adds constant transformations (one for each element 0..n-1) if `include_constants` is true
+  - Optionally adds the identity transformation if `include_id` is true
+  - Validates that n is at most 9 (same as Java)
+  - Returns a BasicAlgebra<i32> with name "Trans{n}" and pow elements
+  - **Fixed `make_composition_op`**: Updated from a placeholder unary operation to a proper binary operation that composes two transformations using Horner encoding/decoding
+  
+- **Python Bindings**: `uacalc_lib/src/alg/algebras.rs` - `full_transformation_semigroup()` pyfunction
+  - Exposed as module-level function in Python
+  - Takes int n, bool include_constants, bool include_id, returns PyBasicAlgebra
+  - Raises ValueError if n > 9 or there's an error during creation
+  
+- **Java Wrapper**: `java_wrapper/src/alg/AlgebrasWrapper.java` - `handleFullTransformationSemigroup()` method
+  - Command: `fullTransformationSemigroup --n <n> [--includeConstants true/false] [--includeId true/false]`
+  - Returns JSON with result algebra information including operation details
+  - Validates that n is at most 9 and positive
+  
+- **Tests**:
+  - Rust: `src/alg/algebras.rs` - 7 test cases (basic, with constants, with identity, with all, composition, n=3, invalid n)
+  - Python: `python/uacalc/tests/test_algebras.py` - 6 test cases (basic, with constants, with identity, with all, n=3, invalid n)
+  
+- **Type Stubs**: `python/uacalc/uacalc_lib.pyi` - Added `full_transformation_semigroup()` method signature with documentation
+
+- **Note**: The implementation fixes the existing `make_composition_op()` function which was previously a placeholder. The composition operation is now a proper binary operation that:
+  1. Takes two transformations encoded as Horner integers
+  2. Decodes them to arrays
+  3. Composes them: (f ∘ g)(i) = f(g(i))
+  4. Encodes the result back as a Horner integer
+  This matches the Java implementation exactly.

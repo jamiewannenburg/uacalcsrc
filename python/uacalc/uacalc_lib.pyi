@@ -1869,9 +1869,27 @@ class alg:
     
     Returns:
         A BasicAlgebra representing the ternary discriminator algebra
-        
+    
     Raises:
         ValueError: If cardinality is not positive or there's an error during creation
+    """
+    
+    def full_transformation_semigroup(n: int, include_constants: bool, include_id: bool) -> "alg.BasicAlgebra": ...
+    """Create the full transformation semigroup on n elements.
+    
+    The transformation semigroup consists of all functions from {0..n-1} to {0..n-1}.
+    Each transformation is encoded as a Horner integer.
+    
+    Args:
+        n: The size of the underlying set (must be at most 9)
+        include_constants: Whether to include constant transformations (one for each element)
+        include_id: Whether to include the identity transformation
+    
+    Returns:
+        A BasicAlgebra representing the transformation semigroup algebra
+    
+    Raises:
+        ValueError: If n > 9 or there's an error during creation
     """
     
     @staticmethod

@@ -671,6 +671,159 @@ class TestAlgebras:
         assert disc_op.int_value_at([3, 3, 2]) == 2
 
 
+class TestFullTransformationSemigroup:
+    """Tests for full_transformation_semigroup function."""
+    
+    def test_full_transformation_semigroup_basic(self):
+        """Test full_transformation_semigroup with basic parameters."""
+        import uacalc_lib
+        
+        full_transformation_semigroup = uacalc_lib.alg.full_transformation_semigroup
+        
+        # Create transformation semigroup with n=2, no constants, no identity
+        result = full_transformation_semigroup(2, False, False)
+        
+        # Should have cardinality 2^2 = 4
+        assert result.cardinality() == 4, f"Expected cardinality 4, got {result.cardinality()}"
+        assert result.name() == "Trans2", f"Expected name 'Trans2', got '{result.name()}'"
+        
+        # Should have one operation (composition)
+        ops = result.operations()
+        assert len(ops) == 1, f"Expected 1 operation, got {len(ops)}"
+        assert ops[0].arity() == 2, f"Expected arity 2, got {ops[0].arity()}"
+        assert ops[0].symbol().name() == "composition", f"Expected name 'composition', got '{ops[0].symbol().name()}'"
+        
+        # Compare with Java wrapper
+        java_result = run_java_wrapper("fullTransformationSemigroup", [
+            "--n", "2", "--includeConstants", "false", "--includeId", "false"
+        ])
+        
+        assert java_result["success"] == True
+        assert java_result["data"]["result_size"] == 4
+        assert java_result["data"]["result_size"] == result.cardinality(), \
+            "Python and Java should match"
+        assert java_result["data"]["operations_count"] == 1
+    
+    def test_full_transformation_semigroup_with_constants(self):
+        """Test full_transformation_semigroup with constants included."""
+        import uacalc_lib
+        
+        full_transformation_semigroup = uacalc_lib.alg.full_transformation_semigroup
+        
+        # Create transformation semigroup with n=2, constants included
+        result = full_transformation_semigroup(2, True, False)
+        
+        # Should have cardinality 4
+        assert result.cardinality() == 4
+        
+        # Should have 1 composition + 2 constants = 3 operations
+        ops = result.operations()
+        assert len(ops) == 3
+        
+        # Compare with Java wrapper
+        java_result = run_java_wrapper("fullTransformationSemigroup", [
+            "--n", "2", "--includeConstants", "true", "--includeId", "false"
+        ])
+        
+        assert java_result["success"] == True
+        assert java_result["data"]["result_size"] == 4
+        assert java_result["data"]["operations_count"] == 3
+    
+    def test_full_transformation_semigroup_with_id(self):
+        """Test full_transformation_semigroup with identity included."""
+        import uacalc_lib
+        
+        full_transformation_semigroup = uacalc_lib.alg.full_transformation_semigroup
+        
+        # Create transformation semigroup with n=2, identity included
+        result = full_transformation_semigroup(2, False, True)
+        
+        # Should have cardinality 4
+        assert result.cardinality() == 4
+        
+        # Should have 1 composition + 1 identity = 2 operations
+        ops = result.operations()
+        assert len(ops) == 2
+        
+        # Compare with Java wrapper
+        java_result = run_java_wrapper("fullTransformationSemigroup", [
+            "--n", "2", "--includeConstants", "false", "--includeId", "true"
+        ])
+        
+        assert java_result["success"] == True
+        assert java_result["data"]["result_size"] == 4
+        assert java_result["data"]["operations_count"] == 2
+    
+    def test_full_transformation_semigroup_with_all(self):
+        """Test full_transformation_semigroup with both constants and identity."""
+        import uacalc_lib
+        
+        full_transformation_semigroup = uacalc_lib.alg.full_transformation_semigroup
+        
+        # Create transformation semigroup with n=2, both constants and identity
+        result = full_transformation_semigroup(2, True, True)
+        
+        # Should have cardinality 4
+        assert result.cardinality() == 4
+        
+        # Should have 1 composition + 2 constants + 1 identity = 4 operations
+        ops = result.operations()
+        assert len(ops) == 4
+        
+        # Compare with Java wrapper
+        java_result = run_java_wrapper("fullTransformationSemigroup", [
+            "--n", "2", "--includeConstants", "true", "--includeId", "true"
+        ])
+        
+        assert java_result["success"] == True
+        assert java_result["data"]["result_size"] == 4
+        assert java_result["data"]["operations_count"] == 4
+    
+    def test_full_transformation_semigroup_n3(self):
+        """Test full_transformation_semigroup with n=3."""
+        import uacalc_lib
+        
+        full_transformation_semigroup = uacalc_lib.alg.full_transformation_semigroup
+        
+        # Create transformation semigroup with n=3
+        result = full_transformation_semigroup(3, True, True)
+        
+        # Should have cardinality 3^3 = 27
+        assert result.cardinality() == 27
+        assert result.name() == "Trans3"
+        
+        # Should have 1 composition + 3 constants + 1 identity = 5 operations
+        ops = result.operations()
+        assert len(ops) == 5
+        
+        # Compare with Java wrapper
+        java_result = run_java_wrapper("fullTransformationSemigroup", [
+            "--n", "3", "--includeConstants", "true", "--includeId", "true"
+        ])
+        
+        assert java_result["success"] == True
+        assert java_result["data"]["result_size"] == 27
+        assert java_result["data"]["operations_count"] == 5
+    
+    def test_full_transformation_semigroup_invalid_n(self):
+        """Test full_transformation_semigroup with invalid n (should raise error)."""
+        import uacalc_lib
+        
+        full_transformation_semigroup = uacalc_lib.alg.full_transformation_semigroup
+        
+        # Test with n > 9 (should fail)
+        with pytest.raises(Exception):  # ValueError or similar
+            full_transformation_semigroup(10, False, False)
+        
+        # Test with n = 0 (should fail)
+        with pytest.raises(Exception):  # ValueError or similar
+            full_transformation_semigroup(0, False, False)
+        
+        # Test with n < 0 (should fail)
+        with pytest.raises(Exception):  # ValueError or similar
+            full_transformation_semigroup(-1, False, False)
+
+
 class TestMakeRandomAlgebra:
     """Tests for makeRandomAlgebra functions."""
     
