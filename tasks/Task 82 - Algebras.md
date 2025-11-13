@@ -41,20 +41,20 @@
 
 ### Dependencies Analysis
 
-**Critical Missing Dependencies (must be implemented first):**
+**Critical Dependencies:**
 - `SmallAlgebra` - ✅ **COMPLETED** - Core algebra interface (Task 41)
-- `BasicAlgebra - ✅ **COMPLETED** - Basic algebra implementation (Task 71)
-- `QuotientAlgebra` - Quotient algebra (Task 77)
+- `BasicAlgebra` - ✅ **COMPLETED** - Basic algebra implementation (Task 71)
+- `QuotientAlgebra` - ✅ **COMPLETED** - Quotient algebra (Task 77)
 - `Operation` - ✅ **COMPLETED** - Operation interface (Task 12)
 - `Operations` - ✅ **COMPLETED** - Operation factory class (Task 50)
 - `OperationSymbol` - ✅ **COMPLETED** - Operation symbol (Task 1)
 - `SimilarityType` - ✅ **COMPLETED** - Similarity type (Task 2)
 - `Partition` - ✅ **COMPLETED** - Partition class (Task 5)
 - `IntArray` - ✅ **COMPLETED** - Integer array utility (Task 23)
-- `Malcev` - Malcev operations (Task 63)
-- `FreeAlgebra` - Free algebra (Task 81)
+- `Malcev` - ✅ **COMPLETED** - Malcev operations (Task 63)
+- `FreeAlgebra` - ✅ **COMPLETED** - Free algebra (Task 81)
 - `Closer` - ✅ **COMPLETED** - Closer for term generation (Task 84)
-- `SubalgebraLattice` - Subalgebra lattice (Task 76)
+- `SubalgebraLattice` - ✅ **COMPLETED** - Subalgebra lattice (Task 76)
 - `PowerAlgebra` - ✅ **COMPLETED** - Power algebra (Task 57)
 - `Homomorphism` - ✅ **COMPLETED** - Homomorphism class (Task 43)
 - `Term` - ✅ **COMPLETED** - Term class (Task 56)
@@ -63,7 +63,7 @@
 - `SequenceGenerator` - ✅ **COMPLETED** - Sequence generator (Task 15)
 
 **UI Dependencies (can be made optional):**
-- `ProgressReport` - Progress reporting interface
+- `ProgressReport` - ✅ **COMPLETED** - Progress reporting interface (implemented as trait in `src/progress.rs`)
 
 ## Rust Implementation Recommendations
 
@@ -118,7 +118,7 @@ pub fn make_random_algebra_safe(
 
 ### Dependency Analysis
 
-**✅ IMPLEMENTED Dependencies:**
+**✅ ALL DEPENDENCIES COMPLETED:**
 - `OperationSymbol` (Task 1) - ✅ **COMPLETED** - Full implementation in `src/alg/op/mod.rs`
 - `SimilarityType` (Task 2) - ✅ **COMPLETED** - Full implementation in `src/alg/op/mod.rs`
 - `Partition` (Task 5) - ✅ **COMPLETED** - Full implementation in `src/alg/conlat/partition.rs`
@@ -138,19 +138,7 @@ pub fn make_random_algebra_safe(
 - `SubalgebraLattice` (Task 76) - ✅ **COMPLETED** - Fully implemented in `src/alg/sublat/mod.rs`
 - `PowerAlgebra` (Task 57) - ✅ **COMPLETED** - Fully implemented in `src/alg/power_algebra.rs`
 - `Homomorphism` (Task 43) - ✅ **COMPLETED** - Fully implemented in `src/alg/homomorphism.rs`
-
-### Dependencies Status
-**Completed Dependencies:**
-1. Task 41: SmallAlgebra - ✅ **COMPLETED** (trait with concrete implementations: BasicAlgebra, ProductAlgebra, etc.)
-2. Task 71: BasicAlgebra ✅ **COMPLETED** - Fully implemented in `src/alg/basic_algebra.rs`
-3. Task 77: QuotientAlgebra ✅ **COMPLETED** - Fully implemented in `src/alg/quotient_algebra.rs`
-4. Task 12: Operation ✅ **COMPLETED** - Fully implemented in `src/alg/op/operation.rs`
-5. Task 84: Closer - ✅ **COMPLETED** - Implemented in `src/alg/closer.rs`
-6. Task 76: SubalgebraLattice ✅ **COMPLETED** - Implemented in `src/alg/sublat/subalgebra_lattice.rs`
-7. Task 57: PowerAlgebra ✅ **COMPLETED** - Implemented in `src/alg/power_algebra.rs`
-8. Task 43: Homomorphism ✅ **COMPLETED** - Implemented in `src/alg/homomorphism.rs`
-5. Task 63: Malcev ✅ **COMPLETED** -  Implemented in `src/alg/malcev.rs`
-6. ~~Task 81: FreeAlgebra~~ - ✅ **COMPLETED** - Fully implemented in `src/alg/free_algebra.rs`
+- `ProgressReport` - ✅ **COMPLETED** - Progress reporting trait in `src/progress.rs`
 
 ## Testing Strategy
 
@@ -182,9 +170,37 @@ pub fn make_random_algebra_safe(
 - [ ] **All blocking dependencies implemented first**
 
 ## Current Implementation Status
-- **Status**: ✅ READY (8/10 dependencies complete)
-- **Completion**: 0% (0/4 components)
+- **Status**: ✅ READY (All dependencies complete)
+- **Completion**: 0% (0/23 methods implemented)
 - **Rust Implementation**: ❌ Not started
 - **Python Bindings**: ❌ Not started
 - **Java Wrapper**: ❌ Not started
 - **Tests**: ❌ Not started
+
+## Public Methods List
+
+All 23 public static methods from `org/uacalc/alg/Algebras.java`:
+
+- [ ] `unaryCloneAlgFromPartitions(List<Partition> pars, List<Partition> decomp)` - Creates unary clone algebra from partitions (WARNING: not complete in Java)
+- [ ] `unaryCloneAlgFromPartitions(List<Partition> pars, Partition eta0, Partition eta1)` - Creates unary clone algebra with eta partitions
+- [ ] `unaryClone(List<Partition> pars, Partition eta0, Partition eta1)` - Computes unary clone set (returns NavigableSet<IntArray>)
+- [ ] `findNUF(SmallAlgebra alg, int arity)` - Finds near unanimity term (delegates to Malcev.nuTerm)
+- [ ] `jonssonTerms(SmallAlgebra alg)` - Returns Jonsson terms for distributive variety (delegates to Malcev.jonssonTerms)
+- [ ] `jonssonLevel(SmallAlgebra alg)` - Returns minimal number of Jonsson terms (delegates to Malcev.jonssonLevel)
+- [x] `isEndomorphism(Operation endo, SmallAlgebra alg)` - Tests if operation is endomorphism ✅
+- [ ] `isHomomorphism(int[] map, SmallAlgebra alg0, SmallAlgebra alg1)` - Tests if map is homomorphism
+- [ ] `matrixPower(SmallAlgebra alg, int k)` - Creates matrix power algebra
+- [ ] `fullTransformationSemigroup(int n, boolean includeConstants, boolean includeId)` - Creates transformation semigroup
+- [ ] `findInClone(List<Operation> ops, SmallAlgebra A, ProgressReport report)` - Finds operations in clone
+- [ ] `makeRandomAlgebra(int n, SimilarityType simType)` - Creates random algebra
+- [ ] `makeRandomAlgebra(int n, SimilarityType simType, long seed)` - Creates random algebra with seed
+- [ ] `makeRandomAlgebra(int n, int[] arities)` - Creates random algebra with arities
+- [ ] `makeRandomAlgebra(int n, int[] arities, long seed)` - Creates random algebra with arities and seed
+- [ ] `ternaryDiscriminatorAlgebra(int card)` - Creates ternary discriminator algebra
+- [ ] `memberOfQuasivariety(SmallAlgebra A, SmallAlgebra B, ProgressReport report)` - Tests quasivariety membership
+- [ ] `memberOfQuasivariety(SmallAlgebra A, List<SmallAlgebra> genAlgs, ProgressReport report)` - Tests quasivariety membership
+- [ ] `memberOfQuasivarietyGenByProperSubs(SmallAlgebra A, ProgressReport report)` - Tests membership in proper subalgebras
+- [ ] `quasiCriticalCongruences(SmallAlgebra A, ProgressReport report)` - Finds quasi-critical congruences
+- [ ] `quasiCritical(SmallAlgebra A)` - Tests if algebra is quasi-critical
+- [ ] `quasiCritical(SmallAlgebra A, ProgressReport report)` - Tests if algebra is quasi-critical with report
+- [ ] `main(String[] args)` - Main method for testing (not needed in Rust)

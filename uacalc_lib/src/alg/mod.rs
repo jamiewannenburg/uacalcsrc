@@ -9,6 +9,7 @@ pub mod free_algebra;
 pub mod general_algebra;
 pub mod homomorphism;
 pub mod malcev;
+pub mod algebras;
 pub mod maltsev_product_decomposition;
 pub mod maltsev_decomposition_iterator;
 pub mod parameterized_algebra;
@@ -66,6 +67,7 @@ use crate::alg::op::abstract_operation::PyAbstractOperationNew;
 use crate::alg::parallel::PyPool;
 use crate::alg::closer::register_closer;
 use crate::alg::closer_timing::register_closer_timing;
+use crate::alg::algebras::register_algebras_functions;
 
 pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     // Register classes internally but only export clean names
@@ -159,6 +161,9 @@ pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
 
     // Register malcev module-level functions
     malcev::register_malcev_functions(_py, m)?;
+
+    // Register algebras module-level functions
+    algebras::register_algebras_functions(_py, m)?;
 
     Ok(())
 }

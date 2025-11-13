@@ -176,6 +176,7 @@ where
 }
 
 pub mod algebra;
+pub mod algebras;
 pub mod algebra_from_minimal_sets;
 pub mod algebra_with_generating_vector;
 pub mod big_product_algebra;
