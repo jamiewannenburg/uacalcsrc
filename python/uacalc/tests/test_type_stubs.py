@@ -41,7 +41,11 @@ class TestTypeStubValidation:
     def test_type_hints_accessible(self):
         """Test that type hints can be retrieved from the module."""
         try:
-            hints = get_type_hints(uacalc_lib, include_extras=True)
+            # include_extras was added in Python 3.9
+            if sys.version_info >= (3, 9):
+                hints = get_type_hints(uacalc_lib, include_extras=True)
+            else:
+                hints = get_type_hints(uacalc_lib)
             # Should have at least some type hints
             assert isinstance(hints, dict)
         except Exception as e:
