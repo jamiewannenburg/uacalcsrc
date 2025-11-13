@@ -154,7 +154,10 @@ jobs:
         run: pip install maturin
 
       - name: Build Python bindings
-        run: maturin develop --release
+        run: maturin build --release --out dist
+
+      - name: Install built wheel
+        run: pip install dist/*.whl
 
       - name: Install test dependencies
         run: pip install -e ".[test]"
