@@ -302,6 +302,163 @@ pub fn matrix_power(
     Ok(BasicAlgebra::new(name, universe, ops2))
 }
 
+/// Make a random algebra of a given similarity type.
+///
+/// Creates a random algebra with the specified size and similarity type.
+/// The operations are generated randomly.
+///
+/// # Arguments
+/// * `n` - The size of the algebra (cardinality of the universe)
+/// * `sim_type` - The similarity type (defines the operations)
+///
+/// # Returns
+/// * `Ok(BasicAlgebra)` - Successfully created random algebra
+/// * `Err(String)` - If there's an error during creation
+///
+/// # Examples
+/// ```
+/// use uacalc::alg::{algebras, Algebra};
+/// use uacalc::alg::op::{SimilarityType, OperationSymbol};
+///
+/// let op_syms = vec![OperationSymbol::new("f", 2, false)];
+/// let sim_type = SimilarityType::new(op_syms);
+/// let alg = algebras::make_random_algebra(3, &sim_type).unwrap();
+/// assert_eq!(alg.cardinality(), 3);
+/// ```
+pub fn make_random_algebra(
+    n: i32,
+    sim_type: &crate::alg::op::SimilarityType,
+) -> Result<BasicAlgebra<i32>, String> {
+    make_random_algebra_with_seed(n, sim_type, None)
+}
+
+/// Make a random algebra of a given similarity type with a seed.
+///
+/// Creates a random algebra with the specified size and similarity type.
+/// The operations are generated randomly using the provided seed for reproducibility.
+///
+/// # Arguments
+/// * `n` - The size of the algebra (cardinality of the universe)
+/// * `sim_type` - The similarity type (defines the operations)
+/// * `seed` - Optional seed for the random number generator (None means use random seed)
+///
+/// # Returns
+/// * `Ok(BasicAlgebra)` - Successfully created random algebra
+/// * `Err(String)` - If there's an error during creation
+///
+/// # Examples
+/// ```
+/// use uacalc::alg::{algebras, Algebra};
+/// use uacalc::alg::op::{SimilarityType, OperationSymbol};
+///
+/// let op_syms = vec![OperationSymbol::new("f", 2, false)];
+/// let sim_type = SimilarityType::new(op_syms);
+/// let alg = algebras::make_random_algebra_with_seed(3, &sim_type, Some(12345)).unwrap();
+/// assert_eq!(alg.cardinality(), 3);
+/// ```
+pub fn make_random_algebra_with_seed(
+    n: i32,
+    sim_type: &crate::alg::op::SimilarityType,
+    seed: Option<i64>,
+) -> Result<BasicAlgebra<i32>, String> {
+    if n <= 0 {
+        return Err(format!("Algebra size must be positive, got {}", n));
+    }
+    
+    // Convert i64 seed to Option<u64> for make_random_operations_with_seed
+    // In Java, -1 means no seed, so we treat None as no seed
+    let seed_u64 = seed.map(|s| s as u64);
+    
+    // Create random operations
+    let ops = crate::alg::op::operations::make_random_operations_with_seed(n, sim_type, seed_u64)?;
+    
+    // Create universe set
+    let universe: HashSet<i32> = (0..n).collect();
+    
+    // Create name
+    let name = format!("RAlg{}", n);
+    
+    // Create BasicAlgebra
+    Ok(BasicAlgebra::new(name, universe, ops))
+}
+
+/// Make a random algebra with given arities of the operations.
+///
+/// Creates a random algebra with the specified size and operation arities.
+/// Operation symbols are automatically created as "r0", "r1", etc.
+///
+/// # Arguments
+/// * `n` - The size of the algebra (cardinality of the universe)
+/// * `arities` - Vector of arities for the operations
+///
+/// # Returns
+/// * `Ok(BasicAlgebra)` - Successfully created random algebra
+/// * `Err(String)` - If there's an error during creation
+///
+/// # Examples
+/// ```
+/// use uacalc::alg::{algebras, Algebra};
+///
+/// let arities = vec![2, 1]; // One binary and one unary operation
+/// let alg = algebras::make_random_algebra_with_arities(3, &arities).unwrap();
+/// assert_eq!(alg.cardinality(), 3);
+/// ```
+pub fn make_random_algebra_with_arities(
+    n: i32,
+    arities: &[i32],
+) -> Result<BasicAlgebra<i32>, String> {
+    make_random_algebra_with_arities_and_seed(n, arities, None)
+}
+
+/// Make a random algebra with given arities of the operations and a seed.
+///
+/// Creates a random algebra with the specified size and operation arities.
+/// Operation symbols are automatically created as "r0", "r1", etc.
+/// The operations are generated randomly using the provided seed for reproducibility.
+///
+/// # Arguments
+/// * `n` - The size of the algebra (cardinality of the universe)
+/// * `arities` - Vector of arities for the operations
+/// * `seed` - Optional seed for the random number generator (None means use random seed)
+///
+/// # Returns
+/// * `Ok(BasicAlgebra)` - Successfully created random algebra
+/// * `Err(String)` - If there's an error during creation
+///
+/// # Examples
+/// ```
+/// use uacalc::alg::{algebras, Algebra};
+///
+/// let arities = vec![2, 1]; // One binary and one unary operation
+/// let alg = algebras::make_random_algebra_with_arities_and_seed(3, &arities, Some(12345)).unwrap();
+/// assert_eq!(alg.cardinality(), 3);
+/// ```
+pub fn make_random_algebra_with_arities_and_seed(
+    n: i32,
+    arities: &[i32],
+    seed: Option<i64>,
+) -> Result<BasicAlgebra<i32>, String> {
+    if n <= 0 {
+        return Err(format!("Algebra size must be positive, got {}", n));
+    }
+    
+    // Create operation symbols from arities
+    let mut op_syms = Vec::new();
+    for (i, &arity) in arities.iter().enumerate() {
+        if arity < 0 {
+            return Err(format!("Arity must be non-negative, got {} at index {}", arity, i));
+        }
+        let sym = crate::alg::op::OperationSymbol::new(&format!("r{}", i), arity, false);
+        op_syms.push(sym);
+    }
+    
+    // Create similarity type
+    let sim_type = crate::alg::op::SimilarityType::new(op_syms);
+    
+    // Call the similarity type version
+    make_random_algebra_with_seed(n, &sim_type, seed)
+}
+
 /// Create a ternary discriminator algebra.
 ///
 /// A ternary discriminator algebra is an algebra with a single ternary operation
@@ -799,6 +956,146 @@ mod tests {
         assert_eq!(disc_op.int_value_at(&[0, 0, 4]).unwrap(), 4);
         assert_eq!(disc_op.int_value_at(&[0, 1, 4]).unwrap(), 0);
         assert_eq!(disc_op.int_value_at(&[3, 3, 2]).unwrap(), 2);
+    }
+
+    #[test]
+    fn test_make_random_algebra_basic() {
+        // Test basic creation of random algebra
+        use crate::alg::op::{SimilarityType, OperationSymbol};
+        
+        let op_syms = vec![OperationSymbol::new("f", 2, false)];
+        let sim_type = SimilarityType::new(op_syms);
+        
+        let result = make_random_algebra(3, &sim_type);
+        assert!(result.is_ok());
+        let alg = result.unwrap();
+        
+        assert_eq!(alg.cardinality(), 3);
+        assert_eq!(alg.name(), "RAlg3");
+        
+        // Should have one operation
+        let ops = alg.get_operations_ref();
+        assert_eq!(ops.len(), 1);
+        assert_eq!(ops[0].arity(), 2);
+    }
+
+    #[test]
+    fn test_make_random_algebra_with_seed() {
+        // Test creation with seed (should be reproducible)
+        use crate::alg::op::{SimilarityType, OperationSymbol};
+        
+        let op_syms = vec![OperationSymbol::new("f", 2, false)];
+        let sim_type = SimilarityType::new(op_syms);
+        
+        let alg1 = make_random_algebra_with_seed(3, &sim_type, Some(12345)).unwrap();
+        let alg2 = make_random_algebra_with_seed(3, &sim_type, Some(12345)).unwrap();
+        
+        // With same seed, should get same operations
+        assert_eq!(alg1.cardinality(), alg2.cardinality());
+        assert_eq!(alg1.get_operations_ref().len(), alg2.get_operations_ref().len());
+        
+        // Check that operations are the same
+        let op1 = alg1.get_operations_ref()[0];
+        let op2 = alg2.get_operations_ref()[0];
+        
+        // Check a few values
+        for i in 0..3 {
+            for j in 0..3 {
+                let val1 = op1.int_value_at(&[i, j]).unwrap();
+                let val2 = op2.int_value_at(&[i, j]).unwrap();
+                assert_eq!(val1, val2, "Operations should be identical with same seed");
+            }
+        }
+    }
+
+    #[test]
+    fn test_make_random_algebra_invalid_size() {
+        // Test with invalid size
+        use crate::alg::op::{SimilarityType, OperationSymbol};
+        
+        let op_syms = vec![OperationSymbol::new("f", 2, false)];
+        let sim_type = SimilarityType::new(op_syms);
+        
+        let result = make_random_algebra(0, &sim_type);
+        assert!(result.is_err());
+        
+        let result = make_random_algebra(-1, &sim_type);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_make_random_algebra_with_arities() {
+        // Test creation with arities
+        let arities = vec![2, 1, 0]; // Binary, unary, nullary
+        
+        let result = make_random_algebra_with_arities(3, &arities);
+        assert!(result.is_ok());
+        let alg = result.unwrap();
+        
+        assert_eq!(alg.cardinality(), 3);
+        assert_eq!(alg.name(), "RAlg3");
+        
+        // Should have 3 operations
+        let ops = alg.get_operations_ref();
+        assert_eq!(ops.len(), 3);
+        assert_eq!(ops[0].arity(), 2);
+        assert_eq!(ops[1].arity(), 1);
+        assert_eq!(ops[2].arity(), 0);
+        
+        // Check operation names
+        assert_eq!(ops[0].symbol().name(), "r0");
+        assert_eq!(ops[1].symbol().name(), "r1");
+        assert_eq!(ops[2].symbol().name(), "r2");
+    }
+
+    #[test]
+    fn test_make_random_algebra_with_arities_and_seed() {
+        // Test creation with arities and seed
+        let arities = vec![2, 1];
+        
+        let alg1 = make_random_algebra_with_arities_and_seed(3, &arities, Some(12345)).unwrap();
+        let alg2 = make_random_algebra_with_arities_and_seed(3, &arities, Some(12345)).unwrap();
+        
+        // With same seed, should get same operations
+        assert_eq!(alg1.cardinality(), alg2.cardinality());
+        assert_eq!(alg1.get_operations_ref().len(), alg2.get_operations_ref().len());
+        
+        // Check that operations are the same
+        let ops1 = alg1.get_operations_ref();
+        let ops2 = alg2.get_operations_ref();
+        
+        for (op1, op2) in ops1.iter().zip(ops2.iter()) {
+            // Check a few values for binary operation
+            if op1.arity() == 2 {
+                for i in 0..3 {
+                    for j in 0..3 {
+                        let val1 = op1.int_value_at(&[i, j]).unwrap();
+                        let val2 = op2.int_value_at(&[i, j]).unwrap();
+                        assert_eq!(val1, val2, "Operations should be identical with same seed");
+                    }
+                }
+            } else if op1.arity() == 1 {
+                for i in 0..3 {
+                    let val1 = op1.int_value_at(&[i]).unwrap();
+                    let val2 = op2.int_value_at(&[i]).unwrap();
+                    assert_eq!(val1, val2, "Operations should be identical with same seed");
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn test_make_random_algebra_with_arities_invalid() {
+        // Test with invalid arities
+        let arities = vec![2, -1];
+        
+        let result = make_random_algebra_with_arities(3, &arities);
+        assert!(result.is_err());
+        
+        // Test with invalid size
+        let arities = vec![2, 1];
+        let result = make_random_algebra_with_arities(0, &arities);
+        assert!(result.is_err());
     }
 }
 

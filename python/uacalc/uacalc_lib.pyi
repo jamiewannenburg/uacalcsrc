@@ -1781,6 +1781,81 @@ class alg:
     """
     
     @staticmethod
+    def make_random_algebra(n: int, sim_type: "alg.SimilarityType") -> "alg.BasicAlgebra": ...
+    """Make a random algebra of a given similarity type.
+    
+    Creates a random algebra with the specified size and similarity type.
+    The operations are generated randomly.
+    
+    Args:
+        n: The size of the algebra (cardinality of the universe)
+        sim_type: The similarity type (defines the operations)
+        
+    Returns:
+        BasicAlgebra: A new random algebra
+        
+    Raises:
+        ValueError: If there's an error during creation
+    """
+    
+    @staticmethod
+    def make_random_algebra_with_seed(n: int, sim_type: "alg.SimilarityType", seed: Optional[int] = None) -> "alg.BasicAlgebra": ...
+    """Make a random algebra of a given similarity type with a seed.
+    
+    Creates a random algebra with the specified size and similarity type.
+    The operations are generated randomly using the provided seed for reproducibility.
+    
+    Args:
+        n: The size of the algebra (cardinality of the universe)
+        sim_type: The similarity type (defines the operations)
+        seed: Optional seed for the random number generator (None means use random seed)
+        
+    Returns:
+        BasicAlgebra: A new random algebra
+        
+    Raises:
+        ValueError: If there's an error during creation
+    """
+    
+    @staticmethod
+    def make_random_algebra_with_arities(n: int, arities: List[int]) -> "alg.BasicAlgebra": ...
+    """Make a random algebra with given arities of the operations.
+    
+    Creates a random algebra with the specified size and operation arities.
+    Operation symbols are automatically created as "r0", "r1", etc.
+    
+    Args:
+        n: The size of the algebra (cardinality of the universe)
+        arities: List of arities for the operations
+        
+    Returns:
+        BasicAlgebra: A new random algebra
+        
+    Raises:
+        ValueError: If there's an error during creation
+    """
+    
+    @staticmethod
+    def make_random_algebra_with_arities_and_seed(n: int, arities: List[int], seed: Optional[int] = None) -> "alg.BasicAlgebra": ...
+    """Make a random algebra with given arities of the operations and a seed.
+    
+    Creates a random algebra with the specified size and operation arities.
+    Operation symbols are automatically created as "r0", "r1", etc.
+    The operations are generated randomly using the provided seed for reproducibility.
+    
+    Args:
+        n: The size of the algebra (cardinality of the universe)
+        arities: List of arities for the operations
+        seed: Optional seed for the random number generator (None means use random seed)
+        
+    Returns:
+        BasicAlgebra: A new random algebra
+        
+    Raises:
+        ValueError: If there's an error during creation
+    """
+    
+    @staticmethod
     def ternary_discriminator_algebra(card: int) -> "alg.BasicAlgebra": ...
     """Create a ternary discriminator algebra.
     

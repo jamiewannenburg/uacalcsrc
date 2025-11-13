@@ -103,7 +103,7 @@ pub fn make_random_algebra_safe(
 ## Implementation Status
 
 ### Current State
-- **Completion**: 35% (8/23 methods implemented)
+- **Completion**: 52% (12/23 methods implemented)
 - **Rust Implementation**: Started for methods checked below
 - **Python Bindings**: Started for methods checked below
 - **Java Wrapper**: Started for methods checked below
@@ -194,10 +194,10 @@ All 23 public static methods from `org/uacalc/alg/Algebras.java`:
 - [x] `matrixPower(SmallAlgebra alg, int k)` - Creates matrix power algebra ✅
 - [ ] `fullTransformationSemigroup(int n, boolean includeConstants, boolean includeId)` - Creates transformation semigroup
 - [ ] `findInClone(List<Operation> ops, SmallAlgebra A, ProgressReport report)` - Finds operations in clone
-- [ ] `makeRandomAlgebra(int n, SimilarityType simType)` - Creates random algebra
-- [ ] `makeRandomAlgebra(int n, SimilarityType simType, long seed)` - Creates random algebra with seed
-- [ ] `makeRandomAlgebra(int n, int[] arities)` - Creates random algebra with arities
-- [ ] `makeRandomAlgebra(int n, int[] arities, long seed)` - Creates random algebra with arities and seed
+- [x] `makeRandomAlgebra(int n, SimilarityType simType)` - Creates random algebra ✅
+- [x] `makeRandomAlgebra(int n, SimilarityType simType, long seed)` - Creates random algebra with seed ✅
+- [x] `makeRandomAlgebra(int n, int[] arities)` - Creates random algebra with arities ✅
+- [x] `makeRandomAlgebra(int n, int[] arities, long seed)` - Creates random algebra with arities and seed ✅
 - [x] `ternaryDiscriminatorAlgebra(int card)` - Creates ternary discriminator algebra ✅
 - [x] `memberOfQuasivariety(SmallAlgebra A, SmallAlgebra B, ProgressReport report)` - Tests quasivariety membership ✅
 - [x] `memberOfQuasivariety(SmallAlgebra A, List<SmallAlgebra> genAlgs, ProgressReport report)` - Tests quasivariety membership ✅
@@ -352,7 +352,28 @@ All 23 public static methods from `org/uacalc/alg/Algebras.java`:
   4. Extends homomorphisms from A to A (not A to B)
   5. Returns early for single element algebras (no proper subalgebras exist)
 
-Prompt:
-Read @Task 82 - Algebras.md. Implement memberOfQuasivarietyGenByProperSubs rust/wrapper/binding/rust test/python test/type stubs. Check if this should make use of an already implemented feature. Make sure everything compiles and all tests pass. Then update the task file with what was implemented.
-To compile wrapper use `ant compile-wrappers`.
-To compile bindings first activate the venv environment and use maturin. You may suppress rust warnings using RUSTFLAGS.
+### makeRandomAlgebra (Completed)
+- **Rust Implementation**: `src/alg/algebras.rs` - `make_random_algebra()`, `make_random_algebra_with_seed()`, `make_random_algebra_with_arities()`, `make_random_algebra_with_arities_and_seed()` functions
+  - Creates random operations using `operations::make_random_operations_with_seed()`
+  - For arities version, creates OperationSymbols from arities ("r0", "r1", etc.) and builds SimilarityType
+  - Creates a BasicAlgebra with name "RAlg{n}" and the generated operations
+  - Validates that size n is positive and arities are non-negative
+  - Returns `Result<BasicAlgebra<i32>, String>`
+  
+- **Python Bindings**: `uacalc_lib/src/alg/algebras.rs` - `make_random_algebra()`, `make_random_algebra_with_seed()`, `make_random_algebra_with_arities()`, `make_random_algebra_with_arities_and_seed()` pyfunctions
+  - Exposed as module-level functions in Python
+  - Takes PySimilarityType (or list of arities) and optional seed, returns PyBasicAlgebra
+  - Raises ValueError if parameters are invalid
+  
+- **Java Wrapper**: `java_wrapper/src/alg/AlgebrasWrapper.java` - `handleMakeRandomAlgebra()`, `handleMakeRandomAlgebraWithSeed()`, `handleMakeRandomAlgebraWithArities()`, `handleMakeRandomAlgebraWithAritiesAndSeed()` methods
+  - Commands: `makeRandomAlgebra --n <n>`, `makeRandomAlgebraWithSeed --n <n> --seed <seed>`, `makeRandomAlgebraWithArities --n <n> --arities "2,1"`, `makeRandomAlgebraWithAritiesAndSeed --n <n> --arities "2,1" --seed <seed>`
+  - Returns JSON with result algebra information including operations count
+  - Uses `createTestSimilarityType()` helper method for similarity type version
+  
+- **Tests**:
+  - Rust: `src/alg/algebras.rs` - 6 test cases (basic, with seed reproducibility, invalid size, with arities, with arities and seed, invalid arities)
+  - Python: `python/uacalc/tests/test_algebras.py` - 6 test cases (basic, with seed reproducibility, invalid size, with arities, with arities and seed, invalid arities)
+  
+- **Type Stubs**: `python/uacalc/uacalc_lib.pyi` - Added all 4 method signatures with documentation
+
+- **Note**: The implementation uses the existing `make_random_operations_with_seed()` function from `operations.rs`, which is already fully implemented and tested. This follows the same pattern as the Java implementation which delegates to `Operations.makeRandomOperations()`. The seed parameter uses `Option<i64>` in Rust (None means no seed), matching Java's -1 convention.

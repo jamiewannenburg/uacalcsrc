@@ -95,6 +95,22 @@ public class AlgebrasWrapper extends WrapperBase {
                 handleMemberOfQuasivarietyGenByProperSubs(options);
                 break;
                 
+            case "makeRandomAlgebra":
+                handleMakeRandomAlgebra(options);
+                break;
+                
+            case "makeRandomAlgebraWithSeed":
+                handleMakeRandomAlgebraWithSeed(options);
+                break;
+                
+            case "makeRandomAlgebraWithArities":
+                handleMakeRandomAlgebraWithArities(options);
+                break;
+                
+            case "makeRandomAlgebraWithAritiesAndSeed":
+                handleMakeRandomAlgebraWithAritiesAndSeed(options);
+                break;
+                
             default:
                 handleError("Unknown command: " + command, null);
         }
@@ -194,6 +210,16 @@ public class AlgebrasWrapper extends WrapperBase {
         ops.add(op);
         
         return new BasicAlgebra("TestAlg", size, ops);
+    }
+    
+    /**
+     * Create a test similarity type.
+     */
+    private SimilarityType createTestSimilarityType() throws Exception {
+        List<OperationSymbol> symbols = new ArrayList<>();
+        symbols.add(new OperationSymbol("f", 2, false));
+        symbols.add(new OperationSymbol("g", 1, false));
+        return new SimilarityType(symbols);
     }
     
     
@@ -679,6 +705,144 @@ public class AlgebrasWrapper extends WrapperBase {
     }
     
     /**
+     * Handle makeRandomAlgebra command - create a random algebra with similarity type.
+     */
+    private void handleMakeRandomAlgebra(Map<String, String> options) throws Exception {
+        int n = getIntArg(options, "n", 3);
+        if (n <= 0) {
+            handleError("Size n must be positive", null);
+            return;
+        }
+        
+        // Create a test similarity type (binary operation)
+        SimilarityType simType = createTestSimilarityType();
+        
+        // Call Java method
+        SmallAlgebra result = Algebras.makeRandomAlgebra(n, simType);
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("command", "makeRandomAlgebra");
+        response.put("size", n);
+        response.put("result_algebra", result.getName());
+        response.put("result_size", result.cardinality());
+        response.put("operations_count", result.operations().size());
+        response.put("status", "success");
+        
+        handleSuccess(response);
+    }
+    
+    /**
+     * Handle makeRandomAlgebraWithSeed command - create a random algebra with similarity type and seed.
+     */
+    private void handleMakeRandomAlgebraWithSeed(Map<String, String> options) throws Exception {
+        int n = getIntArg(options, "n", 3);
+        if (n <= 0) {
+            handleError("Size n must be positive", null);
+            return;
+        }
+        
+        long seed = getLongArg(options, "seed", 12345L);
+        
+        // Create a test similarity type (binary operation)
+        SimilarityType simType = createTestSimilarityType();
+        
+        // Call Java method
+        SmallAlgebra result = Algebras.makeRandomAlgebra(n, simType, seed);
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("command", "makeRandomAlgebraWithSeed");
+        response.put("size", n);
+        response.put("seed", seed);
+        response.put("result_algebra", result.getName());
+        response.put("result_size", result.cardinality());
+        response.put("operations_count", result.operations().size());
+        response.put("status", "success");
+        
+        handleSuccess(response);
+    }
+    
+    /**
+     * Handle makeRandomAlgebraWithArities command - create a random algebra with arities.
+     */
+    private void handleMakeRandomAlgebraWithArities(Map<String, String> options) throws Exception {
+        int n = getIntArg(options, "n", 3);
+        if (n <= 0) {
+            handleError("Size n must be positive", null);
+            return;
+        }
+        
+        // Get arities from comma-separated string or use default
+        String aritiesStr = options.get("arities");
+        int[] arities;
+        if (aritiesStr != null && !aritiesStr.isEmpty()) {
+            String[] parts = aritiesStr.split(",");
+            arities = new int[parts.length];
+            for (int i = 0; i < parts.length; i++) {
+                arities[i] = Integer.parseInt(parts[i].trim());
+            }
+        } else {
+            // Default: one binary operation
+            arities = new int[]{2};
+        }
+        
+        // Call Java method
+        SmallAlgebra result = Algebras.makeRandomAlgebra(n, arities);
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("command", "makeRandomAlgebraWithArities");
+        response.put("size", n);
+        response.put("arities", arities);
+        response.put("result_algebra", result.getName());
+        response.put("result_size", result.cardinality());
+        response.put("operations_count", result.operations().size());
+        response.put("status", "success");
+        
+        handleSuccess(response);
+    }
+    
+    /**
+     * Handle makeRandomAlgebraWithAritiesAndSeed command - create a random algebra with arities and seed.
+     */
+    private void handleMakeRandomAlgebraWithAritiesAndSeed(Map<String, String> options) throws Exception {
+        int n = getIntArg(options, "n", 3);
+        if (n <= 0) {
+            handleError("Size n must be positive", null);
+            return;
+        }
+        
+        // Get arities from comma-separated string or use default
+        String aritiesStr = options.get("arities");
+        int[] arities;
+        if (aritiesStr != null && !aritiesStr.isEmpty()) {
+            String[] parts = aritiesStr.split(",");
+            arities = new int[parts.length];
+            for (int i = 0; i < parts.length; i++) {
+                arities[i] = Integer.parseInt(parts[i].trim());
+            }
+        } else {
+            // Default: one binary operation
+            arities = new int[]{2};
+        }
+        
+        long seed = getLongArg(options, "seed", 12345L);
+        
+        // Call Java method
+        SmallAlgebra result = Algebras.makeRandomAlgebra(n, arities, seed);
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("command", "makeRandomAlgebraWithAritiesAndSeed");
+        response.put("size", n);
+        response.put("arities", arities);
+        response.put("seed", seed);
+        response.put("result_algebra", result.getName());
+        response.put("result_size", result.cardinality());
+        response.put("operations_count", result.operations().size());
+        response.put("status", "success");
+        
+        handleSuccess(response);
+    }
+    
+    /**
      * Show usage information for the Algebras wrapper.
      */
     private void showUsage() {
@@ -695,6 +859,10 @@ public class AlgebrasWrapper extends WrapperBase {
             "ternaryDiscriminatorAlgebra --card 3",
             "memberOfQuasivarietyGenByProperSubs --algebra algebras/lat3.ua",
             "memberOfQuasivarietyGenByProperSubs --size 3",
+            "makeRandomAlgebra --n 3",
+            "makeRandomAlgebraWithSeed --n 3 --seed 12345",
+            "makeRandomAlgebraWithArities --n 3 --arities \"2,1\"",
+            "makeRandomAlgebraWithAritiesAndSeed --n 3 --arities \"2,1\" --seed 12345",
             "help"
         };
         

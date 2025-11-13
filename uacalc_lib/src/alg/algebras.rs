@@ -8,6 +8,7 @@ use pyo3::exceptions::PyValueError;
 use crate::alg::PyBasicAlgebra;
 use crate::alg::homomorphism::PyHomomorphism;
 use crate::alg::op::int_operation::PyIntOperation;
+use crate::alg::op::similarity_type::PySimilarityType;
 use uacalc::alg::op::Operation;
 use uacalc::alg::algebras;
 
@@ -26,6 +27,10 @@ pub fn register_algebras_functions(_py: Python, m: &Bound<'_, PyModule>) -> PyRe
     m.add_function(wrap_pyfunction!(member_of_quasivariety, m)?)?;
     m.add_function(wrap_pyfunction!(member_of_quasivariety_list, m)?)?;
     m.add_function(wrap_pyfunction!(member_of_quasivariety_gen_by_proper_subs, m)?)?;
+    m.add_function(wrap_pyfunction!(make_random_algebra, m)?)?;
+    m.add_function(wrap_pyfunction!(make_random_algebra_with_seed, m)?)?;
+    m.add_function(wrap_pyfunction!(make_random_algebra_with_arities, m)?)?;
+    m.add_function(wrap_pyfunction!(make_random_algebra_with_arities_and_seed, m)?)?;
 
     Ok(())
 }
@@ -299,6 +304,99 @@ fn member_of_quasivariety_gen_by_proper_subs(a: &PyBasicAlgebra) -> PyResult<Opt
             Ok(Some(py_homos))
         },
         Ok(None) => Ok(None),
+        Err(e) => Err(PyValueError::new_err(e)),
+    }
+}
+
+/// Make a random algebra of a given similarity type.
+///
+/// Creates a random algebra with the specified size and similarity type.
+/// The operations are generated randomly.
+///
+/// # Arguments
+/// * `n` - The size of the algebra (cardinality of the universe)
+/// * `sim_type` - The similarity type (defines the operations)
+///
+/// # Returns
+/// BasicAlgebra: A new random algebra
+///
+/// # Raises
+/// `ValueError` if there's an error during creation
+#[pyfunction]
+fn make_random_algebra(n: i32, sim_type: &PySimilarityType) -> PyResult<PyBasicAlgebra> {
+    match algebras::make_random_algebra(n, &sim_type.get_inner()) {
+        Ok(result) => Ok(PyBasicAlgebra { inner: result }),
+        Err(e) => Err(PyValueError::new_err(e)),
+    }
+}
+
+/// Make a random algebra of a given similarity type with a seed.
+///
+/// Creates a random algebra with the specified size and similarity type.
+/// The operations are generated randomly using the provided seed for reproducibility.
+///
+/// # Arguments
+/// * `n` - The size of the algebra (cardinality of the universe)
+/// * `sim_type` - The similarity type (defines the operations)
+/// * `seed` - Optional seed for the random number generator (None means use random seed)
+///
+/// # Returns
+/// BasicAlgebra: A new random algebra
+///
+/// # Raises
+/// `ValueError` if there's an error during creation
+#[pyfunction]
+#[pyo3(signature = (n, sim_type, seed=None))]
+fn make_random_algebra_with_seed(n: i32, sim_type: &PySimilarityType, seed: Option<i64>) -> PyResult<PyBasicAlgebra> {
+    match algebras::make_random_algebra_with_seed(n, &sim_type.get_inner(), seed) {
+        Ok(result) => Ok(PyBasicAlgebra { inner: result }),
+        Err(e) => Err(PyValueError::new_err(e)),
+    }
+}
+
+/// Make a random algebra with given arities of the operations.
+///
+/// Creates a random algebra with the specified size and operation arities.
+/// Operation symbols are automatically created as "r0", "r1", etc.
+///
+/// # Arguments
+/// * `n` - The size of the algebra (cardinality of the universe)
+/// * `arities` - List of arities for the operations
+///
+/// # Returns
+/// BasicAlgebra: A new random algebra
+///
+/// # Raises
+/// `ValueError` if there's an error during creation
+#[pyfunction]
+fn make_random_algebra_with_arities(n: i32, arities: Vec<i32>) -> PyResult<PyBasicAlgebra> {
+    match algebras::make_random_algebra_with_arities(n, &arities) {
+        Ok(result) => Ok(PyBasicAlgebra { inner: result }),
+        Err(e) => Err(PyValueError::new_err(e)),
+    }
+}
+
+/// Make a random algebra with given arities of the operations and a seed.
+///
+/// Creates a random algebra with the specified size and operation arities.
+/// Operation symbols are automatically created as "r0", "r1", etc.
+/// The operations are generated randomly using the provided seed for reproducibility.
+///
+/// # Arguments
+/// * `n` - The size of the algebra (cardinality of the universe)
+/// * `arities` - List of arities for the operations
+/// * `seed` - Optional seed for the random number generator (None means use random seed)
+///
+/// # Returns
+/// BasicAlgebra: A new random algebra
+///
+/// # Raises
+/// `ValueError` if there's an error during creation
+#[pyfunction]
+#[pyo3(signature = (n, arities, seed=None))]
+fn make_random_algebra_with_arities_and_seed(n: i32, arities: Vec<i32>, seed: Option<i64>) -> PyResult<PyBasicAlgebra> {
+    match algebras::make_random_algebra_with_arities_and_seed(n, &arities, seed) {
+        Ok(result) => Ok(PyBasicAlgebra { inner: result }),
         Err(e) => Err(PyValueError::new_err(e)),
     }
 }

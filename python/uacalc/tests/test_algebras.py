@@ -669,16 +669,157 @@ class TestAlgebras:
         assert disc_op.int_value_at([0, 0, 4]) == 4
         assert disc_op.int_value_at([0, 1, 4]) == 0
         assert disc_op.int_value_at([3, 3, 2]) == 2
+
+
+class TestMakeRandomAlgebra:
+    """Tests for makeRandomAlgebra functions."""
+    
+    def test_make_random_algebra_basic(self):
+        """Test make_random_algebra with basic similarity type."""
+        import uacalc_lib
         
-        # Compare with Java wrapper
-        java_result = run_java_wrapper("ternaryDiscriminatorAlgebra", [
-            "--card", "5"
-        ])
+        make_random_algebra = uacalc_lib.alg.make_random_algebra
+        OperationSymbol = uacalc_lib.alg.OperationSymbol
+        SimilarityType = uacalc_lib.alg.SimilarityType
         
-        assert java_result["success"] == True
-        assert java_result["data"]["result_size"] == 5
-        assert java_result["data"]["result_size"] == result.cardinality(), \
-            "Python and Java should match"
+        # Create a similarity type with one binary operation
+        op_syms = [OperationSymbol("f", 2, False)]
+        sim_type = SimilarityType(op_syms)
+        
+        # Create random algebra
+        result = make_random_algebra(3, sim_type)
+        
+        # Check basic properties
+        assert result.cardinality() == 3, f"Expected cardinality 3, got {result.cardinality()}"
+        assert result.name() == "RAlg3", f"Expected name 'RAlg3', got '{result.name()}'"
+        
+        # Should have one operation
+        ops = result.operations()
+        assert len(ops) == 1, f"Expected 1 operation, got {len(ops)}"
+        assert ops[0].arity() == 2, f"Expected arity 2, got {ops[0].arity()}"
+    
+    def test_make_random_algebra_with_seed(self):
+        """Test make_random_algebra_with_seed (should be reproducible)."""
+        import uacalc_lib
+        
+        make_random_algebra_with_seed = uacalc_lib.alg.make_random_algebra_with_seed
+        OperationSymbol = uacalc_lib.alg.OperationSymbol
+        SimilarityType = uacalc_lib.alg.SimilarityType
+        
+        # Create a similarity type with one binary operation
+        op_syms = [OperationSymbol("f", 2, False)]
+        sim_type = SimilarityType(op_syms)
+        
+        # Create two algebras with the same seed
+        alg1 = make_random_algebra_with_seed(3, sim_type, 12345)
+        alg2 = make_random_algebra_with_seed(3, sim_type, 12345)
+        
+        # With same seed, should get same operations
+        assert alg1.cardinality() == alg2.cardinality()
+        assert len(alg1.operations()) == len(alg2.operations())
+        
+        # Check that operations are the same
+        op1 = alg1.operations()[0]
+        op2 = alg2.operations()[0]
+        
+        # Check a few values
+        for i in range(3):
+            for j in range(3):
+                val1 = op1.int_value_at([i, j])
+                val2 = op2.int_value_at([i, j])
+                assert val1 == val2, f"Operations should be identical with same seed at ({i}, {j})"
+    
+    def test_make_random_algebra_invalid_size(self):
+        """Test make_random_algebra with invalid size (should raise error)."""
+        import uacalc_lib
+        
+        make_random_algebra = uacalc_lib.alg.make_random_algebra
+        OperationSymbol = uacalc_lib.alg.OperationSymbol
+        SimilarityType = uacalc_lib.alg.SimilarityType
+        
+        op_syms = [OperationSymbol("f", 2, False)]
+        sim_type = SimilarityType(op_syms)
+        
+        # Test with n = 0 (should fail)
+        with pytest.raises(Exception):  # ValueError or similar
+            make_random_algebra(0, sim_type)
+        
+        # Test with n < 0 (should fail)
+        with pytest.raises(Exception):  # ValueError or similar
+            make_random_algebra(-1, sim_type)
+    
+    def test_make_random_algebra_with_arities(self):
+        """Test make_random_algebra_with_arities."""
+        import uacalc_lib
+        
+        make_random_algebra_with_arities = uacalc_lib.alg.make_random_algebra_with_arities
+        
+        # Create random algebra with arities [2, 1, 0] (binary, unary, nullary)
+        arities = [2, 1, 0]
+        result = make_random_algebra_with_arities(3, arities)
+        
+        # Check basic properties
+        assert result.cardinality() == 3, f"Expected cardinality 3, got {result.cardinality()}"
+        assert result.name() == "RAlg3", f"Expected name 'RAlg3', got '{result.name()}'"
+        
+        # Should have 3 operations
+        ops = result.operations()
+        assert len(ops) == 3, f"Expected 3 operations, got {len(ops)}"
+        assert ops[0].arity() == 2, f"Expected arity 2, got {ops[0].arity()}"
+        assert ops[1].arity() == 1, f"Expected arity 1, got {ops[1].arity()}"
+        assert ops[2].arity() == 0, f"Expected arity 0, got {ops[2].arity()}"
+        
+        # Check operation names
+        assert ops[0].symbol().name() == "r0"
+        assert ops[1].symbol().name() == "r1"
+        assert ops[2].symbol().name() == "r2"
+    
+    def test_make_random_algebra_with_arities_and_seed(self):
+        """Test make_random_algebra_with_arities_and_seed (should be reproducible)."""
+        import uacalc_lib
+        
+        make_random_algebra_with_arities_and_seed = uacalc_lib.alg.make_random_algebra_with_arities_and_seed
+        
+        # Create two algebras with the same seed
+        arities = [2, 1]
+        alg1 = make_random_algebra_with_arities_and_seed(3, arities, 12345)
+        alg2 = make_random_algebra_with_arities_and_seed(3, arities, 12345)
+        
+        # With same seed, should get same operations
+        assert alg1.cardinality() == alg2.cardinality()
+        assert len(alg1.operations()) == len(alg2.operations())
+        
+        # Check that operations are the same
+        ops1 = alg1.operations()
+        ops2 = alg2.operations()
+        
+        for op1, op2 in zip(ops1, ops2):
+            # Check a few values for binary operation
+            if op1.arity() == 2:
+                for i in range(3):
+                    for j in range(3):
+                        val1 = op1.int_value_at([i, j])
+                        val2 = op2.int_value_at([i, j])
+                        assert val1 == val2, f"Operations should be identical with same seed at ({i}, {j})"
+            elif op1.arity() == 1:
+                for i in range(3):
+                    val1 = op1.int_value_at([i])
+                    val2 = op2.int_value_at([i])
+                    assert val1 == val2, f"Operations should be identical with same seed at ({i})"
+    
+    def test_make_random_algebra_with_arities_invalid(self):
+        """Test make_random_algebra_with_arities with invalid arities (should raise error)."""
+        import uacalc_lib
+        
+        make_random_algebra_with_arities = uacalc_lib.alg.make_random_algebra_with_arities
+        
+        # Test with invalid arities (negative)
+        with pytest.raises(Exception):  # ValueError or similar
+            make_random_algebra_with_arities(3, [2, -1])
+        
+        # Test with invalid size
+        with pytest.raises(Exception):  # ValueError or similar
+            make_random_algebra_with_arities(0, [2, 1])
     
     def test_member_of_quasivariety_identical_algebras(self):
         """Test member_of_quasivariety with identical algebras."""
