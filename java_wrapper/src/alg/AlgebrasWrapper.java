@@ -127,6 +127,10 @@ public class AlgebrasWrapper extends WrapperBase {
                 handleUnaryClone(options);
                 break;
                 
+            case "unaryCloneAlgFromPartitions":
+                handleUnaryCloneAlgFromPartitions(options);
+                break;
+                
             default:
                 handleError("Unknown command: " + command, null);
         }
@@ -1062,6 +1066,45 @@ public class AlgebrasWrapper extends WrapperBase {
         }
         
         response.put("status", "success");
+        
+        handleSuccess(response);
+    }
+    
+    /**
+     * Handle unaryCloneAlgFromPartitions command - create algebra from unary clone.
+     */
+    private void handleUnaryCloneAlgFromPartitions(Map<String, String> options) throws Exception {
+        // Get partitions list
+        List<org.uacalc.alg.conlat.Partition> pars = getPartitionListArg(options, "pars");
+        
+        // Get eta0 partition
+        org.uacalc.alg.conlat.Partition eta0 = getPartitionArg(options, "eta0");
+        
+        // Get eta1 partition
+        org.uacalc.alg.conlat.Partition eta1 = getPartitionArg(options, "eta1");
+        
+        // Call Java method
+        org.uacalc.alg.SmallAlgebra alg = Algebras.unaryCloneAlgFromPartitions(pars, eta0, eta1);
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("command", "unaryCloneAlgFromPartitions");
+        response.put("status", "success");
+        
+        if (alg != null) {
+            response.put("algebra_cardinality", alg.cardinality());
+            response.put("algebra_name", alg.getName());
+            response.put("operations_count", alg.operations().size());
+            
+            // Add operation details
+            List<Map<String, Object>> operations = new ArrayList<>();
+            for (org.uacalc.alg.op.Operation op : alg.operations()) {
+                Map<String, Object> opInfo = new HashMap<>();
+                opInfo.put("name", op.symbol().name());
+                opInfo.put("arity", op.arity());
+                operations.add(opInfo);
+            }
+            response.put("operations", operations);
+        }
         
         handleSuccess(response);
     }

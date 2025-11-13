@@ -103,7 +103,7 @@ pub fn make_random_algebra_safe(
 ## Implementation Status
 
 ### Current State
-- **Completion**: 57% (13/23 methods implemented)
+- **Completion**: 61% (14/23 methods implemented)
 - **Rust Implementation**: Started for methods checked below
 - **Python Bindings**: Started for methods checked below
 - **Java Wrapper**: Started for methods checked below
@@ -184,7 +184,7 @@ pub fn make_random_algebra_safe(
 All 23 public static methods from `org/uacalc/alg/Algebras.java`:
 
 - [ ] `unaryCloneAlgFromPartitions(List<Partition> pars, List<Partition> decomp)` - Creates unary clone algebra from partitions (WARNING: not complete in Java)
-- [ ] `unaryCloneAlgFromPartitions(List<Partition> pars, Partition eta0, Partition eta1)` - Creates unary clone algebra with eta partitions
+- [x] `unaryCloneAlgFromPartitions(List<Partition> pars, Partition eta0, Partition eta1)` - Creates unary clone algebra with eta partitions ✅
 - [x] `unaryClone(List<Partition> pars, Partition eta0, Partition eta1)` - Computes unary clone set (returns NavigableSet<IntArray>) ✅
 - [x] `findNUF(SmallAlgebra alg, int arity)` - Finds near unanimity term (delegates to Malcev.nuTerm) ✅
 - [x] `jonssonTerms(SmallAlgebra alg)` - Returns Jonsson terms for distributive variety (delegates to Malcev.jonssonTerms) ✅
@@ -516,3 +516,36 @@ All 23 public static methods from `org/uacalc/alg/Algebras.java`:
   4. When a complete function is built (k0 * k1 == n), add it to the result set
   5. The algorithm alternates between filling f0 and f1 based on the `zero_first` flag
   6. The `get_scratch_value()` helper function safely looks up values in the vec2int map, returning None for invalid combinations
+
+### unaryCloneAlgFromPartitions (Completed)
+- **Rust Implementation**: `src/alg/algebras.rs` - `unary_clone_alg_from_partitions()` function
+  - Creates a BasicAlgebra from the unary clone set computed by `unary_clone()`
+  - For each IntArray in the clone set, creates a unary operation with name "f_0", "f_1", etc.
+  - Uses `make_int_operation()` to create operations from the IntArray values
+  - Returns a BasicAlgebra<i32> with empty name (matching Java implementation)
+  - Validates that all partitions have the same universe size (delegated to `unary_clone()`)
+  - Returns `Result<BasicAlgebra<i32>, String>`
+  
+- **Python Bindings**: `uacalc_lib/src/alg/algebras.rs` - `unary_clone_alg_from_partitions()` pyfunction
+  - Exposed as module-level function in Python
+  - Takes list of PyPartition, PyPartition eta0, PyPartition eta1, returns PyBasicAlgebra
+  - Converts Rust BasicAlgebra to PyBasicAlgebra using wrapper
+  - Raises ValueError if parameters are invalid
+  
+- **Java Wrapper**: `java_wrapper/src/alg/AlgebrasWrapper.java` - `handleUnaryCloneAlgFromPartitions()` method
+  - Command: `unaryCloneAlgFromPartitions --pars <partition_list> --eta0 <partition> --eta1 <partition>` or with `--eta0_array`, `--eta1_array`, etc.
+  - Supports parsing partitions from arrays, strings, or using zero/one partitions
+  - Returns JSON with algebra_cardinality, algebra_name, operations_count, and list of operations with their names and arities
+  - Validates that all partitions have the same universe size
+  
+- **Tests**:
+  - Rust: `src/alg/algebras.rs` - 3 test cases (basic, operation names, empty partitions)
+  - Python: `python/uacalc/tests/test_algebras.py` - 3 test cases (basic, operation names, empty partitions)
+  
+- **Type Stubs**: `python/uacalc/uacalc_lib.pyi` - Added `unary_clone_alg_from_partitions()` method signature with documentation
+
+- **Note**: The implementation follows the Java algorithm exactly:
+  1. Call `unary_clone()` to get the set of unary operations as IntArrays
+  2. For each IntArray in the clone set, create a unary operation with name "f_0", "f_1", etc.
+  3. Create a BasicAlgebra with these operations and an empty name
+  4. The operations are created in the order they appear in the BTreeSet (lexicographic order of IntArrays)

@@ -2022,6 +2022,69 @@ pub fn unary_clone(
     Ok(ans)
 }
 
+/// Make the unary algebra whose operations are the clone of unary
+/// operations respecting every partition in pars and also eta0 and
+/// eta1, which meet and join to 0 and 1 and permute.
+///
+/// This function computes the unary clone set using `unary_clone` and
+/// then creates a BasicAlgebra with one unary operation for each
+/// element in the clone set.
+///
+/// # Arguments
+/// * `pars` - List of partitions that the operations must respect
+/// * `eta0` - First eta partition
+/// * `eta1` - Second eta partition
+///
+/// # Returns
+/// * `Ok(BasicAlgebra<i32>)` - Algebra with unary operations from the clone
+/// * `Err(String)` - If there's an error (e.g., empty partitions list or mismatched sizes)
+///
+/// # Examples
+/// ```
+/// use uacalc::alg::algebras;
+/// use uacalc::alg::conlat::partition::Partition;
+///
+/// // Create partitions and compute unary clone algebra
+/// // (example would go here)
+/// ```
+pub fn unary_clone_alg_from_partitions(
+    pars: &[Partition],
+    eta0: &Partition,
+    eta1: &Partition,
+) -> Result<BasicAlgebra<i32>, String> {
+    use crate::alg::op::operations::make_int_operation;
+    use crate::alg::op::OperationSymbol;
+    use std::collections::HashSet;
+    
+    // Get the unary clone set
+    let clone_set = unary_clone(pars, eta0, eta1)?;
+    
+    let size = pars[0].universe_size();
+    let size_i32 = size as i32;
+    
+    // Create operations from each IntArray in the clone set
+    let mut ops = Vec::new();
+    let mut i = 0;
+    for ia in clone_set {
+        // Get the array representation
+        let arr = ia.as_slice().to_vec();
+        
+        // Create operation symbol with name "f_0", "f_1", etc.
+        let sym = OperationSymbol::new(&format!("f_{}", i), 1, false);
+        
+        // Create unary operation from the array
+        let op = make_int_operation(sym, size_i32, arr)?;
+        ops.push(op);
+        i += 1;
+    }
+    
+    // Create universe set
+    let universe: HashSet<i32> = (0..size_i32).collect();
+    
+    // Create BasicAlgebra with empty name (matching Java implementation)
+    Ok(BasicAlgebra::new("".to_string(), universe, ops))
+}
+
 /// Recursive helper function for computing unary clone.
 ///
 /// This function builds partial functions f0 and f1 and checks if they respect
@@ -2372,6 +2435,87 @@ mod unary_clone_tests {
         let clone_set = result.unwrap();
         // Should have at least the identity function
         assert!(clone_set.len() >= 1);
+    }
+    
+    #[test]
+    fn test_unary_clone_alg_from_partitions_basic() {
+        // Test creating an algebra from unary clone
+        let eta0 = Partition::zero(2);
+        let eta1 = Partition::one(2);
+        let pars = vec![Partition::zero(2)];
+        
+        let result = unary_clone_alg_from_partitions(&pars, &eta0, &eta1);
+        assert!(result.is_ok());
+        let alg = result.unwrap();
+        
+        // Should have the correct cardinality
+        assert_eq!(alg.cardinality(), 2);
+        
+        // Should have operations (at least the identity)
+        let ops = alg.get_operations_ref();
+        assert!(ops.len() >= 1);
+        
+        // All operations should be unary
+        for op in ops {
+            assert_eq!(op.arity(), 1);
+        }
+    }
+    
+    #[test]
+    fn test_unary_clone_alg_from_partitions_operation_names() {
+        // Test that operations are named correctly
+        let eta0 = Partition::zero(3);
+        let eta1 = Partition::one(3);
+        let pars = vec![Partition::zero(3)];
+        
+        let result = unary_clone_alg_from_partitions(&pars, &eta0, &eta1);
+        assert!(result.is_ok());
+        let alg = result.unwrap();
+        
+        let ops = alg.get_operations_ref();
+        // Check that operations are named f_0, f_1, etc. and are unary
+        // (operations are created in the order they appear in the BTreeSet)
+        assert!(ops.len() > 0, "Should have at least one operation");
+        
+        // Verify all operations are unary and have correct names
+        for op in &ops {
+            assert_eq!(op.arity(), 1, "All operations should be unary");
+            let name = op.symbol().name();
+            assert!(name.starts_with("f_"), "Operation name should start with 'f_'");
+        }
+        
+        // Collect all operation names and parse the numbers
+        let mut name_numbers: Vec<(String, usize)> = ops.iter()
+            .map(|op| {
+                let name = op.symbol().name().to_string();
+                // Parse the number after "f_"
+                let num_str = &name[2..]; // Skip "f_"
+                let num = num_str.parse::<usize>().expect("Operation name should have a number after 'f_'");
+                (name, num)
+            })
+            .collect();
+        
+        // Sort by the numeric value
+        name_numbers.sort_by_key(|(_, num)| *num);
+        
+        // Verify we have sequential names (f_0, f_1, f_2, etc.)
+        for (i, (name, num)) in name_numbers.iter().enumerate() {
+            assert_eq!(*num, i, "Operation numbers should be sequential: expected {}, got {}", i, num);
+            let expected = format!("f_{}", i);
+            assert_eq!(name, &expected, "Operation names should be sequential");
+        }
+    }
+    
+    #[test]
+    fn test_unary_clone_alg_from_partitions_empty_partitions() {
+        // Test with empty partitions list (should fail)
+        let eta0 = Partition::zero(3);
+        let eta1 = Partition::one(3);
+        let pars = vec![];
+        
+        let result = unary_clone_alg_from_partitions(&pars, &eta0, &eta1);
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("cannot be empty"));
     }
 }
 

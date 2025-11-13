@@ -37,6 +37,7 @@ pub fn register_algebras_functions(_py: Python, m: &Bound<'_, PyModule>) -> PyRe
     m.add_function(wrap_pyfunction!(quasi_critical_congruences, m)?)?;
     m.add_function(wrap_pyfunction!(quasi_critical, m)?)?;
     m.add_function(wrap_pyfunction!(unary_clone, m)?)?;
+    m.add_function(wrap_pyfunction!(unary_clone_alg_from_partitions, m)?)?;
 
     Ok(())
 }
@@ -530,6 +531,39 @@ fn unary_clone(
                 .collect();
             Ok(py_arrays)
         },
+        Err(e) => Err(PyValueError::new_err(e)),
+    }
+}
+
+/// Make the unary algebra whose operations are the clone of unary
+/// operations respecting every partition in pars and also eta0 and
+/// eta1, which meet and join to 0 and 1 and permute.
+///
+/// This function computes the unary clone set and then creates a
+/// BasicAlgebra with one unary operation for each element in the clone set.
+///
+/// # Arguments
+/// * `pars` - List of partitions that the operations must respect
+/// * `eta0` - First eta partition
+/// * `eta1` - Second eta partition
+///
+/// # Returns
+/// BasicAlgebra with unary operations from the clone
+///
+/// # Raises
+/// `ValueError` if there's an error (e.g., empty partitions list or mismatched sizes)
+#[pyfunction]
+fn unary_clone_alg_from_partitions(
+    pars: Vec<PyRef<'_, PyPartition>>,
+    eta0: &PyPartition,
+    eta1: &PyPartition,
+) -> PyResult<PyBasicAlgebra> {
+    let pars_rust: Vec<uacalc::alg::conlat::partition::Partition> = pars.iter()
+        .map(|p| p.inner.clone())
+        .collect();
+    
+    match algebras::unary_clone_alg_from_partitions(&pars_rust, &eta0.inner, &eta1.inner) {
+        Ok(alg) => Ok(PyBasicAlgebra { inner: alg }),
         Err(e) => Err(PyValueError::new_err(e)),
     }
 }

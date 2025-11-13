@@ -1193,3 +1193,85 @@ class TestMakeRandomAlgebra:
             assert hasattr(arr, 'universe_size')
             assert arr.universe_size() == 2
 
+    def test_unary_clone_alg_from_partitions_basic(self):
+        """Test unary_clone_alg_from_partitions with basic partitions."""
+        import uacalc_lib
+        
+        unary_clone_alg_from_partitions = uacalc_lib.alg.unary_clone_alg_from_partitions
+        Partition = uacalc_lib.alg.Partition
+        
+        # Create simple partitions for testing
+        eta0 = Partition.zero(2)
+        eta1 = Partition.one(2)
+        pars = [Partition.zero(2)]
+        
+        # Test the function
+        result = unary_clone_alg_from_partitions(pars, eta0, eta1)
+        
+        # Result should be a BasicAlgebra
+        assert hasattr(result, 'cardinality')
+        assert result.cardinality() == 2
+        
+        # Should have operations (at least the identity)
+        assert hasattr(result, 'operations')
+        ops = result.operations()
+        assert len(ops) >= 1
+        
+        # All operations should be unary
+        for op in ops:
+            assert op.arity() == 1
+
+    def test_unary_clone_alg_from_partitions_operation_names(self):
+        """Test that operations are named correctly."""
+        import uacalc_lib
+        
+        unary_clone_alg_from_partitions = uacalc_lib.alg.unary_clone_alg_from_partitions
+        Partition = uacalc_lib.alg.Partition
+        
+        # Create partitions
+        eta0 = Partition.zero(3)
+        eta1 = Partition.one(3)
+        pars = [Partition.zero(3)]
+        
+        # Test the function
+        result = unary_clone_alg_from_partitions(pars, eta0, eta1)
+        
+        ops = result.operations()
+        # Check that operations are named f_0, f_1, etc.
+        # (operations are created in the order they appear in the BTreeSet)
+        assert len(ops) > 0, "Should have at least one operation"
+        
+        # Collect all operation names and parse the numbers
+        name_numbers = []
+        for op in ops:
+            name = op.symbol().name()
+            assert name.startswith("f_"), "Operation name should start with 'f_'"
+            num_str = name[2:]  # Skip "f_"
+            num = int(num_str)
+            name_numbers.append((name, num))
+        
+        # Sort by the numeric value
+        name_numbers.sort(key=lambda x: x[1])
+        
+        # Verify we have sequential names (f_0, f_1, f_2, etc.)
+        for i, (name, num) in enumerate(name_numbers):
+            assert num == i, f"Operation numbers should be sequential: expected {i}, got {num}"
+            expected = f"f_{i}"
+            assert name == expected, f"Operation names should be sequential"
+
+    def test_unary_clone_alg_from_partitions_empty_partitions(self):
+        """Test unary_clone_alg_from_partitions with empty partitions list."""
+        import uacalc_lib
+        
+        unary_clone_alg_from_partitions = uacalc_lib.alg.unary_clone_alg_from_partitions
+        Partition = uacalc_lib.alg.Partition
+        
+        # Create partitions
+        eta0 = Partition.zero(3)
+        eta1 = Partition.one(3)
+        pars = []  # Empty list
+        
+        # Test the function - should raise ValueError
+        with pytest.raises(ValueError, match="cannot be empty"):
+            unary_clone_alg_from_partitions(pars, eta0, eta1)
+

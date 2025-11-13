@@ -2004,6 +2004,24 @@ class alg:
         ValueError: If there's an error (e.g., empty partitions list or mismatched sizes)
     """
 
+    def unary_clone_alg_from_partitions(pars: List["alg.Partition"], eta0: "alg.Partition", eta1: "alg.Partition") -> "alg.BasicAlgebra": ...
+    """Make the unary algebra whose operations are the clone of unary operations.
+    
+    This function computes the unary clone set and then creates a BasicAlgebra
+    with one unary operation for each element in the clone set.
+    
+    Args:
+        pars: List of partitions that the operations must respect
+        eta0: First eta partition
+        eta1: Second eta partition
+        
+    Returns:
+        BasicAlgebra with unary operations from the clone
+        
+    Raises:
+        ValueError: If there's an error (e.g., empty partitions list or mismatched sizes)
+    """
+
 # ============================================================================
 # UTIL MODULE (Partial - will be expanded)
 # ============================================================================
