@@ -1,0 +1,9 @@
+{
+    "kiroAgent.configureMCP": "Disabled",
+    "python.analysis.extraPaths": [
+        "./python"
+    ],
+    "cursorpyright.analysis.extraPaths": [
+        "./python"
+    ]
+}

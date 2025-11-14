@@ -1,0 +1,10 @@
+# Requirements for Java Dependency Analyzer
+# Core dependencies
+networkx>=3.0
+
+# Optional dependencies for enhanced visualization
+matplotlib>=3.5.0
+graphviz>=0.20.0
+
+# For better JSON handling (optional)
+ujson>=5.0.0

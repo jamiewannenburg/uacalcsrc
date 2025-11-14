@@ -5,26 +5,26 @@
   <property file="build.properties"/>
   <property name="src" value="."/>
   <property name="src.dir" value="."/>
-  <property name="work.dir" value="../local"/>
+  <property name="work.dir" value="build/work"/>
   <property name="image.dir" value="${src.dir}/org/uacalc/ui/images"/>
   <property name="algs.dir" value="resources/algebras"/>
 
-  <property name="class.dir" value="../classes"/>
+  <property name="class.dir" value="build/classes"/>
   <property name="jar.dir" value="jars"/>
   <property name="webjar.dir" value="/tmp"/>
   <property name="manifest.file" value="manifest"/>
   <!-- <property name="javadoc.dir" value="/www/ralph/UACalc/doc"/> -->
   <!-- <property name="javadoc.dir" value="/var/www/vhosts/uacalc/doc"/> -->
-  <property name="javadoc.dir" value="/tmp/doc"/>
+  <property name="javadoc.dir" value="build/doc"/>
   <property name="debug" value="on"/>
   <property name="dist-debug" value="on"/>
   <property name="verbose" value="yes"/>
   <property name="build" value="build"/>
-  <property name="dist.dir"  value="../dist"/>
+  <property name="dist.dir"  value="dist"/>
 
   <path id="classpath">
     <pathelement location="."/>
-    <pathelement location="./work"/>
+    <pathelement location="${work.dir}"/>
     <fileset dir="${jar.dir}">
       <include name="**/*.jar"/>
     </fileset>
@@ -114,6 +114,9 @@
     <jar jarfile="${dist.dir}/lib/uacalc.jar" 
          manifest="${manifest.file}"
          basedir="${class.dir}"/>
+    <!-- Copy the jar to the jars directory -->
+    <copy file="${dist.dir}/lib/uacalc.jar" 
+          todir="${jar.dir}" overwrite="yes"/>
 <!--
     <signjar jar="${dist.dir}/lib/uacalc.jar"
              storetype="${signjar.storetype}"
@@ -144,6 +147,9 @@
     <jar jarfile="${dist.dir}/lib/uacalc.jar" 
          manifest="${manifest.file}"
          basedir="${class.dir}"/>
+    <!-- Copy the jar to the jars directory -->
+    <copy file="${dist.dir}/lib/uacalc.jar" 
+          todir="${jar.dir}" overwrite="yes"/>
   </target>
 
   <target name="javadoc" depends="compile-dist">
@@ -167,6 +173,95 @@
     <delete dir="${class.dir}"/>
     <delete dir="${dist.dir}"/>
   </target>
+
+  <!-- Call Graph Analysis Targets -->
+  <property name="callgraph.dir" value="tools/callgraph"/>
+  <property name="java-callgraph.dir" value="${callgraph.dir}/java-callgraph"/>
+  <property name="java-callgraph.jar" value="${java-callgraph.dir}/target/javacg-0.1-SNAPSHOT-static.jar"/>
+
+  <target name="setup-callgraph" description="Setup java-callgraph tool for call graph analysis">
+    <echo message="Setting up java-callgraph tool..."/>
+    
+    <!-- Create callgraph directory -->
+    <mkdir dir="${callgraph.dir}"/>
+    
+    <!-- Check if java-callgraph already exists -->
+    <available file="${java-callgraph.jar}" property="callgraph.exists"/>
+    
+    <antcall target="download-callgraph"/>
+  </target>
+
+  <target name="download-callgraph" unless="callgraph.exists">
+    <echo message="Downloading and building java-callgraph..."/>
+    
+    <!-- Clone java-callgraph repository -->
+    <exec executable="git" dir="${callgraph.dir}" failonerror="true">
+      <arg value="clone"/>
+      <arg value="https://github.com/gousiosg/java-callgraph.git"/>
+    </exec>
+    
+    <!-- Build java-callgraph with Java module compatibility flags -->
+    <exec executable="mvn" dir="${java-callgraph.dir}" failonerror="true">
+      <arg value="clean"/>
+      <arg value="compile"/>
+      <arg value="package"/>
+      <arg value="-Dmaven.compiler.release=8"/>
+      <arg value="-Dmaven.test.skip=true"/>
+    </exec>
+    
+    <echo message="java-callgraph setup complete!"/>
+  </target>
+
+  <target name="callgraph" depends="setup-callgraph" 
+          description="Generate call graph analysis">
+    <echo message="Generating call graph analysis..."/>
+    
+    <!-- Check if java-callgraph jar exists -->
+    <available file="${java-callgraph.jar}" property="callgraph.jar.exists"/>
+    <fail unless="callgraph.jar.exists" 
+          message="java-callgraph jar not found. Run 'ant setup-callgraph' first."/>
+    
+    <!-- Run call graph analysis -->
+    <exec executable="python" dir="." failonerror="false">
+      <arg value="tools/java_call_graph_analyzer.py"/>
+      <arg value="--source"/>
+      <arg value="."/>
+      <arg value="--output"/>
+      <arg value="call_graph_analysis"/>
+    </exec>
+    
+    <echo message="Call graph analysis complete! Check call_graph_analysis/ directory."/>
+  </target>
+
+  <target name="dependency-analysis" depends="setup-callgraph" 
+          description="Generate both package and method-level dependency analysis">
+    <echo message="Generating comprehensive dependency analysis..."/>
+    
+    <!-- Run package-level analysis -->
+    <exec executable="python" dir="." failonerror="false">
+      <arg value="tools/java_dependency_analyzer.py"/>
+      <arg value="--source"/>
+      <arg value="."/>
+      <arg value="--output"/>
+      <arg value="dependency_analysis"/>
+    </exec>
+    
+    <!-- Run call graph analysis if available -->
+    <available file="${java-callgraph.jar}" property="callgraph.available"/>
+    <antcall target="callgraph"/>
+    
+    <echo message="Dependency analysis complete!"/>
+    <echo message="Package analysis: dependency_analysis/"/>
+    <echo message="Call graph analysis: call_graph_analysis/"/>
+  </target>
+
+  <target name="clean-callgraph" description="Clean call graph tools and analysis">
+    <delete dir="${callgraph.dir}"/>
+    <delete dir="call_graph_analysis"/>
+    <delete dir="dependency_analysis"/>
+    <echo message="Call graph tools and analysis cleaned."/>
+  </target>
+
 </project>
 
 
