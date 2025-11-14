@@ -1,0 +1,108 @@
+name: Version Sync and Tag
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'VERSION'
+  workflow_dispatch:
+    inputs:
+      create_tag:
+        description: 'Create git tag from VERSION file'
+        required: false
+        default: true
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  sync-and-tag:
+    name: Sync Versions and Create Tag
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0  # Need full history for tags
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Read version from VERSION file
+        id: version
+        run: |
+          VERSION=$(cat VERSION | tr -d '[:space:]')
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "tag=v${VERSION}" >> $GITHUB_OUTPUT
+          echo "Current version: ${VERSION}"
+
+      - name: Sync versions across all files
+        run: |
+          python tools/release.py
+
+      - name: Check if versions were changed
+        id: check-changes
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "Versions were out of sync, syncing now..."
+            git diff
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "All versions are already in sync"
+          fi
+
+      - name: Commit synced versions
+        if: steps.check-changes.outputs.changed == 'true'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add Cargo.toml uacalc_lib/Cargo.toml pyproject.toml python/uacalc/__init__.py
+          git commit -m "chore: sync versions to ${{ steps.version.outputs.version }}"
+          git push
+
+      - name: Check if tag already exists
+        id: check-tag
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "Tag $TAG already exists"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "Tag $TAG does not exist, will create it"
+          fi
+
+      - name: Create git tag
+        if: |
+          (github.event_name == 'push' && steps.check-tag.outputs.exists == 'false') ||
+          (github.event_name == 'workflow_dispatch' && inputs.create_tag == true && steps.check-tag.outputs.exists == 'false')
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          git tag -a "$TAG" -m "Release $TAG"
+          git push origin "$TAG"
+          echo "Created and pushed tag: $TAG"
+
+      - name: Summary
+        run: |
+          echo "## Version Sync Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version**: ${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Tag**: ${{ steps.version.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.check-changes.outputs.changed }}" == "true" ]; then
+            echo "- **Action**: Synced versions across all files" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- **Action**: Versions were already in sync" >> $GITHUB_STEP_SUMMARY
+          fi
+          if [ "${{ steps.check-tag.outputs.exists }}" == "true" ]; then
+            echo "- **Tag Status**: Tag already exists" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- **Tag Status**: Tag created" >> $GITHUB_STEP_SUMMARY
+          fi
+

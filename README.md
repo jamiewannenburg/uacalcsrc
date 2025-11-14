@@ -15,7 +15,7 @@ Currently the java code is mirrored in rust and bindings are exposed to python v
 Pre-built wheels are available for installation without compilation from [GitHub Releases](https://github.com/jamiewannenburg/uacalcsrc/releases):
 
 ```bash
-# Install from GitHub Release (replace v0.1.0 with the latest version)
+# Install from GitHub Release (replace v0.0.1 with the latest version)
 pip install https://github.com/jamiewannenburg/uacalcsrc/releases/download/v0.0.1/uacalc-0.0.1-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
 ```
 
@@ -38,6 +38,10 @@ The documentation is automatically generated from Rust doc comments and includes
 - Code examples and usage patterns
 
 Documentation is built automatically on each push to the main branch and deployed to GitHub Pages.
+
+   cargo doc --no-deps --all-features
+   cd uacalc_lib
+   cargo doc --no-deps --all-features
 
 ------------------
 
