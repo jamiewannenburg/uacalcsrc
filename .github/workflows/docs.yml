@@ -53,7 +53,8 @@ jobs:
           cargo doc --no-deps --all-features
           # Copy to a docs directory for GitHub Pages
           mkdir -p target/gh-pages
-          cp -r target/doc/* target/gh-pages/
+          mkdir -p target/gh-pages/uacalc
+          cp -r target/doc/* target/gh-pages/uacalc/
 
       - name: Build Rust documentation (Python bindings)
         run: |
@@ -113,12 +114,12 @@ jobs:
               <h1>UACalc Documentation</h1>
               <p>Welcome to the UACalc documentation. Choose a documentation set to view:</p>
               
-              <a href="uacalc/index.html" class="doc-link">
+              <a href="uacalc/uacalc/index.html" class="doc-link">
                   <h2>Main UACalc Crate</h2>
                   <p>Core Rust implementation documentation</p>
               </a>
               
-              <a href="uacalc_lib/index.html" class="doc-link">
+              <a href="uacalc_lib/uacalc_lib/index.html" class="doc-link">
                   <h2>Python Bindings (uacalc_lib)</h2>
                   <p>Python bindings documentation</p>
               </a>
