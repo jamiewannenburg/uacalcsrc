@@ -84,6 +84,8 @@ jobs:
           (github.event_name == 'push' && steps.check-tag.outputs.exists == 'false') ||
           (github.event_name == 'workflow_dispatch' && inputs.create_tag == true && steps.check-tag.outputs.exists == 'false')
         run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
           TAG="${{ steps.version.outputs.tag }}"
           git tag -a "$TAG" -m "Release $TAG"
           git push origin "$TAG"
