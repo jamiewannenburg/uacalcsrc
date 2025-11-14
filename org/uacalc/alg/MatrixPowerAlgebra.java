@@ -46,6 +46,10 @@ public class MatrixPowerAlgebra extends GeneralAlgebra implements SmallAlgebra {
       powerAlgebra = new PowerAlgebra(alg, power);
       root = alg;
       rootSize = alg.cardinality();
+      
+      // Set the universe from the power algebra
+      this.universe = powerAlgebra.universe();
+      
       List<Operation> opList = powerAlgebra.operations();
       opList.add(Operations.makeLeftShift(power, rootSize));
       opList.add(Operations.makeMatrixDiagonalOp(power, rootSize));

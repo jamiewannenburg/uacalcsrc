@@ -21,6 +21,11 @@
   <property name="verbose" value="yes"/>
   <property name="build" value="build"/>
   <property name="dist.dir"  value="dist"/>
+  
+  <!-- Java wrapper properties -->
+  <property name="java.wrapper.src" value="java_wrapper/src"/>
+  <property name="java.wrapper.build" value="java_wrapper/build"/>
+  <property name="java.wrapper.classes" value="${java.wrapper.build}/classes"/>
 
   <path id="classpath">
     <pathelement location="."/>
@@ -38,7 +43,7 @@
   </path>
 
   <target name="compile">
-    <javac srcdir="${src}" debug="${debug}">
+    <javac srcdir="${src}" debug="${debug}" excludes="board/geom/BSpline.java,tools/callgraph/**/*.java">
       <classpath refid="classpath"/>
     </javac>
   </target>
@@ -50,7 +55,7 @@
     <javac srcdir="${src.dir}" 
            debug="${dist-debug}"
            destdir="${class.dir}"
-           excludes="board/geom/BSpline.java">
+           excludes="board/geom/BSpline.java,tools/callgraph/**/*.java">
       <classpath refid="dist-classpath"/>
       <!-- <compilerarg value="-Xlint:unchecked" compiler="javac1.5"/> -->
     </javac>
@@ -82,7 +87,7 @@
     </copy>
   </target>
 
-  <target name="dist" depends="dist-jar,compile-dist-work"/>
+  <target name="dist" depends="dist-jar,compile-dist-work,compile-wrappers"/>
 
   <target name="dist-small" depends="dist-jar"/>
 
@@ -168,10 +173,32 @@
     </javadoc>
   </target>
 
+  <!-- Java Wrapper Build Targets -->
+  <target name="compile-wrappers" depends="compile-dist" 
+          description="Compile Java wrapper classes">
+    <echo message="Compiling Java wrapper classes..."/>
+    <mkdir dir="${java.wrapper.classes}"/>
+    <javac srcdir="${java.wrapper.src}" 
+           destdir="${java.wrapper.classes}"
+           debug="${dist-debug}"
+           classpathref="dist-classpath">
+      <include name="**/*.java"/>
+    </javac>
+    <echo message="Java wrapper classes compiled to ${java.wrapper.classes}"/>
+  </target>
+
+
+
+  <target name="clean-wrappers" description="Clean Java wrapper build files">
+    <delete dir="${java.wrapper.build}"/>
+    <echo message="Java wrapper build files cleaned."/>
+  </target>
+
   <target name="clean">
     <!-- Delete the ${build} and ${dist.dir} directory trees -->
     <delete dir="${class.dir}"/>
     <delete dir="${dist.dir}"/>
+    <antcall target="clean-wrappers"/>
   </target>
 
   <!-- Call Graph Analysis Targets -->

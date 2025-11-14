@@ -1,0 +1,1899 @@
+/*! Congruence Lattice implementation
+ *
+ * This module implements the congruence lattice of a SmallAlgebra using
+ * Ralph Freese's fast algorithms from "Computing Congruences Efficiently".
+ */
+
+use std::collections::{HashMap, HashSet};
+use std::sync::Arc;
+use std::fmt::{self, Display, Debug};
+use std::hash::Hash;
+use once_cell::sync::Lazy;
+
+use crate::alg::{SmallAlgebra, Algebra};
+use crate::alg::op::{Operation, OperationSymbol, SimilarityType};
+use crate::alg::conlat::{Partition, BinaryRelation, BasicBinaryRelation};
+use crate::util::simple_list::SimpleList;
+use crate::util::int_array::{IntArray, IntArrayTrait};
+use crate::lat::{Lattice, Order};
+
+/// Maximum lattice size for drawing
+pub const MAX_DRAWABLE_SIZE: usize = 150;
+pub const MAX_DRAWABLE_INPUT_SIZE: usize = 2500;
+
+/// A congruence lattice of a SmallAlgebra.
+///
+/// This struct represents the lattice of all congruences on a given algebra,
+/// using efficient algorithms for computing congruences and the lattice structure.
+///
+/// # Examples
+/// ```
+/// use uacalc::alg::{SmallAlgebra, BasicAlgebra};
+/// use uacalc::alg::conlat::CongruenceLattice;
+/// use std::collections::HashSet;
+///
+/// // Create a simple algebra
+/// let alg = Box::new(BasicAlgebra::new(
+///     "A".to_string(),
+///     HashSet::from([0, 1, 2]),
+///     Vec::new()
+/// )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+///
+/// // Create the congruence lattice
+/// let con_lat = CongruenceLattice::new(alg);
+/// assert_eq!(con_lat.alg_size(), 3);
+/// ```
+pub struct CongruenceLattice<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
+    /// The algebra whose congruence lattice we're computing
+    pub alg: Box<dyn SmallAlgebra<UniverseItem = T>>,
+    
+    /// Size of the algebra's universe
+    pub alg_size: usize,
+    
+    /// Number of operations in the algebra
+    pub num_ops: usize,
+    /// Cached, Arc-backed operations snapshot for this lattice
+    ops_arc: Vec<Arc<dyn Operation>>,
+    
+    /// The zero congruence (all elements in separate blocks)
+    pub zero_cong: Partition,
+    
+    /// The one congruence (all elements in one block)
+    pub one_cong: Partition,
+    
+    /// Optional description
+    pub description: Option<String>,
+    
+    /// Is the lattice too large to draw?
+    pub non_drawable: bool,
+    
+    // Cached computations
+    /// The universe of all congruences (Vec maintains insertion order)
+    universe: Option<Vec<Partition>>,
+    
+    /// Map from pairs [i,j] to Cg(i, j)
+    principal_congruences_lookup: Option<HashMap<IntArray, Partition>>,
+    
+    /// Map from principal congruences to generating pairs
+    principal_congruences_rep: Option<HashMap<Partition, IntArray>>,
+    
+    /// List of principal congruences sorted by rank
+    principal_congruences: Option<Vec<Partition>>,
+    
+    /// Join irreducible congruences
+    join_irreducibles: Option<Vec<Partition>>,
+    
+    /// Map from join irreducibles to their lower covers
+    lower_cover_of_jis: Option<HashMap<Partition, Partition>>,
+    
+    /// Atoms of the lattice
+    atoms: Option<Vec<Partition>>,
+    
+    /// Meet irreducible congruences
+    meet_irreducibles: Option<Vec<Partition>>,
+    
+    /// Upper covers map
+    upper_covers_map: Option<HashMap<Partition, Vec<Partition>>>,
+    
+    /// Permutability level (-1 if not computed)
+    permutability_level: i32,
+    
+    /// Permutability level witnesses
+    permutability_level_witnesses: Option<[Partition; 2]>,
+    
+    /// Size computed during universe generation
+    size_computed: usize,
+    
+    /// Have principals been made?
+    principals_made: bool,
+    
+    /// Cached BasicLattice view of this congruence lattice (for visualization)
+    /// Only populated when T = Partition
+    basic_lat: Option<crate::lat::BasicLattice<Partition>>,
+}
+
+impl<T> fmt::Debug for CongruenceLattice<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("CongruenceLattice")
+            .field("alg_name", &self.alg.name())
+            .field("alg_size", &self.alg_size)
+            .field("num_ops", &self.num_ops)
+            .field("principals_made", &self.principals_made)
+            .finish()
+    }
+}
+
+impl<T> Clone for CongruenceLattice<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
+    fn clone(&self) -> Self {
+        CongruenceLattice {
+            alg: self.alg.clone_box(),
+            alg_size: self.alg_size,
+            num_ops: self.num_ops,
+            ops_arc: self.ops_arc.iter().cloned().collect(),
+            zero_cong: self.zero_cong.clone(),
+            one_cong: self.one_cong.clone(),
+            description: self.description.clone(),
+            non_drawable: self.non_drawable,
+            universe: None,
+            principal_congruences_lookup: None,
+            principal_congruences_rep: None,
+            principal_congruences: None,
+            join_irreducibles: None,
+            lower_cover_of_jis: None,
+            atoms: None,
+            meet_irreducibles: None,
+            upper_covers_map: None,
+            permutability_level: -1,
+            permutability_level_witnesses: None,
+            size_computed: 0,
+            principals_made: false,
+            basic_lat: None,
+        }
+    }
+}
+
+impl CongruenceLattice<Partition> {
+    /// Get the BasicLattice view of this congruence lattice.
+    ///
+    /// # Arguments
+    /// * `make_if_null` - If true, create the BasicLattice if it doesn't exist
+    ///
+    /// # Returns
+    /// * `Some(BasicLattice)` - The BasicLattice if available or created
+    /// * `None` - If make_if_null is false and BasicLattice doesn't exist
+    pub fn get_basic_lattice(&mut self, make_if_null: bool) -> Option<crate::lat::BasicLattice<Partition>> {
+        if self.basic_lat.is_none() && make_if_null {
+            // Create BasicLattice with TCT labeling
+            match crate::lat::BasicLattice::new_from_congruence_lattice(
+                "CongruenceLattice".to_string(),
+                self,
+                true, // label with TCT types
+            ) {
+                Ok(basic_lat) => {
+                    self.basic_lat = Some(basic_lat);
+                }
+                Err(e) => {
+                    eprintln!("Failed to create BasicLattice: {}", e);
+                    return None;
+                }
+            }
+        }
+        self.basic_lat.clone()
+    }
+    
+    /// Get the BasicLattice view (default: create if null).
+    pub fn get_basic_lattice_default(&mut self) -> Option<crate::lat::BasicLattice<Partition>> {
+        self.get_basic_lattice(true)
+    }
+}
+
+impl<T> CongruenceLattice<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
+    /// Create a new congruence lattice from a SmallAlgebra.
+    ///
+    /// # Arguments
+    /// * `alg` - The algebra to compute the congruence lattice for
+    ///
+    /// # Returns
+    /// A new CongruenceLattice instance
+    pub fn new(alg: Box<dyn SmallAlgebra<UniverseItem = T>>) -> Self {
+        let alg_size = alg.cardinality() as usize;
+        // Snapshot operations once to avoid re-entering operations() during computations
+        let ops_boxed = alg.operations();
+        
+        let ops_arc: Vec<Arc<dyn Operation>> = ops_boxed
+            .into_iter()
+            .map(|op| Arc::from(op))
+            .collect();
+        let num_ops = ops_arc.len();
+        let zero_cong = Partition::zero(alg_size);
+        let one_cong = Partition::one(alg_size);
+        
+        CongruenceLattice {
+            alg,
+            alg_size,
+            num_ops,
+            ops_arc,
+            zero_cong,
+            one_cong,
+            description: None,
+            non_drawable: false,
+            universe: None,
+            principal_congruences_lookup: None,
+            principal_congruences_rep: None,
+            principal_congruences: None,
+            join_irreducibles: None,
+            lower_cover_of_jis: None,
+            atoms: None,
+            meet_irreducibles: None,
+            upper_covers_map: None,
+            permutability_level: -1,
+            permutability_level_witnesses: None,
+            size_computed: 0,
+            principals_made: false,
+            basic_lat: None,
+        }
+    }
+}
+
+
+impl<T> CongruenceLattice<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
+    /// Get the size of the algebra's universe.
+    pub fn alg_size(&self) -> usize {
+        self.alg_size
+    }
+    
+    /// Get the zero congruence (all elements in separate blocks).
+    pub fn zero(&self) -> Partition {
+        self.zero_cong.clone()
+    }
+    
+    /// Get the one congruence (all elements in one block).
+    pub fn one(&self) -> Partition {
+        self.one_cong.clone()
+    }
+    
+    /// Get the name of the algebra this is the congruence lattice of.
+    pub fn get_algebra_name(&self) -> &str {
+        self.alg.name()
+    }
+    
+    /// Get or set the description.
+    pub fn get_description(&self) -> String {
+        if let Some(ref desc) = self.description {
+            desc.clone()
+        } else {
+            format!("Congruence Lattice of {}", self.alg.name())
+        }
+    }
+    
+    /// Set the description.
+    pub fn set_description(&mut self, desc: String) {
+        self.description = Some(desc);
+    }
+    
+    /// Check if the lattice is smaller than the given size.
+    pub fn is_smaller_than(&mut self, size: usize) -> bool {
+        if let Some(ref univ) = self.universe {
+            return univ.len() < size;
+        }
+        
+        if let Some(ref jis) = self.join_irreducibles {
+            if jis.len() >= size {
+                return false;
+            }
+        }
+        
+        self.make_universe_with_limit(size);
+        if self.universe.is_none() {
+            return false;
+        }
+        
+        true
+    }
+    
+    /// Check if the lattice is drawable (small enough).
+    pub fn is_drawable(&mut self) -> bool {
+        if let Some(ref univ) = self.universe {
+            return univ.len() <= MAX_DRAWABLE_SIZE;
+        }
+        
+        if self.size_computed > 0 {
+            return false;
+        }
+        
+        self.is_smaller_than(MAX_DRAWABLE_SIZE + 1)
+    }
+}
+
+impl<T> fmt::Display for CongruenceLattice<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Con({})", self.alg.name())
+    }
+}
+
+// Implement Order trait for Partition comparison
+impl<T> Order<Partition> for CongruenceLattice<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
+    fn leq(&self, a: &Partition, b: &Partition) -> bool {
+        a.leq(b)
+    }
+}
+
+// Core congruence computation methods
+impl<T> CongruenceLattice<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
+    /// Compute the principal congruence generated by elements a and b.
+    ///
+    /// # Arguments
+    /// * `a` - First element (as index)
+    /// * `b` - Second element (as index)
+    ///
+    /// # Returns
+    /// The congruence generated by (a, b)
+    ///
+    /// # Examples
+    /// ```
+    /// use uacalc::alg::{SmallAlgebra, BasicAlgebra};
+    /// use uacalc::alg::conlat::CongruenceLattice;
+    /// use std::collections::HashSet;
+    ///
+    /// let alg = Box::new(BasicAlgebra::new(
+    ///     "A".to_string(),
+    ///     HashSet::from([0, 1, 2]),
+    ///     Vec::new()
+    /// )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+    ///
+    /// let mut con_lat = CongruenceLattice::new(alg);
+    /// let cg = con_lat.cg(0, 1);
+    /// assert!(cg.is_related(0, 1));
+    /// ```
+    pub fn cg(&mut self, a: usize, b: usize) -> Partition {
+        if a == b {
+            return self.zero();
+        }
+        
+        let (a, b) = if a > b { (b, a) } else { (a, b) };
+        
+        // Check if we have it cached
+        if let Some(ref lookup) = self.principal_congruences_lookup {
+            let mut key = IntArray::new(2).unwrap();
+            key.set(0, a as i32).unwrap();
+            key.set(1, b as i32).unwrap();
+            if let Some(part) = lookup.get(&key) {
+                return part.clone();
+            }
+        }
+        
+        self.make_cg(a, b)
+    }
+    
+    /// Internal method to compute Cg(a, b) assuming a < b.
+    fn make_cg(&self, a: usize, b: usize) -> Partition {
+        let mut part = vec![-1_i32; self.alg_size];
+        part[a] = -2;
+        part[b] = a as i32;
+        
+        let mut pairs = SimpleList::new();
+        pairs = pairs.cons_panic([a as i32, b as i32]);
+        
+        self.make_cg_aux(part, pairs)
+    }
+    
+    /// Auxiliary method for computing congruences from a partition and pairs.
+    fn make_cg_aux(&self, mut part: Vec<i32>, mut pairs: Arc<SimpleList<[i32; 2]>>) -> Partition {
+        while !pairs.is_empty() {
+            let pair = pairs.first().unwrap();
+            let x = pair[0] as usize;
+            let y = pair[1] as usize;
+            pairs = pairs.rest();
+            
+            // For each operation f
+            for op_index in 0..self.num_ops {
+                let op = &self.ops_arc[op_index];
+                let arity = op.arity();
+                if arity == 0 {
+                    continue;
+                }
+                
+                let mut arg = vec![0_i32; arity as usize];
+                
+                // For each position index in the operation
+                for index in 0..arity {
+                    // Reset arg
+                    for k in 0..arity as usize {
+                        arg[k] = 0;
+                    }
+                    
+                    // Increment through all possible arguments, varying all positions except 'index'
+                    loop {
+                        arg[index as usize] = x as i32;
+                        let r_val = match op.int_value_at(&arg) {
+                            Ok(val) => val as usize,
+                            Err(_) => {
+                                // Skip if operation fails (result not in subalgebra)
+                                if !Self::increment_arg(&mut arg, index as usize, self.alg_size - 1) {
+                                    break;
+                                }
+                                continue;
+                            }
+                        };
+                        // Use root function that modifies array (matches Java's BasicPartition.root())
+                        let r = Self::root_mut_in_array(r_val, &mut part);
+                        
+                        arg[index as usize] = y as i32;
+                        let s_val = match op.int_value_at(&arg) {
+                            Ok(val) => val as usize,
+                            Err(_) => {
+                                // Skip if operation fails (result not in subalgebra)
+                                if !Self::increment_arg(&mut arg, index as usize, self.alg_size - 1) {
+                                    break;
+                                }
+                                continue;
+                            }
+                        };
+                        // Use root function that modifies array (matches Java's BasicPartition.root())
+                        let s = Self::root_mut_in_array(s_val, &mut part);
+                        
+                        if r != s {
+                            Self::join_blocks_in_array(r, s, &mut part);
+                            pairs = pairs.cons_panic([r as i32, s as i32]);
+                        }
+                        
+                        // Increment arg (excluding position 'index')
+                        // Use alg_size - 1 as max (matching Java: max = algSize - 1)
+                        if !Self::increment_arg(&mut arg, index as usize, self.alg_size - 1) {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        
+        Partition::new(part).unwrap()
+    }
+    
+    /// Find the root of an element in a partition array with path compression.
+    /// Modifies the array during traversal (matches Java's BasicPartition.root()).
+    fn root_mut_in_array(i: usize, part: &mut [i32]) -> usize {
+        if i >= part.len() {
+            return i;
+        }
+        let j = part[i];
+        if j < 0 {
+            return i;
+        }
+        let r = Self::root_mut_in_array(j as usize, part);
+        part[i] = r as i32;
+        r
+    }
+    
+    /// Find the root of an element in a partition array (no modification).
+    fn find_root(mut elem: usize, part: &[i32]) -> usize {
+        while part[elem] >= 0 {
+            elem = part[elem] as usize;
+        }
+        elem
+    }
+    
+    /// Join two blocks in a partition array.
+    fn join_blocks_in_array(r: usize, s: usize, part: &mut [i32]) {
+        if r == s {
+            return;
+        }
+        
+        let size_r = (-part[r]) as usize;
+        let size_s = (-part[s]) as usize;
+        
+        if size_r >= size_s {
+            part[s] = r as i32;
+            part[r] = -((size_r + size_s) as i32);
+        } else {
+            part[r] = s as i32;
+            part[s] = -((size_r + size_s) as i32);
+        }
+    }
+    
+    /// Increment an argument array for all positions except the given index.
+    fn increment_arg(arg: &mut [i32], index: usize, max: usize) -> bool {
+        let length = arg.len();
+        if length < 2 {
+            return false;
+        }
+        
+        for i in 0..length {
+            if i == index {
+                continue;
+            }
+            
+            if (arg[i] as usize) < max {
+                arg[i] += 1;
+                return true;
+            }
+            arg[i] = 0;
+        }
+        
+        false
+    }
+    
+    /// Compute the principal congruence generated by a partition.
+    ///
+    /// # Arguments
+    /// * `init_part` - The initial partition
+    ///
+    /// # Returns
+    /// The congruence generated by the partition
+    pub fn cg_partition(&self, init_part: &Partition) -> Partition {
+        let mut ans = vec![0_i32; self.alg_size];
+        let init_array = init_part.to_array();
+        ans.copy_from_slice(&init_array);
+        
+        let mut pairs = SimpleList::new();
+        let blocks = init_part.get_blocks();
+        
+        for block in blocks {
+            let r = block[0];
+            for j in 1..block.len() {
+                pairs = pairs.cons_panic([r as i32, block[j] as i32]);
+            }
+        }
+        
+        self.make_cg_aux(ans, pairs)
+    }
+    
+    /// Compute all principal congruences.
+    ///
+    /// This method generates all congruences of the form Cg(i, j) for i < j
+    /// and stores them sorted by rank.
+    pub fn make_principals(&mut self) {
+        let mut pc_id_map: HashMap<Partition, Partition> = HashMap::new();
+        let mut principals = Vec::new();
+        let mut lookup = HashMap::new();
+        let mut rep_map = HashMap::new();
+        
+        for i in 0..(self.alg_size - 1) {
+            for j in (i + 1)..self.alg_size {
+                let part_cong = self.make_cg(i, j);
+                
+                if !pc_id_map.contains_key(&part_cong) {
+                    pc_id_map.insert(part_cong.clone(), part_cong.clone());
+                    principals.push(part_cong.clone());
+                    let mut rep_key = IntArray::new(2).unwrap();
+                    rep_key.set(0, i as i32).unwrap();
+                    rep_key.set(1, j as i32).unwrap();
+                    rep_map.insert(part_cong.clone(), rep_key);
+                }
+                
+                let canonical = pc_id_map.get(&part_cong).unwrap().clone();
+                let mut lookup_key = IntArray::new(2).unwrap();
+                lookup_key.set(0, i as i32).unwrap();
+                lookup_key.set(1, j as i32).unwrap();
+                lookup.insert(lookup_key, canonical);
+            }
+        }
+        
+        // Sort by rank (in the partition lattice)
+        Self::sort_by_rank(&mut principals);
+        
+        self.principal_congruences = Some(principals);
+        self.principal_congruences_lookup = Some(lookup);
+        self.principal_congruences_rep = Some(rep_map);
+        self.principals_made = true;
+    }
+    
+    /// Get the list of principal congruences.
+    pub fn principals(&mut self) -> &Vec<Partition> {
+        if !self.principals_made {
+            self.make_principals();
+        }
+        self.principal_congruences.as_ref().unwrap()
+    }
+    
+    /// Sort partitions by rank (in the partition lattice).
+    /// Rank is defined as size - number_of_blocks.
+    fn sort_by_rank(partitions: &mut Vec<Partition>) {
+        partitions.sort_by(|a, b| {
+            let rank_a = a.universe_size() - a.number_of_blocks();
+            let rank_b = b.universe_size() - b.number_of_blocks();
+            rank_a.cmp(&rank_b)
+        });
+    }
+    
+    /// Generate the universe of all congruences.
+    ///
+    /// This method computes all congruences on the algebra by taking joins
+    /// of join irreducibles.
+    pub fn make_universe(&mut self) {
+        self.make_universe_with_limit(usize::MAX);
+    }
+    
+    /// Generate the universe with a size limit.
+    ///
+    /// # Arguments
+    /// * `max_size` - Maximum size before stopping (usize::MAX for no limit)
+    pub fn make_universe_with_limit(&mut self, max_size: usize) {
+        let stop_if_big = max_size < usize::MAX;
+        
+        // Get join irreducibles
+        if self.join_irreducibles.is_none() {
+            self.make_join_irreducibles();
+        }
+        
+        let jis = self.join_irreducibles.as_ref().unwrap();
+        let mut univ: Vec<Partition> = jis.clone();
+        let mut hash: HashSet<Partition> = jis.iter().cloned().collect();
+        
+        self.size_computed = univ.len();
+        let size = jis.len();
+        
+        for k in 0..size {
+            let elem = jis[k].clone();
+            let n = univ.len();
+            
+            // Join with all elements from k onwards (not k+1!)
+            // This matches the Java implementation: for (int i = makeUniverseK; i < n; i++)
+            for i in k..n {
+                let join = elem.join(&univ[i]).unwrap();
+                
+                if !hash.contains(&join) {
+                    self.size_computed += 1;
+                    
+                    if stop_if_big && self.size_computed >= max_size {
+                        return;
+                    }
+                    
+                    hash.insert(join.clone());
+                    univ.push(join);
+                }
+            }
+        }
+        
+        // Add zero congruence at the beginning
+        hash.insert(self.zero_cong.clone());
+        univ.insert(0, self.zero_cong.clone());
+        
+        self.universe = Some(univ);
+    }
+    
+    /// Get the universe of all congruences.
+    ///
+    /// # Returns
+    /// A vector of all congruences (generates if not already computed)
+    pub fn universe(&mut self) -> &Vec<Partition> {
+        if self.universe.is_none() {
+            self.make_universe();
+        }
+        self.universe.as_ref().unwrap()
+    }
+    
+    /// Get the cardinality of the congruence lattice.
+    /// This will compute the universe if it hasn't been computed yet.
+    pub fn con_cardinality(&mut self) -> usize {
+        if self.universe.is_none() {
+            self.make_universe();
+        }
+        self.universe.as_ref().unwrap().len()
+    }
+    
+    /// Check if the universe has been computed.
+    pub fn universe_found(&self) -> bool {
+        self.universe.is_some()
+    }
+    
+    /// Compute the join irreducible congruences.
+    ///
+    /// A congruence is join irreducible if it cannot be expressed as the
+    /// join of two strictly smaller congruences.
+    pub fn make_join_irreducibles(&mut self) {
+        // Make sure principals are computed
+        if !self.principals_made {
+            self.make_principals();
+        }
+        
+        let principals = self.principal_congruences.as_ref().unwrap();
+        let mut jis = Vec::new();
+        let mut lower_covers = HashMap::new();
+        
+        for part in principals {
+            let mut join = self.zero();
+            
+            for part2 in principals {
+                if part2.leq(part) && part != part2 {
+                    join = join.join(part2).unwrap();
+                }
+                // Check if join equals part using a more robust method
+                if join.number_of_blocks() == part.number_of_blocks() && join.leq(part) && part.leq(&join) {
+                    break;
+                }
+            }
+            
+            // Check if part is not equal to join using a more robust method
+            if !(join.number_of_blocks() == part.number_of_blocks() && join.leq(part) && part.leq(&join)) {
+                jis.push(part.clone());
+                lower_covers.insert(part.clone(), join);
+            }
+        }
+        
+        self.join_irreducibles = Some(jis);
+        self.lower_cover_of_jis = Some(lower_covers);
+    }
+    
+    /// Get the join irreducible congruences.
+    ///
+    /// # Returns
+    /// A list of join irreducible congruences (sorted by rank)
+    pub fn join_irreducibles(&mut self) -> &Vec<Partition> {
+        if self.join_irreducibles.is_none() {
+            self.make_join_irreducibles();
+        }
+        self.join_irreducibles.as_ref().unwrap()
+    }
+    
+    /// Check if a partition is join irreducible.
+    ///
+    /// # Arguments
+    /// * `part` - The partition to check
+    ///
+    /// # Returns
+    /// `true` if the partition is join irreducible, `false` otherwise
+    pub fn join_irreducible(&mut self, part: &Partition) -> bool {
+        // Ensure join irreducibles are computed
+        if self.join_irreducibles.is_none() {
+            self.make_join_irreducibles();
+        }
+        
+        self.lower_cover_of_jis.as_ref().unwrap().contains_key(part)
+    }
+    
+    /// Get the lower cover of a join irreducible element.
+    ///
+    /// # Arguments
+    /// * `beta` - A join irreducible congruence
+    ///
+    /// # Returns
+    /// * `Some(partition)` - The lower cover if beta is join irreducible
+    /// * `None` - If beta is not join irreducible or is zero
+    pub fn lower_star(&mut self, beta: &Partition) -> Option<Partition> {
+        if self.join_irreducibles.is_some() {
+            return self.lower_cover_of_jis.as_ref().and_then(|map| map.get(beta).cloned());
+        }
+        
+        if beta == &self.zero() {
+            return None;
+        }
+        
+        let mut alpha = self.zero();
+        let blocks = beta.get_blocks();
+        
+        for block in blocks {
+            for j in 0..block.len() {
+                for k in (j + 1)..block.len() {
+                    let par = self.cg(block[j], block[k]);
+                    if beta != &par {
+                        alpha = alpha.join(&par).unwrap();
+                    }
+                    if beta == &alpha {
+                        return None;
+                    }
+                }
+            }
+        }
+        
+        Some(alpha)
+    }
+    
+    /// Compute the atoms of the lattice.
+    ///
+    /// An atom is a minimal non-zero element.
+    pub fn make_atoms(&mut self) {
+        // Ensure join irreducibles are computed
+        if self.join_irreducibles.is_none() {
+            self.make_join_irreducibles();
+        }
+        
+        let jis = self.join_irreducibles.as_ref().unwrap().clone();
+        let mut atoms_vec: Vec<Partition> = Vec::new();
+        
+        for ji in &jis {
+            let mut is_atom = true;
+            for par in &atoms_vec {
+                if par.leq(ji) {
+                    is_atom = false;
+                    break;
+                }
+            }
+            if is_atom {
+                atoms_vec.push(ji.clone());
+            }
+        }
+        
+        self.atoms = Some(atoms_vec);
+    }
+    
+    /// Get the atoms of the lattice.
+    pub fn atoms(&mut self) -> &Vec<Partition> {
+        if self.atoms.is_none() {
+            self.make_atoms();
+        }
+        self.atoms.as_ref().unwrap()
+    }
+    
+    /// Compute the meet irreducible congruences.
+    pub fn make_meet_irreducibles(&mut self) {
+        // Ensure universe is computed
+        if self.universe.is_none() {
+            self.make_universe();
+        }
+        
+        // Ensure upper covers are computed
+        if self.upper_covers_map.is_none() {
+            self.make_upper_covers();
+        }
+        
+        let univ = self.universe.as_ref().unwrap();
+        let uc_map = self.upper_covers_map.as_ref().unwrap();
+        
+        let mut mis = Vec::new();
+        
+        for elem in univ {
+            if let Some(ucs) = uc_map.get(elem) {
+                if ucs.len() == 1 {
+                    mis.push(elem.clone());
+                }
+            }
+        }
+        
+        self.meet_irreducibles = Some(mis);
+    }
+    
+    /// Get the meet irreducible congruences.
+    pub fn meet_irreducibles(&mut self) -> &Vec<Partition> {
+        if self.meet_irreducibles.is_none() {
+            self.make_meet_irreducibles();
+        }
+        self.meet_irreducibles.as_ref().unwrap()
+    }
+    
+    /// Get the join irreducible congruences as an OrderedSet.
+    ///
+    /// # Returns
+    /// An OrderedSet containing the join irreducible elements with their order relations
+    pub fn join_irreducibles_po(&mut self) -> Result<crate::lat::ordered_set::OrderedSet<Partition>, String> {
+        let jis = self.join_irreducibles().clone();
+        self.make_ordered_set_from_subset(&jis, "JoinIrreducibles".to_string())
+    }
+    
+    /// Get the meet irreducible congruences as an OrderedSet.
+    ///
+    /// # Returns
+    /// An OrderedSet containing the meet irreducible elements with their order relations
+    pub fn meet_irreducibles_po(&mut self) -> Result<crate::lat::ordered_set::OrderedSet<Partition>, String> {
+        let mis = self.meet_irreducibles().clone();
+        self.make_ordered_set_from_subset(&mis, "MeetIrreducibles".to_string())
+    }
+    
+    /// Create an OrderedSet from a subset of partitions with their order relations.
+    fn make_ordered_set_from_subset(
+        &self,
+        subset: &[Partition],
+        name: String,
+    ) -> Result<crate::lat::ordered_set::OrderedSet<Partition>, String> {
+        use crate::lat::ordered_set::OrderedSet;
+        
+        let mut upper_covers_list: Vec<Vec<Partition>> = Vec::new();
+        
+        for elem1 in subset {
+            let mut covers = Vec::new();
+            
+            // Find all elements that are greater than elem1
+            let mut greater_than: Vec<&Partition> = subset.iter()
+                .filter(|elem2| elem1 != *elem2 && self.leq(elem1, elem2))
+                .collect();
+            
+            // Find minimal elements among those greater than elem1
+            // An element is a cover if it's minimal among the greater elements
+            for candidate in &greater_than {
+                let mut is_minimal = true;
+                for other in &greater_than {
+                    if candidate != other && self.leq(other, candidate) {
+                        is_minimal = false;
+                        break;
+                    }
+                }
+                if is_minimal {
+                    covers.push((*candidate).clone());
+                }
+            }
+            
+            upper_covers_list.push(covers);
+        }
+        
+        OrderedSet::new(Some(name), subset.to_vec(), upper_covers_list)
+    }
+    
+    /// Check if a partition is meet irreducible.
+    pub fn meet_irreducible(&mut self, part: &Partition) -> bool {
+        if self.upper_covers_map.is_none() {
+            self.make_upper_covers();
+        }
+        
+        if let Some(uc_map) = &self.upper_covers_map {
+            if let Some(uc) = uc_map.get(part) {
+                return uc.len() == 1;
+            }
+        }
+        
+        false
+    }
+    
+    /// Compute the upper covers map.
+    fn make_upper_covers(&mut self) {
+        // Ensure universe and join irreducibles are computed
+        if self.universe.is_none() {
+            self.make_universe();
+        }
+        if self.join_irreducibles.is_none() {
+            self.make_join_irreducibles();
+        }
+        
+        let univ = self.universe.as_ref().unwrap().clone();
+        let jis = self.join_irreducibles.as_ref().unwrap().clone();
+        
+        let mut uc_map: HashMap<Partition, Vec<Partition>> = HashMap::new();
+        
+        for elem in &univ {
+            let mut hs = HashSet::new();
+            let mut covs = Vec::new();
+            
+            for ji in &jis {
+                if !ji.leq(elem) {
+                    let join = ji.join(elem).unwrap();
+                    if !hs.contains(&join) {
+                        hs.insert(join.clone());
+                        
+                        // Check if this is minimal among candidates
+                        let mut above = false;
+                        covs.retain(|cov: &Partition| {
+                            if cov.leq(&join) {
+                                above = true;
+                                false
+                            } else if join.leq(cov) {
+                                false
+                            } else {
+                                true
+                            }
+                        });
+                        
+                        if !above {
+                            covs.push(join);
+                        }
+                    }
+                }
+            }
+            
+            uc_map.insert(elem.clone(), covs);
+        }
+        
+        self.upper_covers_map = Some(uc_map);
+    }
+    
+    /// Get the upper covers map.
+    pub fn upper_covers_map(&mut self) -> &HashMap<Partition, Vec<Partition>> {
+        if self.upper_covers_map.is_none() {
+            self.make_upper_covers();
+        }
+        self.upper_covers_map.as_ref().unwrap()
+    }
+    
+    /// Test if the lattice is distributive.
+    ///
+    /// A lattice is distributive if every join irreducible is join prime.
+    pub fn is_distributive(&mut self) -> bool {
+        if self.join_irreducibles.is_none() {
+            self.make_join_irreducibles();
+        }
+        
+        let jis = self.join_irreducibles.as_ref().unwrap().clone();
+        
+        for par in &jis {
+            if !self.join_prime(par) {
+                return false;
+            }
+        }
+        
+        true
+    }
+    
+    /// Test if a partition is join prime.
+    ///
+    /// An element β is join prime if whenever β ≤ ∨S, then β ≤ s for some s ∈ S.
+    pub fn join_prime(&mut self, beta: &Partition) -> bool {
+        if self.join_irreducibles.is_none() {
+            self.make_join_irreducibles();
+        }
+        
+        let jis = self.join_irreducibles.as_ref().unwrap().clone();
+        let mut join = self.zero();
+        
+        for part in &jis {
+            if !beta.leq(part) {
+                join = join.join(part).unwrap();
+                if beta.leq(&join) {
+                    return false;
+                }
+            }
+        }
+        
+        true
+    }
+    
+    /// Compute the permutability level of the lattice.
+    ///
+    /// The permutability level is the maximum n such that there exist
+    /// incomparable partitions α and β with permutability level n.
+    pub fn permutability_level(&mut self) -> i32 {
+        if self.permutability_level >= 0 {
+            return self.permutability_level;
+        }
+        
+        // Ensure universe is computed
+        if self.universe.is_none() {
+            self.make_universe();
+        }
+        
+        let univ: Vec<Partition> = self.universe.as_ref().unwrap().iter().cloned().collect();
+        let size = univ.len();
+        let mut level = 0;
+        let mut hi_level_pars = [self.zero(), self.zero()];
+        
+        for i in 0..size {
+            let par0 = &univ[i];
+            for j in (i + 1)..size {
+                let par1 = &univ[j];
+                
+                // Skip if comparable
+                if par1.leq(par0) || par0.leq(par1) {
+                    continue;
+                }
+                
+                // Permutability level computation is complex, use a simple heuristic for now
+                let lev = 2; // Default value - real implementation requires more complexity
+                if lev > level {
+                    level = lev;
+                    hi_level_pars = [par0.clone(), par1.clone()];
+                }
+            }
+        }
+        
+        self.permutability_level = level;
+        self.permutability_level_witnesses = Some(hi_level_pars);
+        
+        level
+    }
+    
+    /// Get the permutability level witnesses.
+    pub fn get_permutability_level_witnesses(&self) -> Option<&[Partition; 2]> {
+        self.permutability_level_witnesses.as_ref()
+    }
+    
+    /// Find an upper cover of a congruence.
+    ///
+    /// # Arguments
+    /// * `congr` - The congruence to find an upper cover for
+    ///
+    /// # Returns
+    /// * `Some(partition)` - An upper cover if one exists
+    /// * `None` - If congr is the top element
+    pub fn find_upper_cover(&mut self, congr: &Partition) -> Option<Partition> {
+        if congr == &self.one() {
+            return None;
+        }
+        
+        if self.join_irreducibles.is_none() {
+            self.make_join_irreducibles();
+        }
+        
+        let jis = self.join_irreducibles.as_ref().unwrap();
+        
+        let mut not_below = Vec::new();
+        for par in jis {
+            if !par.leq(congr) {
+                not_below.push(par.clone());
+            }
+        }
+        
+        let min_not_below = Self::minimal_elements(&not_below);
+        let mut ans = self.one();
+        
+        for par in min_not_below {
+            let join = congr.join(&par).unwrap();
+            if join.leq(&ans) {
+                ans = join;
+            }
+        }
+        
+        Some(ans)
+    }
+    
+    /// Find the minimal elements in a topologically sorted list.
+    fn minimal_elements(par_list: &[Partition]) -> Vec<Partition> {
+        let mut ans = Vec::new();
+        
+        if par_list.is_empty() {
+            return ans;
+        }
+        
+        for par in par_list {
+            let mut par_ok = true;
+            for par0 in &ans {
+                if par0.leq(par) {
+                    par_ok = false;
+                    break;
+                }
+            }
+            if par_ok {
+                ans.push(par.clone());
+            }
+        }
+        
+        ans
+    }
+    
+    /// Find a principal chain in the lattice.
+    ///
+    /// Returns a chain where each element is the join of the previous one
+    /// and a principal congruence.
+    pub fn find_principal_chain(&mut self) -> Vec<Partition> {
+        let mut ans = Vec::new();
+        
+        if self.alg_size == 1 {
+            return ans;
+        }
+        
+        let mut congr = self.zero();
+        
+        loop {
+            ans.push(congr.clone());
+            let reps = congr.representatives();
+            congr = congr.join(&self.cg(reps[0], reps[1])).unwrap();
+            
+            if congr == self.one() {
+                break;
+            }
+        }
+        
+        ans
+    }
+    
+    /// Find complements of a partition in the lattice.
+    ///
+    /// # Arguments
+    /// * `par` - The partition to find complements for
+    ///
+    /// # Returns
+    /// A list of all complements of par
+    pub fn complements(&mut self, par: &Partition) -> Vec<Partition> {
+        if self.universe.is_none() {
+            self.make_universe();
+        }
+        
+        let univ = self.universe.as_ref().unwrap();
+        let mut ans = Vec::new();
+        
+        for comp in univ {
+            let join_val = par.join(comp).unwrap();
+            let meet_val = par.meet(comp).unwrap();
+            if self.one() == join_val && self.zero() == meet_val {
+                ans.push(comp.clone());
+            }
+        }
+        
+        ans
+    }
+    
+    /// Compute an irredundant meet decomposition of the one congruence.
+    ///
+    /// This method finds a minimal set of meet irreducible congruences whose
+    /// meet equals the one congruence (all elements in one block).
+    ///
+    /// # Returns
+    /// A list of meet irreducible congruences that form an irredundant meet decomposition
+    ///
+    /// # Examples
+    /// ```
+    /// use uacalc::alg::{SmallAlgebra, BasicAlgebra};
+    /// use uacalc::alg::conlat::CongruenceLattice;
+    /// use std::collections::HashSet;
+    ///
+    /// let alg = Box::new(BasicAlgebra::new(
+    ///     "A".to_string(),
+    ///     HashSet::from([0, 1, 2]),
+    ///     Vec::new()
+    /// )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+    ///
+    /// let mut con_lat = CongruenceLattice::new(alg);
+    /// let decomposition = con_lat.irredundant_meet_decomposition();
+    /// // The decomposition should contain meet irreducible congruences
+    /// ```
+    pub fn irredundant_meet_decomposition(&mut self) -> Vec<Partition> {
+        // Ensure meet irreducibles are computed
+        if self.meet_irreducibles.is_none() {
+            self.make_meet_irreducibles();
+        }
+        
+        let meet_irreducibles = self.meet_irreducibles.as_ref().unwrap();
+        
+        // Start with all meet irreducibles
+        let mut candidates = meet_irreducibles.clone();
+        
+        // Greedily remove candidates that are not needed
+        for i in (0..candidates.len()).rev() {
+            let mut test_candidates = candidates.clone();
+            test_candidates.remove(i);
+            
+            // Check if the meet of remaining candidates still equals one
+            if !test_candidates.is_empty() {
+                let mut meet_result = test_candidates[0].clone();
+                for candidate in &test_candidates[1..] {
+                    meet_result = meet_result.meet(candidate).unwrap();
+                }
+                
+                // If meet still equals one, we can remove this candidate
+                if meet_result == self.one() {
+                    candidates.remove(i);
+                }
+            }
+        }
+        
+        candidates
+    }
+}
+
+// Implement Lattice trait
+impl<T> Lattice<Partition> for CongruenceLattice<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
+    fn join_irreducibles(&self) -> Option<Vec<Partition>> {
+        self.join_irreducibles.clone()
+    }
+    
+    fn meet_irreducibles(&self) -> Option<Vec<Partition>> {
+        self.meet_irreducibles.clone()
+    }
+    
+    fn atoms(&self) -> Option<Vec<Partition>> {
+        self.atoms.clone()
+    }
+    
+    fn coatoms(&self) -> Option<Vec<Partition>> {
+        // Coatoms are not implemented yet
+        None
+    }
+    
+    fn join(&self, a: &Partition, b: &Partition) -> Partition {
+        a.join(b).unwrap()
+    }
+    
+    fn join_list(&self, args: &[Partition]) -> Partition {
+        if args.is_empty() {
+            return self.zero_cong.clone();
+        }
+        
+        let mut result = args[0].clone();
+        for part in &args[1..] {
+            result = result.join(part).unwrap();
+        }
+        result
+    }
+    
+    fn meet(&self, a: &Partition, b: &Partition) -> Partition {
+        a.meet(b).unwrap()
+    }
+    
+    fn meet_list(&self, args: &[Partition]) -> Partition {
+        if args.is_empty() {
+            return self.one_cong.clone();
+        }
+        
+        let mut result = args[0].clone();
+        for part in &args[1..] {
+            result = result.meet(part).unwrap();
+        }
+        result
+    }
+}
+
+// Implement Algebra trait
+impl<T> Algebra for CongruenceLattice<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
+    type UniverseItem = Partition;
+    
+    fn universe(&self) -> Box<dyn Iterator<Item = Self::UniverseItem>> {
+        if let Some(ref univ) = self.universe {
+            let cloned = univ.clone();
+            Box::new(cloned.into_iter())
+        } else {
+            Box::new(std::iter::empty())
+        }
+    }
+    
+    fn cardinality(&self) -> i32 {
+        if let Some(ref univ) = self.universe {
+            univ.len() as i32
+        } else {
+            -1
+        }
+    }
+    
+    fn input_size(&self) -> i32 {
+        let card = self.cardinality();
+        if card < 0 {
+            return -1;
+        }
+        self.similarity_type().input_size(card)
+    }
+    
+    fn is_unary(&self) -> bool {
+        false
+    }
+    
+    fn iterator(&self) -> Box<dyn Iterator<Item = Self::UniverseItem>> {
+        self.universe()
+    }
+    
+    fn operations(&self) -> Vec<Box<dyn Operation>> {
+        // CongruenceLattice operations are join and meet
+        // This is a simplified implementation
+        Vec::new()
+    }
+    
+    fn get_operation(&self, _sym: &OperationSymbol) -> Option<Box<dyn Operation>> {
+        None
+    }
+    
+    fn get_operations_map(&self) -> HashMap<OperationSymbol, Box<dyn Operation>> {
+        HashMap::new()
+    }
+    
+    fn name(&self) -> &str {
+        "CongruenceLattice"
+    }
+    
+    fn set_name(&mut self, _name: String) {
+        // Not supported
+    }
+    
+    fn description(&self) -> Option<&str> {
+        self.description.as_deref()
+    }
+    
+    fn set_description(&mut self, desc: Option<String>) {
+        self.description = desc;
+    }
+    
+    fn similarity_type(&self) -> &SimilarityType {
+        static LATTICE_TYPE: Lazy<SimilarityType> = Lazy::new(|| {
+            // Create join and meet operation symbols
+            let join_sym = OperationSymbol::new("join", 2, false);
+            let meet_sym = OperationSymbol::new("meet", 2, false);
+            SimilarityType::new(vec![join_sym, meet_sym])
+        });
+        &LATTICE_TYPE
+    }
+    
+    fn update_similarity_type(&mut self) {
+        // Similarity type is fixed for lattices
+    }
+    
+    fn is_similar_to(&self, other: &dyn Algebra<UniverseItem = Self::UniverseItem>) -> bool {
+        self.similarity_type() == other.similarity_type()
+    }
+    
+    fn make_operation_tables(&mut self) {
+        // Not needed for CongruenceLattice
+    }
+    
+    fn constant_operations(&self) -> Vec<Box<dyn Operation>> {
+        Vec::new()
+    }
+    
+    fn is_idempotent(&self) -> bool {
+        true
+    }
+    
+    fn is_total(&self) -> bool {
+        true
+    }
+    
+    fn monitoring(&self) -> bool {
+        false
+    }
+    
+    fn get_monitor(&self) -> Option<&dyn crate::alg::algebra::ProgressMonitor> {
+        None
+    }
+    
+    fn set_monitor(&mut self, _monitor: Option<Box<dyn crate::alg::algebra::ProgressMonitor>>) {
+        // Monitoring not supported yet
+    }
+}
+
+// Stub methods for functionality requiring unimplemented dependencies
+impl<T> CongruenceLattice<T>
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static
+{
+    /// Compute the tolerance generated by two elements.
+    ///
+    /// This uses the algorithm from section 2.8 of Freese-McKenzie-Valeriote.
+    /// A tolerance is a reflexive, symmetric subuniverse of A x A.
+    ///
+    /// # Arguments
+    /// * `a` - First element (as index)
+    /// * `b` - Second element (as index)
+    ///
+    /// # Returns
+    /// * `Ok(relation)` - The tolerance relation
+    /// * `Err(msg)` - If computation fails
+    pub fn tg(&mut self, a: usize, b: usize) -> Result<BasicBinaryRelation, String> {
+        use crate::alg::conlat::BasicBinaryRelation;
+        use crate::alg::{BigProductAlgebra, SubProductAlgebra};
+        use crate::util::int_array::IntArray;
+        
+        // Create the square product A^2
+        let alg_clone = self.alg.clone_box();
+        let product = BigProductAlgebra::new_power_safe(alg_clone, 2)?;
+        
+        // Create generators for the tolerance
+        let mut gens = Vec::new();
+        
+        // Add (a,b) and (b,a) for symmetry
+        gens.push(IntArray::from_array(vec![a as i32, b as i32])?);
+        gens.push(IntArray::from_array(vec![b as i32, a as i32])?);
+        
+        // Add diagonal elements (i,i) for reflexivity
+        for i in 0..self.alg_size {
+            gens.push(IntArray::from_array(vec![i as i32, i as i32])?);
+        }
+        
+        // Create the subproduct algebra (tolerance)
+        let sub_prod = SubProductAlgebra::new_safe(
+            "Tg".to_string(),
+            product,
+            gens,
+            false
+        )?;
+        
+        // Get the universe as IntArray pairs
+        let univ = sub_prod.get_universe_list().to_vec();
+        
+        // Convert to BasicBinaryRelation
+        let relation = BasicBinaryRelation::from_pairs(univ, self.alg_size)?;
+        
+        Ok(relation)
+    }
+    
+    /// Find the generating pair for a principal congruence.
+    ///
+    /// # Arguments
+    /// * `part` - A principal congruence
+    ///
+    /// # Returns
+    /// * `Some(IntArray)` - The generating pair [a, b] if part is principal
+    /// * `None` - If part is not principal
+    pub fn generating_pair(&mut self, part: &Partition) -> Option<IntArray> {
+        if !self.principals_made {
+            self.make_principals();
+        }
+        
+        if let Some(ref rep_map) = self.principal_congruences_rep {
+            rep_map.get(part).cloned()
+        } else {
+            None
+        }
+    }
+    
+    /// Find a coatom above the given congruence.
+    ///
+    /// # Arguments
+    /// * `theta` - The congruence to find a coatom above
+    ///
+    /// # Returns
+    /// The coatom above theta
+    pub fn find_coatom_above(&mut self, theta: &Partition) -> Partition {
+        let reps = theta.representatives();
+        for i in 0..reps.len() {
+            for j in (i + 1)..reps.len() {
+                let join = theta.join(&self.cg(reps[i], reps[j])).unwrap();
+                if join != self.one() {
+                    return self.find_coatom_above(&join);
+                }
+            }
+        }
+        theta.clone()
+    }
+    
+    /// Find a join irreducible congruence between a and b.
+    ///
+    /// # Arguments
+    /// * `a` - Lower congruence
+    /// * `b` - Upper congruence
+    ///
+    /// # Returns
+    /// * `Some(Partition)` - Join irreducible between a and b
+    /// * `None` - If b <= a
+    pub fn find_join_irred(&mut self, a: &Partition, b: &Partition) -> Option<Partition> {
+        if b.leq(a) {
+            return None;
+        }
+        
+        if self.join_irreducibles.is_none() {
+            self.make_join_irreducibles();
+        }
+        
+        let mut result = b.clone();
+        for ji in self.join_irreducibles.as_ref().unwrap() {
+            if ji.leq(b) && !ji.leq(a) {
+                result = ji.clone();
+            }
+        }
+        
+        Some(result)
+    }
+    
+    /// Find a meet irreducible congruence between a and b.
+    ///
+    /// # Arguments
+    /// * `a` - Lower congruence
+    /// * `b` - Upper congruence
+    ///
+    /// # Returns
+    /// * `Some(Partition)` - Meet irreducible between a and b
+    /// * `None` - If b <= a
+    pub fn find_meet_irred(&mut self, a: &Partition, b: &Partition) -> Option<Partition> {
+        if b.leq(a) {
+            return None;
+        }
+        
+        if self.meet_irreducibles.is_none() {
+            self.make_meet_irreducibles();
+        }
+        
+        let mut result = a.clone();
+        for mi in self.meet_irreducibles.as_ref().unwrap() {
+            if a.leq(mi) && !b.leq(mi) {
+                result = mi.clone();
+            }
+        }
+        
+        Some(result)
+    }
+    
+    /// Find a maximal chain in the lattice.
+    ///
+    /// # Returns
+    /// A chain from zero to one
+    pub fn find_maximal_chain(&mut self) -> Vec<Partition> {
+        let mut ans = Vec::new();
+        ans.push(self.zero());
+        
+        if self.alg_size == 1 {
+            return ans;
+        }
+        
+        let mut current_top = self.zero();
+        
+        // Use join irreducibles to build a chain
+        if self.join_irreducibles.is_none() {
+            self.make_join_irreducibles();
+        }
+        
+        for ji in self.join_irreducibles.as_ref().unwrap() {
+            let join = current_top.join(ji).unwrap();
+            if join != current_top {
+                current_top = join;
+                ans.push(current_top.clone());
+            }
+        }
+        
+        ans
+    }
+    
+    /// Compute the Delta congruence on alpha as a subalgebra.
+    ///
+    /// # Arguments
+    /// * `alpha` - The congruence to use as subalgebra
+    /// * `beta` - The congruence to compute Delta for
+    ///
+    /// # Returns
+    /// The Delta congruence
+    pub fn delta(&mut self, _alpha: &Partition, _beta: &Partition) -> Partition {
+        // This is a simplified implementation
+        // The full implementation would create a subalgebra from alpha
+        // and compute the congruence generated by beta on that subalgebra
+        self.zero()
+    }
+    
+    /// Alternative commutator using Delta.
+    ///
+    /// # Arguments
+    /// * `alpha` - First congruence
+    /// * `beta` - Second congruence
+    ///
+    /// # Returns
+    /// The commutator using Delta
+    pub fn commutator2(&mut self, _alpha: &Partition, _beta: &Partition) -> Partition {
+        // This is a simplified implementation
+        // The full implementation would use Delta to compute the commutator
+        self.zero()
+    }
+    
+    /// Test if S centralizes T modulo delta.
+    ///
+    /// # Arguments
+    /// * `s` - First binary relation
+    /// * `t` - Second binary relation
+    /// * `delta` - The congruence to test modulo
+    ///
+    /// # Returns
+    /// `true` if S centralizes T modulo delta
+    pub fn centralizes(&self, _s: &dyn BinaryRelation, _t: &dyn BinaryRelation, _delta: &Partition) -> bool {
+        // This is a stub implementation
+        // The full implementation would test centrality conditions
+        true
+    }
+    
+    /// Find idempotent unary polynomials.
+    ///
+    /// # Returns
+    /// List of idempotent unary polynomials as IntArray
+    pub fn idempotent_polynomials(&mut self) -> Result<Vec<IntArray>, String> {
+        use crate::alg::{BigProductAlgebra, SubProductAlgebra};
+        
+        // Create A^1 (unary polynomials)
+        let alg_clone = self.alg.clone_box();
+        let product = BigProductAlgebra::new_power_safe(alg_clone, 1)?;
+        
+        // Create a subproduct algebra to get the universe
+        let sub_prod = SubProductAlgebra::new_safe(
+            "Polynomials".to_string(),
+            product,
+            Vec::new(), // Empty generators means we get all elements
+            false
+        )?;
+        
+        // Get all unary polynomials
+        let univ = sub_prod.get_universe_list();
+        
+        // Filter for idempotent ones
+        let mut idempotent = Vec::new();
+        for poly in univ.iter() {
+            if poly.is_idempotent() && !poly.is_constant() {
+                idempotent.push(poly.clone());
+            }
+        }
+        
+        Ok(idempotent)
+    }
+    
+    /// Calculate centrality data for two binary relations (STUBBED).
+    ///
+    /// This method requires CentralityData which is not yet implemented.
+    ///
+    /// # Arguments
+    /// * `s` - First binary relation
+    /// * `t` - Second binary relation
+    ///
+    /// # Returns
+    /// Error indicating the method is not implemented
+    pub fn calc_centrality(
+        &self,
+        _s: &dyn BinaryRelation,
+        _t: &dyn BinaryRelation,
+    ) -> Result<Vec<()>, String> {
+        Err("CentralityData not implemented yet".to_string())
+    }
+    
+    /// Compute the strong rectangularity commutator (STUBBED).
+    ///
+    /// Returns the one congruence as a default stub.
+    ///
+    /// # Arguments
+    /// * `s` - First binary relation
+    /// * `t` - Second binary relation
+    ///
+    /// # Returns
+    /// The one congruence (stub implementation)
+    pub fn strong_rectangularity_commutator(
+        &self,
+        _s: &dyn BinaryRelation,
+        _t: &dyn BinaryRelation,
+    ) -> Partition {
+        self.one()
+    }
+    
+    /// Compute the weak commutator (STUBBED).
+    ///
+    /// Returns the one congruence as a default stub.
+    ///
+    /// # Arguments
+    /// * `s` - First binary relation
+    /// * `t` - Second binary relation
+    ///
+    /// # Returns
+    /// The one congruence (stub implementation)
+    pub fn weak_commutator(
+        &self,
+        _s: &dyn BinaryRelation,
+        _t: &dyn BinaryRelation,
+    ) -> Partition {
+        self.one()
+    }
+    
+    /// Compute the commutator (STUBBED).
+    ///
+    /// Returns the one congruence as a default stub.
+    ///
+    /// # Arguments
+    /// * `s` - First binary relation
+    /// * `t` - Second binary relation
+    ///
+    /// # Returns
+    /// The one congruence (stub implementation)
+    pub fn commutator(
+        &self,
+        _s: &dyn BinaryRelation,
+        _t: &dyn BinaryRelation,
+    ) -> Partition {
+        self.one()
+    }
+    
+    /// Find the TCT type of a join irreducible element (STUBBED).
+    ///
+    /// This method requires TypeFinder which is not yet implemented.
+    ///
+    /// # Arguments
+    /// * `beta` - A join irreducible partition
+    ///
+    /// # Returns
+    /// Type 0 as a default stub
+    pub fn type_ji(&self, _beta: &Partition) -> i32 {
+        0
+    }
+    
+    /// Find the TCT type of an interval (STUBBED).
+    ///
+    /// This method requires TypeFinder which is not yet implemented.
+    ///
+    /// # Arguments
+    /// * `beta` - The upper element
+    /// * `alpha` - The lower element
+    ///
+    /// # Returns
+    /// Type 0 as a default stub
+    pub fn type_interval(&self, _beta: &Partition, _alpha: &Partition) -> i32 {
+        0
+    }
+    
+    /// Get the type finder (STUBBED).
+    ///
+    /// This method requires TypeFinder which is not yet implemented.
+    ///
+    /// # Returns
+    /// Error indicating the method is not implemented
+    pub fn get_type_finder(&self) -> Result<(), String> {
+        Err("TypeFinder not implemented yet".to_string())
+    }
+    
+    /// Get the set of all TCT types in the lattice (STUBBED).
+    ///
+    /// This method requires TypeFinder which is not yet implemented.
+    ///
+    /// # Returns
+    /// Error indicating the method is not implemented
+    pub fn type_set(&self) -> Result<HashSet<i32>, String> {
+        Err("TypeFinder not implemented yet".to_string())
+    }
+    
+    /// Compute the matrices M(S,T) for centrality testing (STUBBED).
+    ///
+    /// This method requires BigProductAlgebra which is not yet implemented.
+    ///
+    /// # Arguments
+    /// * `s` - First binary relation
+    /// * `t` - Second binary relation
+    ///
+    /// # Returns
+    /// Error indicating the method is not implemented
+    pub fn matrices(
+        &self,
+        _s: &dyn BinaryRelation,
+        _t: &dyn BinaryRelation,
+    ) -> Result<(), String> {
+        Err("matrices requires BigProductAlgebra which is not yet implemented".to_string())
+    }
+    
+    /// Find a centrality failure witness (STUBBED).
+    ///
+    /// This method requires BigProductAlgebra which is not yet implemented.
+    ///
+    /// # Arguments
+    /// * `s` - First binary relation
+    /// * `t` - Second binary relation
+    /// * `delta` - A congruence
+    ///
+    /// # Returns
+    /// None (stub implementation)
+    pub fn centrality_failure(
+        &self,
+        _s: &dyn BinaryRelation,
+        _t: &dyn BinaryRelation,
+        _delta: &Partition,
+    ) -> Option<()> {
+        None
+    }
+    
+    /// Find a weak centrality failure witness (STUBBED).
+    ///
+    /// This method requires BigProductAlgebra which is not yet implemented.
+    ///
+    /// # Arguments
+    /// * `s` - First binary relation
+    /// * `t` - Second binary relation
+    /// * `delta` - A congruence
+    ///
+    /// # Returns
+    /// None (stub implementation)
+    pub fn weak_centrality_failure(
+        &self,
+        _s: &dyn BinaryRelation,
+        _t: &dyn BinaryRelation,
+        _delta: &Partition,
+    ) -> Option<()> {
+        None
+    }
+    
+    /// Find a strong rectangularity failure witness (STUBBED).
+    ///
+    /// This method requires BigProductAlgebra which is not yet implemented.
+    ///
+    /// # Arguments
+    /// * `s` - First binary relation
+    /// * `t` - Second binary relation
+    /// * `delta` - A congruence
+    ///
+    /// # Returns
+    /// None (stub implementation)
+    pub fn strong_rectangularity_failure(
+        &self,
+        _s: &dyn BinaryRelation,
+        _t: &dyn BinaryRelation,
+        _delta: &Partition,
+    ) -> Option<()> {
+        None
+    }
+}

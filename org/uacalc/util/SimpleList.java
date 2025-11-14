@@ -679,7 +679,9 @@ System.out.println("addAll called");
     SimpleList ans = emptyList;
     Iterator it = iterator();
     while (it.hasNext()) {
-      if (i <= k && k < j) ans = ans.cons(it.next());
+      Object elem = it.next();  // Always advance the iterator
+      if (i <= k && k < j) ans = ans.cons(elem);
+      k++;  // Increment counter
     }
     return ans.reverse();
   }

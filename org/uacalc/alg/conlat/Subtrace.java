@@ -38,13 +38,13 @@ public class Subtrace {
   
   
 
-  Subtrace(int a, int b, boolean inv) {
+  public Subtrace(int a, int b, boolean inv) {
     this.a = a;
     this.b = b;
     hasInvolution = inv;
   }
 
-  Subtrace(int a, int b, boolean inv, int type) {
+  public Subtrace(int a, int b, boolean inv, int type) {
     this.a = a;
     this.b = b;
     hasInvolution = inv;

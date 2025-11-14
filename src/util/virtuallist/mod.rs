@@ -1,0 +1,1000 @@
+use std::hash::{Hash, Hasher};
+
+/// A trait for lists indexed by `i64` rather than `usize`.
+/// These have no backing structure; so they are virtual lists.
+/// They are immutable so they only need a `get` and `size` method.
+/// 
+/// An example would be all triples of elements of a list with
+/// elements of type E. A triple could be an array `Vec<E>` or a list of length 3.
+/// If the list had `n` elements then the LongList would have size `n^3`.
+/// The main subtlety is defining `get` which defines a function from i64's
+/// less than `n^3` to triples and should be stateless, or at least thread safe,
+/// so that it behaves well with parallel processing.
+pub trait LongList<E>: Send + Sync {
+    /// Get the kth element.
+    /// 
+    /// # Arguments
+    /// * `k` - the index
+    /// 
+    /// # Returns
+    /// The element at index k
+    fn get(&self, k: i64) -> E;
+    
+    /// Get the size of the list.
+    /// 
+    /// # Returns
+    /// The number of elements in the list
+    fn size(&self) -> i64;
+}
+
+/// A LongList of int arrays of length `tuple_length` with entries between 0
+/// and `base` - 1, inclusive. The kth entry is k written in base `base`.
+pub struct IntTuples {
+    pub tuple_length: usize,
+    pub base: usize,
+    pub size: i64,
+}
+
+impl IntTuples {
+    /// Create a new IntTuples LongList.
+    /// 
+    /// # Arguments
+    /// * `tuple_length` - The length of each tuple
+    /// * `base` - The base for the numbering system
+    /// 
+    /// # Returns
+    /// * `Ok(IntTuples)` - Successfully created
+    /// * `Err(String)` - If arguments are invalid or result is too large
+    pub fn new_safe(tuple_length: usize, base: usize) -> Result<Self, String> {
+        if tuple_length == 0 && base == 0 {
+            return Err("Both tuple_length and base cannot be 0".to_string());
+        }
+        
+        // Calculate size = base^tuple_length
+        let mut size = 1i64;
+        for _ in 0..tuple_length {
+            if let Some(new_size) = size.checked_mul(base as i64) {
+                size = new_size;
+            } else {
+                return Err(format!("{}^{} is too big to be a long", base, tuple_length));
+            }
+        }
+        
+        Ok(IntTuples {
+            tuple_length,
+            base,
+            size,
+        })
+    }
+    
+    /// Create a new IntTuples LongList (panic version for compatibility).
+    pub fn new(tuple_length: usize, base: usize) -> Self {
+        Self::new_safe(tuple_length, base).unwrap()
+    }
+}
+
+impl LongList<Vec<i32>> for IntTuples {
+    fn get(&self, k: i64) -> Vec<i32> {
+        let mut ans = vec![0; self.tuple_length];
+        let mut k = k;
+        for i in 0..self.tuple_length {
+            ans[i] = (k % self.base as i64) as i32;
+            k = k / self.base as i64;
+        }
+        ans
+    }
+    
+    fn size(&self) -> i64 {
+        self.size
+    }
+}
+
+/// A LongList of int arrays of length `tuple_length` with entries between 0
+/// and `base` - 1, inclusive, and having at least one entry in the range `min` to
+/// `base` - 1.
+pub struct IntTuplesWithMin {
+    pub tuple_length: usize,
+    pub base: usize,
+    pub min: usize,
+    pub size: i64,
+    partial_sums: Vec<i64>,
+}
+
+impl IntTuplesWithMin {
+    /// Create a new IntTuplesWithMin LongList.
+    /// 
+    /// # Arguments
+    /// * `tuple_length` - The length of each tuple
+    /// * `base` - The base for the numbering system
+    /// * `min` - The minimum value for at least one entry
+    /// 
+    /// # Returns
+    /// * `Ok(IntTuplesWithMin)` - Successfully created
+    /// * `Err(String)` - If arguments are invalid or result is too large
+    pub fn new_safe(tuple_length: usize, base: usize, min: usize) -> Result<Self, String> {
+        if base <= min {
+            return Err("base must be greater than min".to_string());
+        }
+        
+        // Calculate size = base^tuple_length - min^tuple_length
+        let base_pow = base.pow(tuple_length as u32);
+        let min_pow = min.pow(tuple_length as u32);
+        
+        if base_pow > i64::MAX as usize || min_pow > i64::MAX as usize {
+            return Err(format!("{}^{} or {}^{} is too big to be a long", base, tuple_length, min, tuple_length));
+        }
+        
+        let size = (base_pow - min_pow) as i64;
+        let diff = base - min;
+        
+        // Calculate partial sums
+        let mut partial_sums = vec![0i64; tuple_length];
+        let mut summand = diff as i64;
+        for i in 1..tuple_length {
+            summand = summand.saturating_mul(min as i64);
+        }
+        partial_sums[0] = summand;
+        
+        for i in 1..tuple_length {
+            if min > 0 {
+                summand = (summand.saturating_mul(base as i64)) / (min as i64);
+            } else {
+                summand = summand.saturating_mul(base as i64);
+            }
+            partial_sums[i] = partial_sums[i-1].saturating_add(summand);
+        }
+        
+        Ok(IntTuplesWithMin {
+            tuple_length,
+            base,
+            min,
+            size,
+            partial_sums,
+        })
+    }
+    
+    /// Create a new IntTuplesWithMin LongList (panic version for compatibility).
+    pub fn new(tuple_length: usize, base: usize, min: usize) -> Self {
+        Self::new_safe(tuple_length, base, min).unwrap()
+    }
+}
+
+impl LongList<Vec<i32>> for IntTuplesWithMin {
+    fn get(&self, k: i64) -> Vec<i32> {
+        let mut k = k;
+        let mut stage = 0;
+        
+        // Find the stage
+        while stage < self.partial_sums.len() && k >= self.partial_sums[stage] {
+            stage += 1;
+        }
+        
+        if stage > 0 {
+            k = k - self.partial_sums[stage - 1];
+        }
+        
+        let mut ans = vec![0; self.tuple_length];
+        let diff = self.base - self.min;
+        
+        // Fill the first stage positions
+        for i in 0..stage {
+            ans[i] = (k % self.base as i64) as i32;
+            k = k / self.base as i64;
+        }
+        
+        // Fill the stage position with min constraint
+        if stage < self.tuple_length {
+            ans[stage] = (self.min as i64 + (k % diff as i64)) as i32;
+            k = k / diff as i64;
+        }
+        
+        // Fill the remaining positions
+        for i in (stage + 1)..self.tuple_length {
+            if self.min > 0 {
+                ans[i] = (k % self.min as i64) as i32;
+                k = k / self.min as i64;
+            } else {
+                ans[i] = (k % self.base as i64) as i32;
+                k = k / self.base as i64;
+            }
+        }
+        
+        ans
+    }
+    
+    fn size(&self) -> i64 {
+        self.size
+    }
+}
+
+/// A LongList of int[]'s representing all subsets of size `subset_size` from
+/// the set of nonnegative integers less than `set_size`.
+pub struct FixedSizedSubsets {
+    pub subset_size: usize,
+    pub set_size: usize,
+    pub size: i64,
+}
+
+impl FixedSizedSubsets {
+    /// Create a new FixedSizedSubsets LongList.
+    /// 
+    /// # Arguments
+    /// * `subset_size` - The size of each subset
+    /// * `set_size` - The size of the set to choose from
+    /// 
+    /// # Returns
+    /// * `Ok(FixedSizedSubsets)` - Successfully created
+    /// * `Err(String)` - If arguments are invalid or result is too large
+    pub fn new_safe(subset_size: usize, set_size: usize) -> Result<Self, String> {
+        if subset_size > set_size {
+            return Err("subset_size must be <= set_size".to_string());
+        }
+        
+        // Calculate binomial coefficient: C(set_size, subset_size)
+        let size = Self::binomial(set_size, subset_size);
+        if size > i64::MAX {
+            return Err("There are too many subsets to be a long".to_string());
+        }
+        
+        Ok(FixedSizedSubsets {
+            subset_size,
+            set_size,
+            size,
+        })
+    }
+    
+    /// Create a new FixedSizedSubsets LongList (panic version for compatibility).
+    pub fn new(subset_size: usize, set_size: usize) -> Self {
+        Self::new_safe(subset_size, set_size).unwrap()
+    }
+    
+    /// Calculate binomial coefficient C(n, r)
+    fn binomial(n: usize, r: usize) -> i64 {
+        if r > n {
+            return 0;
+        }
+        let r = r.min(n - r); // Use symmetry
+        let mut result = 1i64;
+        for i in 0..r {
+            result = result.saturating_mul((n - i) as i64) / ((i + 1) as i64);
+        }
+        result
+    }
+    
+    /// Find the largest t such that C(t, r) <= k < C(t+1, r)
+    fn set_last_entry(&self, k: i64, r: usize, arr: &mut Vec<i32>) -> i64 {
+        let one_over_r = 1.0 / (r as f64);
+        let mut guess = (Self::factorial(r) as f64 * k as f64).powf(one_over_r) as i32 + (r / 2) as i32;
+        
+        if k == 0 {
+            guess = (r - 1) as i32;
+        }
+        
+        // Binary search for the correct t
+        let mut low = 0i32;
+        let mut high = guess.max(r as i32);
+        
+        while low <= high {
+            let mid = (low + high) / 2;
+            let binom = Self::binomial(mid as usize, r);
+            if binom <= k {
+                low = mid + 1;
+            } else {
+                high = mid - 1;
+            }
+        }
+        
+        let t = high;
+        arr[r - 1] = t;
+        k - Self::binomial(t as usize, r)
+    }
+    
+    /// Calculate factorial of n
+    fn factorial(n: usize) -> i64 {
+        if n < 2 {
+            return 1;
+        }
+        let mut result = 1i64;
+        for i in 2..=n {
+            result = result.saturating_mul(i as i64);
+        }
+        result
+    }
+}
+
+impl LongList<Vec<i32>> for FixedSizedSubsets {
+    fn get(&self, k: i64) -> Vec<i32> {
+        let mut ans = vec![0; self.subset_size];
+        let mut left_over = k;
+        
+        for r in (1..=self.subset_size).rev() {
+            left_over = self.set_last_entry(left_over, r, &mut ans);
+        }
+        
+        ans
+    }
+    
+    fn size(&self) -> i64 {
+        self.size
+    }
+}
+
+/// A LongList of all subsets of the set of int 0 to set_size - 1,
+/// represented as increasing int arrays.
+pub struct Subsets {
+    pub set_size: usize,
+    pub size: i64,
+}
+
+impl Subsets {
+    /// Create a new Subsets LongList.
+    /// 
+    /// # Arguments
+    /// * `set_size` - The size of the set
+    /// 
+    /// # Returns
+    /// * `Ok(Subsets)` - Successfully created
+    /// * `Err(String)` - If arguments are invalid or result is too large
+    pub fn new_safe(set_size: usize) -> Result<Self, String> {
+        if set_size >= 63 {
+            return Err("There are too many subsets to be a long. set_size should be at most 63".to_string());
+        }
+        
+        let size = 1i64 << set_size; // 2^set_size
+        
+        Ok(Subsets {
+            set_size,
+            size,
+        })
+    }
+    
+    /// Create a new Subsets LongList (panic version for compatibility).
+    pub fn new(set_size: usize) -> Self {
+        Self::new_safe(set_size).unwrap()
+    }
+    
+    /// Calculate 2^r
+    fn pow2(r: usize) -> i64 {
+        1i64 << r
+    }
+    
+    /// Calculate log2 of k
+    fn log2(k: i64) -> usize {
+        if k <= 0 {
+            panic!("k must be positive");
+        }
+        63 - k.leading_zeros() as usize
+    }
+}
+
+impl LongList<Vec<i32>> for Subsets {
+    fn get(&self, k: i64) -> Vec<i32> {
+        if k == 0 {
+            return vec![];
+        }
+        
+        let mut result = Vec::new();
+        let mut k = k;
+        
+        while k > 0 {
+            let t = Self::log2(k);
+            result.push(t as i32);
+            k = k - Self::pow2(t);
+        }
+        
+        result.reverse();
+        result
+    }
+    
+    fn size(&self) -> i64 {
+        self.size
+    }
+}
+
+/// A LongList of int arrays with at least one entry in a specified range.
+/// This is a direct translation of org.uacalc.util.virtuallist.TupleWithMin.
+/// 
+/// The tuples generated have length `array_len` with entries between 0 and `base` - 1,
+/// and having at least one entry in the range `min` to `base` - 1.
+pub struct TupleWithMin {
+    pub array_len: usize,
+    pub base: usize,
+    pub min: usize,
+    pub diff: usize,
+    partial_sums: Vec<i64>,
+}
+
+impl TupleWithMin {
+    /// Create a new TupleWithMin LongList.
+    /// 
+    /// # Arguments
+    /// * `array_len` - The length of each tuple
+    /// * `base` - The base for the numbering system (max value + 1)
+    /// * `min` - The minimum value for at least one entry
+    /// 
+    /// # Returns
+    /// * `Ok(TupleWithMin)` - Successfully created
+    /// * `Err(String)` - If arguments are invalid or result is too large
+    /// 
+    /// # Examples
+    /// ```
+    /// use uacalc::util::virtuallist::{TupleWithMin, LongList};
+    /// let tuples = TupleWithMin::new_safe(3, 4, 2).unwrap();
+    /// assert_eq!(tuples.size(), 56);
+    /// ```
+    pub fn new_safe(array_len: usize, base: usize, min: usize) -> Result<Self, String> {
+        if base <= min {
+            return Err("base must be greater than min".to_string());
+        }
+        
+        let diff = base - min;
+        
+        // Calculate partial sums
+        let mut partial_sums = vec![0i64; array_len];
+        let mut summand = diff as i64;
+        
+        // Initial summand = diff * min^(arrayLen - 1)
+        for _ in 1..array_len {
+            summand = summand.checked_mul(min as i64)
+                .ok_or_else(|| format!("Overflow calculating initial summand"))?;
+        }
+        partial_sums[0] = summand;
+        
+        // Calculate remaining partial sums
+        for i in 1..array_len {
+            summand = summand.checked_mul(base as i64)
+                .ok_or_else(|| format!("Overflow in partial sum calculation"))?
+                .checked_div(min as i64)
+                .ok_or_else(|| format!("Division error in partial sum calculation"))?;
+            partial_sums[i] = partial_sums[i-1].checked_add(summand)
+                .ok_or_else(|| format!("Overflow adding partial sums"))?;
+        }
+        
+        Ok(TupleWithMin {
+            array_len,
+            base,
+            min,
+            diff,
+            partial_sums,
+        })
+    }
+    
+    /// Create a new TupleWithMin LongList (panic version for compatibility).
+    /// 
+    /// # Panics
+    /// Panics if arguments are invalid or result is too large
+    pub fn new(array_len: usize, base: usize, min: usize) -> Self {
+        Self::new_safe(array_len, base, min).unwrap()
+    }
+}
+
+impl LongList<Vec<i32>> for TupleWithMin {
+    fn get(&self, k: i64) -> Vec<i32> {
+        let mut k = k;
+        let mut stage = 0;
+        
+        // Find the stage
+        while stage < self.partial_sums.len() && k >= self.partial_sums[stage] {
+            stage += 1;
+        }
+        
+        if stage > 0 {
+            k = k - self.partial_sums[stage - 1];
+        }
+        
+        let mut ans = vec![0; self.array_len];
+        
+        // Fill the first stage positions
+        for i in 0..stage {
+            ans[i] = (k % self.base as i64) as i32;
+            k = k / self.base as i64;
+        }
+        
+        // Fill the stage position with min constraint
+        if stage < self.array_len {
+            ans[stage] = (self.min as i64 + (k % self.diff as i64)) as i32;
+            k = k / self.diff as i64;
+        }
+        
+        // Fill the remaining positions
+        for i in (stage + 1)..self.array_len {
+            ans[i] = (k % self.min as i64) as i32;
+            k = k / self.min as i64;
+        }
+        
+        ans
+    }
+    
+    fn size(&self) -> i64 {
+        self.partial_sums[self.array_len - 1]
+    }
+}
+
+/// A LongList of all permutations of n elements.
+pub struct Permutations {
+    pub n: usize,
+    pub size: i64,
+    factorials: Vec<i64>,
+}
+
+impl Permutations {
+    /// Create a new Permutations LongList.
+    /// 
+    /// # Arguments
+    /// * `n` - The number of elements to permute
+    /// 
+    /// # Returns
+    /// * `Ok(Permutations)` - Successfully created
+    /// * `Err(String)` - If arguments are invalid or result is too large
+    pub fn new_safe(n: usize) -> Result<Self, String> {
+        if n > 20 {
+            return Err("There are too many permutations to be a long. n should be at most 20".to_string());
+        }
+        
+        let size = Self::factorial(n);
+        let mut factorials = vec![0i64; 21];
+        for i in 0..21 {
+            factorials[i] = Self::factorial(i);
+        }
+        
+        Ok(Permutations {
+            n,
+            size,
+            factorials,
+        })
+    }
+    
+    /// Create a new Permutations LongList (panic version for compatibility).
+    pub fn new(n: usize) -> Self {
+        Self::new_safe(n).unwrap()
+    }
+    
+    /// Calculate factorial of n
+    fn factorial(n: usize) -> i64 {
+        if n < 2 {
+            return 1;
+        }
+        let mut result = 1i64;
+        for i in 2..=n {
+            result = result.saturating_mul(i as i64);
+        }
+        result
+    }
+    
+    /// Set the entry at the given index
+    fn set_entry(&self, index: usize, k: i64, arr: &mut Vec<i32>, lst: &mut Vec<i32>) -> i64 {
+        let m = lst.len();
+        let m_fac = self.factorials[m - 1];
+        let mut r = 0;
+        
+        while k >= (r + 1) * m_fac {
+            r += 1;
+        }
+        
+        arr[index] = lst[r as usize];
+        lst.remove(r as usize);
+        k - r * m_fac
+    }
+}
+
+impl LongList<Vec<i32>> for Permutations {
+    fn get(&self, k: i64) -> Vec<i32> {
+        let mut lst: Vec<i32> = (0..self.n as i32).collect();
+        let mut ans = vec![0; self.n];
+        let mut k = k;
+        
+        for i in 0..self.n {
+            k = self.set_entry(i, k, &mut ans, &mut lst);
+        }
+        
+        ans
+    }
+    
+    fn size(&self) -> i64 {
+        self.size
+    }
+}
+
+/// Utility functions for LongList operations
+pub struct LongListUtils;
+
+impl LongListUtils {
+    /// Calculate factorial of n
+    pub fn factorial(n: usize) -> i64 {
+        if n < 2 {
+            return 1;
+        }
+        let mut result = 1i64;
+        for i in 2..=n {
+            result = result.saturating_mul(i as i64);
+        }
+        result
+    }
+    
+    /// Calculate binomial coefficient C(n, r)
+    pub fn binomial(n: usize, r: usize) -> i64 {
+        if r > n {
+            return 0;
+        }
+        let r = r.min(n - r); // Use symmetry
+        let mut result = 1i64;
+        for i in 0..r {
+            result = result.saturating_mul((n - i) as i64) / ((i + 1) as i64);
+        }
+        result
+    }
+    
+    /// Calculate log2 of k
+    pub fn log2(k: i64) -> usize {
+        if k <= 0 {
+            panic!("k must be positive");
+        }
+        63 - k.leading_zeros() as usize
+    }
+    
+    /// Calculate 2^r
+    pub fn pow2(r: usize) -> i64 {
+        1i64 << r
+    }
+}
+
+// Implement common traits for all LongList implementations
+impl<E> PartialEq for dyn LongList<E> where E: PartialEq {
+    fn eq(&self, other: &Self) -> bool {
+        if self.size() != other.size() {
+            return false;
+        }
+        for i in 0..self.size() {
+            if self.get(i) != other.get(i) {
+                return false;
+            }
+        }
+        true
+    }
+}
+
+impl<E> Eq for dyn LongList<E> where E: Eq {}
+
+impl<E> Hash for dyn LongList<E> where E: Hash {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.size().hash(state);
+        // Hash first few elements for efficiency
+        for i in 0..self.size().min(10) {
+            self.get(i).hash(state);
+        }
+    }
+}
+
+impl<E> std::fmt::Display for dyn LongList<E> where E: std::fmt::Display {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "LongList(size={})", self.size())
+    }
+}
+
+impl<E> std::fmt::Debug for dyn LongList<E> where E: std::fmt::Debug {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "LongList(size={})", self.size())
+    }
+}
+
+/// Static utility methods for creating virtual lists and array indexing.
+/// This module provides the same functionality as the Java VirtualLists class.
+pub mod virtuallists {
+    use super::*;
+    use std::collections::HashMap;
+
+    /// Create a LongList of int tuples of length `tuple_len` with entries between 0 and `base` - 1.
+    /// 
+    /// # Arguments
+    /// * `tuple_len` - The length of each tuple
+    /// * `base` - The base for the numbering system
+    /// 
+    /// # Returns
+    /// * `Ok(Box<dyn LongList<Vec<i32>>>)` - Successfully created LongList
+    /// * `Err(String)` - If arguments are invalid or result is too large
+    /// 
+    /// # Examples
+    /// ```
+    /// use uacalc::util::virtuallist::virtuallists::int_tuples;
+    /// let tuples = int_tuples(3, 4).unwrap();
+    /// assert_eq!(tuples.size(), 64); // 4^3
+    /// ```
+    pub fn int_tuples(tuple_len: usize, base: usize) -> Result<Box<dyn LongList<Vec<i32>>>, String> {
+        let int_tuples = IntTuples::new_safe(tuple_len, base)?;
+        Ok(Box::new(int_tuples))
+    }
+
+    /// Create a LongList of int tuples with minimum constraint.
+    /// 
+    /// # Arguments
+    /// * `tuple_len` - The length of each tuple
+    /// * `base` - The base for the numbering system
+    /// * `min` - The minimum value for at least one entry
+    /// 
+    /// # Returns
+    /// * `Ok(Box<dyn LongList<Vec<i32>>>)` - Successfully created LongList
+    /// * `Err(String)` - If arguments are invalid or result is too large
+    /// 
+    /// # Examples
+    /// ```
+    /// use uacalc::util::virtuallist::virtuallists::int_tuples_with_min;
+    /// let tuples = int_tuples_with_min(3, 4, 2).unwrap();
+    /// assert_eq!(tuples.size(), 56); // 4^3 - 2^3
+    /// ```
+    pub fn int_tuples_with_min(tuple_len: usize, base: usize, min: usize) -> Result<Box<dyn LongList<Vec<i32>>>, String> {
+        let int_tuples_with_min = IntTuplesWithMin::new_safe(tuple_len, base, min)?;
+        Ok(Box::new(int_tuples_with_min))
+    }
+
+    /// Array indexer for tuples with minimum constraint.
+    /// 
+    /// This is an indexer into the set of all int arrays of length `arity` whose entries
+    /// lie between 0 and `base` - 1 and such that at least one entry is greater than
+    /// or equal to `min`.
+    /// 
+    /// # Arguments
+    /// * `k` - The index
+    /// * `arity` - The length of the array
+    /// * `base` - The base for the numbering system
+    /// * `min` - The minimum value for at least one entry
+    /// 
+    /// # Returns
+    /// * `Ok(Vec<i32>)` - The kth array
+    /// * `Err(String)` - If arguments are invalid
+    /// 
+    /// # Examples
+    /// ```
+    /// use uacalc::util::virtuallist::virtuallists::array_indexer_with_min;
+    /// let arr = array_indexer_with_min(0, 3, 4, 2).unwrap();
+    /// assert_eq!(arr, vec![2, 0, 0]);
+    /// ```
+    pub fn array_indexer_with_min(k: i64, arity: usize, base: usize, min: usize) -> Result<Vec<i32>, String> {
+        if arity == 0 {
+            return Ok(vec![]);
+        }
+        
+        if base <= min {
+            return Err("base must be greater than min".to_string());
+        }
+        
+        let diff = base - min;
+        let mut stage = 0;
+        let mut sum = 0i64;
+        let mut summand = diff as i64;
+        
+        // Calculate summand for the first stage
+        for _ in 1..arity {
+            summand = summand.saturating_mul(base as i64);
+        }
+        
+        // Find the correct stage
+        while k >= sum + summand {
+            stage += 1;
+            sum = sum.saturating_add(summand);
+            summand = summand.saturating_mul(min as i64) / (base as i64);
+        }
+        
+        array_indexer_with_min_aux(k - sum, arity, base, min, stage, diff)
+    }
+
+    /// Helper function for array_indexer_with_min.
+    fn array_indexer_with_min_aux(k: i64, arity: usize, base: usize, min: usize, stage: usize, diff: usize) -> Result<Vec<i32>, String> {
+        let mut ans = vec![0; arity];
+        let mut k = k;
+        
+        // Fill the first stage positions
+        for i in 0..stage {
+            ans[i] = (k % min as i64) as i32;
+            k = k / min as i64;
+        }
+        
+        // Fill the stage position with min constraint
+        if stage < arity {
+            ans[stage] = (min as i64 + (k % diff as i64)) as i32;
+            k = k / diff as i64;
+        }
+        
+        // Fill the remaining positions
+        for i in (stage + 1)..arity {
+            ans[i] = (k % base as i64) as i32;
+            k = k / base as i64;
+        }
+        
+        Ok(ans)
+    }
+
+    /// Test method for power calculations.
+    /// 
+    /// # Arguments
+    /// * `k` - The input value
+    /// 
+    /// # Returns
+    /// * `String` - The formatted output
+    /// 
+    /// # Examples
+    /// ```
+    /// use uacalc::util::virtuallist::virtuallists::test_pow;
+    /// let result = test_pow(1000000000);
+    /// assert!(result.contains("k = 1000000000"));
+    /// ```
+    pub fn test_pow(k: i64) -> String {
+        let foo = (6.0 * k as f64).powf(1.0 / 3.0);
+        let floor = foo.floor();
+        let ceil = foo.ceil();
+        format!("k = {}, foo = {}, floor = {}", k, foo, floor)
+    }
+
+    /// Helper method for binomial calculations.
+    /// 
+    /// # Arguments
+    /// * `k` - The input value
+    /// * `r` - The parameter
+    /// 
+    /// # Returns
+    /// * `i32` - The calculated result
+    /// 
+    /// # Examples
+    /// ```
+    /// use uacalc::util::virtuallist::virtuallists::foo;
+    /// let result = foo(1000, 5);
+    /// assert!(result > 0);
+    /// ```
+    pub fn foo(k: i64, r: usize) -> i32 {
+        let r_double = r as f64;
+        let one_over_r = 1.0 / r_double;
+        let factorial_r = factorial(r) as f64;
+        let first_try = (factorial_r * k as f64).powf(one_over_r);
+        
+        (first_try + r_double * (r_double - 1.0) / (24.0 * first_try) - (r_double - 1.0) / 2.0).floor() as i32
+    }
+
+    /// Helper method for binomial calculations.
+    /// 
+    /// # Arguments
+    /// * `k` - The input value
+    /// * `r` - The parameter
+    /// 
+    /// # Returns
+    /// * `i32` - The calculated result
+    /// 
+    /// # Examples
+    /// ```
+    /// use uacalc::util::virtuallist::virtuallists::bar;
+    /// let result = bar(1000, 5);
+    /// assert!(result > 0);
+    /// ```
+    pub fn bar(k: i64, r: usize) -> i32 {
+        let one_over_r = 1.0 / (r as f64);
+        let factorial_r = factorial(r) as f64;
+        ((factorial_r * k as f64).powf(one_over_r) - (r - 1) as f64 / 2.0).floor() as i32
+    }
+
+    /// Helper method for binomial calculations.
+    /// 
+    /// # Arguments
+    /// * `k` - The input value
+    /// * `r` - The parameter
+    /// 
+    /// # Returns
+    /// * `i32` - The calculated result
+    /// 
+    /// # Examples
+    /// ```
+    /// use uacalc::util::virtuallist::virtuallists::baz;
+    /// let result = baz(1000, 5);
+    /// assert!(result > 0);
+    /// ```
+    pub fn baz(k: i64, r: usize) -> i32 {
+        let one_over_r = 1.0 / (r as f64);
+        let factorial_r = factorial(r) as f64;
+        let upper = ((factorial_r * k as f64).powf(one_over_r)).floor() as i32;
+        let lower = upper - r as i32;
+        let t = upper - (r as i32) / 2;
+        
+        // Note: In the Java version, this prints debug information
+        // We'll return the result without printing for now
+        t
+    }
+
+    /// Calculate factorial of n.
+    /// 
+    /// # Arguments
+    /// * `n` - The input value
+    /// 
+    /// # Returns
+    /// * `i64` - The factorial of n
+    /// 
+    /// # Examples
+    /// ```
+    /// use uacalc::util::virtuallist::virtuallists::factorial;
+    /// assert_eq!(factorial(5), 120);
+    /// assert_eq!(factorial(0), 1);
+    /// ```
+    pub fn factorial(n: usize) -> i64 {
+        if n < 2 {
+            1
+        } else {
+            n as i64 * factorial(n - 1)
+        }
+    }
+
+    /// Calculate binomial coefficient C(n, r).
+    /// 
+    /// # Arguments
+    /// * `n` - The total number of items
+    /// * `r` - The number of items to choose
+    /// 
+    /// # Returns
+    /// * `i64` - The binomial coefficient
+    /// 
+    /// # Examples
+    /// ```
+    /// use uacalc::util::virtuallist::virtuallists::binomial;
+    /// assert_eq!(binomial(5, 3), 10);
+    /// assert_eq!(binomial(5, 0), 1);
+    /// ```
+    pub fn binomial(n: usize, r: usize) -> i64 {
+        if r > n {
+            return 0;
+        }
+        
+        let r = r.min(n - r); // Use symmetry
+        let mut result = 1i64;
+        for i in 0..r {
+            result = result.saturating_mul((n - i) as i64) / ((i + 1) as i64);
+        }
+        result
+    }
+
+    /// Main test/demo method.
+    /// 
+    /// # Arguments
+    /// * `args` - Command line arguments (unused in this implementation)
+    /// 
+    /// # Returns
+    /// * `String` - Test results
+    /// 
+
+    /// ```
+    pub fn main(args: &[String]) -> String {
+        let mut result = String::new();
+        
+        // Test int_tuples
+        match int_tuples(3, 4) {
+            Ok(tuples) => {
+                result.push_str(&format!("int_tuples(3, 4) size: {}\n", tuples.size()));
+                for i in 0..tuples.size().min(10) {
+                    result.push_str(&format!("  [{}]: {:?}\n", i, tuples.get(i)));
+                }
+            }
+            Err(e) => result.push_str(&format!("int_tuples error: {}\n", e)),
+        }
+        
+        // Test int_tuples_with_min
+        match int_tuples_with_min(3, 4, 2) {
+            Ok(tuples) => {
+                result.push_str(&format!("int_tuples_with_min(3, 4, 2) size: {}\n", tuples.size()));
+                for i in 0..tuples.size().min(10) {
+                    result.push_str(&format!("  [{}]: {:?}\n", i, tuples.get(i)));
+                }
+            }
+            Err(e) => result.push_str(&format!("int_tuples_with_min error: {}\n", e)),
+        }
+        
+        // Test array_indexer_with_min
+        result.push_str("array_indexer_with_min(0, 3, 4, 2): ");
+        match array_indexer_with_min(0, 3, 4, 2) {
+            Ok(arr) => result.push_str(&format!("{:?}\n", arr)),
+            Err(e) => result.push_str(&format!("error: {}\n", e)),
+        }
+        
+        // Test helper methods
+        result.push_str(&format!("test_pow(1000000000): {}\n", test_pow(1000000000)));
+        result.push_str(&format!("foo(1000, 5): {}\n", foo(1000, 5)));
+        result.push_str(&format!("bar(1000, 5): {}\n", bar(1000, 5)));
+        result.push_str(&format!("baz(1000, 5): {}\n", baz(1000, 5)));
+        
+        result.push_str("Test completed successfully\n");
+        result
+    }
+}

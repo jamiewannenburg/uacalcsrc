@@ -39,6 +39,9 @@ public class Equations {
    */
   public static Equation cyclicLaw(OperationSymbol f) {
     int k = f.arity();
+    if (k < 1) {
+      throw new IllegalArgumentException("The arity must be at least 1, got " + k);
+    }
     List<Term> args = new ArrayList<>(k);
     List<Term> args2 = new ArrayList<>(k);
     args.add(new VariableImp("x0"));
@@ -58,6 +61,9 @@ public class Equations {
    */
   public static Equation firstSecondSymmetricLaw(OperationSymbol f) {
     int k = f.arity();
+    if (k < 2) {
+      throw new IllegalArgumentException("The arity must be at least 2, got " + k);
+    }
     List<Term> args = new ArrayList<>(k);
     List<Term> args2 = new ArrayList<>(k);
     Variable x0 = new VariableImp("x0");
