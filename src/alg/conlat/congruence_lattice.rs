@@ -875,6 +875,63 @@ where
         self.meet_irreducibles.as_ref().unwrap()
     }
     
+    /// Get the join irreducible congruences as an OrderedSet.
+    ///
+    /// # Returns
+    /// An OrderedSet containing the join irreducible elements with their order relations
+    pub fn join_irreducibles_po(&mut self) -> Result<crate::lat::ordered_set::OrderedSet<Partition>, String> {
+        let jis = self.join_irreducibles().clone();
+        self.make_ordered_set_from_subset(&jis, "JoinIrreducibles".to_string())
+    }
+    
+    /// Get the meet irreducible congruences as an OrderedSet.
+    ///
+    /// # Returns
+    /// An OrderedSet containing the meet irreducible elements with their order relations
+    pub fn meet_irreducibles_po(&mut self) -> Result<crate::lat::ordered_set::OrderedSet<Partition>, String> {
+        let mis = self.meet_irreducibles().clone();
+        self.make_ordered_set_from_subset(&mis, "MeetIrreducibles".to_string())
+    }
+    
+    /// Create an OrderedSet from a subset of partitions with their order relations.
+    fn make_ordered_set_from_subset(
+        &self,
+        subset: &[Partition],
+        name: String,
+    ) -> Result<crate::lat::ordered_set::OrderedSet<Partition>, String> {
+        use crate::lat::ordered_set::OrderedSet;
+        
+        let mut upper_covers_list: Vec<Vec<Partition>> = Vec::new();
+        
+        for elem1 in subset {
+            let mut covers = Vec::new();
+            
+            // Find all elements that are greater than elem1
+            let mut greater_than: Vec<&Partition> = subset.iter()
+                .filter(|elem2| elem1 != *elem2 && self.leq(elem1, elem2))
+                .collect();
+            
+            // Find minimal elements among those greater than elem1
+            // An element is a cover if it's minimal among the greater elements
+            for candidate in &greater_than {
+                let mut is_minimal = true;
+                for other in &greater_than {
+                    if candidate != other && self.leq(other, candidate) {
+                        is_minimal = false;
+                        break;
+                    }
+                }
+                if is_minimal {
+                    covers.push((*candidate).clone());
+                }
+            }
+            
+            upper_covers_list.push(covers);
+        }
+        
+        OrderedSet::new(Some(name), subset.to_vec(), upper_covers_list)
+    }
+    
     /// Check if a partition is meet irreducible.
     pub fn meet_irreducible(&mut self, part: &Partition) -> bool {
         if self.upper_covers_map.is_none() {

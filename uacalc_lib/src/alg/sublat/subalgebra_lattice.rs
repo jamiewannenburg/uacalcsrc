@@ -130,6 +130,34 @@ impl PySubalgebraLattice {
         mis.iter().map(|bs| PyBasicSet::from_inner(bs.clone())).collect()
     }
 
+    /// Get the join irreducibles as an OrderedSet.
+    ///
+    /// Returns:
+    ///     OrderedSetBasicSet: An OrderedSet containing the join irreducible elements with their order relations
+    fn join_irreducibles_po(&self) -> PyResult<crate::lat::PyOrderedSetBasicSet> {
+        let mut inner = self.inner.borrow_mut();
+        match inner.join_irreducibles_po() {
+            Ok(ordered_set) => Ok(crate::lat::PyOrderedSetBasicSet {
+                inner: std::sync::Arc::new(std::sync::Mutex::new(ordered_set)),
+            }),
+            Err(e) => Err(pyo3::exceptions::PyRuntimeError::new_err(format!("Failed to create OrderedSet: {}", e))),
+        }
+    }
+
+    /// Get the meet irreducibles as an OrderedSet.
+    ///
+    /// Returns:
+    ///     OrderedSetBasicSet: An OrderedSet containing the meet irreducible elements with their order relations
+    fn meet_irreducibles_po(&self) -> PyResult<crate::lat::PyOrderedSetBasicSet> {
+        let mut inner = self.inner.borrow_mut();
+        match inner.meet_irreducibles_po() {
+            Ok(ordered_set) => Ok(crate::lat::PyOrderedSetBasicSet {
+                inner: std::sync::Arc::new(std::sync::Mutex::new(ordered_set)),
+            }),
+            Err(e) => Err(pyo3::exceptions::PyRuntimeError::new_err(format!("Failed to create OrderedSet: {}", e))),
+        }
+    }
+
     /// Compute the join of two subalgebras.
     ///
     /// Args:

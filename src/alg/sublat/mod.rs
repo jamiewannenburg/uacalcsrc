@@ -1211,6 +1211,64 @@ where
         self.meet_irreducibles = Some(Vec::new());
     }
     
+    /// Get the join irreducible subalgebras as an OrderedSet.
+    ///
+    /// # Returns
+    /// An OrderedSet containing the join irreducible elements with their order relations
+    pub fn join_irreducibles_po(&mut self) -> Result<crate::lat::ordered_set::OrderedSet<BasicSet>, String> {
+        let jis = self.join_irreducibles_mut().clone();
+        self.make_ordered_set_from_subset(&jis, "JoinIrreducibles".to_string())
+    }
+    
+    /// Get the meet irreducible subalgebras as an OrderedSet.
+    ///
+    /// # Returns
+    /// An OrderedSet containing the meet irreducible elements with their order relations
+    pub fn meet_irreducibles_po(&mut self) -> Result<crate::lat::ordered_set::OrderedSet<BasicSet>, String> {
+        let mis = self.meet_irreducibles_mut().clone();
+        self.make_ordered_set_from_subset(&mis, "MeetIrreducibles".to_string())
+    }
+    
+    /// Create an OrderedSet from a subset of BasicSets with their order relations.
+    fn make_ordered_set_from_subset(
+        &self,
+        subset: &[BasicSet],
+        name: String,
+    ) -> Result<crate::lat::ordered_set::OrderedSet<BasicSet>, String> {
+        use crate::lat::ordered_set::OrderedSet;
+        use crate::lat::Order;
+        
+        let mut upper_covers_list: Vec<Vec<BasicSet>> = Vec::new();
+        
+        for elem1 in subset {
+            let mut covers = Vec::new();
+            
+            // Find all elements that are greater than elem1
+            let mut greater_than: Vec<&BasicSet> = subset.iter()
+                .filter(|elem2| elem1 != *elem2 && Order::leq(self, elem1, elem2))
+                .collect();
+            
+            // Find minimal elements among those greater than elem1
+            // An element is a cover if it's minimal among the greater elements
+            for candidate in &greater_than {
+                let mut is_minimal = true;
+                for other in &greater_than {
+                    if candidate != other && Order::leq(self, other, candidate) {
+                        is_minimal = false;
+                        break;
+                    }
+                }
+                if is_minimal {
+                    covers.push((*candidate).clone());
+                }
+            }
+            
+            upper_covers_list.push(covers);
+        }
+        
+        OrderedSet::new(Some(name), subset.to_vec(), upper_covers_list)
+    }
+    
     /// Compute the join of two subalgebras.
     /// 
     /// # Arguments

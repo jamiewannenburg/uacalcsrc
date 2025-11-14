@@ -108,6 +108,26 @@ impl PyCongruenceLattice {
         mis.iter().map(|p| PyPartition { inner: p.clone() }).collect()
     }
 
+    fn join_irreducibles_po(&mut self) -> PyResult<crate::lat::PyOrderedSetPartition> {
+        use uacalc::alg::conlat::CongruenceLattice;
+        match CongruenceLattice::join_irreducibles_po(&mut self.inner) {
+            Ok(ordered_set) => Ok(crate::lat::PyOrderedSetPartition {
+                inner: std::sync::Arc::new(std::sync::Mutex::new(ordered_set)),
+            }),
+            Err(e) => Err(PyRuntimeError::new_err(format!("Failed to create OrderedSet: {}", e))),
+        }
+    }
+
+    fn meet_irreducibles_po(&mut self) -> PyResult<crate::lat::PyOrderedSetPartition> {
+        use uacalc::alg::conlat::CongruenceLattice;
+        match CongruenceLattice::meet_irreducibles_po(&mut self.inner) {
+            Ok(ordered_set) => Ok(crate::lat::PyOrderedSetPartition {
+                inner: std::sync::Arc::new(std::sync::Mutex::new(ordered_set)),
+            }),
+            Err(e) => Err(PyRuntimeError::new_err(format!("Failed to create OrderedSet: {}", e))),
+        }
+    }
+
     fn universe(&mut self) -> Vec<PyPartition> {
         use uacalc::alg::conlat::CongruenceLattice;
         let univ: &Vec<uacalc::alg::conlat::partition::Partition> = CongruenceLattice::universe(&mut self.inner);
@@ -304,6 +324,26 @@ impl PyCongruenceLatticeIntArray {
         use uacalc::alg::conlat::CongruenceLattice;
         let mis: &Vec<uacalc::alg::conlat::partition::Partition> = CongruenceLattice::meet_irreducibles(&mut self.inner);
         mis.iter().map(|p| PyPartition { inner: p.clone() }).collect()
+    }
+
+    fn join_irreducibles_po(&mut self) -> PyResult<crate::lat::PyOrderedSetPartition> {
+        use uacalc::alg::conlat::CongruenceLattice;
+        match CongruenceLattice::join_irreducibles_po(&mut self.inner) {
+            Ok(ordered_set) => Ok(crate::lat::PyOrderedSetPartition {
+                inner: std::sync::Arc::new(std::sync::Mutex::new(ordered_set)),
+            }),
+            Err(e) => Err(PyRuntimeError::new_err(format!("Failed to create OrderedSet: {}", e))),
+        }
+    }
+
+    fn meet_irreducibles_po(&mut self) -> PyResult<crate::lat::PyOrderedSetPartition> {
+        use uacalc::alg::conlat::CongruenceLattice;
+        match CongruenceLattice::meet_irreducibles_po(&mut self.inner) {
+            Ok(ordered_set) => Ok(crate::lat::PyOrderedSetPartition {
+                inner: std::sync::Arc::new(std::sync::Mutex::new(ordered_set)),
+            }),
+            Err(e) => Err(PyRuntimeError::new_err(format!("Failed to create OrderedSet: {}", e))),
+        }
     }
 
     fn universe(&mut self) -> Vec<PyPartition> {

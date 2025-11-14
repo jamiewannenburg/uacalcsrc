@@ -370,6 +370,26 @@ pub struct PyMeetLattice {
 
 #[pymethods]
 impl PyMeetLattice {
+    /// Create a new MeetLattice from a name, universe, and filters.
+    ///
+    /// Args:
+    ///     name: Name for the lattice
+    ///     universe: List of integers representing the universe
+    ///     filters: List of lists, where filters[i] contains elements in the filter of universe[i]
+    ///
+    /// Returns:
+    ///     MeetLattice: A new MeetLattice instance
+    ///
+    /// Raises:
+    ///     ValueError: If universe and filters have different lengths
+    #[new]
+    fn new(name: String, universe: Vec<i32>, filters: Vec<Vec<i32>>) -> PyResult<Self> {
+        match uacalc::lat::lattices::MeetLattice::new(name, universe, filters) {
+            Ok(inner) => Ok(PyMeetLattice { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
     /// Get the name of this lattice
     fn name(&self) -> &str {
         self.inner.name()
@@ -389,7 +409,27 @@ impl PyMeetLattice {
     fn meet_irreducibles(&self) -> Vec<i32> {
         self.inner.meet_irreducibles()
     }
-    
+
+    /// Get join irreducibles as an OrderedSet
+    fn join_irreducibles_po(&self) -> PyResult<PyOrderedSet> {
+        match self.inner.join_irreducibles_po() {
+            Ok(ordered_set) => Ok(PyOrderedSet {
+                inner: std::sync::Arc::new(std::sync::Mutex::new(ordered_set)),
+            }),
+            Err(e) => Err(PyValueError::new_err(format!("Failed to create OrderedSet: {}", e))),
+        }
+    }
+
+    /// Get meet irreducibles as an OrderedSet
+    fn meet_irreducibles_po(&self) -> PyResult<PyOrderedSet> {
+        match self.inner.meet_irreducibles_po() {
+            Ok(ordered_set) => Ok(PyOrderedSet {
+                inner: std::sync::Arc::new(std::sync::Mutex::new(ordered_set)),
+            }),
+            Err(e) => Err(PyValueError::new_err(format!("Failed to create OrderedSet: {}", e))),
+        }
+    }
+
     /// Get atoms of this lattice
     fn atoms(&self) -> Vec<i32> {
         self.inner.atoms()
@@ -444,6 +484,26 @@ pub struct PyJoinLattice {
 
 #[pymethods]
 impl PyJoinLattice {
+    /// Create a new JoinLattice from a name, universe, and filters.
+    ///
+    /// Args:
+    ///     name: Name for the lattice
+    ///     universe: List of integers representing the universe
+    ///     filters: List of lists, where filters[i] contains elements in the filter of universe[i]
+    ///
+    /// Returns:
+    ///     JoinLattice: A new JoinLattice instance
+    ///
+    /// Raises:
+    ///     ValueError: If universe and filters have different lengths
+    #[new]
+    fn new(name: String, universe: Vec<i32>, filters: Vec<Vec<i32>>) -> PyResult<Self> {
+        match uacalc::lat::lattices::JoinLattice::new(name, universe, filters) {
+            Ok(inner) => Ok(PyJoinLattice { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+    
     /// Get the name of this lattice
     fn name(&self) -> &str {
         self.inner.name()
@@ -463,7 +523,27 @@ impl PyJoinLattice {
     fn meet_irreducibles(&self) -> Vec<i32> {
         self.inner.meet_irreducibles()
     }
-    
+
+    /// Get join irreducibles as an OrderedSet
+    fn join_irreducibles_po(&self) -> PyResult<PyOrderedSet> {
+        match self.inner.join_irreducibles_po() {
+            Ok(ordered_set) => Ok(PyOrderedSet {
+                inner: std::sync::Arc::new(std::sync::Mutex::new(ordered_set)),
+            }),
+            Err(e) => Err(PyValueError::new_err(format!("Failed to create OrderedSet: {}", e))),
+        }
+    }
+
+    /// Get meet irreducibles as an OrderedSet
+    fn meet_irreducibles_po(&self) -> PyResult<PyOrderedSet> {
+        match self.inner.meet_irreducibles_po() {
+            Ok(ordered_set) => Ok(PyOrderedSet {
+                inner: std::sync::Arc::new(std::sync::Mutex::new(ordered_set)),
+            }),
+            Err(e) => Err(PyValueError::new_err(format!("Failed to create OrderedSet: {}", e))),
+        }
+    }
+
     /// Get atoms of this lattice
     fn atoms(&self) -> Vec<i32> {
         self.inner.atoms()
@@ -894,6 +974,112 @@ impl PyOrderedSet {
     }
 }
 
+/// Python wrapper for OrderedSet<Partition>
+#[pyclass]
+pub struct PyOrderedSetPartition {
+    pub(crate) inner: std::sync::Arc<std::sync::Mutex<uacalc::lat::ordered_set::OrderedSet<uacalc::alg::conlat::partition::Partition>>>,
+}
+
+#[pymethods]
+impl PyOrderedSetPartition {
+    /// Get the name of this poset.
+    fn name(&self) -> Option<String> {
+        self.inner.lock().unwrap().name().map(|s| s.to_string())
+    }
+    
+    /// Get the cardinality (number of elements) of this poset.
+    fn cardinality(&self) -> usize {
+        self.inner.lock().unwrap().univ().len()
+    }
+    
+    /// Get the universe as a list of Partitions.
+    fn universe(&self) -> Vec<crate::alg::conlat::partition::PyPartition> {
+        let poset = self.inner.lock().unwrap();
+        poset.univ()
+            .iter()
+            .map(|elem| crate::alg::conlat::partition::PyPartition { inner: elem.get_underlying_object().clone() })
+            .collect()
+    }
+    
+    /// Check if a ≤ b in this poset.
+    fn leq(&self, a: &crate::alg::conlat::partition::PyPartition, b: &crate::alg::conlat::partition::PyPartition) -> PyResult<bool> {
+        let poset = self.inner.lock().unwrap();
+        let univ = poset.univ();
+        
+        let elem_a = univ.iter().find(|e| e.get_underlying_object() == &a.inner);
+        let elem_b = univ.iter().find(|e| e.get_underlying_object() == &b.inner);
+        
+        match (elem_a, elem_b) {
+            (Some(a_elem), Some(b_elem)) => Ok(poset.leq(a_elem, b_elem)),
+            _ => Err(PyValueError::new_err("Elements not found in universe")),
+        }
+    }
+    
+    /// Python string representation
+    fn __str__(&self) -> String {
+        let name = self.name().unwrap_or_else(|| "Unnamed".to_string());
+        format!("OrderedSet({}, {} elements)", name, self.cardinality())
+    }
+    
+    /// Python repr representation
+    fn __repr__(&self) -> String {
+        format!("OrderedSetPartition({} elements)", self.cardinality())
+    }
+}
+
+/// Python wrapper for OrderedSet<BasicSet>
+#[pyclass]
+pub struct PyOrderedSetBasicSet {
+    pub(crate) inner: std::sync::Arc<std::sync::Mutex<uacalc::lat::ordered_set::OrderedSet<uacalc::alg::sublat::BasicSet>>>,
+}
+
+#[pymethods]
+impl PyOrderedSetBasicSet {
+    /// Get the name of this poset.
+    fn name(&self) -> Option<String> {
+        self.inner.lock().unwrap().name().map(|s| s.to_string())
+    }
+    
+    /// Get the cardinality (number of elements) of this poset.
+    fn cardinality(&self) -> usize {
+        self.inner.lock().unwrap().univ().len()
+    }
+    
+    /// Get the universe as a list of BasicSets.
+    fn universe(&self) -> Vec<crate::alg::sublat::basic_set::PyBasicSet> {
+        let poset = self.inner.lock().unwrap();
+        poset.univ()
+            .iter()
+            .map(|elem| crate::alg::sublat::basic_set::PyBasicSet::from_inner(elem.get_underlying_object().clone()))
+            .collect()
+    }
+    
+    /// Check if a ≤ b in this poset.
+    fn leq(&self, a: &crate::alg::sublat::basic_set::PyBasicSet, b: &crate::alg::sublat::basic_set::PyBasicSet) -> PyResult<bool> {
+        let poset = self.inner.lock().unwrap();
+        let univ = poset.univ();
+        
+        let elem_a = univ.iter().find(|e| e.get_underlying_object() == a.get_inner());
+        let elem_b = univ.iter().find(|e| e.get_underlying_object() == b.get_inner());
+        
+        match (elem_a, elem_b) {
+            (Some(a_elem), Some(b_elem)) => Ok(poset.leq(a_elem, b_elem)),
+            _ => Err(PyValueError::new_err("Elements not found in universe")),
+        }
+    }
+    
+    /// Python string representation
+    fn __str__(&self) -> String {
+        let name = self.name().unwrap_or_else(|| "Unnamed".to_string());
+        format!("OrderedSet({}, {} elements)", name, self.cardinality())
+    }
+    
+    /// Python repr representation
+    fn __repr__(&self) -> String {
+        format!("OrderedSetBasicSet({} elements)", self.cardinality())
+    }
+}
+
 pub fn register_lat_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     // Register classes internally but only export clean names
     m.add_class::<PyDivisibilityOrder>()?;
@@ -906,6 +1092,8 @@ pub fn register_lat_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     m.add_class::<PyBasicLattice>()?;
     m.add_class::<PyLatticeGraphData>()?;
     m.add_class::<PyOrderedSet>()?;
+    m.add_class::<PyOrderedSetPartition>()?;
+    m.add_class::<PyOrderedSetBasicSet>()?;
     
     // Export only clean names (without Py prefix)
     m.add("DivisibilityOrder", m.getattr("PyDivisibilityOrder")?)?;
@@ -943,6 +1131,8 @@ pub fn register_lat_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     m.add("BasicLattice", m.getattr("PyBasicLattice")?)?;
     m.add("LatticeGraphData", m.getattr("PyLatticeGraphData")?)?;
     m.add("OrderedSet", m.getattr("PyOrderedSet")?)?;
+    m.add("OrderedSetPartition", m.getattr("PyOrderedSetPartition")?)?;
+    m.add("OrderedSetBasicSet", m.getattr("PyOrderedSetBasicSet")?)?;
     
     // Remove the Py* names from the module to avoid confusion
     let module_dict = m.dict();
@@ -956,6 +1146,8 @@ pub fn register_lat_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     module_dict.del_item("PyBasicLattice")?;
     module_dict.del_item("PyLatticeGraphData")?;
     module_dict.del_item("PyOrderedSet")?;
+    module_dict.del_item("PyOrderedSetPartition")?;
+    module_dict.del_item("PyOrderedSetBasicSet")?;
     
     // Remove the py_* function names from the module to avoid confusion
     module_dict.del_item("py_lattice_from_meet")?;

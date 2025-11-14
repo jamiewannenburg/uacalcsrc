@@ -343,7 +343,7 @@ pub mod lattices {
     }
     
     impl MeetLattice {
-        fn new(name: String, universe: Vec<i32>, filters: Vec<Vec<i32>>) -> Result<Self, String> {
+        pub fn new(name: String, universe: Vec<i32>, filters: Vec<Vec<i32>>) -> Result<Self, String> {
             if universe.len() != filters.len() {
                 return Err("Universe and filters must have the same length".to_string());
             }
@@ -384,6 +384,58 @@ pub mod lattices {
         pub fn meet_irreducibles(&self) -> Vec<i32> {
             // For now, return all elements as meet irreducibles
             self.universe.clone()
+        }
+        
+        /// Get join irreducibles as an OrderedSet.
+        pub fn join_irreducibles_po(&self) -> Result<crate::lat::ordered_set::OrderedSet<i32>, String> {
+            let jis = self.join_irreducibles();
+            self.make_ordered_set_from_subset(&jis, "JoinIrreducibles".to_string())
+        }
+        
+        /// Get meet irreducibles as an OrderedSet.
+        pub fn meet_irreducibles_po(&self) -> Result<crate::lat::ordered_set::OrderedSet<i32>, String> {
+            let mis = self.meet_irreducibles();
+            self.make_ordered_set_from_subset(&mis, "MeetIrreducibles".to_string())
+        }
+        
+        /// Create an OrderedSet from a subset of elements with their order relations.
+        fn make_ordered_set_from_subset(
+            &self,
+            subset: &[i32],
+            name: String,
+        ) -> Result<crate::lat::ordered_set::OrderedSet<i32>, String> {
+            use crate::lat::ordered_set::OrderedSet;
+            
+            let mut upper_covers_list: Vec<Vec<i32>> = Vec::new();
+            
+            for &elem1 in subset {
+                let mut covers = Vec::new();
+                
+                // Find all elements that are greater than elem1
+                let mut greater_than: Vec<i32> = subset.iter()
+                    .filter(|&&elem2| elem1 != elem2 && self.leq(&elem1, &elem2))
+                    .copied()
+                    .collect();
+                
+                // Find minimal elements among those greater than elem1
+                // An element is a cover if it's minimal among the greater elements
+                for &candidate in &greater_than {
+                    let mut is_minimal = true;
+                    for &other in &greater_than {
+                        if candidate != other && self.leq(&other, &candidate) {
+                            is_minimal = false;
+                            break;
+                        }
+                    }
+                    if is_minimal {
+                        covers.push(candidate);
+                    }
+                }
+                
+                upper_covers_list.push(covers);
+            }
+            
+            OrderedSet::new(Some(name), subset.to_vec(), upper_covers_list)
         }
         
         /// Get atoms of this lattice.
@@ -492,7 +544,7 @@ pub mod lattices {
     }
     
     impl JoinLattice {
-        fn new(name: String, universe: Vec<i32>, filters: Vec<Vec<i32>>) -> Result<Self, String> {
+        pub fn new(name: String, universe: Vec<i32>, filters: Vec<Vec<i32>>) -> Result<Self, String> {
             if universe.len() != filters.len() {
                 return Err("Universe and filters must have the same length".to_string());
             }
@@ -533,6 +585,58 @@ pub mod lattices {
         pub fn meet_irreducibles(&self) -> Vec<i32> {
             // For now, return all elements as meet irreducibles
             self.universe.clone()
+        }
+        
+        /// Get join irreducibles as an OrderedSet.
+        pub fn join_irreducibles_po(&self) -> Result<crate::lat::ordered_set::OrderedSet<i32>, String> {
+            let jis = self.join_irreducibles();
+            self.make_ordered_set_from_subset(&jis, "JoinIrreducibles".to_string())
+        }
+        
+        /// Get meet irreducibles as an OrderedSet.
+        pub fn meet_irreducibles_po(&self) -> Result<crate::lat::ordered_set::OrderedSet<i32>, String> {
+            let mis = self.meet_irreducibles();
+            self.make_ordered_set_from_subset(&mis, "MeetIrreducibles".to_string())
+        }
+        
+        /// Create an OrderedSet from a subset of elements with their order relations.
+        fn make_ordered_set_from_subset(
+            &self,
+            subset: &[i32],
+            name: String,
+        ) -> Result<crate::lat::ordered_set::OrderedSet<i32>, String> {
+            use crate::lat::ordered_set::OrderedSet;
+            
+            let mut upper_covers_list: Vec<Vec<i32>> = Vec::new();
+            
+            for &elem1 in subset {
+                let mut covers = Vec::new();
+                
+                // Find all elements that are greater than elem1
+                let mut greater_than: Vec<i32> = subset.iter()
+                    .filter(|&&elem2| elem1 != elem2 && self.leq(&elem1, &elem2))
+                    .copied()
+                    .collect();
+                
+                // Find minimal elements among those greater than elem1
+                // An element is a cover if it's minimal among the greater elements
+                for &candidate in &greater_than {
+                    let mut is_minimal = true;
+                    for &other in &greater_than {
+                        if candidate != other && self.leq(&other, &candidate) {
+                            is_minimal = false;
+                            break;
+                        }
+                    }
+                    if is_minimal {
+                        covers.push(candidate);
+                    }
+                }
+                
+                upper_covers_list.push(covers);
+            }
+            
+            OrderedSet::new(Some(name), subset.to_vec(), upper_covers_list)
         }
         
         /// Get atoms of this lattice.
