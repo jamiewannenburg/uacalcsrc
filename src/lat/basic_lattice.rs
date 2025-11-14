@@ -318,7 +318,6 @@ where
         // Find least upper bound
         let a_idx = self.poset.elem_order(a).unwrap_or(0);
         let b_idx = self.poset.elem_order(b).unwrap_or(0);
-        let min_idx = a_idx.min(b_idx);
         let max_idx = a_idx.max(b_idx);
         
         // Search from max_idx upward
@@ -350,7 +349,6 @@ where
         let a_idx = self.poset.elem_order(a).unwrap_or(0);
         let b_idx = self.poset.elem_order(b).unwrap_or(0);
         let min_idx = a_idx.min(b_idx);
-        let max_idx = a_idx.max(b_idx);
         
         // Search from min_idx downward
         for i in (0..=min_idx).rev() {
@@ -420,31 +418,7 @@ where
 
     /// Convert to graph data for visualization.
     pub fn to_graph_data(&self) -> LatticeGraphData {
-        let mut graph = LatticeGraphData::new();
-        
-        // Add nodes
-        for (idx, elem) in self.univ_list.iter().enumerate() {
-            let label = elem.to_string();
-            graph.add_node(idx, label.clone(), label);
-        }
-        
-        // Add edges (from upper covers)
-        for (idx, elem) in self.univ_list.iter().enumerate() {
-            for upper_cover in self.poset.get_upper_covers(elem) {
-                if let Some(cover_idx) = self.poset.elem_order(&upper_cover) {
-                    // Check for TCT label
-                    let edge_label = if let Some(ref tct_map) = self.tct_type_map {
-                        let edge = Edge::new(elem.to_string(), upper_cover.to_string());
-                        tct_map.get(&edge).cloned()
-                    } else {
-                        None
-                    };
-                    graph.add_edge(idx, cover_idx, edge_label);
-                }
-            }
-        }
-        
-        graph
+        self.poset.to_graph_data(self.tct_type_map.as_ref())
     }
 
     /// Get element index.
@@ -795,7 +769,6 @@ where
         let b = &self.univ_list[i1];
         
         // Find least upper bound
-        let min_idx = i0.min(i1);
         let max_idx = i0.max(i1);
         
         for i in max_idx..self.univ_list.len() {

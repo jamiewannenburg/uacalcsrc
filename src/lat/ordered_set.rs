@@ -9,6 +9,7 @@ use std::collections::{HashMap, HashSet};
 use std::fmt::{self, Display, Debug};
 use std::hash::{Hash, Hasher};
 use std::sync::Arc;
+use crate::lat::graph_data::LatticeGraphData;
 
 /// A partially ordered set (poset) structure.
 ///
@@ -69,7 +70,6 @@ where
     /// Get lower covers (elements directly covered by this element).
     /// Note: This requires the poset to be passed in.
     pub fn lower_covers(&self, poset: &OrderedSet<T>) -> Vec<Arc<POElem<T>>> {
-        let self_arc = Arc::new(self.clone());
         let mut lower = Vec::new();
         for (elem, uppers) in &poset.upper_covers {
             if uppers.iter().any(|u| *u.get_underlying_object() == self.underlying_object) {
@@ -423,6 +423,41 @@ where
             }
         }
         lower
+    }
+
+    /// Convert to graph data for visualization.
+    ///
+    /// # Arguments
+    /// * `edge_labels` - Optional map from edges to labels (e.g., for TCT type labeling)
+    ///
+    /// # Returns
+    /// A `LatticeGraphData` structure containing nodes and edges for visualization
+    pub fn to_graph_data(&self, edge_labels: Option<&HashMap<Edge, String>>) -> LatticeGraphData {
+        let mut graph = LatticeGraphData::new();
+        
+        // Add nodes
+        for (idx, elem) in self.universe.iter().enumerate() {
+            let label = elem.to_string();
+            graph.add_node(idx, label.clone(), label);
+        }
+        
+        // Add edges (from upper covers)
+        for (idx, elem) in self.universe.iter().enumerate() {
+            for upper_cover in self.get_upper_covers(elem) {
+                if let Some(cover_idx) = self.elem_order(&upper_cover) {
+                    // Check for edge label
+                    let edge_label = if let Some(labels) = edge_labels {
+                        let edge = Edge::new(elem.to_string(), upper_cover.to_string());
+                        labels.get(&edge).cloned()
+                    } else {
+                        None
+                    };
+                    graph.add_edge(idx, cover_idx, edge_label);
+                }
+            }
+        }
+        
+        graph
     }
 }
 

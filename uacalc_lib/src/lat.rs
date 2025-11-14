@@ -1,8 +1,9 @@
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
-use pyo3::types::PyDict;
+use pyo3::types::{PyDict, PyList};
 use uacalc::lat::*;
 use uacalc::alg::algebra::Algebra;
+use std::sync::Arc;
 
 /// Internal enum to hold either type of BasicLattice
 /// Made public(crate) so it can be used in other modules
@@ -728,6 +729,171 @@ impl PyBasicLattice {
     }
 }
 
+/// Python wrapper for OrderedSet<i32>
+/// This provides Python bindings for creating and manipulating partially ordered sets
+#[pyclass]
+pub struct PyOrderedSet {
+    inner: std::sync::Arc<std::sync::Mutex<uacalc::lat::ordered_set::OrderedSet<i32>>>,
+}
+
+#[pymethods]
+impl PyOrderedSet {
+    /// Create a new OrderedSet from a universe and upper covers.
+    ///
+    /// Args:
+    ///     name: Optional name for the poset
+    ///     universe: List of integers representing the universe
+    ///     upper_covers: List of lists, where upper_covers[i] contains elements that directly cover universe[i]
+    ///
+    /// Returns:
+    ///     OrderedSet: A new OrderedSet instance
+    ///
+    /// Raises:
+    ///     ValueError: If the poset structure is invalid
+    #[new]
+    #[pyo3(signature = (universe, upper_covers, *, name=None))]
+    fn new(universe: Vec<i32>, upper_covers: Vec<Vec<i32>>, name: Option<String>) -> PyResult<Self> {
+        match uacalc::lat::ordered_set::OrderedSet::new(name, universe, upper_covers) {
+            Ok(poset) => Ok(PyOrderedSet {
+                inner: std::sync::Arc::new(std::sync::Mutex::new(poset)),
+            }),
+            Err(e) => Err(PyValueError::new_err(format!("Failed to create OrderedSet: {}", e))),
+        }
+    }
+    
+    /// Get the name of this poset.
+    fn name(&self) -> Option<String> {
+        self.inner.lock().unwrap().name().map(|s| s.to_string())
+    }
+    
+    /// Get the cardinality (number of elements) of this poset.
+    fn cardinality(&self) -> usize {
+        self.inner.lock().unwrap().univ().len()
+    }
+    
+    /// Get the universe as a list of integers.
+    fn universe(&self) -> Vec<i32> {
+        let poset = self.inner.lock().unwrap();
+        poset.univ()
+            .iter()
+            .map(|elem| *elem.get_underlying_object())
+            .collect()
+    }
+    
+    /// Check if a ≤ b in this poset.
+    ///
+    /// Args:
+    ///     a: First element (integer)
+    ///     b: Second element (integer)
+    ///
+    /// Returns:
+    ///     bool: True if a ≤ b, False otherwise
+    fn leq(&self, a: i32, b: i32) -> PyResult<bool> {
+        let poset = self.inner.lock().unwrap();
+        let univ = poset.univ();
+        
+        let elem_a = univ.iter().find(|e| *e.get_underlying_object() == a);
+        let elem_b = univ.iter().find(|e| *e.get_underlying_object() == b);
+        
+        match (elem_a, elem_b) {
+            (Some(a_elem), Some(b_elem)) => Ok(poset.leq(a_elem, b_elem)),
+            _ => Err(PyValueError::new_err(format!("Elements {} or {} not found in universe", a, b))),
+        }
+    }
+    
+    /// Get upper covers (elements that directly cover the given element).
+    ///
+    /// Args:
+    ///     element: The element to get upper covers for
+    ///
+    /// Returns:
+    ///     List[int]: List of elements that directly cover the given element
+    fn get_upper_covers(&self, element: i32) -> PyResult<Vec<i32>> {
+        let poset = self.inner.lock().unwrap();
+        let univ = poset.univ();
+        
+        let elem = univ.iter()
+            .find(|e| *e.get_underlying_object() == element)
+            .ok_or_else(|| PyValueError::new_err(format!("Element {} not found in universe", element)))?;
+        
+        let covers = poset.get_upper_covers(elem);
+        Ok(covers.iter()
+            .map(|e| *e.get_underlying_object())
+            .collect())
+    }
+    
+    /// Get lower covers (elements directly covered by the given element).
+    ///
+    /// Args:
+    ///     element: The element to get lower covers for
+    ///
+    /// Returns:
+    ///     List[int]: List of elements directly covered by the given element
+    fn get_lower_covers(&self, element: i32) -> PyResult<Vec<i32>> {
+        let poset = self.inner.lock().unwrap();
+        let univ = poset.univ();
+        
+        let elem = univ.iter()
+            .find(|e| *e.get_underlying_object() == element)
+            .ok_or_else(|| PyValueError::new_err(format!("Element {} not found in universe", element)))?;
+        
+        let covers = poset.get_lower_covers(elem);
+        Ok(covers.iter()
+            .map(|e| *e.get_underlying_object())
+            .collect())
+    }
+    
+    /// Convert to graph data for visualization.
+    ///
+    /// Args:
+    ///     edge_labels: Optional dictionary mapping (source, target) tuples to edge labels
+    ///
+    /// Returns:
+    ///     LatticeGraphData: Graph data structure for visualization
+    fn to_graph_data(&self, edge_labels: Option<&Bound<'_, PyDict>>) -> PyResult<PyLatticeGraphData> {
+        use uacalc::lat::ordered_set::Edge;
+        use std::collections::HashMap;
+        
+        let poset = self.inner.lock().unwrap();
+        
+        // Convert Python dict to Rust HashMap if provided
+        let edge_labels_map: Option<HashMap<Edge, String>> = if let Some(labels) = edge_labels {
+            let mut map = HashMap::new();
+            for (key, value) in labels.iter() {
+                if let Ok(tuple) = key.extract::<(String, String)>() {
+                    if let Ok(label) = value.extract::<String>() {
+                        map.insert(Edge::new(tuple.0, tuple.1), label);
+                    }
+                }
+            }
+            Some(map)
+        } else {
+            None
+        };
+        
+        let graph_data = poset.to_graph_data(edge_labels_map.as_ref());
+        Ok(PyLatticeGraphData { inner: graph_data })
+    }
+    
+    /// Convert to NetworkX DiGraph if networkx is available
+    fn to_networkx(&self, py: Python, edge_labels: Option<&Bound<'_, PyDict>>) -> PyResult<PyObject> {
+        let graph_data = self.to_graph_data(edge_labels)?;
+        graph_data.to_networkx(py)
+    }
+    
+    /// Python string representation
+    fn __str__(&self) -> String {
+        let name = self.name().unwrap_or_else(|| "Unnamed".to_string());
+        format!("OrderedSet({}, {} elements)", name, self.cardinality())
+    }
+    
+    /// Python repr representation
+    fn __repr__(&self) -> String {
+        let name = self.name().map(|n| format!("name={:?}, ", n)).unwrap_or_default();
+        format!("OrderedSet({}universe={:?})", name, self.universe())
+    }
+}
+
 pub fn register_lat_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     // Register classes internally but only export clean names
     m.add_class::<PyDivisibilityOrder>()?;
@@ -739,6 +905,7 @@ pub fn register_lat_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     m.add_class::<PyJoinLattice>()?;
     m.add_class::<PyBasicLattice>()?;
     m.add_class::<PyLatticeGraphData>()?;
+    m.add_class::<PyOrderedSet>()?;
     
     // Export only clean names (without Py prefix)
     m.add("DivisibilityOrder", m.getattr("PyDivisibilityOrder")?)?;
@@ -775,6 +942,7 @@ pub fn register_lat_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     // Export clean names for new classes
     m.add("BasicLattice", m.getattr("PyBasicLattice")?)?;
     m.add("LatticeGraphData", m.getattr("PyLatticeGraphData")?)?;
+    m.add("OrderedSet", m.getattr("PyOrderedSet")?)?;
     
     // Remove the Py* names from the module to avoid confusion
     let module_dict = m.dict();
@@ -787,6 +955,7 @@ pub fn register_lat_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     module_dict.del_item("PyJoinLattice")?;
     module_dict.del_item("PyBasicLattice")?;
     module_dict.del_item("PyLatticeGraphData")?;
+    module_dict.del_item("PyOrderedSet")?;
     
     // Remove the py_* function names from the module to avoid confusion
     module_dict.del_item("py_lattice_from_meet")?;
