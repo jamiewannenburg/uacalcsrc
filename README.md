@@ -39,9 +39,11 @@ The documentation is automatically generated from Rust doc comments and includes
 
 Documentation is built automatically on each push to the main branch and deployed to GitHub Pages.
 
-   cargo doc --no-deps --all-features
-   cd uacalc_lib
-   cargo doc --no-deps --all-features
+```bash
+cargo doc --no-deps --all-features
+cd uacalc_lib
+cargo doc --no-deps --all-features
+```
 
 ------------------
 
