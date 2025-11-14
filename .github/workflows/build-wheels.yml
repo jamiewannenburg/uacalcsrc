@@ -132,6 +132,8 @@ jobs:
             -w /io \
             quay.io/pypa/manylinux2014_x86_64:latest \
             /bin/bash -c " \
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && \
+            source \$HOME/.cargo/env && \
             /opt/python/cp${PY_VER}-cp${PY_VER}/bin/pip install maturin && \
             /opt/python/cp${PY_VER}-cp${PY_VER}/bin/maturin build \
               --release \
@@ -160,6 +162,8 @@ jobs:
             -w /io \
             quay.io/pypa/manylinux_2_28_aarch64:latest \
             /bin/bash -c " \
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && \
+            source \$HOME/.cargo/env && \
             /opt/python/cp${PY_VER}-cp${PY_VER}/bin/pip install maturin && \
             /opt/python/cp${PY_VER}-cp${PY_VER}/bin/maturin build \
               --release \
@@ -184,17 +188,29 @@ jobs:
           
           # Build for x86_64
           maturin build --release --out temp_x86_64 --interpreter python${{ matrix.python-version }} --target x86_64-apple-darwin
-          X86_64_WHL=$(ls temp_x86_64/*x86_64*.whl | head -1)
+          X86_64_WHL=$(ls temp_x86_64/*x86_64*.whl 2>/dev/null | head -1)
+          if [ -z "$X86_64_WHL" ]; then
+            echo "Error: x86_64 wheel not found"
+            ls -la temp_x86_64/
+            exit 1
+          fi
           
-          # Build for aarch64
+          # Build for aarch64 (arm64)
           maturin build --release --out temp_arm64 --interpreter python${{ matrix.python-version }} --target aarch64-apple-darwin
-          ARM64_WHL=$(ls temp_arm64/*aarch64*.whl | head -1)
+          ARM64_WHL=$(ls temp_arm64/*arm64*.whl 2>/dev/null | head -1)
+          if [ -z "$ARM64_WHL" ]; then
+            echo "Error: arm64 wheel not found"
+            ls -la temp_arm64/
+            exit 1
+          fi
           
           # Install wheel package for unpacking/repacking
           pip install wheel
           
           # Extract both wheels
+          echo "Extracting x86_64 wheel: $X86_64_WHL"
           python -m zipfile -e "$X86_64_WHL" temp_x86_64/extracted
+          echo "Extracting arm64 wheel: $ARM64_WHL"
           python -m zipfile -e "$ARM64_WHL" temp_arm64/extracted
           
           # Copy x86_64 wheel structure to universal
