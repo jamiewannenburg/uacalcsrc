@@ -390,6 +390,20 @@ class lat:
         def meet(self, a: int, b: int) -> int: ...
         def meet_list(self, args: List[int]) -> int: ...
         def leq(self, a: int, b: int) -> bool: ...
+        def join_irreducibles_po(self) -> "lat.OrderedSet": ...
+        """Get join irreducibles as an OrderedSet.
+        
+        Returns:
+            OrderedSet: An OrderedSet containing the join irreducible elements
+                       with their order relations
+        """
+        def meet_irreducibles_po(self) -> "lat.OrderedSet": ...
+        """Get meet irreducibles as an OrderedSet.
+        
+        Returns:
+            OrderedSet: An OrderedSet containing the meet irreducible elements
+                       with their order relations
+        """
         def __str__(self) -> str: ...
         def __repr__(self) -> str: ...
     
@@ -406,6 +420,20 @@ class lat:
         def meet(self, a: int, b: int) -> int: ...
         def meet_list(self, args: List[int]) -> int: ...
         def leq(self, a: int, b: int) -> bool: ...
+        def join_irreducibles_po(self) -> "lat.OrderedSet": ...
+        """Get join irreducibles as an OrderedSet.
+        
+        Returns:
+            OrderedSet: An OrderedSet containing the join irreducible elements
+                       with their order relations
+        """
+        def meet_irreducibles_po(self) -> "lat.OrderedSet": ...
+        """Get meet irreducibles as an OrderedSet.
+        
+        Returns:
+            OrderedSet: An OrderedSet containing the meet irreducible elements
+                       with their order relations
+        """
         def __str__(self) -> str: ...
         def __repr__(self) -> str: ...
     
@@ -485,6 +513,189 @@ class lat:
             
         Raises:
             ImportError: If networkx is not installed
+        """
+        def __str__(self) -> str: ...
+        def __repr__(self) -> str: ...
+    
+    class OrderedSet:
+        """Partially ordered set (poset) structure.
+        
+        This class provides Python bindings for creating and manipulating
+        partially ordered sets with integer elements.
+        """
+        def __init__(
+            self,
+            universe: List[int],
+            upper_covers: List[List[int]],
+            *,
+            name: Optional[str] = None,
+        ) -> None: ...
+        """Create a new OrderedSet from a universe and upper covers.
+        
+        Args:
+            universe: List of integers representing the universe
+            upper_covers: List of lists, where upper_covers[i] contains elements
+                         that directly cover universe[i]
+            name: Optional name for the poset
+            
+        Raises:
+            ValueError: If the poset structure is invalid
+        """
+        def name(self) -> Optional[str]: ...
+        """Get the name of this poset.
+        
+        Returns:
+            The name of the poset, or None if not set
+        """
+        def cardinality(self) -> int: ...
+        """Get the cardinality (number of elements) of this poset.
+        
+        Returns:
+            The number of elements in the poset
+        """
+        def universe(self) -> List[int]: ...
+        """Get the universe as a list of integers.
+        
+        Returns:
+            List of integers representing the universe
+        """
+        def leq(self, a: int, b: int) -> bool: ...
+        """Check if a ≤ b in this poset.
+        
+        Args:
+            a: First element (integer)
+            b: Second element (integer)
+            
+        Returns:
+            True if a ≤ b, False otherwise
+            
+        Raises:
+            ValueError: If elements are not found in universe
+        """
+        def get_upper_covers(self, element: int) -> List[int]: ...
+        """Get upper covers (elements that directly cover the given element).
+        
+        Args:
+            element: The element to get upper covers for
+            
+        Returns:
+            List of elements that directly cover the given element
+            
+        Raises:
+            ValueError: If element is not found in universe
+        """
+        def get_lower_covers(self, element: int) -> List[int]: ...
+        """Get lower covers (elements directly covered by the given element).
+        
+        Args:
+            element: The element to get lower covers for
+            
+        Returns:
+            List of elements directly covered by the given element
+            
+        Raises:
+            ValueError: If element is not found in universe
+        """
+        def to_graph_data(self, edge_labels: Optional[Dict[Tuple[str, str], str]] = None) -> "lat.LatticeGraphData": ...
+        """Convert to graph data for visualization.
+        
+        Args:
+            edge_labels: Optional dictionary mapping (source, target) tuples to edge labels
+            
+        Returns:
+            LatticeGraphData: Graph data structure for visualization
+        """
+        def to_networkx(self, edge_labels: Optional[Dict[Tuple[str, str], str]] = None) -> Any: ...
+        """Convert to NetworkX DiGraph if networkx is available.
+        
+        Args:
+            edge_labels: Optional dictionary mapping (source, target) tuples to edge labels
+            
+        Returns:
+            A NetworkX DiGraph representing the poset structure
+            
+        Raises:
+            ImportError: If networkx is not installed
+        """
+        def __str__(self) -> str: ...
+        def __repr__(self) -> str: ...
+    
+    class OrderedSetPartition:
+        """Partially ordered set (poset) structure for Partition elements.
+        
+        This class provides Python bindings for creating and manipulating
+        partially ordered sets where elements are Partition objects.
+        """
+        def name(self) -> Optional[str]: ...
+        """Get the name of this poset.
+        
+        Returns:
+            The name of the poset, or None if not set
+        """
+        def cardinality(self) -> int: ...
+        """Get the cardinality (number of elements) of this poset.
+        
+        Returns:
+            The number of elements in the poset
+        """
+        def universe(self) -> List["alg.Partition"]: ...
+        """Get the universe as a list of Partitions.
+        
+        Returns:
+            List of Partition objects representing the universe
+        """
+        def leq(self, a: "alg.Partition", b: "alg.Partition") -> bool: ...
+        """Check if a ≤ b in this poset.
+        
+        Args:
+            a: First element (Partition)
+            b: Second element (Partition)
+            
+        Returns:
+            True if a ≤ b, False otherwise
+            
+        Raises:
+            ValueError: If elements are not found in universe
+        """
+        def __str__(self) -> str: ...
+        def __repr__(self) -> str: ...
+    
+    class OrderedSetBasicSet:
+        """Partially ordered set (poset) structure for BasicSet elements.
+        
+        This class provides Python bindings for creating and manipulating
+        partially ordered sets where elements are BasicSet objects.
+        """
+        def name(self) -> Optional[str]: ...
+        """Get the name of this poset.
+        
+        Returns:
+            The name of the poset, or None if not set
+        """
+        def cardinality(self) -> int: ...
+        """Get the cardinality (number of elements) of this poset.
+        
+        Returns:
+            The number of elements in the poset
+        """
+        def universe(self) -> List["alg.BasicSet"]: ...
+        """Get the universe as a list of BasicSets.
+        
+        Returns:
+            List of BasicSet objects representing the universe
+        """
+        def leq(self, a: "alg.BasicSet", b: "alg.BasicSet") -> bool: ...
+        """Check if a ≤ b in this poset.
+        
+        Args:
+            a: First element (BasicSet)
+            b: Second element (BasicSet)
+            
+        Returns:
+            True if a ≤ b, False otherwise
+            
+        Raises:
+            ValueError: If elements are not found in universe
         """
         def __str__(self) -> str: ...
         def __repr__(self) -> str: ...
@@ -909,12 +1120,42 @@ class alg:
     
     # Advanced algebra types
     class Homomorphism: ...
-    class SubalgebraLattice: ...
+    class SubalgebraLattice:
+        """Subalgebra lattice implementation."""
+        def join_irreducibles_po(self) -> "lat.OrderedSetBasicSet": ...
+        """Get the join irreducibles as an OrderedSet.
+        
+        Returns:
+            OrderedSetBasicSet: An OrderedSet containing the join irreducible elements
+                              with their order relations
+        """
+        def meet_irreducibles_po(self) -> "lat.OrderedSetBasicSet": ...
+        """Get the meet irreducibles as an OrderedSet.
+        
+        Returns:
+            OrderedSetBasicSet: An OrderedSet containing the meet irreducible elements
+                              with their order relations
+        """
     class BasicBinaryRelation: ...
     class CentralityData: ...
     class Partition: ...
     class PrintType: ...
-    class CongruenceLattice: ...
+    class CongruenceLattice:
+        """Congruence lattice implementation."""
+        def join_irreducibles_po(self) -> "lat.OrderedSetPartition": ...
+        """Get the join irreducibles as an OrderedSet.
+        
+        Returns:
+            OrderedSetPartition: An OrderedSet containing the join irreducible elements
+                               with their order relations
+        """
+        def meet_irreducibles_po(self) -> "lat.OrderedSetPartition": ...
+        """Get the meet irreducibles as an OrderedSet.
+        
+        Returns:
+            OrderedSetPartition: An OrderedSet containing the meet irreducible elements
+                               with their order relations
+        """
     class BasicSet: ...
     class FreeAlgebra: ...
     class ProductAlgebra: ...
