@@ -483,7 +483,8 @@ pub mod lattices {
                 if self.leq(a, &elem) && self.leq(b, &elem) {
                     let mut is_lub = true;
                     for &other in &self.universe {
-                        if self.leq(a, &other) && self.leq(b, &other) && self.leq(&elem, &other) && elem != other {
+                        // Check if there's another upper bound that is strictly less than elem
+                        if self.leq(a, &other) && self.leq(b, &other) && self.leq(&other, &elem) && elem != other {
                             is_lub = false;
                             break;
                         }
@@ -512,7 +513,8 @@ pub mod lattices {
                 if self.leq(&elem, a) && self.leq(&elem, b) {
                     let mut is_glb = true;
                     for &other in &self.universe {
-                        if self.leq(&other, a) && self.leq(&other, b) && self.leq(&other, &elem) && elem != other {
+                        // Check if there's another lower bound that is strictly greater than elem
+                        if self.leq(&other, a) && self.leq(&other, b) && self.leq(&elem, &other) && elem != other {
                             is_glb = false;
                             break;
                         }
@@ -576,9 +578,49 @@ pub mod lattices {
         }
         
         /// Get join irreducibles of this lattice.
+        /// An element is join irreducible if it cannot be expressed as the join
+        /// of two strictly smaller elements.
         pub fn join_irreducibles(&self) -> Vec<i32> {
-            // For now, return all elements as join irreducibles
-            self.universe.clone()
+            let mut jis = Vec::new();
+            
+            for &elem in &self.universe {
+                // Compute the join of all elements strictly smaller than elem
+                let mut join_of_smaller = None;
+                
+                for &other in &self.universe {
+                    // Check if other is strictly smaller than elem
+                    if self.leq(&other, &elem) && other != elem {
+                        if let Some(current_join) = join_of_smaller {
+                            join_of_smaller = Some(self.join(&current_join, &other));
+                        } else {
+                            join_of_smaller = Some(other);
+                        }
+                        
+                        // Early exit: if we've already reached elem, it's not join irreducible
+                        if let Some(ref join_val) = join_of_smaller {
+                            if *join_val == elem {
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                // If join_of_smaller is None, elem is the bottom element (not join irreducible)
+                // If join_of_smaller != elem, then elem is join irreducible
+                match join_of_smaller {
+                    None => {
+                        // Bottom element - not considered join irreducible
+                        // Do not add it to the list
+                    }
+                    Some(join_val) => {
+                        if join_val != elem {
+                            jis.push(elem);
+                        }
+                    }
+                }
+            }
+            
+            jis
         }
         
         /// Get meet irreducibles of this lattice.
@@ -684,7 +726,8 @@ pub mod lattices {
                 if self.leq(a, &elem) && self.leq(b, &elem) {
                     let mut is_lub = true;
                     for &other in &self.universe {
-                        if self.leq(a, &other) && self.leq(b, &other) && self.leq(&elem, &other) && elem != other {
+                        // Check if there's another upper bound that is strictly less than elem
+                        if self.leq(a, &other) && self.leq(b, &other) && self.leq(&other, &elem) && elem != other {
                             is_lub = false;
                             break;
                         }
@@ -713,7 +756,8 @@ pub mod lattices {
                 if self.leq(&elem, a) && self.leq(&elem, b) {
                     let mut is_glb = true;
                     for &other in &self.universe {
-                        if self.leq(&other, a) && self.leq(&other, b) && self.leq(&other, &elem) && elem != other {
+                        // Check if there's another lower bound that is strictly greater than elem
+                        if self.leq(&other, a) && self.leq(&other, b) && self.leq(&elem, &other) && elem != other {
                             is_glb = false;
                             break;
                         }

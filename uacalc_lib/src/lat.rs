@@ -3,6 +3,10 @@ use pyo3::exceptions::PyValueError;
 use pyo3::types::{PyDict, PyList};
 use uacalc::lat::*;
 use uacalc::alg::algebra::Algebra;
+use uacalc::alg::op::Operation;
+use uacalc::lat::lattices;
+use crate::alg::op::int_operation::PyIntOperation;
+use crate::alg::op::operation::PyBasicOperation;
 use std::sync::Arc;
 
 /// Internal enum to hold either type of BasicLattice
@@ -465,6 +469,75 @@ impl PyMeetLattice {
         self.inner.leq(&a, &b)
     }
     
+    /// Convert this MeetLattice to an OrderedSet.
+    ///
+    /// This method computes the upper covers for each element using join irreducibles
+    /// and creates an OrderedSet representing the full lattice structure.
+    ///
+    /// Args:
+    ///     name: Optional name for the resulting OrderedSet
+    ///
+    /// Returns:
+    ///     OrderedSet: An OrderedSet representing the lattice structure
+    fn to_ordered_set(&self, name: Option<String>) -> PyResult<PyOrderedSet> {
+        let univ = self.inner.universe().to_vec();
+        let jis = self.inner.join_irreducibles();
+        
+        // Build upper covers for each element
+        let mut ucs: Vec<Vec<i32>> = Vec::new();
+        for elem in &univ {
+            let mut covs = Vec::new();
+            for ji in &jis {
+                // Skip if ji is already below elem
+                if self.inner.leq(ji, elem) {
+                    continue;
+                }
+                
+                // Compute join of elem and ji
+                let join_result = self.inner.join(elem, ji);
+                
+                // Skip if join equals elem (no new element)
+                if join_result == *elem {
+                    continue;
+                }
+                
+                // Check if this is a minimal cover
+                let mut is_minimal = true;
+                let mut covers_to_remove = Vec::new();
+                
+                for (i, existing_cover) in covs.iter().enumerate() {
+                    if self.inner.leq(existing_cover, &join_result) {
+                        // Existing cover is below join_result, so join_result is not minimal
+                        is_minimal = false;
+                        break;
+                    } else if self.inner.leq(&join_result, existing_cover) {
+                        // join_result is below existing cover, mark existing for removal
+                        covers_to_remove.push(i);
+                    }
+                }
+                
+                // Remove covers that are above join_result
+                for &i in covers_to_remove.iter().rev() {
+                    covs.remove(i);
+                }
+                
+                // Add join_result if it's minimal
+                if is_minimal {
+                    covs.push(join_result);
+                }
+            }
+            ucs.push(covs);
+        }
+        
+        // Create OrderedSet from universe and upper covers
+        match uacalc::lat::ordered_set::OrderedSet::new(name, univ, ucs) {
+            Ok(poset) => Ok(PyOrderedSet {
+                inner: std::sync::Arc::new(std::sync::Mutex::new(poset)),
+            }),
+            Err(e) => Err(PyValueError::new_err(format!("Failed to create OrderedSet: {}", e))),
+        }
+    }
+    
     /// Python string representation
     fn __str__(&self) -> String {
         format!("MeetLattice({})", self.inner.name())
@@ -579,6 +652,75 @@ impl PyJoinLattice {
         self.inner.leq(&a, &b)
     }
     
+    /// Convert this JoinLattice to an OrderedSet.
+    ///
+    /// This method computes the upper covers for each element using join irreducibles
+    /// and creates an OrderedSet representing the full lattice structure.
+    ///
+    /// Args:
+    ///     name: Optional name for the resulting OrderedSet
+    ///
+    /// Returns:
+    ///     OrderedSet: An OrderedSet representing the lattice structure
+    fn to_ordered_set(&self, name: Option<String>) -> PyResult<PyOrderedSet> {
+        let univ = self.inner.universe().to_vec();
+        let jis = self.inner.join_irreducibles();
+        
+        // Build upper covers for each element
+        let mut ucs: Vec<Vec<i32>> = Vec::new();
+        for elem in &univ {
+            let mut covs = Vec::new();
+            for ji in &jis {
+                // Skip if ji is already below elem
+                if self.inner.leq(ji, elem) {
+                    continue;
+                }
+                
+                // Compute join of elem and ji
+                let join_result = self.inner.join(elem, ji);
+                
+                // Skip if join equals elem (no new element)
+                if join_result == *elem {
+                    continue;
+                }
+                
+                // Check if this is a minimal cover
+                let mut is_minimal = true;
+                let mut covers_to_remove = Vec::new();
+                
+                for (i, existing_cover) in covs.iter().enumerate() {
+                    if self.inner.leq(existing_cover, &join_result) {
+                        // Existing cover is below join_result, so join_result is not minimal
+                        is_minimal = false;
+                        break;
+                    } else if self.inner.leq(&join_result, existing_cover) {
+                        // join_result is below existing cover, mark existing for removal
+                        covers_to_remove.push(i);
+                    }
+                }
+                
+                // Remove covers that are above join_result
+                for &i in covers_to_remove.iter().rev() {
+                    covs.remove(i);
+                }
+                
+                // Add join_result if it's minimal
+                if is_minimal {
+                    covs.push(join_result);
+                }
+            }
+            ucs.push(covs);
+        }
+        
+        // Create OrderedSet from universe and upper covers
+        match uacalc::lat::ordered_set::OrderedSet::new(name, univ, ucs) {
+            Ok(poset) => Ok(PyOrderedSet {
+                inner: std::sync::Arc::new(std::sync::Mutex::new(poset)),
+            }),
+            Err(e) => Err(PyValueError::new_err(format!("Failed to create OrderedSet: {}", e))),
+        }
+    }
+    
     /// Python string representation
     fn __str__(&self) -> String {
         format!("JoinLattice({})", self.inner.name())
@@ -592,30 +734,122 @@ impl PyJoinLattice {
 
 /// Create a lattice from a meet operation using integers for labels
 #[pyfunction]
-fn py_lattice_from_meet(_name: String, _meet: &PyAny) -> PyResult<PyMeetLattice> {
-    // For now, return an error since we need a concrete Operation implementation
-    Err(PyValueError::new_err("lattice_from_meet requires a concrete Operation implementation which is not yet available"))
+fn py_lattice_from_meet(name: String, meet: &Bound<'_, PyAny>) -> PyResult<PyMeetLattice> {
+    // Try to extract PyIntOperation
+    if let Ok(py_int_op) = meet.extract::<PyRef<'_, PyIntOperation>>() {
+        // Clone the inner operation to ensure we have ownership
+        let op: Box<dyn Operation> = Box::new(py_int_op.inner.clone());
+        match lattices::lattice_from_meet(name, op.as_ref()) {
+            Ok(meet_lat) => Ok(PyMeetLattice { inner: meet_lat }),
+            Err(e) => Err(PyValueError::new_err(format!("Failed to create MeetLattice: {}", e))),
+        }
+    }
+    // Try to extract PyBasicOperation
+    else if let Ok(py_basic_op) = meet.extract::<PyRef<'_, PyBasicOperation>>() {
+        // Clone the inner operation to ensure we have ownership
+        let op: Box<dyn Operation> = Box::new(py_basic_op.inner.clone());
+        match lattices::lattice_from_meet(name, op.as_ref()) {
+            Ok(meet_lat) => Ok(PyMeetLattice { inner: meet_lat }),
+            Err(e) => Err(PyValueError::new_err(format!("Failed to create MeetLattice: {}", e))),
+        }
+    }
+    else {
+        Err(PyValueError::new_err(
+            "lattice_from_meet requires an IntOperation or BasicOperation instance"
+        ))
+    }
 }
 
 /// Create a lattice from a join operation using integers for labels
 #[pyfunction]
-fn py_lattice_from_join(_name: String, _join: &PyAny) -> PyResult<PyJoinLattice> {
-    // For now, return an error since we need a concrete Operation implementation
-    Err(PyValueError::new_err("lattice_from_join requires a concrete Operation implementation which is not yet available"))
+fn py_lattice_from_join(name: String, join: &Bound<'_, PyAny>) -> PyResult<PyJoinLattice> {
+    // Try to extract PyIntOperation
+    if let Ok(py_int_op) = join.extract::<PyRef<'_, PyIntOperation>>() {
+        // Clone the inner operation to ensure we have ownership
+        let op: Box<dyn Operation> = Box::new(py_int_op.inner.clone());
+        match lattices::lattice_from_join(name, op.as_ref()) {
+            Ok(join_lat) => Ok(PyJoinLattice { inner: join_lat }),
+            Err(e) => Err(PyValueError::new_err(format!("Failed to create JoinLattice: {}", e))),
+        }
+    }
+    // Try to extract PyBasicOperation
+    else if let Ok(py_basic_op) = join.extract::<PyRef<'_, PyBasicOperation>>() {
+        // Clone the inner operation to ensure we have ownership
+        let op: Box<dyn Operation> = Box::new(py_basic_op.inner.clone());
+        match lattices::lattice_from_join(name, op.as_ref()) {
+            Ok(join_lat) => Ok(PyJoinLattice { inner: join_lat }),
+            Err(e) => Err(PyValueError::new_err(format!("Failed to create JoinLattice: {}", e))),
+        }
+    }
+    else {
+        Err(PyValueError::new_err(
+            "lattice_from_join requires an IntOperation or BasicOperation instance"
+        ))
+    }
 }
 
 /// Create a lattice from a meet operation with custom universe
 #[pyfunction]
-fn py_lattice_from_meet_with_universe(_name: String, _univ: Vec<i32>, _meet: &PyAny) -> PyResult<PyMeetLattice> {
-    // For now, return an error since we need a concrete Operation implementation
-    Err(PyValueError::new_err("lattice_from_meet_with_universe requires a concrete Operation implementation which is not yet available"))
+fn py_lattice_from_meet_with_universe(
+    name: String,
+    univ: Vec<i32>,
+    meet: &Bound<'_, PyAny>
+) -> PyResult<PyMeetLattice> {
+    // Try to extract PyIntOperation
+    if let Ok(py_int_op) = meet.extract::<PyRef<'_, PyIntOperation>>() {
+        // Clone the inner operation to ensure we have ownership
+        let op: Box<dyn Operation> = Box::new(py_int_op.inner.clone());
+        match lattices::lattice_from_meet_with_universe(name, univ, op.as_ref()) {
+            Ok(meet_lat) => Ok(PyMeetLattice { inner: meet_lat }),
+            Err(e) => Err(PyValueError::new_err(format!("Failed to create MeetLattice: {}", e))),
+        }
+    }
+    // Try to extract PyBasicOperation
+    else if let Ok(py_basic_op) = meet.extract::<PyRef<'_, PyBasicOperation>>() {
+        // Clone the inner operation to ensure we have ownership
+        let op: Box<dyn Operation> = Box::new(py_basic_op.inner.clone());
+        match lattices::lattice_from_meet_with_universe(name, univ, op.as_ref()) {
+            Ok(meet_lat) => Ok(PyMeetLattice { inner: meet_lat }),
+            Err(e) => Err(PyValueError::new_err(format!("Failed to create MeetLattice: {}", e))),
+        }
+    }
+    else {
+        Err(PyValueError::new_err(
+            "lattice_from_meet_with_universe requires an IntOperation or BasicOperation instance"
+        ))
+    }
 }
 
 /// Create a lattice from a join operation with custom universe
 #[pyfunction]
-fn py_lattice_from_join_with_universe(_name: String, _univ: Vec<i32>, _join: &PyAny) -> PyResult<PyJoinLattice> {
-    // For now, return an error since we need a concrete Operation implementation
-    Err(PyValueError::new_err("lattice_from_join_with_universe requires a concrete Operation implementation which is not yet available"))
+fn py_lattice_from_join_with_universe(
+    name: String,
+    univ: Vec<i32>,
+    join: &Bound<'_, PyAny>
+) -> PyResult<PyJoinLattice> {
+    // Try to extract PyIntOperation
+    if let Ok(py_int_op) = join.extract::<PyRef<'_, PyIntOperation>>() {
+        // Clone the inner operation to ensure we have ownership
+        let op: Box<dyn Operation> = Box::new(py_int_op.inner.clone());
+        match lattices::lattice_from_join_with_universe(name, univ, op.as_ref()) {
+            Ok(join_lat) => Ok(PyJoinLattice { inner: join_lat }),
+            Err(e) => Err(PyValueError::new_err(format!("Failed to create JoinLattice: {}", e))),
+        }
+    }
+    // Try to extract PyBasicOperation
+    else if let Ok(py_basic_op) = join.extract::<PyRef<'_, PyBasicOperation>>() {
+        // Clone the inner operation to ensure we have ownership
+        let op: Box<dyn Operation> = Box::new(py_basic_op.inner.clone());
+        match lattices::lattice_from_join_with_universe(name, univ, op.as_ref()) {
+            Ok(join_lat) => Ok(PyJoinLattice { inner: join_lat }),
+            Err(e) => Err(PyValueError::new_err(format!("Failed to create JoinLattice: {}", e))),
+        }
+    }
+    else {
+        Err(PyValueError::new_err(
+            "lattice_from_join_with_universe requires an IntOperation or BasicOperation instance"
+        ))
+    }
 }
 
 /// Convert a congruence lattice to a small lattice (not implemented)
@@ -959,6 +1193,34 @@ impl PyOrderedSet {
     fn to_networkx(&self, py: Python, edge_labels: Option<&Bound<'_, PyDict>>) -> PyResult<PyObject> {
         let graph_data = self.to_graph_data(edge_labels)?;
         graph_data.to_networkx(py)
+    }
+    
+    /// Create an OrderedSet from a JoinLattice or MeetLattice.
+    ///
+    /// This static method converts a lattice to an OrderedSet by computing
+    /// upper covers using join irreducibles.
+    ///
+    /// Args:
+    ///     lattice: The JoinLattice or MeetLattice to convert
+    ///     name: Optional name for the resulting OrderedSet
+    ///
+    /// Returns:
+    ///     OrderedSet: An OrderedSet representing the lattice structure
+    #[staticmethod]
+    fn from_lattice(lattice: &Bound<'_, PyAny>, name: Option<String>) -> PyResult<PyOrderedSet> {
+        // Try to extract as JoinLattice
+        if let Ok(join_lat) = lattice.extract::<PyRef<'_, PyJoinLattice>>() {
+            return join_lat.to_ordered_set(name);
+        }
+        
+        // Try to extract as MeetLattice
+        if let Ok(meet_lat) = lattice.extract::<PyRef<'_, PyMeetLattice>>() {
+            return meet_lat.to_ordered_set(name);
+        }
+        
+        Err(PyValueError::new_err(
+            "from_lattice requires a JoinLattice or MeetLattice instance"
+        ))
     }
     
     /// Python string representation

@@ -404,6 +404,18 @@ class lat:
             OrderedSet: An OrderedSet containing the meet irreducible elements
                        with their order relations
         """
+        def to_ordered_set(self, name: Optional[str] = None) -> "lat.OrderedSet": ...
+        """Convert this MeetLattice to an OrderedSet.
+        
+        This method computes the upper covers for each element using join irreducibles
+        and creates an OrderedSet representing the full lattice structure.
+        
+        Args:
+            name: Optional name for the resulting OrderedSet
+            
+        Returns:
+            OrderedSet: An OrderedSet representing the lattice structure
+        """
         def __str__(self) -> str: ...
         def __repr__(self) -> str: ...
     
@@ -433,6 +445,18 @@ class lat:
         Returns:
             OrderedSet: An OrderedSet containing the meet irreducible elements
                        with their order relations
+        """
+        def to_ordered_set(self, name: Optional[str] = None) -> "lat.OrderedSet": ...
+        """Convert this JoinLattice to an OrderedSet.
+        
+        This method computes the upper covers for each element using join irreducibles
+        and creates an OrderedSet representing the full lattice structure.
+        
+        Args:
+            name: Optional name for the resulting OrderedSet
+            
+        Returns:
+            OrderedSet: An OrderedSet representing the lattice structure
         """
         def __str__(self) -> str: ...
         def __repr__(self) -> str: ...
@@ -616,6 +640,20 @@ class lat:
             
         Raises:
             ImportError: If networkx is not installed
+        """
+        @staticmethod
+        def from_lattice(lattice: Any, name: Optional[str] = None) -> "lat.OrderedSet": ...
+        """Create an OrderedSet from a JoinLattice or MeetLattice.
+        
+        This static method converts a lattice to an OrderedSet by computing
+        upper covers using join irreducibles.
+        
+        Args:
+            lattice: The JoinLattice or MeetLattice to convert
+            name: Optional name for the resulting OrderedSet
+            
+        Returns:
+            OrderedSet: An OrderedSet representing the lattice structure
         """
         def __str__(self) -> str: ...
         def __repr__(self) -> str: ...
