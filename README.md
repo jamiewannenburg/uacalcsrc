@@ -12,11 +12,14 @@ Currently the java code is mirrored in rust and bindings are exposed to python v
 
 ## Installation
 
-Pre-built wheels are available for installation without compilation from [GitHub Releases](https://github.com/jamiewannenburg/uacalcsrc/releases):
+Pre-built wheels are available for installation without compilation from [GitHub Releases](https://github.com/jamiewannenburg/uacalcsrc/releases).
+Download and extract the appropriate zip file and run pip, e.g.:
 
 ```bash
 # Install from GitHub Release (replace v0.0.1 with the latest version)
-pip install https://github.com/jamiewannenburg/uacalcsrc/releases/download/v0.0.1/uacalc-0.0.1-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+wget https://github.com/jamiewannenburg/uacalcsrc/releases/download/v0.0.1/wheel-ubuntu-latest-x86_64-py3.12.zip
+unzip wheel-ubuntu-latest-x86_64-py3.12.zip
+pip install uacalc-0.0.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
 ```
 
 **Note**: Replace `v0.0.1` with the latest release version and choose the appropriate wheel file for your platform and Python version. Available wheels support:

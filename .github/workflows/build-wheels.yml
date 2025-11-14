@@ -290,24 +290,42 @@ jobs:
         id: tag
         run: echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
-      - name: Check for wheels
-        id: check-wheels
+      - name: Flatten wheel directory structure
         run: |
-          if [ -z "$(find dist -name '*.whl' 2>/dev/null)" ]; then
+          # Create a flat directory for all wheels
+          mkdir -p dist_wheels
+          # Find all wheels in subdirectories and move them to the flat structure
+          find dist -name '*.whl' -type f -exec cp {} dist_wheels/ \;
+          # Verify wheels were found
+          if [ -z "$(find dist_wheels -name '*.whl' 2>/dev/null)" ]; then
             echo "No wheels found in dist directory"
             exit 1
           fi
           echo "Found wheels:"
-          find dist -name '*.whl' -type f
+          ls -lh dist_wheels/*.whl
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ steps.tag.outputs.tag }}
           name: Release ${{ steps.tag.outputs.tag }}
-          files: dist/**/*.whl
           draft: false
-          prerelease: false
+          prerelease: true
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload wheels to release
+        run: |
+          # Upload each wheel file to the release
+          for wheel in dist_wheels/*.whl; do
+            if [ -f "$wheel" ]; then
+              echo "Uploading $(basename "$wheel")..."
+              gh release upload "${{ steps.tag.outputs.tag }}" "$wheel" \
+                --repo "${{ github.repository }}" \
+                --clobber
+            fi
+          done
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
