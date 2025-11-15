@@ -7,8 +7,7 @@ import uacalc_lib
 IntOperation = uacalc_lib.alg.IntOperation
 BasicOperation = uacalc_lib.alg.BasicOperation
 OperationSymbol = uacalc_lib.alg.OperationSymbol
-JoinLattice = uacalc_lib.lat.JoinLattice
-MeetLattice = uacalc_lib.lat.MeetLattice
+BasicLattice = uacalc_lib.lat.BasicLattice
 
 
 class TestLatticeFromOperations(unittest.TestCase):
@@ -82,7 +81,7 @@ class TestLatticeFromOperations(unittest.TestCase):
         lattice = uacalc_lib.lat.lattice_from_join("TestJoinLattice", join_op)
         
         self.assertIsNotNone(lattice)
-        self.assertIsInstance(lattice, JoinLattice)
+        self.assertIsInstance(lattice, BasicLattice)
         self.assertEqual(lattice.name(), "TestJoinLattice")
         
         # Check universe
@@ -126,7 +125,7 @@ class TestLatticeFromOperations(unittest.TestCase):
         lattice = uacalc_lib.lat.lattice_from_join("TestJoinLattice", join_op)
         
         self.assertIsNotNone(lattice)
-        self.assertIsInstance(lattice, JoinLattice)
+        self.assertIsInstance(lattice, BasicLattice)
         self.assertEqual(lattice.name(), "TestJoinLattice")
 
     def test_lattice_from_meet_int_operation(self):
@@ -135,7 +134,7 @@ class TestLatticeFromOperations(unittest.TestCase):
         lattice = uacalc_lib.lat.lattice_from_meet("TestMeetLattice", meet_op)
         
         self.assertIsNotNone(lattice)
-        self.assertIsInstance(lattice, MeetLattice)
+        self.assertIsInstance(lattice, BasicLattice)
         self.assertEqual(lattice.name(), "TestMeetLattice")
         
         # Check universe
@@ -179,7 +178,7 @@ class TestLatticeFromOperations(unittest.TestCase):
         lattice = uacalc_lib.lat.lattice_from_meet("TestMeetLattice", meet_op)
         
         self.assertIsNotNone(lattice)
-        self.assertIsInstance(lattice, MeetLattice)
+        self.assertIsInstance(lattice, BasicLattice)
         self.assertEqual(lattice.name(), "TestMeetLattice")
 
     def test_lattice_from_join_with_universe_int_operation(self):
@@ -191,7 +190,7 @@ class TestLatticeFromOperations(unittest.TestCase):
         )
         
         self.assertIsNotNone(lattice)
-        self.assertIsInstance(lattice, JoinLattice)
+        self.assertIsInstance(lattice, BasicLattice)
         self.assertEqual(lattice.name(), "TestJoinLattice")
         
         # Universe should match or be extended
@@ -208,7 +207,7 @@ class TestLatticeFromOperations(unittest.TestCase):
         )
         
         self.assertIsNotNone(lattice)
-        self.assertIsInstance(lattice, JoinLattice)
+        self.assertIsInstance(lattice, BasicLattice)
 
     def test_lattice_from_meet_with_universe_int_operation(self):
         """Test lattice_from_meet_with_universe with IntOperation."""
@@ -219,7 +218,7 @@ class TestLatticeFromOperations(unittest.TestCase):
         )
         
         self.assertIsNotNone(lattice)
-        self.assertIsInstance(lattice, MeetLattice)
+        self.assertIsInstance(lattice, BasicLattice)
         self.assertEqual(lattice.name(), "TestMeetLattice")
 
     def test_lattice_from_meet_with_universe_basic_operation(self):
@@ -231,7 +230,7 @@ class TestLatticeFromOperations(unittest.TestCase):
         )
         
         self.assertIsNotNone(lattice)
-        self.assertIsInstance(lattice, MeetLattice)
+        self.assertIsInstance(lattice, BasicLattice)
 
     def test_lattice_from_join_invalid_operation(self):
         """Test that lattice_from_join raises error for invalid operation type."""

@@ -493,6 +493,54 @@ class lat:
         Returns:
             The name of the lattice
         """
+        def universe(self) -> List[int]: ...
+        """Get the universe as a list of integers (for BasicLattice<i32> only).
+        
+        Returns:
+            List of integers representing the universe elements
+            
+        Raises:
+            ValueError: If this is not a BasicLattice<i32> created from operations
+        """
+        def leq(self, a: int, b: int) -> bool: ...
+        """Check if a ≤ b in the lattice order (for BasicLattice<i32> only).
+        
+        Args:
+            a: First element
+            b: Second element
+            
+        Returns:
+            True if a ≤ b, False otherwise
+            
+        Raises:
+            ValueError: If this is not a BasicLattice<i32> or elements not found
+        """
+        def join(self, a: int, b: int) -> int: ...
+        """Compute the join (least upper bound) of two elements (for BasicLattice<i32> only).
+        
+        Args:
+            a: First element
+            b: Second element
+            
+        Returns:
+            The join of a and b
+            
+        Raises:
+            ValueError: If this is not a BasicLattice<i32> or elements not found
+        """
+        def meet(self, a: int, b: int) -> int: ...
+        """Compute the meet (greatest lower bound) of two elements (for BasicLattice<i32> only).
+        
+        Args:
+            a: First element
+            b: Second element
+            
+        Returns:
+            The meet of a and b
+            
+        Raises:
+            ValueError: If this is not a BasicLattice<i32> or elements not found
+        """
         def to_graph_data(self) -> "lat.LatticeGraphData": ...
         """Convert this lattice to graph data for visualization.
         
@@ -750,26 +798,26 @@ class lat:
     @staticmethod
     def ordered_sets_main() -> str: ...
     @staticmethod
-    def lattice_from_meet(name: str, meet: Any) -> "lat.MeetLattice": ...
+    def lattice_from_meet(name: str, meet: Any) -> "lat.BasicLattice": ...
     @staticmethod
-    def lattice_from_join(name: str, join: Any) -> "lat.JoinLattice": ...
+    def lattice_from_join(name: str, join: Any) -> "lat.BasicLattice": ...
     @staticmethod
-    def lattice_from_meet_with_universe(name: str, univ: List[int], meet: Any) -> "lat.MeetLattice": ...
+    def lattice_from_meet_with_universe(name: str, univ: List[int], meet: Any) -> "lat.BasicLattice": ...
     @staticmethod
-    def lattice_from_join_with_universe(name: str, univ: List[int], join: Any) -> "lat.JoinLattice": ...
+    def lattice_from_join_with_universe(name: str, univ: List[int], join: Any) -> "lat.BasicLattice": ...
     @staticmethod
     def con_to_small_lattice(con: Any) -> Any: ...
     @staticmethod
     def dual(lat: Any) -> Any: ...
     # Internal function names (also exported for compatibility)
     @staticmethod
-    def py_lattice_from_meet(name: str, meet: Any) -> "lat.MeetLattice": ...
+    def py_lattice_from_meet(name: str, meet: Any) -> "lat.BasicLattice": ...
     @staticmethod
-    def py_lattice_from_join(name: str, join: Any) -> "lat.JoinLattice": ...
+    def py_lattice_from_join(name: str, join: Any) -> "lat.BasicLattice": ...
     @staticmethod
-    def py_lattice_from_meet_with_universe(name: str, univ: List[int], meet: Any) -> "lat.MeetLattice": ...
+    def py_lattice_from_meet_with_universe(name: str, univ: List[int], meet: Any) -> "lat.BasicLattice": ...
     @staticmethod
-    def py_lattice_from_join_with_universe(name: str, univ: List[int], join: Any) -> "lat.JoinLattice": ...
+    def py_lattice_from_join_with_universe(name: str, univ: List[int], join: Any) -> "lat.BasicLattice": ...
     @staticmethod
     def py_con_to_small_lattice(con: Any) -> Any: ...
     @staticmethod

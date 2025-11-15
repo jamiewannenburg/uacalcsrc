@@ -94,7 +94,7 @@ pub mod lattices {
     /// * `meet` - The meet operation
     /// 
     /// # Returns
-    /// * `Ok(MeetLattice)` - Successfully created lattice
+    /// * `Ok(BasicLattice<i32>)` - Successfully created lattice
     /// * `Err(String)` - Error message if creation fails
     /// 
     /// # Examples
@@ -105,7 +105,10 @@ pub mod lattices {
     /// // This would require a concrete Operation implementation
     /// // let lattice = lattice_from_meet("TestLattice", meet_op).unwrap();
     /// ```
-    pub fn lattice_from_meet(name: String, meet: &dyn Operation) -> Result<MeetLattice, String> {
+    pub fn lattice_from_meet(name: String, meet: &dyn Operation) -> Result<crate::lat::BasicLattice<i32>, String> {
+        use crate::lat::ordered_set::OrderedSet;
+        use crate::lat::BasicLattice;
+        
         let s = meet.get_set_size() as usize;
         let mut univ: Vec<i32> = (0..s as i32).collect();
         
@@ -143,8 +146,11 @@ pub mod lattices {
             }
         }
         
-        // Create a simple lattice implementation
-        MeetLattice::new(name, univ, filters)
+        // Create OrderedSet from filters
+        let poset = OrderedSet::ordered_set_from_filters(Some(name.clone()), univ, filters)?;
+        
+        // Create BasicLattice from OrderedSet
+        BasicLattice::new_from_poset(name, poset)
     }
     
     /// Create a lattice from a join operation using integers for labels.
@@ -157,9 +163,12 @@ pub mod lattices {
     /// * `join` - The join operation
     /// 
     /// # Returns
-    /// * `Ok(JoinLattice)` - Successfully created lattice
+    /// * `Ok(BasicLattice<i32>)` - Successfully created lattice
     /// * `Err(String)` - Error message if creation fails
-    pub fn lattice_from_join(name: String, join: &dyn Operation) -> Result<JoinLattice, String> {
+    pub fn lattice_from_join(name: String, join: &dyn Operation) -> Result<crate::lat::BasicLattice<i32>, String> {
+        use crate::lat::ordered_set::OrderedSet;
+        use crate::lat::BasicLattice;
+        
         let s = join.get_set_size() as usize;
         let mut univ: Vec<i32> = (0..s as i32).collect();
         
@@ -192,8 +201,11 @@ pub mod lattices {
             filters.push(bot_filter);
         }
         
-        // Create a simple lattice implementation
-        JoinLattice::new(name, univ, filters)
+        // Create OrderedSet from filters
+        let poset = OrderedSet::ordered_set_from_filters(Some(name.clone()), univ, filters)?;
+        
+        // Create BasicLattice from OrderedSet
+        BasicLattice::new_from_poset(name, poset)
     }
     
     /// Create a lattice from a meet operation with custom universe.
@@ -206,13 +218,16 @@ pub mod lattices {
     /// * `meet` - The meet operation
     /// 
     /// # Returns
-    /// * `Ok(MeetLattice)` - Successfully created lattice
+    /// * `Ok(BasicLattice<i32>)` - Successfully created lattice
     /// * `Err(String)` - Error message if creation fails
     pub fn lattice_from_meet_with_universe(
         name: String, 
         univ: Vec<i32>, 
         meet: &dyn Operation
-    ) -> Result<MeetLattice, String> {
+    ) -> Result<crate::lat::BasicLattice<i32>, String> {
+        use crate::lat::ordered_set::OrderedSet;
+        use crate::lat::BasicLattice;
+        
         let s = univ.len();
         let mut universe = univ.clone();
         
@@ -251,8 +266,11 @@ pub mod lattices {
             }
         }
         
-        // Create a simple lattice implementation
-        MeetLattice::new(name, universe, filters)
+        // Create OrderedSet from filters
+        let poset = OrderedSet::ordered_set_from_filters(Some(name.clone()), universe, filters)?;
+        
+        // Create BasicLattice from OrderedSet
+        BasicLattice::new_from_poset(name, poset)
     }
     
     /// Create a lattice from a join operation with custom universe.
@@ -265,13 +283,16 @@ pub mod lattices {
     /// * `join` - The join operation
     /// 
     /// # Returns
-    /// * `Ok(JoinLattice)` - Successfully created lattice
+    /// * `Ok(BasicLattice<i32>)` - Successfully created lattice
     /// * `Err(String)` - Error message if creation fails
     pub fn lattice_from_join_with_universe(
         name: String, 
         univ: Vec<i32>, 
         join: &dyn Operation
-    ) -> Result<JoinLattice, String> {
+    ) -> Result<crate::lat::BasicLattice<i32>, String> {
+        use crate::lat::ordered_set::OrderedSet;
+        use crate::lat::BasicLattice;
+        
         let s = univ.len();
         let mut universe = univ.clone();
         
@@ -305,8 +326,11 @@ pub mod lattices {
             filters.push(bot_filter);
         }
         
-        // Create a simple lattice implementation
-        JoinLattice::new(name, universe, filters)
+        // Create OrderedSet from filters
+        let poset = OrderedSet::ordered_set_from_filters(Some(name.clone()), universe, filters)?;
+        
+        // Create BasicLattice from OrderedSet
+        BasicLattice::new_from_poset(name, poset)
     }
     
     /// Convert a congruence lattice to a small lattice.

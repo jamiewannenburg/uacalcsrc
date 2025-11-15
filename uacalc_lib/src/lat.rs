@@ -14,6 +14,7 @@ use std::sync::Arc;
 pub(crate) enum BasicLatticeInner {
     Partition(std::sync::Arc<std::sync::Mutex<uacalc::lat::BasicLattice<uacalc::alg::conlat::Partition>>>),
     BasicSet(std::sync::Arc<std::sync::Mutex<uacalc::lat::BasicLattice<uacalc::alg::sublat::BasicSet>>>),
+    Int32(std::sync::Arc<std::sync::Mutex<uacalc::lat::BasicLattice<i32>>>),
 }
 
 /// Python wrapper for DivisibilityOrder
@@ -734,14 +735,16 @@ impl PyJoinLattice {
 
 /// Create a lattice from a meet operation using integers for labels
 #[pyfunction]
-fn py_lattice_from_meet(name: String, meet: &Bound<'_, PyAny>) -> PyResult<PyMeetLattice> {
+fn py_lattice_from_meet(name: String, meet: &Bound<'_, PyAny>) -> PyResult<PyBasicLattice> {
     // Try to extract PyIntOperation
     if let Ok(py_int_op) = meet.extract::<PyRef<'_, PyIntOperation>>() {
         // Clone the inner operation to ensure we have ownership
         let op: Box<dyn Operation> = Box::new(py_int_op.inner.clone());
         match lattices::lattice_from_meet(name, op.as_ref()) {
-            Ok(meet_lat) => Ok(PyMeetLattice { inner: meet_lat }),
-            Err(e) => Err(PyValueError::new_err(format!("Failed to create MeetLattice: {}", e))),
+            Ok(basic_lat) => Ok(PyBasicLattice {
+                inner: BasicLatticeInner::Int32(std::sync::Arc::new(std::sync::Mutex::new(basic_lat))),
+            }),
+            Err(e) => Err(PyValueError::new_err(format!("Failed to create BasicLattice: {}", e))),
         }
     }
     // Try to extract PyBasicOperation
@@ -749,8 +752,10 @@ fn py_lattice_from_meet(name: String, meet: &Bound<'_, PyAny>) -> PyResult<PyMee
         // Clone the inner operation to ensure we have ownership
         let op: Box<dyn Operation> = Box::new(py_basic_op.inner.clone());
         match lattices::lattice_from_meet(name, op.as_ref()) {
-            Ok(meet_lat) => Ok(PyMeetLattice { inner: meet_lat }),
-            Err(e) => Err(PyValueError::new_err(format!("Failed to create MeetLattice: {}", e))),
+            Ok(basic_lat) => Ok(PyBasicLattice {
+                inner: BasicLatticeInner::Int32(std::sync::Arc::new(std::sync::Mutex::new(basic_lat))),
+            }),
+            Err(e) => Err(PyValueError::new_err(format!("Failed to create BasicLattice: {}", e))),
         }
     }
     else {
@@ -762,14 +767,16 @@ fn py_lattice_from_meet(name: String, meet: &Bound<'_, PyAny>) -> PyResult<PyMee
 
 /// Create a lattice from a join operation using integers for labels
 #[pyfunction]
-fn py_lattice_from_join(name: String, join: &Bound<'_, PyAny>) -> PyResult<PyJoinLattice> {
+fn py_lattice_from_join(name: String, join: &Bound<'_, PyAny>) -> PyResult<PyBasicLattice> {
     // Try to extract PyIntOperation
     if let Ok(py_int_op) = join.extract::<PyRef<'_, PyIntOperation>>() {
         // Clone the inner operation to ensure we have ownership
         let op: Box<dyn Operation> = Box::new(py_int_op.inner.clone());
         match lattices::lattice_from_join(name, op.as_ref()) {
-            Ok(join_lat) => Ok(PyJoinLattice { inner: join_lat }),
-            Err(e) => Err(PyValueError::new_err(format!("Failed to create JoinLattice: {}", e))),
+            Ok(basic_lat) => Ok(PyBasicLattice {
+                inner: BasicLatticeInner::Int32(std::sync::Arc::new(std::sync::Mutex::new(basic_lat))),
+            }),
+            Err(e) => Err(PyValueError::new_err(format!("Failed to create BasicLattice: {}", e))),
         }
     }
     // Try to extract PyBasicOperation
@@ -777,8 +784,10 @@ fn py_lattice_from_join(name: String, join: &Bound<'_, PyAny>) -> PyResult<PyJoi
         // Clone the inner operation to ensure we have ownership
         let op: Box<dyn Operation> = Box::new(py_basic_op.inner.clone());
         match lattices::lattice_from_join(name, op.as_ref()) {
-            Ok(join_lat) => Ok(PyJoinLattice { inner: join_lat }),
-            Err(e) => Err(PyValueError::new_err(format!("Failed to create JoinLattice: {}", e))),
+            Ok(basic_lat) => Ok(PyBasicLattice {
+                inner: BasicLatticeInner::Int32(std::sync::Arc::new(std::sync::Mutex::new(basic_lat))),
+            }),
+            Err(e) => Err(PyValueError::new_err(format!("Failed to create BasicLattice: {}", e))),
         }
     }
     else {
@@ -794,14 +803,16 @@ fn py_lattice_from_meet_with_universe(
     name: String,
     univ: Vec<i32>,
     meet: &Bound<'_, PyAny>
-) -> PyResult<PyMeetLattice> {
+) -> PyResult<PyBasicLattice> {
     // Try to extract PyIntOperation
     if let Ok(py_int_op) = meet.extract::<PyRef<'_, PyIntOperation>>() {
         // Clone the inner operation to ensure we have ownership
         let op: Box<dyn Operation> = Box::new(py_int_op.inner.clone());
         match lattices::lattice_from_meet_with_universe(name, univ, op.as_ref()) {
-            Ok(meet_lat) => Ok(PyMeetLattice { inner: meet_lat }),
-            Err(e) => Err(PyValueError::new_err(format!("Failed to create MeetLattice: {}", e))),
+            Ok(basic_lat) => Ok(PyBasicLattice {
+                inner: BasicLatticeInner::Int32(std::sync::Arc::new(std::sync::Mutex::new(basic_lat))),
+            }),
+            Err(e) => Err(PyValueError::new_err(format!("Failed to create BasicLattice: {}", e))),
         }
     }
     // Try to extract PyBasicOperation
@@ -809,8 +820,10 @@ fn py_lattice_from_meet_with_universe(
         // Clone the inner operation to ensure we have ownership
         let op: Box<dyn Operation> = Box::new(py_basic_op.inner.clone());
         match lattices::lattice_from_meet_with_universe(name, univ, op.as_ref()) {
-            Ok(meet_lat) => Ok(PyMeetLattice { inner: meet_lat }),
-            Err(e) => Err(PyValueError::new_err(format!("Failed to create MeetLattice: {}", e))),
+            Ok(basic_lat) => Ok(PyBasicLattice {
+                inner: BasicLatticeInner::Int32(std::sync::Arc::new(std::sync::Mutex::new(basic_lat))),
+            }),
+            Err(e) => Err(PyValueError::new_err(format!("Failed to create BasicLattice: {}", e))),
         }
     }
     else {
@@ -826,14 +839,16 @@ fn py_lattice_from_join_with_universe(
     name: String,
     univ: Vec<i32>,
     join: &Bound<'_, PyAny>
-) -> PyResult<PyJoinLattice> {
+) -> PyResult<PyBasicLattice> {
     // Try to extract PyIntOperation
     if let Ok(py_int_op) = join.extract::<PyRef<'_, PyIntOperation>>() {
         // Clone the inner operation to ensure we have ownership
         let op: Box<dyn Operation> = Box::new(py_int_op.inner.clone());
         match lattices::lattice_from_join_with_universe(name, univ, op.as_ref()) {
-            Ok(join_lat) => Ok(PyJoinLattice { inner: join_lat }),
-            Err(e) => Err(PyValueError::new_err(format!("Failed to create JoinLattice: {}", e))),
+            Ok(basic_lat) => Ok(PyBasicLattice {
+                inner: BasicLatticeInner::Int32(std::sync::Arc::new(std::sync::Mutex::new(basic_lat))),
+            }),
+            Err(e) => Err(PyValueError::new_err(format!("Failed to create BasicLattice: {}", e))),
         }
     }
     // Try to extract PyBasicOperation
@@ -841,8 +856,10 @@ fn py_lattice_from_join_with_universe(
         // Clone the inner operation to ensure we have ownership
         let op: Box<dyn Operation> = Box::new(py_basic_op.inner.clone());
         match lattices::lattice_from_join_with_universe(name, univ, op.as_ref()) {
-            Ok(join_lat) => Ok(PyJoinLattice { inner: join_lat }),
-            Err(e) => Err(PyValueError::new_err(format!("Failed to create JoinLattice: {}", e))),
+            Ok(basic_lat) => Ok(PyBasicLattice {
+                inner: BasicLatticeInner::Int32(std::sync::Arc::new(std::sync::Mutex::new(basic_lat))),
+            }),
+            Err(e) => Err(PyValueError::new_err(format!("Failed to create BasicLattice: {}", e))),
         }
     }
     else {
@@ -1026,6 +1043,7 @@ impl PyBasicLattice {
         match &self.inner {
             BasicLatticeInner::Partition(inner) => inner.lock().unwrap().cardinality(),
             BasicLatticeInner::BasicSet(inner) => inner.lock().unwrap().cardinality(),
+            BasicLatticeInner::Int32(inner) => inner.lock().unwrap().cardinality(),
         }
     }
     
@@ -1034,6 +1052,7 @@ impl PyBasicLattice {
         match &self.inner {
             BasicLatticeInner::Partition(inner) => inner.lock().unwrap().name().to_string(),
             BasicLatticeInner::BasicSet(inner) => inner.lock().unwrap().name().to_string(),
+            BasicLatticeInner::Int32(inner) => inner.lock().unwrap().name().to_string(),
         }
     }
     
@@ -1045,6 +1064,10 @@ impl PyBasicLattice {
                 inner.to_graph_data()
             }
             BasicLatticeInner::BasicSet(inner) => {
+                let inner = inner.lock().unwrap();
+                inner.to_graph_data()
+            }
+            BasicLatticeInner::Int32(inner) => {
                 let inner = inner.lock().unwrap();
                 inner.to_graph_data()
             }
@@ -1066,6 +1089,86 @@ impl PyBasicLattice {
     /// Python repr representation
     fn __repr__(&self) -> String {
         format!("BasicLattice({})", self.name())
+    }
+    
+    /// Get universe as a list of integers (for BasicLattice<i32> only)
+    fn universe(&self) -> PyResult<Vec<i32>> {
+        match &self.inner {
+            BasicLatticeInner::Int32(inner) => {
+                let inner = inner.lock().unwrap();
+                let univ_list = inner.get_universe_list();
+                Ok(univ_list.iter()
+                    .map(|po_elem| *po_elem.get_underlying_object())
+                    .collect())
+            }
+            _ => Err(PyValueError::new_err("universe() is only available for BasicLattice<i32> created from operations")),
+        }
+    }
+    
+    /// Check if a ≤ b (for BasicLattice<i32> only)
+    fn leq(&self, a: i32, b: i32) -> PyResult<bool> {
+        match &self.inner {
+            BasicLatticeInner::Int32(inner) => {
+                let inner = inner.lock().unwrap();
+                let univ_list = inner.get_universe_list();
+                
+                // Find POElems for a and b
+                let po_a = univ_list.iter().find(|e| *e.get_underlying_object() == a);
+                let po_b = univ_list.iter().find(|e| *e.get_underlying_object() == b);
+                
+                match (po_a, po_b) {
+                    (Some(pa), Some(pb)) => Ok(inner.leq(pa, pb)),
+                    _ => Err(PyValueError::new_err(format!("Elements {} or {} not found in universe", a, b))),
+                }
+            }
+            _ => Err(PyValueError::new_err("leq() is only available for BasicLattice<i32> created from operations")),
+        }
+    }
+    
+    /// Compute join of two elements (for BasicLattice<i32> only)
+    fn join(&self, a: i32, b: i32) -> PyResult<i32> {
+        match &self.inner {
+            BasicLatticeInner::Int32(inner) => {
+                let inner = inner.lock().unwrap();
+                let univ_list = inner.get_universe_list();
+                
+                // Find POElems for a and b
+                let po_a = univ_list.iter().find(|e| *e.get_underlying_object() == a);
+                let po_b = univ_list.iter().find(|e| *e.get_underlying_object() == b);
+                
+                match (po_a, po_b) {
+                    (Some(pa), Some(pb)) => {
+                        let result = inner.join(pa, pb);
+                        Ok(*result.get_underlying_object())
+                    }
+                    _ => Err(PyValueError::new_err(format!("Elements {} or {} not found in universe", a, b))),
+                }
+            }
+            _ => Err(PyValueError::new_err("join() is only available for BasicLattice<i32> created from operations")),
+        }
+    }
+    
+    /// Compute meet of two elements (for BasicLattice<i32> only)
+    fn meet(&self, a: i32, b: i32) -> PyResult<i32> {
+        match &self.inner {
+            BasicLatticeInner::Int32(inner) => {
+                let inner = inner.lock().unwrap();
+                let univ_list = inner.get_universe_list();
+                
+                // Find POElems for a and b
+                let po_a = univ_list.iter().find(|e| *e.get_underlying_object() == a);
+                let po_b = univ_list.iter().find(|e| *e.get_underlying_object() == b);
+                
+                match (po_a, po_b) {
+                    (Some(pa), Some(pb)) => {
+                        let result = inner.meet(pa, pb);
+                        Ok(*result.get_underlying_object())
+                    }
+                    _ => Err(PyValueError::new_err(format!("Elements {} or {} not found in universe", a, b))),
+                }
+            }
+            _ => Err(PyValueError::new_err("meet() is only available for BasicLattice<i32> created from operations")),
+        }
     }
 }
 
