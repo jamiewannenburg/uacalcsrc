@@ -22,6 +22,9 @@ jobs:
   sync-and-tag:
     name: Sync Versions and Create Tag
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
+      tag_created: ${{ steps.check-tag.outputs.exists == 'false' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.create_tag == true)) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
