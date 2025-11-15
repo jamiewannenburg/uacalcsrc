@@ -111,11 +111,13 @@ jobs:
 
       - name: Fetch tags
         if: github.event_name == 'workflow_run' || github.event_name == 'workflow_dispatch'
+        shell: bash
         run: |
           git fetch --tags
 
       - name: Get tag name
         id: tag
+        shell: bash
         run: |
           if [ "${{ github.event_name }}" == "workflow_run" ]; then
             # When triggered by workflow_run, get the latest tag matching v* pattern
@@ -148,6 +150,7 @@ jobs:
 
       - name: Checkout tag
         if: github.event_name == 'workflow_run' || github.event_name == 'workflow_dispatch'
+        shell: bash
         run: |
           git checkout ${{ steps.tag.outputs.tag }}
 
@@ -332,11 +335,13 @@ jobs:
 
       - name: Fetch tags
         if: github.event_name == 'workflow_run'
+        shell: bash
         run: |
           git fetch --tags
 
       - name: Get tag name
         id: tag
+        shell: bash
         run: |
           if [ "${{ github.event_name }}" == "workflow_run" ]; then
             # When triggered by workflow_run, get the latest tag matching v* pattern
@@ -355,6 +360,7 @@ jobs:
           fi
 
       - name: Flatten wheel directory structure
+        shell: bash
         run: |
           # Create a flat directory for all wheels
           mkdir -p dist_wheels
@@ -380,6 +386,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload wheels to release
+        shell: bash
         run: |
           # Upload each wheel file to the release
           for wheel in dist_wheels/*.whl; do
