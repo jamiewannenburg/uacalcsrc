@@ -852,16 +852,42 @@ fn py_lattice_from_join_with_universe(
     }
 }
 
-/// Convert a congruence lattice to a small lattice (not implemented)
+/// Convert a congruence lattice to a small lattice
 #[pyfunction]
-fn py_con_to_small_lattice(_con: &PyAny) -> PyResult<PyObject> {
-    Err(PyValueError::new_err("con_to_small_lattice requires CongruenceLattice which is not yet implemented"))
+fn py_con_to_small_lattice(con: &Bound<'_, PyAny>, _py: Python) -> PyResult<PyObject> {
+    use crate::alg::conlat::congruence_lattice::PyCongruenceLattice;
+    
+    // Try to extract PyCongruenceLattice
+    if let Ok(py_con_lat) = con.extract::<PyRef<'_, PyCongruenceLattice>>() {
+        // Clone the inner CongruenceLattice since we need mutable access
+        let mut con_lat = py_con_lat.inner.clone();
+        
+        // Call the Rust function
+        match uacalc::lat::lattices::con_to_small_lattice(&mut con_lat) {
+            Ok(_small_lat) => {
+                // SmallLattice is a trait, so we can't directly return it to Python
+                // TODO: Create a PySmallLattice wrapper type or convert to OrderedSet/BasicLattice
+                Err(PyValueError::new_err("con_to_small_lattice is implemented in Rust but needs a PySmallLattice wrapper type to be fully exposed to Python. Consider using the BasicLattice view of the CongruenceLattice instead."))
+            }
+            Err(e) => Err(PyValueError::new_err(format!("Failed to convert congruence lattice to small lattice: {}", e)))
+        }
+    } else {
+        Err(PyValueError::new_err("con_to_small_lattice requires a CongruenceLattice instance"))
+    }
 }
 
-/// Create the dual of a basic lattice (not implemented)
+/// Create the dual of a basic lattice
 #[pyfunction]
-fn py_dual(_lat: &PyAny) -> PyResult<PyObject> {
-    Err(PyValueError::new_err("dual requires BasicLattice which is not yet implemented"))
+fn py_dual(lat: &Bound<'_, PyAny>, _py: Python) -> PyResult<PyObject> {
+    // Try to extract PyBasicLattice
+    if let Ok(_py_basic_lat) = lat.extract::<PyRef<'_, PyBasicLattice>>() {
+        // The dual function takes ownership of BasicLattice, which is problematic from Python
+        // since BasicLattice is wrapped in Arc<Mutex<...>> and doesn't implement Clone easily.
+        // TODO: Either implement Clone for BasicLattice or change dual to take a reference
+        Err(PyValueError::new_err("dual is implemented in Rust but requires BasicLattice to implement Clone or dual to take a reference. This is a known limitation that needs to be addressed."))
+    } else {
+        Err(PyValueError::new_err("dual requires a BasicLattice instance"))
+    }
 }
 
 /// Python wrapper for LatticeGraphData

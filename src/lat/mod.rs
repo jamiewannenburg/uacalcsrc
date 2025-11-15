@@ -78,6 +78,9 @@ pub use basic_lattice::BasicLattice;
 /// and other lattice operations. It's a partial implementation that excludes
 /// methods requiring CongruenceLattice and BasicLattice dependencies.
 pub mod lattices {
+    use std::fmt::{Debug, Display};
+    use std::hash::Hash;
+    use std::sync::Arc;
     use crate::alg::op::Operation;
     use crate::lat::Order;
     
@@ -308,30 +311,530 @@ pub mod lattices {
     
     /// Convert a congruence lattice to a small lattice.
     /// 
-    /// This method is not implemented in the partial version as it requires
-    /// CongruenceLattice which is not yet available.
+    /// This method converts a CongruenceLattice to a SmallLattice by computing
+    /// the upper covers for each element using join irreducibles.
     /// 
     /// # Arguments
     /// * `con` - The congruence lattice to convert
     /// 
     /// # Returns
-    /// * `Err(String)` - Always returns an error indicating this method is not implemented
-    pub fn con_to_small_lattice(_con: &dyn crate::lat::Lattice<i32>) -> Result<Box<dyn crate::lat::SmallLattice<i32>>, String> {
-        Err("con_to_small_lattice requires CongruenceLattice which is not yet implemented".to_string())
+    /// * `Ok(Box<dyn SmallLattice<Partition>>)` - Successfully created small lattice
+    /// * `Err(String)` - Error message if conversion fails
+    pub fn con_to_small_lattice<T>(
+        con: &mut crate::alg::conlat::CongruenceLattice<T>
+    ) -> Result<Box<dyn crate::lat::SmallLattice<crate::alg::conlat::Partition>>, String>
+    where
+        T: Clone + PartialEq + Eq + std::hash::Hash + Debug + Display + Send + Sync + 'static,
+    {
+        use crate::alg::conlat::Partition;
+        use crate::lat::Lattice;
+        
+        // Get universe and join irreducibles
+        let univ: Vec<Partition> = con.universe().iter().cloned().collect();
+        // Use the mutable method to compute join irreducibles if needed
+        let jis: Vec<Partition> = con.join_irreducibles().iter().cloned().collect();
+        
+        // Build upper covers for each element
+        let mut ucs: Vec<Vec<usize>> = Vec::new();
+        for (idx, elem1) in univ.iter().enumerate() {
+            let mut covs = Vec::new();
+            for ji in &jis {
+                let join = Lattice::join(con, elem1, ji);
+                if join != *elem1 {
+                    let mut bad = false;
+                    let mut to_remove = Vec::new();
+                    
+                    // Check if join is greater than any existing cover
+                    for (cov_idx, elem2) in covs.iter().enumerate() {
+                        let cover_part: &Partition = &univ[*elem2];
+                        if cover_part.leq(&join) {
+                            bad = true;
+                            break;
+                        }
+                        if join.leq(cover_part) {
+                            to_remove.push(cov_idx);
+                        }
+                    }
+                    
+                    // Remove elements that are greater than join
+                    for &idx in to_remove.iter().rev() {
+                        covs.remove(idx);
+                    }
+                    
+                    if !bad {
+                        // Find index of join in universe
+                        if let Some(join_idx) = univ.iter().position(|p| p == &join) {
+                            covs.push(join_idx);
+                        }
+                    }
+                }
+            }
+            ucs.push(covs);
+        }
+        
+        // Create SmallLattice implementation
+        Ok(Box::new(PartitionSmallLattice {
+            universe: univ,
+            upper_covers: ucs,
+        }))
     }
     
     /// Create the dual of a basic lattice.
     /// 
-    /// This method is not implemented in the partial version as it requires
-    /// BasicLattice which is not yet available.
+    /// The dual lattice reverses the order (leq becomes reversed) and swaps
+    /// join and meet operations.
     /// 
     /// # Arguments
     /// * `lat` - The basic lattice to dualize
     /// 
     /// # Returns
-    /// * `Err(String)` - Always returns an error indicating this method is not implemented
-    pub fn dual(_lat: &dyn crate::lat::Lattice<i32>) -> Result<Box<dyn crate::lat::Lattice<i32>>, String> {
-        Err("dual requires BasicLattice which is not yet implemented".to_string())
+    /// * `Ok(Box<dyn Lattice<T>>)` - Successfully created dual lattice
+    /// * `Err(String)` - Error message if creation fails
+    pub fn dual<T>(lat: crate::lat::BasicLattice<T>) -> Result<Box<dyn crate::lat::Lattice<Arc<crate::lat::ordered_set::POElem<T>>>>, String>
+    where
+        T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static,
+    {
+        use std::sync::Arc;
+        use crate::alg::algebra::Algebra;
+        
+        // Get name and description from the lattice
+        let name = lat.name().to_string();
+        let description = lat.description().map(|s| s.to_string());
+        
+        // Create a wrapper that reverses the order and swaps join/meet
+        Ok(Box::new(DualLattice {
+            base: Arc::new(std::sync::RwLock::new(lat)),
+            name,
+            description,
+        }))
+    }
+    
+    /// A SmallLattice implementation for Partition elements.
+    #[derive(Debug)]
+    struct PartitionSmallLattice {
+        universe: Vec<crate::alg::conlat::Partition>,
+        upper_covers: Vec<Vec<usize>>,
+    }
+    
+    impl Display for PartitionSmallLattice {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            write!(f, "PartitionSmallLattice(size={})", self.universe.len())
+        }
+    }
+    
+    impl crate::lat::Order<crate::alg::conlat::Partition> for PartitionSmallLattice {
+        fn leq(&self, a: &crate::alg::conlat::Partition, b: &crate::alg::conlat::Partition) -> bool {
+            a.leq(b)
+        }
+    }
+    
+    impl crate::lat::Lattice<crate::alg::conlat::Partition> for PartitionSmallLattice {
+        fn join_irreducibles(&self) -> Option<Vec<crate::alg::conlat::Partition>> {
+            // Find join irreducibles (elements with exactly one upper cover)
+            let jis: Vec<_> = self.upper_covers.iter()
+                .enumerate()
+                .filter(|(_, covers)| covers.len() == 1)
+                .map(|(idx, _)| self.universe[idx].clone())
+                .collect();
+            Some(jis)
+        }
+        
+        fn meet_irreducibles(&self) -> Option<Vec<crate::alg::conlat::Partition>> {
+            // For now, return empty - can be computed if needed
+            None
+        }
+        
+        fn atoms(&self) -> Option<Vec<crate::alg::conlat::Partition>> {
+            // Atoms are elements with no lower covers (minimal elements)
+            // Elements with empty upper covers in the dual are atoms
+            // For simplicity, return elements that are covered by all others
+            None
+        }
+        
+        fn coatoms(&self) -> Option<Vec<crate::alg::conlat::Partition>> {
+            // Coatoms are elements with no upper covers (maximal elements)
+            let mut coatoms = Vec::new();
+            for (idx, covers) in self.upper_covers.iter().enumerate() {
+                if covers.is_empty() {
+                    coatoms.push(self.universe[idx].clone());
+                }
+            }
+            Some(coatoms)
+        }
+        
+        fn join(&self, a: &crate::alg::conlat::Partition, b: &crate::alg::conlat::Partition) -> crate::alg::conlat::Partition {
+            a.join(b).unwrap_or_else(|_| a.clone())
+        }
+        
+        fn join_list(&self, args: &[crate::alg::conlat::Partition]) -> crate::alg::conlat::Partition {
+            if args.is_empty() {
+                return self.universe[0].clone(); // Return first element as zero
+            }
+            args.iter().fold(args[0].clone(), |acc, x| self.join(&acc, x))
+        }
+        
+        fn meet(&self, a: &crate::alg::conlat::Partition, b: &crate::alg::conlat::Partition) -> crate::alg::conlat::Partition {
+            a.meet(b).unwrap_or_else(|_| a.clone())
+        }
+        
+        fn meet_list(&self, args: &[crate::alg::conlat::Partition]) -> crate::alg::conlat::Partition {
+            if args.is_empty() {
+                return self.universe.last().unwrap().clone(); // Return last element as one
+            }
+            args.iter().fold(args[0].clone(), |acc, x| self.meet(&acc, x))
+        }
+    }
+    
+    impl crate::lat::SmallLattice<crate::alg::conlat::Partition> for PartitionSmallLattice {
+        fn upper_covers_indices(&self, index: usize) -> Vec<usize> {
+            if index < self.upper_covers.len() {
+                self.upper_covers[index].clone()
+            } else {
+                vec![]
+            }
+        }
+    }
+    
+    impl crate::alg::algebra::Algebra for PartitionSmallLattice {
+        type UniverseItem = crate::alg::conlat::Partition;
+        
+        fn name(&self) -> &str {
+            "PartitionSmallLattice"
+        }
+        
+        fn cardinality(&self) -> i32 {
+            self.universe.len() as i32
+        }
+        
+        fn input_size(&self) -> i32 {
+            // For a lattice, input size is cardinality^2 for join and meet
+            let card = self.universe.len() as i64;
+            let size = card * card * 2; // join and meet operations
+            if size > i32::MAX as i64 {
+                -1
+            } else {
+                size as i32
+            }
+        }
+        
+        fn is_unary(&self) -> bool {
+            false // Lattices have binary operations
+        }
+        
+        fn universe(&self) -> Box<dyn Iterator<Item = Self::UniverseItem> + 'static> {
+            Box::new(self.universe.clone().into_iter())
+        }
+        
+        fn iterator(&self) -> Box<dyn Iterator<Item = Self::UniverseItem> + 'static> {
+            Box::new(self.universe.clone().into_iter())
+        }
+        
+        fn operations(&self) -> Vec<Box<dyn crate::alg::op::Operation>> {
+            vec![]
+        }
+        
+        fn get_operation(&self, _sym: &crate::alg::op::OperationSymbol) -> Option<Box<dyn crate::alg::op::Operation>> {
+            None
+        }
+        
+        fn get_operations_map(&self) -> std::collections::HashMap<crate::alg::op::OperationSymbol, Box<dyn crate::alg::op::Operation>> {
+            std::collections::HashMap::new()
+        }
+        
+        fn set_name(&mut self, _name: String) {
+            // No-op - name is fixed
+        }
+        
+        fn description(&self) -> Option<&str> {
+            None
+        }
+        
+        fn set_description(&mut self, _desc: Option<String>) {
+            // No-op
+        }
+        
+        fn similarity_type(&self) -> &crate::alg::op::SimilarityType {
+            // Return the lattice similarity type
+            use crate::alg::op::SimilarityType;
+            use once_cell::sync::Lazy;
+            static LATTICE_TYPE: Lazy<SimilarityType> = Lazy::new(|| {
+                use crate::alg::op::OperationSymbol;
+                SimilarityType::new(vec![
+                    OperationSymbol::join().clone(),
+                    OperationSymbol::meet().clone(),
+                ])
+            });
+            &LATTICE_TYPE
+        }
+        
+        fn update_similarity_type(&mut self) {
+            // No-op - similarity type is fixed
+        }
+        
+        fn is_similar_to(&self, other: &dyn crate::alg::algebra::Algebra<UniverseItem = Self::UniverseItem>) -> bool {
+            self.similarity_type() == other.similarity_type()
+        }
+        
+        fn make_operation_tables(&mut self) {
+            // No-op - no operations to table
+        }
+        
+        fn constant_operations(&self) -> Vec<Box<dyn crate::alg::op::Operation>> {
+            vec![]
+        }
+        
+        fn is_idempotent(&self) -> bool {
+            true
+        }
+        
+        fn is_total(&self) -> bool {
+            true
+        }
+        
+        fn monitoring(&self) -> bool {
+            false
+        }
+        
+        fn get_monitor(&self) -> Option<&dyn crate::alg::algebra::ProgressMonitor> {
+            None
+        }
+        
+        fn set_monitor(&mut self, _monitor: Option<Box<dyn crate::alg::algebra::ProgressMonitor>>) {
+            // No-op
+        }
+    }
+    
+    /// A dual lattice wrapper that reverses order and swaps join/meet.
+    /// 
+    /// This uses Arc and RwLock for interior mutability to handle methods
+    /// that require mutable access in a thread-safe way.
+    struct DualLattice<T>
+    where
+        T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static,
+    {
+        base: std::sync::Arc<std::sync::RwLock<crate::lat::BasicLattice<T>>>,
+        name: String,
+        description: Option<String>,
+    }
+    
+    impl<T> std::fmt::Debug for DualLattice<T>
+    where
+        T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static,
+    {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            write!(f, "DualLattice")
+        }
+    }
+    
+    impl<T> std::fmt::Display for DualLattice<T>
+    where
+        T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static,
+    {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            let base = self.base.read().unwrap();
+            write!(f, "Dual({})", base.name())
+        }
+    }
+    
+    impl<T> crate::lat::Order<Arc<crate::lat::ordered_set::POElem<T>>> for DualLattice<T>
+    where
+        T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static,
+    {
+        fn leq(&self, a: &Arc<crate::lat::ordered_set::POElem<T>>, b: &Arc<crate::lat::ordered_set::POElem<T>>) -> bool {
+            // Reverse the order: a ≤ b in dual iff b ≤ a in original
+            let base = self.base.read().unwrap();
+            base.leq(b, a)
+        }
+    }
+    
+    impl<T> crate::alg::algebra::Algebra for DualLattice<T>
+    where
+        T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static,
+    {
+        type UniverseItem = Arc<crate::lat::ordered_set::POElem<T>>;
+        
+        fn universe(&self) -> Box<dyn Iterator<Item = Self::UniverseItem> + 'static> {
+            let base = self.base.read().unwrap();
+            // Use fully qualified syntax to call the trait method, not the public method
+            crate::alg::algebra::Algebra::universe(&*base)
+        }
+        
+        fn cardinality(&self) -> i32 {
+            let base = self.base.read().unwrap();
+            base.cardinality() as i32
+        }
+        
+        fn input_size(&self) -> i32 {
+            let base = self.base.read().unwrap();
+            base.input_size()
+        }
+        
+        fn is_unary(&self) -> bool {
+            let base = self.base.read().unwrap();
+            base.is_unary()
+        }
+        
+        fn iterator(&self) -> Box<dyn Iterator<Item = Self::UniverseItem> + 'static> {
+            let base = self.base.read().unwrap();
+            base.iterator()
+        }
+        
+        fn operations(&self) -> Vec<Box<dyn crate::alg::op::Operation>> {
+            let base = self.base.read().unwrap();
+            base.operations()
+        }
+        
+        fn get_operation(&self, sym: &crate::alg::op::OperationSymbol) -> Option<Box<dyn crate::alg::op::Operation>> {
+            let base = self.base.read().unwrap();
+            base.get_operation(sym)
+        }
+        
+        fn get_operations_map(&self) -> std::collections::HashMap<crate::alg::op::OperationSymbol, Box<dyn crate::alg::op::Operation>> {
+            let base = self.base.read().unwrap();
+            base.get_operations_map()
+        }
+        
+        fn similarity_type(&self) -> &crate::alg::op::SimilarityType {
+            // We can't return a reference to data inside the RwLock guard
+            // So we need to use the base's similarity type directly
+            // This is a limitation - we'll need to store a reference or clone
+            // For now, we'll use a static or clone the similarity type
+            // Actually, BasicLattice stores the similarity type in the base GeneralAlgebra,
+            // which should be accessible. Let me check if we can access it differently.
+            // Since we can't return a reference, we need to either:
+            // 1. Store the similarity type in DualLattice
+            // 2. Clone it (but SimilarityType might not be Clone)
+            // For now, let's use a workaround - return a static lattice similarity type
+            use crate::alg::op::SimilarityType;
+            use once_cell::sync::Lazy;
+            static LATTICE_TYPE: Lazy<SimilarityType> = Lazy::new(|| {
+                use crate::alg::op::OperationSymbol;
+                SimilarityType::new(vec![
+                    OperationSymbol::join().clone(),
+                    OperationSymbol::meet().clone(),
+                ])
+            });
+            &LATTICE_TYPE
+        }
+        
+        fn update_similarity_type(&mut self) {
+            let mut base = self.base.write().unwrap();
+            base.update_similarity_type()
+        }
+        
+        fn is_similar_to(&self, other: &dyn crate::alg::algebra::Algebra<UniverseItem = Self::UniverseItem>) -> bool {
+            let base = self.base.read().unwrap();
+            base.is_similar_to(other)
+        }
+        
+        fn make_operation_tables(&mut self) {
+            let mut base = self.base.write().unwrap();
+            base.make_operation_tables()
+        }
+        
+        fn constant_operations(&self) -> Vec<Box<dyn crate::alg::op::Operation>> {
+            let base = self.base.read().unwrap();
+            base.constant_operations()
+        }
+        
+        fn is_idempotent(&self) -> bool {
+            let base = self.base.read().unwrap();
+            base.is_idempotent()
+        }
+        
+        fn is_total(&self) -> bool {
+            let base = self.base.read().unwrap();
+            base.is_total()
+        }
+        
+        fn monitoring(&self) -> bool {
+            let base = self.base.read().unwrap();
+            base.monitoring()
+        }
+        
+        fn get_monitor(&self) -> Option<&dyn crate::alg::algebra::ProgressMonitor> {
+            // Can't return a reference to data inside RwLock guard
+            // BasicLattice doesn't store monitor, so return None
+            None
+        }
+        
+        fn set_monitor(&mut self, monitor: Option<Box<dyn crate::alg::algebra::ProgressMonitor>>) {
+            let mut base = self.base.write().unwrap();
+            base.set_monitor(monitor)
+        }
+        
+        fn name(&self) -> &str {
+            &self.name
+        }
+        
+        fn set_name(&mut self, name: String) {
+            self.name = name.clone();
+            let mut base = self.base.write().unwrap();
+            base.set_name(name)
+        }
+        
+        fn description(&self) -> Option<&str> {
+            self.description.as_deref()
+        }
+        
+        fn set_description(&mut self, desc: Option<String>) {
+            self.description = desc.clone();
+            let mut base = self.base.write().unwrap();
+            base.set_description(desc)
+        }
+    }
+    
+    impl<T> crate::lat::Lattice<Arc<crate::lat::ordered_set::POElem<T>>> for DualLattice<T>
+    where
+        T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static,
+    {
+        fn join_irreducibles(&self) -> Option<Vec<Arc<crate::lat::ordered_set::POElem<T>>>> {
+            // Join irreducibles in dual are meet irreducibles in original
+            let mut base = self.base.write().unwrap();
+            base.meet_irreducibles().map(|mis| mis.iter().cloned().collect())
+        }
+        
+        fn meet_irreducibles(&self) -> Option<Vec<Arc<crate::lat::ordered_set::POElem<T>>>> {
+            // Meet irreducibles in dual are join irreducibles in original
+            let mut base = self.base.write().unwrap();
+            base.join_irreducibles().map(|jis| jis.iter().cloned().collect())
+        }
+        
+        fn atoms(&self) -> Option<Vec<Arc<crate::lat::ordered_set::POElem<T>>>> {
+            // Atoms in dual are coatoms in original
+            let base = self.base.read().unwrap();
+            Some(base.coatoms().iter().cloned().collect())
+        }
+        
+        fn coatoms(&self) -> Option<Vec<Arc<crate::lat::ordered_set::POElem<T>>>> {
+            // Coatoms in dual are atoms in original
+            let base = self.base.read().unwrap();
+            Some(base.atoms().iter().cloned().collect())
+        }
+        
+        fn join(&self, a: &Arc<crate::lat::ordered_set::POElem<T>>, b: &Arc<crate::lat::ordered_set::POElem<T>>) -> Arc<crate::lat::ordered_set::POElem<T>> {
+            // Join in dual is meet in original
+            let base = self.base.read().unwrap();
+            base.meet(a, b)
+        }
+        
+        fn join_list(&self, args: &[Arc<crate::lat::ordered_set::POElem<T>>]) -> Arc<crate::lat::ordered_set::POElem<T>> {
+            // Join list in dual is meet list in original
+            let base = self.base.read().unwrap();
+            base.meet_list(args)
+        }
+        
+        fn meet(&self, a: &Arc<crate::lat::ordered_set::POElem<T>>, b: &Arc<crate::lat::ordered_set::POElem<T>>) -> Arc<crate::lat::ordered_set::POElem<T>> {
+            // Meet in dual is join in original
+            let base = self.base.read().unwrap();
+            base.join(a, b)
+        }
+        
+        fn meet_list(&self, args: &[Arc<crate::lat::ordered_set::POElem<T>>]) -> Arc<crate::lat::ordered_set::POElem<T>> {
+            // Meet list in dual is join list in original
+            let base = self.base.read().unwrap();
+            base.join_list(args)
+        }
     }
     
     /// A simple lattice implementation for meet operations.
