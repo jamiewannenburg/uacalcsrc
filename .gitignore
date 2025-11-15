@@ -17,6 +17,11 @@ tests/.scratch/*
 *.pyzw
 *.pyz
 *.pyzw
+# Native extensions copied by maturin during development
+python/uacalc_lib/*.so
+python/uacalc_lib/*.pyd
+python/uacalc_lib/*.dylib
+python/uacalc_lib/*.dll
 **/*.egg-info/
 Cargo.lock
 .benchmarks/

@@ -11,6 +11,7 @@ import platform
 
 # Import clean class names (Py* names are not available)
 import uacalc_lib
+
 AlgebraFromMinimalSets = uacalc_lib.alg.AlgebraFromMinimalSets
 BasicAlgebra = uacalc_lib.alg.BasicAlgebra
 

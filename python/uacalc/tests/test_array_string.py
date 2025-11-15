@@ -7,7 +7,7 @@ including unit tests and integration tests.
 
 import json
 import pytest
-import uacalc_lib.uacalc_lib as lib
+import uacalc_lib as lib
 from test_utils import TestConfig, TestHarness
 
 class TestArrayString:
