@@ -899,35 +899,50 @@ impl PyBasicLattice {
         }
     }
     
-    /// Get join irreducibles (for BasicLattice<Partition> only, created from CongruenceLattice).
+    /// Get join irreducibles.
     ///
     /// Returns:
-    ///     List[Partition]: List of join irreducible elements
-    fn join_irreducibles(&self) -> PyResult<Vec<crate::alg::conlat::partition::PyPartition>> {
+    ///     For BasicLattice<Partition>: List[Partition] - List of join irreducible elements
+    ///     For BasicLattice<i32>: List[int] - List of join irreducible elements
+    fn join_irreducibles(&self, py: Python) -> PyResult<PyObject> {
         match &self.inner {
             BasicLatticeInner::Partition(inner) => {
                 let mut inner = inner.lock().unwrap();
                 // Call the inherent method, not the trait method
                 let jis: &[std::sync::Arc<uacalc::lat::ordered_set::POElem<uacalc::alg::conlat::Partition>>] = 
                     uacalc::lat::BasicLattice::join_irreducibles(&mut *inner);
-                let mut result = Vec::new();
+                let mut py_objects = Vec::new();
                 for po_elem_arc in jis {
                     // po_elem_arc is &Arc<POElem<Partition>>, dereference to get &POElem<Partition>
                     let po_elem: &uacalc::lat::ordered_set::POElem<uacalc::alg::conlat::Partition> = po_elem_arc.deref();
                     let part = po_elem.get_underlying_object();
-                    result.push(crate::alg::conlat::partition::PyPartition { inner: part.clone() });
+                    let py_partition = crate::alg::conlat::partition::PyPartition { inner: part.clone() };
+                    py_objects.push(py_partition.into_py(py));
                 }
-                Ok(result)
+                Ok(py_objects.into_py(py))
             }
-            _ => Err(PyValueError::new_err("join_irreducibles() is only available for BasicLattice<Partition> created from CongruenceLattice")),
+            BasicLatticeInner::Int32(inner) => {
+                let mut inner = inner.lock().unwrap();
+                let jis: &[std::sync::Arc<uacalc::lat::ordered_set::POElem<i32>>] = 
+                    uacalc::lat::BasicLattice::join_irreducibles(&mut *inner);
+                let mut result = Vec::new();
+                for po_elem_arc in jis {
+                    let po_elem: &uacalc::lat::ordered_set::POElem<i32> = po_elem_arc.deref();
+                    let val = po_elem.get_underlying_object();
+                    result.push(*val);
+                }
+                Ok(result.into_py(py))
+            }
+            _ => Err(PyValueError::new_err("join_irreducibles() is only available for BasicLattice<Partition> or BasicLattice<i32>")),
         }
     }
     
-    /// Get zero (bottom) element (for BasicLattice<Partition> only).
+    /// Get zero (bottom) element.
     ///
     /// Returns:
-    ///     Partition: The zero (bottom) element
-    fn zero(&self) -> PyResult<crate::alg::conlat::partition::PyPartition> {
+    ///     For BasicLattice<Partition>: Partition - The zero (bottom) element
+    ///     For BasicLattice<i32>: int - The zero (bottom) element
+    fn zero(&self, py: Python) -> PyResult<PyObject> {
         match &self.inner {
             BasicLatticeInner::Partition(inner) => {
                 let inner = inner.lock().unwrap();
@@ -935,9 +950,17 @@ impl PyBasicLattice {
                 // zero is Arc<POElem<Partition>>, dereference to get &POElem<Partition>
                 let po_elem: &uacalc::lat::ordered_set::POElem<uacalc::alg::conlat::Partition> = zero.deref();
                 let part = po_elem.get_underlying_object();
-                Ok(crate::alg::conlat::partition::PyPartition { inner: part.clone() })
+                let py_partition = crate::alg::conlat::partition::PyPartition { inner: part.clone() };
+                Ok(py_partition.into_py(py))
             }
-            _ => Err(PyValueError::new_err("zero() is only available for BasicLattice<Partition> created from CongruenceLattice")),
+            BasicLatticeInner::Int32(inner) => {
+                let inner = inner.lock().unwrap();
+                let zero = inner.zero();
+                let po_elem: &uacalc::lat::ordered_set::POElem<i32> = zero.deref();
+                let val = po_elem.get_underlying_object();
+                Ok(val.into_py(py))
+            }
+            _ => Err(PyValueError::new_err("zero() is only available for BasicLattice<Partition> or BasicLattice<i32>")),
         }
     }
 }
