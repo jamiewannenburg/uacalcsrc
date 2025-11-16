@@ -8,6 +8,7 @@ use uacalc::lat::lattices;
 use crate::alg::op::int_operation::PyIntOperation;
 use crate::alg::op::operation::PyBasicOperation;
 use std::sync::Arc;
+use std::ops::Deref;
 
 /// Internal enum to hold either type of BasicLattice
 /// Made public(crate) so it can be used in other modules
@@ -895,6 +896,48 @@ impl PyBasicLattice {
                     .collect())
             }
             _ => Err(PyValueError::new_err("ideal() is only available for BasicLattice<i32> created from operations")),
+        }
+    }
+    
+    /// Get join irreducibles (for BasicLattice<Partition> only, created from CongruenceLattice).
+    ///
+    /// Returns:
+    ///     List[Partition]: List of join irreducible elements
+    fn join_irreducibles(&self) -> PyResult<Vec<crate::alg::conlat::partition::PyPartition>> {
+        match &self.inner {
+            BasicLatticeInner::Partition(inner) => {
+                let mut inner = inner.lock().unwrap();
+                // Call the inherent method, not the trait method
+                let jis: &[std::sync::Arc<uacalc::lat::ordered_set::POElem<uacalc::alg::conlat::Partition>>] = 
+                    uacalc::lat::BasicLattice::join_irreducibles(&mut *inner);
+                let mut result = Vec::new();
+                for po_elem_arc in jis {
+                    // po_elem_arc is &Arc<POElem<Partition>>, dereference to get &POElem<Partition>
+                    let po_elem: &uacalc::lat::ordered_set::POElem<uacalc::alg::conlat::Partition> = po_elem_arc.deref();
+                    let part = po_elem.get_underlying_object();
+                    result.push(crate::alg::conlat::partition::PyPartition { inner: part.clone() });
+                }
+                Ok(result)
+            }
+            _ => Err(PyValueError::new_err("join_irreducibles() is only available for BasicLattice<Partition> created from CongruenceLattice")),
+        }
+    }
+    
+    /// Get zero (bottom) element (for BasicLattice<Partition> only).
+    ///
+    /// Returns:
+    ///     Partition: The zero (bottom) element
+    fn zero(&self) -> PyResult<crate::alg::conlat::partition::PyPartition> {
+        match &self.inner {
+            BasicLatticeInner::Partition(inner) => {
+                let inner = inner.lock().unwrap();
+                let zero = inner.zero();
+                // zero is Arc<POElem<Partition>>, dereference to get &POElem<Partition>
+                let po_elem: &uacalc::lat::ordered_set::POElem<uacalc::alg::conlat::Partition> = zero.deref();
+                let part = po_elem.get_underlying_object();
+                Ok(crate::alg::conlat::partition::PyPartition { inner: part.clone() })
+            }
+            _ => Err(PyValueError::new_err("zero() is only available for BasicLattice<Partition> created from CongruenceLattice")),
         }
     }
 }

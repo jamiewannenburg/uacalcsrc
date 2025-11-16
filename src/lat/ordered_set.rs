@@ -106,18 +106,83 @@ where
     }
 
     /// Check if this element is join irreducible.
+    /// 
+    /// Uses the same logic as Java: an element is join irreducible if it cannot
+    /// be expressed as the join of two strictly smaller elements. The bottom
+    /// element is excluded.
+    /// 
     /// Note: This requires the poset to be passed in.
+    /// 
+    /// Note: This method computes join from the poset structure (least upper bound).
+    /// For more efficient computation with explicit join operations, use
+    /// `BasicLattice.join_irreducibles()` instead.
     pub fn is_join_irreducible(&self, poset: &OrderedSet<T>) -> bool {
+        let self_arc = Arc::new(self.clone());
+        
+        // Check if this is the bottom element (has no lower covers)
+        let lowers = self.lower_covers(poset);
+        if lowers.is_empty() {
+            return false; // Bottom element is not join irreducible
+        }
+        
+        // Check if this is the top element (has no upper covers)
         let uppers = self.upper_covers(poset);
         if uppers.is_empty() {
             return false; // Top element is not join irreducible
         }
-        if uppers.len() == 1 {
-            return true;
+        
+        // Compute the join of all elements strictly smaller than this element
+        // The join is the least upper bound of all strictly smaller elements
+        let mut strictly_smaller: Vec<Arc<POElem<T>>> = Vec::new();
+        
+        for elem in &poset.universe {
+            // Check if elem is strictly smaller than self
+            if poset.leq(elem, &self_arc) && elem.get_underlying_object() != self.get_underlying_object() {
+                strictly_smaller.push(elem.clone());
+            }
         }
-        // An element is join irreducible if it has exactly one upper cover
-        // or if it cannot be expressed as the join of two strictly smaller elements
-        // For now, use the simple check: has exactly one upper cover
+        
+        // If no strictly smaller elements, this shouldn't happen (we already checked for bottom)
+        if strictly_smaller.is_empty() {
+            return false;
+        }
+        
+        // Find the least upper bound (join) of all strictly smaller elements
+        // This is the smallest element that is >= all strictly smaller elements
+        let mut join_candidates: Vec<Arc<POElem<T>>> = Vec::new();
+        
+        for candidate in &poset.universe {
+            // Check if candidate is an upper bound of all strictly smaller elements
+            let is_upper_bound = strictly_smaller.iter().all(|smaller| poset.leq(smaller, candidate));
+            
+            if is_upper_bound {
+                // Check if candidate is the least such upper bound
+                let is_least = poset.universe.iter().all(|other| {
+                    if other == candidate {
+                        return true;
+                    }
+                    // If other is also an upper bound, then candidate must be <= other
+                    let other_is_upper_bound = strictly_smaller.iter().all(|smaller| poset.leq(smaller, other));
+                    if other_is_upper_bound {
+                        return poset.leq(candidate, other);
+                    }
+                    true
+                });
+                
+                if is_least {
+                    join_candidates.push(candidate.clone());
+                }
+            }
+        }
+        
+        // In a lattice, there should be exactly one least upper bound
+        // Element is join irreducible if it's not equal to the join
+        if let Some(join) = join_candidates.first() {
+            return join.get_underlying_object() != self.get_underlying_object();
+        }
+        
+        // If we can't find the join, fall back to cover-based check
+        // (element with exactly one upper cover is join irreducible)
         uppers.len() == 1
     }
 

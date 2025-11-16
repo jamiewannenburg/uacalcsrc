@@ -389,14 +389,56 @@ where
     }
 
     /// Get join irreducibles.
+    /// 
+    /// Uses the same logic as Java: an element is join irreducible if it cannot
+    /// be expressed as the join of two strictly smaller elements. The bottom
+    /// element (zero) is excluded as it has no strictly smaller elements.
     pub fn join_irreducibles(&mut self) -> &[Arc<POElem<T>>] {
         if self.join_irreducibles.is_none() {
             let mut jis = Vec::new();
+            let zero = self.zero();
+            
             for elem in &self.univ_list {
-                if elem.is_join_irreducible(&self.poset) {
-                    jis.push(elem.clone());
+                // Skip bottom element - it's not join irreducible
+                if elem == &zero {
+                    continue;
+                }
+                
+                // Compute the join of all elements strictly smaller than elem
+                let mut join_of_smaller = None;
+                
+                for other in &self.univ_list {
+                    // Check if other is strictly smaller than elem
+                    if self.leq(other, elem) && other != elem {
+                        if let Some(current_join) = join_of_smaller {
+                            join_of_smaller = Some(self.join(&current_join, other));
+                        } else {
+                            join_of_smaller = Some(other.clone());
+                        }
+                        
+                        // Early exit: if we've already reached elem, it's not join irreducible
+                        if let Some(ref join_val) = join_of_smaller {
+                            if join_val == elem {
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                // If join_of_smaller is None, elem has no strictly smaller elements (shouldn't happen for non-zero)
+                // If join_of_smaller != elem, then elem is join irreducible
+                match join_of_smaller {
+                    None => {
+                        // This shouldn't happen for non-zero elements, but if it does, skip it
+                    }
+                    Some(join_val) => {
+                        if join_val != *elem {
+                            jis.push(elem.clone());
+                        }
+                    }
                 }
             }
+            
             self.join_irreducibles = Some(jis);
         }
         self.join_irreducibles.as_ref().unwrap()
