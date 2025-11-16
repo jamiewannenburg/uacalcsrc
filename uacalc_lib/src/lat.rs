@@ -1093,6 +1093,32 @@ impl PyOrderedSet {
         graph_data.to_networkx(py)
     }
     
+    /// Create an OrderedSet from filters.
+    ///
+    /// A filter for an element x is the set of all elements y such that x ≤ y.
+    /// This method converts filters to upper covers and creates an OrderedSet.
+    ///
+    /// Args:
+    ///     universe: List of integers representing the universe
+    ///     filters: List of lists, where filters[i] contains all elements ≥ universe[i]
+    ///     name: Optional name for the poset
+    ///
+    /// Returns:
+    ///     OrderedSet: An OrderedSet created from the filters
+    ///
+    /// Raises:
+    ///     ValueError: If universe and filters have different lengths or structure is invalid
+    #[staticmethod]
+    #[pyo3(signature = (universe, filters, *, name=None))]
+    fn from_filters(universe: Vec<i32>, filters: Vec<Vec<i32>>, name: Option<String>) -> PyResult<PyOrderedSet> {
+        match uacalc::lat::ordered_set::OrderedSet::ordered_set_from_filters(name, universe, filters) {
+            Ok(poset) => Ok(PyOrderedSet {
+                inner: std::sync::Arc::new(std::sync::Mutex::new(poset)),
+            }),
+            Err(e) => Err(PyValueError::new_err(format!("Failed to create OrderedSet from filters: {}", e))),
+        }
+    }
+    
     /// Create an OrderedSet from a BasicLattice.
     ///
     /// This static method converts a lattice to an OrderedSet by computing
