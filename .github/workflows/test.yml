@@ -3,11 +3,11 @@ name: Tests
 on:
   push:
     branches:
-      - main
+      - master
       - rust-again
   pull_request:
     branches:
-      - main
+      - master
       - rust-again
   workflow_dispatch:
     inputs:
