@@ -78,39 +78,38 @@ def get_downward_closed_sets(poset):
     Get all downward closed sets (ideals) of a poset.
     
     A downward closed set U is a set such that if x in U and x >= y, then y in U.
+    Uses the ideal() method to get principal ideals, then computes closure under union.
     """
     universe = poset.universe()
-    n = len(universe)
     
-    # Build a list of all downward closed sets
-    downward_closed_sets = []
+    # Start with principal ideals (ideals of each element)
+    principal_ideals = []
+    for elem in universe:
+        ideal = poset.ideal(elem)
+        principal_ideals.append(set(ideal))
     
-    # For each subset of the universe, including the empty set, check if it's downward closed
-    for mask in range(1 << n):  # 2^n subsets
-        subset = []
-        for i in range(n):
-            if mask & (1 << i):
-                subset.append(universe[i])
-        
-        # Check if this subset is downward closed
-        is_downward_closed = True
-        for elem in subset:
-            # Check all elements in the universe
-            for other in universe:
-                # If other <= elem and other not in subset, then not downward closed
-                if poset.leq(other, elem) and other not in subset:
-                    is_downward_closed = False
-                    break
-            if not is_downward_closed:
-                break
-        
-        if is_downward_closed:
-            # Store as a sorted tuple for uniqueness (using the underlying values)
-            # For OrderedSet with integers, the elements are the integers themselves
-            downward_closed_sets.append(tuple(sorted(subset)))
+    # Also include the empty set
+    all_ideals = {frozenset()}
     
-    # Remove duplicates and sort
-    downward_closed_sets = sorted(set(downward_closed_sets))
+    # Add all principal ideals
+    for ideal in principal_ideals:
+        all_ideals.add(frozenset(ideal))
+    
+    # Compute closure under union: keep adding unions until no new ideals are found
+    changed = True
+    while changed:
+        changed = False
+        new_ideals = set(all_ideals)
+        for ideal1 in all_ideals:
+            for ideal2 in all_ideals:
+                union_ideal = ideal1 | ideal2
+                if frozenset(union_ideal) not in all_ideals:
+                    new_ideals.add(frozenset(union_ideal))
+                    changed = True
+        all_ideals = new_ideals
+    
+    # Convert to sorted list of sorted tuples
+    downward_closed_sets = sorted([tuple(sorted(list(ideal))) for ideal in all_ideals])
     return downward_closed_sets
 
 
@@ -255,8 +254,62 @@ def main():
     print("Step 2: Getting join irreducibles as a partial order...")
     print(f"  Created BasicLattice from join operation using lattice_from_join()")
     
-    # Get join irreducibles as a partial order
-    jis_po = join_lattice.join_irreducibles_po()
+    # Get join irreducibles from the lattice
+    # For BasicLattice<i32>, we need to compute join irreducibles manually
+    # A join irreducible element is one that cannot be expressed as the join
+    # of two strictly smaller elements
+    lattice_universe = join_lattice.universe()
+    join_irreducibles = []
+    
+    for elem in lattice_universe:
+        # Skip bottom element (0) - it's not join irreducible
+        if elem == 0:
+            continue
+        
+        # Check if elem is join irreducible
+        # An element is join irreducible if it cannot be written as the join
+        # of two strictly smaller elements (in the lattice order)
+        is_join_irreducible = True
+        for a in lattice_universe:
+            # Skip if a is not strictly less than elem in lattice order
+            if not join_lattice.leq(a, elem) or a == elem:
+                continue
+            for b in lattice_universe:
+                # Skip if b is not strictly less than elem in lattice order
+                if not join_lattice.leq(b, elem) or b == elem:
+                    continue
+                # Check if join(a, b) == elem
+                join_ab = join_lattice.join(a, b)
+                if join_ab == elem:
+                    is_join_irreducible = False
+                    break
+            if not is_join_irreducible:
+                break
+        
+        if is_join_irreducible:
+            join_irreducibles.append(elem)
+    
+    # Create an OrderedSet from join irreducibles
+    # We need to compute upper covers for each join irreducible element
+    upper_covers_list = []
+    for ji in join_irreducibles:
+        covers = []
+        # Find minimal elements among join irreducibles that are greater than ji
+        for other_ji in join_irreducibles:
+            if other_ji != ji and join_lattice.leq(ji, other_ji):
+                # Check if other_ji is minimal (no other ji is between ji and other_ji)
+                is_minimal = True
+                for candidate in join_irreducibles:
+                    if candidate != ji and candidate != other_ji:
+                        if join_lattice.leq(ji, candidate) and join_lattice.leq(candidate, other_ji):
+                            is_minimal = False
+                            break
+                if is_minimal:
+                    covers.append(other_ji)
+        upper_covers_list.append(covers)
+    
+    # Create OrderedSet from join irreducibles
+    jis_po = OrderedSet(join_irreducibles, upper_covers_list, name="JoinIrreducibles")
     print(f"  Join irreducibles poset: {jis_po.name()}")
     print(f"  Join irreducibles cardinality: {jis_po.cardinality()}")
     jis_universe = jis_po.universe()
@@ -274,7 +327,7 @@ def main():
     print("Step 3: Creating downward closed sets (ideals) of the partial order...")
     downward_closed_sets = get_downward_closed_sets(jis_po)
     print(f"  Number of downward closed sets: {len(downward_closed_sets)}")
-    print(f"  Upward closed sets:")
+    print(f"  Downward closed sets:")
     for i, dcs in enumerate(downward_closed_sets):
         print(f"    {i}: {list(dcs)}")
     print()
