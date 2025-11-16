@@ -27,8 +27,7 @@ try:
     BasicAlgebra = uacalc_lib.alg.BasicAlgebra
     CongruenceLattice = uacalc_lib.alg.CongruenceLattice
     # Lattice types
-    JoinLattice = uacalc_lib.lat.JoinLattice
-    MeetLattice = uacalc_lib.lat.MeetLattice
+    BasicLattice = uacalc_lib.lat.BasicLattice
 except ImportError as e:
     print(f"Error importing uacalc_lib: {e}")
     print("Make sure to run 'maturin develop' first")

@@ -181,6 +181,142 @@ class TestLatticeGraphDataFormats:
         assert hasattr(nx_graph, 'nodes') or hasattr(nx_graph, 'number_of_nodes')
 
 
+class TestBasicLatticeFilterIdeal:
+    """Test filter and ideal methods on BasicLattice."""
+    
+    def create_chain_lattice(self):
+        """Create a 3-element chain lattice: 0 < 1 < 2."""
+        import uacalc_lib
+        IntOperation = uacalc_lib.alg.IntOperation
+        OperationSymbol = uacalc_lib.alg.OperationSymbol
+        
+        # Create a join operation for a chain
+        symbol = OperationSymbol("join", 2, False)
+        set_size = 3
+        table = [
+            0, 1, 2,  # join(0, 0)=0, join(0, 1)=1, join(0, 2)=2
+            1, 1, 2,  # join(1, 0)=1, join(1, 1)=1, join(1, 2)=2
+            2, 2, 2,  # join(2, 0)=2, join(2, 1)=2, join(2, 2)=2
+        ]
+        join_op = IntOperation(symbol, set_size, table)
+        
+        return uacalc_lib.lat.lattice_from_join("Chain3", join_op)
+    
+    def test_filter_chain(self):
+        """Test filter method on a chain lattice."""
+        lattice = self.create_chain_lattice()
+        
+        # Filter of 0 should contain all elements (0, 1, 2)
+        filter_0 = lattice.filter(0)
+        assert sorted(filter_0) == [0, 1, 2]
+        
+        # Filter of 1 should contain 1 and 2
+        filter_1 = lattice.filter(1)
+        assert sorted(filter_1) == [1, 2]
+        
+        # Filter of 2 should contain only 2
+        filter_2 = lattice.filter(2)
+        assert filter_2 == [2]
+        
+        # Test with invalid element
+        import pytest
+        with pytest.raises(ValueError):
+            lattice.filter(99)
+    
+    def test_ideal_chain(self):
+        """Test ideal method on a chain lattice."""
+        lattice = self.create_chain_lattice()
+        
+        # Ideal of 0 should contain only 0
+        ideal_0 = lattice.ideal(0)
+        assert ideal_0 == [0]
+        
+        # Ideal of 1 should contain 0 and 1
+        ideal_1 = lattice.ideal(1)
+        assert sorted(ideal_1) == [0, 1]
+        
+        # Ideal of 2 should contain all elements (0, 1, 2)
+        ideal_2 = lattice.ideal(2)
+        assert sorted(ideal_2) == [0, 1, 2]
+        
+        # Test with invalid element
+        import pytest
+        with pytest.raises(ValueError):
+            lattice.ideal(99)
+    
+    def test_filter_diamond(self):
+        """Test filter method on a diamond lattice."""
+        import uacalc_lib
+        IntOperation = uacalc_lib.alg.IntOperation
+        OperationSymbol = uacalc_lib.alg.OperationSymbol
+        
+        # Create a join operation for a diamond: 0 < 1,2 < 3
+        symbol = OperationSymbol("join", 2, False)
+        set_size = 4
+        # Order: (0,0), (0,1), (0,2), (0,3), (1,0), (1,1), (1,2), (1,3), 
+        #        (2,0), (2,1), (2,2), (2,3), (3,0), (3,1), (3,2), (3,3)
+        table = [
+            0, 1, 2, 3,  # join(0, *)
+            1, 1, 3, 3,  # join(1, *)
+            2, 3, 2, 3,  # join(2, *)
+            3, 3, 3, 3,  # join(3, *)
+        ]
+        join_op = IntOperation(symbol, set_size, table)
+        
+        lattice = uacalc_lib.lat.lattice_from_join("Diamond", join_op)
+        
+        # Filter of 0 should contain all elements
+        filter_0 = lattice.filter(0)
+        assert sorted(filter_0) == [0, 1, 2, 3]
+        
+        # Filter of 1 should contain 1 and 3
+        filter_1 = lattice.filter(1)
+        assert sorted(filter_1) == [1, 3]
+        
+        # Filter of 2 should contain 2 and 3
+        filter_2 = lattice.filter(2)
+        assert sorted(filter_2) == [2, 3]
+        
+        # Filter of 3 should contain only 3
+        filter_3 = lattice.filter(3)
+        assert filter_3 == [3]
+    
+    def test_ideal_diamond(self):
+        """Test ideal method on a diamond lattice."""
+        import uacalc_lib
+        IntOperation = uacalc_lib.alg.IntOperation
+        OperationSymbol = uacalc_lib.alg.OperationSymbol
+        
+        # Create a join operation for a diamond: 0 < 1,2 < 3
+        symbol = OperationSymbol("join", 2, False)
+        set_size = 4
+        table = [
+            0, 1, 2, 3,  # join(0, *)
+            1, 1, 3, 3,  # join(1, *)
+            2, 3, 2, 3,  # join(2, *)
+            3, 3, 3, 3,  # join(3, *)
+        ]
+        join_op = IntOperation(symbol, set_size, table)
+        
+        lattice = uacalc_lib.lat.lattice_from_join("Diamond", join_op)
+        
+        # Ideal of 0 should contain only 0
+        ideal_0 = lattice.ideal(0)
+        assert ideal_0 == [0]
+        
+        # Ideal of 1 should contain 0 and 1
+        ideal_1 = lattice.ideal(1)
+        assert sorted(ideal_1) == [0, 1]
+        
+        # Ideal of 2 should contain 0 and 2
+        ideal_2 = lattice.ideal(2)
+        assert sorted(ideal_2) == [0, 2]
+        
+        # Ideal of 3 should contain all elements
+        ideal_3 = lattice.ideal(3)
+        assert sorted(ideal_3) == [0, 1, 2, 3]
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
 

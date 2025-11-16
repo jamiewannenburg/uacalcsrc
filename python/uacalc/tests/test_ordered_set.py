@@ -141,6 +141,116 @@ class TestOrderedSet(unittest.TestCase):
         with self.assertRaises(ValueError):
             poset.get_lower_covers(99)
 
+    def test_filter_chain(self):
+        """Test filter method on a chain."""
+        OrderedSet = uacalc_lib.lat.OrderedSet
+        
+        universe = [0, 1, 2]
+        upper_covers = [[1], [2], []]
+        
+        poset = OrderedSet(universe=universe, upper_covers=upper_covers)
+        
+        # Filter of 0 should contain all elements (0, 1, 2)
+        filter_0 = poset.filter(0)
+        self.assertEqual(sorted(filter_0), [0, 1, 2])
+        
+        # Filter of 1 should contain 1 and 2
+        filter_1 = poset.filter(1)
+        self.assertEqual(sorted(filter_1), [1, 2])
+        
+        # Filter of 2 should contain only 2
+        filter_2 = poset.filter(2)
+        self.assertEqual(filter_2, [2])
+        
+        # Test with invalid element
+        with self.assertRaises(ValueError):
+            poset.filter(99)
+
+    def test_ideal_chain(self):
+        """Test ideal method on a chain."""
+        OrderedSet = uacalc_lib.lat.OrderedSet
+        
+        universe = [0, 1, 2]
+        upper_covers = [[1], [2], []]
+        
+        poset = OrderedSet(universe=universe, upper_covers=upper_covers)
+        
+        # Ideal of 0 should contain only 0
+        ideal_0 = poset.ideal(0)
+        self.assertEqual(ideal_0, [0])
+        
+        # Ideal of 1 should contain 0 and 1
+        ideal_1 = poset.ideal(1)
+        self.assertEqual(sorted(ideal_1), [0, 1])
+        
+        # Ideal of 2 should contain all elements (0, 1, 2)
+        ideal_2 = poset.ideal(2)
+        self.assertEqual(sorted(ideal_2), [0, 1, 2])
+        
+        # Test with invalid element
+        with self.assertRaises(ValueError):
+            poset.ideal(99)
+
+    def test_filter_diamond(self):
+        """Test filter method on a diamond poset."""
+        OrderedSet = uacalc_lib.lat.OrderedSet
+        
+        universe = [0, 1, 2, 3]
+        upper_covers = [
+            [1, 2],   # 0 is covered by both 1 and 2
+            [3],      # 1 is covered by 3
+            [3],      # 2 is covered by 3
+            [],       # 3 has no upper covers
+        ]
+        
+        poset = OrderedSet(universe=universe, upper_covers=upper_covers)
+        
+        # Filter of 0 should contain all elements
+        filter_0 = poset.filter(0)
+        self.assertEqual(sorted(filter_0), [0, 1, 2, 3])
+        
+        # Filter of 1 should contain 1 and 3
+        filter_1 = poset.filter(1)
+        self.assertEqual(sorted(filter_1), [1, 3])
+        
+        # Filter of 2 should contain 2 and 3
+        filter_2 = poset.filter(2)
+        self.assertEqual(sorted(filter_2), [2, 3])
+        
+        # Filter of 3 should contain only 3
+        filter_3 = poset.filter(3)
+        self.assertEqual(filter_3, [3])
+
+    def test_ideal_diamond(self):
+        """Test ideal method on a diamond poset."""
+        OrderedSet = uacalc_lib.lat.OrderedSet
+        
+        universe = [0, 1, 2, 3]
+        upper_covers = [
+            [1, 2],   # 0 is covered by both 1 and 2
+            [3],      # 1 is covered by 3
+            [3],      # 2 is covered by 3
+            [],       # 3 has no upper covers
+        ]
+        
+        poset = OrderedSet(universe=universe, upper_covers=upper_covers)
+        
+        # Ideal of 0 should contain only 0
+        ideal_0 = poset.ideal(0)
+        self.assertEqual(ideal_0, [0])
+        
+        # Ideal of 1 should contain 0 and 1
+        ideal_1 = poset.ideal(1)
+        self.assertEqual(sorted(ideal_1), [0, 1])
+        
+        # Ideal of 2 should contain 0 and 2
+        ideal_2 = poset.ideal(2)
+        self.assertEqual(sorted(ideal_2), [0, 2])
+        
+        # Ideal of 3 should contain all elements
+        ideal_3 = poset.ideal(3)
+        self.assertEqual(sorted(ideal_3), [0, 1, 2, 3])
+
     def test_to_graph_data(self):
         """Test converting to graph data."""
         OrderedSet = uacalc_lib.lat.OrderedSet

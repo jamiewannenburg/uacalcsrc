@@ -367,371 +367,6 @@ impl PyBooleanLattice {
     }
 }
 
-/// Python wrapper for MeetLattice
-#[pyclass]
-pub struct PyMeetLattice {
-    inner: uacalc::lat::lattices::MeetLattice,
-}
-
-#[pymethods]
-impl PyMeetLattice {
-    /// Create a new MeetLattice from a name, universe, and filters.
-    ///
-    /// Args:
-    ///     name: Name for the lattice
-    ///     universe: List of integers representing the universe
-    ///     filters: List of lists, where filters[i] contains elements in the filter of universe[i]
-    ///
-    /// Returns:
-    ///     MeetLattice: A new MeetLattice instance
-    ///
-    /// Raises:
-    ///     ValueError: If universe and filters have different lengths
-    #[new]
-    fn new(name: String, universe: Vec<i32>, filters: Vec<Vec<i32>>) -> PyResult<Self> {
-        match uacalc::lat::lattices::MeetLattice::new(name, universe, filters) {
-            Ok(inner) => Ok(PyMeetLattice { inner }),
-            Err(e) => Err(PyValueError::new_err(e)),
-        }
-    }
-    
-    /// Get the name of this lattice
-    fn name(&self) -> &str {
-        self.inner.name()
-    }
-    
-    /// Get the universe of this lattice
-    fn universe(&self) -> Vec<i32> {
-        self.inner.universe().to_vec()
-    }
-    
-    /// Get join irreducibles of this lattice
-    fn join_irreducibles(&self) -> Vec<i32> {
-        self.inner.join_irreducibles()
-    }
-    
-    /// Get meet irreducibles of this lattice
-    fn meet_irreducibles(&self) -> Vec<i32> {
-        self.inner.meet_irreducibles()
-    }
-
-    /// Get join irreducibles as an OrderedSet
-    fn join_irreducibles_po(&self) -> PyResult<PyOrderedSet> {
-        match self.inner.join_irreducibles_po() {
-            Ok(ordered_set) => Ok(PyOrderedSet {
-                inner: std::sync::Arc::new(std::sync::Mutex::new(ordered_set)),
-            }),
-            Err(e) => Err(PyValueError::new_err(format!("Failed to create OrderedSet: {}", e))),
-        }
-    }
-
-    /// Get meet irreducibles as an OrderedSet
-    fn meet_irreducibles_po(&self) -> PyResult<PyOrderedSet> {
-        match self.inner.meet_irreducibles_po() {
-            Ok(ordered_set) => Ok(PyOrderedSet {
-                inner: std::sync::Arc::new(std::sync::Mutex::new(ordered_set)),
-            }),
-            Err(e) => Err(PyValueError::new_err(format!("Failed to create OrderedSet: {}", e))),
-        }
-    }
-
-    /// Get atoms of this lattice
-    fn atoms(&self) -> Vec<i32> {
-        self.inner.atoms()
-    }
-    
-    /// Get coatoms of this lattice
-    fn coatoms(&self) -> Vec<i32> {
-        self.inner.coatoms()
-    }
-    
-    /// Compute join of two elements
-    fn join(&self, a: i32, b: i32) -> i32 {
-        self.inner.join(&a, &b)
-    }
-    
-    /// Compute join of a list of elements
-    fn join_list(&self, args: Vec<i32>) -> i32 {
-        self.inner.join_list(&args)
-    }
-    
-    /// Compute meet of two elements
-    fn meet(&self, a: i32, b: i32) -> i32 {
-        self.inner.meet(&a, &b)
-    }
-    
-    /// Compute meet of a list of elements
-    fn meet_list(&self, args: Vec<i32>) -> i32 {
-        self.inner.meet_list(&args)
-    }
-    
-    /// Check if a ≤ b in the lattice order
-    fn leq(&self, a: i32, b: i32) -> bool {
-        self.inner.leq(&a, &b)
-    }
-    
-    /// Convert this MeetLattice to an OrderedSet.
-    ///
-    /// This method computes the upper covers for each element using join irreducibles
-    /// and creates an OrderedSet representing the full lattice structure.
-    ///
-    /// Args:
-    ///     name: Optional name for the resulting OrderedSet
-    ///
-    /// Returns:
-    ///     OrderedSet: An OrderedSet representing the lattice structure
-    fn to_ordered_set(&self, name: Option<String>) -> PyResult<PyOrderedSet> {
-        let univ = self.inner.universe().to_vec();
-        let jis = self.inner.join_irreducibles();
-        
-        // Build upper covers for each element
-        let mut ucs: Vec<Vec<i32>> = Vec::new();
-        for elem in &univ {
-            let mut covs = Vec::new();
-            for ji in &jis {
-                // Skip if ji is already below elem
-                if self.inner.leq(ji, elem) {
-                    continue;
-                }
-                
-                // Compute join of elem and ji
-                let join_result = self.inner.join(elem, ji);
-                
-                // Skip if join equals elem (no new element)
-                if join_result == *elem {
-                    continue;
-                }
-                
-                // Check if this is a minimal cover
-                let mut is_minimal = true;
-                let mut covers_to_remove = Vec::new();
-                
-                for (i, existing_cover) in covs.iter().enumerate() {
-                    if self.inner.leq(existing_cover, &join_result) {
-                        // Existing cover is below join_result, so join_result is not minimal
-                        is_minimal = false;
-                        break;
-                    } else if self.inner.leq(&join_result, existing_cover) {
-                        // join_result is below existing cover, mark existing for removal
-                        covers_to_remove.push(i);
-                    }
-                }
-                
-                // Remove covers that are above join_result
-                for &i in covers_to_remove.iter().rev() {
-                    covs.remove(i);
-                }
-                
-                // Add join_result if it's minimal
-                if is_minimal {
-                    covs.push(join_result);
-                }
-            }
-            ucs.push(covs);
-        }
-        
-        // Create OrderedSet from universe and upper covers
-        match uacalc::lat::ordered_set::OrderedSet::new(name, univ, ucs) {
-            Ok(poset) => Ok(PyOrderedSet {
-                inner: std::sync::Arc::new(std::sync::Mutex::new(poset)),
-            }),
-            Err(e) => Err(PyValueError::new_err(format!("Failed to create OrderedSet: {}", e))),
-        }
-    }
-    
-    /// Python string representation
-    fn __str__(&self) -> String {
-        format!("MeetLattice({})", self.inner.name())
-    }
-    
-    /// Python repr representation
-    fn __repr__(&self) -> String {
-        format!("MeetLattice({})", self.inner.name())
-    }
-}
-
-/// Python wrapper for JoinLattice
-#[pyclass]
-pub struct PyJoinLattice {
-    inner: uacalc::lat::lattices::JoinLattice,
-}
-
-#[pymethods]
-impl PyJoinLattice {
-    /// Create a new JoinLattice from a name, universe, and filters.
-    ///
-    /// Args:
-    ///     name: Name for the lattice
-    ///     universe: List of integers representing the universe
-    ///     filters: List of lists, where filters[i] contains elements in the filter of universe[i]
-    ///
-    /// Returns:
-    ///     JoinLattice: A new JoinLattice instance
-    ///
-    /// Raises:
-    ///     ValueError: If universe and filters have different lengths
-    #[new]
-    fn new(name: String, universe: Vec<i32>, filters: Vec<Vec<i32>>) -> PyResult<Self> {
-        match uacalc::lat::lattices::JoinLattice::new(name, universe, filters) {
-            Ok(inner) => Ok(PyJoinLattice { inner }),
-            Err(e) => Err(PyValueError::new_err(e)),
-        }
-    }
-    
-    /// Get the name of this lattice
-    fn name(&self) -> &str {
-        self.inner.name()
-    }
-    
-    /// Get the universe of this lattice
-    fn universe(&self) -> Vec<i32> {
-        self.inner.universe().to_vec()
-    }
-    
-    /// Get join irreducibles of this lattice
-    fn join_irreducibles(&self) -> Vec<i32> {
-        self.inner.join_irreducibles()
-    }
-    
-    /// Get meet irreducibles of this lattice
-    fn meet_irreducibles(&self) -> Vec<i32> {
-        self.inner.meet_irreducibles()
-    }
-
-    /// Get join irreducibles as an OrderedSet
-    fn join_irreducibles_po(&self) -> PyResult<PyOrderedSet> {
-        match self.inner.join_irreducibles_po() {
-            Ok(ordered_set) => Ok(PyOrderedSet {
-                inner: std::sync::Arc::new(std::sync::Mutex::new(ordered_set)),
-            }),
-            Err(e) => Err(PyValueError::new_err(format!("Failed to create OrderedSet: {}", e))),
-        }
-    }
-
-    /// Get meet irreducibles as an OrderedSet
-    fn meet_irreducibles_po(&self) -> PyResult<PyOrderedSet> {
-        match self.inner.meet_irreducibles_po() {
-            Ok(ordered_set) => Ok(PyOrderedSet {
-                inner: std::sync::Arc::new(std::sync::Mutex::new(ordered_set)),
-            }),
-            Err(e) => Err(PyValueError::new_err(format!("Failed to create OrderedSet: {}", e))),
-        }
-    }
-
-    /// Get atoms of this lattice
-    fn atoms(&self) -> Vec<i32> {
-        self.inner.atoms()
-    }
-    
-    /// Get coatoms of this lattice
-    fn coatoms(&self) -> Vec<i32> {
-        self.inner.coatoms()
-    }
-    
-    /// Compute join of two elements
-    fn join(&self, a: i32, b: i32) -> i32 {
-        self.inner.join(&a, &b)
-    }
-    
-    /// Compute join of a list of elements
-    fn join_list(&self, args: Vec<i32>) -> i32 {
-        self.inner.join_list(&args)
-    }
-    
-    /// Compute meet of two elements
-    fn meet(&self, a: i32, b: i32) -> i32 {
-        self.inner.meet(&a, &b)
-    }
-    
-    /// Compute meet of a list of elements
-    fn meet_list(&self, args: Vec<i32>) -> i32 {
-        self.inner.meet_list(&args)
-    }
-    
-    /// Check if a ≤ b in the lattice order
-    fn leq(&self, a: i32, b: i32) -> bool {
-        self.inner.leq(&a, &b)
-    }
-    
-    /// Convert this JoinLattice to an OrderedSet.
-    ///
-    /// This method computes the upper covers for each element using join irreducibles
-    /// and creates an OrderedSet representing the full lattice structure.
-    ///
-    /// Args:
-    ///     name: Optional name for the resulting OrderedSet
-    ///
-    /// Returns:
-    ///     OrderedSet: An OrderedSet representing the lattice structure
-    fn to_ordered_set(&self, name: Option<String>) -> PyResult<PyOrderedSet> {
-        let univ = self.inner.universe().to_vec();
-        let jis = self.inner.join_irreducibles();
-        
-        // Build upper covers for each element
-        let mut ucs: Vec<Vec<i32>> = Vec::new();
-        for elem in &univ {
-            let mut covs = Vec::new();
-            for ji in &jis {
-                // Skip if ji is already below elem
-                if self.inner.leq(ji, elem) {
-                    continue;
-                }
-                
-                // Compute join of elem and ji
-                let join_result = self.inner.join(elem, ji);
-                
-                // Skip if join equals elem (no new element)
-                if join_result == *elem {
-                    continue;
-                }
-                
-                // Check if this is a minimal cover
-                let mut is_minimal = true;
-                let mut covers_to_remove = Vec::new();
-                
-                for (i, existing_cover) in covs.iter().enumerate() {
-                    if self.inner.leq(existing_cover, &join_result) {
-                        // Existing cover is below join_result, so join_result is not minimal
-                        is_minimal = false;
-                        break;
-                    } else if self.inner.leq(&join_result, existing_cover) {
-                        // join_result is below existing cover, mark existing for removal
-                        covers_to_remove.push(i);
-                    }
-                }
-                
-                // Remove covers that are above join_result
-                for &i in covers_to_remove.iter().rev() {
-                    covs.remove(i);
-                }
-                
-                // Add join_result if it's minimal
-                if is_minimal {
-                    covs.push(join_result);
-                }
-            }
-            ucs.push(covs);
-        }
-        
-        // Create OrderedSet from universe and upper covers
-        match uacalc::lat::ordered_set::OrderedSet::new(name, univ, ucs) {
-            Ok(poset) => Ok(PyOrderedSet {
-                inner: std::sync::Arc::new(std::sync::Mutex::new(poset)),
-            }),
-            Err(e) => Err(PyValueError::new_err(format!("Failed to create OrderedSet: {}", e))),
-        }
-    }
-    
-    /// Python string representation
-    fn __str__(&self) -> String {
-        format!("JoinLattice({})", self.inner.name())
-    }
-    
-    /// Python repr representation
-    fn __repr__(&self) -> String {
-        format!("JoinLattice({})", self.inner.name())
-    }
-}
 
 /// Create a lattice from a meet operation using integers for labels
 #[pyfunction]
@@ -1038,6 +673,44 @@ impl PyBasicLattice {
         }
     }
     
+    /// Create a BasicLattice from an OrderedSet<i32>
+    #[staticmethod]
+    fn new_from_poset(name: String, poset: PyRef<'_, PyOrderedSet>) -> PyResult<Self> {
+        // Extract the inner OrderedSet
+        let inner_poset = poset.inner.lock().unwrap();
+        // Clone the OrderedSet (we need to convert Arc<Mutex<OrderedSet>> to OrderedSet)
+        // Since we can't easily clone, we'll need to reconstruct from the poset
+        // For now, this is a limitation - we'd need to add a clone method or use a different approach
+        // For BasicLattice<i32>, we can create from the poset's universe and upper covers
+        let univ = inner_poset.univ();
+        let universe: Vec<i32> = univ.iter().map(|e| *e.get_underlying_object()).collect();
+        
+        // Build upper covers list
+        let mut upper_covers_list: Vec<Vec<i32>> = Vec::new();
+        for po_elem in univ {
+            let mut covers = Vec::new();
+            let upper_covers = inner_poset.get_upper_covers(&po_elem);
+            for cover_po in upper_covers {
+                covers.push(*cover_po.get_underlying_object());
+            }
+            upper_covers_list.push(covers);
+        }
+        
+        // Create a new OrderedSet and then BasicLattice from it
+        drop(inner_poset); // Release the lock
+        match uacalc::lat::ordered_set::OrderedSet::new(Some(name.clone()), universe, upper_covers_list) {
+            Ok(new_poset) => {
+                match uacalc::lat::BasicLattice::new_from_poset(name, new_poset) {
+                    Ok(basic_lat) => Ok(PyBasicLattice {
+                        inner: BasicLatticeInner::Int32(std::sync::Arc::new(std::sync::Mutex::new(basic_lat))),
+                    }),
+                    Err(e) => Err(PyValueError::new_err(format!("Failed to create BasicLattice: {}", e))),
+                }
+            }
+            Err(e) => Err(PyValueError::new_err(format!("Failed to create OrderedSet: {}", e))),
+        }
+    }
+    
     /// Get cardinality
     fn cardinality(&self) -> usize {
         match &self.inner {
@@ -1170,6 +843,60 @@ impl PyBasicLattice {
             _ => Err(PyValueError::new_err("meet() is only available for BasicLattice<i32> created from operations")),
         }
     }
+    
+    /// Get the filter (all elements ≥ the given element) (for BasicLattice<i32> only).
+    ///
+    /// Args:
+    ///     element: The element to get the filter for
+    ///
+    /// Returns:
+    ///     List[int]: List of all elements greater than or equal to the given element
+    fn filter(&self, element: i32) -> PyResult<Vec<i32>> {
+        match &self.inner {
+            BasicLatticeInner::Int32(inner) => {
+                let inner = inner.lock().unwrap();
+                let poset = inner.get_poset();
+                let univ_list = inner.get_universe_list();
+                
+                let po_elem = univ_list.iter()
+                    .find(|e| *e.get_underlying_object() == element)
+                    .ok_or_else(|| PyValueError::new_err(format!("Element {} not found in universe", element)))?;
+                
+                let filter = po_elem.filter(poset);
+                Ok(filter.iter()
+                    .map(|e| *e.get_underlying_object())
+                    .collect())
+            }
+            _ => Err(PyValueError::new_err("filter() is only available for BasicLattice<i32> created from operations")),
+        }
+    }
+    
+    /// Get the ideal (all elements ≤ the given element) (for BasicLattice<i32> only).
+    ///
+    /// Args:
+    ///     element: The element to get the ideal for
+    ///
+    /// Returns:
+    ///     List[int]: List of all elements less than or equal to the given element
+    fn ideal(&self, element: i32) -> PyResult<Vec<i32>> {
+        match &self.inner {
+            BasicLatticeInner::Int32(inner) => {
+                let inner = inner.lock().unwrap();
+                let poset = inner.get_poset();
+                let univ_list = inner.get_universe_list();
+                
+                let po_elem = univ_list.iter()
+                    .find(|e| *e.get_underlying_object() == element)
+                    .ok_or_else(|| PyValueError::new_err(format!("Element {} not found in universe", element)))?;
+                
+                let ideal = po_elem.ideal(poset);
+                Ok(ideal.iter()
+                    .map(|e| *e.get_underlying_object())
+                    .collect())
+            }
+            _ => Err(PyValueError::new_err("ideal() is only available for BasicLattice<i32> created from operations")),
+        }
+    }
 }
 
 /// Python wrapper for OrderedSet<i32>
@@ -1286,6 +1013,48 @@ impl PyOrderedSet {
             .collect())
     }
     
+    /// Get the filter (all elements ≥ the given element).
+    ///
+    /// Args:
+    ///     element: The element to get the filter for
+    ///
+    /// Returns:
+    ///     List[int]: List of all elements greater than or equal to the given element
+    fn filter(&self, element: i32) -> PyResult<Vec<i32>> {
+        let poset = self.inner.lock().unwrap();
+        let univ = poset.univ();
+        
+        let elem = univ.iter()
+            .find(|e| *e.get_underlying_object() == element)
+            .ok_or_else(|| PyValueError::new_err(format!("Element {} not found in universe", element)))?;
+        
+        let filter = elem.filter(&poset);
+        Ok(filter.iter()
+            .map(|e| *e.get_underlying_object())
+            .collect())
+    }
+    
+    /// Get the ideal (all elements ≤ the given element).
+    ///
+    /// Args:
+    ///     element: The element to get the ideal for
+    ///
+    /// Returns:
+    ///     List[int]: List of all elements less than or equal to the given element
+    fn ideal(&self, element: i32) -> PyResult<Vec<i32>> {
+        let poset = self.inner.lock().unwrap();
+        let univ = poset.univ();
+        
+        let elem = univ.iter()
+            .find(|e| *e.get_underlying_object() == element)
+            .ok_or_else(|| PyValueError::new_err(format!("Element {} not found in universe", element)))?;
+        
+        let ideal = elem.ideal(&poset);
+        Ok(ideal.iter()
+            .map(|e| *e.get_underlying_object())
+            .collect())
+    }
+    
     /// Convert to graph data for visualization.
     ///
     /// Args:
@@ -1324,32 +1093,60 @@ impl PyOrderedSet {
         graph_data.to_networkx(py)
     }
     
-    /// Create an OrderedSet from a JoinLattice or MeetLattice.
+    /// Create an OrderedSet from a BasicLattice.
     ///
     /// This static method converts a lattice to an OrderedSet by computing
     /// upper covers using join irreducibles.
     ///
     /// Args:
-    ///     lattice: The JoinLattice or MeetLattice to convert
+    ///     lattice: The BasicLattice to convert
     ///     name: Optional name for the resulting OrderedSet
     ///
     /// Returns:
     ///     OrderedSet: An OrderedSet representing the lattice structure
     #[staticmethod]
     fn from_lattice(lattice: &Bound<'_, PyAny>, name: Option<String>) -> PyResult<PyOrderedSet> {
-        // Try to extract as JoinLattice
-        if let Ok(join_lat) = lattice.extract::<PyRef<'_, PyJoinLattice>>() {
-            return join_lat.to_ordered_set(name);
+        // Try to extract as BasicLattice
+        if let Ok(basic_lat) = lattice.extract::<PyRef<'_, PyBasicLattice>>() {
+            // Get the poset from BasicLattice<i32>
+            match &basic_lat.inner {
+                BasicLatticeInner::Int32(inner) => {
+                    let inner = inner.lock().unwrap();
+                    let poset = inner.get_poset();
+                    let univ_list = inner.get_universe_list();
+                    
+                    // Build upper covers for each element
+                    let mut upper_covers_list: Vec<Vec<i32>> = Vec::new();
+                    let universe: Vec<i32> = univ_list.iter()
+                        .map(|e| *e.get_underlying_object())
+                        .collect();
+                    
+                    for po_elem in univ_list {
+                        let mut covers = Vec::new();
+                        let upper_covers = poset.get_upper_covers(&po_elem);
+                        for cover_po in upper_covers {
+                            covers.push(*cover_po.get_underlying_object());
+                        }
+                        upper_covers_list.push(covers);
+                    }
+                    
+                    // Create OrderedSet from universe and upper covers
+                    match uacalc::lat::ordered_set::OrderedSet::new(name, universe, upper_covers_list) {
+                        Ok(poset) => Ok(PyOrderedSet {
+                            inner: std::sync::Arc::new(std::sync::Mutex::new(poset)),
+                        }),
+                        Err(e) => Err(PyValueError::new_err(format!("Failed to create OrderedSet: {}", e))),
+                    }
+                }
+                _ => Err(PyValueError::new_err(
+                    "from_lattice currently only supports BasicLattice<i32> created from operations"
+                )),
+            }
+        } else {
+            Err(PyValueError::new_err(
+                "from_lattice requires a BasicLattice instance"
+            ))
         }
-        
-        // Try to extract as MeetLattice
-        if let Ok(meet_lat) = lattice.extract::<PyRef<'_, PyMeetLattice>>() {
-            return meet_lat.to_ordered_set(name);
-        }
-        
-        Err(PyValueError::new_err(
-            "from_lattice requires a JoinLattice or MeetLattice instance"
-        ))
     }
     
     /// Python string representation
@@ -1478,8 +1275,6 @@ pub fn register_lat_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     m.add_class::<PyNaturalOrder>()?;
     m.add_class::<PyDiamondLattice>()?;
     m.add_class::<PyBooleanLattice>()?;
-    m.add_class::<PyMeetLattice>()?;
-    m.add_class::<PyJoinLattice>()?;
     m.add_class::<PyBasicLattice>()?;
     m.add_class::<PyLatticeGraphData>()?;
     m.add_class::<PyOrderedSet>()?;
@@ -1492,9 +1287,6 @@ pub fn register_lat_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     m.add("NaturalOrder", m.getattr("PyNaturalOrder")?)?;
     m.add("DiamondLattice", m.getattr("PyDiamondLattice")?)?;
     m.add("BooleanLattice", m.getattr("PyBooleanLattice")?)?;
-    m.add("MeetLattice", m.getattr("PyMeetLattice")?)?;
-    m.add("JoinLattice", m.getattr("PyJoinLattice")?)?;
-    
     // Add OrderedSets functions
     m.add_function(wrap_pyfunction!(maximals_divisibility, m)?)?;
     m.add_function(wrap_pyfunction!(maximals_prefix, m)?)?;
@@ -1532,8 +1324,6 @@ pub fn register_lat_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     module_dict.del_item("PyNaturalOrder")?;
     module_dict.del_item("PyDiamondLattice")?;
     module_dict.del_item("PyBooleanLattice")?;
-    module_dict.del_item("PyMeetLattice")?;
-    module_dict.del_item("PyJoinLattice")?;
     module_dict.del_item("PyBasicLattice")?;
     module_dict.del_item("PyLatticeGraphData")?;
     module_dict.del_item("PyOrderedSet")?;

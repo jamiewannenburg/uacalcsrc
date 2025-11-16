@@ -99,6 +99,14 @@ public class BasicLatticeWrapper extends WrapperBase {
                 handleToGraphData(options);
                 break;
                 
+            case "filter":
+                handleFilter(options);
+                break;
+                
+            case "ideal":
+                handleIdeal(options);
+                break;
+                
             case "test":
                 handleTest();
                 break;
@@ -277,6 +285,40 @@ public class BasicLatticeWrapper extends WrapperBase {
     }
     
     /**
+     * Handle filter command.
+     */
+    private void handleFilter(Map<String, String> options) throws Exception {
+        try {
+            String latticeJson = getRequiredArg(options, "lattice");
+            String elementStr = getRequiredArg(options, "element");
+            
+            // Note: This would require deserializing the BasicLattice
+            // For now, return an error
+            handleError("filter command requires BasicLattice deserialization which is not yet implemented", null);
+            
+        } catch (Exception e) {
+            handleError("filter command failed", e);
+        }
+    }
+    
+    /**
+     * Handle ideal command.
+     */
+    private void handleIdeal(Map<String, String> options) throws Exception {
+        try {
+            String latticeJson = getRequiredArg(options, "lattice");
+            String elementStr = getRequiredArg(options, "element");
+            
+            // Note: This would require deserializing the BasicLattice
+            // For now, return an error
+            handleError("ideal command requires BasicLattice deserialization which is not yet implemented", null);
+            
+        } catch (Exception e) {
+            handleError("ideal command failed", e);
+        }
+    }
+    
+    /**
      * Handle test command.
      */
     private void handleTest() throws Exception {
@@ -302,6 +344,8 @@ public class BasicLatticeWrapper extends WrapperBase {
             "coatoms --lattice <json>",
             "join_irreducibles --lattice <json>",
             "meet_irreducibles --lattice <json>",
+            "filter --lattice <json> --element 0",
+            "ideal --lattice <json> --element 0",
             "to_graph_data --lattice <json>",
             "test"
         };

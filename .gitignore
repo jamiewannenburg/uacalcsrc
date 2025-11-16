@@ -35,3 +35,4 @@ call_graph_analysis/
 dependency_analysis/
 venv/
 tests/.scratch/
+.cursor/rules/

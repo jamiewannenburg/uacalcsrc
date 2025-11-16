@@ -239,13 +239,13 @@ def main():
     if join_op is None:
         raise ValueError("Join operation not found")
     
-    # Create a JoinLattice for visualization and further processing
-    join_lattice = uacalc_lib.lat.lattice_from_join("JoinLattice", join_op)
+    # Create a BasicLattice for visualization and further processing
+    join_lattice = uacalc_lib.lat.lattice_from_join("BasicLattice", join_op)
     
     # Print lattice diagram
     print("  Lattice diagram (DOT format):")
-    # Convert JoinLattice to OrderedSet using the new to_ordered_set method
-    lattice_poset = join_lattice.to_ordered_set(name="LatticePoset")
+    # Convert BasicLattice to OrderedSet using the from_lattice method
+    lattice_poset = OrderedSet.from_lattice(join_lattice, name="LatticePoset")
     lattice_graph = lattice_poset.to_graph_data()
     lattice_dot = lattice_graph.to_dot()
     print(lattice_dot)
@@ -253,7 +253,7 @@ def main():
     
     # Step 2: Get join irreducibles as a partial order
     print("Step 2: Getting join irreducibles as a partial order...")
-    print(f"  Created JoinLattice from join operation using lattice_from_join()")
+    print(f"  Created BasicLattice from join operation using lattice_from_join()")
     
     # Get join irreducibles as a partial order
     jis_po = join_lattice.join_irreducibles_po()
