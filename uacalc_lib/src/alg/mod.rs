@@ -41,6 +41,7 @@ pub use op::operation_with_default_value::PyOperationWithDefaultValue;
 pub use sublat::basic_set::PyBasicSet;
 pub use sublat::subalgebra_lattice::PySubalgebraLattice;
 pub use crate::alg::op::operation_symbol::PyOperationSymbol;
+pub use algebra_with_generating_vector::PyAlgebraWithGeneratingVector;
 
 // Module registration function
 use pyo3::prelude::*;
@@ -107,6 +108,7 @@ pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     m.add_class::<PySubtrace>()?;
     m.add_class::<PyTypeFinder>()?;
     m.add_class::<PyPool>()?;
+    m.add_class::<PyAlgebraWithGeneratingVector>()?;
 
     // Register closer module components
     closer::register_closer(_py, m)?;
@@ -150,6 +152,7 @@ pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     m.add("Subtrace", m.getattr("PySubtrace")?)?;
     m.add("TypeFinder", m.getattr("PyTypeFinder")?)?;
     m.add("Pool", m.getattr("PyPool")?)?;
+    m.add("AlgebraWithGeneratingVector", m.getattr("PyAlgebraWithGeneratingVector")?)?;
     
     // Remove the Py* names from the module to avoid confusion
     let module_dict = m.dict();
@@ -158,6 +161,7 @@ pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     module_dict.del_item("PyCloserTiming")?;
     module_dict.del_item("PyPolinLikeAlgebra")?;
     module_dict.del_item("PyMaltsevDecompositionIterator")?;
+    module_dict.del_item("PyAlgebraWithGeneratingVector")?;
 
     // Register malcev module-level functions
     malcev::register_malcev_functions(_py, m)?;

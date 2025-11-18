@@ -138,6 +138,15 @@ impl PyPermutationGroup {
 }
 
 pub fn register_group_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
+    // Register classes internally but only export clean names
     m.add_class::<PyPermutationGroup>()?;
+    
+    // Export only clean names (without Py prefix)
+    m.add("PermutationGroup", m.getattr("PyPermutationGroup")?)?;
+    
+    // Remove the Py* names from the module to avoid confusion
+    let module_dict = m.dict();
+    module_dict.del_item("PyPermutationGroup")?;
+    
     Ok(())
 }
