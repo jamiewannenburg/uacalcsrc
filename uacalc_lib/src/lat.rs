@@ -576,7 +576,7 @@ impl PyLatticeGraphData {
     
     /// Convert to NetworkX DiGraph if networkx is available
     fn to_networkx(&self, py: Python) -> PyResult<PyObject> {
-        match py.import("networkx") {
+        match py.import_bound("networkx") {
             Ok(nx) => {
                 let graph = nx.getattr("DiGraph")?.call0()?;
                 

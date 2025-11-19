@@ -485,7 +485,7 @@ fn quasi_critical(py: Python, a: &PyBasicAlgebra) -> PyResult<Option<PyObject>> 
     
     match algebras::quasi_critical(a_box, None) {
         Ok(Some(map)) => {
-            let py_dict = PyDict::new(py);
+            let py_dict = PyDict::new_bound(py);
             for (partition, gens) in map {
                 let py_partition = PyPartition::from_inner(partition);
                 // Convert PyPartition to PyObject for use as dict key
@@ -597,7 +597,7 @@ fn find_in_clone(py: Python, ops: Vec<PyRef<PyIntOperation>>, alg: &PyBasicAlgeb
     
     match algebras::find_in_clone(&rust_ops, &alg.inner, None) {
         Ok(map) => {
-            let py_dict = PyDict::new(py);
+            let py_dict = PyDict::new_bound(py);
             for (sym, term) in map {
                 let py_sym = PyOperationSymbol::from_inner(sym);
                 let term_str = format!("{}", term);

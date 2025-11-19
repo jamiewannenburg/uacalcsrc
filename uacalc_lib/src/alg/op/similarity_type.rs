@@ -25,7 +25,7 @@ impl PySimilarityType {
     ///     SimilarityType: A new SimilarityType instance
     #[new]
     #[pyo3(signature = (operation_symbols, sort=false))]
-    fn new(operation_symbols: &PyAny, sort: bool) -> PyResult<Self> {
+    fn new(operation_symbols: &Bound<'_, PyAny>, sort: bool) -> PyResult<Self> {
         // Accept either root-level or local OperationSymbol wrappers
         let ops: Vec<uacalc::alg::op::OperationSymbol> = if let Ok(v) = operation_symbols.extract::<Vec<PyRef<root_alg::PyOperationSymbol>>>() {
             v.into_iter().map(|py_op| py_op.get_inner()).collect()

@@ -23,7 +23,7 @@ impl PyBasicOperation {
     ///     ValueError: If set_size is invalid
     #[new]
     #[pyo3(signature = (symbol, set_size, table=None))]
-    fn new(symbol: &PyAny, set_size: i32, table: Option<Vec<i32>>) -> PyResult<Self> {
+    fn new(symbol: &Bound<'_, PyAny>, set_size: i32, table: Option<Vec<i32>>) -> PyResult<Self> {
         // Accept either root-level or op module OperationSymbol
         let inner_sym = if let Ok(sym) = symbol.extract::<PyRef<PyOperationSymbol>>() {
             sym.get_inner()

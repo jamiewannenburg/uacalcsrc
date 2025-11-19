@@ -17,7 +17,7 @@ pub struct PyOperations;
 impl PyOperations {
     /// Check if a unary operation commutes with another operation.
     #[staticmethod]
-    fn commutes(unary_op: &PyAny, op: &PyAny) -> PyResult<bool> {
+    fn commutes(unary_op: &Bound<'_, PyAny>, op: &Bound<'_, PyAny>) -> PyResult<bool> {
         if let Ok(u) = unary_op.extract::<PyRef<PyBasicOperation>>() {
             if let Ok(o) = op.extract::<PyRef<PyBasicOperation>>() {
                 return uacalc::alg::op::ops::commutes_unary(&u.inner, &o.inner).map_err(PyValueError::new_err);
@@ -36,7 +36,7 @@ impl PyOperations {
 
     /// Check if an operation is total.
     #[staticmethod]
-    fn is_total(op: &PyAny) -> PyResult<bool> {
+    fn is_total(op: &Bound<'_, PyAny>) -> PyResult<bool> {
         if let Ok(o) = op.extract::<PyRef<PyBasicOperation>>() {
             return uacalc::alg::op::ops::is_total(&o.inner).map_err(PyValueError::new_err);
         } else if let Ok(o) = op.extract::<PyRef<PyIntOperation>>() {
@@ -47,7 +47,7 @@ impl PyOperations {
 
     /// Check if an operation is idempotent.
     #[staticmethod]
-    fn is_idempotent(operation: &PyAny) -> PyResult<bool> {
+    fn is_idempotent(operation: &Bound<'_, PyAny>) -> PyResult<bool> {
         if let Ok(basic_op) = operation.extract::<PyRef<PyBasicOperation>>() {
             return uacalc::alg::op::ops::is_idempotent(&basic_op.inner).map_err(PyValueError::new_err);
         } else if let Ok(int_op) = operation.extract::<PyRef<PyIntOperation>>() {
@@ -58,7 +58,7 @@ impl PyOperations {
 
     /// Check if an operation is commutative.
     #[staticmethod]
-    fn is_commutative(operation: &PyAny) -> PyResult<bool> {
+    fn is_commutative(operation: &Bound<'_, PyAny>) -> PyResult<bool> {
         if let Ok(basic_op) = operation.extract::<PyRef<PyBasicOperation>>() {
             return uacalc::alg::op::ops::is_commutative(&basic_op.inner).map_err(PyValueError::new_err);
         } else if let Ok(int_op) = operation.extract::<PyRef<PyIntOperation>>() {
@@ -69,7 +69,7 @@ impl PyOperations {
 
     /// Check if an operation is totally symmetric.
     #[staticmethod]
-    fn is_totally_symmetric(op: &PyAny) -> PyResult<bool> {
+    fn is_totally_symmetric(op: &Bound<'_, PyAny>) -> PyResult<bool> {
         if let Ok(o) = op.extract::<PyRef<PyBasicOperation>>() {
             return uacalc::alg::op::ops::is_totally_symmetric(&o.inner).map_err(PyValueError::new_err);
         } else if let Ok(o) = op.extract::<PyRef<PyIntOperation>>() {
@@ -80,7 +80,7 @@ impl PyOperations {
 
     /// Check if an operation is associative.
     #[staticmethod]
-    fn is_associative(op: &PyAny) -> PyResult<bool> {
+    fn is_associative(op: &Bound<'_, PyAny>) -> PyResult<bool> {
         if let Ok(o) = op.extract::<PyRef<PyBasicOperation>>() {
             return uacalc::alg::op::ops::is_associative(&o.inner).map_err(PyValueError::new_err);
         } else if let Ok(o) = op.extract::<PyRef<PyIntOperation>>() {
@@ -91,7 +91,7 @@ impl PyOperations {
 
     /// Check if an operation is a Maltsev operation.
     #[staticmethod]
-    fn is_maltsev(op: &PyAny) -> PyResult<bool> {
+    fn is_maltsev(op: &Bound<'_, PyAny>) -> PyResult<bool> {
         if let Ok(o) = op.extract::<PyRef<PyBasicOperation>>() {
             return uacalc::alg::op::ops::is_maltsev(&o.inner).map_err(PyValueError::new_err);
         } else if let Ok(o) = op.extract::<PyRef<PyIntOperation>>() {
@@ -102,7 +102,7 @@ impl PyOperations {
 
     /// Find the first difference between two operations.
     #[staticmethod]
-    fn find_difference(op1: &PyAny, op2: &PyAny) -> PyResult<Option<Vec<i32>>> {
+    fn find_difference(op1: &Bound<'_, PyAny>, op2: &Bound<'_, PyAny>) -> PyResult<Option<Vec<i32>>> {
         if let Ok(basic_op1) = op1.extract::<PyRef<PyBasicOperation>>() {
             if let Ok(basic_op2) = op2.extract::<PyRef<PyBasicOperation>>() {
                 return uacalc::alg::op::ops::find_difference(&basic_op1.inner, &basic_op2.inner)
@@ -125,7 +125,7 @@ impl PyOperations {
 
     /// Check if two operations have equal values.
     #[staticmethod]
-    fn equal_values(op1: &PyAny, op2: &PyAny) -> PyResult<bool> {
+    fn equal_values(op1: &Bound<'_, PyAny>, op2: &Bound<'_, PyAny>) -> PyResult<bool> {
         if let Ok(basic_op1) = op1.extract::<PyRef<PyBasicOperation>>() {
             if let Ok(basic_op2) = op2.extract::<PyRef<PyBasicOperation>>() {
                 return uacalc::alg::op::ops::equal_values(&basic_op1.inner, &basic_op2.inner)
@@ -151,7 +151,7 @@ impl PyOperations {
     /// Overloaded constructor for IntOperation from symbol or name.
     #[staticmethod]
     #[pyo3(signature = (a, b, c, d=None))]
-    fn make_int_operation(a: &PyAny, b: i32, c: &PyAny, d: Option<&PyAny>) -> PyResult<PyIntOperation> {
+    fn make_int_operation(a: &Bound<'_, PyAny>, b: i32, c: &Bound<'_, PyAny>, d: Option<&Bound<'_, PyAny>>) -> PyResult<PyIntOperation> {
         // Case 1: (symbol, set_size, table)
         if let Ok(sym) = a.extract::<PyRef<PyOperationSymbol>>() {
             let set_size = b;
@@ -248,7 +248,7 @@ impl PyOperations {
     /// - (prefix: &str, set_size: i32, elt: i32)
     #[staticmethod]
     #[pyo3(signature = (a, b, c=None))]
-    fn make_constant_int_operation(a: &PyAny, b: i32, c: Option<&PyAny>) -> PyResult<PyIntOperation> {
+    fn make_constant_int_operation(a: &Bound<'_, PyAny>, b: i32, c: Option<&Bound<'_, PyAny>>) -> PyResult<PyIntOperation> {
         // Overloaded: (set_size, elt) or (prefix, set_size, elt)
         if let Ok(set_size) = a.extract::<i32>() {
             if set_size <= 0 {
@@ -453,7 +453,7 @@ impl PyOperations {
     }
 
     #[staticmethod]
-    fn make_derived_operation(base_op: &PyAny, reduction_array: Vec<i32>, new_arity: i32) -> PyResult<PyIntOperation> {
+    fn make_derived_operation(base_op: &Bound<'_, PyAny>, reduction_array: Vec<i32>, new_arity: i32) -> PyResult<PyIntOperation> {
         let op: Box<dyn uacalc::alg::op::Operation> = if let Ok(o) = base_op.extract::<PyRef<PyBasicOperation>>() {
             Box::new(o.inner.clone())
         } else if let Ok(o) = base_op.extract::<PyRef<PyIntOperation>>() {
@@ -565,7 +565,7 @@ impl PyOperations {
     }
 
     #[staticmethod]
-    fn make_jonsson_operations_from_nuf(_nuf: &PyAny) -> PyResult<Vec<PyIntOperation>> {
+    fn make_jonsson_operations_from_nuf(_nuf: &Bound<'_, PyAny>) -> PyResult<Vec<PyIntOperation>> {
         // Placeholder: returns empty list consistent with current Rust implementation
         Ok(Vec::new())
     }

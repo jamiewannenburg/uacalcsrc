@@ -26,14 +26,14 @@ impl PyPartiallyDefinedLattice {
     /// # Returns
     /// A new PartiallyDefinedLattice instance
     #[new]
-    fn new(name: String, joins: &PyAny, meets: &PyAny) -> PyResult<Self> {
+    fn new(name: String, joins: &Bound<'_, PyAny>, meets: &Bound<'_, PyAny>) -> PyResult<Self> {
         // Convert Python lists to Rust vectors
-        let joins_list: &PyList = joins.downcast()?;
-        let meets_list: &PyList = meets.downcast()?;
+        let joins_list: &Bound<'_, PyList> = joins.downcast()?;
+        let meets_list: &Bound<'_, PyList> = meets.downcast()?;
         
         let mut rust_joins = Vec::new();
         for join_py in joins_list {
-            let join_list: &PyList = join_py.downcast()?;
+            let join_list: &Bound<'_, PyList> = join_py.downcast()?;
             let mut join = Vec::new();
             for var_py in join_list {
                 let var: PyVariableImp = var_py.extract()?;
@@ -44,7 +44,7 @@ impl PyPartiallyDefinedLattice {
         
         let mut rust_meets = Vec::new();
         for meet_py in meets_list {
-            let meet_list: &PyList = meet_py.downcast()?;
+            let meet_list: &Bound<'_, PyList> = meet_py.downcast()?;
             let mut meet = Vec::new();
             for var_py in meet_list {
                 let var: PyVariableImp = var_py.extract()?;

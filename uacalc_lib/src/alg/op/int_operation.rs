@@ -22,7 +22,7 @@ impl PyIntOperation {
     /// Raises:
     ///     ValueError: If parameters are invalid
     #[new]
-    fn new(symbol: &PyOperationSymbol, set_size: i32, table: &PyAny) -> PyResult<Self> {
+    fn new(symbol: &PyOperationSymbol, set_size: i32, table: &Bound<'_, PyAny>) -> PyResult<Self> {
         // Try to convert table to Vec<i32> - handles both lists and numpy arrays
         let table_vec: Vec<i32> = table.extract()?;
         match IntOperation::new(symbol.get_inner().clone(), set_size, table_vec) {
@@ -281,7 +281,7 @@ impl PyIntOperation {
     ///     matrix = [[0, 1], [1, 0]]
     ///     op = IntOperation.from_matrix("xor", matrix)
     #[staticmethod]
-    fn from_matrix(name: &str, operation_matrix: &PyAny) -> PyResult<Self> {
+    fn from_matrix(name: &str, operation_matrix: &Bound<'_, PyAny>) -> PyResult<Self> {
         Python::with_gil(|_py| {
             // Extract the 2D matrix
             let matrix: Vec<Vec<i32>> = operation_matrix.extract()?;

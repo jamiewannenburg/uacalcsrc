@@ -35,7 +35,7 @@ impl PyReductAlgebra {
     /// Raises:
     ///     ValueError: If the terms are invalid or algebra is incompatible
     #[new]
-    fn new(super_algebra: &PyBasicAlgebra, term_list: &PyList) -> PyResult<Self> {
+    fn new(super_algebra: &PyBasicAlgebra, term_list: &Bound<'_, PyList>) -> PyResult<Self> {
         // Convert Python list of terms to Rust Vec<Box<dyn Term>>
         let mut rust_terms: Vec<Box<dyn uacalc::terms::Term>> = Vec::new();
         

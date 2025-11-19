@@ -62,7 +62,7 @@ impl PyAbstractIntOperation {
 
     /// Create a new AbstractIntOperation from a precomputed table (as used in tests).
     #[staticmethod]
-    fn from_table(name: &str, arity: i32, set_size: i32, table: &pyo3::types::PyAny) -> PyResult<Self> {
+    fn from_table(name: &str, arity: i32, set_size: i32, table: &Bound<'_, pyo3::types::PyAny>) -> PyResult<Self> {
         // Validate symbol and sizes
         let inner = match AbstractIntOperation::new_safe(name, arity, set_size) {
             Ok(inner) => inner,

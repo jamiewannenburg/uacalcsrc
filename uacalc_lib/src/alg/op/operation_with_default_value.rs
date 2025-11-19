@@ -19,7 +19,7 @@ impl PyOperationWithDefaultValue {
     #[new]
     #[pyo3(signature = (name_or_op, arity_or_set_size=None, set_size=None, default_value=-1))]
     fn new(
-        name_or_op: &PyAny,
+        name_or_op: &Bound<'_, PyAny>,
         arity_or_set_size: Option<i32>,
         set_size: Option<i32>,
         default_value: i32,
