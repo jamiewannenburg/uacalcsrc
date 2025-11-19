@@ -681,7 +681,7 @@ impl<E> std::fmt::Debug for dyn LongList<E> where E: std::fmt::Debug {
 /// This module provides the same functionality as the Java VirtualLists class.
 pub mod virtuallists {
     use super::*;
-    use std::collections::HashMap;
+    
 
     /// Create a LongList of int tuples of length `tuple_len` with entries between 0 and `base` - 1.
     /// 

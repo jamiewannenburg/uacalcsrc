@@ -5,7 +5,6 @@ use std::sync::{Arc, RwLock};
 use crate::alg::algebra::{Algebra, ProgressMonitor};
 use crate::alg::general_algebra::GeneralAlgebra;
 use crate::alg::small_algebra::{SmallAlgebra, AlgebraType};
-use crate::alg::conlat::partition::Partition;
 use crate::alg::op::{Operation, OperationSymbol, SimilarityType};
 
 /// A simple complement operation for Polin-like algebras.

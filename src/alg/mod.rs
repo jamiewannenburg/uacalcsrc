@@ -2910,7 +2910,7 @@ impl MaltsevDecompositionIterator {
             // Create a temporary wrapper to get mutable access
             use crate::alg::SmallAlgebraWrapper;
             let wrapper = Box::new(SmallAlgebraWrapper::<i32>::new(alg_clone));
-            let mut con_lat = crate::alg::conlat::CongruenceLattice::new(wrapper);
+            let con_lat = crate::alg::conlat::CongruenceLattice::new(wrapper);
             con_lat.zero()
         };
         

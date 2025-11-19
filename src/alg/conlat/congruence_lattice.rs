@@ -907,7 +907,7 @@ where
             let mut covers = Vec::new();
             
             // Find all elements that are greater than elem1
-            let mut greater_than: Vec<&Partition> = subset.iter()
+            let greater_than: Vec<&Partition> = subset.iter()
                 .filter(|elem2| elem1 != *elem2 && self.leq(elem1, elem2))
                 .collect();
             

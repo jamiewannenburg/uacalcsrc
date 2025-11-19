@@ -1788,7 +1788,7 @@ where
         .collect();
     
     // Find firstOne (elements with first coordinate = 1)
-    let mut first_one: Vec<IntArray> = closure.iter()
+    let first_one: Vec<IntArray> = closure.iter()
         .filter(|ia| (**ia).get(0) == Some(1))
         .cloned()
         .collect();

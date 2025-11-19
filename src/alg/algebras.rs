@@ -1194,7 +1194,7 @@ mod tests {
 pub fn member_of_quasivariety(
     a: Box<dyn SmallAlgebra<UniverseItem = i32>>,
     b: Box<dyn SmallAlgebra<UniverseItem = i32>>,
-    mut report: Option<&mut dyn crate::progress::ProgressReport>,
+    report: Option<&mut dyn crate::progress::ProgressReport>,
 ) -> Result<Option<Vec<Homomorphism>>, String> {
     let gen_algs = vec![b];
     member_of_quasivariety_list(a, gen_algs, report)
@@ -1221,7 +1221,7 @@ pub fn member_of_quasivariety_list(
 ) -> Result<Option<Vec<Homomorphism>>, String> {
     use crate::alg::conlat::CongruenceLattice;
     use crate::alg::sublat::SubalgebraLattice;
-    use crate::alg::conlat::partition::Partition;
+    
     use crate::util::{ArrayIncrementor, SequenceGenerator};
     use std::collections::HashMap;
     
@@ -1333,7 +1333,7 @@ pub fn member_of_quasivariety_gen_by_proper_subs(
 ) -> Result<Option<Vec<Homomorphism>>, String> {
     use crate::alg::conlat::CongruenceLattice;
     use crate::alg::sublat::SubalgebraLattice;
-    use crate::alg::conlat::partition::Partition;
+    
     use crate::util::{ArrayIncrementor, SequenceGenerator};
     use std::collections::HashMap;
     
@@ -1690,10 +1690,10 @@ pub fn quasi_critical_congruences(
     mut report: Option<&mut dyn crate::progress::ProgressReport>,
 ) -> Result<Vec<crate::alg::conlat::partition::Partition>, String> {
     use crate::alg::conlat::CongruenceLattice;
-    use crate::alg::conlat::partition::Partition;
+    
     use crate::alg::QuotientAlgebra;
     
-    let mut a_con = CongruenceLattice::new(a.clone_box());
+    let a_con = CongruenceLattice::new(a.clone_box());
     let one = a_con.one();
     let zero = a_con.zero();
     let mut meet_of_non_zeros = one.clone();
@@ -2125,7 +2125,7 @@ pub fn find_in_clone(
 ) -> Result<HashMap<crate::alg::op::OperationSymbol, Box<dyn crate::terms::Term>>, String> {
     use crate::alg::FreeAlgebra;
     use crate::alg::Closer;
-    use crate::alg::BigProductAlgebra;
+    
     use crate::alg::op::OperationSymbol;
     use crate::terms::Term;
     

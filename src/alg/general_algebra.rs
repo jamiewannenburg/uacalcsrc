@@ -111,7 +111,7 @@ where
         };
         
         // Convert boxed operations to Arcs
-        let mut ops_arc: Vec<Arc<dyn Operation>> = operations
+        let ops_arc: Vec<Arc<dyn Operation>> = operations
             .into_iter()
             .map(|op| Arc::<dyn Operation>::from(op))
             .collect();

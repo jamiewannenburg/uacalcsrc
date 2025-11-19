@@ -1,5 +1,5 @@
 use crate::lat::Order;
-use crate::terms::{Variable, VariableImp};
+use crate::terms::VariableImp;
 use std::sync::Arc;
 use std::fmt;
 

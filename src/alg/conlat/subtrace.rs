@@ -8,7 +8,7 @@ The implementation is based on the Java `org.uacalc.alg.conlat.Subtrace` class.
 
 use std::fmt;
 use std::hash::{Hash, Hasher};
-use crate::util::int_array::{IntArray, IntArrayTrait};
+use crate::util::int_array::IntArray;
 
 /// A subtrace represents a pair {a, b} with TCT type information.
 /// 

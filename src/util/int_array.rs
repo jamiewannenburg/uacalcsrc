@@ -8,7 +8,7 @@ The implementation is based on the Java `org.uacalc.util.IntArray` class.
 
 use std::collections::HashSet;
 use std::fmt;
-use std::hash::{Hash, Hasher};
+use std::hash::Hash;
 use crate::alg::conlat::partition::Partition;
 
 /// Trait for integer array operations.

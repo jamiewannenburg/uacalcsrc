@@ -460,7 +460,7 @@ impl IntArrayTrait for BasicSet {
 use crate::alg::{Algebra, ProgressMonitor};
 use crate::alg::op::{Operation, OperationSymbol, SimilarityType};
 use crate::alg::subalgebra::Subalgebra;
-use crate::util::{ArrayIncrementor, SequenceGenerator, PermutationGenerator};
+use crate::util::{ArrayIncrementor, SequenceGenerator};
 use crate::lat::{Order, Lattice};
 use std::collections::HashMap;
 
@@ -1244,7 +1244,7 @@ where
             let mut covers = Vec::new();
             
             // Find all elements that are greater than elem1
-            let mut greater_than: Vec<&BasicSet> = subset.iter()
+            let greater_than: Vec<&BasicSet> = subset.iter()
                 .filter(|elem2| elem1 != *elem2 && Order::leq(self, elem1, elem2))
                 .collect();
             
@@ -1278,7 +1278,7 @@ where
     /// # Returns
     /// The join (smallest subalgebra containing both)
     pub fn join_sets(&self, a: &BasicSet, b: &BasicSet) -> BasicSet {
-        let (mut seta, mut setb) = if b.universe_size() > a.universe_size() {
+        let (seta, setb) = if b.universe_size() > a.universe_size() {
             (b.clone(), a.clone())
         } else {
             (a.clone(), b.clone())

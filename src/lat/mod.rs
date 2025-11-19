@@ -814,13 +814,13 @@ pub mod lattices {
     {
         fn join_irreducibles(&self) -> Option<Vec<Arc<crate::lat::ordered_set::POElem<T>>>> {
             // Join irreducibles in dual are meet irreducibles in original
-            let mut base = self.base.write().unwrap();
+            let base = self.base.write().unwrap();
             base.meet_irreducibles().map(|mis| mis.iter().cloned().collect())
         }
         
         fn meet_irreducibles(&self) -> Option<Vec<Arc<crate::lat::ordered_set::POElem<T>>>> {
             // Meet irreducibles in dual are join irreducibles in original
-            let mut base = self.base.write().unwrap();
+            let base = self.base.write().unwrap();
             base.join_irreducibles().map(|jis| jis.iter().cloned().collect())
         }
         

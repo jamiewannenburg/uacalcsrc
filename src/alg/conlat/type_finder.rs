@@ -5,8 +5,7 @@
  * It is designed so that it can be reused for efficiency.
  */
 
-use std::collections::{HashMap, HashSet};
-use std::sync::Arc;
+use std::collections::HashSet;
 use std::hash::Hash;
 use std::fmt::{Debug, Display};
 

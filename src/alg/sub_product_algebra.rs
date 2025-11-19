@@ -121,7 +121,7 @@ where
     pub fn new_safe(
         name: String,
         prod: BigProductAlgebra<T>,
-        mut gens: Vec<IntArray>,
+        gens: Vec<IntArray>,
         find_terms: bool,
     ) -> Result<Self, String> {
         Self::new_full_safe(name, prod, gens, find_terms, false)
@@ -141,7 +141,7 @@ where
     /// * `Err(String)` - If construction fails
     pub fn new_full_safe(
         name: String,
-        mut prod: BigProductAlgebra<T>,
+        prod: BigProductAlgebra<T>,
         mut gens: Vec<IntArray>,
         find_terms: bool,
         include_constants: bool,
@@ -945,7 +945,7 @@ where
 {
     fn clone(&self) -> Self {
         // Clone operations using Arc::clone (cheap, no deep copy)
-        let mut cloned = SubProductAlgebra {
+        let cloned = SubProductAlgebra {
             name: self.name.clone(),
             description: self.description.clone(),
             product_algebra: self.product_algebra.clone(),
