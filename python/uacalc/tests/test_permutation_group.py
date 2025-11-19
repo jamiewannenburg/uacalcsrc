@@ -149,3 +149,63 @@ class TestPermutationGroup:
         # p * identity should equal p
         result = uacalc_lib.group.PermutationGroup.prod(p, identity)
         assert result == p
+
+    def test_automorphism_group_trivial(self):
+        """Test automorphism group of a trivial algebra (no operations)."""
+        # Create a trivial algebra with no operations
+        universe = [0, 1, 2]
+        alg = uacalc_lib.alg.BasicAlgebra("Trivial", universe, None)
+        
+        # Compute automorphism group
+        aut_group = uacalc_lib.group.PermutationGroup.automorphism_group(alg)
+        
+        # For a set with no operations, all permutations are automorphisms
+        # So we should have 3! = 6 automorphisms
+        assert aut_group.get_underlying_set_size() == 3
+        assert len(aut_group.get_generators()) == 6
+
+    def test_automorphism_group_with_operation(self):
+        """Test automorphism group of an algebra with operations."""
+        # Create an algebra with a constant operation
+        universe = [0, 1]
+        const_op = uacalc_lib.alg.Operations.make_constant_int_operation(2, 0)
+        alg = uacalc_lib.alg.BasicAlgebra("ConstAlg", universe, [const_op])
+        
+        # Compute automorphism group
+        aut_group = uacalc_lib.group.PermutationGroup.automorphism_group(alg)
+        
+        # Should have at least the identity automorphism
+        assert aut_group.get_underlying_set_size() == 2
+        assert len(aut_group.get_generators()) >= 1
+
+    def test_to_basic_algebra(self):
+        """Test converting PermutationGroup to BasicAlgebra."""
+        # Create a permutation group
+        generators = [[1, 0]]
+        pg = uacalc_lib.group.PermutationGroup("S2", generators)
+        
+        # Convert to BasicAlgebra
+        alg = pg.to_basic_algebra("S2_algebra")
+        
+        # Check basic properties
+        assert alg.cardinality() == 2
+        assert alg.name() == "S2_algebra"
+        
+        # Should have 3 operations (product, inverse, identity)
+        assert alg.operations_count() == 3
+
+    def test_to_basic_algebra_universe(self):
+        """Test that to_basic_algebra creates correct universe."""
+        # Create a permutation group
+        generators = [[1, 0, 2]]
+        pg = uacalc_lib.group.PermutationGroup("S3", generators)
+        
+        # Convert to BasicAlgebra
+        alg = pg.to_basic_algebra("S3_algebra")
+        
+        # Check universe
+        universe = alg.get_universe()
+        assert len(universe) == 3
+        assert 0 in universe
+        assert 1 in universe
+        assert 2 in universe

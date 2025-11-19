@@ -1,6 +1,8 @@
 use uacalc::group::PermutationGroup;
 use uacalc::util::int_array::{IntArray, IntArrayTrait};
 use uacalc::alg::op::Operation;
+use uacalc::alg::{BasicAlgebra, SmallAlgebra, Algebra};
+use std::collections::HashSet;
 
 #[test]
 fn test_permutation_group_new() {
@@ -278,4 +280,74 @@ fn test_permutation_group_edge_cases() {
     // Test product with single elements
     let product = PermutationGroup::prod(p.clone(), p).unwrap();
     assert_eq!(product.as_slice(), &[0]);
+}
+
+#[test]
+fn test_automorphism_group_trivial_algebra() {
+    // Create a trivial algebra with no operations (just the set)
+    let universe: HashSet<i32> = (0..3).collect();
+    let alg = BasicAlgebra::new("Trivial".to_string(), universe, vec![]);
+    
+    // The automorphism group should be the full symmetric group S3
+    let aut_group = PermutationGroup::automorphism_group(&alg).unwrap();
+    
+    // For a set with no operations, all permutations are automorphisms
+    // So we should have 3! = 6 automorphisms
+    assert_eq!(aut_group.generators.len(), 6);
+    assert_eq!(aut_group.underlying_set_size, 3);
+}
+
+#[test]
+fn test_automorphism_group_with_operation() {
+    // Create an algebra with a constant operation
+    use uacalc::alg::op::ops::make_constant_int_operation;
+    
+    let universe: HashSet<i32> = (0..2).collect();
+    let const_op = make_constant_int_operation(2, 0).unwrap();
+    let alg = BasicAlgebra::new("ConstAlg".to_string(), universe, vec![const_op]);
+    
+    // The automorphism group should preserve the constant operation
+    // Since the constant is 0, any permutation that fixes 0 is an automorphism
+    let aut_group = PermutationGroup::automorphism_group(&alg).unwrap();
+    
+    // Should have at least the identity automorphism
+    assert!(aut_group.generators.len() >= 1);
+    assert_eq!(aut_group.underlying_set_size, 2);
+}
+
+#[test]
+fn test_to_basic_algebra() {
+    // Create a simple permutation group
+    let generators = vec![
+        IntArray::from_array(vec![1, 0, 2]).unwrap(),
+    ];
+    let group = PermutationGroup::new("S3".to_string(), generators);
+    
+    // Convert to BasicAlgebra
+    let alg = group.to_basic_algebra("S3_algebra".to_string()).unwrap();
+    
+    // Check basic properties
+    assert_eq!(alg.cardinality(), 3);
+    assert_eq!(alg.name(), "S3_algebra");
+    
+    // Should have 3 operations (product, inverse, identity)
+    assert_eq!(alg.operations().len(), 3);
+}
+
+#[test]
+fn test_to_basic_algebra_and_back() {
+    // Create a permutation group
+    let generators = vec![
+        IntArray::from_array(vec![1, 0]).unwrap(),
+    ];
+    let group = PermutationGroup::new("S2".to_string(), generators);
+    
+    // Convert to BasicAlgebra
+    let alg = group.to_basic_algebra("S2_algebra".to_string()).unwrap();
+    
+    // The algebra should have the correct universe
+    let universe: Vec<i32> = alg.universe().collect();
+    assert_eq!(universe.len(), 2);
+    assert!(universe.contains(&0));
+    assert!(universe.contains(&1));
 }

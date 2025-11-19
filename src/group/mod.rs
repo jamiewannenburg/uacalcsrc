@@ -3,7 +3,10 @@ use std::fmt::{Debug, Display};
 use std::hash::{Hash, Hasher};
 use crate::alg::general_algebra::GeneralAlgebra;
 use crate::alg::op::{Operation, OperationSymbol};
+use crate::alg::{BasicAlgebra, Algebra};
+use crate::alg::algebras::is_homomorphism;
 use crate::util::int_array::{IntArray, IntArrayTrait};
+use crate::util::PermutationGenerator;
 
 /// A permutation group on the set {0, ..., n-1}.
 /// 
@@ -389,6 +392,114 @@ impl PermutationGroup {
     /// A mutable reference to the general algebra
     pub fn get_general_algebra_mut(&mut self) -> &mut GeneralAlgebra<IntArray> {
         &mut self.general_algebra
+    }
+    
+    /// Compute the automorphism group of a BasicAlgebra.
+    /// 
+    /// This function finds all automorphisms (bijections that preserve all operations)
+    /// of the given algebra and returns them as a PermutationGroup.
+    /// 
+    /// # Arguments
+    /// * `alg` - The BasicAlgebra to compute the automorphism group for
+    /// 
+    /// # Returns
+    /// * `Ok(PermutationGroup)` - The automorphism group
+    /// * `Err(String)` - If there's an error during computation
+    /// 
+    /// # Examples
+    /// ```
+    /// use uacalc::group::PermutationGroup;
+    /// use uacalc::alg::{BasicAlgebra, SmallAlgebra};
+    /// use std::collections::HashSet;
+    /// 
+    /// // Create a simple algebra and compute its automorphism group
+    /// // (example would go here)
+    /// ```
+    pub fn automorphism_group(alg: &BasicAlgebra<i32>) -> Result<Self, String> {
+        let n = alg.cardinality() as usize;
+        
+        if n == 0 {
+            return Err("Cannot compute automorphism group of empty algebra".to_string());
+        }
+        
+        // Collect all automorphisms
+        let mut automorphisms = Vec::new();
+        
+        // Iterate through all permutations
+        for perm_vec in PermutationGenerator::iterator(n) {
+            // Convert Vec<usize> to Vec<i32> for the map
+            let map: Vec<i32> = perm_vec.iter().map(|&x| x as i32).collect();
+            
+            // Check if this permutation is an automorphism
+            // An automorphism is a homomorphism from the algebra to itself
+            match is_homomorphism(&map, alg, alg) {
+                Ok(true) => {
+                    // This is an automorphism, add it as a generator
+                    let perm_array = IntArray::from_array(map)
+                        .map_err(|e| format!("Failed to create IntArray: {}", e))?;
+                    automorphisms.push(perm_array);
+                }
+                Ok(false) => {
+                    // Not an automorphism, skip
+                }
+                Err(e) => {
+                    return Err(format!("Error checking automorphism: {}", e));
+                }
+            }
+        }
+        
+        if automorphisms.is_empty() {
+            return Err("No automorphisms found (this should not happen)".to_string());
+        }
+        
+        // Create PermutationGroup from the automorphisms
+        let name = format!("Aut({})", alg.name());
+        Ok(Self::new(name, automorphisms))
+    }
+    
+    /// Convert this PermutationGroup to a BasicAlgebra with integer elements.
+    /// 
+    /// The resulting algebra has:
+    /// - Universe: {0, 1, ..., n-1} where n is the underlying set size
+    /// - Operations: The group operations (product, inverse, identity) as table-based operations
+    /// 
+    /// # Arguments
+    /// * `name` - The name for the resulting BasicAlgebra
+    /// 
+    /// # Returns
+    /// * `Ok(BasicAlgebra<i32>)` - The BasicAlgebra representation
+    /// * `Err(String)` - If there's an error during conversion
+    /// 
+    /// # Examples
+    /// ```
+    /// use uacalc::group::PermutationGroup;
+    /// use uacalc::util::int_array::{IntArray, IntArrayTrait};
+    /// use uacalc::alg::Algebra;
+    /// 
+    /// let generators = vec![IntArray::from_array(vec![1, 0, 2]).unwrap()];
+    /// let group = PermutationGroup::new("S2".to_string(), generators);
+    /// let alg = group.to_basic_algebra("S2_algebra".to_string()).unwrap();
+    /// assert_eq!(alg.cardinality(), 3);
+    /// ```
+    pub fn to_basic_algebra(&self, name: String) -> Result<BasicAlgebra<i32>, String> {
+        let n = self.underlying_set_size;
+        
+        // Create universe as integers 0..n-1
+        let universe: HashSet<i32> = (0..n as i32).collect();
+        
+        // Create operations from the group structure
+        let mut operations = Vec::new();
+        
+        // Add product operation
+        operations.push(Self::make_prod_op(n as i32));
+        
+        // Add inverse operation
+        operations.push(Self::make_inv_op(n as i32));
+        
+        // Add identity operation
+        operations.push(Self::make_id_op(n as i32, n as i32));
+        
+        Ok(BasicAlgebra::new(name, universe, operations))
     }
 }
 
