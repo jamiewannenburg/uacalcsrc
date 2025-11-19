@@ -1,9 +1,6 @@
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
 use uacalc::alg::*;
-use uacalc::alg::conlat::BasicBinaryRelation;
-use uacalc::alg::sublat::BasicSet;
-use uacalc::lat::{Lattice, Order};
 use crate::alg::PyBasicAlgebra;
 use crate::alg::PyPartition;
 use crate::alg::PySubalgebraLattice;

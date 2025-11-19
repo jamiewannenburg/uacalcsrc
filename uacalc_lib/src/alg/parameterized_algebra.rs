@@ -1,7 +1,6 @@
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
 use std::collections::HashMap;
-use crate::util::PyIntArray;
 use crate::alg::op::parameterized_operation::PyParameterizedOperation;
 
 /// Python wrapper for ParameterizedAlgebra

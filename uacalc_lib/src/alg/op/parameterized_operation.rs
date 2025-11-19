@@ -1,6 +1,5 @@
 use pyo3::prelude::*;
 use std::collections::HashMap;
-use uacalc::alg::op::ParameterizedOperation;
 
 /// Python wrapper for ParameterizedOperation
 #[pyclass]

@@ -1,13 +1,12 @@
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
-use pyo3::types::{PyDict, PyList};
+use pyo3::types::PyDict;
 use uacalc::lat::*;
 use uacalc::alg::algebra::Algebra;
 use uacalc::alg::op::Operation;
 use uacalc::lat::lattices;
 use crate::alg::op::int_operation::PyIntOperation;
 use crate::alg::op::operation::PyBasicOperation;
-use std::sync::Arc;
 use std::ops::Deref;
 
 /// Internal enum to hold either type of BasicLattice

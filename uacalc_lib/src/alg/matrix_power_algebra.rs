@@ -4,7 +4,6 @@ use std::collections::HashMap;
 use uacalc::alg::*;
 use crate::alg::PyBasicAlgebra;
 use crate::alg::power_algebra::PyPowerAlgebra;
-use crate::util::PyIntArray;
 
 /// Python wrapper for MatrixPowerAlgebra
 #[pyclass]

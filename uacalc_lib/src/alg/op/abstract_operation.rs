@@ -1,7 +1,6 @@
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
 use pyo3::types::PyList;
-use std::collections::HashMap;
 use crate::alg::op::operation_symbol::PyOperationSymbol;
 
 /// Evaluation mode for AbstractOperation that supports both integer and non-integer universes

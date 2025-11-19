@@ -3,7 +3,6 @@ use pyo3::exceptions::PyValueError;
 use pyo3::types::PyList;
 use std::collections::HashMap;
 use uacalc::alg::*;
-use uacalc::terms::{VariableImp, Term};
 use crate::util::PyIntArray;
 
 use crate::alg::PyBasicAlgebra;

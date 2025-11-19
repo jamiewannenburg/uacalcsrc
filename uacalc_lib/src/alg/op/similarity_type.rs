@@ -1,7 +1,5 @@
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
-use pyo3::types::PyList;
-use std::collections::HashMap;
 
 use uacalc::alg::op::SimilarityType;
 

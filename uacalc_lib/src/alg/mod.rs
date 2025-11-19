@@ -66,9 +66,6 @@ use crate::alg::op::int_operation::PyIntOperation;
 use crate::alg::op::abstract_int_operation::PyAbstractIntOperation;
 use crate::alg::op::abstract_operation::PyAbstractOperationNew;
 use crate::alg::parallel::PyPool;
-use crate::alg::closer::register_closer;
-use crate::alg::closer_timing::register_closer_timing;
-use crate::alg::algebras::register_algebras_functions;
 
 pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     // Register classes internally but only export clean names

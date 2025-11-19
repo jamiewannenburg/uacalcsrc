@@ -2,7 +2,6 @@ use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
 use pyo3::types::PyList;
 use std::collections::HashMap;
-use std::sync::Arc;
 use uacalc::alg::*;
 use uacalc::alg::op::{Operation, IntOperation, BasicOperation};
 use crate::alg::PySubalgebraLattice;

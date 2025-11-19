@@ -1,17 +1,9 @@
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
 use pyo3::types::PyList;
-use std::collections::{HashMap, HashSet};
 use uacalc::alg::*;
-use uacalc::alg::conlat::{BinaryRelation, MutableBinaryRelation};
 use uacalc::util::IntArrayTrait;
-use uacalc::alg::conlat::BasicBinaryRelation;
-use uacalc::alg::conlat::subtrace::Subtrace;
-use uacalc::alg::op::{Operation, BasicOperation, AbstractIntOperation, IntOperation};
-use uacalc::alg::sublat::BasicSet;
-use uacalc::lat::{Lattice, Order};
-use crate::util::PyIntArray;
-use crate::eq::PyEquation;
+use uacalc::alg::op::Operation;
 
 /// Python wrapper for Polymorphisms
 #[pyclass]

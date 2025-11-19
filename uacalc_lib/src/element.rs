@@ -1,5 +1,4 @@
 use pyo3::prelude::*;
-use pyo3::exceptions::PyValueError;
 
 // Note: SubProductElement bindings are not implemented in this partial implementation
 // due to the complexity of lifetime management and the Element trait's get_algebra method.

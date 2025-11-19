@@ -1,6 +1,4 @@
 use pyo3::prelude::*;
-use pyo3::exceptions::PyValueError;
-use std::sync::Arc;
 use uacalc::alg::CloserTiming;
 use crate::alg::big_product_algebra::PyBigProductAlgebra;
 

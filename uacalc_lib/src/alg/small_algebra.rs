@@ -1,11 +1,8 @@
 /// Python wrapper for SmallAlgebra (simplified for bindings)
 use pyo3::prelude::*;
-use pyo3::exceptions::PyValueError;
 use uacalc::alg::BasicAlgebra;
 use uacalc::alg::SmallAlgebra;
 use uacalc::alg::Algebra;
-use uacalc::util::IntArray;
-use crate::alg::PyBasicAlgebra;
 
 pub fn register_small_algebra(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PySmallAlgebra>()?;
