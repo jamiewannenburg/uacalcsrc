@@ -322,7 +322,7 @@ public class Algebras {
     String str = alg.getName() != null? alg.getName() + "^[" + k + "]" : k + "-matrix pwoer";
     SmallAlgebra ans = new BasicAlgebra(str, Operations.power(alg.cardinality(), k), ops2);
     //try {
-    //  org.uacalc.io.AlgebraIO.writeAlgebraFile(ans, "/home/ralph/Java/Algebra/algebras/upow.ua");
+    //  org.uacalc.io.AlgebraIO.writeAlgebraFile(ans, "resources/algebras/upow.ua");
     //}
     //catch (Exception e) {}
     return ans;
@@ -785,10 +785,10 @@ public class Algebras {
     
     if (endNow) return;
     
-    SmallAlgebra pol = org.uacalc.io.AlgebraIO.readAlgebraFile("/home/ralph/Java/Algebra/algebras/polin3ontop.ua");
-    SmallAlgebra polid = org.uacalc.io.AlgebraIO.readAlgebraFile("/home/ralph/Java/Algebra/algebras/polinidempotent.ua");
-    SmallAlgebra lat = org.uacalc.io.AlgebraIO.readAlgebraFile("/home/ralph/Java/Algebra/algebras/polin3ontop.ua");
-    SmallAlgebra jenjb = org.uacalc.io.AlgebraIO.readAlgebraFile("/home/ralph/Java/Algebra/algebras/jenjb3.ua");
+    SmallAlgebra pol = org.uacalc.io.AlgebraIO.readAlgebraFile("resources/algebras/polin3ontop.ua");
+    SmallAlgebra polid = org.uacalc.io.AlgebraIO.readAlgebraFile("resources/algebras/polinidempotent.ua");
+    SmallAlgebra lat = org.uacalc.io.AlgebraIO.readAlgebraFile("resources/algebras/polin3ontop.ua");
+    SmallAlgebra jenjb = org.uacalc.io.AlgebraIO.readAlgebraFile("resources/algebras/jenjb3.ua");
 
     
     
@@ -921,7 +921,7 @@ public class Algebras {
     int[] inv = new int[] {1,2,0};
     final int invx = Horner.horner(inv, 3);
     //ops.add(Operations.makeConstantIntOperation(alg0.cardinality(), invx));
-    org.uacalc.io.AlgebraIO.writeAlgebraFile(alg0, "/home/ralph/Java/Algebra/algebras/trans3.ua");
+    org.uacalc.io.AlgebraIO.writeAlgebraFile(alg0, "resources/algebras/trans3.ua");
     for (int i = 0; i < 27; i++) {
       System.out.println("" + i + ": " + ArrayString.toString(Horner.hornerInv(i, 3, 3)));
     }

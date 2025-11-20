@@ -205,14 +205,14 @@ public class QuotientAlgebra extends GeneralAlgebra implements SmallAlgebra {
 
   public static void main(String[] args) throws java.io.IOException,
                                    org.uacalc.io.BadAlgebraFileException {
-    String str = "/home/ralph/Java/Algebra/algebras/polin.ua";
+    String str = "resources/algebras/polin.ua";
     SmallAlgebra alg = org.uacalc.io.AlgebraIO.readAlgebraFile(str);
     SmallAlgebra qalg = new QuotientAlgebra(alg, alg.con().Cg(0,2));
     //SmallAlgebra qbasic = qalg.makeBasicAlgebra();
     //AlgebraIO.writeAlgebraFile(qbasic, "/tmp/qbasic.ua");
     
     
-    str = "/home/ralph/Java/Algebra/algebras/m3.ua";
+    str = "resources/algebras/m3.ua";
     alg = org.uacalc.io.AlgebraIO.readAlgebraFile(str);
     
     SmallAlgebra salg = alg.sub().Sg(new int[] {0,2});

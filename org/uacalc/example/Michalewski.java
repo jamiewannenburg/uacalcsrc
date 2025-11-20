@@ -106,8 +106,8 @@ public class Michalewski {
   
 	
   public static void main(String[] args) throws Exception {    
-    //SmallAlgebra alg = org.uacalc.io.AlgebraIO.readAlgebraFile("/Users/ralph/Java/Algebra/algebras/rps4.ua");
-    SmallAlgebra alg = org.uacalc.io.AlgebraIO.readAlgebraFile("/Users/ralph/Java/Algebra/algebras/emil2y.ua");
+    //SmallAlgebra alg = org.uacalc.io.AlgebraIO.readAlgebraFile("resources/algebras/rps4.ua");
+    SmallAlgebra alg = org.uacalc.io.AlgebraIO.readAlgebraFile("resources/algebras/emil2y.ua");
     findJoinMeetMatPower(alg, 2);
   }
 

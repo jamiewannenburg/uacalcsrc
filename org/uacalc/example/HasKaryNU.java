@@ -52,7 +52,7 @@ public class HasKaryNU {
       testalg = new ProductAlgebra(algs);
     } else {
       //testalg = InputAlg1;
-      testalg = (SmallAlgebra) org.uacalc.io.AlgebraIO.readAlgebraFile("/home/ralph/Java/Algebra/algebras/BA2.ua");
+      testalg = (SmallAlgebra) org.uacalc.io.AlgebraIO.readAlgebraFile("resources/algebras/ba2.ua");
     }
     int result = hasNUHorowitz(testalg, arity);
     if (result == 1) {

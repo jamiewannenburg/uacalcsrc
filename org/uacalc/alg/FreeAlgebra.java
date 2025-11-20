@@ -413,11 +413,11 @@ public class FreeAlgebra extends SubProductAlgebra implements SmallAlgebra {
     SmallAlgebra algB = org.uacalc.io.AlgebraIO.readAlgebraFile("/tmp/Jipsen/b.ua");
     FreeAlgebra f1 = new FreeAlgebra(algB, 1, true, true);
     if (args.length == 0) {
-      SmallAlgebra alg0 = org.uacalc.io.AlgebraIO.readAlgebraFile("/home/ralph/Java/Algebra/algebras/lat2.ua");
-      SmallAlgebra m3 = org.uacalc.io.AlgebraIO.readAlgebraFile("/home/ralph/Java/Algebra/algebras/m3.ua");
-      SmallAlgebra n5 = org.uacalc.io.AlgebraIO.readAlgebraFile("/home/ralph/Java/Algebra/algebras/n5.ua");
-      SmallAlgebra lyndon = org.uacalc.io.AlgebraIO.readAlgebraFile("/home/ralph/Java/Algebra/algebras/lyndon.ua");
-      SmallAlgebra d16 = org.uacalc.io.AlgebraIO.readAlgebraFile("/home/ralph/Java/Algebra/algebras/D16.ua");
+      SmallAlgebra alg0 = org.uacalc.io.AlgebraIO.readAlgebraFile("resources/algebras/lat2.ua");
+      SmallAlgebra m3 = org.uacalc.io.AlgebraIO.readAlgebraFile("resources/algebras/m3.ua");
+      SmallAlgebra n5 = org.uacalc.io.AlgebraIO.readAlgebraFile("resources/algebras/n5.ua");
+      SmallAlgebra lyndon = org.uacalc.io.AlgebraIO.readAlgebraFile("resources/algebras/lyndon.ua");
+      SmallAlgebra d16 = org.uacalc.io.AlgebraIO.readAlgebraFile("resources/algebras/D16.ua");
       //Equation eq = findEquationOfAnotB(alg0, alg1, new int[] {1, 2, 3});
       //System.out.println("eq is\n" + eq);
       

@@ -482,7 +482,7 @@ public class SubProductAlgebra extends GeneralAlgebra implements SmallAlgebra {
 
   public static void main(String[] args) throws java.io.IOException,
                                    org.uacalc.io.BadAlgebraFileException {
-    SmallAlgebra polin = org.uacalc.io.AlgebraIO.readAlgebraFile("/home/ralph/Java/Algebra/algebras/polin.ua");
+    SmallAlgebra polin = org.uacalc.io.AlgebraIO.readAlgebraFile("resources/algebras/polin.ua");
     Partition theta = polin.con().Cg(0, 2);
     Map<IntArray,Partition> map = new HashMap<IntArray,Partition>();
     map.put(new IntArray(new int[] {0, 1}), theta);
@@ -490,7 +490,7 @@ public class SubProductAlgebra extends GeneralAlgebra implements SmallAlgebra {
     SmallAlgebra subpow = new SubProductAlgebra(polin, 3, map);
     System.out.println("univ: " + subpow.universe());
     System.out.println("con size: " + subpow.con().cardinality());
-    org.uacalc.io.AlgebraIO.writeAlgebraFile(subpow, "/home/ralph/Java/Algebra/algebras/subpolin3.ua");
+    org.uacalc.io.AlgebraIO.writeAlgebraFile(subpow, "resources/algebras/subpolin3.ua");
     
     if (args.length == 0) return;
     System.out.println("reading " + args[0]);

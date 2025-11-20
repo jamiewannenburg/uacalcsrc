@@ -29,12 +29,12 @@ public class MembershipTester {
   // not have those, the example is set to use N_5 and M_3.
   
   // The McNulty-Scott example:
-  //static String alg0File = "/home/ralph/Java/Algebra/algebras/hajilarov.ua";
-  //static String alg1File = "/home/ralph/Java/Algebra/algebras/diffiq.ua";
+  //static String alg0File = "resources/algebras/hajilarov.ua";
+  //static String alg1File = "resources/algebras/diffi.ua";
   //static int[] alg1Generators = new int[] { 1, 2, 4, 5 };
 
-  static String alg0File = "/home/ralph/Java/Algebra/algebras/n5.ua";
-  static String alg1File = "/home/ralph/Java/Algebra/algebras/m3.ua";
+  static String alg0File = "resources/algebras/n5.ua";
+  static String alg1File = "resources/algebras/m3.ua";
   // This should be a generating set of alg1. Make it as small as possible.
   static int[] alg1Generators = new int[] { 1, 2, 3 };
   

@@ -151,9 +151,9 @@ System.out.println("tmp.length = " + tmp.length );
   
   public static void main(String[] args) throws IOException, BadAlgebraFileException {
     SmallAlgebra alg = AlgebraIO.readAlgebraFile(
-        //"/home/ralph/Java/Algebra/algebras/D8-set.ua");
-        "/home/ralph/Java/Algebra/algebras/D16-set.ua");
-        //"/home/ralph/Java/Algebra/algebras/Octagon4.ua");
+        //"resources/algebras/D8-set.ua");
+        "resources/algebras/D16-set.ua");
+        //"resources/algebras/Octagon4.ua");
     UnaryTermsMonoid m = new UnaryTermsMonoid(alg);
     AlgebraIO.writeAlgebraFile(m, "/tmp/D8-2.ua");
   }

@@ -10,10 +10,10 @@ import org.uacalc.io.*;
 
 public class FinitelyPresentedAlg {
 
-  static String m3File = "/home/ralph/Java/Algebra/algebras/m3.ua";
-  static String m4File = "/home/ralph/Java/Algebra/algebras/m4.ua";
-  static String twoFile = "/home/ralph/Java/Algebra/algebras/lat2.xml";
-  static String n5File = "/home/ralph/Java/Algebra/algebras/n5.ua";
+  static String m3File = "resources/algebras/m3.ua";
+  static String m4File = "resources/algebras/m4.ua";
+  static String twoFile = "resources/algebras/lat2.ua";
+  static String n5File = "resources/algebras/n5.ua";
   static int numGens = 4;
   // This should be a generating set of alg1. Make it as small as possible.
   static OperationSymbol meet = OperationSymbol.MEET;

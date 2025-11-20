@@ -938,9 +938,9 @@ public class SubalgebraLattice implements Lattice {
     if (args.length == 0) {
       try {
         alg = (SmallAlgebra)org.uacalc.io.AlgebraIO.readAlgebraFile(
-                "/home/ralph/Java/Algebra/algebras/lyndon.ua");
+                "resources/algebras/lyndon.ua");
         alg2 = (SmallAlgebra)org.uacalc.io.AlgebraIO.readAlgebraFile(
-                "/home/ralph/Java/Algebra/algebras/m3.ua");
+                "resources/algebras/m3.ua");
       }
       catch (Exception e) {}
       System.out.println("map: " + SubalgebraLattice.extendToHomomorphism(

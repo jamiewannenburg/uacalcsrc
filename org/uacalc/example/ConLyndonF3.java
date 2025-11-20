@@ -11,8 +11,8 @@ import org.uacalc.io.*;
 
 public class ConLyndonF3 {
 
-  static String alg0File = "/home/ralph/Java/Algebra/algebras/lyndonquotbasic.ua";
-  static String alg1File = "/home/ralph/Java/Algebra/algebras/m3.ua";
+  static String alg0File = "resources/algebras/lyndon.ua";
+  static String alg1File = "resources/algebras/m3.ua";
   // This should be a generating set of alg1. Make it as small as possible.
   static int[] alg1Generators = new int[] { 1, 2, 3 };
   

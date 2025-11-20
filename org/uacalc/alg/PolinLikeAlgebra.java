@@ -218,12 +218,12 @@ public class PolinLikeAlgebra extends GeneralAlgebra implements SmallAlgebra {
     SmallAlgebra alg0 = null;
     //try {
     //  lat2 = org.uacalc.io.AlgebraIO.readAlgebraFile(
-    //           "/home/ralph/Java/Algebra/algebras/lat2.xml");
+    //           "resources/algebras/lat2.xml");
     //}
     try {
       alg0 = org.uacalc.io.AlgebraIO.readAlgebraFile(
-               "/home/ralph/Java/Algebra/algebras/3polidpent2.xml"
-               //"/home/ralph/Java/Algebra/algebras/polin.xml"
+               "resources/algebras/3polidpent2.xml"
+               //"resources/algebras/polin.xml"
                );
     }
     catch(Exception e) { e.printStackTrace(); }
