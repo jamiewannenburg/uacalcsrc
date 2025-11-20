@@ -117,6 +117,60 @@ impl PyGeneralAlgebra {
         }
     }
 
+    /// Create a new GeneralAlgebra with a name and universe.
+    ///
+    /// Args:
+    ///     name (str): The name of the algebra
+    ///     universe (List[Any]): The universe set as a list of Python objects
+    ///
+    /// Returns:
+    ///     GeneralAlgebra: A new GeneralAlgebra instance
+    ///
+    /// Raises:
+    ///     ValueError: If universe is empty or contains duplicates
+    #[staticmethod]
+    fn with_universe(py: Python<'_>, name: String, universe: &Bound<'_, PyAny>) -> PyResult<Self> {
+        // Extract universe as a list of PyObjects
+        let universe_list: Vec<PyObject> = if let Ok(list) = universe.extract::<Vec<PyObject>>() {
+            list
+        } else if let Ok(iter) = universe.iter() {
+            let mut result = Vec::new();
+            for item in iter {
+                result.push(item?.to_object(py));
+            }
+            result
+        } else {
+            return Err(PyValueError::new_err("Universe must be a list, set, or iterable"));
+        };
+
+        if universe_list.is_empty() {
+            return Err(PyValueError::new_err("Universe cannot be empty"));
+        }
+
+        // Build unique universe and check for duplicates
+        let mut unique_universe: Vec<PyObject> = Vec::new();
+        for elem in universe_list.iter() {
+            // Check if we've seen this element before using Python equality
+            let mut found = false;
+            for existing_elem in unique_universe.iter() {
+                if elem.bind(py).eq(existing_elem.bind(py))? {
+                    found = true;
+                    break;
+                }
+            }
+            if !found {
+                unique_universe.push(elem.clone());
+            }
+        }
+
+        Ok(PyGeneralAlgebra {
+            name,
+            description: None,
+            universe: unique_universe,
+            operations: Vec::new(),
+        })
+    }
+
     /// Get the name of this algebra.
     ///
     /// Returns:
@@ -234,6 +288,14 @@ impl PyGeneralAlgebra {
     ///     List[Any]: The universe elements as a list
     fn get_universe(&self, py: Python<'_>) -> Vec<PyObject> {
         self.universe.clone()
+    }
+
+    /// Get the universe as a list of Python objects (alias for get_universe).
+    ///
+    /// Returns:
+    ///     List[Any]: The universe elements as a list
+    fn universe(&self, py: Python<'_>) -> Vec<PyObject> {
+        self.get_universe(py)
     }
 
     /// Get the operations of this algebra.

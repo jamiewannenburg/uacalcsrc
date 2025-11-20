@@ -318,6 +318,63 @@ impl PyNonVariableTerm {
     fn __repr__(&self) -> String {
         format!("NonVariableTerm({})", self.inner)
     }
+
+    /// Substitute terms for variables according to the given map.
+    ///
+    /// # Arguments
+    /// * `var_map` - A dictionary mapping variable names to replacement terms
+    ///
+    /// # Returns
+    /// The term with substitutions applied
+    fn substitute(&self, var_map: std::collections::HashMap<String, Bound<'_, PyAny>>) -> PyResult<PyObject> {
+        Python::with_gil(|py| {
+            // Convert Python objects to Rust terms
+            let mut rust_map = std::collections::HashMap::new();
+            for (key, value) in var_map {
+                let term: Box<dyn Term> = if let Ok(var) = value.extract::<PyRef<PyVariableImp>>() {
+                    Box::new(var.inner.clone())
+                } else if let Ok(nvt) = value.extract::<PyRef<PyNonVariableTerm>>() {
+                    nvt.inner.clone_box()
+                } else {
+                    return Err(PyValueError::new_err("Values must be VariableImp or NonVariableTerm"));
+                };
+                rust_map.insert(key, term);
+            }
+
+            let result = self.inner.substitute(&rust_map)
+                .map_err(|e| PyValueError::new_err(e))?;
+
+            // Convert back to Python
+            if result.isa_variable() {
+                let var_name = format!("{}", result);
+                let py_var = PyVariableImp {
+                    inner: VariableImp::new(&var_name),
+                };
+                Ok(py_var.into_py(py))
+            } else {
+                let py_term = reconstruct_non_variable_term(result.as_ref())?;
+                Ok(py_term.into_py(py))
+            }
+        })
+    }
+
+    /// Python string representation (alias for __str__)
+    fn to_string(&self) -> String {
+        format!("{}", self.inner)
+    }
+
+    /// Write this term to a string buffer.
+    ///
+    /// # Arguments
+    /// * `sb` - The string buffer to append to
+    ///
+    /// # Returns
+    /// The updated string buffer
+    fn write_string_buffer(&self, sb: String) -> String {
+        let mut buffer = sb;
+        self.inner.write_string_buffer(&mut buffer);
+        buffer
+    }
 }
 
 /// Python wrapper for Taylor

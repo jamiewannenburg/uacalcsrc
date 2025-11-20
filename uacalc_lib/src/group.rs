@@ -1,6 +1,7 @@
 use pyo3::prelude::*;
 use uacalc::group::PermutationGroup;
 use uacalc::util::int_array::{IntArray, IntArrayTrait};
+use crate::alg::basic_algebra::PyBasicAlgebra;
 
 #[pyclass]
 pub struct PyPermutationGroup {
@@ -106,6 +107,26 @@ impl PyPermutationGroup {
         Ok(result.as_slice().to_vec())
     }
 
+    /// Compute the automorphism group of a BasicAlgebra.
+    ///
+    /// This function finds all automorphisms (bijections that preserve all operations)
+    /// of the given algebra and returns them as a PermutationGroup.
+    ///
+    /// Args:
+    ///     alg (BasicAlgebra): The BasicAlgebra to compute the automorphism group for
+    ///
+    /// Returns:
+    ///     PermutationGroup: The automorphism group
+    ///
+    /// Raises:
+    ///     ValueError: If there's an error during computation
+    #[staticmethod]
+    fn automorphism_group(alg: &PyBasicAlgebra) -> PyResult<Self> {
+        let aut_group = PermutationGroup::automorphism_group(&alg.inner)
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e))?;
+        Ok(PyPermutationGroup { inner: aut_group })
+    }
+
     fn get_name(&self) -> String {
         self.inner.name.clone()
     }
@@ -135,9 +156,38 @@ impl PyPermutationGroup {
     fn __repr__(&self) -> String {
         format!("PermutationGroup({})", self.inner.name)
     }
+
+    /// Convert this PermutationGroup to a BasicAlgebra with integer elements.
+    ///
+    /// The resulting algebra has:
+    /// - Universe: {0, 1, ..., n-1} where n is the underlying set size
+    /// - Operations: The group operations (product, inverse, identity)
+    ///
+    /// Args:
+    ///     name (str): The name for the resulting BasicAlgebra
+    ///
+    /// Returns:
+    ///     BasicAlgebra: The BasicAlgebra representation
+    ///
+    /// Raises:
+    ///     ValueError: If there's an error during conversion
+    fn to_basic_algebra(&self, name: String) -> PyResult<PyBasicAlgebra> {
+        let alg = self.inner.to_basic_algebra(name)
+            .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e))?;
+        Ok(PyBasicAlgebra::from_inner(alg))
+    }
 }
 
 pub fn register_group_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
+    // Register classes internally but only export clean names
     m.add_class::<PyPermutationGroup>()?;
+    
+    // Export only clean names (without Py prefix)
+    m.add("PermutationGroup", m.getattr("PyPermutationGroup")?)?;
+    
+    // Remove the Py* names from the module to avoid confusion
+    let module_dict = m.dict();
+    module_dict.del_item("PyPermutationGroup")?;
+    
     Ok(())
 }

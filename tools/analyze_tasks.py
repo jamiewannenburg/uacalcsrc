@@ -2,15 +2,8 @@
 """
 Task Implementation Status Analysis Script
 
-This script analyzes each of the 85 task files in the tasks/ directory to verify
-what is already implemented and what still needs to be implemented. It checks:
-- Rust implementation status
-- Python bindings status  
-- Java wrapper status
-- Testing status
-- Dependencies that are blocking implementation
-
-The script updates TASK_STATUS.md with the current status of all tasks.
+This script analyzes each of the 85 task files in the tasks/ directory. 
+It runs the prompt through cursor-agent and returns structured data.
 """
 
 import os
@@ -42,7 +35,11 @@ class TaskAnalyzer:
         self.rust_src_dir = self.project_root / "src"
         self.python_lib_dir = self.project_root / "uacalc_lib" / "src"
         self.java_wrapper_dir = self.project_root / "java_wrapper" / "src"
-        self.task_status_file = self.project_root / "TASK_STATUS.md"
+        self.python_dir = self.project_root / "python"
+        self.python_tests_dir = self.project_root / "python" / "uacalc" / "tests"
+        self.python_type_stubs = self.project_root / "python" / "uacalc_lib" / "__init__.pyi"
+        self.task_status_file = self.project_root / "TASK_STATUS.json"
+        self.results_file = self.project_root / "task_analysis" / "task_analysis_results.json"
         
         # Verify required directories exist
         if not self.tasks_dir.exists():
@@ -53,6 +50,14 @@ class TaskAnalyzer:
             raise FileNotFoundError(f"Rust source directory not found: {self.rust_src_dir}")
         if not self.python_lib_dir.exists():
             raise FileNotFoundError(f"Python library directory not found: {self.python_lib_dir}")
+        if not self.java_wrapper_dir.exists():
+            raise FileNotFoundError(f"Java wrapper directory not found: {self.java_wrapper_dir}")
+        if not self.python_dir.exists():
+            raise FileNotFoundError(f"Python directory not found: {self.python_dir}")
+        if not self.python_tests_dir.exists():
+            raise FileNotFoundError(f"Python tests directory not found: {self.python_tests_dir}")
+        if not self.python_type_stubs.exists():
+            raise FileNotFoundError(f"Python type stubs not found: {self.python_type_stubs}")
     
     def parse_task_file(self, task_path: Path) -> Dict:
         """Parse a task file to extract Java file path, dependencies, and status."""
@@ -61,69 +66,32 @@ class TaskAnalyzer:
                 content = f.read()
             
             # Extract Java file path from the content
-            java_file = self.extract_java_file_path(content)
-            
-            # Extract dependencies
-            dependencies = self.extract_dependencies(content)
-            
-            # Check completion status
-            is_completed = self.check_completion_status(content)
+            java_file = self.extract_java_file_path(task_path)
             
             return {
                 'task_file': str(task_path),
                 'java_file': java_file,
-                'dependencies': dependencies,
-                'is_completed': is_completed,
                 'content': content
             }
         except Exception as e:
             logger.error(f"Error parsing task file {task_path}: {e}")
             return None
     
-    def extract_java_file_path(self, content: str) -> Optional[str]:
+    def extract_java_file_path(self, task_path: Path) -> Optional[str]:
         """Extract Java file path from task content."""
-        # Look for patterns like "**Java File:** `org/uacalc/alg/op/Operation.java`"
-        pattern = r'\*\*Java File:\*\*\s*`([^`]+\.java)`'
-        match = re.search(pattern, content)
+        # Look for patterns like `Task <number> - <name>.md`
+        pattern = r'Task (\d+) - (.+)\.md'
+        match = re.search(pattern, task_path.name)
         if match:
-            return match.group(1)
-        
-        # Fallback: look for any .java file reference
-        pattern = r'`([^`]*\.java)`'
-        matches = re.findall(pattern, content)
-        if matches:
-            return matches[0]
-        
+            # look for the java file in the java_dir and its subdirectories
+            for java_file in self.java_dir.glob(f"**/{match.group(2)}.java"):
+                return str(java_file)
         return None
-    
-    def extract_dependencies(self, content: str) -> List[str]:
-        """Extract dependencies from task content."""
-        dependencies = []
-        
-        # Look for dependencies section
-        deps_section = re.search(r'### Dependencies\n(.*?)(?=\n###|\n##|\Z)', content, re.DOTALL)
-        if deps_section:
-            deps_text = deps_section.group(1)
-            # Extract dependency lines
-            dep_lines = re.findall(r'-\s*`([^`]+)`', deps_text)
-            dependencies.extend(dep_lines)
-        
-        return dependencies
-    
-    def check_completion_status(self, content: str) -> bool:
-        """Check if task is marked as completed."""
-        # Count checked boxes
-        checked_boxes = content.count('- [x]')
-        total_boxes = content.count('- [')
-        
-        # Consider completed if all boxes are checked
-        return checked_boxes > 0 and checked_boxes == total_boxes
     
     def build_agent_prompt(self, task_info: Dict) -> str:
         """Build comprehensive prompt for cursor-agent to analyze implementation status."""
         task_file = task_info['task_file']
         java_file = task_info['java_file']
-        is_completed = task_info['is_completed']
         
         prompt = f"""You are a Rust translation expert analyzing a Java-to-Rust translation task. Your job is to analyze the current implementation status and provide detailed status information.
 
@@ -132,6 +100,7 @@ class TaskAnalyzer:
 - DO NOT write any Python bindings
 - DO NOT write any Java wrappers
 - DO NOT write any tests
+- DO NOT write any type stubs
 - DO NOT modify existing implementations
 - ONLY analyze what already exists
 
@@ -139,8 +108,9 @@ class TaskAnalyzer:
 1. Read and analyze the task file: {task_file}
 2. Read and analyze the Java file: {java_file}
 3. Check the current implementation status in the codebase
-4. Update the task file with current implementation status
-5. Provide structured status information
+4. Make sure all public methods are implemented and exposed in python
+5. Update the task file with current implementation status
+6. Provide structured status information
 
 ## Analysis Requirements:
 
@@ -149,19 +119,13 @@ class TaskAnalyzer:
 - Check if Python bindings exist in uacalc_lib/src/ directory  
 - Check if Java wrapper exists in java_wrapper/src/ directory
 - Check if tests exist (either in separate test files or in mod.rs)
+- Check if type stubs is complete in python/uacalc_lib/__init__.pyi
 - Verify the quality and completeness of each component
 - DO NOT create any files - only check what exists
 
-### 2. Dependency Analysis (READ-ONLY)
-- Parse Java imports to identify UACalc dependencies
-- Check if dependencies are implemented in the codebase
-- Determine if this task is blocked by missing dependencies
-- Identify what needs to be implemented before this task can proceed
-- DO NOT implement any dependencies
-
-### 3. Status Determination
+### 2. Status Determination
 Based on implementation status, determine:
-- **Complete**: All 4 components implemented (Rust, Python, Java wrapper, Tests)
+- **Complete**: All 5 components implemented (Rust, Python, Java wrapper, Tests, Type stubs)
 - **Partially Complete**: 75%+ components implemented
 - **In Progress**: 25-74% components implemented
 - **Blocked**: Has dependencies that prevent implementation
@@ -185,8 +149,10 @@ Based on implementation status, determine:
 - Task file: {task_file}
 - Java file: {java_file}
 - Rust source: src/ directory
-- Python bindings: uacalc_lib/src/ directory
 - Java wrappers: java_wrapper/src/ directory
+- Python bindings: uacalc_lib/src/ directory
+- Python tests: python/uacalc/tests/ directory
+- Python type stubs: python/uacalc_lib/__init__.pyi
 
 Begin your analysis and update the task file accordingly. Return your findings in JSON format with the following structure:
 {{
@@ -195,8 +161,6 @@ Begin your analysis and update the task file accordingly. Return your findings i
     "java_file": "{java_file}",
     "status": "complete|partially_complete|in_progress|blocked|not_started",
     "completion_percentage": 0-100,
-    "priority": "high|medium|low",
-    "priority_reason": "explanation of why this priority level was assigned",
     "rust_implementation": {{
       "exists": true/false,
       "path": "path/to/implementation",
@@ -221,19 +185,18 @@ Begin your analysis and update the task file accordingly. Return your findings i
       "quality": "excellent|good|basic|poor",
       "notes": "test notes"
     }},
-    "blocking_dependencies": ["list", "of", "blocking", "dependencies"],
-    "ready_dependencies": ["list", "of", "ready", "dependencies"],
+    "type_stubs": {{
+      "exists": true/false,
+      "path": "path/to/type_stubs",
+      "quality": "excellent|good|basic|poor",
+      "notes": "type stubs notes"
+    }},
     "recommendations": "detailed recommendations for next steps"
   }},
   "task_file_updated": true/false,
   "changes_made": "description of changes made to task file"
 }}
-
-## Priority Assessment Guidelines:
-- **High Priority**: Core foundational classes, interfaces, or classes with many dependencies
-- **Medium Priority**: Important utility classes or classes with moderate dependencies  
-- **Low Priority**: Specialized classes, UI components, or classes with few dependencies
-- Consider: How many other classes depend on this one? Is it a core interface or abstract class? Is it needed for basic functionality?"""
+"""
 
         return prompt
     
@@ -247,6 +210,7 @@ Begin your analysis and update the task file accordingly. Return your findings i
             # Build cursor-agent command using headless syntax
             cmd = [
                 "cursor-agent",  # Now available in PATH
+                "--model", "composer-1", # Use free composer-1 model
                 "-p",  # Enable print mode for non-interactive execution
                 "--force",  # Allow file modifications without confirmation
                 "--output-format", "json",  # Set output format to JSON for structured output
@@ -316,8 +280,8 @@ Generated on: {time.strftime('%Y-%m-%d %H:%M:%S')}
 
 ## Task Details
 
-| Task | Java File | Status | Completion | Priority | Rust | Python | Java Wrapper | Tests | Blocking Dependencies |
-|------|-----------|--------|------------|---------|------|--------|--------------|-------|----------------------|
+| Task | Java File | Status | Completion | Rust | Python | Java Wrapper | Tests | Type Stubs |
+|------|-----------|--------|------------|------|--------|--------------|-------|----------------------|
 """
         
         for result in sorted_results:
@@ -348,15 +312,12 @@ Generated on: {time.strftime('%Y-%m-%d %H:%M:%S')}
             if tests_impl.get('quality'):
                 tests_status += f" ({tests_impl['quality']})"
             
-            priority = result.get('priority', 'unknown')
-            priority_emoji = "🔴" if priority == "high" else "🟡" if priority == "medium" else "🟢" if priority == "low" else "⚪"
+            type_stubs_impl = result.get('type_stubs', {})
+            type_stubs_status = "✅" if type_stubs_impl.get('exists', False) else "❌"
+            if type_stubs_impl.get('quality'):
+                type_stubs_status += f" ({type_stubs_impl['quality']})"
             
-            blocking_deps = result.get('blocking_dependencies', [])
-            blocking_str = ", ".join(blocking_deps[:2])  # Show first 2 dependencies
-            if len(blocking_deps) > 2:
-                blocking_str += f" (+{len(blocking_deps) - 2} more)"
-            
-            md_content += f"| {task_name} | `{java_file}` | {status.replace('_', ' ').title()} | {completion} | {priority_emoji} {priority.title()} | {rust_status} | {python_status} | {java_wrapper_status} | {tests_status} | {blocking_str} |\n"
+            md_content += f"| {task_name} | `{java_file}` | {status.replace('_', ' ').title()} | {completion} | {rust_status} | {python_status} | {java_wrapper_status} | {tests_status} | {type_stubs_status} |\n"
         
         md_content += """
 ## Status Definitions
@@ -364,14 +325,7 @@ Generated on: {time.strftime('%Y-%m-%d %H:%M:%S')}
 - **Complete**: All components implemented (Rust, Python bindings, Java wrapper, Tests)
 - **Partially Complete**: 75%+ components implemented
 - **In Progress**: 25-74% components implemented  
-- **Blocked**: Has dependencies that prevent implementation
 - **Not Started**: Less than 25% components implemented
-
-## Priority Definitions
-
-- **🔴 High**: Core foundational classes, interfaces, or classes with many dependencies
-- **🟡 Medium**: Important utility classes or classes with moderate dependencies  
-- **🟢 Low**: Specialized classes, UI components, or classes with few dependencies
 
 ## Implementation Components
 
@@ -379,12 +333,12 @@ Generated on: {time.strftime('%Y-%m-%d %H:%M:%S')}
 - **Python**: Python bindings via PyO3
 - **Java Wrapper**: Java CLI wrapper for testing
 - **Tests**: Rust test suite
+- **Type Stubs**: Python type stubs
 
 ## Notes
 
-- Tasks are ordered by dependency count (lowest first)
-- Blocking dependencies are shown for tasks that cannot proceed
-- Completion percentage is based on the 4 main components
+- Type stubs are shown for tasks that have type stubs
+- Completion percentage is based on the 5 main components
 - Status is automatically determined based on implementation progress
 """
         
@@ -502,14 +456,11 @@ Generated on: {time.strftime('%Y-%m-%d %H:%M:%S')}
                 'java_file': task_info['java_file'],
                 'status': analysis.get('status', 'unknown'),
                 'completion_percentage': analysis.get('completion_percentage', 0),
-                'priority': analysis.get('priority', 'unknown'),
-                'priority_reason': analysis.get('priority_reason', ''),
                 'rust_implementation': analysis.get('rust_implementation', {}),
                 'python_bindings': analysis.get('python_bindings', {}),
                 'java_wrapper': analysis.get('java_wrapper', {}),
                 'tests': analysis.get('tests', {}),
-                'blocking_dependencies': analysis.get('blocking_dependencies', []),
-                'ready_dependencies': analysis.get('ready_dependencies', []),
+                'type_stubs': analysis.get('type_stubs', {}),
                 'recommendations': analysis.get('recommendations', ''),
                 'task_file_updated': structured_output.get('task_file_updated', False),
                 'changes_made': structured_output.get('changes_made', ''),
@@ -560,7 +511,7 @@ Generated on: {time.strftime('%Y-%m-%d %H:%M:%S')}
     def is_task_failed(self, task_path: str, existing_results: Dict[str, Dict]) -> bool:
         """Check if a task failed based on existing results."""
         if task_path not in existing_results:
-            return False
+            return True
         
         result = existing_results[task_path]
         return result.get('success', True) == False

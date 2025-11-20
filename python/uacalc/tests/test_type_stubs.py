@@ -139,12 +139,12 @@ class TestTypeStubValidation:
 
     def test_type_stub_file_exists(self):
         """Test that the type stub file exists."""
-        stub_file = Path(__file__).parent.parent / "uacalc_lib.pyi"
-        assert stub_file.exists(), "Type stub file uacalc_lib.pyi does not exist"
+        stub_file = Path(__file__).parent.parent.parent / "uacalc_lib" / "__init__.pyi"
+        assert stub_file.exists(), "Type stub file __init__.pyi does not exist"
 
     def test_type_stub_syntax(self):
         """Test that the type stub file has valid Python syntax."""
-        stub_file = Path(__file__).parent.parent / "uacalc_lib.pyi"
+        stub_file = Path(__file__).parent.parent.parent / "uacalc_lib" / "__init__.pyi"
         if not stub_file.exists():
             pytest.skip("Type stub file does not exist")
         
