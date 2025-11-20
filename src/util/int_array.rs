@@ -386,6 +386,7 @@ impl fmt::Display for IntArray {
 mod tests {
     use super::*;
     use std::collections::HashSet;
+    use std::hash::Hasher;
     
     #[test]
     fn test_new() {
