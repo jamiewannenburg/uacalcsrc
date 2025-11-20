@@ -317,6 +317,117 @@ class TestBasicLatticeFilterIdeal:
         assert sorted(ideal_3) == [0, 1, 2, 3]
 
 
+class TestBasicLatticeJoinIrreducibles:
+    """Test join_irreducibles() and zero() methods on BasicLattice<i32>."""
+    
+    def create_chain_lattice(self):
+        """Create a 3-element chain lattice: 0 < 1 < 2."""
+        import uacalc_lib
+        IntOperation = uacalc_lib.alg.IntOperation
+        OperationSymbol = uacalc_lib.alg.OperationSymbol
+        
+        # Create a join operation for a chain
+        symbol = OperationSymbol("join", 2, False)
+        set_size = 3
+        table = [
+            0, 1, 2,  # join(0, 0)=0, join(0, 1)=1, join(0, 2)=2
+            1, 1, 2,  # join(1, 0)=1, join(1, 1)=1, join(1, 2)=2
+            2, 2, 2,  # join(2, 0)=2, join(2, 1)=2, join(2, 2)=2
+        ]
+        join_op = IntOperation(symbol, set_size, table)
+        
+        return uacalc_lib.lat.lattice_from_join("Chain3", join_op)
+    
+    def test_zero_chain(self):
+        """Test zero() method on a chain lattice."""
+        lattice = self.create_chain_lattice()
+        
+        # Zero should be 0 (the bottom element)
+        zero = lattice.zero()
+        assert zero == 0
+    
+    def test_join_irreducibles_chain(self):
+        """Test join_irreducibles() on a chain lattice."""
+        lattice = self.create_chain_lattice()
+        
+        # In a chain 0 < 1 < 2:
+        # - 0 is the bottom element, so it's NOT join irreducible
+        # - 1 is join irreducible (cannot be expressed as join of strictly smaller elements)
+        # - 2 is join irreducible (cannot be expressed as join of strictly smaller elements)
+        jis = lattice.join_irreducibles()
+        assert isinstance(jis, list)
+        assert sorted(jis) == [1, 2], f"Expected [1, 2], got {sorted(jis)}"
+        # Verify 0 is NOT in the list
+        assert 0 not in jis, "Bottom element (0) should not be join irreducible"
+    
+    def create_diamond_lattice(self):
+        """Create a diamond lattice: 0 < 1,2 < 3."""
+        import uacalc_lib
+        IntOperation = uacalc_lib.alg.IntOperation
+        OperationSymbol = uacalc_lib.alg.OperationSymbol
+        
+        # Create a join operation for a diamond: 0 < 1,2 < 3
+        symbol = OperationSymbol("join", 2, False)
+        set_size = 4
+        table = [
+            0, 1, 2, 3,  # join(0, *)
+            1, 1, 3, 3,  # join(1, *)
+            2, 3, 2, 3,  # join(2, *)
+            3, 3, 3, 3,  # join(3, *)
+        ]
+        join_op = IntOperation(symbol, set_size, table)
+        
+        return uacalc_lib.lat.lattice_from_join("Diamond", join_op)
+    
+    def test_zero_diamond(self):
+        """Test zero() method on a diamond lattice."""
+        lattice = self.create_diamond_lattice()
+        
+        # Zero should be 0 (the bottom element)
+        zero = lattice.zero()
+        assert zero == 0
+    
+    def test_join_irreducibles_diamond(self):
+        """Test join_irreducibles() on a diamond lattice."""
+        lattice = self.create_diamond_lattice()
+        
+        # In a diamond 0 < 1,2 < 3:
+        # - 0 is the bottom element, so it's NOT join irreducible
+        # - 1 is join irreducible (cannot be expressed as join of strictly smaller elements)
+        # - 2 is join irreducible (cannot be expressed as join of strictly smaller elements)
+        # - 3 is NOT join irreducible (3 = join(1, 2), where 1 and 2 are strictly smaller)
+        jis = lattice.join_irreducibles()
+        assert isinstance(jis, list)
+        assert sorted(jis) == [1, 2], f"Expected [1, 2], got {sorted(jis)}"
+        # Verify 0 and 3 are NOT in the list
+        assert 0 not in jis, "Bottom element (0) should not be join irreducible"
+        assert 3 not in jis, "Top element (3) should not be join irreducible (3 = join(1, 2))"
+    
+    def test_join_irreducibles_single_element(self):
+        """Test join_irreducibles() on a single-element lattice."""
+        import uacalc_lib
+        IntOperation = uacalc_lib.alg.IntOperation
+        OperationSymbol = uacalc_lib.alg.OperationSymbol
+        
+        # Create a single-element lattice (trivial case)
+        symbol = OperationSymbol("join", 2, False)
+        set_size = 1
+        table = [0]  # join(0, 0) = 0
+        join_op = IntOperation(symbol, set_size, table)
+        
+        lattice = uacalc_lib.lat.lattice_from_join("Single", join_op)
+        
+        # In a single-element lattice, there are no join irreducibles
+        # (the only element is the bottom element, which is excluded)
+        jis = lattice.join_irreducibles()
+        assert isinstance(jis, list)
+        assert len(jis) == 0, f"Expected empty list, got {jis}"
+        
+        # Zero should still be 0
+        zero = lattice.zero()
+        assert zero == 0
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
 

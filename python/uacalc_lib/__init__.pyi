@@ -588,6 +588,20 @@ class lat:
             con_lat: The congruence lattice to convert
             label: Whether to include TCT (Type Classification Theory) labeling
         """
+        @staticmethod
+        def new_from_poset(name: str, poset: "lat.OrderedSet") -> "lat.BasicLattice": ...
+        """Create a BasicLattice from an OrderedSet.
+        
+        Args:
+            name: Name for the lattice
+            poset: The ordered set to convert to a lattice
+            
+        Returns:
+            BasicLattice: A new BasicLattice instance
+            
+        Raises:
+            ValueError: If the poset cannot be converted to a lattice
+        """
         def cardinality(self) -> int: ...
         """Get the cardinality of this lattice.
 
@@ -616,94 +630,104 @@ class lat:
             ImportError: If networkx is not installed
         """
         def universe(self) -> List[int]: ...
-        """Get universe as a list of integers (for BasicLattice<i32> only).
-
+        """Get the universe as a list of integers (for BasicLattice<i32> only).
+        
         Returns:
-            List of integers representing the universe
-
+            List of integers representing the universe elements
+            
         Raises:
-            ValueError: If not available for this BasicLattice type
+            ValueError: If called on a BasicLattice that is not BasicLattice<i32>
         """
         def leq(self, a: int, b: int) -> bool: ...
-        """Check if a ≤ b in the lattice order (for BasicLattice<i32> only).
-
+        """Check if a ≤ b in this lattice (for BasicLattice<i32> only).
+        
         Args:
-            a: First element
-            b: Second element
-
+            a: First element (integer)
+            b: Second element (integer)
+            
         Returns:
             True if a ≤ b, False otherwise
-
+            
         Raises:
-            ValueError: If not available for this BasicLattice type
+            ValueError: If called on a BasicLattice that is not BasicLattice<i32>,
+                        or if elements are not found in universe
         """
         def join(self, a: int, b: int) -> int: ...
-        """Compute join of two elements (for BasicLattice<i32> only).
-
+        """Compute the join (least upper bound) of two elements (for BasicLattice<i32> only).
+        
         Args:
-            a: First element
-            b: Second element
-
+            a: First element (integer)
+            b: Second element (integer)
+            
         Returns:
-            The join (least upper bound) of a and b
-
+            The join of a and b as an integer
+            
         Raises:
-            ValueError: If not available for this BasicLattice type
+            ValueError: If called on a BasicLattice that is not BasicLattice<i32>,
+                        or if elements are not found in universe
         """
         def meet(self, a: int, b: int) -> int: ...
-        """Compute meet of two elements (for BasicLattice<i32> only).
-
+        """Compute the meet (greatest lower bound) of two elements (for BasicLattice<i32> only).
+        
         Args:
-            a: First element
-            b: Second element
-
+            a: First element (integer)
+            b: Second element (integer)
+            
         Returns:
-            The meet (greatest lower bound) of a and b
-
+            The meet of a and b as an integer
+            
         Raises:
-            ValueError: If not available for this BasicLattice type
+            ValueError: If called on a BasicLattice that is not BasicLattice<i32>,
+                        or if elements are not found in universe
         """
         def filter(self, element: int) -> List[int]: ...
         """Get the filter (all elements ≥ the given element) (for BasicLattice<i32> only).
-
+        
         Args:
             element: The element to get the filter for
-
+            
         Returns:
             List of all elements greater than or equal to the given element
-
+            
         Raises:
-            ValueError: If not available for this BasicLattice type
+            ValueError: If called on a BasicLattice that is not BasicLattice<i32>,
+                        or if element is not found in universe
         """
         def ideal(self, element: int) -> List[int]: ...
         """Get the ideal (all elements ≤ the given element) (for BasicLattice<i32> only).
-
+        
         Args:
             element: The element to get the ideal for
-
+            
         Returns:
             List of all elements less than or equal to the given element
-
+            
         Raises:
-            ValueError: If not available for this BasicLattice type
+            ValueError: If called on a BasicLattice that is not BasicLattice<i32>,
+                        or if element is not found in universe
         """
-        def join_irreducibles(self) -> List["alg.Partition"]: ...
-        """Get join irreducibles (for BasicLattice<Partition> only, created from CongruenceLattice).
-
+        def join_irreducibles(self) -> Union[List["alg.Partition"], List[int]]: ...
+        """Get join irreducibles.
+        
         Returns:
-            List of join irreducible elements
-
+            For BasicLattice<Partition>: List of Partition objects representing join irreducible elements
+            For BasicLattice<i32>: List of integers representing join irreducible elements
+            
         Raises:
-            ValueError: If not available for this BasicLattice type
+            ValueError: If called on a BasicLattice that is not BasicLattice<Partition> or BasicLattice<i32>
+            
+        Note:
+            The bottom element (zero) is excluded from join irreducibles.
         """
-        def zero(self) -> "alg.Partition": ...
-        """Get zero (bottom) element (for BasicLattice<Partition> only).
-
+        def zero(self) -> Union["alg.Partition", int]: ...
+        """Get zero (bottom) element.
+        
         Returns:
-            The zero (bottom) element
-
+            For BasicLattice<Partition>: The zero (bottom) element as a Partition
+            For BasicLattice<i32>: The zero (bottom) element as an integer
+            
         Raises:
-            ValueError: If not available for this BasicLattice type
+            ValueError: If called on a BasicLattice that is not BasicLattice<Partition> or BasicLattice<i32>
         """
         def __str__(self) -> str: ...
         def __repr__(self) -> str: ...
@@ -946,30 +970,129 @@ class lat:
     @staticmethod
     def ordered_sets_main() -> str: ...
     @staticmethod
-    def lattice_from_meet(name: str, meet: Any) -> "lat.BasicLattice": ...
+    def lattice_from_meet(name: str, meet: Operation) -> "lat.BasicLattice": ...
+    """Create a lattice from a meet operation.
+    
+    Creates a BasicLattice from a meet operation using integers for labels.
+    The lattice is constructed by creating filters from the meet operation.
+    
+    Args:
+        name: Name for the lattice
+        meet: The meet operation (Operation protocol)
+        
+    Returns:
+        BasicLattice: A BasicLattice created from the meet operation
+        
+    Raises:
+        ValueError: If the operation is invalid or construction fails
+    """
     @staticmethod
-    def lattice_from_join(name: str, join: Any) -> "lat.BasicLattice": ...
+    def lattice_from_join(name: str, join: Operation) -> "lat.BasicLattice": ...
+    """Create a lattice from a join operation.
+    
+    Creates a BasicLattice from a join operation using integers for labels.
+    The lattice is constructed by creating filters from the join operation.
+    
+    Args:
+        name: Name for the lattice
+        join: The join operation (Operation protocol)
+        
+    Returns:
+        BasicLattice: A BasicLattice created from the join operation
+        
+    Raises:
+        ValueError: If the operation is invalid or construction fails
+    """
     @staticmethod
-    def lattice_from_meet_with_universe(name: str, univ: List[int], meet: Any) -> "lat.BasicLattice": ...
+    def lattice_from_meet_with_universe(name: str, univ: List[int], meet: Operation) -> "lat.BasicLattice": ...
+    """Create a lattice from a meet operation with a custom universe.
+    
+    Creates a BasicLattice from a meet operation using the provided universe elements.
+    The lattice is constructed by creating filters from the meet operation.
+    
+    Args:
+        name: Name for the lattice
+        univ: List of integers representing the universe elements
+        meet: The meet operation (Operation protocol)
+        
+    Returns:
+        BasicLattice: A BasicLattice created from the meet operation
+        
+    Raises:
+        ValueError: If the operation is invalid or construction fails
+    """
     @staticmethod
-    def lattice_from_join_with_universe(name: str, univ: List[int], join: Any) -> "lat.BasicLattice": ...
+    def lattice_from_join_with_universe(name: str, univ: List[int], join: Operation) -> "lat.BasicLattice": ...
+    """Create a lattice from a join operation with a custom universe.
+    
+    Creates a BasicLattice from a join operation using the provided universe elements.
+    The lattice is constructed by creating filters from the join operation.
+    
+    Args:
+        name: Name for the lattice
+        univ: List of integers representing the universe elements
+        join: The join operation (Operation protocol)
+        
+    Returns:
+        BasicLattice: A BasicLattice created from the join operation
+        
+    Raises:
+        ValueError: If the operation is invalid or construction fails
+    """
     @staticmethod
-    def con_to_small_lattice(con: Any) -> Any: ...
+    def con_to_small_lattice(con: "alg.CongruenceLattice") -> Any: ...
+    """Convert a congruence lattice to a small lattice.
+    
+    Converts a CongruenceLattice to a SmallLattice<Partition> by computing
+    upper covers using join irreducibles algorithm.
+    
+    Args:
+        con: The congruence lattice to convert
+        
+    Returns:
+        SmallLattice: A SmallLattice containing Partition elements
+        
+    Raises:
+        ValueError: If conversion fails
+        
+    Note:
+        Currently returns Any as the SmallLattice type needs a Python wrapper.
+        The Rust implementation is complete, but Python binding requires wrapper type.
+    """
     @staticmethod
-    def dual(lat: Any) -> Any: ...
+    def dual(lat: "lat.BasicLattice") -> "lat.BasicLattice": ...
+    """Create the dual of a basic lattice.
+    
+    Creates a dual lattice with reversed order and swapped join/meet operations.
+    In the dual lattice: a ≤ b iff b ≤ a in the original, and join in dual
+    is meet in original (and vice versa).
+    
+    Args:
+        lat: The basic lattice to create the dual of
+        
+    Returns:
+        BasicLattice: The dual lattice
+        
+    Raises:
+        ValueError: If dual creation fails
+        
+    Note:
+        Currently may have limitations with BasicLattice cloning/ownership
+        requirements in Python bindings.
+    """
     # Internal function names (also exported for compatibility)
     @staticmethod
-    def py_lattice_from_meet(name: str, meet: Any) -> "lat.BasicLattice": ...
+    def py_lattice_from_meet(name: str, meet: Operation) -> "lat.BasicLattice": ...
     @staticmethod
-    def py_lattice_from_join(name: str, join: Any) -> "lat.BasicLattice": ...
+    def py_lattice_from_join(name: str, join: Operation) -> "lat.BasicLattice": ...
     @staticmethod
-    def py_lattice_from_meet_with_universe(name: str, univ: List[int], meet: Any) -> "lat.BasicLattice": ...
+    def py_lattice_from_meet_with_universe(name: str, univ: List[int], meet: Operation) -> "lat.BasicLattice": ...
     @staticmethod
-    def py_lattice_from_join_with_universe(name: str, univ: List[int], join: Any) -> "lat.BasicLattice": ...
+    def py_lattice_from_join_with_universe(name: str, univ: List[int], join: Operation) -> "lat.BasicLattice": ...
     @staticmethod
-    def py_con_to_small_lattice(con: Any) -> Any: ...
+    def py_con_to_small_lattice(con: "alg.CongruenceLattice") -> Any: ...
     @staticmethod
-    def py_dual(lat: Any) -> Any: ...
+    def py_dual(lat: "lat.BasicLattice") -> "lat.BasicLattice": ...
 
 # ============================================================================
 # IO MODULE

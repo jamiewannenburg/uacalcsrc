@@ -240,7 +240,7 @@ def main():
     
     # Create a BasicLattice for visualization and further processing
     join_lattice = uacalc_lib.lat.lattice_from_join("BasicLattice", join_op)
-    
+
     # Print lattice diagram
     print("  Lattice diagram (DOT format):")
     # Convert BasicLattice to OrderedSet using the from_lattice method
@@ -255,58 +255,13 @@ def main():
     print(f"  Created BasicLattice from join operation using lattice_from_join()")
     
     # Get join irreducibles from the lattice
-    # For BasicLattice<i32>, we need to compute join irreducibles manually
-    # A join irreducible element is one that cannot be expressed as the join
-    # of two strictly smaller elements
-    lattice_universe = join_lattice.universe()
-    join_irreducibles = []
-    
-    for elem in lattice_universe:
-        # Skip bottom element (0) - it's not join irreducible
-        if elem == 0:
-            continue
-        
-        # Check if elem is join irreducible
-        # An element is join irreducible if it cannot be written as the join
-        # of two strictly smaller elements (in the lattice order)
-        is_join_irreducible = True
-        for a in lattice_universe:
-            # Skip if a is not strictly less than elem in lattice order
-            if not join_lattice.leq(a, elem) or a == elem:
-                continue
-            for b in lattice_universe:
-                # Skip if b is not strictly less than elem in lattice order
-                if not join_lattice.leq(b, elem) or b == elem:
-                    continue
-                # Check if join(a, b) == elem
-                join_ab = join_lattice.join(a, b)
-                if join_ab == elem:
-                    is_join_irreducible = False
-                    break
-            if not is_join_irreducible:
-                break
-        
-        if is_join_irreducible:
-            join_irreducibles.append(elem)
-    
-    # Create an OrderedSet from join irreducibles
-    # We need to compute upper covers for each join irreducible element
+    join_irreducibles = join_lattice.join_irreducibles()
+    join_irreducibles_set = set(join_irreducibles)
+    print(f"  Join irreducibles: {join_irreducibles}")
     upper_covers_list = []
     for ji in join_irreducibles:
-        covers = []
-        # Find minimal elements among join irreducibles that are greater than ji
-        for other_ji in join_irreducibles:
-            if other_ji != ji and join_lattice.leq(ji, other_ji):
-                # Check if other_ji is minimal (no other ji is between ji and other_ji)
-                is_minimal = True
-                for candidate in join_irreducibles:
-                    if candidate != ji and candidate != other_ji:
-                        if join_lattice.leq(ji, candidate) and join_lattice.leq(candidate, other_ji):
-                            is_minimal = False
-                            break
-                if is_minimal:
-                    covers.append(other_ji)
-        upper_covers_list.append(covers)
+        filter = list(join_irreducibles_set.intersection(join_lattice.filter(ji)))
+        upper_covers_list.append(filter)
     
     # Create OrderedSet from join irreducibles
     jis_po = OrderedSet(join_irreducibles, upper_covers_list, name="JoinIrreducibles")
