@@ -15,47 +15,31 @@ ordered by inclusion.
 """
 
 import uacalc_lib
+import itertools
 
 BasicAlgebra = uacalc_lib.alg.BasicAlgebra
 GeneralAlgebra = uacalc_lib.alg.GeneralAlgebra
 IntOperation = uacalc_lib.alg.IntOperation
 AbstractOperation = uacalc_lib.alg.AbstractOperation
 OrderedSet = uacalc_lib.lat.OrderedSet
+PowerAlgebra = uacalc_lib.alg.PowerAlgebra
+OperationSymbol = uacalc_lib.alg.OperationSymbol
+Subalgebra = uacalc_lib.alg.Subalgebra
 
-def create_6_element_distributive_lattice():
+def create_distributive_lattices(n):
     """
-    Create a 6-element distributive lattice.
-    
-    Structure:
-    - 0 (bottom)
-    - 1, 2 (atoms, incomparable)
-    - 3 = 1 ∨ 2
-    - 4 (above 3)
-    - 5 (top)
-    
-    Order: 0 < 1, 2 < 3 < 4 < 5
+    Create the boolean algebra with n atoms.
+    Yield all of its subalgebras.
     """
-    universe = [0, 1, 2, 3, 4, 5]
-    
-    # Define join operation table
-    # join[i][j] = join of elements i and j
+    # make 2-element lattice
+    universe = [0,1]
     join_table = [
-        [0, 1, 2, 3, 4, 5],  # 0 join anything = that element (0 is bottom)
-        [1, 1, 3, 3, 4, 5],  # 1 join 2 = 3, etc.
-        [2, 3, 2, 3, 4, 5],
-        [3, 3, 3, 3, 4, 5],
-        [4, 4, 4, 4, 4, 5],
-        [5, 5, 5, 5, 5, 5],  # 5 join anything = 5 (5 is top)
+        [0, 1],
+        [1, 1],
     ]
-    
-    # Define meet operation table
     meet_table = [
-        [0, 0, 0, 0, 0, 0],  # 0 meet anything = 0 (0 is bottom)
-        [0, 1, 0, 1, 1, 1],  # 1 meet 2 = 0, etc.
-        [0, 0, 2, 2, 2, 2],
-        [0, 1, 2, 3, 3, 3],
-        [0, 1, 2, 3, 4, 4],
-        [0, 1, 2, 3, 4, 5],  # 5 meet anything = that element (5 is top)
+        [0, 0],
+        [0, 1],
     ]
     
     def join_func(args):
@@ -66,12 +50,31 @@ def create_6_element_distributive_lattice():
         i, j = args[0], args[1]
         return meet_table[i][j]
     
-    join_op = IntOperation.from_int_value_at("join", 2, 6, join_func)
-    meet_op = IntOperation.from_int_value_at("meet", 2, 6, meet_func)
+    join_op = IntOperation.from_int_value_at("join", 2, 2, join_func)
+    meet_op = IntOperation.from_int_value_at("meet", 2, 2, meet_func)
     
-    alg = BasicAlgebra("DistributiveLattice6", universe, [join_op, meet_op])
-    return alg
+    ba2 = BasicAlgebra("DistributiveLattice2", universe, [join_op, meet_op])
+    
+    # The n-th power algebra of ba2
+    power_alg = PowerAlgebra(ba2, n)
+    
+    # Convert PowerAlgebra to BasicAlgebra
+    power_basic_alg = power_alg.to_basic_algebra()
 
+    # Get subalgebra lattice
+    sublat = power_basic_alg.sub()
+    
+    # Get all subalgebras using universe() method
+    # Each BasicSet represents a subalgebra as a set of universe element indices
+    all_subalgebras = sublat.universe()
+    
+    # For each subalgebra (BasicSet), create a BasicAlgebra by restricting operations
+    # Use sg method as suggested - but actually we already have all subalgebras from universe()
+    # The sg method generates from generators, but we have the complete subalgebras already
+    for basic_set in all_subalgebras:
+        # subalg = power_basic_alg.sg(basic_set.elements())
+        subalg = Subalgebra("DistributiveExample", power_basic_alg, basic_set.elements())
+        yield subalg
 
 def get_downward_closed_sets(poset):
     """
@@ -219,117 +222,96 @@ def main():
     print("=" * 70)
     print()
     
-    # Step 1: Create a 6-element distributive lattice
-    print("Step 1: Creating a 6-element distributive lattice...")
-    original_lattice = create_6_element_distributive_lattice()
-    print(f"  Created lattice: {original_lattice.name()}")
-    print(f"  Cardinality: {original_lattice.cardinality()}")
-    ops = original_lattice.operations()
-    print(f"  Operations: {[op.symbol().name() for op in ops]}")
-    print()
-    
-    # Extract the join operation from the algebra (needed for both diagram and Step 2)
-    join_op = None
-    for op in original_lattice.operations():
-        if op.symbol().name() == "join":
-            join_op = op
-            break
-    
-    if join_op is None:
-        raise ValueError("Join operation not found")
-    
-    # Create a BasicLattice for visualization and further processing
-    join_lattice = uacalc_lib.lat.lattice_from_join("BasicLattice", join_op)
-
-    # Print lattice diagram
-    print("  Lattice diagram (DOT format):")
-    # Convert BasicLattice to OrderedSet using the from_lattice method
-    lattice_poset = OrderedSet.from_lattice(join_lattice, name="LatticePoset")
-    lattice_graph = lattice_poset.to_graph_data()
-    lattice_dot = lattice_graph.to_dot()
-    print(lattice_dot)
-    print()
-    
-    # Step 2: Get join irreducibles as a partial order
-    print("Step 2: Getting join irreducibles as a partial order...")
-    print(f"  Created BasicLattice from join operation using lattice_from_join()")
-    
-    # Get join irreducibles from the lattice
-    join_irreducibles = join_lattice.join_irreducibles()
-    join_irreducibles_set = set(join_irreducibles)
-    print(f"  Join irreducibles: {join_irreducibles}")
-    upper_covers_list = []
-    for ji in join_irreducibles:
-        filter = list(join_irreducibles_set.intersection(join_lattice.filter(ji)))
-        upper_covers_list.append(filter)
-    
-    # Create OrderedSet from join irreducibles
-    jis_po = OrderedSet(join_irreducibles, upper_covers_list, name="JoinIrreducibles")
-    print(f"  Join irreducibles poset: {jis_po.name()}")
-    print(f"  Join irreducibles cardinality: {jis_po.cardinality()}")
-    jis_universe = jis_po.universe()
-    print(f"  Join irreducibles (from poset): {jis_universe}")
-    print()
-    
-    # Print poset diagram
-    print("  Join irreducibles poset diagram (DOT format):")
-    poset_graph = jis_po.to_graph_data()
-    poset_dot = poset_graph.to_dot()
-    print(poset_dot)
-    print()
-    
-    # Step 3: Create downward closed sets (ideals) of the partial order
-    print("Step 3: Creating downward closed sets (ideals) of the partial order...")
-    downward_closed_sets = get_downward_closed_sets(jis_po)
-    print(f"  Number of downward closed sets: {len(downward_closed_sets)}")
-    print(f"  Downward closed sets:")
-    for i, dcs in enumerate(downward_closed_sets):
-        print(f"    {i}: {list(dcs)}")
-    print()
-    
-    # Step 4: Create a general algebra with intersection and union
-    print("Step 4: Creating general algebra with intersection and union...")
-    ideal_alg = create_ideal_algebra(downward_closed_sets)
-    print(f"  Created algebra: {ideal_alg.name()}")
-    print(f"  Cardinality: {ideal_alg.cardinality()}")
-    ideal_ops = ideal_alg.get_operations()
-    print(f"  Operations: {[op.symbol().name() for op in ideal_ops]}")
-    print()
-    
-    # Step 5: Convert to basic algebra
-    print("Step 5: Converting general algebra to basic algebra...")
-    ideal_basic_alg = ideal_alg.to_basic_algebra()
-    print(f"  Converted to BasicAlgebra")
-    print(f"  Cardinality: {ideal_basic_alg.cardinality()}")
-    ideal_basic_ops = ideal_basic_alg.operations()
-    print(f"  Operations: {[op.symbol().name() for op in ideal_basic_ops]}")
-    print()
-    
-    # Step 6: Check isomorphism
-    print("Step 6: Checking if original lattice is isomorphic to constructed algebra...")
-    is_iso, message = check_isomorphism(original_lattice, ideal_basic_alg)
-    print(f"  Result: {message}")
-    
-    if is_iso:
+    for original_lattice in create_distributive_lattices(3):
+        ops = original_lattice.operations()
+        
+        # Extract the join operation from the algebra (needed for both diagram and Step 2)
+        # Now we're working with BasicAlgebra, so operations() returns operation objects
+        join_op = None
+        for op in original_lattice.operations():
+            if op.symbol().name() == "join":
+                join_op = op
+                break
+        
+        if join_op is None:
+            raise ValueError("Join operation not found")
+        
+        # Create a BasicLattice for visualization and further processing
+        join_lattice = uacalc_lib.lat.lattice_from_join("BasicLattice", join_op)
+        
+        # Step 2: Get join irreducibles as a partial order
+        print("Step 2: Getting join irreducibles as a partial order...")
+        print(f"  Created BasicLattice from join operation using lattice_from_join()")
+        
+        # Get join irreducibles from the lattice
+        join_irreducibles = join_lattice.join_irreducibles()
+        join_irreducibles_set = set(join_irreducibles)
+        print(f"  Join irreducibles: {join_irreducibles}")
+        upper_covers_list = []
+        for ji in join_irreducibles:
+            filter = list(join_irreducibles_set.intersection(join_lattice.filter(ji)))
+            upper_covers_list.append(filter)
+        
+        # Create OrderedSet from join irreducibles
+        jis_po = OrderedSet(join_irreducibles, upper_covers_list, name="JoinIrreducibles")
+        print(f"  Join irreducibles poset: {jis_po.name()}")
+        print(f"  Join irreducibles cardinality: {jis_po.cardinality()}")
+        jis_universe = jis_po.universe()
+        print(f"  Join irreducibles (from poset): {jis_universe}")
         print()
-        print("SUCCESS: The original lattice is isomorphic to the lattice of")
-        print("  downward closed sets of its join irreducibles!")
+                
+        # Step 3: Create downward closed sets (ideals) of the partial order
+        print("Step 3: Creating downward closed sets (ideals) of the partial order...")
+        downward_closed_sets = get_downward_closed_sets(jis_po)
+        print(f"  Number of downward closed sets: {len(downward_closed_sets)}")
+        print(f"  Downward closed sets:")
+        for i, dcs in enumerate(downward_closed_sets):
+            print(f"    {i}: {list(dcs)}")
         print()
-        print("This demonstrates Birkhoff representation: every finite distributive")
-        print("lattice is isomorphic to the lattice of downward closed sets")
-        print("(ideals) of its join irreducibles, ordered by inclusion.")
-    else:
+        
+        # Step 4: Create a general algebra with intersection and union
+        print("Step 4: Creating general algebra with intersection and union...")
+        ideal_alg = create_ideal_algebra(downward_closed_sets)
+        print(f"  Created algebra: {ideal_alg.name()}")
+        print(f"  Cardinality: {ideal_alg.cardinality()}")
+        ideal_ops = ideal_alg.get_operations()
+        print(f"  Operations: {[op.symbol().name() for op in ideal_ops]}")
         print()
-        print("NOTE: The algebras are not isomorphic (or isomorphism check failed).")
-        print(f"  Reason: {message}")
+        
+        # Step 5: Convert to basic algebra
+        print("Step 5: Converting general algebra to basic algebra...")
+        ideal_basic_alg = ideal_alg.to_basic_algebra()
+        print(f"  Converted to BasicAlgebra")
+        print(f"  Cardinality: {ideal_basic_alg.cardinality()}")
+        ideal_basic_ops = ideal_basic_alg.operations()
+        print(f"  Operations: {[op.symbol().name() for op in ideal_basic_ops]}")
         print()
-        print("This might be due to:")
-        print("  - The lattice structure or join irreducibles computation")
-        print("  - The way downward closed sets are computed")
-        print("  - The isomorphism check being too simplistic")
-    
-    print()
-    print("=" * 70)
+        
+        # Step 6: Check isomorphism
+        print("Step 6: Checking if original lattice is isomorphic to constructed algebra...")
+        is_iso, message = check_isomorphism(original_lattice, ideal_basic_alg)
+        print(f"  Result: {message}")
+        
+        if is_iso:
+            print()
+            print("SUCCESS: The original lattice is isomorphic to the lattice of")
+            print("  downward closed sets of its join irreducibles!")
+            print()
+            print("This demonstrates Birkhoff representation: every finite distributive")
+            print("lattice is isomorphic to the lattice of downward closed sets")
+            print("(ideals) of its join irreducibles, ordered by inclusion.")
+        else:
+            print()
+            print("NOTE: The algebras are not isomorphic (or isomorphism check failed).")
+            print(f"  Reason: {message}")
+            print()
+            print("This might be due to:")
+            print("  - The lattice structure or join irreducibles computation")
+            print("  - The way downward closed sets are computed")
+            print("  - The isomorphism check being too simplistic")
+        
+        print()
+        print("=" * 70)
 
 
 if __name__ == "__main__":
