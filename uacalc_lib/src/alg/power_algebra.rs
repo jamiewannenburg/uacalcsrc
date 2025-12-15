@@ -3,6 +3,7 @@ use pyo3::exceptions::PyValueError;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 use uacalc::alg::{Algebra, SmallAlgebra};
+use uacalc::alg::op::{IntOperation, BasicOperation};
 use crate::alg::{PyBasicAlgebra, PySubalgebraLattice};
 use crate::alg::conlat::congruence_lattice::PyCongruenceLattice;
 
@@ -158,12 +159,59 @@ impl PyPowerAlgebra {
     /// Get the operations of this power algebra.
     ///
     /// Returns:
-    ///     list: List of operation names and arities as tuples
-    fn operations(&self) -> Vec<(String, i32)> {
-        // Use get_operations_ref() to avoid infinite recursion limitation in operations()
-        self.inner.get_operations_ref().iter().map(|op| {
-            (op.symbol().name().to_string(), op.arity())
-        }).collect()
+    ///     list: List of Operation objects (IntOperation or BasicOperation)
+    ///     
+    /// Note: This reconstructs operations from their symbol and table data
+    /// to avoid deep cloning through trait objects.
+    fn operations(&self, py: Python<'_>) -> PyResult<Vec<PyObject>> {
+        let ops = self.inner.operations();
+        let mut result = Vec::new();
+        
+        for op_box in ops {
+            let symbol = op_box.symbol().clone();
+            let set_size = op_box.get_set_size();
+            
+            // Try to get the table - if available, we can reconstruct the operation
+            if let Some(table) = op_box.get_table() {
+                let table_vec = table.to_vec();
+                
+                // Try to create as IntOperation first (most common case)
+                if let Ok(int_op) = IntOperation::new(symbol.clone(), set_size, table_vec.clone()) {
+                    let py_op = crate::alg::op::int_operation::PyIntOperation {
+                        inner: int_op,
+                    };
+                    result.push(Py::new(py, py_op)?.to_object(py));
+                    continue;
+                }
+                
+                // Try to create as BasicOperation
+                if let Ok(basic_op) = BasicOperation::new_with_table(symbol.clone(), set_size, table_vec) {
+                    let py_op = crate::alg::op::operation::PyBasicOperation {
+                        inner: basic_op,
+                    };
+                    result.push(Py::new(py, py_op)?.to_object(py));
+                    continue;
+                }
+            }
+            
+            // If no table is available, try to create a BasicOperation without a table
+            // This is a fallback for operations that don't have tables yet
+            if let Ok(basic_op) = BasicOperation::new_safe(symbol.clone(), set_size) {
+                let py_op = crate::alg::op::operation::PyBasicOperation {
+                    inner: basic_op,
+                };
+                result.push(Py::new(py, py_op)?.to_object(py));
+                continue;
+            }
+            
+            // If all else fails, return an error
+            return Err(PyValueError::new_err(format!(
+                "Failed to reconstruct operation {} from PowerAlgebra",
+                symbol.name()
+            )));
+        }
+        
+        Ok(result)
     }
 
     /// Check if this power algebra is unary.
@@ -232,6 +280,79 @@ impl PyPowerAlgebra {
     fn sub(&mut self) -> PySubalgebraLattice {
         let sub_lat = self.inner.sub();
         PySubalgebraLattice::from_inner(sub_lat.clone())
+    }
+
+    /// Convert this PowerAlgebra to a BasicAlgebra.
+    ///
+    /// This method creates a BasicAlgebra with the same universe and operations
+    /// as this PowerAlgebra. The universe elements are integers (0 to cardinality-1).
+    ///
+    /// Args:
+    ///     None
+    ///
+    /// Returns:
+    ///     BasicAlgebra: A new BasicAlgebra instance with the same operations
+    ///
+    /// Raises:
+    ///     ValueError: If the conversion fails
+    fn to_basic_algebra(&self, _py: Python<'_>) -> PyResult<PyBasicAlgebra> {
+        use std::collections::HashSet;
+        
+        let cardinality = self.inner.cardinality();
+        if cardinality < 0 {
+            return Err(PyValueError::new_err(
+                "Cannot convert PowerAlgebra with unknown cardinality to BasicAlgebra"
+            ));
+        }
+        
+        // Create universe as integers from 0 to cardinality-1
+        let universe: HashSet<i32> = (0..cardinality).collect();
+        
+        // Get operations and convert them
+        let ops = self.inner.operations();
+        let mut rust_ops: Vec<Box<dyn uacalc::alg::op::Operation>> = Vec::new();
+        
+        for op_box in ops {
+            let symbol = op_box.symbol().clone();
+            let set_size = op_box.get_set_size();
+            
+            // Try to get the table
+            if let Some(table) = op_box.get_table() {
+                let table_vec = table.to_vec();
+                
+                // Try IntOperation first
+                if let Ok(int_op) = IntOperation::new(symbol.clone(), set_size, table_vec.clone()) {
+                    rust_ops.push(Box::new(int_op));
+                    continue;
+                }
+                
+                // Try BasicOperation
+                if let Ok(basic_op) = BasicOperation::new_with_table(symbol.clone(), set_size, table_vec) {
+                    rust_ops.push(Box::new(basic_op));
+                    continue;
+                }
+            }
+            
+            // Fallback: try BasicOperation without table
+            if let Ok(basic_op) = BasicOperation::new_safe(symbol.clone(), set_size) {
+                rust_ops.push(Box::new(basic_op));
+                continue;
+            }
+            
+            return Err(PyValueError::new_err(format!(
+                "Failed to convert operation {} to BasicAlgebra operation",
+                symbol.name()
+            )));
+        }
+        
+        // Create BasicAlgebra
+        let basic_alg = uacalc::alg::BasicAlgebra::new(
+            format!("{}_as_basic", self.inner.name()),
+            universe,
+            rust_ops
+        );
+        
+        Ok(PyBasicAlgebra { inner: basic_alg })
     }
 }
 
