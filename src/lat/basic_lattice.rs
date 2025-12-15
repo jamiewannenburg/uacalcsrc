@@ -288,7 +288,24 @@ where
     }
 
     /// Get zero (bottom) element.
+    /// 
+    /// Returns the minimal element, i.e., the element that is less than or equal
+    /// to all other elements in the lattice.
     pub fn zero(&self) -> Arc<POElem<T>> {
+        // Find the minimal element: the element that is ≤ all other elements
+        for candidate in &self.univ_list {
+            let mut is_minimal = true;
+            for other in &self.univ_list {
+                if !self.poset.leq(candidate, other) {
+                    is_minimal = false;
+                    break;
+                }
+            }
+            if is_minimal {
+                return candidate.clone();
+            }
+        }
+        // Fallback: should not happen in a valid lattice, but return first element
         self.univ_list[0].clone()
     }
 
