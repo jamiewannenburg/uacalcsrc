@@ -14,6 +14,6 @@ except ImportError:
 # Re-export all modules from uacalc_lib
 from uacalc_lib import *
 
-__version__ = "0.0.4"
+__version__ = "0.0.5"
 __author__ = "UACalc Contributors"
 __license__ = "MIT"
