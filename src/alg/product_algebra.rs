@@ -667,26 +667,47 @@ impl Operation for ProductOperation {
             args_expanded[i] = horner::horner_inv(arg, &self.sizes);
         }
         
-        // Apply operations in each component algebra (reverse order for Horner)
-        for i in (0..self.number_of_products).rev() {
-            // Get the operation from the algebra without cloning the whole list
+        // Apply operations in each component algebra (reverse order to match Java)
+        // The Java code iterates from i = numberOfProducts - 1 down to 0
+        // and accumulates results using Horner's method directly.
+        // 
+        // IMPORTANT: When iterating in reverse, we process components from
+        // most significant (i=n-1) to least significant (i=0).
+        // args_expanded[j][i] gives the i-th component where:
+        //   - i=0 is the LEAST significant component (first algebra)
+        //   - i=n-1 is the MOST significant component (last algebra)
+        // So when i=n-1, we're processing the most significant component.
+        // Apply operations in each component algebra (reverse order to match Java exactly)
+        // The Java code iterates from i = numberOfProducts - 1 down to 0
+        // and accumulates results using Horner's method directly.
+        // 
+        // CRITICAL BUG FIX: Use complementary indices for both algebra and component extraction
+        // When iterating in reverse (i = n-1 to 0), we process from most to least significant.
+        // But the mapping between iteration index and component/algebra might be reversed.
+        // BUG FIX: Collect results first in forward order, then encode them.
+        // This ensures result_components[i] is the result for component i (i=0 is least sig).
+        let mut result_components = vec![0i32; self.number_of_products];
+        for i in 0..self.number_of_products {
+            // Get the operation from the algebra at index i
             let op = self.algebras[i]
                 .get_operation_ref(&self.symbol)
                 .ok_or_else(|| format!("Operation not found: {}", self.symbol))?;
             
             // Extract arguments for this component
+            // args_expanded[j][i] gives the i-th component where i=0 is least significant
             let mut component_args = Vec::with_capacity(args.len());
             for j in 0..args.len() {
                 component_args.push(args_expanded[j][i]);
             }
             
-            // Apply the operation
-            let result = op.int_value_at(&component_args)?;
-            
-            // Accumulate using Horner's method
-            let s = self.sizes[i];
-            ans = s.wrapping_mul(ans).wrapping_add(result);
+            // Apply the operation and store result for component i
+            result_components[i] = op.int_value_at(&component_args)?;
         }
+        
+        // Encode using Horner's method
+        // horner([a0, a1], [s0, s1]) = s0 * a1 + a0
+        // So it expects [least_sig, most_sig] which matches result_components
+        ans = horner::horner(&result_components, &self.sizes);
         
         Ok(ans)
     }

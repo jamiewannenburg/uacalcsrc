@@ -309,32 +309,64 @@ impl PyPowerAlgebra {
         let universe: HashSet<i32> = (0..cardinality).collect();
         
         // Get operations and convert them
-        let ops = self.inner.operations();
+        // BUG FIX: Manually compute tables by calling operations on the root algebra
+        // This bypasses any buggy cached tables in ProductOperation
+        let root = self.inner.get_root();
+        let power = self.inner.get_power();
+        let root_size = self.inner.get_root_size();
+        
+        // Get operations from root algebra
+        let root_ops: Vec<_> = root.get_operations_ref();
+        
         let mut rust_ops: Vec<Box<dyn uacalc::alg::op::Operation>> = Vec::new();
         
-        for op_box in ops {
-            let symbol = op_box.symbol().clone();
-            let set_size = op_box.get_set_size();
+        for root_op in root_ops {
+            let symbol = root_op.symbol().clone();
+            let arity = root_op.arity();
             
-            // Try to get the table
-            if let Some(table) = op_box.get_table() {
-                let table_vec = table.to_vec();
+            // Manually compute the table for the power algebra operation
+            // by applying the root operation component-wise
+            use uacalc::util::horner;
+            let table_size = if arity == 0 { 1 } else { (cardinality as usize).pow(arity as u32) };
+            let mut table_vec = Vec::with_capacity(table_size);
+            
+            for i in 0..table_size {
+                // Decode the Horner-encoded index into component arguments
+                let args_encoded = horner::horner_inv_same_size(i as i32, cardinality, arity as usize);
                 
-                // Try IntOperation first
-                if let Ok(int_op) = IntOperation::new(symbol.clone(), set_size, table_vec.clone()) {
-                    rust_ops.push(Box::new(int_op));
-                    continue;
+                // Decode each encoded argument into its components
+                let mut args_expanded = Vec::with_capacity(arity as usize);
+                for &arg_encoded in &args_encoded {
+                    args_expanded.push(horner::horner_inv(arg_encoded, &vec![root_size; power]));
                 }
                 
-                // Try BasicOperation
-                if let Ok(basic_op) = BasicOperation::new_with_table(symbol.clone(), set_size, table_vec) {
-                    rust_ops.push(Box::new(basic_op));
-                    continue;
+                // Apply the operation component-wise
+                let mut result_components = vec![0i32; power];
+                for comp_idx in 0..power {
+                    // Extract arguments for this component
+                    let mut component_args = Vec::with_capacity(arity as usize);
+                    for arg_components in &args_expanded {
+                        component_args.push(arg_components[comp_idx]);
+                    }
+                    
+                    // Apply the root operation
+                    result_components[comp_idx] = root_op.int_value_at(&component_args)
+                        .map_err(|e| PyValueError::new_err(format!("Failed to compute operation value: {}", e)))?;
                 }
+                
+                // Encode the result using Horner's method
+                let result = horner::horner(&result_components, &vec![root_size; power]);
+                table_vec.push(result);
             }
             
-            // Fallback: try BasicOperation without table
-            if let Ok(basic_op) = BasicOperation::new_safe(symbol.clone(), set_size) {
+            // Create IntOperation with the manually computed table
+            if let Ok(int_op) = IntOperation::new(symbol.clone(), cardinality, table_vec.clone()) {
+                rust_ops.push(Box::new(int_op));
+                continue;
+            }
+            
+            // Try BasicOperation
+            if let Ok(basic_op) = BasicOperation::new_with_table(symbol.clone(), cardinality, table_vec) {
                 rust_ops.push(Box::new(basic_op));
                 continue;
             }

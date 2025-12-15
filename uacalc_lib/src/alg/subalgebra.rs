@@ -1,6 +1,7 @@
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
 use uacalc::alg::*;
+use uacalc::alg::op::{IntOperation, BasicOperation};
 use crate::alg::PyBasicAlgebra;
 use crate::alg::PyPartition;
 use crate::alg::PySubalgebraLattice;
@@ -79,6 +80,14 @@ impl PySubalgebra {
     ///     list[int]: Array of indices forming the subuniverse
     fn get_subuniverse_array(&self) -> Vec<i32> {
         self.inner.get_subuniverse_array().to_vec()
+    }
+
+    /// Get the universe as a list of integers.
+    ///
+    /// Returns:
+    ///     List[int]: The universe elements as a list
+    fn get_universe(&self) -> Vec<i32> {
+        self.inner.universe().collect()
     }
 
     /// Get the cardinality of this subalgebra.
@@ -165,6 +174,66 @@ impl PySubalgebra {
         let sub_lat = self.inner.sub();
         PySubalgebraLattice::from_inner(sub_lat.clone())
     }
+
+    /// Get the operations of this subalgebra.
+    ///
+    /// Returns:
+    ///     List[Operation]: List of Operation instances (IntOperation or BasicOperation)
+    ///
+    /// Note: This method reconstructs Python operation objects from the internal
+    /// Rust operations. Operations are restricted to the subalgebra's universe.
+    fn operations(&self, py: Python<'_>) -> PyResult<Vec<PyObject>> {
+        let ops = self.inner.operations();
+        let mut result = Vec::new();
+        
+        for op_box in ops {
+            let symbol = op_box.symbol().clone();
+            let set_size = op_box.get_set_size();
+            
+            // Try to get the table - if available, we can reconstruct the operation
+            if let Some(table) = op_box.get_table() {
+                let table_vec = table.to_vec();
+                
+                // Try to create as IntOperation first (most common case)
+                if let Ok(int_op) = IntOperation::new(symbol.clone(), set_size, table_vec.clone()) {
+                    let py_op = crate::alg::op::int_operation::PyIntOperation {
+                        inner: int_op,
+                    };
+                    result.push(Py::new(py, py_op)?.to_object(py));
+                    continue;
+                }
+                
+                // Try to create as BasicOperation
+                if let Ok(basic_op) = BasicOperation::new_with_table(symbol.clone(), set_size, table_vec) {
+                    let py_op = crate::alg::op::operation::PyBasicOperation {
+                        inner: basic_op,
+                    };
+                    result.push(Py::new(py, py_op)?.to_object(py));
+                    continue;
+                }
+            }
+            
+            // If no table is available, try to create a BasicOperation without a table
+            // This is a fallback for operations that don't have tables yet
+            if let Ok(basic_op) = BasicOperation::new_safe(symbol.clone(), set_size) {
+                let py_op = crate::alg::op::operation::PyBasicOperation {
+                    inner: basic_op,
+                };
+                result.push(Py::new(py, py_op)?.to_object(py));
+                continue;
+            }
+            
+            // If all else fails, return an error
+            return Err(PyValueError::new_err(format!(
+                "Failed to reconstruct operation {} from Subalgebra (arity: {}, set_size: {})",
+                symbol.name(),
+                symbol.arity(),
+                set_size
+            )));
+        }
+        
+        Ok(result)
+    }
     
     /// Create a congruence as an algebra (static method).
     /// 
@@ -213,5 +282,90 @@ impl PySubalgebra {
             Ok(subalgebra) => Ok(PySubalgebra { inner: subalgebra }),
             Err(e) => Err(PyValueError::new_err(e)),
         }
+    }
+
+    /// Convert this Subalgebra to a BasicAlgebra.
+    ///
+    /// This method creates a BasicAlgebra with the same universe and operations
+    /// as this Subalgebra. The universe elements are integers (0 to cardinality-1).
+    ///
+    /// Args:
+    ///     None
+    ///
+    /// Returns:
+    ///     BasicAlgebra: A new BasicAlgebra instance with the same operations
+    ///
+    /// Raises:
+    ///     ValueError: If the conversion fails
+    fn to_basic_algebra(&self, _py: Python<'_>) -> PyResult<PyBasicAlgebra> {
+        use std::collections::HashSet;
+        use uacalc::util::horner;
+        
+        let cardinality = self.inner.cardinality();
+        if cardinality < 0 {
+            return Err(PyValueError::new_err(
+                "Cannot convert Subalgebra with unknown cardinality to BasicAlgebra"
+            ));
+        }
+        
+        // Create universe as integers from 0 to cardinality-1
+        let universe: HashSet<i32> = (0..cardinality).collect();
+        
+        // Get operations from the subalgebra
+        let ops = self.inner.operations();
+        let mut rust_ops: Vec<Box<dyn uacalc::alg::op::Operation>> = Vec::new();
+        
+        for op_box in ops {
+            let symbol = op_box.symbol().clone();
+            let arity = op_box.arity();
+            
+            // Build the operation table by calling int_value_at for all argument combinations
+            let table_size = if arity == 0 { 1 } else { (cardinality as usize).pow(arity as u32) };
+            let mut table_vec = Vec::with_capacity(table_size);
+            
+            // Generate all argument combinations and evaluate the operation
+            for i in 0..table_size {
+                let args = if arity == 0 {
+                    Vec::new()
+                } else {
+                    horner::horner_inv_same_size(i as i32, cardinality, arity as usize)
+                };
+                
+                // Call int_value_at on the operation
+                let result = op_box.int_value_at(&args)
+                    .map_err(|e| PyValueError::new_err(format!(
+                        "Failed to compute operation {} value at {:?}: {}",
+                        symbol.name(), args, e
+                    )))?;
+                
+                table_vec.push(result);
+            }
+            
+            // Create IntOperation with the computed table
+            if let Ok(int_op) = IntOperation::new(symbol.clone(), cardinality, table_vec.clone()) {
+                rust_ops.push(Box::new(int_op));
+                continue;
+            }
+            
+            // Try BasicOperation as fallback
+            if let Ok(basic_op) = BasicOperation::new_with_table(symbol.clone(), cardinality, table_vec) {
+                rust_ops.push(Box::new(basic_op));
+                continue;
+            }
+            
+            return Err(PyValueError::new_err(format!(
+                "Failed to convert operation {} to BasicAlgebra operation",
+                symbol.name()
+            )));
+        }
+        
+        // Create BasicAlgebra
+        let basic_alg = uacalc::alg::BasicAlgebra::new(
+            format!("{}_as_basic", self.inner.name()),
+            universe,
+            rust_ops
+        );
+        
+        Ok(PyBasicAlgebra { inner: basic_alg })
     }
 }

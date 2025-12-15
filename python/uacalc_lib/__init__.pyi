@@ -3032,11 +3032,14 @@ class alg:
                 The algebra type ("Power")
             """
 
-        def operations(self) -> List[Tuple[str, int]]:
+        def operations(self) -> List[alg.IntOperation|alg.BasicOperation]:
             """Get the operations of this power algebra.
 
             Returns:
-                List of operation names and arities as tuples
+                List of Operation objects (IntOperation or BasicOperation)
+                
+            Note: This reconstructs operations from their symbol and table data
+            to avoid deep cloning through trait objects.
             """
 
         def is_unary(self) -> bool:
@@ -3084,6 +3087,19 @@ class alg:
 
             Returns:
                 The subalgebra lattice
+            """
+
+        def to_basic_algebra(self) -> "alg.BasicAlgebra":
+            """Convert this PowerAlgebra to a BasicAlgebra.
+
+            This method creates a BasicAlgebra with the same universe and operations
+            as this PowerAlgebra. The universe elements are integers (0 to cardinality-1).
+
+            Returns:
+                A new BasicAlgebra instance with the same operations
+
+            Raises:
+                ValueError: If the conversion fails
             """
     class MatrixPowerAlgebra: ...
     
@@ -3378,6 +3394,12 @@ class alg:
         Returns:
             Array of indices forming the subuniverse
         """
+        def get_universe(self) -> List[int]: ...
+        """Get the universe as a list of integers.
+        
+        Returns:
+            List[int]: The universe elements as a list
+        """
         def get_universe_list(self) -> Optional[List[int]]: ...
         """Get the universe as a list.
     
@@ -3448,6 +3470,14 @@ class alg:
         
         Returns:
             The subalgebra lattice
+        """
+        def operations(self) -> List["alg.IntOperation"|"alg.BasicOperation"]: ...
+        """Get the operations of this subalgebra.
+        
+        Returns:
+            List of Operation objects (IntOperation or BasicOperation)
+            
+        Note: Operations are restricted to the subalgebra's universe.
         """
         @staticmethod
         def congruence_as_algebra(

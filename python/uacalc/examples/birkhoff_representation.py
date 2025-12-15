@@ -15,6 +15,7 @@ ordered by inclusion.
 """
 
 import uacalc_lib
+from phart import ASCIIRenderer
 import itertools
 
 BasicAlgebra = uacalc_lib.alg.BasicAlgebra
@@ -61,6 +62,16 @@ def create_distributive_lattices(n):
     # Convert PowerAlgebra to BasicAlgebra
     power_basic_alg = power_alg.to_basic_algebra()
 
+    # print lattice graph
+    # for op in power_basic_alg.operations():
+    #     if op.symbol().name() == "join":
+    #         join_op = op
+    #         break
+    # join_lattice = uacalc_lib.lat.lattice_from_join("BasicLattice", join_op)
+    # join_graph = join_lattice.to_networkx()
+    # renderer = ASCIIRenderer(join_graph)
+    # print(renderer.render())
+
     # Get subalgebra lattice
     sublat = power_basic_alg.sub()
     
@@ -68,11 +79,12 @@ def create_distributive_lattices(n):
     # Each BasicSet represents a subalgebra as a set of universe element indices
     all_subalgebras = sublat.universe()
     
-    # For each subalgebra (BasicSet), create a BasicAlgebra by restricting operations
-    # Use sg method as suggested - but actually we already have all subalgebras from universe()
-    # The sg method generates from generators, but we have the complete subalgebras already
+    # For each subalgebra (BasicSet), create a Subalgebra
+    # Subalgebra automatically restricts operations to the subuniverse
     for basic_set in all_subalgebras:
-        # subalg = power_basic_alg.sg(basic_set.elements())
+        if len(basic_set.elements()) == 0:
+            continue
+        # basic_set.elements() returns indices in the super algebra
         subalg = Subalgebra("DistributiveExample", power_basic_alg, basic_set.elements())
         yield subalg
 
@@ -209,6 +221,7 @@ def check_isomorphism(alg1, alg2):
                 # Found an isomorphism!
                 return True, f"Algebras are isomorphic (found isomorphism)"
         except Exception as e:
+            print(list(perm),e)
             # Skip this permutation if there's an error (e.g., missing operation)
             continue
     
@@ -216,17 +229,15 @@ def check_isomorphism(alg1, alg2):
 
 
 def main():
-    """Main function demonstrating Birkhoff's representation."""
-    print("=" * 70)
-    print("Birkhoff's representation Example for Finite Distributive Lattices")
+    """Main function demonstrating Birkhoff's representation for Finite Distributive Lattices"""
     print("=" * 70)
     print()
     
-    for original_lattice in create_distributive_lattices(3):
-        ops = original_lattice.operations()
-        
+    for subalgebra_lattice in create_distributive_lattices(3):
         # Extract the join operation from the algebra (needed for both diagram and Step 2)
         # Now we're working with BasicAlgebra, so operations() returns operation objects
+        print(subalgebra_lattice.get_universe())
+        original_lattice = subalgebra_lattice.to_basic_algebra()
         join_op = None
         for op in original_lattice.operations():
             if op.symbol().name() == "join":
@@ -236,17 +247,25 @@ def main():
         if join_op is None:
             raise ValueError("Join operation not found")
         
-        # Create a BasicLattice for visualization and further processing
+        # print join operation table
+        # for i in range(original_lattice.cardinality()):
+        #     print(f"{i}: ", end="")
+        #     for j in range(original_lattice.cardinality()):
+        #         print(join_op.int_value_at([i, j]), end=" ")
+        #     print()
+        # print()
+
+        # # Create a BasicLattice for visualization and further processing
         join_lattice = uacalc_lib.lat.lattice_from_join("BasicLattice", join_op)
-        
-        # Step 2: Get join irreducibles as a partial order
-        print("Step 2: Getting join irreducibles as a partial order...")
-        print(f"  Created BasicLattice from join operation using lattice_from_join()")
-        
+        join_graph = join_lattice.to_networkx()
+        # renderer = ASCIIRenderer(join_graph)
+        # print(renderer.render())
+
         # Get join irreducibles from the lattice
         join_irreducibles = join_lattice.join_irreducibles()
+        # print(f"Join irreducibles: {join_irreducibles}")
+
         join_irreducibles_set = set(join_irreducibles)
-        print(f"  Join irreducibles: {join_irreducibles}")
         upper_covers_list = []
         for ji in join_irreducibles:
             filter = list(join_irreducibles_set.intersection(join_lattice.filter(ji)))
@@ -254,61 +273,40 @@ def main():
         
         # Create OrderedSet from join irreducibles
         jis_po = OrderedSet(join_irreducibles, upper_covers_list, name="JoinIrreducibles")
-        print(f"  Join irreducibles poset: {jis_po.name()}")
-        print(f"  Join irreducibles cardinality: {jis_po.cardinality()}")
         jis_universe = jis_po.universe()
-        print(f"  Join irreducibles (from poset): {jis_universe}")
-        print()
                 
         # Step 3: Create downward closed sets (ideals) of the partial order
-        print("Step 3: Creating downward closed sets (ideals) of the partial order...")
         downward_closed_sets = get_downward_closed_sets(jis_po)
-        print(f"  Number of downward closed sets: {len(downward_closed_sets)}")
-        print(f"  Downward closed sets:")
-        for i, dcs in enumerate(downward_closed_sets):
-            print(f"    {i}: {list(dcs)}")
-        print()
-        
+        # print(downward_closed_sets)
         # Step 4: Create a general algebra with intersection and union
-        print("Step 4: Creating general algebra with intersection and union...")
         ideal_alg = create_ideal_algebra(downward_closed_sets)
-        print(f"  Created algebra: {ideal_alg.name()}")
-        print(f"  Cardinality: {ideal_alg.cardinality()}")
-        ideal_ops = ideal_alg.get_operations()
-        print(f"  Operations: {[op.symbol().name() for op in ideal_ops]}")
-        print()
         
         # Step 5: Convert to basic algebra
-        print("Step 5: Converting general algebra to basic algebra...")
         ideal_basic_alg = ideal_alg.to_basic_algebra()
-        print(f"  Converted to BasicAlgebra")
-        print(f"  Cardinality: {ideal_basic_alg.cardinality()}")
-        ideal_basic_ops = ideal_basic_alg.operations()
-        print(f"  Operations: {[op.symbol().name() for op in ideal_basic_ops]}")
-        print()
         
+        # Create a BasicLattice for visualization
+        # for op in ideal_basic_alg.operations():
+        #     if op.symbol().name() == "join":
+        #         join_op = op
+        #         break
+        # join_lattice = uacalc_lib.lat.lattice_from_join("BasicLattice", join_op)
+        # join_po = OrderedSet.from_lattice(join_lattice)
+        # join_graph = join_po.to_networkx()
+        # print(join_graph.edges())
+        # renderer = ASCIIRenderer(join_graph)
+        # print(renderer.render())
+
         # Step 6: Check isomorphism
-        print("Step 6: Checking if original lattice is isomorphic to constructed algebra...")
         is_iso, message = check_isomorphism(original_lattice, ideal_basic_alg)
-        print(f"  Result: {message}")
         
         if is_iso:
             print()
             print("SUCCESS: The original lattice is isomorphic to the lattice of")
             print("  downward closed sets of its join irreducibles!")
-            print()
-            print("This demonstrates Birkhoff representation: every finite distributive")
-            print("lattice is isomorphic to the lattice of downward closed sets")
-            print("(ideals) of its join irreducibles, ordered by inclusion.")
         else:
             print()
             print("NOTE: The algebras are not isomorphic (or isomorphism check failed).")
             print(f"  Reason: {message}")
-            print()
-            print("This might be due to:")
-            print("  - The lattice structure or join irreducibles computation")
-            print("  - The way downward closed sets are computed")
-            print("  - The isomorphism check being too simplistic")
         
         print()
         print("=" * 70)
