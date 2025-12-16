@@ -256,7 +256,7 @@ def main():
         # print()
 
         # # Create a BasicLattice for visualization and further processing
-        join_lattice = uacalc_lib.lat.lattice_from_join("BasicLattice", join_op)
+        join_lattice = uacalc_lib.lat.lattice_from_join_with_universe("BasicLattice", original_lattice.get_universe(), join_op)
         join_graph = join_lattice.to_networkx()
         # renderer = ASCIIRenderer(join_graph)
         # print(renderer.render())

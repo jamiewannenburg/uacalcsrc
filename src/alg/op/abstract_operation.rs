@@ -72,8 +72,24 @@ pub trait AbstractOperation: Operation {
         Ok(result)
     }
     
-    /// Default implementation of int_value_at() - delegates to compute_value.
+    /// Default implementation of int_value_at() - uses table if available, otherwise delegates to compute_value.
     fn default_int_value_at(&self, args: &[i32]) -> Result<i32, String> {
+        // Try to use the table first if available
+        if let Some(table) = self.get_value_table() {
+            // Compute Horner encoding of args
+            let set_size = self.get_algebra_size();
+            let mut index = 0i32;
+            for &arg in args {
+                if arg < 0 || arg >= set_size {
+                    return Err(format!("Argument {} is out of bounds [0, {})", arg, set_size));
+                }
+                index = index * set_size + arg;
+            }
+            if index >= 0 && (index as usize) < table.len() {
+                return Ok(table[index as usize]);
+            }
+        }
+        // Fall back to compute_value
         self.compute_value(args)
     }
     

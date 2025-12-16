@@ -700,7 +700,7 @@ impl PyBasicLattice {
         drop(inner_poset); // Release the lock
         match uacalc::lat::ordered_set::OrderedSet::new(Some(name.clone()), universe, upper_covers_list) {
             Ok(new_poset) => {
-                match uacalc::lat::BasicLattice::new_from_poset(name, new_poset) {
+                match uacalc::lat::BasicLattice::new_from_poset(name, new_poset, None) {
                     Ok(basic_lat) => Ok(PyBasicLattice {
                         inner: BasicLatticeInner::Int32(std::sync::Arc::new(std::sync::Mutex::new(basic_lat))),
                     }),
@@ -799,22 +799,36 @@ impl PyBasicLattice {
     }
     
     /// Compute join of two elements (for BasicLattice<i32> only)
+    /// 
+    /// Arguments a and b are element VALUES (not indices).
+    /// Returns the element VALUE of the join result.
     fn join(&self, a: i32, b: i32) -> PyResult<i32> {
         match &self.inner {
             BasicLatticeInner::Int32(inner) => {
                 let inner = inner.lock().unwrap();
                 let univ_list = inner.get_universe_list();
                 
-                // Find POElems for a and b
-                let po_a = univ_list.iter().find(|e| *e.get_underlying_object() == a);
-                let po_b = univ_list.iter().find(|e| *e.get_underlying_object() == b);
+                // Convert element VALUES to their POSITIONS (indices) in universe_list
+                let idx_a = univ_list.iter().position(|e| *e.get_underlying_object() == a);
+                let idx_b = univ_list.iter().position(|e| *e.get_underlying_object() == b);
                 
-                match (po_a, po_b) {
-                    (Some(pa), Some(pb)) => {
-                        let result = inner.join(pa, pb);
-                        Ok(*result.get_underlying_object())
+                match (idx_a, idx_b) {
+                    (Some(ia), Some(ib)) => {
+                        // Look up in the join operation table
+                        let join_op = inner.get_join_operation();
+                        match join_op.int_value_at(&[ia as i32, ib as i32]) {
+                            Ok(result_idx) => {
+                                // Convert result INDEX back to element VALUE
+                                if (result_idx as usize) < univ_list.len() {
+                                    Ok(*univ_list[result_idx as usize].get_underlying_object())
+                                } else {
+                                    Err(PyValueError::new_err(format!("Join result index {} out of bounds", result_idx)))
+                                }
+                            }
+                            Err(e) => Err(PyValueError::new_err(format!("Join operation error: {}", e))),
+                        }
                     }
-                    _ => Err(PyValueError::new_err(format!("Elements {} or {} not found in universe", a, b))),
+                    _ => Err(PyValueError::new_err(format!("Element {} or {} not found in universe", a, b))),
                 }
             }
             _ => Err(PyValueError::new_err("join() is only available for BasicLattice<i32> created from operations")),

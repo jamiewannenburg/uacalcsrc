@@ -483,7 +483,8 @@ where
     pub fn get_lower_covers(&self, elem: &Arc<POElem<T>>) -> Vec<Arc<POElem<T>>> {
         let mut lower = Vec::new();
         for (other_elem, uppers) in &self.upper_covers {
-            if uppers.iter().any(|u| u.get_underlying_object() == elem.get_underlying_object()) {
+            // Compare using Arc<POElem> equality (compares both underlying_object AND index)
+            if uppers.iter().any(|u| Arc::ptr_eq(u, elem) || **u == **elem) {
                 lower.push(other_elem.clone());
             }
         }

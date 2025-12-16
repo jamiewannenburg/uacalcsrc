@@ -61,11 +61,16 @@ where
     /// # Arguments
     /// * `name` - Name for the lattice
     /// * `poset` - The ordered set to wrap
+    /// * `join_op_override` - Optional join operation to use instead of generating from poset
     ///
     /// # Returns
     /// * `Ok(BasicLattice)` - Successfully created lattice
     /// * `Err(String)` - If creation fails
-    pub fn new_from_poset(name: String, poset: OrderedSet<T>) -> Result<Self, String> {
+    pub fn new_from_poset(
+        name: String, 
+        poset: OrderedSet<T>,
+        join_op_override: Option<Arc<dyn Operation>>
+    ) -> Result<Self, String> {
         let poset_arc = Arc::new(poset);
         let univ_list = poset_arc.univ();
         
@@ -79,7 +84,11 @@ where
         let mut base = GeneralAlgebra::new_with_universe(name.clone(), universe);
         
         // Create join and meet operations
-        let join_op = Self::make_join_operation(&poset_arc, &univ_list)?;
+        let join_op = if let Some(override_op) = join_op_override {
+            override_op
+        } else {
+            Self::make_join_operation(&poset_arc, &univ_list)?
+        };
         let meet_op = Self::make_meet_operation(&poset_arc, &univ_list)?;
         
         // Set operations - we need to convert Arc to Box
@@ -149,7 +158,7 @@ where
         }
         
         let poset = OrderedSet::new(Some(name.clone()), univ, ucs)?;
-        Self::new_from_poset(name, poset)
+        Self::new_from_poset(name, poset, None)
     }
 
 }
@@ -175,7 +184,7 @@ impl BasicLattice<crate::alg::conlat::Partition> {
         let poset = Self::make_ordered_set_from_congruence_lattice(con_lat)?;
         
         // Create basic lattice
-        let mut basic_lat = Self::new_from_poset(name, poset)?;
+        let mut basic_lat = Self::new_from_poset(name, poset, None)?;
         
         // Add TCT labeling if requested
         if label {
@@ -282,6 +291,11 @@ where
         &self.poset
     }
 
+    /// Get the join operation.
+    pub fn get_join_operation(&self) -> &Arc<dyn Operation> {
+        &self.join_operation
+    }
+
     /// Get cardinality.
     pub fn cardinality(&self) -> usize {
         self.univ_list.len()
@@ -291,17 +305,15 @@ where
     /// 
     /// Returns the minimal element, i.e., the element that is less than or equal
     /// to all other elements in the lattice.
+    /// 
+    /// The zero element is found by looking for the element with no lower covers
+    /// (no elements below it in the poset).
     pub fn zero(&self) -> Arc<POElem<T>> {
-        // Find the minimal element: the element that is ≤ all other elements
+        // Find the minimal element: the element with no lower covers
+        // An element has no lower covers if no other element has it as an upper cover
         for candidate in &self.univ_list {
-            let mut is_minimal = true;
-            for other in &self.univ_list {
-                if !self.poset.leq(candidate, other) {
-                    is_minimal = false;
-                    break;
-                }
-            }
-            if is_minimal {
+            let lower_covers = self.poset.get_lower_covers(candidate);
+            if lower_covers.is_empty() {
                 return candidate.clone();
             }
         }
@@ -310,7 +322,21 @@ where
     }
 
     /// Get one (top) element.
+    /// 
+    /// Returns the maximal element, i.e., the element that is greater than or equal
+    /// to all other elements in the lattice.
+    /// 
+    /// The one element is found by looking for the element with no upper covers
+    /// (no elements above it in the poset).
     pub fn one(&self) -> Arc<POElem<T>> {
+        // Find the maximal element: the element with no upper covers
+        for candidate in &self.univ_list {
+            let upper_covers = self.poset.get_upper_covers(candidate);
+            if upper_covers.is_empty() {
+                return candidate.clone();
+            }
+        }
+        // Fallback: should not happen in a valid lattice, but return last element
         self.univ_list[self.univ_list.len() - 1].clone()
     }
 
@@ -332,7 +358,16 @@ where
 
     /// Compute join of two elements.
     pub fn join(&self, a: &Arc<POElem<T>>, b: &Arc<POElem<T>>) -> Arc<POElem<T>> {
-        // Find least upper bound
+        // Use the stored join operation for lookup
+        if let (Some(a_idx), Some(b_idx)) = (self.poset.elem_order(a), self.poset.elem_order(b)) {
+            if let Ok(result_idx) = self.join_operation.int_value_at(&[a_idx as i32, b_idx as i32]) {
+                if (result_idx as usize) < self.univ_list.len() {
+                    return self.univ_list[result_idx as usize].clone();
+                }
+            }
+        }
+        
+        // Fallback: compute from poset if operation lookup fails
         let a_idx = self.poset.elem_order(a).unwrap_or(0);
         let b_idx = self.poset.elem_order(b).unwrap_or(0);
         let max_idx = a_idx.max(b_idx);
@@ -407,52 +442,18 @@ where
 
     /// Get join irreducibles.
     /// 
-    /// Uses the same logic as Java: an element is join irreducible if it cannot
-    /// be expressed as the join of two strictly smaller elements. The bottom
-    /// element (zero) is excluded as it has no strictly smaller elements.
+    /// An element is join irreducible if it has exactly one lower cover
+    /// (i.e., exactly one element directly below it). The bottom element (zero)
+    /// is not join irreducible because it has no lower covers.
     pub fn join_irreducibles(&mut self) -> &[Arc<POElem<T>>] {
         if self.join_irreducibles.is_none() {
             let mut jis = Vec::new();
-            let zero = self.zero();
             
             for elem in &self.univ_list {
-                // Skip bottom element - it's not join irreducible
-                if elem == &zero {
-                    continue;
-                }
-                
-                // Compute the join of all elements strictly smaller than elem
-                let mut join_of_smaller = None;
-                
-                for other in &self.univ_list {
-                    // Check if other is strictly smaller than elem
-                    if self.leq(other, elem) && other != elem {
-                        if let Some(current_join) = join_of_smaller {
-                            join_of_smaller = Some(self.join(&current_join, other));
-                        } else {
-                            join_of_smaller = Some(other.clone());
-                        }
-                        
-                        // Early exit: if we've already reached elem, it's not join irreducible
-                        if let Some(ref join_val) = join_of_smaller {
-                            if join_val == elem {
-                                break;
-                            }
-                        }
-                    }
-                }
-                
-                // If join_of_smaller is None, elem has no strictly smaller elements (shouldn't happen for non-zero)
-                // If join_of_smaller != elem, then elem is join irreducible
-                match join_of_smaller {
-                    None => {
-                        // This shouldn't happen for non-zero elements, but if it does, skip it
-                    }
-                    Some(join_val) => {
-                        if join_val != *elem {
-                            jis.push(elem.clone());
-                        }
-                    }
+                // An element is join irreducible if it has exactly one lower cover
+                let lower_covers = self.poset.get_lower_covers(elem);
+                if lower_covers.len() == 1 {
+                    jis.push(elem.clone());
                 }
             }
             

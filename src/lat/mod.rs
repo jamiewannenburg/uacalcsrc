@@ -82,7 +82,6 @@ pub mod lattices {
     use std::hash::Hash;
     use std::sync::Arc;
     use crate::alg::op::Operation;
-    use crate::lat::Order;
     
     /// Create a lattice from a meet operation using integers for labels.
     /// 
@@ -150,7 +149,7 @@ pub mod lattices {
         let poset = OrderedSet::ordered_set_from_filters(Some(name.clone()), univ, filters)?;
         
         // Create BasicLattice from OrderedSet
-        BasicLattice::new_from_poset(name, poset)
+        BasicLattice::new_from_poset(name, poset, None)
     }
     
     /// Create a lattice from a join operation using integers for labels.
@@ -205,7 +204,7 @@ pub mod lattices {
         let poset = OrderedSet::ordered_set_from_filters(Some(name.clone()), univ, filters)?;
         
         // Create BasicLattice from OrderedSet
-        BasicLattice::new_from_poset(name, poset)
+        BasicLattice::new_from_poset(name, poset, None)
     }
     
     /// Create a lattice from a meet operation with custom universe.
@@ -270,7 +269,7 @@ pub mod lattices {
         let poset = OrderedSet::ordered_set_from_filters(Some(name.clone()), universe, filters)?;
         
         // Create BasicLattice from OrderedSet
-        BasicLattice::new_from_poset(name, poset)
+        BasicLattice::new_from_poset(name, poset, None)
     }
     
     /// Create a lattice from a join operation with custom universe.
@@ -297,14 +296,24 @@ pub mod lattices {
         let mut universe = univ.clone();
         
         // Create filters for each element
+        // Note: We need to use indices when calling the operation, not element values,
+        // because value_at delegates to int_value_at which treats arguments as indices.
         let mut filters: Vec<Vec<i32>> = Vec::new();
         for i in 0..s {
             let mut filter = Vec::new();
             for j in 0..s {
-                let args = vec![universe[i], universe[j]];
-                match join.value_at(&args) {
-                    Ok(result) if result == universe[j] => filter.push(universe[j]),
-                    Ok(_) => {},
+                // Use indices i and j to call the operation
+                match join.int_value_at(&[i as i32, j as i32]) {
+                    Ok(result_idx) => {
+                        // result_idx is an index, convert to element
+                        if (result_idx as usize) < universe.len() {
+                            let result_elem = universe[result_idx as usize];
+                            // Check if join(universe[i], universe[j]) == universe[j] (i.e., universe[i] <= universe[j])
+                            if result_elem == universe[j] {
+                                filter.push(universe[j]);
+                            }
+                        }
+                    },
                     Err(e) => return Err(format!("Error evaluating join operation: {}", e)),
                 }
             }
@@ -327,10 +336,77 @@ pub mod lattices {
         }
         
         // Create OrderedSet from filters
-        let poset = OrderedSet::ordered_set_from_filters(Some(name.clone()), universe, filters)?;
+        let poset = OrderedSet::ordered_set_from_filters(Some(name.clone()), universe.clone(), filters)?;
         
-        // Create BasicLattice from OrderedSet
-        BasicLattice::new_from_poset(name, poset)
+        // Create a table-based join operation that uses the original join operation
+        // This ensures the generated join matches the original join exactly
+        let original_universe_size = univ.len();
+        let has_bottom = universe.len() > original_universe_size;
+        let lattice_universe_size = universe.len();
+        
+        // Pre-compute all join values into a table
+        let table_size = (lattice_universe_size * lattice_universe_size) as usize;
+        let mut join_table = Vec::with_capacity(table_size);
+        
+        for i in 0..lattice_universe_size {
+            for j in 0..lattice_universe_size {
+                let result = if has_bottom {
+                    let bottom_idx = original_universe_size;
+                    if i == bottom_idx && j == bottom_idx {
+                        bottom_idx as i32
+                    } else if i == bottom_idx {
+                        j as i32
+                    } else if j == bottom_idx {
+                        i as i32
+                    } else if (i as usize) < original_universe_size && (j as usize) < original_universe_size {
+                        // Use original join operation
+                        // The result is an index in the original universe
+                        // We need to map it to the lattice universe index
+                        match join.int_value_at(&[i as i32, j as i32]) {
+                            Ok(r) => {
+                                // r is an index in the original universe
+                                // Since the lattice universe starts with the original universe,
+                                // the index should be the same (unless it's out of bounds)
+                                if (r as usize) < original_universe_size {
+                                    r
+                                } else {
+                                    return Err(format!("Join operation returned index {} which is out of bounds for original universe size {}", r, original_universe_size));
+                                }
+                            },
+                            Err(e) => return Err(format!("Error evaluating join operation: {}", e)),
+                        }
+                    } else {
+                        return Err(format!("Index out of bounds: {} or {} (original size: {})", i, j, original_universe_size));
+                    }
+                } else {
+                    // No bottom element, use original join operation directly
+                    // The result is an index in the original universe, which matches the lattice universe
+                    match join.int_value_at(&[i as i32, j as i32]) {
+                        Ok(r) => {
+                            if (r as usize) < original_universe_size {
+                                r
+                            } else {
+                                return Err(format!("Join operation returned index {} which is out of bounds for universe size {}", r, original_universe_size));
+                            }
+                        },
+                        Err(e) => return Err(format!("Error evaluating join operation: {}", e)),
+                    }
+                };
+                join_table.push(result);
+            }
+        }
+        
+        // Create BasicOperation from the table
+        use crate::alg::op::{OperationSymbol, basic_operation::BasicOperation};
+        use std::sync::Arc;
+        let join_symbol = OperationSymbol::join().clone();
+        let join_op = match BasicOperation::new_with_table(join_symbol, lattice_universe_size as i32, join_table) {
+            Ok(op) => Arc::new(op) as Arc<dyn Operation>,
+            Err(e) => return Err(format!("Failed to create join operation from table: {}", e)),
+        };
+        
+        // Create BasicLattice from OrderedSet with the table-based join operation
+        BasicLattice::new_from_poset(name, poset, Some(join_op))
     }
     
     /// Convert a congruence lattice to a small lattice.

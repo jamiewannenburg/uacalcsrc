@@ -57,7 +57,7 @@ fn test_basic_lattice_from_poset() {
     
     let poset = OrderedSet::new(Some("Chain3".to_string()), univ, ucs).unwrap();
     
-    let basic_lat = BasicLattice::new_from_poset("TestLattice".to_string(), poset);
+    let basic_lat = BasicLattice::new_from_poset("TestLattice".to_string(), poset, None);
     assert!(basic_lat.is_ok());
     
     let basic_lat = basic_lat.unwrap();
@@ -75,7 +75,7 @@ fn test_basic_lattice_join_meet() {
     ];
     
     let poset = OrderedSet::new(Some("Chain3".to_string()), univ, ucs).unwrap();
-    let basic_lat = BasicLattice::new_from_poset("TestLattice".to_string(), poset).unwrap();
+    let basic_lat = BasicLattice::new_from_poset("TestLattice".to_string(), poset, None).unwrap();
     
     let univ_list = basic_lat.get_universe_list();
     assert_eq!(univ_list.len(), 3);
@@ -108,7 +108,7 @@ fn test_basic_lattice_atoms_coatoms() {
     ];
     
     let poset = OrderedSet::new(Some("Chain3".to_string()), univ, ucs).unwrap();
-    let basic_lat = BasicLattice::new_from_poset("TestLattice".to_string(), poset).unwrap();
+    let basic_lat = BasicLattice::new_from_poset("TestLattice".to_string(), poset, None).unwrap();
     
     // Atoms are elements covering zero
     let atoms = basic_lat.atoms();
@@ -132,7 +132,7 @@ fn test_basic_lattice_join_irreducibles() {
     ];
     
     let poset = OrderedSet::new(Some("Chain3".to_string()), univ, ucs).unwrap();
-    let mut basic_lat = BasicLattice::new_from_poset("TestLattice".to_string(), poset).unwrap();
+    let mut basic_lat = BasicLattice::new_from_poset("TestLattice".to_string(), poset, None).unwrap();
     
     // Join irreducibles are elements with exactly one upper cover
     // Use BasicLattice::join_irreducibles() method directly (not trait method)
@@ -155,7 +155,7 @@ fn test_basic_lattice_to_graph_data() {
     ];
     
     let poset = OrderedSet::new(Some("Chain3".to_string()), univ, ucs).unwrap();
-    let basic_lat = BasicLattice::new_from_poset("TestLattice".to_string(), poset).unwrap();
+    let basic_lat = BasicLattice::new_from_poset("TestLattice".to_string(), poset, None).unwrap();
     
     let graph_data = basic_lat.to_graph_data();
     
@@ -186,7 +186,7 @@ fn test_graph_data_to_dot() {
     ];
     
     let poset = OrderedSet::new(Some("Chain3".to_string()), univ, ucs).unwrap();
-    let basic_lat = BasicLattice::new_from_poset("TestLattice".to_string(), poset).unwrap();
+    let basic_lat = BasicLattice::new_from_poset("TestLattice".to_string(), poset, None).unwrap();
     
     let graph_data = basic_lat.to_graph_data();
     let dot = graph_data.to_dot();
@@ -208,7 +208,7 @@ fn test_graph_data_to_mermaid() {
     ];
     
     let poset = OrderedSet::new(Some("Chain3".to_string()), univ, ucs).unwrap();
-    let basic_lat = BasicLattice::new_from_poset("TestLattice".to_string(), poset).unwrap();
+    let basic_lat = BasicLattice::new_from_poset("TestLattice".to_string(), poset, None).unwrap();
     
     let graph_data = basic_lat.to_graph_data();
     let mermaid = graph_data.to_mermaid();
