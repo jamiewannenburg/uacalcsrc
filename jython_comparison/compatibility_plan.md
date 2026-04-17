@@ -1,5 +1,7 @@
 # Plan: Python-Jython Compatibility Layer
 
+**Agent workflow, slices, and regeneration commands:** see [AGENTS_PARITY.md](AGENTS_PARITY.md).
+
 To allow existing Jython scripts to run with the new Python bindings and compare their outputs, we should implement a compatibility layer.
 
 ## Phase 1: Package Redirection

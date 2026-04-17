@@ -36,3 +36,4 @@ dependency_analysis/
 venv/
 tests/.scratch/
 .cursor/rules/
+.jython_cache/

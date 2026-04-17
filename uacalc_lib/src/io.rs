@@ -152,7 +152,9 @@ impl PyMace4Reader {
         Ok(PyMace4AlgebraIterator::new(file_path))
     }
     
-    /// Parse a list of algebras from input data
+    /// Parse all algebras from a complete byte buffer (`Vec<u8>`), not an open Python file.
+    /// Lazy iteration is only exposed via `parse_algebra_list_from_file`; the underlying
+    /// Rust `Mace4Reader` still accepts any `std::io::Read` when used from Rust.
     fn parse_algebra_list_from_stream(&self, data: Vec<u8>) -> PyResult<Vec<PyBasicAlgebra>> {
         let cursor = std::io::Cursor::new(data);
         match uacalc::io::Mace4Reader::new_safe(Box::new(cursor)) {

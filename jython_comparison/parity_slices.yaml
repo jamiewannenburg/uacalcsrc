@@ -1,0 +1,234 @@
+# Parity work slices — edited by humans/agents. Do NOT auto-generate.
+# When you finish work on a slice, update status, owner, last_updated, and notes.
+# Run: python jython_comparison/scripts/generate_parity_inventory.py
+# to refresh parity_inventory.yaml (class list, wrappers, shim flags).
+
+version: 1
+
+status_values:
+  not_started: No shim or tests yet.
+  in_progress: Someone actively owns this; update notes with branch or PR.
+  shim_complete: org.uacalc Python surface exists; golden/Jython parity not done.
+  parity_golden: Shared scripts + pytest agree with Jython on representative cases.
+  done: Shim + parity + docs; ready for refactor with regression guard.
+
+binding_scope:
+  core: Mathematical / programmatic API expected in scripts (priority).
+  examples: Example/demos in org.uacalc.example (often lower bind priority).
+  gui: Swing/NetBeans UI (usually out of scope for Jython parity unless needed).
+
+merge_rules:
+  - One active owner per slice (set owner to GitHub handle or initials).
+  - Touch only this file and your slice directory under python/org/uacalc/... and tests.
+  - After changing Java under org/uacalc or java_wrapper wrappers, regenerate parity_inventory.yaml.
+  - Conflicts: if two agents need the same slice, split work by "workstream" notes or sub-slice id.
+
+slices:
+  - id: core-io
+    title: Algebra file IO and readers/writers
+    binding_scope: core
+    java_package_prefixes:
+      - org.uacalc.io
+    depends_on: []
+    owner: ""
+    status: in_progress
+    workstreams: []
+    parity_tests_dir: tests/parity/io
+    notes: Existing python/org/uacalc/io shim; expand methods + goldens.
+
+  - id: core-alg-base
+    title: Core algebras (BasicAlgebra, SmallAlgebra, products, …) excluding conlat/op subtrees
+    binding_scope: core
+    java_package_prefixes:
+      - org.uacalc.alg
+    package_excludes:
+      - org.uacalc.alg.conlat
+      - org.uacalc.alg.op
+      - org.uacalc.alg.parallel
+      - org.uacalc.alg.sublat
+    depends_on:
+      - core-io
+    owner: ""
+    status: in_progress
+    workstreams: []
+    parity_tests_dir: tests/parity/alg
+    notes: Large slice; consider splitting further if multiple agents (document in workstreams).
+
+  - id: core-alg-op
+    title: Operation symbols and operations
+    binding_scope: core
+    java_package_prefixes:
+      - org.uacalc.alg.op
+    depends_on:
+      - core-alg-base
+    owner: ""
+    status: not_started
+    workstreams: []
+    parity_tests_dir: tests/parity/alg_op
+    notes: ""
+
+  - id: core-alg-conlat
+    title: Congruences, partitions, congruence lattices
+    binding_scope: core
+    java_package_prefixes:
+      - org.uacalc.alg.conlat
+    depends_on:
+      - core-alg-base
+    owner: ""
+    status: not_started
+    workstreams: []
+    parity_tests_dir: tests/parity/conlat
+    notes: ""
+
+  - id: core-alg-parallel
+    title: Parallel closers / pool (if exposed to scripts)
+    binding_scope: core
+    java_package_prefixes:
+      - org.uacalc.alg.parallel
+    depends_on:
+      - core-alg-base
+    owner: ""
+    status: not_started
+    workstreams: []
+    parity_tests_dir: tests/parity/parallel
+    notes: May be optional for some script users; document in notes.
+
+  - id: core-alg-sublat
+    title: Subalgebra lattice
+    binding_scope: core
+    java_package_prefixes:
+      - org.uacalc.alg.sublat
+    depends_on:
+      - core-alg-conlat
+    owner: ""
+    status: not_started
+    workstreams: []
+    parity_tests_dir: tests/parity/sublat
+    notes: ""
+
+  - id: core-element
+    title: Elements and subproduct elements
+    binding_scope: core
+    java_package_prefixes:
+      - org.uacalc.element
+    depends_on:
+      - core-alg-base
+    owner: ""
+    status: not_started
+    workstreams: []
+    parity_tests_dir: tests/parity/element
+    notes: ""
+
+  - id: core-eq
+    title: Equations and presentations
+    binding_scope: core
+    java_package_prefixes:
+      - org.uacalc.eq
+    depends_on:
+      - core-alg-base
+    owner: ""
+    status: not_started
+    workstreams: []
+    parity_tests_dir: tests/parity/eq
+    notes: ""
+
+  - id: core-lat
+    title: Lattices and ordered sets
+    binding_scope: core
+    java_package_prefixes:
+      - org.uacalc.lat
+    depends_on: []
+    owner: ""
+    status: not_started
+    workstreams: []
+    parity_tests_dir: tests/parity/lat
+    notes: ""
+
+  - id: core-terms
+    title: Terms and Taylor operations
+    binding_scope: core
+    java_package_prefixes:
+      - org.uacalc.terms
+    depends_on:
+      - core-alg-base
+    owner: ""
+    status: not_started
+    workstreams: []
+    parity_tests_dir: tests/parity/terms
+    notes: ""
+
+  - id: core-group
+    title: Permutation groups
+    binding_scope: core
+    java_package_prefixes:
+      - org.uacalc.group
+    depends_on:
+      - core-alg-base
+    owner: ""
+    status: not_started
+    workstreams: []
+    parity_tests_dir: tests/parity/group
+    notes: ""
+
+  - id: core-fplat
+    title: Partially defined lattices (flat representation)
+    binding_scope: core
+    java_package_prefixes:
+      - org.uacalc.fplat
+    depends_on:
+      - core-lat
+    owner: ""
+    status: not_started
+    workstreams: []
+    parity_tests_dir: tests/parity/fplat
+    notes: ""
+
+  - id: core-util
+    title: Shared util (IntArray, generators, …)
+    binding_scope: core
+    java_package_prefixes:
+      - org.uacalc.util
+    depends_on: []
+    owner: ""
+    status: not_started
+    workstreams: []
+    parity_tests_dir: tests/parity/util
+    notes: Cross-cutting; coordinate with slices that need types from util.
+
+  - id: examples-org
+    title: org.uacalc.example scripts and demos
+    binding_scope: examples
+    java_package_prefixes:
+      - org.uacalc.example
+    depends_on:
+      - core-io
+      - core-alg-base
+    owner: ""
+    status: not_started
+    workstreams: []
+    parity_tests_dir: tests/parity/example
+    notes: Parity often lower priority unless users rely on these classes.
+
+  - id: gui-swing
+    title: Swing UI (org.uacalc.ui)
+    binding_scope: gui
+    java_package_prefixes:
+      - org.uacalc.ui
+    depends_on: []
+    owner: ""
+    status: not_started
+    workstreams: []
+    parity_tests_dir: ""
+    notes: Typically out of scope for Rust parity; keep slice for visibility.
+
+  - id: gui-nbui
+    title: NetBeans UI (org.uacalc.nbui)
+    binding_scope: gui
+    java_package_prefixes:
+      - org.uacalc.nbui
+    depends_on: []
+    owner: ""
+    status: not_started
+    workstreams: []
+    parity_tests_dir: ""
+    notes: Typically out of scope for Rust parity; keep slice for visibility.
