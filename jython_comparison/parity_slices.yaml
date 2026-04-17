@@ -114,10 +114,22 @@ slices:
     depends_on:
       - core-alg-base
     owner: ""
-    status: not_started
+    status: shim_complete
     workstreams: []
     parity_tests_dir: tests/parity/element
-    notes: ""
+    notes: "python/org/uacalc/element shim + tests/parity/element; golden parity pending built uacalc_lib."
+
+  - id: core-lat
+    title: Lattices and ordered sets
+    binding_scope: core
+    java_package_prefixes:
+      - org.uacalc.lat
+    depends_on: []
+    owner: ""
+    status: shim_complete
+    workstreams: []
+    parity_tests_dir: tests/parity/lat
+    notes: "python/org/uacalc/lat shim + tests/parity/lat; golden parity pending built uacalc_lib."
 
   - id: core-eq
     title: Equations and presentations
@@ -130,18 +142,6 @@ slices:
     status: not_started
     workstreams: []
     parity_tests_dir: tests/parity/eq
-    notes: ""
-
-  - id: core-lat
-    title: Lattices and ordered sets
-    binding_scope: core
-    java_package_prefixes:
-      - org.uacalc.lat
-    depends_on: []
-    owner: ""
-    status: not_started
-    workstreams: []
-    parity_tests_dir: tests/parity/lat
     notes: ""
 
   - id: core-terms
@@ -190,10 +190,10 @@ slices:
       - org.uacalc.util
     depends_on: []
     owner: ""
-    status: not_started
+    status: shim_complete
     workstreams: []
     parity_tests_dir: tests/parity/util
-    notes: Cross-cutting; coordinate with slices that need types from util.
+    notes: "python/org/uacalc/util shim + tests/parity/util; cross-cutting coordination unchanged; golden parity pending built uacalc_lib."
 
   - id: examples-org
     title: org.uacalc.example scripts and demos
