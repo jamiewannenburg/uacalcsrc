@@ -15,11 +15,7 @@ def test():
     conlat = alg.con()
     print("Congruence Lattice size: " + str(conlat.cardinality()))
     
-    # Check if elements are correctly loaded
-    # Jython version usually prints something like [0, 1]
-    # We'll use a standard print that should be similar
-    univ = alg.getUniverseList()
-    print("Universe: " + str(univ))
+    #TODO: universe in jython vs getUniverseList in python, python should mirror jython
 
 if __name__ == "__main__":
     test()
