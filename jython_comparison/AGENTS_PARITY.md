@@ -20,6 +20,15 @@ This document tells **what to build**, **where it lives**, and **how multiple ag
 
 Legacy context: `jython_comparison/api_diff.md` and `jython_comparison/compatibility_plan.md`.
 
+### Slice status snapshot
+
+Use `jython_comparison/parity_slices.yaml` as the source of truth for owners and `status`.
+
+- **`parity_golden`:** Every tracked slice is at this level: shared golden scripts under each slice’s `parity_tests_dir` plus pytest compare Jython vs checked-in fixtures (and CPython vs fixtures). Full behavioral parity on empty CPython shims still follows future `uacalc_lib` bindings; see per-slice **notes**.
+- **Swing / NetBeans UI** (`org.uacalc.ui`, `org.uacalc.nbui`) are **not** tracked as slices here (out of scope for this manifest); the inventory still lists those Java packages.
+
+Re-run `python jython_comparison/scripts/validate_parity_slices.py` after editing slices.
+
 ## Before you start (every agent)
 
 1. Read **your slice** in `parity_slices.yaml` (`id`, `java_package_prefixes`, `depends_on`, `parity_tests_dir`).
@@ -56,6 +65,12 @@ python jython_comparison/scripts/generate_parity_inventory.py --verify
 # Confirm parity_slices.yaml java_package_prefixes match packages in the inventory
 python jython_comparison/scripts/validate_parity_slices.py
 ```
+
+### CI and local checks
+
+GitHub Actions `test.yml` runs `pytest python/uacalc/tests` (with `uacalc_lib` installed from the built wheel). That suite includes `test_jython_examples_parity.py`, which subprocess-invokes `validate_parity_slices.py` and `generate_parity_inventory.py --verify` via `verify_fresh`. You do **not** need a separate workflow step for those scripts unless you want failure faster before the full pytest install — in that case run the two commands above locally or in a small pre-check job.
+
+After changing `python/org/uacalc/` or Java wrappers, regenerate `parity_inventory.yaml` in the same PR so `verify_fresh` stays green.
 
 ## Normalization for cross-Python tests
 

@@ -1,0 +1,6 @@
+﻿MODULE: org.uacalc.alg.parallel
+RUNTIME: jython
+POOL_NOTE: On Jython, Pool is org.uacalc.alg.parallel.Pool; on CPython uacalc_lib often exposes Pool on uacalc_lib.alg while the org.uacalc.alg.parallel shim may be empty until alg.parallel is wired.
+SHIM_PUBLIC_COUNT: 2
+SHIM_NAME: Pool
+SHIM_NAME: SingleClose

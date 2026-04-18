@@ -1,0 +1,4 @@
+﻿MODULE: org.uacalc.alg.conlat
+RUNTIME: cpython
+PUBLIC_COUNT: 0
+SAMPLE_BP_JOIN: skip (no BasicPartition on this runtime)

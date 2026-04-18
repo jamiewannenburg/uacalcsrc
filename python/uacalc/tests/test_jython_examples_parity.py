@@ -250,7 +250,7 @@ class TestParityTooling:
         assert "tests/parity/example" in text
 
     def test_run_comparison_cli_help(self):
-        """run_comparison.py remains invokable for CI/docs (argparse wiring)."""
+        """run_comparison.py remains invokable for CI/docs (``--help`` / dry-run wiring)."""
         script = REPO_ROOT / "jython_comparison" / "run_comparison.py"
         r = subprocess.run(
             [sys.executable, str(script), "--help"],
@@ -263,6 +263,16 @@ class TestParityTooling:
         assert r.returncode == 0, r.stderr + r.stdout
         assert "CLASSPATH" in r.stdout or "classpath" in r.stdout.lower()
         assert "--quiet" in r.stdout and "-q" in r.stdout
+
+    def test_jython_comparison_default_script_checked_in_and_wired(self):
+        """Parity manifest: default comparison script stays on disk and referenced by run_comparison."""
+        default_script = REPO_ROOT / "jython_comparison" / "test_script.py"
+        assert default_script.is_file(), f"missing {default_script}"
+        rc_text = (REPO_ROOT / "jython_comparison" / "run_comparison.py").read_text(
+            encoding="utf-8",
+            errors="replace",
+        )
+        assert "test_script.py" in rc_text
 
     def test_parity_inventory_meta_has_generation_timestamp(self):
         """Inventory must stay machine-generated with a UTC timestamp (staleness guard)."""

@@ -1,0 +1,8 @@
+﻿MODULE: org.uacalc.alg.op
+RUNTIME: jython
+PUBLIC_COUNT: 2
+NAME: AbstractIntOperation
+NAME: OperationSymbol
+SAMPLE_OP_SYMBOL: *
+SAMPLE_OP_ARITY: 2
+SAMPLE_ABS_INT_OP_SET_SIZE: 3
