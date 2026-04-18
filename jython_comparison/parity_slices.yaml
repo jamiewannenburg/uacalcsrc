@@ -30,11 +30,15 @@ slices:
     java_package_prefixes:
       - org.uacalc.io
     depends_on: []
-    owner: ""
-    status: in_progress
+    owner: agent-a
+    status: parity_golden
+    last_updated: "2026-04-18"
     workstreams: []
     parity_tests_dir: tests/parity/io
-    notes: Existing python/org/uacalc/io shim; expand methods + goldens.
+    notes: >-
+      python/org/uacalc/io re-exports uacalc_lib.io + AlgebraIO shim + JSONChannel placeholder until Rust
+      binds it. Golden stdout tests/parity/io/golden_io_surface.py + fixtures; test_io_shim_imports.py.
+      parity_inventory regenerated. agent-a.
 
   - id: core-alg-base
     title: Core algebras (BasicAlgebra, SmallAlgebra, products, …) excluding conlat/op subtrees
@@ -48,11 +52,14 @@ slices:
       - org.uacalc.alg.sublat
     depends_on:
       - core-io
-    owner: ""
-    status: in_progress
+    owner: agent-b
+    status: parity_golden
+    last_updated: "2026-04-18"
     workstreams: []
     parity_tests_dir: tests/parity/alg
-    notes: Large slice; consider splitting further if multiple agents (document in workstreams).
+    notes: >-
+      Golden smoke: tests/parity/alg/golden_alg_core_surface.py + fixtures + test_alg_core_golden_smoke.py
+      (BasicAlgebra tiny algebra; CPython vs Jython stdout). agent-b.
 
   - id: core-alg-op
     title: Operation symbols and operations
@@ -61,11 +68,14 @@ slices:
       - org.uacalc.alg.op
     depends_on:
       - core-alg-base
-    owner: ""
-    status: not_started
+    owner: agent-b
+    status: shim_complete
+    last_updated: "2026-04-18"
     workstreams: []
     parity_tests_dir: tests/parity/alg_op
-    notes: ""
+    notes: >-
+      python/org/uacalc/alg/op/__init__.py delegates to uacalc_lib.alg.op when bound (currently empty on
+      CPython). tests/parity/alg_op/test_op_shim_smoke.py. agent-b.
 
   - id: core-alg-conlat
     title: Congruences, partitions, congruence lattices
@@ -74,11 +84,14 @@ slices:
       - org.uacalc.alg.conlat
     depends_on:
       - core-alg-base
-    owner: ""
-    status: not_started
+    owner: agent-b
+    status: shim_complete
+    last_updated: "2026-04-18"
     workstreams: []
     parity_tests_dir: tests/parity/conlat
-    notes: ""
+    notes: >-
+      python/org/uacalc/alg/conlat/__init__.py; uacalc_lib.alg.conlat not bound yet (empty CPython
+      namespace). tests/parity/conlat/test_conlat_shim_smoke.py. agent-b.
 
   - id: core-alg-parallel
     title: Parallel closers / pool (if exposed to scripts)
@@ -87,11 +100,14 @@ slices:
       - org.uacalc.alg.parallel
     depends_on:
       - core-alg-base
-    owner: ""
-    status: not_started
+    owner: agent-b
+    status: shim_complete
+    last_updated: "2026-04-18"
     workstreams: []
     parity_tests_dir: tests/parity/parallel
-    notes: May be optional for some script users; document in notes.
+    notes: >-
+      python/org/uacalc/alg/parallel/__init__.py; uacalc_lib.alg.parallel not bound (Pool lives on
+      uacalc_lib.alg for now). tests/parity/parallel/test_parallel_shim_smoke.py. agent-b.
 
   - id: core-alg-sublat
     title: Subalgebra lattice
@@ -100,11 +116,14 @@ slices:
       - org.uacalc.alg.sublat
     depends_on:
       - core-alg-conlat
-    owner: ""
-    status: not_started
+    owner: agent-b
+    status: shim_complete
+    last_updated: "2026-04-18"
     workstreams: []
     parity_tests_dir: tests/parity/sublat
-    notes: ""
+    notes: >-
+      python/org/uacalc/alg/sublat/__init__.py; uacalc_lib.alg.sublat not bound yet (empty CPython
+      namespace). tests/parity/sublat/test_sublat_shim_smoke.py. agent-b.
 
   - id: core-element
     title: Elements and subproduct elements
@@ -131,11 +150,14 @@ slices:
       - org.uacalc.eq
     depends_on:
       - core-alg-base
-    owner: ""
-    status: not_started
+    owner: agent-b
+    status: shim_complete
+    last_updated: "2026-04-18"
     workstreams: []
     parity_tests_dir: tests/parity/eq
-    notes: ""
+    notes: >-
+      python/org/uacalc/eq/__init__.py re-exports uacalc_lib.eq. tests/parity/eq/test_eq_shim_smoke.py.
+      agent-b.
 
   - id: core-lat
     title: Lattices and ordered sets
@@ -143,11 +165,14 @@ slices:
     java_package_prefixes:
       - org.uacalc.lat
     depends_on: []
-    owner: ""
-    status: not_started
+    owner: agent-a
+    status: parity_golden
+    last_updated: "2026-04-18"
     workstreams: []
     parity_tests_dir: tests/parity/lat
-    notes: ""
+    notes: >-
+      Golden surface tests/parity/lat/golden_lat_surface.py; test_lat_shim_exports.py for CPython
+      dir()/identity checks vs uacalc_lib.lat. agent-a.
 
   - id: core-terms
     title: Terms and Taylor operations
@@ -156,11 +181,14 @@ slices:
       - org.uacalc.terms
     depends_on:
       - core-alg-base
-    owner: ""
-    status: not_started
+    owner: agent-b
+    status: shim_complete
+    last_updated: "2026-04-18"
     workstreams: []
     parity_tests_dir: tests/parity/terms
-    notes: ""
+    notes: >-
+      python/org/uacalc/terms/__init__.py re-exports uacalc_lib.terms. tests/parity/terms/test_terms_shim_smoke.py.
+      agent-b.
 
   - id: core-group
     title: Permutation groups
@@ -169,11 +197,14 @@ slices:
       - org.uacalc.group
     depends_on:
       - core-alg-base
-    owner: ""
-    status: not_started
+    owner: agent-b
+    status: shim_complete
+    last_updated: "2026-04-18"
     workstreams: []
     parity_tests_dir: tests/parity/group
-    notes: ""
+    notes: >-
+      python/org/uacalc/group/__init__.py re-exports uacalc_lib.group. tests/parity/group/test_group_shim_smoke.py.
+      agent-b.
 
   - id: core-fplat
     title: Partially defined lattices (flat representation)
@@ -182,11 +213,14 @@ slices:
       - org.uacalc.fplat
     depends_on:
       - core-lat
-    owner: ""
-    status: not_started
+    owner: agent-b
+    status: shim_complete
+    last_updated: "2026-04-18"
     workstreams: []
     parity_tests_dir: tests/parity/fplat
-    notes: ""
+    notes: >-
+      python/org/uacalc/fplat/__init__.py re-exports uacalc_lib.fplat. tests/parity/fplat/test_fplat_shim_smoke.py.
+      agent-b.
 
   - id: core-util
     title: Shared util (IntArray, generators, …)
@@ -194,11 +228,15 @@ slices:
     java_package_prefixes:
       - org.uacalc.util
     depends_on: []
-    owner: ""
-    status: not_started
+    owner: agent-a
+    status: parity_golden
+    last_updated: "2026-04-18"
     workstreams: []
     parity_tests_dir: tests/parity/util
-    notes: Cross-cutting; coordinate with slices that need types from util.
+    notes: >-
+      python/org/uacalc/util delegates to uacalc_lib.util with Java aliases; org.uacalc.util.virtuallist
+      shim maps LongList/TupleWithMin/VirtualLists. Golden tests/parity/util/golden_util_surface.py +
+      fixtures. parity_inventory regenerated. agent-a.
 
   - id: examples-org
     title: org.uacalc.example scripts and demos
@@ -208,11 +246,16 @@ slices:
     depends_on:
       - core-io
       - core-alg-base
-    owner: ""
-    status: not_started
+    owner: agent-c
+    status: shim_complete
+    last_updated: "2026-04-18"
     workstreams: []
     parity_tests_dir: tests/parity/example
-    notes: Parity often lower priority unless users rely on these classes.
+    notes: >-
+      python/org/uacalc/example/__init__.py: CPython loads public names from uacalc_lib.example
+      when present; Jython uses ``from org.uacalc.example import *`` against the JAR.
+      tests/parity/example/test_example_shim_smoke.py asserts shim ``dir()`` matches
+      uacalc_lib.example. Demo Java classes remain low priority until scripts import them.
 
   - id: gui-swing
     title: Swing UI (org.uacalc.ui)

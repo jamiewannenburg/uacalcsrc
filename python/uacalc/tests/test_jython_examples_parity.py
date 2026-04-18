@@ -3,19 +3,28 @@ Tests aligned with Jython example scripts under jython_comparison/.
 
 Covers the same APIs as:
 - jython_comparison/test_script.py  (org.uacalc.io.AlgebraIO, org.uacalc.alg.*)
-- jython_comparison/debug_jython.py (same, plus introspection)
+- jython_comparison/debug_jython.py (``AlgebraIO.readAlgebraFile``, universe and congruence lattice)
 - jython_comparison/subreducts_mace4_stream.py (Mace4Reader, Terms.stringToTerm,
   ReductAlgebra, subalgebra lattice from algebra.sub()) — CPython uses the same
   Rust-backed types via uacalc_lib; the Jython script uses SubalgebraLattice(alg)
   and iterator(), which are not all exposed identically in Python yet.
 
 Also smoke-tests parity manifest tooling (validate script + inventory builder).
+
+Parity note (``core-alg-op`` / ``AbstractIntOperation``): Java exposes
+``org.uacalc.alg.op.AbstractIntOperation`` for Jython subclasses; the repo includes
+``java_wrapper/src/alg/op/AbstractIntOperationWrapper.java`` for JSON/CLI-style checks
+alongside ``tasks/Task 13 - AbstractIntOperation.md``. Rust ``uacalc_lib`` exposes
+``AbstractIntOperation`` with extra Python helpers (e.g. ``from_int_value_at_function``,
+``make_table``) beyond the minimal Java API—``org.uacalc.alg.op`` on CPython may still be
+empty until the shim re-exports; Jython subclass parity stays tracked under core-alg-op.
 """
 
 from __future__ import annotations
 
 import importlib.util
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -111,6 +120,26 @@ def org_uacalc_alg_star() -> dict:
     return out
 
 
+class TestDebugJythonParity:
+    """Same surface as ``jython_comparison/debug_jython.py`` (non-interactive)."""
+
+    def test_algebra_io_types_match_debug_script(self):
+        ua_path = REPO_ROOT / "resources" / "algebras" / "cyclic2.ua"
+        if not ua_path.is_file():
+            pytest.skip("resources/algebras/cyclic2.ua not found")
+
+        _ensure_python_org_on_path()
+        from org.uacalc.io import AlgebraIO  # pylint: disable=import-outside-toplevel
+        from org.uacalc.alg import BasicAlgebra  # pylint: disable=import-outside-toplevel
+
+        alg = AlgebraIO.readAlgebraFile(str(ua_path))
+        assert isinstance(alg, BasicAlgebra)
+        assert alg.name() == "C2"
+        assert set(alg.get_universe_list()) == {0, 1}
+        conlat = alg.con()
+        assert conlat.cardinality() == 2
+
+
 class TestSubreductsMace4ExampleAPIs:
     """APIs exercised by subreducts_mace4_stream.py (CPython / uacalc_lib)."""
 
@@ -151,9 +180,41 @@ class TestSubreductsMace4ExampleAPIs:
         sub_lat = reduct.sub()
         assert sub_lat.cardinality() >= 1
 
+    def test_mace4_reader_stream_matches_file_parse(self):
+        """
+        ``subreducts_mace4_stream.py`` uses ``Mace4Reader(Java InputStream)`` and
+        ``parseAlgebra()``; Rust exposes ``new_from_stream`` + ``parse_algebra_from_stream``.
+        """
+        path = REPO_ROOT / "resources" / "mace4" / "KR-8-expl.model"
+        if not path.is_file():
+            pytest.skip("KR-8-expl.model not found")
+
+        io = getattr(uacalc_lib, "io")
+        data = path.read_bytes()
+        from_file = io.Mace4Reader.parse_algebra_from_file(str(path))
+        reader = io.Mace4Reader.new_from_stream(data)
+        first = reader.parse_algebra_from_stream(data)
+        assert first is not None
+        assert first.name() == from_file.name() == "model1"
+
+        _ensure_python_org_on_path()
+        from org.uacalc.io import Mace4Reader as ShimMace4Reader  # pylint: disable=import-outside-toplevel
+
+        assert ShimMace4Reader is io.Mace4Reader
+
 
 class TestParityTooling:
     """Verify jython_comparison manifest scripts run cleanly."""
+
+    def test_parity_inventory_lists_example_package(self):
+        """Inventory must include ``org.uacalc.example`` when Java demos exist."""
+        inv = REPO_ROOT / "jython_comparison" / "parity_inventory.yaml"
+        if not inv.is_file():
+            pytest.fail(f"missing {inv}")
+        text = inv.read_text(encoding="utf-8", errors="replace")
+        assert re.search(
+            r"(?m)^  org\.uacalc\.example:\s*$", text
+        ), "expected packages section to list org.uacalc.example"
 
     def test_validate_parity_slices_subprocess(self):
         script = REPO_ROOT / "jython_comparison" / "scripts" / "validate_parity_slices.py"
@@ -180,3 +241,33 @@ class TestParityTooling:
             "parity_inventory.yaml missing or stale; run: "
             "python jython_comparison/scripts/generate_parity_inventory.py"
         )
+
+    def test_parity_slices_declares_examples_org_slice(self):
+        """Guardrail: examples-org slice stays wired to tests/parity/example (manifest hygiene)."""
+        sl = REPO_ROOT / "jython_comparison" / "parity_slices.yaml"
+        text = sl.read_text(encoding="utf-8", errors="replace")
+        assert "id: examples-org" in text
+        assert "tests/parity/example" in text
+
+    def test_run_comparison_cli_help(self):
+        """run_comparison.py remains invokable for CI/docs (argparse wiring)."""
+        script = REPO_ROOT / "jython_comparison" / "run_comparison.py"
+        r = subprocess.run(
+            [sys.executable, str(script), "--help"],
+            cwd=str(REPO_ROOT),
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+        )
+        assert r.returncode == 0, r.stderr + r.stdout
+        assert "CLASSPATH" in r.stdout or "classpath" in r.stdout.lower()
+        assert "--quiet" in r.stdout and "-q" in r.stdout
+
+    def test_parity_inventory_meta_has_generation_timestamp(self):
+        """Inventory must stay machine-generated with a UTC timestamp (staleness guard)."""
+        inv = REPO_ROOT / "jython_comparison" / "parity_inventory.yaml"
+        assert inv.is_file()
+        text = inv.read_text(encoding="utf-8", errors="replace")
+        assert "generated_at_utc:" in text
+        assert "meta:" in text

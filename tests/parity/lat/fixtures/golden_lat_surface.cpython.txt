@@ -1,6 +1,7 @@
 MODULE: org.uacalc.lat
 RUNTIME: cpython
 PUBLIC_COUNT: 24
+HAS_BASIC_LATTICE: yes
 NAME: BasicLattice
 NAME: BooleanLattice
 NAME: DiamondLattice

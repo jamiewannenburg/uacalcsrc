@@ -2,7 +2,7 @@
 # Generator version: 1
 # Do not edit by hand; run the script to refresh.
 meta:
-  generated_at_utc: "2026-04-17T19:14:35.850481+00:00"
+  generated_at_utc: "2026-04-18T08:37:04.159384+00:00"
   generator_version: 1
   repo_root: "C:/Users/u28409265/Documents/uacalcsrc"
   java_org_uacalc_files_scanned: 146
@@ -22,7 +22,20 @@ meta:
   python_org_uacalc_packages_with_init:
     - org.uacalc
     - org.uacalc.alg
+    - org.uacalc.alg.conlat
+    - org.uacalc.alg.op
+    - org.uacalc.alg.parallel
+    - org.uacalc.alg.sublat
+    - org.uacalc.element
+    - org.uacalc.eq
+    - org.uacalc.example
+    - org.uacalc.fplat
+    - org.uacalc.group
     - org.uacalc.io
+    - org.uacalc.lat
+    - org.uacalc.terms
+    - org.uacalc.util
+    - org.uacalc.util.virtuallist
 java_cli_wrapper_index:
   org.uacalc.alg.Algebra:
     - GeneralAlgebraWrapper
@@ -1302,7 +1315,7 @@ types:
     java_cli_wrappers:
       - BasicBinaryRelationWrapper
       - CentralityDataWrapper
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: alg
   org.uacalc.alg.conlat.BasicPartition:
     package: org.uacalc.alg.conlat
@@ -1360,7 +1373,7 @@ types:
       - CentralityDataWrapper
       - MaltsevProductDecompositionWrapper
       - PolymorphismsWrapper
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: alg
   org.uacalc.alg.conlat.BinaryRelation:
     package: org.uacalc.alg.conlat
@@ -1375,7 +1388,7 @@ types:
     java_cli_wrappers:
       - BasicBinaryRelationWrapper
       - CentralityDataWrapper
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: alg
   org.uacalc.alg.conlat.CentralityData:
     package: org.uacalc.alg.conlat
@@ -1398,7 +1411,7 @@ types:
       - toString
     java_cli_wrappers:
       - CentralityDataWrapper
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: alg
   org.uacalc.alg.conlat.CongruenceLattice:
     package: org.uacalc.alg.conlat
@@ -1514,7 +1527,7 @@ types:
       - zero
     java_cli_wrappers:
       - BasicLatticeWrapper
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: alg
   org.uacalc.alg.conlat.Partition:
     package: org.uacalc.alg.conlat
@@ -1545,7 +1558,7 @@ types:
       - HomomorphismWrapper
       - MaltsevProductDecompositionWrapper
       - PolymorphismsWrapper
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: alg
   org.uacalc.alg.conlat.Polymorphisms:
     package: org.uacalc.alg.conlat
@@ -1557,7 +1570,7 @@ types:
       - main
     java_cli_wrappers:
       - PolymorphismsWrapper
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: alg
   org.uacalc.alg.conlat.PrintType:
     package: org.uacalc.alg.conlat
@@ -1585,7 +1598,7 @@ types:
       - universeSize
     java_cli_wrappers:
       []
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: alg
   org.uacalc.alg.conlat.Subtrace:
     package: org.uacalc.alg.conlat
@@ -1606,7 +1619,7 @@ types:
       - type
     java_cli_wrappers:
       - SubtraceWrapper
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: alg
   org.uacalc.alg.conlat.TypeFinder:
     package: org.uacalc.alg.conlat
@@ -1623,7 +1636,7 @@ types:
       - main
     java_cli_wrappers:
       []
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: alg
   org.uacalc.alg.op.AbstractIntOperation:
     package: org.uacalc.alg.op
@@ -1636,7 +1649,7 @@ types:
       - valueAt
     java_cli_wrappers:
       - AbstractIntOperationWrapper
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: alg
   org.uacalc.alg.op.AbstractOperation:
     package: org.uacalc.alg.op
@@ -1662,7 +1675,7 @@ types:
       - valueAt
     java_cli_wrappers:
       - AbstractOperationWrapper
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: alg
   org.uacalc.alg.op.Operation:
     package: org.uacalc.alg.op
@@ -1695,7 +1708,7 @@ types:
       - OperationWithDefaultValueWrapper
       - OperationsWrapper
       - UnaryTermsMonoidWrapper
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: alg
   org.uacalc.alg.op.OperationSymbol:
     package: org.uacalc.alg.op
@@ -1725,7 +1738,7 @@ types:
       - OperationsWrapper
       - SimilarityTypeWrapper
       - TaylorWrapper
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: alg
   org.uacalc.alg.op.OperationWithDefaultValue:
     package: org.uacalc.alg.op
@@ -1751,7 +1764,7 @@ types:
       - valueAt
     java_cli_wrappers:
       - OperationWithDefaultValueWrapper
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: alg
   org.uacalc.alg.op.Operations:
     package: org.uacalc.alg.op
@@ -1796,7 +1809,7 @@ types:
       - IntOperationWrapper
       - OperationWithDefaultValueWrapper
       - OperationsWrapper
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: alg
   org.uacalc.alg.op.ParameterizedOperation:
     package: org.uacalc.alg.op
@@ -1810,7 +1823,7 @@ types:
     java_cli_wrappers:
       - ParameterizedAlgebraWrapper
       - ParameterizedOperationWrapper
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: alg
   org.uacalc.alg.op.SimilarityType:
     package: org.uacalc.alg.op
@@ -1832,7 +1845,7 @@ types:
       - GeneralAlgebraWrapper
       - OperationsWrapper
       - SimilarityTypeWrapper
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: alg
   org.uacalc.alg.op.TermOperation:
     package: org.uacalc.alg.op
@@ -1844,7 +1857,7 @@ types:
       - getTerm
     java_cli_wrappers:
       []
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: alg
   org.uacalc.alg.op.TermOperationImp:
     package: org.uacalc.alg.op
@@ -1860,7 +1873,7 @@ types:
       - valueAt
     java_cli_wrappers:
       - TermOperationImpWrapper
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: alg
   org.uacalc.alg.parallel.Pool:
     package: org.uacalc.alg.parallel
@@ -1871,7 +1884,7 @@ types:
       []
     java_cli_wrappers:
       - PoolWrapper
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: alg
   org.uacalc.alg.parallel.SingleClose:
     package: org.uacalc.alg.parallel
@@ -1882,7 +1895,7 @@ types:
       - main
     java_cli_wrappers:
       - SingleCloseWrapper
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: alg
   org.uacalc.alg.sublat.BasicSet:
     package: org.uacalc.alg.sublat
@@ -1901,7 +1914,7 @@ types:
       - union
     java_cli_wrappers:
       []
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: alg
   org.uacalc.alg.sublat.SubalgebraLattice:
     package: org.uacalc.alg.sublat
@@ -1976,7 +1989,7 @@ types:
       - zero
     java_cli_wrappers:
       - BasicLatticeWrapper
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: alg
   org.uacalc.element.Element:
     package: org.uacalc.element
@@ -1992,7 +2005,7 @@ types:
       - toString
     java_cli_wrappers:
       []
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: element
   org.uacalc.element.SubProductElement:
     package: org.uacalc.element
@@ -2012,7 +2025,7 @@ types:
       - toString
     java_cli_wrappers:
       - CentralityDataWrapper
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: element
   org.uacalc.eq.Equation:
     package: org.uacalc.eq
@@ -2032,7 +2045,7 @@ types:
       - EquationWrapper
       - EquationsWrapper
       - PresentationWrapper
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: eq
   org.uacalc.eq.Equations:
     package: org.uacalc.eq
@@ -2046,7 +2059,7 @@ types:
       - main
     java_cli_wrappers:
       - EquationsWrapper
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: eq
   org.uacalc.eq.Presentation:
     package: org.uacalc.eq
@@ -2059,7 +2072,7 @@ types:
       - getVariables
     java_cli_wrappers:
       - PresentationWrapper
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: eq
   "org.uacalc.example.<file:ParallelClose.java>":
     package: org.uacalc.example
@@ -2070,7 +2083,7 @@ types:
       - main
     java_cli_wrappers:
       []
-    python_org_package_hint: null
+    python_org_package_hint: org.uacalc.example
     rust_uacalc_lib_submodule_hint: example
   org.uacalc.example.Average:
     package: org.uacalc.example
@@ -2085,7 +2098,7 @@ types:
       - valueAt
     java_cli_wrappers:
       []
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: example
   org.uacalc.example.ConLyndonF3:
     package: org.uacalc.example
@@ -2096,7 +2109,7 @@ types:
       - main
     java_cli_wrappers:
       []
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: example
   org.uacalc.example.FilteringAlgebras:
     package: org.uacalc.example
@@ -2109,7 +2122,7 @@ types:
       - test
     java_cli_wrappers:
       []
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: example
   org.uacalc.example.FiniteField:
     package: org.uacalc.example
@@ -2149,7 +2162,7 @@ types:
       - zeroIndex
     java_cli_wrappers:
       []
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: example
   org.uacalc.example.FinitelyPresentedAlg:
     package: org.uacalc.example
@@ -2160,7 +2173,7 @@ types:
       - main
     java_cli_wrappers:
       []
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: example
   org.uacalc.example.HasConstantTuple:
     package: org.uacalc.example
@@ -2171,7 +2184,7 @@ types:
       - hasConstantTuple
     java_cli_wrappers:
       []
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: example
   org.uacalc.example.HasKaryNU:
     package: org.uacalc.example
@@ -2183,7 +2196,7 @@ types:
       - main
     java_cli_wrappers:
       []
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: example
   org.uacalc.example.Jipsen:
     package: org.uacalc.example
@@ -2194,7 +2207,7 @@ types:
       - main
     java_cli_wrappers:
       []
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: example
   org.uacalc.example.KKMVWExample:
     package: org.uacalc.example
@@ -2208,7 +2221,7 @@ types:
       - valueAt
     java_cli_wrappers:
       []
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: example
   org.uacalc.example.Kearnes:
     package: org.uacalc.example
@@ -2236,7 +2249,7 @@ types:
       - willardsE
     java_cli_wrappers:
       []
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: example
   org.uacalc.example.MembershipTester:
     package: org.uacalc.example
@@ -2247,7 +2260,7 @@ types:
       - main
     java_cli_wrappers:
       []
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: example
   org.uacalc.example.Michalewski:
     package: org.uacalc.example
@@ -2261,7 +2274,7 @@ types:
       - testJoinMeetMatPower
     java_cli_wrappers:
       []
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: example
   org.uacalc.example.NoSymGroup:
     package: org.uacalc.example
@@ -2277,7 +2290,7 @@ types:
       - valueAt
     java_cli_wrappers:
       []
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: example
   org.uacalc.example.ParallelClose8:
     package: org.uacalc.example
@@ -2292,7 +2305,7 @@ types:
       - main
     java_cli_wrappers:
       []
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: example
   org.uacalc.example.TupleStream:
     package: org.uacalc.example
@@ -2310,7 +2323,7 @@ types:
       - tupleStream
     java_cli_wrappers:
       []
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: example
   org.uacalc.example.Type1:
     package: org.uacalc.example
@@ -2325,7 +2338,7 @@ types:
       - subtraces
     java_cli_wrappers:
       []
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: example
   org.uacalc.fplat.PartiallyDefinedLattice:
     package: org.uacalc.fplat
@@ -2337,7 +2350,7 @@ types:
       - main
     java_cli_wrappers:
       - PartiallyDefinedLatticeWrapper
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: fplat
   org.uacalc.group.PermutationGroup:
     package: org.uacalc.group
@@ -2355,7 +2368,7 @@ types:
       - valueAt
     java_cli_wrappers:
       []
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: group
   org.uacalc.io.AlgebraIO:
     package: org.uacalc.io
@@ -2525,7 +2538,7 @@ types:
       - zero
     java_cli_wrappers:
       - BasicLatticeWrapper
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: lat
   org.uacalc.lat.Lattice:
     package: org.uacalc.lat
@@ -2541,7 +2554,7 @@ types:
       - meetIrreducibles
     java_cli_wrappers:
       - BasicLatticeWrapper
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: lat
   org.uacalc.lat.Lattices:
     package: org.uacalc.lat
@@ -2558,7 +2571,7 @@ types:
       - meet
     java_cli_wrappers:
       - LatticesWrapper
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: lat
   org.uacalc.lat.Order:
     package: org.uacalc.lat
@@ -2570,7 +2583,7 @@ types:
     java_cli_wrappers:
       - OrderedSetsWrapper
       - PartiallyDefinedLatticeWrapper
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: lat
   org.uacalc.lat.OrderedSets:
     package: org.uacalc.lat
@@ -2583,7 +2596,7 @@ types:
       - maximals
     java_cli_wrappers:
       - OrderedSetsWrapper
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: lat
   org.uacalc.lat.SmallLattice:
     package: org.uacalc.lat
@@ -2594,7 +2607,7 @@ types:
       - upperCoversIndices
     java_cli_wrappers:
       []
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: lat
   org.uacalc.nbui.AlgebraEditorController:
     package: org.uacalc.nbui
@@ -3120,7 +3133,7 @@ types:
       - writeStringBuffer
     java_cli_wrappers:
       - EquationsWrapper
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: terms
   org.uacalc.terms.Taylor:
     package: org.uacalc.terms
@@ -3142,7 +3155,7 @@ types:
       - termFromArray
     java_cli_wrappers:
       []
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: terms
   org.uacalc.terms.Term:
     package: org.uacalc.terms
@@ -3165,7 +3178,7 @@ types:
       - writeStringBuffer
     java_cli_wrappers:
       - EquationsWrapper
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: terms
   org.uacalc.terms.Terms:
     package: org.uacalc.terms
@@ -3181,7 +3194,7 @@ types:
       - testFlatten
     java_cli_wrappers:
       []
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: terms
   org.uacalc.terms.Variable:
     package: org.uacalc.terms
@@ -3192,7 +3205,7 @@ types:
       - getName
     java_cli_wrappers:
       - EquationsWrapper
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: terms
   org.uacalc.terms.VariableImp:
     package: org.uacalc.terms
@@ -3224,7 +3237,7 @@ types:
       - writeStringBuffer
     java_cli_wrappers:
       - EquationsWrapper
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: terms
   org.uacalc.ui.AlgebraEditor:
     package: org.uacalc.ui
@@ -3881,7 +3894,7 @@ types:
       - ArrayIncrementorWrapper
       - PermutationGeneratorWrapper
       - SequenceGeneratorWrapper
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: util
   org.uacalc.util.ArrayString:
     package: org.uacalc.util
@@ -3892,7 +3905,7 @@ types:
       - toString
     java_cli_wrappers:
       - ArrayStringWrapper
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: util
   org.uacalc.util.Horner:
     package: org.uacalc.util
@@ -3906,7 +3919,7 @@ types:
       - reverseArray
     java_cli_wrappers:
       - HornerWrapper
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: util
   org.uacalc.util.IntArray:
     package: org.uacalc.util
@@ -3944,7 +3957,7 @@ types:
       - IntArrayWrapper
       - SingleCloseWrapper
       - SubtraceWrapper
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: util
   org.uacalc.util.PermutationGenerator:
     package: org.uacalc.util
@@ -3966,7 +3979,7 @@ types:
     java_cli_wrappers:
       - ArrayIncrementorWrapper
       - PermutationGeneratorWrapper
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: util
   org.uacalc.util.SequenceGenerator:
     package: org.uacalc.util
@@ -3981,7 +3994,7 @@ types:
       - main
     java_cli_wrappers:
       - SequenceGeneratorWrapper
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: util
   org.uacalc.util.SimpleList:
     package: org.uacalc.util
@@ -4039,7 +4052,7 @@ types:
       - toString
     java_cli_wrappers:
       - SimpleListWrapper
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: util
   org.uacalc.util.virtuallist.LongList:
     package: org.uacalc.util.virtuallist
@@ -4062,7 +4075,7 @@ types:
     java_cli_wrappers:
       - LongListWrapper
       - TupleWithMinWrapper
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: util
   org.uacalc.util.virtuallist.TupleWithMin:
     package: org.uacalc.util.virtuallist
@@ -4076,7 +4089,7 @@ types:
       - size
     java_cli_wrappers:
       - TupleWithMinWrapper
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: util
   org.uacalc.util.virtuallist.VirtualLists:
     package: org.uacalc.util.virtuallist
@@ -4097,5 +4110,5 @@ types:
       - tuplesVirtualList
     java_cli_wrappers:
       - VirtualListsWrapper
-    python_org_shim_directory_exists: false
+    python_org_shim_directory_exists: true
     rust_uacalc_lib_submodule_hint: util

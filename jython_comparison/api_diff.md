@@ -32,6 +32,28 @@ Rust and our current Python bindings prefer `snake_case`. Java and Jython use `c
 | `readAlgebraFile()`| `read_algebra_file()` |
 | `con()`           | `con()` (Matches!) |
 | `sub()`           | `sub()` (Matches!) |
+| `getName()`       | `name()` / `get_name()` (Rust often uses `name()`; alias `getName` may be patched on shims) |
+| `elementIndex()`  | `element_index()` |
+| `algebraType()`   | `algebra_type()` |
+| `resetConAndSub()`| `reset_con_and_sub()` |
+| `stringToTerm()` (static) | `string_to_term()` on the terms module / class |
+| `AlgebraIO.readAlgebraFile` | `AlgebraIO.read_algebra_file` or module-level `read_algebra_file` |
+| `Mace4Reader.parseAlgebraFromFile` | `parse_algebra_from_file()` |
+| `BasicPartition.toString()` shape | `str()` / `__repr__` should match Java `BasicPartition` text (parity tests normalize ordering where needed) |
+| `intValueAt(int[])` / table indexing | `int_value_at` / `compute_value` (Rust/Python) |
+| `valueAt(int[])` (Operation) | `value_at` (may raise or map to `compute_value` on bound ops) |
+| `getSymbol()` / `symbol()` | `symbol` / operation symbol accessor on bound types |
+| `isIdempotent()` | `is_idempotent()` |
+| `table()` / `getTable()` | `table` / `get_table()` depending on binding |
+| `makeTable()` (lazy int ops) | `make_table()` on `AbstractIntOperation`-style bindings |
+| `fromIntValueAtFunction` (Jython-friendly factories) | `from_int_value_at_function()` where exposed in `uacalc_lib.alg` |
+| `parseAlgebraFromFile` (`Mace4Reader`) | `parse_algebra_from_file()` |
+| `stringToTerm` (`Terms`) | `string_to_term()` |
+| `getMeet()` / `getJoin()` (lattice-like types) | `get_meet()` / `get_join()` (where bound) |
+| `intValue()` (numeric / boxed results) | `int_value()` |
+| `isZero()` / `isOne()` (partition / relation helpers) | `is_zero()` / `is_one()` |
+| `getPartition()` (congruence-style accessors) | `get_partition()` |
+| `clone()` (Java `Object` / algebra copies) | `clone()` (often same name; verify per type) |
 
 ### Suggested Change:
 Expose aliases in the Python classes to support both.

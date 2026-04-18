@@ -1,14 +1,21 @@
 import sys
 
-is_jython = sys.platform.startswith('java')
+if sys.platform.startswith('java'):
+    from org.uacalc.util import *  # noqa: F403
+else:
+    import uacalc_lib as _uacalc_lib
 
-if not is_jython:
-    import uacalc_lib
-
-    _util = getattr(uacalc_lib, 'util')
+    _util = getattr(_uacalc_lib, 'util')
 
     for _name in dir(_util):
         if not _name.startswith('_'):
             globals()[_name] = getattr(_util, _name)
-else:
-    from org.uacalc.util import *
+
+    if 'ArrayIncrementorImpl' in globals():
+        globals()['ArrayIncrementor'] = globals()['ArrayIncrementorImpl']
+    if 'LongListUtils' in globals():
+        globals()['LongList'] = globals()['LongListUtils']
+
+    del _uacalc_lib, _util
+
+del sys

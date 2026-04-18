@@ -1,0 +1,10 @@
+MODULE: org.uacalc.io
+RUNTIME: jython
+PUBLIC_COUNT: 7
+NAME: AlgebraIO
+NAME: AlgebraReader
+NAME: AlgebraWriter
+NAME: BadAlgebraFileException
+NAME: ExtFileFilter
+NAME: JSONChannel
+NAME: Mace4Reader

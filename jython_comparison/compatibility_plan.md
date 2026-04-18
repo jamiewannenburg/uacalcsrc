@@ -4,6 +4,21 @@
 
 To allow existing Jython scripts to run with the new Python bindings and compare their outputs, we should implement a compatibility layer.
 
+## Current status (2026)
+
+What is in place today (this repository):
+
+- **Package mirroring:** `python/org/uacalc/` provides shims for the packages listed in `parity_inventory.yaml` under `python_org_uacalc_packages_with_init` (including `io`, `alg` and subpackages, `element`, `lat`, `util`, `example`, `eq`, `terms`, `group`, `fplat`). On CPython, each shim re-exports from the matching `uacalc_lib` submodule where it exists; on Jython, packages such as `org.uacalc.lat` load the Java classes from the classpath (see `python/org/uacalc/lat/__init__.py`). The `example` package follows the same pattern; `uacalc_lib.example` may still be a thin placeholder until demos are bound.
+- **CamelCase on algebras:** `org.uacalc.alg` applies `monkey_patch_classes()` for `getUniverseList`, `elementIndex`, and related Java-style names on bound algebra classes where the bindings expose snake_case.
+- **Verification:** `jython_comparison/scripts/validate_parity_slices.py` checks slice ids, `depends_on`, and that `java_package_prefixes` exist in `parity_inventory.yaml`; `generate_parity_inventory.py` rebuilds inventory from Java and wrapper metadata. Parity tests live under `tests/parity/` and `python/uacalc/tests/test_jython_examples_parity.py`. `jython_comparison/run_comparison.py` compares Jython vs CPython stdout for a chosen script (default `jython_comparison/test_script.py`), exiting non-zero on mismatch or subprocess failure.
+- **Per-slice tracking:** Human-edited `jython_comparison/parity_slices.yaml` lists owners and statuses. Several slices are `shim_complete` with smoke or golden tests (for example `core-alg-op`, `core-element`, `examples-org`); others such as `core-lat` and `core-util` remain `not_started` or early-stage in the YAML even where a small golden surface test exists—use `parity_slices.yaml` plus the referenced `parity_tests_dir` to see what is actually checked in.
+
+Still pending or partial:
+
+- **Full behavioral parity:** Many packages have import/surface tests or goldens but not full Jython-vs-CPython behavioral parity on every type (congruence lattice, subalgebra lattice, parallel helpers, etc.—see slice `status` and `notes`).
+- **String parity:** `toString()`-equivalent output is aligned for some types only; remaining gaps are tracked per slice and golden tests.
+- **Example/demo Java classes:** `org.uacalc.example` has a Python shim and tests under `tests/parity/example/`; Rust-backed demo types remain optional until scripts import them by name.
+
 ## Phase 1: Package Redirection
 Create a Python package hierarchy that mirrors the original Java package structure.
 

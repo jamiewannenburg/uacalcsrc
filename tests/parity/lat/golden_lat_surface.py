@@ -48,6 +48,7 @@ def main():
     print('RUNTIME: ' + runtime)
     names = sorted(n for n in dir(lat_pkg) if not n.startswith('_'))
     print('PUBLIC_COUNT: ' + str(len(names)))
+    print('HAS_BASIC_LATTICE: ' + ('yes' if 'BasicLattice' in names else 'no'))
     for n in names:
         print('NAME: ' + n)
 

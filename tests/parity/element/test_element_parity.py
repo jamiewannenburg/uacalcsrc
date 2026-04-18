@@ -36,14 +36,41 @@ def test_org_uacalc_element_import_smoke():
     assert elt.__name__ == 'org.uacalc.element'
 
 
+def test_org_uacalc_element_same_module_on_reimport():
+    """``importlib.import_module`` must resolve to the same ``org.uacalc.element`` shim."""
+    import importlib  # noqa: PLC0415
+
+    _uacalc_lib_element()
+    _ensure_python_org_on_path()
+    m1 = importlib.import_module('org.uacalc.element')
+    import org.uacalc.element as m2  # noqa: PLC0415
+
+    assert m1 is m2
+
+
 def test_element_shim_public_names_match_uacalc_lib():
     """Re-exported symbols match the nested ``uacalc_lib.element`` module."""
     lib_element = _uacalc_lib_element()
     _ensure_python_org_on_path()
     import org.uacalc.element as shim  # noqa: PLC0415
 
+    # Native ``uacalc_lib`` may report the submodule as ``element`` or ``uacalc_lib.element``.
+    assert getattr(lib_element, '__name__', '') in ('uacalc_lib.element', 'element')
+    assert shim.__name__ == 'org.uacalc.element'
+
     lib_public = {n for n in dir(lib_element) if not n.startswith('_')}
     shim_public = {n for n in dir(shim) if not n.startswith('_')}
     assert shim_public == lib_public
     for name in lib_public:
         assert getattr(shim, name) is getattr(lib_element, name)
+
+
+def test_element_shim_reexports_element_class_when_bound():
+    """If bindings expose ``Element``, the org shim must forward the same object."""
+    lib_element = _uacalc_lib_element()
+    if not hasattr(lib_element, "Element"):
+        pytest.skip("uacalc_lib.element.Element not in this build")
+    _ensure_python_org_on_path()
+    import org.uacalc.element as shim  # noqa: PLC0415
+
+    assert shim.Element is lib_element.Element

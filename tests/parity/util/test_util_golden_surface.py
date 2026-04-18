@@ -1,4 +1,4 @@
-"""Golden stdout checks for ``tests/parity/lat/golden_lat_surface.py``."""
+"""Golden stdout checks for ``tests/parity/util/golden_util_surface.py``."""
 
 from __future__ import annotations
 
@@ -11,8 +11,8 @@ from pathlib import Path
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-SCRIPT = REPO_ROOT / "tests" / "parity" / "lat" / "golden_lat_surface.py"
-FIXTURES = REPO_ROOT / "tests" / "parity" / "lat" / "fixtures"
+SCRIPT = REPO_ROOT / "tests" / "parity" / "util" / "golden_util_surface.py"
+FIXTURES = REPO_ROOT / "tests" / "parity" / "util" / "fixtures"
 JAR = REPO_ROOT / "jars" / "uacalc.jar"
 
 
@@ -27,29 +27,10 @@ def _read_golden(name: str) -> str:
 
 
 def test_normalize_output_strips_carriage_returns():
-    assert _normalize_output("a\r\nb\r\n") == "a\nb\n"
+    assert _normalize_output("x\r\ny\r\n") == "x\ny\n"
 
 
-def _public_count_from_golden(text: str) -> int:
-    for line in text.splitlines():
-        if line.startswith("PUBLIC_COUNT:"):
-            return int(line.split(":", 1)[1].strip())
-    raise AssertionError("missing PUBLIC_COUNT line")
-
-
-def test_golden_lat_surface_fixtures_have_expected_markers():
-    """Both fixtures share the same structural markers; counts may differ (CPython vs Jython)."""
-    c = _read_golden("golden_lat_surface.cpython.txt")
-    j = _read_golden("golden_lat_surface.jython.txt")
-    for blob, label in ((c, "cpython"), (j, "jython")):
-        assert "MODULE: org.uacalc.lat" in blob, label
-        assert f"RUNTIME: {label}" in blob, label
-        assert "HAS_BASIC_LATTICE: yes" in blob, label
-        assert _public_count_from_golden(blob) >= 1
-    assert _public_count_from_golden(c) != _public_count_from_golden(j)
-
-
-def test_golden_lat_surface_cpython_matches_fixture():
+def test_golden_util_surface_cpython_matches_fixture():
     if not SCRIPT.is_file():
         pytest.fail(f"missing golden script: {SCRIPT}")
     r = subprocess.run(
@@ -64,10 +45,10 @@ def test_golden_lat_surface_cpython_matches_fixture():
     )
     assert r.returncode == 0, r.stderr + r.stdout
     assert r.stderr.strip() == "", r.stderr
-    assert _normalize_output(r.stdout) == _read_golden("golden_lat_surface.cpython.txt")
+    assert _normalize_output(r.stdout) == _read_golden("golden_util_surface.cpython.txt")
 
 
-def test_golden_lat_surface_jython_matches_fixture():
+def test_golden_util_surface_jython_matches_fixture():
     jython = shutil.which("jython")
     if not jython:
         pytest.skip("jython not on PATH")
@@ -90,4 +71,4 @@ def test_golden_lat_surface_jython_matches_fixture():
     )
     assert r.returncode == 0, r.stderr + r.stdout
     assert r.stderr.strip() == "", r.stderr
-    assert _normalize_output(r.stdout) == _read_golden("golden_lat_surface.jython.txt")
+    assert _normalize_output(r.stdout) == _read_golden("golden_util_surface.jython.txt")
