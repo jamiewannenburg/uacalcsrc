@@ -1,0 +1,6 @@
+MODULE: org.uacalc.group
+RUNTIME: jython
+PUBLIC_COUNT: 1
+HAS_PERMUTATION_GROUP: yes
+NAME: PermutationGroup
+SMOKE_S2_NAME: S2

@@ -1,4 +1,17 @@
-"""Smoke tests for ``org.uacalc.example`` shim (examples-org slice)."""
+"""Smoke tests for ``org.uacalc.example`` shim (examples-org slice).
+
+**Golden stdout (``golden_*_surface.py``) is not added here:** on CPython,
+``uacalc_lib.example`` is currently an empty placeholder, so there is no shared
+``dir()`` surface to compare to Jython. A Jython-only golden would require
+importing many demo classes from the JAR (see ``parity_inventory``). When
+``uacalc_lib.example`` exposes names, add ``golden_example_surface.py`` +
+fixtures like ``tests/parity/lat/``.
+
+**Jython 2 vs CPython 3:** if golden tests are added later, use separate
+fixtures per runtime (``*.cpython.txt`` / ``*.jython.txt``) and keep
+normalization to line endings only unless a stable API for labels is chosen
+(avoid Java ``Object@`` identity strings in goldens).
+"""
 
 from __future__ import annotations
 

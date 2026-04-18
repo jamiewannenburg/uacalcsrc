@@ -1,0 +1,13 @@
+MODULE: org.uacalc.terms
+RUNTIME: cpython
+PUBLIC_COUNT: 8
+HAS_IS_VALID_VAR_STRING: yes
+NAME: NonVariableTerm
+NAME: Taylor
+NAME: TermOperationImp
+NAME: VariableImp
+NAME: flatten
+NAME: is_valid_op_name_string
+NAME: is_valid_var_string
+NAME: string_to_term
+SMOKE_VALID_X: yes
