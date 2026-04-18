@@ -96,7 +96,7 @@ jobs:
         run: ant compile-wrappers
 
       - name: Install Maturin
-        run: pip install maturin
+        run: python3 -m pip install maturin
 
       - name: Build Python bindings
         run: maturin build --release --out dist
