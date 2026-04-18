@@ -114,10 +114,13 @@ slices:
     depends_on:
       - core-alg-base
     owner: ""
-    status: not_started
+    status: shim_complete
     workstreams: []
     parity_tests_dir: tests/parity/element
-    notes: ""
+    notes: >-
+      CPython `python/org/uacalc/element` re-exports `uacalc_lib.element` only (no extra
+      `sys`/`is_jython` leakage); pytest parity matches. Jython branch star-imports the Java
+      package; golden Jython vs script parity not run in this change.
 
   - id: core-eq
     title: Equations and presentations
