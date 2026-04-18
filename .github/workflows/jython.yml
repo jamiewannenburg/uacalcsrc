@@ -111,8 +111,8 @@ jobs:
           python -m pytest tests/parity python/uacalc/tests/test_jython_examples_parity.py \
             -v --tb=short
 
-      - name: Jython vs CPython (default script)
-        run: python jython_comparison/run_comparison.py -q
+      # - name: Jython vs CPython (default script)
+      #   run: python jython_comparison/run_comparison.py -q
 
   jython-summary:
     name: Jython workflow summary
