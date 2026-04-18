@@ -34,6 +34,7 @@ Legacy context: `jython_comparison/api_diff.md` and `jython_comparison/compatibi
    - **Unit / JSON parity:** Same idea as `python/uacalc/tests/test_*.py` + java_wrapper (good for coverage).
    - **Integration:** Add small scripts checked in under the slice’s `parity_tests_dir` (create the directory if missing) that run under **both** Jython and CPython, writing **normalized** output; compare to checked-in goldens or to a live Jython run in CI.
    - **Jython example alignment:** `python/uacalc/tests/test_jython_examples_parity.py` locks `jython_comparison/test_script.py` / `subreducts_mace4_stream.py` APIs against `uacalc_lib` and runs the parity manifest scripts (`validate_parity_slices`, `generate_parity_inventory`).
+   - **Slice goldens:** e.g. `tests/parity/element/golden_element_surface.py` with stdout fixtures under `tests/parity/element/fixtures/` (CPython vs Jython subprocess checks in `test_element_golden_surface.py`).
 4. **Finish:** Update the slice status to `parity_golden` or `done` in `parity_slices.yaml`.
 
 ## Multi-agent rules (avoid merge pain)

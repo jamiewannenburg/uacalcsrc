@@ -119,8 +119,10 @@ slices:
     parity_tests_dir: tests/parity/element
     notes: >-
       CPython `python/org/uacalc/element` re-exports `uacalc_lib.element` only (no extra
-      `sys`/`is_jython` leakage); pytest parity matches. Jython branch star-imports the Java
-      package; golden Jython vs script parity not run in this change.
+      `sys`/`is_jython` leakage). Golden script `tests/parity/element/golden_element_surface.py`
+      plus fixtures under `tests/parity/element/fixtures/`; `test_element_golden_surface.py`
+      runs CPython and Jython subprocesses. Full behavioral parity waits on
+      `uacalc_lib.element` bindings (Jython still exposes `Element`, `SubProductElement`).
 
   - id: core-eq
     title: Equations and presentations
