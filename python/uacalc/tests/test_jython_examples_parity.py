@@ -238,7 +238,7 @@ class TestParityTooling:
         mod = _load_generate_inventory_module()
         code = mod.verify_fresh(REPO_ROOT)
         assert code == 0, (
-            "parity_inventory.yaml missing or stale; run: "
+            "parity_inventory.yaml missing or out of date; run: "
             "python jython_comparison/scripts/generate_parity_inventory.py"
         )
 

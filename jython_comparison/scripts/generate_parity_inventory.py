@@ -7,8 +7,9 @@ Usage (from repo root):
   python jython_comparison/scripts/generate_parity_inventory.py
   python jython_comparison/scripts/generate_parity_inventory.py --verify
 
---verify checks that parity_inventory.yaml exists and is not older than any
-source .java file or this script (non-zero exit if stale).
+--verify checks that parity_inventory.yaml exists and matches the output of
+``build_inventory`` (ignoring generation timestamp and repo_root), so CI is
+not fooled by checkout file mtimes.
 """
 
 from __future__ import annotations
@@ -24,6 +25,9 @@ from typing import Any, Dict, List, Mapping, Optional, Set, Tuple
 
 
 GENERATOR_VERSION = 1
+
+_RE_META_UTC = re.compile(r"(?m)^[ \t]+generated_at_utc:[^\n]*\n")
+_RE_META_REPO_ROOT = re.compile(r"(?m)^([ \t]+)repo_root:[^\n]*\n")
 
 
 def _repo_root() -> Path:
@@ -111,7 +115,8 @@ def _yaml_dump(obj: Any, indent: int = 0) -> List[str]:
     return lines
 
 
-def write_yaml(path: Path, data: Mapping[str, Any], repo: Path) -> None:
+def format_inventory_yaml(data: Mapping[str, Any], repo: Path) -> str:
+    """Full file text as written by ``write_yaml`` (for verification)."""
     lines = _yaml_dump(dict(data))
     try:
         script_rel = Path(__file__).resolve().relative_to(repo).as_posix()
@@ -122,7 +127,19 @@ def write_yaml(path: Path, data: Mapping[str, Any], repo: Path) -> None:
         f"# Generator version: {GENERATOR_VERSION}\n"
         "# Do not edit by hand; run the script to refresh.\n"
     )
-    path.write_text(header + "\n".join(lines) + "\n", encoding="utf-8")
+    return header + "\n".join(lines) + "\n"
+
+
+def write_yaml(path: Path, data: Mapping[str, Any], repo: Path) -> None:
+    path.write_text(format_inventory_yaml(data, repo), encoding="utf-8")
+
+
+def _normalize_parity_inventory_text(text: str) -> str:
+    """Strip machine-specific meta so two working trees can be compared."""
+    text = text.replace("\r\n", "\n")
+    text = _RE_META_UTC.sub("", text)
+    text = _RE_META_REPO_ROOT.sub(r'\1repo_root: "<normalized>"\n', text)
+    return text
 
 
 # --- Java scanning ---
@@ -329,22 +346,29 @@ def _map_java_package_to_rust_module(package: str) -> Optional[str]:
 
 def verify_fresh(repo: Path) -> int:
     inv = repo / "jython_comparison" / "parity_inventory.yaml"
-    script = Path(__file__).resolve()
     if not inv.is_file():
         print("parity_inventory.yaml missing; run generator", file=sys.stderr)
         return 2
-    inv_m = inv.stat().st_mtime
-    if script.stat().st_mtime > inv_m:
-        print("parity_inventory.yaml is older than generator script", file=sys.stderr)
+    try:
+        built = build_inventory(repo)
+    except Exception as exc:  # pylint: disable=broad-exception-caught
+        print(f"parity_inventory verify: failed to build inventory: {exc}", file=sys.stderr)
         return 1
-    for jf in _walk_org_uacalc_java(repo):
-        if jf.stat().st_mtime > inv_m:
-            print(f"parity_inventory.yaml is older than {jf.relative_to(repo)}", file=sys.stderr)
-            return 1
-    for wf in (repo / "java_wrapper" / "src").rglob("*Wrapper.java"):
-        if wf.stat().st_mtime > inv_m:
-            print(f"parity_inventory.yaml is older than {wf.relative_to(repo)}", file=sys.stderr)
-            return 1
+    new_text = format_inventory_yaml(built, repo)
+    try:
+        existing_text = inv.read_text(encoding="utf-8")
+    except OSError as exc:
+        print(f"parity_inventory.yaml: cannot read: {exc}", file=sys.stderr)
+        return 1
+    if _normalize_parity_inventory_text(new_text) != _normalize_parity_inventory_text(
+        existing_text
+    ):
+        print(
+            "parity_inventory.yaml differs from generator output; run: "
+            "python jython_comparison/scripts/generate_parity_inventory.py",
+            file=sys.stderr,
+        )
+        return 1
     return 0
 
 
@@ -353,7 +377,7 @@ def main() -> int:
     parser.add_argument(
         "--verify",
         action="store_true",
-        help="Exit non-zero if parity_inventory.yaml is missing or stale.",
+        help="Exit non-zero if parity_inventory.yaml is missing or not reproducible.",
     )
     args = parser.parse_args()
     repo = _repo_root()
