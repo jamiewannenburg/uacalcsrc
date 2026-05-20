@@ -7,7 +7,8 @@
         "./python"
     ],
     "python.testing.pytestArgs": [
-        "python"
+        "python",
+        "tests/parity"
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true

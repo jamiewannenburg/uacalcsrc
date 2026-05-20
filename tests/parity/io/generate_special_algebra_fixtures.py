@@ -25,12 +25,19 @@ def main():
     if not sys.platform.startswith("java"):
         print("This generator requires Jython (Java platform).", file=sys.stderr)
         sys.exit(2)
-
+    
+    # sys.path.append("jars/uacalc.jar")
+    sys.path.append(os.path.join(REPO_ROOT,"jars","uacalc.jar"))
+    # print(os.path.join(REPO_ROOT,"jars","LatDraw.jar"))
+    sys.path.append(os.path.join(REPO_ROOT,"jars","LatDraw.jar"))
     from org.uacalc.io import AlgebraIO, AlgebraWriter  # noqa: F401
     from org.uacalc.alg import BasicAlgebra, ProductAlgebra, PowerAlgebra  # noqa: F401
     from org.uacalc.alg import QuotientAlgebra, Subalgebra  # noqa: F401
-
-    os.makedirs(SPECIAL_DIR, exist_ok=True)
+    
+    try:
+        os.makedirs(SPECIAL_DIR)
+    except OSError as exc:
+        pass # directory already exists
 
     c2_path = os.path.join(REPO_ROOT, "resources", "algebras", "cyclic2.ua")
     c2 = AlgebraIO.readAlgebraFile(c2_path)
@@ -41,7 +48,7 @@ def main():
 
     # Minimal quotient: use a known congruence on C2 if available; skip if API differs.
     try:
-        con = c2.con().getCongruence(0)
+        con = c2.con().universe().iterator().next()
         quot = QuotientAlgebra(c2, con)
         AlgebraWriter(quot, os.path.join(SPECIAL_DIR, "quotient_example.ua")).writeAlgebraXML()
     except Exception as exc:
