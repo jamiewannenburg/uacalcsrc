@@ -1,0 +1,12 @@
+MODULE: org.uacalc.util
+RUNTIME: jython
+PUBLIC_COUNT: 8
+HAS_VIRTUAL_LIST: yes
+NAME: ArrayIncrementor
+NAME: ArrayString
+NAME: Horner
+NAME: IntArray
+NAME: PermutationGenerator
+NAME: SequenceGenerator
+NAME: SimpleList
+NAME: virtuallist

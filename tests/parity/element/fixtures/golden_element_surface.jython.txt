@@ -1,0 +1,5 @@
+MODULE: org.uacalc.element
+RUNTIME: jython
+PUBLIC_COUNT: 2
+NAME: Element
+NAME: SubProductElement

@@ -1,0 +1,6 @@
+MODULE: org.uacalc.fplat
+RUNTIME: cpython
+PUBLIC_COUNT: 1
+HAS_PARTIALLY_DEFINED_LATTICE: yes
+NAME: PartiallyDefinedLattice
+SMOKE_T_STR: PartiallyDefinedLattice(T)

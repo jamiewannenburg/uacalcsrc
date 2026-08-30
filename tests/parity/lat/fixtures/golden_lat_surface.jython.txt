@@ -1,0 +1,10 @@
+MODULE: org.uacalc.lat
+RUNTIME: jython
+PUBLIC_COUNT: 6
+HAS_BASIC_LATTICE: yes
+NAME: BasicLattice
+NAME: Lattice
+NAME: Lattices
+NAME: Order
+NAME: OrderedSets
+NAME: SmallLattice

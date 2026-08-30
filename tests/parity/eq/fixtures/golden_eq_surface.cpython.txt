@@ -1,0 +1,10 @@
+MODULE: org.uacalc.eq
+RUNTIME: cpython
+PUBLIC_COUNT: 5
+HAS_ASSOCIATIVE_LAW: yes
+NAME: Equation
+NAME: Presentation
+NAME: associative_law
+NAME: cyclic_law
+NAME: first_second_symmetric_law
+SMOKE_ASSOC_LAW: *(x,*(y,z)) = *(*(x,y),z)

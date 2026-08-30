@@ -1,0 +1,6 @@
+﻿MODULE: org.uacalc.alg.sublat
+RUNTIME: jython
+PUBLIC_COUNT: 2
+NAME: BasicSet
+NAME: SubalgebraLattice
+SAMPLE_BASIC_SET_UNIVERSE_SIZE: 2

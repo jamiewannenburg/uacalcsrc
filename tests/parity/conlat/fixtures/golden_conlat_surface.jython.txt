@@ -1,0 +1,6 @@
+﻿MODULE: org.uacalc.alg.conlat
+RUNTIME: jython
+PUBLIC_COUNT: 2
+NAME: BasicPartition
+NAME: Partition
+SAMPLE_BP_JOIN: |0,1,2|

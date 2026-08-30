@@ -1,0 +1,138 @@
+# Rust tests, maturin-built bindings, and Jython-backed parity checks for the jython branch.
+# Parity tests under tests/parity skip when `jython` is not on PATH; this workflow installs it.
+
+name: Jython compatibility
+
+on:
+  push:
+    branches:
+      - jython
+  pull_request:
+    branches:
+      - jython
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rust-tests:
+    name: Rust tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Install Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "11"
+
+      - name: Install Ant
+        run: sudo apt-get update && sudo apt-get install -y ant
+
+      - name: Build Java wrappers
+        run: ant compile-wrappers
+
+      - name: Run Rust tests (main crate)
+        run: cargo test --all-features
+
+  jython-parity:
+    name: Jython parity (bindings + golden tests)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "11"
+
+      - name: Install Ant
+        run: sudo apt-get update && sudo apt-get install -y ant
+
+      - name: Install Jython 2.7.3
+        shell: bash
+        run: |
+          curl -fsSL -o /tmp/jython-installer.jar \
+            "https://repo1.maven.org/maven2/org/python/jython-installer/2.7.3/jython-installer-2.7.3.jar"
+          # Silent install: -s (no prompts), -d (prefix), -t standard (full install with cached stdlib)
+          java -jar /tmp/jython-installer.jar -s -d "$HOME/jython" -t standard
+          echo "$HOME/jython/bin" >> "$GITHUB_PATH"
+
+      - name: Verify Jython
+        run: jython --version
+
+      - name: Build Java wrappers
+        run: ant compile-wrappers
+
+      - name: Install Maturin
+        run: python -m pip install maturin
+
+      - name: Build Python bindings
+        run: maturin build --release --out dist
+
+      - name: Install wheel and test dependencies
+        run: |
+          python -m pip install dist/*.whl
+          python -m pip install -e ".[test]"
+
+      - name: Pytest (parity + Jython example tests)
+        run: |
+          python -m pytest tests/parity python/uacalc/tests/test_jython_examples_parity.py \
+            -v --tb=short
+
+      # - name: Jython vs CPython (default script)
+      #   run: python jython_comparison/run_comparison.py -q
+
+  jython-summary:
+    name: Jython workflow summary
+    runs-on: ubuntu-latest
+    needs: [rust-tests, jython-parity]
+    if: always()
+    steps:
+      - name: Check results
+        run: |
+          echo "## Jython compatibility workflow" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Rust tests: ${{ needs.rust-tests.result }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Jython parity: ${{ needs.jython-parity.result }}" >> "$GITHUB_STEP_SUMMARY"
+          rust="${{ needs.rust-tests.result }}"
+          jy="${{ needs.jython-parity.result }}"
+          if [ "$rust" = "failure" ] || [ "$jy" = "failure" ]; then
+            echo "❌ One or more jobs failed" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          if [ "$rust" = "cancelled" ] || [ "$jy" = "cancelled" ]; then
+            echo "⚠️ One or more jobs were cancelled" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          echo "✅ All jobs passed or were skipped" >> "$GITHUB_STEP_SUMMARY"

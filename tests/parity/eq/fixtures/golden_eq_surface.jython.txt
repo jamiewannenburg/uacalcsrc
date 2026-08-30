@@ -1,0 +1,8 @@
+MODULE: org.uacalc.eq
+RUNTIME: jython
+PUBLIC_COUNT: 3
+HAS_ASSOCIATIVE_LAW: no
+NAME: Equation
+NAME: Equations
+NAME: Presentation
+SMOKE: associative_law is uacalc_lib-only (not in JAR package)

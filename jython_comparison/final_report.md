@@ -1,20 +1,27 @@
-# Final Report: Python-Jython Compatibility Layer
+# Final report: Python–Jython compatibility (UACalc)
 
-We have successfully implemented and verified a compatibility layer that allows Jython scripts to run on the new Python/Rust bindings with minimal or no modification.
+This file is a **snapshot** of progress, not a claim that every `org.uacalc.*` surface matches legacy Jython behavior.
 
-## Achievements
-1.  **Package Structure Mirroring:** Created the `org.uacalc` hierarchy within the `python/` directory, allowing scripts to use `from org.uacalc.alg import *`.
-2.  **CamelCase Aliasing:** Implemented a monkey-patching system in `org/uacalc/alg/__init__.py` that aliases Rust `snake_case` methods to Java-style `camelCase` (e.g., `getName`, `getUniverseList`).
-3.  **Static Method Support:** Wrapped Rust IO functions in an `AlgebraIO` class with `@staticmethod` to match Java usage.
-4.  **Verification:** Created `jython_comparison/run_comparison.py` which executes the same script in both `jython` (using `uacalc.jar`) and `python3` (using `uacalc_lib` and the compatibility layer) and verifies the outputs match.
+## What exists today
 
-## Verification Results
-- **Algebra Loading:** Successful in both environments.
-- **Name/Cardinality:** Identical output (`C2`, `2`).
-- **Congruence Lattice:** Successfully calculated and verified identical size (`2`).
-- **API Parity:** Both environments accepted `AlgebraIO.readAlgebraFile`, `alg.getName()`, `alg.cardinality()`, and `alg.con()`.
+1. **`python/org/uacalc/`** mirrors Java package names so scripts can use `import org.uacalc...` on CPython (via `uacalc_lib`) and on Jython (classpath) where packages exist.
+2. **Shims** delegate to `uacalc_lib` on CPython and re-export public names; some submodules are still empty stubs until Rust bindings grow.
+3. **`jython_comparison/run_comparison.py`** runs a chosen script under Jython and under CPython and compares normalized stdout (default script: `jython_comparison/test_script.py`).
+4. **Parity tooling:** `parity_slices.yaml` (human), `parity_inventory.yaml` (generated), `validate_parity_slices.py`, and `generate_parity_inventory.py` coordinate multi-agent work. Status values and owners live in `parity_slices.yaml`.
+5. **Tests:** `tests/parity/*` golden and shim smoke tests; `python/uacalc/tests/test_jython_examples_parity.py` locks example APIs and runs inventory validation helpers.
 
-## Next Steps for Full Parity
-- **Output String Normalization:** Ensure all `__repr__` methods match Java `toString()` exactly (e.g., for Partitions and Terms).
-- **Expand Aliases:** Add aliases for all classes in `uacalc_lib`.
-- **Property Support:** Add `@property` decorators for common bean properties (e.g., `alg.name` as well as `alg.getName()`).
+## Not done / in flight
+
+- **`uacalc_lib.types`** is a placeholder Rust module; `org.uacalc.types` tracks it under the `core-util` workstream but may export nothing until stubs are implemented.
+- **Swing / NetBeans UI** packages are **out of scope** for the parity slice manifest (not listed in `parity_slices.yaml`).
+- **String-level parity** (`repr` / `toString`) and **full alias coverage** across all types are ongoing where tests do not yet enforce them; some slices still have richer behavior on Jython than on CPython until Rust exposes matching types.
+
+## How to verify locally
+
+```text
+python jython_comparison/scripts/validate_parity_slices.py
+python jython_comparison/scripts/generate_parity_inventory.py --verify
+pytest python/uacalc/tests/test_jython_examples_parity.py -q
+```
+
+Rebuild `uacalc_lib` (wheel) before pytest if you changed Rust bindings.

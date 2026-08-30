@@ -1,0 +1,6 @@
+MODULE: org.uacalc.example
+RUNTIME: jython
+PUBLIC_COUNT: 3
+NAME: Average
+NAME: FiniteField
+NAME: Type1

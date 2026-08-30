@@ -1,0 +1,261 @@
+# Parity work slices — edited by humans/agents. Do NOT auto-generate.
+# When you finish work on a slice, update status, owner, last_updated, and notes.
+# Run: python jython_comparison/scripts/generate_parity_inventory.py
+# to refresh parity_inventory.yaml (class list, wrappers, shim flags).
+
+version: 1
+
+status_values:
+  not_started: No shim or tests yet.
+  in_progress: Someone actively owns this; update notes with branch or PR.
+  shim_complete: org.uacalc Python surface exists; golden/Jython parity not done.
+  parity_golden: Shared scripts + pytest agree with Jython on representative cases.
+  done: Shim + parity + docs; ready for refactor with regression guard.
+
+binding_scope:
+  core: Mathematical / programmatic API expected in scripts (priority).
+  examples: Example/demos in org.uacalc.example (often lower bind priority).
+
+merge_rules:
+  - One active owner per slice (set owner to GitHub handle or initials).
+  - Touch only this file and your slice directory under python/org/uacalc/... and tests.
+  - After changing Java under org/uacalc or java_wrapper wrappers, regenerate parity_inventory.yaml.
+  - Conflicts: if two agents need the same slice, split work by "workstream" notes or sub-slice id.
+
+slices:
+  - id: core-io
+    title: Algebra file IO and readers/writers
+    binding_scope: core
+    java_package_prefixes:
+      - org.uacalc.io
+    depends_on: []
+    owner: agent-a
+    status: parity_golden
+    last_updated: "2026-04-18"
+    workstreams: []
+    parity_tests_dir: tests/parity/io
+    notes: >-
+      python/org/uacalc/io re-exports uacalc_lib.io + AlgebraIO shim + JSONChannel placeholder until Rust
+      binds it. Golden stdout tests/parity/io/golden_io_surface.py + fixtures; test_io_shim_imports.py.
+      parity_inventory regenerated. agent-a.
+
+  - id: core-alg-base
+    title: Core algebras (BasicAlgebra, SmallAlgebra, products, …) excluding conlat/op subtrees
+    binding_scope: core
+    java_package_prefixes:
+      - org.uacalc.alg
+    package_excludes:
+      - org.uacalc.alg.conlat
+      - org.uacalc.alg.op
+      - org.uacalc.alg.parallel
+      - org.uacalc.alg.sublat
+    depends_on:
+      - core-io
+    owner: agent-b
+    status: parity_golden
+    last_updated: "2026-04-18"
+    workstreams: []
+    parity_tests_dir: tests/parity/alg
+    notes: >-
+      Golden smoke: tests/parity/alg/golden_alg_core_surface.py + fixtures + test_alg_core_golden_smoke.py
+      (BasicAlgebra tiny algebra; CPython vs Jython stdout). agent-b.
+
+  - id: core-alg-op
+    title: Operation symbols and operations
+    binding_scope: core
+    java_package_prefixes:
+      - org.uacalc.alg.op
+    depends_on:
+      - core-alg-base
+    owner: agent-e
+    status: parity_golden
+    last_updated: "2026-04-18"
+    workstreams: []
+    parity_tests_dir: tests/parity/alg_op
+    notes: >-
+      parity_golden: golden_alg_op_surface.py + per-runtime fixtures; Jython exercises
+      OperationSymbol/AbstractIntOperation samples; CPython records empty shim until uacalc_lib.alg.op
+      binds. Cross-runtime behavioral parity is a future Rust follow-up.
+
+  - id: core-alg-conlat
+    title: Congruences, partitions, congruence lattices
+    binding_scope: core
+    java_package_prefixes:
+      - org.uacalc.alg.conlat
+    depends_on:
+      - core-alg-base
+    owner: agent-e
+    status: parity_golden
+    last_updated: "2026-04-18"
+    workstreams: []
+    parity_tests_dir: tests/parity/conlat
+    notes: >-
+      parity_golden: golden_conlat_surface.py + fixtures (Jython BasicPartition join sample; CPython
+      empty namespace). uacalc_lib.alg.conlat wiring remains future work.
+
+  - id: core-alg-parallel
+    title: Parallel closers / pool (if exposed to scripts)
+    binding_scope: core
+    java_package_prefixes:
+      - org.uacalc.alg.parallel
+    depends_on:
+      - core-alg-base
+    owner: agent-e
+    status: parity_golden
+    last_updated: "2026-04-18"
+    workstreams: []
+    parity_tests_dir: tests/parity/parallel
+    notes: >-
+      parity_golden: golden_parallel_surface.py documents Pool on Jython vs uacalc_lib.alg.Pool on
+      CPython while org.uacalc.alg.parallel shim may stay empty.
+
+  - id: core-alg-sublat
+    title: Subalgebra lattice
+    binding_scope: core
+    java_package_prefixes:
+      - org.uacalc.alg.sublat
+    depends_on:
+      - core-alg-conlat
+    owner: agent-e
+    status: parity_golden
+    last_updated: "2026-04-18"
+    workstreams: []
+    parity_tests_dir: tests/parity/sublat
+    notes: >-
+      parity_golden: golden_sublat_surface.py + fixtures (Jython BasicSet sample; CPython empty).
+      uacalc_lib.alg.sublat remains a future binding target.
+
+  - id: core-element
+    title: Elements and subproduct elements
+    binding_scope: core
+    java_package_prefixes:
+      - org.uacalc.element
+    depends_on:
+      - core-alg-base
+    owner: agent-e
+    status: parity_golden
+    last_updated: "2026-04-18"
+    workstreams: []
+    parity_tests_dir: tests/parity/element
+    notes: >-
+      parity_golden: golden_element_surface.py + fixtures + export checks. Deeper behavioral parity
+      still tracks uacalc_lib.element coverage vs the JAR.
+
+  - id: core-eq
+    title: Equations and presentations
+    binding_scope: core
+    java_package_prefixes:
+      - org.uacalc.eq
+    depends_on:
+      - core-alg-base
+    owner: agent-d
+    status: parity_golden
+    last_updated: "2026-04-18"
+    workstreams: []
+    parity_tests_dir: tests/parity/eq
+    notes: >-
+      Golden tests/parity/eq/golden_eq_surface.py + fixtures + test_eq_golden_surface.py (Jython vs CPython).
+      JAR has Equation/Equations/Presentation only; uacalc_lib adds associative_law helpers (fixtures differ).
+      agent-d.
+
+  - id: core-lat
+    title: Lattices and ordered sets
+    binding_scope: core
+    java_package_prefixes:
+      - org.uacalc.lat
+    depends_on: []
+    owner: agent-a
+    status: parity_golden
+    last_updated: "2026-04-18"
+    workstreams: []
+    parity_tests_dir: tests/parity/lat
+    notes: >-
+      Golden surface tests/parity/lat/golden_lat_surface.py; test_lat_shim_exports.py for CPython
+      dir()/identity checks vs uacalc_lib.lat. agent-a.
+
+  - id: core-terms
+    title: Terms and Taylor operations
+    binding_scope: core
+    java_package_prefixes:
+      - org.uacalc.terms
+    depends_on:
+      - core-alg-base
+    owner: agent-d
+    status: parity_golden
+    last_updated: "2026-04-18"
+    workstreams: []
+    parity_tests_dir: tests/parity/terms
+    notes: >-
+      Golden tests/parity/terms/golden_terms_surface.py + fixtures + test_terms_golden_surface.py. JAR vs
+      uacalc_lib differ in package-level helpers and PUBLIC_COUNT (separate fixtures). agent-d.
+
+  - id: core-group
+    title: Permutation groups
+    binding_scope: core
+    java_package_prefixes:
+      - org.uacalc.group
+    depends_on:
+      - core-alg-base
+    owner: agent-d
+    status: parity_golden
+    last_updated: "2026-04-18"
+    workstreams: []
+    parity_tests_dir: tests/parity/group
+    notes: >-
+      Golden tests/parity/group/golden_group_surface.py + fixtures + test_group_golden_surface.py. Golden uses
+      getName/get_name for stable label (avoid Java default str @ identity). agent-d.
+
+  - id: core-fplat
+    title: Partially defined lattices (flat representation)
+    binding_scope: core
+    java_package_prefixes:
+      - org.uacalc.fplat
+    depends_on:
+      - core-lat
+    owner: agent-d
+    status: parity_golden
+    last_updated: "2026-04-18"
+    workstreams: []
+    parity_tests_dir: tests/parity/fplat
+    notes: >-
+      Golden tests/parity/fplat/golden_fplat_surface.py + fixtures + test_fplat_golden_surface.py. Rust shim ctor
+      differs from JAR (Jython fixture records ctor note; CPython prints SMOKE_T_STR). agent-d.
+
+  - id: core-util
+    title: Shared util (IntArray, generators, …)
+    binding_scope: core
+    java_package_prefixes:
+      - org.uacalc.util
+    depends_on: []
+    owner: agent-a
+    status: parity_golden
+    last_updated: "2026-04-18"
+    workstreams:
+      - >-
+        core-types (agent-f): org.uacalc.types shim + tests/parity/types. There is no
+        org.uacalc.* Java package for ``types`` in parity_inventory, so this workstream is
+        tracked here instead of a separate slice row (avoids validate_parity_slices gaps).
+        uacalc_lib.types is a Rust stub module until IDE/type stubs land.
+    parity_tests_dir: tests/parity/util
+    notes: >-
+      python/org/uacalc/util delegates to uacalc_lib.util with Java aliases; org.uacalc.util.virtuallist
+      shim maps LongList/TupleWithMin/VirtualLists. Golden tests/parity/util/golden_util_surface.py +
+      fixtures. parity_inventory regenerated. agent-a. See workstreams for org.uacalc.types.
+
+  - id: examples-org
+    title: org.uacalc.example scripts and demos
+    binding_scope: examples
+    java_package_prefixes:
+      - org.uacalc.example
+    depends_on:
+      - core-io
+      - core-alg-base
+    owner: agent-d
+    status: parity_golden
+    last_updated: "2026-04-18"
+    workstreams: []
+    parity_tests_dir: tests/parity/example
+    notes: >-
+      parity_golden: golden_example_surface.py + per-runtime fixtures (Jython imports representative
+      demo classes so ``dir(org.uacalc.example)`` is populated; CPython matches empty uacalc_lib.example).
+      test_example_shim_smoke.py + test_example_golden_surface.py.

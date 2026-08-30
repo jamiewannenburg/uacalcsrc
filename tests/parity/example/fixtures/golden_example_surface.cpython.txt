@@ -1,0 +1,3 @@
+MODULE: org.uacalc.example
+RUNTIME: cpython
+PUBLIC_COUNT: 0

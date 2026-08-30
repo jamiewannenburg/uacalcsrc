@@ -1,0 +1,10 @@
+MODULE: org.uacalc.terms
+RUNTIME: jython
+PUBLIC_COUNT: 6
+HAS_IS_VALID_VAR_STRING: no
+NAME: NonVariableTerm
+NAME: Taylor
+NAME: Term
+NAME: Terms
+NAME: Variable
+NAME: VariableImp

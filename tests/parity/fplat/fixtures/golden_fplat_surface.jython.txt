@@ -1,0 +1,6 @@
+MODULE: org.uacalc.fplat
+RUNTIME: jython
+PUBLIC_COUNT: 1
+HAS_PARTIALLY_DEFINED_LATTICE: yes
+NAME: PartiallyDefinedLattice
+SMOKE: ctor differs (Java needs Order + join/meet lists; Rust shim uses 3-arg)

@@ -1,0 +1,4 @@
+﻿MODULE: org.uacalc.alg.op
+RUNTIME: cpython
+PUBLIC_COUNT: 0
+SAMPLE_OP_SYMBOL: skip (no OperationSymbol on this runtime)

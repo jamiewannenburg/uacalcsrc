@@ -1,17 +1,33 @@
 import sys
-is_jython = sys.platform.startswith('java')
 
-if not is_jython:
-    import uacalc_lib
-    # Access it as an attribute of the module, not a top-level import
-    # which might be shadowed by standard 'io'
-    _io = getattr(uacalc_lib, 'io')
-    AlgebraReader = _io.AlgebraReader
-
-    class AlgebraIO:
-        @staticmethod
-        def readAlgebraFile(path):
-            reader = AlgebraReader.new_from_file(path)
-            return reader.read_algebra_file()
+if sys.platform.startswith("java"):
+    from org.uacalc.io import *  # noqa: F403
 else:
-    from org.uacalc.io import AlgebraIO
+    import uacalc_lib as _uacalc_lib
+
+    _io = getattr(_uacalc_lib, "io")
+
+    for _name in dir(_io):
+        if not _name.startswith("_"):
+            globals()[_name] = getattr(_io, _name)
+
+    from org.uacalc.io._jython_compat import (  # noqa: E402
+        AlgebraIO,
+        AlgebraReader,
+        AlgebraWriter,
+        BadAlgebraFileException,
+        ExtFileFilter,
+        Mace4Reader,
+    )
+
+    class JSONChannel:
+        """Placeholder for Java ``org.uacalc.io.JSONChannel`` (not bound in ``uacalc_lib``)."""
+
+        def __init__(self, *_args, **_kwargs):
+            raise NotImplementedError(
+                "JSONChannel is not implemented in uacalc_lib; use Jython with uacalc.jar."
+            )
+
+    del _uacalc_lib, _io
+
+del sys
