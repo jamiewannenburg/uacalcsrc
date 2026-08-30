@@ -1,6 +1,7 @@
 # Requirements for Java Dependency Analyzer
 # Core dependencies
 networkx>=3.0
+PyYAML>=6.0
 
 # Optional dependencies for enhanced visualization
 matplotlib>=3.5.0

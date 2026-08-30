@@ -1,25 +1,9 @@
-# A script that should run in both Jython and Python (with compatibility layer)
-from org.uacalc.io import AlgebraIO
-from org.uacalc.alg import *
+# Backward-compatible entry point; prefer scripts/load_cyclic2.py.
+import os
+import runpy
 
-import sys
-
-def test():
-    # Load cyclic2 algebra
-    alg = AlgebraIO.readAlgebraFile("resources/algebras/cyclic2.ua")
-    
-    print("Algebra: " + str(alg.getName()))
-    print("Cardinality: " + str(alg.cardinality()))
-    
-    # Get congruence lattice
-    conlat = alg.con()
-    print("Congruence Lattice size: " + str(conlat.cardinality()))
-    
-    # Check if elements are correctly loaded
-    # Jython version usually prints something like [0, 1]
-    # We'll use a standard print that should be similar
-    univ = alg.getUniverseList()
-    print("Universe: " + str(univ))
-
-if __name__ == "__main__":
-    test()
+_here = os.path.dirname(os.path.abspath(__file__))
+runpy.run_path(
+    os.path.join(_here, "scripts", "load_cyclic2.py"),
+    run_name="__main__",
+)

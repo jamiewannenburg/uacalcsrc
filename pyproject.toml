@@ -47,6 +47,9 @@ test = [
 drawing = [
     "networkx>=3.0",
 ]
+jython_comparison = [
+    "PyYAML>=6.0.0"
+]
 
 [tool.pytest.ini_options]
 testpaths = ["python/uacalc/tests"]

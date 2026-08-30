@@ -1,0 +1,34 @@
+target: org.uacalc.alg.BasicAlgebra
+level: file
+status: implemented
+java_source: org/uacalc/alg/BasicAlgebra.java
+notes: |
+  CamelCase aliases matching the previous package-wide alg monkey-patch,
+  now tracked at file level.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    getUniverseList: get_universe_list
+    elementIndex: element_index
+    algebraType: algebra_type
+    resetConAndSub: reset_con_and_sub
+    getName: name
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    Exercise getName, cardinality, con(), and getUniverseList on an algebra
+    loaded from disk. elementIndex / algebraType / resetConAndSub are declared
+    on the surface but not yet covered by a parity script — add scripts as
+    those aliases are needed by real Jython code.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/load_cyclic2.py
+      covers:
+        - getName
+        - getUniverseList
+        - cardinality
+        - con
+      ignore_lines:
+        - "Universe:"

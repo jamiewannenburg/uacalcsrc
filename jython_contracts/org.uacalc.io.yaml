@@ -1,0 +1,25 @@
+target: org.uacalc.io
+level: package
+status: implemented
+java_source: null
+notes: |
+  Small package — package-level contract is sufficient.
+  Provides AlgebraIO static facade matching Java/Jython usage.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases: {}
+  static_methods:
+    - AlgebraIO.readAlgebraFile
+  str_parity: false
+testing:
+  notes: |
+    Load a known .ua file via AlgebraIO.readAlgebraFile and print algebra
+    name/cardinality. Same script must match under jython and CPython.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/load_cyclic2.py
+      covers:
+        - AlgebraIO.readAlgebraFile
+      ignore_lines:
+        - "Universe:"

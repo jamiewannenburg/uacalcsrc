@@ -266,6 +266,19 @@ The call graph analysis uses off-the-shelf tools:
 - **Code complexity analysis**: Find complex call patterns
 - **Dead code detection**: Identify unused methods
 
+## Jython Compatibility Contracts
+
+Track and inspect hierarchical Jython API contracts (package → file) for the
+`python/org/` shim. See [`jython_contracts/README.md`](../jython_contracts/README.md).
+
+```bash
+python3 tools/jython_contracts_cli.py status
+python3 tools/jython_contracts_cli.py inspect org.uacalc.alg.BasicAlgebra
+python3 tools/jython_contracts_cli.py validate
+```
+
+Requires `PyYAML` (listed in `tools/requirements.txt`).
+
 ## License
 
 Part of the UACalc project. See main project license for details.
