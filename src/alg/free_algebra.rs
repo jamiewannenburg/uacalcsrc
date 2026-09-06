@@ -261,8 +261,15 @@ impl FreeAlgebra
             println!("{}", line);
         }
 
-        // Setup generators and product algebra
-        let (product_algebra, mut gens) = Self::setup_gens_and_product_alg(
+        // Setup generators and product algebra. Keep a clone of the base algebra
+        // so thinning can rebuild the ambient product the way Java does:
+        // productAlgebra = new BigProductAlgebra(alg, gens.get(0).universeSize()).
+        let alg_for_thin = if thin_gens && !decompose {
+            Some(alg.clone_box())
+        } else {
+            None
+        };
+        let (mut product_algebra, mut gens) = Self::setup_gens_and_product_alg(
             alg,
             number_of_gens as usize,
             decompose,
@@ -288,6 +295,17 @@ impl FreeAlgebra
                 println!("gens coord length = {}", gens[0].universe_size());
             }
             gens = thinned_gens;
+            let thinned_power = gens
+                .first()
+                .map(|g| g.universe_size() as usize)
+                .unwrap_or(0);
+            if thinned_power == 0 {
+                return Err("thinned generators have empty coordinate length".to_string());
+            }
+            product_algebra = BigProductAlgebra::new_power_safe(
+                alg_for_thin.expect("cloned base algebra for thinning"),
+                thinned_power,
+            )?;
         }
 
         // Create subproduct algebra

@@ -287,10 +287,10 @@ where
     /// A reference to the subalgebra lattice
     pub fn sub(&mut self) -> &crate::alg::sublat::SubalgebraLattice<T> {
         if self.sub.is_none() {
-            // Create SubalgebraLattice with the same universe type
-            let sub_lat = crate::alg::sublat::SubalgebraLattice::new_safe(
-                self.super_algebra.clone_box()
-            ).unwrap();
+            // Java: sub = new SubalgebraLattice(this);
+            let alg_box = Box::new(self.clone()) as Box<dyn SmallAlgebra<UniverseItem = T>>;
+            let sub_lat = crate::alg::sublat::SubalgebraLattice::new_safe(alg_box)
+                .expect("Failed to create SubalgebraLattice");
             self.sub = Some(Box::new(sub_lat));
         }
         self.sub.as_ref().unwrap()
