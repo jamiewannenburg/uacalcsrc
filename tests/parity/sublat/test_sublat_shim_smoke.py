@@ -41,24 +41,19 @@ def test_org_uacalc_alg_sublat_import_smoke():
 
 
 def test_sublat_shim_public_names_match_uacalc_lib():
-    lib = _lib_alg_sublat()
+    """Jython ``org.uacalc.alg.sublat`` exports ``SubalgebraLattice`` and ``BasicSet``."""
     _ensure_python_org_on_path()
+    import org.uacalc.alg as alg  # noqa: PLC0415
     import org.uacalc.alg.sublat as shim  # noqa: PLC0415
 
-    if lib is None:
-        lib_public: set[str] = set()
-    else:
-        lib_public = {n for n in dir(lib) if not n.startswith("_")}
-    shim_public = {n for n in dir(shim) if not n.startswith("_")}
-    assert shim_public == lib_public
-    for name in lib_public:
-        assert getattr(shim, name) is getattr(lib, name)
+    for name in ("SubalgebraLattice", "BasicSet"):
+        if not hasattr(alg, name):
+            continue
+        assert hasattr(shim, name), name
+        assert getattr(shim, name) is getattr(alg, name)
 
 
 def test_sublat_minimal_if_bindings():
-    lib = _lib_alg_sublat()
-    if lib is None or not any(not n.startswith("_") for n in dir(lib)):
-        pytest.skip("uacalc_lib.alg.sublat not bound; no CPython re-exports yet")
     _ensure_python_org_on_path()
     import org.uacalc.alg.sublat as shim  # noqa: PLC0415
 

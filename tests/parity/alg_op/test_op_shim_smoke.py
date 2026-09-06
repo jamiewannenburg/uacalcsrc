@@ -41,25 +41,34 @@ def test_org_uacalc_alg_op_import_smoke():
 
 
 def test_op_shim_public_names_match_uacalc_lib():
-    """Re-exported symbols match ``uacalc_lib.alg.op`` when that submodule exists."""
-    lib_op = _lib_alg_op()
+    """``org.uacalc.alg.op`` re-exports operation types (Jython package path).
+
+    Bindings live on ``uacalc_lib.alg`` / ``org.uacalc.alg``, not a nested
+    ``uacalc_lib.alg.op`` module.
+    """
     _ensure_python_org_on_path()
+    import org.uacalc.alg as alg  # noqa: PLC0415
     import org.uacalc.alg.op as shim  # noqa: PLC0415
 
-    if lib_op is None:
-        lib_public: set[str] = set()
-    else:
-        lib_public = {n for n in dir(lib_op) if not n.startswith("_")}
-    shim_public = {n for n in dir(shim) if not n.startswith("_")}
-    assert shim_public == lib_public
-    for name in lib_public:
-        assert getattr(shim, name) is getattr(lib_op, name)
+    expected = (
+        "AbstractIntOperation",
+        "AbstractOperation",
+        "BasicOperation",
+        "IntOperation",
+        "OperationSymbol",
+        "OperationWithDefaultValue",
+        "Operations",
+        "ParameterizedOperation",
+        "SimilarityType",
+    )
+    for name in expected:
+        if not hasattr(alg, name):
+            continue
+        assert hasattr(shim, name), name
+        assert getattr(shim, name) is getattr(alg, name)
 
 
 def test_op_minimal_if_bindings():
-    lib_op = _lib_alg_op()
-    if lib_op is None or not any(not n.startswith("_") for n in dir(lib_op)):
-        pytest.skip("uacalc_lib.alg.op not bound; no CPython re-exports yet")
     _ensure_python_org_on_path()
     import org.uacalc.alg.op as shim  # noqa: PLC0415
 

@@ -1,4 +1,13 @@
 ﻿MODULE: org.uacalc.alg.op
 RUNTIME: cpython
-PUBLIC_COUNT: 0
+PUBLIC_COUNT: 9
+NAME: AbstractIntOperation
+NAME: AbstractOperation
+NAME: BasicOperation
+NAME: IntOperation
+NAME: OperationSymbol
+NAME: OperationWithDefaultValue
+NAME: Operations
+NAME: ParameterizedOperation
+NAME: SimilarityType
 SAMPLE_OP_SYMBOL: skip (no OperationSymbol on this runtime)

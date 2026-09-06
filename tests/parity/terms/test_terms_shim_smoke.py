@@ -37,15 +37,19 @@ def test_org_uacalc_terms_import_smoke():
 
 
 def test_terms_shim_public_names_match_uacalc_lib():
+    """Shim re-exports ``uacalc_lib.terms`` and adds Jython ``Terms`` / ``Variable``."""
     lib_terms = _uacalc_lib_terms()
     _ensure_python_org_on_path()
     import org.uacalc.terms as shim  # noqa: PLC0415
 
     lib_public = {n for n in dir(lib_terms) if not n.startswith("_")}
     shim_public = {n for n in dir(shim) if not n.startswith("_")}
-    assert shim_public == lib_public
+    assert lib_public <= shim_public
     for name in lib_public:
         assert getattr(shim, name) is getattr(lib_terms, name)
+    assert "Terms" in shim_public
+    assert "Variable" in shim_public
+    assert shim.Variable is shim.VariableImp
 
 
 def test_terms_minimal_if_bindings():
