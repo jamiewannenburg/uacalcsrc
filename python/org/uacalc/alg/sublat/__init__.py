@@ -1,26 +1,23 @@
-"""Compatibility shim for ``org.uacalc.alg.sublat`` (subalgebra lattice helpers).
+"""Compatibility shim for ``org.uacalc.alg.sublat``.
 
-CPython loads from ``uacalc_lib.alg.sublat`` when present; otherwise the
-namespace may be empty. Jython uses the Java package from the classpath.
+CPython: ``SubalgebraLattice`` lives on ``uacalc_lib.alg``; re-export it here so
+``from org.uacalc.alg.sublat import SubalgebraLattice`` matches Jython.
 """
 
 
 def _load_cp() -> None:
-    import importlib
+    import org.uacalc.alg as _alg
 
-    import uacalc_lib as _uacalc_lib
+    if hasattr(_alg, "SubalgebraLattice"):
+        globals()["SubalgebraLattice"] = _alg.SubalgebraLattice
 
-    _alg = getattr(_uacalc_lib, "alg")
-    _sub = getattr(_alg, "sublat", None)
-    if _sub is None:
-        try:
-            _sub = importlib.import_module("uacalc_lib.alg.sublat")
-        except ImportError:
-            return
-    g = globals()
-    for _name in dir(_sub):
-        if not _name.startswith("_"):
-            g[_name] = getattr(_sub, _name)
+    _CLASS_ALIASES = {
+        "SubalgebraLattice": {
+            "iterator": "iterator",
+            "Sg": "sg",
+        },
+    }
+    globals()["_CLASS_ALIASES"] = _CLASS_ALIASES
 
 
 if __import__("sys").platform.startswith("java"):

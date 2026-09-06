@@ -1,0 +1,28 @@
+target: org.uacalc.eq.Equation
+level: file
+status: implemented
+java_source: org/uacalc/eq/Equation.java
+notes: |
+  structural_completeness.py / get_idempotents.py / dmm.py construct
+  Equation(left, right) and call findFailureMap / leftSide / rightSide.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    findFailureMap: find_failure_map
+    leftSide: left_side
+    rightSide: right_side
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    equation_smoke.py builds a tautology Equation(x, x) and prints sides /
+    findFailureMap result on cyclic2.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/equation_smoke.py
+      covers:
+        - findFailureMap
+        - leftSide
+        - rightSide
+      ignore_lines: []

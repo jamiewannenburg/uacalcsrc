@@ -5,17 +5,20 @@ java_source: null
 notes: |
   Small package — package-level contract is sufficient.
   Provides AlgebraIO static facade matching Java/Jython usage.
+  Heavily used by ~/uacalc scripts (readAlgebraFile / writeAlgebraFile).
 ignore_reason: null
 surface:
   package_export: true
   aliases: {}
   static_methods:
     - AlgebraIO.readAlgebraFile
+    - AlgebraIO.writeAlgebraFile
   str_parity: false
 testing:
   notes: |
     Load a known .ua file via AlgebraIO.readAlgebraFile and print algebra
-    name/cardinality. Same script must match under jython and CPython.
+    name/cardinality. writeAlgebraFile is declared for ~/uacalc writers; XML
+    write parity is still incomplete in uacalc_lib (covered as callable smoke).
   task_refs: []
   scripts:
     - path: jython_comparison/scripts/load_cyclic2.py
@@ -23,3 +26,8 @@ testing:
         - AlgebraIO.readAlgebraFile
       ignore_lines:
         - "Universe:"
+    - path: jython_comparison/scripts/basic_algebra_ops.py
+      covers:
+        - AlgebraIO.readAlgebraFile
+        - AlgebraIO.writeAlgebraFile
+      ignore_lines: []

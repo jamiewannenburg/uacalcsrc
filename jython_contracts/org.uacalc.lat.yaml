@@ -1,0 +1,28 @@
+target: org.uacalc.lat
+level: package
+status: implemented
+java_source: null
+notes: |
+  Lattices.latticeFromJoin / latticeFromMeet used by dmm.py when converting
+  algebras to lattices. Package-level facade is enough.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases: {}
+  static_methods:
+    - Lattices.latticeFromJoin
+    - Lattices.latticeFromMeet
+  str_parity: false
+testing:
+  notes: |
+    lattices_facade_smoke.py builds a 2-element chain via latticeFromJoin and
+    latticeFromMeet using AbstractOperation join/meet tables.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/lattices_facade_smoke.py
+      covers:
+        - Lattices.latticeFromJoin
+        - Lattices.latticeFromMeet
+      ignore_lines:
+        - "labels has size"
+        - "ucs has size"

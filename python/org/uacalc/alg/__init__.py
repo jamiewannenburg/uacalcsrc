@@ -1,47 +1,78 @@
 import sys
-is_jython = sys.platform.startswith('java')
+
+is_jython = sys.platform.startswith("java")
 
 if not is_jython:
     import uacalc_lib
-    _alg = getattr(uacalc_lib, 'alg')
+
+    _alg = getattr(uacalc_lib, "alg")
 
     # Export everything from _alg to this module
     for _name in dir(_alg):
-        if not _name.startswith('_'):
+        if not _name.startswith("_"):
             globals()[_name] = getattr(_alg, _name)
 
-    # Per-class camelCase aliases — kept in sync with file-level contracts:
-    #   jython_contracts/org.uacalc.alg.BasicAlgebra.yaml
-    #   jython_contracts/org.uacalc.alg.SmallAlgebra.yaml
-    # Package contract org.uacalc.alg.yaml is intentionally thin (re-export only).
+    # Literal map for jython_contracts validate() (also applied by _jython_compat).
     _CLASS_ALIASES = {
-        'SmallAlgebra': {
-            'getUniverseList': 'get_universe_list',
-            'elementIndex': 'element_index',
-            'algebraType': 'algebra_type',
-            'resetConAndSub': 'reset_con_and_sub',
-            'getName': 'name',
+        "SmallAlgebra": {
+            "getUniverseList": "get_universe_list",
+            "elementIndex": "element_index",
+            "algebraType": "algebra_type",
+            "resetConAndSub": "reset_con_and_sub",
+            "getName": "name",
+            "setName": "set_name",
+            "getOperation": "getOperation",
+            "universe": "universe",
+            "similarityType": "similarityType",
+            "constantOperations": "constantOperations",
         },
-        'BasicAlgebra': {
-            'getUniverseList': 'get_universe_list',
-            'elementIndex': 'element_index',
-            'algebraType': 'algebra_type',
-            'resetConAndSub': 'reset_con_and_sub',
-            'getName': 'name',
+        "BasicAlgebra": {
+            "getUniverseList": "get_universe_list",
+            "elementIndex": "element_index",
+            "algebraType": "algebra_type",
+            "resetConAndSub": "reset_con_and_sub",
+            "getName": "name",
+            "setName": "set_name",
+            "getOperation": "getOperation",
+            "universe": "universe",
+            "similarityType": "similarityType",
+            "constantOperations": "constantOperations",
+        },
+        "FreeAlgebra": {
+            "getName": "name",
+            "setName": "set_name",
+            "elementIndex": "element_index",
+            "getOperation": "getOperation",
+        },
+        "ProductAlgebra": {
+            "getName": "name",
+            "setName": "set_name",
+            "numberOfFactors": "number_of_factors",
+            "getOperation": "getOperation",
+        },
+        "ReductAlgebra": {
+            "getName": "name",
+            "setName": "set_name",
+            "getOperation": "getOperation",
+        },
+        "Subalgebra": {
+            "getName": "name",
+            "setName": "set_name",
+            "getOperation": "getOperation",
+        },
+        "SubalgebraLattice": {
+            "iterator": "iterator",
+            "Sg": "sg",
         },
     }
 
-    def _apply_class_aliases():
-        for class_name, aliases in _CLASS_ALIASES.items():
-            cls = globals().get(class_name)
-            if cls is None:
-                continue
-            for camel, snake in aliases.items():
-                impl = getattr(cls, snake, None)
-                if impl is not None:
-                    setattr(cls, camel, impl)
+    # Jython call-shape bridges (BasicAlgebra(name, n, ops), AbstractOperation
+    # subclassing, getOperation / setName / …). Kept in sync with file-level
+    # contracts under jython_contracts/org.uacalc.alg.*.yaml
+    from org.uacalc.alg._jython_compat import _install as _install_jython_compat
 
-    _apply_class_aliases()
+    _install_jython_compat(globals())
+    del _install_jython_compat
 else:
     # In Jython, import from the Java package
-    from org.uacalc.alg import *
+    from org.uacalc.alg import *  # noqa: F403,F401

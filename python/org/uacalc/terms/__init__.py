@@ -1,24 +1,74 @@
-"""Compatibility shim for ``org.uacalc.terms`` (terms, Taylor operations).
+"""Compatibility shim for ``org.uacalc.terms``.
 
-CPython re-exports ``uacalc_lib.terms`` when available. Jython uses the Java
-package from the classpath.
+CPython re-exports ``uacalc_lib.terms`` and adds Jython facades used by
+``~/uacalc`` scripts: ``Terms.stringToTerm``, ``Variable`` (= ``VariableImp``),
+``NonVariableTerm.makeConstantTerm``.
 """
 
-
-def _load_from_uacalc_lib() -> None:
-    import uacalc_lib as _uacalc_lib
-
-    _terms = getattr(_uacalc_lib, "terms", None)
-    if _terms is None:
-        return
-    g = globals()
-    for _name in dir(_terms):
-        if not _name.startswith("_"):
-            g[_name] = getattr(_terms, _name)
-
+_CLASS_ALIASES = {
+    "NonVariableTerm": {
+        "makeConstantTerm": "make_constant_term",
+        "intEval": "int_eval",
+    },
+    "VariableImp": {
+        "intEval": "int_eval",
+    },
+    "Terms": {},
+}
 
 if __import__("sys").platform.startswith("java"):
     from org.uacalc.terms import *  # noqa: F403
 else:
-    _load_from_uacalc_lib()
-    del _load_from_uacalc_lib
+    import uacalc_lib as _uacalc_lib
+
+    _terms = _uacalc_lib.terms
+    for _name in dir(_terms):
+        if not _name.startswith("_"):
+            globals()[_name] = getattr(_terms, _name)
+
+    _LibNonVariableTerm = _terms.NonVariableTerm
+    _string_to_term = _terms.string_to_term
+    VariableImp = _terms.VariableImp
+    Variable = VariableImp
+
+    if not hasattr(_LibNonVariableTerm, "makeConstantTerm"):
+        _LibNonVariableTerm.makeConstantTerm = _LibNonVariableTerm.make_constant_term
+    if not hasattr(_LibNonVariableTerm, "intEval") and hasattr(_LibNonVariableTerm, "int_eval"):
+        _LibNonVariableTerm.intEval = _LibNonVariableTerm.int_eval
+    if not hasattr(VariableImp, "intEval") and hasattr(VariableImp, "int_eval"):
+        VariableImp.intEval = VariableImp.int_eval
+    if not hasattr(VariableImp, "getVariableList") and hasattr(VariableImp, "get_variable_list"):
+        VariableImp.getVariableList = VariableImp.get_variable_list
+    if not hasattr(_LibNonVariableTerm, "getVariableList") and hasattr(
+        _LibNonVariableTerm, "get_variable_list"
+    ):
+        _LibNonVariableTerm.getVariableList = _LibNonVariableTerm.get_variable_list
+
+    for _vname in ("x", "y", "z"):
+        _attr = getattr(VariableImp, _vname, None)
+        if callable(_attr):
+            try:
+                setattr(VariableImp, _vname, _attr())
+            except TypeError:
+                pass
+
+    class Terms(object):
+        """Static facade matching Java ``org.uacalc.terms.Terms``."""
+
+        @staticmethod
+        def stringToTerm(s):
+            return _string_to_term(str(s))
+
+    class NonVariableTerm(object):
+        """Proxy so validate() sees ``makeConstantTerm``; constructs lib terms."""
+
+        make_constant_term = staticmethod(_LibNonVariableTerm.make_constant_term)
+
+        @staticmethod
+        def makeConstantTerm(sym):
+            return _LibNonVariableTerm.make_constant_term(sym)
+
+        def __new__(cls, *args, **kwargs):
+            return _LibNonVariableTerm(*args, **kwargs)
+
+    del _uacalc_lib, _terms, _name, _vname, _attr

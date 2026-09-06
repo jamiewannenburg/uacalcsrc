@@ -37,7 +37,12 @@ def _read_shim(package: str) -> Optional[str]:
     path = _shim_module_path(package)
     if not path.exists():
         return None
-    return path.read_text(encoding="utf-8")
+    parts = [path.read_text(encoding="utf-8")]
+    # Jython bridges often live in a sibling _jython_compat.py (io, alg, …).
+    compat = path.parent / "_jython_compat.py"
+    if compat.exists():
+        parts.append(compat.read_text(encoding="utf-8"))
+    return "\n".join(parts)
 
 
 def _assigned_aliases_in_shim(shim_source: str) -> Dict[str, Set[str]]:

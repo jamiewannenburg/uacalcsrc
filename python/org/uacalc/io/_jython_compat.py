@@ -65,9 +65,18 @@ class AlgebraIO:
     @staticmethod
     def writeAlgebraFile(algebra: Any, path_or_file: Any, oldStyle: Optional[bool] = None) -> None:
         path = _coerce_path(path_or_file)
+        # Unwrap org.uacalc.alg BasicAlgebra Jython compat wrapper if present.
+        alg = getattr(algebra, "_inner", algebra)
         if oldStyle is None:
-            return _io.write_algebra_file(algebra, path)
-        return _io.write_algebra_file_with_style(algebra, path, bool(oldStyle))
+            # Prefer XML-style writer when the bare writer is a no-op on some builds.
+            try:
+                _io.write_algebra_file(alg, path)
+                if os.path.isfile(path) and os.path.getsize(path) > 0:
+                    return
+            except Exception:
+                pass
+            return _io.write_algebra_file_with_style(alg, path, False)
+        return _io.write_algebra_file_with_style(alg, path, bool(oldStyle))
 
 
 class AlgebraReader:

@@ -1,8 +1,19 @@
-"""Compatibility shim for ``org.uacalc.eq`` (equations, presentations).
+"""Compatibility shim for ``org.uacalc.eq``.
 
-CPython re-exports ``uacalc_lib.eq`` when available. Jython uses the Java
-package from the classpath.
+Adds camelCase aliases used by ``~/uacalc`` scripts (``findFailureMap``,
+``leftSide``, ``rightSide``).
 """
+
+_CLASS_ALIASES = {
+    "Equation": {
+        "findFailureMap": "find_failure_map",
+        "findFailure": "find_failure",
+        "leftSide": "left_side",
+        "rightSide": "right_side",
+        "getOperationSymbols": "get_operation_symbols",
+        "getVariableList": "get_variable_list",
+    },
+}
 
 
 def _load_from_uacalc_lib() -> None:
@@ -15,6 +26,12 @@ def _load_from_uacalc_lib() -> None:
     for _name in dir(_eq):
         if not _name.startswith("_"):
             g[_name] = getattr(_eq, _name)
+
+    Equation = g.get("Equation")
+    if Equation is not None:
+        for camel, snake in _CLASS_ALIASES["Equation"].items():
+            if not hasattr(Equation, camel) and hasattr(Equation, snake):
+                setattr(Equation, camel, getattr(Equation, snake))
 
 
 if __import__("sys").platform.startswith("java"):

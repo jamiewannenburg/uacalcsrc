@@ -1,0 +1,22 @@
+target: org.uacalc.alg.ReductAlgebra
+level: file
+status: pending
+java_source: org/uacalc/alg/ReductAlgebra.java
+notes: |
+  get_subreducts.py builds ReductAlgebra(alg, signature) where signature is a
+  list of Terms from Terms.stringToTerm. Current Python binding only accepts
+  string variable names — term-list parity is pending. Once bound, expect the
+  same getName/setName/getOperation aliases as other SmallAlgebra types.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases: {}
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    Declared for tracking ~/uacalc get_subreducts.py. Full term-signature
+    reduct construction needs richer ReductAlgebra bindings before a parity
+    script can match Jython.
+  task_refs: []
+  scripts: []

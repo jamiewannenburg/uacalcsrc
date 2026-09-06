@@ -3,8 +3,9 @@ level: file
 status: implemented
 java_source: org/uacalc/alg/SmallAlgebra.java
 notes: |
-  Java interface; Python binding exposes a SmallAlgebra type with the same
-  camelCase aliases as BasicAlgebra for Jython script compatibility.
+  Java interface; Python binding exposes a SmallAlgebra-compatible type with the
+  same camelCase aliases as BasicAlgebra for Jython script compatibility.
+  ~/uacalc scripts treat AlgebraIO results as SmallAlgebra (getOperation, etc.).
 ignore_reason: null
 surface:
   package_export: true
@@ -14,13 +15,17 @@ surface:
     algebraType: algebra_type
     resetConAndSub: reset_con_and_sub
     getName: name
+    setName: set_name
+    getOperation: getOperation
+    universe: universe
+    similarityType: similarityType
+    constantOperations: constantOperations
   static_methods: []
   str_parity: false
 testing:
   notes: |
-    Concrete instances from AlgebraIO are SmallAlgebra/BasicAlgebra. The shared
-    load_cyclic2 parity script covers getName / getUniverseList (and con /
-    cardinality on the instance). Remaining aliases need dedicated scripts.
+    Concrete instances from AlgebraIO are BasicAlgebra implementing SmallAlgebra
+    call shapes. Shared parity scripts cover the alias surface.
   task_refs: []
   scripts:
     - path: jython_comparison/scripts/load_cyclic2.py
@@ -31,3 +36,16 @@ testing:
         - con
       ignore_lines:
         - "Universe:"
+    - path: jython_comparison/scripts/basic_algebra_ops.py
+      covers:
+        - getName
+        - setName
+        - getOperation
+        - universe
+        - similarityType
+        - constantOperations
+        - getUniverseList
+        - elementIndex
+        - algebraType
+        - resetConAndSub
+      ignore_lines: []

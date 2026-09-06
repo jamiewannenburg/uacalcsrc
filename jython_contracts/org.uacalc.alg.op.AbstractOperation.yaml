@@ -1,0 +1,27 @@
+target: org.uacalc.alg.op.AbstractOperation
+level: file
+status: implemented
+java_source: org/uacalc/alg/op/AbstractOperation.java
+notes: |
+  ~/uacalc scripts (mace4.py, dmm.py, rigorous_extension.py, isomorphism.py, …)
+  subclass AbstractOperation and override intValueAt, then pass instances to
+  BasicAlgebra(name, card, ops). CPython shim provides a subclassable Python
+  base that materializes IntOperation tables for the Rust BasicAlgebra ctor.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    intValueAt: int_value_at
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    basic_algebra_ops.py subclasses AbstractOperation with intValueAt and
+    evaluates the op through BasicAlgebra.getOperation.
+  task_refs:
+    - tasks/Task 11 - AbstractOperation.md
+  scripts:
+    - path: jython_comparison/scripts/basic_algebra_ops.py
+      covers:
+        - intValueAt
+      ignore_lines: []

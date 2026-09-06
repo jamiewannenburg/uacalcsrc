@@ -3,8 +3,10 @@ level: file
 status: implemented
 java_source: org/uacalc/alg/BasicAlgebra.java
 notes: |
-  CamelCase aliases matching the previous package-wide alg monkey-patch,
-  now tracked at file level.
+  CamelCase aliases and Jython constructor shape used by ~/uacalc scripts:
+  BasicAlgebra(name, cardinality, ops) with AbstractOperation subclasses,
+  getOperation(OperationSymbol), getName/setName, operations(), universe(),
+  similarityType().getOperationSymbols(), cardinality().
 ignore_reason: null
 surface:
   package_export: true
@@ -14,14 +16,19 @@ surface:
     algebraType: algebra_type
     resetConAndSub: reset_con_and_sub
     getName: name
+    setName: set_name
+    getOperation: getOperation
+    universe: universe
+    similarityType: similarityType
+    constantOperations: constantOperations
   static_methods: []
   str_parity: false
 testing:
   notes: |
-    Exercise getName, cardinality, con(), and getUniverseList on an algebra
-    loaded from disk. elementIndex / algebraType / resetConAndSub are declared
-    on the surface but not yet covered by a parity script — add scripts as
-    those aliases are needed by real Jython code.
+    basic_algebra_ops.py builds an algebra with a subclassed AbstractOperation
+    and exercises getOperation / getName / setName / universe / similarityType.
+    load_cyclic2.py covers getName / getUniverseList / cardinality / con on a
+    file-loaded instance (AlgebraIO returns BasicAlgebra).
   task_refs: []
   scripts:
     - path: jython_comparison/scripts/load_cyclic2.py
@@ -32,3 +39,17 @@ testing:
         - con
       ignore_lines:
         - "Universe:"
+    - path: jython_comparison/scripts/basic_algebra_ops.py
+      covers:
+        - getName
+        - setName
+        - getOperation
+        - universe
+        - similarityType
+        - constantOperations
+        - cardinality
+        - elementIndex
+        - algebraType
+        - resetConAndSub
+        - getUniverseList
+      ignore_lines: []

@@ -1,0 +1,21 @@
+target: org.uacalc.alg.Subalgebra
+level: file
+status: pending
+java_source: org/uacalc/alg/Subalgebra.java
+notes: |
+  get_subreducts.py / jep_check.py construct Subalgebra(alg, gens) from
+  SubalgebraLattice iterator elements. Binding exists but generator/BasicSet
+  call shape parity is not locked yet. Expect getName/setName/getOperation
+  once the constructor shape matches Java.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases: {}
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    Tracked for ~/uacalc subreduct / JEP scripts. Add a dedicated parity script
+    once Subalgebra(alg, BasicSet) matches Java.
+  task_refs: []
+  scripts: []

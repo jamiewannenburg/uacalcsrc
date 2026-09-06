@@ -1,0 +1,44 @@
+target: org.uacalc.alg.FreeAlgebra
+level: file
+status: pending
+java_source: org/uacalc/alg/FreeAlgebra.java
+notes: |
+  ~/uacalc free_algebras.py / get_idempotents.py call
+  FreeAlgebra(alg, n, makeUniverse, thinGens) plus advanced methods
+  getElementFromTerm, getProductAlgebra, getTerm, getTerms, getElement,
+  elementIndex, sub().Sg — several still missing on the Rust binding.
+  Constructor overload and getName/elementIndex/getOperation are shimmed;
+  remaining surface stays pending until bindings land.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    getName: name
+    setName: set_name
+    elementIndex: element_index
+    getOperation: getOperation
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    free_algebra_smoke.py constructs FreeAlgebra(cyclic2, 1, True, True) and
+    prints cardinality / alias probes. Construction progress and default names
+    still differ across runtimes (ignored below).
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/free_algebra_smoke.py
+      covers:
+        - getName
+        - setName
+        - elementIndex
+        - getOperation
+        - cardinality
+      ignore_lines:
+        - "Constructing free"
+        - "pass:"
+        - "done constructing"
+        - "thin "
+        - "thin ="
+        - "thin coord"
+        - "gens coord"
+        - "name="

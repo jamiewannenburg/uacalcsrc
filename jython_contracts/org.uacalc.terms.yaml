@@ -1,0 +1,26 @@
+target: org.uacalc.terms
+level: package
+status: implemented
+java_source: null
+notes: |
+  Package facade for Terms.stringToTerm plus Variable / NonVariableTerm /
+  VariableImp re-exports. Matches ~/uacalc get_subreducts.py, dmm.py,
+  associativity_of_iff.py, structural_completeness.py.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases: {}
+  static_methods:
+    - Terms.stringToTerm
+    - NonVariableTerm.makeConstantTerm
+  str_parity: false
+testing:
+  notes: |
+    terms_string_to_term.py parses a variable term and builds a constant term.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/terms_string_to_term.py
+      covers:
+        - Terms.stringToTerm
+        - NonVariableTerm.makeConstantTerm
+      ignore_lines: []

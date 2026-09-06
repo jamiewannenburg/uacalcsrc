@@ -1,27 +1,41 @@
-"""Compatibility shim for ``org.uacalc.alg.op`` (operation symbols / operations).
+"""Compatibility shim for ``org.uacalc.alg.op``.
 
-CPython loads from ``uacalc_lib.alg.op`` when that submodule exists; otherwise the
-namespace stays empty until Rust exposes it. Jython uses the Java package from
-the classpath.
+CPython: re-export operation types from ``org.uacalc.alg`` (where ``uacalc_lib``
+binds them) so ``from org.uacalc.alg.op import AbstractOperation, OperationSymbol``
+matches Jython. Jython uses the Java package from the classpath.
 """
 
 
 def _load_cp() -> None:
-    import importlib
+    import org.uacalc.alg as _alg
 
-    import uacalc_lib as _uacalc_lib
+    # Prefer names already bridged by alg._jython_compat
+    for name in (
+        "AbstractOperation",
+        "AbstractIntOperation",
+        "OperationSymbol",
+        "OperationWithDefaultValue",
+        "Operations",
+        "BasicOperation",
+        "IntOperation",
+        "TermOperationImp",
+        "SimilarityType",
+        "ParameterizedOperation",
+    ):
+        if hasattr(_alg, name):
+            globals()[name] = getattr(_alg, name)
 
-    _alg = getattr(_uacalc_lib, "alg")
-    _op = getattr(_alg, "op", None)
-    if _op is None:
-        try:
-            _op = importlib.import_module("uacalc_lib.alg.op")
-        except ImportError:
-            return
-    g = globals()
-    for _name in dir(_op):
-        if not _name.startswith("_"):
-            g[_name] = getattr(_op, _name)
+    # Contract validate looks for class bodies / alias assignments in this module.
+    _CLASS_ALIASES = {
+        "AbstractOperation": {
+            "intValueAt": "int_value_at",
+        },
+        "OperationSymbol": {},
+        "IntOperation": {
+            "intValueAt": "int_value_at",
+        },
+    }
+    globals()["_CLASS_ALIASES"] = _CLASS_ALIASES
 
 
 if __import__("sys").platform.startswith("java"):

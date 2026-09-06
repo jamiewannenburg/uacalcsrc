@@ -1,3 +1,4 @@
+# coding: utf-8
 #!/usr/bin/env python3
 """
 Validate jython_comparison/parity_slices.yaml against parity_inventory.yaml without PyYAML.
@@ -10,9 +11,9 @@ Checks:
   ``java_package_prefixes``, not under ``depends_on``.
 - Slice ``id:`` values are unique (duplicate rows break ownership tracking).
 - Slice ``id:`` values use kebab-case (letters, digits, hyphens) and must not look like
-  Java package names (no ``org.`` / dots)—those belong under ``java_package_prefixes``.
+  Java package names (no ``org.`` / dots)-those belong under ``java_package_prefixes``.
 - ``depends_on`` list items that look like Java package names (e.g. ``org.uacalc...``)
-  are flagged—those belong under ``java_package_prefixes``, not ``depends_on``.
+  are flagged-those belong under ``java_package_prefixes``, not ``depends_on``.
 
 Exit code 0 on success, 1 on validation errors, 2 on missing files.
 """

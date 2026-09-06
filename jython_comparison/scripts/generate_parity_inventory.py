@@ -1,3 +1,4 @@
+# coding: utf-8
 #!/usr/bin/env python3
 """
 Generate jython_comparison/parity_inventory.yaml from the Java org.uacalc tree,
@@ -174,7 +175,7 @@ def _extract_public_methods(java_source: str) -> List[str]:
         if name in ("if", "for", "while", "switch", "return", "throw", "new", "true", "false", "null"):
             continue
         if name[0].isupper() and "(" in s:
-            # could be constructor ClassName( — still a public surface in Jython
+            # could be constructor ClassName( - still a public surface in Jython
             pass
         names.add(name)
     return sorted(names)

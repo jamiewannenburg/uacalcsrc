@@ -1,0 +1,20 @@
+target: org.uacalc.util.IntArray
+level: file
+status: pending
+java_source: org/uacalc/util/IntArray.java
+notes: |
+  free_algebras.py uses IntArray elements from FreeAlgebra.getElement with
+  .get / .set / .clone. Binding exists; FreeAlgebra element type parity is
+  still pending, so this contract stays pending.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases: {}
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    Add a script once FreeAlgebra.getElement returns IntArray-compatible values
+    under both runtimes.
+  task_refs: []
+  scripts: []

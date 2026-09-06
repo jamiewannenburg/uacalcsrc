@@ -1,0 +1,33 @@
+target: org.uacalc.alg.ProductAlgebra
+level: file
+status: implemented
+java_source: org/uacalc/alg/ProductAlgebra.java
+notes: |
+  ~/uacalc uses ProductAlgebra(algs) (jep_check.py) and
+  ProductAlgebra(name, algs) (sc_joins_of_covers.py), plus numberOfFactors /
+  getName / cardinality / sub().
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    getName: name
+    setName: set_name
+    getOperation: getOperation
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    product_algebra_smoke.py builds a product of cyclic2 with itself via both
+    constructor shapes and prints cardinality / getName / setName.
+    numberOfFactors is a Rust helper; Java ProductAlgebra uses factors() — kept
+    as an alias for CPython scripts that already call numberOfFactors.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/product_algebra_smoke.py
+      covers:
+        - getName
+        - setName
+        - getOperation
+        - cardinality
+        - numberOfFactors
+      ignore_lines: []

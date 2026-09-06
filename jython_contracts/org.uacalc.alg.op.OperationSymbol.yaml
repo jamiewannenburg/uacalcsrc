@@ -1,0 +1,28 @@
+target: org.uacalc.alg.op.OperationSymbol
+level: file
+status: pending
+java_source: org/uacalc/alg/op/OperationSymbol.java
+notes: |
+  Constructed as OperationSymbol(name, arity) throughout ~/uacalc scripts;
+  passed to getOperation and NonVariableTerm / makeConstantTerm. Exported from
+  org.uacalc.alg.op; no camelCase aliases required (method names already match).
+ignore_reason: null
+surface:
+  package_export: true
+  aliases: {}
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    basic_algebra_ops.py and terms_string_to_term.py construct OperationSymbol
+    values as part of broader surface tests.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/basic_algebra_ops.py
+      covers:
+        - OperationSymbol
+      ignore_lines: []
+    - path: jython_comparison/scripts/terms_string_to_term.py
+      covers:
+        - OperationSymbol
+      ignore_lines: []

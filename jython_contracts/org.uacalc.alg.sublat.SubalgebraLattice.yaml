@@ -1,0 +1,32 @@
+target: org.uacalc.alg.sublat.SubalgebraLattice
+level: file
+status: implemented
+java_source: org/uacalc/alg/sublat/SubalgebraLattice.java
+notes: |
+  Used by ~/uacalc as SubalgebraLattice(alg), then .iterator() over subuniverses
+  (get_subreducts.py, 2subalgebras.py, jep_check.py) and alg.sub().Sg(gens)
+  (free_algebras.py, sc_joins_of_covers.py).
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    iterator: iterator
+    Sg: sg
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    subalgebra_lattice_smoke.py builds SubalgebraLattice on cyclic2 and prints
+    sorted universe descriptions from iterator().
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/subalgebra_lattice_smoke.py
+      covers:
+        - iterator
+        - Sg
+        - cardinality
+      ignore_lines:
+        - "oneGenerated size"
+        - "pass 0 of"
+        - "pass 1 of"
+        - "pass "
