@@ -63,16 +63,6 @@ else:
         def stringToTerm(s):
             return _string_to_term(str(s))
 
-    class NonVariableTerm(object):
-        """Proxy so validate() sees ``makeConstantTerm``; constructs lib terms."""
+    NonVariableTerm = _LibNonVariableTerm
 
-        make_constant_term = staticmethod(_LibNonVariableTerm.make_constant_term)
-
-        @staticmethod
-        def makeConstantTerm(sym):
-            return _LibNonVariableTerm.make_constant_term(sym)
-
-        def __new__(cls, *args, **kwargs):
-            return _LibNonVariableTerm(*args, **kwargs)
-
-    del _uacalc_lib, _terms, _name, _vname, _attr
+    del _uacalc_lib, _terms, _name, _vname, _attr, _LibNonVariableTerm
