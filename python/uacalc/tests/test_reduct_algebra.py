@@ -240,9 +240,13 @@ class TestReductAlgebra(unittest.TestCase):
         reduct = self.ReductAlgebra(super_alg, [])
         
         universe = reduct.get_universe_list()
-        self.assertIsNotNone(universe)
-        self.assertEqual(len(universe), 3)
-        self.assertEqual(set(universe), {0, 1, 2})
+        self.assertIsNone(universe)
+        card = reduct.cardinality()
+        self.assertEqual(card, 3)
+        for idx in range(card):
+            elem = reduct.get_element(idx)
+            self.assertIsNotNone(elem)
+            self.assertEqual(reduct.element_index(elem), idx)
     
     def test_get_universe_order(self):
         """Test get_universe_order method."""
@@ -252,14 +256,12 @@ class TestReductAlgebra(unittest.TestCase):
         order = reduct.get_universe_order()
         self.assertIsNotNone(order)
         self.assertEqual(len(order), 3)
-        # Verify that all elements from the universe are in the order map
-        universe = reduct.get_universe_list()
-        for elem in universe:
+        # Java getUniverseList() is null; walk elements by index.
+        card = reduct.cardinality()
+        for idx in range(card):
+            elem = reduct.get_element(idx)
             self.assertIn(elem, order)
-            # Verify that the order value is a valid index
-            idx = order[elem]
-            self.assertGreaterEqual(idx, 0)
-            self.assertLess(idx, len(universe))
+            self.assertEqual(order[elem], idx)
     
     def test_operations_count(self):
         """Test operations_count method."""
@@ -332,8 +334,7 @@ class TestReductAlgebra(unittest.TestCase):
         
         # Get the actual universe
         universe = reduct.get_universe_list()
-        self.assertEqual(len(universe), 5)
-        self.assertEqual(set(universe), {0, 1, 2, 3, 4})
+        self.assertIsNone(universe)
         
         # Test element access - verify consistency between get_element and element_index
         for i in range(5):
