@@ -125,8 +125,21 @@ class TestConSubMethods(unittest.TestCase):
         # Verify it returns a SubalgebraLattice
         self.assertIsInstance(sub_lat, self.SubalgebraLattice)
         
-        # Verify basic properties - cardinality returns -1 until universe is computed
+        # Verify basic properties - cardinality is computed via universe_mut
         self.assertIsInstance(sub_lat.cardinality(), int)
+
+    def test_subalgebra_singleton_sub_lattice_matches_java(self):
+        """Java Subalgebra({0}).sub().cardinality() is 2 for cyclic2, not Super's 3."""
+        ua = "resources/algebras/cyclic2.ua"
+        if not os.path.isfile(ua):
+            self.skipTest("resources/algebras/cyclic2.ua not found")
+        reader = uacalc_lib.io.AlgebraReader.new_from_file(ua)
+        alg = reader.read_algebra_file()
+        sub_alg = self.Subalgebra("S0", alg, [0])
+        self.assertEqual(sub_alg.cardinality(), 1)
+        self.assertEqual(sub_alg.algebra_type(), "SUBALGEBRA")
+        self.assertEqual(sub_alg.sub().cardinality(), 2)
+        self.assertEqual(sub_alg.con().cardinality(), 1)
 
     def test_reduct_algebra_con_method(self):
         """Test ReductAlgebra con() method."""

@@ -123,17 +123,15 @@ class TestReductAlgebra(unittest.TestCase):
         super_alg = self.BasicAlgebra("Super", [0, 1, 2], [])
         reduct = self.ReductAlgebra(super_alg, [])
         
-        # Get the actual universe to know what elements exist
-        universe = reduct.get_universe_list()
-        self.assertIsNotNone(universe)
-        self.assertEqual(len(universe), 3)
-        
-        # Test element_index for each element in the universe
-        for elem in universe:
-            idx = reduct.element_index(elem)
-            self.assertIsNotNone(idx)
-            # Verify that get_element returns the same element
-            self.assertEqual(reduct.get_element(idx), elem)
+        # Java ReductAlgebra.getUniverseList() returns null; index via get_element.
+        card = reduct.cardinality()
+        self.assertEqual(card, 3)
+        self.assertIsNone(reduct.get_universe_list())
+
+        for idx in range(card):
+            elem = reduct.get_element(idx)
+            self.assertIsNotNone(elem)
+            self.assertEqual(reduct.element_index(elem), idx)
         
         # Test with Java wrapper
         java_result = run_java_wrapper([
@@ -153,16 +151,13 @@ class TestReductAlgebra(unittest.TestCase):
         super_alg = self.BasicAlgebra("Super", [0, 1, 2], [])
         reduct = self.ReductAlgebra(super_alg, [])
         
-        # Get the actual universe to know how many elements exist
-        universe = reduct.get_universe_list()
-        self.assertIsNotNone(universe)
-        self.assertEqual(len(universe), 3)
-        
-        # Test get_element for each valid index
-        for idx in range(len(universe)):
+        card = reduct.cardinality()
+        self.assertEqual(card, 3)
+        self.assertIsNone(reduct.get_universe_list())
+
+        for idx in range(card):
             elem = reduct.get_element(idx)
             self.assertIsNotNone(elem)
-            # Verify that element_index returns the same index
             self.assertEqual(reduct.element_index(elem), idx)
         
         # Test with Java wrapper
@@ -184,7 +179,7 @@ class TestReductAlgebra(unittest.TestCase):
         reduct = self.ReductAlgebra(super_alg, [])
         
         alg_type = reduct.algebra_type()
-        self.assertEqual(alg_type, "Reduct")
+        self.assertEqual(alg_type, "REDUCT")
         
         # Test with Java wrapper
         java_result = run_java_wrapper([

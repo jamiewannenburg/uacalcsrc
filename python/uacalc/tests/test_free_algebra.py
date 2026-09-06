@@ -265,8 +265,8 @@ class TestFreeAlgebra:
         # Test element access
         if len(universe_list) > 0:
             element = free_alg.get_element(0)
-            # Element might be None for simplified implementation
-            assert element is None or hasattr(element, 'inner')
+            assert element is not None
+            assert hasattr(element, "to_array") or hasattr(element, "getArray")
         
         # Compare with Java wrapper
         java_result = run_java_wrapper(
@@ -468,3 +468,19 @@ class TestFreeAlgebra:
         # Both should return valid counts >= 0
         assert free_alg.operations_count() >= 0
         assert java_data["operations_count"] >= 0
+
+    def test_thin_generators_rebuilds_product(self):
+        """Jython FreeAlgebra(alg, n, True, True) thins the ambient product."""
+        ua = "resources/algebras/cyclic2.ua"
+        if not os.path.isfile(ua):
+            pytest.skip("resources/algebras/cyclic2.ua not found")
+        reader = uacalc_lib.io.AlgebraReader.new_from_file(ua)
+        c2 = reader.read_algebra_file()
+        FreeAlgebra = uacalc_lib.alg.FreeAlgebra
+        f = FreeAlgebra.new_with_progress(c2, 1, True, True, False)
+        assert f.cardinality() == 2
+        prod = f.get_product_algebra()
+        assert prod.cardinality() == 2
+        assert prod.number_of_factors() == 1
+        univ = [[int(x) for x in e.to_array()] for e in f.get_universe_list()]
+        assert univ == [[1], [0]]
