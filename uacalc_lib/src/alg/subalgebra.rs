@@ -2,6 +2,7 @@ use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
 use uacalc::alg::*;
 use uacalc::alg::op::{IntOperation, BasicOperation};
+use crate::alg::convert::{algebra_type_java_name, operation_to_py};
 use crate::alg::PyBasicAlgebra;
 use crate::alg::PyPartition;
 use crate::alg::PySubalgebraLattice;
@@ -11,6 +12,7 @@ use crate::alg::conlat::congruence_lattice::PyCongruenceLattice;
 #[pyclass]
 pub struct PySubalgebra {
     inner: uacalc::alg::Subalgebra<i32>,
+    super_alg: uacalc::alg::BasicAlgebra<i32>,
 }
 
 #[pymethods]
@@ -28,7 +30,10 @@ impl PySubalgebra {
     fn new(name: String, super_algebra: &PyBasicAlgebra, univ: Vec<i32>) -> PyResult<Self> {
         let super_box = Box::new(super_algebra.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
         match uacalc::alg::Subalgebra::new_safe(name, super_box, univ) {
-            Ok(inner) => Ok(PySubalgebra { inner }),
+            Ok(inner) => Ok(PySubalgebra {
+                inner,
+                super_alg: super_algebra.inner.clone(),
+            }),
             Err(e) => Err(PyValueError::new_err(e)),
         }
     }
@@ -66,10 +71,17 @@ impl PySubalgebra {
         }
     }
 
-    /// Get the super algebra name.
+    /// Get the super algebra.
     ///
     /// Returns:
-    ///     str: Name of the super algebra
+    ///     BasicAlgebra: The super algebra
+    fn super_algebra(&self) -> PyBasicAlgebra {
+        PyBasicAlgebra {
+            inner: self.super_alg.clone(),
+        }
+    }
+
+    /// Java `superAlgebraName` convenience used by older bindings.
     fn super_algebra_name(&self) -> String {
         self.inner.super_algebra().name().to_string()
     }
@@ -128,7 +140,12 @@ impl PySubalgebra {
     /// Returns:
     ///     str: The algebra type ("Subalgebra")
     fn algebra_type(&self) -> String {
-        format!("{:?}", self.inner.algebra_type())
+        algebra_type_java_name(self.inner.algebra_type())
+    }
+
+    /// Java `getUniverseList()` returns null for Subalgebra.
+    fn get_universe_list(&self) -> Option<Vec<i32>> {
+        None
     }
 
     /// Get the name of this algebra.
@@ -252,7 +269,10 @@ impl PySubalgebra {
     fn congruence_as_algebra(alg: &PyBasicAlgebra, cong: &PyPartition) -> PyResult<PySubalgebra> {
         let alg_box = Box::new(alg.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
         match uacalc::alg::Subalgebra::<i32>::congruence_as_algebra_subalgebra("".to_string(), alg_box, cong.get_inner()) {
-            Ok(subalgebra) => Ok(PySubalgebra { inner: subalgebra }),
+            Ok(subalgebra) => Ok(PySubalgebra {
+                inner: subalgebra,
+                super_alg: alg.inner.clone(),
+            }),
             Err(e) => Err(PyValueError::new_err(e)),
         }
     }
@@ -279,7 +299,10 @@ impl PySubalgebra {
     ) -> PyResult<PySubalgebra> {
         let alg_box = Box::new(alg.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
         match uacalc::alg::Subalgebra::<i32>::congruence_as_algebra_subalgebra(name, alg_box, cong.get_inner()) {
-            Ok(subalgebra) => Ok(PySubalgebra { inner: subalgebra }),
+            Ok(subalgebra) => Ok(PySubalgebra {
+                inner: subalgebra,
+                super_alg: alg.inner.clone(),
+            }),
             Err(e) => Err(PyValueError::new_err(e)),
         }
     }

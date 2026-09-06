@@ -5,6 +5,7 @@ pub mod algebra_with_generating_vector;
 pub mod big_product_algebra;
 pub mod closer;
 pub mod closer_timing;
+pub mod convert;
 pub mod free_algebra;
 pub mod general_algebra;
 pub mod homomorphism;

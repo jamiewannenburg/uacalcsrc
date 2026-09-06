@@ -1,6 +1,7 @@
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
 use uacalc::alg::*;
+use crate::alg::convert::operation_to_py;
 use crate::alg::{PyBasicAlgebra, PySubalgebraLattice};
 use crate::alg::conlat::congruence_lattice::PyCongruenceLattice;
 
@@ -126,6 +127,15 @@ impl PyProductAlgebra {
     ///     name (str): The new name
     fn set_name(&mut self, name: String) {
         self.inner.set_name(name);
+    }
+
+    /// Java `operations()`.
+    fn operations(&self, py: Python<'_>) -> PyResult<Vec<PyObject>> {
+        let mut result = Vec::new();
+        for op in self.inner.operations() {
+            result.push(operation_to_py(py, op.as_ref())?);
+        }
+        Ok(result)
     }
 
     /// Make operation tables for all operations.

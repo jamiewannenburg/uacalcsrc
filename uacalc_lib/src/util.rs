@@ -1360,6 +1360,24 @@ impl PyIntArray {
             inner: self.inner.clone(),
         }
     }
+
+    /// Java `IntArray.clone()`.
+    #[allow(non_snake_case)]
+    fn clone(&self) -> Self {
+        self.clone_array()
+    }
+
+    /// Java `universeSize()`.
+    #[allow(non_snake_case)]
+    fn universeSize(&self) -> usize {
+        self.inner.universe_size()
+    }
+
+    /// Java `getArray()`.
+    #[allow(non_snake_case)]
+    fn getArray(&self) -> Vec<i32> {
+        self.inner.as_slice().to_vec()
+    }
     
     /// Convert the array to a string representation.
     /// 
