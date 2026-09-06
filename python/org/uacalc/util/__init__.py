@@ -29,16 +29,26 @@ else:
         if not hasattr(_LibIntArray, "getArray") and hasattr(_LibIntArray, "to_array"):
             _LibIntArray.getArray = _LibIntArray.to_array
 
-        def IntArray(*args):  # noqa: N802 — Java constructor name
-            """``IntArray(size)`` or ``IntArray([ints])`` (Jython int[] shape)."""
-            if len(args) == 0:
-                return _LibIntArray.from_array([])
-            if len(args) != 1:
-                raise TypeError("IntArray() takes 0 or 1 arguments")
-            arg = args[0]
-            if isinstance(arg, (list, tuple)):
-                return _LibIntArray.from_array([int(x) for x in arg])
-            return _LibIntArray(int(arg))
+        class _IntArrayMeta(type):
+            def __instancecheck__(cls, instance):
+                return isinstance(instance, _LibIntArray)
+
+        class IntArray(object, metaclass=_IntArrayMeta):  # noqa: N801
+            """Jython ``IntArray(size)`` / ``IntArray([ints])`` plus ``from_array``."""
+
+            from_array = staticmethod(_LibIntArray.from_array)
+
+            def __new__(cls, *args):
+                if len(args) == 0:
+                    return _LibIntArray.from_array([])
+                if len(args) != 1:
+                    raise TypeError("IntArray() takes 0 or 1 arguments")
+                arg = args[0]
+                if isinstance(arg, _LibIntArray):
+                    return arg
+                if isinstance(arg, (list, tuple)):
+                    return _LibIntArray.from_array([int(x) for x in arg])
+                return _LibIntArray(int(arg))
 
         globals()["IntArray"] = IntArray
         globals()["_LibIntArray"] = _LibIntArray

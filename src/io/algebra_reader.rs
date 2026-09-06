@@ -379,8 +379,13 @@ impl AlgebraParser {
         
         match elem_name {
             "algebra" => {
-                if let Some(alg) = self.algebra.take() {
-                    self.algebra_list.push(alg);
+                // Nested kinds (product/quotient/…) set ``self.algebra`` without
+                // pushing. Top-level ``basicAlgebra`` children are already in
+                // ``algebra_list``; only push here if nothing was collected.
+                if self.algebra_list.is_empty() {
+                    if let Some(alg) = self.algebra.take() {
+                        self.algebra_list.push(alg);
+                    }
                 }
                 self.clear_strings();
             }
@@ -482,6 +487,14 @@ impl AlgebraParser {
                 self.algebra = Some(algebra);
                 self.add_description();
                 self.ops = Vec::new();
+                // A multi-algebra .ua list is one ``<algebra>`` root with several
+                // ``<basicAlgebra>`` children. Collect each so list reads match
+                // the Java ``readAlgebraListFile`` contract (all listed algebras).
+                if parent.as_deref() == Some("algebra") {
+                    if let Some(alg) = self.algebra.take() {
+                        self.algebra_list.push(alg);
+                    }
+                }
             }
             _ => {}
         }
@@ -538,6 +551,58 @@ mod tests {
         
         assert_eq!(algebra.name(), "test");
         assert_eq!(algebra.cardinality(), 2);
+    }
+
+    #[test]
+    fn test_algebra_reader_list_collects_each_basic_algebra() {
+        let xml = r#"<?xml version="1.0"?>
+<algebra>
+  <basicAlgebra>
+    <algName>C2</algName>
+    <cardinality>2</cardinality>
+    <operations>
+      <op>
+        <opSymbol>
+          <opName>+</opName>
+          <arity>2</arity>
+        </opSymbol>
+        <opTable>
+          <intArray>
+            <row r="[0]">0,1</row>
+            <row r="[1]">1,0</row>
+          </intArray>
+        </opTable>
+      </op>
+    </operations>
+  </basicAlgebra>
+  <basicAlgebra>
+    <algName>C3</algName>
+    <cardinality>3</cardinality>
+    <operations>
+      <op>
+        <opSymbol>
+          <opName>+</opName>
+          <arity>2</arity>
+        </opSymbol>
+        <opTable>
+          <intArray>
+            <row r="[0]">0,1,2</row>
+            <row r="[1]">1,2,0</row>
+            <row r="[2]">2,0,1</row>
+          </intArray>
+        </opTable>
+      </op>
+    </operations>
+  </basicAlgebra>
+</algebra>"#;
+
+        let reader = AlgebraReader::new_from_stream(xml.as_bytes().to_vec()).unwrap();
+        let algebras = reader.read_algebra_list_from_stream().unwrap();
+        assert_eq!(algebras.len(), 2);
+        assert_eq!(algebras[0].name(), "C2");
+        assert_eq!(algebras[0].cardinality(), 2);
+        assert_eq!(algebras[1].name(), "C3");
+        assert_eq!(algebras[1].cardinality(), 3);
     }
 }
 

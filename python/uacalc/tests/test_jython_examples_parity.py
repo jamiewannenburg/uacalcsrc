@@ -200,7 +200,12 @@ class TestSubreductsMace4ExampleAPIs:
         _ensure_python_org_on_path()
         from org.uacalc.io import Mace4Reader as ShimMace4Reader  # pylint: disable=import-outside-toplevel
 
-        assert ShimMace4Reader is io.Mace4Reader
+        # Jython constructs ``Mace4Reader(stream)`` and calls ``parseAlgebra()``.
+        # The CPython shim is a constructor facade over the PyO3 class, not the
+        # same object as ``uacalc_lib.io.Mace4Reader``.
+        assert callable(getattr(ShimMace4Reader, "parseAlgebra"))
+        shim_alg = ShimMace4Reader(data).parseAlgebra()
+        assert shim_alg.name() == from_file.name() == "model1"
 
 
 class TestParityTooling:

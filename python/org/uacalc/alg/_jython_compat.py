@@ -138,7 +138,15 @@ def _install(alg_module_globals: dict) -> None:
             )
             return self._cached_int_op
 
-    class BasicAlgebra(object):
+    class _BasicAlgebraMeta(type):
+        """Treat native ``uacalc_lib`` BasicAlgebra values as this Jython type."""
+
+        def __instancecheck__(cls, instance: Any) -> bool:
+            if type(instance) is cls:
+                return True
+            return isinstance(instance, _LibBasicAlgebra)
+
+    class BasicAlgebra(object, metaclass=_BasicAlgebraMeta):
         """Jython-compatible constructor over ``uacalc_lib`` BasicAlgebra.
 
         Accepts ``BasicAlgebra(name, n, ops)`` (integer cardinality) as in Java,

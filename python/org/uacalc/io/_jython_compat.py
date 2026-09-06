@@ -44,11 +44,13 @@ class AlgebraIO:
 
     @staticmethod
     def readAlgebraFile(path_or_file: Any) -> Any:
-        return _io.read_algebra_file(_coerce_path(path_or_file))
+        # Use AlgebraReader so description and other SAX fields survive (the
+        # module-level read_algebra_file rebuilds a bare BasicAlgebra).
+        return AlgebraReader(_coerce_path(path_or_file)).readAlgebraFile()
 
     @staticmethod
     def readAlgebraFromStream(stream: Any) -> Any:
-        return _io.read_algebra_from_stream(_coerce_stream_bytes(stream))
+        return AlgebraReader(_coerce_stream_bytes(stream)).readAlgebraFromStream()
 
     @staticmethod
     def readAlgebraListFile(path_or_file: Any) -> List[Any]:
@@ -67,16 +69,13 @@ class AlgebraIO:
         path = _coerce_path(path_or_file)
         # Unwrap org.uacalc.alg BasicAlgebra Jython compat wrapper if present.
         alg = getattr(algebra, "_inner", algebra)
-        if oldStyle is None:
-            # Prefer XML-style writer when the bare writer is a no-op on some builds.
-            try:
-                _io.write_algebra_file(alg, path)
-                if os.path.isfile(path) and os.path.getsize(path) > 0:
-                    return
-            except Exception:
-                pass
-            return _io.write_algebra_file_with_style(alg, path, False)
-        return _io.write_algebra_file_with_style(alg, path, bool(oldStyle))
+        use_old_style = bool(oldStyle) if oldStyle is not None else False
+        if use_old_style:
+            return _io.write_algebra_file_with_style(alg, path, True)
+        # Java AlgebraIO.writeAlgebraFile writes XML to the given path whenever
+        # the file has an extension (including .ua). uacalc_lib.write_algebra_file
+        # appends ".xml" for non-.xml suffixes, so use AlgebraWriter instead.
+        return _LibAlgebraWriter.write_algebra_xml_to_file(alg, path)
 
 
 class AlgebraReader:
@@ -148,7 +147,7 @@ class AlgebraWriter:
     """Writer matching ``org.uacalc.io.AlgebraWriter`` instance API."""
 
     def __init__(self, algebra: Any, path_or_writer: Any) -> None:
-        self._algebra = algebra
+        self._algebra = getattr(algebra, "_inner", algebra)
         if hasattr(path_or_writer, "write"):
             raise NotImplementedError(
                 "AlgebraWriter with a custom writer is not bound in uacalc_lib"
@@ -175,7 +174,16 @@ class AlgebraWriter:
 
 
 class Mace4Reader:
-    """Mace4 parser matching ``org.uacalc.io.Mace4Reader``."""
+    """Mace4 parser matching ``org.uacalc.io.Mace4Reader``.
+
+    Jython constructs ``Mace4Reader(stream)`` and calls ``parseAlgebra()``.
+    Static helpers from ``uacalc_lib.io.Mace4Reader`` are re-exported so callers
+    can use either the Java constructor or the binding factory methods.
+    """
+
+    new_from_file = staticmethod(_LibMace4Reader.new_from_file)
+    new_from_stream = staticmethod(_LibMace4Reader.new_from_stream)
+    parse_algebra_from_file = staticmethod(_LibMace4Reader.parse_algebra_from_file)
 
     def __init__(self, stream: Any) -> None:
         self._data = _coerce_stream_bytes(stream)

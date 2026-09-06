@@ -200,9 +200,16 @@ impl AlgebraWriter {
         self.write_desc()?;
         self.write_cardinality()?;
         
-        // Write universe if it's not integer-based
-        if self.algebra.get_universe_list().is_some() {
-            self.write_universe()?;
+        // Java originally skipped the universe for integer 0..n-1 BasicAlgebras
+        // (``intUniverse()``). Checked-in ``.ua`` files omit that default universe.
+        if let Some(list) = self.algebra.get_universe_list() {
+            let card = self.algebra.cardinality();
+            let is_int_universe = card >= 0
+                && list.len() == card as usize
+                && list.iter().cloned().eq(0..card);
+            if !is_int_universe {
+                self.write_universe()?;
+            }
         }
         
         self.write_tag("<operations>")?;
