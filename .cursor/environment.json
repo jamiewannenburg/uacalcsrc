@@ -1,0 +1,4 @@
+{
+  "name": "UACalc (Rust/Python/Java)",
+  "install": "bash .cursor/install.sh"
+}
