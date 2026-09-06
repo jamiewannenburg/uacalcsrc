@@ -4,18 +4,82 @@ status: pending
 java_source: org/uacalc/alg/Subalgebra.java
 notes: |
   get_subreducts.py / jep_check.py construct Subalgebra(alg, gens) from
-  SubalgebraLattice iterator elements. Binding exists but generator/BasicSet
-  call shape parity is not locked yet. Expect getName/setName/getOperation
-  once the constructor shape matches Java.
+  SubalgebraLattice iterator BasicSets. Java constructors:
+  Subalgebra(alg, int[]), Subalgebra(alg, IntArray),
+  Subalgebra(name, alg, int[]), Subalgebra(name, alg, IntArray).
+  BasicSet extends IntArray, so Subalgebra(alg, BasicSet) is the IntArray
+  overload (also used by SubalgebraLattice.Sg(BasicSet)).
+
+  Public instance API used by scripts: cardinality, getName/setName,
+  getSubuniverseArray, index(k), getElement, elementIndex, operations /
+  getOperation (restricted to the subuniverse), superAlgebra(), con(), sub().
+
+  WHY CPYTHON FAILS NOW (backend work, do not weaken the script):
+  - superAlgebra() is missing. Binding exposes super_algebra_name() (a
+    string), not the algebra object Java returns.
+  - index(k) found-values should match. Missing k: Java Arrays.binarySearch
+    returns a negative insertion point; binding returns -1. The script locks
+    "missing => negative" rather than the exact binarySearch encoding.
+  - CamelCase getSubuniverseArray / getElement / elementIndex need aliases
+    onto the existing snake_case binding methods (declared here; applied by
+    the org shim alias map). Constructor coercion of BasicSet / IntArray /
+    list is already in python/org/uacalc/alg/_jython_compat.py.
+  - Restricted operations should evaluate on *subalgebra* indices (Java
+    maps through univArray then index()). If reconstructed ops disagree
+    with Java intValueAt, that is a real mismatch — do not ignore it.
+  - sub() of the singleton {0} subalgebra: Java SubalgebraLattice
+    cardinality is 2; CPython currently reports 3. Keep that mismatch.
+  - getUniverseList(): Java returns null; CPython alias calls missing
+    get_universe_list and raises AttributeError.
+  - algebraType(): Java AlgebraType.SUBALGEBRA; CPython string "Subalgebra".
 ignore_reason: null
 surface:
   package_export: true
-  aliases: {}
+  aliases:
+    getName: name
+    setName: set_name
+    getOperation: getOperation
+    superAlgebra: super_algebra
+    getSubuniverseArray: get_subuniverse_array
+    elementIndex: element_index
+    getElement: get_element
+    index: index
+    algebraType: algebra_type
+    getUniverseList: get_universe_list
   static_methods: []
   str_parity: false
 testing:
   notes: |
-    Tracked for ~/uacalc subreduct / JEP scripts. Add a dedicated parity script
-    once Subalgebra(alg, BasicSet) matches Java.
+    subalgebra_smoke.py is the source of truth for Jython Subalgebra.
+    On cyclic2 it builds:
+    - Subalgebra(alg, BasicSet {0} from SubalgebraLattice.iterator)
+    - Subalgebra("Full", alg, [0, 1])
+    - Subalgebra(alg, IntArray([0]))
+    After setName, prints cardinality, getSubuniverseArray, index (found
+    exact / missing as boolean), getElement / elementIndex, restricted +
+    table, superAlgebra() name+card, and con()/sub() cardinalities.
+
+    ignore_lines are SubalgebraLattice progress only.
   task_refs: []
-  scripts: []
+  scripts:
+    - path: jython_comparison/scripts/subalgebra_smoke.py
+      covers:
+        - getName
+        - setName
+        - getOperation
+        - superAlgebra
+        - getSubuniverseArray
+        - elementIndex
+        - getElement
+        - index
+        - algebraType
+        - getUniverseList
+        - cardinality
+        - operations
+        - con
+        - sub
+      ignore_lines:
+        - "oneGenerated size"
+        - "pass 0 of"
+        - "pass 1 of"
+        - "pass "

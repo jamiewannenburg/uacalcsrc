@@ -23,6 +23,8 @@ def _install(alg_module_globals: dict) -> None:
     _LibFreeAlgebra = alg_module_globals["FreeAlgebra"]
     _LibProductAlgebra = alg_module_globals["ProductAlgebra"]
     _LibSubalgebraLattice = alg_module_globals["SubalgebraLattice"]
+    _LibReductAlgebra = alg_module_globals.get("ReductAlgebra")
+    _LibSubalgebra = alg_module_globals.get("Subalgebra")
     _LibAbstractOperation = alg_module_globals.get("AbstractOperation")
 
     def _sym_name(sym: Any) -> str:
@@ -191,6 +193,87 @@ def _install(alg_module_globals: dict) -> None:
             return _LibProductAlgebra(str(args[0]), list(args[1]))
         raise TypeError("ProductAlgebra() takes 1 or 2 arguments")
 
+    def _unwrap_algebra(alg: Any) -> Any:
+        """Prefer the PyO3 inner object when a Jython wrapper is present."""
+        return getattr(alg, "_inner", alg)
+
+    def _term_to_name(term: Any) -> str:
+        """Map a Jython Term (or already-a-string) to the Rust string binding."""
+        if isinstance(term, (str, bytes)):
+            return str(term)
+        for attr in ("name", "getName", "get_name"):
+            fn = getattr(term, attr, None)
+            if callable(fn):
+                try:
+                    return str(fn())
+                except TypeError:
+                    continue
+            if fn is not None and not callable(fn):
+                return str(fn)
+        return str(term)
+
+    def _terms_to_names(terms: Any) -> List[str]:
+        if terms is None:
+            return []
+        return [_term_to_name(t) for t in list(terms)]
+
+    def _as_universe_indices(obj: Any) -> List[int]:
+        """Coerce Java BasicSet / IntArray / list into ``list[int]`` indices."""
+        if obj is None:
+            return []
+        if isinstance(obj, (list, tuple)):
+            return [int(x) for x in obj]
+        for attr in ("elements", "to_array", "toArray", "getArray", "get_array"):
+            fn = getattr(obj, attr, None)
+            if callable(fn):
+                try:
+                    return [int(x) for x in fn()]
+                except TypeError:
+                    continue
+        size_fn = getattr(obj, "universeSize", None) or getattr(obj, "universe_size", None)
+        getter = getattr(obj, "get", None)
+        if callable(size_fn) and callable(getter):
+            try:
+                n = int(size_fn())
+                return [int(getter(i)) for i in range(n)]
+            except TypeError:
+                pass
+        try:
+            return [int(x) for x in obj]
+        except TypeError:
+            raise TypeError(
+                "cannot coerce {!r} to a subuniverse index list".format(type(obj))
+            )
+
+    def _reduct_algebra(*args: Any) -> Any:
+        """``ReductAlgebra(alg, terms)`` or ``ReductAlgebra(name, alg, terms)``."""
+        if _LibReductAlgebra is None:
+            raise TypeError("ReductAlgebra is not bound")
+        if len(args) == 2:
+            alg, terms = args
+            name = None
+        elif len(args) == 3:
+            name, alg, terms = args
+        else:
+            raise TypeError("ReductAlgebra() takes 2 or 3 arguments")
+        reduct = _LibReductAlgebra(_unwrap_algebra(alg), _terms_to_names(terms))
+        if name is not None:
+            reduct.set_name(str(name))
+        return reduct
+
+    def _subalgebra(*args: Any) -> Any:
+        """``Subalgebra(alg, univ)`` or ``Subalgebra(name, alg, univ)``."""
+        if _LibSubalgebra is None:
+            raise TypeError("Subalgebra is not bound")
+        if len(args) == 2:
+            alg, univ = args
+            name = ""
+        elif len(args) == 3:
+            name, alg, univ = args
+        else:
+            raise TypeError("Subalgebra() takes 2 or 3 arguments")
+        return _LibSubalgebra(str(name), _unwrap_algebra(alg), _as_universe_indices(univ))
+
     def getOperation(self: Any, sym: Any) -> Any:
         target_name = _sym_name(sym)
         target_arity = _sym_arity(sym)
@@ -280,6 +363,7 @@ def _install(alg_module_globals: dict) -> None:
         "constantOperations": constantOperations,
         "getUniverseList": lambda self: list(self.get_universe_list()),
         "elementIndex": lambda self, elem: self.element_index(elem),
+        "getElement": lambda self, index: self.get_element(index),
         "algebraType": lambda self: self.algebra_type(),
         "resetConAndSub": lambda self: self.reset_con_and_sub(),
     }
@@ -303,7 +387,11 @@ def _install(alg_module_globals: dict) -> None:
             "BasicAlgebra": _LibBasicAlgebra,
             "FreeAlgebra": _LibFreeAlgebra,
             "ProductAlgebra": _LibProductAlgebra,
+            "ReductAlgebra": _LibReductAlgebra,
+            "Subalgebra": _LibSubalgebra,
         }.get(cls_name, lib_cls)
+        if target is None:
+            continue
         for camel, impl in _ALGEBRA_PATCHES.items():
             if not hasattr(target, camel):
                 try:
@@ -346,6 +434,12 @@ def _install(alg_module_globals: dict) -> None:
     alg_module_globals["BasicAlgebra"] = BasicAlgebra
     alg_module_globals["FreeAlgebra"] = _free_algebra
     alg_module_globals["ProductAlgebra"] = _product_algebra
+    if _LibReductAlgebra is not None:
+        alg_module_globals["ReductAlgebra"] = _reduct_algebra
+        alg_module_globals["_LibReductAlgebra"] = _LibReductAlgebra
+    if _LibSubalgebra is not None:
+        alg_module_globals["Subalgebra"] = _subalgebra
+        alg_module_globals["_LibSubalgebra"] = _LibSubalgebra
     # Keep native classes available for isinstance checks / advanced use
     alg_module_globals["_LibBasicAlgebra"] = _LibBasicAlgebra
     alg_module_globals["_LibFreeAlgebra"] = _LibFreeAlgebra
@@ -382,7 +476,18 @@ def _install(alg_module_globals: dict) -> None:
             "getName": "name",
             "setName": "set_name",
             "elementIndex": "element_index",
+            "getElement": "get_element",
             "getOperation": "getOperation",
+            "getUniverseList": "get_universe_list",
+            "getTerms": "get_terms",
+            "getTerm": "get_term",
+            "getElementFromTerm": "get_element_from_term",
+            "getProductAlgebra": "get_product_algebra",
+            "generators": "generators",
+            "getVariables": "get_variables",
+            "getIdempotentTerms": "get_idempotent_terms",
+            "superAlgebra": "super_algebra",
+            "algebraType": "algebra_type",
         },
         "ProductAlgebra": {
             "getName": "name",
@@ -394,11 +499,23 @@ def _install(alg_module_globals: dict) -> None:
             "getName": "name",
             "setName": "set_name",
             "getOperation": "getOperation",
+            "superAlgebra": "super_algebra",
+            "elementIndex": "element_index",
+            "getElement": "get_element",
+            "getUniverseList": "get_universe_list",
+            "algebraType": "algebra_type",
         },
         "Subalgebra": {
             "getName": "name",
             "setName": "set_name",
             "getOperation": "getOperation",
+            "superAlgebra": "super_algebra",
+            "getSubuniverseArray": "get_subuniverse_array",
+            "elementIndex": "element_index",
+            "getElement": "get_element",
+            "index": "index",
+            "algebraType": "algebra_type",
+            "getUniverseList": "get_universe_list",
         },
         "SubalgebraLattice": {
             "iterator": "iterator",
@@ -413,6 +530,8 @@ def _install(alg_module_globals: dict) -> None:
                 "FreeAlgebra": _LibFreeAlgebra,
                 "ProductAlgebra": _LibProductAlgebra,
                 "SubalgebraLattice": _LibSubalgebraLattice,
+                "ReductAlgebra": _LibReductAlgebra,
+                "Subalgebra": _LibSubalgebra,
             }.get(class_name, alg_module_globals.get(class_name))
             if cls is None:
                 continue

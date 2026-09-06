@@ -4,11 +4,30 @@ status: pending
 java_source: org/uacalc/alg/FreeAlgebra.java
 notes: |
   ~/uacalc free_algebras.py / get_idempotents.py call
-  FreeAlgebra(alg, n, makeUniverse, thinGens) plus advanced methods
-  getElementFromTerm, getProductAlgebra, getTerm, getTerms, getElement,
-  elementIndex, sub().Sg — several still missing on the Rust binding.
-  Constructor overload and getName/elementIndex/getOperation are shimmed;
-  remaining surface stays pending until bindings land.
+  FreeAlgebra(alg, n) and FreeAlgebra(alg, n, makeUniverse, thinGens), plus
+  SubProductAlgebra methods getElement, elementIndex, getTerms, getTerm,
+  getElementFromTerm, getProductAlgebra, generators, getVariables,
+  getIdempotentTerms, and inherited SmallAlgebra getOperation / operations.
+
+  WHY CPYTHON FAILS NOW (backend work, do not weaken the script):
+  - uacalc_lib/src/alg/free_algebra.rs get_element / element_index always
+    return None. Java SubProductAlgebra.getElement(i) returns univ.get(i)
+    (an IntArray coordinate tuple); elementIndex looks it up in univHashMap.
+  - Binding has no getTerms / getTerm / getElementFromTerm / getProductAlgebra /
+    generators / getVariables. Java defines these on SubProductAlgebra.
+  - Binding has no operations(); only operations_count. Java
+    GeneralAlgebra.operations() / getOperation(symbol) work after makeUniverse.
+  - new_with_progress ignores make_universe / thin_gens / decompose (always
+    the default Rust constructor). Java 4-arg thinGens=true thins projections
+    and shrinks getProductAlgebra().getNumberOfFactors().
+  - Default names differ: Java FreeAlgebra(alg, n) is "Free(n, name)"; some
+    ProgressReport overloads use "F(n) over name". Scripts call setName first.
+  - get_idempotent_terms exists but returns List[str], not List[Term].
+    On F(1) over C2 both sides currently print [x] (Java list of Term).
+  - algebraType() already matches ("FREE"). getUniverseList works for the
+    unthinned ctor ([[0,1],[0,0]]); the thinned ctor still returns the
+    unthinned universe because thin_gens is ignored.
+  - superAlgebra() (alias of the product) is missing; same as getProductAlgebra.
 ignore_reason: null
 surface:
   package_export: true
@@ -16,14 +35,40 @@ surface:
     getName: name
     setName: set_name
     elementIndex: element_index
+    getElement: get_element
     getOperation: getOperation
+    getUniverseList: get_universe_list
+    getTerms: get_terms
+    getTerm: get_term
+    getElementFromTerm: get_element_from_term
+    getProductAlgebra: get_product_algebra
+    generators: generators
+    getVariables: get_variables
+    getIdempotentTerms: get_idempotent_terms
+    superAlgebra: super_algebra
+    algebraType: algebra_type
   static_methods: []
   str_parity: false
 testing:
   notes: |
-    free_algebra_smoke.py constructs FreeAlgebra(cyclic2, 1, True, True) and
-    prints cardinality / alias probes. Construction progress and default names
-    still differ across runtimes (ignored below).
+    free_algebra_smoke.py is the source of truth for Jython FreeAlgebra.
+    Constructs F(1) over cyclic2 two ways: FreeAlgebra(alg, 1) and
+    FreeAlgebra(alg, 1, True, True). After setName, prints cardinality,
+    getUniverseList / getElement / elementIndex (IntArray coords), getTerms /
+    getTerm / getElementFromTerm round-trip, getProductAlgebra
+    cardinality+factor count, generators, getVariables, getIdempotentTerms,
+    operations() count, and getOperation("+") table.
+
+    Expected Java (F(1) over C2, makeUniverse=true): cardinality 2; universe
+    elements are IntArrays (not ints); getTerms is [x, +(x,x)];
+    getIdempotentTerms is [x] only (+(x,x) is the constant-0 term, not
+    idempotent). Unthinned 2-arg product is C2^2 (card 4, 2 factors),
+    universe [[0,1],[0,0]]. Thinned 4-arg product has 1 factor (card 2),
+    universe [[1],[0]]. + table on free-algebra indices is 1,0,0,1
+    (generator is index 0).
+
+    ignore_lines are construction progress only. Do not ignore None vs
+    IntArray, missing methods, or name/factor mismatches.
   task_refs: []
   scripts:
     - path: jython_comparison/scripts/free_algebra_smoke.py
@@ -31,8 +76,20 @@ testing:
         - getName
         - setName
         - elementIndex
+        - getElement
         - getOperation
+        - getUniverseList
+        - getTerms
+        - getTerm
+        - getElementFromTerm
+        - getProductAlgebra
+        - generators
+        - getVariables
+        - getIdempotentTerms
+        - superAlgebra
+        - algebraType
         - cardinality
+        - operations
       ignore_lines:
         - "Constructing free"
         - "pass:"

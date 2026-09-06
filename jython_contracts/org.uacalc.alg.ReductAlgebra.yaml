@@ -3,20 +3,74 @@ level: file
 status: pending
 java_source: org/uacalc/alg/ReductAlgebra.java
 notes: |
-  get_subreducts.py builds ReductAlgebra(alg, signature) where signature is a
-  list of Terms from Terms.stringToTerm. Current Python binding only accepts
-  string variable names — term-list parity is pending. Once bound, expect the
-  same getName/setName/getOperation aliases as other SmallAlgebra types.
+  get_subreducts.py / jython_comparison/subreducts_mace4_stream.py build
+  ReductAlgebra(alg, signature) where signature is a list of Term, and
+  ReductAlgebra(name, alg, terms). Java skips term.isaVariable() when
+  building operations and otherwise adds term.interpretation(alg).
+  Same getName/setName/getOperation/getElement/elementIndex as SmallAlgebra,
+  plus superAlgebra().
+
+  WHY CPYTHON FAILS NOW (backend work, do not weaken the script):
+  - PyO3 constructor (uacalc_lib/src/alg/reduct_algebra.rs) only accepts
+    strings and wraps each as VariableImp. Java interprets non-variable
+    Terms. The org shim stringifies Terms first (_terms_to_names), so a real
+    +(x,y) becomes VariableImp("+(x,y)") and is skipped — CPython always
+    gets zero operations for any current constructor argument.
+  - super_algebra() always raises ValueError ("not yet fully implemented").
+    Java superAlgebra() returns the original SmallAlgebra (identity of
+    universe / name / cardinality).
+  - No operations() on the binding (only operations_count). getOperation
+    (org patch) iterates operations(), so intValueAt on the interpreted
+    reduct op cannot run.
+  - Terms.stringToTerm cannot parse cyclic2's op name "+" (Java
+    isValidOpNameString requires a leading letter). The full script builds
+    NonVariableTerm(alg.operations()[0].symbol(), [Variable.x, Variable.y]).
+  - getUniverseList(): Java returns null; CPython returns [0, 1].
+  - algebraType(): Java AlgebraType.REDUCT; CPython string "Reduct".
+  - Variable-term and empty-list constructors already match Java on
+    name/cardinality; operations() is still missing so nops cannot print.
 ignore_reason: null
 surface:
   package_export: true
-  aliases: {}
+  aliases:
+    getName: name
+    setName: set_name
+    getOperation: getOperation
+    superAlgebra: super_algebra
+    elementIndex: element_index
+    getElement: get_element
+    getUniverseList: get_universe_list
+    algebraType: algebra_type
   static_methods: []
   str_parity: false
 testing:
   notes: |
-    Declared for tracking ~/uacalc get_subreducts.py. Full term-signature
-    reduct construction needs richer ReductAlgebra bindings before a parity
-    script can match Jython.
+    reduct_algebra_smoke.py is the source of truth for Jython ReductAlgebra.
+    On cyclic2 it builds the actual non-variable + term via NonVariableTerm
+    (not stringToTerm — "+" is not a valid op-name token), then:
+    - ReductAlgebra(alg, [plus]) and ReductAlgebra(name, alg, [plus])
+    - operations() count 1; the interpreted op is a TermOperation named
+      "\"+(x,y)\"", so getOperation(OperationSymbol("+", 2)) is None
+    - operations()[0].intValueAt table is C2's + (0,1,1,0); getOperation
+      of that op's own symbol finds it
+    - superAlgebra() name+cardinality identity with C2
+    - getElement / elementIndex delegated to the super algebra (Java
+      getElement(0) is 0 on C2)
+    Secondary: variable term and empty list → 0 operations, card 2.
+
+    Do not ignore nops=1 vs 0, missing superAlgebra, or op-table failures.
   task_refs: []
-  scripts: []
+  scripts:
+    - path: jython_comparison/scripts/reduct_algebra_smoke.py
+      covers:
+        - getName
+        - setName
+        - getOperation
+        - superAlgebra
+        - elementIndex
+        - getElement
+        - getUniverseList
+        - algebraType
+        - cardinality
+        - operations
+      ignore_lines: []

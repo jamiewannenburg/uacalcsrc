@@ -14,7 +14,15 @@ surface:
   str_parity: false
 testing:
   notes: |
-    Add a script once FreeAlgebra.getElement returns IntArray-compatible values
-    under both runtimes.
+    int_array_smoke.py constructs IntArray(size) and IntArray(list), then
+    exercises get / set / clone / universeSize. FreeAlgebra.getElement returning
+    IntArray values is still a separate pending binding.
   task_refs: []
-  scripts: []
+  scripts:
+    - path: jython_comparison/scripts/int_array_smoke.py
+      covers:
+        - get
+        - set
+        - clone
+        - universeSize
+      ignore_lines: []
