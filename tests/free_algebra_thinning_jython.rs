@@ -2,7 +2,7 @@
 //! to `alg ^ gens[0].universeSize()` the way Java FreeAlgebra does.
 
 use std::path::Path;
-use uacalc::alg::{Algebra, FreeAlgebra, SmallAlgebra};
+use uacalc::alg::{Algebra, FreeAlgebra};
 use uacalc::io::algebra_io::read_algebra_file;
 use uacalc::util::int_array::IntArrayTrait;
 

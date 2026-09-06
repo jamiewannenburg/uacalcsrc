@@ -282,7 +282,7 @@ impl FreeAlgebra
             if let Some(ref report) = report {
                 report.add_start_line("thinning coordinate projections ...");
             }
-            let thinned_gens = Self::thin_generators(&gens)?;
+            let thinned_gens = Self::thin_generators(&gens, &product_algebra)?;
             if let Some(ref report) = report {
                 report.add_end_line(&format!(
                     "thinned {} coordinates down to {}",
@@ -520,27 +520,36 @@ impl FreeAlgebra
     }
 
     /// Thin generators by eliminating redundant coordinate projections.
-    fn thin_generators(gens: &[IntArray]) -> Result<Vec<IntArray>, String> {
-        // Transpose the generators to get projections
+    ///
+    /// Java `SubProductAlgebra.thinGenerators()` keeps maximal projections under
+    /// the homomorphism order: `leq(a,b)` iff there is a homomorphism from
+    /// `projection(b)` to `projection(a)` sending `b` to `a`.
+    fn thin_generators(
+        gens: &[IntArray],
+        product_algebra: &BigProductAlgebra<i32>,
+    ) -> Result<Vec<IntArray>, String> {
         let projs = Self::transpose(gens)?;
-        
-        // Create a map from projections to their corresponding algebras
-        let mut proj_map = std::collections::HashMap::new();
+        let mut proj_map: HashMap<IntArray, Box<dyn SmallAlgebra<UniverseItem = i32>>> =
+            HashMap::new();
         for (k, ia) in projs.iter().enumerate() {
-            // For now, we'll use a simplified approach since we don't have
-            // access to the product algebra's projection method
-            proj_map.insert(ia.clone(), k);
+            proj_map.insert(ia.clone(), product_algebra.projection(k)?);
         }
-        
-        // Find maximals using homomorphism-based ordering
+
         let thinned_projs = Self::maximals(&projs, |a, b| {
-            // Check if there's a homomorphism from b to a
-            // For now, we'll use a simplified check
-            // The full implementation would use SubalgebraLattice::extend_to_homomorphism
-            a.universe_size() <= b.universe_size()
+            match (proj_map.get(b), proj_map.get(a)) {
+                (Some(alg_b), Some(alg_a)) => {
+                    crate::alg::sublat::SubalgebraLattice::<i32>::extend_to_homomorphism(
+                        b.as_slice(),
+                        a.as_slice(),
+                        alg_b.as_ref(),
+                        alg_a.as_ref(),
+                    )
+                    .is_some()
+                }
+                _ => false,
+            }
         });
-        
-        // Transpose back to get the thinned generators
+
         Self::transpose(&thinned_projs)
     }
     
