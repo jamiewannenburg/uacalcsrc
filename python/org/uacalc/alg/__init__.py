@@ -61,6 +61,10 @@ if not is_jython:
             "numberOfFactors": "number_of_factors",
             "getOperation": "getOperation",
         },
+        "BigProductAlgebra": {
+            "numberOfFactors": "number_of_factors",
+            "getNumberOfFactors": "number_of_factors",
+        },
         "ReductAlgebra": {
             "getName": "name",
             "setName": "set_name",

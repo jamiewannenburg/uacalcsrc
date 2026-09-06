@@ -25,6 +25,7 @@ def _install(alg_module_globals: dict) -> None:
     _LibSubalgebraLattice = alg_module_globals["SubalgebraLattice"]
     _LibReductAlgebra = alg_module_globals.get("ReductAlgebra")
     _LibSubalgebra = alg_module_globals.get("Subalgebra")
+    _LibBigProductAlgebra = alg_module_globals.get("BigProductAlgebra")
     _LibAbstractOperation = alg_module_globals.get("AbstractOperation")
 
     def _sym_name(sym: Any) -> str:
@@ -172,7 +173,7 @@ def _install(alg_module_globals: dict) -> None:
         if len(rest) == 1:
             # makeUniverse only
             return _LibFreeAlgebra.new_with_progress(
-                base_inner, int(number_of_gens), bool(rest[0]), False, True
+                base_inner, int(number_of_gens), bool(rest[0]), False, False
             )
         # makeUniverse, thinGenerators
         return _LibFreeAlgebra.new_with_progress(
@@ -180,7 +181,7 @@ def _install(alg_module_globals: dict) -> None:
             int(number_of_gens),
             bool(rest[0]),
             bool(rest[1]),
-            True,
+            False,
         )
 
     def _product_algebra(*args: Any) -> Any:
@@ -256,7 +257,7 @@ def _install(alg_module_globals: dict) -> None:
             name, alg, terms = args
         else:
             raise TypeError("ReductAlgebra() takes 2 or 3 arguments")
-        reduct = _LibReductAlgebra(_unwrap_algebra(alg), _terms_to_names(terms))
+        reduct = _LibReductAlgebra(_unwrap_algebra(alg), list(terms))
         if name is not None:
             reduct.set_name(str(name))
         return reduct
@@ -295,6 +296,14 @@ def _install(alg_module_globals: dict) -> None:
         if hasattr(self, "get_universe"):
             return list(self.get_universe())
         return list(range(self.cardinality()))
+
+    def getUniverseList(self: Any) -> Any:
+        if hasattr(self, "get_universe_list"):
+            univ = self.get_universe_list()
+            if univ is None:
+                return None
+            return list(univ)
+        return None
 
     # --- patch SimilarityType ---
     if not hasattr(SimilarityType, "getOperationSymbols") and hasattr(
@@ -361,9 +370,10 @@ def _install(alg_module_globals: dict) -> None:
         "universe": universe,
         "similarityType": similarityType,
         "constantOperations": constantOperations,
-        "getUniverseList": lambda self: list(self.get_universe_list()),
+        "getUniverseList": getUniverseList,
         "elementIndex": lambda self, elem: self.element_index(elem),
         "getElement": lambda self, index: self.get_element(index),
+        "superAlgebra": lambda self: self.super_algebra(),
         "algebraType": lambda self: self.algebra_type(),
         "resetConAndSub": lambda self: self.reset_con_and_sub(),
     }
@@ -405,6 +415,16 @@ def _install(alg_module_globals: dict) -> None:
             _LibProductAlgebra.numberOfFactors = numberOfFactors
         except (TypeError, AttributeError):
             pass
+    if _LibBigProductAlgebra is not None:
+        for camel, impl in (
+            ("numberOfFactors", numberOfFactors),
+            ("getNumberOfFactors", numberOfFactors),
+        ):
+            if not hasattr(_LibBigProductAlgebra, camel):
+                try:
+                    setattr(_LibBigProductAlgebra, camel, impl)
+                except (TypeError, AttributeError):
+                    pass
 
     if not hasattr(_LibSubalgebraLattice, "iterator"):
         try:
@@ -495,6 +515,10 @@ def _install(alg_module_globals: dict) -> None:
             "numberOfFactors": "number_of_factors",
             "getOperation": "getOperation",
         },
+        "BigProductAlgebra": {
+            "numberOfFactors": "number_of_factors",
+            "getNumberOfFactors": "number_of_factors",
+        },
         "ReductAlgebra": {
             "getName": "name",
             "setName": "set_name",
@@ -529,6 +553,7 @@ def _install(alg_module_globals: dict) -> None:
                 "BasicAlgebra": _LibBasicAlgebra,
                 "FreeAlgebra": _LibFreeAlgebra,
                 "ProductAlgebra": _LibProductAlgebra,
+                "BigProductAlgebra": _LibBigProductAlgebra,
                 "SubalgebraLattice": _LibSubalgebraLattice,
                 "ReductAlgebra": _LibReductAlgebra,
                 "Subalgebra": _LibSubalgebra,
