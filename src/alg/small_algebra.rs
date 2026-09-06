@@ -190,7 +190,14 @@ where
         // Check if we need to initialize (read lock)
         if self.universe_list.read().unwrap().is_none() {
             // Initialize with write lock
-            let universe_vec: Vec<T> = self.base.universe.iter().cloned().collect();
+            let mut universe_vec: Vec<T> = self.base.universe.iter().cloned().collect();
+            // Java integer universes are 0..n-1 in index order, not HashSet order.
+            if std::any::TypeId::of::<T>() == std::any::TypeId::of::<i32>() {
+                unsafe {
+                    let as_i32 = &mut *(&mut universe_vec as *mut Vec<T> as *mut Vec<i32>);
+                    as_i32.sort_unstable();
+                }
+            }
             
             let mut universe_order = HashMap::new();
             for (i, elem) in universe_vec.iter().enumerate() {

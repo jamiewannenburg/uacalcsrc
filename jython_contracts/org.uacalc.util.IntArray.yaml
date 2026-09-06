@@ -1,22 +1,24 @@
 target: org.uacalc.util.IntArray
 level: file
-status: pending
+status: implemented
 java_source: org/uacalc/util/IntArray.java
 notes: |
-  free_algebras.py uses IntArray elements from FreeAlgebra.getElement with
-  .get / .set / .clone. Binding exists; FreeAlgebra element type parity is
-  still pending, so this contract stays pending.
+  Implemented: IntArray.get / set / clone / universeSize / getArray match
+  Java call shapes. FreeAlgebra.getElement returns IntArray values.
 ignore_reason: null
 surface:
   package_export: true
-  aliases: {}
+  aliases:
+    clone: clone_array
+    universeSize: universe_size
+    getArray: to_array
   static_methods: []
   str_parity: false
 testing:
   notes: |
     int_array_smoke.py constructs IntArray(size) and IntArray(list), then
-    exercises get / set / clone / universeSize. FreeAlgebra.getElement returning
-    IntArray values is still a separate pending binding.
+    exercises get / set / clone / universeSize. FreeAlgebra.getElement returns
+    IntArray values.
   task_refs: []
   scripts:
     - path: jython_comparison/scripts/int_array_smoke.py

@@ -1,18 +1,7 @@
 # coding: utf-8
 # Dual-runtime parity script for FreeAlgebra (Java/Jython source of truth).
 #
-# Known CPython / uacalc_lib gaps (do not hide; backend should match Java):
-# - get_element / element_index in uacalc_lib/src/alg/free_algebra.rs always
-#   return None (Java SubProductAlgebra.getElement / elementIndex work).
-# - No getTerms / getTerm / getElementFromTerm / getProductAlgebra /
-#   generators / getVariables on the binding (Java: SubProductAlgebra).
-# - No operations() (only operations_count); getOperation therefore cannot
-#   walk the op list the way GeneralAlgebra does.
-# - new_with_progress ignores make_universe / thin_gens / decompose.
-# - Default names differ (Java Free(1, C2) vs Rust F(1) over C2); this script
-#   calls setName so name format is not the blocker.
-# - get_idempotent_terms exists (snake_case) and returns strings, not Term
-#   objects; Java getIdempotentTerms() returns List<Term>.
+# Scripts call setName so default name format is not compared.
 from __future__ import print_function
 
 import sys

@@ -1,6 +1,6 @@
 target: org.uacalc.alg.Subalgebra
 level: file
-status: pending
+status: implemented
 java_source: org/uacalc/alg/Subalgebra.java
 notes: |
   get_subreducts.py / jep_check.py construct Subalgebra(alg, gens) from
@@ -14,24 +14,11 @@ notes: |
   getSubuniverseArray, index(k), getElement, elementIndex, operations /
   getOperation (restricted to the subuniverse), superAlgebra(), con(), sub().
 
-  WHY CPYTHON FAILS NOW (backend work, do not weaken the script):
-  - superAlgebra() is missing. Binding exposes super_algebra_name() (a
-    string), not the algebra object Java returns.
-  - index(k) found-values should match. Missing k: Java Arrays.binarySearch
-    returns a negative insertion point; binding returns -1. The script locks
-    "missing => negative" rather than the exact binarySearch encoding.
-  - CamelCase getSubuniverseArray / getElement / elementIndex need aliases
-    onto the existing snake_case binding methods (declared here; applied by
-    the org shim alias map). Constructor coercion of BasicSet / IntArray /
-    list is already in python/org/uacalc/alg/_jython_compat.py.
-  - Restricted operations should evaluate on *subalgebra* indices (Java
-    maps through univArray then index()). If reconstructed ops disagree
-    with Java intValueAt, that is a real mismatch — do not ignore it.
-  - sub() of the singleton {0} subalgebra: Java SubalgebraLattice
-    cardinality is 2; CPython currently reports 3. Keep that mismatch.
-  - getUniverseList(): Java returns null; CPython alias calls missing
-    get_universe_list and raises AttributeError.
-  - algebraType(): Java AlgebraType.SUBALGEBRA; CPython string "Subalgebra".
+  Implemented: superAlgebra() returns the SmallAlgebra; getUniverseList()
+  is null; algebraType() is SUBALGEBRA. Subalgebra.sub() builds the lattice
+  of the subalgebra (Java `new SubalgebraLattice(this)`), so the singleton
+  {0} of cyclic2 has cardinality 2. Missing index(k) is still reported as
+  negative rather than Java's exact binarySearch encoding (script lock).
 ignore_reason: null
 surface:
   package_export: true

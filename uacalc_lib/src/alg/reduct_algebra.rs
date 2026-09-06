@@ -5,6 +5,7 @@ use std::collections::HashMap;
 use uacalc::alg::*;
 use crate::util::PyIntArray;
 
+use crate::alg::convert::{algebra_type_java_name, operation_to_py, py_to_term};
 use crate::alg::PyBasicAlgebra;
 use crate::alg::PySubalgebraLattice;
 use crate::alg::conlat::congruence_lattice::PyCongruenceLattice;
@@ -12,12 +13,13 @@ use crate::alg::conlat::congruence_lattice::PyCongruenceLattice;
 #[pyclass]
 pub struct PyReductAlgebra {
     inner: uacalc::alg::ReductAlgebra,
+    super_alg: uacalc::alg::BasicAlgebra<i32>,
 }
 
 impl PyReductAlgebra {
     /// Create PyReductAlgebra from inner Rust type (not exposed to Python)
-    fn from_inner(inner: uacalc::alg::ReductAlgebra) -> Self {
-        PyReductAlgebra { inner }
+    fn from_inner(inner: uacalc::alg::ReductAlgebra, super_alg: uacalc::alg::BasicAlgebra<i32>) -> Self {
+        PyReductAlgebra { inner, super_alg }
     }
 }
 
@@ -36,25 +38,17 @@ impl PyReductAlgebra {
     ///     ValueError: If the terms are invalid or algebra is incompatible
     #[new]
     fn new(super_algebra: &PyBasicAlgebra, term_list: &Bound<'_, PyList>) -> PyResult<Self> {
-        // Convert Python list of terms to Rust Vec<Box<dyn Term>>
         let mut rust_terms: Vec<Box<dyn uacalc::terms::Term>> = Vec::new();
-        
         for item in term_list.iter() {
-            // For now, we'll create a simple variable term
-            // In a full implementation, we'd need to handle different term types
-            if let Ok(var_name) = item.extract::<String>() {
-                let var = Box::new(uacalc::terms::VariableImp::new(&var_name)) as Box<dyn uacalc::terms::Term>;
-                rust_terms.push(var);
-            } else {
-                return Err(PyValueError::new_err("Term list must contain strings (variable names)"));
-            }
+            rust_terms.push(py_to_term(&item)?);
         }
-        
-        // Create the super algebra as a trait object
-        let super_alg = Box::new(super_algebra.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
-        
-        match uacalc::alg::ReductAlgebra::new_safe(super_alg, rust_terms) {
-            Ok(inner) => Ok(PyReductAlgebra { inner }),
+
+        let super_alg = super_algebra.inner.clone();
+        let super_box = Box::new(super_alg.clone())
+            as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
+
+        match uacalc::alg::ReductAlgebra::new_safe(super_box, rust_terms) {
+            Ok(inner) => Ok(PyReductAlgebra { inner, super_alg }),
             Err(e) => Err(PyValueError::new_err(e)),
         }
     }
@@ -88,15 +82,15 @@ impl PyReductAlgebra {
     /// Returns:
     ///     str: The algebra type
     fn algebra_type(&self) -> String {
-        "Reduct".to_string()
+        algebra_type_java_name(self.inner.algebra_type())
     }
     
     /// Get the universe as a list.
     /// 
     /// Returns:
-    ///     List[int]: The universe elements
+    ///     None: Java `ReductAlgebra.getUniverseList()` returns null
     fn get_universe_list(&self) -> Option<Vec<i32>> {
-        self.inner.get_universe_list()
+        None
     }
     
     /// Get the universe order as a dictionary.
@@ -160,6 +154,15 @@ impl PyReductAlgebra {
     fn operations_count(&self) -> usize {
         self.inner.get_operations_ref().len()
     }
+
+    /// Java `operations()`.
+    fn operations(&self, py: Python<'_>) -> PyResult<Vec<PyObject>> {
+        let mut result = Vec::new();
+        for op in self.inner.operations() {
+            result.push(operation_to_py(py, op.as_ref())?);
+        }
+        Ok(result)
+    }
     
     /// Python string representation
     fn __str__(&self) -> String {
@@ -210,13 +213,10 @@ impl PyReductAlgebra {
     /// 
     /// Returns:
     ///     BasicAlgebra: The super algebra (as BasicAlgebra for now)
-    fn super_algebra(&self) -> PyResult<PyBasicAlgebra> {
-        // Since we can't easily convert Box<dyn SmallAlgebra> back to PyBasicAlgebra,
-        // we'll need to clone the inner algebra if it's a BasicAlgebra
-        // For now, this is a limitation - we'd need to store the original PyBasicAlgebra
-        // or have a way to convert back
-        // This is a placeholder that will need proper implementation
-        Err(PyValueError::new_err("super_algebra() not yet fully implemented - need to store original algebra reference"))
+    fn super_algebra(&self) -> PyBasicAlgebra {
+        PyBasicAlgebra {
+            inner: self.super_alg.clone(),
+        }
     }
     
     /// Make operation tables from the terms.

@@ -81,7 +81,22 @@ impl PyBigProductAlgebra {
     fn cardinality(&self) -> i32 {
         self.inner.cardinality()
     }
-    
+
+    /// Java `numberOfFactors()` / `getNumberOfFactors()`.
+    fn number_of_factors(&self) -> usize {
+        self.inner.get_number_of_factors()
+    }
+
+    #[allow(non_snake_case)]
+    fn getNumberOfFactors(&self) -> usize {
+        self.inner.get_number_of_factors()
+    }
+
+    #[allow(non_snake_case)]
+    fn numberOfFactors(&self) -> usize {
+        self.inner.get_number_of_factors()
+    }
+
     fn __str__(&self) -> String {
         format!("BigProductAlgebra(name: {}, factors: {})",
             self.inner.name(),
@@ -97,5 +112,11 @@ impl PyBigProductAlgebra {
     /// Get the inner BigProductAlgebra (for internal use)
     pub(crate) fn get_inner(&self) -> Arc<BigProductAlgebra<i32>> {
         Arc::clone(&self.inner)
+    }
+
+    pub(crate) fn from_cloned(inner: &BigProductAlgebra<i32>) -> Self {
+        PyBigProductAlgebra {
+            inner: Arc::new(inner.clone()),
+        }
     }
 }

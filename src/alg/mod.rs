@@ -1968,16 +1968,17 @@ impl ReductAlgebra {
         self.operations.clear();
         
         for term in &self.term_list {
-            // Get the variable list for this term
-            let varlist = term.get_variable_list();
-            
-            // Now that clone_box preserves operations, we can use it safely
+            // Java ReductAlgebra skips variables; only non-variable terms become ops.
+            if term.isa_variable() {
+                continue;
+            }
             let cloned_alg = self.super_algebra.clone_box();
             let wrapper = SmallAlgebraWrapper::new(cloned_alg);
             let alg_arc = Arc::new(wrapper);
-            let interpretation = term.interpretation(alg_arc, &varlist, true)?;
-            
-            self.operations.push(Arc::from(interpretation));
+            // Java uses term.interpretation(alg) → TermOperationImp named "\"term\"".
+            let interpretation = term.interpretation_simple(alg_arc)?;
+            let as_op: Box<dyn Operation> = interpretation;
+            self.operations.push(Arc::from(as_op));
         }
         
         Ok(())

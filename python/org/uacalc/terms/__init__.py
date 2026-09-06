@@ -33,8 +33,12 @@ else:
 
     if not hasattr(_LibNonVariableTerm, "makeConstantTerm"):
         _LibNonVariableTerm.makeConstantTerm = _LibNonVariableTerm.make_constant_term
-    if not hasattr(_LibNonVariableTerm, "intEval") and hasattr(_LibNonVariableTerm, "int_eval"):
-        _LibNonVariableTerm.intEval = _LibNonVariableTerm.int_eval
+    if not hasattr(_LibNonVariableTerm, "isaVariable") and hasattr(
+        _LibNonVariableTerm, "isa_variable"
+    ):
+        _LibNonVariableTerm.isaVariable = _LibNonVariableTerm.isa_variable
+    if not hasattr(VariableImp, "isaVariable") and hasattr(VariableImp, "isa_variable"):
+        VariableImp.isaVariable = VariableImp.isa_variable
     if not hasattr(VariableImp, "intEval") and hasattr(VariableImp, "int_eval"):
         VariableImp.intEval = VariableImp.int_eval
     if not hasattr(VariableImp, "getVariableList") and hasattr(VariableImp, "get_variable_list"):

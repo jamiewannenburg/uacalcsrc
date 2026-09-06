@@ -1,9 +1,13 @@
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
+use pyo3::types::PyAny;
 use uacalc::alg::{Algebra, SmallAlgebra};
 use crate::alg::{PyBasicAlgebra, PyBasicOperation};
+use crate::alg::big_product_algebra::PyBigProductAlgebra;
+use crate::alg::convert::{algebra_type_java_name, operation_to_py, py_to_term, term_to_py};
 use crate::alg::conlat::congruence_lattice::PyCongruenceLatticeIntArray;
 use crate::eq::PyEquation;
+use crate::terms::PyVariableImp;
 use crate::util::PyIntArray;
 use std::collections::HashMap;
 
@@ -72,8 +76,14 @@ impl PyFreeAlgebra {
         decompose: bool
     ) -> PyResult<Self> {
         let rust_base = Box::new(base.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
+        let _ = decompose;
 
-        match uacalc::alg::FreeAlgebra::new_with_progress_safe(rust_base, number_of_gens, None) {
+        match uacalc::alg::FreeAlgebra::new_with_thin_safe(
+            rust_base,
+            number_of_gens,
+            make_universe,
+            thin_gens,
+        ) {
             Ok(inner) => Ok(PyFreeAlgebra { inner }),
             Err(e) => Err(PyValueError::new_err(e)),
         }
@@ -106,13 +116,13 @@ impl PyFreeAlgebra {
     /// Get the idempotent terms.
     ///
     /// Returns:
-    ///     List[str]: List of idempotent term representations
-    fn get_idempotent_terms(&self) -> PyResult<Vec<String>> {
+    ///     List[Term]: Idempotent terms (VariableImp / NonVariableTerm)
+    fn get_idempotent_terms(&self, py: Python<'_>) -> PyResult<Vec<PyObject>> {
         match self.inner.get_idempotent_terms() {
-            Ok(terms) => {
-                // Convert Box<dyn Term> to strings
-                Ok(terms.iter().map(|t| t.to_string()).collect())
-            },
+            Ok(terms) => terms
+                .iter()
+                .map(|t| term_to_py(py, t.as_ref()))
+                .collect(),
             Err(e) => Err(PyValueError::new_err(e)),
         }
     }
@@ -122,10 +132,7 @@ impl PyFreeAlgebra {
     /// Returns:
     ///     str: The algebra type
     fn algebra_type(&self) -> String {
-        match self.inner.algebra_type() {
-            uacalc::alg::AlgebraType::Free => "FREE".to_string(),
-            _ => "UNKNOWN".to_string(),
-        }
+        algebra_type_java_name(self.inner.algebra_type())
     }
 
     /// Switch x and y automorphism.
@@ -221,6 +228,76 @@ impl PyFreeAlgebra {
         self.inner.get_operations_ref().len()
     }
 
+    /// Java `operations()` — table-backed ops so `intValueAt` works from Python.
+    fn operations(&self, py: Python<'_>) -> PyResult<Vec<PyObject>> {
+        let mut result = Vec::new();
+        for op in self.inner.operations() {
+            result.push(operation_to_py(py, op.as_ref())?);
+        }
+        Ok(result)
+    }
+
+    /// Java `getTerms()`.
+    fn get_terms(&self, py: Python<'_>) -> PyResult<Vec<PyObject>> {
+        match self.inner.get_inner().get_terms() {
+            Some(terms) => terms
+                .iter()
+                .map(|t| term_to_py(py, t.as_ref()))
+                .collect(),
+            None => Ok(Vec::new()),
+        }
+    }
+
+    /// Java `getTerm(elt)`.
+    fn get_term(&self, py: Python<'_>, element: &PyIntArray) -> PyResult<Option<PyObject>> {
+        match self.inner.get_inner().get_term(&element.inner) {
+            Some(term) => Ok(Some(term_to_py(py, term)?)),
+            None => Ok(None),
+        }
+    }
+
+    /// Java `getElementFromTerm(term)`.
+    fn get_element_from_term(&self, term: &Bound<'_, PyAny>) -> PyResult<Option<PyIntArray>> {
+        let rust_term = py_to_term(term)?;
+        Ok(self
+            .inner
+            .get_inner()
+            .get_element_from_term(rust_term.as_ref())
+            .map(|arr| PyIntArray { inner: arr }))
+    }
+
+    /// Java `getProductAlgebra()`.
+    fn get_product_algebra(&self) -> PyBigProductAlgebra {
+        PyBigProductAlgebra::from_cloned(self.inner.get_inner().get_product_algebra())
+    }
+
+    /// Java `superAlgebra()` — same as the product algebra for a free algebra.
+    fn super_algebra(&self) -> PyBigProductAlgebra {
+        self.get_product_algebra()
+    }
+
+    /// Java `generators()`.
+    fn generators(&self) -> Vec<PyIntArray> {
+        self.inner
+            .get_inner()
+            .generators()
+            .iter()
+            .cloned()
+            .map(|arr| PyIntArray { inner: arr })
+            .collect()
+    }
+
+    /// Java `getVariables()`.
+    fn get_variables(&self) -> Vec<PyVariableImp> {
+        self.inner
+            .get_inner()
+            .get_variables()
+            .unwrap_or_default()
+            .into_iter()
+            .map(|inner| PyVariableImp { inner })
+            .collect()
+    }
+
     /// Get the universe as a list.
     ///
     /// Returns:
@@ -249,9 +326,9 @@ impl PyFreeAlgebra {
     /// Returns:
     ///     IntArray: The element at the given index
     fn get_element(&self, index: usize) -> Option<PyIntArray> {
-        // This is a simplified implementation
-        // The full implementation would need to convert from IntArray
-        None
+        self.inner
+            .get_element(index)
+            .map(|arr| PyIntArray { inner: arr })
     }
 
     /// Get the index of an element.
@@ -262,9 +339,7 @@ impl PyFreeAlgebra {
     /// Returns:
     ///     int: The index of the element
     fn element_index(&self, element: &PyIntArray) -> Option<usize> {
-        // This is a simplified implementation
-        // The full implementation would need to search through the universe
-        None
+        self.inner.element_index(&element.inner)
     }
 
     /// String representation of the algebra.

@@ -1,6 +1,6 @@
 target: org.uacalc.alg.ReductAlgebra
 level: file
-status: pending
+status: implemented
 java_source: org/uacalc/alg/ReductAlgebra.java
 notes: |
   get_subreducts.py / jython_comparison/subreducts_mace4_stream.py build
@@ -10,25 +10,11 @@ notes: |
   Same getName/setName/getOperation/getElement/elementIndex as SmallAlgebra,
   plus superAlgebra().
 
-  WHY CPYTHON FAILS NOW (backend work, do not weaken the script):
-  - PyO3 constructor (uacalc_lib/src/alg/reduct_algebra.rs) only accepts
-    strings and wraps each as VariableImp. Java interprets non-variable
-    Terms. The org shim stringifies Terms first (_terms_to_names), so a real
-    +(x,y) becomes VariableImp("+(x,y)") and is skipped — CPython always
-    gets zero operations for any current constructor argument.
-  - super_algebra() always raises ValueError ("not yet fully implemented").
-    Java superAlgebra() returns the original SmallAlgebra (identity of
-    universe / name / cardinality).
-  - No operations() on the binding (only operations_count). getOperation
-    (org patch) iterates operations(), so intValueAt on the interpreted
-    reduct op cannot run.
-  - Terms.stringToTerm cannot parse cyclic2's op name "+" (Java
-    isValidOpNameString requires a leading letter). The full script builds
-    NonVariableTerm(alg.operations()[0].symbol(), [Variable.x, Variable.y]).
-  - getUniverseList(): Java returns null; CPython returns [0, 1].
-  - algebraType(): Java AlgebraType.REDUCT; CPython string "Reduct".
-  - Variable-term and empty-list constructors already match Java on
-    name/cardinality; operations() is still missing so nops cannot print.
+  Implemented: ReductAlgebra accepts VariableImp / NonVariableTerm / str;
+  Java-style interpretation skips variables; operations() and superAlgebra()
+  work; getUniverseList() is null; algebraType() is REDUCT. Scripts still
+  build NonVariableTerm from the cyclic2 "+" symbol (stringToTerm cannot
+  parse "+").
 ignore_reason: null
 surface:
   package_export: true

@@ -1,6 +1,6 @@
 target: org.uacalc.alg.FreeAlgebra
 level: file
-status: pending
+status: implemented
 java_source: org/uacalc/alg/FreeAlgebra.java
 notes: |
   ~/uacalc free_algebras.py / get_idempotents.py call
@@ -9,25 +9,14 @@ notes: |
   getElementFromTerm, getProductAlgebra, generators, getVariables,
   getIdempotentTerms, and inherited SmallAlgebra getOperation / operations.
 
-  WHY CPYTHON FAILS NOW (backend work, do not weaken the script):
-  - uacalc_lib/src/alg/free_algebra.rs get_element / element_index always
-    return None. Java SubProductAlgebra.getElement(i) returns univ.get(i)
-    (an IntArray coordinate tuple); elementIndex looks it up in univHashMap.
-  - Binding has no getTerms / getTerm / getElementFromTerm / getProductAlgebra /
-    generators / getVariables. Java defines these on SubProductAlgebra.
-  - Binding has no operations(); only operations_count. Java
-    GeneralAlgebra.operations() / getOperation(symbol) work after makeUniverse.
-  - new_with_progress ignores make_universe / thin_gens / decompose (always
-    the default Rust constructor). Java 4-arg thinGens=true thins projections
-    and shrinks getProductAlgebra().getNumberOfFactors().
-  - Default names differ: Java FreeAlgebra(alg, n) is "Free(n, name)"; some
-    ProgressReport overloads use "F(n) over name". Scripts call setName first.
-  - get_idempotent_terms exists but returns List[str], not List[Term].
-    On F(1) over C2 both sides currently print [x] (Java list of Term).
-  - algebraType() already matches ("FREE"). getUniverseList works for the
-    unthinned ctor ([[0,1],[0,0]]); the thinned ctor still returns the
-    unthinned universe because thin_gens is ignored.
-  - superAlgebra() (alias of the product) is missing; same as getProductAlgebra.
+  Implemented: FreeAlgebra.getElement / elementIndex return IntArray tuples;
+  getTerms / getTerm / getElementFromTerm / getProductAlgebra / generators /
+  getVariables / operations / superAlgebra are bound; getIdempotentTerms
+  returns Term objects. new_with_progress honors make_universe and thin_gens.
+  After thinning, the product is rebuilt (Java BigProductAlgebra(alg,
+  gens.get(0).universeSize())) and projections are maximals under the
+  homomorphism order. Scripts still call setName so default names are not
+  compared.
 ignore_reason: null
 surface:
   package_export: true

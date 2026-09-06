@@ -261,8 +261,15 @@ impl FreeAlgebra
             println!("{}", line);
         }
 
-        // Setup generators and product algebra
-        let (product_algebra, mut gens) = Self::setup_gens_and_product_alg(
+        // Setup generators and product algebra. Keep a clone of the base algebra
+        // so thinning can rebuild the ambient product the way Java does:
+        // productAlgebra = new BigProductAlgebra(alg, gens.get(0).universeSize()).
+        let alg_for_thin = if thin_gens && !decompose {
+            Some(alg.clone_box())
+        } else {
+            None
+        };
+        let (mut product_algebra, mut gens) = Self::setup_gens_and_product_alg(
             alg,
             number_of_gens as usize,
             decompose,
@@ -275,7 +282,7 @@ impl FreeAlgebra
             if let Some(ref report) = report {
                 report.add_start_line("thinning coordinate projections ...");
             }
-            let thinned_gens = Self::thin_generators(&gens)?;
+            let thinned_gens = Self::thin_generators(&gens, &product_algebra)?;
             if let Some(ref report) = report {
                 report.add_end_line(&format!(
                     "thinned {} coordinates down to {}",
@@ -288,6 +295,17 @@ impl FreeAlgebra
                 println!("gens coord length = {}", gens[0].universe_size());
             }
             gens = thinned_gens;
+            let thinned_power = gens
+                .first()
+                .map(|g| g.universe_size() as usize)
+                .unwrap_or(0);
+            if thinned_power == 0 {
+                return Err("thinned generators have empty coordinate length".to_string());
+            }
+            product_algebra = BigProductAlgebra::new_power_safe(
+                alg_for_thin.expect("cloned base algebra for thinning"),
+                thinned_power,
+            )?;
         }
 
         // Create subproduct algebra
@@ -502,27 +520,36 @@ impl FreeAlgebra
     }
 
     /// Thin generators by eliminating redundant coordinate projections.
-    fn thin_generators(gens: &[IntArray]) -> Result<Vec<IntArray>, String> {
-        // Transpose the generators to get projections
+    ///
+    /// Java `SubProductAlgebra.thinGenerators()` keeps maximal projections under
+    /// the homomorphism order: `leq(a,b)` iff there is a homomorphism from
+    /// `projection(b)` to `projection(a)` sending `b` to `a`.
+    fn thin_generators(
+        gens: &[IntArray],
+        product_algebra: &BigProductAlgebra<i32>,
+    ) -> Result<Vec<IntArray>, String> {
         let projs = Self::transpose(gens)?;
-        
-        // Create a map from projections to their corresponding algebras
-        let mut proj_map = std::collections::HashMap::new();
+        let mut proj_map: HashMap<IntArray, Box<dyn SmallAlgebra<UniverseItem = i32>>> =
+            HashMap::new();
         for (k, ia) in projs.iter().enumerate() {
-            // For now, we'll use a simplified approach since we don't have
-            // access to the product algebra's projection method
-            proj_map.insert(ia.clone(), k);
+            proj_map.insert(ia.clone(), product_algebra.projection(k)?);
         }
-        
-        // Find maximals using homomorphism-based ordering
+
         let thinned_projs = Self::maximals(&projs, |a, b| {
-            // Check if there's a homomorphism from b to a
-            // For now, we'll use a simplified check
-            // The full implementation would use SubalgebraLattice::extend_to_homomorphism
-            a.universe_size() <= b.universe_size()
+            match (proj_map.get(b), proj_map.get(a)) {
+                (Some(alg_b), Some(alg_a)) => {
+                    crate::alg::sublat::SubalgebraLattice::<i32>::extend_to_homomorphism(
+                        b.as_slice(),
+                        a.as_slice(),
+                        alg_b.as_ref(),
+                        alg_a.as_ref(),
+                    )
+                    .is_some()
+                }
+                _ => false,
+            }
         });
-        
-        // Transpose back to get the thinned generators
+
         Self::transpose(&thinned_projs)
     }
     

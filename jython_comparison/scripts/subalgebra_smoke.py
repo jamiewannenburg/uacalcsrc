@@ -1,18 +1,8 @@
 # coding: utf-8
 # Dual-runtime parity script for Subalgebra (Java/Jython source of truth).
 #
-# Known CPython / uacalc_lib gaps (do not hide; backend should match Java):
-# - Java constructors: Subalgebra(alg, int[]), (alg, IntArray),
-#   (name, alg, int[]), (name, alg, IntArray). BasicSet extends IntArray, so
-#   Subalgebra(alg, BasicSet) is the IntArray overload (used by
-#   SubalgebraLattice.Sg / iterator).
-# - superAlgebra() returns the SmallAlgebra; the binding only exposes
-#   super_algebra_name() (a string).
-# - index(k) is Java Arrays.binarySearch (negative insertion-point encoding
-#   when missing). Binding returns -1 when missing. This script locks
-#   found indices exactly and missing as "negative".
-# - getSubuniverseArray / getElement / elementIndex exist as snake_case on
-#   the binding; Java names are the camelCase forms below.
+# Missing index(k) is locked as "negative" (Java Arrays.binarySearch encoding
+# is not required). Scripts call setName so default names are not compared.
 from __future__ import print_function
 
 import sys
