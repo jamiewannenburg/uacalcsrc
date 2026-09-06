@@ -3,10 +3,11 @@
 # Cloud Agent install script for the UACalc Rust/Python/Java project.
 #
 # Idempotent: safe to run repeatedly and against cached/partial state.
-# Prepares three toolchains that the repository needs end to end:
+# Prepares the toolchains that the repository needs end to end:
 #   * Rust   - core library + `uacalc` binary, and the PyO3 binding crate
-#   * Java   - reference "ground truth" wrappers used by comparison tests
+#   * Java   - reference "ground truth" wrappers + uacalc.jar used by tests
 #   * Python - maturin-built `uacalc_lib` extension + test dependencies
+#   * Jython - Java-backed Python used by the tests/parity golden checks
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -27,10 +28,27 @@ rustup default stable
 # Compiles the core `uacalc` crate and the `uacalc` binary.
 cargo build
 
-# --- Build Java reference wrappers -----------------------------------------
-# `compile-wrappers` also compiles the full Java sources it depends on. These
-# wrappers are invoked as ground truth by the Rust/Python comparison tests.
-ant compile-wrappers
+# --- Build Java reference wrappers + uacalc.jar ----------------------------
+# `dist` compiles the full Java sources, builds the command-line wrappers
+# (ground truth for the Rust/Python comparison tests), and packages
+# `jars/uacalc.jar`. The jar is required on Jython's CLASSPATH by the
+# `tests/parity` golden checks, which otherwise skip.
+ant dist
+
+# --- Jython (tests/parity golden checks) -----------------------------------
+# The parity tests invoke `jython` to exercise the Java reference surface and
+# compare it against the CPython bindings; they skip when `jython` is not on
+# PATH. Install Jython 2.7.3 and expose it via a symlink so every shell (and
+# `shutil.which`) finds it without mutating shell profiles.
+JYTHON_HOME="$HOME/jython"
+if [ ! -x "$JYTHON_HOME/bin/jython" ]; then
+  curl -fsSL -o /tmp/jython-installer.jar \
+    "https://repo1.maven.org/maven2/org/python/jython-installer/2.7.3/jython-installer-2.7.3.jar"
+  # Silent install (-s), prefix (-d), full standard install with cached stdlib (-t standard).
+  java -jar /tmp/jython-installer.jar -s -d "$JYTHON_HOME" -t standard
+fi
+sudo ln -sf "$JYTHON_HOME/bin/jython" /usr/local/bin/jython
+jython --version
 
 # --- Python environment ----------------------------------------------------
 # Isolated venv holding the maturin-built `uacalc_lib` extension and the
