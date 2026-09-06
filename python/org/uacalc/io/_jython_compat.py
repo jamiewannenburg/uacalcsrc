@@ -44,11 +44,13 @@ class AlgebraIO:
 
     @staticmethod
     def readAlgebraFile(path_or_file: Any) -> Any:
-        return _io.read_algebra_file(_coerce_path(path_or_file))
+        # Use AlgebraReader so description and other SAX fields survive (the
+        # module-level read_algebra_file rebuilds a bare BasicAlgebra).
+        return AlgebraReader(_coerce_path(path_or_file)).readAlgebraFile()
 
     @staticmethod
     def readAlgebraFromStream(stream: Any) -> Any:
-        return _io.read_algebra_from_stream(_coerce_stream_bytes(stream))
+        return AlgebraReader(_coerce_stream_bytes(stream)).readAlgebraFromStream()
 
     @staticmethod
     def readAlgebraListFile(path_or_file: Any) -> List[Any]:
