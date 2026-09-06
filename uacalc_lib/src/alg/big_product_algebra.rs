@@ -87,10 +87,6 @@ impl PyBigProductAlgebra {
         self.inner.get_number_of_factors()
     }
 
-    fn get_number_of_factors(&self) -> usize {
-        self.inner.get_number_of_factors()
-    }
-
     #[allow(non_snake_case)]
     fn getNumberOfFactors(&self) -> usize {
         self.inner.get_number_of_factors()
