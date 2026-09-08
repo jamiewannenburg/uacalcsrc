@@ -9,6 +9,7 @@ The implementation is based on the Java `org.uacalc.util.IntArray` class.
 use std::collections::HashSet;
 use std::fmt;
 use std::hash::Hash;
+use std::sync::Arc;
 use crate::alg::conlat::partition::Partition;
 
 /// Trait for integer array operations.
@@ -103,8 +104,9 @@ pub trait IntArrayTrait {
 /// Concrete implementation of IntArrayTrait using Vec<i32>.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct IntArray {
-    /// The underlying array
-    array: Vec<i32>,
+    /// The immutable payload is shared by clones. `set` uses copy-on-write,
+    /// preserving value semantics while avoiding repeated tuple allocations.
+    array: Arc<Vec<i32>>,
     /// The size of the universe
     size: usize,
 }
@@ -132,7 +134,7 @@ impl IntArray {
         }
         
         Ok(IntArray {
-            array: vec![0; size],
+            array: Arc::new(vec![0; size]),
             size,
         })
     }
@@ -159,7 +161,10 @@ impl IntArray {
         }
         
         let size = array.len();
-        Ok(IntArray { array, size })
+        Ok(IntArray {
+            array: Arc::new(array),
+            size,
+        })
     }
     
     /// Create a new IntArray from a string representation.
@@ -300,7 +305,7 @@ impl IntArrayTrait for IntArray {
         if index >= self.size {
             return Err(format!("Index {} out of bounds for array of size {}", index, self.size));
         }
-        self.array[index] = value;
+        Arc::make_mut(&mut self.array)[index] = value;
         Ok(())
     }
     
@@ -439,6 +444,19 @@ mod tests {
         
         let result = array.set(3, 1);
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_clone_shares_storage_until_mutated() {
+        let array = IntArray::from_array(vec![1, 2, 3]).unwrap();
+        let mut cloned = array.clone();
+
+        assert_eq!(array.as_slice().as_ptr(), cloned.as_slice().as_ptr());
+
+        cloned.set(1, 9).unwrap();
+        assert_eq!(array.as_slice(), &[1, 2, 3]);
+        assert_eq!(cloned.as_slice(), &[1, 9, 3]);
+        assert_ne!(array.as_slice().as_ptr(), cloned.as_slice().as_ptr());
     }
     
     #[test]

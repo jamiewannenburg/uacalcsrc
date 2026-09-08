@@ -1,6 +1,7 @@
 use std::fmt::{Debug, Display, Formatter};
 use std::hash::{Hash, Hasher};
 use std::cmp::Ordering;
+use std::sync::Arc;
 use crate::alg::op::{Operation, OperationSymbol};
 
 /// IntOperation is a table-based implementation of the Operation trait.
@@ -12,7 +13,9 @@ use crate::alg::op::{Operation, OperationSymbol};
 pub struct IntOperation {
     symbol: OperationSymbol,
     set_size: i32,
-    table: Vec<i32>,
+    /// Operation tables are immutable after construction and can be very large.
+    /// Share the allocation across algebra/operation clones.
+    table: Arc<[i32]>,
 }
 
 impl IntOperation {
@@ -69,7 +72,7 @@ impl IntOperation {
         Ok(IntOperation {
             symbol,
             set_size,
-            table,
+            table: table.into(),
         })
     }
     
@@ -232,12 +235,12 @@ impl Operation for IntOperation {
     }
 
     fn get_table(&self) -> Option<&[i32]> {
-        Some(&self.table)
+        Some(self.table.as_ref())
     }
     
     fn get_table_force(&mut self, _make_table: bool) -> Result<&[i32], String> {
         // Table always exists for IntOperation
-        Ok(&self.table)
+        Ok(self.table.as_ref())
     }
     
     fn is_table_based(&self) -> bool {
@@ -364,7 +367,7 @@ impl PartialEq for IntOperation {
     fn eq(&self, other: &Self) -> bool {
         self.symbol == other.symbol && 
         self.set_size == other.set_size &&
-        self.table == other.table
+        self.table.as_ref() == other.table.as_ref()
     }
 }
 
@@ -381,7 +384,7 @@ impl Ord for IntOperation {
         // First compare by symbol, then by set size, then by table
         match self.symbol.cmp(&other.symbol) {
             Ordering::Equal => match self.set_size.cmp(&other.set_size) {
-                Ordering::Equal => self.table.cmp(&other.table),
+                Ordering::Equal => self.table.as_ref().cmp(other.table.as_ref()),
                 other => other,
             },
             other => other,
@@ -393,7 +396,7 @@ impl Hash for IntOperation {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.symbol.hash(state);
         self.set_size.hash(state);
-        self.table.hash(state);
+        self.table.as_ref().hash(state);
     }
 }
 
@@ -415,4 +418,22 @@ fn generate_all_args(set_size: i32, arity: usize) -> Vec<Vec<i32>> {
     }
     
     result
+}
+
+#[cfg(test)]
+mod memory_tests {
+    use super::*;
+
+    #[test]
+    fn clones_share_the_immutable_table() {
+        let op = IntOperation::binary_xor("xor").unwrap();
+        let cloned = op.clone();
+
+        assert_eq!(op, cloned);
+        assert_eq!(
+            op.get_table().unwrap().as_ptr(),
+            cloned.get_table().unwrap().as_ptr(),
+            "cloning an operation must not duplicate its table"
+        );
+    }
 }

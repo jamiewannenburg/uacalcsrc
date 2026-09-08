@@ -209,13 +209,15 @@ where
     /// A new CongruenceLattice instance
     pub fn new(alg: Box<dyn SmallAlgebra<UniverseItem = T>>) -> Self {
         let alg_size = alg.cardinality() as usize;
-        // Snapshot operations once to avoid re-entering operations() during computations
-        let ops_boxed = alg.operations();
-        
-        let ops_arc: Vec<Arc<dyn Operation>> = ops_boxed
-            .into_iter()
-            .map(|op| Arc::from(op))
-            .collect();
+        // Snapshot shared operations once. Older algebra implementations can
+        // still use the boxed fallback while Arc-backed implementations avoid
+        // cloning tables or wrapper state.
+        let ops_arc: Vec<Arc<dyn Operation>> =
+            if let Some(operations) = alg.operations_ref_arc() {
+                operations.to_vec()
+            } else {
+                alg.operations().into_iter().map(Arc::from).collect()
+            };
         let num_ops = ops_arc.len();
         let zero_cong = Partition::zero(alg_size);
         let one_cong = Partition::one(alg_size);
