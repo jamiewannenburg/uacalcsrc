@@ -431,15 +431,7 @@ impl PyAbstractOperationNew {
     }
 
     fn horner_encode(&self, args: &[i32]) -> i32 {
-        let mut result = 0;
-        let mut multiplier = 1;
-
-        for &arg in args.iter().rev() {
-            result += arg * multiplier;
-            multiplier *= self.set_size;
-        }
-
-        result
+        uacalc::util::horner::horner_same_size(args, self.set_size)
     }
 
     fn generate_args_static(

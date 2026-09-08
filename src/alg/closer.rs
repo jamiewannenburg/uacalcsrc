@@ -1847,6 +1847,15 @@ where
             let old_current_mark = current_mark;
             closed_mark = current_mark;
             current_mark = self.ans.len();
+
+            if !img_ops_not_null {
+                let algebra_cardinality = self.algebra.cardinality();
+                if algebra_cardinality > 0
+                    && current_mark >= algebra_cardinality as usize
+                {
+                    break;
+                }
+            }
         }
         
         if let Some(ref report) = self.report {

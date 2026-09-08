@@ -202,6 +202,7 @@ def compare_one_script(
 
     py_env = os.environ.copy()
     py_env["PYTHONPATH"] = args.pythonpath
+    py_env["PYTHONUNBUFFERED"] = "1"
 
     python_bin = _resolve_python_bin(repo, args.python)
 
