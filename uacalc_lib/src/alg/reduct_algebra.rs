@@ -1,7 +1,6 @@
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
-use pyo3::types::PyList;
-use std::collections::HashMap;
+use pyo3::types::{PyAny, PyDict, PyList};
 use uacalc::alg::*;
 use crate::util::PyIntArray;
 
@@ -9,17 +8,23 @@ use crate::alg::convert::{algebra_type_java_name, operation_to_py, py_to_term};
 use crate::alg::PyBasicAlgebra;
 use crate::alg::PySubalgebraLattice;
 use crate::alg::conlat::congruence_lattice::PyCongruenceLattice;
+use crate::alg::universe_map::PyUniverseMap;
 
 #[pyclass]
 pub struct PyReductAlgebra {
     inner: uacalc::alg::ReductAlgebra,
     super_alg: uacalc::alg::BasicAlgebra<i32>,
+    element_map: Option<PyUniverseMap>,
 }
 
 impl PyReductAlgebra {
     /// Create PyReductAlgebra from inner Rust type (not exposed to Python)
     fn from_inner(inner: uacalc::alg::ReductAlgebra, super_alg: uacalc::alg::BasicAlgebra<i32>) -> Self {
-        PyReductAlgebra { inner, super_alg }
+        PyReductAlgebra {
+            inner,
+            super_alg,
+            element_map: None,
+        }
     }
 }
 
@@ -48,7 +53,11 @@ impl PyReductAlgebra {
             as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
 
         match uacalc::alg::ReductAlgebra::new_safe(super_box, rust_terms) {
-            Ok(inner) => Ok(PyReductAlgebra { inner, super_alg }),
+            Ok(inner) => Ok(PyReductAlgebra {
+                inner,
+                super_alg,
+                element_map: super_algebra.element_map().cloned(),
+            }),
             Err(e) => Err(PyValueError::new_err(e)),
         }
     }
@@ -97,8 +106,20 @@ impl PyReductAlgebra {
     /// 
     /// Returns:
     ///     Dict[int, int]: The universe order mapping
-    fn get_universe_order(&self) -> Option<HashMap<i32, usize>> {
-        self.inner.get_universe_order()
+    fn get_universe_order(&self, py: Python<'_>) -> PyResult<Option<PyObject>> {
+        let order = PyDict::new_bound(py);
+        if let Some(map) = &self.element_map {
+            for (index, label) in map.labels().iter().enumerate() {
+                if order.set_item(label.bind(py), index).is_err() {
+                    return Ok(None);
+                }
+            }
+        } else {
+            for (element, index) in self.inner.get_universe_order().unwrap_or_default() {
+                order.set_item(element, index)?;
+            }
+        }
+        Ok(Some(order.to_object(py)))
     }
     
     /// Get an element by its index.
@@ -108,8 +129,13 @@ impl PyReductAlgebra {
     /// 
     /// Returns:
     ///     int: The element at the given index
-    fn get_element(&self, index: usize) -> Option<i32> {
-        self.inner.get_element(index)
+    fn get_element(&self, py: Python<'_>, index: usize) -> Option<PyObject> {
+        let element = self.inner.get_element(index)?;
+        if let Some(map) = &self.element_map {
+            map.element(element as usize)
+        } else {
+            Some(element.into_py(py))
+        }
     }
     
     /// Get the index of an element.
@@ -119,8 +145,17 @@ impl PyReductAlgebra {
     /// 
     /// Returns:
     ///     int: The index of the element
-    fn element_index(&self, element: i32) -> Option<usize> {
-        self.inner.element_index(&element)
+    fn element_index(
+        &self,
+        py: Python<'_>,
+        element: &Bound<'_, PyAny>,
+    ) -> PyResult<Option<usize>> {
+        let internal = if let Some(map) = &self.element_map {
+            map.index_of(py, element)?.map(|index| index as i32)
+        } else {
+            element.extract::<i32>().ok()
+        };
+        Ok(internal.and_then(|value| self.inner.element_index(&value)))
     }
     
     /// Check if this algebra is unary.
@@ -214,7 +249,10 @@ impl PyReductAlgebra {
     /// Returns:
     ///     BasicAlgebra: The super algebra (as BasicAlgebra for now)
     fn super_algebra(&self) -> PyBasicAlgebra {
-        PyBasicAlgebra::from_inner(self.super_alg.clone())
+        PyBasicAlgebra::from_inner_with_optional_map(
+            self.super_alg.clone(),
+            self.element_map.clone(),
+        )
     }
     
     /// Make operation tables from the terms.

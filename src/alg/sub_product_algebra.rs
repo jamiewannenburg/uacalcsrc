@@ -706,12 +706,10 @@ where
     /// # Returns
     /// The term for the element, or None if not found or terms not computed
     pub fn get_term(&self, elt: &IntArray) -> Option<&dyn Term> {
-        if let Some(terms) = &self.terms {
-            if let Some(&idx) = self.univ_hash_map.get(elt) {
-                return Some(terms[idx].as_ref());
-            }
-        }
-        None
+        self.term_map
+            .as_ref()?
+            .get(elt)
+            .map(|term| term.as_ref())
     }
     
     /// Get the term map.

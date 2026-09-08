@@ -107,4 +107,20 @@ impl PyUniverseMap {
         }
         Ok(None)
     }
+
+    pub(crate) fn equals(
+        &self,
+        py: Python<'_>,
+        other: &Self,
+    ) -> PyResult<bool> {
+        if self.len() != other.len() {
+            return Ok(false);
+        }
+        for (left, right) in self.labels.iter().zip(other.labels.iter()) {
+            if !left.bind(py).eq(right.bind(py))? {
+                return Ok(false);
+            }
+        }
+        Ok(true)
+    }
 }

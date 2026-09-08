@@ -104,6 +104,14 @@ class TestHomomorphism:
         # assert java_result["range_name"] == "range"
         # assert java_result["map_size"] == 2
         # assert java_result["created"] is True
+
+    def test_labeled_domain_and_range_round_trip(self):
+        domain = create_mock_algebra("domain", ["a", "b"])
+        range_algebra = create_mock_algebra("range", ["x", "y"])
+        homo = Homomorphism(domain, range_algebra, {0: 0, 1: 1})
+
+        assert homo.get_domain().get_universe() == ["a", "b"]
+        assert homo.get_range().get_universe() == ["x", "y"]
     
     def test_homomorphism_kernel(self):
         """Test kernel computation."""

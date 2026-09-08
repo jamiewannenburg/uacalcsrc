@@ -33,6 +33,13 @@ impl PyBasicAlgebra {
         }
     }
 
+    pub(crate) fn from_inner_with_optional_map(
+        inner: uacalc::alg::BasicAlgebra<i32>,
+        element_map: Option<PyUniverseMap>,
+    ) -> Self {
+        PyBasicAlgebra { inner, element_map }
+    }
+
     /// Get the inner algebra (for internal use)
     pub(crate) fn get_inner(&self) -> &uacalc::alg::BasicAlgebra<i32> {
         &self.inner
@@ -407,10 +414,21 @@ impl PyBasicAlgebra {
     }
 
     /// Python equality comparison
-    fn __eq__(&self, other: &PyBasicAlgebra) -> bool {
-        // Compare basic properties since we can't easily compare the full structure
-        self.inner.name() == other.inner.name() &&
-        self.inner.cardinality() == other.inner.cardinality()
+    fn __eq__(
+        &self,
+        py: Python<'_>,
+        other: &PyBasicAlgebra,
+    ) -> PyResult<bool> {
+        if self.inner.name() != other.inner.name()
+            || self.inner.cardinality() != other.inner.cardinality()
+        {
+            return Ok(false);
+        }
+        match (&self.element_map, &other.element_map) {
+            (Some(left), Some(right)) => left.equals(py, right),
+            (None, None) => Ok(true),
+            _ => Ok(false),
+        }
     }
 
     /// Get the operations of this algebra.

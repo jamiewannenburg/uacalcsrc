@@ -256,6 +256,12 @@ class TestBasicAlgebra(unittest.TestCase):
         # Different name should not be equal
         self.assertNotEqual(alg1, alg3)
 
+        labeled1 = BasicAlgebra("labels", ["a", "b"], [])
+        labeled2 = BasicAlgebra("labels", ["a", "b"], [])
+        different_labels = BasicAlgebra("labels", ["x", "y"], [])
+        self.assertEqual(labeled1, labeled2)
+        self.assertNotEqual(labeled1, different_labels)
+
     def test_operations(self):
         """Test operations."""
 

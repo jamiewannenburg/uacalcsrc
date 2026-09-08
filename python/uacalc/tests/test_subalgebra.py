@@ -71,6 +71,17 @@ def run_java_wrapper(command_args):
         return None
 
 
+def test_labeled_super_algebra_round_trip():
+    super_algebra = BasicAlgebra("colors", ["red", "green", "blue"], [])
+    sub = Subalgebra("selected", super_algebra, [0, 2])
+
+    assert sub.get_universe() == ["red", "blue"]
+    assert sub.get_element(1) == "blue"
+    assert sub.element_index("blue") == 1
+    assert sub.element_index("green") == -1
+    assert sub.super_algebra().get_universe() == ["red", "green", "blue"]
+
+
 def test_congruence_as_algebra():
     """Test congruence_as_algebra static method."""
     print("Test 1: congruence_as_algebra static method")

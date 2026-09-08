@@ -7,12 +7,14 @@ use crate::alg::PyBasicAlgebra;
 use crate::alg::PyPartition;
 use crate::alg::PySubalgebraLattice;
 use crate::alg::conlat::congruence_lattice::PyCongruenceLattice;
+use crate::alg::universe_map::PyUniverseMap;
 
 /// Python wrapper for Subalgebra
 #[pyclass]
 pub struct PySubalgebra {
     inner: uacalc::alg::Subalgebra<i32>,
     super_alg: uacalc::alg::BasicAlgebra<i32>,
+    element_map: Option<PyUniverseMap>,
 }
 
 #[pymethods]
@@ -33,6 +35,7 @@ impl PySubalgebra {
             Ok(inner) => Ok(PySubalgebra {
                 inner,
                 super_alg: super_algebra.inner.clone(),
+                element_map: super_algebra.element_map().cloned(),
             }),
             Err(e) => Err(PyValueError::new_err(e)),
         }
@@ -76,7 +79,10 @@ impl PySubalgebra {
     /// Returns:
     ///     BasicAlgebra: The super algebra
     fn super_algebra(&self) -> PyBasicAlgebra {
-        PyBasicAlgebra::from_inner(self.super_alg.clone())
+        PyBasicAlgebra::from_inner_with_optional_map(
+            self.super_alg.clone(),
+            self.element_map.clone(),
+        )
     }
 
     /// Java `superAlgebraName` convenience used by older bindings.
@@ -92,12 +98,21 @@ impl PySubalgebra {
         self.inner.get_subuniverse_array().to_vec()
     }
 
-    /// Get the universe as a list of integers.
+    /// Get the universe using the super algebra's Python labels.
     ///
     /// Returns:
-    ///     List[int]: The universe elements as a list
-    fn get_universe(&self) -> Vec<i32> {
-        self.inner.universe().collect()
+    ///     List[Any]: The universe elements as a list
+    fn get_universe(&self, py: Python<'_>) -> PyResult<Vec<PyObject>> {
+        self.inner
+            .universe()
+            .map(|element| {
+                if let Some(map) = &self.element_map {
+                    map.element_or_error(element, "Subalgebra element")
+                } else {
+                    Ok(element.into_py(py))
+                }
+            })
+            .collect()
     }
 
     /// Get the cardinality of this subalgebra.
@@ -114,23 +129,38 @@ impl PySubalgebra {
     ///     k (int): Index of the element
     ///
     /// Returns:
-    ///     int: The element at index k, or -1 if out of bounds
-    fn get_element(&self, k: usize) -> i32 {
-        self.inner.get_element(k).unwrap_or(-1)
+    ///     Any: The element at index k, or -1/None if out of bounds
+    fn get_element(&self, py: Python<'_>, k: usize) -> PyObject {
+        let element = self.inner.get_element(k);
+        if let Some(map) = &self.element_map {
+            return element
+                .and_then(|index| map.element(index as usize))
+                .unwrap_or_else(|| py.None());
+        }
+        element.unwrap_or(-1).into_py(py)
     }
 
     /// Get the index of an element in the universe.
     ///
     /// Args:
-    ///     elem (int): The element to find
+    ///     elem (Any): The element to find
     ///
     /// Returns:
     ///     int: The index of the element, or -1 if not found
-    fn element_index(&self, elem: i32) -> i32 {
-        match self.inner.element_index(&elem) {
+    fn element_index(
+        &self,
+        py: Python<'_>,
+        elem: &Bound<'_, PyAny>,
+    ) -> PyResult<i32> {
+        let internal = if let Some(map) = &self.element_map {
+            map.index_of(py, elem)?.map(|index| index as i32)
+        } else {
+            elem.extract::<i32>().ok()
+        };
+        Ok(match internal.and_then(|element| self.inner.element_index(&element)) {
             Some(idx) => idx as i32,
             None => -1,
-        }
+        })
     }
 
     /// Get the algebra type.
