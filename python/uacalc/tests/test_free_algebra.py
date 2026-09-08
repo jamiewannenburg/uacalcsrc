@@ -117,6 +117,21 @@ class TestFreeAlgebra:
         assert free_alg.cardinality() >= 0
         assert java_data["cardinality"] >= 0
 
+    def test_deferred_universe_matches_java_constructor_flag(self, base_algebra):
+        FreeAlgebra = uacalc_lib.alg.FreeAlgebra
+
+        free_alg = FreeAlgebra.new_with_progress(
+            base_algebra,
+            1,
+            False,
+            False,
+            False,
+        )
+
+        assert free_alg.cardinality() == 0
+        assert free_alg.get_universe_list() == []
+        assert free_alg.operations_count() == 0
+
     def test_free_algebra_properties(self, test_config, base_algebra):
         """Test FreeAlgebra properties."""
         # Access the classes through the module
