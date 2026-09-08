@@ -279,6 +279,29 @@ class TestFreeAlgebra:
         java_data = get_java_data(java_result)
         assert isinstance(java_data["universe"], list)
 
+    def test_labeled_base_elements_round_trip_from_free_algebra(self):
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
+        IntOperation = uacalc_lib.alg.IntOperation
+        FreeAlgebra = uacalc_lib.alg.FreeAlgebra
+
+        labels = ["zero", "one"]
+        base = BasicAlgebra(
+            "labeled C2",
+            labels,
+            [IntOperation.binary_xor("+")],
+        )
+        free_alg = FreeAlgebra(base, 1)
+
+        universe = free_alg.get_universe_list()
+        assert universe == [
+            ("zero", "one"),
+            ("zero", "zero"),
+        ]
+        first = free_alg.get_element(0)
+        assert free_alg.element_index(first) == 0
+        term = free_alg.get_term(first)
+        assert free_alg.get_element_from_term(term) == first
+
     @pytest.mark.parametrize("num_gens", [1, 2, 3, 4])
     def test_different_generator_counts(self, test_config, base_algebra, num_gens):
         """Test FreeAlgebra with different generator counts."""

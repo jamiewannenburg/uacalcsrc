@@ -1,22 +1,36 @@
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
-use pyo3::types::PyList;
-use std::collections::HashMap;
+use pyo3::types::{PyAny, PyDict, PyList};
 use uacalc::alg::*;
 use uacalc::alg::op::{Operation, IntOperation, BasicOperation};
 use crate::alg::PySubalgebraLattice;
 use crate::alg::PyCongruenceLattice;
+use crate::alg::universe_map::PyUniverseMap;
 
 /// Python wrapper for BasicAlgebra (for integer universes)
 #[pyclass]
 pub struct PyBasicAlgebra {
     pub(crate) inner: uacalc::alg::BasicAlgebra<i32>,
+    pub(crate) element_map: Option<PyUniverseMap>,
 }
 
 impl PyBasicAlgebra {
     /// Create PyBasicAlgebra from inner Rust type (not exposed to Python)
     pub fn from_inner(inner: uacalc::alg::BasicAlgebra<i32>) -> Self {
-        PyBasicAlgebra { inner }
+        PyBasicAlgebra {
+            inner,
+            element_map: None,
+        }
+    }
+
+    pub(crate) fn from_inner_with_map(
+        inner: uacalc::alg::BasicAlgebra<i32>,
+        element_map: PyUniverseMap,
+    ) -> Self {
+        PyBasicAlgebra {
+            inner,
+            element_map: Some(element_map),
+        }
     }
 
     /// Get the inner algebra (for internal use)
@@ -28,6 +42,10 @@ impl PyBasicAlgebra {
     /// This is needed for the MaltsevProductDecomposition constructor.
     pub(crate) fn clone_box(&self) -> Box<dyn SmallAlgebra<UniverseItem = i32>> {
         Box::new(self.inner.clone()) as Box<dyn SmallAlgebra<UniverseItem = i32>>
+    }
+
+    pub(crate) fn element_map(&self) -> Option<&PyUniverseMap> {
+        self.element_map.as_ref()
     }
 }
 
@@ -85,21 +103,37 @@ impl PyBasicAlgebra {
     #[new]
     #[pyo3(signature = (name, universe, operations=None))]
     fn new(
+        py: Python<'_>,
         name: String,
-        universe: Vec<i32>,
+        universe: Vec<PyObject>,
         operations: Option<&Bound<'_, PyList>>,
     ) -> PyResult<Self> {
-        let universe_set: std::collections::HashSet<i32> = universe.into_iter().collect();
-        
+        let map = PyUniverseMap::from_objects(py, universe, true)?;
+        let set_size = i32::try_from(map.len())
+            .map_err(|_| PyValueError::new_err("Universe is too large"))?;
         // Extract operations if provided
         let ops = if let Some(ops_list) = operations {
             extract_operations(ops_list)?
         } else {
             Vec::new()
         };
-        
+
+        for operation in &ops {
+            if operation.get_set_size() != set_size {
+                return Err(PyValueError::new_err(format!(
+                    "Operation {} has set size {}, expected {}",
+                    operation.symbol(),
+                    operation.get_set_size(),
+                    set_size
+                )));
+            }
+        }
+
+        let universe_set = (0..set_size).collect();
+        let element_map = (!map.is_dense_integer_identity(py)).then_some(map);
         Ok(PyBasicAlgebra {
             inner: uacalc::alg::BasicAlgebra::new(name, universe_set, ops),
+            element_map,
         })
     }
 
@@ -112,9 +146,15 @@ impl PyBasicAlgebra {
     /// Returns:
     ///     BasicAlgebra: A new BasicAlgebra instance with a constant operation
     #[staticmethod]
-    fn new_with_constant_op(name: String, universe: Vec<i32>) -> PyResult<Self> {
-        let universe_set: std::collections::HashSet<i32> = universe.into_iter().collect();
-        let set_size = universe_set.len() as i32;
+    fn new_with_constant_op(
+        py: Python<'_>,
+        name: String,
+        universe: Vec<PyObject>,
+    ) -> PyResult<Self> {
+        let map = PyUniverseMap::from_objects(py, universe, true)?;
+        let set_size = i32::try_from(map.len())
+            .map_err(|_| PyValueError::new_err("Universe is too large"))?;
+        let universe_set = (0..set_size).collect();
         let mut operations = Vec::new();
         
         if set_size > 0 {
@@ -127,6 +167,7 @@ impl PyBasicAlgebra {
         
         Ok(PyBasicAlgebra {
             inner: uacalc::alg::BasicAlgebra::new(name, universe_set, operations),
+            element_map: (!map.is_dense_integer_identity(py)).then_some(map),
         })
     }
 
@@ -233,12 +274,20 @@ impl PyBasicAlgebra {
         self.inner.monitoring()
     }
 
-    /// Get the universe as a list of integers.
+    /// Get the universe using the original Python labels.
     ///
     /// Returns:
-    ///     List[int]: The universe elements as a list
-    fn get_universe(&self) -> Vec<i32> {
-        self.inner.universe().collect()
+    ///     List[Any]: The universe elements as a list
+    fn get_universe(&self, py: Python<'_>) -> Vec<PyObject> {
+        if let Some(map) = &self.element_map {
+            return map.labels_owned();
+        }
+        self.inner
+            .get_universe_list()
+            .unwrap_or_default()
+            .into_iter()
+            .map(|element| element.into_py(py))
+            .collect()
     }
 
     /// Get the algebra type.
@@ -255,39 +304,73 @@ impl PyBasicAlgebra {
     ///     k (int): The index of the element to retrieve
     ///
     /// Returns:
-    ///     int: The element at index k, or -1 if k is out of bounds
-    fn get_element(&self, k: usize) -> i32 {
-        self.inner.get_element(k).unwrap_or(-1)
+    ///     Any: The element at index k, or -1/None if k is out of bounds
+    fn get_element(&self, py: Python<'_>, k: usize) -> PyObject {
+        if let Some(map) = &self.element_map {
+            return map.element(k).unwrap_or_else(|| py.None());
+        }
+        self.inner.get_element(k).unwrap_or(-1).into_py(py)
     }
 
     /// Get the index of an element in the universe.
     ///
     /// Args:
-    ///     elem (int): The element to find the index for
+    ///     elem (Any): The element to find the index for
     ///
     /// Returns:
     ///     int: The index of the element, or -1 if not found
-    fn element_index(&self, elem: i32) -> i32 {
-        match self.inner.element_index(&elem) {
+    fn element_index(
+        &self,
+        py: Python<'_>,
+        elem: &Bound<'_, PyAny>,
+    ) -> PyResult<i32> {
+        let index = if let Some(map) = &self.element_map {
+            map.index_of(py, elem)?
+        } else {
+            elem.extract::<i32>()
+                .ok()
+                .and_then(|element| self.inner.element_index(&element))
+        };
+        Ok(match index {
             Some(idx) => idx as i32,
             None => -1,
-        }
+        })
     }
 
     /// Get the universe as a list.
     ///
     /// Returns:
-    ///     List[int]: The universe elements as a list, or None if not available
-    fn get_universe_list(&self) -> Option<Vec<i32>> {
-        self.inner.get_universe_list()
+    ///     List[Any]: The universe elements as a list, or None if not available
+    fn get_universe_list(&self, py: Python<'_>) -> Option<Vec<PyObject>> {
+        if let Some(map) = &self.element_map {
+            return Some(map.labels_owned());
+        }
+        self.inner.get_universe_list().map(|universe| {
+            universe
+                .into_iter()
+                .map(|element| element.into_py(py))
+                .collect()
+        })
     }
 
     /// Get the universe order map.
     ///
     /// Returns:
-    ///     dict: A mapping from elements to their indices, or None if not available
-    fn get_universe_order(&self) -> Option<HashMap<i32, usize>> {
-        self.inner.get_universe_order()
+    ///     dict: A mapping from elements to their indices, or None if labels are unhashable
+    fn get_universe_order(&self, py: Python<'_>) -> PyResult<Option<PyObject>> {
+        let order = PyDict::new_bound(py);
+        if let Some(map) = &self.element_map {
+            for (index, label) in map.labels().iter().enumerate() {
+                if order.set_item(label.bind(py), index).is_err() {
+                    return Ok(None);
+                }
+            }
+        } else {
+            for (element, index) in self.inner.get_universe_order().unwrap_or_default() {
+                order.set_item(element, index)?;
+            }
+        }
+        Ok(Some(order.to_object(py)))
     }
 
     /// Check if this algebra uses an integer universe.
@@ -295,7 +378,7 @@ impl PyBasicAlgebra {
     /// Returns:
     ///     bool: True if the universe is just integers from 0 to n-1
     fn int_universe(&self) -> bool {
-        self.inner.int_universe()
+        self.element_map.is_none() && self.inner.int_universe()
     }
 
     /// Reset cached congruence and subalgebra lattices.
@@ -345,6 +428,42 @@ impl PyBasicAlgebra {
         for op_arc in ops_arc {
             let symbol = op_arc.symbol().clone();
             let set_size = op_arc.get_set_size();
+
+            if let Some(map) = &self.element_map {
+                let table = if let Some(table) = op_arc.get_table() {
+                    table.to_vec()
+                } else {
+                    let table_size = if op_arc.arity() == 0 {
+                        1
+                    } else {
+                        (set_size as usize)
+                            .checked_pow(op_arc.arity() as u32)
+                            .ok_or_else(|| {
+                                PyValueError::new_err("Operation table size overflow")
+                            })?
+                    };
+                    let mut table = Vec::with_capacity(table_size);
+                    for encoded in 0..table_size {
+                        let args = uacalc::util::horner::horner_inv_same_size(
+                            encoded as i32,
+                            set_size,
+                            op_arc.arity() as usize,
+                        );
+                        table.push(op_arc.int_value_at(&args).map_err(
+                            PyValueError::new_err,
+                        )?);
+                    }
+                    table
+                };
+                let py_op =
+                    crate::alg::op::abstract_operation::PyAbstractOperationNew::from_value_table(
+                        symbol,
+                        table,
+                        map.clone(),
+                    )?;
+                result.push(Py::new(py, py_op)?.to_object(py));
+                continue;
+            }
             
             // Try to get the table - if available, we can reconstruct the operation
             if let Some(table) = op_arc.get_table() {

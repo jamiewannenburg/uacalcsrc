@@ -104,13 +104,13 @@ impl PyHomomorphism {
         // We need to downcast from trait object to concrete type
         // For now, we'll create a new BasicAlgebra with the same properties
         // This is a limitation - ideally we'd have a way to clone the exact type
-        PyBasicAlgebra {
-            inner: uacalc::alg::BasicAlgebra::new(
+        PyBasicAlgebra::from_inner(
+            uacalc::alg::BasicAlgebra::new(
                 domain.name().to_string(),
                 domain.universe().collect(),
                 domain.operations()
-            )
-        }
+            ),
+        )
     }
 
     /// Set the domain algebra.
@@ -133,13 +133,13 @@ impl PyHomomorphism {
         // We need to downcast from trait object to concrete type
         // For now, we'll create a new BasicAlgebra with the same properties
         // This is a limitation - ideally we'd have a way to clone the exact type
-        PyBasicAlgebra {
-            inner: uacalc::alg::BasicAlgebra::new(
+        PyBasicAlgebra::from_inner(
+            uacalc::alg::BasicAlgebra::new(
                 range.name().to_string(),
                 range.universe().collect(),
                 range.operations()
-            )
-        }
+            ),
+        )
     }
 
     /// Set the range algebra.

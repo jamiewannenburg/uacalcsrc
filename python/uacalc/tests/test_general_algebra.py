@@ -381,11 +381,39 @@ class TestGeneralAlgebra(unittest.TestCase):
         self.assertEqual(basic_alg.cardinality(), 3)
         self.assertEqual(basic_alg.algebra_type(), "Basic")
         
-        # Check universe - should be integers (indices)
+        # Dense integers stay internal to Rust; labels round-trip to Python.
         basic_universe = basic_alg.get_universe()
         self.assertEqual(len(basic_universe), 3)
-        # Should be integers 0, 1, 2
-        self.assertEqual(set(basic_universe), {0, 1, 2})
+        self.assertEqual(basic_universe, universe)
+
+    def test_conversion_materializes_python_operation_once(self):
+        universe = ["zero", "one", "two"]
+        calls = 0
+
+        def left_projection(args):
+            nonlocal calls
+            calls += 1
+            return args[0]
+
+        operation = AbstractOperation.from_value_at_function(
+            "left", 2, universe, left_projection
+        )
+        general = GeneralAlgebra("labels", universe, [operation])
+        basic = general.to_basic_algebra()
+
+        self.assertEqual(calls, len(universe) ** 2)
+        converted_operation = basic.operations()[0]
+        for _ in range(10):
+            self.assertEqual(converted_operation.int_value_at([2, 1]), 2)
+            self.assertEqual(
+                converted_operation.value_at(["two", "one"]),
+                "two",
+            )
+        self.assertEqual(calls, len(universe) ** 2)
+
+        # The table is cached on the defining operation as well.
+        general.to_basic_algebra()
+        self.assertEqual(calls, len(universe) ** 2)
     
     def test_to_basic_algebra_with_operations(self):
         """Test converting GeneralAlgebra with operations to BasicAlgebra."""

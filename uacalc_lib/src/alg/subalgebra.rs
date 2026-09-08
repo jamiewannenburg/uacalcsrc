@@ -76,9 +76,7 @@ impl PySubalgebra {
     /// Returns:
     ///     BasicAlgebra: The super algebra
     fn super_algebra(&self) -> PyBasicAlgebra {
-        PyBasicAlgebra {
-            inner: self.super_alg.clone(),
-        }
+        PyBasicAlgebra::from_inner(self.super_alg.clone())
     }
 
     /// Java `superAlgebraName` convenience used by older bindings.
@@ -389,6 +387,6 @@ impl PySubalgebra {
             rust_ops
         );
         
-        Ok(PyBasicAlgebra { inner: basic_alg })
+        Ok(PyBasicAlgebra::from_inner(basic_alg))
     }
 }

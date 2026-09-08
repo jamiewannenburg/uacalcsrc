@@ -214,9 +214,7 @@ impl PyReductAlgebra {
     /// Returns:
     ///     BasicAlgebra: The super algebra (as BasicAlgebra for now)
     fn super_algebra(&self) -> PyBasicAlgebra {
-        PyBasicAlgebra {
-            inner: self.super_alg.clone(),
-        }
+        PyBasicAlgebra::from_inner(self.super_alg.clone())
     }
     
     /// Make operation tables from the terms.
