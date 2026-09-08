@@ -19,44 +19,32 @@ use crate::terms::{Term, NonVariableTerm};
 /// 
 /// Each operation on the product is defined by applying the corresponding
 /// operation from each factor algebra to the corresponding component.
-struct BigProductOperation<T>
-where
-    T: Clone + PartialEq + Eq + Hash + std::fmt::Debug + Send + Sync + 'static
-{
+#[derive(Clone)]
+struct BigProductOperation {
     symbol: OperationSymbol,
     arity: i32,
     number_of_factors: usize,
     /// The operations from each factor algebra
     op_list: Vec<Arc<dyn Operation>>,
-    /// The factor algebras (needed to convert indices to elements for IntArray universes)
-    factor_algebras: Vec<Box<dyn SmallAlgebra<UniverseItem = T>>>,
 }
 
-impl<T> BigProductOperation<T>
-where
-    T: Clone + PartialEq + Eq + Hash + std::fmt::Debug + Send + Sync + 'static
-{
+impl BigProductOperation {
     fn new(
         symbol: OperationSymbol,
         arity: i32,
         number_of_factors: usize,
         op_list: Vec<Arc<dyn Operation>>,
-        factor_algebras: Vec<Box<dyn SmallAlgebra<UniverseItem = T>>>,
     ) -> Self {
         BigProductOperation {
             symbol,
             arity,
             number_of_factors,
             op_list,
-            factor_algebras,
         }
     }
 }
 
-impl<T> fmt::Debug for BigProductOperation<T>
-where
-    T: Clone + PartialEq + Eq + Hash + std::fmt::Debug + Send + Sync + 'static
-{
+impl fmt::Debug for BigProductOperation {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("BigProductOperation")
             .field("symbol", &self.symbol)
@@ -66,19 +54,13 @@ where
     }
 }
 
-impl<T> fmt::Display for BigProductOperation<T>
-where
-    T: Clone + PartialEq + Eq + Hash + std::fmt::Debug + Send + Sync + 'static
-{
+impl fmt::Display for BigProductOperation {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "BigProductOp({})", self.symbol)
     }
 }
 
-impl<T> Operation for BigProductOperation<T>
-where
-    T: Clone + PartialEq + Eq + Hash + std::fmt::Debug + Send + Sync + 'static
-{
+impl Operation for BigProductOperation {
     fn symbol(&self) -> &OperationSymbol {
         &self.symbol
     }
@@ -108,46 +90,35 @@ where
             }
             return Ok(ans);
         }
+
+        if args.len() != self.arity as usize {
+            return Err(format!(
+                "Expected {} product arguments, got {}",
+                self.arity,
+                args.len()
+            ));
+        }
         
-        // Check if factor algebras have IntArray elements
-        // Use algebra type as a heuristic
-        use crate::alg::AlgebraType;
-        let has_int_array_elements = matches!(
-            self.factor_algebras[0].algebra_type(), 
-            AlgebraType::Free | AlgebraType::Subproduct
-        );
-        
-        if has_int_array_elements {
-            // For factor algebras with IntArray elements (e.g., FreeAlgebra),
-            // SubProductOpWrapper.int_value_at handles index-to-element conversion internally.
-            // We call int_value_at directly - SubProductOpWrapper should handle conversion correctly.
-            for j in 0..self.number_of_factors {
-                // Extract indices for this component
-                let arg_indices: Vec<i32> = args.iter().map(|a| a[j]).collect();
-                // SubProductOpWrapper.int_value_at converts indices to elements internally
-                ans[j] = self.op_list[j].int_value_at(&arg_indices)?;
-            }
-        } else {
-            // Factor algebras have i32 elements - can use int_value_at directly
-            let mut arg_buf = vec![0; self.arity as usize];
-            for j in 0..self.number_of_factors {
-                // Extract j-th component from each argument
-                for (index, &arg_array) in args.iter().enumerate() {
-                    arg_buf[index] = arg_array[j];
+        let mut arg_buf = vec![0; self.arity as usize];
+        for j in 0..self.number_of_factors {
+            for (index, &arg_array) in args.iter().enumerate() {
+                if j >= arg_array.len() {
+                    return Err(format!(
+                        "Product argument has {} coordinates, expected {}",
+                        arg_array.len(),
+                        self.number_of_factors
+                    ));
                 }
-                // Apply the j-th operation
-                ans[j] = self.op_list[j].int_value_at(&arg_buf)?;
+                arg_buf[index] = arg_array[j];
             }
+            ans[j] = self.op_list[j].int_value_at(&arg_buf)?;
         }
         
         Ok(ans)
     }
     
     fn clone_box(&self) -> Box<dyn Operation> {
-        // Cannot clone BigProductOperation easily because it contains Box<dyn SmallAlgebra>
-        // Instead, return an error or create a new one
-        // For now, we'll need to handle cloning differently
-        todo!("BigProductOperation::clone_box not yet implemented - operations should be Arc-backed")
+        Box::new(self.clone())
     }
     
     fn value_at(&self, _args: &[i32]) -> Result<i32, String> {
@@ -237,8 +208,9 @@ where
     /// Description of the algebra
     description: Option<String>,
     
-    /// The factor algebras
-    algebras: Vec<Box<dyn SmallAlgebra<UniverseItem = T>>>,
+    /// The factor algebras. Powers intentionally repeat the same Arc rather
+    /// than cloning the full algebra for every coordinate.
+    algebras: Vec<Arc<dyn SmallAlgebra<UniverseItem = T>>>,
     
     /// Sizes of each factor
     sizes: Vec<i32>,
@@ -256,7 +228,7 @@ where
     cardinality: i32,
     
     /// Root algebras (for powers)
-    root_algebras: Option<Vec<Box<dyn SmallAlgebra<UniverseItem = T>>>>,
+    root_algebras: Option<Vec<Arc<dyn SmallAlgebra<UniverseItem = T>>>>,
     
     /// Powers (for powers)
     powers: Option<Vec<i32>>,
@@ -305,6 +277,11 @@ where
         if algebras.is_empty() {
             return Err("Cannot create product of empty list of algebras".to_string());
         }
+
+        let algebras: Vec<Arc<dyn SmallAlgebra<UniverseItem = T>>> = algebras
+            .into_iter()
+            .map(Arc::from)
+            .collect();
         
         let number_of_factors = algebras.len();
         let mut sizes = Vec::with_capacity(number_of_factors);
@@ -390,14 +367,19 @@ where
             return Err("Number of algebras must match number of powers".to_string());
         }
         
+        let root_algebras: Vec<Arc<dyn SmallAlgebra<UniverseItem = T>>> =
+            root_algs.into_iter().map(Arc::from).collect();
         let mut algebras = Vec::new();
         let mut number_of_factors = 0;
         
         for (i, pow) in powers.iter().enumerate() {
-            let alg = &root_algs[i];
+            if *pow < 0 {
+                return Err("Powers must be non-negative".to_string());
+            }
+            let alg = &root_algebras[i];
             number_of_factors += *pow as usize;
             for _ in 0..*pow {
-                algebras.push(alg.clone_box());
+                algebras.push(Arc::clone(alg));
             }
         }
         
@@ -415,7 +397,7 @@ where
             constants: None,
             constant_to_symbol: None,
             cardinality: -2,
-            root_algebras: Some(root_algs),
+            root_algebras: Some(root_algebras),
             powers: Some(powers),
             operations: Vec::new(),
             similarity_type: None,
@@ -432,128 +414,70 @@ where
     /// This creates operations on the product that apply componentwise.
     /// For power algebras, uses operations from the root algebra with Arc references.
     fn make_operations(&mut self) {
-        self.operations = Vec::new();
-        
-        // Get operations from first algebra as a template
+        self.operations.clear();
+
         if self.algebras.is_empty() {
             return;
         }
-        
-        // For power algebras, get operations from root algebra using Arc references
-        // For regular products, get from first factor
-        if let Some(ref root_algs) = self.root_algebras {
-            // Power algebra - use root algebra operations with Arc refs
-            if let Some(root_alg) = root_algs.first() {
-                // Get operations from root algebra
-                // Note: Ideally we'd use operations_ref_arc() to avoid cloning,
-                // but SmallAlgebra trait doesn't expose it. For FreeAlgebra/SubProductAlgebra
-                // we could downcast, but for now we use operations() which creates boxes.
-                let root_ops = root_alg.operations();
-                let k = root_ops.len();
-                
-                // Verify root algebra has operations - this is critical
-                if k == 0 {
-                    eprintln!("ERROR: Root algebra has no operations for power algebra");
-                    // Don't leave operations empty - this would cause issues
-                    // Return early but operations will be empty, which will cause errors later
-                    // This is better than silently continuing with no operations
-                    return;
+
+        let shared_operations =
+            |algebra: &Arc<dyn SmallAlgebra<UniverseItem = T>>| -> Vec<Arc<dyn Operation>> {
+                if let Some(operations) = algebra.operations_ref_arc() {
+                    operations.to_vec()
+                } else {
+                    algebra.operations().into_iter().map(Arc::from).collect()
                 }
-                
-                // For each operation in the root algebra
-                for i in 0..k {
-                    let root_op = &root_ops[i];
+            };
+
+        if let Some(ref root_algs) = self.root_algebras {
+            if let Some(root_alg) = root_algs.first() {
+                let root_ops = shared_operations(root_alg);
+                for root_op in root_ops {
                     let arity = root_op.arity();
                     let symbol = root_op.symbol().clone();
-                    
-                    // Create a list of Arc references to the same operation (for power)
-                    // Since all factors are the same, we use the same operation
-                    let mut op_list = Vec::with_capacity(self.number_of_factors);
-                    for _ in 0..self.number_of_factors {
-                        // Clone the operation box and wrap in Arc
-                        let op_box = root_ops[i].clone_box();
-                        op_list.push(Arc::from(op_box));
-                    }
-                    
-                    // Clone factor algebras for the operation
-                    let factor_algebras: Vec<Box<dyn SmallAlgebra<UniverseItem = T>>> = 
-                        self.algebras.iter().map(|a| a.clone_box()).collect();
-                    
-                    // Create the product operation
+                    let op_list = vec![root_op; self.number_of_factors];
                     let prod_op = BigProductOperation::new(
                         symbol,
                         arity,
                         self.number_of_factors,
                         op_list,
-                        factor_algebras,
                     );
-                    
                     self.operations.push(Arc::new(prod_op));
                 }
-                
-                // Verify we created operations
-                if self.operations.is_empty() {
-                    eprintln!("ERROR: Failed to create any operations for power algebra");
-                }
-                return; // Done with power algebra case
+                return;
             }
         }
-        
-        // Regular product case - use original logic
-        let first_ops = self.algebras[0].operations();
-        let k = first_ops.len();
-        
-        // Verify first algebra has operations
-        if k == 0 {
-            eprintln!("ERROR: First factor algebra has no operations for product algebra");
-            // Don't leave operations empty
-            return;
-        }
-        
-        // For each operation in the first algebra
+
+        let factor_operations: Vec<Vec<Arc<dyn Operation>>> = self
+            .algebras
+            .iter()
+            .map(shared_operations)
+            .collect();
+        let k = factor_operations[0].len();
+
         for i in 0..k {
-            let arity = first_ops[i].arity();
-            let symbol = first_ops[i].symbol().clone();
-            let symbol_str = symbol.to_string();
-            
-            // Collect the i-th operation from each factor algebra
-            let mut op_list = Vec::with_capacity(self.number_of_factors);
-            let mut all_factors_have_op = true;
-            for j in 0..self.number_of_factors {
-                let ops = self.algebras[j].operations();
-                if i < ops.len() {
-                    // Wrap factor operation with Arc. Since Product/SmallAlgebra
-                    // return ArcOp-backed boxes, clone_box is shallow.
-                    op_list.push(Arc::from(ops[i].clone_box()));
-                } else {
-                    // Factor missing operation - skip this product operation
-                    all_factors_have_op = false;
-                    break;
-                }
-            }
-            
-            if !all_factors_have_op {
-                // Skip this operation if any factor doesn't have it
+            let template = &factor_operations[0][i];
+            let symbol = template.symbol().clone();
+            let arity = template.arity();
+            if factor_operations.iter().any(|operations| {
+                operations
+                    .get(i)
+                    .is_none_or(|operation| operation.symbol() != &symbol)
+            }) {
                 continue;
             }
-            
-            // Clone factor algebras for the operation
-            let factor_algebras: Vec<Box<dyn SmallAlgebra<UniverseItem = T>>> = 
-                self.algebras.iter().map(|a| a.clone_box()).collect();
-            
-            // Create the product operation
+            let op_list = factor_operations
+                .iter()
+                .map(|operations| Arc::clone(&operations[i]))
+                .collect();
             let prod_op = BigProductOperation::new(
                 symbol,
                 arity,
                 self.number_of_factors,
                 op_list,
-                factor_algebras,
             );
-            
             self.operations.push(Arc::new(prod_op));
-            
         }
-        
     }
     
     /// Get constants in this algebra.
@@ -634,7 +558,7 @@ where
     /// 
     /// # Returns
     /// A reference to the list of factor algebras
-    pub fn factors(&self) -> &[Box<dyn SmallAlgebra<UniverseItem = T>>] {
+    pub fn factors(&self) -> &[Arc<dyn SmallAlgebra<UniverseItem = T>>] {
         &self.algebras
     }
     
@@ -642,7 +566,7 @@ where
     /// 
     /// # Returns
     /// The list of root algebras, if this is a power
-    pub fn root_factors(&self) -> Option<&[Box<dyn SmallAlgebra<UniverseItem = T>>]> {
+    pub fn root_factors(&self) -> Option<&[Arc<dyn SmallAlgebra<UniverseItem = T>>]> {
         self.root_algebras.as_deref()
     }
     
@@ -667,9 +591,12 @@ where
         // BigProductOperation is intentionally non-table-based (lazy)
         // Do not attempt to build tables here.
         
-        // Also make tables for factor algebras
+        // A shared factor can only be mutated while this product is its sole
+        // owner. Otherwise its existing operation representation is retained.
         for alg in &mut self.algebras {
-            alg.make_operation_tables();
+            if let Some(alg) = Arc::get_mut(alg) {
+                alg.make_operation_tables();
+            }
         }
     }
     
@@ -827,24 +754,21 @@ where
     T: Clone + PartialEq + Eq + Hash + std::fmt::Debug + Send + Sync + 'static
 {
     fn clone(&self) -> Self {
-        let mut cloned = BigProductAlgebra {
+        BigProductAlgebra {
             name: self.name.clone(),
             description: self.description.clone(),
-            algebras: self.algebras.iter().map(|a| a.clone_box()).collect(),
+            algebras: self.algebras.clone(),
             sizes: self.sizes.clone(),
             number_of_factors: self.number_of_factors,
             constants: self.constants.clone(),
             constant_to_symbol: self.constant_to_symbol.clone(),
             cardinality: self.cardinality,
-            root_algebras: self.root_algebras.as_ref().map(|v| v.iter().map(|a| a.clone_box()).collect()),
+            root_algebras: self.root_algebras.clone(),
             powers: self.powers.clone(),
-            operations: Vec::new(), // Will be populated by make_operations()
-            similarity_type: None,
+            operations: self.operations.clone(),
+            similarity_type: self.similarity_type.clone(),
             monitor: None,
-        };
-        // Regenerate operations after cloning (since we cloned the algebras)
-        cloned.make_operations();
-        cloned
+        }
     }
 }
 
@@ -1039,6 +963,31 @@ mod tests {
         let power = BigProductAlgebra::<i32>::new_power_safe(alg, 3).unwrap();
         assert_eq!(power.get_number_of_factors(), 3);
         assert!(power.is_power());
+        assert!(Arc::ptr_eq(&power.factors()[0], &power.factors()[1]));
+        assert!(Arc::ptr_eq(&power.factors()[1], &power.factors()[2]));
+    }
+
+    #[test]
+    fn test_product_operation_clone_is_shallow_and_usable() {
+        let operation = crate::alg::op::operations::make_int_operation(
+            OperationSymbol::new_safe("xor", 2, false).unwrap(),
+            2,
+            vec![0, 1, 1, 0],
+        )
+        .unwrap();
+        let alg = Box::new(BasicAlgebra::new(
+            "A".to_string(),
+            HashSet::from([0, 1]),
+            vec![operation],
+        )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+        let power = BigProductAlgebra::<i32>::new_power_safe(alg, 3).unwrap();
+
+        let operations = power.operations();
+        let cloned = operations[0].clone_box();
+        assert_eq!(
+            cloned.value_at_arrays(&[&[0, 1, 1], &[1, 1, 0]]).unwrap(),
+            vec![1, 0, 1]
+        );
     }
 
     #[test]

@@ -29,6 +29,10 @@ where
     fn get_operations_ref(&self) -> Vec<&dyn Operation> {
         self.inner.get_operations_ref()
     }
+
+    fn operations_ref_arc(&self) -> Option<&[Arc<dyn Operation>]> {
+        self.inner.operations_ref_arc()
+    }
     
     fn clone_box(&self) -> Box<dyn SmallAlgebra<UniverseItem = Self::UniverseItem>> {
         Box::new(SmallAlgebraWrapper::new(self.inner.clone_box()))
@@ -1656,6 +1660,10 @@ impl SmallAlgebra for PowerAlgebra {
     
     fn get_operations_ref(&self) -> Vec<&dyn Operation> {
         self.product.get_operations_ref()
+    }
+
+    fn operations_ref_arc(&self) -> Option<&[Arc<dyn Operation>]> {
+        self.product.operations_ref_arc()
     }
     
     fn clone_box(&self) -> Box<dyn SmallAlgebra<UniverseItem = Self::UniverseItem>> {

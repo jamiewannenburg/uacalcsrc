@@ -1,11 +1,13 @@
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
-use pyo3::types::PyAny;
+use pyo3::types::{PyAny, PyTuple};
 use uacalc::alg::{Algebra, SmallAlgebra};
+use uacalc::util::int_array::{IntArray, IntArrayTrait};
 use crate::alg::{PyBasicAlgebra, PyBasicOperation};
 use crate::alg::big_product_algebra::PyBigProductAlgebra;
 use crate::alg::convert::{algebra_type_java_name, operation_to_py, py_to_term, term_to_py};
 use crate::alg::conlat::congruence_lattice::PyCongruenceLatticeIntArray;
+use crate::alg::universe_map::PyUniverseMap;
 use crate::eq::PyEquation;
 use crate::terms::PyVariableImp;
 use crate::util::PyIntArray;
@@ -15,6 +17,57 @@ use std::collections::HashMap;
 #[pyclass]
 pub struct PyFreeAlgebra {
     inner: uacalc::alg::FreeAlgebra,
+    element_map: Option<PyUniverseMap>,
+}
+
+impl PyFreeAlgebra {
+    fn element_to_python(
+        &self,
+        py: Python<'_>,
+        element: IntArray,
+    ) -> PyResult<PyObject> {
+        if let Some(map) = &self.element_map {
+            let labels = element
+                .as_slice()
+                .iter()
+                .map(|&index| map.element_or_error(index, "Free algebra coordinate"))
+                .collect::<PyResult<Vec<_>>>()?;
+            Ok(PyTuple::new_bound(py, labels).to_object(py))
+        } else {
+            Ok(Py::new(py, PyIntArray { inner: element })?.to_object(py))
+        }
+    }
+
+    fn element_from_python(
+        &self,
+        py: Python<'_>,
+        element: &Bound<'_, PyAny>,
+    ) -> PyResult<IntArray> {
+        if let Ok(array) = element.extract::<PyRef<PyIntArray>>() {
+            return Ok(array.inner.clone());
+        }
+        let map = self.element_map.as_ref().ok_or_else(|| {
+            PyValueError::new_err("Expected an IntArray free-algebra element")
+        })?;
+        let coordinates: Vec<PyObject> = element.extract().map_err(|_| {
+            PyValueError::new_err(
+                "Expected an IntArray or a sequence of base-algebra elements",
+            )
+        })?;
+        let indices = coordinates
+            .iter()
+            .map(|coordinate| {
+                map.index_of(py, coordinate.bind(py))?
+                    .map(|index| index as i32)
+                    .ok_or_else(|| {
+                        PyValueError::new_err(
+                            "Free-algebra coordinate is not in the base universe",
+                        )
+                    })
+            })
+            .collect::<PyResult<Vec<_>>>()?;
+        IntArray::from_array(indices).map_err(PyValueError::new_err)
+    }
 }
 
 #[pymethods]
@@ -32,7 +85,10 @@ impl PyFreeAlgebra {
         let rust_base = Box::new(base.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
 
         match uacalc::alg::FreeAlgebra::new_safe(rust_base, number_of_gens) {
-            Ok(inner) => Ok(PyFreeAlgebra { inner }),
+            Ok(inner) => Ok(PyFreeAlgebra {
+                inner,
+                element_map: base.element_map().cloned(),
+            }),
             Err(e) => Err(PyValueError::new_err(e)),
         }
     }
@@ -51,7 +107,10 @@ impl PyFreeAlgebra {
         let rust_base = Box::new(base.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
 
         match uacalc::alg::FreeAlgebra::new_with_name_safe(name, rust_base, number_of_gens) {
-            Ok(inner) => Ok(PyFreeAlgebra { inner }),
+            Ok(inner) => Ok(PyFreeAlgebra {
+                inner,
+                element_map: base.element_map().cloned(),
+            }),
             Err(e) => Err(PyValueError::new_err(e)),
         }
     }
@@ -84,7 +143,10 @@ impl PyFreeAlgebra {
             make_universe,
             thin_gens,
         ) {
-            Ok(inner) => Ok(PyFreeAlgebra { inner }),
+            Ok(inner) => Ok(PyFreeAlgebra {
+                inner,
+                element_map: base.element_map().cloned(),
+            }),
             Err(e) => Err(PyValueError::new_err(e)),
         }
     }
@@ -108,7 +170,10 @@ impl PyFreeAlgebra {
         let rust_relations: Vec<uacalc::eq::Equation> = relations.into_iter().map(|eq| eq.inner).collect();
 
         match uacalc::alg::FreeAlgebra::new_with_relations_safe(rust_base, number_of_gens, rust_relations, None) {
-            Ok(inner) => Ok(PyFreeAlgebra { inner }),
+            Ok(inner) => Ok(PyFreeAlgebra {
+                inner,
+                element_map: base.element_map().cloned(),
+            }),
             Err(e) => Err(PyValueError::new_err(e)),
         }
     }
@@ -249,21 +314,30 @@ impl PyFreeAlgebra {
     }
 
     /// Java `getTerm(elt)`.
-    fn get_term(&self, py: Python<'_>, element: &PyIntArray) -> PyResult<Option<PyObject>> {
-        match self.inner.get_inner().get_term(&element.inner) {
+    fn get_term(
+        &self,
+        py: Python<'_>,
+        element: &Bound<'_, PyAny>,
+    ) -> PyResult<Option<PyObject>> {
+        let element = self.element_from_python(py, element)?;
+        match self.inner.get_inner().get_term(&element) {
             Some(term) => Ok(Some(term_to_py(py, term)?)),
             None => Ok(None),
         }
     }
 
     /// Java `getElementFromTerm(term)`.
-    fn get_element_from_term(&self, term: &Bound<'_, PyAny>) -> PyResult<Option<PyIntArray>> {
+    fn get_element_from_term(
+        &self,
+        py: Python<'_>,
+        term: &Bound<'_, PyAny>,
+    ) -> PyResult<Option<PyObject>> {
         let rust_term = py_to_term(term)?;
-        Ok(self
-            .inner
+        self.inner
             .get_inner()
             .get_element_from_term(rust_term.as_ref())
-            .map(|arr| PyIntArray { inner: arr }))
+            .map(|element| self.element_to_python(py, element))
+            .transpose()
     }
 
     /// Java `getProductAlgebra()`.
@@ -277,13 +351,13 @@ impl PyFreeAlgebra {
     }
 
     /// Java `generators()`.
-    fn generators(&self) -> Vec<PyIntArray> {
+    fn generators(&self, py: Python<'_>) -> PyResult<Vec<PyObject>> {
         self.inner
             .get_inner()
             .generators()
             .iter()
             .cloned()
-            .map(|arr| PyIntArray { inner: arr })
+            .map(|element| self.element_to_python(py, element))
             .collect()
     }
 
@@ -302,9 +376,9 @@ impl PyFreeAlgebra {
     ///
     /// Returns:
     ///     List[IntArray]: The universe elements
-    fn get_universe_list(&self) -> Vec<PyIntArray> {
+    fn get_universe_list(&self, py: Python<'_>) -> PyResult<Vec<PyObject>> {
         self.inner.universe()
-            .map(|item| PyIntArray { inner: item })
+            .map(|element| self.element_to_python(py, element))
             .collect()
     }
 
@@ -325,10 +399,15 @@ impl PyFreeAlgebra {
     ///
     /// Returns:
     ///     IntArray: The element at the given index
-    fn get_element(&self, index: usize) -> Option<PyIntArray> {
+    fn get_element(
+        &self,
+        py: Python<'_>,
+        index: usize,
+    ) -> PyResult<Option<PyObject>> {
         self.inner
             .get_element(index)
-            .map(|arr| PyIntArray { inner: arr })
+            .map(|element| self.element_to_python(py, element))
+            .transpose()
     }
 
     /// Get the index of an element.
@@ -338,8 +417,13 @@ impl PyFreeAlgebra {
     ///
     /// Returns:
     ///     int: The index of the element
-    fn element_index(&self, element: &PyIntArray) -> Option<usize> {
-        self.inner.element_index(&element.inner)
+    fn element_index(
+        &self,
+        py: Python<'_>,
+        element: &Bound<'_, PyAny>,
+    ) -> PyResult<Option<usize>> {
+        let element = self.element_from_python(py, element)?;
+        Ok(self.inner.element_index(&element))
     }
 
     /// String representation of the algebra.

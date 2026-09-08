@@ -59,11 +59,11 @@ impl PyPowerAlgebra {
     fn get_root(&self) -> PyBasicAlgebra {
         // We can't return a reference to the root algebra since it's boxed
         // This is a limitation of the current design
-        PyBasicAlgebra { inner: uacalc::alg::BasicAlgebra::new(
+        PyBasicAlgebra::from_inner(uacalc::alg::BasicAlgebra::new(
             "Root".to_string(),
             std::collections::HashSet::new(),
             Vec::new()
-        )}
+        ))
     }
 
     /// Get the parent algebra (same as root for power algebra).
@@ -72,11 +72,11 @@ impl PyPowerAlgebra {
     ///     BasicAlgebra: The parent algebra
     fn parent(&self) -> PyBasicAlgebra {
         // Same limitation as get_root
-        PyBasicAlgebra { inner: uacalc::alg::BasicAlgebra::new(
+        PyBasicAlgebra::from_inner(uacalc::alg::BasicAlgebra::new(
             "Parent".to_string(),
             std::collections::HashSet::new(),
             Vec::new()
-        )}
+        ))
     }
 
     /// Get the parent algebras (list containing the root algebra).
@@ -85,11 +85,11 @@ impl PyPowerAlgebra {
     ///     list[BasicAlgebra]: List containing the root algebra
     fn parents(&self) -> Vec<PyBasicAlgebra> {
         // Same limitation as get_root
-        vec![PyBasicAlgebra { inner: uacalc::alg::BasicAlgebra::new(
+        vec![PyBasicAlgebra::from_inner(uacalc::alg::BasicAlgebra::new(
             "Parent".to_string(),
             std::collections::HashSet::new(),
             Vec::new()
-        ) }]
+        ))]
     }
 
     /// Get the power/exponent.
@@ -384,7 +384,7 @@ impl PyPowerAlgebra {
             rust_ops
         );
         
-        Ok(PyBasicAlgebra { inner: basic_alg })
+        Ok(PyBasicAlgebra::from_inner(basic_alg))
     }
 }
 

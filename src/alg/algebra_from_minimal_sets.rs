@@ -512,6 +512,10 @@ impl SmallAlgebra for AlgebraFromMinimalSets {
     fn get_operations_ref(&self) -> Vec<&dyn Operation> {
         self.base.get_operations_ref()
     }
+
+    fn operations_ref_arc(&self) -> Option<&[Arc<dyn Operation>]> {
+        Some(self.base.operations_ref_arc())
+    }
     
     fn clone_box(&self) -> Box<dyn SmallAlgebra<UniverseItem = i32>> {
         Box::new(self.clone())

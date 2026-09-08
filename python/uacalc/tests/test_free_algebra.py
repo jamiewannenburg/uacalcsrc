@@ -117,6 +117,21 @@ class TestFreeAlgebra:
         assert free_alg.cardinality() >= 0
         assert java_data["cardinality"] >= 0
 
+    def test_deferred_universe_matches_java_constructor_flag(self, base_algebra):
+        FreeAlgebra = uacalc_lib.alg.FreeAlgebra
+
+        free_alg = FreeAlgebra.new_with_progress(
+            base_algebra,
+            1,
+            False,
+            False,
+            False,
+        )
+
+        assert free_alg.cardinality() == 0
+        assert free_alg.get_universe_list() == []
+        assert free_alg.operations_count() == 0
+
     def test_free_algebra_properties(self, test_config, base_algebra):
         """Test FreeAlgebra properties."""
         # Access the classes through the module
@@ -278,6 +293,29 @@ class TestFreeAlgebra:
         assert java_result.exit_code == 0
         java_data = get_java_data(java_result)
         assert isinstance(java_data["universe"], list)
+
+    def test_labeled_base_elements_round_trip_from_free_algebra(self):
+        BasicAlgebra = uacalc_lib.alg.BasicAlgebra
+        IntOperation = uacalc_lib.alg.IntOperation
+        FreeAlgebra = uacalc_lib.alg.FreeAlgebra
+
+        labels = ["zero", "one"]
+        base = BasicAlgebra(
+            "labeled C2",
+            labels,
+            [IntOperation.binary_xor("+")],
+        )
+        free_alg = FreeAlgebra(base, 1)
+
+        universe = free_alg.get_universe_list()
+        assert universe == [
+            ("zero", "one"),
+            ("zero", "zero"),
+        ]
+        first = free_alg.get_element(0)
+        assert free_alg.element_index(first) == 0
+        term = free_alg.get_term(first)
+        assert free_alg.get_element_from_term(term) == first
 
     @pytest.mark.parametrize("num_gens", [1, 2, 3, 4])
     def test_different_generator_counts(self, test_config, base_algebra, num_gens):

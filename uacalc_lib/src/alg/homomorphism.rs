@@ -6,6 +6,7 @@ use pyo3::types::PyList;
 use pyo3::Bound;
 use crate::alg::PyBasicAlgebra;
 use crate::alg::conlat::partition::PyPartition;
+use crate::alg::universe_map::PyUniverseMap;
 use crate::util::PyIntArray;
 
 /// Python wrapper for Homomorphism
@@ -13,6 +14,8 @@ use crate::util::PyIntArray;
 #[derive(Clone)]
 pub struct PyHomomorphism {
     inner: uacalc::alg::Homomorphism,
+    domain_map: Option<PyUniverseMap>,
+    range_map: Option<PyUniverseMap>,
 }
 
 #[pymethods]
@@ -37,7 +40,11 @@ impl PyHomomorphism {
         let range_box = Box::new(range.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
 
         match uacalc::alg::Homomorphism::new_safe(domain_box, range_box, map) {
-            Ok(inner) => Ok(PyHomomorphism { inner }),
+            Ok(inner) => Ok(PyHomomorphism {
+                inner,
+                domain_map: domain.element_map().cloned(),
+                range_map: range.element_map().cloned(),
+            }),
             Err(e) => Err(PyValueError::new_err(e)),
         }
     }
@@ -104,13 +111,14 @@ impl PyHomomorphism {
         // We need to downcast from trait object to concrete type
         // For now, we'll create a new BasicAlgebra with the same properties
         // This is a limitation - ideally we'd have a way to clone the exact type
-        PyBasicAlgebra {
-            inner: uacalc::alg::BasicAlgebra::new(
+        PyBasicAlgebra::from_inner_with_optional_map(
+            uacalc::alg::BasicAlgebra::new(
                 domain.name().to_string(),
                 domain.universe().collect(),
                 domain.operations()
-            )
-        }
+            ),
+            self.domain_map.clone(),
+        )
     }
 
     /// Set the domain algebra.
@@ -120,6 +128,7 @@ impl PyHomomorphism {
     fn set_domain(&mut self, domain: &PyBasicAlgebra) {
         let domain_box = Box::new(domain.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
         self.inner.set_domain(domain_box);
+        self.domain_map = domain.element_map().cloned();
     }
 
     /// Get the range algebra.
@@ -133,13 +142,14 @@ impl PyHomomorphism {
         // We need to downcast from trait object to concrete type
         // For now, we'll create a new BasicAlgebra with the same properties
         // This is a limitation - ideally we'd have a way to clone the exact type
-        PyBasicAlgebra {
-            inner: uacalc::alg::BasicAlgebra::new(
+        PyBasicAlgebra::from_inner_with_optional_map(
+            uacalc::alg::BasicAlgebra::new(
                 range.name().to_string(),
                 range.universe().collect(),
                 range.operations()
-            )
-        }
+            ),
+            self.range_map.clone(),
+        )
     }
 
     /// Set the range algebra.
@@ -149,6 +159,7 @@ impl PyHomomorphism {
     fn set_range(&mut self, range: &PyBasicAlgebra) {
         let range_box = Box::new(range.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
         self.inner.set_range(range_box);
+        self.range_map = range.element_map().cloned();
     }
 
     /// Get the mapping.
@@ -192,6 +203,10 @@ impl PyHomomorphism {
     /// This is used internally when converting Rust Homomorphism objects
     /// to Python objects.
     pub fn from_inner(inner: uacalc::alg::Homomorphism) -> Self {
-        PyHomomorphism { inner }
+        PyHomomorphism {
+            inner,
+            domain_map: None,
+            range_map: None,
+        }
     }
 }

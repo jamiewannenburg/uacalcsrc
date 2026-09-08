@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 use std::fmt::{Debug, Display};
 use std::hash::Hash;
-use std::sync::RwLock;
+use std::sync::{Arc, RwLock};
 use crate::alg::algebra::{Algebra, ProgressMonitor};
 use crate::alg::general_algebra::GeneralAlgebra;
 use crate::alg::op::{Operation, OperationSymbol, SimilarityType};
@@ -37,6 +37,14 @@ pub trait SmallAlgebra: Algebra {
     /// Get references to all operations (internal use).
     /// This is a workaround for the limitation of not being able to clone trait objects.
     fn get_operations_ref(&self) -> Vec<&dyn Operation>;
+
+    /// Borrow Arc-backed operations when the concrete algebra supports it.
+    ///
+    /// Returning a borrowed slice lets product and closure algorithms share
+    /// immutable operation tables without allocating wrappers or deep-cloning.
+    fn operations_ref_arc(&self) -> Option<&[Arc<dyn Operation>]> {
+        None
+    }
     
     /// Clone this algebra into a new boxed trait object.
     /// 
@@ -193,10 +201,12 @@ where
             let mut universe_vec: Vec<T> = self.base.universe.iter().cloned().collect();
             // Java integer universes are 0..n-1 in index order, not HashSet order.
             if std::any::TypeId::of::<T>() == std::any::TypeId::of::<i32>() {
-                unsafe {
-                    let as_i32 = &mut *(&mut universe_vec as *mut Vec<T> as *mut Vec<i32>);
-                    as_i32.sort_unstable();
-                }
+                use std::any::Any;
+                universe_vec.sort_unstable_by_key(|value| {
+                    *(value as &dyn Any)
+                        .downcast_ref::<i32>()
+                        .expect("TypeId checked above")
+                });
             }
             
             let mut universe_order = HashMap::new();
@@ -214,7 +224,22 @@ where
     /// # Returns
     /// `true` if the universe is just integers from 0 to n-1, `false` otherwise
     pub fn int_universe(&self) -> bool {
-        self.universe_list.read().unwrap().is_none()
+        use std::any::{Any, TypeId};
+
+        if TypeId::of::<T>() != TypeId::of::<i32>() {
+            return false;
+        }
+
+        self.ensure_universe_list();
+        self.universe_list
+            .read()
+            .unwrap()
+            .as_ref()
+            .is_some_and(|universe| {
+                universe.iter().enumerate().all(|(index, value)| {
+                    (value as &dyn Any).downcast_ref::<i32>() == Some(&(index as i32))
+                })
+            })
     }
     
     /// Reset the cached universe list and order.
@@ -425,89 +450,13 @@ where
     fn get_operations_ref(&self) -> Vec<&dyn Operation> {
         self.base.get_operations_ref()
     }
+
+    fn operations_ref_arc(&self) -> Option<&[Arc<dyn Operation>]> {
+        Some(BasicAlgebra::operations_ref_arc(self))
+    }
     
     fn clone_box(&self) -> Box<dyn SmallAlgebra<UniverseItem = Self::UniverseItem>> {
-        // Create a new BasicAlgebra with the same properties
-        // Key insight: Preserve operations by forcing them to have tables first,
-        // then reconstruct from those tables.
-        let universe: HashSet<T> = self.base.universe().collect();
-        let mut new_base = GeneralAlgebra::new_with_universe(
-            self.base.name().to_string(),
-            universe.clone(),
-        );
-        
-        // Clone all operations from the current algebra
-        // For each operation, if it doesn't have a table, force it to create one
-        let ops = self.base.get_operations_ref();
-        let mut operations_to_add = Vec::new();
-        
-        for op_ref in ops {
-            // Try to get the table - if missing, compute it
-            let table = if let Some(t) = op_ref.get_table() {
-                t.to_vec()
-            } else {
-                // For operations without tables, we need to compute the table
-                // This works for operations that implement int_value_at correctly
-                let arity = op_ref.arity();
-                let set_size = op_ref.get_set_size();
-                
-                if arity < 0 || set_size <= 0 {
-                    // Skip operations with invalid arity or set_size
-                    continue;
-                }
-                
-                // Compute the table by calling int_value_at for all argument combinations
-                let table_size = if arity == 0 {
-                    1
-                } else {
-                    (set_size as usize).pow(arity as u32)
-                };
-                
-                let mut table = Vec::with_capacity(table_size);
-                
-                use crate::util::horner;
-                for k in 0..table_size {
-                    let args = horner::horner_inv_same_size(k as i32, set_size, arity as usize);
-                    match op_ref.int_value_at(&args) {
-                        Ok(val) => table.push(val),
-                        Err(_) => {
-                            // If we can't compute a value, skip this operation
-                            eprintln!("Warning: Could not compute value for operation {}", op_ref.symbol());
-                            table.clear();
-                            break;
-                        }
-                    }
-                }
-                
-                if table.is_empty() {
-                    continue; // Skip operations we couldn't compute
-                }
-                table
-            };
-            
-            // Create a new operation with the table
-            if let Ok(new_op) = crate::alg::op::operations::make_int_operation(
-                op_ref.symbol().clone(),
-                op_ref.get_set_size(),
-                table,
-            ) {
-                operations_to_add.push(new_op);
-            }
-        }
-        
-        if !operations_to_add.is_empty() {
-            new_base.set_operations(operations_to_add);
-        }
-        
-        Box::new(BasicAlgebra {
-            base: new_base,
-            algebra_type: self.algebra_type.clone(),
-            universe_list: RwLock::new(self.universe_list.read().unwrap().clone()),
-            universe_order: RwLock::new(self.universe_order.read().unwrap().clone()),
-            parent: None,
-            con: None,
-            sub: None,
-        })
+        Box::new(self.clone())
     }
 
     fn algebra_type(&self) -> AlgebraType {

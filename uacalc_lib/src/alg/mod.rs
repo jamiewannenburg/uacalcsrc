@@ -26,6 +26,7 @@ pub mod op;
 pub mod parallel;
 pub mod sublat;
 pub mod small_algebra;
+pub(crate) mod universe_map;
 
 // Re-export the main types that are used throughout the codebase
 pub use basic_algebra::PyBasicAlgebra;

@@ -30,8 +30,25 @@ class TestBasicAlgebra(unittest.TestCase):
 
         alg = BasicAlgebra("test", [0, 1, 2, 3, 4] ,[])
         
-        # Initially, universe list is not cached so int_universe returns True
         self.assertTrue(alg.int_universe())
+
+    def test_python_labels_use_dense_internal_indices(self):
+        labels = ["red", "green", "blue"]
+        projection = IntOperation.from_int_value_at(
+            "projection", 1, len(labels), lambda args: args[0]
+        )
+        alg = BasicAlgebra("colors", labels, [projection])
+
+        self.assertFalse(alg.int_universe())
+        self.assertEqual(alg.get_universe(), labels)
+        self.assertEqual(alg.get_element(1), "green")
+        self.assertEqual(alg.element_index("blue"), 2)
+        self.assertEqual(alg.element_index("missing"), -1)
+        self.assertIsNone(alg.get_element(99))
+
+        operation = alg.operations()[0]
+        self.assertEqual(operation.int_value_at([1]), 1)
+        self.assertEqual(operation.value_at(["green"]), "green")
     
     def test_get_element(self):
         """Test getting elements by index."""
@@ -239,6 +256,12 @@ class TestBasicAlgebra(unittest.TestCase):
         # Different name should not be equal
         self.assertNotEqual(alg1, alg3)
 
+        labeled1 = BasicAlgebra("labels", ["a", "b"], [])
+        labeled2 = BasicAlgebra("labels", ["a", "b"], [])
+        different_labels = BasicAlgebra("labels", ["x", "y"], [])
+        self.assertEqual(labeled1, labeled2)
+        self.assertNotEqual(labeled1, different_labels)
+
     def test_operations(self):
         """Test operations."""
 
@@ -331,10 +354,10 @@ class TestBasicAlgebra(unittest.TestCase):
         self.assertEqual(basic_alg.cardinality(), 3)
         self.assertEqual(basic_alg.algebra_type(), "Basic")
         
-        # Check universe - should be integers (indices)
+        # Dense indices are an internal detail; Python receives the labels.
         basic_universe = basic_alg.get_universe()
         self.assertEqual(len(basic_universe), 3)
-        self.assertEqual(set(basic_universe), {0, 1, 2})
+        self.assertEqual(basic_universe, universe)
     
     def test_from_general_algebra_with_operations(self):
         """Test creating BasicAlgebra from GeneralAlgebra with operations."""

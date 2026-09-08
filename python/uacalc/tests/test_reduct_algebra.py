@@ -90,6 +90,17 @@ class TestReductAlgebra(unittest.TestCase):
         if java_result and java_result.get("success"):
             java_data = java_result["data"]
             self.assertEqual(java_data.get("cardinality"), 3)
+
+    def test_labeled_super_algebra_round_trip(self):
+        super_alg = self.BasicAlgebra("Colors", ["red", "green", "blue"], [])
+        reduct = self.ReductAlgebra(super_alg, [])
+
+        self.assertEqual(reduct.get_element(1), "green")
+        self.assertEqual(reduct.element_index("blue"), 2)
+        self.assertEqual(
+            reduct.super_algebra().get_universe(),
+            ["red", "green", "blue"],
+        )
     
     def test_create_with_name(self):
         """Test creating ReductAlgebra with a custom name."""
