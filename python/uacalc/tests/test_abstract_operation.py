@@ -113,8 +113,12 @@ class TestAbstractOperation(unittest.TestCase):
         
         # Now should be table-based
         self.assertTrue(op.is_table_based())
-        expected_table = [0, 1, 0, 1]  # f(x,x)=x, f(x,y)=y, f(y,x)=x, f(y,y)=y → [0,1,0,1]
+        # UACalc Horner tables vary the first argument fastest:
+        # f(x,x), f(y,x), f(x,y), f(y,y).
+        expected_table = [0, 0, 1, 1]
         self.assertEqual(op.get_table(), expected_table)
+        self.assertEqual(op.int_value_at([0, 1]), 1)
+        self.assertEqual(op.int_value_at([1, 0]), 0)
     
     def test_property_checks(self):
         """Test property checks work with both function types."""
