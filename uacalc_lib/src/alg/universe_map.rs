@@ -8,7 +8,7 @@ use pyo3::prelude::*;
 /// The Rust core never owns Python objects. Bindings share this sidecar across
 /// algebra and operation wrappers so algorithms use integers while values
 /// crossing the Python boundary retain their original representation.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub(crate) struct PyUniverseMap {
     labels: Arc<Vec<PyObject>>,
 }

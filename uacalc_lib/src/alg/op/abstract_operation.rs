@@ -442,4 +442,21 @@ impl PyAbstractOperationNew {
         result
     }
 
+    fn generate_args_static(
+        arity: i32,
+        set_size: i32,
+        current: &mut Vec<i32>,
+        all_args: &mut Vec<Vec<i32>>,
+    ) {
+        if current.len() == arity as usize {
+            all_args.push(current.clone());
+            return;
+        }
+        for value in 0..set_size {
+            current.push(value);
+            Self::generate_args_static(arity, set_size, current, all_args);
+            current.pop();
+        }
+    }
+
 }
