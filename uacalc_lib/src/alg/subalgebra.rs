@@ -300,6 +300,7 @@ impl PySubalgebra {
             Ok(subalgebra) => Ok(PySubalgebra {
                 inner: subalgebra,
                 super_alg: alg.inner.clone(),
+                element_map: alg.element_map().cloned(),
             }),
             Err(e) => Err(PyValueError::new_err(e)),
         }
@@ -330,6 +331,7 @@ impl PySubalgebra {
             Ok(subalgebra) => Ok(PySubalgebra {
                 inner: subalgebra,
                 super_alg: alg.inner.clone(),
+                element_map: alg.element_map().cloned(),
             }),
             Err(e) => Err(PyValueError::new_err(e)),
         }
