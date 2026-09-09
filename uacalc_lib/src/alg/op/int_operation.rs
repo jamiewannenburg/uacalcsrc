@@ -134,28 +134,12 @@ impl PyIntOperation {
             let table_size = if arity == 0 { 1 } else { (set_size as usize).pow(arity as u32) };
             let mut table = Vec::with_capacity(table_size);
 
-            // Generate all possible argument combinations and evaluate the function
-            fn generate_args(arity: i32, set_size: i32, current: &mut Vec<i32>, all_args: &mut Vec<Vec<i32>>) {
-                if current.len() == arity as usize {
-                    all_args.push(current.clone());
-                    return;
-                }
-                for i in 0..set_size {
-                    current.push(i);
-                    generate_args(arity, set_size, current, all_args);
-                    current.pop();
-                }
-            }
-
-            let mut all_args = Vec::new();
-            if arity == 0 {
-                all_args.push(Vec::new());
-            } else {
-                generate_args(arity, set_size, &mut Vec::new(), &mut all_args);
-            }
-
-            // Evaluate function for each argument combination
-            for args in all_args {
+            for encoded in 0..table_size {
+                let args = uacalc::util::horner::horner_inv_same_size(
+                    encoded as i32,
+                    set_size,
+                    arity as usize,
+                );
                 let py_args = PyList::new_bound(py, &args);
                 let result = int_value_at_fn.call1(py, (py_args,))?;
                 let result_int: i32 = result.extract(py)?;
@@ -208,28 +192,12 @@ impl PyIntOperation {
             let table_size = if arity == 0 { 1 } else { (set_size as usize).pow(arity as u32) };
             let mut table = Vec::with_capacity(table_size);
 
-            // Generate all possible argument combinations and evaluate the function
-            fn generate_indices(arity: i32, set_size: i32, current: &mut Vec<i32>, all_indices: &mut Vec<Vec<i32>>) {
-                if current.len() == arity as usize {
-                    all_indices.push(current.clone());
-                    return;
-                }
-                for i in 0..set_size {
-                    current.push(i);
-                    generate_indices(arity, set_size, current, all_indices);
-                    current.pop();
-                }
-            }
-
-            let mut all_indices = Vec::new();
-            if arity == 0 {
-                all_indices.push(Vec::new());
-            } else {
-                generate_indices(arity, set_size, &mut Vec::new(), &mut all_indices);
-            }
-
-            // Evaluate function for each argument combination
-            for indices in all_indices {
+            for encoded in 0..table_size {
+                let indices = uacalc::util::horner::horner_inv_same_size(
+                    encoded as i32,
+                    set_size,
+                    arity as usize,
+                );
                 // Convert indices to universe elements
                 let mut universe_args = Vec::new();
                 for &idx in &indices {

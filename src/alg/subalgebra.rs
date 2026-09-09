@@ -1,6 +1,7 @@
 use std::collections::{HashMap, HashSet};
 use std::fmt::{Debug, Display};
 use std::hash::Hash;
+use std::sync::Arc;
 use crate::alg::algebra::{Algebra, ProgressMonitor};
 use crate::alg::general_algebra::GeneralAlgebra;
 use crate::alg::small_algebra::{SmallAlgebra, AlgebraType};
@@ -573,6 +574,10 @@ where
     
     fn get_operations_ref(&self) -> Vec<&dyn Operation> {
         self.base.get_operations_ref()
+    }
+
+    fn operations_ref_arc(&self) -> Option<&[Arc<dyn Operation>]> {
+        Some(self.base.operations_ref_arc())
     }
     
     fn clone_box(&self) -> Box<dyn SmallAlgebra<UniverseItem = Self::UniverseItem>> {

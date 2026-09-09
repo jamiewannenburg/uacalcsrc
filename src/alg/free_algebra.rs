@@ -291,6 +291,14 @@ impl FreeAlgebra
                 ));
             } else {
                 println!("thin size = {}", thinned_gens.len());
+                println!(
+                    "thin = [{}]",
+                    thinned_gens
+                        .iter()
+                        .map(ToString::to_string)
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                );
                 println!("thin coord length = {}", thinned_gens[0].universe_size());
                 println!("gens coord length = {}", gens[0].universe_size());
             }
@@ -308,12 +316,13 @@ impl FreeAlgebra
             )?;
         }
 
-        // Create subproduct algebra
-        let mut sub_prod = SubProductAlgebra::<i32>::new_safe(
+        // FreeAlgebra has a deferred-universe constructor in Java. Build only
+        // the shell here, then close once if requested.
+        let mut sub_prod = SubProductAlgebra::<i32>::new_uncomputed_safe(
             name.clone(),
             product_algebra,
             gens,
-            true, // find_terms
+            true,
         )?;
 
         // Set flags
@@ -322,7 +331,7 @@ impl FreeAlgebra
 
         // Make universe if requested
         if make_universe {
-            Self::make_universe(&mut sub_prod, report.as_ref())?;
+            sub_prod.compute_universe(true, report.clone())?;
         }
 
         let size = sub_prod.cardinality();
@@ -608,43 +617,6 @@ impl FreeAlgebra
         }
         
         ans
-    }
-
-    /// Make the universe by computing the closure of generators.
-    fn make_universe(
-        sub_prod: &mut SubProductAlgebra<i32>,
-        report: Option<&Arc<dyn ProgressReport>>,
-    ) -> Result<(), String> {
-        // Create a Closer to compute the closure
-        let mut closer = Closer::new_safe(
-            Arc::new(sub_prod.product_algebra.clone()),
-            sub_prod.gens.clone()
-        )?;
-        
-        // Set progress report if provided
-        if let Some(report) = report {
-            closer.set_progress_report(Some(report.clone()));
-        }
-        
-        // Compute the closure
-        let univ = closer.sg_close()?;
-        
-        // Update the subproduct algebra with the universe
-        sub_prod.univ = univ.clone();
-        
-        // Create universe hash map
-        sub_prod.univ_hash_map = HashMap::new();
-        for (k, elem) in univ.iter().enumerate() {
-            sub_prod.univ_hash_map.insert(elem.clone(), k);
-        }
-        
-        // Create universe set
-        sub_prod.universe = univ.into_iter().collect();
-        
-        // Note: make_operations is private, so we can't call it directly
-        // The operations will be created when needed
-        
-        Ok(())
     }
 
     /// Get the idempotent terms in this algebra.
@@ -1127,6 +1099,10 @@ impl SmallAlgebra for FreeAlgebra
 
     fn get_operations_ref(&self) -> Vec<&dyn Operation> {
         self.inner.get_operations_ref()
+    }
+
+    fn operations_ref_arc(&self) -> Option<&[Arc<dyn Operation>]> {
+        Some(FreeAlgebra::operations_ref_arc(self))
     }
 
     fn clone_box(&self) -> Box<dyn SmallAlgebra<UniverseItem = Self::UniverseItem>> {

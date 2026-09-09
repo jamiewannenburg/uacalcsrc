@@ -703,8 +703,10 @@ where
             report.add_start_line("subpower closing ...");
         }
         
-        // Check that algebra has operations
-        let operations = self.algebra.as_ref().operations();
+        // Snapshot Arc handles once for the full closure. Rebuilding boxed
+        // operation views on every pass needlessly allocates and can duplicate
+        // wrapper state.
+        let operations = self.algebra.operations_ref_arc().to_vec();
         if operations.is_empty() {
             return Err("Algebra has no operations for closure computation".to_string());
         }
@@ -828,8 +830,6 @@ where
             }
             
             // Apply operations to expand the closure
-            use crate::alg::Algebra;
-            let operations = self.algebra.as_ref().operations();
             let num_ops = operations.len();
             
             // Verify we have operations
@@ -1847,6 +1847,15 @@ where
             let old_current_mark = current_mark;
             closed_mark = current_mark;
             current_mark = self.ans.len();
+
+            if !img_ops_not_null {
+                let algebra_cardinality = self.algebra.cardinality();
+                if algebra_cardinality > 0
+                    && current_mark >= algebra_cardinality as usize
+                {
+                    break;
+                }
+            }
         }
         
         if let Some(ref report) = self.report {

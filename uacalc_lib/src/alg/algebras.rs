@@ -191,7 +191,7 @@ fn matrix_power(alg: &PyBasicAlgebra, k: i32) -> PyResult<PyBasicAlgebra> {
     let rust_alg = Box::new(alg.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
     
     match algebras::matrix_power(rust_alg, k) {
-        Ok(result) => Ok(PyBasicAlgebra { inner: result }),
+        Ok(result) => Ok(PyBasicAlgebra::from_inner(result)),
         Err(e) => Err(PyValueError::new_err(e)),
     }
 }
@@ -214,7 +214,7 @@ fn matrix_power(alg: &PyBasicAlgebra, k: i32) -> PyResult<PyBasicAlgebra> {
 #[pyfunction]
 fn ternary_discriminator_algebra(card: i32) -> PyResult<PyBasicAlgebra> {
     match algebras::ternary_discriminator_algebra(card) {
-        Ok(result) => Ok(PyBasicAlgebra { inner: result }),
+        Ok(result) => Ok(PyBasicAlgebra::from_inner(result)),
         Err(e) => Err(PyValueError::new_err(e)),
     }
 }
@@ -333,7 +333,7 @@ fn member_of_quasivariety_gen_by_proper_subs(a: &PyBasicAlgebra) -> PyResult<Opt
 #[pyfunction]
 fn make_random_algebra(n: i32, sim_type: &PySimilarityType) -> PyResult<PyBasicAlgebra> {
     match algebras::make_random_algebra(n, &sim_type.get_inner()) {
-        Ok(result) => Ok(PyBasicAlgebra { inner: result }),
+        Ok(result) => Ok(PyBasicAlgebra::from_inner(result)),
         Err(e) => Err(PyValueError::new_err(e)),
     }
 }
@@ -357,7 +357,7 @@ fn make_random_algebra(n: i32, sim_type: &PySimilarityType) -> PyResult<PyBasicA
 #[pyo3(signature = (n, sim_type, seed=None))]
 fn make_random_algebra_with_seed(n: i32, sim_type: &PySimilarityType, seed: Option<i64>) -> PyResult<PyBasicAlgebra> {
     match algebras::make_random_algebra_with_seed(n, &sim_type.get_inner(), seed) {
-        Ok(result) => Ok(PyBasicAlgebra { inner: result }),
+        Ok(result) => Ok(PyBasicAlgebra::from_inner(result)),
         Err(e) => Err(PyValueError::new_err(e)),
     }
 }
@@ -379,7 +379,7 @@ fn make_random_algebra_with_seed(n: i32, sim_type: &PySimilarityType, seed: Opti
 #[pyfunction]
 fn make_random_algebra_with_arities(n: i32, arities: Vec<i32>) -> PyResult<PyBasicAlgebra> {
     match algebras::make_random_algebra_with_arities(n, &arities) {
-        Ok(result) => Ok(PyBasicAlgebra { inner: result }),
+        Ok(result) => Ok(PyBasicAlgebra::from_inner(result)),
         Err(e) => Err(PyValueError::new_err(e)),
     }
 }
@@ -404,7 +404,7 @@ fn make_random_algebra_with_arities(n: i32, arities: Vec<i32>) -> PyResult<PyBas
 #[pyo3(signature = (n, arities, seed=None))]
 fn make_random_algebra_with_arities_and_seed(n: i32, arities: Vec<i32>, seed: Option<i64>) -> PyResult<PyBasicAlgebra> {
     match algebras::make_random_algebra_with_arities_and_seed(n, &arities, seed) {
-        Ok(result) => Ok(PyBasicAlgebra { inner: result }),
+        Ok(result) => Ok(PyBasicAlgebra::from_inner(result)),
         Err(e) => Err(PyValueError::new_err(e)),
     }
 }
@@ -427,7 +427,7 @@ fn make_random_algebra_with_arities_and_seed(n: i32, arities: Vec<i32>, seed: Op
 #[pyfunction]
 fn full_transformation_semigroup(n: i32, include_constants: bool, include_id: bool) -> PyResult<PyBasicAlgebra> {
     match algebras::full_transformation_semigroup(n, include_constants, include_id) {
-        Ok(result) => Ok(PyBasicAlgebra { inner: result }),
+        Ok(result) => Ok(PyBasicAlgebra::from_inner(result)),
         Err(e) => Err(PyValueError::new_err(e)),
     }
 }
@@ -564,7 +564,7 @@ fn unary_clone_alg_from_partitions(
         .collect();
     
     match algebras::unary_clone_alg_from_partitions(&pars_rust, &eta0.inner, &eta1.inner) {
-        Ok(alg) => Ok(PyBasicAlgebra { inner: alg }),
+        Ok(alg) => Ok(PyBasicAlgebra::from_inner(alg)),
         Err(e) => Err(PyValueError::new_err(e)),
     }
 }

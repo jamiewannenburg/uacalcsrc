@@ -3,13 +3,14 @@
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
 use pyo3::types::{PyList, PyAny};
+use crate::alg::universe_map::PyUniverseMap;
 
 /// Python wrapper for GeneralAlgebra that supports Python objects and AbstractOperations
 #[pyclass]
 pub struct PyGeneralAlgebra {
     name: String,
     description: Option<String>,
-    universe: Vec<PyObject>, // Universe as Python objects
+    universe: PyUniverseMap,
     operations: Vec<PyObject>, // Operations stored as PyObject references to PyAbstractOperationNew
 }
 
@@ -52,21 +53,7 @@ impl PyGeneralAlgebra {
             return Err(PyValueError::new_err("Universe cannot be empty"));
         }
 
-        // Build unique universe and check for duplicates
-        let mut unique_universe: Vec<PyObject> = Vec::new();
-        for elem in universe_list.iter() {
-            // Check if we've seen this element before using Python equality
-            let mut found = false;
-            for existing_elem in unique_universe.iter() {
-                if elem.bind(py).eq(existing_elem.bind(py))? {
-                    found = true;
-                    break;
-                }
-            }
-            if !found {
-                unique_universe.push(elem.clone());
-            }
-        }
+        let universe = PyUniverseMap::from_objects(py, universe_list, true)?;
 
         // Extract operations
         let operations_list: Vec<PyObject> = if let Some(ops) = operations {
@@ -95,7 +82,7 @@ impl PyGeneralAlgebra {
         Ok(PyGeneralAlgebra {
             name,
             description: None,
-            universe: unique_universe,
+            universe,
             operations: operations_list,
         })
     }
@@ -108,11 +95,12 @@ impl PyGeneralAlgebra {
     /// Returns:
     ///     GeneralAlgebra: A new GeneralAlgebra instance with empty universe
     #[staticmethod]
-    fn with_name(name: String) -> Self {
+    fn with_name(py: Python<'_>, name: String) -> Self {
         PyGeneralAlgebra {
             name,
             description: None,
-            universe: Vec::new(),
+            universe: PyUniverseMap::from_objects(py, Vec::new(), false)
+                .expect("an empty universe map is valid"),
             operations: Vec::new(),
         }
     }
@@ -147,26 +135,12 @@ impl PyGeneralAlgebra {
             return Err(PyValueError::new_err("Universe cannot be empty"));
         }
 
-        // Build unique universe and check for duplicates
-        let mut unique_universe: Vec<PyObject> = Vec::new();
-        for elem in universe_list.iter() {
-            // Check if we've seen this element before using Python equality
-            let mut found = false;
-            for existing_elem in unique_universe.iter() {
-                if elem.bind(py).eq(existing_elem.bind(py))? {
-                    found = true;
-                    break;
-                }
-            }
-            if !found {
-                unique_universe.push(elem.clone());
-            }
-        }
+        let universe = PyUniverseMap::from_objects(py, universe_list, true)?;
 
         Ok(PyGeneralAlgebra {
             name,
             description: None,
-            universe: unique_universe,
+            universe,
             operations: Vec::new(),
         })
     }
@@ -286,16 +260,16 @@ impl PyGeneralAlgebra {
     ///
     /// Returns:
     ///     List[Any]: The universe elements as a list
-    fn get_universe(&self, py: Python<'_>) -> Vec<PyObject> {
-        self.universe.clone()
+    fn get_universe(&self) -> Vec<PyObject> {
+        self.universe.labels_owned()
     }
 
     /// Get the universe as a list of Python objects (alias for get_universe).
     ///
     /// Returns:
     ///     List[Any]: The universe elements as a list
-    fn universe(&self, py: Python<'_>) -> Vec<PyObject> {
-        self.get_universe(py)
+    fn universe(&self) -> Vec<PyObject> {
+        self.get_universe()
     }
 
     /// Get the operations of this algebra.
@@ -363,25 +337,9 @@ impl PyGeneralAlgebra {
     ///                  cannot be converted to IntOperation
     pub(crate) fn to_basic_algebra(&self, py: Python<'_>) -> PyResult<crate::alg::PyBasicAlgebra> {
         use crate::alg::PyBasicAlgebra;
-        use std::collections::HashSet;
-        
-        // Convert universe elements to integers
-        let mut universe_ints: Vec<i32> = Vec::new();
-        
-        for (idx, elem) in self.universe.iter().enumerate() {
-            let idx_i32 = idx as i32;
-            
-            // Try to extract as integer directly
-            if let Ok(int_val) = elem.bind(py).extract::<i32>() {
-                universe_ints.push(int_val);
-            } else {
-                // If not an integer, use the index as the integer value
-                universe_ints.push(idx_i32);
-            }
-        }
-        
-        let universe_set: HashSet<i32> = universe_ints.iter().cloned().collect();
-        let set_size = universe_set.len() as i32;
+        let set_size = i32::try_from(self.universe.len())
+            .map_err(|_| PyValueError::new_err("Universe is too large"))?;
+        let universe_set = (0..set_size).collect();
         
         // Convert operations from PyAbstractOperationNew to IntOperation
         let mut rust_ops: Vec<Box<dyn uacalc::alg::op::Operation>> = Vec::new();
@@ -399,13 +357,19 @@ impl PyGeneralAlgebra {
             // Get operation properties
             let arity: i32 = op_bound.getattr("arity")?.call0()?.extract()?;
             let op_set_size: i32 = op_bound.getattr("get_set_size")?.call0()?.extract()?;
+            if op_set_size != set_size {
+                return Err(PyValueError::new_err(format!(
+                    "Operation has set size {}, expected {}",
+                    op_set_size, set_size
+                )));
+            }
             
             // Get symbol name
             let symbol_obj = op_bound.getattr("symbol")?.call0()?;
             let symbol_name: String = symbol_obj.getattr("name")?.call0()?.extract()?;
             
             // Try to get table first (more efficient)
-            let table: Option<Vec<i32>> = if let Ok(get_table) = op_bound.getattr("get_table") {
+            let mut table: Option<Vec<i32>> = if let Ok(get_table) = op_bound.getattr("get_table") {
                 if let Ok(table_result) = get_table.call0() {
                     if let Ok(Some(table_vec)) = table_result.extract::<Option<Vec<i32>>>() {
                         Some(table_vec)
@@ -418,47 +382,36 @@ impl PyGeneralAlgebra {
             } else {
                 None
             };
+
+            // Native abstract operations cache their table after the first
+            // conversion, so repeated conversions never re-enter Python.
+            if table.is_none() && op_bound.call_method0("make_table").is_ok() {
+                table = op_bound
+                    .call_method0("get_table")?
+                    .extract::<Option<Vec<i32>>>()?;
+            }
             
             // Build table if not available
             let final_table = if let Some(t) = table {
                 t
             } else {
                 // Generate table by calling int_value_at for all argument combinations
-                let table_size = if arity == 0 { 1 } else { (set_size as usize).pow(arity as u32) };
-                let mut op_table = Vec::with_capacity(table_size);
-                
-                // Generate all argument combinations
-                fn generate_args(arity: i32, set_size: i32, current: &mut Vec<i32>, all_args: &mut Vec<Vec<i32>>) {
-                    if current.len() == arity as usize {
-                        all_args.push(current.clone());
-                        return;
-                    }
-                    for i in 0..set_size {
-                        current.push(i);
-                        generate_args(arity, set_size, current, all_args);
-                        current.pop();
-                    }
-                }
-                
-                let mut all_args = Vec::new();
-                if arity == 0 {
-                    all_args.push(Vec::new());
+                let table_size = if arity == 0 {
+                    1
                 } else {
-                    generate_args(arity, set_size, &mut Vec::new(), &mut all_args);
-                }
-                
-                // Evaluate operation for each argument combination
-                for args in all_args {
-                    // Map universe elements to integers if needed
-                    let mapped_args: Vec<i32> = if op_set_size == set_size {
-                        args
-                    } else {
-                        // If operation uses different universe, we need to map
-                        // For now, assume they match
-                        args
-                    };
-                    
-                    let py_args = PyList::new_bound(py, &mapped_args);
+                    (set_size as usize)
+                        .checked_pow(arity as u32)
+                        .ok_or_else(|| PyValueError::new_err("Operation table size overflow"))?
+                };
+                let mut op_table = Vec::with_capacity(table_size);
+
+                for encoded in 0..table_size {
+                    let args = uacalc::util::horner::horner_inv_same_size(
+                        encoded as i32,
+                        set_size,
+                        arity as usize,
+                    );
+                    let py_args = PyList::new_bound(py, &args);
                     let result = op_bound.call_method1("int_value_at", (py_args,))?;
                     let result_int: i32 = result.extract()?;
                     
@@ -497,7 +450,14 @@ impl PyGeneralAlgebra {
             rust_ops
         );
         
-        Ok(PyBasicAlgebra::from_inner(basic_alg))
+        if self.universe.is_dense_integer_identity(py) {
+            Ok(PyBasicAlgebra::from_inner(basic_alg))
+        } else {
+            Ok(PyBasicAlgebra::from_inner_with_map(
+                basic_alg,
+                self.universe.clone(),
+            ))
+        }
     }
 
     /// Python string representation
@@ -525,7 +485,12 @@ impl PyGeneralAlgebra {
             return Ok(false);
         }
         // Compare universes element by element
-        for (self_elem, other_elem) in self.universe.iter().zip(other.universe.iter()) {
+        for (self_elem, other_elem) in self
+            .universe
+            .labels()
+            .iter()
+            .zip(other.universe.labels())
+        {
             if !self_elem.bind(py).eq(other_elem.bind(py))? {
                 return Ok(false);
             }

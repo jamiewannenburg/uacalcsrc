@@ -8,7 +8,7 @@ use std::collections::HashSet;
 fn test_sub_product_algebra_sub_method() {
     // Create two small algebras with operations
     let mut ops1: Vec<Box<dyn Operation>> = Vec::new();
-    let const_sym1 = OperationSymbol::new("c1", 0, false);
+    let const_sym1 = OperationSymbol::new("c", 0, false);
     let const_op1 = operations::make_int_operation(const_sym1, 2, vec![0])
         .expect("Failed to create constant operation");
     ops1.push(const_op1);
@@ -20,7 +20,7 @@ fn test_sub_product_algebra_sub_method() {
     )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
 
     let mut ops2: Vec<Box<dyn Operation>> = Vec::new();
-    let const_sym2 = OperationSymbol::new("c2", 0, false);
+    let const_sym2 = OperationSymbol::new("c", 0, false);
     let const_op2 = operations::make_int_operation(const_sym2, 3, vec![0])
         .expect("Failed to create constant operation");
     ops2.push(const_op2);
@@ -103,7 +103,7 @@ fn test_sub_product_algebra_sub_with_single_factor() {
 fn test_sub_product_algebra_sub_with_terms() {
     // Create two small algebras with operations
     let mut ops1: Vec<Box<dyn Operation>> = Vec::new();
-    let const_sym1 = OperationSymbol::new("c1", 0, false);
+    let const_sym1 = OperationSymbol::new("c", 0, false);
     let const_op1 = operations::make_int_operation(const_sym1, 2, vec![0])
         .expect("Failed to create constant operation");
     ops1.push(const_op1);
@@ -115,7 +115,7 @@ fn test_sub_product_algebra_sub_with_terms() {
     )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
 
     let mut ops2: Vec<Box<dyn Operation>> = Vec::new();
-    let const_sym2 = OperationSymbol::new("c2", 0, false);
+    let const_sym2 = OperationSymbol::new("c", 0, false);
     let const_op2 = operations::make_int_operation(const_sym2, 2, vec![0])
         .expect("Failed to create constant operation");
     ops2.push(const_op2);

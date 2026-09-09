@@ -25,8 +25,14 @@ mod basic_algebra_tests {
         let operations = Vec::new();
         let alg = BasicAlgebra::new("test".to_string(), universe, operations);
         
-        // Initially, universe list is not cached so int_universe returns true
         assert!(alg.int_universe());
+
+        let sparse = BasicAlgebra::new(
+            "sparse".to_string(),
+            HashSet::from([2, 4]),
+            Vec::new(),
+        );
+        assert!(!sparse.int_universe());
     }
 
     #[test]
@@ -96,9 +102,9 @@ mod basic_algebra_tests {
         let operations = Vec::new();
         let alg = BasicAlgebra::new("test".to_string(), universe, operations);
         
-        // Access universe list to cache it
+        // Cache state does not change the semantic answer.
         let _ = alg.get_universe_list();
-        assert!(!alg.int_universe());
+        assert!(alg.int_universe());
         
         // Reset cache
         alg.reset_universe_cache();
@@ -184,17 +190,29 @@ mod basic_algebra_tests {
 
     #[test]
     fn test_clone() {
-        // Create algebra
-        let universe: HashSet<i32> = (0..5).collect();
-        let operations = Vec::new();
+        use std::sync::Arc;
+        use uacalc::alg::op::{IntOperation, Operation};
+
+        let universe: HashSet<i32> = (0..2).collect();
+        let operations = vec![
+            Box::new(IntOperation::binary_xor("xor").unwrap()) as Box<dyn Operation>
+        ];
         let alg = BasicAlgebra::new("test".to_string(), universe, operations);
         
-        // Clone it
         let alg_clone = alg.clone();
+        let boxed_clone = alg.clone_box();
         
         assert_eq!(alg.name(), alg_clone.name());
         assert_eq!(alg.cardinality(), alg_clone.cardinality());
         assert_eq!(alg.algebra_type(), alg_clone.algebra_type());
+        assert!(Arc::ptr_eq(
+            &alg.operations_ref_arc()[0],
+            &alg_clone.operations_ref_arc()[0],
+        ));
+        assert!(Arc::ptr_eq(
+            &alg.operations_ref_arc()[0],
+            &boxed_clone.operations_ref_arc().unwrap()[0],
+        ));
     }
 
     #[test]
