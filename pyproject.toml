@@ -62,6 +62,16 @@ addopts = [
     "--verbose",
     "--tb=short",
 ]
+markers = [
+    "smoke: parity tests that only check imports and basic structure",
+    "surface: parity tests that check public API surface (dir, counts)",
+    "behavioral: parity tests that check exact functional parity with Java",
+    "slow: tests that take a long time to run",
+    "integration: integration tests",
+    "unit: unit tests",
+    "compatibility: compatibility tests",
+    "performance: performance tests",
+]
 
 [tool.coverage.run]
 source = ["python/uacalc"]

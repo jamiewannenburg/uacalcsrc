@@ -1,4 +1,7 @@
-"""Golden stdout checks for ``tests/parity/io/golden_io_surface.py``."""
+"""Golden stdout checks for ``tests/parity/io/golden_io_surface.py``.
+
+Classification: SURFACE test - checks public API surface (module names, counts).
+"""
 
 from __future__ import annotations
 
@@ -11,6 +14,8 @@ from pathlib import Path
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
+
+pytestmark = pytest.mark.surface  # Mark all tests in this file as surface tests
 SCRIPT = REPO_ROOT / "tests" / "parity" / "io" / "golden_io_surface.py"
 FIXTURES = REPO_ROOT / "tests" / "parity" / "io" / "fixtures"
 JAR = REPO_ROOT / "jars" / "uacalc.jar"

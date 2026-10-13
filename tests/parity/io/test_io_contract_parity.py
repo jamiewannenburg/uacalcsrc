@@ -1,6 +1,7 @@
 """
 Contract parity for ``org.uacalc.io`` (see ``tests/parity/io/CONTRACT.md``).
 
+Classification: BEHAVIORAL test - exact functional parity checks.
 Uses Java/Jython names on the ``org.uacalc.io`` shim. Failures reflect missing
 ``uacalc_lib`` behavior or incomplete compatibility wrappers — not hidden skips.
 """
@@ -16,6 +17,11 @@ from pathlib import Path
 from typing import Any, Callable, List
 
 import pytest
+
+# Mark module-level tests - individual tests can override
+pytestmark = [
+    pytest.mark.behavioral,  # These are behavioral parity tests
+]
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 

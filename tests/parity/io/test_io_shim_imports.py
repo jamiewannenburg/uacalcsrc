@@ -1,4 +1,7 @@
-"""Import smoke: ``org.uacalc.io`` re-exports on CPython."""
+"""Import smoke: ``org.uacalc.io`` re-exports on CPython.
+
+Classification: SMOKE test - only verifies imports work and basic structure exists.
+"""
 
 from __future__ import annotations
 
@@ -8,6 +11,8 @@ from pathlib import Path
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
+
+pytestmark = pytest.mark.smoke  # Mark all tests in this file as smoke tests
 
 _IO_PUBLIC = (
     "AlgebraIO",
