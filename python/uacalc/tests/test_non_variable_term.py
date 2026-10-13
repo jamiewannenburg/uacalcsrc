@@ -177,6 +177,73 @@ class TestNonVariableTermBasic(unittest.TestCase):
         self.assertEqual(term.depth(), 1)  # Constant term has depth 1 (the constant itself)
         self.assertEqual(term.length(), 1)
         self.assertEqual(len(term.get_variable_list()), 0)
+    
+    def test_make_constant_term_java_parity(self):
+        """Test makeConstantTerm static method matches Java behavior.
+        
+        Java signature: public static Term makeConstantTerm(OperationSymbol sym)
+        Returns: NonVariableTerm with the given symbol and empty children list
+        """
+        # Test with various operation symbols (arity 0)
+        symbols = [
+            ("e", 0),
+            ("zero", 0),
+            ("identity", 0),
+        ]
+        
+        for name, arity in symbols:
+            with self.subTest(symbol=name):
+                sym = self.OperationSymbol(name, arity)
+                
+                # Call via both Python (snake_case) and Java (camelCase) names
+                term_snake = self.NonVariableTerm.make_constant_term(sym)
+                term_camel = self.NonVariableTerm.makeConstantTerm(sym)
+                
+                # Both should work and produce equivalent results
+                for term, style in [(term_snake, "snake_case"), (term_camel, "camelCase")]:
+                    with self.subTest(style=style):
+                        # Verify Java-equivalent properties
+                        self.assertIsNotNone(term, f"makeConstantTerm({name}) should return a term")
+                        self.assertFalse(term.isa_variable(), "Constant term should not be a variable")
+                        self.assertEqual(term.depth(), 1, "Constant term depth should be 1")
+                        self.assertEqual(term.length(), 1, "Constant term length should be 1")
+                        self.assertEqual(len(term.get_variable_list()), 0, 
+                                       "Constant term should have no variables")
+                        
+                        # Verify string representation: should be "name()"
+                        str_repr = str(term)
+                        self.assertEqual(str_repr, f"{name}()", 
+                                       f"String representation should be '{name}()'")
+                
+                # Verify both methods produce the same string representation
+                self.assertEqual(str(term_snake), str(term_camel),
+                               "Both naming conventions should produce identical results")
+    
+    def test_make_constant_term_in_compound(self):
+        """Test that constant terms from makeConstantTerm work in compound expressions.
+        
+        Verifies the constant term can be used as a child in other terms,
+        matching Java's usage pattern.
+        """
+        # Create constant term
+        e = self.OperationSymbol("e", 0)
+        const = self.NonVariableTerm.make_constant_term(e)
+        
+        # Use it in a compound term: f(x, e())
+        x = self.VariableImp("x")
+        f = self.OperationSymbol("f", 2)
+        compound = self.NonVariableTerm(f, [x, const])
+        
+        # Verify structure
+        self.assertEqual(compound.depth(), 2, "Compound with constant should have depth 2")
+        self.assertEqual(compound.length(), 3, "Should count f, x, and e")
+        self.assertEqual(len(compound.get_variable_list()), 1, "Should have one variable (x)")
+        
+        # Verify string representation
+        str_repr = str(compound)
+        self.assertIn("f", str_repr)
+        self.assertIn("x", str_repr)
+        self.assertIn("e()", str_repr)
 
 
 class TestNonVariableTermEvaluation(unittest.TestCase):

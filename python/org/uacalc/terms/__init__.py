@@ -31,12 +31,35 @@ else:
     VariableImp = _terms.VariableImp
     Variable = VariableImp
 
-    if not hasattr(_LibNonVariableTerm, "makeConstantTerm"):
-        _LibNonVariableTerm.makeConstantTerm = _LibNonVariableTerm.make_constant_term
+    # Save references to library functions before creating wrapper
+    _make_constant_term = _LibNonVariableTerm.make_constant_term
+    _LibNonVariableTermClass = _LibNonVariableTerm
+
+    class NonVariableTerm(object):
+        """Jython compatibility wrapper for NonVariableTerm."""
+
+        def __new__(cls, *args, **kwargs):
+            # When instantiated, create the actual library object
+            return _LibNonVariableTermClass(*args, **kwargs)
+
+        @staticmethod
+        def makeConstantTerm(sym):
+            """Create a constant term from an operation symbol.
+            
+            Matches Java: public static Term makeConstantTerm(OperationSymbol sym)
+            Returns a NonVariableTerm with the given symbol and empty children.
+            """
+            return _make_constant_term(sym)
+
+    # Copy over other class attributes and methods from the library class
+    for _attr_name in dir(_LibNonVariableTerm):
+        if not _attr_name.startswith('_') and not hasattr(NonVariableTerm, _attr_name):
+            setattr(NonVariableTerm, _attr_name, getattr(_LibNonVariableTerm, _attr_name))
+
     if not hasattr(_LibNonVariableTerm, "isaVariable") and hasattr(
         _LibNonVariableTerm, "isa_variable"
     ):
-        _LibNonVariableTerm.isaVariable = _LibNonVariableTerm.isa_variable
+        NonVariableTerm.isaVariable = _LibNonVariableTerm.isa_variable
     if not hasattr(VariableImp, "isaVariable") and hasattr(VariableImp, "isa_variable"):
         VariableImp.isaVariable = VariableImp.isa_variable
     if not hasattr(VariableImp, "intEval") and hasattr(VariableImp, "int_eval"):
@@ -46,7 +69,7 @@ else:
     if not hasattr(_LibNonVariableTerm, "getVariableList") and hasattr(
         _LibNonVariableTerm, "get_variable_list"
     ):
-        _LibNonVariableTerm.getVariableList = _LibNonVariableTerm.get_variable_list
+        NonVariableTerm.getVariableList = _LibNonVariableTerm.get_variable_list
 
     for _vname in ("x", "y", "z"):
         _attr = getattr(VariableImp, _vname, None)
@@ -62,7 +85,5 @@ else:
         @staticmethod
         def stringToTerm(s):
             return _string_to_term(str(s))
-
-    NonVariableTerm = _LibNonVariableTerm
 
     del _uacalc_lib, _terms, _name, _vname, _attr, _LibNonVariableTerm
