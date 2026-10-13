@@ -1,4 +1,7 @@
-"""``org.uacalc.lat`` namespace and key imports on CPython (Jython-style parity)."""
+"""``org.uacalc.lat`` namespace and key imports on CPython (Jython-style parity).
+
+Classification: SMOKE test - verifies imports and basic structure.
+"""
 
 from __future__ import annotations
 
@@ -8,6 +11,8 @@ from pathlib import Path
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
+
+pytestmark = pytest.mark.smoke  # Mark all tests in this file as smoke tests
 
 _EXPECTED_DIR_SUBSET = (
     "BasicLattice",

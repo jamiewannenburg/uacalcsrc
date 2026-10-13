@@ -1,0 +1,407 @@
+{
+  "metadata": {
+    "generated_at": "2026-10-13T13:18:51.973138+00:00",
+    "jar": "uacalc.jar",
+    "package": "org.uacalc.lat",
+    "runtime": "jython",
+    "test_cases": 16,
+    "type": "package"
+  },
+  "test_cases": [
+    {
+      "args": [],
+      "call": "Lattices.latticeFromJoin(\"chain2j\", join2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Build 2-element chain from join operation",
+      "expected_exception": null,
+      "id": "lattice_from_join_2chain",
+      "kwargs": {},
+      "method": "Lattices.latticeFromJoin",
+      "notes": "",
+      "result": {
+        "return_type": "BasicLattice",
+        "return_value": {
+          "__type__": "lattice",
+          "cardinality": 2,
+          "class": "BasicLattice",
+          "name": "chain2j",
+          "universe": [
+            0,
+            1
+          ],
+          "zero": 0
+        },
+        "string_repr": "org.uacalc.lat.BasicLattice@6ae62c7e",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Lattices.latticeFromMeet(\"chain2m\", meet2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Build 2-element chain from meet operation",
+      "expected_exception": null,
+      "id": "lattice_from_meet_2chain",
+      "kwargs": {},
+      "method": "Lattices.latticeFromMeet",
+      "notes": "",
+      "result": {
+        "return_type": "BasicLattice",
+        "return_value": {
+          "__type__": "lattice",
+          "cardinality": 2,
+          "class": "BasicLattice",
+          "name": "chain2m",
+          "universe": [
+            0,
+            1
+          ],
+          "zero": 0
+        },
+        "string_repr": "org.uacalc.lat.BasicLattice@4b0f2299",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Lattices.latticeFromJoin(\"M3\", join_m3)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Build diamond M3 from join operation",
+      "expected_exception": null,
+      "id": "lattice_from_join_diamond",
+      "kwargs": {},
+      "method": "Lattices.latticeFromJoin",
+      "notes": "",
+      "result": {
+        "return_type": "BasicLattice",
+        "return_value": {
+          "__type__": "lattice",
+          "cardinality": 4,
+          "class": "BasicLattice",
+          "name": "M3",
+          "universe": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "zero": 0
+        },
+        "string_repr": "org.uacalc.lat.BasicLattice@7601bc96",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Lattices.latticeFromJoin(\"chain2j3\", [0, 1], join2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "latticeFromJoin(name, universe, join)",
+      "expected_exception": null,
+      "id": "lattice_from_join_with_universe",
+      "kwargs": {},
+      "method": "Lattices.latticeFromJoin",
+      "notes": "",
+      "result": {
+        "return_type": "BasicLattice",
+        "return_value": {
+          "__type__": "lattice",
+          "cardinality": 2,
+          "class": "BasicLattice",
+          "name": "chain2j3",
+          "universe": [
+            0,
+            1
+          ],
+          "zero": 0
+        },
+        "string_repr": "org.uacalc.lat.BasicLattice@53d13cd4",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Lattices.latticeFromMeet(\"chain2m3\", [0, 1], meet2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "latticeFromMeet(name, universe, meet)",
+      "expected_exception": null,
+      "id": "lattice_from_meet_with_universe",
+      "kwargs": {},
+      "method": "Lattices.latticeFromMeet",
+      "notes": "",
+      "result": {
+        "return_type": "BasicLattice",
+        "return_value": {
+          "__type__": "lattice",
+          "cardinality": 2,
+          "class": "BasicLattice",
+          "name": "chain2m3",
+          "universe": [
+            0,
+            1
+          ],
+          "zero": 0
+        },
+        "string_repr": "org.uacalc.lat.BasicLattice@4e49ce2b",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Lattices.latticeFromJoin(\"bad\", bad_join)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Non-lattice join table: Java catches NonOrderedSetException and returns null",
+      "expected_exception": null,
+      "id": "lattice_from_join_not_ordered",
+      "kwargs": {},
+      "method": "Lattices.latticeFromJoin",
+      "notes": "",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n",
+      "skip_string_check": true,
+      "xfail_reason": "Java latticeFromJoin returns null after NonOrderedSetException; Python currently constructs a BasicLattice."
+    },
+    {
+      "args": [],
+      "call": "lat.cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "BasicLattice.cardinality of a 2-chain",
+      "expected_exception": null,
+      "id": "basic_lattice_cardinality",
+      "kwargs": {},
+      "method": "BasicLattice.cardinality",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "lat.leq(a, b)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "0 <= 1 in the 2-chain",
+      "expected_exception": null,
+      "id": "basic_lattice_leq",
+      "kwargs": {},
+      "method": "BasicLattice.leq",
+      "notes": "",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nif sys.platform.startswith(\"java\"):\n    a = lat.getElement(0)\n    b = lat.getElement(1)\nelse:\n    a = 0\n    b = 1\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "lat.join(a, b)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "join(0,1) is 1 in the 2-chain",
+      "expected_exception": null,
+      "id": "basic_lattice_join",
+      "kwargs": {},
+      "method": "BasicLattice.join",
+      "notes": "Java returns a POElem that stringifies to 1; Python returns int 1.",
+      "result": {
+        "return_type": "POElem",
+        "return_value": 1,
+        "string_repr": "1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nif sys.platform.startswith(\"java\"):\n    a = lat.getElement(0)\n    b = lat.getElement(1)\nelse:\n    a = 0\n    b = 1\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "lat.meet(a, b)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "meet(0,1) is 0 in the 2-chain",
+      "expected_exception": null,
+      "id": "basic_lattice_meet",
+      "kwargs": {},
+      "method": "BasicLattice.meet",
+      "notes": "",
+      "result": {
+        "return_type": "POElem",
+        "return_value": 0,
+        "string_repr": "0",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nif sys.platform.startswith(\"java\"):\n    a = lat.getElement(0)\n    b = lat.getElement(1)\nelse:\n    a = 0\n    b = 1\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "lat.zero()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Bottom element of the 2-chain",
+      "expected_exception": null,
+      "id": "basic_lattice_zero",
+      "kwargs": {},
+      "method": "BasicLattice.zero",
+      "notes": "",
+      "result": {
+        "return_type": "POElem",
+        "return_value": 0,
+        "string_repr": "0",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "list(lat.joinIrreducibles()) if hasattr(lat, 'joinIrreducibles') else list(lat.join_irreducibles())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Join-irreducibles of the 2-chain",
+      "expected_exception": null,
+      "id": "basic_lattice_join_irreducibles",
+      "kwargs": {},
+      "method": "BasicLattice.joinIrreducibles",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          1
+        ],
+        "string_repr": "[1]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "list(OrderedSets.maximals([2, 3, 6, 35, 175], order))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Maximals under divisibility via uacalc_lib.lat.maximals_divisibility",
+      "expected_exception": null,
+      "id": "ordered_sets_maximals_divisibility",
+      "kwargs": {},
+      "method": "OrderedSets.maximals",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          6,
+          175
+        ],
+        "string_repr": "[6, 175]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nif sys.platform.startswith(\"java\"):\n    # Java has no DivisibilityOrder class; subclass Order with the same leq.\n    from org.uacalc.lat import Order\n    class _Div(Order):\n        def leq(self, a, b):\n            if a == 0:\n                return True\n            if b == 0:\n                return a == 0\n            return (b % a) == 0\n    order = _Div()\nelse:\n    from org.uacalc.lat import DivisibilityOrder\n    order = DivisibilityOrder()\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Lattices.dual(lat)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Lattices.dual of a 2-chain",
+      "expected_exception": null,
+      "id": "lattices_dual",
+      "kwargs": {},
+      "method": "Lattices.dual",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.NullPointerException: Cannot invoke \"java.lang.Integer.intValue()\" because the return value of \"java.util.HashMap.get(Object)\" is null",
+          "type": "NullPointerException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\n",
+      "skip_string_check": true,
+      "xfail_reason": "Java Lattices.dual throws NullPointerException (known Java bug). Python dual currently raises ValueError about Clone/reference limits."
+    },
+    {
+      "args": [],
+      "call": "_con_to_small()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Lattices.conToSmallLattice on Con(C2); Java always returns null",
+      "expected_exception": null,
+      "id": "lattices_con_to_small_lattice",
+      "kwargs": {},
+      "method": "Lattices.conToSmallLattice",
+      "notes": "",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nfrom org.uacalc.io import AlgebraIO\nalg = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nif sys.platform.startswith(\"java\"):\n    from org.uacalc.alg.conlat import CongruenceLattice\n    con = CongruenceLattice(alg)\n    _ctors = Lattices.getDeclaredConstructors()\n    _ctors[0].setAccessible(True)\n    _helper = _ctors[0].newInstance()\n    def _con_to_small():\n        return _helper.conToSmallLattice(con)\nelse:\n    from org.uacalc.alg import CongruenceLattice\n    con = CongruenceLattice(alg)\n    def _con_to_small():\n        return Lattices.conToSmallLattice(con)\n",
+      "skip_string_check": true,
+      "xfail_reason": "Java Lattices.conToSmallLattice always returns null (OrderedSet is built then discarded). Python raises ValueError: needs a PySmallLattice wrapper."
+    },
+    {
+      "args": [],
+      "call": "_con_to_small()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "conToSmallLattice(null) error case",
+      "expected_exception": "NullPointerException",
+      "id": "lattices_con_to_small_lattice_null",
+      "kwargs": {},
+      "method": "Lattices.conToSmallLattice",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.NullPointerException: Cannot invoke \"org.uacalc.alg.conlat.CongruenceLattice.universe()\" because \"con\" is null",
+          "type": "NullPointerException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nif sys.platform.startswith(\"java\"):\n    _ctors = Lattices.getDeclaredConstructors()\n    _ctors[0].setAccessible(True)\n    _helper = _ctors[0].newInstance()\n    def _con_to_small():\n        return _helper.conToSmallLattice(None)\nelse:\n    def _con_to_small():\n        return Lattices.conToSmallLattice(None)\n",
+      "skip_string_check": false,
+      "xfail_reason": "Java raises NullPointerException; Python raises ValueError (requires a CongruenceLattice instance)."
+    }
+  ]
+}

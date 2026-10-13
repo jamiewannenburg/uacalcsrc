@@ -20,6 +20,7 @@ from .registry import (
 )
 from .validate import format_issues, validate_contracts
 from .coverage import build_coverage, format_coverage
+from .parity_coverage import build_parity_coverage, format_parity_coverage
 
 
 def _contracts_dir(args: argparse.Namespace) -> Path:
@@ -171,6 +172,19 @@ def cmd_coverage(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_parity_coverage(args: argparse.Namespace) -> int:
+    """Show parity test coverage (wrapper + behavioral test coverage)."""
+    packages = args.packages if args.packages else None
+    report = build_parity_coverage(packages=packages)
+    print(format_parity_coverage(
+        report,
+        show_unwrapped=args.unwrapped,
+        show_untested=args.untested,
+        verbose=args.verbose
+    ), end="")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="jython_contracts",
@@ -241,6 +255,35 @@ def build_parser() -> argparse.ArgumentParser:
         help="List each surface symbol and coverage mark",
     )
     p_cov.set_defaults(func=cmd_coverage)
+
+    p_pcov = sub.add_parser(
+        "parity-coverage",
+        help="Show parity test coverage (wrapper + behavioral test coverage)",
+    )
+    p_pcov.add_argument(
+        "-p",
+        "--package",
+        action="append",
+        dest="packages",
+        help="Package to analyze (can be repeated, default: all)",
+    )
+    p_pcov.add_argument(
+        "--unwrapped",
+        action="store_true",
+        help="Show Java methods not wrapped in Python",
+    )
+    p_pcov.add_argument(
+        "--untested",
+        action="store_true",
+        help="Show wrapped methods without behavioral tests",
+    )
+    p_pcov.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="Show detailed method lists",
+    )
+    p_pcov.set_defaults(func=cmd_parity_coverage)
 
     return parser
 

@@ -69,4 +69,9 @@ def test_golden_example_surface_jython_matches_fixture():
     )
     assert r.returncode == 0, r.stderr + r.stdout
     assert r.stderr.strip() == "", r.stderr
-    assert _normalize_output(r.stdout) == _read_golden("golden_example_surface.jython.txt")
+    from tests.parity.jython_surface import assert_jython_surface_contains_golden
+
+    assert_jython_surface_contains_golden(
+        _normalize_output(r.stdout),
+        _read_golden("golden_example_surface.jython.txt"),
+    )

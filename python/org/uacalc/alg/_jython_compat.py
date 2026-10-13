@@ -580,3 +580,12 @@ def _install(alg_module_globals: dict) -> None:
 
     _apply_class_aliases()
     alg_module_globals["_apply_class_aliases"] = _apply_class_aliases
+
+    Operations = alg_module_globals.get("Operations")
+    if Operations is not None and not hasattr(Operations, "makeIntOperation"):
+        make_int = getattr(Operations, "make_int_operation", None)
+        if make_int is not None:
+            try:
+                Operations.makeIntOperation = staticmethod(make_int)
+            except (TypeError, AttributeError):
+                Operations.makeIntOperation = make_int

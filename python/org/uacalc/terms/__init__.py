@@ -52,6 +52,8 @@ else:
         VariableImp.isaVariable = VariableImp.isa_variable
     if not hasattr(VariableImp, "intEval") and hasattr(VariableImp, "int_eval"):
         VariableImp.intEval = VariableImp.int_eval
+    if not hasattr(VariableImp, "getName") and hasattr(VariableImp, "get_name"):
+        VariableImp.getName = VariableImp.get_name
     if not hasattr(VariableImp, "getVariableList") and hasattr(VariableImp, "get_variable_list"):
         VariableImp.getVariableList = VariableImp.get_variable_list
     if not hasattr(_LibNonVariableTerm, "getVariableList") and hasattr(
@@ -70,8 +72,23 @@ else:
     class Terms(object):
         """Static facade matching Java ``org.uacalc.terms.Terms``."""
 
+        _lib = _terms
+        _string_to_term = staticmethod(_string_to_term)
+
         @staticmethod
         def stringToTerm(s):
-            return _string_to_term(str(s))
+            return Terms._string_to_term(str(s))
+
+        @staticmethod
+        def isValidVarString(s):
+            return Terms._lib.is_valid_var_string(str(s))
+
+        @staticmethod
+        def isValidOpNameString(s):
+            return Terms._lib.is_valid_op_name_string(str(s))
+
+        @staticmethod
+        def flatten(term):
+            return Terms._lib.flatten(term)
 
     del _uacalc_lib, _terms, _name, _vname, _attr, _LibNonVariableTerm, _make_constant_term

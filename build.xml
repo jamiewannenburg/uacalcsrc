@@ -43,7 +43,7 @@
   </path>
 
   <target name="compile">
-    <javac srcdir="${src}" debug="${debug}" excludes="board/geom/BSpline.java,tools/callgraph/**/*.java">
+    <javac srcdir="${src}" debug="${debug}" excludes="board/geom/BSpline.java,tools/**/*.java">
       <classpath refid="classpath"/>
     </javac>
   </target>
@@ -55,7 +55,7 @@
     <javac srcdir="${src.dir}" 
            debug="${dist-debug}"
            destdir="${class.dir}"
-           excludes="board/geom/BSpline.java,tools/callgraph/**/*.java">
+           excludes="board/geom/BSpline.java,tools/**/*.java">
       <classpath refid="dist-classpath"/>
       <!-- <compilerarg value="-Xlint:unchecked" compiler="javac1.5"/> -->
     </javac>
