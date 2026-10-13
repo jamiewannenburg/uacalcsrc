@@ -41,12 +41,11 @@ Malcev is intentionally left alone.
 ### Exception types
 
 - **Java**: `NumberFormatException`, `FileNotFoundException`, `IllegalArgumentException`, …
-- **Python**: typically `ValueError` or `FileNotFoundError` from Rust/PyO3.
-- **Status**: Under Review (message text often matches for terms)
-- **Tests**: strict xfail on the error cases below. Exception **type** is the mismatch;
-  tests do not rewrite Java expected types.
-- **Owner vs shim**: translating Java exception *names* is a shim problem; wrong
-  messages or missing-file vs empty-parse behavior is a library question.
+- **Python (shim)**: Java-named types in `org.uacalc._exceptions`, with inheritance
+  so `except ValueError` / `except OSError` still work. The shim translates at the
+  wrapper boundary; `uacalc_lib` still raises `ValueError` / `FileNotFoundError`.
+- **Status**: Shim-fixable cases below are translated. Remaining mismatches are
+  library/owner (wrong message or missing-file vs empty-parse).
 
 ---
 
@@ -55,10 +54,10 @@ Malcev is intentionally left alone.
 ### AlgebraIO.readAlgebraFile (invalid XML cardinality)
 
 - **Java**: `NumberFormatException: For input string: "NOT_A_NUMBER"`
-- **Python**: `ValueError: Failed to parse cardinality: invalid digit found in string`
-- **Status**: Under Review
-- **Tests**: `read_invalid` strict xfail
-- **Owner vs shim**: Shim — Python can map this `ValueError` to a `NumberFormatException`-named error; Java is the source of truth for the type.
+- **Python**: shim maps the library `ValueError` to `NumberFormatException` (same
+  `For input string: "…"` form when the `<cardinality>` token is available).
+- **Status**: Fixed in the shim
+- **Tests**: `read_invalid` passes
 
 ### AlgebraIO.readAlgebraFile (missing file)
 
@@ -72,10 +71,10 @@ Malcev is intentionally left alone.
 
 - **Java**: `ExtFileFilter.splitOffExtension` uses `File.getName()`, so XML is written
   as `<basename>.xml` in the current working directory.
-- **Python**: writes beside the source `.alg` path.
-- **Status**: Under Review
-- **Tests**: `convert_to_xml` strict xfail
-- **Owner vs shim**: Shim-fixable by passing Java’s cwd/basename path into `convert_to_xml`; the library currently writes beside the source.
+- **Python**: library still writes beside the source `.alg` path; the shim relocates
+  that file to `cwd/<basename>.xml`.
+- **Status**: Fixed in the shim
+- **Tests**: `convert_to_xml` passes
 
 ### AlgebraWriter / writeAlgebraFile XML `<universe>`
 
@@ -97,10 +96,10 @@ Malcev is intentionally left alone.
 ### Mace4Reader missing file
 
 - **Java**: `FileNotFoundException` from `FileInputStream`
-- **Python**: `FileNotFoundError` from `open()`
-- **Status**: Accepted (platform exception names)
-- **Tests**: `mace4_missing_file` strict xfail
-- **Owner vs shim**: Shim — only the exception *class name* differs (`FileNotFoundError` vs `FileNotFoundException`).
+- **Python**: shim `Mace4Reader.open` raises `FileNotFoundException` (also an
+  `OSError` / `FileNotFoundError` subclass).
+- **Status**: Fixed in the shim
+- **Tests**: `mace4_missing_file` passes
 
 ### AlgebraIO.readAlgebraListFile
 
@@ -117,10 +116,10 @@ Malcev is intentionally left alone.
 ### Terms.stringToTerm invalid input
 
 - **Java**: `IllegalArgumentException` (`empty string`, `The string + cannot be made into a function symbol.`)
-- **Python**: `ValueError` with the same message
-- **Status**: Under Review
-- **Tests**: `string_to_term_empty`, `string_to_term_plus_invalid` strict xfail
-- **Owner vs shim**: Shim — same message; map `ValueError` to an `IllegalArgumentException`-named error.
+- **Python**: shim maps the library `ValueError` to `IllegalArgumentException` with
+  the same message.
+- **Status**: Fixed in the shim
+- **Tests**: `string_to_term_empty`, `string_to_term_plus_invalid` pass
 
 ---
 

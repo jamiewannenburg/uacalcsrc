@@ -132,7 +132,7 @@
       },
       "setup": "\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\n",
       "skip_string_check": false,
-      "xfail_reason": "Java raises IllegalArgumentException; Python raises ValueError with the same message."
+      "xfail_reason": null
     },
     {
       "args": [],
@@ -154,7 +154,7 @@
       },
       "setup": "\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\n",
       "skip_string_check": false,
-      "xfail_reason": "Java raises IllegalArgumentException('empty string'); Python raises ValueError with the same message."
+      "xfail_reason": null
     },
     {
       "args": [],

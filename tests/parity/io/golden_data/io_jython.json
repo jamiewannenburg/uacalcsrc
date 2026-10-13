@@ -255,7 +255,7 @@
       },
       "setup": "\nfrom org.uacalc.io import AlgebraIO, AlgebraReader, AlgebraWriter, Mace4Reader, BadAlgebraFileException\n",
       "skip_string_check": false,
-      "xfail_reason": "Java raises NumberFormatException for invalid cardinality text; Python raises ValueError from the Rust parser."
+      "xfail_reason": null
     },
     {
       "args": [],
@@ -480,9 +480,9 @@
         "string_repr": "{'normalized': '<?xml version=\"1.0\"?> <algebra> <basicAlgebra> <algName>tmpZWnK01.alg</algName> <cardinality>2</cardinality> <operations> <op> <opSymbol> <opName>b_0</opName> <arity>2</arity> </opSymbol> <opTable> <intArray> <row r=\"[0]\">0,1</row> <row r=\"[1]\">1,0</row> </intArray> </opTable> </op> </operations> </basicAlgebra> </algebra>', 'suffix': '.xml', '__type__': 'file'}",
         "success": true
       },
-      "setup": "\nimport os, tempfile\nfrom org.uacalc.io import AlgebraIO\nalg = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nfd, alg_path = tempfile.mkstemp(suffix=\".alg\")\nos.close(fd)\nAlgebraIO.writeAlgebraFile(alg, alg_path, True)\nAlgebraIO.convertToXML(alg_path)\n# Java ExtFileFilter.splitOffExtension uses File.getName(), so the XML\n# is written next to cwd as <basename>.xml, not beside the temp .alg file.\nbase = os.path.splitext(os.path.basename(alg_path))[0]\nCAPTURE_PATH = os.path.join(os.getcwd(), base + \".xml\")\nOUT_PATH = CAPTURE_PATH\n",
+      "setup": "\nimport os, tempfile\nfrom org.uacalc.io import AlgebraIO\nalg = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\n# Stable basename so Java File.getName() / Python file_name() match the golden\n# algName (legacy .alg format names the algebra after the file).\nalg_dir = tempfile.mkdtemp()\nalg_path = os.path.join(alg_dir, \"tmpZWnK01.alg\")\nAlgebraIO.writeAlgebraFile(alg, alg_path, True)\nAlgebraIO.convertToXML(alg_path)\n# Java ExtFileFilter.splitOffExtension uses File.getName(), so the XML\n# is written next to cwd as <basename>.xml, not beside the temp .alg file.\nCAPTURE_PATH = os.path.join(os.getcwd(), \"tmpZWnK01.xml\")\nOUT_PATH = CAPTURE_PATH\n",
       "skip_string_check": true,
-      "xfail_reason": "Java convertToXML writes <basename>.xml in cwd (splitOffExtension uses File.getName()). Python writes beside the source path. Also Python XML includes a <universe> element that Java omits."
+      "xfail_reason": null
     },
     {
       "args": [],
@@ -1662,7 +1662,7 @@
       },
       "setup": "\nimport sys\nfrom org.uacalc.io import Mace4Reader\npath = \"resources/mace4/does_not_exist.model\"\nif sys.platform.startswith(\"java\"):\n    from java.io import FileInputStream\n    reader = Mace4Reader(FileInputStream(path))\nelse:\n    reader = Mace4Reader.open(path) if hasattr(Mace4Reader, \"open\") else None\n    if reader is None:\n        fh = open(path, \"rb\")\n        reader = Mace4Reader(fh)\n",
       "skip_string_check": false,
-      "xfail_reason": "Java raises FileNotFoundException constructing Mace4Reader; Python raises FileNotFoundError/ValueError from open()."
+      "xfail_reason": null
     }
   ]
 }
