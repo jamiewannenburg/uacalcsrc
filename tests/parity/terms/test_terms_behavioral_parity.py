@@ -18,10 +18,6 @@ from parity_test_base import BehavioralParityTest
 pytestmark = pytest.mark.behavioral
 
 
-@pytest.mark.skipif(
-    not (REPO_ROOT / "tests" / "parity" / "terms" / "golden_data" / "Terms_jython.json").exists(),
-    reason="Golden data not generated. Run: python3 tools/generate_golden_data.py --package terms"
-)
 class TestTermsBehavioralParity(BehavioralParityTest):
     """Behavioral parity tests for Terms methods."""
     

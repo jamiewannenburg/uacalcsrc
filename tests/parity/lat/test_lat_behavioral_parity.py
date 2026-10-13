@@ -18,10 +18,6 @@ from parity_test_base import BehavioralParityTest
 pytestmark = pytest.mark.behavioral
 
 
-@pytest.mark.skipif(
-    not (REPO_ROOT / "tests" / "parity" / "lat" / "golden_data" / "Lattices_jython.json").exists(),
-    reason="Golden data not generated. Run: python3 tools/generate_golden_data.py --package lat --type Lattices"
-)
 class TestLatticesBehavioralParity(BehavioralParityTest):
     """Behavioral parity tests for Lattices static methods."""
     

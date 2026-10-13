@@ -37,6 +37,7 @@ def find_jython() -> Optional[str]:
     
     # Check common locations
     common_paths = [
+        "/tmp/jython/bin/jython",
         "/usr/local/bin/jython",
         "/usr/bin/jython",
         str(Path.home() / "jython" / "bin" / "jython"),
@@ -49,11 +50,11 @@ def find_jython() -> Optional[str]:
 
 
 def run_test_case_jython(
-    package: str, test_case: TestCaseSpec, jar_path: Path
+    package: str, test_case: TestCaseSpec, classpath: str
 ) -> TestResult:
     """Run a single test case using Jython/Java and return the result."""
     # Create a temporary script to run the test case
-    script = f"""#!/usr/bin/env jython
+    script_template = """#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 import sys
@@ -63,7 +64,6 @@ import json
 import org.uacalc.{package} as pkg
 
 def serialize_result(obj):
-    \"\"\"Convert result to JSON-serializable form.\"\"\"
     if obj is None:
         return None
     if isinstance(obj, (bool, int, float, str)):
@@ -77,27 +77,41 @@ def serialize_result(obj):
     class_name = obj.__class__.__name__
     result = {{'__type__': class_name}}
     
-    # Try common attribute patterns
-    for attr_name in ['name', 'cardinality']:
-        if hasattr(obj, attr_name):
-            val = getattr(obj, attr_name)
+    # Try getName() / name
+    for name_method in ['getName', 'name']:
+        if hasattr(obj, name_method):
+            val = getattr(obj, name_method)
             if callable(val):
-                result[attr_name] = val()
+                try:
+                    result['name'] = val()
+                except:
+                    pass
             else:
-                result[attr_name] = val
-        # Try Java getter pattern
-        getter = 'get' + attr_name.capitalize()
-        if hasattr(obj, getter):
-            val = getattr(obj, getter)
+                result['name'] = val
+            break
+    
+    # Try cardinality() / cardinality
+    for card_method in ['cardinality']:
+        if hasattr(obj, card_method):
+            val = getattr(obj, card_method)
             if callable(val):
-                result[attr_name] = val()
+                try:
+                    result['cardinality'] = val()
+                except:
+                    pass
+            else:
+                result['cardinality'] = val
+            break
     
     # Operations count
     for ops_attr in ['operations', 'getOperations']:
         if hasattr(obj, ops_attr):
             ops = getattr(obj, ops_attr)
             if callable(ops):
-                ops = ops()
+                try:
+                    ops = ops()
+                except:
+                    ops = None
             if ops:
                 try:
                     result['operation_count'] = len(list(ops))
@@ -108,16 +122,20 @@ def serialize_result(obj):
     return result
 
 # Parse method name and call it
-method_parts = {json.dumps(test_case.method.split('.'))}
-obj = pkg
-for part in method_parts[:-1]:
-    obj = getattr(obj, part)
-method = getattr(obj, method_parts[-1])
+method_path = {method_path}
+args_list = {args_list}
+kwargs_dict = {kwargs_dict}
 
 try:
-    args = {json.dumps(test_case.args)}
-    kwargs = {json.dumps(test_case.kwargs)}
-    result = method(*args, **kwargs)
+    # Navigate to method
+    parts = method_path.split('.')
+    obj = pkg
+    for part in parts[:-1]:
+        obj = getattr(obj, part)
+    method = getattr(obj, parts[-1])
+    
+    # Call method
+    result = method(*args_list, **kwargs_dict)
     
     output = {{
         'success': True,
@@ -127,6 +145,7 @@ try:
     }}
     print(json.dumps(output))
 except Exception as e:
+    import traceback
     output = {{
         'success': False,
         'exception': {{
@@ -136,6 +155,13 @@ except Exception as e:
     }}
     print(json.dumps(output))
 """
+    
+    script = script_template.format(
+        package=package,
+        method_path=repr(test_case.method),
+        args_list=repr(test_case.args),
+        kwargs_dict=repr(test_case.kwargs)
+    )
     
     # Write script to temp file
     import tempfile
@@ -153,7 +179,7 @@ except Exception as e:
             )
         
         env = os.environ.copy()
-        env['CLASSPATH'] = str(jar_path)
+        env['CLASSPATH'] = classpath
         env['PYTHONPATH'] = ''
         
         proc = subprocess.run(
@@ -169,11 +195,18 @@ except Exception as e:
             return TestResult(
                 success=False,
                 exception_type="JythonError",
-                exception_message=f"Jython failed: {proc.stderr}"
+                exception_message=f"Jython failed: {proc.stderr}\nStdout: {proc.stdout}"
             )
         
         # Parse JSON output
-        result_data = json.loads(proc.stdout.strip())
+        try:
+            result_data = json.loads(proc.stdout.strip())
+        except json.JSONDecodeError:
+            return TestResult(
+                success=False,
+                exception_type="JSONDecodeError",
+                exception_message=f"Failed to parse output: {proc.stdout}"
+            )
         
         if result_data['success']:
             return TestResult(
@@ -202,10 +235,10 @@ def generate_golden_for_package(package: str, type_name: Optional[str] = None) -
     print(f"Generating golden data for org.uacalc.{package}" +
           (f".{type_name}" if type_name else ""))
     
-    # Find JAR
-    jar_path = REPO_ROOT / "jars" / "uacalc.jar"
-    if not jar_path.exists():
-        print(f"ERROR: {jar_path} not found", file=sys.stderr)
+    # Use compiled classes
+    classpath = str(REPO_ROOT / "build" / "classes")
+    if not Path(classpath).exists():
+        print(f"ERROR: {classpath} not found. Run 'ant compile-wrappers' first.", file=sys.stderr)
         sys.exit(1)
     
     # Check Jython
@@ -218,7 +251,7 @@ def generate_golden_for_package(package: str, type_name: Optional[str] = None) -
         sys.exit(1)
     
     print(f"Using Jython: {jython}")
-    print(f"Using JAR: {jar_path}")
+    print(f"Using classpath: {classpath}")
     
     # Load test case specifications
     test_cases = load_test_cases(package, type_name)
@@ -233,8 +266,8 @@ def generate_golden_for_package(package: str, type_name: Optional[str] = None) -
     # Run test cases
     golden_test_cases = []
     for i, test_case in enumerate(test_cases, 1):
-        print(f"  [{i}/{len(test_cases)}] {test_case.id}...", end=" ")
-        result = run_test_case_jython(package, test_case, jar_path)
+        print(f"  [{i}/{len(test_cases)}] {test_case.id}...", end=" ", flush=True)
+        result = run_test_case_jython(package, test_case, classpath)
         
         if result.success:
             print("✓")
@@ -297,7 +330,12 @@ def load_test_cases(package: str, type_name: Optional[str]) -> List[TestCaseSpec
     if type_name:
         cases_file = test_cases_dir / f"{type_name.lower()}_cases.py"
     else:
-        cases_file = test_cases_dir / "cases.py"
+        # Try all *_cases.py files in the directory
+        cases_files = list(test_cases_dir.glob("*_cases.py"))
+        if cases_files:
+            cases_file = cases_files[0]  # Use first one found
+        else:
+            cases_file = test_cases_dir / "cases.py"
     
     if not cases_file.exists():
         # Try package-level test_cases.py
@@ -307,6 +345,11 @@ def load_test_cases(package: str, type_name: Optional[str]) -> List[TestCaseSpec
         return []
     
     # Import and extract TEST_CASES
+    # Add tests/parity to sys.path for parity_test_base import
+    parity_tests_path = str(REPO_ROOT / "tests" / "parity")
+    if parity_tests_path not in sys.path:
+        sys.path.insert(0, parity_tests_path)
+    
     import importlib.util
     spec = importlib.util.spec_from_file_location("test_cases", cases_file)
     module = importlib.util.module_from_spec(spec)
