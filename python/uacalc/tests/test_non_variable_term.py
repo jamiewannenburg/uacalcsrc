@@ -223,27 +223,43 @@ class TestNonVariableTermBasic(unittest.TestCase):
         """Test that constant terms from makeConstantTerm work in compound expressions.
         
         Verifies the constant term can be used as a child in other terms,
-        matching Java's usage pattern.
+        matching Java's usage pattern. Expected values from Java UACalc (OpenJDK 21):
+        - f(x, e()): toString="f(x,e())", depth=2, length=3, variables=1
+        - g(x, y, identity()): toString="g(x,y,identity())", depth=2, length=4
         """
-        # Create constant term
+        # Test f(x, e())
         e = self.OperationSymbol("e", 0)
         const = self.NonVariableTerm.make_constant_term(e)
         
-        # Use it in a compound term: f(x, e())
         x = self.VariableImp("x")
         f = self.OperationSymbol("f", 2)
         compound = self.NonVariableTerm(f, [x, const])
         
-        # Verify structure
-        self.assertEqual(compound.depth(), 2, "Compound with constant should have depth 2")
-        self.assertEqual(compound.length(), 3, "Should count f, x, and e")
-        self.assertEqual(len(compound.get_variable_list()), 1, "Should have one variable (x)")
+        # Verify structure matches Java exactly
+        self.assertEqual(compound.depth(), 2, "Java: depth() returns 2")
+        self.assertEqual(compound.length(), 3, "Java: length() returns 3")
+        self.assertEqual(len(compound.get_variable_list()), 1, "Java: getVariableList().size() returns 1")
         
-        # Verify string representation
+        # Verify exact string representation from Java
         str_repr = str(compound)
-        self.assertIn("f", str_repr)
-        self.assertIn("x", str_repr)
-        self.assertIn("e()", str_repr)
+        self.assertEqual(str_repr, "f(x,e())", "Java: toString() returns 'f(x,e())'")
+        
+        # Verify isinstance works (NonVariableTerm must be the real class)
+        self.assertIsInstance(compound, self.NonVariableTerm,
+                            "Constructor must create actual NonVariableTerm instances")
+        self.assertIsInstance(const, self.NonVariableTerm,
+                            "makeConstantTerm must return actual NonVariableTerm instances")
+        
+        # Test g(x, y, identity())
+        y = self.VariableImp("y")
+        g = self.OperationSymbol("g", 3)
+        identity = self.OperationSymbol("identity", 0)
+        const_identity = self.NonVariableTerm.makeConstantTerm(identity)
+        compound2 = self.NonVariableTerm(g, [x, y, const_identity])
+        
+        self.assertEqual(compound2.depth(), 2, "Java: depth() returns 2")
+        self.assertEqual(compound2.length(), 4, "Java: length() returns 4")
+        self.assertEqual(str(compound2), "g(x,y,identity())", "Java: toString() returns 'g(x,y,identity())'")
 
 
 class TestNonVariableTermEvaluation(unittest.TestCase):
