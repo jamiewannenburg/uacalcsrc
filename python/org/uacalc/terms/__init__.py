@@ -31,28 +31,18 @@ else:
     VariableImp = _terms.VariableImp
     Variable = VariableImp
 
-    # Save the make_constant_term implementation before we create the stub class
-    _make_constant_term_impl = _LibNonVariableTerm.make_constant_term
+    _make_constant_term = _LibNonVariableTerm.make_constant_term
 
-    # Create a stub class for AST-based contract validation
-    # This class definition makes the validator happy, but we replace it with the real library class below
+    # jython_contracts validate() only sees ClassDef methods. Keep this stub in
+    # the AST, then replace it with the library class so isinstance() works and
+    # ``NonVariableTerm is uacalc_lib.terms.NonVariableTerm``.
     class NonVariableTerm:
-        """Jython compatibility stub for AST validation. Replaced with library class at runtime."""
-        
         @staticmethod
         def makeConstantTerm(sym):
-            """Create a constant term from an operation symbol.
-            
-            Matches Java: public static Term makeConstantTerm(OperationSymbol sym)
-            Returns a NonVariableTerm with the given symbol and empty children.
-            """
-            pass  # Implementation replaced at runtime
-    
-    # Replace the stub with the real library class so isinstance works
-    # This preserves type identity while keeping the staticmethod attached
+            return _make_constant_term(sym)
+
     NonVariableTerm = _LibNonVariableTerm
-    # Attach the wrapped implementation as makeConstantTerm
-    NonVariableTerm.makeConstantTerm = staticmethod(_make_constant_term_impl)
+    NonVariableTerm.makeConstantTerm = staticmethod(_make_constant_term)
 
     if not hasattr(_LibNonVariableTerm, "isaVariable") and hasattr(
         _LibNonVariableTerm, "isa_variable"
@@ -84,4 +74,4 @@ else:
         def stringToTerm(s):
             return _string_to_term(str(s))
 
-    del _uacalc_lib, _terms, _name, _vname, _attr, _LibNonVariableTerm
+    del _uacalc_lib, _terms, _name, _vname, _attr, _LibNonVariableTerm, _make_constant_term

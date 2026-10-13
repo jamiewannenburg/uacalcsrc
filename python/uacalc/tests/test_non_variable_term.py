@@ -178,88 +178,66 @@ class TestNonVariableTermBasic(unittest.TestCase):
         self.assertEqual(term.length(), 1)
         self.assertEqual(len(term.get_variable_list()), 0)
     
+    def _import_terms_shim(self):
+        """Import ``org.uacalc.terms`` (python/org), not the Java source tree."""
+        py_root = str(PROJECT_ROOT / "python")
+        if py_root not in sys.path:
+            sys.path.insert(0, py_root)
+        from org.uacalc.alg.op import OperationSymbol
+        from org.uacalc.terms import NonVariableTerm, VariableImp
+        return NonVariableTerm, VariableImp, OperationSymbol
+
     def test_make_constant_term_java_parity(self):
-        """Test makeConstantTerm static method matches Java behavior.
-        
-        Java signature: public static Term makeConstantTerm(OperationSymbol sym)
-        Returns: NonVariableTerm with the given symbol and empty children list
+        """makeConstantTerm matches Java UACalc (compiled org/uacalc, OpenJDK 21).
+
+        Java: toString=e()/zero()/identity(), depth=1, length=1, getVariableList=[].
         """
-        # Test with various operation symbols (arity 0)
-        symbols = [
-            ("e", 0),
-            ("zero", 0),
-            ("identity", 0),
-        ]
-        
-        for name, arity in symbols:
+        NonVariableTerm, _, OperationSymbol = self._import_terms_shim()
+        self.assertIs(NonVariableTerm, uacalc_lib.terms.NonVariableTerm)
+
+        for name in ("e", "zero", "identity"):
             with self.subTest(symbol=name):
-                sym = self.OperationSymbol(name, arity)
-                
-                # Call via both Python (snake_case) and Java (camelCase) names
-                term_snake = self.NonVariableTerm.make_constant_term(sym)
-                term_camel = self.NonVariableTerm.makeConstantTerm(sym)
-                
-                # Both should work and produce equivalent results
-                for term, style in [(term_snake, "snake_case"), (term_camel, "camelCase")]:
+                sym = OperationSymbol(name, 0)
+                term_snake = NonVariableTerm.make_constant_term(sym)
+                term_camel = NonVariableTerm.makeConstantTerm(sym)
+                for term, style in ((term_snake, "snake_case"), (term_camel, "camelCase")):
                     with self.subTest(style=style):
-                        # Verify Java-equivalent properties
-                        self.assertIsNotNone(term, f"makeConstantTerm({name}) should return a term")
-                        self.assertFalse(term.isa_variable(), "Constant term should not be a variable")
-                        self.assertEqual(term.depth(), 1, "Constant term depth should be 1")
-                        self.assertEqual(term.length(), 1, "Constant term length should be 1")
-                        self.assertEqual(len(term.get_variable_list()), 0, 
-                                       "Constant term should have no variables")
-                        
-                        # Verify string representation: should be "name()"
-                        str_repr = str(term)
-                        self.assertEqual(str_repr, f"{name}()", 
-                                       f"String representation should be '{name}()'")
-                
-                # Verify both methods produce the same string representation
-                self.assertEqual(str(term_snake), str(term_camel),
-                               "Both naming conventions should produce identical results")
-    
+                        self.assertIsInstance(term, NonVariableTerm)
+                        self.assertFalse(term.isaVariable())
+                        self.assertEqual(term.depth(), 1)
+                        self.assertEqual(term.length(), 1)
+                        self.assertEqual(list(term.getVariableList()), [])
+                        self.assertEqual(str(term), "{}()".format(name))
+                self.assertEqual(str(term_snake), str(term_camel))
+
     def test_make_constant_term_in_compound(self):
-        """Test that constant terms from makeConstantTerm work in compound expressions.
-        
-        Verifies the constant term can be used as a child in other terms,
-        matching Java's usage pattern. Expected values from Java UACalc (OpenJDK 21):
-        - f(x, e()): toString="f(x,e())", depth=2, length=3, variables=1
-        - g(x, y, identity()): toString="g(x,y,identity())", depth=2, length=4
+        """Constructor NonVariableTerm(f, [x, c]) and Java toString of f(x,e()).
+
+        Java UACalc (OpenJDK 21): toString=f(x,e()), depth=2, length=3,
+        getVariableList=[x]; g(x,y,identity()) has toString=g(x,y,identity()),
+        depth=2, length=4.
         """
-        # Test f(x, e())
-        e = self.OperationSymbol("e", 0)
-        const = self.NonVariableTerm.make_constant_term(e)
-        
-        x = self.VariableImp("x")
-        f = self.OperationSymbol("f", 2)
-        compound = self.NonVariableTerm(f, [x, const])
-        
-        # Verify structure matches Java exactly
-        self.assertEqual(compound.depth(), 2, "Java: depth() returns 2")
-        self.assertEqual(compound.length(), 3, "Java: length() returns 3")
-        self.assertEqual(len(compound.get_variable_list()), 1, "Java: getVariableList().size() returns 1")
-        
-        # Verify exact string representation from Java
-        str_repr = str(compound)
-        self.assertEqual(str_repr, "f(x,e())", "Java: toString() returns 'f(x,e())'")
-        
-        # Verify isinstance works (NonVariableTerm must be the real class)
-        self.assertIsInstance(compound, self.NonVariableTerm,
-                            "Constructor must create actual NonVariableTerm instances")
-        self.assertIsInstance(const, self.NonVariableTerm,
-                            "makeConstantTerm must return actual NonVariableTerm instances")
-        
-        # Test g(x, y, identity())
-        y = self.VariableImp("y")
-        g = self.OperationSymbol("g", 3)
-        identity = self.OperationSymbol("identity", 0)
-        const_identity = self.NonVariableTerm.makeConstantTerm(identity)
-        compound2 = self.NonVariableTerm(g, [x, y, const_identity])
-        
-        self.assertEqual(compound2.depth(), 2, "Java: depth() returns 2")
-        self.assertEqual(compound2.length(), 4, "Java: length() returns 4")
-        self.assertEqual(str(compound2), "g(x,y,identity())", "Java: toString() returns 'g(x,y,identity())'")
+        NonVariableTerm, VariableImp, OperationSymbol = self._import_terms_shim()
+
+        const = NonVariableTerm.makeConstantTerm(OperationSymbol("e", 0))
+        self.assertIsInstance(const, NonVariableTerm)
+
+        x = VariableImp("x")
+        compound = NonVariableTerm(OperationSymbol("f", 2), [x, const])
+        self.assertIsInstance(compound, NonVariableTerm)
+        self.assertEqual(compound.depth(), 2)
+        self.assertEqual(compound.length(), 3)
+        self.assertEqual(list(compound.getVariableList()), ["x"])
+        self.assertEqual(str(compound), "f(x,e())")
+
+        y = VariableImp("y")
+        const_identity = NonVariableTerm.makeConstantTerm(OperationSymbol("identity", 0))
+        compound2 = NonVariableTerm(
+            OperationSymbol("g", 3), [x, y, const_identity]
+        )
+        self.assertEqual(compound2.depth(), 2)
+        self.assertEqual(compound2.length(), 4)
+        self.assertEqual(str(compound2), "g(x,y,identity())")
 
 
 class TestNonVariableTermEvaluation(unittest.TestCase):
