@@ -105,6 +105,10 @@ TEST_CASES = [
         call='AlgebraIO.readAlgebraListFile("resources/algebras/cyclic2_cyclic3_list.ua")',
         description="Read multi-algebra list file (Java returns the last algebra only)",
         skip_string_check=True,
+        xfail_reason=(
+            "Java AlgebraIO.readAlgebraListFile returns only the last algebra (C3). "
+            "Current uacalc_lib returns both C2 and C3."
+        ),
     ),
     TestCaseSpec(
         id="read_algebra_list_from_stream",
@@ -122,10 +126,6 @@ TEST_CASES = [
         description="Write algebra XML to a .ua path",
         capture_file=True,
         skip_string_check=True,
-        xfail_reason=(
-            "Python XML includes a <universe> element that Java AlgebraWriter omits. "
-            "Operation tables and names otherwise match."
-        ),
     ),
     TestCaseSpec(
         id="write_algebra_file_old_style",
@@ -159,8 +159,7 @@ OUT_PATH = CAPTURE_PATH
         skip_string_check=True,
         xfail_reason=(
             "Java convertToXML writes <basename>.xml in cwd (splitOffExtension uses "
-            "File.getName()). Python writes beside the source path. Also Python XML "
-            "includes a <universe> element that Java omits."
+            "File.getName()). Python writes beside the source path."
         ),
     ),
     TestCaseSpec(
@@ -210,6 +209,10 @@ else:
         call="reader.readAlgebraListFile()",
         description="AlgebraReader.readAlgebraListFile",
         skip_string_check=True,
+        xfail_reason=(
+            "Java AlgebraReader.readAlgebraListFile returns only the last algebra (C3). "
+            "Current uacalc_lib returns both C2 and C3."
+        ),
     ),
     TestCaseSpec(
         id="writer_write_algebra_xml",
@@ -221,9 +224,6 @@ writer = AlgebraWriter(alg, OUT_PATH)
         description="AlgebraWriter.writeAlgebraXML",
         capture_file=True,
         skip_string_check=True,
-        xfail_reason=(
-            "Python XML includes a <universe> element that Java AlgebraWriter omits."
-        ),
     ),
     TestCaseSpec(
         id="writer_write_algebra",
@@ -237,8 +237,7 @@ writer = AlgebraWriter(alg, OUT_PATH)
         skip_string_check=True,
         xfail_reason=(
             "Java writeAlgebra() does not close/flush the PrintWriter, so the "
-            "captured file is empty. Python writes immediately. Python also emits "
-            "<universe> which Java omits."
+            "captured file is empty. Python writes immediately."
         ),
     ),
     TestCaseSpec(

@@ -195,14 +195,9 @@ def test_algebra_io_read_algebra_list_file(io_pkg):
     assert format_algebra_list_summaries(lib_list) == format_algebra_list_summaries(
         shim_list
     )
-    # Java AlgebraIO.readAlgebraListFile currently returns only the last
-    # basicAlgebra (C3). Python matches that; CONTRACT.md still wants >=2.
-    assert len(shim_list) == 1, (
-        "Java currently returns only the last algebra in cyclic2_cyclic3_list.ua; "
-        "got {0}. Update this assertion if the Java parser is fixed.".format(
-            len(shim_list)
-        )
-    )
+    # Count vs Java is a behavioral strict xfail (Java last-only, Python may
+    # return both). This test only checks shim == uacalc_lib.
+    assert len(shim_list) >= 1
 
 
 def test_mace4_reader_parse_algebra(io_pkg):
@@ -256,13 +251,6 @@ def test_write_algebra_file_roundtrip_semantic(io_pkg):
         out.unlink(missing_ok=True)
 
 
-@pytest.mark.xfail(
-    reason=(
-        "Python writeAlgebraFile emits <universe>; Java source XML omits it. "
-        "See KNOWN_DIFFERENCES.md. Java is the source of truth."
-    ),
-    strict=True,
-)
 def test_write_algebra_file_roundtrip_xml(io_pkg):
     src = algebra_path("cyclic3.ua")
     if not os.path.isfile(src):

@@ -80,12 +80,10 @@ Malcev is intentionally left alone.
 ### AlgebraWriter / writeAlgebraFile XML `<universe>`
 
 - **Java**: omits `<universe>` for basic algebras.
-- **Python**: emits `<universe><elem>…</elem></universe>` (element order may also differ).
-- **Status**: Under Review
+- **Python** (current `uacalc_lib`): matches Java; no extra `<universe>`.
+- **Status**: Resolved in the library (strict xfails removed after CI XPASS)
 - **Tests**: `write_algebra_file_xml`, `writer_write_algebra_xml`,
-  `test_write_algebra_file_roundtrip_xml` strict xfail. Semantic reread
-  (`test_write_algebra_file_roundtrip_semantic`) passes.
-- **Owner vs shim**: Library/Java — XML shape comes from the writer, not from name translation in the shim.
+  `test_write_algebra_file_roundtrip_xml` now pass.
 
 ### AlgebraWriter.writeAlgebra / writeBasicAlgebra flush
 
@@ -106,9 +104,11 @@ Malcev is intentionally left alone.
 
 ### AlgebraIO.readAlgebraListFile
 
-- **Java and Python**: both currently return only the last algebra in
-  `cyclic2_cyclic3_list.ua` (C3). Recorded as matching Java, not as a skip.
-  Contract test `test_algebra_io_read_algebra_list_file` asserts `len == 1`.
+- **Java**: returns only the last algebra in `cyclic2_cyclic3_list.ua` (C3).
+- **Python**: current `uacalc_lib` returns both C2 and C3.
+- **Status**: To Be Fixed if Python should match Java’s last-only parser
+- **Tests**: `read_algebra_list_file`, `reader_read_algebra_list_file` strict xfail
+- **Owner vs shim**: Library — list parsing lives in `uacalc_lib`, not the shim.
 
 ---
 
