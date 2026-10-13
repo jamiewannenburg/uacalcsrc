@@ -31,12 +31,23 @@ else:
     VariableImp = _terms.VariableImp
     Variable = VariableImp
 
-    if not hasattr(_LibNonVariableTerm, "makeConstantTerm"):
-        _LibNonVariableTerm.makeConstantTerm = _LibNonVariableTerm.make_constant_term
+    _make_constant_term = _LibNonVariableTerm.make_constant_term
+
+    # jython_contracts validate() only sees ClassDef methods. Keep this stub in
+    # the AST, then replace it with the library class so isinstance() works and
+    # ``NonVariableTerm is uacalc_lib.terms.NonVariableTerm``.
+    class NonVariableTerm:
+        @staticmethod
+        def makeConstantTerm(sym):
+            return _make_constant_term(sym)
+
+    NonVariableTerm = _LibNonVariableTerm
+    NonVariableTerm.makeConstantTerm = staticmethod(_make_constant_term)
+
     if not hasattr(_LibNonVariableTerm, "isaVariable") and hasattr(
         _LibNonVariableTerm, "isa_variable"
     ):
-        _LibNonVariableTerm.isaVariable = _LibNonVariableTerm.isa_variable
+        NonVariableTerm.isaVariable = _LibNonVariableTerm.isa_variable
     if not hasattr(VariableImp, "isaVariable") and hasattr(VariableImp, "isa_variable"):
         VariableImp.isaVariable = VariableImp.isa_variable
     if not hasattr(VariableImp, "intEval") and hasattr(VariableImp, "int_eval"):
@@ -48,7 +59,7 @@ else:
     if not hasattr(_LibNonVariableTerm, "getVariableList") and hasattr(
         _LibNonVariableTerm, "get_variable_list"
     ):
-        _LibNonVariableTerm.getVariableList = _LibNonVariableTerm.get_variable_list
+        NonVariableTerm.getVariableList = _LibNonVariableTerm.get_variable_list
 
     for _vname in ("x", "y", "z"):
         _attr = getattr(VariableImp, _vname, None)
@@ -80,8 +91,4 @@ else:
         def flatten(term):
             return Terms._lib.flatten(term)
 
-    NonVariableTerm = _LibNonVariableTerm
-    if not hasattr(NonVariableTerm, "isaVariable") and hasattr(NonVariableTerm, "isa_variable"):
-        NonVariableTerm.isaVariable = NonVariableTerm.isa_variable
-
-    del _uacalc_lib, _terms, _name, _vname, _attr, _LibNonVariableTerm
+    del _uacalc_lib, _terms, _name, _vname, _attr, _LibNonVariableTerm, _make_constant_term

@@ -177,6 +177,67 @@ class TestNonVariableTermBasic(unittest.TestCase):
         self.assertEqual(term.depth(), 1)  # Constant term has depth 1 (the constant itself)
         self.assertEqual(term.length(), 1)
         self.assertEqual(len(term.get_variable_list()), 0)
+    
+    def _import_terms_shim(self):
+        """Import ``org.uacalc.terms`` (python/org), not the Java source tree."""
+        py_root = str(PROJECT_ROOT / "python")
+        if py_root not in sys.path:
+            sys.path.insert(0, py_root)
+        from org.uacalc.alg.op import OperationSymbol
+        from org.uacalc.terms import NonVariableTerm, VariableImp
+        return NonVariableTerm, VariableImp, OperationSymbol
+
+    def test_make_constant_term_java_parity(self):
+        """makeConstantTerm matches Java UACalc (compiled org/uacalc, OpenJDK 21).
+
+        Java: toString=e()/zero()/identity(), depth=1, length=1, getVariableList=[].
+        """
+        NonVariableTerm, _, OperationSymbol = self._import_terms_shim()
+        self.assertIs(NonVariableTerm, uacalc_lib.terms.NonVariableTerm)
+
+        for name in ("e", "zero", "identity"):
+            with self.subTest(symbol=name):
+                sym = OperationSymbol(name, 0)
+                term_snake = NonVariableTerm.make_constant_term(sym)
+                term_camel = NonVariableTerm.makeConstantTerm(sym)
+                for term, style in ((term_snake, "snake_case"), (term_camel, "camelCase")):
+                    with self.subTest(style=style):
+                        self.assertIsInstance(term, NonVariableTerm)
+                        self.assertFalse(term.isaVariable())
+                        self.assertEqual(term.depth(), 1)
+                        self.assertEqual(term.length(), 1)
+                        self.assertEqual(list(term.getVariableList()), [])
+                        self.assertEqual(str(term), "{}()".format(name))
+                self.assertEqual(str(term_snake), str(term_camel))
+
+    def test_make_constant_term_in_compound(self):
+        """Constructor NonVariableTerm(f, [x, c]) and Java toString of f(x,e()).
+
+        Java UACalc (OpenJDK 21): toString=f(x,e()), depth=2, length=3,
+        getVariableList=[x]; g(x,y,identity()) has toString=g(x,y,identity()),
+        depth=2, length=4.
+        """
+        NonVariableTerm, VariableImp, OperationSymbol = self._import_terms_shim()
+
+        const = NonVariableTerm.makeConstantTerm(OperationSymbol("e", 0))
+        self.assertIsInstance(const, NonVariableTerm)
+
+        x = VariableImp("x")
+        compound = NonVariableTerm(OperationSymbol("f", 2), [x, const])
+        self.assertIsInstance(compound, NonVariableTerm)
+        self.assertEqual(compound.depth(), 2)
+        self.assertEqual(compound.length(), 3)
+        self.assertEqual(list(compound.getVariableList()), ["x"])
+        self.assertEqual(str(compound), "f(x,e())")
+
+        y = VariableImp("y")
+        const_identity = NonVariableTerm.makeConstantTerm(OperationSymbol("identity", 0))
+        compound2 = NonVariableTerm(
+            OperationSymbol("g", 3), [x, y, const_identity]
+        )
+        self.assertEqual(compound2.depth(), 2)
+        self.assertEqual(compound2.length(), 4)
+        self.assertEqual(str(compound2), "g(x,y,identity())")
 
 
 class TestNonVariableTermEvaluation(unittest.TestCase):
