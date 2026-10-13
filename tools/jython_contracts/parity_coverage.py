@@ -28,6 +28,24 @@ PENDING_BINDINGS = {
     ],
 }
 
+# tests/parity/<name> → Java/Python package path under org/uacalc (posix).
+NESTED_PACKAGE_PATHS = {
+    "alg_op": "alg/op",
+    "conlat": "alg/conlat",
+    "sublat": "alg/sublat",
+    "parallel": "alg/parallel",
+}
+
+
+def _java_package_dir(package: str) -> Path:
+    rel = NESTED_PACKAGE_PATHS.get(package, package)
+    return PROJECT_ROOT / "org" / "uacalc" / rel
+
+
+def _python_package_dir(package: str) -> Path:
+    rel = NESTED_PACKAGE_PATHS.get(package, package)
+    return PROJECT_ROOT / "python" / "org" / "uacalc" / rel
+
 
 @dataclass
 class ParityCoverageReport:
@@ -222,14 +240,14 @@ def build_parity_coverage(
         coverage = PackageCoverage(package=package)
         
         # Scan Java sources for public methods
-        java_package_dir = PROJECT_ROOT / "org" / "uacalc" / package
+        java_package_dir = _java_package_dir(package)
         if java_package_dir.exists():
             for java_file in java_package_dir.glob("*.java"):
                 methods = scan_java_public_methods(java_file)
                 coverage.java_methods.update(methods)
         
         # Scan Python wrappers (package dir, including _jython_compat)
-        python_package_dir = PROJECT_ROOT / "python" / "org" / "uacalc" / package
+        python_package_dir = _python_package_dir(package)
         if python_package_dir.exists():
             python_names: Set[str] = set()
             for python_file in python_package_dir.glob("*.py"):

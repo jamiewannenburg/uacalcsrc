@@ -87,11 +87,15 @@ Malcev is intentionally left alone.
 ### AlgebraWriter.writeAlgebra / writeBasicAlgebra flush
 
 - **Java**: does not close/flush the `PrintWriter`, so a subsequent file read is empty
-  until `writeAlgebraXML()` (which closes).
-- **Python**: writes immediately.
-- **Status**: Accepted as Java behavior (source of truth)
-- **Tests**: `writer_write_algebra`, `writer_write_basic_algebra` strict xfail
-- **Owner vs shim**: Java behavior question for the owner — Python flushing is correct I/O; matching Java would mean dropping the flush.
+  until `writeAlgebraXML()` (which closes). Java has no `flush()` method.
+- **Python**: org wrapper `writeAlgebra` / `writeBasicAlgebra` leave the destination
+  file unflushed (empty). `AlgebraWriter.flush()` is a no-op so an explicit flush
+  still matches Java. `uacalc_lib` still writes and flushes; only the org wrapper
+  changed.
+- **Status**: Fixed in the shim
+- **Tests**: `writer_write_algebra`, `writer_write_basic_algebra` pass
+- **Owner vs shim**: Shim — no-op `flush` / unflushed `writeAlgebra` in
+  `python/org/uacalc/io` only.
 
 ### Mace4Reader missing file
 
@@ -101,13 +105,20 @@ Malcev is intentionally left alone.
 - **Status**: Fixed in the shim
 - **Tests**: `mace4_missing_file` passes
 
-### AlgebraIO.readAlgebraListFile
+### AlgebraIO.readAlgebraListFile (known Java bug)
 
-- **Java**: returns only the last algebra in `cyclic2_cyclic3_list.ua` (C3).
-- **Python**: current `uacalc_lib` returns both C2 and C3.
-- **Status**: To Be Fixed if Python should match Java’s last-only parser
-- **Tests**: `read_algebra_list_file`, `reader_read_algebra_list_file` strict xfail
-- **Owner vs shim**: Library — list parsing lives in `uacalc_lib`, not the shim.
+- **Java**: SAX list reader keeps only the last algebra in
+  `cyclic2_cyclic3_list.ua` (C3). This is a **known Java bug**, not a shim or
+  library defect. Java golden expected values are left unchanged.
+- **Python**: the org wrapper (`AlgebraIO.readAlgebraListFile` and
+  `AlgebraReader.readAlgebraListFile`) deliberately returns the full list of
+  every algebra (C2 and C3), including in its Jython-compatible API.
+  `uacalc_lib` is unchanged.
+- **Status**: Known Java bug — intentional difference; Python is the desired
+  behavior
+- **Tests**: `read_algebra_list_file`, `reader_read_algebra_list_file` strict
+  xfail (Java golden still records last-only C3)
+- **Owner vs shim**: Known Java bug. Not a shim issue and not a library issue.
 
 ---
 
@@ -128,10 +139,12 @@ Malcev is intentionally left alone.
 ### Lattices.latticeFromJoin on a cyclic / non-ordered table
 
 - **Java**: catches `NonOrderedSetException`, prints a stack trace, **returns null**
-- **Python**: constructs a `BasicLattice`
-- **Status**: To Be Fixed
-- **Tests**: `lattice_from_join_not_ordered` strict xfail
-- **Owner vs shim**: Library/Java — owner call on whether Python should return `None` after a non-ordered table, matching Java’s catch-and-null.
+- **Python**: org wrapper returns `None` when the join table does not define a
+  lattice (library `ValueError`, or join that is not a semilattice). `uacalc_lib`
+  is unchanged and may still construct a `BasicLattice`.
+- **Status**: Fixed in the shim
+- **Tests**: `lattice_from_join_not_ordered` passes
+- **Owner vs shim**: Shim — catch-and-`None` lives in `python/org/uacalc/lat` only.
 
 ### Lattices.dual
 
@@ -168,6 +181,23 @@ Malcev is intentionally left alone.
 - **Python**: element-label order `[0, 1, …]`
 - **Status**: Accepted for comparison — golden serialization sorts the universe as a set.
   Cardinality, name, zero, join, meet, and leq are compared exactly and match.
+
+---
+
+## org.uacalc.alg.op
+
+### Operation.isTableBased (IntOperationImp)
+
+- **Java**: `Operations.IntOperationImp` extends `AbstractOperation` and does **not**
+  override `isTableBased()`, so table-constructed ops from
+  `makeIntOperation(symbol, size, table)` report `false`.
+- **Python**: `IntOperation` is table-backed and `is_table_based()` returns `true`.
+- **Status**: To Be Fixed (Java likely omitted the override; Python matches the
+  documented meaning of the method)
+- **Tests**: `op_is_table_based` strict xfail
+- **Owner vs shim**: Owner/library — changing Rust `IntOperation` to lie would
+  break `makeIntOperation(Operation)` skip-if-table-based logic; this is not a
+  rename in the shim.
 
 ---
 

@@ -374,6 +374,18 @@ fn test_similarity_type_equals_different() {
     );
 }
 
+/// Java SimilarityType.hashCode is List.hashCode of the operation symbols.
+#[test]
+fn test_similarity_type_java_hash_code_lattice() {
+    let st = SimilarityType::new(vec![
+        OperationSymbol::new("join", 2, false),
+        OperationSymbol::new("meet", 2, false),
+    ]);
+    // List.hashCode: 31 * (31 * 1 + join.hashCode) + meet.hashCode
+    // join=3267884, meet=3347529 → 104652894
+    assert_eq!(st.java_hash_code(), 104652894);
+}
+
 /// Test hash code
 #[test]
 fn test_similarity_type_hash_code() {

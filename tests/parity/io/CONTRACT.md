@@ -120,6 +120,7 @@ Required Java/Jython syntax:
 - `writer.writeAlgebraXML()`
 - `writer.writeAlgebra()`
 - `writer.writeBasicAlgebra()`
+- `writer.flush()` (no-op; Java never flushes `writeAlgebra`)
 
 Compatibility requirements:
 

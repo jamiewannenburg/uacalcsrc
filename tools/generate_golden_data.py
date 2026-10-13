@@ -84,6 +84,41 @@ def op_arity(op):
     except Exception:
         return 0
 
+def horner_inv_same_size(k, size, length):
+    if length <= 0:
+        return []
+    ans = [0] * length
+    remaining = int(k)
+    for i in range(length - 1):
+        if size:
+            ans[i] = remaining % size
+            remaining = (remaining - ans[i]) // size
+        else:
+            ans[i] = 0
+    ans[length - 1] = remaining
+    return ans
+
+def op_eval_values(op, limit=32):
+    arity = op_arity(op)
+    size_raw = call_or_get(op, "getSetSize", "get_set_size")
+    try:
+        size = int(size_raw)
+    except Exception:
+        size = 0
+    total = 1 if arity == 0 else (size ** arity if size > 0 else 0)
+    iva = getattr(op, "intValueAt", None)
+    if iva is None or not callable(iva):
+        return []
+    values = []
+    for idx in range(min(total, limit)):
+        args = horner_inv_same_size(idx, size, arity)
+        try:
+            values.append(int(iva(args)))
+        except Exception:
+            e = sys.exc_info()[1]
+            values.append({"error": type(e).__name__, "message": str(e)})
+    return values
+
 def serialize(obj):
     if obj is None:
         return None
@@ -93,14 +128,33 @@ def serialize(obj):
         return obj
     if isinstance(obj, (str, unicode)):
         return str(obj)
-    if isinstance(obj, dict) and obj.get("__type__") in ("file", "algebra", "lattice", "term"):
-        return obj
+    if isinstance(obj, dict):
+        if obj.get("__type__") in ("file", "algebra", "lattice", "term"):
+            return obj
+        out = {}
+        for k in obj:
+            out[str(k)] = serialize(obj[k])
+        return out
     if isinstance(obj, (list, tuple)):
         return [serialize(item) for item in obj]
+    try:
+        import array as _arraymod
+        if isinstance(obj, _arraymod.array):
+            return [serialize(item) for item in obj]
+    except Exception:
+        pass
     try:
         from java.util import Collection
         if isinstance(obj, Collection):
             return [serialize(item) for item in obj]
+    except Exception:
+        pass
+    try:
+        # Java primitive arrays (int[], etc.)
+        if hasattr(obj, "__getitem__") and hasattr(obj, "__len__") and not isinstance(obj, (str, dict)):
+            tname = type(obj).__name__
+            if tname.startswith("[") or tname.endswith("[]"):
+                return [serialize(obj[i]) for i in range(len(obj))]
     except Exception:
         pass
     class_name = obj.__class__.__name__
@@ -165,6 +219,50 @@ def serialize(obj):
             "string": str(obj),
             "isa_variable": bool(isa) if isa is not None else None,
         }
+    if "OperationSymbol" in class_name:
+        return {
+            "__type__": "operation_symbol",
+            "name": str(call_or_get(obj, "name", "getName") or obj),
+            "arity": int(call_or_get(obj, "arity", "getArity") or 0),
+        }
+    if "SimilarityType" in class_name:
+        symbols = call_or_get(obj, "getOperationSymbols", "get_operation_symbols") or []
+        max_ar = call_or_get(obj, "getMaxArity", "get_max_arity")
+        return {
+            "__type__": "similarity_type",
+            "class": class_name,
+            "string": str(obj),
+            "symbols": [serialize(s) for s in list(symbols)],
+            "max_arity": int(max_ar) if max_ar is not None else -1,
+        }
+    if (
+        ("Operation" in class_name or "IntOperation" in class_name or "BasicOperation" in class_name)
+        and class_name not in ("Operations", "ParameterizedOperation")
+    ):
+        set_size = call_or_get(obj, "getSetSize", "get_set_size")
+        arity = op_arity(obj)
+        try:
+            size_i = int(set_size)
+        except Exception:
+            size_i = 0
+        total = 1 if arity == 0 else (size_i ** arity if size_i > 0 else 0)
+        return {
+            "__type__": "operation",
+            "symbol": op_symbol_name(obj),
+            "arity": arity,
+            "set_size": size_i if set_size is not None else None,
+            "value_count": total,
+            "values": op_eval_values(obj),
+        }
+    try:
+        from java.util import Map
+        if isinstance(obj, Map):
+            out = {}
+            for entry in obj.entrySet():
+                out[str(serialize(entry.getKey()) if not isinstance(entry.getKey(), (str, int)) else entry.getKey())] = serialize(entry.getValue())
+            return out
+    except Exception:
+        pass
     text = str(obj)
     try:
         if re.match(r"^-?\d+$", text or ""):

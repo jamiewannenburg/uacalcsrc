@@ -597,8 +597,8 @@ mod tests {
             .map(|op| op.symbol().name().to_string())
             .collect();
         
-        assert!(operation_names.iter().any(|name| name.contains("leftShift")));
-        assert!(operation_names.iter().any(|name| name.contains("matrixDiagonal")));
+        assert!(operation_names.iter().any(|name| name.contains("leftshift")));
+        assert!(operation_names.iter().any(|name| name.contains("diagonal")));
     }
 
     #[test]

@@ -1,15 +1,18 @@
 target: org.uacalc.alg.op.OperationSymbol
 level: file
-status: pending
+status: implemented
 java_source: org/uacalc/alg/op/OperationSymbol.java
 notes: |
   Constructed as OperationSymbol(name, arity) throughout ~/uacalc scripts;
   passed to getOperation and NonVariableTerm / makeConstantTerm. Exported from
-  org.uacalc.alg.op; no camelCase aliases required (method names already match).
+  org.uacalc.alg.op. hashCode/compareTo are Java methods aliased from
+  hash_code/compare_to in the bindings.
 ignore_reason: null
 surface:
   package_export: true
-  aliases: {}
+  aliases:
+    hashCode: hash_code
+    compareTo: compare_to
   static_methods: []
   str_parity: false
 testing:

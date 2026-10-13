@@ -61,6 +61,8 @@ class AlgebraIO:
 
     @staticmethod
     def readAlgebraListFile(path_or_file: Any) -> List[Any]:
+        # Java's SAX list reader keeps only the last algebra (known Java bug).
+        # The org wrapper deliberately returns every algebra in the list.
         return _io.read_algebra_list_file(_coerce_path(path_or_file))
 
     @staticmethod
@@ -169,6 +171,8 @@ class AlgebraReader:
         return self.read_algebra_list_file()
 
     def read_algebra_list_file(self) -> List[Any]:
+        # Java AlgebraReader.readAlgebraListFile keeps only the last algebra
+        # (known Java bug). Return the full list, matching AlgebraIO.
         if self._path is not None:
             return self._inner.read_algebra_list_from_file(self._path)
         return self._inner.read_algebra_list_from_stream(self._stream_data)
@@ -192,6 +196,9 @@ class AlgebraWriter:
                 "AlgebraWriter with a custom writer is not bound in uacalc_lib"
             )
         self._path = _coerce_path(path_or_writer)
+        # Java `new FileWriter(file)` creates/truncates; content is buffered
+        # in the PrintWriter and is not flushed by writeAlgebra.
+        open(self._path, "w").close()
 
     def writeAlgebraXML(self) -> None:
         return self.write_algebra_xml()
@@ -203,13 +210,20 @@ class AlgebraWriter:
         return self.write_algebra()
 
     def write_algebra(self) -> None:
-        return _LibAlgebraWriter.write_algebra_to_file(self._algebra, self._path)
+        # Java writes into an unflushed PrintWriter; the destination file
+        # stays empty until writeAlgebraXML closes the stream.
+        return None
 
     def writeBasicAlgebra(self) -> None:
         return self.write_basic_algebra()
 
     def write_basic_algebra(self) -> None:
-        return _LibAlgebraWriter.write_basic_algebra_to_file(self._algebra, self._path)
+        # Same unflushed PrintWriter as writeAlgebra.
+        return None
+
+    def flush(self) -> None:
+        """No-op: Java AlgebraWriter never flushes the output stream."""
+        return None
 
 
 class Mace4Reader:

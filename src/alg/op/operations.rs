@@ -135,24 +135,47 @@ pub fn is_maltsev(op: &dyn Operation) -> Result<bool, String> {
 /// * `Some(args)` - The first argument combination where the operations differ
 /// * `None` - If the operations are equal
 pub fn find_difference(op0: &dyn Operation, op1: &dyn Operation) -> Result<Option<Vec<i32>>, String> {
-    if op0.arity() != op1.arity() {
-        return Err("Operations must have the same arity".to_string());
+    // Match Java Operations.findDifference: set-size check first, then arity,
+    // then SequenceGenerator.sequenceIncrementor (rightmost index first).
+    let n = op0.get_set_size();
+    if n != op1.get_set_size() {
+        return Err("Ops have different set sizes".to_string());
     }
-    if op0.get_set_size() != op1.get_set_size() {
-        return Err("Operations must have the same set size".to_string());
+    let arity = op0.arity();
+    if arity != op1.arity() {
+        return Err("Ops have different arities".to_string());
     }
-    
-    let set_size = op0.get_set_size();
-    let arity = op0.arity() as usize;
-    let total = (set_size as usize).pow(arity as u32);
-    
-    for idx in 0..total {
-        let arr = horner::horner_inv_same_size(idx as i32, set_size, arity);
+
+    let mut arr = vec![0i32; arity as usize];
+    if op0.int_value_at(&arr)? != op1.int_value_at(&arr)? {
+        return Ok(Some(arr));
+    }
+    let len = arr.len();
+    if len == 0 {
+        return Ok(None);
+    }
+    loop {
+        let mut i = len;
+        let mut incremented = false;
+        while i > 0 {
+            i -= 1;
+            if arr[i] < n - 1 {
+                arr[i] += 1;
+                for j in (i + 1)..len {
+                    arr[j] = 0;
+                }
+                incremented = true;
+                break;
+            }
+        }
+        if !incremented {
+            break;
+        }
         if op0.int_value_at(&arr)? != op1.int_value_at(&arr)? {
             return Ok(Some(arr));
         }
     }
-    
+
     Ok(None)
 }
 
@@ -166,34 +189,136 @@ pub fn equal_values(op0: &dyn Operation, op1: &dyn Operation) -> Result<bool, St
 // Additional Constructors (matching Java public API)
 // =============================================================================
 
-/// Make Jónsson operations from a near-unanimity function (placeholder).
-/// Returns an empty list for now until full algorithm is implemented.
-pub fn make_jonsson_operations_from_nuf(_nuf: &dyn Operation) -> Result<Vec<Box<dyn Operation>>, String> {
-    Ok(Vec::new())
+/// Table-ize any operation so later factory methods can return `IntOperation`.
+pub fn make_int_operation_from_dyn(op: &dyn Operation) -> Result<Box<dyn Operation>, String> {
+    if let Some(table) = op.get_table() {
+        return make_int_operation(op.symbol().clone(), op.get_set_size(), table.to_vec());
+    }
+    let arity = op.arity();
+    let set_size = op.get_set_size();
+    let table_size = if arity == 0 {
+        1
+    } else {
+        (set_size as usize).pow(arity as u32)
+    };
+    let mut table = Vec::with_capacity(table_size);
+    for i in 0..table_size {
+        let args = horner::horner_inv_same_size(i as i32, set_size, arity as usize);
+        table.push(op.int_value_at(&args)?);
+    }
+    make_int_operation(op.symbol().clone(), set_size, table)
 }
 
-/// Make a left shift unary operation on vectors of given size (deterministic placeholder).
-pub fn make_left_shift(vec_size: i32, _root_size: i32) -> Result<Box<dyn Operation>, String> {
-    let sym = OperationSymbol::new_safe("leftShift", 1, false)?;
-    let mut table = Vec::with_capacity(vec_size as usize);
-    for i in 0..vec_size { table.push((i + 1) % vec_size); }
-    make_int_operation(sym, vec_size, table)
+/// Make Jónsson operations from a near-unanimity function, omitting the two projections.
+///
+/// Matches Java `Operations.makeJonssonOperationsFromNUF`. A binary NUF yields
+/// `Illegal Capacity: -1` from `new ArrayList<>(2 * arity - 5)`.
+pub fn make_jonsson_operations_from_nuf(nuf: &dyn Operation) -> Result<Vec<Box<dyn Operation>>, String> {
+    let nuf_arity = nuf.arity();
+    let cap = 2 * nuf_arity - 5;
+    if cap < 0 {
+        return Err(format!("Illegal Capacity: {}", cap));
+    }
+    let table_op = make_int_operation_from_dyn(nuf)?;
+    let arc: Arc<dyn Operation> = Arc::from(table_op);
+    let mut ans = Vec::with_capacity(cap as usize);
+    let mut reduct_array = vec![0i32; nuf_arity as usize];
+    for i in 0..nuf_arity as usize {
+        if i + 1 == nuf_arity as usize {
+            reduct_array[i] = 2;
+        } else if i + 2 == nuf_arity as usize {
+            reduct_array[i] = 1;
+        } else {
+            reduct_array[i] = 0;
+        }
+    }
+    ans.push(make_derived_operation(arc.clone(), reduct_array.clone(), 3)?);
+    let mut k = 1;
+    while k < nuf_arity - 2 {
+        for i in 0..nuf_arity as usize {
+            if (i as i32) < nuf_arity - (k + 1) {
+                reduct_array[i] = 0;
+            } else {
+                reduct_array[i] = 2;
+            }
+        }
+        reduct_array[(nuf_arity - k - 2) as usize] = 1;
+        ans.push(make_derived_operation(arc.clone(), reduct_array.clone(), 3)?);
+        k += 1;
+    }
+    Ok(ans)
 }
 
-/// Make a binary left shift operation (deterministic placeholder).
-pub fn make_binary_left_shift(vec_size: i32, _root_size: i32) -> Result<Box<dyn Operation>, String> {
-    let sym = OperationSymbol::new_safe("binaryLeftShift", 2, false)?;
-    let mut table = Vec::with_capacity((vec_size * vec_size) as usize);
-    for i in 0..vec_size { for j in 0..vec_size { table.push((i + j) % vec_size); } }
-    make_int_operation(sym, vec_size, table)
+/// The unary operation that cyclically shifts a vector left.
+///
+/// Algebra size is `root_size ** vec_size`. Symbol name is Java's `"leftshift"`.
+pub fn make_left_shift(vec_size: i32, root_size: i32) -> Result<Box<dyn Operation>, String> {
+    if vec_size <= 0 || root_size <= 0 {
+        return Err("vecSize and rootSize must be positive".to_string());
+    }
+    let alg_size = power(root_size, vec_size);
+    let sym = OperationSymbol::new_safe("leftshift", 1, false)?;
+    let table_size = alg_size as usize;
+    let mut table = Vec::with_capacity(table_size);
+    for encoded in 0..alg_size {
+        let mut arr = horner::horner_inv_same_size(encoded, root_size, vec_size as usize);
+        if !arr.is_empty() {
+            arr.rotate_left(1);
+        }
+        table.push(horner::horner_same_size(&arr, root_size));
+    }
+    make_int_operation(sym, alg_size, table)
 }
 
-/// Make a matrix diagonal operation (deterministic placeholder; arity 2).
-pub fn make_matrix_diagonal_op(vec_size: i32, _root_size: i32) -> Result<Box<dyn Operation>, String> {
-    let sym = OperationSymbol::new_safe("matrixDiagonal", 2, false)?;
-    let mut table = Vec::with_capacity((vec_size * vec_size) as usize);
-    for i in 0..vec_size { for j in 0..vec_size { table.push(if i == j { i } else { 0 }); } }
-    make_int_operation(sym, vec_size, table)
+/// Maps a pair of vectors `(x, y)` to `(y_{k-1}, x_0, ..., x_{k-2})`.
+///
+/// Symbol name is Java's `"binrightshift"`.
+pub fn make_binary_left_shift(vec_size: i32, root_size: i32) -> Result<Box<dyn Operation>, String> {
+    if vec_size <= 0 || root_size <= 0 {
+        return Err("vecSize and rootSize must be positive".to_string());
+    }
+    let alg_size = power(root_size, vec_size);
+    let sym = OperationSymbol::new_safe("binrightshift", 2, false)?;
+    let table_size = (alg_size as usize).pow(2);
+    let mut table = Vec::with_capacity(table_size);
+    for k in 0..table_size {
+        let args = horner::horner_inv_same_size(k as i32, alg_size, 2);
+        let arr0 = horner::horner_inv_same_size(args[0], root_size, vec_size as usize);
+        let arr1 = horner::horner_inv_same_size(args[1], root_size, vec_size as usize);
+        let mut ans = vec![0i32; vec_size as usize];
+        for i in 1..vec_size as usize {
+            ans[i] = arr0[i - 1];
+        }
+        if vec_size > 0 {
+            ans[0] = arr1[(vec_size as usize) - 1];
+        }
+        table.push(horner::horner_same_size(&ans, root_size));
+    }
+    make_int_operation(sym, alg_size, table)
+}
+
+/// Diagonal operation of arity `vec_size` on `root_size ** vec_size` elements.
+///
+/// Symbol name is Java's `"diagonal"`.
+pub fn make_matrix_diagonal_op(vec_size: i32, root_size: i32) -> Result<Box<dyn Operation>, String> {
+    if vec_size <= 0 || root_size <= 0 {
+        return Err("vecSize and rootSize must be positive".to_string());
+    }
+    let alg_size = power(root_size, vec_size);
+    let arity = vec_size;
+    let sym = OperationSymbol::new_safe("diagonal", arity, false)?;
+    let table_size = (alg_size as usize).pow(arity as u32);
+    let mut table = Vec::with_capacity(table_size);
+    for k in 0..table_size {
+        let args = horner::horner_inv_same_size(k as i32, alg_size, arity as usize);
+        let mut ans = vec![0i32; vec_size as usize];
+        for i in 0..vec_size as usize {
+            let vec_i = horner::horner_inv_same_size(args[i], root_size, vec_size as usize);
+            ans[i] = vec_i[i];
+        }
+        table.push(horner::horner_same_size(&ans, root_size));
+    }
+    make_int_operation(sym, alg_size, table)
 }
 
 /// Make a module operation with the given modulus and coefficients: f(x1,...,xk) = sum c_i x_i (mod m).
@@ -236,40 +361,23 @@ pub fn make_composition_op(n: i32, pow: i32) -> Result<Box<dyn Operation>, Strin
         return Err("Transformation semigroup size must be positive".to_string());
     }
     
-    let sym = OperationSymbol::new_safe("composition", 2, false)?;
-    
-    // Create the operation table
-    // For each pair (f, g) of transformations, compute f ∘ g
-    let table_size = (pow as usize) * (pow as usize);
+    // Java Operations.makeCompositionOp uses symbol "comp" and evaluates
+    // intValueAt via Horner.hornerInv(args[i], n, n) then Horner.horner(comp, n).
+    let sym = OperationSymbol::new_safe("comp", 2, false)?;
+    let table_size = (pow as usize).pow(2);
     let mut value_table = Vec::with_capacity(table_size);
-    
-    for f_encoded in 0..pow {
-        for g_encoded in 0..pow {
-            // Decode the transformations
-            let f = horner::horner_inv_same_size(f_encoded, n, n as usize);
-            let g = horner::horner_inv_same_size(g_encoded, n, n as usize);
-            
-            // Compose: (f ∘ g)(i) = f(g(i))
-            let mut comp = vec![0i32; n as usize];
-            for i in 0..n as usize {
-                comp[i] = f[g[i] as usize];
-            }
-            
-            // Encode the composition
-            let comp_encoded = horner::horner_same_size(&comp, n);
-            
-            // Clamp the result to [0, pow) to handle cases where pow != n^n
-            // This matches Java behavior which doesn't validate pow = n^n
-            let clamped_value = if comp_encoded >= pow {
-                comp_encoded % pow
-            } else {
-                comp_encoded
-            };
-            
-            value_table.push(clamped_value);
+    for k in 0..table_size {
+        let args = horner::horner_inv_same_size(k as i32, pow, 2);
+        let f = horner::horner_inv_same_size(args[0], n, n as usize);
+        let g = horner::horner_inv_same_size(args[1], n, n as usize);
+        let mut comp = vec![0i32; n as usize];
+        for i in 0..n as usize {
+            let gi = g[i] as usize;
+            comp[i] = if gi < f.len() { f[gi] } else { 0 };
         }
+        value_table.push(horner::horner_same_size(&comp, n));
     }
-    
+
     make_int_operation(sym, pow, value_table)
 }
 
@@ -579,6 +687,41 @@ pub fn power(base: i32, pow: i32) -> i32 {
     ans
 }
 
+/// Write a binary operation as CSV, matching Java `Operations.binaryOpToCSV`.
+pub fn binary_op_to_csv(desc: &str, binop: &dyn Operation) -> Result<String, String> {
+    if binop.arity() != 2 {
+        return Err(String::new());
+    }
+    let size = binop.get_set_size();
+    let mut out = String::new();
+    out.push(',');
+    out.push('"');
+    out.push_str(desc);
+    out.push('"');
+    out.push(',');
+    out.push('\n');
+    out.push_str(",,\n");
+    out.push_str(",,");
+    for i in 0..size {
+        out.push_str(&i.to_string());
+        out.push(',');
+    }
+    out.push_str("\n,,\n");
+    for i in 0..size {
+        out.push_str(&i.to_string());
+        out.push_str(",,");
+        for j in 0..size {
+            let val = binop.int_value_at(&[i, j])?;
+            out.push_str(&val.to_string());
+            out.push(',');
+        }
+        out.push('\n');
+    }
+    // Java `out.println(eol)` prints "\n" plus PrintStream's newline.
+    out.push_str("\n\n");
+    Ok(out)
+}
+
 /// Convert a list of operations to use IntOperation internally.
 pub fn make_int_operations(ops: Vec<Box<dyn Operation>>) -> Result<Vec<Box<dyn Operation>>, String> {
     let mut result = Vec::with_capacity(ops.len());
@@ -672,7 +815,44 @@ mod tests {
         let op2 = IntOperation::binary_and("and").unwrap();
         
         let diff = find_difference(&op1, &op2).unwrap();
-        assert!(diff.is_some());
+        // Java SequenceGenerator increments the rightmost index first: [0,1]
+        assert_eq!(diff, Some(vec![0, 1]));
+    }
+
+    #[test]
+    fn test_make_composition_op_matches_java() {
+        let op = make_composition_op(2, 4).unwrap();
+        assert_eq!(op.symbol().name(), "comp");
+        assert_eq!(op.arity(), 2);
+        assert_eq!(op.get_set_size(), 4);
+        let values: Vec<i32> = (0..16)
+            .map(|k| op.int_value_at_horner(k).unwrap())
+            .collect();
+        assert_eq!(
+            values,
+            vec![0, 3, 0, 3, 0, 2, 1, 3, 0, 1, 2, 3, 0, 0, 3, 3]
+        );
+    }
+
+    #[test]
+    fn test_make_left_shift_matches_java() {
+        let op = make_left_shift(2, 2).unwrap();
+        assert_eq!(op.symbol().name(), "leftshift");
+        assert_eq!(op.arity(), 1);
+        assert_eq!(op.get_set_size(), 4);
+        // vectors of length 2 over {0,1}: Horner [a,b] = a + 2b
+        // left rotate [a,b] -> [b,a] => a' + 2b' = b + 2a
+        assert_eq!(op.int_value_at(&[0]).unwrap(), 0); // [0,0] -> [0,0]
+        assert_eq!(op.int_value_at(&[1]).unwrap(), 2); // [1,0] -> [0,1] = 2
+        assert_eq!(op.int_value_at(&[2]).unwrap(), 1); // [0,1] -> [1,0] = 1
+        assert_eq!(op.int_value_at(&[3]).unwrap(), 3); // [1,1] -> [1,1] = 3
+    }
+
+    #[test]
+    fn test_jonsson_binary_nuf_illegal_capacity() {
+        let op = IntOperation::binary_xor("xor").unwrap();
+        let err = make_jonsson_operations_from_nuf(&op).unwrap_err();
+        assert_eq!(err, "Illegal Capacity: -1");
     }
 
     #[test]

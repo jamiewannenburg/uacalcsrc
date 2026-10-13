@@ -1,0 +1,84 @@
+target: org.uacalc.alg.op.Operations
+level: file
+status: implemented
+java_source: org/uacalc/alg/op/Operations.java
+notes: |
+  Static factory/helpers. CPython facade dispatches to uacalc_lib.alg.Operations
+  (camelCase names, overload selection, IllegalArgumentException /
+  NullPointerException translation). Groovy makeOperationFromScript and
+  commented-out makeDirectProductOperation are not wrapped. ProgressReport
+  findDifference overload is not bound.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases: {}
+  static_methods:
+    - Operations.commutes
+    - Operations.isTotal
+    - Operations.isIdempotent
+    - Operations.isCommutative
+    - Operations.isTotallySymmetric
+    - Operations.isAssociative
+    - Operations.isMaltsev
+    - Operations.findDifference
+    - Operations.equalValues
+    - Operations.makeMap
+    - Operations.makeIntOperation
+    - Operations.makeIntOperations
+    - Operations.makeBinaryIntOperation
+    - Operations.makeConstantIntOperation
+    - Operations.makeConstantIntOperations
+    - Operations.makeTransposition
+    - Operations.makeFullCycle
+    - Operations.ternaryDiscriminator
+    - Operations.makeRandomOperation
+    - Operations.makeRandomOperations
+    - Operations.makeDerivedOperation
+    - Operations.makeJonssonOperationsFromNUF
+    - Operations.power
+    - Operations.makeLeftShift
+    - Operations.makeBinaryLeftShift
+    - Operations.makeMatrixDiagonalOp
+    - Operations.makeModuleOperation
+    - Operations.makeCompositionOp
+    - Operations.binaryOpToCSV
+  str_parity: false
+testing:
+  notes: |
+    Golden cases in tests/parity/alg_op cover each wrapped static method plus
+    exception types. Random factories are checked for arity/count only.
+  task_refs:
+    - tasks/Task 50 - Operations.md
+  scripts:
+    - path: jython_comparison/scripts/operation_similaritytype.py
+      covers:
+        - Operations.commutes
+        - Operations.isTotal
+        - Operations.isIdempotent
+        - Operations.isCommutative
+        - Operations.isTotallySymmetric
+        - Operations.isAssociative
+        - Operations.isMaltsev
+        - Operations.findDifference
+        - Operations.equalValues
+        - Operations.makeMap
+        - Operations.makeIntOperation
+        - Operations.makeIntOperations
+        - Operations.makeBinaryIntOperation
+        - Operations.makeConstantIntOperation
+        - Operations.makeConstantIntOperations
+        - Operations.makeTransposition
+        - Operations.makeFullCycle
+        - Operations.ternaryDiscriminator
+        - Operations.makeRandomOperation
+        - Operations.makeRandomOperations
+        - Operations.makeDerivedOperation
+        - Operations.makeJonssonOperationsFromNUF
+        - Operations.makeLeftShift
+        - Operations.makeBinaryLeftShift
+        - Operations.makeMatrixDiagonalOp
+        - Operations.makeModuleOperation
+        - Operations.makeCompositionOp
+        - Operations.power
+        - Operations.binaryOpToCSV
+      ignore_lines: []
