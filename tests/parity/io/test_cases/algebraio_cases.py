@@ -102,8 +102,9 @@ TEST_CASES = [
         description="Read multi-algebra list file (Java returns the last algebra only)",
         skip_string_check=True,
         xfail_reason=(
-            "Java AlgebraIO.readAlgebraListFile returns only the last algebra (C3). "
-            "Current uacalc_lib returns both C2 and C3."
+            "Known Java bug: AlgebraIO.readAlgebraListFile returns only the last "
+            "algebra (C3). The org wrapper deliberately returns the full list "
+            "(C2 and C3). Java golden values are left unchanged."
         ),
     ),
     TestCaseSpec(
@@ -203,8 +204,9 @@ else:
         description="AlgebraReader.readAlgebraListFile",
         skip_string_check=True,
         xfail_reason=(
-            "Java AlgebraReader.readAlgebraListFile returns only the last algebra (C3). "
-            "Current uacalc_lib returns both C2 and C3."
+            "Known Java bug: AlgebraReader.readAlgebraListFile returns only the last "
+            "algebra (C3). The org wrapper deliberately returns the full list "
+            "(C2 and C3). Java golden values are left unchanged."
         ),
     ),
     TestCaseSpec(
@@ -228,10 +230,6 @@ writer = AlgebraWriter(alg, OUT_PATH)
         description="AlgebraWriter.writeAlgebra",
         capture_file=True,
         skip_string_check=True,
-        xfail_reason=(
-            "Java writeAlgebra() does not close/flush the PrintWriter, so the "
-            "captured file is empty. Python writes immediately."
-        ),
     ),
     TestCaseSpec(
         id="writer_write_basic_algebra",
@@ -243,10 +241,6 @@ writer = AlgebraWriter(alg, OUT_PATH)
         description="AlgebraWriter.writeBasicAlgebra",
         capture_file=True,
         skip_string_check=True,
-        xfail_reason=(
-            "Java writeBasicAlgebra() does not close/flush the PrintWriter, so the "
-            "captured file is empty. Python writes immediately and includes <universe>."
-        ),
     ),
     TestCaseSpec(
         id="mace4_parse_algebra",

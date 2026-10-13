@@ -165,6 +165,16 @@ impl PyOperationSymbol {
         hasher.finish()
     }
 
+    /// Java `OperationSymbol.hashCode()` (`name.hashCode() + arity`).
+    fn hash_code(&self) -> i32 {
+        self.inner.java_hash_code()
+    }
+
+    /// Java `OperationSymbol.compareTo`.
+    fn compare_to(&self, other: &PyOperationSymbol) -> i32 {
+        self.inner.compare_to(&other.inner)
+    }
+
     /// Python comparison (less than).
     fn __lt__(&self, other: &PyOperationSymbol) -> bool {
         self.inner < other.inner

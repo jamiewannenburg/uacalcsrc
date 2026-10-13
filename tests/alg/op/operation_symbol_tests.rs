@@ -205,6 +205,16 @@ fn test_operation_symbol_equals() {
     );
 }
 
+/// Java OperationSymbol.hashCode is name.hashCode() + arity ("join" -> 3267884).
+#[test]
+fn test_operation_symbol_java_hash_code_join() {
+    let join = OperationSymbol::new("join", 2, false);
+    assert_eq!(join.java_hash_code(), 3267884);
+    let inv = OperationSymbol::new("inv", 1, false);
+    let prod = OperationSymbol::new("prod", 2, false);
+    assert_eq!(prod.compare_to(&inv), -1);
+}
+
 /// Test hash code
 #[test]
 fn test_operation_symbol_hash_code() {

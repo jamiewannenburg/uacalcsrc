@@ -691,7 +691,7 @@ class TestFullTransformationSemigroup:
         ops = result.operations()
         assert len(ops) == 1, f"Expected 1 operation, got {len(ops)}"
         assert ops[0].arity() == 2, f"Expected arity 2, got {ops[0].arity()}"
-        assert ops[0].symbol().name() == "composition", f"Expected name 'composition', got '{ops[0].symbol().name()}'"
+        assert ops[0].symbol().name() == "comp", f"Expected name 'comp', got '{ops[0].symbol().name()}'"
         
         # Compare with Java wrapper
         java_result = run_java_wrapper("fullTransformationSemigroup", [

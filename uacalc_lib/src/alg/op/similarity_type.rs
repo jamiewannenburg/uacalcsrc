@@ -161,6 +161,11 @@ impl PySimilarityType {
         hasher.finish()
     }
 
+    /// Java `SimilarityType.hashCode()` (`List.hashCode()` of the symbols).
+    fn hash_code(&self) -> i32 {
+        self.inner.java_hash_code()
+    }
+
 }
 
 // Internal accessor for other bindings modules

@@ -75,10 +75,6 @@ TEST_CASES = [
         call='Lattices.latticeFromJoin("bad", bad_join)',
         description="Non-lattice join table: Java catches NonOrderedSetException and returns null",
         skip_string_check=True,
-        xfail_reason=(
-            "Java latticeFromJoin returns null after NonOrderedSetException; "
-            "Python currently constructs a BasicLattice."
-        ),
     ),
     TestCaseSpec(
         id="basic_lattice_cardinality",

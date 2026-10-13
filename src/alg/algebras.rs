@@ -1543,7 +1543,7 @@ mod full_transformation_semigroup_tests {
         let ops = alg.get_operations_ref();
         assert_eq!(ops.len(), 1);
         assert_eq!(ops[0].arity(), 2);
-        assert_eq!(ops[0].symbol().name(), "composition");
+        assert_eq!(ops[0].symbol().name(), "comp");
     }
 
     #[test]

@@ -17,8 +17,10 @@ surface:
 testing:
   notes: |
     Load a known .ua file via AlgebraIO.readAlgebraFile and print algebra
-    name/cardinality. writeAlgebraFile is declared for ~/uacalc writers; XML
-    write parity is still incomplete in uacalc_lib (covered as callable smoke).
+    name/cardinality. writeAlgebraFile is declared for ~/uacalc writers.
+    AlgebraWriter.flush is a no-op (Java never flushes writeAlgebra).
+    readAlgebraListFile returns the full algebra list (Java last-only is a
+    known Java bug; goldens stay last-only as a strict xfail).
   task_refs: []
   scripts:
     - path: jython_comparison/scripts/load_cyclic2.py

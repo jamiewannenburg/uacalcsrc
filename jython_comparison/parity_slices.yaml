@@ -67,15 +67,17 @@ slices:
       - org.uacalc.alg.op
     depends_on:
       - core-alg-base
-    owner: agent-e
+    owner: cursor-agent
     status: parity_golden
-    last_updated: "2026-04-18"
+    last_updated: "2026-10-13"
     workstreams: []
     parity_tests_dir: tests/parity/alg_op
     notes: >-
-      parity_golden: golden_alg_op_surface.py + per-runtime fixtures; Jython exercises
-      OperationSymbol/AbstractIntOperation samples; CPython records empty shim until uacalc_lib.alg.op
-      binds. Cross-runtime behavioral parity is a future Rust follow-up.
+      Operation / Operations / SimilarityType Jython shims on org.uacalc.alg.op
+      with golden behavioral cases in tests/parity/alg_op, including SimilarityType
+      value round-trip (equals/hashCode/toString/compareTo) and Java-named
+      conversion-path exceptions. Groovy makeOperationFromScript is not wrapped.
+      Branch cursor/operation-similaritytype-7472.
 
   - id: core-alg-conlat
     title: Congruences, partitions, congruence lattices

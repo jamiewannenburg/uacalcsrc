@@ -33,6 +33,14 @@ class NullPointerException(TypeError, RuntimeException):
     """java.lang.NullPointerException."""
 
 
+class ClassCastException(TypeError, RuntimeException):
+    """java.lang.ClassCastException."""
+
+
+class UnsupportedOperationException(RuntimeException):
+    """java.lang.UnsupportedOperationException."""
+
+
 class IOException(OSError, JavaException):
     """java.io.IOException."""
 

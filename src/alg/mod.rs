@@ -736,11 +736,11 @@ impl MatrixPowerAlgebra {
     fn add_matrix_operations(&mut self) -> Result<(), String> {
         use crate::alg::op::operations::{make_left_shift, make_matrix_diagonal_op};
         
-        // Add left shift operation
-        let left_shift = make_left_shift(self.cardinality(), self.root_size)?;
+        // Java MatrixPowerAlgebra: makeLeftShift(power, rootSize)
+        let left_shift = make_left_shift(self.power as i32, self.root_size)?;
         
-        // Add matrix diagonal operation
-        let matrix_diagonal = make_matrix_diagonal_op(self.cardinality(), self.root_size)?;
+        // Java MatrixPowerAlgebra: makeMatrixDiagonalOp(power, rootSize)
+        let matrix_diagonal = make_matrix_diagonal_op(self.power as i32, self.root_size)?;
         
         // Store operations in matrix_operations field
         self.matrix_operations.push(left_shift);
@@ -910,12 +910,12 @@ impl Algebra for MatrixPowerAlgebra {
         let mut operations = Vec::new();
         
         // Recreate left shift operation
-        if let Ok(left_shift) = make_left_shift(self.cardinality(), self.root_size) {
+        if let Ok(left_shift) = make_left_shift(self.power as i32, self.root_size) {
             operations.push(left_shift);
         }
         
         // Recreate matrix diagonal operation
-        if let Ok(matrix_diagonal) = make_matrix_diagonal_op(self.cardinality(), self.root_size) {
+        if let Ok(matrix_diagonal) = make_matrix_diagonal_op(self.power as i32, self.root_size) {
             operations.push(matrix_diagonal);
         }
         

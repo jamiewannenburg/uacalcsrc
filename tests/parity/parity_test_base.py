@@ -115,6 +115,40 @@ def _op_arity(op: Any) -> int:
     return int(ar) if ar is not None else 0
 
 
+def _horner_inv_same_size(k: int, size: int, length: int) -> List[int]:
+    """Match UACalc Horner.hornerInv for equal component sizes."""
+    if length <= 0:
+        return []
+    ans = [0] * length
+    remaining = int(k)
+    for i in range(length - 1):
+        if size:
+            ans[i] = remaining % size
+            remaining = (remaining - ans[i]) // size
+        else:
+            ans[i] = 0
+    ans[length - 1] = remaining
+    return ans
+
+
+def _op_eval_values(op: Any, limit: int = 32) -> List[Any]:
+    arity = _op_arity(op)
+    size_raw = _call_or_get(op, "getSetSize", "get_set_size")
+    size = int(size_raw) if size_raw is not None else 0
+    total = 1 if arity == 0 else (size ** arity if size > 0 else 0)
+    iva = getattr(op, "intValueAt", None) or getattr(op, "int_value_at", None)
+    if not callable(iva):
+        return []
+    values = []
+    for idx in range(min(total, limit)):
+        args = _horner_inv_same_size(idx, size, arity)
+        try:
+            values.append(int(iva(args)))
+        except Exception as exc:
+            values.append({"error": type(exc).__name__, "message": str(exc)})
+    return values
+
+
 def serialize_for_golden(obj: Any) -> Any:
     """Convert an object to a JSON-serializable form for golden data."""
     if obj is None:
@@ -129,6 +163,14 @@ def serialize_for_golden(obj: Any) -> Any:
 
     if isinstance(obj, (list, tuple)):
         return [serialize_for_golden(item) for item in obj]
+
+    try:
+        import array as _arraymod
+
+        if isinstance(obj, _arraymod.array):
+            return [serialize_for_golden(item) for item in obj]
+    except Exception:
+        pass
 
     if isinstance(obj, dict):
         if obj.get("__type__") in ("file", "algebra", "lattice", "term"):
@@ -194,6 +236,47 @@ def serialize_for_golden(obj: Any) -> Any:
             "class": class_name,
             "string": str(obj),
             "isa_variable": bool(isa) if isa is not None else None,
+        }
+
+    # OperationSymbol
+    if "OperationSymbol" in class_name:
+        return {
+            "__type__": "operation_symbol",
+            "name": str(_call_or_get(obj, "name", "getName") or obj),
+            "arity": int(_call_or_get(obj, "arity", "getArity") or 0),
+        }
+
+    # SimilarityType
+    if "SimilarityType" in class_name:
+        symbols = _call_or_get(obj, "getOperationSymbols", "get_operation_symbols") or []
+        return {
+            "__type__": "similarity_type",
+            "class": class_name,
+            "string": str(obj),
+            "symbols": [serialize_for_golden(s) for s in list(symbols)],
+            "max_arity": int(
+                _call_or_get(obj, "getMaxArity", "get_max_arity")
+                if _call_or_get(obj, "getMaxArity", "get_max_arity") is not None
+                else -1
+            ),
+        }
+
+    # Operation-like (IntOperation, AbstractOperation, …)
+    if (
+        any(tag in class_name for tag in ("Operation", "IntOperation", "BasicOperation"))
+        and class_name not in ("Operations", "ParameterizedOperation")
+    ):
+        set_size = _call_or_get(obj, "getSetSize", "get_set_size")
+        arity = _op_arity(obj)
+        size_i = int(set_size) if set_size is not None else 0
+        total = 1 if arity == 0 else (size_i ** arity if size_i > 0 else 0)
+        return {
+            "__type__": "operation",
+            "symbol": _op_symbol_name(obj),
+            "arity": arity,
+            "set_size": size_i if set_size is not None else None,
+            "value_count": total,
+            "values": _op_eval_values(obj),
         }
 
     # POElem / lattice elements: prefer integer labels

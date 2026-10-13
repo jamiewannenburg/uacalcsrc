@@ -667,7 +667,7 @@
       },
       "setup": "\nimport os, tempfile\nfrom org.uacalc.io import AlgebraIO, AlgebraWriter\nalg = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nfd, OUT_PATH = tempfile.mkstemp(suffix='.xml')\nos.close(fd)\nCAPTURE_PATH = OUT_PATH\n\nwriter = AlgebraWriter(alg, OUT_PATH)\n",
       "skip_string_check": true,
-      "xfail_reason": "Java writeAlgebra() does not close/flush the PrintWriter, so the captured file is empty. Python writes immediately. Python also emits <universe> which Java omits."
+      "xfail_reason": null
     },
     {
       "args": [],
@@ -692,7 +692,7 @@
       },
       "setup": "\nimport os, tempfile\nfrom org.uacalc.io import AlgebraIO, AlgebraWriter\nalg = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nfd, OUT_PATH = tempfile.mkstemp(suffix='.xml')\nos.close(fd)\nCAPTURE_PATH = OUT_PATH\n\nwriter = AlgebraWriter(alg, OUT_PATH)\n",
       "skip_string_check": true,
-      "xfail_reason": "Java writeBasicAlgebra() does not close/flush the PrintWriter, so the captured file is empty. Python writes immediately and includes <universe>."
+      "xfail_reason": null
     },
     {
       "args": [],

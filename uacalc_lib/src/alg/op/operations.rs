@@ -2,12 +2,31 @@
 
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
-use pyo3::types::PyAny;
+use pyo3::types::{PyAny, PyDict};
 
 use crate::alg::op::operation_symbol::PyOperationSymbol;
 use super::operation::PyBasicOperation;
 use super::int_operation::PyIntOperation;
 use super::similarity_type::PySimilarityType;
+
+fn extract_dyn_op(op: &Bound<'_, PyAny>) -> PyResult<Box<dyn uacalc::alg::op::Operation>> {
+    if let Ok(o) = op.extract::<PyRef<PyBasicOperation>>() {
+        return Ok(Box::new(o.inner.clone()));
+    }
+    if let Ok(o) = op.extract::<PyRef<PyIntOperation>>() {
+        return Ok(Box::new(o.inner.clone()));
+    }
+    Err(PyValueError::new_err("Unsupported operation type"))
+}
+
+fn extract_op_list(ops: &Bound<'_, PyAny>) -> PyResult<Vec<Box<dyn uacalc::alg::op::Operation>>> {
+    let seq = ops.iter()?;
+    let mut out = Vec::new();
+    for item in seq {
+        out.push(extract_dyn_op(&item?)?);
+    }
+    Ok(out)
+}
 
 /// Python wrapper for Operations utility class
 #[pyclass]
@@ -32,6 +51,14 @@ impl PyOperations {
             }
         }
         Err(PyValueError::new_err("Unsupported operation types for commutes"))
+    }
+
+    /// Test if a map is a homomorphism wrt two operations.
+    #[staticmethod]
+    fn commutes_map(map: Vec<i32>, op0: &Bound<'_, PyAny>, op1: &Bound<'_, PyAny>) -> PyResult<bool> {
+        let a = extract_dyn_op(op0)?;
+        let b = extract_dyn_op(op1)?;
+        uacalc::alg::op::ops::commutes_map(&map, a.as_ref(), b.as_ref()).map_err(PyValueError::new_err)
     }
 
     /// Check if an operation is total.
@@ -370,22 +397,25 @@ impl PyOperations {
     // ---------------- Additional factory and util methods to match tests ----------------
 
     #[staticmethod]
-    fn make_int_operations(ops: Vec<PyRef<PyBasicOperation>>) -> PyResult<Vec<PyIntOperation>> {
-        let rust_ops: Vec<Box<dyn uacalc::alg::op::Operation>> = ops.into_iter().map(|o| Box::new(o.inner.clone()) as Box<dyn uacalc::alg::op::Operation>).collect();
+    fn make_int_operations(ops: &Bound<'_, PyAny>) -> PyResult<Vec<PyIntOperation>> {
+        let rust_ops = extract_op_list(ops)?;
         match uacalc::alg::op::ops::make_int_operations(rust_ops) {
             Ok(vec) => {
                 let mut out = Vec::with_capacity(vec.len());
                 for op in vec {
-                    let sym = op.symbol().clone();
-                    let ss = op.get_set_size();
-                    let table = op.get_table().unwrap().to_vec();
-                    let inner = uacalc::alg::op::IntOperation::new(sym, ss, table).map_err(PyValueError::new_err)?;
-                    out.push(PyIntOperation { inner });
+                    out.push(PyIntOperation::from_dyn_op(op.as_ref())?);
                 }
                 Ok(out)
             },
             Err(e) => Err(PyValueError::new_err(e)),
         }
+    }
+
+    /// Table-ize an existing operation (Java `makeIntOperation(Operation)`).
+    #[staticmethod]
+    fn make_int_operation_from_op(op: &Bound<'_, PyAny>) -> PyResult<PyIntOperation> {
+        let rust_op = extract_dyn_op(op)?;
+        PyIntOperation::from_dyn_op(rust_op.as_ref())
     }
 
     #[staticmethod]
@@ -558,16 +588,41 @@ impl PyOperations {
     }
 
     #[staticmethod]
-    fn make_map(ops: Vec<PyRef<PyBasicOperation>>) -> PyResult<Vec<i32>> {
-        let rust_ops: Vec<Box<dyn uacalc::alg::op::Operation>> = ops.into_iter().map(|o| Box::new(o.inner.clone()) as Box<dyn uacalc::alg::op::Operation>).collect();
-        let map = uacalc::alg::op::ops::make_map(&rust_ops);
-        Ok(vec![0; map.len()])
+    fn make_map(py: Python<'_>, ops: &Bound<'_, PyAny>) -> PyResult<PyObject> {
+        let rust_ops = extract_op_list(ops)?;
+        let dict = PyDict::new_bound(py);
+        for op in rust_ops {
+            let py_op = PyIntOperation::from_dyn_op(op.as_ref())?;
+            let sym = PyOperationSymbol::from_inner(op.symbol().clone());
+            dict.set_item(Py::new(py, sym)?, Py::new(py, py_op)?)?;
+        }
+        Ok(dict.into())
     }
 
     #[staticmethod]
-    fn make_jonsson_operations_from_nuf(_nuf: &Bound<'_, PyAny>) -> PyResult<Vec<PyIntOperation>> {
-        // Placeholder: returns empty list consistent with current Rust implementation
-        Ok(Vec::new())
+    fn make_jonsson_operations_from_nuf(nuf: &Bound<'_, PyAny>) -> PyResult<Vec<PyIntOperation>> {
+        let rust_op = extract_dyn_op(nuf)?;
+        match uacalc::alg::op::ops::make_jonsson_operations_from_nuf(rust_op.as_ref()) {
+            Ok(vec) => {
+                let mut out = Vec::with_capacity(vec.len());
+                for op in vec {
+                    out.push(PyIntOperation::from_dyn_op(op.as_ref())?);
+                }
+                Ok(out)
+            }
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+
+    #[staticmethod]
+    fn power(base: i32, pow: i32) -> i32 {
+        uacalc::alg::op::ops::power(base, pow)
+    }
+
+    #[staticmethod]
+    fn binary_op_to_csv(desc: &str, binop: &Bound<'_, PyAny>) -> PyResult<String> {
+        let rust_op = extract_dyn_op(binop)?;
+        uacalc::alg::op::ops::binary_op_to_csv(desc, rust_op.as_ref()).map_err(PyValueError::new_err)
     }
 }
 

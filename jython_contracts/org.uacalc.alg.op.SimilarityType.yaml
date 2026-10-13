@@ -1,0 +1,38 @@
+target: org.uacalc.alg.op.SimilarityType
+level: file
+status: implemented
+java_source: org/uacalc/alg/op/SimilarityType.java
+notes: |
+  Concrete class. Shim aliases snake_case bindings and exposes
+  LATTICE_SIMILARITY_TYPE / GROUP_SIMILARITY_TYPE. toString matches Java
+  "(join, meet)" form.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    getOperationSymbols: get_operation_symbols
+    getSortedOperationSymbols: get_sorted_operation_symbols
+    inputSize: input_size
+    getAritiesMap: get_arities_map
+    getMaxArity: get_max_arity
+    aritiesString: arities_string
+    hashCode: hash_code
+  static_methods: []
+  str_parity: true
+testing:
+  notes: |
+    Golden cases cover constructors, getters, aritiesString, equals, inputSize,
+    lattice/group constants, and a full value round-trip (serialize symbols and
+    arities, reconstruct, compare equals/hashCode/toString/compareTo).
+  task_refs:
+    - tasks/Task 2 - SimilarityType.md
+  scripts:
+    - path: jython_comparison/scripts/operation_similaritytype.py
+      covers:
+        - getOperationSymbols
+        - getSortedOperationSymbols
+        - inputSize
+        - getAritiesMap
+        - getMaxArity
+        - aritiesString
+      ignore_lines: []

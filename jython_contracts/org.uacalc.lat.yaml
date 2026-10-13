@@ -4,7 +4,8 @@ status: implemented
 java_source: null
 notes: |
   Lattices.latticeFromJoin / latticeFromMeet used by dmm.py when converting
-  algebras to lattices. Package-level facade is enough.
+  algebras to lattices. latticeFromJoin returns None when the join is not a
+  lattice (Java catch-and-null). Package-level facade is enough.
 ignore_reason: null
 surface:
   package_export: true

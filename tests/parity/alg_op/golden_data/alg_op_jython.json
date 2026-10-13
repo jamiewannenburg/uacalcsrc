@@ -1,0 +1,1959 @@
+{
+  "metadata": {
+    "generated_at": "2026-10-13T15:40:25.282591+00:00",
+    "jar": "uacalc.jar",
+    "package": "org.uacalc.alg_op",
+    "runtime": "jython",
+    "test_cases": 81,
+    "type": "package"
+  },
+  "test_cases": [
+    {
+      "args": [],
+      "call": "xor2.arity()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "xor arity is 2",
+      "expected_exception": null,
+      "id": "op_arity_xor",
+      "kwargs": {},
+      "method": "Operation.arity",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "xor2.getSetSize()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "xor set size is 2",
+      "expected_exception": null,
+      "id": "op_get_set_size_xor",
+      "kwargs": {},
+      "method": "Operation.getSetSize",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "xor2.symbol()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "xor symbol name and arity",
+      "expected_exception": null,
+      "id": "op_symbol_xor",
+      "kwargs": {},
+      "method": "Operation.symbol",
+      "notes": "",
+      "result": {
+        "return_type": "OperationSymbol",
+        "return_value": {
+          "__type__": "operation_symbol",
+          "arity": 2,
+          "name": "xor"
+        },
+        "string_repr": "xor",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "xor2.valueAt([1, 0])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "valueAt(List) for xor(1,0)",
+      "expected_exception": null,
+      "id": "op_value_at_xor",
+      "kwargs": {},
+      "method": "Operation.valueAt",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 1,
+        "string_repr": "1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "xor2.intValueAt([1, 1])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "intValueAt(int[]) for xor(1,1)",
+      "expected_exception": null,
+      "id": "op_int_value_at_list",
+      "kwargs": {},
+      "method": "Operation.intValueAt",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 0,
+        "string_repr": "0",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "xor2.intValueAt(2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "intValueAt(Horner int) for xor table index 2",
+      "expected_exception": null,
+      "id": "op_int_value_at_horner",
+      "kwargs": {},
+      "method": "Operation.intValueAt",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 1,
+        "string_repr": "1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "xor2.makeTable()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "makeTable is void",
+      "expected_exception": null,
+      "id": "op_make_table",
+      "kwargs": {},
+      "method": "Operation.makeTable",
+      "notes": "",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "xor2.getTable()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getTable() for xor",
+      "expected_exception": null,
+      "id": "op_get_table",
+      "kwargs": {},
+      "method": "Operation.getTable",
+      "notes": "",
+      "result": {
+        "return_type": "array",
+        "return_value": [
+          0,
+          1,
+          1,
+          0
+        ],
+        "string_repr": "array('i', [0, 1, 1, 0])",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "xor2.getTable(True)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getTable(true) for xor",
+      "expected_exception": null,
+      "id": "op_get_table_make",
+      "kwargs": {},
+      "method": "Operation.getTable",
+      "notes": "",
+      "result": {
+        "return_type": "array",
+        "return_value": [
+          0,
+          1,
+          1,
+          0
+        ],
+        "string_repr": "array('i', [0, 1, 1, 0])",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "xor2.isTableBased()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Java IntOperationImp inherits AbstractOperation.isTableBased()=false",
+      "expected_exception": null,
+      "id": "op_is_table_based",
+      "kwargs": {},
+      "method": "Operation.isTableBased",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": false,
+        "string_repr": "False",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": true,
+      "xfail_reason": "owner: Java IntOperationImp does not override isTableBased, so table-constructed ops report false; Python IntOperation reports true"
+    },
+    {
+      "args": [],
+      "call": "and2.isIdempotent()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "AND is idempotent",
+      "expected_exception": null,
+      "id": "op_is_idempotent_and",
+      "kwargs": {},
+      "method": "Operation.isIdempotent",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "xor2.isIdempotent()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "XOR is not idempotent",
+      "expected_exception": null,
+      "id": "op_is_idempotent_xor",
+      "kwargs": {},
+      "method": "Operation.isIdempotent",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": false,
+        "string_repr": "False",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "xor2.isAssociative()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "XOR is associative",
+      "expected_exception": null,
+      "id": "op_is_associative_xor",
+      "kwargs": {},
+      "method": "Operation.isAssociative",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "proj.isAssociative()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Left projection is associative",
+      "expected_exception": null,
+      "id": "op_is_associative_proj",
+      "kwargs": {},
+      "method": "Operation.isAssociative",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "xor2.isCommutative()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "XOR is commutative",
+      "expected_exception": null,
+      "id": "op_is_commutative_xor",
+      "kwargs": {},
+      "method": "Operation.isCommutative",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "proj.isCommutative()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Left projection is not commutative",
+      "expected_exception": null,
+      "id": "op_is_commutative_proj",
+      "kwargs": {},
+      "method": "Operation.isCommutative",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": false,
+        "string_repr": "False",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "xor2.isTotallySymmetric()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "XOR is totally symmetric",
+      "expected_exception": null,
+      "id": "op_is_totally_symmetric_xor",
+      "kwargs": {},
+      "method": "Operation.isTotallySymmetric",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "disc.isMaltsev()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Ternary discriminator is Maltsev",
+      "expected_exception": null,
+      "id": "op_is_maltsev_disc",
+      "kwargs": {},
+      "method": "Operation.isMaltsev",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "xor2.isMaltsev()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Binary XOR is not Maltsev",
+      "expected_exception": null,
+      "id": "op_is_maltsev_xor",
+      "kwargs": {},
+      "method": "Operation.isMaltsev",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": false,
+        "string_repr": "False",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "xor2.isTotal()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Table-based ops are total",
+      "expected_exception": null,
+      "id": "op_is_total",
+      "kwargs": {},
+      "method": "Operation.isTotal",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Operations.commutes(id1, xor2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Identity unary commutes with xor",
+      "expected_exception": null,
+      "id": "ops_commutes_id_xor",
+      "kwargs": {},
+      "method": "Operations.commutes",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Operations.commutes(not1, xor2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "NOT commutes with xor",
+      "expected_exception": null,
+      "id": "ops_commutes_not_xor",
+      "kwargs": {},
+      "method": "Operations.commutes",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": false,
+        "string_repr": "False",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Operations.commutes([0, 1], xor2, xor2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Identity map is a homomorphism of xor",
+      "expected_exception": null,
+      "id": "ops_commutes_map",
+      "kwargs": {},
+      "method": "Operations.commutes",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Operations.isTotal(xor2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "",
+      "expected_exception": null,
+      "id": "ops_is_total",
+      "kwargs": {},
+      "method": "Operations.isTotal",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Operations.isIdempotent(and2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "",
+      "expected_exception": null,
+      "id": "ops_is_idempotent",
+      "kwargs": {},
+      "method": "Operations.isIdempotent",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Operations.isCommutative(or2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "",
+      "expected_exception": null,
+      "id": "ops_is_commutative",
+      "kwargs": {},
+      "method": "Operations.isCommutative",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Operations.isTotallySymmetric(and2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "",
+      "expected_exception": null,
+      "id": "ops_is_totally_symmetric",
+      "kwargs": {},
+      "method": "Operations.isTotallySymmetric",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Operations.isAssociative(add3)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "",
+      "expected_exception": null,
+      "id": "ops_is_associative",
+      "kwargs": {},
+      "method": "Operations.isAssociative",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Operations.isMaltsev(disc)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "",
+      "expected_exception": null,
+      "id": "ops_is_maltsev",
+      "kwargs": {},
+      "method": "Operations.isMaltsev",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Operations.findDifference(xor2, xor2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "equal ops have no difference",
+      "expected_exception": null,
+      "id": "ops_find_difference_same",
+      "kwargs": {},
+      "method": "Operations.findDifference",
+      "notes": "",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "list(Operations.findDifference(xor2, and2))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "xor vs and first difference",
+      "expected_exception": null,
+      "id": "ops_find_difference_diff",
+      "kwargs": {},
+      "method": "Operations.findDifference",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          0,
+          1
+        ],
+        "string_repr": "[0, 1]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Operations.findDifference(xor2, id1)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "different arities raise IllegalArgumentException",
+      "expected_exception": "IllegalArgumentException",
+      "id": "ops_find_difference_arity",
+      "kwargs": {},
+      "method": "Operations.findDifference",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.IllegalArgumentException: Ops have different arities",
+          "type": "IllegalArgumentException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Operations.equalValues(xor2, xor2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "",
+      "expected_exception": null,
+      "id": "ops_equal_values_same",
+      "kwargs": {},
+      "method": "Operations.equalValues",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Operations.equalValues(xor2, and2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "",
+      "expected_exception": null,
+      "id": "ops_equal_values_diff",
+      "kwargs": {},
+      "method": "Operations.equalValues",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": false,
+        "string_repr": "False",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_mm_keys",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "makeMap keys are operation symbol names",
+      "expected_exception": null,
+      "id": "ops_make_map_keys",
+      "kwargs": {},
+      "method": "Operations.makeMap",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "and",
+          "xor"
+        ],
+        "string_repr": "['and', 'xor']",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n\n_mm = Operations.makeMap([xor2, and2])\nif hasattr(_mm, \"keySet\"):\n    _mm_keys = sorted(str(k) for k in _mm.keySet())\nelse:\n    _mm_keys = sorted(str(k) for k in _mm)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Operations.makeIntOperation(OperationSymbol(\"f\", 2), 2, [0, 1, 1, 0])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "makeIntOperation(symbol, size, table)",
+      "expected_exception": null,
+      "id": "ops_make_int_operation_symbol",
+      "kwargs": {},
+      "method": "Operations.makeIntOperation",
+      "notes": "Java Operation toString is Class@hex; values compared.",
+      "result": {
+        "return_type": "Operations$IntOperationImp",
+        "return_value": {
+          "__type__": "operation",
+          "arity": 2,
+          "set_size": 2,
+          "symbol": "f",
+          "value_count": 4,
+          "values": [
+            0,
+            1,
+            1,
+            0
+          ]
+        },
+        "string_repr": "org.uacalc.alg.op.Operations$IntOperationImp@46a488c2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Operations.makeIntOperation(\"g\", 1, 2, [1, 0])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "makeIntOperation(name, arity, size, table)",
+      "expected_exception": null,
+      "id": "ops_make_int_operation_name",
+      "kwargs": {},
+      "method": "Operations.makeIntOperation",
+      "notes": "Java Operation toString is Class@hex; values compared.",
+      "result": {
+        "return_type": "Operations$IntOperationImp",
+        "return_value": {
+          "__type__": "operation",
+          "arity": 1,
+          "set_size": 2,
+          "symbol": "g",
+          "value_count": 2,
+          "values": [
+            1,
+            0
+          ]
+        },
+        "string_repr": "org.uacalc.alg.op.Operations$IntOperationImp@7ee8130e",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Operations.makeIntOperation(xor2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "makeIntOperation(Operation) table-izes",
+      "expected_exception": null,
+      "id": "ops_make_int_operation_from_op",
+      "kwargs": {},
+      "method": "Operations.makeIntOperation",
+      "notes": "Java Operation toString is Class@hex; values compared.",
+      "result": {
+        "return_type": "Operations$8",
+        "return_value": {
+          "__type__": "operation",
+          "arity": 2,
+          "set_size": 2,
+          "symbol": "xor",
+          "value_count": 4,
+          "values": [
+            0,
+            1,
+            1,
+            0
+          ]
+        },
+        "string_repr": "org.uacalc.alg.op.Operations$8@5cc9d3d0",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "[op.symbol().name() for op in Operations.makeIntOperations([xor2, and2])]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "makeIntOperations preserves symbols",
+      "expected_exception": null,
+      "id": "ops_make_int_operations",
+      "kwargs": {},
+      "method": "Operations.makeIntOperations",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "xor",
+          "and"
+        ],
+        "string_repr": "[u'xor', u'and']",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Operations.makeBinaryIntOperation(OperationSymbol(\"b\", 2), 2, [[0, 1], [1, 0]])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "makeBinaryIntOperation from 2D table",
+      "expected_exception": null,
+      "id": "ops_make_binary_int_operation",
+      "kwargs": {},
+      "method": "Operations.makeBinaryIntOperation",
+      "notes": "Java Operation toString is Class@hex; values compared.",
+      "result": {
+        "return_type": "Operations$IntOperationImp",
+        "return_value": {
+          "__type__": "operation",
+          "arity": 2,
+          "set_size": 2,
+          "symbol": "b",
+          "value_count": 4,
+          "values": [
+            0,
+            1,
+            1,
+            0
+          ]
+        },
+        "string_repr": "org.uacalc.alg.op.Operations$IntOperationImp@7b6c6e70",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Operations.makeConstantIntOperation(3, 1)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "",
+      "expected_exception": null,
+      "id": "ops_make_constant_int_operation",
+      "kwargs": {},
+      "method": "Operations.makeConstantIntOperation",
+      "notes": "Java Operation toString is Class@hex; values compared.",
+      "result": {
+        "return_type": "Operations$11",
+        "return_value": {
+          "__type__": "operation",
+          "arity": 0,
+          "set_size": 3,
+          "symbol": "c1",
+          "value_count": 1,
+          "values": [
+            1
+          ]
+        },
+        "string_repr": "org.uacalc.alg.op.Operations$11@67de7a99",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Operations.makeConstantIntOperation(\"k\", 3, 2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "",
+      "expected_exception": null,
+      "id": "ops_make_constant_int_operation_prefix",
+      "kwargs": {},
+      "method": "Operations.makeConstantIntOperation",
+      "notes": "Java Operation toString is Class@hex; values compared.",
+      "result": {
+        "return_type": "Operations$11",
+        "return_value": {
+          "__type__": "operation",
+          "arity": 0,
+          "set_size": 3,
+          "symbol": "k2",
+          "value_count": 1,
+          "values": [
+            2
+          ]
+        },
+        "string_repr": "org.uacalc.alg.op.Operations$11@423c5404",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "[op.intValueAt([]) for op in Operations.makeConstantIntOperations(3)]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "one constant op per element",
+      "expected_exception": null,
+      "id": "ops_make_constant_int_operations",
+      "kwargs": {},
+      "method": "Operations.makeConstantIntOperations",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          0,
+          1,
+          2
+        ],
+        "string_repr": "[0, 1, 2]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Operations.makeTransposition(3, 0, 2).intValueAt([0])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "transposition swaps 0 and 2",
+      "expected_exception": null,
+      "id": "ops_make_transposition",
+      "kwargs": {},
+      "method": "Operations.makeTransposition",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Operations.makeFullCycle(3).intValueAt([2])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "full cycle 2 -> 0",
+      "expected_exception": null,
+      "id": "ops_make_full_cycle",
+      "kwargs": {},
+      "method": "Operations.makeFullCycle",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 0,
+        "string_repr": "0",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Operations.ternaryDiscriminator(2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "",
+      "expected_exception": null,
+      "id": "ops_ternary_discriminator",
+      "kwargs": {},
+      "method": "Operations.ternaryDiscriminator",
+      "notes": "Java Operation toString is Class@hex; values compared.",
+      "result": {
+        "return_type": "Operations$1",
+        "return_value": {
+          "__type__": "operation",
+          "arity": 3,
+          "set_size": 2,
+          "symbol": "disc",
+          "value_count": 8,
+          "values": [
+            0,
+            1,
+            0,
+            0,
+            1,
+            1,
+            0,
+            1
+          ]
+        },
+        "string_repr": "org.uacalc.alg.op.Operations$1@4779aae6",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Operations.makeRandomOperation(2, OperationSymbol('r', 2)).arity()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "unseeded random op has requested arity",
+      "expected_exception": null,
+      "id": "ops_make_random_operation_arity",
+      "kwargs": {},
+      "method": "Operations.makeRandomOperation",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "len(Operations.makeRandomOperations(2, st, 1))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "seeded random ops match similarity type length",
+      "expected_exception": null,
+      "id": "ops_make_random_operations_count",
+      "kwargs": {},
+      "method": "Operations.makeRandomOperations",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Operations.makeDerivedOperation(disc, [0, 1, 0], 2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "",
+      "expected_exception": null,
+      "id": "ops_make_derived_operation",
+      "kwargs": {},
+      "method": "Operations.makeDerivedOperation",
+      "notes": "Java Operation toString is Class@hex; values compared.",
+      "result": {
+        "return_type": "Operations$2",
+        "return_value": {
+          "__type__": "operation",
+          "arity": 2,
+          "set_size": 2,
+          "symbol": "disc_derived[0,1,0]",
+          "value_count": 4,
+          "values": [
+            0,
+            1,
+            0,
+            1
+          ]
+        },
+        "string_repr": "org.uacalc.alg.op.Operations$2@279dd959",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "len(Operations.makeJonssonOperationsFromNUF(nuf3))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "ternary NUF yields one Jonsson operation",
+      "expected_exception": null,
+      "id": "ops_make_jonsson_ternary",
+      "kwargs": {},
+      "method": "Operations.makeJonssonOperationsFromNUF",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 1,
+        "string_repr": "1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n\nnuf3 = _op(\"nuf\", 3, 2, [0, 0, 0, 0, 0, 0, 0, 1])\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Operations.makeJonssonOperationsFromNUF(xor2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "binary NUF: Java ArrayList(-1) IllegalArgumentException",
+      "expected_exception": "IllegalArgumentException",
+      "id": "ops_make_jonsson_binary",
+      "kwargs": {},
+      "method": "Operations.makeJonssonOperationsFromNUF",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.IllegalArgumentException: Illegal Capacity: -1",
+          "type": "IllegalArgumentException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Operations.power(2, 3)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "power(2,3) == 8",
+      "expected_exception": null,
+      "id": "ops_power",
+      "kwargs": {},
+      "method": "Operations.power",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 8,
+        "string_repr": "8",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Operations.makeLeftShift(2, 2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "",
+      "expected_exception": null,
+      "id": "ops_make_left_shift",
+      "kwargs": {},
+      "method": "Operations.makeLeftShift",
+      "notes": "Java Operation toString is Class@hex; values compared.",
+      "result": {
+        "return_type": "Operations$3",
+        "return_value": {
+          "__type__": "operation",
+          "arity": 1,
+          "set_size": 4,
+          "symbol": "leftshift",
+          "value_count": 4,
+          "values": [
+            0,
+            2,
+            1,
+            3
+          ]
+        },
+        "string_repr": "org.uacalc.alg.op.Operations$3@12a14b74",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Operations.makeBinaryLeftShift(2, 2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "",
+      "expected_exception": null,
+      "id": "ops_make_binary_left_shift",
+      "kwargs": {},
+      "method": "Operations.makeBinaryLeftShift",
+      "notes": "Java Operation toString is Class@hex; values compared.",
+      "result": {
+        "return_type": "Operations$4",
+        "return_value": {
+          "__type__": "operation",
+          "arity": 2,
+          "set_size": 4,
+          "symbol": "binrightshift",
+          "value_count": 16,
+          "values": [
+            0,
+            2,
+            0,
+            2,
+            0,
+            2,
+            0,
+            2,
+            1,
+            3,
+            1,
+            3,
+            1,
+            3,
+            1,
+            3
+          ]
+        },
+        "string_repr": "org.uacalc.alg.op.Operations$4@65eb76cd",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Operations.makeMatrixDiagonalOp(2, 2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "",
+      "expected_exception": null,
+      "id": "ops_make_matrix_diagonal",
+      "kwargs": {},
+      "method": "Operations.makeMatrixDiagonalOp",
+      "notes": "Java Operation toString is Class@hex; values compared.",
+      "result": {
+        "return_type": "Operations$5",
+        "return_value": {
+          "__type__": "operation",
+          "arity": 2,
+          "set_size": 4,
+          "symbol": "diagonal",
+          "value_count": 16,
+          "values": [
+            0,
+            1,
+            0,
+            1,
+            0,
+            1,
+            0,
+            1,
+            2,
+            3,
+            2,
+            3,
+            2,
+            3,
+            2,
+            3
+          ]
+        },
+        "string_repr": "org.uacalc.alg.op.Operations$5@330c1f61",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Operations.makeModuleOperation(3, [1, 0]).intValueAt([1, 2])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "module op in-range evaluation",
+      "expected_exception": null,
+      "id": "ops_make_module_in_range",
+      "kwargs": {},
+      "method": "Operations.makeModuleOperation",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 1,
+        "string_repr": "1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Operations.makeCompositionOp(2, 4)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "",
+      "expected_exception": null,
+      "id": "ops_make_composition_op",
+      "kwargs": {},
+      "method": "Operations.makeCompositionOp",
+      "notes": "Java Operation toString is Class@hex; values compared.",
+      "result": {
+        "return_type": "Operations$7",
+        "return_value": {
+          "__type__": "operation",
+          "arity": 2,
+          "set_size": 4,
+          "symbol": "comp",
+          "value_count": 16,
+          "values": [
+            0,
+            3,
+            0,
+            3,
+            0,
+            2,
+            1,
+            3,
+            0,
+            1,
+            2,
+            3,
+            0,
+            0,
+            3,
+            3
+          ]
+        },
+        "string_repr": "org.uacalc.alg.op.Operations$7@4f3faa70",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_csv_text()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "binaryOpToCSV writes Java-format CSV",
+      "expected_exception": null,
+      "id": "ops_binary_op_to_csv",
+      "kwargs": {},
+      "method": "Operations.binaryOpToCSV",
+      "notes": "",
+      "result": {
+        "return_type": "str",
+        "return_value": ",\"xor\",\n,,\n,,0,1,\n,,\n0,,0,1,\n1,,1,0,\n\n\n",
+        "string_repr": ",\"xor\",\n,,\n,,0,1,\n,,\n0,,0,1,\n1,,1,0,\n\n\n",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n\nimport sys\nif sys.platform.startswith(\"java\"):\n    from java.io import ByteArrayOutputStream, PrintStream\n    _buf = ByteArrayOutputStream()\n    _out = PrintStream(_buf)\n    def _csv_text():\n        return str(_buf.toString())\nelse:\n    try:\n        from io import StringIO\n    except ImportError:\n        from StringIO import StringIO\n    _out = StringIO()\n    def _csv_text():\n        return _out.getvalue()\nOperations.binaryOpToCSV(\"xor\", xor2, _out)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Operations.binaryOpToCSV(\"id\", id1, _out)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "binaryOpToCSV rejects non-binary ops",
+      "expected_exception": "IllegalArgumentException",
+      "id": "ops_binary_op_to_csv_unary",
+      "kwargs": {},
+      "method": "Operations.binaryOpToCSV",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.IllegalArgumentException",
+          "type": "IllegalArgumentException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n\nimport sys\nif sys.platform.startswith(\"java\"):\n    from java.io import ByteArrayOutputStream, PrintStream\n    _out = PrintStream(ByteArrayOutputStream())\nelse:\n    try:\n        from io import StringIO\n    except ImportError:\n        from StringIO import StringIO\n    _out = StringIO()\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Operations.isTotal(None)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "null op is not OperationWithDefaultValue, so isTotal is true",
+      "expected_exception": null,
+      "id": "ops_is_total_null",
+      "kwargs": {},
+      "method": "Operations.isTotal",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "str(st)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "SimilarityType toString is (join, meet)",
+      "expected_exception": null,
+      "id": "sim_to_string",
+      "kwargs": {},
+      "method": "SimilarityType.toString",
+      "notes": "",
+      "result": {
+        "return_type": "str",
+        "return_value": "(join, meet)",
+        "string_repr": "(join, meet)",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "[str(s) for s in st.getOperationSymbols()]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "",
+      "expected_exception": null,
+      "id": "sim_get_operation_symbols",
+      "kwargs": {},
+      "method": "SimilarityType.getOperationSymbols",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "join",
+          "meet"
+        ],
+        "string_repr": "['join', 'meet']",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "[str(s) for s in st_unsorted.getSortedOperationSymbols()]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "",
+      "expected_exception": null,
+      "id": "sim_get_sorted_operation_symbols",
+      "kwargs": {},
+      "method": "SimilarityType.getSortedOperationSymbols",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "prod",
+          "inv",
+          "id"
+        ],
+        "string_repr": "['prod', 'inv', 'id']",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "st.inputSize(3)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "lattice type input size for |A|=3 is 9+9=18",
+      "expected_exception": null,
+      "id": "sim_input_size",
+      "kwargs": {},
+      "method": "SimilarityType.inputSize",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 18,
+        "string_repr": "18",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "SimilarityType([]).inputSize(5)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "no operations: inputSize is algebra size",
+      "expected_exception": null,
+      "id": "sim_input_size_empty",
+      "kwargs": {},
+      "method": "SimilarityType.inputSize",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 5,
+        "string_repr": "5",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_am_items",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "two binary ops",
+      "expected_exception": null,
+      "id": "sim_get_arities_map",
+      "kwargs": {},
+      "method": "SimilarityType.getAritiesMap",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            2,
+            2
+          ]
+        ],
+        "string_repr": "[[2, 2]]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n\n_am = st.getAritiesMap()\n_am_items = []\nif hasattr(_am, \"entrySet\"):\n    for _e in _am.entrySet():\n        _am_items.append([int(_e.getKey()), int(_e.getValue())])\nelse:\n    for _k in _am:\n        _am_items.append([int(_k), int(_am[_k])])\n_am_items = sorted(_am_items)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "st.getMaxArity()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "",
+      "expected_exception": null,
+      "id": "sim_get_max_arity",
+      "kwargs": {},
+      "method": "SimilarityType.getMaxArity",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "st.aritiesString()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "",
+      "expected_exception": null,
+      "id": "sim_arities_string",
+      "kwargs": {},
+      "method": "SimilarityType.aritiesString",
+      "notes": "",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "binary: (2)",
+        "string_repr": "binary: (2)",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "st.equals(SimilarityType([meet, join]))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "equals ignores order",
+      "expected_exception": null,
+      "id": "sim_equals",
+      "kwargs": {},
+      "method": "SimilarityType.equals",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "str(SimilarityType.LATTICE_SIMILARITY_TYPE)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "LATTICE_SIMILARITY_TYPE toString",
+      "expected_exception": null,
+      "id": "sim_lattice_constant",
+      "kwargs": {},
+      "method": "SimilarityType.LATTICE_SIMILARITY_TYPE",
+      "notes": "",
+      "result": {
+        "return_type": "str",
+        "return_value": "(join, meet)",
+        "string_repr": "(join, meet)",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "str(SimilarityType.GROUP_SIMILARITY_TYPE)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "GROUP_SIMILARITY_TYPE toString",
+      "expected_exception": null,
+      "id": "sim_group_constant",
+      "kwargs": {},
+      "method": "SimilarityType.GROUP_SIMILARITY_TYPE",
+      "notes": "",
+      "result": {
+        "return_type": "str",
+        "return_value": "(prod, inv, id)",
+        "string_repr": "(prod, inv, id)",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "str(st_sorted)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "constructor with sort=True",
+      "expected_exception": null,
+      "id": "sim_constructor_sort",
+      "kwargs": {},
+      "method": "SimilarityType",
+      "notes": "",
+      "result": {
+        "return_type": "str",
+        "return_value": "(prod, inv, id)",
+        "string_repr": "(prod, inv, id)",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "join.hashCode()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Java OperationSymbol.hashCode is name.hashCode()+arity",
+      "expected_exception": null,
+      "id": "op_symbol_hash_code_join",
+      "kwargs": {},
+      "method": "OperationSymbol.hashCode",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 3267884,
+        "string_repr": "3267884",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "prod.compareTo(inv)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "compareTo: higher arity first (prod vs inv)",
+      "expected_exception": null,
+      "id": "op_symbol_compare_to",
+      "kwargs": {},
+      "method": "OperationSymbol.compareTo",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": -1,
+        "string_repr": "-1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_rt",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Round-trip SimilarityType via symbol name/arity: equals, hashCode, toString, compareTo",
+      "expected_exception": null,
+      "id": "sim_value_roundtrip",
+      "kwargs": {},
+      "method": "SimilarityType",
+      "notes": "",
+      "result": {
+        "return_type": "dict",
+        "return_value": {
+          "equals": true,
+          "equals_rev": true,
+          "hashCode": 104652894,
+          "hashCode_rt": 104652894,
+          "similar": true,
+          "sorted_compare": [
+            0,
+            0
+          ],
+          "symbols": [
+            [
+              "join",
+              2
+            ],
+            [
+              "meet",
+              2
+            ]
+          ],
+          "toString": "(join, meet)",
+          "toString_rt": "(join, meet)"
+        },
+        "string_repr": "{'similar': True, 'equals_rev': True, 'symbols': [['join', 2], ['meet', 2]], 'hashCode': 104652894, 'hashCode_rt': 104652894, 'equals': True, 'toString_rt': '(join, meet)', 'toString': '(join, meet)', 'sorted_compare': [0, 0]}",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n\n_payload = []\nfor _s in st.getOperationSymbols():\n    _nm = _s.name() if callable(getattr(_s, \"name\", None)) else _s.name\n    _ar = _s.arity() if callable(getattr(_s, \"arity\", None)) else _s.arity\n    _payload.append([str(_nm), int(_ar)])\n_st_rt = SimilarityType([OperationSymbol(_n, _a) for _n, _a in _payload])\n\ndef _java_hash(obj):\n    hc = getattr(obj, \"hashCode\", None)\n    if callable(hc):\n        try:\n            return int(hc())\n        except TypeError:\n            pass\n    h = 1\n    for _s in obj.getOperationSymbols():\n        shc = getattr(_s, \"hashCode\", None)\n        eh = int(shc()) if callable(shc) else 0\n        h = 31 * h + eh\n        h = ((h + (1 << 31)) % (1 << 32)) - (1 << 31)\n    return int(h)\n\ndef _cmp_sym(a, b):\n    ct = getattr(a, \"compareTo\", None)\n    if callable(ct):\n        return int(ct(b))\n    if a < b:\n        return -1\n    if a > b:\n        return 1\n    return 0\n\n_sorted_a = list(st.getSortedOperationSymbols())\n_sorted_b = list(_st_rt.getSortedOperationSymbols())\n_rt = {\n    \"equals\": bool(st.equals(_st_rt)),\n    \"equals_rev\": bool(_st_rt.equals(st)),\n    \"toString\": str(st),\n    \"toString_rt\": str(_st_rt),\n    \"hashCode\": _java_hash(st),\n    \"hashCode_rt\": _java_hash(_st_rt),\n    \"symbols\": _payload,\n    \"sorted_compare\": [_cmp_sym(a, b) for a, b in zip(_sorted_a, _sorted_b)],\n    \"similar\": bool(st.equals(_st_rt) and str(st) == str(_st_rt)),\n}\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "xor2.intValueAt(None)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "intValueAt(null) is NPE",
+      "expected_exception": "NullPointerException",
+      "id": "op_int_value_at_null",
+      "kwargs": {},
+      "method": "Operation.intValueAt",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.NullPointerException: Cannot read the array length because \"args\" is null",
+          "type": "NullPointerException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "xor2.valueAt(None)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "valueAt(null) hits valueAt(int[][]) UnsupportedOperationException",
+      "expected_exception": "UnsupportedOperationException",
+      "id": "op_value_at_null",
+      "kwargs": {},
+      "method": "Operation.valueAt",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.UnsupportedOperationException",
+          "type": "UnsupportedOperationException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "xor2.intValueAt('bad')",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "intValueAt(non-int sequence) is TypeError",
+      "expected_exception": "TypeError",
+      "id": "op_int_value_at_bad_string",
+      "kwargs": {},
+      "method": "Operation.intValueAt",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "intValueAt(): 1st arg can't be coerced to int, int[]",
+          "type": "TypeError"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Operations.makeIntOperation(1)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "makeIntOperation(int) TypeError on coerce",
+      "expected_exception": "TypeError",
+      "id": "ops_make_int_operation_coerce",
+      "kwargs": {},
+      "method": "Operations.makeIntOperation",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "makeIntOperation(): 1st arg can't be coerced to org.uacalc.alg.op.Operation",
+          "type": "TypeError"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Operations.makeIntOperations([1])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "makeIntOperations([int]) ClassCastException",
+      "expected_exception": "ClassCastException",
+      "id": "ops_make_int_operations_class_cast",
+      "kwargs": {},
+      "method": "Operations.makeIntOperations",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.ClassCastException: class java.lang.Integer cannot be cast to class org.uacalc.alg.op.Operation (java.lang.Integer is in module java.base of loader 'bootstrap'; org.uacalc.alg.op.Operation is in unnamed module of loader 'app')",
+          "type": "ClassCastException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Operations.isIdempotent(None)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "isIdempotent(null) is NPE",
+      "expected_exception": "NullPointerException",
+      "id": "ops_is_idempotent_null",
+      "kwargs": {},
+      "method": "Operations.isIdempotent",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.NullPointerException: Cannot invoke \"org.uacalc.alg.op.Operation.arity()\" because \"op\" is null",
+          "type": "NullPointerException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    }
+  ]
+}

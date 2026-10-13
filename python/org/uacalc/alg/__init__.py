@@ -100,6 +100,9 @@ if not is_jython:
 
     _install_jython_compat(globals())
     del _install_jython_compat
+
+    # Apply Operation/Operations/SimilarityType Jython facades (alg.op shim).
+    import org.uacalc.alg.op  # noqa: F401
 else:
     # In Jython, import from the Java package
     from org.uacalc.alg import *  # noqa: F403,F401

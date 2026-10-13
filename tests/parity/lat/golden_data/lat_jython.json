@@ -184,7 +184,7 @@
       },
       "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n",
       "skip_string_check": true,
-      "xfail_reason": "Java latticeFromJoin returns null after NonOrderedSetException; Python currently constructs a BasicLattice."
+      "xfail_reason": null
     },
     {
       "args": [],

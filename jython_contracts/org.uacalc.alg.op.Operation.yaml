@@ -1,0 +1,48 @@
+target: org.uacalc.alg.op.Operation
+level: file
+status: implemented
+java_source: org/uacalc/alg/op/Operation.java
+notes: |
+  Java interface. CPython instances are IntOperation / BasicOperation from
+  uacalc_lib; the shim adds camelCase Operation methods (getSetSize, intValueAt
+  list-vs-Horner dispatch, getTable overload, property checks).
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    getSetSize: get_set_size
+    intValueAt: int_value_at
+    valueAt: value_at
+    makeTable: make_table
+    getTable: get_table
+    isTableBased: is_table_based
+    isIdempotent: is_idempotent
+    isAssociative: is_associative
+    isCommutative: is_commutative
+    isTotallySymmetric: is_totally_symmetric
+    isMaltsev: is_maltsev
+    isTotal: is_total
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    Golden cases in tests/parity/alg_op exercise every interface method on a
+    table-based xor/and/discriminator built via Operations.makeIntOperation.
+  task_refs:
+    - tasks/Task 12 - Operation.md
+  scripts:
+    - path: jython_comparison/scripts/operation_similaritytype.py
+      covers:
+        - getSetSize
+        - intValueAt
+        - valueAt
+        - makeTable
+        - getTable
+        - isTableBased
+        - isIdempotent
+        - isAssociative
+        - isCommutative
+        - isTotallySymmetric
+        - isMaltsev
+        - isTotal
+      ignore_lines: []

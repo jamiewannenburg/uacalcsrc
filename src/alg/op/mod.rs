@@ -195,6 +195,44 @@ impl OperationSymbol {
         let mut map = CURRENT_SYM_INDEX_MAP.lock().unwrap();
         map.remove(&arity);
     }
+
+    /// Java `String.hashCode()` over UTF-16 code units: `h = 31 * h + unit`.
+    pub fn java_string_hash(s: &str) -> i32 {
+        let mut h: i32 = 0;
+        for unit in s.encode_utf16() {
+            h = h.wrapping_mul(31).wrapping_add(unit as i32);
+        }
+        h
+    }
+
+    /// Java `OperationSymbol.hashCode()`: `name.hashCode() + arity`.
+    pub fn java_hash_code(&self) -> i32 {
+        Self::java_string_hash(&self.name).wrapping_add(self.arity)
+    }
+
+    /// Java `String.compareTo` over UTF-16 code units.
+    pub fn java_string_compare(a: &str, b: &str) -> i32 {
+        let au: Vec<u16> = a.encode_utf16().collect();
+        let bu: Vec<u16> = b.encode_utf16().collect();
+        let n = au.len().min(bu.len());
+        for i in 0..n {
+            if au[i] != bu[i] {
+                return (au[i] as i32).wrapping_sub(bu[i] as i32);
+            }
+        }
+        (au.len() as i32).wrapping_sub(bu.len() as i32)
+    }
+
+    /// Java `OperationSymbol.compareTo`: high arity first, then `name.compareTo`.
+    pub fn compare_to(&self, other: &Self) -> i32 {
+        if self.arity < other.arity {
+            return 1;
+        }
+        if self.arity > other.arity {
+            return -1;
+        }
+        Self::java_string_compare(&self.name, &other.name)
+    }
 }
 
 impl std::fmt::Display for OperationSymbol {
@@ -617,6 +655,15 @@ impl SimilarityType {
         }
         
         parts.join(", ")
+    }
+
+    /// Java `SimilarityType.hashCode()`: `List.hashCode()` of the symbols.
+    pub fn java_hash_code(&self) -> i32 {
+        let mut h: i32 = 1;
+        for sym in &self.operation_symbols {
+            h = h.wrapping_mul(31).wrapping_add(sym.java_hash_code());
+        }
+        h
     }
 }
 

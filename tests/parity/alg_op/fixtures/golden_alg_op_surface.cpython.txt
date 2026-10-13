@@ -1,10 +1,11 @@
 ﻿MODULE: org.uacalc.alg.op
 RUNTIME: cpython
-PUBLIC_COUNT: 9
+PUBLIC_COUNT: 10
 NAME: AbstractIntOperation
 NAME: AbstractOperation
 NAME: BasicOperation
 NAME: IntOperation
+NAME: Operation
 NAME: OperationSymbol
 NAME: OperationWithDefaultValue
 NAME: Operations
