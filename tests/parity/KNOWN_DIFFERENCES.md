@@ -201,6 +201,31 @@ Malcev is intentionally left alone.
 
 ---
 
+## org.uacalc.alg (Algebra / SmallAlgebra / BasicAlgebra)
+
+### Algebra.setMonitor / getMonitor / ProgressReport
+
+- **Java**: `setMonitor(ProgressReport)` stores a static `GeneralAlgebra.monitor`.
+  Jython rejects a non-`ProgressReport` argument with `TypeError`.
+- **Python**: `org.uacalc.ui.tm.ProgressReport` is not bound. The shim stores a
+  module-level monitor like Java's static field, accepts `None`, and raises
+  `TypeError` for any other argument.
+- **Status**: Accepted — UI type is out of scope; exception type matches Jython
+- **Tests**: `alg_set_monitor` (TypeError), `alg_monitoring_after_set`,
+  `alg_get_monitor_default`, `alg_monitoring_default`
+- **Owner vs shim**: Shim — argument check only. Not a library defect.
+
+### SmallAlgebra.getElement(null)
+
+- **Java/Jython**: `getElement(int)` — Jython cannot coerce `None` to `int`, so
+  this is `TypeError` (`getElement(): 1st arg can't be coerced to int`), not NPE.
+- **Python**: `int(None)` is also `TypeError`.
+- **Status**: Accepted — matches Jython
+- **Tests**: `small_get_element_null`
+- **Owner vs shim**: Shim — argument coercion. Not a library defect.
+
+---
+
 ## org.uacalc.alg.Malcev
 
 Left alone, as specified. `minority_term` / `weak_nu_term` are not part of this

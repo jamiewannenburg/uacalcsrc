@@ -1,0 +1,73 @@
+target: org.uacalc.alg.Algebra
+level: file
+status: implemented
+java_source: org/uacalc/alg/Algebra.java
+notes: |
+  Java interface. CPython instances are BasicAlgebra (and other SmallAlgebra
+  types) from uacalc_lib; the shim adds camelCase Algebra methods, CARDINALITY_*
+  constants, and Java exception names. ProgressReport monitor is a static
+  field on Java GeneralAlgebra; the shim stores it at module scope.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    universe: universe
+    cardinality: cardinality
+    inputSize: input_size
+    isUnary: is_unary
+    iterator: iterator
+    operations: operations
+    getOperation: get_operation
+    getOperationsMap: get_operations_map
+    getName: name
+    setName: set_name
+    getDescription: description
+    setDescription: set_description
+    similarityType: similarity_type
+    updateSimilarityType: update_similarity_type
+    isSimilarTo: is_similar_to
+    makeOperationTables: make_operation_tables
+    constantOperations: constant_operations
+    isIdempotent: is_idempotent
+    isTotal: is_total
+    monitoring: monitoring
+    getMonitor: getMonitor
+    setMonitor: setMonitor
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    Golden cases in tests/parity/alg exercise every Algebra interface method on
+    a table-based xor algebra built via Operations.makeIntOperation plus
+    BasicAlgebra(name, n, ops). AlgebraIO write/read round-trip is included.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/algebra_api.py
+      covers:
+        - universe
+        - cardinality
+        - inputSize
+        - isUnary
+        - iterator
+        - operations
+        - getOperation
+        - getOperationsMap
+        - getName
+        - setName
+        - getDescription
+        - setDescription
+        - similarityType
+        - updateSimilarityType
+        - isSimilarTo
+        - makeOperationTables
+        - constantOperations
+        - isIdempotent
+        - isTotal
+        - monitoring
+        - getMonitor
+        - setMonitor
+      ignore_lines:
+        - "oneGenerated size"
+        - "pass 0 of"
+        - "pass 1 of"
+        - "pass "

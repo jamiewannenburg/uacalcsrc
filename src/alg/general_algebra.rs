@@ -342,9 +342,11 @@ where
     }
     
     fn constant_operations(&self) -> Vec<Box<dyn Operation>> {
-        // Since we can't easily clone operations, return empty vec for now
-        // In practice, we'd need to use Arc<dyn Operation> or similar
-        Vec::new()
+        self.operations
+            .iter()
+            .filter(|op| op.arity() == 0)
+            .map(|op| boxed_arc_op(Arc::clone(op)))
+            .collect()
     }
     
     fn is_idempotent(&self) -> bool {

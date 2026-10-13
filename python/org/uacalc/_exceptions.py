@@ -41,6 +41,10 @@ class UnsupportedOperationException(RuntimeException):
     """java.lang.UnsupportedOperationException."""
 
 
+class IndexOutOfBoundsException(IndexError, RuntimeException):
+    """java.lang.IndexOutOfBoundsException."""
+
+
 class IOException(OSError, JavaException):
     """java.io.IOException."""
 
