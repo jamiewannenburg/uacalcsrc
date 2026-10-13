@@ -45,6 +45,8 @@ Malcev is intentionally left alone.
 - **Status**: Under Review (message text often matches for terms)
 - **Tests**: strict xfail on the error cases below. Exception **type** is the mismatch;
   tests do not rewrite Java expected types.
+- **Owner vs shim**: translating Java exception *names* is a shim problem; wrong
+  messages or missing-file vs empty-parse behavior is a library question.
 
 ---
 
@@ -56,6 +58,7 @@ Malcev is intentionally left alone.
 - **Python**: `ValueError: Failed to parse cardinality: invalid digit found in string`
 - **Status**: Under Review
 - **Tests**: `read_invalid` strict xfail
+- **Owner vs shim**: Shim — Python can map this `ValueError` to a `NumberFormatException`-named error; Java is the source of truth for the type.
 
 ### AlgebraIO.readAlgebraFile (missing file)
 
@@ -63,6 +66,7 @@ Malcev is intentionally left alone.
 - **Python**: `ValueError: No algebras found in file`
 - **Status**: To Be Fixed (Python should surface a missing-file error)
 - **Tests**: `read_nonexistent` strict xfail
+- **Owner vs shim**: Library — the parser reports “no algebras” instead of a missing file; a shim existence check would only hide that.
 
 ### AlgebraIO.convertToXML output path
 
@@ -71,6 +75,7 @@ Malcev is intentionally left alone.
 - **Python**: writes beside the source `.alg` path.
 - **Status**: Under Review
 - **Tests**: `convert_to_xml` strict xfail
+- **Owner vs shim**: Shim-fixable by passing Java’s cwd/basename path into `convert_to_xml`; the library currently writes beside the source.
 
 ### AlgebraWriter / writeAlgebraFile XML `<universe>`
 
@@ -80,6 +85,7 @@ Malcev is intentionally left alone.
 - **Tests**: `write_algebra_file_xml`, `writer_write_algebra_xml`,
   `test_write_algebra_file_roundtrip_xml` strict xfail. Semantic reread
   (`test_write_algebra_file_roundtrip_semantic`) passes.
+- **Owner vs shim**: Library/Java — XML shape comes from the writer, not from name translation in the shim.
 
 ### AlgebraWriter.writeAlgebra / writeBasicAlgebra flush
 
@@ -88,6 +94,7 @@ Malcev is intentionally left alone.
 - **Python**: writes immediately.
 - **Status**: Accepted as Java behavior (source of truth)
 - **Tests**: `writer_write_algebra`, `writer_write_basic_algebra` strict xfail
+- **Owner vs shim**: Java behavior question for the owner — Python flushing is correct I/O; matching Java would mean dropping the flush.
 
 ### Mace4Reader missing file
 
@@ -95,6 +102,7 @@ Malcev is intentionally left alone.
 - **Python**: `FileNotFoundError` from `open()`
 - **Status**: Accepted (platform exception names)
 - **Tests**: `mace4_missing_file` strict xfail
+- **Owner vs shim**: Shim — only the exception *class name* differs (`FileNotFoundError` vs `FileNotFoundException`).
 
 ### AlgebraIO.readAlgebraListFile
 
@@ -112,6 +120,7 @@ Malcev is intentionally left alone.
 - **Python**: `ValueError` with the same message
 - **Status**: Under Review
 - **Tests**: `string_to_term_empty`, `string_to_term_plus_invalid` strict xfail
+- **Owner vs shim**: Shim — same message; map `ValueError` to an `IllegalArgumentException`-named error.
 
 ---
 
@@ -123,6 +132,7 @@ Malcev is intentionally left alone.
 - **Python**: constructs a `BasicLattice`
 - **Status**: To Be Fixed
 - **Tests**: `lattice_from_join_not_ordered` strict xfail
+- **Owner vs shim**: Library/Java — owner call on whether Python should return `None` after a non-ordered table, matching Java’s catch-and-null.
 
 ### Lattices.dual
 
@@ -130,6 +140,7 @@ Malcev is intentionally left alone.
 - **Python**: `ValueError` about Clone/reference limits
 - **Status**: Java is buggy; Python is incomplete. Left as a visible xfail.
 - **Tests**: `lattices_dual` strict xfail
+- **Owner vs shim**: Library/Java — Java NPE is a known bug; Python still needs Clone/reference support in `uacalc_lib`, not a rename in the shim.
 
 ### Lattices.conToSmallLattice
 
@@ -141,6 +152,16 @@ Malcev is intentionally left alone.
 - **Status**: To Be Fixed (Python wrapper); Java return value is the golden.
 - **Tests**: `lattices_con_to_small_lattice`, `lattices_con_to_small_lattice_null`
   strict xfail
+- **Owner vs shim**: Library/Java — Java always returns null (owner question); Python `ValueError` is a missing `PySmallLattice` wrapper, not a shim rename.
+
+### OrderedSets.maximals generic `Order`
+
+- **Java**: `maximals(elems, Order)` accepts any `Order.leq`.
+- **Python**: only `DivisibilityOrder`, `PrefixOrder`, and `NaturalOrder` route through
+  `uacalc_lib`. Any other order raises `NotImplementedError` (no Python reimplementation).
+- **Status**: Pending binding
+- **Tests**: divisibility case exercises `maximals_divisibility`; generic `Order.leq`
+  is listed as pending in `parity-coverage`, not as a silent skip.
 
 ### Universe list order
 

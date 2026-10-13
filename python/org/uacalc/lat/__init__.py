@@ -18,6 +18,9 @@ if not is_jython:
     _dual = globals()["dual"]
     _con_to_small_lattice = globals()["con_to_small_lattice"]
     _maximals_divisibility = globals()["maximals_divisibility"]
+    _maximals_prefix = globals()["maximals_prefix"]
+    _maximals_natural_i32 = globals()["maximals_natural_i32"]
+    _maximals_natural_string = globals()["maximals_natural_string"]
     _BasicLattice = globals()["BasicLattice"]
 
     class Lattices(object):
@@ -48,27 +51,21 @@ if not is_jython:
 
         @staticmethod
         def maximals(elems, order):
-            # Java dispatches on the Order implementation. DivisibilityOrder is
-            # the order used by the Java OrderedSets.main example.
-            if order is None or type(order).__name__ in ("DivisibilityOrder", "PyDivisibilityOrder"):
-                return _maximals_divisibility(list(elems))
-            if hasattr(order, "leq"):
-                # Generic fallback: emulate Java OrderedSets.maximals.
-                ans = []
-                for candidate in list(elems):
-                    new_ans = []
-                    candidate_below = False
-                    for elem in ans:
-                        if order.leq(candidate, elem):
-                            candidate_below = True
-                            break
-                        if not order.leq(elem, candidate):
-                            new_ans.append(elem)
-                    if not candidate_below:
-                        ans = new_ans
-                        ans.append(candidate)
-                return ans
-            raise TypeError("OrderedSets.maximals requires an Order with leq()")
+            # Route only through uacalc_lib. Generic Order.leq is not bound.
+            name = type(order).__name__ if order is not None else "DivisibilityOrder"
+            items = list(elems)
+            if name in ("DivisibilityOrder", "PyDivisibilityOrder"):
+                return _maximals_divisibility([int(x) for x in items])
+            if name in ("PrefixOrder", "PyPrefixOrder"):
+                return _maximals_prefix([str(x) for x in items])
+            if name in ("NaturalOrder", "PyNaturalOrder"):
+                if items and isinstance(items[0], str):
+                    return _maximals_natural_string(items)
+                return _maximals_natural_i32([int(x) for x in items])
+            raise NotImplementedError(
+                "OrderedSets.maximals only routes DivisibilityOrder, PrefixOrder, "
+                "and NaturalOrder through uacalc_lib; generic Order.leq is not bound"
+            )
 
     for _camel, _snake in (
         ("joinIrreducibles", "join_irreducibles"),

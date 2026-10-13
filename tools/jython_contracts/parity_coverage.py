@@ -16,6 +16,18 @@ from typing import Dict, List, Optional, Set
 
 from . import PROJECT_ROOT
 
+# Bindings that exist as Java APIs but are not fully routed through uacalc_lib.
+# These stay visible in coverage instead of being counted as tested or skipped.
+PENDING_BINDINGS = {
+    "lat": [
+        (
+            "maximals (generic Order.leq)",
+            "only DivisibilityOrder/PrefixOrder/NaturalOrder route through "
+            "uacalc_lib; a Python reimplementation is not allowed",
+        ),
+    ],
+}
+
 
 @dataclass
 class ParityCoverageReport:
@@ -292,6 +304,11 @@ def format_parity_coverage(
                     lines.append(f"    - {method}")
                 if len(coverage.untested_methods) > 20:
                     lines.append(f"    ... and {len(coverage.untested_methods) - 20} more")
+        pending = PENDING_BINDINGS.get(package, [])
+        if pending:
+            lines.append(f"  Pending bindings ({len(pending)}):")
+            for name, reason in pending:
+                lines.append(f"    - {name}: {reason}")
     
     lines.append("-" * 70)
     
@@ -322,5 +339,19 @@ def format_parity_coverage(
     lines.append(f"  - {report.total_wrapped_methods} wrapped in Python ({total_wrapper_pct:.1f}%)")
     lines.append(f"  - {report.total_tested_methods} have behavioral parity tests ({total_test_pct:.1f}%)")
     lines.append(f"  - {untested_total} wrapped methods need behavioral tests")
+    pending_shown = [
+        (package, name, reason)
+        for package, items in sorted(PENDING_BINDINGS.items())
+        if package in report.by_package
+        for name, reason in items
+    ]
+    if pending_shown:
+        lines.append(
+            "  - {0} pending uacalc_lib bindings (see per-package notes)".format(
+                len(pending_shown)
+            )
+        )
+        for package, name, reason in pending_shown:
+            lines.append("      {0}.{1}: {2}".format(package, name, reason))
     
     return "\n".join(lines)

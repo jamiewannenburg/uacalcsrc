@@ -166,20 +166,24 @@ lat = Lattices.latticeFromJoin("chain2j", join2)
         id="ordered_sets_maximals_divisibility",
         method="OrderedSets.maximals",
         setup=_MAKE_OPS + """
-try:
+import sys
+if sys.platform.startswith("java"):
+    # Java has no DivisibilityOrder class; subclass Order with the same leq.
     from org.uacalc.lat import Order
-except ImportError:
-    class Order(object):
-        pass
-class Div(Order):
-    def leq(self, a, b):
-        if a == 0:
-            return True
-        return (b % a) == 0
-order = Div()
+    class _Div(Order):
+        def leq(self, a, b):
+            if a == 0:
+                return True
+            if b == 0:
+                return a == 0
+            return (b % a) == 0
+    order = _Div()
+else:
+    from org.uacalc.lat import DivisibilityOrder
+    order = DivisibilityOrder()
 """,
         call="list(OrderedSets.maximals([2, 3, 6, 35, 175], order))",
-        description="Maximals under divisibility match Java OrderedSets.main",
+        description="Maximals under divisibility via uacalc_lib.lat.maximals_divisibility",
     ),
     TestCaseSpec(
         id="lattices_dual",
