@@ -51,14 +51,16 @@ slices:
       - org.uacalc.alg.sublat
     depends_on:
       - core-io
-    owner: agent-b
+    owner: cursor-agent
     status: parity_golden
-    last_updated: "2026-04-18"
+    last_updated: "2026-10-13"
     workstreams: []
     parity_tests_dir: tests/parity/alg
     notes: >-
-      Golden smoke: tests/parity/alg/golden_alg_core_surface.py + fixtures + test_alg_core_golden_smoke.py
-      (BasicAlgebra tiny algebra; CPython vs Jython stdout). agent-b.
+      Algebra / SmallAlgebra / BasicAlgebra Jython shims on org.uacalc.alg with
+      golden behavioral cases in tests/parity/alg, including AlgebraIO write/read
+      value round-trip and Java-named conversion-path exceptions. Malcev is not
+      wrapped. Branch cursor/algebras-268e.
 
   - id: core-alg-op
     title: Operation symbols and operations

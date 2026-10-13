@@ -3,8 +3,11 @@ use pyo3::exceptions::PyValueError;
 use pyo3::types::{PyAny, PyDict, PyList};
 use uacalc::alg::*;
 use uacalc::alg::op::{Operation, IntOperation, BasicOperation};
+use crate::alg::convert::{operation_to_py, operations_to_py};
+use crate::alg::op::similarity_type::PySimilarityType;
 use crate::alg::PySubalgebraLattice;
 use crate::alg::PyCongruenceLattice;
+use crate::alg::PyOperationSymbol;
 use crate::alg::universe_map::PyUniverseMap;
 
 /// Python wrapper for BasicAlgebra (for integer universes)
@@ -389,16 +392,11 @@ impl PyBasicAlgebra {
     }
 
     /// Reset cached congruence and subalgebra lattices.
-    ///
-    /// Note: In this partial implementation, con/sub lattices are not yet implemented,
-    /// so this is a no-op but matches the Java API signature.
     fn reset_con_and_sub(&mut self) {
         self.inner.reset_con_and_sub();
     }
 
-    /// Convert operations to default value operations (for UI).
-    ///
-    /// Note: In this partial implementation, this is a no-op but matches the Java API signature.
+    /// Convert operations to default-value operations (Java UI helper).
     fn convert_to_default_value_ops(&mut self) {
         self.inner.convert_to_default_value_ops();
     }
@@ -556,5 +554,76 @@ impl PyBasicAlgebra {
         let sub_lat_ref = self.inner.sub();
         // Clone the subalgebra lattice and wrap it for Python
         PySubalgebraLattice::from_inner(sub_lat_ref.clone())
+    }
+
+    /// Look up an operation by symbol. Returns None if the symbol is absent
+    /// (including a None argument, matching Java HashMap.get).
+    fn get_operation(&self, py: Python<'_>, sym: &Bound<'_, PyAny>) -> PyResult<Option<PyObject>> {
+        if sym.is_none() {
+            return Ok(None);
+        }
+        let py_sym: PyRef<PyOperationSymbol> = match sym.extract() {
+            Ok(s) => s,
+            Err(_) => return Ok(None),
+        };
+        match Algebra::get_operation(&self.inner, &py_sym.get_inner()) {
+            Some(op) => Ok(Some(operation_to_py(py, op.as_ref())?)),
+            None => Ok(None),
+        }
+    }
+
+    /// Map from operation symbols to operations.
+    fn get_operations_map(&self, py: Python<'_>) -> PyResult<PyObject> {
+        let dict = PyDict::new_bound(py);
+        for (sym, op) in Algebra::get_operations_map(&self.inner) {
+            let py_sym = Py::new(py, PyOperationSymbol::from_inner(sym))?;
+            dict.set_item(py_sym, operation_to_py(py, op.as_ref())?)?;
+        }
+        Ok(dict.to_object(py))
+    }
+
+    /// Similarity type of this algebra.
+    fn similarity_type(&self) -> PySimilarityType {
+        PySimilarityType::from_inner(self.inner.similarity_type().clone())
+    }
+
+    /// Rebuild the similarity type from the current operations.
+    fn update_similarity_type(&mut self) {
+        Algebra::update_similarity_type(&mut self.inner);
+    }
+
+    /// True when ``other`` has the same similarity type.
+    fn is_similar_to(&self, other: &PyBasicAlgebra) -> bool {
+        self.inner.similarity_type() == other.inner.similarity_type()
+    }
+
+    /// Precompute operation tables (no-op when tables already exist).
+    fn make_operation_tables(&mut self) {
+        Algebra::make_operation_tables(&mut self.inner);
+    }
+
+    /// Operations of arity 0.
+    fn constant_operations(&self, py: Python<'_>) -> PyResult<Vec<PyObject>> {
+        operations_to_py(py, Algebra::constant_operations(&self.inner))
+    }
+
+    /// Universe as a list of labels (Java ``Algebra.universe()`` iteration order).
+    fn universe(&self, py: Python<'_>) -> Vec<PyObject> {
+        self.get_universe(py)
+    }
+
+    /// Iterator over the universe (materialized list, matching finite Java sets).
+    fn iterator(&self, py: Python<'_>) -> Vec<PyObject> {
+        self.get_universe(py)
+    }
+
+    /// Parent algebra; None for BasicAlgebra.
+    fn parent(&self) -> Option<PyObject> {
+        None
+    }
+
+    /// Parent algebras; None for BasicAlgebra.
+    fn parents(&self) -> Option<Vec<PyObject>> {
+        None
     }
 }

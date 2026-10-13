@@ -3,40 +3,55 @@ level: file
 status: implemented
 java_source: org/uacalc/alg/SmallAlgebra.java
 notes: |
-  Java interface; Python binding exposes a SmallAlgebra-compatible type with the
-  same camelCase aliases as BasicAlgebra for Jython script compatibility.
-  ~/uacalc scripts treat AlgebraIO results as SmallAlgebra (getOperation, etc.).
+  Java interface extending Algebra. CPython instances are BasicAlgebra from
+  uacalc_lib (AlgebraIO results included). Nested AlgebraType enum is a
+  shim stand-in whose str/name is BASIC, QUOTIENT, …
 ignore_reason: null
 surface:
   package_export: true
   aliases:
-    getUniverseList: get_universe_list
-    elementIndex: element_index
-    algebraType: algebra_type
-    resetConAndSub: reset_con_and_sub
+    universe: universe
+    cardinality: cardinality
+    inputSize: input_size
+    isUnary: is_unary
+    iterator: iterator
+    operations: operations
+    getOperation: get_operation
+    getOperationsMap: get_operations_map
     getName: name
     setName: set_name
-    getOperation: getOperation
-    universe: universe
-    similarityType: similarityType
-    constantOperations: constantOperations
+    getDescription: description
+    setDescription: set_description
+    similarityType: similarity_type
+    updateSimilarityType: update_similarity_type
+    isSimilarTo: is_similar_to
+    makeOperationTables: make_operation_tables
+    constantOperations: constant_operations
+    isIdempotent: is_idempotent
+    isTotal: is_total
+    monitoring: monitoring
+    getMonitor: getMonitor
+    setMonitor: setMonitor
+    algebraType: algebra_type
+    getElement: get_element
+    elementIndex: element_index
+    getUniverseList: get_universe_list
+    getUniverseOrder: get_universe_order
+    con: con
+    sub: sub
+    resetConAndSub: reset_con_and_sub
+    parent: parent
+    parents: parents
+    convertToDefaultValueOps: convert_to_default_value_ops
   static_methods: []
   str_parity: false
 testing:
   notes: |
-    Concrete instances from AlgebraIO are BasicAlgebra implementing SmallAlgebra
-    call shapes. Shared parity scripts cover the alias surface.
+    Concrete instances from BasicAlgebra / AlgebraIO implement SmallAlgebra
+    call shapes. Shared parity script and golden cases cover the alias surface.
   task_refs: []
   scripts:
-    - path: jython_comparison/scripts/load_cyclic2.py
-      covers:
-        - getName
-        - getUniverseList
-        - cardinality
-        - con
-      ignore_lines:
-        - "Universe:"
-    - path: jython_comparison/scripts/basic_algebra_ops.py
+    - path: jython_comparison/scripts/algebra_api.py
       covers:
         - getName
         - setName
@@ -45,7 +60,42 @@ testing:
         - similarityType
         - constantOperations
         - getUniverseList
+        - getUniverseOrder
         - elementIndex
+        - getElement
         - algebraType
         - resetConAndSub
-      ignore_lines: []
+        - convertToDefaultValueOps
+        - parent
+        - parents
+        - con
+        - sub
+        - cardinality
+        - inputSize
+        - isUnary
+        - iterator
+        - operations
+        - getOperationsMap
+        - getDescription
+        - setDescription
+        - updateSimilarityType
+        - isSimilarTo
+        - makeOperationTables
+        - isIdempotent
+        - isTotal
+        - monitoring
+        - getMonitor
+        - setMonitor
+      ignore_lines:
+        - "oneGenerated size"
+        - "pass 0 of"
+        - "pass 1 of"
+        - "pass "
+    - path: jython_comparison/scripts/load_cyclic2.py
+      covers:
+        - getName
+        - getUniverseList
+        - cardinality
+        - con
+      ignore_lines:
+        - "Universe:"

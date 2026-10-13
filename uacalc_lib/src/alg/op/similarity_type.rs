@@ -173,4 +173,8 @@ impl PySimilarityType {
     pub(crate) fn get_inner(&self) -> SimilarityType {
         self.inner.clone()
     }
+
+    pub(crate) fn from_inner(inner: SimilarityType) -> Self {
+        PySimilarityType { inner }
+    }
 }

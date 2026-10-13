@@ -3,42 +3,102 @@ level: file
 status: implemented
 java_source: org/uacalc/alg/BasicAlgebra.java
 notes: |
-  CamelCase aliases and Jython constructor shape used by ~/uacalc scripts:
-  BasicAlgebra(name, cardinality, ops) with AbstractOperation subclasses,
-  getOperation(OperationSymbol), getName/setName, operations(), universe(),
-  similarityType().getOperationSymbols(), cardinality().
+  CamelCase aliases and Jython constructor shapes:
+  BasicAlgebra(name, cardinality, ops) (int universe, getUniverseList null) and
+  BasicAlgebra(name, list, ops). AbstractOperation subclasses are coerced to
+  IntOperation. Java-named exceptions are translated in the org.uacalc shim.
 ignore_reason: null
 surface:
   package_export: true
   aliases:
-    getUniverseList: get_universe_list
-    elementIndex: element_index
-    algebraType: algebra_type
-    resetConAndSub: reset_con_and_sub
+    universe: universe
+    cardinality: cardinality
+    inputSize: input_size
+    isUnary: is_unary
+    iterator: iterator
+    operations: operations
+    getOperation: get_operation
+    getOperationsMap: get_operations_map
     getName: name
     setName: set_name
-    getOperation: getOperation
-    universe: universe
-    similarityType: similarityType
-    constantOperations: constantOperations
+    getDescription: description
+    setDescription: set_description
+    similarityType: similarity_type
+    updateSimilarityType: update_similarity_type
+    isSimilarTo: is_similar_to
+    makeOperationTables: make_operation_tables
+    constantOperations: constant_operations
+    isIdempotent: is_idempotent
+    isTotal: is_total
+    monitoring: monitoring
+    getMonitor: getMonitor
+    setMonitor: setMonitor
+    algebraType: algebra_type
+    getElement: get_element
+    elementIndex: element_index
+    getUniverseList: get_universe_list
+    getUniverseOrder: get_universe_order
+    con: con
+    sub: sub
+    resetConAndSub: reset_con_and_sub
+    parent: parent
+    parents: parents
+    convertToDefaultValueOps: convert_to_default_value_ops
+    intUniverse: int_universe
+    setUniverseList: setUniverseList
+    setUniverseOrder: setUniverseOrder
   static_methods: []
   str_parity: false
 testing:
   notes: |
-    basic_algebra_ops.py builds an algebra with a subclassed AbstractOperation
-    and exercises getOperation / getName / setName / universe / similarityType.
-    load_cyclic2.py covers getName / getUniverseList / cardinality / con on a
-    file-loaded instance (AlgebraIO returns BasicAlgebra).
+    algebra_api.py plus golden cases cover constructors, every public instance
+    method, exception paths, and AlgebraIO write/read round-trip. load_cyclic2.py
+    covers a file-loaded BasicAlgebra.
   task_refs: []
   scripts:
-    - path: jython_comparison/scripts/load_cyclic2.py
+    - path: jython_comparison/scripts/algebra_api.py
       covers:
         - getName
-        - getUniverseList
+        - setName
+        - getOperation
+        - universe
+        - similarityType
+        - constantOperations
         - cardinality
+        - inputSize
+        - isUnary
+        - iterator
+        - operations
+        - getOperationsMap
+        - getDescription
+        - setDescription
+        - updateSimilarityType
+        - isSimilarTo
+        - makeOperationTables
+        - isIdempotent
+        - isTotal
+        - monitoring
+        - getMonitor
+        - setMonitor
+        - elementIndex
+        - getElement
+        - algebraType
+        - resetConAndSub
+        - convertToDefaultValueOps
+        - getUniverseList
+        - getUniverseOrder
+        - intUniverse
+        - setUniverseList
+        - setUniverseOrder
+        - parent
+        - parents
         - con
+        - sub
       ignore_lines:
-        - "Universe:"
+        - "oneGenerated size"
+        - "pass 0 of"
+        - "pass 1 of"
+        - "pass "
     - path: jython_comparison/scripts/basic_algebra_ops.py
       covers:
         - getName
@@ -53,3 +113,11 @@ testing:
         - resetConAndSub
         - getUniverseList
       ignore_lines: []
+    - path: jython_comparison/scripts/load_cyclic2.py
+      covers:
+        - getName
+        - getUniverseList
+        - cardinality
+        - con
+      ignore_lines:
+        - "Universe:"

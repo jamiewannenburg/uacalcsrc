@@ -1,0 +1,1411 @@
+{
+  "metadata": {
+    "generated_at": "2026-10-13T17:53:35.695691+00:00",
+    "jar": "uacalc.jar",
+    "package": "org.uacalc.alg",
+    "runtime": "jython",
+    "test_cases": 62,
+    "type": "package"
+  },
+  "test_cases": [
+    {
+      "args": [],
+      "call": "Algebra.CARDINALITY_UNKNOWN",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Algebra.CARDINALITY_UNKNOWN constant",
+      "expected_exception": null,
+      "id": "algebra_cardinality_unknown",
+      "kwargs": {},
+      "method": "Algebra.CARDINALITY_UNKNOWN",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": -1,
+        "string_repr": "-1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Algebra.CARDINALITY_FINITE",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Algebra.CARDINALITY_FINITE constant",
+      "expected_exception": null,
+      "id": "algebra_cardinality_finite",
+      "kwargs": {},
+      "method": "Algebra.CARDINALITY_FINITE",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": -2,
+        "string_repr": "-2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Algebra.CARDINALITY_INFINITE",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Algebra.CARDINALITY_INFINITE constant",
+      "expected_exception": null,
+      "id": "algebra_cardinality_infinite",
+      "kwargs": {},
+      "method": "Algebra.CARDINALITY_INFINITE",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": -3,
+        "string_repr": "-3",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Algebra.CARDINALITY_COUNTABLE",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Algebra.CARDINALITY_COUNTABLE constant",
+      "expected_exception": null,
+      "id": "algebra_cardinality_countable",
+      "kwargs": {},
+      "method": "Algebra.CARDINALITY_COUNTABLE",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": -4,
+        "string_repr": "-4",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Algebra.CARDINALITY_COUNTABLY_INFINITE",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Algebra.CARDINALITY_COUNTABLY_INFINITE constant",
+      "expected_exception": null,
+      "id": "algebra_cardinality_countably_infinite",
+      "kwargs": {},
+      "method": "Algebra.CARDINALITY_COUNTABLY_INFINITE",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": -5,
+        "string_repr": "-5",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg.getName()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getName of xor algebra",
+      "expected_exception": null,
+      "id": "alg_get_name",
+      "kwargs": {},
+      "method": "Algebra.getName",
+      "notes": "",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "Xor2",
+        "string_repr": "Xor2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg.getName()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "setName then getName",
+      "expected_exception": null,
+      "id": "alg_set_name",
+      "kwargs": {},
+      "method": "Algebra.setName",
+      "notes": "",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "Renamed",
+        "string_repr": "Renamed",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n\nalg.setName('Renamed')\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg.cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "cardinality of size-2 algebra",
+      "expected_exception": null,
+      "id": "alg_cardinality",
+      "kwargs": {},
+      "method": "Algebra.cardinality",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg.inputSize()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "inputSize for binary op on 2 elements",
+      "expected_exception": null,
+      "id": "alg_input_size",
+      "kwargs": {},
+      "method": "Algebra.inputSize",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 4,
+        "string_repr": "4",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg.isUnary()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "xor algebra is not unary",
+      "expected_exception": null,
+      "id": "alg_is_unary_false",
+      "kwargs": {},
+      "method": "Algebra.isUnary",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": false,
+        "string_repr": "False",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg_id.isUnary()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "unary id algebra is unary",
+      "expected_exception": null,
+      "id": "alg_is_unary_true",
+      "kwargs": {},
+      "method": "Algebra.isUnary",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sorted(alg.universe())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "universe of int-universe algebra",
+      "expected_exception": null,
+      "id": "alg_universe",
+      "kwargs": {},
+      "method": "Algebra.universe",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          0,
+          1
+        ],
+        "string_repr": "[0, 1]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "list(alg.iterator())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "iterator yields 0..n-1 in order",
+      "expected_exception": null,
+      "id": "alg_iterator",
+      "kwargs": {},
+      "method": "Algebra.iterator",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          0,
+          1
+        ],
+        "string_repr": "[0, 1]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg.operations()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "operations() list for xor algebra",
+      "expected_exception": null,
+      "id": "alg_operations",
+      "kwargs": {},
+      "method": "Algebra.operations",
+      "notes": "Java Operation toString is Class@hex; values compared.",
+      "result": {
+        "return_type": "ArrayList",
+        "return_value": [
+          {
+            "__type__": "operation",
+            "arity": 2,
+            "set_size": 2,
+            "symbol": "xor",
+            "value_count": 4,
+            "values": [
+              0,
+              1,
+              1,
+              0
+            ]
+          }
+        ],
+        "string_repr": "[org.uacalc.alg.op.Operations$IntOperationImp@707b1a44]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg.getOperation(OperationSymbol(\"xor\", 2)).intValueAt([1, 0])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getOperation finds xor and evaluates",
+      "expected_exception": null,
+      "id": "alg_get_operation",
+      "kwargs": {},
+      "method": "Algebra.getOperation",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 1,
+        "string_repr": "1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg.getOperation(OperationSymbol(\"nope\", 1))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getOperation missing symbol returns null",
+      "expected_exception": null,
+      "id": "alg_get_operation_missing",
+      "kwargs": {},
+      "method": "Algebra.getOperation",
+      "notes": "Java null vs Python None.",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg.getOperation(None)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getOperation(null) returns null",
+      "expected_exception": null,
+      "id": "alg_get_operation_null",
+      "kwargs": {},
+      "method": "Algebra.getOperation",
+      "notes": "Java null vs Python None.",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sorted(str(k) for k in (alg.getOperationsMap().keySet() if hasattr(alg.getOperationsMap(), \"keySet\") else alg.getOperationsMap()))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getOperationsMap keys",
+      "expected_exception": null,
+      "id": "alg_get_operations_map_keys",
+      "kwargs": {},
+      "method": "Algebra.getOperationsMap",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "xor"
+        ],
+        "string_repr": "['xor']",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg.getDescription()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getDescription when unset is null",
+      "expected_exception": null,
+      "id": "alg_get_description_unset",
+      "kwargs": {},
+      "method": "Algebra.getDescription",
+      "notes": "Java null vs Python None.",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg.getDescription()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "setDescription then getDescription",
+      "expected_exception": null,
+      "id": "alg_set_description",
+      "kwargs": {},
+      "method": "Algebra.setDescription",
+      "notes": "",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "notes",
+        "string_repr": "notes",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n\nalg.setDescription('notes')\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg.similarityType()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "similarityType of xor algebra",
+      "expected_exception": null,
+      "id": "alg_similarity_type",
+      "kwargs": {},
+      "method": "Algebra.similarityType",
+      "notes": "",
+      "result": {
+        "return_type": "SimilarityType",
+        "return_value": {
+          "__type__": "similarity_type",
+          "class": "SimilarityType",
+          "max_arity": 2,
+          "string": "(xor)",
+          "symbols": [
+            {
+              "__type__": "operation_symbol",
+              "arity": 2,
+              "name": "xor"
+            }
+          ]
+        },
+        "string_repr": "(xor)",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg.updateSimilarityType()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "updateSimilarityType is void",
+      "expected_exception": null,
+      "id": "alg_update_similarity_type",
+      "kwargs": {},
+      "method": "Algebra.updateSimilarityType",
+      "notes": "",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg.isSimilarTo(alg)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "algebra is similar to itself",
+      "expected_exception": null,
+      "id": "alg_is_similar_to_self",
+      "kwargs": {},
+      "method": "Algebra.isSimilarTo",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg.isSimilarTo(alg_id)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "xor is not similar to unary id",
+      "expected_exception": null,
+      "id": "alg_is_similar_to_other",
+      "kwargs": {},
+      "method": "Algebra.isSimilarTo",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": false,
+        "string_repr": "False",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg.isSimilarTo(None)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "isSimilarTo(null) raises NPE",
+      "expected_exception": "NullPointerException",
+      "id": "alg_is_similar_to_null",
+      "kwargs": {},
+      "method": "Algebra.isSimilarTo",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.NullPointerException: Cannot invoke \"org.uacalc.alg.Algebra.similarityType()\" because \"alg2\" is null",
+          "type": "NullPointerException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg.makeOperationTables()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "makeOperationTables is void",
+      "expected_exception": null,
+      "id": "alg_make_operation_tables",
+      "kwargs": {},
+      "method": "Algebra.makeOperationTables",
+      "notes": "",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "len(alg.constantOperations())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "xor algebra has no constant operations",
+      "expected_exception": null,
+      "id": "alg_constant_operations_empty",
+      "kwargs": {},
+      "method": "Algebra.constantOperations",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 0,
+        "string_repr": "0",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg_const.constantOperations()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "constantOperations for arity-0 op",
+      "expected_exception": null,
+      "id": "alg_constant_operations_one",
+      "kwargs": {},
+      "method": "Algebra.constantOperations",
+      "notes": "Java Operation toString is Class@hex; values compared.",
+      "result": {
+        "return_type": "ArrayList",
+        "return_value": [
+          {
+            "__type__": "operation",
+            "arity": 0,
+            "set_size": 2,
+            "symbol": "c0",
+            "value_count": 1,
+            "values": [
+              0
+            ]
+          }
+        ],
+        "string_repr": "[org.uacalc.alg.op.Operations$11@50f097b5]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg.isIdempotent()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "xor algebra is not idempotent",
+      "expected_exception": null,
+      "id": "alg_is_idempotent_xor",
+      "kwargs": {},
+      "method": "Algebra.isIdempotent",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": false,
+        "string_repr": "False",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg_and.isIdempotent()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "AND algebra is idempotent",
+      "expected_exception": null,
+      "id": "alg_is_idempotent_and",
+      "kwargs": {},
+      "method": "Algebra.isIdempotent",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg.isTotal()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "table xor algebra is total",
+      "expected_exception": null,
+      "id": "alg_is_total",
+      "kwargs": {},
+      "method": "Algebra.isTotal",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg.monitoring()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "monitoring default is false",
+      "expected_exception": null,
+      "id": "alg_monitoring_default",
+      "kwargs": {},
+      "method": "Algebra.monitoring",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": false,
+        "string_repr": "False",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg.getMonitor()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getMonitor default is null",
+      "expected_exception": null,
+      "id": "alg_get_monitor_default",
+      "kwargs": {},
+      "method": "Algebra.getMonitor",
+      "notes": "Java null vs Python None.",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg.setMonitor('rpt')",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "setMonitor(non-ProgressReport) raises TypeError",
+      "expected_exception": "TypeError",
+      "id": "alg_set_monitor",
+      "kwargs": {},
+      "method": "Algebra.setMonitor",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "setMonitor(): 1st arg can't be coerced to org.uacalc.ui.tm.ProgressReport",
+          "type": "TypeError"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg.monitoring()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "monitoring stays false after rejected setMonitor",
+      "expected_exception": null,
+      "id": "alg_monitoring_after_set",
+      "kwargs": {},
+      "method": "Algebra.monitoring",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": false,
+        "string_repr": "False",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n\ntry:\n    alg.setMonitor('rpt')\nexcept Exception:\n    pass\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "str(alg.algebraType())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "algebraType is BASIC",
+      "expected_exception": null,
+      "id": "small_algebra_type",
+      "kwargs": {},
+      "method": "SmallAlgebra.algebraType",
+      "notes": "",
+      "result": {
+        "return_type": "str",
+        "return_value": "BASIC",
+        "string_repr": "BASIC",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg.getElement(1)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getElement(1) on int universe",
+      "expected_exception": null,
+      "id": "small_get_element",
+      "kwargs": {},
+      "method": "SmallAlgebra.getElement",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 1,
+        "string_repr": "1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg.getElement(99)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "int-universe getElement ignores bounds",
+      "expected_exception": null,
+      "id": "small_get_element_unbounded",
+      "kwargs": {},
+      "method": "SmallAlgebra.getElement",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 99,
+        "string_repr": "99",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg.getElement(None)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getElement(null) raises TypeError (Jython cannot coerce None to int)",
+      "expected_exception": "TypeError",
+      "id": "small_get_element_null",
+      "kwargs": {},
+      "method": "SmallAlgebra.getElement",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "getElement(): 1st arg can't be coerced to int",
+          "type": "TypeError"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg.elementIndex(1)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "elementIndex of 1",
+      "expected_exception": null,
+      "id": "small_element_index",
+      "kwargs": {},
+      "method": "SmallAlgebra.elementIndex",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 1,
+        "string_repr": "1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg.elementIndex(9)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "elementIndex out of range is -1",
+      "expected_exception": null,
+      "id": "small_element_index_oob",
+      "kwargs": {},
+      "method": "SmallAlgebra.elementIndex",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": -1,
+        "string_repr": "-1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg.elementIndex(\"x\")",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "elementIndex ClassCast on int universe is -1",
+      "expected_exception": null,
+      "id": "small_element_index_cast",
+      "kwargs": {},
+      "method": "SmallAlgebra.elementIndex",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": -1,
+        "string_repr": "-1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg.elementIndex(None)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "elementIndex(null) raises NPE",
+      "expected_exception": "NullPointerException",
+      "id": "small_element_index_null",
+      "kwargs": {},
+      "method": "SmallAlgebra.elementIndex",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.NullPointerException: Cannot invoke \"java.lang.Integer.intValue()\" because \"obj\" is null",
+          "type": "NullPointerException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg.getUniverseList()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "int-universe getUniverseList is null",
+      "expected_exception": null,
+      "id": "small_get_universe_list_int",
+      "kwargs": {},
+      "method": "SmallAlgebra.getUniverseList",
+      "notes": "Java null vs Python None.",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg.getUniverseOrder()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "int-universe getUniverseOrder is null",
+      "expected_exception": null,
+      "id": "small_get_universe_order_int",
+      "kwargs": {},
+      "method": "SmallAlgebra.getUniverseOrder",
+      "notes": "Java null vs Python None.",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg_list.getUniverseList()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "list-universe getUniverseList",
+      "expected_exception": null,
+      "id": "small_get_universe_list_list",
+      "kwargs": {},
+      "method": "SmallAlgebra.getUniverseList",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "a",
+          "b"
+        ],
+        "string_repr": "['a', 'b']",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg_list.getElement(1)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getElement on list universe",
+      "expected_exception": null,
+      "id": "small_get_element_list",
+      "kwargs": {},
+      "method": "SmallAlgebra.getElement",
+      "notes": "",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "b",
+        "string_repr": "b",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg_list.getElement(9)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "list-universe getElement OOB",
+      "expected_exception": "IndexOutOfBoundsException",
+      "id": "small_get_element_list_oob",
+      "kwargs": {},
+      "method": "SmallAlgebra.getElement",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.IndexOutOfBoundsException: Index 9 out of bounds for length 2",
+          "type": "IndexOutOfBoundsException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg_list.elementIndex(\"missing\")",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "list-universe missing element NPEs",
+      "expected_exception": "NullPointerException",
+      "id": "small_element_index_list_missing",
+      "kwargs": {},
+      "method": "SmallAlgebra.elementIndex",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.NullPointerException: Cannot invoke \"java.lang.Integer.intValue()\" because the return value of \"java.util.Map.get(Object)\" is null",
+          "type": "NullPointerException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg.con().cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "con() congruence lattice cardinality",
+      "expected_exception": null,
+      "id": "small_con",
+      "kwargs": {},
+      "method": "SmallAlgebra.con",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg.sub().cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "sub() subalgebra lattice cardinality",
+      "expected_exception": null,
+      "id": "small_sub",
+      "kwargs": {},
+      "method": "SmallAlgebra.sub",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 3,
+        "string_repr": "3",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg.resetConAndSub()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "resetConAndSub is void",
+      "expected_exception": null,
+      "id": "small_reset_con_and_sub",
+      "kwargs": {},
+      "method": "SmallAlgebra.resetConAndSub",
+      "notes": "",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg.parent()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "BasicAlgebra parent is null",
+      "expected_exception": null,
+      "id": "small_parent",
+      "kwargs": {},
+      "method": "SmallAlgebra.parent",
+      "notes": "Java null vs Python None.",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg.parents()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "BasicAlgebra parents is null",
+      "expected_exception": null,
+      "id": "small_parents",
+      "kwargs": {},
+      "method": "SmallAlgebra.parents",
+      "notes": "Java null vs Python None.",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg.getOperation(OperationSymbol(\"xor\", 2)).intValueAt([1, 0])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "convertToDefaultValueOps preserves xor values",
+      "expected_exception": null,
+      "id": "small_convert_default_ops",
+      "kwargs": {},
+      "method": "SmallAlgebra.convertToDefaultValueOps",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 1,
+        "string_repr": "1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n\nalg.convertToDefaultValueOps()\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg.intUniverse()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "int constructor reports intUniverse",
+      "expected_exception": null,
+      "id": "basic_int_universe",
+      "kwargs": {},
+      "method": "BasicAlgebra.intUniverse",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg_list.intUniverse()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "list constructor is not intUniverse",
+      "expected_exception": null,
+      "id": "basic_list_int_universe",
+      "kwargs": {},
+      "method": "BasicAlgebra.intUniverse",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": false,
+        "string_repr": "False",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg_list.getUniverseList()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "setUniverseList then getUniverseList",
+      "expected_exception": null,
+      "id": "basic_set_universe_list",
+      "kwargs": {},
+      "method": "BasicAlgebra.setUniverseList",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "x",
+          "y"
+        ],
+        "string_repr": "['x', 'y']",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n\nalg_list.setUniverseList(['x', 'y'])\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg_list.getUniverseOrder()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "setUniverseOrder(null)",
+      "expected_exception": null,
+      "id": "basic_set_universe_order",
+      "kwargs": {},
+      "method": "BasicAlgebra.setUniverseOrder",
+      "notes": "Java null vs Python None.",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n\nalg_list.setUniverseOrder(None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "alg_empty.cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "empty-ops algebra cardinality",
+      "expected_exception": null,
+      "id": "basic_empty_cardinality",
+      "kwargs": {},
+      "method": "BasicAlgebra.cardinality",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 3,
+        "string_repr": "3",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "result",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "write algebra in this runtime then read it back",
+      "expected_exception": null,
+      "id": "io_roundtrip_write_read",
+      "kwargs": {},
+      "method": "AlgebraIO.writeAlgebraFile",
+      "notes": "Java Algebra toString is Class@hex; values compared.",
+      "result": {
+        "return_type": "BasicAlgebra",
+        "return_value": {
+          "__type__": "algebra",
+          "arities": [
+            2
+          ],
+          "cardinality": 2,
+          "class": "BasicAlgebra",
+          "name": "Xor2",
+          "operation_count": 1,
+          "symbols": [
+            "xor"
+          ],
+          "tables": [
+            [
+              0,
+              1,
+              1,
+              0
+            ]
+          ]
+        },
+        "string_repr": "org.uacalc.alg.BasicAlgebra@7efa3f63",
+        "success": true
+      },
+      "setup": "\nimport os, tempfile\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\nmake = getattr(Operations, \"makeIntOperation\", None)\nif make is None:\n    make = Operations.make_int_operation\nop = make(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\nalg = BasicAlgebra(\"Xor2\", 2, [op])\nfd, path = tempfile.mkstemp(suffix=\".ua\")\nos.close(fd)\nAlgebraIO.writeAlgebraFile(alg, path)\nresult = AlgebraIO.readAlgebraFile(path)\nos.unlink(path)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "AlgebraIO-loaded algebra as SmallAlgebra/BasicAlgebra",
+      "expected_exception": null,
+      "id": "io_read_cyclic2_as_small",
+      "kwargs": {},
+      "method": "SmallAlgebra.getName",
+      "notes": "Java Algebra toString is Class@hex; values compared.",
+      "result": {
+        "return_type": "BasicAlgebra",
+        "return_value": {
+          "__type__": "algebra",
+          "arities": [
+            2
+          ],
+          "cardinality": 2,
+          "class": "BasicAlgebra",
+          "name": "C2",
+          "operation_count": 1,
+          "symbols": [
+            "+"
+          ],
+          "tables": [
+            [
+              0,
+              1,
+              1,
+              0
+            ]
+          ]
+        },
+        "string_repr": "org.uacalc.alg.BasicAlgebra@51b77cdf",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg import Algebra, SmallAlgebra, BasicAlgebra\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.io import AlgebraIO\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nc0 = Operations.makeConstantIntOperation(2, 0)\nalg = BasicAlgebra(\"Xor2\", 2, [xor2])\nalg_and = BasicAlgebra(\"And2\", 2, [and2])\nalg_id = BasicAlgebra(\"Id2\", 2, [id1])\nalg_const = BasicAlgebra(\"C2\", 2, [c0])\nalg_list = BasicAlgebra(\"Listed\", [\"a\", \"b\"], [id1])\nalg_empty = BasicAlgebra(\"E\", 3, [])\n# Java GeneralAlgebra.monitor is static; reset between golden cases.\nalg.setMonitor(None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    }
+  ]
+}

@@ -4,7 +4,10 @@ use std::hash::Hash;
 use std::sync::{Arc, RwLock};
 use crate::alg::algebra::{Algebra, ProgressMonitor};
 use crate::alg::general_algebra::GeneralAlgebra;
-use crate::alg::op::{Operation, OperationSymbol, SimilarityType};
+use crate::alg::op::{
+    BasicOperation, Operation, OperationSymbol, OperationWithDefaultValue, SimilarityType,
+};
+use crate::util::horner;
 
 /// Types of small algebras, matching the Java enum
 #[derive(Debug, Clone, PartialEq)]
@@ -156,6 +159,27 @@ where
     
     /// Lazy-initialized subalgebra lattice
     sub: Option<Box<crate::alg::sublat::SubalgebraLattice<i32>>>,
+}
+
+fn operation_table(op: &dyn Operation) -> Result<Vec<i32>, String> {
+    if let Some(table) = op.get_table() {
+        return Ok(table.to_vec());
+    }
+    let set_size = op.get_set_size();
+    let arity = op.arity();
+    let table_size = if arity == 0 {
+        1usize
+    } else {
+        (set_size as usize)
+            .checked_pow(arity as u32)
+            .ok_or_else(|| "Operation table size overflow".to_string())?
+    };
+    let mut table = Vec::with_capacity(table_size);
+    for encoded in 0..table_size {
+        let args = horner::horner_inv_same_size_safe(encoded as i32, set_size, arity as usize)?;
+        table.push(op.int_value_at(&args)?);
+    }
+    Ok(table)
 }
 
 impl<T> BasicAlgebra<T>
@@ -509,17 +533,25 @@ where
     }
     
     fn reset_con_and_sub(&mut self) {
-        // Reset any cached congruence and subalgebra lattices
-        // In this partial implementation, we don't have con/sub lattices yet
-        // This is a no-op for now but matches the Java signature
+        self.con = None;
+        self.sub = None;
     }
     
     fn convert_to_default_value_ops(&mut self) {
-        // Convert operations to default value operations for UI
-        // This would wrap operations in OperationWithDefaultValue
-        // For now, this is a partial implementation - full implementation
-        // would require OperationWithDefaultValue to be available
-        // This is a no-op for now but matches the Java signature
+        let current: Vec<Arc<dyn Operation>> = self.operations_ref_arc().to_vec();
+        let mut new_ops: Vec<Box<dyn Operation>> = Vec::new();
+        for op in current {
+            let converted = operation_table(op.as_ref())
+                .and_then(|table| {
+                    BasicOperation::new_with_table(op.symbol().clone(), op.get_set_size(), table)
+                })
+                .and_then(OperationWithDefaultValue::from_operation);
+            match converted {
+                Ok(dv) => new_ops.push(Box::new(dv)),
+                Err(_) => new_ops.push(op.as_ref().clone_box()),
+            }
+        }
+        self.base.set_operations(new_ops);
     }
 }
 
