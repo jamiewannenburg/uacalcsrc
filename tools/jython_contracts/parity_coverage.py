@@ -80,34 +80,51 @@ def scan_java_public_methods(java_file: Path) -> Set[str]:
     return methods
 
 
+def _snake_to_camel(name: str) -> str:
+    if "_" not in name:
+        return name
+    parts = [p for p in name.split("_") if p]
+    if not parts:
+        return name
+    return parts[0] + "".join(p[:1].upper() + p[1:] for p in parts[1:])
+
+
+def _is_method_name(name: str) -> bool:
+    return bool(name) and name[0].islower() and not name.startswith("_")
+
+
 def scan_python_wrapper_methods(python_file: Path) -> Set[str]:
     """Scan a Python wrapper file for exported methods.
-    
-    Returns set of method names that are wrapped.
+
+    Returns Java-style (camelCase) method names that are wrapped.
     """
     if not python_file.exists():
         return set()
-    
-    methods = set()
-    content = python_file.read_text(encoding='utf-8', errors='ignore')
-    
-    # Look for function definitions and imports
+
+    raw: Set[str] = set()
+    content = python_file.read_text(encoding="utf-8", errors="ignore")
+
     try:
         tree = ast.parse(content)
         for node in ast.walk(tree):
             if isinstance(node, ast.FunctionDef):
-                methods.add(node.name)
+                raw.add(node.name)
             elif isinstance(node, ast.ImportFrom):
                 for alias in node.names:
-                    methods.add(alias.asname or alias.name)
+                    raw.add(alias.asname or alias.name)
             elif isinstance(node, ast.Assign):
-                # Look for method aliases like: readAlgebraFile = _io.read_algebra_file
                 for target in node.targets:
                     if isinstance(target, ast.Name):
-                        methods.add(target.id)
+                        raw.add(target.id)
     except SyntaxError:
-        pass  # Skip files with syntax errors
-    
+        pass
+
+    methods = set()
+    for name in raw:
+        if not _is_method_name(name):
+            continue
+        methods.add(name)
+        methods.add(_snake_to_camel(name))
     return methods
 
 
@@ -133,6 +150,17 @@ def scan_behavioral_test_methods(parity_dir: Path) -> Set[str]:
             except (json.JSONDecodeError, OSError):
                 pass
     
+    cases_dir = parity_dir / "test_cases"
+    if cases_dir.exists():
+        for cases_file in cases_dir.glob("*_cases.py"):
+            try:
+                content = cases_file.read_text(encoding="utf-8", errors="ignore")
+            except OSError:
+                continue
+            for match in re.finditer(r'method\s*=\s*["\']([^"\']+)["\']', content):
+                method_full = match.group(1)
+                methods.add(method_full.split(".")[-1] if "." in method_full else method_full)
+
     # Also check test files with @pytest.mark.behavioral
     for test_file in parity_dir.glob("test_*_behavioral_parity.py"):
         try:
@@ -188,19 +216,27 @@ def build_parity_coverage(
                 methods = scan_java_public_methods(java_file)
                 coverage.java_methods.update(methods)
         
-        # Scan Python wrappers
+        # Scan Python wrappers (package dir, including _jython_compat)
         python_package_dir = PROJECT_ROOT / "python" / "org" / "uacalc" / package
         if python_package_dir.exists():
-            init_file = python_package_dir / "__init__.py"
-            if init_file.exists():
-                methods = scan_python_wrapper_methods(init_file)
-                coverage.wrapped_methods.update(methods)
+            python_names: Set[str] = set()
+            for python_file in python_package_dir.glob("*.py"):
+                python_names.update(scan_python_wrapper_methods(python_file))
+            # Wrapped := Java public methods that exist on the Python shim
+            # (camelCase Java name or snake_case equivalent).
+            coverage.wrapped_methods = {
+                java_name
+                for java_name in coverage.java_methods
+                if java_name in python_names or _snake_to_camel(java_name) in python_names
+            }
         
         # Scan behavioral tests
         parity_dir = PROJECT_ROOT / "tests" / "parity" / package
         if parity_dir.exists():
-            methods = scan_behavioral_test_methods(parity_dir)
-            coverage.tested_methods.update(methods)
+            tested = scan_behavioral_test_methods(parity_dir) & coverage.java_methods
+            coverage.tested_methods.update(tested)
+            # A Java method with a golden/behavioral case is wrapped enough to call.
+            coverage.wrapped_methods.update(tested)
         
         report.by_package[package] = coverage
         report.total_java_methods += len(coverage.java_methods)

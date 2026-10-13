@@ -1,6 +1,6 @@
 MODULE: org.uacalc.lat
 RUNTIME: cpython
-PUBLIC_COUNT: 25
+PUBLIC_COUNT: 26
 HAS_BASIC_LATTICE: yes
 NAME: BasicLattice
 NAME: BooleanLattice
@@ -12,6 +12,7 @@ NAME: NaturalOrder
 NAME: OrderedSet
 NAME: OrderedSetBasicSet
 NAME: OrderedSetPartition
+NAME: OrderedSets
 NAME: PrefixOrder
 NAME: con_to_small_lattice
 NAME: dual

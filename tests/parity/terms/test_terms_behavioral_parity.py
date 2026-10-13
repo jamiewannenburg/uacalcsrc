@@ -14,36 +14,26 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO_ROOT / "tests" / "parity"))
 
 from parity_test_base import BehavioralParityTest
+from tests.parity.terms.test_cases.terms_cases import TEST_CASES
 
 pytestmark = pytest.mark.behavioral
 
 
 class TestTermsBehavioralParity(BehavioralParityTest):
-    """Behavioral parity tests for Terms methods."""
-    
     package = "terms"
-    golden_file = "Terms_jython.json"
-    
-    def test_string_to_term_variable(self):
-        """Test parsing a variable term."""
-        self.run_golden_test_case("string_to_term_variable")
-    
-    def test_string_to_term_unary_op(self):
-        """Test parsing a term with unary operation."""
-        self.run_golden_test_case("string_to_term_unary_op")
-    
-    def test_string_to_term_binary_op(self):
-        """Test parsing a term with binary operation."""
-        self.run_golden_test_case("string_to_term_binary_op")
-    
-    def test_string_to_term_nested(self):
-        """Test parsing a nested term."""
-        self.run_golden_test_case("string_to_term_nested")
-    
-    def test_make_constant_term_0(self):
-        """Test creating constant term for value 0."""
-        self.run_golden_test_case("make_constant_term_0")
-    
-    def test_make_constant_term_5(self):
-        """Test creating constant term for value 5."""
-        self.run_golden_test_case("make_constant_term_5")
+    golden_file = "terms_jython.json"
+
+
+def _bind(case):
+    def test(self):
+        self.run_golden_test_case(case.id)
+
+    test.__name__ = "test_{0}".format(case.id)
+    test.__doc__ = case.description
+    if case.xfail_reason:
+        test = pytest.mark.xfail(reason=case.xfail_reason, strict=True)(test)
+    return test
+
+
+for _case in TEST_CASES:
+    setattr(TestTermsBehavioralParity, "test_{0}".format(_case.id), _bind(_case))

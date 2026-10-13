@@ -14,24 +14,26 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO_ROOT / "tests" / "parity"))
 
 from parity_test_base import BehavioralParityTest
+from tests.parity.lat.test_cases.lattices_cases import TEST_CASES
 
 pytestmark = pytest.mark.behavioral
 
 
 class TestLatticesBehavioralParity(BehavioralParityTest):
-    """Behavioral parity tests for Lattices static methods."""
-    
     package = "lat"
-    golden_file = "Lattices_jython.json"
-    
-    def test_lattice_from_join_2chain(self):
-        """Test latticeFromJoin with 2-element chain."""
-        self.run_golden_test_case("lattice_from_join_2chain")
-    
-    def test_lattice_from_meet_2chain(self):
-        """Test latticeFromMeet with 2-element chain."""
-        self.run_golden_test_case("lattice_from_meet_2chain")
-    
-    def test_lattice_from_join_diamond(self):
-        """Test latticeFromJoin with diamond lattice M3."""
-        self.run_golden_test_case("lattice_from_join_diamond")
+    golden_file = "lat_jython.json"
+
+
+def _bind(case):
+    def test(self):
+        self.run_golden_test_case(case.id)
+
+    test.__name__ = "test_{0}".format(case.id)
+    test.__doc__ = case.description
+    if case.xfail_reason:
+        test = pytest.mark.xfail(reason=case.xfail_reason, strict=True)(test)
+    return test
+
+
+for _case in TEST_CASES:
+    setattr(TestLatticesBehavioralParity, "test_{0}".format(_case.id), _bind(_case))

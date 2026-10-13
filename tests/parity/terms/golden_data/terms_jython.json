@@ -1,0 +1,385 @@
+{
+  "metadata": {
+    "generated_at": "2026-10-13T12:59:08.734001+00:00",
+    "jar": "uacalc.jar",
+    "package": "org.uacalc.terms",
+    "runtime": "jython",
+    "test_cases": 16,
+    "type": "package"
+  },
+  "test_cases": [
+    {
+      "args": [],
+      "call": "Terms.stringToTerm(\"x0\")",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Parse a variable term",
+      "expected_exception": null,
+      "id": "string_to_term_variable",
+      "kwargs": {},
+      "method": "Terms.stringToTerm",
+      "notes": "",
+      "result": {
+        "return_type": "VariableImp",
+        "return_value": {
+          "__type__": "term",
+          "class": "VariableImp",
+          "isa_variable": true,
+          "string": "x0"
+        },
+        "string_repr": "x0",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Terms.stringToTerm(\"f(x0)\")",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Parse a term with unary operation",
+      "expected_exception": null,
+      "id": "string_to_term_unary_op",
+      "kwargs": {},
+      "method": "Terms.stringToTerm",
+      "notes": "",
+      "result": {
+        "return_type": "NonVariableTerm",
+        "return_value": {
+          "__type__": "term",
+          "class": "NonVariableTerm",
+          "isa_variable": false,
+          "string": "f(x0)"
+        },
+        "string_repr": "f(x0)",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Terms.stringToTerm(\"f(x0,x1)\")",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Parse a term with a valid binary operation name",
+      "expected_exception": null,
+      "id": "string_to_term_binary_op",
+      "kwargs": {},
+      "method": "Terms.stringToTerm",
+      "notes": "",
+      "result": {
+        "return_type": "NonVariableTerm",
+        "return_value": {
+          "__type__": "term",
+          "class": "NonVariableTerm",
+          "isa_variable": false,
+          "string": "f(x0,x1)"
+        },
+        "string_repr": "f(x0,x1)",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Terms.stringToTerm(\"f(g(x0,x1))\")",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Parse a nested term",
+      "expected_exception": null,
+      "id": "string_to_term_nested",
+      "kwargs": {},
+      "method": "Terms.stringToTerm",
+      "notes": "",
+      "result": {
+        "return_type": "NonVariableTerm",
+        "return_value": {
+          "__type__": "term",
+          "class": "NonVariableTerm",
+          "isa_variable": false,
+          "string": "f(g(x0,x1))"
+        },
+        "string_repr": "f(g(x0,x1))",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Terms.stringToTerm(\"+(x0,x1)\")",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "'+' is not a valid Java operation name",
+      "expected_exception": "IllegalArgumentException",
+      "id": "string_to_term_plus_invalid",
+      "kwargs": {},
+      "method": "Terms.stringToTerm",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.IllegalArgumentException: The string + cannot be made into a function symbol.",
+          "type": "IllegalArgumentException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\n",
+      "skip_string_check": false,
+      "xfail_reason": "Java raises IllegalArgumentException; Python raises ValueError with the same message."
+    },
+    {
+      "args": [],
+      "call": "Terms.stringToTerm(\"\")",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Empty string is not a term",
+      "expected_exception": "IllegalArgumentException",
+      "id": "string_to_term_empty",
+      "kwargs": {},
+      "method": "Terms.stringToTerm",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.IllegalArgumentException: empty string",
+          "type": "IllegalArgumentException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\n",
+      "skip_string_check": false,
+      "xfail_reason": "Java raises IllegalArgumentException('empty string'); Python raises ValueError with the same message."
+    },
+    {
+      "args": [],
+      "call": "NonVariableTerm.makeConstantTerm(OperationSymbol(\"c\", 0))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Create constant term from a nullary OperationSymbol",
+      "expected_exception": null,
+      "id": "make_constant_term_c",
+      "kwargs": {},
+      "method": "NonVariableTerm.makeConstantTerm",
+      "notes": "",
+      "result": {
+        "return_type": "NonVariableTerm",
+        "return_value": {
+          "__type__": "term",
+          "class": "NonVariableTerm",
+          "isa_variable": false,
+          "string": "c()"
+        },
+        "string_repr": "c()",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "NonVariableTerm.makeConstantTerm(OperationSymbol(\"e\", 0))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Create constant term e()",
+      "expected_exception": null,
+      "id": "make_constant_term_e",
+      "kwargs": {},
+      "method": "NonVariableTerm.makeConstantTerm",
+      "notes": "",
+      "result": {
+        "return_type": "NonVariableTerm",
+        "return_value": {
+          "__type__": "term",
+          "class": "NonVariableTerm",
+          "isa_variable": false,
+          "string": "e()"
+        },
+        "string_repr": "e()",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Terms.isValidVarString(\"x0\")",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "x0 is a valid variable name",
+      "expected_exception": null,
+      "id": "is_valid_var_string_x0",
+      "kwargs": {},
+      "method": "Terms.isValidVarString",
+      "notes": "Java str(true) vs Python str(True).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Terms.isValidVarString(\"\")",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Empty string is not a valid variable name",
+      "expected_exception": null,
+      "id": "is_valid_var_string_empty",
+      "kwargs": {},
+      "method": "Terms.isValidVarString",
+      "notes": "",
+      "result": {
+        "return_type": "bool",
+        "return_value": false,
+        "string_repr": "False",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Terms.isValidOpNameString(\"f\")",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "f is a valid operation name",
+      "expected_exception": null,
+      "id": "is_valid_op_name_f",
+      "kwargs": {},
+      "method": "Terms.isValidOpNameString",
+      "notes": "",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Terms.isValidOpNameString(\"+\")",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "'+' is not a valid operation name",
+      "expected_exception": null,
+      "id": "is_valid_op_name_plus",
+      "kwargs": {},
+      "method": "Terms.isValidOpNameString",
+      "notes": "",
+      "result": {
+        "return_type": "bool",
+        "return_value": false,
+        "string_repr": "False",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Terms.flatten(nested)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Flatten associative nested f(x,f(x,x)) to f(x,x,x)",
+      "expected_exception": null,
+      "id": "flatten_associative",
+      "kwargs": {},
+      "method": "Terms.flatten",
+      "notes": "",
+      "result": {
+        "return_type": "NonVariableTerm",
+        "return_value": {
+          "__type__": "term",
+          "class": "NonVariableTerm",
+          "isa_variable": false,
+          "string": "f(x,x,x)"
+        },
+        "string_repr": "f(x,x,x)",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\n\nx = VariableImp(\"x\")\nfsym = OperationSymbol(\"f\", 2, True)\ninner = NonVariableTerm(fsym, [x, x])\nnested = NonVariableTerm(fsym, [x, inner])\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "v.getName()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "VariableImp constructor and getName",
+      "expected_exception": null,
+      "id": "variable_imp_x0",
+      "kwargs": {},
+      "method": "VariableImp.getName",
+      "notes": "",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "x0",
+        "string_repr": "x0",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\n\nv = VariableImp(\"x0\")\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "v.isaVariable()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "VariableImp.isaVariable is true",
+      "expected_exception": null,
+      "id": "variable_imp_isa_variable",
+      "kwargs": {},
+      "method": "VariableImp.isaVariable",
+      "notes": "",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\n\nv = VariableImp(\"y\")\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "t.isaVariable()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Constant term isaVariable is false",
+      "expected_exception": null,
+      "id": "non_variable_isa_variable",
+      "kwargs": {},
+      "method": "NonVariableTerm.isaVariable",
+      "notes": "",
+      "result": {
+        "return_type": "bool",
+        "return_value": false,
+        "string_repr": "False",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\n\nt = NonVariableTerm.makeConstantTerm(OperationSymbol(\"c\", 0))\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    }
+  ]
+}

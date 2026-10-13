@@ -85,8 +85,9 @@ tests/parity/{package}/
 │   ├── algebraio_cases.py      # Test cases for AlgebraIO
 │   └── lattices_cases.py       # Test cases for Lattices
 ├── golden_data/                 # Expected outputs from Java/Jython
-│   ├── AlgebraIO_jython.json   # Golden data for AlgebraIO
-│   └── Lattices_jython.json    # Golden data for Lattices
+│   ├── io_jython.json          # Golden data for org.uacalc.io
+│   ├── terms_jython.json       # Golden data for org.uacalc.terms
+│   └── lat_jython.json         # Golden data for org.uacalc.lat
 ├── fixtures/                    # Legacy surface test fixtures
 │   ├── golden_*_surface.jython.txt
 │   └── golden_*_surface.cpython.txt
@@ -120,7 +121,7 @@ TEST_CASES = [
 python3 tools/generate_golden_data.py --package {package} --type {ClassName}
 ```
 
-This runs test cases on Jython (real Java) and saves expected outputs to `golden_data/{ClassName}_jython.json`.
+This runs test cases on Jython (real Java) and saves expected outputs to `golden_data/{package}_jython.json`.
 
 ### Step 3: Create or Update Behavioral Test
 
@@ -133,7 +134,7 @@ from parity_test_base import BehavioralParityTest
 @pytest.mark.behavioral
 class TestClassNameBehavioralParity(BehavioralParityTest):
     package = "{package}"
-    golden_file = "{ClassName}_jython.json"
+    golden_file = "{package}_jython.json"
     
     def test_my_test_case(self):
         """Test description."""
