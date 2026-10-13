@@ -77,7 +77,17 @@ else:
 
         @staticmethod
         def stringToTerm(s):
-            return Terms._string_to_term(str(s))
+            from org.uacalc._exceptions import (
+                IllegalArgumentException,
+                translate_illegal_argument,
+            )
+
+            if s is None:
+                raise IllegalArgumentException("null string")
+            try:
+                return Terms._string_to_term(str(s))
+            except ValueError as exc:
+                translate_illegal_argument(exc)
 
         @staticmethod
         def isValidVarString(s):

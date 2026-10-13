@@ -73,10 +73,6 @@ TEST_CASES = [
         call='AlgebraIO.readAlgebraFile("resources/algebras/invalid_parity.ua")',
         description="Reading invalid file should raise",
         expected_exception="NumberFormatException",
-        xfail_reason=(
-            "Java raises NumberFormatException for invalid cardinality text; "
-            "Python raises ValueError from the Rust parser."
-        ),
     ),
     TestCaseSpec(
         id="read_nonexistent",
@@ -143,24 +139,21 @@ TEST_CASES = [
 import os, tempfile
 from org.uacalc.io import AlgebraIO
 alg = AlgebraIO.readAlgebraFile("resources/algebras/cyclic2.ua")
-fd, alg_path = tempfile.mkstemp(suffix=".alg")
-os.close(fd)
+# Stable basename so Java File.getName() / Python file_name() match the golden
+# algName (legacy .alg format names the algebra after the file).
+alg_dir = tempfile.mkdtemp()
+alg_path = os.path.join(alg_dir, "tmpZWnK01.alg")
 AlgebraIO.writeAlgebraFile(alg, alg_path, True)
 AlgebraIO.convertToXML(alg_path)
 # Java ExtFileFilter.splitOffExtension uses File.getName(), so the XML
 # is written next to cwd as <basename>.xml, not beside the temp .alg file.
-base = os.path.splitext(os.path.basename(alg_path))[0]
-CAPTURE_PATH = os.path.join(os.getcwd(), base + ".xml")
+CAPTURE_PATH = os.path.join(os.getcwd(), "tmpZWnK01.xml")
 OUT_PATH = CAPTURE_PATH
 """,
         call="None",
         description="Convert a .alg file to XML beside it",
         capture_file=True,
         skip_string_check=True,
-        xfail_reason=(
-            "Java convertToXML writes <basename>.xml in cwd (splitOffExtension uses "
-            "File.getName()). Python writes beside the source path."
-        ),
     ),
     TestCaseSpec(
         id="reader_read_algebra_file",
@@ -310,9 +303,5 @@ else:
         call="reader.parseAlgebra()",
         description="Mace4Reader on a missing file should raise",
         expected_exception="FileNotFoundException",
-        xfail_reason=(
-            "Java raises FileNotFoundException constructing Mace4Reader; "
-            "Python raises FileNotFoundError/ValueError from open()."
-        ),
     ),
 ]

@@ -49,10 +49,6 @@ TEST_CASES = [
         call='Terms.stringToTerm("+(x0,x1)")',
         description="'+' is not a valid Java operation name",
         expected_exception="IllegalArgumentException",
-        xfail_reason=(
-            "Java raises IllegalArgumentException; Python raises ValueError "
-            "with the same message."
-        ),
     ),
     TestCaseSpec(
         id="string_to_term_empty",
@@ -61,10 +57,6 @@ TEST_CASES = [
         call='Terms.stringToTerm("")',
         description="Empty string is not a term",
         expected_exception="IllegalArgumentException",
-        xfail_reason=(
-            "Java raises IllegalArgumentException('empty string'); "
-            "Python raises ValueError with the same message."
-        ),
     ),
     TestCaseSpec(
         id="make_constant_term_c",

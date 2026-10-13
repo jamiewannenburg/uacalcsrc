@@ -3,9 +3,16 @@
 from __future__ import annotations
 
 import os
+import shutil
 from typing import Any, List, Optional, Union
 
 import uacalc_lib as _uacalc_lib
+
+from org.uacalc._exceptions import (
+    FileNotFoundException,
+    java_file_not_found_message,
+    translate_io_error,
+)
 
 _io = getattr(_uacalc_lib, "io")
 _LibAlgebraReader = _io.AlgebraReader
@@ -62,7 +69,23 @@ class AlgebraIO:
 
     @staticmethod
     def convertToXML(path_or_file: Any) -> None:
-        return _io.convert_to_xml(_coerce_path(path_or_file))
+        # Java ExtFileFilter.splitOffExtension uses File.getName(), then writes
+        # <basename>.xml in the current working directory. uacalc_lib writes
+        # beside the source path; relocate the library output to match Java.
+        path = _coerce_path(path_or_file)
+        name, ext = _io.ExtFileFilter.split_off_extension(path)
+        if not name or ext is None or str(ext).lower() != "alg":
+            return None
+        try:
+            _io.convert_to_xml(path)
+        except Exception as exc:
+            translate_io_error(exc, path=path)
+        produced = os.path.join(os.path.dirname(os.path.abspath(path)), name + ".xml")
+        java_dest = os.path.join(os.getcwd(), name + ".xml")
+        if os.path.abspath(produced) != os.path.abspath(java_dest) and os.path.isfile(
+            produced
+        ):
+            shutil.move(produced, java_dest)
 
     @staticmethod
     def writeAlgebraFile(algebra: Any, path_or_file: Any, oldStyle: Optional[bool] = None) -> None:
@@ -107,10 +130,15 @@ class AlgebraReader:
         return self.read_algebra_file()
 
     def read_algebra_file(self) -> Any:
-        if self._path is not None:
-            result = self._inner.read_algebra_file()
-        else:
-            result = self._inner.read_algebra_from_stream(self._stream_data)
+        try:
+            if self._path is not None:
+                result = self._inner.read_algebra_file()
+            else:
+                result = self._inner.read_algebra_from_stream(self._stream_data)
+        except Exception as exc:
+            translate_io_error(
+                exc, path=self._path, stream_text=self._stream_text()
+            )
         if result is None:
             raise ValueError("no algebra read from source")
         return result
@@ -121,10 +149,21 @@ class AlgebraReader:
     def read_algebra_from_stream(self) -> Any:
         if self._stream_data is None:
             raise ValueError("reader was not constructed from a stream")
-        result = self._inner.read_algebra_from_stream(self._stream_data)
+        try:
+            result = self._inner.read_algebra_from_stream(self._stream_data)
+        except Exception as exc:
+            translate_io_error(exc, stream_text=self._stream_text())
         if result is None:
             raise ValueError("no algebra read from stream")
         return result
+
+    def _stream_text(self) -> Optional[str]:
+        if not self._stream_data:
+            return None
+        try:
+            return bytes(self._stream_data).decode("utf-8", "replace")
+        except Exception:
+            return None
 
     def readAlgebraListFile(self) -> List[Any]:
         return self.read_algebra_list_file()
@@ -184,6 +223,21 @@ class Mace4Reader:
     new_from_file = staticmethod(_LibMace4Reader.new_from_file)
     new_from_stream = staticmethod(_LibMace4Reader.new_from_stream)
     parse_algebra_from_file = staticmethod(_LibMace4Reader.parse_algebra_from_file)
+
+    @staticmethod
+    def open(path: Any) -> "Mace4Reader":
+        """Open a path like Java ``Mace4Reader(new FileInputStream(path))``."""
+        filename = _coerce_path(path)
+        try:
+            fh = open(filename, "rb")
+        except FileNotFoundError as exc:
+            raise FileNotFoundException(
+                java_file_not_found_message(filename, exc)
+            ) from exc
+        try:
+            return Mace4Reader(fh)
+        finally:
+            fh.close()
 
     def __init__(self, stream: Any) -> None:
         self._data = _coerce_stream_bytes(stream)
