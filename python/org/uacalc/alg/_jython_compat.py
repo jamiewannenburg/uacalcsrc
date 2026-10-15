@@ -251,7 +251,11 @@ def _install(alg_module_globals: dict) -> None:
 
         @staticmethod
         def calcCard(sizes: Any) -> int:
-            return int(_lib_call(_LibProductAlgebra.calc_card, [int(x) for x in list(sizes)]))
+            # Java starts from BigInteger.ONE, so the empty product is 1.
+            items = [int(x) for x in list(sizes)]
+            if not items:
+                return 1
+            return int(_lib_call(_LibProductAlgebra.calc_card, items))
 
     class _PowerAlgebraMeta(type):
         def __instancecheck__(cls, instance: Any) -> bool:

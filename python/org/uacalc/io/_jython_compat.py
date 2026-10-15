@@ -31,6 +31,20 @@ def _coerce_path(path_or_file: Any) -> str:
     )
 
 
+def _raise_if_missing(path: str) -> None:
+    """Raise Java ``FileNotFoundException`` before the library tries to parse.
+
+    Java ``SAXParser.parse(File)`` uses the absolute path in
+    ``java.io.FileNotFoundException: <abspath> (No such file or directory)``.
+    The parity harness compares ``str(exc)`` and strips the
+    ``java.io.FileNotFoundException: `` prefix, so the shim message is the
+    ``getMessage()`` form ``<abspath> (No such file or directory)``.
+    """
+    if os.path.isfile(path):
+        return
+    raise FileNotFoundException(java_file_not_found_message(os.path.abspath(path)))
+
+
 def _coerce_stream_bytes(stream: Any) -> bytes:
     if isinstance(stream, (bytes, bytearray)):
         return bytes(stream)
@@ -53,7 +67,9 @@ class AlgebraIO:
     def readAlgebraFile(path_or_file: Any) -> Any:
         # Use AlgebraReader so description and other SAX fields survive (the
         # module-level read_algebra_file rebuilds a bare BasicAlgebra).
-        return AlgebraReader(_coerce_path(path_or_file)).readAlgebraFile()
+        path = _coerce_path(path_or_file)
+        _raise_if_missing(path)
+        return AlgebraReader(path).readAlgebraFile()
 
     @staticmethod
     def readAlgebraFromStream(stream: Any) -> Any:
@@ -121,18 +137,15 @@ class AlgebraReader:
             self._path = None
             self._stream_data = _coerce_stream_bytes(path_or_stream)
             self._inner = _LibAlgebraReader.new_from_stream(self._stream_data)
-        elif isinstance(path_or_stream, str) and os.path.isfile(path_or_stream):
-            self._path = path_or_stream
-            self._stream_data = None
-            self._inner = _LibAlgebraReader.new_from_file(self._path)
-        elif isinstance(path_or_stream, str):
-            self._path = None
-            self._stream_data = path_or_stream.encode("utf-8")
-            self._inner = _LibAlgebraReader.new_from_stream(self._stream_data)
         else:
+            # Java AlgebraReader(String/File) is always a filename. A missing
+            # path must not be treated as XML stream content.
             self._path = _coerce_path(path_or_stream)
             self._stream_data = None
-            self._inner = _LibAlgebraReader.new_from_file(self._path)
+            if os.path.isfile(self._path):
+                self._inner = _LibAlgebraReader.new_from_file(self._path)
+            else:
+                self._inner = None
 
     def readAlgebraFile(self) -> Any:
         return self.read_algebra_file()
@@ -140,6 +153,9 @@ class AlgebraReader:
     def read_algebra_file(self) -> Any:
         try:
             if self._path is not None:
+                _raise_if_missing(self._path)
+                if self._inner is None:
+                    self._inner = _LibAlgebraReader.new_from_file(self._path)
                 result = self._inner.read_algebra_file()
             else:
                 result = self._inner.read_algebra_from_stream(self._stream_data)
