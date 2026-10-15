@@ -8,6 +8,7 @@ use uacalc::alg::AlgebraType;
 use uacalc::terms::{NonVariableTerm, Term, VariableImp};
 use uacalc::util::horner;
 
+use crate::alg::basic_algebra::PyBasicAlgebra;
 use crate::alg::op::int_operation::PyIntOperation;
 use crate::terms::{PyNonVariableTerm, PyVariableImp};
 
@@ -119,4 +120,67 @@ pub fn operations_to_py(
     ops.into_iter()
         .map(|op| operation_to_py(py, op.as_ref()))
         .collect()
+}
+
+/// Materialize operations as a table-backed BasicAlgebra (Java write/read shape).
+pub fn ops_to_basic_algebra(
+    name: String,
+    cardinality: i32,
+    ops: impl IntoIterator<Item = Box<dyn Operation>>,
+) -> PyResult<PyBasicAlgebra> {
+    use std::collections::HashSet;
+    if cardinality < 0 {
+        return Err(PyValueError::new_err(
+            "Cannot convert algebra with unknown cardinality to BasicAlgebra",
+        ));
+    }
+    let universe: HashSet<i32> = (0..cardinality).collect();
+    let mut rust_ops: Vec<Box<dyn Operation>> = Vec::new();
+    for op in ops {
+        let symbol = op.symbol().clone();
+        let arity = op.arity();
+        let table_size = if arity == 0 {
+            1usize
+        } else {
+            (cardinality as usize)
+                .checked_pow(arity as u32)
+                .ok_or_else(|| {
+                    PyValueError::new_err(format!(
+                        "operation {} table is too large to materialize",
+                        symbol.name()
+                    ))
+                })?
+        };
+        let mut table_vec = Vec::with_capacity(table_size);
+        for i in 0..table_size {
+            let args = if arity == 0 {
+                Vec::new()
+            } else {
+                horner::horner_inv_same_size_safe(i as i32, cardinality, arity as usize)
+                    .map_err(PyValueError::new_err)?
+            };
+            table_vec.push(op.int_value_at(&args).map_err(PyValueError::new_err)?);
+        }
+        let int_op =
+            IntOperation::new(symbol, cardinality, table_vec).map_err(PyValueError::new_err)?;
+        rust_ops.push(Box::new(int_op));
+    }
+    Ok(PyBasicAlgebra::from_inner(uacalc::alg::BasicAlgebra::new(
+        name, universe, rust_ops,
+    )))
+}
+
+/// Java `Arrays.binarySearch` encoding: index, or `-(insertion point) - 1`.
+pub fn binary_search_i32(sorted: &[i32], key: i32) -> i32 {
+    match sorted.binary_search(&key) {
+        Ok(i) => i as i32,
+        Err(i) => -(i as i32) - 1,
+    }
+}
+
+pub fn binary_search_usize(sorted: &[usize], key: usize) -> i32 {
+    match sorted.binary_search(&key) {
+        Ok(i) => i as i32,
+        Err(i) => -(i as i32) - 1,
+    }
 }

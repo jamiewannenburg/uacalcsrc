@@ -1,12 +1,17 @@
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
+use pyo3::types::PyAny;
 use uacalc::alg::*;
 use uacalc::alg::op::{IntOperation, BasicOperation};
-use crate::alg::convert::{algebra_type_java_name, operation_to_py};
+use uacalc::util::horner;
+use crate::alg::algebra_extract::extract_boxed_small_algebra;
+use crate::alg::convert::{algebra_type_java_name, binary_search_i32, ops_to_basic_algebra, operation_to_py};
+use crate::alg::product_algebra::PyProductAlgebra;
 use crate::alg::PyBasicAlgebra;
 use crate::alg::PyPartition;
 use crate::alg::PySubalgebraLattice;
 use crate::alg::conlat::congruence_lattice::PyCongruenceLattice;
+use crate::alg::op::similarity_type::PySimilarityType;
 use crate::alg::universe_map::PyUniverseMap;
 
 /// Python wrapper for Subalgebra
@@ -14,6 +19,7 @@ use crate::alg::universe_map::PyUniverseMap;
 pub struct PySubalgebra {
     inner: uacalc::alg::Subalgebra<i32>,
     super_alg: uacalc::alg::BasicAlgebra<i32>,
+    super_obj: PyObject,
     element_map: Option<PyUniverseMap>,
 }
 
@@ -29,14 +35,42 @@ impl PySubalgebra {
     /// Raises:
     ///     ValueError: If the subuniverse is empty or contains invalid indices
     #[new]
-    fn new(name: String, super_algebra: &PyBasicAlgebra, univ: Vec<i32>) -> PyResult<Self> {
-        let super_box = Box::new(super_algebra.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
+    fn new(py: Python<'_>, name: String, super_algebra: &Bound<'_, PyAny>, univ: Vec<i32>) -> PyResult<Self> {
+        let super_box = extract_boxed_small_algebra(super_algebra)?;
         match uacalc::alg::Subalgebra::new_safe(name, super_box, univ) {
-            Ok(inner) => Ok(PySubalgebra {
-                inner,
-                super_alg: super_algebra.inner.clone(),
-                element_map: super_algebra.element_map().cloned(),
-            }),
+            Ok(inner) => {
+                let (super_alg, element_map) = if let Ok(alg) = super_algebra.extract::<PyRef<PyBasicAlgebra>>() {
+                    (alg.inner.clone(), alg.element_map().cloned())
+                } else if let Ok(wrapped) = super_algebra.getattr("_inner") {
+                    if let Ok(alg) = wrapped.extract::<PyRef<PyBasicAlgebra>>() {
+                        (alg.inner.clone(), alg.element_map().cloned())
+                    } else {
+                        (
+                            uacalc::alg::BasicAlgebra::new(
+                                "super".to_string(),
+                                std::collections::HashSet::new(),
+                                Vec::new(),
+                            ),
+                            None,
+                        )
+                    }
+                } else {
+                    (
+                        uacalc::alg::BasicAlgebra::new(
+                            "super".to_string(),
+                            std::collections::HashSet::new(),
+                            Vec::new(),
+                        ),
+                        None,
+                    )
+                };
+                Ok(PySubalgebra {
+                    inner,
+                    super_alg,
+                    super_obj: super_algebra.clone().into_py(py),
+                    element_map,
+                })
+            }
             Err(e) => Err(PyValueError::new_err(e)),
         }
     }
@@ -51,10 +85,7 @@ impl PySubalgebra {
     /// Returns:
     ///     int: Index in the subalgebra, or -1 if not found
     fn index(&self, k: i32) -> i32 {
-        match self.inner.index(k) {
-            Some(idx) => idx as i32,
-            None => -1,
-        }
+        binary_search_i32(self.inner.get_subuniverse_array(), k)
     }
 
     /// Restrict a partition (or congruence) on the parent algebra to this subalgebra.
@@ -78,11 +109,8 @@ impl PySubalgebra {
     ///
     /// Returns:
     ///     BasicAlgebra: The super algebra
-    fn super_algebra(&self) -> PyBasicAlgebra {
-        PyBasicAlgebra::from_inner_with_optional_map(
-            self.super_alg.clone(),
-            self.element_map.clone(),
-        )
+    fn super_algebra(&self, py: Python<'_>) -> PyObject {
+        self.super_obj.clone_ref(py)
     }
 
     /// Java `superAlgebraName` convenience used by older bindings.
@@ -171,9 +199,78 @@ impl PySubalgebra {
         algebra_type_java_name(self.inner.algebra_type())
     }
 
+    fn get_universe_order(&self) -> Option<Vec<i32>> {
+        None
+    }
+
+    fn make_operation_tables(&mut self) {
+        self.inner.make_operation_tables();
+    }
+
+    fn similarity_type(&self) -> PySimilarityType {
+        PySimilarityType::from_inner(Algebra::similarity_type(&self.inner).clone())
+    }
+
+    fn input_size(&self) -> i32 {
+        Algebra::input_size(&self.inner)
+    }
+
+    fn is_unary(&self) -> bool {
+        Algebra::is_unary(&self.inner)
+    }
+
+    fn is_idempotent(&self) -> bool {
+        Algebra::is_idempotent(&self.inner)
+    }
+
+    fn is_total(&self) -> bool {
+        Algebra::is_total(&self.inner)
+    }
+
+    fn description(&self) -> Option<&str> {
+        Algebra::description(&self.inner)
+    }
+
+    fn set_description(&mut self, description: Option<String>) {
+        Algebra::set_description(&mut self.inner, description);
+    }
+
+    fn get_operation(&self, py: Python<'_>, sym: &Bound<'_, PyAny>) -> PyResult<Option<PyObject>> {
+        let name = if let Ok(s) = sym.extract::<String>() {
+            s
+        } else if let Ok(n) = sym.call_method0("name") {
+            n.extract::<String>()?
+        } else {
+            return Ok(None);
+        };
+        let arity = if let Ok(a) = sym.call_method0("arity") {
+            a.extract::<i32>().ok()
+        } else {
+            None
+        };
+        for op in Algebra::operations(&self.inner) {
+            if op.symbol().name() == name && arity.map(|a| op.arity() == a).unwrap_or(true) {
+                return Ok(Some(operation_to_py(py, op.as_ref())?));
+            }
+        }
+        Ok(None)
+    }
+
     /// Java `getUniverseList()` returns null for Subalgebra.
     fn get_universe_list(&self) -> Option<Vec<i32>> {
         None
+    }
+
+    fn parent(&self) -> Option<PyObject> {
+        None
+    }
+
+    fn parents(&self) -> Option<Vec<PyObject>> {
+        None
+    }
+
+    fn reset_con_and_sub(&mut self) {
+        SmallAlgebra::reset_con_and_sub(&mut self.inner);
     }
 
     /// Get the name of this algebra.
@@ -294,16 +391,8 @@ impl PySubalgebra {
     /// Raises:
     ///     ValueError: If creation fails
     #[staticmethod]
-    fn congruence_as_algebra(alg: &PyBasicAlgebra, cong: &PyPartition) -> PyResult<PySubalgebra> {
-        let alg_box = Box::new(alg.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
-        match uacalc::alg::Subalgebra::<i32>::congruence_as_algebra_subalgebra("".to_string(), alg_box, cong.get_inner()) {
-            Ok(subalgebra) => Ok(PySubalgebra {
-                inner: subalgebra,
-                super_alg: alg.inner.clone(),
-                element_map: alg.element_map().cloned(),
-            }),
-            Err(e) => Err(PyValueError::new_err(e)),
-        }
+    fn congruence_as_algebra(py: Python<'_>, alg: &PyBasicAlgebra, cong: &PyPartition) -> PyResult<PySubalgebra> {
+        Self::congruence_as_algebra_with_name(py, "".to_string(), alg, cong)
     }
     
     /// Create a congruence as an algebra with a name (static method).
@@ -322,19 +411,35 @@ impl PySubalgebra {
     ///     ValueError: If creation fails
     #[staticmethod]
     fn congruence_as_algebra_with_name(
+        py: Python<'_>,
         name: String,
         alg: &PyBasicAlgebra,
         cong: &PyPartition
     ) -> PyResult<PySubalgebra> {
-        let alg_box = Box::new(alg.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
-        match uacalc::alg::Subalgebra::<i32>::congruence_as_algebra_subalgebra(name, alg_box, cong.get_inner()) {
-            Ok(subalgebra) => Ok(PySubalgebra {
-                inner: subalgebra,
-                super_alg: alg.inner.clone(),
-                element_map: alg.element_map().cloned(),
-            }),
-            Err(e) => Err(PyValueError::new_err(e)),
+        let a1 = Box::new(alg.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
+        let a2 = Box::new(alg.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
+        let product = uacalc::alg::ProductAlgebra::new_safe("".to_string(), vec![a1, a2])
+            .map_err(PyValueError::new_err)?;
+        let n = alg.inner.cardinality();
+        let mut univ_arr = Vec::new();
+        for i in 0..n {
+            for j in 0..n {
+                if cong.get_inner().is_related(i as usize, j as usize) {
+                    univ_arr.push(horner::horner_same_size(&[i, j], n));
+                }
+            }
         }
+        univ_arr.sort();
+        let prod_box = Box::new(product.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
+        let inner = uacalc::alg::Subalgebra::new_safe(name, prod_box, univ_arr)
+            .map_err(PyValueError::new_err)?;
+        let py_prod = Py::new(py, PyProductAlgebra::from_inner(product))?;
+        Ok(PySubalgebra {
+            inner,
+            super_alg: alg.inner.clone(),
+            super_obj: py_prod.to_object(py),
+            element_map: alg.element_map().cloned(),
+        })
     }
 
     /// Convert this Subalgebra to a BasicAlgebra.

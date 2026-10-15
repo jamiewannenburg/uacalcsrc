@@ -53,14 +53,16 @@ slices:
       - core-io
     owner: cursor-agent
     status: parity_golden
-    last_updated: "2026-10-13"
+    last_updated: "2026-10-15"
     workstreams: []
     parity_tests_dir: tests/parity/alg
     notes: >-
-      Algebra / SmallAlgebra / BasicAlgebra Jython shims on org.uacalc.alg with
-      golden behavioral cases in tests/parity/alg, including AlgebraIO write/read
-      value round-trip and Java-named conversion-path exceptions. Malcev is not
-      wrapped. Branch cursor/algebras-268e.
+      Algebra / SmallAlgebra / BasicAlgebra plus Subalgebra, ProductAlgebra,
+      PowerAlgebra, QuotientAlgebra/QuotientElement, and SubProductAlgebra Jython
+      shims on org.uacalc.alg with golden behavioral cases in tests/parity/alg,
+      including AlgebraIO write/read value round-trips and Java-named
+      conversion-path exceptions. Malcev is not wrapped. Branch
+      cursor/sub-prod-quot.
 
   - id: core-alg-op
     title: Operation symbols and operations

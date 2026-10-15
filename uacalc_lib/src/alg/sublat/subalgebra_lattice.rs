@@ -342,4 +342,13 @@ impl PySubalgebraLattice {
     pub(crate) fn from_inner(inner: uacalc::alg::sublat::SubalgebraLattice<i32>) -> Self {
         PySubalgebraLattice { inner: std::cell::RefCell::new(inner) }
     }
+
+    pub(crate) fn from_basic(algebra: &PyBasicAlgebra) -> PyResult<Self> {
+        let alg_box: Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>> =
+            Box::new(algebra.inner.clone());
+        match uacalc::alg::sublat::SubalgebraLattice::new_safe(alg_box) {
+            Ok(inner) => Ok(Self::from_inner(inner)),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
 }

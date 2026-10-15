@@ -10,15 +10,11 @@ notes: |
   BasicSet extends IntArray, so Subalgebra(alg, BasicSet) is the IntArray
   overload (also used by SubalgebraLattice.Sg(BasicSet)).
 
-  Public instance API used by scripts: cardinality, getName/setName,
-  getSubuniverseArray, index(k), getElement, elementIndex, operations /
-  getOperation (restricted to the subuniverse), superAlgebra(), con(), sub().
-
-  Implemented: superAlgebra() returns the SmallAlgebra; getUniverseList()
-  is null; algebraType() is SUBALGEBRA. Subalgebra.sub() builds the lattice
-  of the subalgebra (Java `new SubalgebraLattice(this)`), so the singleton
-  {0} of cyclic2 has cardinality 2. Missing index(k) is still reported as
-  negative rather than Java's exact binarySearch encoding (script lock).
+  Public instance API: cardinality, getName/setName, getSubuniverseArray,
+  index(k) (Java Arrays.binarySearch encoding), getElement, elementIndex,
+  operations / getOperation (restricted to the subuniverse), superAlgebra(),
+  con(), sub(), restrictPartition, congruenceAsAlgebra, convertToDefaultValueOps
+  UOE. getUniverseList() is null; algebraType() is SUBALGEBRA.
 ignore_reason: null
 surface:
   package_export: true
@@ -33,21 +29,27 @@ surface:
     index: index
     algebraType: algebra_type
     getUniverseList: get_universe_list
-  static_methods: []
+    getUniverseOrder: get_universe_order
+    restrictPartition: restrict_partition
+    convertToDefaultValueOps: convertToDefaultValueOps
+    con: con
+    sub: sub
+    makeOperationTables: make_operation_tables
+    universe: universe
+    parent: parent
+    parents: parents
+  static_methods:
+    - congruenceAsAlgebra
   str_parity: false
 testing:
   notes: |
     subalgebra_smoke.py is the source of truth for Jython Subalgebra.
-    On cyclic2 it builds:
-    - Subalgebra(alg, BasicSet {0} from SubalgebraLattice.iterator)
-    - Subalgebra("Full", alg, [0, 1])
-    - Subalgebra(alg, IntArray([0]))
-    After setName, prints cardinality, getSubuniverseArray, index (found
-    exact / missing as boolean), getElement / elementIndex, restricted +
-    table, superAlgebra() name+card, and con()/sub() cardinalities.
-
-    ignore_lines are SubalgebraLattice progress only.
-  task_refs: []
+    Golden cases in tests/parity/alg/test_cases/sub_prod_quot_cases.py cover
+    every wrapped public method including restrictPartition, congruenceAsAlgebra,
+    convertToDefaultValueOps UOE, binarySearch missing index, and write/read
+    round-trip.
+  task_refs:
+    - tests/parity/alg/test_cases/sub_prod_quot_cases.py
   scripts:
     - path: jython_comparison/scripts/subalgebra_smoke.py
       covers:
@@ -61,10 +63,18 @@ testing:
         - index
         - algebraType
         - getUniverseList
-        - cardinality
-        - operations
+        - getUniverseOrder
+        - restrictPartition
+        - convertToDefaultValueOps
         - con
         - sub
+        - makeOperationTables
+        - universe
+        - parent
+        - parents
+        - congruenceAsAlgebra
+        - cardinality
+        - operations
       ignore_lines:
         - "oneGenerated size"
         - "pass 0 of"

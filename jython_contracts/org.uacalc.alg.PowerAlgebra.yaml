@@ -1,0 +1,69 @@
+target: org.uacalc.alg.PowerAlgebra
+level: file
+status: implemented
+java_source: org/uacalc/alg/PowerAlgebra.java
+notes: |
+  PowerAlgebra(alg, power) and PowerAlgebra(name, alg, power). Java 2-arg
+  name is "". getRoot / getPower / parent / parents; inherited ProductAlgebra
+  getElement (Horner tuples), getUniverseList (last-index-fastest). Java
+  PowerAlgebra.elementIndex always returns -1 because universe() yields
+  ArrayLists, not IntArrays — matched in the org wrapper (known Java bug).
+  convertToDefaultValueOps throws UnsupportedOperationException.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    getName: name
+    setName: set_name
+    getOperation: getOperation
+    getRoot: get_root
+    getPower: get_power
+    parent: parent
+    parents: parents
+    getElement: get_element_tuple
+    elementIndex: element_index
+    getUniverseList: get_universe_list
+    algebraType: algebra_type
+    factors: factors
+    projection: projection
+    numberOfFactors: number_of_factors
+    convertToDefaultValueOps: convertToDefaultValueOps
+    con: con
+    sub: sub
+    makeOperationTables: make_operation_tables
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    power_algebra_smoke.py plus tests/parity/alg/test_cases/sub_prod_quot_cases.py.
+    Golden cases cover constructors, getRoot/getPower/parent/parents,
+    getElement/elementIndex/getUniverseList, algebraType, convertToDefaultValueOps
+    UOE, con/sub, and AlgebraIO write/read round-trip.
+  task_refs:
+    - tests/parity/alg/test_cases/sub_prod_quot_cases.py
+  scripts:
+    - path: jython_comparison/scripts/power_algebra_smoke.py
+      covers:
+        - getName
+        - setName
+        - getOperation
+        - getRoot
+        - getPower
+        - parent
+        - parents
+        - getElement
+        - elementIndex
+        - getUniverseList
+        - algebraType
+        - factors
+        - projection
+        - numberOfFactors
+        - convertToDefaultValueOps
+        - con
+        - sub
+        - makeOperationTables
+        - cardinality
+      ignore_lines:
+        - "pass 0 of"
+        - "pass 1 of"
+        - "pass "
