@@ -1,0 +1,61 @@
+target: org.uacalc.alg.conlat.BasicPartition
+level: file
+status: implemented
+java_source: org/uacalc/alg/conlat/BasicPartition.java
+notes: |
+  Constructors (array / bar string / bracket string) and static helpers.
+  ProgressReport overloads, main, toMatt, generalizedWeakClosure, closureAt,
+  projection, and termMap variants are not wrapped.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    universeSize: universe_size
+    numberOfBlocks: number_of_blocks
+    isRelated: is_related
+    toArray: to_array
+    joinBlocks: join_blocks
+    getArray: get_array
+    get: get
+    getPairs: get_pairs
+    compareTo: compare_to
+    hashCode: hash_code
+    toString: toString
+  static_methods:
+    - BasicPartition.zero
+    - BasicPartition.one
+    - BasicPartition.stringToPartition
+    - BasicPartition.jbToPartition
+    - BasicPartition.permutabilityLevel
+    - BasicPartition.leq
+    - BasicPartition.normalize
+    - BasicPartition.partToKissString
+    - BasicPartition.directProduct
+    - BasicPartition.unaryPolymorphisms
+    - BasicPartition.binaryPolymorphisms
+    - BasicPartition.unaryPolymorphismsAlgebra
+    - BasicPartition.binaryPolymorphismsAlgebra
+    - BasicPartition.isHereditary
+    - BasicPartition.funcToJIs
+    - BasicPartition.joinClosure
+    - BasicPartition.meetClosure
+    - BasicPartition.subUniverseGenerated
+    - BasicPartition.partitionFromMatrix
+    - BasicPartition.firstProjection
+    - BasicPartition.secondProjection
+  str_parity: true
+testing:
+  notes: |
+    Golden cases in tests/parity/conlat cover constructors, static helpers,
+    exception paths, and array/toString round-trip.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/conlat_partition.py
+      covers:
+        - zero
+        - one
+        - partToKissString
+        - firstProjection
+        - hashCode
+        - stringToPartition
+      ignore_lines: []

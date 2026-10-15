@@ -1,0 +1,60 @@
+target: org.uacalc.alg.conlat.CongruenceLattice
+level: file
+status: implemented
+java_source: org/uacalc/alg/conlat/CongruenceLattice.java
+notes: |
+  Jython CongruenceLattice surface on uacalc_lib. UI (getDiagram/getConTable),
+  ProgressReport overloads, main, and SubProduct type-theory/commutator
+  overloads are not wrapped. coatoms/setName match Java UOE. operations() is
+  identically null as in Java.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    getName: get_name
+    getAlgebra: getAlgebra
+    getDescription: get_description
+    joinIrreducibles: join_irreducibles
+    meetIrreducibles: meet_irreducibles
+    getUniverseList: get_universe_list
+    isDistributive: is_distributive
+    generatingPair: generating_pair
+    findCoatomAbove: find_coatom_above
+    findJoinIrred: find_join_irred
+    findMeetIrred: find_meet_irred
+    findPrincipalChain: find_principal_chain
+    findUpperCover: find_upper_cover
+    irredundantMeetDecomposition: irredundant_meet_decomposition
+    permutabilityLevel: permutability_level
+    getBasicLattice: get_basic_lattice
+    universeFound: universe_found
+    makeUniverse: make_universe
+    makePrincipals: make_principals
+    joinIrreducible: join_irreducible
+    meetIrreducible: meet_irreducible
+    inputSize: input_size
+    similarityType: similarityType
+    isSimilarTo: isSimilarTo
+    upperCoversMap: upper_covers_map
+    getPermutabilityLevelWitnesses: get_permutability_level_witnesses
+    joinIrreduciblesFound: join_irreducibles_found
+  static_methods:
+    - CongruenceLattice.minimalElements
+  str_parity: false
+testing:
+  notes: |
+    Golden cases in tests/parity/conlat cover constructors, lattice operations,
+    exception paths, and round-trip of Con(cyclic2) partitions.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/conlat_partition.py
+      covers:
+        - cardinality
+        - getName
+        - zero
+        - one
+        - join
+        - meet
+        - leq
+        - Cg
+      ignore_lines: []

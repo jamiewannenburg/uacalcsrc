@@ -1,0 +1,48 @@
+target: org.uacalc.alg.conlat.Partition
+level: file
+status: implemented
+java_source: org/uacalc/alg/conlat/Partition.java
+notes: |
+  Java interface. CPython instances are uacalc_lib Partition; the shim adds
+  camelCase Partition methods, PrintType enum names, IndexOutOfBoundsException
+  / NullPointerException translation, and toString(PrintType) dispatch.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    universeSize: universe_size
+    numberOfBlocks: number_of_blocks
+    isRelated: is_related
+    toArray: to_array
+    joinBlocks: join_blocks
+    isRepresentative: is_representative
+    blockIndex: block_index
+    getBlocks: get_blocks
+    isZero: is_zero
+    isUniform: is_uniform
+    isInitialLexRepresentative: is_initial_lex_representative
+    getPairs: get_pairs
+    compareTo: compare_to
+    hashCode: hash_code
+    toString: toString
+  static_methods: []
+  str_parity: true
+testing:
+  notes: |
+    Golden cases in tests/parity/conlat cover every interface method plus
+    array/toString round-trip of join, meet, leq, equals, and toString.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/conlat_partition.py
+      covers:
+        - universeSize
+        - numberOfBlocks
+        - isRelated
+        - representative
+        - join
+        - meet
+        - leq
+        - toArray
+        - equals
+        - toString
+      ignore_lines: []

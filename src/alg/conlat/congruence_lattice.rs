@@ -703,6 +703,11 @@ where
         self.universe.is_some()
     }
     
+    /// Java `joinIrreduciblesFound()`: whether the JI list has been computed.
+    pub fn join_irreducibles_found(&self) -> bool {
+        self.join_irreducibles.is_some()
+    }
+
     /// Compute the join irreducible congruences.
     ///
     /// A congruence is join irreducible if it cannot be expressed as the

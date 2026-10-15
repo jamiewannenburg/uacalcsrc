@@ -88,14 +88,19 @@ slices:
       - org.uacalc.alg.conlat
     depends_on:
       - core-alg-base
-    owner: agent-e
+    owner: cursor-agent
     status: parity_golden
-    last_updated: "2026-04-18"
+    last_updated: "2026-10-15"
     workstreams: []
     parity_tests_dir: tests/parity/conlat
     notes: >-
-      parity_golden: golden_conlat_surface.py + fixtures (Jython BasicPartition join sample; CPython
-      empty namespace). uacalc_lib.alg.conlat wiring remains future work.
+      Partition / BasicPartition / CongruenceLattice Jython shims on
+      org.uacalc.alg.conlat with golden behavioral cases in tests/parity/conlat,
+      including array/toString value round-trips and Java-named conversion-path
+      exceptions. UI, ProgressReport, main, toMatt, generalizedWeakClosure,
+      closureAt, projection, and termMap overloads are not wrapped. TypeFinder /
+      Subtrace / Polymorphisms / CentralityData are not this wrap. Branch
+      cursor/congruences-4252.
 
   - id: core-alg-parallel
     title: Parallel closers / pool (if exposed to scripts)

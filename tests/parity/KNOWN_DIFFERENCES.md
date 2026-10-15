@@ -228,6 +228,47 @@ Malcev is intentionally left alone.
 
 ---
 
+## org.uacalc.alg.conlat
+
+### CongruenceLattice.getDescription (default)
+
+- **Java**: `"Congruence Lattice of " + alg` uses `Algebra.toString()`, i.e.
+  `org.uacalc.alg.BasicAlgebra@hex`.
+- **Python**: library `get_description` uses the algebra name (`C2`).
+- **Status**: To Be Fixed
+- **Tests**: `cl_get_description` strict xfail
+- **Owner vs shim**: Owner/library — default description is built in Rust from
+  `alg.name()`, not Java identity `toString()`. After `setDescription` the
+  strings match (`cl_set_description`).
+
+### CongruenceLattice.Delta
+
+- **Java**: `Delta(zero, one)` on cyclic2 is the one partition `|0,1|`.
+- **Python**: library `delta` is a stub that returns zero `|0|1|`.
+- **Status**: To Be Fixed
+- **Tests**: `cl_delta` strict xfail
+- **Owner vs shim**: Owner/library — stub in `src/alg/conlat/congruence_lattice.rs`.
+  Not a rename in the shim.
+
+### CongruenceLattice.idempotentPolynomials
+
+- **Java**: one idempotent polynomial on cyclic2.
+- **Python**: library returns an empty list.
+- **Status**: To Be Fixed
+- **Tests**: `cl_idempotent_polys` strict xfail
+- **Owner vs shim**: Owner/library — incomplete `idempotent_polynomials`.
+
+### CongruenceLattice.getPermutabilityLevelWitnesses
+
+- **Java**: after `permutabilityLevel()` on cyclic2 the witness array is two
+  nulls (`None` in Jython).
+- **Python**: library returns the zero/zero pair.
+- **Status**: To Be Fixed
+- **Tests**: `cl_perm_witnesses` strict xfail
+- **Owner vs shim**: Owner/library — witness storage differs. Not a shim issue.
+
+---
+
 ## org.uacalc.alg.Malcev
 
 Left alone, as specified. `minority_term` / `weak_nu_term` are not part of this

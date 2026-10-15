@@ -1,8 +1,30 @@
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
+use pyo3::types::PyAny;
 use uacalc::util::IntArrayTrait;
 use uacalc::alg::conlat::{BinaryRelation, MutableBinaryRelation};
+use uacalc::alg::conlat::partition::Partition;
 use crate::alg::conlat::basic_binary_relation::PyBasicBinaryRelation;
+use crate::util::PyIntArray;
+
+fn extract_partition(obj: &Bound<'_, PyAny>) -> PyResult<Partition> {
+    if let Ok(p) = obj.extract::<PyRef<PyPartition>>() {
+        return Ok(p.inner.clone());
+    }
+    Err(PyValueError::new_err("expected Partition"))
+}
+
+fn extract_partition_list(obj: &Bound<'_, PyAny>) -> PyResult<Vec<Partition>> {
+    let mut out = Vec::new();
+    for item in obj.iter()? {
+        out.push(extract_partition(&item?)?);
+    }
+    Ok(out)
+}
+
+fn wrap(inner: Partition) -> PyPartition {
+    PyPartition { inner }
+}
 
 /// Python wrapper for Partition
 #[pyclass]
@@ -364,6 +386,235 @@ impl PyPartition {
     // Python comparison (greater than or equal).
     fn __ge__(&self, other: &PyPartition) -> bool {
         self.inner >= other.inner
+    }
+
+    fn get_array(&self) -> Vec<i32> {
+        self.inner.to_array()
+    }
+
+    fn get_pairs(&self) -> Vec<Vec<i32>> {
+        self.inner
+            .pairs_as_vec()
+            .into_iter()
+            .map(|p| vec![p[0], p[1]])
+            .collect()
+    }
+
+    fn compose(&self, other: &Bound<'_, PyAny>) -> PyResult<PyBasicBinaryRelation> {
+        let rel = if let Ok(p) = other.extract::<PyRef<PyPartition>>() {
+            self.inner.compose_bbr(&p.inner)
+        } else if let Ok(r) = other.extract::<PyRef<PyBasicBinaryRelation>>() {
+            self.inner.compose_bbr(&r.inner)
+        } else {
+            return Err(PyValueError::new_err("compose expects a BinaryRelation"));
+        };
+        match rel {
+            Ok(inner) => Ok(PyBasicBinaryRelation { inner }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+
+    fn compare_to(&self, other: &PyPartition) -> i32 {
+        // Java BasicPartition.compareTo: -1/1 on block-count, else raw array diff.
+        let diff = other.inner.number_of_blocks() as i32 - self.inner.number_of_blocks() as i32;
+        if diff < 0 {
+            return -1;
+        }
+        if diff > 0 {
+            return 1;
+        }
+        let a = self.inner.to_array();
+        let b = other.inner.to_array();
+        let n = a.len().min(b.len());
+        for i in 0..n {
+            let d = b[i] - a[i];
+            if d != 0 {
+                return d;
+            }
+        }
+        0
+    }
+
+    fn get(&self, i: usize) -> PyResult<i32> {
+        let arr = self.inner.to_array();
+        arr.get(i).copied().ok_or_else(|| {
+            pyo3::exceptions::PyIndexError::new_err(format!(
+                "Index {} out of bounds for length {}",
+                i,
+                arr.len()
+            ))
+        })
+    }
+
+    fn hash_code(&self) -> i32 {
+        Partition::java_hash_code(&self.inner.to_array())
+    }
+
+    fn __iter__(slf: PyRef<'_, Self>) -> PyResult<Py<PyPartitionPairsIter>> {
+        let pairs = slf.get_pairs();
+        Py::new(
+            slf.py(),
+            PyPartitionPairsIter { pairs, index: 0 },
+        )
+    }
+
+    #[staticmethod]
+    fn string_to_partition(str: &str, length: i32) -> PyResult<Option<Vec<i32>>> {
+        match Partition::string_to_partition(str, length) {
+            Ok(v) => Ok(v),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+
+    #[staticmethod]
+    fn jb_to_partition(a: Vec<i32>) -> PyResult<PyPartition> {
+        match Partition::jb_to_partition(&a) {
+            Ok(inner) => Ok(wrap(inner)),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+
+    #[staticmethod]
+    #[pyo3(signature = (a_or_par0, b_or_par1, par0=None, par1=None))]
+    fn permutability_level(
+        a_or_par0: &Bound<'_, PyAny>,
+        b_or_par1: &Bound<'_, PyAny>,
+        par0: Option<&PyPartition>,
+        par1: Option<&PyPartition>,
+    ) -> PyResult<i32> {
+        if let (Some(p0), Some(p1)) = (par0, par1) {
+            let a = a_or_par0.extract::<usize>()?;
+            let b = b_or_par1.extract::<usize>()?;
+            return Ok(Partition::permutability_level(a, b, &p0.inner, &p1.inner));
+        }
+        let p0 = extract_partition(a_or_par0)?;
+        let p1 = extract_partition(b_or_par1)?;
+        match Partition::permutability_level_of_join(&p0, &p1) {
+            Ok(v) => Ok(v),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+
+    #[staticmethod]
+    fn leq_arrays(u: Vec<i32>, v: Vec<i32>) -> bool {
+        Partition::leq_arrays(&u, &v)
+    }
+
+    #[staticmethod]
+    fn normalize_array(mut part: Vec<i32>) -> PyResult<Vec<i32>> {
+        match Partition::normalize_array_java(&mut part) {
+            Ok(()) => Ok(part),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+
+    #[staticmethod]
+    fn part_to_kiss_string(part: Vec<i32>) -> String {
+        Partition::part_to_kiss_string_public(&part)
+    }
+
+    #[staticmethod]
+    fn direct_product(alpha: &Bound<'_, PyAny>, beta: &Bound<'_, PyAny>) -> PyResult<PyPartition> {
+        let a = extract_partition(alpha)?;
+        let b = extract_partition(beta)?;
+        match Partition::direct_product(&a, &b) {
+            Ok(inner) => Ok(wrap(inner)),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+
+    #[staticmethod]
+    fn unary_polymorphisms(pars: &Bound<'_, PyAny>) -> PyResult<Vec<PyIntArray>> {
+        let rust = extract_partition_list(pars)?;
+        match Partition::unary_polymorphisms(&rust) {
+            Ok(set) => Ok(set.into_iter().map(|ia| PyIntArray { inner: ia }).collect()),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+
+    #[staticmethod]
+    fn binary_polymorphisms(pars: &Bound<'_, PyAny>) -> PyResult<Vec<PyIntArray>> {
+        let rust = extract_partition_list(pars)?;
+        match Partition::binary_polymorphisms(&rust, None) {
+            Ok(set) => Ok(set.into_iter().map(|ia| PyIntArray { inner: ia }).collect()),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+
+    #[staticmethod]
+    fn join_closure(pars: &Bound<'_, PyAny>) -> PyResult<Vec<PyPartition>> {
+        let rust = extract_partition_list(pars)?;
+        match Partition::join_closure(&rust) {
+            Ok(v) => Ok(v.into_iter().map(wrap).collect()),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+
+    #[staticmethod]
+    fn meet_closure(pars: &Bound<'_, PyAny>) -> PyResult<Vec<PyPartition>> {
+        let rust = extract_partition_list(pars)?;
+        match Partition::meet_closure(&rust) {
+            Ok(v) => Ok(v.into_iter().map(wrap).collect()),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+
+    #[staticmethod]
+    fn sub_universe_generated(gens: &Bound<'_, PyAny>) -> PyResult<Vec<PyPartition>> {
+        let rust = extract_partition_list(gens)?;
+        match Partition::sub_universe_generated(&rust) {
+            Ok(v) => Ok(v.into_iter().map(wrap).collect()),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+
+    #[staticmethod]
+    fn partition_from_matrix(matrix: Vec<Vec<i32>>) -> PyResult<PyPartition> {
+        match Partition::partition_from_matrix(&matrix) {
+            Ok(inner) => Ok(wrap(inner)),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+
+    #[staticmethod]
+    fn first_projection(n: usize) -> PyResult<PyPartition> {
+        match Partition::first_projection(n) {
+            Ok(inner) => Ok(wrap(inner)),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+
+    #[staticmethod]
+    fn second_projection(n: usize) -> PyResult<PyPartition> {
+        match Partition::second_projection(n) {
+            Ok(inner) => Ok(wrap(inner)),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+}
+
+#[pyclass]
+pub struct PyPartitionPairsIter {
+    pairs: Vec<Vec<i32>>,
+    index: usize,
+}
+
+#[pymethods]
+impl PyPartitionPairsIter {
+    fn __iter__(slf: PyRef<'_, Self>) -> PyRef<'_, Self> {
+        slf
+    }
+
+    fn __next__(&mut self) -> Option<PyIntArray> {
+        if self.index >= self.pairs.len() {
+            return None;
+        }
+        let pair = &self.pairs[self.index];
+        self.index += 1;
+        match uacalc::util::int_array::IntArray::from_array(pair.clone()) {
+            Ok(inner) => Some(PyIntArray { inner }),
+            Err(_) => None,
+        }
     }
 }
 

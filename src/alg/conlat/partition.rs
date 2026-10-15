@@ -71,10 +71,7 @@ impl Partition {
     /// assert_eq!(partition.universe_size(), 3);
     /// ```
     pub fn new(array: Vec<i32>) -> Result<Self, String> {
-        if array.is_empty() {
-            return Err("Partition array cannot be empty".to_string());
-        }
-        
+        // Java BasicPartition(int[]) accepts the empty array (0-element algebra).
         let mut partition = Partition {
             array,
             block_count: -1,
@@ -112,8 +109,10 @@ impl Partition {
     /// * `Ok(Partition)` - Successfully created partition
     /// * `Err(String)` - Invalid string format
     pub fn from_string_with_length(str: &str, length: i32) -> Result<Self, String> {
-        let array = Self::string_to_partition(str, length)?;
-        Self::new(array)
+        match Self::string_to_partition(str, length)? {
+            Some(array) => Self::new(array),
+            None => Err("null".to_string()),
+        }
     }
     
     /// Create the zero partition (all elements in separate blocks).
@@ -619,57 +618,68 @@ impl Partition {
     }
     
     /// Convert string to partition array representation.
-    fn string_to_partition(str: &str, length: i32) -> Result<Vec<i32>, String> {
+    ///
+    /// Matches Java `BasicPartition.stringToPartition`: unrecognized format
+    /// returns `Ok(None)` (Java `null`); invalid bracket form is an error.
+    pub fn string_to_partition(str: &str, length: i32) -> Result<Option<Vec<i32>>, String> {
         let str = str.trim();
+        if str.is_empty() {
+            return Err("String index out of range: 0".to_string());
+        }
+        let first = str.chars().next().unwrap();
         let mut blocks: Option<Vec<BTreeSet<i32>>> = None;
         let mut strings: Option<Vec<String>> = None;
         let mut blk_count = -1;
-        
-        // Parse bar notation: |1 2|3 4 5|
-        if str.starts_with('|') && str.ends_with('|') {
-            let content = &str[1..str.len()-1];
+
+        // Bar notation: |1 2|3 4 5|
+        if first == '|' && str.ends_with('|') {
+            let content = &str[1..str.len() - 1];
             strings = Some(content.split('|').map(|s| s.to_string()).collect());
             blk_count = strings.as_ref().unwrap().len() as i32;
             blocks = Some(Vec::new());
         }
-        // Parse bracket notation: [[1 2][3 4 5]]
-        else if str.starts_with("[[") && str.ends_with("]]") {
-            let content = &str[2..str.len()-2].trim();
-            if !content.starts_with('[') {
+        // Bracket notation: [[1 2][3 4 5]]  (Java splits on '[' after stripping outer [])
+        if first == '[' && str.ends_with(']') {
+            let inner = str[1..str.len() - 1].trim();
+            if inner.is_empty() || !inner.starts_with('[') {
                 return Err("Not a valid partition string".to_string());
             }
-            strings = Some(content[1..].split("][").map(|s| s.to_string()).collect());
+            strings = Some(inner[1..].split('[').map(|s| s.to_string()).collect());
             blk_count = strings.as_ref().unwrap().len() as i32;
             blocks = Some(Vec::new());
         }
-        
+
         if let (Some(mut blocks), Some(strings)) = (blocks, strings) {
             for i in 0..blk_count as usize {
                 blocks.push(Self::block_string_to_set(&strings[i])?);
             }
-            
+
             let size = if length < 0 {
                 blocks.iter().map(|block| block.len()).sum()
             } else {
                 length as usize
             };
-            
+
             let mut ans = vec![-1; size];
             for block in &blocks {
+                if block.is_empty() {
+                    continue;
+                }
+                let first_elt = *block.iter().next().unwrap();
                 for &i in block {
-                    if i < size as i32 {
-                        if i == *block.iter().next().unwrap() {
+                    if i >= 0 && (i as usize) < size {
+                        if i == first_elt {
                             ans[i as usize] = -(block.len() as i32);
                         } else {
-                            ans[i as usize] = *block.iter().next().unwrap();
+                            ans[i as usize] = first_elt;
                         }
                     }
                 }
             }
-            return Ok(ans);
+            return Ok(Some(ans));
         }
-        
-        Err("Invalid partition string format".to_string())
+
+        Ok(None)
     }
     
     /// Convert a block string to a set of integers.
@@ -1177,6 +1187,266 @@ impl Partition {
             ans += 1;
         }
     }
+
+    /// Max of `permutability_level(a,b,par0,par1)` over related pairs in the join.
+    pub fn permutability_level_of_join(par0: &Partition, par1: &Partition) -> Result<i32, String> {
+        let mut level = -1;
+        let join = par0.join(par1)?;
+        let n = par0.universe_size();
+        for i in 0..n {
+            for j in (i + 1)..n {
+                if join.is_related(i, j) {
+                    level = level.max(Self::permutability_level(i, j, par0, par1));
+                    level = level.max(Self::permutability_level(j, i, par0, par1));
+                }
+            }
+        }
+        Ok(level)
+    }
+
+    /// Java `BasicPartition.jbToPartition`.
+    pub fn jb_to_partition(a: &[i32]) -> Result<Partition, String> {
+        let mut ans = vec![0; a.len()];
+        for (i, &k) in a.iter().enumerate() {
+            if k < 0 || (k as usize) >= a.len() {
+                return Err(format!("Index: {}, Size: {}", k, a.len()));
+            }
+            let ku = k as usize;
+            ans[ku] -= 1;
+            if (k as usize) < i {
+                ans[i] = k;
+            }
+        }
+        Self::new(ans)
+    }
+
+    /// Java `BasicPartition.leq(int[], int[])` (copies; Java mutates via `root`).
+    pub fn leq_arrays(u: &[i32], v: &[i32]) -> bool {
+        if u.len() != v.len() {
+            return false;
+        }
+        let mut uu = u.to_vec();
+        let mut vv = v.to_vec();
+        let n = uu.len();
+        for i in 0..n {
+            if uu[i] >= 0 {
+                let ru = Self::root_mut(i, &mut uu);
+                let rv_i = Self::root_mut(i, &mut vv);
+                let rv_r = Self::root_mut(ru, &mut vv);
+                if rv_i != rv_r {
+                    return false;
+                }
+            }
+        }
+        true
+    }
+
+    /// Java `BasicPartition.normalize(int[])`. `part[0] == 0` is a Java RuntimeException.
+    pub fn normalize_array_java(part: &mut [i32]) -> Result<(), String> {
+        if part.is_empty() {
+            return Err("Index: 0, Size: 0".to_string());
+        }
+        if part[0] == 0 {
+            return Err("RuntimeException".to_string());
+        }
+        Self::normalize_array(part);
+        Ok(())
+    }
+
+    /// Java `BasicPartition.partToKissString`.
+    pub fn part_to_kiss_string_public(part: &[i32]) -> String {
+        Self::part_to_kiss_string(part)
+    }
+
+    /// Java `BasicPartition.directProduct`.
+    pub fn direct_product(alpha: &Partition, beta: &Partition) -> Result<Partition, String> {
+        let n = alpha.universe_size();
+        let m = beta.universe_size();
+        let univ_sizes = [n as i32, m as i32];
+        let size = n * m;
+        let a_blocks = alpha.get_blocks();
+        let b_blocks = beta.get_blocks();
+        let mut ans = Self::zero(size);
+        for a_block in &a_blocks {
+            for b_block in &b_blocks {
+                let root = crate::util::horner::horner(
+                    &[a_block[0] as i32, b_block[0] as i32],
+                    &univ_sizes,
+                ) as usize;
+                for (i, &ai) in a_block.iter().enumerate() {
+                    for (j, &bj) in b_block.iter().enumerate() {
+                        if i != 0 || j != 0 {
+                            let other = crate::util::horner::horner(
+                                &[ai as i32, bj as i32],
+                                &univ_sizes,
+                            ) as usize;
+                            let r = ans.representative(root);
+                            let s = ans.representative(other);
+                            if r != s {
+                                ans.join_blocks(r, s);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        Ok(ans)
+    }
+
+    /// Java `BasicPartition.joinClosure(List)` (one-pass; not a full closure).
+    pub fn join_closure(pars: &[Partition]) -> Result<Vec<Partition>, String> {
+        let mut hs: std::collections::HashSet<Partition> = pars.iter().cloned().collect();
+        let mut ans: Vec<Partition> = pars.to_vec();
+        let orig: Vec<Partition> = pars.to_vec();
+        let mut k = 0;
+        for elt in &orig {
+            k += 1;
+            let n = ans.len();
+            for i in k..n {
+                let join = elt.join(&ans[i])?;
+                if hs.insert(join.clone()) {
+                    ans.push(join);
+                }
+            }
+        }
+        Ok(ans)
+    }
+
+    /// Java `BasicPartition.meetClosure(List)`.
+    pub fn meet_closure(pars: &[Partition]) -> Result<Vec<Partition>, String> {
+        let mut hs: std::collections::HashSet<Partition> = pars.iter().cloned().collect();
+        let mut ans: Vec<Partition> = pars.to_vec();
+        let orig: Vec<Partition> = pars.to_vec();
+        let mut k = 0;
+        for elt in &orig {
+            k += 1;
+            let n = ans.len();
+            for i in k..n {
+                let meet = elt.meet(&ans[i])?;
+                if hs.insert(meet.clone()) {
+                    ans.push(meet);
+                }
+            }
+        }
+        Ok(ans)
+    }
+
+    /// Java `BasicPartition.subUniverseGenerated(List)`.
+    pub fn sub_universe_generated(gens: &[Partition]) -> Result<Vec<Partition>, String> {
+        let mut ans = Self::meet_closure(gens)?;
+        let mut k = ans.len();
+        loop {
+            ans = Self::join_closure(&ans)?;
+            if ans.len() == k {
+                return Ok(ans);
+            }
+            k = ans.len();
+            ans = Self::meet_closure(&ans)?;
+            if ans.len() == k {
+                return Ok(ans);
+            }
+            k = ans.len();
+        }
+    }
+
+    /// Java `BasicPartition.partitionFromMatrix`.
+    pub fn partition_from_matrix(matrix: &[Vec<i32>]) -> Result<Partition, String> {
+        if matrix.is_empty() || matrix[0].is_empty() {
+            return Err("matrix must be nonempty".to_string());
+        }
+        let rows = matrix.len();
+        let cols = matrix[0].len();
+        let sizes = [rows as i32, cols as i32];
+        let mut map: std::collections::BTreeMap<i32, Vec<i32>> = std::collections::BTreeMap::new();
+        for (i, row) in matrix.iter().enumerate() {
+            for (j, &key) in row.iter().enumerate() {
+                let idx = crate::util::horner::horner(&[i as i32, j as i32], &sizes);
+                map.entry(key).or_default().push(idx);
+            }
+        }
+        let mut arr = vec![0; rows * cols];
+        for lst in map.values() {
+            if lst.is_empty() {
+                continue;
+            }
+            let first = lst[0] as usize;
+            arr[first] = -(lst.len() as i32);
+            for &idx in lst.iter().skip(1) {
+                arr[idx as usize] = first as i32;
+            }
+        }
+        Self::new(arr)
+    }
+
+    /// Java `BasicPartition.firstProjection`.
+    pub fn first_projection(n: usize) -> Result<Partition, String> {
+        let mut arr = vec![0; n * n];
+        for k in 0..n {
+            for j in 1..n {
+                arr[k * n + j] = (k * n) as i32;
+            }
+            if n > 0 {
+                arr[k * n] = -(n as i32);
+            }
+        }
+        Self::new(arr)
+    }
+
+    /// Java `BasicPartition.secondProjection`.
+    pub fn second_projection(n: usize) -> Result<Partition, String> {
+        let mut arr = vec![0; n * n];
+        for i in 0..n {
+            arr[i] = -(n as i32);
+        }
+        for k in 1..n {
+            for j in 0..n {
+                arr[k * n + j] = j as i32;
+            }
+        }
+        Self::new(arr)
+    }
+
+    /// Java `int[]` hashCode used by `IntArray` / `BasicPartition`.
+    pub fn java_hash_code(part: &[i32]) -> i32 {
+        let mut ans: i32 = 1;
+        for &x in part {
+            ans = ans.wrapping_mul(31).wrapping_add(x);
+        }
+        ans
+    }
+
+    /// Exposed pairs of the equivalence relation (Java `getPairs` without stdout).
+    pub fn pairs_as_vec(&self) -> Vec<[i32; 2]> {
+        BinaryRelation::get_pairs(self)
+            .into_iter()
+            .map(|ia| [ia.get(0).unwrap_or(0), ia.get(1).unwrap_or(0)])
+            .collect()
+    }
+
+    /// Compose with another binary relation, returning a `BasicBinaryRelation`.
+    pub fn compose_bbr(
+        &self,
+        other: &dyn BinaryRelation<IntArray>,
+    ) -> Result<BasicBinaryRelation, String> {
+        if self.universe_size() != other.universe_size() {
+            return Err(format!(
+                "Cannot compose relations with different universe sizes: {} and {}",
+                self.universe_size(),
+                other.universe_size()
+            ));
+        }
+        let mut result = BasicBinaryRelation::new(self.universe_size())?;
+        for pair in BinaryRelation::get_pairs(self) {
+            let i = pair.get(0).unwrap() as usize;
+            let j = pair.get(1).unwrap() as usize;
+            for k in 0..self.universe_size() {
+                if other.is_related(j, k) {
+                    result.add(i, k)?;
+                }
+            }
+        }
+        Ok(result)
+    }
 }
 
 impl PartialEq for Partition {
@@ -1394,5 +1664,28 @@ mod tests {
         assert!(s.contains("0,1"));
         assert!(s.contains("2"));
         assert!(s.contains("3"));
+    }
+
+    #[test]
+    fn test_from_string_brackets() {
+        let partition = Partition::from_string("[[0 1][2 3]]").unwrap();
+        assert_eq!(partition.universe_size(), 4);
+        assert!(partition.is_related(0, 1));
+        assert!(partition.is_related(2, 3));
+        assert!(!partition.is_related(0, 2));
+    }
+
+    #[test]
+    fn test_join_closure_and_projections() {
+        let p = Partition::from_string("|0 1|2|").unwrap();
+        let q = Partition::from_string("|0|1 2|").unwrap();
+        let jc = Partition::join_closure(&[p.clone(), q.clone()]).unwrap();
+        assert!(jc.len() >= 2);
+        let fp = Partition::first_projection(2).unwrap();
+        let sp = Partition::second_projection(2).unwrap();
+        assert_eq!(fp.universe_size(), 4);
+        assert_eq!(sp.universe_size(), 4);
+        let prod = Partition::direct_product(&p, &q).unwrap();
+        assert_eq!(prod.universe_size(), 9);
     }
 }

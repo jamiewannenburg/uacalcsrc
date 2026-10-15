@@ -149,6 +149,16 @@ def _op_eval_values(op: Any, limit: int = 32) -> List[Any]:
     return values
 
 
+def _lattice_zero_ser(zero: Any) -> Any:
+    if zero is None:
+        return None
+    text = str(zero)
+    try:
+        return int(text)
+    except (TypeError, ValueError):
+        return text
+
+
 def serialize_for_golden(obj: Any) -> Any:
     """Convert an object to a JSON-serializable form for golden data."""
     if obj is None:
@@ -203,6 +213,24 @@ def serialize_for_golden(obj: Any) -> Any:
             "tables": tables,
         }
 
+    # Partition / BasicPartition (before Lattice: CongruenceLattice is a lattice)
+    if "Partition" in class_name and "Lattice" not in class_name:
+        arr = _call_or_get(obj, "toArray", "to_array", "getArray", "get_array") or []
+        if class_name == "Partition":
+            class_name = "BasicPartition"
+        return {
+            "__type__": "partition",
+            "class": class_name,
+            "string": str(obj),
+            "array": [int(x) for x in list(arr)],
+            "universe_size": int(
+                _call_or_get(obj, "universeSize", "universe_size") or 0
+            ),
+            "number_of_blocks": int(
+                _call_or_get(obj, "numberOfBlocks", "number_of_blocks") or 0
+            ),
+        }
+
     # Lattice-like
     if "Lattice" in class_name or "lattice" in class_name:
         univ = _call_or_get(obj, "universe", "getUniverseList")
@@ -225,7 +253,7 @@ def serialize_for_golden(obj: Any) -> Any:
             "name": str(_call_or_get(obj, "name", "getName") or ""),
             "cardinality": int(_call_or_get(obj, "cardinality") or 0),
             "universe": univ_ser,
-            "zero": serialize_for_golden(_maybe_elem(_call_or_get(obj, "zero"))),
+            "zero": _lattice_zero_ser(_call_or_get(obj, "zero")),
         }
 
     # Term-like

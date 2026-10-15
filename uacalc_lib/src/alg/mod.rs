@@ -86,6 +86,7 @@ pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     m.add_class::<PyCentralityData>()?;
     m.add_class::<PySimilarityType>()?;
     m.add_class::<PyPartition>()?;
+    m.add_class::<crate::alg::conlat::partition::PyPartitionPairsIter>()?;
     m.add_class::<PyPrintType>()?;
     m.add_class::<PyCongruenceLattice>()?;
     m.add_class::<PyCongruenceLatticeIntArray>()?;
@@ -131,6 +132,7 @@ pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     m.add("SimilarityType", m.getattr("PySimilarityType")?)?;
     m.add("CentralityData", m.getattr("PyCentralityData")?)?;
     m.add("Partition", m.getattr("PyPartition")?)?;
+    m.add("BasicPartition", m.getattr("PyPartition")?)?;
     m.add("PrintType", m.getattr("PyPrintType")?)?;
     m.add("CongruenceLattice", m.getattr("PyCongruenceLattice")?)?;
     m.add("ParameterizedOperation", m.getattr("PyParameterizedOperation")?)?;
