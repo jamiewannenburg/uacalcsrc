@@ -15,13 +15,14 @@ if not is_jython:
     _lattice_from_meet = globals()["lattice_from_meet"]
     _lattice_from_join_with_universe = globals()["lattice_from_join_with_universe"]
     _lattice_from_meet_with_universe = globals()["lattice_from_meet_with_universe"]
-    _dual = globals()["dual"]
-    _con_to_small_lattice = globals()["con_to_small_lattice"]
+    from org.uacalc._exceptions import NullPointerException as _NullPointerException
+
     _maximals_divisibility = globals()["maximals_divisibility"]
     _maximals_prefix = globals()["maximals_prefix"]
     _maximals_natural_i32 = globals()["maximals_natural_i32"]
     _maximals_natural_string = globals()["maximals_natural_string"]
     _BasicLattice = globals()["BasicLattice"]
+    _SmallLattice = globals().get("SmallLattice")
 
     def _join_defines_lattice(join):
         """True when *join* is a join-semilattice (library property checks).
@@ -76,11 +77,25 @@ if not is_jython:
 
         @staticmethod
         def dual(lat):
-            return _dual(lat)
+            # Java Lattices.dual throws NPE (comment: "this causes a npe").
+            # uacalc_lib.dual is unchanged (Clone/reference stub); the org
+            # wrapper matches Java.
+            raise _NullPointerException(
+                'Cannot invoke "java.lang.Integer.intValue()" because the '
+                'return value of "java.util.HashMap.get(Object)" is null'
+            )
 
         @staticmethod
         def conToSmallLattice(con):
-            return _con_to_small_lattice(con)
+            # Java always returns null after building (and discarding) an
+            # OrderedSet. Null argument NPEs on con.universe().
+            # uacalc_lib.con_to_small_lattice now returns PySmallLattice.
+            if con is None:
+                raise _NullPointerException(
+                    'Cannot invoke "org.uacalc.alg.conlat.CongruenceLattice.'
+                    'universe()" because "con" is null'
+                )
+            return None
 
     class OrderedSets(object):
         """Static facade matching Java ``org.uacalc.lat.OrderedSets``."""
@@ -113,6 +128,18 @@ if not is_jython:
                 setattr(_BasicLattice, _camel, getattr(_BasicLattice, _snake))
             except (TypeError, AttributeError):
                 pass
+
+    if _SmallLattice is not None:
+        for _camel, _snake in (
+            ("upperCoversIndices", "upper_covers_indices"),
+            ("getName", "name"),
+            ("getUniverseList", "universe"),
+        ):
+            if not hasattr(_SmallLattice, _camel) and hasattr(_SmallLattice, _snake):
+                try:
+                    setattr(_SmallLattice, _camel, getattr(_SmallLattice, _snake))
+                except (TypeError, AttributeError):
+                    pass
 
     globals()["Lattices"] = Lattices
     globals()["OrderedSets"] = OrderedSets

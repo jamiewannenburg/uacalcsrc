@@ -504,27 +504,85 @@ fn py_lattice_from_join_with_universe(
     }
 }
 
+/// Python wrapper for a concrete SmallLattice produced by `con_to_small_lattice`.
+///
+/// Java `SmallLattice` is an interface; this is the missing binding so the
+/// library can return a real object instead of a ValueError about the wrapper.
+#[pyclass]
+pub struct PySmallLattice {
+    universe: Vec<uacalc::alg::conlat::Partition>,
+    upper_covers: Vec<Vec<usize>>,
+    name: String,
+}
+
+#[pymethods]
+impl PySmallLattice {
+    /// Number of elements in the lattice.
+    fn cardinality(&self) -> usize {
+        self.universe.len()
+    }
+
+    /// Lattice name (Java `getName`).
+    fn name(&self) -> String {
+        self.name.clone()
+    }
+
+    /// Universe as a list of Partition objects.
+    fn universe(&self, py: Python) -> PyResult<PyObject> {
+        let mut py_objects = Vec::new();
+        for part in &self.universe {
+            let py_partition = crate::alg::conlat::partition::PyPartition {
+                inner: part.clone(),
+            };
+            py_objects.push(py_partition.into_py(py));
+        }
+        Ok(py_objects.into_py(py))
+    }
+
+    /// Indices of the upper covers of the element at `index` (Java `upperCoversIndices`).
+    fn upper_covers_indices(&self, index: usize) -> Vec<usize> {
+        self.upper_covers.get(index).cloned().unwrap_or_default()
+    }
+
+    fn __str__(&self) -> String {
+        format!("SmallLattice({})", self.name)
+    }
+
+    fn __repr__(&self) -> String {
+        format!("SmallLattice({})", self.name)
+    }
+}
+
 /// Convert a congruence lattice to a small lattice
 #[pyfunction]
-fn py_con_to_small_lattice(con: &Bound<'_, PyAny>, _py: Python) -> PyResult<PyObject> {
+fn py_con_to_small_lattice(con: &Bound<'_, PyAny>, py: Python) -> PyResult<PyObject> {
     use crate::alg::conlat::congruence_lattice::PyCongruenceLattice;
-    
-    // Try to extract PyCongruenceLattice
+
     if let Ok(py_con_lat) = con.extract::<PyRef<'_, PyCongruenceLattice>>() {
-        // Clone the inner CongruenceLattice since we need mutable access
         let mut con_lat = py_con_lat.inner.clone();
-        
-        // Call the Rust function
         match uacalc::lat::lattices::con_to_small_lattice(&mut con_lat) {
-            Ok(_small_lat) => {
-                // SmallLattice is a trait, so we can't directly return it to Python
-                // TODO: Create a PySmallLattice wrapper type or convert to OrderedSet/BasicLattice
-                Err(PyValueError::new_err("con_to_small_lattice is implemented in Rust but needs a PySmallLattice wrapper type to be fully exposed to Python. Consider using the BasicLattice view of the CongruenceLattice instead."))
+            Ok(small_lat) => {
+                let universe: Vec<_> = small_lat.universe().collect();
+                let upper_covers: Vec<Vec<usize>> = (0..universe.len())
+                    .map(|i| small_lat.upper_covers_indices(i))
+                    .collect();
+                let name = small_lat.name().to_string();
+                Ok(PySmallLattice {
+                    universe,
+                    upper_covers,
+                    name,
+                }
+                .into_py(py))
             }
-            Err(e) => Err(PyValueError::new_err(format!("Failed to convert congruence lattice to small lattice: {}", e)))
+            Err(e) => Err(PyValueError::new_err(format!(
+                "Failed to convert congruence lattice to small lattice: {}",
+                e
+            ))),
         }
     } else {
-        Err(PyValueError::new_err("con_to_small_lattice requires a CongruenceLattice instance"))
+        Err(PyValueError::new_err(
+            "con_to_small_lattice requires a CongruenceLattice instance",
+        ))
     }
 }
 
@@ -1381,6 +1439,7 @@ pub fn register_lat_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     m.add_class::<PyDiamondLattice>()?;
     m.add_class::<PyBooleanLattice>()?;
     m.add_class::<PyBasicLattice>()?;
+    m.add_class::<PySmallLattice>()?;
     m.add_class::<PyLatticeGraphData>()?;
     m.add_class::<PyOrderedSet>()?;
     m.add_class::<PyOrderedSetPartition>()?;
@@ -1417,6 +1476,7 @@ pub fn register_lat_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     
     // Export clean names for new classes
     m.add("BasicLattice", m.getattr("PyBasicLattice")?)?;
+    m.add("SmallLattice", m.getattr("PySmallLattice")?)?;
     m.add("LatticeGraphData", m.getattr("PyLatticeGraphData")?)?;
     m.add("OrderedSet", m.getattr("PyOrderedSet")?)?;
     m.add("OrderedSetPartition", m.getattr("PyOrderedSetPartition")?)?;
@@ -1430,6 +1490,7 @@ pub fn register_lat_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     module_dict.del_item("PyDiamondLattice")?;
     module_dict.del_item("PyBooleanLattice")?;
     module_dict.del_item("PyBasicLattice")?;
+    module_dict.del_item("PySmallLattice")?;
     module_dict.del_item("PyLatticeGraphData")?;
     module_dict.del_item("PyOrderedSet")?;
     module_dict.del_item("PyOrderedSetPartition")?;
@@ -1443,8 +1504,8 @@ pub fn register_lat_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     module_dict.del_item("py_con_to_small_lattice")?;
     module_dict.del_item("py_dual")?;
     
-    // Note: Lattice and SmallLattice are traits (interfaces) and cannot be instantiated directly.
-    // Python bindings are provided for concrete implementations like DiamondLattice and BooleanLattice.
+    // Lattice remains a trait (interface). SmallLattice is exposed as the concrete
+    // PySmallLattice returned by con_to_small_lattice, plus DiamondLattice / BooleanLattice.
     
     Ok(())
 }

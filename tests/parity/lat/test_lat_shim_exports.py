@@ -25,6 +25,7 @@ _EXPECTED_DIR_SUBSET = (
     "OrderedSetBasicSet",
     "OrderedSetPartition",
     "PrefixOrder",
+    "SmallLattice",
 )
 
 

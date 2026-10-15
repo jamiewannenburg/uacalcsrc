@@ -190,10 +190,6 @@ lat = Lattices.latticeFromJoin("chain2j", join2)
         call="Lattices.dual(lat)",
         description="Lattices.dual of a 2-chain",
         skip_string_check=True,
-        xfail_reason=(
-            "Java Lattices.dual throws NullPointerException (known Java bug). "
-            "Python dual currently raises ValueError about Clone/reference limits."
-        ),
     ),
     TestCaseSpec(
         id="lattices_con_to_small_lattice",
@@ -219,10 +215,6 @@ else:
         call="_con_to_small()",
         description="Lattices.conToSmallLattice on Con(C2); Java always returns null",
         skip_string_check=True,
-        xfail_reason=(
-            "Java Lattices.conToSmallLattice always returns null (OrderedSet is "
-            "built then discarded). Python raises ValueError: needs a PySmallLattice wrapper."
-        ),
     ),
     TestCaseSpec(
         id="lattices_con_to_small_lattice_null",
@@ -242,9 +234,5 @@ else:
         call="_con_to_small()",
         description="conToSmallLattice(null) error case",
         expected_exception="NullPointerException",
-        xfail_reason=(
-            "Java raises NullPointerException; Python raises ValueError "
-            "(requires a CongruenceLattice instance)."
-        ),
     ),
 ]
