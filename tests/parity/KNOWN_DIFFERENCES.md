@@ -228,6 +228,50 @@ Malcev is intentionally left alone.
 
 ---
 
+## org.uacalc.alg (Subalgebra / products / quotients)
+
+### ProductAlgebra.calcCard([])
+
+- **Java**: `calcCard(new int[0])` is `1` (empty product of `BigInteger.ONE`).
+- **Python**: `uacalc_lib` `calc_card_safe` rejects an empty size list.
+- **Status**: To Be Fixed
+- **Tests**: `prod_calc_card_empty` strict xfail
+- **Owner vs shim**: Owner/library — empty-product cardinality is computed in
+  Rust `src/alg/product_algebra.rs`, not a rename in the shim.
+
+### ProductAlgebra([]) / PowerAlgebra(alg, 0)
+
+- **Java**: `makeOperations()` does `algebras.get(0)` and throws
+  `IndexOutOfBoundsException: Index 0 out of bounds for length 0`.
+- **Python**: the org wrapper raises the same `IndexOutOfBoundsException` before
+  calling `uacalc_lib` (which would reject empty products with `ValueError`).
+- **Status**: Fixed in the shim
+- **Tests**: `prod_empty_ctor`, `pwr_zero` pass
+- **Owner vs shim**: Shim — argument check only. Not a library defect.
+
+### PowerAlgebra.elementIndex (known Java bug)
+
+- **Java**: `PowerAlgebra.elementIndex` linear-searches `universe()` for
+  `IntArray`, but `ProductAlgebra.makeCartesianProduct` yields `ArrayList`s, so
+  the method always returns `-1`.
+- **Python**: the org wrapper matches that always-`-1` result.
+- **Status**: Known Java bug — matched on purpose
+- **Tests**: `pwr_element_index` passes
+- **Owner vs shim**: Known Java bug. Shim matches Java; not a library defect.
+
+### QuotientAlgebra.elementIndex (known Java quirk)
+
+- **Java**: `elementIndex(obj)` returns
+  `congruence.representative(superAlgebra.elementIndex(obj))`, a representative
+  in the *super* algebra, not the quotient index (`binarySearch` of
+  representatives).
+- **Python**: the org wrapper matches that super-representative result.
+- **Status**: Known Java quirk — matched on purpose
+- **Tests**: `quot_element_index` passes
+- **Owner vs shim**: Known Java bug/quirk. Shim matches Java.
+
+---
+
 ## org.uacalc.alg.conlat
 
 ### CongruenceLattice.getDescription (default)

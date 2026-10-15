@@ -5,10 +5,11 @@ java_source: null
 notes: |
   Thin package index only. org.uacalc.alg is too large for a single package-level
   surface contract; real alias/str parity work lives in file-level contracts
-  (BasicAlgebra, SmallAlgebra, FreeAlgebra, ProductAlgebra, ReductAlgebra,
+  (BasicAlgebra, SmallAlgebra, FreeAlgebra, ProductAlgebra, PowerAlgebra,
+  QuotientAlgebra, QuotientElement, SubProductAlgebra, ReductAlgebra,
   Subalgebra, and op/sublat types). The python/org shim re-exports uacalc_lib.alg
   and applies Jython call-shape bridges from _jython_compat.py for ~/uacalc
-  scripts.
+  scripts. Malcev is not wrapped.
 ignore_reason: null
 surface:
   package_export: true

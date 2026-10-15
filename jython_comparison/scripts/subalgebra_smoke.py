@@ -136,6 +136,18 @@ def test():
 
     _show("S0_con_card", lambda: s.con().cardinality())
     _show("S0_sub_card", lambda: s.sub().cardinality())
+    _show("S0_univOrder", lambda: s.getUniverseOrder())
+    _show("S0_universe", lambda: list(s.universe()))
+    _show("S0_parent", lambda: s.parent())
+    _show("S0_parents", lambda: s.parents())
+    _show("S0_convert", lambda: s.convertToDefaultValueOps())
+    s.makeOperationTables()
+    _show("S0_op_table_after", lambda: _op_table(s, plus_sym))
+    _show("restrict", lambda: str(full.restrictPartition(alg.con().Cg(0, 1))))
+    _show(
+        "congAsAlg",
+        lambda: Subalgebra.congruenceAsAlgebra(alg, alg.con().Cg(0, 1)).cardinality(),
+    )
 
 
 if __name__ == "__main__":

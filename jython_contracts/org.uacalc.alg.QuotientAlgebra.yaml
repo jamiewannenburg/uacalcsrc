@@ -1,0 +1,67 @@
+target: org.uacalc.alg.QuotientAlgebra
+level: file
+status: implemented
+java_source: org/uacalc/alg/QuotientAlgebra.java
+notes: |
+  QuotientAlgebra(alg, cong) and QuotientAlgebra(name, alg, cong). getElement
+  returns QuotientElement; getUniverseList is null; convertToDefaultValueOps
+  throws UOE. Java elementIndex returns congruence.representative(super.elementIndex(obj)),
+  a super-algebra representative rather than the quotient index — matched in
+  the org wrapper (known Java quirk). universe() iterates super representatives,
+  not QuotientElements.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    getName: name
+    setName: set_name
+    getOperation: getOperation
+    superAlgebra: super_algebra
+    getCongruence: get_congruence
+    getElement: get_element
+    elementIndex: element_index
+    representativeIndex: representative_index
+    canonicalHomomorphism: canonical_homomorphism
+    getUniverseList: get_universe_list
+    getUniverseOrder: get_universe_order
+    algebraType: algebra_type
+    convertToDefaultValueOps: convertToDefaultValueOps
+    con: con
+    sub: sub
+    makeOperationTables: make_operation_tables
+    universe: universe
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    quotient_algebra_smoke.py plus tests/parity/alg/test_cases/sub_prod_quot_cases.py.
+    Golden cases cover constructors, superAlgebra/getCongruence, getElement /
+    QuotientElement, representativeIndex, canonicalHomomorphism, universe null
+    list, convertToDefaultValueOps UOE, con/sub, and write/read round-trip.
+  task_refs:
+    - tests/parity/alg/test_cases/sub_prod_quot_cases.py
+  scripts:
+    - path: jython_comparison/scripts/quotient_algebra_smoke.py
+      covers:
+        - getName
+        - setName
+        - getOperation
+        - superAlgebra
+        - getCongruence
+        - getElement
+        - elementIndex
+        - representativeIndex
+        - canonicalHomomorphism
+        - getUniverseList
+        - getUniverseOrder
+        - algebraType
+        - convertToDefaultValueOps
+        - con
+        - sub
+        - makeOperationTables
+        - universe
+        - cardinality
+      ignore_lines:
+        - "pass 0 of"
+        - "pass 1 of"
+        - "pass "

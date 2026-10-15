@@ -1,16 +1,21 @@
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
+use pyo3::types::PyAny;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 use uacalc::alg::{Algebra, SmallAlgebra};
 use uacalc::alg::op::{IntOperation, BasicOperation};
+use uacalc::util::horner;
+use crate::alg::convert::{algebra_type_java_name, ops_to_basic_algebra, operation_to_py, operations_to_py};
 use crate::alg::{PyBasicAlgebra, PySubalgebraLattice};
 use crate::alg::conlat::congruence_lattice::PyCongruenceLattice;
+use crate::alg::op::similarity_type::PySimilarityType;
 
 /// Python wrapper for PowerAlgebra
 #[pyclass]
 pub struct PyPowerAlgebra {
     inner: uacalc::alg::PowerAlgebra,
+    root: uacalc::alg::BasicAlgebra<i32>,
 }
 
 #[pymethods]
@@ -28,7 +33,7 @@ impl PyPowerAlgebra {
         let rust_root = Box::new(root.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
 
         match uacalc::alg::PowerAlgebra::new_safe(rust_root, power) {
-            Ok(inner) => Ok(PyPowerAlgebra { inner }),
+            Ok(inner) => Ok(PyPowerAlgebra { inner, root: root.inner.clone() }),
             Err(e) => Err(PyValueError::new_err(e)),
         }
     }
@@ -47,49 +52,25 @@ impl PyPowerAlgebra {
         let rust_root = Box::new(root.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
 
         match uacalc::alg::PowerAlgebra::new_with_name_safe(name, rust_root, power) {
-            Ok(inner) => Ok(PyPowerAlgebra { inner }),
+            Ok(inner) => Ok(PyPowerAlgebra { inner, root: root.inner.clone() }),
             Err(e) => Err(PyValueError::new_err(e)),
         }
     }
 
-    /// Get the root algebra.
-    ///
-    /// Returns:
-    ///     BasicAlgebra: The root algebra
     fn get_root(&self) -> PyBasicAlgebra {
-        // We can't return a reference to the root algebra since it's boxed
-        // This is a limitation of the current design
-        PyBasicAlgebra::from_inner(uacalc::alg::BasicAlgebra::new(
-            "Root".to_string(),
-            std::collections::HashSet::new(),
-            Vec::new()
-        ))
+        PyBasicAlgebra::from_inner(self.root.clone())
     }
 
-    /// Get the parent algebra (same as root for power algebra).
-    ///
-    /// Returns:
-    ///     BasicAlgebra: The parent algebra
     fn parent(&self) -> PyBasicAlgebra {
-        // Same limitation as get_root
-        PyBasicAlgebra::from_inner(uacalc::alg::BasicAlgebra::new(
-            "Parent".to_string(),
-            std::collections::HashSet::new(),
-            Vec::new()
-        ))
+        self.get_root()
     }
 
-    /// Get the parent algebras (list containing the root algebra).
-    ///
-    /// Returns:
-    ///     list[BasicAlgebra]: List containing the root algebra
     fn parents(&self) -> Vec<PyBasicAlgebra> {
-        // Same limitation as get_root
-        vec![PyBasicAlgebra::from_inner(uacalc::alg::BasicAlgebra::new(
-            "Parent".to_string(),
-            std::collections::HashSet::new(),
-            Vec::new()
-        ))]
+        vec![self.get_root()]
+    }
+
+    fn factors(&self) -> Vec<PyBasicAlgebra> {
+        (0..self.inner.get_power()).map(|_| self.get_root()).collect()
     }
 
     /// Get the power/exponent.
@@ -154,6 +135,101 @@ impl PyPowerAlgebra {
     ///     str: The algebra type ("Power")
     fn algebra_type(&self) -> String {
         format!("{:?}", self.inner.algebra_type())
+    }
+
+    fn get_element_tuple(&self, k: i32) -> Vec<i32> {
+        let sizes = vec![self.inner.get_root_size(); self.inner.get_power()];
+        horner::horner_inv(k, &sizes)
+    }
+
+    fn element_index_tuple(&self, tuple: Vec<i32>) -> i32 {
+        let sizes = vec![self.inner.get_root_size(); self.inner.get_power()];
+        horner::horner(&tuple, &sizes)
+    }
+
+    fn get_universe_tuples(&self) -> Vec<Vec<i32>> {
+        let sizes = vec![self.inner.get_root_size(); self.inner.get_power()];
+        let n = sizes.len();
+        if n == 0 {
+            return vec![Vec::new()];
+        }
+        if sizes.iter().any(|&s| s <= 0) {
+            return Vec::new();
+        }
+        let mut indices = vec![0i32; n];
+        let mut out = Vec::new();
+        loop {
+            out.push(indices.clone());
+            let mut k = n;
+            loop {
+                if k == 0 {
+                    return out;
+                }
+                k -= 1;
+                indices[k] += 1;
+                if indices[k] < sizes[k] {
+                    break;
+                }
+                indices[k] = 0;
+            }
+        }
+    }
+
+    fn get_universe_list(&self) -> Vec<Vec<i32>> {
+        self.get_universe_tuples()
+    }
+
+    fn get_universe_order(&self) -> Option<Vec<i32>> {
+        None
+    }
+
+    fn similarity_type(&self) -> PySimilarityType {
+        PySimilarityType::from_inner(Algebra::similarity_type(&self.inner).clone())
+    }
+
+    fn make_operation_tables(&mut self) {
+        Algebra::make_operation_tables(&mut self.inner);
+    }
+
+    fn input_size(&self) -> i32 {
+        Algebra::input_size(&self.inner)
+    }
+
+    fn get_operation(&self, py: Python<'_>, sym: &Bound<'_, PyAny>) -> PyResult<Option<PyObject>> {
+        let name = if let Ok(s) = sym.extract::<String>() {
+            s
+        } else if let Ok(n) = sym.call_method0("name") {
+            n.extract::<String>()?
+        } else {
+            return Ok(None);
+        };
+        let arity = if let Ok(a) = sym.call_method0("arity") {
+            a.extract::<i32>().ok()
+        } else {
+            None
+        };
+        for op in Algebra::operations(&self.inner) {
+            if op.symbol().name() == name && arity.map(|a| op.arity() == a).unwrap_or(true) {
+                return Ok(Some(operation_to_py(py, op.as_ref())?));
+            }
+        }
+        Ok(None)
+    }
+
+    fn projection(&self, k: usize) -> PyResult<PyBasicAlgebra> {
+        if k < self.inner.get_power() {
+            Ok(self.get_root())
+        } else {
+            Err(PyValueError::new_err(format!("projection index {} out of range", k)))
+        }
+    }
+
+    fn projection_kernel(&self, _k: i32) -> Option<PyObject> {
+        None
+    }
+
+    fn number_of_factors(&self) -> usize {
+        self.inner.get_power()
     }
 
     /// Get the operations of this power algebra.
@@ -389,5 +465,18 @@ impl PyPowerAlgebra {
 }
 
 impl PyPowerAlgebra {
-    pub(crate) fn from_inner(inner: uacalc::alg::PowerAlgebra) -> Self { PyPowerAlgebra { inner } }
+    pub(crate) fn from_inner(inner: uacalc::alg::PowerAlgebra) -> Self {
+        let root = inner.get_root();
+        let card = root.cardinality();
+        let reconstructed = uacalc::alg::BasicAlgebra::new(
+            root.name().to_string(),
+            (0..card).collect(),
+            root.operations(),
+        );
+        PyPowerAlgebra { inner, root: reconstructed }
+    }
+
+    pub(crate) fn clone_inner(&self) -> uacalc::alg::PowerAlgebra {
+        self.inner.clone()
+    }
 }

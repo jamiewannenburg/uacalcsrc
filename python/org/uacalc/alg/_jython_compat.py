@@ -9,8 +9,10 @@ from __future__ import annotations
 from typing import Any, Iterable, List, Optional, Sequence, Union
 
 from org.uacalc._exceptions import (
+    ArrayIndexOutOfBoundsException,
     IndexOutOfBoundsException,
     NullPointerException,
+    UnsupportedOperationException,
     translate_illegal_argument,
 )
 
@@ -27,6 +29,10 @@ def _install(alg_module_globals: dict) -> None:
     _LibReductAlgebra = alg_module_globals.get("ReductAlgebra")
     _LibSubalgebra = alg_module_globals.get("Subalgebra")
     _LibBigProductAlgebra = alg_module_globals.get("BigProductAlgebra")
+    _LibPowerAlgebra = alg_module_globals.get("PowerAlgebra")
+    _LibQuotientAlgebra = alg_module_globals.get("QuotientAlgebra")
+    _LibQuotientElement = alg_module_globals.get("QuotientElement")
+    _LibSubProductAlgebra = alg_module_globals.get("SubProductAlgebra")
     _LibAbstractOperation = alg_module_globals.get("AbstractOperation")
 
     def _sym_name(sym: Any) -> str:
@@ -200,15 +206,152 @@ def _install(alg_module_globals: dict) -> None:
             False,
         )
 
-    def _product_algebra(*args: Any) -> Any:
+    def _as_product_factor(alg: Any) -> Any:
+        inner = getattr(alg, "_inner", alg)
+        typ = type(inner).__name__
+        if typ in ("PyBasicAlgebra", "BasicAlgebra"):
+            return inner
+        conv = getattr(inner, "to_basic_algebra", None)
+        if callable(conv):
+            return conv()
+        return inner
+
+    def _product_factors(algs: Any) -> List[Any]:
+        return [_as_product_factor(a) for a in list(algs)]
+
+    def _product_name(algs: List[Any]) -> str:
+        names = []
+        for a in algs:
+            getter = getattr(a, "getName", None) or getattr(a, "name", None)
+            names.append(str(getter() if callable(getter) else getter))
+        return "x".join(names)
+
+    class _ProductAlgebraMeta(type):
+        def __instancecheck__(cls, instance: Any) -> bool:
+            return isinstance(instance, _LibProductAlgebra)
+
+    class ProductAlgebra(object, metaclass=_ProductAlgebraMeta):
         """``ProductAlgebra(algs)`` or ``ProductAlgebra(name, algs)``."""
-        if len(args) == 1:
-            algs = list(args[0])
-            name = "x".join(str(getattr(a, "getName", getattr(a, "name"))()) for a in algs)
-            return _LibProductAlgebra(name, algs)
-        if len(args) == 2:
-            return _LibProductAlgebra(str(args[0]), list(args[1]))
-        raise TypeError("ProductAlgebra() takes 1 or 2 arguments")
+
+        def __new__(cls, *args: Any) -> Any:
+            if len(args) == 1:
+                algs = _product_factors(args[0])
+            elif len(args) == 2:
+                algs = _product_factors(args[1])
+            else:
+                raise TypeError("ProductAlgebra() takes 1 or 2 arguments")
+            # Java makeOperations() does algebras.get(0) and throws IOBE.
+            if not algs:
+                raise IndexOutOfBoundsException(
+                    "Index 0 out of bounds for length 0"
+                )
+            if len(args) == 1:
+                return _lib_call(_LibProductAlgebra, _product_name(algs), algs)
+            return _lib_call(_LibProductAlgebra, str(args[0]), algs)
+
+        @staticmethod
+        def calcCard(sizes: Any) -> int:
+            return int(_lib_call(_LibProductAlgebra.calc_card, [int(x) for x in list(sizes)]))
+
+    class _PowerAlgebraMeta(type):
+        def __instancecheck__(cls, instance: Any) -> bool:
+            return _LibPowerAlgebra is not None and isinstance(instance, _LibPowerAlgebra)
+
+    class PowerAlgebra(object, metaclass=_PowerAlgebraMeta):
+        """``PowerAlgebra(alg, power)`` or ``PowerAlgebra(name, alg, power)``."""
+
+        def __new__(cls, *args: Any) -> Any:
+            if _LibPowerAlgebra is None:
+                raise TypeError("PowerAlgebra is not bound")
+            if len(args) == 2:
+                alg, power = args
+                name = ""
+            elif len(args) == 3:
+                name, alg, power = args
+            else:
+                raise TypeError("PowerAlgebra() takes 2 or 3 arguments")
+            # Java PowerAlgebra(alg, 0) hits ProductAlgebra.makeOperations IOBE.
+            if int(power) == 0:
+                raise IndexOutOfBoundsException(
+                    "Index 0 out of bounds for length 0"
+                )
+            return _lib_call(
+                _LibPowerAlgebra.new_with_name,
+                str(name),
+                _as_product_factor(alg),
+                int(power),
+            )
+
+    class _QuotientAlgebraMeta(type):
+        def __instancecheck__(cls, instance: Any) -> bool:
+            return _LibQuotientAlgebra is not None and isinstance(instance, _LibQuotientAlgebra)
+
+    class QuotientAlgebra(object, metaclass=_QuotientAlgebraMeta):
+        """``QuotientAlgebra(alg, cong)`` or ``QuotientAlgebra(name, alg, cong)``."""
+
+        def __new__(cls, *args: Any) -> Any:
+            if _LibQuotientAlgebra is None:
+                raise TypeError("QuotientAlgebra is not bound")
+            if len(args) == 2:
+                alg, cong = args
+                return _lib_call(_LibQuotientAlgebra, "", alg, cong)
+            if len(args) == 3:
+                name, alg, cong = args
+                return _lib_call(_LibQuotientAlgebra, str(name), alg, cong)
+            raise TypeError("QuotientAlgebra() takes 2 or 3 arguments")
+
+    class _SubProductAlgebraMeta(type):
+        def __instancecheck__(cls, instance: Any) -> bool:
+            return _LibSubProductAlgebra is not None and isinstance(
+                instance, _LibSubProductAlgebra
+            )
+
+    class SubProductAlgebra(object, metaclass=_SubProductAlgebraMeta):
+        """``SubProductAlgebra(name, prod, gens[, findTerms])``."""
+
+        def __new__(cls, *args: Any) -> Any:
+            if _LibSubProductAlgebra is None:
+                raise TypeError("SubProductAlgebra is not bound")
+            if len(args) == 3:
+                name, prod, gens = args
+                return _LibSubProductAlgebra(str(name), prod, list(gens), False)
+            if len(args) == 4:
+                name, prod, gens, find_terms = args
+                return _LibSubProductAlgebra(str(name), prod, list(gens), bool(find_terms))
+            if len(args) >= 5:
+                name, prod, gens, find_terms = args[:4]
+                return _LibSubProductAlgebra(str(name), prod, list(gens), bool(find_terms))
+            raise TypeError("SubProductAlgebra() takes 3 or more arguments")
+
+    class _BigProductAlgebraMeta(type):
+        def __instancecheck__(cls, instance: Any) -> bool:
+            return _LibBigProductAlgebra is not None and isinstance(
+                instance, _LibBigProductAlgebra
+            )
+
+    class BigProductAlgebra(object, metaclass=_BigProductAlgebraMeta):
+        """Java constructor overloads over ``new_from_algebras`` / ``new_power``."""
+
+        def __new__(cls, *args: Any) -> Any:
+            if _LibBigProductAlgebra is None:
+                raise TypeError("BigProductAlgebra is not bound")
+            if len(args) == 1:
+                return _LibBigProductAlgebra.new_from_algebras(_product_factors(args[0]))
+            if len(args) == 2:
+                a0, a1 = args
+                if isinstance(a1, int) and not isinstance(a1, bool):
+                    return _LibBigProductAlgebra.new_power(_unwrap_algebra(a0), int(a1))
+                if isinstance(a0, (str, bytes)):
+                    return _LibBigProductAlgebra.new_from_algebras_named(
+                        str(a0), _product_factors(a1)
+                    )
+                return _LibBigProductAlgebra.new_from_algebras(_product_factors(a0))
+            if len(args) == 3:
+                name, alg, power = args
+                return _LibBigProductAlgebra.new_power_named(
+                    str(name), _unwrap_algebra(alg), int(power)
+                )
+            raise TypeError("BigProductAlgebra() takes 1, 2, or 3 arguments")
 
     def _unwrap_algebra(alg: Any) -> Any:
         """Prefer the PyO3 inner object when a Jython wrapper is present."""
@@ -278,18 +421,45 @@ def _install(alg_module_globals: dict) -> None:
             reduct.set_name(str(name))
         return reduct
 
-    def _subalgebra(*args: Any) -> Any:
+    class _SubalgebraMeta(type):
+        def __instancecheck__(cls, instance: Any) -> bool:
+            return _LibSubalgebra is not None and isinstance(instance, _LibSubalgebra)
+
+    class Subalgebra(object, metaclass=_SubalgebraMeta):
         """``Subalgebra(alg, univ)`` or ``Subalgebra(name, alg, univ)``."""
-        if _LibSubalgebra is None:
-            raise TypeError("Subalgebra is not bound")
-        if len(args) == 2:
-            alg, univ = args
-            name = ""
-        elif len(args) == 3:
-            name, alg, univ = args
-        else:
-            raise TypeError("Subalgebra() takes 2 or 3 arguments")
-        return _LibSubalgebra(str(name), _unwrap_algebra(alg), _as_universe_indices(univ))
+
+        def __new__(cls, *args: Any) -> Any:
+            if _LibSubalgebra is None:
+                raise TypeError("Subalgebra is not bound")
+            if len(args) == 2:
+                alg, univ = args
+                name = ""
+            elif len(args) == 3:
+                name, alg, univ = args
+            else:
+                raise TypeError("Subalgebra() takes 2 or 3 arguments")
+            return _lib_call(
+                _LibSubalgebra, str(name), alg, _as_universe_indices(univ)
+            )
+
+        @staticmethod
+        def congruenceAsAlgebra(*args: Any) -> Any:
+            if _LibSubalgebra is None:
+                raise TypeError("Subalgebra is not bound")
+            if len(args) == 2:
+                alg, cong = args
+                return _lib_call(
+                    _LibSubalgebra.congruence_as_algebra, _unwrap_algebra(alg), cong
+                )
+            if len(args) == 3:
+                name, alg, cong = args
+                return _lib_call(
+                    _LibSubalgebra.congruence_as_algebra_with_name,
+                    str(name),
+                    _unwrap_algebra(alg),
+                    cong,
+                )
+            raise TypeError("congruenceAsAlgebra() takes 2 or 3 arguments")
 
     def _raise_npe(what: str = "null") -> None:
         raise NullPointerException(what)
@@ -594,6 +764,241 @@ def _install(alg_module_globals: dict) -> None:
         if callable(fn):
             _lib_call(fn)
 
+    def convertToDefaultValueOps_uoe(self: Any) -> None:
+        raise UnsupportedOperationException("Only for basic algebras")
+
+    def _int_array(values: Any) -> Any:
+        from org.uacalc.util import IntArray
+
+        if values is None:
+            return None
+        return IntArray([int(x) for x in list(values)])
+
+    def _is_int_array(elem: Any) -> bool:
+        if elem is None:
+            return False
+        name = type(elem).__name__
+        if name in ("IntArray", "PyIntArray"):
+            return True
+        return hasattr(elem, "to_array") and hasattr(elem, "universeSize")
+
+    def _int_array_values(elem: Any) -> List[int]:
+        for attr in ("to_array", "getArray", "get_array"):
+            fn = getattr(elem, attr, None)
+            if callable(fn):
+                return [int(x) for x in fn()]
+        return [int(x) for x in list(elem)]
+
+    def productGetElement(self: Any, k: Any) -> Any:
+        idx = int(k)
+        fn = getattr(self, "get_element_tuple", None)
+        if callable(fn):
+            return list(fn(idx))
+        return getElement(self, k)
+
+    def productElementIndex(self: Any, elem: Any) -> int:
+        # Java ProductAlgebra.elementIndex only accepts IntArray; else UOE.
+        if not _is_int_array(elem):
+            raise UnsupportedOperationException()
+        fn = getattr(self, "element_index_tuple", None)
+        if callable(fn):
+            return int(fn(_int_array_values(elem)))
+        return int(self.element_index(_int_array_values(elem)))
+
+    def powerElementIndex(self: Any, elem: Any) -> int:
+        # Java PowerAlgebra.elementIndex searches universe() for IntArray, but
+        # ProductIterator yields ArrayLists, so the result is always -1.
+        return -1
+
+    def productGetUniverseList(self: Any) -> Any:
+        fn = getattr(self, "get_universe_tuples", None) or getattr(
+            self, "get_universe_list", None
+        )
+        if callable(fn):
+            univ = fn()
+            return None if univ is None else [list(row) for row in univ]
+        return getUniverseList(self)
+
+    def productSg(self: Any, elems: Any) -> Any:
+        gens = [productElementIndex(self, e) for e in list(elems)]
+        univ = self.sub().Sg(gens)
+        # Java SubalgebraLattice.Sg returns a Subalgebra, not a BasicSet.
+        return Subalgebra(self, univ)
+
+    def sgClose(self: Any, elems: Any) -> Any:
+        fn = getattr(self, "sg_close", None)
+        if callable(fn):
+            return list(fn(list(elems)))
+        return []
+
+    def productFactors(self: Any) -> Any:
+        impl = getattr(type(self), "factors", None)
+        if callable(impl) and impl is not productFactors:
+            try:
+                return impl(self)
+            except TypeError:
+                return impl()
+        return None
+
+    def projection(self: Any, k: Any) -> Any:
+        fn = getattr(self, "projection", None)
+        if callable(fn):
+            return _lib_call(fn, int(k))
+        return None
+
+    def projectionKernel(self: Any, k: Any) -> Any:
+        fn = getattr(self, "projection_kernel", None)
+        if callable(fn):
+            return fn(int(k))
+        return None
+
+    def getRoot(self: Any) -> Any:
+        fn = getattr(self, "get_root", None)
+        if callable(fn):
+            return fn()
+        return None
+
+    def getPower(self: Any) -> int:
+        fn = getattr(self, "get_power", None)
+        if callable(fn):
+            return int(fn())
+        return int(self.number_of_factors())
+
+    def powerParent(self: Any) -> Any:
+        return getRoot(self)
+
+    def powerParents(self: Any) -> Any:
+        root = getRoot(self)
+        return None if root is None else [root]
+
+    def subalgebraGetElement(self: Any, k: Any) -> Any:
+        idx = int(k)
+        arr = list(self.get_subuniverse_array())
+        n = len(arr)
+        if idx < 0 or idx >= n:
+            raise ArrayIndexOutOfBoundsException(
+                "Index: {0}, Size: {1}".format(idx, n)
+            )
+        super_alg = self.super_algebra()
+        get = getattr(super_alg, "getElement", None) or getattr(
+            super_alg, "get_element", None
+        )
+        return get(arr[idx])
+
+    def subalgebraElementIndex(self: Any, elem: Any) -> int:
+        super_alg = self.super_algebra()
+        eidx = getattr(super_alg, "elementIndex", None) or getattr(
+            super_alg, "element_index", None
+        )
+        super_idx = eidx(elem)
+        return int(self.index(int(super_idx)))
+
+    def restrictPartition(self: Any, par: Any) -> Any:
+        fn = getattr(self, "restrict_partition", None)
+        if callable(fn):
+            return _lib_call(fn, par)
+        raise TypeError("restrictPartition is not bound")
+
+    def nullUniverseList(self: Any) -> Any:
+        return None
+
+    def quotientGetElement(self: Any, k: Any) -> Any:
+        fn = getattr(self, "get_element", None)
+        if callable(fn):
+            return _lib_call(fn, int(k))
+        return getElement(self, k)
+
+    def quotientElementIndex(self: Any, obj: Any) -> int:
+        # Java returns congruence.representative(super.elementIndex(obj)),
+        # which is a super-algebra representative, not the quotient index.
+        super_alg = self.super_algebra()
+        eidx = getattr(super_alg, "elementIndex", None) or getattr(
+            super_alg, "element_index", None
+        )
+        super_idx = int(eidx(obj))
+        cong = self.get_congruence()
+        rep = getattr(cong, "representative", None)
+        return int(rep(super_idx)) if callable(rep) else super_idx
+
+    def representativeIndex(self: Any, rep: Any) -> int:
+        fn = getattr(self, "representative_index", None)
+        if callable(fn):
+            return int(fn(int(rep)))
+        return -1
+
+    def canonicalHomomorphism(self: Any, e: Any) -> int:
+        fn = getattr(self, "canonical_homomorphism", None)
+        if callable(fn):
+            return int(fn(int(e)))
+        return representativeIndex(self, self.get_congruence().representative(int(e)))
+
+    def getCongruence(self: Any) -> Any:
+        fn = getattr(self, "get_congruence", None)
+        if callable(fn):
+            return fn()
+        return None
+
+    def getAlgebra(self: Any) -> Any:
+        fn = getattr(self, "get_algebra", None)
+        if callable(fn):
+            return fn()
+        return None
+
+    def getIndex(self: Any) -> int:
+        fn = getattr(self, "get_index", None)
+        if callable(fn):
+            return int(fn())
+        return -1
+
+    def getIndexInSuperAlgebra(self: Any) -> int:
+        fn = getattr(self, "get_index_in_super_algebra", None)
+        if callable(fn):
+            return int(fn())
+        return -1
+
+    def toString(self: Any) -> str:
+        return str(self)
+
+    def subproductGetElement(self: Any, k: Any) -> Any:
+        fn = getattr(self, "get_element", None)
+        if not callable(fn):
+            return getElement(self, k)
+        raw = fn(int(k))
+        if raw is None:
+            return None
+        if _is_int_array(raw):
+            return raw
+        return _int_array(raw)
+
+    def subproductElementIndex(self: Any, obj: Any) -> int:
+        fn = getattr(self, "element_index", None)
+        if not callable(fn):
+            return -1
+        if _is_int_array(obj):
+            return int(fn(_int_array_values(obj)))
+        if isinstance(obj, (list, tuple)):
+            return int(fn([int(x) for x in obj]))
+        return -1
+
+    def subproductGenerators(self: Any) -> Any:
+        impl = getattr(type(self), "generators", None)
+        if callable(impl) and impl is not subproductGenerators:
+            raw = impl(self)
+            return [_int_array(row) for row in list(raw)]
+        return None
+
+    def getProductAlgebra(self: Any) -> Any:
+        fn = getattr(self, "get_product_algebra", None)
+        if callable(fn):
+            return fn()
+        return None
+
+    def getTerms(self: Any) -> Any:
+        fn = getattr(self, "get_terms", None)
+        if callable(fn):
+            return fn()
+        return None
+
     def parent(self: Any) -> Any:
         # Java BasicAlgebra / GeneralAlgebra.parent() is identically null.
         return None
@@ -703,6 +1108,8 @@ def _install(alg_module_globals: dict) -> None:
         "ReductAlgebra",
         "Subalgebra",
         "PowerAlgebra",
+        "QuotientAlgebra",
+        "SubProductAlgebra",
         "GeneralAlgebra",
     ):
         # Patch the *library* class (what AlgebraIO returns), not only wrappers.
@@ -716,6 +1123,9 @@ def _install(alg_module_globals: dict) -> None:
             "ProductAlgebra": _LibProductAlgebra,
             "ReductAlgebra": _LibReductAlgebra,
             "Subalgebra": _LibSubalgebra,
+            "PowerAlgebra": _LibPowerAlgebra,
+            "QuotientAlgebra": _LibQuotientAlgebra,
+            "SubProductAlgebra": _LibSubProductAlgebra,
         }.get(cls_name, lib_cls)
         if target is None:
             continue
@@ -727,6 +1137,172 @@ def _install(alg_module_globals: dict) -> None:
                 setattr(target, camel, impl)
             except (TypeError, AttributeError):
                 pass
+
+    def _bind(cls: Any, name: str, impl: Any) -> None:
+        if cls is None:
+            return
+        try:
+            setattr(cls, name, impl)
+        except (TypeError, AttributeError):
+            pass
+
+    _orig_prod_proj = getattr(_LibProductAlgebra, "projection", None)
+
+    def productProjection(self: Any, k: Any, _orig: Any = _orig_prod_proj) -> Any:
+        try:
+            return _lib_call(_orig, self, int(k)) if _orig is not None else None
+        except Exception as exc:
+            if type(exc).__name__ in (
+                "ValueError",
+                "IllegalArgumentException",
+                "IndexError",
+            ):
+                raise IndexOutOfBoundsException(str(exc)) from exc
+            raise
+
+    _PRODUCT_EXTRA = {
+        "getElement": productGetElement,
+        "elementIndex": productElementIndex,
+        "getUniverseList": productGetUniverseList,
+        "getUniverseOrder": lambda self: None,
+        "Sg": productSg,
+        "sgClose": sgClose,
+        "projection": productProjection,
+        "projectionKernel": projectionKernel,
+        "numberOfFactors": numberOfFactors,
+        "convertToDefaultValueOps": convertToDefaultValueOps_uoe,
+        "iterator": _algebra_iterator,
+        "parent": parent,
+        "parents": lambda self: self.factors(),
+    }
+    for camel, impl in _PRODUCT_EXTRA.items():
+        _bind(_LibProductAlgebra, camel, impl)
+
+    _POWER_EXTRA = dict(_PRODUCT_EXTRA)
+    _orig_pow_proj = (
+        getattr(_LibPowerAlgebra, "projection", None)
+        if _LibPowerAlgebra is not None
+        else None
+    )
+
+    def powerProjection(self: Any, k: Any, _orig: Any = _orig_pow_proj) -> Any:
+        try:
+            return _lib_call(_orig, self, int(k)) if _orig is not None else None
+        except Exception as exc:
+            if type(exc).__name__ in (
+                "ValueError",
+                "IllegalArgumentException",
+                "IndexError",
+            ):
+                raise IndexOutOfBoundsException(str(exc)) from exc
+            raise
+
+    _POWER_EXTRA.update(
+        {
+            "elementIndex": powerElementIndex,
+            "getRoot": getRoot,
+            "getPower": getPower,
+            "parent": powerParent,
+            "parents": powerParents,
+            "projection": powerProjection,
+        }
+    )
+    for camel, impl in _POWER_EXTRA.items():
+        _bind(_LibPowerAlgebra, camel, impl)
+
+    def subalgebraUniverse(self: Any) -> List[Any]:
+        n = int(self.cardinality())
+        return [subalgebraGetElement(self, i) for i in range(n)]
+
+    def quotientUniverse(self: Any) -> List[Any]:
+        super_alg = self.super_algebra()
+        reps = self.representatives()
+        get = getattr(super_alg, "getElement", None) or getattr(
+            super_alg, "get_element", None
+        )
+        return [get(int(r)) for r in list(reps)]
+
+    _SUBALG_EXTRA = {
+        "getElement": subalgebraGetElement,
+        "elementIndex": subalgebraElementIndex,
+        "getUniverseList": nullUniverseList,
+        "getUniverseOrder": lambda self: None,
+        "restrictPartition": restrictPartition,
+        "convertToDefaultValueOps": convertToDefaultValueOps_uoe,
+        "universe": subalgebraUniverse,
+        "iterator": lambda self: iter(subalgebraUniverse(self)),
+        "parent": parent,
+        "parents": parents,
+    }
+    for camel, impl in _SUBALG_EXTRA.items():
+        _bind(_LibSubalgebra, camel, impl)
+
+    _QUOT_EXTRA = {
+        "getElement": quotientGetElement,
+        "elementIndex": quotientElementIndex,
+        "getUniverseList": nullUniverseList,
+        "getUniverseOrder": lambda self: None,
+        "representativeIndex": representativeIndex,
+        "canonicalHomomorphism": canonicalHomomorphism,
+        "getCongruence": getCongruence,
+        "convertToDefaultValueOps": convertToDefaultValueOps_uoe,
+        "universe": quotientUniverse,
+        "iterator": lambda self: iter(quotientUniverse(self)),
+        "parent": parent,
+        "parents": parents,
+    }
+    for camel, impl in _QUOT_EXTRA.items():
+        _bind(_LibQuotientAlgebra, camel, impl)
+
+    if _LibQuotientElement is not None:
+        for camel, impl in (
+            ("getAlgebra", getAlgebra),
+            ("superAlgebra", lambda self: self.super_algebra()),
+            ("getCongruence", getCongruence),
+            ("getIndex", getIndex),
+            ("getIndexInSuperAlgebra", getIndexInSuperAlgebra),
+            ("toString", toString),
+        ):
+            _bind(_LibQuotientElement, camel, impl)
+
+    _orig_sp_gens = (
+        getattr(_LibSubProductAlgebra, "generators", None)
+        if _LibSubProductAlgebra is not None
+        else None
+    )
+    _orig_sp_univ = (
+        getattr(_LibSubProductAlgebra, "get_universe_list", None)
+        if _LibSubProductAlgebra is not None
+        else None
+    )
+
+    def subproductGeneratorsBound(self: Any, _orig: Any = _orig_sp_gens) -> Any:
+        if _orig is None:
+            return None
+        return [_int_array(row) for row in list(_orig(self))]
+
+    def subproductUniverseListBound(self: Any, _orig: Any = _orig_sp_univ) -> Any:
+        if _orig is None:
+            return None
+        univ = _orig(self)
+        return None if univ is None else [_int_array(row) for row in univ]
+
+    _SUBPROD_EXTRA = {
+        "getElement": subproductGetElement,
+        "elementIndex": subproductElementIndex,
+        "getUniverseList": subproductUniverseListBound,
+        "getUniverseOrder": lambda self: None,
+        "generators": subproductGeneratorsBound,
+        "getProductAlgebra": getProductAlgebra,
+        "getTerms": getTerms,
+        "convertToDefaultValueOps": convertToDefaultValueOps_uoe,
+        "iterator": _algebra_iterator,
+        "parent": parent,
+        "parents": parents,
+        "numberOfFactors": numberOfFactors,
+    }
+    for camel, impl in _SUBPROD_EXTRA.items():
+        _bind(_LibSubProductAlgebra, camel, impl)
 
     # FreeAlgebra / ProductAlgebra extras
     if not hasattr(_LibProductAlgebra, "numberOfFactors"):
@@ -903,17 +1479,28 @@ def _install(alg_module_globals: dict) -> None:
     alg_module_globals["SmallAlgebra"] = SmallAlgebra
     alg_module_globals["BasicAlgebra"] = BasicAlgebra
     alg_module_globals["FreeAlgebra"] = _free_algebra
-    alg_module_globals["ProductAlgebra"] = _product_algebra
+    alg_module_globals["ProductAlgebra"] = ProductAlgebra
+    alg_module_globals["PowerAlgebra"] = PowerAlgebra
+    alg_module_globals["QuotientAlgebra"] = QuotientAlgebra
+    alg_module_globals["SubProductAlgebra"] = SubProductAlgebra
+    alg_module_globals["BigProductAlgebra"] = BigProductAlgebra
     if _LibReductAlgebra is not None:
         alg_module_globals["ReductAlgebra"] = _reduct_algebra
         alg_module_globals["_LibReductAlgebra"] = _LibReductAlgebra
     if _LibSubalgebra is not None:
-        alg_module_globals["Subalgebra"] = _subalgebra
+        alg_module_globals["Subalgebra"] = Subalgebra
         alg_module_globals["_LibSubalgebra"] = _LibSubalgebra
+    if _LibQuotientElement is not None:
+        alg_module_globals["QuotientElement"] = _LibQuotientElement
+        alg_module_globals["_LibQuotientElement"] = _LibQuotientElement
     # Keep native classes available for isinstance checks / advanced use
     alg_module_globals["_LibBasicAlgebra"] = _LibBasicAlgebra
     alg_module_globals["_LibFreeAlgebra"] = _LibFreeAlgebra
     alg_module_globals["_LibProductAlgebra"] = _LibProductAlgebra
+    alg_module_globals["_LibPowerAlgebra"] = _LibPowerAlgebra
+    alg_module_globals["_LibQuotientAlgebra"] = _LibQuotientAlgebra
+    alg_module_globals["_LibSubProductAlgebra"] = _LibSubProductAlgebra
+    alg_module_globals["_LibBigProductAlgebra"] = _LibBigProductAlgebra
     alg_module_globals["_LibAbstractOperation"] = _LibAbstractOperation
 
     # Class-alias map kept for jython_contracts validate()
@@ -992,6 +1579,87 @@ def _install(alg_module_globals: dict) -> None:
             "setName": "set_name",
             "numberOfFactors": "number_of_factors",
             "getOperation": "getOperation",
+            "getElement": "get_element_tuple",
+            "elementIndex": "element_index_tuple",
+            "getUniverseList": "get_universe_list",
+            "getUniverseOrder": "get_universe_order",
+            "algebraType": "algebra_type",
+            "factors": "factors",
+            "parents": "parents",
+            "parent": "parent",
+            "projection": "projection",
+            "projectionKernel": "projection_kernel",
+            "Sg": "Sg",
+            "sgClose": "sg_close",
+            "makeOperationTables": "make_operation_tables",
+            "convertToDefaultValueOps": "convertToDefaultValueOps",
+            "con": "con",
+            "sub": "sub",
+        },
+        "PowerAlgebra": {
+            "getName": "name",
+            "setName": "set_name",
+            "getOperation": "getOperation",
+            "getRoot": "get_root",
+            "getPower": "get_power",
+            "parent": "parent",
+            "parents": "parents",
+            "getElement": "get_element_tuple",
+            "elementIndex": "element_index",
+            "getUniverseList": "get_universe_list",
+            "algebraType": "algebra_type",
+            "factors": "factors",
+            "projection": "projection",
+            "numberOfFactors": "number_of_factors",
+            "convertToDefaultValueOps": "convertToDefaultValueOps",
+            "con": "con",
+            "sub": "sub",
+            "makeOperationTables": "make_operation_tables",
+        },
+        "QuotientAlgebra": {
+            "getName": "name",
+            "setName": "set_name",
+            "getOperation": "getOperation",
+            "superAlgebra": "super_algebra",
+            "getCongruence": "get_congruence",
+            "getElement": "get_element",
+            "elementIndex": "element_index",
+            "representativeIndex": "representative_index",
+            "canonicalHomomorphism": "canonical_homomorphism",
+            "getUniverseList": "get_universe_list",
+            "getUniverseOrder": "get_universe_order",
+            "algebraType": "algebra_type",
+            "convertToDefaultValueOps": "convertToDefaultValueOps",
+            "con": "con",
+            "sub": "sub",
+            "makeOperationTables": "make_operation_tables",
+            "universe": "universe",
+        },
+        "QuotientElement": {
+            "getAlgebra": "get_algebra",
+            "superAlgebra": "super_algebra",
+            "getCongruence": "get_congruence",
+            "getIndex": "get_index",
+            "getIndexInSuperAlgebra": "get_index_in_super_algebra",
+            "toString": "toString",
+        },
+        "SubProductAlgebra": {
+            "getName": "name",
+            "setName": "set_name",
+            "getOperation": "getOperation",
+            "generators": "generators",
+            "getProductAlgebra": "get_product_algebra",
+            "superAlgebra": "super_algebra",
+            "getElement": "get_element",
+            "elementIndex": "element_index",
+            "getUniverseList": "get_universe_list",
+            "getUniverseOrder": "get_universe_order",
+            "algebraType": "algebra_type",
+            "convertToDefaultValueOps": "convertToDefaultValueOps",
+            "getTerms": "get_terms",
+            "con": "con",
+            "sub": "sub",
+            "makeOperationTables": "make_operation_tables",
         },
         "BigProductAlgebra": {
             "numberOfFactors": "number_of_factors",
@@ -1018,6 +1686,15 @@ def _install(alg_module_globals: dict) -> None:
             "index": "index",
             "algebraType": "algebra_type",
             "getUniverseList": "get_universe_list",
+            "getUniverseOrder": "get_universe_order",
+            "restrictPartition": "restrict_partition",
+            "convertToDefaultValueOps": "convertToDefaultValueOps",
+            "con": "con",
+            "sub": "sub",
+            "makeOperationTables": "make_operation_tables",
+            "universe": "universe",
+            "parent": "parent",
+            "parents": "parents",
         },
         "SubalgebraLattice": {
             "iterator": "iterator",
@@ -1031,6 +1708,10 @@ def _install(alg_module_globals: dict) -> None:
                 "BasicAlgebra": _LibBasicAlgebra,
                 "FreeAlgebra": _LibFreeAlgebra,
                 "ProductAlgebra": _LibProductAlgebra,
+                "PowerAlgebra": _LibPowerAlgebra,
+                "QuotientAlgebra": _LibQuotientAlgebra,
+                "QuotientElement": _LibQuotientElement,
+                "SubProductAlgebra": _LibSubProductAlgebra,
                 "BigProductAlgebra": _LibBigProductAlgebra,
                 "SubalgebraLattice": _LibSubalgebraLattice,
                 "ReductAlgebra": _LibReductAlgebra,

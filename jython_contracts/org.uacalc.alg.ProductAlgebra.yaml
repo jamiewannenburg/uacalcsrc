@@ -3,25 +3,46 @@ level: file
 status: implemented
 java_source: org/uacalc/alg/ProductAlgebra.java
 notes: |
-  ~/uacalc uses ProductAlgebra(algs) (jep_check.py) and
-  ProductAlgebra(name, algs) (sc_joins_of_covers.py), plus numberOfFactors /
-  getName / cardinality / sub().
+  ProductAlgebra(algs) and ProductAlgebra(name, algs), plus calcCard, factors,
+  parents, projection, projectionKernel (Java stub, always null), sgClose
+  (Java stub, always empty), Sg, getElement (Horner.hornerInv int[]), 
+  elementIndex (IntArray only, else UOE), getUniverseList (last index fastest),
+  convertToDefaultValueOps UOE. Empty products are a library mismatch (xfail).
 ignore_reason: null
 surface:
   package_export: true
   aliases:
     getName: name
     setName: set_name
+    numberOfFactors: number_of_factors
     getOperation: getOperation
-  static_methods: []
+    getElement: get_element_tuple
+    elementIndex: element_index_tuple
+    getUniverseList: get_universe_list
+    getUniverseOrder: get_universe_order
+    algebraType: algebra_type
+    factors: factors
+    parents: parents
+    parent: parent
+    projection: projection
+    projectionKernel: projection_kernel
+    Sg: Sg
+    sgClose: sg_close
+    makeOperationTables: make_operation_tables
+    convertToDefaultValueOps: convertToDefaultValueOps
+    con: con
+    sub: sub
+  static_methods:
+    - calcCard
   str_parity: false
 testing:
   notes: |
-    product_algebra_smoke.py builds a product of cyclic2 with itself via both
-    constructor shapes and prints cardinality / getName / setName.
-    numberOfFactors is a Rust helper; Java ProductAlgebra uses factors() — kept
-    as an alias for CPython scripts that already call numberOfFactors.
-  task_refs: []
+    product_algebra_smoke.py plus tests/parity/alg/test_cases/sub_prod_quot_cases.py.
+    Golden cases cover both constructors, Horner getElement vs last-fastest
+    universe, IntArray-only elementIndex, stubs, UOE, con/sub, and write/read
+    round-trip. Empty product / calcCard([]) are owner xfails.
+  task_refs:
+    - tests/parity/alg/test_cases/sub_prod_quot_cases.py
   scripts:
     - path: jython_comparison/scripts/product_algebra_smoke.py
       covers:
@@ -30,4 +51,24 @@ testing:
         - getOperation
         - cardinality
         - numberOfFactors
-      ignore_lines: []
+        - getElement
+        - elementIndex
+        - getUniverseList
+        - getUniverseOrder
+        - algebraType
+        - factors
+        - parents
+        - parent
+        - projection
+        - projectionKernel
+        - Sg
+        - sgClose
+        - makeOperationTables
+        - convertToDefaultValueOps
+        - con
+        - sub
+        - calcCard
+      ignore_lines:
+        - "pass 0 of"
+        - "pass 1 of"
+        - "pass "
