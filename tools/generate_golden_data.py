@@ -180,6 +180,20 @@ def serialize(obj):
             "arities": arities,
             "tables": tables,
         }
+    if "Partition" in class_name and "Lattice" not in class_name:
+        arr = call_or_get(obj, "toArray", "to_array", "getArray", "get_array") or []
+        us = call_or_get(obj, "universeSize", "universe_size")
+        nb = call_or_get(obj, "numberOfBlocks", "number_of_blocks")
+        if class_name == "Partition":
+            class_name = "BasicPartition"
+        return {
+            "__type__": "partition",
+            "class": class_name,
+            "string": str(obj),
+            "array": [int(x) for x in list(arr)],
+            "universe_size": int(us) if us is not None else 0,
+            "number_of_blocks": int(nb) if nb is not None else 0,
+        }
     if "Lattice" in class_name:
         univ = call_or_get(obj, "universe", "getUniverseList")
         univ_ser = None

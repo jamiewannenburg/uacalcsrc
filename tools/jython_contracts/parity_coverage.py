@@ -26,6 +26,20 @@ PENDING_BINDINGS = {
             "uacalc_lib; a Python reimplementation is not allowed",
         ),
     ],
+    "conlat": [
+        (
+            "ProgressReport overloads / UI (getDiagram, getConTable)",
+            "org.uacalc.ui.tm.ProgressReport and Swing/latdraw are not bound",
+        ),
+        (
+            "BasicPartition.generalizedWeakClosure / closureAt / projection / termMap",
+            "SubProductAlgebra/Term overloads are not bound; no Python reimplementation",
+        ),
+        (
+            "CongruenceLattice type theory / commutator SubProduct overloads",
+            "typeSet/type/subtrace/matrices/commutator-with-report stay on uacalc_lib stubs",
+        ),
+    ],
 }
 
 # tests/parity/<name> → Java/Python package path under org/uacalc (posix).

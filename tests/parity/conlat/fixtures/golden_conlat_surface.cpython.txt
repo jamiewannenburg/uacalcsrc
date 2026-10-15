@@ -1,4 +1,13 @@
 ﻿MODULE: org.uacalc.alg.conlat
 RUNTIME: cpython
-PUBLIC_COUNT: 0
-SAMPLE_BP_JOIN: skip (no BasicPartition on this runtime)
+PUBLIC_COUNT: 9
+NAME: BasicBinaryRelation
+NAME: BasicPartition
+NAME: CentralityData
+NAME: CongruenceLattice
+NAME: Partition
+NAME: Polymorphisms
+NAME: PrintType
+NAME: Subtrace
+NAME: TypeFinder
+SAMPLE_BP_JOIN: |0,1,2|

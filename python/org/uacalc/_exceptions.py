@@ -45,6 +45,14 @@ class IndexOutOfBoundsException(IndexError, RuntimeException):
     """java.lang.IndexOutOfBoundsException."""
 
 
+class ArrayIndexOutOfBoundsException(IndexOutOfBoundsException):
+    """java.lang.ArrayIndexOutOfBoundsException."""
+
+
+class StringIndexOutOfBoundsException(IndexOutOfBoundsException):
+    """java.lang.StringIndexOutOfBoundsException."""
+
+
 class IOException(OSError, JavaException):
     """java.io.IOException."""
 

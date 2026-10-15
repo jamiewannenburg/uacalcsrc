@@ -3,7 +3,7 @@
 """
 Golden surface snapshot for ``org.uacalc.alg.conlat``.
 
-Runs under **CPython** (shim → ``uacalc_lib.alg.conlat`` when bound) and **Jython**
+Runs under **CPython** (shim → ``uacalc_lib``) and **Jython**
 (Java from ``uacalc.jar``). Normalized stdout is compared to checked-in fixtures.
 
 **CPython** (repo root)::
@@ -13,9 +13,6 @@ Runs under **CPython** (shim → ``uacalc_lib.alg.conlat`` when bound) and **Jyt
 **Jython** (empty ``PYTHONPATH``; ``CLASSPATH`` includes ``jars/uacalc.jar``)::
 
     CLASSPATH=jars/uacalc.jar PYTHONPATH= jython tests/parity/conlat/golden_conlat_surface.py
-
-When the CPython namespace is empty, the script still prints stable markers so pytest
-can lock the shim surface without ``uacalc_lib`` bindings.
 """
 from __future__ import print_function
 
@@ -40,11 +37,10 @@ def main():
     for n in names:
         print("NAME: " + n)
 
-    if is_java and "BasicPartition" in names:
-        from org.uacalc.alg.conlat import BasicPartition  # noqa: F401
-
-        z = BasicPartition.zero(3)
-        j = z.join(BasicPartition.one(3))
+    BP = getattr(pkg, "BasicPartition", None)
+    if BP is not None and hasattr(BP, "zero"):
+        z = BP.zero(3)
+        j = z.join(BP.one(3))
         print("SAMPLE_BP_JOIN: " + str(j))
     else:
         print("SAMPLE_BP_JOIN: skip (no BasicPartition on this runtime)")

@@ -1,0 +1,3543 @@
+{
+  "metadata": {
+    "generated_at": "2026-10-15T11:07:32.118407+00:00",
+    "jar": "uacalc.jar",
+    "package": "org.uacalc.conlat",
+    "runtime": "jython",
+    "test_cases": 144,
+    "type": "package"
+  },
+  "test_cases": [
+    {
+      "args": [],
+      "call": "zero3",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "zero(3) block string",
+      "expected_exception": null,
+      "id": "bp_zero_str",
+      "kwargs": {},
+      "method": "BasicPartition.zero",
+      "notes": "",
+      "result": {
+        "return_type": "BasicPartition",
+        "return_value": {
+          "__type__": "partition",
+          "array": [
+            -1,
+            -1,
+            -1
+          ],
+          "class": "BasicPartition",
+          "number_of_blocks": 3,
+          "string": "|0|1|2|",
+          "universe_size": 3
+        },
+        "string_repr": "|0|1|2|",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "one3",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "one(3) block string",
+      "expected_exception": null,
+      "id": "bp_one_str",
+      "kwargs": {},
+      "method": "BasicPartition.one",
+      "notes": "",
+      "result": {
+        "return_type": "BasicPartition",
+        "return_value": {
+          "__type__": "partition",
+          "array": [
+            -3,
+            0,
+            0
+          ],
+          "class": "BasicPartition",
+          "number_of_blocks": 1,
+          "string": "|0,1,2|",
+          "universe_size": 3
+        },
+        "string_repr": "|0,1,2|",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "p01",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "BasicPartition from bar string",
+      "expected_exception": null,
+      "id": "bp_from_string",
+      "kwargs": {},
+      "method": "BasicPartition.BasicPartition",
+      "notes": "",
+      "result": {
+        "return_type": "BasicPartition",
+        "return_value": {
+          "__type__": "partition",
+          "array": [
+            -2,
+            0,
+            -1
+          ],
+          "class": "BasicPartition",
+          "number_of_blocks": 2,
+          "string": "|0,1|2|",
+          "universe_size": 3
+        },
+        "string_repr": "|0,1|2|",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "BasicPartition('[[0 1][2]]')",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "BasicPartition from bracket string",
+      "expected_exception": null,
+      "id": "bp_from_brackets",
+      "kwargs": {},
+      "method": "BasicPartition.BasicPartition",
+      "notes": "",
+      "result": {
+        "return_type": "BasicPartition",
+        "return_value": {
+          "__type__": "partition",
+          "array": [
+            -2,
+            0,
+            -1
+          ],
+          "class": "BasicPartition",
+          "number_of_blocks": 2,
+          "string": "|0,1|2|",
+          "universe_size": 3
+        },
+        "string_repr": "|0,1|2|",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "p_arr",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "BasicPartition from array",
+      "expected_exception": null,
+      "id": "bp_from_array",
+      "kwargs": {},
+      "method": "BasicPartition.BasicPartition",
+      "notes": "",
+      "result": {
+        "return_type": "BasicPartition",
+        "return_value": {
+          "__type__": "partition",
+          "array": [
+            -2,
+            0,
+            -1
+          ],
+          "class": "BasicPartition",
+          "number_of_blocks": 2,
+          "string": "|0,1|2|",
+          "universe_size": 3
+        },
+        "string_repr": "|0,1|2|",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "p01.universeSize()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "universeSize of |0 1|2|",
+      "expected_exception": null,
+      "id": "bp_universe_size",
+      "kwargs": {},
+      "method": "Partition.universeSize",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 3,
+        "string_repr": "3",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "p01.numberOfBlocks()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "numberOfBlocks of |0 1|2|",
+      "expected_exception": null,
+      "id": "bp_number_of_blocks",
+      "kwargs": {},
+      "method": "Partition.numberOfBlocks",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "p01.isRelated(0, 1)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "0 related to 1",
+      "expected_exception": null,
+      "id": "bp_is_related_true",
+      "kwargs": {},
+      "method": "Partition.isRelated",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "p01.isRelated(0, 2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "0 not related to 2",
+      "expected_exception": null,
+      "id": "bp_is_related_false",
+      "kwargs": {},
+      "method": "Partition.isRelated",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": false,
+        "string_repr": "False",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "p01.representative(1)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "representative of 1 in |0 1|2|",
+      "expected_exception": null,
+      "id": "bp_representative",
+      "kwargs": {},
+      "method": "Partition.representative",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 0,
+        "string_repr": "0",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "p01.isRepresentative(0)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "0 is a representative",
+      "expected_exception": null,
+      "id": "bp_is_representative",
+      "kwargs": {},
+      "method": "Partition.isRepresentative",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "list(p01.representatives())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "representatives list",
+      "expected_exception": null,
+      "id": "bp_representatives",
+      "kwargs": {},
+      "method": "Partition.representatives",
+      "notes": "Java array/List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          0,
+          2
+        ],
+        "string_repr": "[0, 2]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "p01.blockIndex(1)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "blockIndex of 1",
+      "expected_exception": null,
+      "id": "bp_block_index",
+      "kwargs": {},
+      "method": "Partition.blockIndex",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 0,
+        "string_repr": "0",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "[[int(x) for x in blk] for blk in p01.getBlocks()]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getBlocks nested lists",
+      "expected_exception": null,
+      "id": "bp_get_blocks",
+      "kwargs": {},
+      "method": "Partition.getBlocks",
+      "notes": "Java array/List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            0,
+            1
+          ],
+          [
+            2
+          ]
+        ],
+        "string_repr": "[[0, 1], [2]]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "list(p01.toArray())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "toArray",
+      "expected_exception": null,
+      "id": "bp_to_array",
+      "kwargs": {},
+      "method": "Partition.toArray",
+      "notes": "Java array/List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          -2,
+          0,
+          -1
+        ],
+        "string_repr": "[-2, 0, -1]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "list(p01.getArray())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getArray",
+      "expected_exception": null,
+      "id": "bp_get_array",
+      "kwargs": {},
+      "method": "BasicPartition.getArray",
+      "notes": "Java array/List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          -2,
+          0,
+          -1
+        ],
+        "string_repr": "[-2, 0, -1]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "p01.join(p12)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "join of two partitions",
+      "expected_exception": null,
+      "id": "bp_join",
+      "kwargs": {},
+      "method": "Partition.join",
+      "notes": "",
+      "result": {
+        "return_type": "BasicPartition",
+        "return_value": {
+          "__type__": "partition",
+          "array": [
+            -3,
+            0,
+            0
+          ],
+          "class": "BasicPartition",
+          "number_of_blocks": 1,
+          "string": "|0,1,2|",
+          "universe_size": 3
+        },
+        "string_repr": "|0,1,2|",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "p01.meet(p12)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "meet of two partitions",
+      "expected_exception": null,
+      "id": "bp_meet",
+      "kwargs": {},
+      "method": "Partition.meet",
+      "notes": "",
+      "result": {
+        "return_type": "BasicPartition",
+        "return_value": {
+          "__type__": "partition",
+          "array": [
+            -1,
+            -1,
+            -1
+          ],
+          "class": "BasicPartition",
+          "number_of_blocks": 3,
+          "string": "|0|1|2|",
+          "universe_size": 3
+        },
+        "string_repr": "|0|1|2|",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "p01.leq(one3)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "p01 leq one",
+      "expected_exception": null,
+      "id": "bp_leq_true",
+      "kwargs": {},
+      "method": "Partition.leq",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "one3.leq(p01)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "one not leq p01",
+      "expected_exception": null,
+      "id": "bp_leq_false",
+      "kwargs": {},
+      "method": "Partition.leq",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": false,
+        "string_repr": "False",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "zero3.isZero()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "zero isZero",
+      "expected_exception": null,
+      "id": "bp_is_zero",
+      "kwargs": {},
+      "method": "Partition.isZero",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "one3.isUniform()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "one is uniform",
+      "expected_exception": null,
+      "id": "bp_is_uniform_one",
+      "kwargs": {},
+      "method": "Partition.isUniform",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "p01.isUniform()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "|0 1|2| is not uniform",
+      "expected_exception": null,
+      "id": "bp_is_uniform_p01",
+      "kwargs": {},
+      "method": "Partition.isUniform",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": false,
+        "string_repr": "False",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "zero3.isInitialLexRepresentative()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "zero is initial lex representative",
+      "expected_exception": null,
+      "id": "bp_is_initial_lex",
+      "kwargs": {},
+      "method": "Partition.isInitialLexRepresentative",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "p01.rank()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "rank = n - numberOfBlocks",
+      "expected_exception": null,
+      "id": "bp_rank",
+      "kwargs": {},
+      "method": "BasicPartition.rank",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 1,
+        "string_repr": "1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "p01.toString()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "toString BLOCK",
+      "expected_exception": null,
+      "id": "bp_tostring_default",
+      "kwargs": {},
+      "method": "Partition.toString",
+      "notes": "",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "|0,1|2|",
+        "string_repr": "|0,1|2|",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "one3.toString(3)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "toString(maxLen)",
+      "expected_exception": null,
+      "id": "bp_tostring_maxlen",
+      "kwargs": {},
+      "method": "Partition.toString",
+      "notes": "",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "|0,1 ...",
+        "string_repr": "|0,1 ...",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "p01.toString(Partition.PrintType.INTERNAL)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "toString(INTERNAL)",
+      "expected_exception": null,
+      "id": "bp_tostring_internal",
+      "kwargs": {},
+      "method": "Partition.toString",
+      "notes": "",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "[-2, 0, -1]",
+        "string_repr": "[-2, 0, -1]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "p01.toString(Partition.PrintType.EWK)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "toString(EWK)",
+      "expected_exception": null,
+      "id": "bp_tostring_ewk",
+      "kwargs": {},
+      "method": "Partition.toString",
+      "notes": "",
+      "result": {
+        "return_type": "unicode",
+        "return_value": ",0,0,2",
+        "string_repr": ",0,0,2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "p01.toString(Partition.PrintType.HUMAN)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "toString(HUMAN)",
+      "expected_exception": null,
+      "id": "bp_tostring_human",
+      "kwargs": {},
+      "method": "Partition.toString",
+      "notes": "",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "|0,1|2| (2 block(s))",
+        "string_repr": "|0,1|2| (2 block(s))",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "p01.toString(Partition.PrintType.SQ_BRACE_BLOCK)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "toString(SQ_BRACE_BLOCK)",
+      "expected_exception": null,
+      "id": "bp_tostring_sq",
+      "kwargs": {},
+      "method": "Partition.toString",
+      "notes": "",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "[[0,1],[2]]",
+        "string_repr": "[[0,1],[2]]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "p01.equals(BasicPartition('|0 1|2|'))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "equals after reconstruct",
+      "expected_exception": null,
+      "id": "bp_equals",
+      "kwargs": {},
+      "method": "Partition.equals",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "p01.hashCode()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Java IntArray hashCode",
+      "expected_exception": null,
+      "id": "bp_hash_code",
+      "kwargs": {},
+      "method": "BasicPartition.hashCode",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 27868,
+        "string_repr": "27868",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "p01.compareTo(one3)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "compareTo by rank then array",
+      "expected_exception": null,
+      "id": "bp_compare_to",
+      "kwargs": {},
+      "method": "BasicPartition.compareTo",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": -1,
+        "string_repr": "-1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sorted((int(p.get(0) if hasattr(p, 'get') else p[0]), int(p.get(1) if hasattr(p, 'get') else p[1])) for p in p01.getPairs())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getPairs as lists",
+      "expected_exception": null,
+      "id": "bp_get_pairs",
+      "kwargs": {},
+      "method": "Partition.getPairs",
+      "notes": "Java array/List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            2
+          ]
+        ],
+        "string_repr": "[(0, 0), (0, 1), (1, 0), (1, 1), (2, 2)]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "(lambda r: sorted((int(p.get(0) if hasattr(p, 'get') else p[0]), int(p.get(1) if hasattr(p, 'get') else p[1])) for p in r.getPairs()))(p01.compose(p12))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "compose two partitions as sorted pairs",
+      "expected_exception": null,
+      "id": "bp_compose",
+      "kwargs": {},
+      "method": "Partition.compose",
+      "notes": "Java array/List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            2
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            1
+          ],
+          [
+            2,
+            2
+          ]
+        ],
+        "string_repr": "[(0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2), (2, 1), (2, 2)]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "(lambda q: (q.joinBlocks(0, 2), str(q))[1])(BasicPartition.zero(3))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "joinBlocks 0 and 2 on zero(3)",
+      "expected_exception": null,
+      "id": "bp_join_blocks",
+      "kwargs": {},
+      "method": "Partition.joinBlocks",
+      "notes": "",
+      "result": {
+        "return_type": "str",
+        "return_value": "|0,2|1|",
+        "string_repr": "|0,2|1|",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "(lambda q: (q.normalize(), str(q))[1])(BasicPartition([-1, -1, -1]))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "normalize zero array",
+      "expected_exception": null,
+      "id": "bp_normalize",
+      "kwargs": {},
+      "method": "Partition.normalize",
+      "notes": "",
+      "result": {
+        "return_type": "str",
+        "return_value": "|0|1|2|",
+        "string_repr": "|0|1|2|",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "list(BasicPartition.stringToPartition('|0 1|2|', -1))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "stringToPartition returns int array",
+      "expected_exception": null,
+      "id": "bp_string_to_partition",
+      "kwargs": {},
+      "method": "BasicPartition.stringToPartition",
+      "notes": "Java array/List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          -2,
+          0,
+          -1
+        ],
+        "string_repr": "[-2, 0, -1]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "BasicPartition.stringToPartition('not-a-partition', -1)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "unrecognized format returns null",
+      "expected_exception": null,
+      "id": "bp_string_to_partition_null",
+      "kwargs": {},
+      "method": "BasicPartition.stringToPartition",
+      "notes": "Java null vs Python None.",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "BasicPartition.jbToPartition([0, 0, 2, 0])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "jbToPartition kernel form",
+      "expected_exception": null,
+      "id": "bp_jb_to_partition",
+      "kwargs": {},
+      "method": "BasicPartition.jbToPartition",
+      "notes": "",
+      "result": {
+        "return_type": "BasicPartition",
+        "return_value": {
+          "__type__": "partition",
+          "array": [
+            -3,
+            0,
+            -1,
+            0
+          ],
+          "class": "BasicPartition",
+          "number_of_blocks": 2,
+          "string": "|0,1,3|2|",
+          "universe_size": 4
+        },
+        "string_repr": "|0,1,3|2|",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "BasicPartition.permutabilityLevel(0, 2, p01, p12)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "permutabilityLevel(a,b,par0,par1)",
+      "expected_exception": null,
+      "id": "bp_perm_level_pair",
+      "kwargs": {},
+      "method": "BasicPartition.permutabilityLevel",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "BasicPartition.permutabilityLevel(p01, p12)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "permutabilityLevel(par0, par1)",
+      "expected_exception": null,
+      "id": "bp_perm_level_join",
+      "kwargs": {},
+      "method": "BasicPartition.permutabilityLevel",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 3,
+        "string_repr": "3",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "BasicPartition.leq(list(p01.toArray()), list(one3.toArray()))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "static leq(int[], int[])",
+      "expected_exception": null,
+      "id": "bp_leq_arrays",
+      "kwargs": {},
+      "method": "BasicPartition.leq",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "BasicPartition.partToKissString(list(p01.toArray()))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "partToKissString",
+      "expected_exception": null,
+      "id": "bp_part_to_kiss",
+      "kwargs": {},
+      "method": "BasicPartition.partToKissString",
+      "notes": "",
+      "result": {
+        "return_type": "unicode",
+        "return_value": ",0,0,2",
+        "string_repr": ",0,0,2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "BasicPartition.directProduct(p01, p12)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "directProduct",
+      "expected_exception": null,
+      "id": "bp_direct_product",
+      "kwargs": {},
+      "method": "BasicPartition.directProduct",
+      "notes": "",
+      "result": {
+        "return_type": "BasicPartition",
+        "return_value": {
+          "__type__": "partition",
+          "array": [
+            -2,
+            0,
+            -1,
+            -4,
+            3,
+            -2,
+            3,
+            3,
+            5
+          ],
+          "class": "BasicPartition",
+          "number_of_blocks": 4,
+          "string": "|0,1|2|3,4,6,7|5,8|",
+          "universe_size": 9
+        },
+        "string_repr": "|0,1|2|3,4,6,7|5,8|",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "BasicPartition.firstProjection(2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "firstProjection(2)",
+      "expected_exception": null,
+      "id": "bp_first_projection",
+      "kwargs": {},
+      "method": "BasicPartition.firstProjection",
+      "notes": "",
+      "result": {
+        "return_type": "BasicPartition",
+        "return_value": {
+          "__type__": "partition",
+          "array": [
+            -2,
+            0,
+            -2,
+            2
+          ],
+          "class": "BasicPartition",
+          "number_of_blocks": 2,
+          "string": "|0,1|2,3|",
+          "universe_size": 4
+        },
+        "string_repr": "|0,1|2,3|",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "BasicPartition.secondProjection(2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "secondProjection(2)",
+      "expected_exception": null,
+      "id": "bp_second_projection",
+      "kwargs": {},
+      "method": "BasicPartition.secondProjection",
+      "notes": "",
+      "result": {
+        "return_type": "BasicPartition",
+        "return_value": {
+          "__type__": "partition",
+          "array": [
+            -2,
+            -2,
+            0,
+            1
+          ],
+          "class": "BasicPartition",
+          "number_of_blocks": 2,
+          "string": "|0,2|1,3|",
+          "universe_size": 4
+        },
+        "string_repr": "|0,2|1,3|",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "[str(p) for p in BasicPartition.joinClosure([p01, p12])]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "joinClosure strings",
+      "expected_exception": null,
+      "id": "bp_join_closure",
+      "kwargs": {},
+      "method": "BasicPartition.joinClosure",
+      "notes": "Java array/List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "|0,1|2|",
+          "|0|1,2|",
+          "|0,1,2|"
+        ],
+        "string_repr": "['|0,1|2|', '|0|1,2|', '|0,1,2|']",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "[str(p) for p in BasicPartition.meetClosure([p01, p12])]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "meetClosure strings",
+      "expected_exception": null,
+      "id": "bp_meet_closure",
+      "kwargs": {},
+      "method": "BasicPartition.meetClosure",
+      "notes": "Java array/List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "|0,1|2|",
+          "|0|1,2|",
+          "|0|1|2|"
+        ],
+        "string_repr": "['|0,1|2|', '|0|1,2|', '|0|1|2|']",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sorted(str(p) for p in BasicPartition.subUniverseGenerated([p01, p12]))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "subUniverseGenerated strings",
+      "expected_exception": null,
+      "id": "bp_sub_universe",
+      "kwargs": {},
+      "method": "BasicPartition.subUniverseGenerated",
+      "notes": "Java array/List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "|0,1,2|",
+          "|0,1|2|",
+          "|0|1,2|",
+          "|0|1|2|"
+        ],
+        "string_repr": "['|0,1,2|', '|0,1|2|', '|0|1,2|', '|0|1|2|']",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "BasicPartition.partitionFromMatrix([[0, 1], [1, 0]])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "partitionFromMatrix 2x2",
+      "expected_exception": null,
+      "id": "bp_from_matrix",
+      "kwargs": {},
+      "method": "BasicPartition.partitionFromMatrix",
+      "notes": "",
+      "result": {
+        "return_type": "BasicPartition",
+        "return_value": {
+          "__type__": "partition",
+          "array": [
+            -2,
+            -2,
+            1,
+            0
+          ],
+          "class": "BasicPartition",
+          "number_of_blocks": 2,
+          "string": "|0,3|1,2|",
+          "universe_size": 4
+        },
+        "string_repr": "|0,3|1,2|",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "len(BasicPartition.unaryPolymorphisms([BasicPartition.zero(2)], None))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "unaryPolymorphisms of zero(2) count",
+      "expected_exception": null,
+      "id": "bp_unary_polys",
+      "kwargs": {},
+      "method": "BasicPartition.unaryPolymorphisms",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 4,
+        "string_repr": "4",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "len(BasicPartition.binaryPolymorphisms([BasicPartition.zero(2)]))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "binaryPolymorphisms of zero(2) count",
+      "expected_exception": null,
+      "id": "bp_binary_polys",
+      "kwargs": {},
+      "method": "BasicPartition.binaryPolymorphisms",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 16,
+        "string_repr": "16",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "BasicPartition.unaryPolymorphismsAlgebra([BasicPartition.zero(2)]).cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "unaryPolymorphismsAlgebra cardinality",
+      "expected_exception": null,
+      "id": "bp_unary_poly_alg",
+      "kwargs": {},
+      "method": "BasicPartition.unaryPolymorphismsAlgebra",
+      "notes": "Java Algebra toString is Class@hex; values compared.",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "BasicPartition.isHereditary([BasicPartition.zero(2)])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "isHereditary always true after computing",
+      "expected_exception": null,
+      "id": "bp_is_hereditary",
+      "kwargs": {},
+      "method": "BasicPartition.isHereditary",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "BasicPartition.funcToJIs(1)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "funcToJIs returns null",
+      "expected_exception": null,
+      "id": "bp_func_to_jis",
+      "kwargs": {},
+      "method": "BasicPartition.funcToJIs",
+      "notes": "Java null vs Python None.",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "p01.join(None)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "join(null) is NPE",
+      "expected_exception": "NullPointerException",
+      "id": "bp_join_null",
+      "kwargs": {},
+      "method": "Partition.join",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.NullPointerException: Cannot invoke \"org.uacalc.alg.conlat.Partition.toArray()\" because \"part2\" is null",
+          "type": "NullPointerException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "BasicPartition(None)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "BasicPartition(null) is NPE",
+      "expected_exception": "NullPointerException",
+      "id": "bp_ctor_null_string",
+      "kwargs": {},
+      "method": "BasicPartition.BasicPartition",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.NullPointerException: Cannot invoke \"String.trim()\" because \"str\" is null",
+          "type": "NullPointerException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "BasicPartition('not-a-partition')",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "BasicPartition(unrecognized) NPEs on null array",
+      "expected_exception": "NullPointerException",
+      "id": "bp_ctor_bad_string",
+      "kwargs": {},
+      "method": "BasicPartition.BasicPartition",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.NullPointerException: Cannot read the array length because \"this.array\" is null",
+          "type": "NullPointerException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "BasicPartition('')",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "BasicPartition('') StringIndexOutOfBoundsException",
+      "expected_exception": "StringIndexOutOfBoundsException",
+      "id": "bp_ctor_empty_string",
+      "kwargs": {},
+      "method": "BasicPartition.BasicPartition",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.StringIndexOutOfBoundsException: Range [0, 1) out of bounds for length 0",
+          "type": "StringIndexOutOfBoundsException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "BasicPartition('[0 1]')",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "single-bracket string is IllegalArgumentException",
+      "expected_exception": "IllegalArgumentException",
+      "id": "bp_ctor_bad_bracket",
+      "kwargs": {},
+      "method": "BasicPartition.BasicPartition",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.IllegalArgumentException: Not a valid partition string",
+          "type": "IllegalArgumentException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "BasicPartition.normalize([0, 0, 2, 0])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "static normalize part[0]==0 is RuntimeException",
+      "expected_exception": "RuntimeException",
+      "id": "bp_normalize_runtime",
+      "kwargs": {},
+      "method": "BasicPartition.normalize",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.RuntimeException",
+          "type": "RuntimeException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "p01.isRelated(0, 9)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "isRelated OOB is IndexOutOfBoundsException",
+      "expected_exception": "IndexOutOfBoundsException",
+      "id": "bp_is_related_oob",
+      "kwargs": {},
+      "method": "Partition.isRelated",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.ArrayIndexOutOfBoundsException: Index 9 out of bounds for length 3",
+          "type": "ArrayIndexOutOfBoundsException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_rt",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Round-trip partition via array and toString: join, meet, leq, equals, toString",
+      "expected_exception": null,
+      "id": "bp_value_roundtrip",
+      "kwargs": {},
+      "method": "Partition",
+      "notes": "",
+      "result": {
+        "return_type": "dict",
+        "return_value": {
+          "equals_arr": true,
+          "equals_str": true,
+          "join": "|0,1,2|",
+          "join_arr": "|0,1,2|",
+          "leq": true,
+          "leq_arr": true,
+          "meet": "|0|1|2|",
+          "meet_arr": "|0|1|2|",
+          "toString": "|0,1|2|",
+          "toString_arr": "|0,1|2|",
+          "toString_str": "|0,1|2|"
+        },
+        "string_repr": "{'equals_arr': True, 'toString_str': '|0,1|2|', 'leq_arr': True, 'equals_str': True, 'meet': '|0|1|2|', 'toString_arr': '|0,1|2|', 'meet_arr': '|0|1|2|', 'leq': True, 'toString': '|0,1|2|', 'join': '|0,1,2|', 'join_arr': '|0,1,2|'}",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n\n_payload = list(p01.toArray())\n_txt = p01.toString()\n_p_arr = BasicPartition(_payload)\n_p_str = BasicPartition(_txt)\n_rt = {\n    \"equals_arr\": bool(p01.equals(_p_arr)),\n    \"equals_str\": bool(p01.equals(_p_str)),\n    \"toString\": str(p01),\n    \"toString_arr\": str(_p_arr),\n    \"toString_str\": str(_p_str),\n    \"join\": str(p01.join(p12)),\n    \"join_arr\": str(_p_arr.join(p12)),\n    \"meet\": str(p01.meet(p12)),\n    \"meet_arr\": str(_p_arr.meet(p12)),\n    \"leq\": bool(p01.leq(one3)),\n    \"leq_arr\": bool(_p_arr.leq(one3)),\n}\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "con",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "CongruenceLattice of cyclic2",
+      "expected_exception": null,
+      "id": "cl_ctor_cyclic2",
+      "kwargs": {},
+      "method": "CongruenceLattice.CongruenceLattice",
+      "notes": "Java lattice toString is Class@hex; values compared.",
+      "result": {
+        "return_type": "CongruenceLattice",
+        "return_value": {
+          "__type__": "lattice",
+          "cardinality": 2,
+          "class": "CongruenceLattice",
+          "name": "Con(C2)",
+          "universe": [
+            "|0,1|",
+            "|0|1|"
+          ],
+          "zero": "|0|1|"
+        },
+        "string_repr": "org.uacalc.alg.conlat.CongruenceLattice@5dc0ff7d",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "con.cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Con(cyclic2) cardinality",
+      "expected_exception": null,
+      "id": "cl_cardinality",
+      "kwargs": {},
+      "method": "CongruenceLattice.cardinality",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "con.zero()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "zero congruence",
+      "expected_exception": null,
+      "id": "cl_zero",
+      "kwargs": {},
+      "method": "CongruenceLattice.zero",
+      "notes": "",
+      "result": {
+        "return_type": "BasicPartition",
+        "return_value": {
+          "__type__": "partition",
+          "array": [
+            -1,
+            -1
+          ],
+          "class": "BasicPartition",
+          "number_of_blocks": 2,
+          "string": "|0|1|",
+          "universe_size": 2
+        },
+        "string_repr": "|0|1|",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "con.one()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "one congruence",
+      "expected_exception": null,
+      "id": "cl_one",
+      "kwargs": {},
+      "method": "CongruenceLattice.one",
+      "notes": "",
+      "result": {
+        "return_type": "BasicPartition",
+        "return_value": {
+          "__type__": "partition",
+          "array": [
+            -2,
+            0
+          ],
+          "class": "BasicPartition",
+          "number_of_blocks": 1,
+          "string": "|0,1|",
+          "universe_size": 2
+        },
+        "string_repr": "|0,1|",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sorted(str(p) for p in con.universe())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "universe strings",
+      "expected_exception": null,
+      "id": "cl_universe",
+      "kwargs": {},
+      "method": "CongruenceLattice.universe",
+      "notes": "Java array/List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "|0,1|",
+          "|0|1|"
+        ],
+        "string_repr": "['|0,1|', '|0|1|']",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sorted(str(p) for p in con.getUniverseList())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getUniverseList strings",
+      "expected_exception": null,
+      "id": "cl_get_universe_list",
+      "kwargs": {},
+      "method": "CongruenceLattice.getUniverseList",
+      "notes": "Java array/List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "|0,1|",
+          "|0|1|"
+        ],
+        "string_repr": "['|0,1|', '|0|1|']",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sorted(str(p) for p in con.principals())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "principals",
+      "expected_exception": null,
+      "id": "cl_principals",
+      "kwargs": {},
+      "method": "CongruenceLattice.principals",
+      "notes": "Java array/List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "|0,1|"
+        ],
+        "string_repr": "['|0,1|']",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sorted(str(p) for p in con.joinIrreducibles())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "joinIrreducibles",
+      "expected_exception": null,
+      "id": "cl_join_irreducibles",
+      "kwargs": {},
+      "method": "CongruenceLattice.joinIrreducibles",
+      "notes": "Java array/List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "|0,1|"
+        ],
+        "string_repr": "['|0,1|']",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sorted(str(p) for p in con.meetIrreducibles())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "meetIrreducibles",
+      "expected_exception": null,
+      "id": "cl_meet_irreducibles",
+      "kwargs": {},
+      "method": "CongruenceLattice.meetIrreducibles",
+      "notes": "Java array/List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "|0|1|"
+        ],
+        "string_repr": "['|0|1|']",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sorted(str(p) for p in con.atoms())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "atoms",
+      "expected_exception": null,
+      "id": "cl_atoms",
+      "kwargs": {},
+      "method": "CongruenceLattice.atoms",
+      "notes": "Java array/List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "|0,1|"
+        ],
+        "string_repr": "['|0,1|']",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "con.isDistributive()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "isDistributive cyclic2",
+      "expected_exception": null,
+      "id": "cl_is_distributive",
+      "kwargs": {},
+      "method": "CongruenceLattice.isDistributive",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "con.Cg(0, 1)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Cg(0,1)",
+      "expected_exception": null,
+      "id": "cl_cg",
+      "kwargs": {},
+      "method": "CongruenceLattice.Cg",
+      "notes": "",
+      "result": {
+        "return_type": "BasicPartition",
+        "return_value": {
+          "__type__": "partition",
+          "array": [
+            -2,
+            0
+          ],
+          "class": "BasicPartition",
+          "number_of_blocks": 1,
+          "string": "|0,1|",
+          "universe_size": 2
+        },
+        "string_repr": "|0,1|",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "(lambda r: sorted((int(p.get(0) if hasattr(p, 'get') else p[0]), int(p.get(1) if hasattr(p, 'get') else p[1])) for p in r.getPairs()))(con.Tg(0, 1))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Tg(0,1) as sorted pairs",
+      "expected_exception": null,
+      "id": "cl_tg",
+      "kwargs": {},
+      "method": "CongruenceLattice.Tg",
+      "notes": "Java array/List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "string_repr": "[(0, 0), (0, 1), (1, 0), (1, 1)]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "con.getName()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getName Con(alg)",
+      "expected_exception": null,
+      "id": "cl_get_name",
+      "kwargs": {},
+      "method": "CongruenceLattice.getName",
+      "notes": "",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "Con(C2)",
+        "string_repr": "Con(C2)",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "con.isTotal()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "isTotal true",
+      "expected_exception": null,
+      "id": "cl_is_total",
+      "kwargs": {},
+      "method": "CongruenceLattice.isTotal",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "con.isUnary()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "isUnary false",
+      "expected_exception": null,
+      "id": "cl_is_unary",
+      "kwargs": {},
+      "method": "CongruenceLattice.isUnary",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": false,
+        "string_repr": "False",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "con.isIdempotent()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "isIdempotent true",
+      "expected_exception": null,
+      "id": "cl_is_idempotent",
+      "kwargs": {},
+      "method": "CongruenceLattice.isIdempotent",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "con.operations()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "operations is null",
+      "expected_exception": null,
+      "id": "cl_operations",
+      "kwargs": {},
+      "method": "CongruenceLattice.operations",
+      "notes": "Java null vs Python None.",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "con.getOperation(None)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getOperation is null",
+      "expected_exception": null,
+      "id": "cl_get_operation",
+      "kwargs": {},
+      "method": "CongruenceLattice.getOperation",
+      "notes": "Java null vs Python None.",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "list(con.constantOperations())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "constantOperations empty",
+      "expected_exception": null,
+      "id": "cl_constant_ops",
+      "kwargs": {},
+      "method": "CongruenceLattice.constantOperations",
+      "notes": "Java array/List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [],
+        "string_repr": "[]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "con.setName('x')",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "setName is UOE",
+      "expected_exception": "UnsupportedOperationException",
+      "id": "cl_set_name",
+      "kwargs": {},
+      "method": "CongruenceLattice.setName",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.UnsupportedOperationException",
+          "type": "UnsupportedOperationException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "con.coatoms()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "coatoms is UOE",
+      "expected_exception": "UnsupportedOperationException",
+      "id": "cl_coatoms",
+      "kwargs": {},
+      "method": "CongruenceLattice.coatoms",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.UnsupportedOperationException: Not implemented yet.",
+          "type": "UnsupportedOperationException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sorted(str(p) for p in con.complements(con.zero()))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "complements of zero",
+      "expected_exception": null,
+      "id": "cl_complements",
+      "kwargs": {},
+      "method": "CongruenceLattice.complements",
+      "notes": "Java array/List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "|0,1|"
+        ],
+        "string_repr": "['|0,1|']",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "con.join(con.zero(), con.one())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "lattice join zero, one",
+      "expected_exception": null,
+      "id": "cl_join_lat",
+      "kwargs": {},
+      "method": "CongruenceLattice.join",
+      "notes": "",
+      "result": {
+        "return_type": "BasicPartition",
+        "return_value": {
+          "__type__": "partition",
+          "array": [
+            -2,
+            0
+          ],
+          "class": "BasicPartition",
+          "number_of_blocks": 1,
+          "string": "|0,1|",
+          "universe_size": 2
+        },
+        "string_repr": "|0,1|",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "con.meet(con.zero(), con.one())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "lattice meet zero, one",
+      "expected_exception": null,
+      "id": "cl_meet_lat",
+      "kwargs": {},
+      "method": "CongruenceLattice.meet",
+      "notes": "",
+      "result": {
+        "return_type": "BasicPartition",
+        "return_value": {
+          "__type__": "partition",
+          "array": [
+            -1,
+            -1
+          ],
+          "class": "BasicPartition",
+          "number_of_blocks": 2,
+          "string": "|0|1|",
+          "universe_size": 2
+        },
+        "string_repr": "|0|1|",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "con.leq(con.zero(), con.one())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "lattice leq zero, one",
+      "expected_exception": null,
+      "id": "cl_leq_lat",
+      "kwargs": {},
+      "method": "CongruenceLattice.leq",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "con.join([con.zero(), con.one()])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "join(List)",
+      "expected_exception": null,
+      "id": "cl_join_list",
+      "kwargs": {},
+      "method": "CongruenceLattice.join",
+      "notes": "",
+      "result": {
+        "return_type": "BasicPartition",
+        "return_value": {
+          "__type__": "partition",
+          "array": [
+            -2,
+            0
+          ],
+          "class": "BasicPartition",
+          "number_of_blocks": 1,
+          "string": "|0,1|",
+          "universe_size": 2
+        },
+        "string_repr": "|0,1|",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "(con.universe(), con.universeFound())[1]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "universeFound after universe()",
+      "expected_exception": null,
+      "id": "cl_universe_found",
+      "kwargs": {},
+      "method": "CongruenceLattice.universeFound",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "con.isDrawable()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "isDrawable cyclic2",
+      "expected_exception": null,
+      "id": "cl_is_drawable",
+      "kwargs": {},
+      "method": "CongruenceLattice.isDrawable",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "con.isSmallerThan(10)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "isSmallerThan(10)",
+      "expected_exception": null,
+      "id": "cl_is_smaller_than",
+      "kwargs": {},
+      "method": "CongruenceLattice.isSmallerThan",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "con.joinIrreducible(con.one())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "joinIrreducible(one)",
+      "expected_exception": null,
+      "id": "cl_join_irreducible",
+      "kwargs": {},
+      "method": "CongruenceLattice.joinIrreducible",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "(con.setMonitor(None), con.monitoring())[1]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "monitoring after setMonitor(None)",
+      "expected_exception": null,
+      "id": "cl_monitoring",
+      "kwargs": {},
+      "method": "CongruenceLattice.monitoring",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": false,
+        "string_repr": "False",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "con.getMonitor()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getMonitor default None",
+      "expected_exception": null,
+      "id": "cl_get_monitor",
+      "kwargs": {},
+      "method": "CongruenceLattice.getMonitor",
+      "notes": "Java null vs Python None.",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "con.setMonitor(1)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "setMonitor(int) TypeError",
+      "expected_exception": "TypeError",
+      "id": "cl_set_monitor_bad",
+      "kwargs": {},
+      "method": "CongruenceLattice.setMonitor",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "setMonitor(): 1st arg can't be coerced to org.uacalc.ui.tm.ProgressReport",
+          "type": "TypeError"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "[str(p) for p in CongruenceLattice.minimalElements([con.one(), con.zero()])]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "minimalElements topological",
+      "expected_exception": null,
+      "id": "cl_minimal_elements",
+      "kwargs": {},
+      "method": "CongruenceLattice.minimalElements",
+      "notes": "Java array/List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "|0,1|",
+          "|0|1|"
+        ],
+        "string_repr": "['|0,1|', '|0|1|']",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "CongruenceLattice(None)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "CongruenceLattice(null) NPE",
+      "expected_exception": "NullPointerException",
+      "id": "cl_ctor_null",
+      "kwargs": {},
+      "method": "CongruenceLattice.CongruenceLattice",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.NullPointerException: Cannot invoke \"org.uacalc.alg.SmallAlgebra.cardinality()\" because \"alg\" is null",
+          "type": "NullPointerException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_rt",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Round-trip Con(cyclic2) partitions: join, meet, leq, equals, toString",
+      "expected_exception": null,
+      "id": "cl_value_roundtrip",
+      "kwargs": {},
+      "method": "CongruenceLattice",
+      "notes": "",
+      "result": {
+        "return_type": "dict",
+        "return_value": {
+          "card": 2,
+          "eq_zero": true,
+          "join": "|0,1|",
+          "leq": true,
+          "meet": "|0|1|",
+          "toString_one": "|0,1|",
+          "toString_zero": "|0|1|",
+          "univ": [
+            "|0,1|",
+            "|0|1|"
+          ]
+        },
+        "string_repr": "{'eq_zero': True, 'toString_one': '|0,1|', 'univ': ['|0,1|', '|0|1|'], 'meet': '|0|1|', 'toString_zero': '|0|1|', 'leq': True, 'join': '|0,1|', 'card': 2}",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n\n_univ = [str(p) for p in con.universe()]\n_parts = list(con.universe())\n_z = con.zero()\n_o = con.one()\n_rt = {\n    \"card\": int(con.cardinality()),\n    \"univ\": sorted(_univ),\n    \"join\": str(_z.join(_o)),\n    \"meet\": str(_z.meet(_o)),\n    \"leq\": bool(_z.leq(_o)),\n    \"eq_zero\": bool(_z.equals(BasicPartition.zero(_z.universeSize()))),\n    \"toString_zero\": str(_z),\n    \"toString_one\": str(_o),\n}\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "p01.get(1)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "IntArray get(1) on |0 1|2|",
+      "expected_exception": null,
+      "id": "bp_get",
+      "kwargs": {},
+      "method": "BasicPartition.get",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 0,
+        "string_repr": "0",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sorted((int(p.get(0) if hasattr(p, 'get') else p[0]), int(p.get(1) if hasattr(p, 'get') else p[1])) for p in p01.iterator())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "iterator over pairs",
+      "expected_exception": null,
+      "id": "bp_iterator",
+      "kwargs": {},
+      "method": "Partition.iterator",
+      "notes": "Java array/List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            2
+          ]
+        ],
+        "string_repr": "[(0, 0), (0, 1), (1, 0), (1, 1), (2, 2)]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "p01.meet(None)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "meet(null) is NPE",
+      "expected_exception": "NullPointerException",
+      "id": "bp_meet_null",
+      "kwargs": {},
+      "method": "Partition.meet",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.NullPointerException: Cannot invoke \"org.uacalc.alg.conlat.Partition.toArray()\" because \"part2\" is null",
+          "type": "NullPointerException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "p01.leq(None)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "leq(null) is NPE",
+      "expected_exception": "NullPointerException",
+      "id": "bp_leq_null",
+      "kwargs": {},
+      "method": "Partition.leq",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.NullPointerException: Cannot invoke \"org.uacalc.alg.conlat.Partition.toArray()\" because \"part2\" is null",
+          "type": "NullPointerException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "BasicPartition.unaryPolymorphisms([], None)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "unaryPolymorphisms empty list is IndexOutOfBoundsException",
+      "expected_exception": "IndexOutOfBoundsException",
+      "id": "bp_unary_empty",
+      "kwargs": {},
+      "method": "BasicPartition.unaryPolymorphisms",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.IndexOutOfBoundsException: Index 0 out of bounds for length 0",
+          "type": "IndexOutOfBoundsException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "BasicPartition.binaryPolymorphismsAlgebra([BasicPartition.zero(2)], None).cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "binaryPolymorphismsAlgebra cardinality",
+      "expected_exception": null,
+      "id": "bp_binary_poly_alg",
+      "kwargs": {},
+      "method": "BasicPartition.binaryPolymorphismsAlgebra",
+      "notes": "Java Algebra toString is Class@hex; values compared.",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "(lambda a: (BasicPartition.normalize(a), list(a))[1])([-1, -1, -1])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "static normalize of zero array",
+      "expected_exception": null,
+      "id": "bp_static_normalize",
+      "kwargs": {},
+      "method": "BasicPartition.normalize",
+      "notes": "Java array/List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          -1,
+          -1,
+          -1
+        ],
+        "string_repr": "[-1, -1, -1]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "con.getDescription()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getDescription default",
+      "expected_exception": null,
+      "id": "cl_get_description",
+      "kwargs": {},
+      "method": "CongruenceLattice.getDescription",
+      "notes": "Java lattice toString is Class@hex; values compared.",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "Congruence Lattice of org.uacalc.alg.BasicAlgebra@27df95e",
+        "string_repr": "Congruence Lattice of org.uacalc.alg.BasicAlgebra@27df95e",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": "owner: Java getDescription uses alg.toString() Class@hex; library uses the algebra name"
+    },
+    {
+      "args": [],
+      "call": "(con.setDescription('d'), con.getDescription())[1]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "setDescription then get",
+      "expected_exception": null,
+      "id": "cl_set_description",
+      "kwargs": {},
+      "method": "CongruenceLattice.setDescription",
+      "notes": "",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "d",
+        "string_repr": "d",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "con.getOperationsMap()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getOperationsMap is null",
+      "expected_exception": null,
+      "id": "cl_get_ops_map",
+      "kwargs": {},
+      "method": "CongruenceLattice.getOperationsMap",
+      "notes": "Java null vs Python None.",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "con.makeOperationTables()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "makeOperationTables is void",
+      "expected_exception": null,
+      "id": "cl_make_op_tables",
+      "kwargs": {},
+      "method": "CongruenceLattice.makeOperationTables",
+      "notes": "",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sorted(str(p) for p in con.iterator())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "iterator over universe",
+      "expected_exception": null,
+      "id": "cl_iterator",
+      "kwargs": {},
+      "method": "CongruenceLattice.iterator",
+      "notes": "Java array/List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "|0,1|",
+          "|0|1|"
+        ],
+        "string_repr": "['|0,1|', '|0|1|']",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "con.Cg(con.zero())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Cg(Partition)",
+      "expected_exception": null,
+      "id": "cl_cg_part",
+      "kwargs": {},
+      "method": "CongruenceLattice.Cg",
+      "notes": "",
+      "result": {
+        "return_type": "BasicPartition",
+        "return_value": {
+          "__type__": "partition",
+          "array": [
+            -1,
+            -1
+          ],
+          "class": "BasicPartition",
+          "number_of_blocks": 2,
+          "string": "|0|1|",
+          "universe_size": 2
+        },
+        "string_repr": "|0|1|",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "con.meet([con.zero(), con.one()])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "meet(List)",
+      "expected_exception": null,
+      "id": "cl_meet_list",
+      "kwargs": {},
+      "method": "CongruenceLattice.meet",
+      "notes": "",
+      "result": {
+        "return_type": "BasicPartition",
+        "return_value": {
+          "__type__": "partition",
+          "array": [
+            -1,
+            -1
+          ],
+          "class": "BasicPartition",
+          "number_of_blocks": 2,
+          "string": "|0|1|",
+          "universe_size": 2
+        },
+        "string_repr": "|0|1|",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "(lambda p: None if p is None else [int(p.get(i)) for i in range(p.universeSize())])(con.generatingPair(con.one()))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "generatingPair of one",
+      "expected_exception": null,
+      "id": "cl_generating_pair",
+      "kwargs": {},
+      "method": "CongruenceLattice.generatingPair",
+      "notes": "Java array/List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          0,
+          1
+        ],
+        "string_repr": "[0, 1]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "con.findCoatomAbove(con.zero())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "findCoatomAbove(zero)",
+      "expected_exception": null,
+      "id": "cl_find_coatom",
+      "kwargs": {},
+      "method": "CongruenceLattice.findCoatomAbove",
+      "notes": "",
+      "result": {
+        "return_type": "BasicPartition",
+        "return_value": {
+          "__type__": "partition",
+          "array": [
+            -1,
+            -1
+          ],
+          "class": "BasicPartition",
+          "number_of_blocks": 2,
+          "string": "|0|1|",
+          "universe_size": 2
+        },
+        "string_repr": "|0|1|",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "con.findJoinIrred(con.zero(), con.one())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "findJoinIrred(zero, one)",
+      "expected_exception": null,
+      "id": "cl_find_join_irred",
+      "kwargs": {},
+      "method": "CongruenceLattice.findJoinIrred",
+      "notes": "",
+      "result": {
+        "return_type": "BasicPartition",
+        "return_value": {
+          "__type__": "partition",
+          "array": [
+            -2,
+            0
+          ],
+          "class": "BasicPartition",
+          "number_of_blocks": 1,
+          "string": "|0,1|",
+          "universe_size": 2
+        },
+        "string_repr": "|0,1|",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "con.findMeetIrred(con.zero(), con.one())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "findMeetIrred(zero, one)",
+      "expected_exception": null,
+      "id": "cl_find_meet_irred",
+      "kwargs": {},
+      "method": "CongruenceLattice.findMeetIrred",
+      "notes": "",
+      "result": {
+        "return_type": "BasicPartition",
+        "return_value": {
+          "__type__": "partition",
+          "array": [
+            -1,
+            -1
+          ],
+          "class": "BasicPartition",
+          "number_of_blocks": 2,
+          "string": "|0|1|",
+          "universe_size": 2
+        },
+        "string_repr": "|0|1|",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "[str(p) for p in con.findPrincipalChain()]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "findPrincipalChain",
+      "expected_exception": null,
+      "id": "cl_find_principal_chain",
+      "kwargs": {},
+      "method": "CongruenceLattice.findPrincipalChain",
+      "notes": "Java array/List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "|0|1|"
+        ],
+        "string_repr": "['|0|1|']",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "con.findUpperCover(con.zero())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "findUpperCover(zero)",
+      "expected_exception": null,
+      "id": "cl_find_upper_cover",
+      "kwargs": {},
+      "method": "CongruenceLattice.findUpperCover",
+      "notes": "",
+      "result": {
+        "return_type": "BasicPartition",
+        "return_value": {
+          "__type__": "partition",
+          "array": [
+            -2,
+            0
+          ],
+          "class": "BasicPartition",
+          "number_of_blocks": 1,
+          "string": "|0,1|",
+          "universe_size": 2
+        },
+        "string_repr": "|0,1|",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sorted(str(p) for p in con.irredundantMeetDecomposition())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "irredundantMeetDecomposition",
+      "expected_exception": null,
+      "id": "cl_irredundant",
+      "kwargs": {},
+      "method": "CongruenceLattice.irredundantMeetDecomposition",
+      "notes": "Java array/List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "|0|1|"
+        ],
+        "string_repr": "['|0|1|']",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "con.permutabilityLevel()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "permutabilityLevel of cyclic2",
+      "expected_exception": null,
+      "id": "cl_perm_level",
+      "kwargs": {},
+      "method": "CongruenceLattice.permutabilityLevel",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 0,
+        "string_repr": "0",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "con.getBasicLattice().cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getBasicLattice cardinality",
+      "expected_exception": null,
+      "id": "cl_basic_lattice",
+      "kwargs": {},
+      "method": "CongruenceLattice.getBasicLattice",
+      "notes": "Java lattice toString is Class@hex; values compared.",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "len(con.idempotentPolynomials())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "idempotentPolynomials count",
+      "expected_exception": null,
+      "id": "cl_idempotent_polys",
+      "kwargs": {},
+      "method": "CongruenceLattice.idempotentPolynomials",
+      "notes": "Java array/List/Set toString vs Python list.",
+      "result": {
+        "return_type": "int",
+        "return_value": 1,
+        "string_repr": "1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": "owner: library idempotent_polynomials is incomplete vs Java on cyclic2 (0 vs 1)"
+    },
+    {
+      "args": [],
+      "call": "con.meetIrreducible(con.zero())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "meetIrreducible(zero)",
+      "expected_exception": null,
+      "id": "cl_meet_irreducible",
+      "kwargs": {},
+      "method": "CongruenceLattice.meetIrreducible",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "con.joinPrime(con.one())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "joinPrime(one)",
+      "expected_exception": null,
+      "id": "cl_join_prime",
+      "kwargs": {},
+      "method": "CongruenceLattice.joinPrime",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "con.lowerStar(con.one())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "lowerStar(one)",
+      "expected_exception": null,
+      "id": "cl_lower_star",
+      "kwargs": {},
+      "method": "CongruenceLattice.lowerStar",
+      "notes": "",
+      "result": {
+        "return_type": "BasicPartition",
+        "return_value": {
+          "__type__": "partition",
+          "array": [
+            -1,
+            -1
+          ],
+          "class": "BasicPartition",
+          "number_of_blocks": 2,
+          "string": "|0|1|",
+          "universe_size": 2
+        },
+        "string_repr": "|0|1|",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "(con.makeUniverse(), con.universeFound())[1]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "makeUniverse then universeFound",
+      "expected_exception": null,
+      "id": "cl_make_universe",
+      "kwargs": {},
+      "method": "CongruenceLattice.makeUniverse",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "(con.makePrincipals(None), len(con.principals()))[1]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "makePrincipals then count",
+      "expected_exception": null,
+      "id": "cl_make_principals",
+      "kwargs": {},
+      "method": "CongruenceLattice.makePrincipals",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 1,
+        "string_repr": "1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "(con.makeAtoms(), len(con.atoms()))[1]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "makeAtoms then count",
+      "expected_exception": null,
+      "id": "cl_make_atoms",
+      "kwargs": {},
+      "method": "CongruenceLattice.makeAtoms",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 1,
+        "string_repr": "1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "(con.makeJoinIrreducibles(None), len(con.joinIrreducibles()))[1]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "makeJoinIrreducibles then count",
+      "expected_exception": null,
+      "id": "cl_make_jis",
+      "kwargs": {},
+      "method": "CongruenceLattice.makeJoinIrreducibles",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 1,
+        "string_repr": "1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "con.inputSize()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "inputSize lattice type",
+      "expected_exception": null,
+      "id": "cl_input_size",
+      "kwargs": {},
+      "method": "CongruenceLattice.inputSize",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 8,
+        "string_repr": "8",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "con.getAlgebra().cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getAlgebra cardinality",
+      "expected_exception": null,
+      "id": "cl_get_algebra",
+      "kwargs": {},
+      "method": "CongruenceLattice.getAlgebra",
+      "notes": "Java Algebra toString is Class@hex; values compared.",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "str(con.similarityType())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "similarityType is lattice",
+      "expected_exception": null,
+      "id": "cl_similarity_type",
+      "kwargs": {},
+      "method": "CongruenceLattice.similarityType",
+      "notes": "",
+      "result": {
+        "return_type": "str",
+        "return_value": "(join, meet)",
+        "string_repr": "(join, meet)",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "con.isSimilarTo(con)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "isSimilarTo self",
+      "expected_exception": null,
+      "id": "cl_is_similar_to",
+      "kwargs": {},
+      "method": "CongruenceLattice.isSimilarTo",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "con.updateSimilarityType()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "updateSimilarityType is void",
+      "expected_exception": null,
+      "id": "cl_update_sim",
+      "kwargs": {},
+      "method": "CongruenceLattice.updateSimilarityType",
+      "notes": "",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "(lambda m: sorted(str(k) for k in (m.keySet() if hasattr(m, 'keySet') else m)))(con.upperCoversMap())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "upperCoversMap keys",
+      "expected_exception": null,
+      "id": "cl_upper_covers",
+      "kwargs": {},
+      "method": "CongruenceLattice.upperCoversMap",
+      "notes": "Java array/List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "|0,1|",
+          "|0|1|"
+        ],
+        "string_repr": "['|0,1|', '|0|1|']",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "(lambda w: None if w is None else sorted(str(p) for p in w))((con.permutabilityLevel(), con.getPermutabilityLevelWitnesses())[1])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "permutability witnesses after computing level",
+      "expected_exception": null,
+      "id": "cl_perm_witnesses",
+      "kwargs": {},
+      "method": "CongruenceLattice.getPermutabilityLevelWitnesses",
+      "notes": "Java array/List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "None",
+          "None"
+        ],
+        "string_repr": "['None', 'None']",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": "owner: Java permutabilityLevelWitnesses stay null on cyclic2; library returns the zero partition pair"
+    },
+    {
+      "args": [],
+      "call": "(con.joinIrreducibles(), con.joinIrreduciblesFound())[1]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "joinIrreduciblesFound after joinIrreducibles",
+      "expected_exception": null,
+      "id": "cl_jis_found",
+      "kwargs": {},
+      "method": "CongruenceLattice.joinIrreduciblesFound",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "con.Delta(con.zero(), con.one())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Delta(zero, one)",
+      "expected_exception": null,
+      "id": "cl_delta",
+      "kwargs": {},
+      "method": "CongruenceLattice.Delta",
+      "notes": "",
+      "result": {
+        "return_type": "BasicPartition",
+        "return_value": {
+          "__type__": "partition",
+          "array": [
+            -2,
+            0
+          ],
+          "class": "BasicPartition",
+          "number_of_blocks": 1,
+          "string": "|0,1|",
+          "universe_size": 2
+        },
+        "string_repr": "|0,1|",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": "owner: library Delta is a stub returning zero; Java returns one on cyclic2"
+    },
+    {
+      "args": [],
+      "call": "con.commutator2(con.zero(), con.one())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "commutator2(zero, one)",
+      "expected_exception": null,
+      "id": "cl_commutator2",
+      "kwargs": {},
+      "method": "CongruenceLattice.commutator2",
+      "notes": "",
+      "result": {
+        "return_type": "BasicPartition",
+        "return_value": {
+          "__type__": "partition",
+          "array": [
+            -1,
+            -1
+          ],
+          "class": "BasicPartition",
+          "number_of_blocks": 2,
+          "string": "|0|1|",
+          "universe_size": 2
+        },
+        "string_repr": "|0|1|",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "con.centralizes(con.Tg(0, 0), con.Tg(0, 1), con.zero())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "centralizes S, T, delta",
+      "expected_exception": null,
+      "id": "cl_centralizes",
+      "kwargs": {},
+      "method": "CongruenceLattice.centralizes",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    }
+  ]
+}
