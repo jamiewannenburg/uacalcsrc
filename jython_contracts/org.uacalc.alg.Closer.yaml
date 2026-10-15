@@ -1,0 +1,109 @@
+target: org.uacalc.alg.Closer
+level: file
+status: implemented
+java_source: org/uacalc/alg/Closer.java
+notes: |
+  Closer(alg, gens) / term-map / makeTermMap overloads on BigProductAlgebra.
+  close() is the Java stub (IAE unless isPower, else copies gens). sgClose
+  and sgClosePower run the real closure. getmaxSize keeps Java's lowercase m.
+  ProgressReport (setProgressReport), parallel extra-arg sgClose overloads,
+  sgCloseParallel / sgCloseParallel_Old, countFuncApplications,
+  doOneStagePartialClosure, and CloserTiming (UI) are not wrapped.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    getAnswer: get_answer
+    sgClose: sg_close
+    sgClosePower: sg_close_power
+    close: close
+    getmaxSize: getmaxSize
+    setMaxSize: set_max_size
+    getGenerators: get_generators
+    setGenerators: set_generators
+    getTermMap: get_term_map
+    setTermMap: set_term_map
+    getElementToFind: get_element_to_find
+    setElementToFind: set_element_to_find
+    getElementsToFind: get_elements_to_find
+    setElementsToFind: set_elements_to_find
+    allElementsFound: all_elements_found
+    getBlocks: get_blocks
+    setBlocks: set_blocks
+    getValues: get_values
+    setValues: set_values
+    getSetConstraint: get_set_constraint
+    setConstraintSet: set_constraint_set
+    getIndexForConstraintSet: getIndexForConstraintSet
+    setIndexForConstraintSet: set_index_for_constraint_set
+    getIndexForCongruenceConstraint: getIndexForCongruenceConstraint
+    setIndexForCongruenceConstraint: set_index_for_congruence_constraint
+    getCongruenceConstraintElemIndex: getCongruenceConstraintElemIndex
+    setCongruenceConstraintElemIndex: set_congruence_constraint_elem_index
+    getCongruenceForCongruenceConstraint: get_congruence_for_congruence_constraint
+    setCongruenceForCongruenceConstraint: set_congruence_for_congruence_constraint
+    setupCongruenceConstraint: setup_congruence_constraint
+    getFailingEquation: get_failing_equation
+    getImageAlgebra: get_image_algebra
+    setImageAlgebra: set_image_algebra
+    getHomomorphism: get_homomorphism
+    setHomomorphism: set_homomorphism
+    getTermMapForOperations: get_term_map_for_operations
+    setRootAlgebra: set_root_algebra
+    setOperations: set_operations
+    isSuppressOutput: is_suppress_output
+    setSuppressOutput: set_suppress_output
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    closer_smoke.py plus tests/parity/alg/test_cases/free_hom_closer_cases.py.
+    Closer on BigProductAlgebra(c2, 2) with gens [0,0] and [1,1]. Covers
+    getAnswer before/after sgClose, close() stub, close() IAE on a non-power,
+    term map, constraints, image algebra similarity IAE, homomorphism gens
+    overload, and term-map plus FreeAlgebra write/read round-trip.
+  task_refs:
+    - tests/parity/alg/test_cases/free_hom_closer_cases.py
+  scripts:
+    - path: jython_comparison/scripts/closer_smoke.py
+      covers:
+        - getAnswer
+        - sgClose
+        - sgClosePower
+        - close
+        - getmaxSize
+        - setMaxSize
+        - getGenerators
+        - setGenerators
+        - getTermMap
+        - setTermMap
+        - getElementToFind
+        - setElementToFind
+        - getElementsToFind
+        - setElementsToFind
+        - allElementsFound
+        - getBlocks
+        - setBlocks
+        - getValues
+        - setValues
+        - getSetConstraint
+        - setConstraintSet
+        - getIndexForConstraintSet
+        - setIndexForConstraintSet
+        - getIndexForCongruenceConstraint
+        - setIndexForCongruenceConstraint
+        - getCongruenceConstraintElemIndex
+        - setCongruenceConstraintElemIndex
+        - getCongruenceForCongruenceConstraint
+        - setCongruenceForCongruenceConstraint
+        - setupCongruenceConstraint
+        - getFailingEquation
+        - getImageAlgebra
+        - setImageAlgebra
+        - getHomomorphism
+        - setHomomorphism
+        - getTermMapForOperations
+        - setRootAlgebra
+        - setOperations
+        - isSuppressOutput
+        - setSuppressOutput

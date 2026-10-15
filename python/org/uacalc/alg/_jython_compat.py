@@ -10,6 +10,7 @@ from typing import Any, Iterable, List, Optional, Sequence, Union
 
 from org.uacalc._exceptions import (
     ArrayIndexOutOfBoundsException,
+    IllegalArgumentException,
     IndexOutOfBoundsException,
     NullPointerException,
     UnsupportedOperationException,
@@ -34,6 +35,8 @@ def _install(alg_module_globals: dict) -> None:
     _LibQuotientElement = alg_module_globals.get("QuotientElement")
     _LibSubProductAlgebra = alg_module_globals.get("SubProductAlgebra")
     _LibAbstractOperation = alg_module_globals.get("AbstractOperation")
+    _LibHomomorphism = alg_module_globals.get("Homomorphism")
+    _LibCloser = alg_module_globals.get("Closer")
 
     def _sym_name(sym: Any) -> str:
         name = getattr(sym, "name", None)
@@ -187,24 +190,104 @@ def _install(alg_module_globals: dict) -> None:
         def __str__(self) -> str:
             return str(self._inner)
 
-    def _free_algebra(base: Any, number_of_gens: int, *rest: Any) -> Any:
-        """``FreeAlgebra(alg, n)`` or ``FreeAlgebra(alg, n, makeUniverse, thinGens)``."""
-        base_inner = getattr(base, "_inner", base)
-        if not rest:
-            return _LibFreeAlgebra(base_inner, int(number_of_gens))
-        if len(rest) == 1:
-            # makeUniverse only
-            return _LibFreeAlgebra.new_with_progress(
-                base_inner, int(number_of_gens), bool(rest[0]), False, False
-            )
-        # makeUniverse, thinGenerators
-        return _LibFreeAlgebra.new_with_progress(
-            base_inner,
-            int(number_of_gens),
-            bool(rest[0]),
-            bool(rest[1]),
-            False,
+    def _as_basic_algebra(alg: Any) -> Any:
+        if alg is None:
+            _raise_npe()
+        inner = getattr(alg, "_inner", alg)
+        typ = type(inner).__name__
+        if typ in ("PyBasicAlgebra", "BasicAlgebra"):
+            return inner
+        conv = getattr(inner, "to_basic_algebra", None) or getattr(
+            alg, "to_basic_algebra", None
         )
+        if callable(conv):
+            return conv()
+        return inner
+
+    class _FreeAlgebraMeta(type):
+        def __instancecheck__(cls, instance: Any) -> bool:
+            return isinstance(instance, _LibFreeAlgebra)
+
+    class FreeAlgebra(object, metaclass=_FreeAlgebraMeta):
+        """Java constructor overloads over ``uacalc_lib`` FreeAlgebra."""
+
+        def __new__(cls, *args: Any) -> Any:
+            if not args:
+                raise TypeError("FreeAlgebra() takes at least 2 arguments")
+            # FreeAlgebra(name, prod, gens, univList)
+            if len(args) == 4 and not isinstance(args[2], (int, bool)):
+                name, prod, gens, univ = args
+                return _lib_call(
+                    _LibFreeAlgebra.new_from_product,
+                    str(name),
+                    prod,
+                    [_int_array(g) for g in list(gens)],
+                    [_int_array(u) for u in list(univ)],
+                )
+            # FreeAlgebra(name, alg, n[, makeUniverse[, thinGens]])
+            if isinstance(args[0], (str, bytes)):
+                name = str(args[0])
+                if len(args) < 3:
+                    raise TypeError("FreeAlgebra(name, alg, n) requires 3 arguments")
+                base = _as_basic_algebra(args[1])
+                n = int(args[2])
+                make_universe = True if len(args) < 4 else bool(args[3])
+                thin_gens = False if len(args) < 5 else bool(args[4])
+                return _lib_call(
+                    _LibFreeAlgebra.new_with_name_thin,
+                    name,
+                    base,
+                    n,
+                    make_universe,
+                    thin_gens,
+                )
+            # FreeAlgebra(alg, n[, makeUniverse[, thinGens]])
+            # or FreeAlgebra(alg, n, ProgressReport) with report=None.
+            base = _as_basic_algebra(args[0])
+            if len(args) < 2:
+                raise TypeError("FreeAlgebra(alg, n) requires 2 arguments")
+            n = int(args[1])
+            if len(args) == 2:
+                return _lib_call(_LibFreeAlgebra, base, n)
+            third = args[2]
+            if third is None:
+                if len(args) > 3:
+                    raise TypeError(
+                        "FreeAlgebra(): expected org.uacalc.ui.tm.ProgressReport or None"
+                    )
+                # Java (alg, n, report=null): makeUniverse=true, thinGens=true,
+                # decompose=true. Non-None ProgressReport is not bound.
+                return _lib_call(
+                    _LibFreeAlgebra.new_with_progress,
+                    base,
+                    n,
+                    True,
+                    True,
+                    True,
+                )
+            if not isinstance(third, bool):
+                raise TypeError(
+                    "FreeAlgebra(): expected org.uacalc.ui.tm.ProgressReport or None"
+                )
+            make_universe = bool(third)
+            thin_gens = False if len(args) < 4 else bool(args[3])
+            return _lib_call(
+                _LibFreeAlgebra.new_with_progress,
+                base,
+                n,
+                make_universe,
+                thin_gens,
+                False,
+            )
+
+        @staticmethod
+        def findEquationOfAnotB(a: Any, b: Any, bGens: Any, report: Any = None) -> Any:
+            # Java 3-arg overload always NPEs: report.addLine on null report.
+            if report is None:
+                raise NullPointerException()
+            raise TypeError(
+                "findEquationOfAnotB(): expected org.uacalc.ui.tm.ProgressReport or None"
+            )
 
     def _as_product_factor(alg: Any) -> Any:
         inner = getattr(alg, "_inner", alg)
@@ -464,6 +547,424 @@ def _install(alg_module_globals: dict) -> None:
                     cong,
                 )
             raise TypeError("congruenceAsAlgebra() takes 2 or 3 arguments")
+
+    class _HomomorphismMeta(type):
+        def __instancecheck__(cls, instance: Any) -> bool:
+            return _LibHomomorphism is not None and isinstance(
+                instance, _LibHomomorphism
+            )
+
+    class Homomorphism(object, metaclass=_HomomorphismMeta):
+        """Java ``Homomorphism(domain, range, map)``."""
+
+        def __new__(cls, domain: Any, range_alg: Any, mapping: Any) -> Any:
+            if _LibHomomorphism is None:
+                raise TypeError("Homomorphism is not bound")
+            # Java stores null domain/range/map; toString NPEs on a null domain.
+            if domain is None:
+                _raise_npe()
+            if range_alg is None:
+                _raise_npe()
+            raw = {}
+            if mapping is not None:
+                items = mapping.items() if hasattr(mapping, "items") else mapping
+                for item in items:
+                    if isinstance(item, (list, tuple)) and len(item) == 2:
+                        k, v = item
+                    else:
+                        k, v = item, mapping[item]
+                    raw[int(k)] = int(v)
+            return _LibHomomorphism.new_java(
+                _as_basic_algebra(domain), _as_basic_algebra(range_alg), raw
+            )
+
+        @staticmethod
+        def productHomo(lst: Any) -> Any:
+            if lst is None:
+                _raise_npe()
+            items = list(lst)
+            if not items:
+                raise IndexOutOfBoundsException(
+                    "Index 0 out of bounds for length 0"
+                )
+            rows = _lib_call(_LibHomomorphism.product_homo, items)
+            out = []
+            for row in rows:
+                if _is_int_array(row):
+                    out.append(row)
+                else:
+                    out.append(_int_array(row))
+            return out
+
+    _CLOSER_ORIG_CLOSE = [None]
+
+    class _CloserMeta(type):
+        def __instancecheck__(cls, instance: Any) -> bool:
+            if type(instance) is cls:
+                return True
+            return _LibCloser is not None and isinstance(instance, _LibCloser)
+
+    class Closer(object, metaclass=_CloserMeta):
+        """Java ``Closer(alg, gens)`` / term-map / makeTermMap overloads."""
+
+        def __init__(self, algebra: Any, generators: Any, third: Any = None) -> None:
+            if _LibCloser is None:
+                raise TypeError("Closer is not bound")
+            # Java Closer(null, gens) stores the algebra and only NPEs later.
+            # setGenerators(null) NPEs while iterating gens.
+            if generators is None:
+                _raise_npe()
+            if algebra is None:
+                _raise_npe()
+            gens = [_int_array(g) for g in list(generators)]
+            if third is None:
+                inner = _lib_call(_LibCloser, algebra, gens)
+            elif isinstance(third, bool):
+                inner = _lib_call(
+                    _LibCloser.new_with_make_term_map, algebra, gens, third
+                )
+            else:
+                inner = _lib_call(
+                    _LibCloser.new_with_term_map, algebra, gens, third
+                )
+            self._inner = inner
+            self._ans = None
+            self._ans_set = False
+
+        def __getattr__(self, item: str) -> Any:
+            return getattr(self._inner, item)
+
+        def getAnswer(self) -> Any:
+            return self._ans if self._ans_set else None
+
+        def sgClose(self) -> Any:
+            self._ans = _lib_call(self._inner.sg_close)
+            self._ans_set = True
+            return self._ans
+
+        def sgClosePower(self) -> Any:
+            self._ans = _lib_call(self._inner.sg_close_power)
+            self._ans_set = True
+            return self._ans
+
+        def close(self) -> Any:
+            orig = getattr(self._inner, "close")
+            # Prefer the original PyO3 close; fall back if already wrapped.
+            self._ans = _lib_call(_CLOSER_ORIG_CLOSE[0] or orig, self._inner)
+            self._ans_set = True
+            return self._ans
+
+        def getmaxSize(self) -> int:
+            return closerGetmaxSize(self._inner)
+
+        def setMaxSize(self, k: Any) -> None:
+            closerSetMaxSize(self._inner, k)
+
+        def getGenerators(self) -> Any:
+            return closerGetGenerators(self._inner)
+
+        def setGenerators(self, gens: Any) -> None:
+            closerSetGenerators(self._inner, gens)
+
+        def getTermMap(self) -> Any:
+            return closerGetTermMap(self._inner)
+
+        def setTermMap(self, term_map: Any) -> None:
+            closerSetTermMap(self._inner, term_map)
+
+        def getElementToFind(self) -> Any:
+            return closerGetElementToFind(self._inner)
+
+        def setElementToFind(self, e: Any) -> None:
+            closerSetElementToFind(self._inner, e)
+
+        def getElementsToFind(self) -> Any:
+            return closerGetElementsToFind(self._inner)
+
+        def setElementsToFind(self, elts: Any, gens: Any = None) -> None:
+            closerSetElementsToFind(self._inner, elts, gens)
+
+        def allElementsFound(self) -> bool:
+            return closerAllElementsFound(self._inner)
+
+        def getBlocks(self) -> Any:
+            return closerGetBlocks(self._inner)
+
+        def setBlocks(self, blocks: Any) -> None:
+            closerSetBlocks(self._inner, blocks)
+
+        def getValues(self) -> Any:
+            return closerGetValues(self._inner)
+
+        def setValues(self, values: Any) -> None:
+            closerSetValues(self._inner, values)
+
+        def getSetConstraint(self) -> Any:
+            return closerGetSetConstraint(self._inner)
+
+        def setConstraintSet(self, s: Any) -> None:
+            closerSetConstraintSet(self._inner, s)
+
+        def getIndexForConstraintSet(self) -> int:
+            return closerGetIndexForConstraintSet(self._inner)
+
+        def setIndexForConstraintSet(self, k: Any) -> None:
+            closerSetIndexForConstraintSet(self._inner, k)
+
+        def getIndexForCongruenceConstraint(self) -> int:
+            return closerGetIndexForCongruenceConstraint(self._inner)
+
+        def setIndexForCongruenceConstraint(self, k: Any) -> None:
+            closerSetIndexForCongruenceConstraint(self._inner, k)
+
+        def getCongruenceConstraintElemIndex(self) -> int:
+            return closerGetCongruenceConstraintElemIndex(self._inner)
+
+        def setCongruenceConstraintElemIndex(self, k: Any) -> None:
+            closerSetCongruenceConstraintElemIndex(self._inner, k)
+
+        def getCongruenceForCongruenceConstraint(self) -> Any:
+            return closerGetCongruenceForCongruenceConstraint(self._inner)
+
+        def setCongruenceForCongruenceConstraint(self, alpha: Any) -> None:
+            closerSetCongruenceForCongruenceConstraint(self._inner, alpha)
+
+        def setupCongruenceConstraint(self, alpha: Any, index: Any, elemIndex: Any) -> None:
+            closerSetupCongruenceConstraint(self._inner, alpha, index, elemIndex)
+
+        def getFailingEquation(self) -> Any:
+            return closerGetFailingEquation(self._inner)
+
+        def getImageAlgebra(self) -> Any:
+            return closerGetImageAlgebra(self._inner)
+
+        def setImageAlgebra(self, alg: Any) -> None:
+            closerSetImageAlgebra(self._inner, alg)
+
+        def getHomomorphism(self) -> Any:
+            return closerGetHomomorphism(self._inner)
+
+        def setHomomorphism(self, arg: Any) -> None:
+            closerSetHomomorphism(self._inner, arg)
+
+        def getTermMapForOperations(self) -> Any:
+            return closerGetTermMapForOperations(self._inner)
+
+        def setRootAlgebra(self, alg: Any) -> None:
+            closerSetRootAlgebra(self._inner, alg)
+
+        def setOperations(self, ops: Any) -> None:
+            closerSetOperations(self._inner, ops)
+
+        def isSuppressOutput(self) -> bool:
+            return closerIsSuppressOutput(self._inner)
+
+        def setSuppressOutput(self, suppress: Any) -> None:
+            closerSetSuppressOutput(self._inner, suppress)
+
+    def _algebras_fn(name: str) -> Any:
+        fn = alg_module_globals.get(name)
+        if fn is None:
+            raise TypeError("Algebras.{} is not bound".format(name))
+        return fn
+
+    class Algebras(object):
+        """Static facade matching Java ``org.uacalc.alg.Algebras``.
+
+        Malcev helpers (findNUF, jonssonTerms, jonssonLevel) are not wrapped.
+        """
+
+        @staticmethod
+        def isEndomorphism(endo: Any, alg: Any) -> bool:
+            if endo is None or alg is None:
+                _raise_npe()
+            return bool(
+                _lib_call(_algebras_fn("is_endomorphism"), endo, _as_basic_algebra(alg))
+            )
+
+        @staticmethod
+        def isHomomorphism(mapping: Any, alg0: Any, alg1: Any) -> bool:
+            if mapping is None or alg0 is None or alg1 is None:
+                _raise_npe()
+            return bool(
+                _lib_call(
+                    _algebras_fn("is_homomorphism"),
+                    [int(x) for x in list(mapping)],
+                    _as_basic_algebra(alg0),
+                    _as_basic_algebra(alg1),
+                )
+            )
+
+        @staticmethod
+        def matrixPower(alg: Any, k: Any) -> Any:
+            if alg is None:
+                _raise_npe()
+            if int(k) == 0:
+                raise IndexOutOfBoundsException(
+                    "Index 0 out of bounds for length 0"
+                )
+            return _lib_call(
+                _algebras_fn("matrix_power"), _as_basic_algebra(alg), int(k)
+            )
+
+        @staticmethod
+        def fullTransformationSemigroup(
+            n: Any, includeConstants: Any, includeId: Any
+        ) -> Any:
+            return _lib_call(
+                _algebras_fn("full_transformation_semigroup"),
+                int(n),
+                bool(includeConstants),
+                bool(includeId),
+            )
+
+        @staticmethod
+        def ternaryDiscriminatorAlgebra(card: Any) -> Any:
+            return _lib_call(
+                _algebras_fn("ternary_discriminator_algebra"), int(card)
+            )
+
+        @staticmethod
+        def makeRandomAlgebra(*args: Any) -> Any:
+            # Java: (n, simType), (n, simType, seed), (n, arities), (n, arities, seed)
+            if len(args) == 2:
+                n, second = args
+                if second is None:
+                    _raise_npe()
+                if isinstance(second, (list, tuple)):
+                    return _lib_call(
+                        _algebras_fn("make_random_algebra_with_arities"),
+                        int(n),
+                        [int(x) for x in list(second)],
+                    )
+                return _lib_call(
+                    _algebras_fn("make_random_algebra"), int(n), second
+                )
+            if len(args) == 3:
+                n, second, seed = args
+                if second is None:
+                    _raise_npe()
+                if isinstance(second, (list, tuple)):
+                    return _lib_call(
+                        _algebras_fn("make_random_algebra_with_arities_and_seed"),
+                        int(n),
+                        [int(x) for x in list(second)],
+                        int(seed),
+                    )
+                return _lib_call(
+                    _algebras_fn("make_random_algebra_with_seed"),
+                    int(n),
+                    second,
+                    int(seed),
+                )
+            raise TypeError("makeRandomAlgebra() takes 2 or 3 arguments")
+
+        @staticmethod
+        def findInClone(ops: Any, alg: Any, report: Any = None) -> Any:
+            if ops is None or alg is None:
+                raise IllegalArgumentException(
+                    "ops cannot be empty and the algebra cannot be null"
+                )
+            op_list = list(ops)
+            if not op_list:
+                raise IllegalArgumentException(
+                    "ops cannot be empty and the algebra cannot be null"
+                )
+            if report is not None:
+                raise TypeError(
+                    "findInClone(): expected org.uacalc.ui.tm.ProgressReport or None"
+                )
+            return _lib_call(
+                _algebras_fn("find_in_clone"), op_list, _as_basic_algebra(alg)
+            )
+
+        @staticmethod
+        def memberOfQuasivariety(a: Any, b_or_list: Any, report: Any = None) -> Any:
+            if a is None or b_or_list is None:
+                _raise_npe()
+            if report is not None:
+                raise TypeError(
+                    "memberOfQuasivariety(): expected org.uacalc.ui.tm.ProgressReport or None"
+                )
+            # Java: (A, B, report) vs (A, List, report). A list of algebras is not
+            # a SmallAlgebra; a single algebra is not a List.
+            if isinstance(b_or_list, (list, tuple)):
+                algs = [_as_basic_algebra(x) for x in list(b_or_list)]
+                return _lib_call(
+                    _algebras_fn("member_of_quasivariety_list"),
+                    _as_basic_algebra(a),
+                    algs,
+                )
+            return _lib_call(
+                _algebras_fn("member_of_quasivariety"),
+                _as_basic_algebra(a),
+                _as_basic_algebra(b_or_list),
+            )
+
+        @staticmethod
+        def memberOfQuasivarietyGenByProperSubs(a: Any, report: Any = None) -> Any:
+            if a is None:
+                _raise_npe()
+            if report is not None:
+                raise TypeError(
+                    "memberOfQuasivarietyGenByProperSubs(): expected "
+                    "org.uacalc.ui.tm.ProgressReport or None"
+                )
+            return _lib_call(
+                _algebras_fn("member_of_quasivariety_gen_by_proper_subs"),
+                _as_basic_algebra(a),
+            )
+
+        @staticmethod
+        def quasiCriticalCongruences(a: Any, report: Any = None) -> Any:
+            if a is None:
+                _raise_npe()
+            if report is not None:
+                raise TypeError(
+                    "quasiCriticalCongruences(): expected "
+                    "org.uacalc.ui.tm.ProgressReport or None"
+                )
+            return _lib_call(
+                _algebras_fn("quasi_critical_congruences"), _as_basic_algebra(a)
+            )
+
+        @staticmethod
+        def quasiCritical(a: Any, report: Any = None) -> Any:
+            if a is None:
+                _raise_npe()
+            if report is not None:
+                raise TypeError(
+                    "quasiCritical(): expected org.uacalc.ui.tm.ProgressReport or None"
+                )
+            return _lib_call(_algebras_fn("quasi_critical"), _as_basic_algebra(a))
+
+        @staticmethod
+        def unaryClone(pars: Any, eta0: Any, eta1: Any) -> Any:
+            if pars is None or eta0 is None or eta1 is None:
+                _raise_npe()
+            return _lib_call(
+                _algebras_fn("unary_clone"), list(pars), eta0, eta1
+            )
+
+        @staticmethod
+        def unaryCloneAlgFromPartitions(*args: Any) -> Any:
+            # Java (pars, decomp) is incomplete and always returns null.
+            if len(args) == 2:
+                pars, decomp = args
+                if pars is None or decomp is None:
+                    _raise_npe()
+                return None
+            if len(args) == 3:
+                pars, eta0, eta1 = args
+                if pars is None or eta0 is None or eta1 is None:
+                    _raise_npe()
+                return _lib_call(
+                    _algebras_fn("unary_clone_alg_from_partitions"),
+                    list(pars),
+                    eta0,
+                    eta1,
+                )
+            raise TypeError("unaryCloneAlgFromPartitions() takes 2 or 3 arguments")
 
     def _raise_npe(what: str = "null") -> None:
         raise NullPointerException(what)
@@ -776,6 +1277,8 @@ def _install(alg_module_globals: dict) -> None:
 
         if values is None:
             return None
+        if _is_int_array(values):
+            return values
         return IntArray([int(x) for x in list(values)])
 
     def _is_int_array(elem: Any) -> bool:
@@ -1308,6 +1811,315 @@ def _install(alg_module_globals: dict) -> None:
     for camel, impl in _SUBPROD_EXTRA.items():
         _bind(_LibSubProductAlgebra, camel, impl)
 
+    def switchXandYAutomorphism(self: Any) -> Any:
+        fn = getattr(self, "switch_x_and_y_automorphism", None)
+        if callable(fn):
+            return _lib_call(fn)
+        return None
+
+    def _java_map_str(mapping: Any) -> str:
+        if mapping is None:
+            return "null"
+        items = []
+        try:
+            keys = list(mapping.keys())
+        except Exception:
+            return str(mapping)
+        for k in keys:
+            items.append("{}={}".format(k, mapping[k]))
+        return "{" + ", ".join(items) + "}"
+
+    def homomorphismToString(self: Any) -> str:
+        domain = self.getDomain() if hasattr(self, "getDomain") else self.get_domain()
+        range_alg = self.getRange() if hasattr(self, "getRange") else self.get_range()
+        dname = domain.getName() if hasattr(domain, "getName") else domain.name()
+        rname = range_alg.getName() if hasattr(range_alg, "getName") else range_alg.name()
+        mapping = self.getMap() if hasattr(self, "getMap") else self.get_map()
+        return "homomorphism: {} --> {} : {}".format(
+            dname, rname, _java_map_str(mapping)
+        )
+
+    def homomorphismGetDomain(self: Any) -> Any:
+        return self.get_domain()
+
+    def homomorphismSetDomain(self: Any, domain: Any) -> None:
+        if domain is None:
+            _raise_npe()
+        self.set_domain(_as_basic_algebra(domain))
+
+    def homomorphismGetRange(self: Any) -> Any:
+        return self.get_range()
+
+    def homomorphismSetRange(self: Any, range_alg: Any) -> None:
+        if range_alg is None:
+            _raise_npe()
+        self.set_range(_as_basic_algebra(range_alg))
+
+    def homomorphismGetMap(self: Any) -> Any:
+        raw = self.get_map()
+        return {int(k): int(v) for k, v in dict(raw).items()}
+
+    def homomorphismSetMap(self: Any, mapping: Any) -> None:
+        if mapping is None:
+            _raise_npe()
+        raw = {int(k): int(v) for k, v in dict(mapping).items()}
+        self.set_map(raw)
+
+    _orig_homo_kernel = (
+        getattr(_LibHomomorphism, "kernel", None) if _LibHomomorphism is not None else None
+    )
+
+    def homomorphismKernel(self: Any, _orig: Any = _orig_homo_kernel) -> Any:
+        mapping = homomorphismGetMap(self)
+        domain = homomorphismGetDomain(self)
+        n = int(domain.cardinality())
+        # Java: map.get(i).equals(map.get(j)) NPEs only when get(i) is null
+        # for some i with a later j, i.e. a missing non-last key.
+        for i in range(max(0, n - 1)):
+            if i not in mapping:
+                _raise_npe()
+        if _orig is None:
+            raise TypeError("kernel is not bound")
+        return _lib_call(_orig, self)
+
+    _HOMO_EXTRA = {
+        "getDomain": homomorphismGetDomain,
+        "setDomain": homomorphismSetDomain,
+        "getRange": homomorphismGetRange,
+        "setRange": homomorphismSetRange,
+        "getMap": homomorphismGetMap,
+        "setMap": homomorphismSetMap,
+        "kernel": homomorphismKernel,
+        "toString": homomorphismToString,
+        "__str__": homomorphismToString,
+    }
+    if _LibHomomorphism is not None:
+        for camel, impl in _HOMO_EXTRA.items():
+            _bind(_LibHomomorphism, camel, impl)
+        try:
+            _LibHomomorphism.productHomo = staticmethod(Homomorphism.productHomo)
+        except (TypeError, AttributeError):
+            _LibHomomorphism.productHomo = Homomorphism.productHomo
+
+    if _LibCloser is not None:
+        _CLOSER_ORIG_CLOSE[0] = getattr(_LibCloser, "close", None)
+
+    def _mark_closer_answer(self: Any, result: Any) -> Any:
+        try:
+            self._ans_set = True
+            self._ans = result
+        except (AttributeError, TypeError):
+            pass
+        return result
+
+    def closerGetAnswer(self: Any) -> Any:
+        if not getattr(self, "_ans_set", False):
+            return None
+        return getattr(self, "_ans", None)
+
+    def closerSgClose(self: Any) -> Any:
+        return _mark_closer_answer(self, _lib_call(self.sg_close))
+
+    def closerSgClosePower(self: Any) -> Any:
+        return _mark_closer_answer(self, _lib_call(self.sg_close_power))
+
+    def closerClose(self: Any) -> Any:
+        orig = _CLOSER_ORIG_CLOSE[0]
+        if orig is None:
+            raise TypeError("close is not bound")
+        return _mark_closer_answer(self, _lib_call(orig, self))
+
+    def closerGetmaxSize(self: Any) -> int:
+        v = self.get_max_size()
+        return -1 if v is None else int(v)
+
+    def closerSetMaxSize(self: Any, k: Any) -> None:
+        n = int(k)
+        self.set_max_size(None if n < 0 else n)
+
+    def closerGetIndexForConstraintSet(self: Any) -> int:
+        v = self.get_index_for_constraint_set()
+        return -1 if v is None else int(v)
+
+    def closerSetIndexForConstraintSet(self: Any, k: Any) -> None:
+        self.set_index_for_constraint_set(int(k))
+
+    def closerGetIndexForCongruenceConstraint(self: Any) -> int:
+        v = self.get_index_for_congruence_constraint()
+        return 0 if v is None else int(v)
+
+    def closerSetIndexForCongruenceConstraint(self: Any, k: Any) -> None:
+        self.set_index_for_congruence_constraint(int(k))
+
+    def closerGetCongruenceConstraintElemIndex(self: Any) -> int:
+        v = self.get_congruence_constraint_elem_index()
+        return 0 if v is None else int(v)
+
+    def closerSetCongruenceConstraintElemIndex(self: Any, k: Any) -> None:
+        self.set_congruence_constraint_elem_index(int(k))
+
+    def closerSetImageAlgebra(self: Any, alg: Any) -> None:
+        if alg is None:
+            _raise_npe()
+        _lib_call(self.set_image_algebra, alg)
+
+    def closerSetHomomorphism(self: Any, arg: Any) -> None:
+        if arg is None:
+            _raise_npe()
+        _lib_call(self.set_homomorphism, arg)
+
+    def closerSetElementToFind(self: Any, e: Any) -> None:
+        self.set_element_to_find(None if e is None else _int_array(e))
+
+    def closerSetElementsToFind(self: Any, elts: Any, gens: Any = None) -> None:
+        if elts is None:
+            _raise_npe()
+        args = [[_int_array(x) for x in list(elts)]]
+        if gens is not None:
+            args.append([_int_array(x) for x in list(gens)])
+        _lib_call(self.set_elements_to_find, *args)
+
+    def closerSetGenerators(self: Any, gens: Any) -> None:
+        if gens is None:
+            _raise_npe()
+        _lib_call(self.set_generators, [_int_array(g) for g in list(gens)])
+
+    def closerGetGenerators(self: Any) -> Any:
+        return list(self.get_generators())
+
+    def closerGetTermMap(self: Any) -> Any:
+        return self.get_term_map()
+
+    def closerSetTermMap(self: Any, term_map: Any) -> None:
+        self.set_term_map(term_map)
+
+    def closerGetElementToFind(self: Any) -> Any:
+        return self.get_element_to_find()
+
+    def closerGetElementsToFind(self: Any) -> Any:
+        return self.get_elements_to_find()
+
+    def closerAllElementsFound(self: Any) -> bool:
+        return bool(self.all_elements_found())
+
+    def closerGetBlocks(self: Any) -> Any:
+        return self.get_blocks()
+
+    def closerSetBlocks(self: Any, blocks: Any) -> None:
+        self.set_blocks(blocks)
+
+    def closerGetValues(self: Any) -> Any:
+        return self.get_values()
+
+    def closerSetValues(self: Any, values: Any) -> None:
+        # Java int[][]; the binding wants a sequence of (index, value) pairs.
+        if values is None:
+            self.set_values(None)
+            return
+        pairs = []
+        for row in list(values):
+            items = list(row)
+            if len(items) >= 2:
+                pairs.append((int(items[0]), int(items[1])))
+            elif len(items) == 1:
+                pairs.append((0, int(items[0])))
+        self.set_values(pairs)
+
+    def closerGetSetConstraint(self: Any) -> Any:
+        return self.get_set_constraint()
+
+    def closerSetConstraintSet(self: Any, s: Any) -> None:
+        self.set_constraint_set(None if s is None else set(s))
+
+    def closerGetCongruenceForCongruenceConstraint(self: Any) -> Any:
+        return self.get_congruence_for_congruence_constraint()
+
+    def closerSetCongruenceForCongruenceConstraint(self: Any, alpha: Any) -> None:
+        self.set_congruence_for_congruence_constraint(alpha)
+
+    def closerSetupCongruenceConstraint(self: Any, alpha: Any, index: Any, elemIndex: Any) -> None:
+        _lib_call(self.setup_congruence_constraint, alpha, int(index), int(elemIndex))
+
+    def closerGetFailingEquation(self: Any) -> Any:
+        return self.get_failing_equation()
+
+    def closerGetImageAlgebra(self: Any) -> Any:
+        return self.get_image_algebra()
+
+    def closerGetHomomorphism(self: Any) -> Any:
+        return self.get_homomorphism()
+
+    def closerGetTermMapForOperations(self: Any) -> Any:
+        return self.get_term_map_for_operations()
+
+    def closerSetRootAlgebra(self: Any, alg: Any) -> None:
+        if alg is None:
+            _raise_npe()
+        _lib_call(self.set_root_algebra, alg)
+
+    def closerSetOperations(self: Any, ops: Any) -> None:
+        if ops is None:
+            _raise_npe()
+        _lib_call(self.set_operations, list(ops))
+
+    def closerIsSuppressOutput(self: Any) -> bool:
+        return bool(self.is_suppress_output())
+
+    def closerSetSuppressOutput(self: Any, suppress: Any) -> None:
+        self.set_suppress_output(bool(suppress))
+
+    _CLOSER_EXTRA = {
+        "getAnswer": closerGetAnswer,
+        "sgClose": closerSgClose,
+        "sgClosePower": closerSgClosePower,
+        "close": closerClose,
+        "getmaxSize": closerGetmaxSize,
+        "setMaxSize": closerSetMaxSize,
+        "getIndexForConstraintSet": closerGetIndexForConstraintSet,
+        "setIndexForConstraintSet": closerSetIndexForConstraintSet,
+        "getIndexForCongruenceConstraint": closerGetIndexForCongruenceConstraint,
+        "setIndexForCongruenceConstraint": closerSetIndexForCongruenceConstraint,
+        "getCongruenceConstraintElemIndex": closerGetCongruenceConstraintElemIndex,
+        "setCongruenceConstraintElemIndex": closerSetCongruenceConstraintElemIndex,
+        "setImageAlgebra": closerSetImageAlgebra,
+        "setHomomorphism": closerSetHomomorphism,
+        "setElementToFind": closerSetElementToFind,
+        "setElementsToFind": closerSetElementsToFind,
+        "setGenerators": closerSetGenerators,
+        "getGenerators": closerGetGenerators,
+        "getTermMap": closerGetTermMap,
+        "setTermMap": closerSetTermMap,
+        "getElementToFind": closerGetElementToFind,
+        "getElementsToFind": closerGetElementsToFind,
+        "allElementsFound": closerAllElementsFound,
+        "getBlocks": closerGetBlocks,
+        "setBlocks": closerSetBlocks,
+        "getValues": closerGetValues,
+        "setValues": closerSetValues,
+        "getSetConstraint": closerGetSetConstraint,
+        "setConstraintSet": closerSetConstraintSet,
+        "getCongruenceForCongruenceConstraint": closerGetCongruenceForCongruenceConstraint,
+        "setCongruenceForCongruenceConstraint": closerSetCongruenceForCongruenceConstraint,
+        "setupCongruenceConstraint": closerSetupCongruenceConstraint,
+        "getFailingEquation": closerGetFailingEquation,
+        "getImageAlgebra": closerGetImageAlgebra,
+        "getHomomorphism": closerGetHomomorphism,
+        "getTermMapForOperations": closerGetTermMapForOperations,
+        "setRootAlgebra": closerSetRootAlgebra,
+        "setOperations": closerSetOperations,
+        "isSuppressOutput": closerIsSuppressOutput,
+        "setSuppressOutput": closerSetSuppressOutput,
+    }
+    if _LibCloser is not None:
+        for camel, impl in _CLOSER_EXTRA.items():
+            _bind(_LibCloser, camel, impl)
+
+    _bind(_LibFreeAlgebra, "switchXandYAutomorphism", switchXandYAutomorphism)
+    try:
+        _LibFreeAlgebra.findEquationOfAnotB = staticmethod(FreeAlgebra.findEquationOfAnotB)
+    except (TypeError, AttributeError):
+        _LibFreeAlgebra.findEquationOfAnotB = FreeAlgebra.findEquationOfAnotB
+
     # FreeAlgebra / ProductAlgebra extras
     if not hasattr(_LibProductAlgebra, "numberOfFactors"):
         try:
@@ -1482,7 +2294,10 @@ def _install(alg_module_globals: dict) -> None:
     alg_module_globals["AlgebraType"] = AlgebraType
     alg_module_globals["SmallAlgebra"] = SmallAlgebra
     alg_module_globals["BasicAlgebra"] = BasicAlgebra
-    alg_module_globals["FreeAlgebra"] = _free_algebra
+    alg_module_globals["FreeAlgebra"] = FreeAlgebra
+    alg_module_globals["Homomorphism"] = Homomorphism
+    alg_module_globals["Closer"] = Closer
+    alg_module_globals["Algebras"] = Algebras
     alg_module_globals["ProductAlgebra"] = ProductAlgebra
     alg_module_globals["PowerAlgebra"] = PowerAlgebra
     alg_module_globals["QuotientAlgebra"] = QuotientAlgebra
@@ -1506,6 +2321,8 @@ def _install(alg_module_globals: dict) -> None:
     alg_module_globals["_LibSubProductAlgebra"] = _LibSubProductAlgebra
     alg_module_globals["_LibBigProductAlgebra"] = _LibBigProductAlgebra
     alg_module_globals["_LibAbstractOperation"] = _LibAbstractOperation
+    alg_module_globals["_LibHomomorphism"] = _LibHomomorphism
+    alg_module_globals["_LibCloser"] = _LibCloser
 
     # Class-alias map kept for jython_contracts validate()
     _ALGEBRA_INTERFACE_ALIASES = {
@@ -1577,7 +2394,63 @@ def _install(alg_module_globals: dict) -> None:
             "getIdempotentTerms": "get_idempotent_terms",
             "superAlgebra": "super_algebra",
             "algebraType": "algebra_type",
+            "switchXandYAutomorphism": "switch_x_and_y_automorphism",
+            "findEquationOfAnotB": "findEquationOfAnotB",
         },
+        "Homomorphism": {
+            "getDomain": "get_domain",
+            "setDomain": "set_domain",
+            "getRange": "get_range",
+            "setRange": "set_range",
+            "getMap": "get_map",
+            "setMap": "set_map",
+            "kernel": "kernel",
+            "toString": "toString",
+            "productHomo": "productHomo",
+        },
+        "Closer": {
+            "getAnswer": "get_answer",
+            "sgClose": "sg_close",
+            "sgClosePower": "sg_close_power",
+            "close": "close",
+            "getmaxSize": "getmaxSize",
+            "setMaxSize": "set_max_size",
+            "getGenerators": "get_generators",
+            "setGenerators": "set_generators",
+            "getTermMap": "get_term_map",
+            "setTermMap": "set_term_map",
+            "getElementToFind": "get_element_to_find",
+            "setElementToFind": "set_element_to_find",
+            "getElementsToFind": "get_elements_to_find",
+            "setElementsToFind": "set_elements_to_find",
+            "allElementsFound": "all_elements_found",
+            "getBlocks": "get_blocks",
+            "setBlocks": "set_blocks",
+            "getValues": "get_values",
+            "setValues": "set_values",
+            "getSetConstraint": "get_set_constraint",
+            "setConstraintSet": "set_constraint_set",
+            "getIndexForConstraintSet": "getIndexForConstraintSet",
+            "setIndexForConstraintSet": "set_index_for_constraint_set",
+            "getIndexForCongruenceConstraint": "getIndexForCongruenceConstraint",
+            "setIndexForCongruenceConstraint": "set_index_for_congruence_constraint",
+            "getCongruenceConstraintElemIndex": "getCongruenceConstraintElemIndex",
+            "setCongruenceConstraintElemIndex": "set_congruence_constraint_elem_index",
+            "getCongruenceForCongruenceConstraint": "get_congruence_for_congruence_constraint",
+            "setCongruenceForCongruenceConstraint": "set_congruence_for_congruence_constraint",
+            "setupCongruenceConstraint": "setup_congruence_constraint",
+            "getFailingEquation": "get_failing_equation",
+            "getImageAlgebra": "get_image_algebra",
+            "setImageAlgebra": "set_image_algebra",
+            "getHomomorphism": "get_homomorphism",
+            "setHomomorphism": "set_homomorphism",
+            "getTermMapForOperations": "get_term_map_for_operations",
+            "setRootAlgebra": "set_root_algebra",
+            "setOperations": "set_operations",
+            "isSuppressOutput": "is_suppress_output",
+            "setSuppressOutput": "set_suppress_output",
+        },
+        "Algebras": {},
         "ProductAlgebra": {
             "getName": "name",
             "setName": "set_name",
@@ -1711,6 +2584,8 @@ def _install(alg_module_globals: dict) -> None:
             cls = {
                 "BasicAlgebra": _LibBasicAlgebra,
                 "FreeAlgebra": _LibFreeAlgebra,
+                "Homomorphism": _LibHomomorphism,
+                "Closer": _LibCloser,
                 "ProductAlgebra": _LibProductAlgebra,
                 "PowerAlgebra": _LibPowerAlgebra,
                 "QuotientAlgebra": _LibQuotientAlgebra,

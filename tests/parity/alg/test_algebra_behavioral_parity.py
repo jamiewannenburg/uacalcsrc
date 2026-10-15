@@ -13,8 +13,9 @@ sys.path.insert(0, str(REPO_ROOT / "tests" / "parity"))
 from parity_test_base import BehavioralParityTest
 from tests.parity.alg.test_cases.algebra_cases import TEST_CASES as _ALG_CASES
 from tests.parity.alg.test_cases.sub_prod_quot_cases import TEST_CASES as _SPQ_CASES
+from tests.parity.alg.test_cases.free_hom_closer_cases import TEST_CASES as _FHC_CASES
 
-TEST_CASES = list(_ALG_CASES) + list(_SPQ_CASES)
+TEST_CASES = list(_ALG_CASES) + list(_SPQ_CASES) + list(_FHC_CASES)
 
 pytestmark = pytest.mark.behavioral
 

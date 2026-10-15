@@ -184,6 +184,18 @@ def test():
     f_thin = FreeAlgebra(c2, 1, True, True)
     _dump_free("F1thin", f_thin, plus_sym)
 
+    _show("F1_switchXY", lambda: f.switchXandYAutomorphism())
+    f2 = FreeAlgebra(c2, 2)
+    f2.setName("F2")
+
+    def _auto_vals():
+        op = f2.switchXandYAutomorphism()
+        n = int(op.getSetSize()) if hasattr(op, "getSetSize") else int(op.get_set_size())
+        return "[" + ",".join(str(int(op.intValueAt([i]))) for i in range(n)) + "]"
+
+    _show("F2_switchXY", _auto_vals)
+    _show("findEq", lambda: FreeAlgebra.findEquationOfAnotB(c2, c2, [0]))
+
 
 if __name__ == "__main__":
     test()

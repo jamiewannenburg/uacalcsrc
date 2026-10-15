@@ -12,11 +12,13 @@ notes: |
   Implemented: FreeAlgebra.getElement / elementIndex return IntArray tuples;
   getTerms / getTerm / getElementFromTerm / getProductAlgebra / generators /
   getVariables / operations / superAlgebra are bound; getIdempotentTerms
-  returns Term objects. new_with_progress honors make_universe and thin_gens.
-  After thinning, the product is rebuilt (Java BigProductAlgebra(alg,
-  gens.get(0).universeSize())) and projections are maximals under the
-  homomorphism order. Scripts still call setName so default names are not
-  compared.
+  returns Term objects. switchXandYAutomorphism is bound. 3-arg
+  findEquationOfAnotB matches Java NPE on null ProgressReport. Non-None
+  ProgressReport / relations / main are not wrapped. new_with_progress honors
+  make_universe and thin_gens. After thinning, the product is rebuilt (Java
+  BigProductAlgebra(alg, gens.get(0).universeSize())) and projections are
+  maximals under the homomorphism order. Scripts still call setName so default
+  names are not compared.
 ignore_reason: null
 surface:
   package_export: true
@@ -36,17 +38,22 @@ surface:
     getIdempotentTerms: get_idempotent_terms
     superAlgebra: super_algebra
     algebraType: algebra_type
-  static_methods: []
+    switchXandYAutomorphism: switch_x_and_y_automorphism
+    findEquationOfAnotB: findEquationOfAnotB
+  static_methods:
+    - findEquationOfAnotB
   str_parity: false
 testing:
   notes: |
-    free_algebra_smoke.py is the source of truth for Jython FreeAlgebra.
+    free_algebra_smoke.py plus tests/parity/alg/test_cases/free_hom_closer_cases.py.
     Constructs F(1) over cyclic2 two ways: FreeAlgebra(alg, 1) and
-    FreeAlgebra(alg, 1, True, True). After setName, prints cardinality,
-    getUniverseList / getElement / elementIndex (IntArray coords), getTerms /
-    getTerm / getElementFromTerm round-trip, getProductAlgebra
-    cardinality+factor count, generators, getVariables, getIdempotentTerms,
-    operations() count, and getOperation("+") table.
+    FreeAlgebra(alg, 1, True, True), plus F(2) only for switchXandYAutomorphism.
+    After setName, prints cardinality, getUniverseList / getElement /
+    elementIndex (IntArray coords), getTerms / getTerm / getElementFromTerm
+    round-trip, getProductAlgebra cardinality+factor count, generators,
+    getVariables, getIdempotentTerms, operations() count, and getOperation("+")
+    table. Golden cases also cover named/from-product constructors, null
+    ProgressReport, findEquationOfAnotB NPE, and AlgebraIO write/read.
 
     Expected Java (F(1) over C2, makeUniverse=true): cardinality 2; universe
     elements are IntArrays (not ints); getTerms is [x, +(x,x)];
@@ -58,7 +65,8 @@ testing:
 
     ignore_lines are construction progress only. Do not ignore None vs
     IntArray, missing methods, or name/factor mismatches.
-  task_refs: []
+  task_refs:
+    - tests/parity/alg/test_cases/free_hom_closer_cases.py
   scripts:
     - path: jython_comparison/scripts/free_algebra_smoke.py
       covers:
@@ -79,6 +87,8 @@ testing:
         - algebraType
         - cardinality
         - operations
+        - switchXandYAutomorphism
+        - findEquationOfAnotB
       ignore_lines:
         - "Constructing free"
         - "pass:"

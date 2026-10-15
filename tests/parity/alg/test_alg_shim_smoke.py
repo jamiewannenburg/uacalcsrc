@@ -90,3 +90,40 @@ def test_product_power_quotient_subalgebra_constructors():
     assert isinstance(sp, SubProductAlgebra)
     assert sp.cardinality() == 2
     assert str(sp.algebraType()) == "SUBPRODUCT"
+
+
+def test_free_hom_closer_algebras_constructors():
+    _ensure_python_org_on_path()
+    from org.uacalc.alg import (  # noqa: PLC0415
+        FreeAlgebra,
+        Homomorphism,
+        Closer,
+        Algebras,
+        BigProductAlgebra,
+        SmallAlgebra,
+    )
+    from org.uacalc.io import AlgebraIO  # noqa: PLC0415
+    from org.uacalc.util import IntArray  # noqa: PLC0415
+
+    c2 = AlgebraIO.readAlgebraFile(str(REPO_ROOT / "resources/algebras/cyclic2.ua"))
+    f1 = FreeAlgebra(c2, 1)
+    assert isinstance(f1, FreeAlgebra)
+    assert isinstance(f1, SmallAlgebra)
+    assert f1.cardinality() == 2
+    assert str(f1.algebraType()) == "FREE"
+
+    h = Homomorphism(c2, c2, {0: 0, 1: 1})
+    assert isinstance(h, Homomorphism)
+    assert str(h.kernel())
+
+    bp = BigProductAlgebra(c2, 2)
+    closer = Closer(bp, [IntArray([0, 0]), IntArray([1, 1])])
+    assert isinstance(closer, Closer)
+    assert closer.getAnswer() is None
+    ans = closer.sgClose()
+    assert ans is not None
+    assert closer.getmaxSize() == -1
+
+    trans = Algebras.fullTransformationSemigroup(2, False, False)
+    assert trans.cardinality() == 4
+    assert Algebras.unaryCloneAlgFromPartitions([c2.con().zero()], [c2.con().zero()]) is None
