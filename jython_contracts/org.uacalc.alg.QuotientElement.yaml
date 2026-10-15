@@ -1,0 +1,38 @@
+target: org.uacalc.alg.QuotientElement
+level: file
+status: implemented
+java_source: org/uacalc/alg/QuotientElement.java
+notes: |
+  Element of a QuotientAlgebra. toString is super.getElement(rep) + "/" +
+  congruence. getIndex is the quotient index; getIndexInSuperAlgebra is the
+  representative in the super algebra.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    getAlgebra: get_algebra
+    superAlgebra: super_algebra
+    getCongruence: get_congruence
+    getIndex: get_index
+    getIndexInSuperAlgebra: get_index_in_super_algebra
+    toString: toString
+  static_methods: []
+  str_parity: true
+testing:
+  notes: |
+    Covered by quotient_algebra_smoke.py and golden QuotientElement cases.
+  task_refs:
+    - tests/parity/alg/test_cases/sub_prod_quot_cases.py
+  scripts:
+    - path: jython_comparison/scripts/quotient_algebra_smoke.py
+      covers:
+        - getAlgebra
+        - superAlgebra
+        - getCongruence
+        - getIndex
+        - getIndexInSuperAlgebra
+        - toString
+      ignore_lines:
+        - "pass 0 of"
+        - "pass 1 of"
+        - "pass "

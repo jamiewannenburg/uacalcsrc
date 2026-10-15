@@ -45,3 +45,48 @@ def test_basic_algebra_int_constructor_and_instancecheck():
     assert alg.intUniverse() is True
     assert alg.getUniverseList() is None
     assert alg.getOperation(OperationSymbol("id", 1)).intValueAt([1]) == 1
+
+
+def test_product_power_quotient_subalgebra_constructors():
+    _ensure_python_org_on_path()
+    from org.uacalc.alg import (  # noqa: PLC0415
+        Algebra,
+        ProductAlgebra,
+        PowerAlgebra,
+        QuotientAlgebra,
+        Subalgebra,
+        SubProductAlgebra,
+        BigProductAlgebra,
+        SmallAlgebra,
+    )
+    from org.uacalc.io import AlgebraIO  # noqa: PLC0415
+
+    c2 = AlgebraIO.readAlgebraFile(str(REPO_ROOT / "resources/algebras/cyclic2.ua"))
+    prod = ProductAlgebra("C2xC2", [c2, c2])
+    assert isinstance(prod, ProductAlgebra)
+    assert isinstance(prod, SmallAlgebra)
+    assert isinstance(prod, Algebra)
+    assert prod.cardinality() == 4
+    assert str(prod.algebraType()) == "PRODUCT"
+
+    pwr = PowerAlgebra(c2, 2)
+    assert isinstance(pwr, PowerAlgebra)
+    assert pwr.getPower() == 2
+    assert str(pwr.algebraType()) == "POWER"
+
+    sub = Subalgebra("S", c2, [0])
+    assert isinstance(sub, Subalgebra)
+    assert sub.cardinality() == 1
+    assert str(sub.algebraType()) == "SUBALGEBRA"
+
+    cong = c2.con().Cg(0, 1)
+    quot = QuotientAlgebra(c2, cong)
+    assert isinstance(quot, QuotientAlgebra)
+    assert quot.cardinality() == 1
+    assert str(quot.algebraType()) == "QUOTIENT"
+
+    bp = BigProductAlgebra(c2, 2)
+    sp = SubProductAlgebra("SP", bp, [[0, 0], [1, 1]])
+    assert isinstance(sp, SubProductAlgebra)
+    assert sp.cardinality() == 2
+    assert str(sp.algebraType()) == "SUBPRODUCT"

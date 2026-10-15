@@ -110,6 +110,12 @@ class AlgebraIO:
         path = _coerce_path(path_or_file)
         # Unwrap org.uacalc.alg BasicAlgebra Jython compat wrapper if present.
         alg = getattr(algebra, "_inner", algebra)
+        # Java AlgebraIO.writeAlgebraFile accepts any SmallAlgebra. uacalc_lib
+        # writers take PyBasicAlgebra, so materialize tables when needed.
+        if type(alg).__name__ not in ("PyBasicAlgebra", "BasicAlgebra"):
+            conv = getattr(alg, "to_basic_algebra", None)
+            if callable(conv):
+                alg = conv()
         use_old_style = bool(oldStyle) if oldStyle is not None else False
         if use_old_style:
             return _io.write_algebra_file_with_style(alg, path, True)

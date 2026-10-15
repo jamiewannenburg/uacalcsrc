@@ -1,8 +1,9 @@
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
+use pyo3::types::PyAny;
 use std::sync::Arc;
 use uacalc::alg::{BigProductAlgebra, SmallAlgebra, Algebra};
-use crate::alg::small_algebra::PySmallAlgebra;
+use crate::alg::algebra_extract::extract_boxed_small_algebra;
 
 /// Python wrapper for BigProductAlgebra
 #[pyclass(name = "BigProductAlgebra")]
@@ -21,12 +22,16 @@ impl PyBigProductAlgebra {
     /// A new BigProductAlgebra instance
     #[staticmethod]
     fn new_from_algebras(algebras: &Bound<'_, PyAny>) -> PyResult<Self> {
-        let py_algebras: Vec<PyRef<PySmallAlgebra>> = algebras.extract()?;
-        let rust_algs: Vec<Box<dyn SmallAlgebra<UniverseItem = i32>>> = py_algebras.iter()
-            .map(|a| a.clone_box())
-            .collect();
-        
-        match BigProductAlgebra::<i32>::new_safe(rust_algs) {
+        Self::new_from_algebras_named("".to_string(), algebras)
+    }
+
+    #[staticmethod]
+    fn new_from_algebras_named(name: String, algebras: &Bound<'_, PyAny>) -> PyResult<Self> {
+        let mut rust_algs: Vec<Box<dyn SmallAlgebra<UniverseItem = i32>>> = Vec::new();
+        for item in algebras.iter()? {
+            rust_algs.push(extract_boxed_small_algebra(&item?)?);
+        }
+        match BigProductAlgebra::<i32>::new_with_name_safe(name, rust_algs) {
             Ok(algebra) => Ok(PyBigProductAlgebra { inner: Arc::new(algebra) }),
             Err(e) => Err(PyValueError::new_err(e)),
         }
@@ -41,10 +46,14 @@ impl PyBigProductAlgebra {
     /// # Returns
     /// A new BigProductAlgebra instance
     #[staticmethod]
-    fn new_power(algebra: &PySmallAlgebra, power: usize) -> PyResult<Self> {
-        let rust_alg = algebra.clone_box();
+    fn new_power(algebra: &Bound<'_, PyAny>, power: usize) -> PyResult<Self> {
+        Self::new_power_named("".to_string(), algebra, power)
+    }
 
-        match BigProductAlgebra::<i32>::new_power_safe(rust_alg, power) {
+    #[staticmethod]
+    fn new_power_named(name: String, algebra: &Bound<'_, PyAny>, power: usize) -> PyResult<Self> {
+        let rust_alg = extract_boxed_small_algebra(algebra)?;
+        match BigProductAlgebra::<i32>::new_power_with_name_safe(name, rust_alg, power) {
             Ok(algebra) => Ok(PyBigProductAlgebra { inner: Arc::new(algebra) }),
             Err(e) => Err(PyValueError::new_err(e)),
         }
@@ -118,5 +127,9 @@ impl PyBigProductAlgebra {
         PyBigProductAlgebra {
             inner: Arc::new(inner.clone()),
         }
+    }
+
+    pub(crate) fn clone_inner(&self) -> BigProductAlgebra<i32> {
+        (*self.inner).clone()
     }
 }
