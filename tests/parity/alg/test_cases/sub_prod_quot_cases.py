@@ -120,7 +120,6 @@ TEST_CASES = [
         setup=_SETUP,
         call="ProductAlgebra.calcCard([])",
         description="Java empty product cardinality is 1",
-        xfail_reason="owner: uacalc_lib ProductAlgebra.calc_card_safe rejects empty sizes; Java returns 1",
     ),
     TestCaseSpec(
         id="prod_empty_ctor",

@@ -238,11 +238,11 @@ Malcev is intentionally left alone.
 ### ProductAlgebra.calcCard([])
 
 - **Java**: `calcCard(new int[0])` is `1` (empty product of `BigInteger.ONE`).
-- **Python**: `uacalc_lib` `calc_card_safe` rejects an empty size list.
-- **Status**: To Be Fixed
-- **Tests**: `prod_calc_card_empty` strict xfail
-- **Owner vs shim**: Owner/library — empty-product cardinality is computed in
-  Rust `src/alg/product_algebra.rs`, not a rename in the shim.
+- **Python**: the org wrapper returns `1` for an empty size list before calling
+  `uacalc_lib` (which still rejects empty sizes). `uacalc_lib` is unchanged.
+- **Status**: Fixed in the shim
+- **Tests**: `prod_calc_card_empty` passes
+- **Owner vs shim**: Shim — empty-list check in `python/org/uacalc/alg` only.
 
 ### ProductAlgebra([]) / PowerAlgebra(alg, 0)
 
