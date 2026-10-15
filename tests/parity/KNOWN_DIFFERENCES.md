@@ -61,11 +61,15 @@ Malcev is intentionally left alone.
 
 ### AlgebraIO.readAlgebraFile (missing file)
 
-- **Java**: `FileNotFoundException`
-- **Python**: `ValueError: No algebras found in file`
-- **Status**: To Be Fixed (Python should surface a missing-file error)
-- **Tests**: `read_nonexistent` strict xfail
-- **Owner vs shim**: Library — the parser reports “no algebras” instead of a missing file; a shim existence check would only hide that.
+- **Java**: `FileNotFoundException` with
+  `<absolute path> (No such file or directory)` (Jython `str(exc)` also has
+  the `java.io.FileNotFoundException: ` prefix; the harness strips it).
+- **Python**: shim existence check in `AlgebraIO.readAlgebraFile` /
+  `AlgebraReader.readAlgebraFile` raises `FileNotFoundException` with the
+  same `getMessage()` form. `uacalc_lib` is unchanged.
+- **Status**: Fixed in the shim
+- **Tests**: `read_nonexistent` passes
+- **Owner vs shim**: Shim — check-before-read in `python/org/uacalc/io` only.
 
 ### AlgebraIO.convertToXML output path
 
@@ -191,15 +195,16 @@ Malcev is intentionally left alone.
 ### Operation.isTableBased (IntOperationImp)
 
 - **Java**: `Operations.IntOperationImp` extends `AbstractOperation` and does **not**
-  override `isTableBased()`, so table-constructed ops from
-  `makeIntOperation(symbol, size, table)` report `false`.
-- **Python**: `IntOperation` is table-backed and `is_table_based()` returns `true`.
-- **Status**: To Be Fixed (Java likely omitted the override; Python matches the
-  documented meaning of the method)
-- **Tests**: `op_is_table_based` strict xfail
-- **Owner vs shim**: Owner/library — changing Rust `IntOperation` to lie would
-  break `makeIntOperation(Operation)` skip-if-table-based logic; this is not a
-  rename in the shim.
+  override `isTableBased()`, so `makeIntOperation(symbol, size, table)` reports
+  `false`. Function / value-at constructors also stay `false`. Factories that
+  override it (`makeIntOperation(Operation)`, `makeConstantIntOperation`) report
+  `true`.
+- **Python**: the org wrapper records how each `Operation` was constructed and
+  `isTableBased()` uses that flag. It does not read the Rust backend (always
+  table-based). `uacalc_lib` is unchanged.
+- **Status**: Fixed in the shim
+- **Tests**: `op_is_table_based` passes
+- **Owner vs shim**: Shim — construction flag in `python/org/uacalc/alg/op` only.
 
 ---
 

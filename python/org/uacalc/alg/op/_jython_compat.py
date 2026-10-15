@@ -38,6 +38,36 @@ def _install(op_globals: dict) -> None:
                 raise ClassCastException(msg) from exc
             translate_illegal_argument(exc)
 
+    # PyIntOperation is not weakrefable and compares by value, so record
+    # construction by identity. Java IntOperationImp / value-at / function
+    # constructors leave AbstractOperation.isTableBased() as false; only
+    # factories that override it (makeIntOperation(op), constants) are true.
+    _CONSTRUCTED_TABLE_BASED = {}
+
+    def _mark_constructed(op: Any, table_based: bool) -> Any:
+        if op is None:
+            return op
+        _CONSTRUCTED_TABLE_BASED[id(op)] = (op, bool(table_based))
+        return op
+
+    def _mark_constructed_list(ops: Any, table_based: bool) -> list:
+        return [_mark_constructed(op, table_based) for op in list(ops)]
+
+    def _recorded_table_based(op: Any) -> Optional[bool]:
+        item = _CONSTRUCTED_TABLE_BASED.get(id(op))
+        if item is None:
+            return None
+        stored, flag = item
+        if stored is op:
+            return flag
+        return None
+
+    def _op_is_table_based(op: Any) -> bool:
+        recorded = _recorded_table_based(op)
+        if recorded is not None:
+            return recorded
+        return False
+
     def _as_int_list(args: Any) -> list:
         if args is None:
             _raise_npe()
@@ -90,7 +120,7 @@ def _install(op_globals: dict) -> None:
         return int(self.get_set_size())
 
     def _is_table_based(self: Any) -> bool:
-        return bool(self.is_table_based())
+        return _op_is_table_based(self)
 
     def _is_idempotent(self: Any) -> bool:
         return bool(_lib_call(self.is_idempotent))
@@ -349,27 +379,41 @@ def _install(op_globals: dict) -> None:
                 op = args[0]
                 if op is None:
                     _raise_npe()
+                # Java: if (opx.isTableBased()) return opx;
+                if _op_is_table_based(op):
+                    return op
                 try:
-                    return Operations._lib.make_int_operation_from_op(op)
+                    result = Operations._lib.make_int_operation_from_op(op)
                 except (TypeError, ValueError) as exc:
                     raise TypeError(str(exc)) from exc
+                return _mark_constructed(result, True)
             if len(args) == 3:
                 symbol, alg_size, table = args
                 if symbol is None or table is None:
                     _raise_npe()
-                return _lib_call(
-                    Operations._lib.make_int_operation, symbol, int(alg_size), list(table)
+                # Java IntOperationImp does not override isTableBased().
+                return _mark_constructed(
+                    _lib_call(
+                        Operations._lib.make_int_operation,
+                        symbol,
+                        int(alg_size),
+                        list(table),
+                    ),
+                    False,
                 )
             if len(args) == 4:
                 name, arity, alg_size, table = args
                 if name is None or table is None:
                     _raise_npe()
-                return _lib_call(
-                    Operations._lib.make_int_operation,
-                    str(name),
-                    int(arity),
-                    int(alg_size),
-                    list(table),
+                return _mark_constructed(
+                    _lib_call(
+                        Operations._lib.make_int_operation,
+                        str(name),
+                        int(arity),
+                        int(alg_size),
+                        list(table),
+                    ),
+                    False,
                 )
             raise TypeError("makeIntOperation() takes 1, 3, or 4 arguments")
 
@@ -378,9 +422,10 @@ def _install(op_globals: dict) -> None:
             if ops is None:
                 _raise_npe()
             try:
-                return Operations._lib.make_int_operations(list(ops))
+                results = Operations._lib.make_int_operations(list(ops))
             except ValueError as exc:
                 raise ClassCastException(str(exc)) from exc
+            return _mark_constructed_list(results, True)
 
         @staticmethod
         def makeBinaryIntOperation(symbol, algSize, table):
@@ -388,64 +433,97 @@ def _install(op_globals: dict) -> None:
                 _raise_npe()
             rows = list(table)
             if rows and not isinstance(rows[0], (list, tuple)):
-                return _lib_call(
-                    Operations._lib.make_binary_int_operation,
-                    symbol,
-                    int(algSize),
-                    [int(x) for x in rows],
+                return _mark_constructed(
+                    _lib_call(
+                        Operations._lib.make_binary_int_operation,
+                        symbol,
+                        int(algSize),
+                        [int(x) for x in rows],
+                    ),
+                    False,
                 )
             flat = []
             for row in rows:
                 flat.extend(int(x) for x in list(row))
-            return _lib_call(
-                Operations._lib.make_binary_int_operation, symbol, int(algSize), flat
+            return _mark_constructed(
+                _lib_call(
+                    Operations._lib.make_binary_int_operation, symbol, int(algSize), flat
+                ),
+                False,
             )
 
         @staticmethod
         def makeConstantIntOperation(*args):
             if len(args) == 2:
                 alg_size, elt = args
-                return _lib_call(
-                    Operations._lib.make_constant_int_operation, int(alg_size), int(elt)
+                return _mark_constructed(
+                    _lib_call(
+                        Operations._lib.make_constant_int_operation,
+                        int(alg_size),
+                        int(elt),
+                    ),
+                    True,
                 )
             if len(args) == 3:
                 prefix, alg_size, elt = args
                 if prefix is None:
                     _raise_npe()
-                return _lib_call(
-                    Operations._lib.make_constant_int_operation,
-                    str(prefix),
-                    int(alg_size),
-                    int(elt),
+                return _mark_constructed(
+                    _lib_call(
+                        Operations._lib.make_constant_int_operation,
+                        str(prefix),
+                        int(alg_size),
+                        int(elt),
+                    ),
+                    True,
                 )
             raise TypeError("makeConstantIntOperation() takes 2 or 3 arguments")
 
         @staticmethod
         def makeConstantIntOperations(algSize):
-            return _lib_call(Operations._lib.make_constant_int_operations, int(algSize))
+            return _mark_constructed_list(
+                _lib_call(Operations._lib.make_constant_int_operations, int(algSize)),
+                True,
+            )
 
         @staticmethod
         def makeTransposition(algSize, a0, a1):
-            return _lib_call(
-                Operations._lib.make_transposition, int(algSize), int(a0), int(a1)
+            return _mark_constructed(
+                _lib_call(
+                    Operations._lib.make_transposition, int(algSize), int(a0), int(a1)
+                ),
+                False,
             )
 
         @staticmethod
         def makeFullCycle(algSize):
-            return _lib_call(Operations._lib.make_full_cycle, int(algSize))
+            return _mark_constructed(
+                _lib_call(Operations._lib.make_full_cycle, int(algSize)), False
+            )
 
         @staticmethod
         def ternaryDiscriminator(size):
-            return _lib_call(Operations._lib.ternary_discriminator, int(size))
+            return _mark_constructed(
+                _lib_call(Operations._lib.ternary_discriminator, int(size)), False
+            )
 
         @staticmethod
         def makeRandomOperation(n, opSym, seed=None):
             if opSym is None:
                 _raise_npe()
             if seed is None:
-                return _lib_call(Operations._lib.make_random_operation, int(n), opSym)
-            return _lib_call(
-                Operations._lib.make_random_operation_with_seed, int(n), opSym, int(seed)
+                return _mark_constructed(
+                    _lib_call(Operations._lib.make_random_operation, int(n), opSym),
+                    False,
+                )
+            return _mark_constructed(
+                _lib_call(
+                    Operations._lib.make_random_operation_with_seed,
+                    int(n),
+                    opSym,
+                    int(seed),
+                ),
+                False,
             )
 
         @staticmethod
@@ -453,30 +531,42 @@ def _install(op_globals: dict) -> None:
             if simType is None:
                 _raise_npe()
             if seed is None:
-                return _lib_call(Operations._lib.make_random_operations, int(n), simType)
-            return _lib_call(
-                Operations._lib.make_random_operations_with_seed,
-                int(n),
-                simType,
-                int(seed),
+                return _mark_constructed_list(
+                    _lib_call(Operations._lib.make_random_operations, int(n), simType),
+                    False,
+                )
+            return _mark_constructed_list(
+                _lib_call(
+                    Operations._lib.make_random_operations_with_seed,
+                    int(n),
+                    simType,
+                    int(seed),
+                ),
+                False,
             )
 
         @staticmethod
         def makeDerivedOperation(op, reductionArray, newArity):
             if op is None or reductionArray is None:
                 _raise_npe()
-            return _lib_call(
-                Operations._lib.make_derived_operation,
-                op,
-                _as_int_list(reductionArray),
-                int(newArity),
+            return _mark_constructed(
+                _lib_call(
+                    Operations._lib.make_derived_operation,
+                    op,
+                    _as_int_list(reductionArray),
+                    int(newArity),
+                ),
+                False,
             )
 
         @staticmethod
         def makeJonssonOperationsFromNUF(nuf):
             if nuf is None:
                 _raise_npe()
-            return _lib_call(Operations._lib.make_jonsson_operations_from_nuf, nuf)
+            return _mark_constructed_list(
+                _lib_call(Operations._lib.make_jonsson_operations_from_nuf, nuf),
+                False,
+            )
 
         @staticmethod
         def power(base, pow):
@@ -484,31 +574,50 @@ def _install(op_globals: dict) -> None:
 
         @staticmethod
         def makeLeftShift(vecSize, rootSize):
-            return _lib_call(Operations._lib.make_left_shift, int(vecSize), int(rootSize))
+            return _mark_constructed(
+                _lib_call(
+                    Operations._lib.make_left_shift, int(vecSize), int(rootSize)
+                ),
+                False,
+            )
 
         @staticmethod
         def makeBinaryLeftShift(vecSize, rootSize):
-            return _lib_call(
-                Operations._lib.make_binary_left_shift, int(vecSize), int(rootSize)
+            return _mark_constructed(
+                _lib_call(
+                    Operations._lib.make_binary_left_shift, int(vecSize), int(rootSize)
+                ),
+                False,
             )
 
         @staticmethod
         def makeMatrixDiagonalOp(vecSize, rootSize):
-            return _lib_call(
-                Operations._lib.make_matrix_diagonal_op, int(vecSize), int(rootSize)
+            return _mark_constructed(
+                _lib_call(
+                    Operations._lib.make_matrix_diagonal_op, int(vecSize), int(rootSize)
+                ),
+                False,
             )
 
         @staticmethod
         def makeModuleOperation(modulus, coeffs):
             if coeffs is None:
                 _raise_npe()
-            return _lib_call(
-                Operations._lib.make_module_operation, int(modulus), _as_int_list(coeffs)
+            return _mark_constructed(
+                _lib_call(
+                    Operations._lib.make_module_operation,
+                    int(modulus),
+                    _as_int_list(coeffs),
+                ),
+                False,
             )
 
         @staticmethod
         def makeCompositionOp(n, pow):
-            return _lib_call(Operations._lib.make_composition_op, int(n), int(pow))
+            return _mark_constructed(
+                _lib_call(Operations._lib.make_composition_op, int(n), int(pow)),
+                False,
+            )
 
         @staticmethod
         def binaryOpToCSV(desc, binop, out):

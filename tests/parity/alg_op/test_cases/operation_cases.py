@@ -117,10 +117,6 @@ TEST_CASES = [
         setup=_SETUP,
         call="xor2.isTableBased()",
         description="Java IntOperationImp inherits AbstractOperation.isTableBased()=false",
-        xfail_reason=(
-            "owner: Java IntOperationImp does not override isTableBased, so "
-            "table-constructed ops report false; Python IntOperation reports true"
-        ),
         **_BOOL
     ),
     TestCaseSpec(

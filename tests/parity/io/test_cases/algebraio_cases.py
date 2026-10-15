@@ -81,10 +81,6 @@ TEST_CASES = [
         call='AlgebraIO.readAlgebraFile("resources/algebras/nonexistent.ua")',
         description="Reading nonexistent file should raise",
         expected_exception="FileNotFoundException",
-        xfail_reason=(
-            "Java raises FileNotFoundException; Python currently raises "
-            "ValueError('No algebras found in file')."
-        ),
     ),
     TestCaseSpec(
         id="read_from_stream_cyclic2",
