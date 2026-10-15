@@ -58,11 +58,12 @@ slices:
     parity_tests_dir: tests/parity/alg
     notes: >-
       Algebra / SmallAlgebra / BasicAlgebra plus Subalgebra, ProductAlgebra,
-      PowerAlgebra, QuotientAlgebra/QuotientElement, and SubProductAlgebra Jython
-      shims on org.uacalc.alg with golden behavioral cases in tests/parity/alg,
-      including AlgebraIO write/read value round-trips and Java-named
-      conversion-path exceptions. Malcev is not wrapped. Branch
-      cursor/sub-prod-quot.
+      PowerAlgebra, QuotientAlgebra/QuotientElement, SubProductAlgebra,
+      FreeAlgebra, Homomorphism, Closer, and Algebras (no Malcev) Jython shims
+      on org.uacalc.alg with golden behavioral cases in tests/parity/alg,
+      including AlgebraIO write/read value round-trips, homomorphism kernels,
+      Closer term maps, and Java-named conversion-path exceptions. CloserTiming
+      is UI-only and is not wrapped. Branch cursor/free-hom-closer.
 
   - id: core-alg-op
     title: Operation symbols and operations

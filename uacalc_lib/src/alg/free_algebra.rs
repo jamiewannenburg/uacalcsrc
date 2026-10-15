@@ -1,17 +1,19 @@
-use pyo3::prelude::*;
-use pyo3::exceptions::PyValueError;
-use pyo3::types::{PyAny, PyTuple};
-use uacalc::alg::{Algebra, SmallAlgebra};
-use uacalc::util::int_array::{IntArray, IntArrayTrait};
-use crate::alg::{PyBasicAlgebra, PyBasicOperation};
 use crate::alg::big_product_algebra::PyBigProductAlgebra;
-use crate::alg::convert::{algebra_type_java_name, operation_to_py, py_to_term, term_to_py};
 use crate::alg::conlat::congruence_lattice::PyCongruenceLatticeIntArray;
+use crate::alg::convert::{
+    algebra_type_java_name, operation_to_py, ops_to_basic_algebra, py_to_term, term_to_py,
+};
 use crate::alg::universe_map::PyUniverseMap;
+use crate::alg::PyBasicAlgebra;
 use crate::eq::PyEquation;
 use crate::terms::PyVariableImp;
 use crate::util::PyIntArray;
+use pyo3::exceptions::PyValueError;
+use pyo3::prelude::*;
+use pyo3::types::{PyAny, PyTuple};
 use std::collections::HashMap;
+use uacalc::alg::{Algebra, SmallAlgebra};
+use uacalc::util::int_array::{IntArray, IntArrayTrait};
 
 /// Python wrapper for FreeAlgebra
 #[pyclass]
@@ -21,11 +23,7 @@ pub struct PyFreeAlgebra {
 }
 
 impl PyFreeAlgebra {
-    fn element_to_python(
-        &self,
-        py: Python<'_>,
-        element: IntArray,
-    ) -> PyResult<PyObject> {
+    fn element_to_python(&self, py: Python<'_>, element: IntArray) -> PyResult<PyObject> {
         if let Some(map) = &self.element_map {
             let labels = element
                 .as_slice()
@@ -46,13 +44,12 @@ impl PyFreeAlgebra {
         if let Ok(array) = element.extract::<PyRef<PyIntArray>>() {
             return Ok(array.inner.clone());
         }
-        let map = self.element_map.as_ref().ok_or_else(|| {
-            PyValueError::new_err("Expected an IntArray free-algebra element")
-        })?;
+        let map = self
+            .element_map
+            .as_ref()
+            .ok_or_else(|| PyValueError::new_err("Expected an IntArray free-algebra element"))?;
         let coordinates: Vec<PyObject> = element.extract().map_err(|_| {
-            PyValueError::new_err(
-                "Expected an IntArray or a sequence of base-algebra elements",
-            )
+            PyValueError::new_err("Expected an IntArray or a sequence of base-algebra elements")
         })?;
         let indices = coordinates
             .iter()
@@ -60,9 +57,7 @@ impl PyFreeAlgebra {
                 map.index_of(py, coordinate.bind(py))?
                     .map(|index| index as i32)
                     .ok_or_else(|| {
-                        PyValueError::new_err(
-                            "Free-algebra coordinate is not in the base universe",
-                        )
+                        PyValueError::new_err("Free-algebra coordinate is not in the base universe")
                     })
             })
             .collect::<PyResult<Vec<_>>>()?;
@@ -82,7 +77,8 @@ impl PyFreeAlgebra {
     ///     ValueError: If construction fails
     #[new]
     fn new(base: &PyBasicAlgebra, number_of_gens: i32) -> PyResult<Self> {
-        let rust_base = Box::new(base.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
+        let rust_base =
+            Box::new(base.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
 
         match uacalc::alg::FreeAlgebra::new_safe(rust_base, number_of_gens) {
             Ok(inner) => Ok(PyFreeAlgebra {
@@ -104,7 +100,8 @@ impl PyFreeAlgebra {
     ///     ValueError: If construction fails
     #[staticmethod]
     fn new_with_name(name: String, base: &PyBasicAlgebra, number_of_gens: i32) -> PyResult<Self> {
-        let rust_base = Box::new(base.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
+        let rust_base =
+            Box::new(base.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
 
         match uacalc::alg::FreeAlgebra::new_with_name_safe(name, rust_base, number_of_gens) {
             Ok(inner) => Ok(PyFreeAlgebra {
@@ -132,9 +129,10 @@ impl PyFreeAlgebra {
         number_of_gens: i32,
         make_universe: bool,
         thin_gens: bool,
-        decompose: bool
+        decompose: bool,
     ) -> PyResult<Self> {
-        let rust_base = Box::new(base.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
+        let rust_base =
+            Box::new(base.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
         let _ = decompose;
 
         match uacalc::alg::FreeAlgebra::new_with_thin_safe(
@@ -164,12 +162,19 @@ impl PyFreeAlgebra {
     fn new_with_relations(
         base: &PyBasicAlgebra,
         number_of_gens: i32,
-        relations: Vec<PyEquation>
+        relations: Vec<PyEquation>,
     ) -> PyResult<Self> {
-        let rust_base = Box::new(base.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
-        let rust_relations: Vec<uacalc::eq::Equation> = relations.into_iter().map(|eq| eq.inner).collect();
+        let rust_base =
+            Box::new(base.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
+        let rust_relations: Vec<uacalc::eq::Equation> =
+            relations.into_iter().map(|eq| eq.inner).collect();
 
-        match uacalc::alg::FreeAlgebra::new_with_relations_safe(rust_base, number_of_gens, rust_relations, None) {
+        match uacalc::alg::FreeAlgebra::new_with_relations_safe(
+            rust_base,
+            number_of_gens,
+            rust_relations,
+            None,
+        ) {
             Ok(inner) => Ok(PyFreeAlgebra {
                 inner,
                 element_map: base.element_map().cloned(),
@@ -184,10 +189,7 @@ impl PyFreeAlgebra {
     ///     List[Term]: Idempotent terms (VariableImp / NonVariableTerm)
     fn get_idempotent_terms(&self, py: Python<'_>) -> PyResult<Vec<PyObject>> {
         match self.inner.get_idempotent_terms() {
-            Ok(terms) => terms
-                .iter()
-                .map(|t| term_to_py(py, t.as_ref()))
-                .collect(),
+            Ok(terms) => terms.iter().map(|t| term_to_py(py, t.as_ref())).collect(),
             Err(e) => Err(PyValueError::new_err(e)),
         }
     }
@@ -203,15 +205,57 @@ impl PyFreeAlgebra {
     /// Switch x and y automorphism.
     ///
     /// Returns:
-    ///     Optional[PyBasicOperation]: The automorphism operation, or None if not applicable
-    fn switch_x_and_y_automorphism(&self) -> PyResult<Option<PyBasicOperation>> {
+    ///     Optional[Operation]: The automorphism operation, or None if fewer than 2 generators
+    fn switch_x_and_y_automorphism(&self, py: Python<'_>) -> PyResult<Option<PyObject>> {
         match self.inner.switch_x_and_y_automorphism() {
-            Ok(Some(op)) => {
-                // Convert Box<dyn Operation> to PyBasicOperation
-                // This is a simplified approach - in practice, you'd need proper type conversion
-                Ok(None) // Simplified for now
-            },
+            Ok(Some(op)) => Ok(Some(operation_to_py(py, op.as_ref())?)),
             Ok(None) => Ok(None),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+
+    /// Java `FreeAlgebra(name, alg, n, makeUniverse, thinGens)`.
+    #[staticmethod]
+    fn new_with_name_thin(
+        name: String,
+        base: &PyBasicAlgebra,
+        number_of_gens: i32,
+        make_universe: bool,
+        thin_gens: bool,
+    ) -> PyResult<Self> {
+        let rust_base =
+            Box::new(base.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
+        match uacalc::alg::FreeAlgebra::new_with_name_thin_safe(
+            name,
+            rust_base,
+            number_of_gens,
+            make_universe,
+            thin_gens,
+        ) {
+            Ok(inner) => Ok(PyFreeAlgebra {
+                inner,
+                element_map: base.element_map().cloned(),
+            }),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+
+    /// Java `FreeAlgebra(name, prod, gens, univList)`.
+    #[staticmethod]
+    fn new_from_product(
+        name: String,
+        prod: &PyBigProductAlgebra,
+        generators: Vec<PyIntArray>,
+        universe: Vec<PyIntArray>,
+    ) -> PyResult<Self> {
+        let gens: Vec<IntArray> = generators.iter().map(|g| g.inner.clone()).collect();
+        let univ: Vec<IntArray> = universe.iter().map(|g| g.inner.clone()).collect();
+        match uacalc::alg::FreeAlgebra::new_from_product_safe(name, prod.clone_inner(), gens, univ)
+        {
+            Ok(inner) => Ok(PyFreeAlgebra {
+                inner,
+                element_map: None,
+            }),
             Err(e) => Err(PyValueError::new_err(e)),
         }
     }
@@ -226,10 +270,14 @@ impl PyFreeAlgebra {
     /// Returns:
     ///     Optional[Equation]: The equation, or None if not found
     #[staticmethod]
-    fn find_equation_of_a_not_b(a: &PyBasicAlgebra, b: &PyBasicAlgebra, b_gens: Vec<i32>) -> PyResult<Option<PyEquation>> {
+    fn find_equation_of_a_not_b(
+        a: &PyBasicAlgebra,
+        b: &PyBasicAlgebra,
+        b_gens: Vec<i32>,
+    ) -> PyResult<Option<PyEquation>> {
         let a_boxed = a.clone_box();
         let b_boxed = b.clone_box();
-        
+
         match uacalc::alg::FreeAlgebra::find_equation_of_a_not_b(a_boxed, b_boxed, b_gens) {
             Ok(Some(eq)) => Ok(Some(PyEquation { inner: eq })),
             Ok(None) => Ok(None),
@@ -305,20 +353,13 @@ impl PyFreeAlgebra {
     /// Java `getTerms()`.
     fn get_terms(&self, py: Python<'_>) -> PyResult<Vec<PyObject>> {
         match self.inner.get_inner().get_terms() {
-            Some(terms) => terms
-                .iter()
-                .map(|t| term_to_py(py, t.as_ref()))
-                .collect(),
+            Some(terms) => terms.iter().map(|t| term_to_py(py, t.as_ref())).collect(),
             None => Ok(Vec::new()),
         }
     }
 
     /// Java `getTerm(elt)`.
-    fn get_term(
-        &self,
-        py: Python<'_>,
-        element: &Bound<'_, PyAny>,
-    ) -> PyResult<Option<PyObject>> {
+    fn get_term(&self, py: Python<'_>, element: &Bound<'_, PyAny>) -> PyResult<Option<PyObject>> {
         let element = self.element_from_python(py, element)?;
         match self.inner.get_inner().get_term(&element) {
             Some(term) => Ok(Some(term_to_py(py, term)?)),
@@ -377,7 +418,8 @@ impl PyFreeAlgebra {
     /// Returns:
     ///     List[IntArray]: The universe elements
     fn get_universe_list(&self, py: Python<'_>) -> PyResult<Vec<PyObject>> {
-        self.inner.universe()
+        self.inner
+            .universe()
             .map(|element| self.element_to_python(py, element))
             .collect()
     }
@@ -399,11 +441,7 @@ impl PyFreeAlgebra {
     ///
     /// Returns:
     ///     IntArray: The element at the given index
-    fn get_element(
-        &self,
-        py: Python<'_>,
-        index: usize,
-    ) -> PyResult<Option<PyObject>> {
+    fn get_element(&self, py: Python<'_>, index: usize) -> PyResult<Option<PyObject>> {
         self.inner
             .get_element(index)
             .map(|element| self.element_to_python(py, element))
@@ -417,11 +455,7 @@ impl PyFreeAlgebra {
     ///
     /// Returns:
     ///     int: The index of the element
-    fn element_index(
-        &self,
-        py: Python<'_>,
-        element: &Bound<'_, PyAny>,
-    ) -> PyResult<Option<usize>> {
+    fn element_index(&self, py: Python<'_>, element: &Bound<'_, PyAny>) -> PyResult<Option<usize>> {
         let element = self.element_from_python(py, element)?;
         Ok(self.inner.element_index(&element))
     }
@@ -439,7 +473,11 @@ impl PyFreeAlgebra {
     /// Returns:
     ///     str: Debug string representation
     fn __repr__(&self) -> String {
-        format!("FreeAlgebra(name='{}', cardinality={})", self.name(), self.cardinality())
+        format!(
+            "FreeAlgebra(name='{}', cardinality={})",
+            self.name(),
+            self.cardinality()
+        )
     }
 
     /// Equality comparison.
@@ -472,6 +510,14 @@ impl PyFreeAlgebra {
     ///     int: Cardinality of the algebra
     fn __len__(&self) -> usize {
         self.inner.cardinality() as usize
+    }
+
+    fn to_basic_algebra(&self) -> PyResult<PyBasicAlgebra> {
+        ops_to_basic_algebra(
+            self.inner.name().to_string(),
+            self.inner.cardinality(),
+            uacalc::alg::Algebra::operations(&self.inner),
+        )
     }
 
     /// Get the congruence lattice (lazy initialization).

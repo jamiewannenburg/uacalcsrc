@@ -1,0 +1,52 @@
+target: org.uacalc.alg.Algebras
+level: file
+status: implemented
+java_source: org/uacalc/alg/Algebras.java
+notes: |
+  Static facade matching Java org.uacalc.alg.Algebras. Malcev helpers
+  (findNUF, jonssonTerms, jonssonLevel) and main are not wrapped.
+  unaryCloneAlgFromPartitions(pars, decomp) is the Java stub that always
+  returns null. ProgressReport overloads accept None; non-None is TypeError.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases: {}
+  static_methods:
+    - isEndomorphism
+    - isHomomorphism
+    - matrixPower
+    - fullTransformationSemigroup
+    - ternaryDiscriminatorAlgebra
+    - makeRandomAlgebra
+    - findInClone
+    - memberOfQuasivariety
+    - memberOfQuasivarietyGenByProperSubs
+    - quasiCriticalCongruences
+    - quasiCritical
+    - unaryClone
+    - unaryCloneAlgFromPartitions
+  str_parity: false
+testing:
+  notes: |
+    algebras_smoke.py plus tests/parity/alg/test_cases/free_hom_closer_cases.py.
+    Tiny C2 inputs. Random algebras compare name/card only (RNG differs).
+    fullTransformationSemigroup n=10 is IAE. findInClone empty/null is IAE.
+    matrixPower k=0 is IOBE. 2-arg unaryCloneAlgFromPartitions is null.
+  task_refs:
+    - tests/parity/alg/test_cases/free_hom_closer_cases.py
+  scripts:
+    - path: jython_comparison/scripts/algebras_smoke.py
+      covers:
+        - isEndomorphism
+        - isHomomorphism
+        - matrixPower
+        - fullTransformationSemigroup
+        - ternaryDiscriminatorAlgebra
+        - makeRandomAlgebra
+        - findInClone
+        - memberOfQuasivariety
+        - memberOfQuasivarietyGenByProperSubs
+        - quasiCriticalCongruences
+        - quasiCritical
+        - unaryClone
+        - unaryCloneAlgFromPartitions

@@ -264,6 +264,27 @@ Malcev is intentionally left alone.
 - **Tests**: `pwr_element_index` passes
 - **Owner vs shim**: Known Java bug. Shim matches Java; not a library defect.
 
+### FreeAlgebra AlgebraIO write/read table order
+
+- **Java**: writing F(1) over cyclic2 and reading it back yields cardinality 2
+  and `+` table `[0,1,1,0]` (universe indices after IO differ from the live
+  free algebra, whose table is `[1,0,0,1]`).
+- **Python**: write/read keeps the live table `[1,0,0,1]`. Cardinality and
+  `getTerms()` (`x`, `+(x,x)`) match.
+- **Status**: To Be Fixed
+- **Tests**: `fa_roundtrip_write_read` strict xfail
+- **Owner vs shim**: Owner/library — AlgebraIO serialization of FreeAlgebra
+  universe order. Not a rename in the shim.
+
+### Algebras.quasiCriticalCongruences
+
+- **Java**: on cyclic2 the list is the one-block congruence `|0,1|`.
+- **Python**: `uacalc_lib` `quasi_critical_congruences` returns an empty list.
+- **Status**: To Be Fixed
+- **Tests**: `algs_quasi_crit_congs` strict xfail
+- **Owner vs shim**: Owner/library — incomplete `quasi_critical_congruences`.
+  Not a shim issue.
+
 ### QuotientAlgebra.elementIndex (known Java quirk)
 
 - **Java**: `elementIndex(obj)` returns

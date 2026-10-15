@@ -1,0 +1,46 @@
+target: org.uacalc.alg.Homomorphism
+level: file
+status: implemented
+java_source: org/uacalc/alg/Homomorphism.java
+notes: |
+  Homomorphism(domain, range, map) stores the index map with no validation
+  (Java constructor has none). kernel() joins domain indices with equal
+  images; a missing map key NPEs like Java map.get(i).equals. productHomo
+  of an empty list is IOBE (lst.get(0)). ProgressReport is not involved.
+  Malcev is not wrapped.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    getDomain: get_domain
+    setDomain: set_domain
+    getRange: get_range
+    setRange: set_range
+    getMap: get_map
+    setMap: set_map
+    kernel: kernel
+    toString: toString
+    productHomo: productHomo
+  static_methods:
+    - productHomo
+  str_parity: false
+testing:
+  notes: |
+    homomorphism_smoke.py plus tests/parity/alg/test_cases/free_hom_closer_cases.py.
+    Identity and constant maps on cyclic2: kernel, getMap, productHomo,
+    toString prefix, null-arg NPEs, empty productHomo IOBE, and write/read
+    of the domain algebra then rebuild the homo and compare kernels.
+  task_refs:
+    - tests/parity/alg/test_cases/free_hom_closer_cases.py
+  scripts:
+    - path: jython_comparison/scripts/homomorphism_smoke.py
+      covers:
+        - getDomain
+        - setDomain
+        - getRange
+        - setRange
+        - getMap
+        - setMap
+        - kernel
+        - toString
+        - productHomo

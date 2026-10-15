@@ -1,13 +1,13 @@
 //! Python wrapper for Homomorphism
 
-use pyo3::prelude::*;
-use pyo3::exceptions::PyValueError;
-use pyo3::types::PyList;
-use pyo3::Bound;
-use crate::alg::PyBasicAlgebra;
 use crate::alg::conlat::partition::PyPartition;
 use crate::alg::universe_map::PyUniverseMap;
+use crate::alg::PyBasicAlgebra;
 use crate::util::PyIntArray;
+use pyo3::exceptions::PyValueError;
+use pyo3::prelude::*;
+use pyo3::types::PyList;
+use pyo3::Bound;
 
 /// Python wrapper for Homomorphism
 #[pyclass]
@@ -36,8 +36,10 @@ impl PyHomomorphism {
         map: std::collections::HashMap<usize, usize>,
     ) -> PyResult<Self> {
         // Convert Python algebras to Rust algebras
-        let domain_box = Box::new(domain.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
-        let range_box = Box::new(range.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
+        let domain_box = Box::new(domain.inner.clone())
+            as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
+        let range_box =
+            Box::new(range.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
 
         match uacalc::alg::Homomorphism::new_safe(domain_box, range_box, map) {
             Ok(inner) => Ok(PyHomomorphism {
@@ -46,6 +48,24 @@ impl PyHomomorphism {
                 range_map: range.element_map().cloned(),
             }),
             Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+
+    /// Java constructor: store the map with no domain/range validation.
+    #[staticmethod]
+    fn new_java(
+        domain: &PyBasicAlgebra,
+        range: &PyBasicAlgebra,
+        map: std::collections::HashMap<usize, usize>,
+    ) -> Self {
+        let domain_box = Box::new(domain.inner.clone())
+            as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
+        let range_box =
+            Box::new(range.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
+        PyHomomorphism {
+            inner: uacalc::alg::Homomorphism::new_java(domain_box, range_box, map),
+            domain_map: domain.element_map().cloned(),
+            range_map: range.element_map().cloned(),
         }
     }
 
@@ -96,7 +116,7 @@ impl PyHomomorphism {
                 }
                 Ok(py_int_arrays)
             }
-            Err(e) => Err(PyValueError::new_err(e))
+            Err(e) => Err(PyValueError::new_err(e)),
         }
     }
 
@@ -115,7 +135,7 @@ impl PyHomomorphism {
             uacalc::alg::BasicAlgebra::new(
                 domain.name().to_string(),
                 domain.universe().collect(),
-                domain.operations()
+                domain.operations(),
             ),
             self.domain_map.clone(),
         )
@@ -126,7 +146,8 @@ impl PyHomomorphism {
     /// Args:
     ///     domain (BasicAlgebra): The new domain algebra
     fn set_domain(&mut self, domain: &PyBasicAlgebra) {
-        let domain_box = Box::new(domain.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
+        let domain_box = Box::new(domain.inner.clone())
+            as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
         self.inner.set_domain(domain_box);
         self.domain_map = domain.element_map().cloned();
     }
@@ -146,7 +167,7 @@ impl PyHomomorphism {
             uacalc::alg::BasicAlgebra::new(
                 range.name().to_string(),
                 range.universe().collect(),
-                range.operations()
+                range.operations(),
             ),
             self.range_map.clone(),
         )
@@ -157,7 +178,8 @@ impl PyHomomorphism {
     /// Args:
     ///     range (BasicAlgebra): The new range algebra
     fn set_range(&mut self, range: &PyBasicAlgebra) {
-        let range_box = Box::new(range.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
+        let range_box =
+            Box::new(range.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
         self.inner.set_range(range_box);
         self.range_map = range.element_map().cloned();
     }
@@ -191,15 +213,15 @@ impl PyHomomorphism {
     /// Python equality comparison
     fn __eq__(&self, other: &PyHomomorphism) -> bool {
         // Compare basic properties since we can't easily compare the full structure
-        self.inner.get_domain().name() == other.inner.get_domain().name() &&
-        self.inner.get_range().name() == other.inner.get_range().name() &&
-        self.inner.get_map() == other.inner.get_map()
+        self.inner.get_domain().name() == other.inner.get_domain().name()
+            && self.inner.get_range().name() == other.inner.get_range().name()
+            && self.inner.get_map() == other.inner.get_map()
     }
 }
 
 impl PyHomomorphism {
     /// Create a PyHomomorphism from an existing Homomorphism.
-    /// 
+    ///
     /// This is used internally when converting Rust Homomorphism objects
     /// to Python objects.
     pub fn from_inner(inner: uacalc::alg::Homomorphism) -> Self {
