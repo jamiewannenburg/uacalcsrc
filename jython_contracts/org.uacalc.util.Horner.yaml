@@ -1,0 +1,34 @@
+target: org.uacalc.util.Horner
+level: file
+status: implemented
+java_source: org/uacalc/util/Horner.java
+notes: |
+  All overloads: horner(int[], int[]), horner(int[], int), horner(Integer[], int),
+  hornerInv(k, sizes[, dest]), hornerInv(k, size, length[, dest]),
+  reverseArray, leftRightReverse.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    horner: horner
+    hornerInv: hornerInv
+    reverseArray: reverseArray
+    leftRightReverse: leftRightReverse
+  static_methods:
+    - horner
+    - hornerInv
+    - reverseArray
+    - leftRightReverse
+  str_parity: false
+testing:
+  notes: |
+    Goldens cover encode/decode round-trips over many tuples and dest overloads.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/util_ops.py
+      covers:
+        - horner
+        - hornerInv
+        - reverseArray
+        - leftRightReverse
+      ignore_lines: []

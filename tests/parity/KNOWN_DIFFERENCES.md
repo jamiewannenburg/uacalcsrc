@@ -628,6 +628,41 @@ the org shim's `leftSide` / `rightSide` return term objects via
 
 ---
 
+## org.uacalc.util
+
+### IntArray.getArray live alias
+
+- **Java**: `getArray()` / `toArray()` return the live backing `int[]`; mutating it changes the IntArray.
+- **Python**: `uacalc_lib` IntArray is copy-on-write and returns a copy.
+- **Status**: Strict xfail (roadmap)
+- **Tests**: `ia_getarray_copy`
+- **Owner vs shim**: Owner/library — keep copy-on-write
+
+### IntArray.setIntArray replace
+
+- **Java**: `setIntArray(int[])` replaces the backing store and can change `universeSize`.
+- **Python**: shim can write same-length values via `set`; length change raises `UnsupportedOperationException`.
+- **Status**: Strict xfail (roadmap)
+- **Tests**: `ia_setintarray_replace`
+- **Owner vs shim**: Owner/library — copy-on-write IntArray
+
+### LongList.stream / parallelStream
+
+- **Java**: default Java 8 `Stream` / parallel stream over `get(k)`.
+- **Python**: not bound.
+- **Status**: Strict xfail
+- **Tests**: `ll_stream`
+- **Owner vs shim**: Out of scope (Java 8 Stream)
+
+### SimpleList serialization
+
+- **Java**: custom `writeObject` / `readObject` encodes the sharing graph.
+- **Python**: not bound. Core list ops (cons/first/rest/append/reverse) match.
+- **Status**: Documented gap (no golden case; cannot dual-run Java serialization)
+- **Owner vs shim**: Owner — serialization roadmap
+
+---
+
 ## org.uacalc.alg.Malcev
 
 Left alone, as specified. `minority_term` / `weak_nu_term` are not part of this

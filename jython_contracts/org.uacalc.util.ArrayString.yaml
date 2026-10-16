@@ -1,0 +1,23 @@
+target: org.uacalc.util.ArrayString
+level: file
+status: implemented
+java_source: org/uacalc/util/ArrayString.java
+notes: |
+  Recursive toString matching Java (no spaces after commas). null -> "null".
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    toString: toString
+  static_methods:
+    - toString
+  str_parity: true
+testing:
+  notes: |
+    Goldens cover flat, nested, empty, and null.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/util_ops.py
+      covers:
+        - toString
+      ignore_lines: []

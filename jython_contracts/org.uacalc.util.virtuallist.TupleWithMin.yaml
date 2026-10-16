@@ -1,0 +1,24 @@
+target: org.uacalc.util.virtuallist.TupleWithMin
+level: file
+status: implemented
+java_source: org/uacalc/util/virtuallist/TupleWithMin.java
+notes: |
+  TupleWithMin(arrayLen, base, min) get/size match LongList.intTuplesWithMin.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    get: get
+    size: size
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    Goldens dump the full small list and compare to LongList.intTuplesWithMin.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/util_ops.py
+      covers:
+        - get
+        - size
+      ignore_lines: []

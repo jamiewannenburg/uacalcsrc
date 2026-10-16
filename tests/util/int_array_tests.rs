@@ -498,20 +498,20 @@ fn test_arrays_not_equal() {
     );
 }
 
-/// Test error handling for invalid size
+/// Java `IntArray(0)` is a legal empty array.
 #[test]
-fn test_new_invalid_size() {
-    let result = IntArray::new(0);
-    assert!(result.is_err());
-    assert_eq!(result.unwrap_err(), "Array size cannot be zero");
+fn test_new_zero_size() {
+    let result = IntArray::new(0).unwrap();
+    assert_eq!(result.universe_size(), 0);
+    assert!(result.as_slice().is_empty());
 }
 
-/// Test error handling for empty array
+/// Java `IntArray(new int[0])` is a legal empty array.
 #[test]
 fn test_from_empty_array() {
-    let result = IntArray::from_array(vec![]);
-    assert!(result.is_err());
-    assert_eq!(result.unwrap_err(), "Array cannot be empty");
+    let result = IntArray::from_array(vec![]).unwrap();
+    assert_eq!(result.universe_size(), 0);
+    assert!(result.as_slice().is_empty());
 }
 
 /// Test error handling for invalid string

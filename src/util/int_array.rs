@@ -118,7 +118,7 @@ impl IntArray {
     /// * `size` - The size of the array
     /// 
     /// # Returns
-    /// * `Ok(IntArray)` - Successfully created array
+    /// * `Ok(IntArray)` - Successfully created array (size 0 is allowed, matching Java)
     /// * `Err(String)` - If size is invalid
     /// 
     /// # Examples
@@ -129,10 +129,6 @@ impl IntArray {
     /// assert_eq!(array.universe_size(), 5);
     /// ```
     pub fn new(size: usize) -> Result<Self, String> {
-        if size == 0 {
-            return Err("Array size cannot be zero".to_string());
-        }
-        
         Ok(IntArray {
             array: Arc::new(vec![0; size]),
             size,
@@ -145,8 +141,8 @@ impl IntArray {
     /// * `array` - The array to wrap
     /// 
     /// # Returns
-    /// * `Ok(IntArray)` - Successfully created array
-    /// * `Err(String)` - If array is empty
+    /// * `Ok(IntArray)` - Successfully created array (empty is allowed, matching Java)
+    /// * `Err(String)` - If construction fails
     /// 
     /// # Examples
     /// ```
@@ -156,10 +152,6 @@ impl IntArray {
     /// assert_eq!(array.universe_size(), 3);
     /// ```
     pub fn from_array(array: Vec<i32>) -> Result<Self, String> {
-        if array.is_empty() {
-            return Err("Array cannot be empty".to_string());
-        }
-        
         let size = array.len();
         Ok(IntArray {
             array: Arc::new(array),
@@ -402,8 +394,9 @@ mod tests {
     
     #[test]
     fn test_new_zero_size() {
-        let result = IntArray::new(0);
-        assert!(result.is_err());
+        let result = IntArray::new(0).unwrap();
+        assert_eq!(result.universe_size(), 0);
+        assert!(result.as_slice().is_empty());
     }
     
     #[test]
@@ -415,8 +408,9 @@ mod tests {
     
     #[test]
     fn test_from_empty_array() {
-        let result = IntArray::from_array(vec![]);
-        assert!(result.is_err());
+        let result = IntArray::from_array(vec![]).unwrap();
+        assert_eq!(result.universe_size(), 0);
+        assert!(result.as_slice().is_empty());
     }
     
     #[test]
@@ -544,8 +538,8 @@ mod tests {
         let array = IntArray::from_array(vec![1, 2, 3]).unwrap();
         assert_eq!(array.to_string(), "[1, 2, 3]");
         
-        let _empty_array = IntArray::from_array(vec![]).unwrap_err();
-        // This should fail since we don't allow empty arrays
+        let empty_array = IntArray::from_array(vec![]).unwrap();
+        assert_eq!(empty_array.to_string(), "[]");
     }
     
     #[test]
