@@ -1,0 +1,26 @@
+target: org.uacalc.alg.op.TermOperation
+level: file
+status: implemented
+java_source: org/uacalc/alg/op/TermOperation.java
+notes: |
+  Java interface. CPython instances are TermOperationImp. getTerm returns the
+  original Term object; getOrderedVariables returns the Variable list passed
+  to the constructor.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    getTerm: get_term
+    getOrderedVariables: get_ordered_variables
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    Exercised via TermOperationImp goldens on several small algebras.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/op_leftovers.py
+      covers:
+        - getTerm
+        - getOrderedVariables
+      ignore_lines: []

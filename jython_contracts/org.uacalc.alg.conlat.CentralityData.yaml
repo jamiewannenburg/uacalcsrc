@@ -1,0 +1,45 @@
+target: org.uacalc.alg.conlat.CentralityData
+level: file
+status: implemented
+java_source: org/uacalc/alg/conlat/CentralityData.java
+notes: |
+  Constructor plus getLeft/getRight/getDelta/compareTo. Failure
+  getters/setters are stored on the org wrapper (uacalc_lib has no
+  SubProductElement failure fields). toString matches Java including
+  null failures. main is not wrapped.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    getLeft: left
+    getRight: right
+    getDelta: delta
+    compareTo: compare_to
+    getCentralityFailure: getCentralityFailure
+    setCentralityFailure: setCentralityFailure
+    getWeakCentralityFailure: getWeakCentralityFailure
+    setWeakCentralityFailure: setWeakCentralityFailure
+    getStrongRectangularityFailure: getStrongRectangularityFailure
+    setStrongRectangularityFailure: setStrongRectangularityFailure
+    toString: toString
+  static_methods: []
+  str_parity: true
+testing:
+  notes: |
+    Goldens cover constructor, accessors, compareTo, failure set/get, toString.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/conlat_leftovers.py
+      covers:
+        - getLeft
+        - getRight
+        - getDelta
+        - compareTo
+        - getCentralityFailure
+        - setCentralityFailure
+        - getWeakCentralityFailure
+        - setWeakCentralityFailure
+        - getStrongRectangularityFailure
+        - setStrongRectangularityFailure
+        - toString
+      ignore_lines: []

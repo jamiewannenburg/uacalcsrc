@@ -66,6 +66,53 @@ _CLASS_ALIASES = {
         "meetIrreducible": "meet_irreducible",
         "inputSize": "input_size",
     },
+    "BinaryRelation": {
+        "universeSize": "universe_size",
+        "isRelated": "is_related",
+        "getPairs": "get_pairs",
+        "compose": "compose",
+    },
+    "BasicBinaryRelation": {
+        "universeSize": "universe_size",
+        "isRelated": "is_related",
+        "getPairs": "get_pairs",
+        "compose": "compose",
+        "compareTo": "compareTo",
+        "isReflexive": "is_reflexive",
+        "isSymmetric": "is_symmetric",
+        "toString": "toString",
+    },
+    "Subtrace": {
+        "hasInvolution": "has_involution",
+        "getSubtraceUniverse": "get_subtrace_universe",
+        "setSubtraceUniverse": "set_subtrace_universe",
+        "getMatrixUniverse": "get_matrix_universe",
+        "setMatrixUniverse": "set_matrix_universe",
+        "setType": "set_type",
+        "toString": "toString",
+    },
+    "CentralityData": {
+        "getLeft": "left",
+        "getRight": "right",
+        "getDelta": "delta",
+        "compareTo": "compare_to",
+        "getCentralityFailure": "getCentralityFailure",
+        "setCentralityFailure": "setCentralityFailure",
+        "getWeakCentralityFailure": "getWeakCentralityFailure",
+        "setWeakCentralityFailure": "setWeakCentralityFailure",
+        "getStrongRectangularityFailure": "getStrongRectangularityFailure",
+        "setStrongRectangularityFailure": "setStrongRectangularityFailure",
+        "toString": "toString",
+    },
+    "TypeFinder": {
+        "init": "init",
+        "findTypeSet": "find_type_set",
+        "isSubtrace": "is_subtrace",
+        "findSubtrace": "find_subtrace",
+        "findType": "find_type",
+        "nextPairForSubtrace": "nextPairForSubtrace",
+    },
+    "Polymorphisms": {},
 }
 
 
@@ -91,7 +138,18 @@ def _load_cp() -> None:
     _install_jython_compat(globals())
 
     # Keep org.uacalc.alg facades in sync with this package.
-    for name in ("Partition", "BasicPartition", "CongruenceLattice", "PrintType"):
+    for name in (
+        "Partition",
+        "BasicPartition",
+        "CongruenceLattice",
+        "PrintType",
+        "BinaryRelation",
+        "BasicBinaryRelation",
+        "CentralityData",
+        "Polymorphisms",
+        "Subtrace",
+        "TypeFinder",
+    ):
         if name in globals():
             setattr(_alg, name, globals()[name])
 

@@ -1,13 +1,735 @@
 {
   "metadata": {
-    "generated_at": "2026-10-13T15:40:25.282591+00:00",
+    "generated_at": "2026-10-16T22:50:45.487380+00:00",
     "jar": "uacalc.jar",
     "package": "org.uacalc.alg_op",
     "runtime": "jython",
-    "test_cases": 81,
+    "test_cases": 112,
     "type": "package"
   },
   "test_cases": [
+    {
+      "args": [],
+      "call": "aio_sym.getSetSize()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "AbstractIntOperation(symbol, size) getSetSize",
+      "expected_exception": null,
+      "id": "aio_sym_size",
+      "kwargs": {},
+      "method": "AbstractIntOperation.getSetSize",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 3,
+        "string_repr": "3",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, OperationSymbol, OperationWithDefaultValue,\n    Operations, ParameterizedOperation, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nplus2 = OperationSymbol(\"+\", 2)\njoin2 = OperationSymbol(\"join\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nterm_c2 = NonVariableTerm(plus2, _varlist(x, y))\nterm_lat = NonVariableTerm(join2, _varlist(x, y))\ntoi_c2 = TermOperationImp(term_c2, _varlist(x, y), c2)\ntoi_c3 = TermOperationImp(term_c2, _varlist(x, y), c3)\ntoi_lat = TermOperationImp(term_lat, _varlist(x, y), lat2)\ntoi_named = TermOperationImp(\"plusTerm\", term_c2, _varlist(x, y), c2)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\naio_name = AbstractIntOperation(\"f\", 1, 4)\n\ndef _set_parm(obj, name, value):\n    try:\n        f = obj.getClass().getDeclaredField(name)\n        f.setAccessible(True)\n        f.set(obj, value)\n        return\n    except Exception:\n        pass\n    setattr(obj, name, value)\n\nparm = ParameterizedOperation()\n_set_parm(parm, \"symbolName\", \"m\")\n_set_parm(parm, \"arityExp\", \"2\")\n_set_parm(parm, \"setSizeExp\", \"3\")\n_set_parm(parm, \"definitionExp\", \"x\")\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_xor = OperationWithDefaultValue(xor)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\n\nclass PlusOp(AbstractIntOperation):\n    def intValueAt(self, args):\n        return (int(args[0]) + int(args[1])) % self.getSetSize()\nplus_op = PlusOp(\"plus\", 2, 3)\n\ndef _vars(lst):\n    return [str(v) for v in list(lst)]\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(x) for x in list(t)]\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "[aio_name.getSetSize(), aio_name.arity()]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "AbstractIntOperation(name, arity, size)",
+      "expected_exception": null,
+      "id": "aio_name_arity",
+      "kwargs": {},
+      "method": "AbstractIntOperation.arity",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          4,
+          1
+        ],
+        "string_repr": "[4, 1]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, OperationSymbol, OperationWithDefaultValue,\n    Operations, ParameterizedOperation, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nplus2 = OperationSymbol(\"+\", 2)\njoin2 = OperationSymbol(\"join\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nterm_c2 = NonVariableTerm(plus2, _varlist(x, y))\nterm_lat = NonVariableTerm(join2, _varlist(x, y))\ntoi_c2 = TermOperationImp(term_c2, _varlist(x, y), c2)\ntoi_c3 = TermOperationImp(term_c2, _varlist(x, y), c3)\ntoi_lat = TermOperationImp(term_lat, _varlist(x, y), lat2)\ntoi_named = TermOperationImp(\"plusTerm\", term_c2, _varlist(x, y), c2)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\naio_name = AbstractIntOperation(\"f\", 1, 4)\n\ndef _set_parm(obj, name, value):\n    try:\n        f = obj.getClass().getDeclaredField(name)\n        f.setAccessible(True)\n        f.set(obj, value)\n        return\n    except Exception:\n        pass\n    setattr(obj, name, value)\n\nparm = ParameterizedOperation()\n_set_parm(parm, \"symbolName\", \"m\")\n_set_parm(parm, \"arityExp\", \"2\")\n_set_parm(parm, \"setSizeExp\", \"3\")\n_set_parm(parm, \"definitionExp\", \"x\")\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_xor = OperationWithDefaultValue(xor)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\n\nclass PlusOp(AbstractIntOperation):\n    def intValueAt(self, args):\n        return (int(args[0]) + int(args[1])) % self.getSetSize()\nplus_op = PlusOp(\"plus\", 2, 3)\n\ndef _vars(lst):\n    return [str(v) for v in list(lst)]\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(x) for x in list(t)]\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "aio_sym.valueAt([0, 1])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "valueAt is UOE",
+      "expected_exception": "UnsupportedOperationException",
+      "id": "aio_value_at_uoe",
+      "kwargs": {},
+      "method": "AbstractIntOperation.valueAt",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.UnsupportedOperationException",
+          "type": "UnsupportedOperationException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, OperationSymbol, OperationWithDefaultValue,\n    Operations, ParameterizedOperation, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nplus2 = OperationSymbol(\"+\", 2)\njoin2 = OperationSymbol(\"join\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nterm_c2 = NonVariableTerm(plus2, _varlist(x, y))\nterm_lat = NonVariableTerm(join2, _varlist(x, y))\ntoi_c2 = TermOperationImp(term_c2, _varlist(x, y), c2)\ntoi_c3 = TermOperationImp(term_c2, _varlist(x, y), c3)\ntoi_lat = TermOperationImp(term_lat, _varlist(x, y), lat2)\ntoi_named = TermOperationImp(\"plusTerm\", term_c2, _varlist(x, y), c2)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\naio_name = AbstractIntOperation(\"f\", 1, 4)\n\ndef _set_parm(obj, name, value):\n    try:\n        f = obj.getClass().getDeclaredField(name)\n        f.setAccessible(True)\n        f.set(obj, value)\n        return\n    except Exception:\n        pass\n    setattr(obj, name, value)\n\nparm = ParameterizedOperation()\n_set_parm(parm, \"symbolName\", \"m\")\n_set_parm(parm, \"arityExp\", \"2\")\n_set_parm(parm, \"setSizeExp\", \"3\")\n_set_parm(parm, \"definitionExp\", \"x\")\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_xor = OperationWithDefaultValue(xor)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\n\nclass PlusOp(AbstractIntOperation):\n    def intValueAt(self, args):\n        return (int(args[0]) + int(args[1])) % self.getSetSize()\nplus_op = PlusOp(\"plus\", 2, 3)\n\ndef _vars(lst):\n    return [str(v) for v in list(lst)]\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(x) for x in list(t)]\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "aio_sym.intValueAt([0, 1])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "intValueAt is UOE unless subclassed",
+      "expected_exception": "UnsupportedOperationException",
+      "id": "aio_int_value_at_uoe",
+      "kwargs": {},
+      "method": "AbstractIntOperation.intValueAt",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.UnsupportedOperationException",
+          "type": "UnsupportedOperationException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, OperationSymbol, OperationWithDefaultValue,\n    Operations, ParameterizedOperation, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nplus2 = OperationSymbol(\"+\", 2)\njoin2 = OperationSymbol(\"join\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nterm_c2 = NonVariableTerm(plus2, _varlist(x, y))\nterm_lat = NonVariableTerm(join2, _varlist(x, y))\ntoi_c2 = TermOperationImp(term_c2, _varlist(x, y), c2)\ntoi_c3 = TermOperationImp(term_c2, _varlist(x, y), c3)\ntoi_lat = TermOperationImp(term_lat, _varlist(x, y), lat2)\ntoi_named = TermOperationImp(\"plusTerm\", term_c2, _varlist(x, y), c2)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\naio_name = AbstractIntOperation(\"f\", 1, 4)\n\ndef _set_parm(obj, name, value):\n    try:\n        f = obj.getClass().getDeclaredField(name)\n        f.setAccessible(True)\n        f.set(obj, value)\n        return\n    except Exception:\n        pass\n    setattr(obj, name, value)\n\nparm = ParameterizedOperation()\n_set_parm(parm, \"symbolName\", \"m\")\n_set_parm(parm, \"arityExp\", \"2\")\n_set_parm(parm, \"setSizeExp\", \"3\")\n_set_parm(parm, \"definitionExp\", \"x\")\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_xor = OperationWithDefaultValue(xor)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\n\nclass PlusOp(AbstractIntOperation):\n    def intValueAt(self, args):\n        return (int(args[0]) + int(args[1])) % self.getSetSize()\nplus_op = PlusOp(\"plus\", 2, 3)\n\ndef _vars(lst):\n    return [str(v) for v in list(lst)]\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(x) for x in list(t)]\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "plus_op.intValueAt([1, 2])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "subclass intValueAt plus mod 3",
+      "expected_exception": null,
+      "id": "aio_subclass_iva",
+      "kwargs": {},
+      "method": "AbstractIntOperation.intValueAt",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 0,
+        "string_repr": "0",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, OperationSymbol, OperationWithDefaultValue,\n    Operations, ParameterizedOperation, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nplus2 = OperationSymbol(\"+\", 2)\njoin2 = OperationSymbol(\"join\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nterm_c2 = NonVariableTerm(plus2, _varlist(x, y))\nterm_lat = NonVariableTerm(join2, _varlist(x, y))\ntoi_c2 = TermOperationImp(term_c2, _varlist(x, y), c2)\ntoi_c3 = TermOperationImp(term_c2, _varlist(x, y), c3)\ntoi_lat = TermOperationImp(term_lat, _varlist(x, y), lat2)\ntoi_named = TermOperationImp(\"plusTerm\", term_c2, _varlist(x, y), c2)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\naio_name = AbstractIntOperation(\"f\", 1, 4)\n\ndef _set_parm(obj, name, value):\n    try:\n        f = obj.getClass().getDeclaredField(name)\n        f.setAccessible(True)\n        f.set(obj, value)\n        return\n    except Exception:\n        pass\n    setattr(obj, name, value)\n\nparm = ParameterizedOperation()\n_set_parm(parm, \"symbolName\", \"m\")\n_set_parm(parm, \"arityExp\", \"2\")\n_set_parm(parm, \"setSizeExp\", \"3\")\n_set_parm(parm, \"definitionExp\", \"x\")\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_xor = OperationWithDefaultValue(xor)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\n\nclass PlusOp(AbstractIntOperation):\n    def intValueAt(self, args):\n        return (int(args[0]) + int(args[1])) % self.getSetSize()\nplus_op = PlusOp(\"plus\", 2, 3)\n\ndef _vars(lst):\n    return [str(v) for v in list(lst)]\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(x) for x in list(t)]\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "str(toi_c2.getTerm()).replace(' ', '')",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "TermOperationImp getTerm on cyclic2 +",
+      "expected_exception": null,
+      "id": "toi_c2_term",
+      "kwargs": {},
+      "method": "TermOperation.getTerm",
+      "notes": "",
+      "result": {
+        "return_type": "str",
+        "return_value": "+(x,y)",
+        "string_repr": "+(x,y)",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, OperationSymbol, OperationWithDefaultValue,\n    Operations, ParameterizedOperation, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nplus2 = OperationSymbol(\"+\", 2)\njoin2 = OperationSymbol(\"join\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nterm_c2 = NonVariableTerm(plus2, _varlist(x, y))\nterm_lat = NonVariableTerm(join2, _varlist(x, y))\ntoi_c2 = TermOperationImp(term_c2, _varlist(x, y), c2)\ntoi_c3 = TermOperationImp(term_c2, _varlist(x, y), c3)\ntoi_lat = TermOperationImp(term_lat, _varlist(x, y), lat2)\ntoi_named = TermOperationImp(\"plusTerm\", term_c2, _varlist(x, y), c2)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\naio_name = AbstractIntOperation(\"f\", 1, 4)\n\ndef _set_parm(obj, name, value):\n    try:\n        f = obj.getClass().getDeclaredField(name)\n        f.setAccessible(True)\n        f.set(obj, value)\n        return\n    except Exception:\n        pass\n    setattr(obj, name, value)\n\nparm = ParameterizedOperation()\n_set_parm(parm, \"symbolName\", \"m\")\n_set_parm(parm, \"arityExp\", \"2\")\n_set_parm(parm, \"setSizeExp\", \"3\")\n_set_parm(parm, \"definitionExp\", \"x\")\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_xor = OperationWithDefaultValue(xor)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\n\nclass PlusOp(AbstractIntOperation):\n    def intValueAt(self, args):\n        return (int(args[0]) + int(args[1])) % self.getSetSize()\nplus_op = PlusOp(\"plus\", 2, 3)\n\ndef _vars(lst):\n    return [str(v) for v in list(lst)]\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(x) for x in list(t)]\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_vars(toi_c2.getOrderedVariables())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getOrderedVariables [x, y]",
+      "expected_exception": null,
+      "id": "toi_c2_vars",
+      "kwargs": {},
+      "method": "TermOperation.getOrderedVariables",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "x",
+          "y"
+        ],
+        "string_repr": "['x', 'y']",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, OperationSymbol, OperationWithDefaultValue,\n    Operations, ParameterizedOperation, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nplus2 = OperationSymbol(\"+\", 2)\njoin2 = OperationSymbol(\"join\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nterm_c2 = NonVariableTerm(plus2, _varlist(x, y))\nterm_lat = NonVariableTerm(join2, _varlist(x, y))\ntoi_c2 = TermOperationImp(term_c2, _varlist(x, y), c2)\ntoi_c3 = TermOperationImp(term_c2, _varlist(x, y), c3)\ntoi_lat = TermOperationImp(term_lat, _varlist(x, y), lat2)\ntoi_named = TermOperationImp(\"plusTerm\", term_c2, _varlist(x, y), c2)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\naio_name = AbstractIntOperation(\"f\", 1, 4)\n\ndef _set_parm(obj, name, value):\n    try:\n        f = obj.getClass().getDeclaredField(name)\n        f.setAccessible(True)\n        f.set(obj, value)\n        return\n    except Exception:\n        pass\n    setattr(obj, name, value)\n\nparm = ParameterizedOperation()\n_set_parm(parm, \"symbolName\", \"m\")\n_set_parm(parm, \"arityExp\", \"2\")\n_set_parm(parm, \"setSizeExp\", \"3\")\n_set_parm(parm, \"definitionExp\", \"x\")\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_xor = OperationWithDefaultValue(xor)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\n\nclass PlusOp(AbstractIntOperation):\n    def intValueAt(self, args):\n        return (int(args[0]) + int(args[1])) % self.getSetSize()\nplus_op = PlusOp(\"plus\", 2, 3)\n\ndef _vars(lst):\n    return [str(v) for v in list(lst)]\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(x) for x in list(t)]\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "[toi_c2.intValueAt([0,0]), toi_c2.intValueAt([0,1]), toi_c2.intValueAt([1,0]), toi_c2.intValueAt([1,1])]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "cyclic2 + table via TermOperationImp",
+      "expected_exception": null,
+      "id": "toi_c2_iva",
+      "kwargs": {},
+      "method": "TermOperationImp.intValueAt",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          0,
+          1,
+          1,
+          0
+        ],
+        "string_repr": "[0, 1, 1, 0]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, OperationSymbol, OperationWithDefaultValue,\n    Operations, ParameterizedOperation, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nplus2 = OperationSymbol(\"+\", 2)\njoin2 = OperationSymbol(\"join\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nterm_c2 = NonVariableTerm(plus2, _varlist(x, y))\nterm_lat = NonVariableTerm(join2, _varlist(x, y))\ntoi_c2 = TermOperationImp(term_c2, _varlist(x, y), c2)\ntoi_c3 = TermOperationImp(term_c2, _varlist(x, y), c3)\ntoi_lat = TermOperationImp(term_lat, _varlist(x, y), lat2)\ntoi_named = TermOperationImp(\"plusTerm\", term_c2, _varlist(x, y), c2)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\naio_name = AbstractIntOperation(\"f\", 1, 4)\n\ndef _set_parm(obj, name, value):\n    try:\n        f = obj.getClass().getDeclaredField(name)\n        f.setAccessible(True)\n        f.set(obj, value)\n        return\n    except Exception:\n        pass\n    setattr(obj, name, value)\n\nparm = ParameterizedOperation()\n_set_parm(parm, \"symbolName\", \"m\")\n_set_parm(parm, \"arityExp\", \"2\")\n_set_parm(parm, \"setSizeExp\", \"3\")\n_set_parm(parm, \"definitionExp\", \"x\")\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_xor = OperationWithDefaultValue(xor)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\n\nclass PlusOp(AbstractIntOperation):\n    def intValueAt(self, args):\n        return (int(args[0]) + int(args[1])) % self.getSetSize()\nplus_op = PlusOp(\"plus\", 2, 3)\n\ndef _vars(lst):\n    return [str(v) for v in list(lst)]\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(x) for x in list(t)]\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "toi_c2.valueAt([1, 1])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "valueAt(List) is the Java interpretation stub (null)",
+      "expected_exception": null,
+      "id": "toi_c2_value_at",
+      "kwargs": {},
+      "method": "TermOperationImp.valueAt",
+      "notes": "Java null vs Python None.",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, OperationSymbol, OperationWithDefaultValue,\n    Operations, ParameterizedOperation, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nplus2 = OperationSymbol(\"+\", 2)\njoin2 = OperationSymbol(\"join\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nterm_c2 = NonVariableTerm(plus2, _varlist(x, y))\nterm_lat = NonVariableTerm(join2, _varlist(x, y))\ntoi_c2 = TermOperationImp(term_c2, _varlist(x, y), c2)\ntoi_c3 = TermOperationImp(term_c2, _varlist(x, y), c3)\ntoi_lat = TermOperationImp(term_lat, _varlist(x, y), lat2)\ntoi_named = TermOperationImp(\"plusTerm\", term_c2, _varlist(x, y), c2)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\naio_name = AbstractIntOperation(\"f\", 1, 4)\n\ndef _set_parm(obj, name, value):\n    try:\n        f = obj.getClass().getDeclaredField(name)\n        f.setAccessible(True)\n        f.set(obj, value)\n        return\n    except Exception:\n        pass\n    setattr(obj, name, value)\n\nparm = ParameterizedOperation()\n_set_parm(parm, \"symbolName\", \"m\")\n_set_parm(parm, \"arityExp\", \"2\")\n_set_parm(parm, \"setSizeExp\", \"3\")\n_set_parm(parm, \"definitionExp\", \"x\")\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_xor = OperationWithDefaultValue(xor)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\n\nclass PlusOp(AbstractIntOperation):\n    def intValueAt(self, args):\n        return (int(args[0]) + int(args[1])) % self.getSetSize()\nplus_op = PlusOp(\"plus\", 2, 3)\n\ndef _vars(lst):\n    return [str(v) for v in list(lst)]\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(x) for x in list(t)]\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "toi_c2.getTable()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getTable() NPEs until interpretation makeTable (Java stub)",
+      "expected_exception": "NullPointerException",
+      "id": "toi_get_table_npe",
+      "kwargs": {},
+      "method": "TermOperationImp.getTable",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.NullPointerException: Cannot invoke \"org.uacalc.alg.op.Operation.getTable()\" because \"this.tableOp\" is null",
+          "type": "NullPointerException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, OperationSymbol, OperationWithDefaultValue,\n    Operations, ParameterizedOperation, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nplus2 = OperationSymbol(\"+\", 2)\njoin2 = OperationSymbol(\"join\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nterm_c2 = NonVariableTerm(plus2, _varlist(x, y))\nterm_lat = NonVariableTerm(join2, _varlist(x, y))\ntoi_c2 = TermOperationImp(term_c2, _varlist(x, y), c2)\ntoi_c3 = TermOperationImp(term_c2, _varlist(x, y), c3)\ntoi_lat = TermOperationImp(term_lat, _varlist(x, y), lat2)\ntoi_named = TermOperationImp(\"plusTerm\", term_c2, _varlist(x, y), c2)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\naio_name = AbstractIntOperation(\"f\", 1, 4)\n\ndef _set_parm(obj, name, value):\n    try:\n        f = obj.getClass().getDeclaredField(name)\n        f.setAccessible(True)\n        f.set(obj, value)\n        return\n    except Exception:\n        pass\n    setattr(obj, name, value)\n\nparm = ParameterizedOperation()\n_set_parm(parm, \"symbolName\", \"m\")\n_set_parm(parm, \"arityExp\", \"2\")\n_set_parm(parm, \"setSizeExp\", \"3\")\n_set_parm(parm, \"definitionExp\", \"x\")\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_xor = OperationWithDefaultValue(xor)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\n\nclass PlusOp(AbstractIntOperation):\n    def intValueAt(self, args):\n        return (int(args[0]) + int(args[1])) % self.getSetSize()\nplus_op = PlusOp(\"plus\", 2, 3)\n\ndef _vars(lst):\n    return [str(v) for v in list(lst)]\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(x) for x in list(t)]\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "[int(x) for x in list(toi_c2.getTable(True))]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getTable(True) builds the + table on cyclic2",
+      "expected_exception": null,
+      "id": "toi_get_table_true",
+      "kwargs": {},
+      "method": "TermOperationImp.getTable",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          0,
+          1,
+          1,
+          0
+        ],
+        "string_repr": "[0, 1, 1, 0]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, OperationSymbol, OperationWithDefaultValue,\n    Operations, ParameterizedOperation, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nplus2 = OperationSymbol(\"+\", 2)\njoin2 = OperationSymbol(\"join\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nterm_c2 = NonVariableTerm(plus2, _varlist(x, y))\nterm_lat = NonVariableTerm(join2, _varlist(x, y))\ntoi_c2 = TermOperationImp(term_c2, _varlist(x, y), c2)\ntoi_c3 = TermOperationImp(term_c2, _varlist(x, y), c3)\ntoi_lat = TermOperationImp(term_lat, _varlist(x, y), lat2)\ntoi_named = TermOperationImp(\"plusTerm\", term_c2, _varlist(x, y), c2)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\naio_name = AbstractIntOperation(\"f\", 1, 4)\n\ndef _set_parm(obj, name, value):\n    try:\n        f = obj.getClass().getDeclaredField(name)\n        f.setAccessible(True)\n        f.set(obj, value)\n        return\n    except Exception:\n        pass\n    setattr(obj, name, value)\n\nparm = ParameterizedOperation()\n_set_parm(parm, \"symbolName\", \"m\")\n_set_parm(parm, \"arityExp\", \"2\")\n_set_parm(parm, \"setSizeExp\", \"3\")\n_set_parm(parm, \"definitionExp\", \"x\")\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_xor = OperationWithDefaultValue(xor)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\n\nclass PlusOp(AbstractIntOperation):\n    def intValueAt(self, args):\n        return (int(args[0]) + int(args[1])) % self.getSetSize()\nplus_op = PlusOp(\"plus\", 2, 3)\n\ndef _vars(lst):\n    return [str(v) for v in list(lst)]\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(x) for x in list(t)]\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "toi_c2.toString().replace(' ', '')",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "toString is the term",
+      "expected_exception": null,
+      "id": "toi_c2_str",
+      "kwargs": {},
+      "method": "TermOperationImp.toString",
+      "notes": "",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "+(x,y)",
+        "string_repr": "+(x,y)",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, OperationSymbol, OperationWithDefaultValue,\n    Operations, ParameterizedOperation, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nplus2 = OperationSymbol(\"+\", 2)\njoin2 = OperationSymbol(\"join\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nterm_c2 = NonVariableTerm(plus2, _varlist(x, y))\nterm_lat = NonVariableTerm(join2, _varlist(x, y))\ntoi_c2 = TermOperationImp(term_c2, _varlist(x, y), c2)\ntoi_c3 = TermOperationImp(term_c2, _varlist(x, y), c3)\ntoi_lat = TermOperationImp(term_lat, _varlist(x, y), lat2)\ntoi_named = TermOperationImp(\"plusTerm\", term_c2, _varlist(x, y), c2)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\naio_name = AbstractIntOperation(\"f\", 1, 4)\n\ndef _set_parm(obj, name, value):\n    try:\n        f = obj.getClass().getDeclaredField(name)\n        f.setAccessible(True)\n        f.set(obj, value)\n        return\n    except Exception:\n        pass\n    setattr(obj, name, value)\n\nparm = ParameterizedOperation()\n_set_parm(parm, \"symbolName\", \"m\")\n_set_parm(parm, \"arityExp\", \"2\")\n_set_parm(parm, \"setSizeExp\", \"3\")\n_set_parm(parm, \"definitionExp\", \"x\")\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_xor = OperationWithDefaultValue(xor)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\n\nclass PlusOp(AbstractIntOperation):\n    def intValueAt(self, args):\n        return (int(args[0]) + int(args[1])) % self.getSetSize()\nplus_op = PlusOp(\"plus\", 2, 3)\n\ndef _vars(lst):\n    return [str(v) for v in list(lst)]\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(x) for x in list(t)]\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "[toi_c3.intValueAt([1,2]), toi_c3.intValueAt([2,2])]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "cyclic3 + via TermOperationImp",
+      "expected_exception": null,
+      "id": "toi_c3_iva",
+      "kwargs": {},
+      "method": "TermOperationImp.intValueAt",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          0,
+          1
+        ],
+        "string_repr": "[0, 1]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, OperationSymbol, OperationWithDefaultValue,\n    Operations, ParameterizedOperation, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nplus2 = OperationSymbol(\"+\", 2)\njoin2 = OperationSymbol(\"join\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nterm_c2 = NonVariableTerm(plus2, _varlist(x, y))\nterm_lat = NonVariableTerm(join2, _varlist(x, y))\ntoi_c2 = TermOperationImp(term_c2, _varlist(x, y), c2)\ntoi_c3 = TermOperationImp(term_c2, _varlist(x, y), c3)\ntoi_lat = TermOperationImp(term_lat, _varlist(x, y), lat2)\ntoi_named = TermOperationImp(\"plusTerm\", term_c2, _varlist(x, y), c2)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\naio_name = AbstractIntOperation(\"f\", 1, 4)\n\ndef _set_parm(obj, name, value):\n    try:\n        f = obj.getClass().getDeclaredField(name)\n        f.setAccessible(True)\n        f.set(obj, value)\n        return\n    except Exception:\n        pass\n    setattr(obj, name, value)\n\nparm = ParameterizedOperation()\n_set_parm(parm, \"symbolName\", \"m\")\n_set_parm(parm, \"arityExp\", \"2\")\n_set_parm(parm, \"setSizeExp\", \"3\")\n_set_parm(parm, \"definitionExp\", \"x\")\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_xor = OperationWithDefaultValue(xor)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\n\nclass PlusOp(AbstractIntOperation):\n    def intValueAt(self, args):\n        return (int(args[0]) + int(args[1])) % self.getSetSize()\nplus_op = PlusOp(\"plus\", 2, 3)\n\ndef _vars(lst):\n    return [str(v) for v in list(lst)]\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(x) for x in list(t)]\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "[toi_lat.intValueAt([0,1]), toi_lat.intValueAt([1,1])]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "lat2 join via TermOperationImp",
+      "expected_exception": null,
+      "id": "toi_lat_iva",
+      "kwargs": {},
+      "method": "TermOperationImp.intValueAt",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          1,
+          1
+        ],
+        "string_repr": "[1, 1]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, OperationSymbol, OperationWithDefaultValue,\n    Operations, ParameterizedOperation, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nplus2 = OperationSymbol(\"+\", 2)\njoin2 = OperationSymbol(\"join\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nterm_c2 = NonVariableTerm(plus2, _varlist(x, y))\nterm_lat = NonVariableTerm(join2, _varlist(x, y))\ntoi_c2 = TermOperationImp(term_c2, _varlist(x, y), c2)\ntoi_c3 = TermOperationImp(term_c2, _varlist(x, y), c3)\ntoi_lat = TermOperationImp(term_lat, _varlist(x, y), lat2)\ntoi_named = TermOperationImp(\"plusTerm\", term_c2, _varlist(x, y), c2)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\naio_name = AbstractIntOperation(\"f\", 1, 4)\n\ndef _set_parm(obj, name, value):\n    try:\n        f = obj.getClass().getDeclaredField(name)\n        f.setAccessible(True)\n        f.set(obj, value)\n        return\n    except Exception:\n        pass\n    setattr(obj, name, value)\n\nparm = ParameterizedOperation()\n_set_parm(parm, \"symbolName\", \"m\")\n_set_parm(parm, \"arityExp\", \"2\")\n_set_parm(parm, \"setSizeExp\", \"3\")\n_set_parm(parm, \"definitionExp\", \"x\")\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_xor = OperationWithDefaultValue(xor)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\n\nclass PlusOp(AbstractIntOperation):\n    def intValueAt(self, args):\n        return (int(args[0]) + int(args[1])) % self.getSetSize()\nplus_op = PlusOp(\"plus\", 2, 3)\n\ndef _vars(lst):\n    return [str(v) for v in list(lst)]\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(x) for x in list(t)]\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "str(toi_named.getTerm()).replace(' ', '')",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "named TermOperationImp still exposes the term",
+      "expected_exception": null,
+      "id": "toi_named_term",
+      "kwargs": {},
+      "method": "TermOperationImp.getTerm",
+      "notes": "",
+      "result": {
+        "return_type": "str",
+        "return_value": "+(x,y)",
+        "string_repr": "+(x,y)",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, OperationSymbol, OperationWithDefaultValue,\n    Operations, ParameterizedOperation, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nplus2 = OperationSymbol(\"+\", 2)\njoin2 = OperationSymbol(\"join\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nterm_c2 = NonVariableTerm(plus2, _varlist(x, y))\nterm_lat = NonVariableTerm(join2, _varlist(x, y))\ntoi_c2 = TermOperationImp(term_c2, _varlist(x, y), c2)\ntoi_c3 = TermOperationImp(term_c2, _varlist(x, y), c3)\ntoi_lat = TermOperationImp(term_lat, _varlist(x, y), lat2)\ntoi_named = TermOperationImp(\"plusTerm\", term_c2, _varlist(x, y), c2)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\naio_name = AbstractIntOperation(\"f\", 1, 4)\n\ndef _set_parm(obj, name, value):\n    try:\n        f = obj.getClass().getDeclaredField(name)\n        f.setAccessible(True)\n        f.set(obj, value)\n        return\n    except Exception:\n        pass\n    setattr(obj, name, value)\n\nparm = ParameterizedOperation()\n_set_parm(parm, \"symbolName\", \"m\")\n_set_parm(parm, \"arityExp\", \"2\")\n_set_parm(parm, \"setSizeExp\", \"3\")\n_set_parm(parm, \"definitionExp\", \"x\")\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_xor = OperationWithDefaultValue(xor)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\n\nclass PlusOp(AbstractIntOperation):\n    def intValueAt(self, args):\n        return (int(args[0]) + int(args[1])) % self.getSetSize()\nplus_op = PlusOp(\"plus\", 2, 3)\n\ndef _vars(lst):\n    return [str(v) for v in list(lst)]\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(x) for x in list(t)]\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "ParameterizedOperation.subParmValues('n+1', {'n': '3'})",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "subParmValues is identity",
+      "expected_exception": null,
+      "id": "parm_sub",
+      "kwargs": {},
+      "method": "ParameterizedOperation.subParmValues",
+      "notes": "",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "n+1",
+        "string_repr": "n+1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, OperationSymbol, OperationWithDefaultValue,\n    Operations, ParameterizedOperation, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nplus2 = OperationSymbol(\"+\", 2)\njoin2 = OperationSymbol(\"join\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nterm_c2 = NonVariableTerm(plus2, _varlist(x, y))\nterm_lat = NonVariableTerm(join2, _varlist(x, y))\ntoi_c2 = TermOperationImp(term_c2, _varlist(x, y), c2)\ntoi_c3 = TermOperationImp(term_c2, _varlist(x, y), c3)\ntoi_lat = TermOperationImp(term_lat, _varlist(x, y), lat2)\ntoi_named = TermOperationImp(\"plusTerm\", term_c2, _varlist(x, y), c2)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\naio_name = AbstractIntOperation(\"f\", 1, 4)\n\ndef _set_parm(obj, name, value):\n    try:\n        f = obj.getClass().getDeclaredField(name)\n        f.setAccessible(True)\n        f.set(obj, value)\n        return\n    except Exception:\n        pass\n    setattr(obj, name, value)\n\nparm = ParameterizedOperation()\n_set_parm(parm, \"symbolName\", \"m\")\n_set_parm(parm, \"arityExp\", \"2\")\n_set_parm(parm, \"setSizeExp\", \"3\")\n_set_parm(parm, \"definitionExp\", \"x\")\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_xor = OperationWithDefaultValue(xor)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\n\nclass PlusOp(AbstractIntOperation):\n    def intValueAt(self, args):\n        return (int(args[0]) + int(args[1])) % self.getSetSize()\nplus_op = PlusOp(\"plus\", 2, 3)\n\ndef _vars(lst):\n    return [str(v) for v in list(lst)]\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(x) for x in list(t)]\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "parm.makeOp({'n': '1'}).intValueAt([1, 2])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "makeOp intValueAt is Math.max",
+      "expected_exception": null,
+      "id": "parm_make_op",
+      "kwargs": {},
+      "method": "ParameterizedOperation.makeOp",
+      "notes": "Java Operation toString is Class@hex; values compared.",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, OperationSymbol, OperationWithDefaultValue,\n    Operations, ParameterizedOperation, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nplus2 = OperationSymbol(\"+\", 2)\njoin2 = OperationSymbol(\"join\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nterm_c2 = NonVariableTerm(plus2, _varlist(x, y))\nterm_lat = NonVariableTerm(join2, _varlist(x, y))\ntoi_c2 = TermOperationImp(term_c2, _varlist(x, y), c2)\ntoi_c3 = TermOperationImp(term_c2, _varlist(x, y), c3)\ntoi_lat = TermOperationImp(term_lat, _varlist(x, y), lat2)\ntoi_named = TermOperationImp(\"plusTerm\", term_c2, _varlist(x, y), c2)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\naio_name = AbstractIntOperation(\"f\", 1, 4)\n\ndef _set_parm(obj, name, value):\n    try:\n        f = obj.getClass().getDeclaredField(name)\n        f.setAccessible(True)\n        f.set(obj, value)\n        return\n    except Exception:\n        pass\n    setattr(obj, name, value)\n\nparm = ParameterizedOperation()\n_set_parm(parm, \"symbolName\", \"m\")\n_set_parm(parm, \"arityExp\", \"2\")\n_set_parm(parm, \"setSizeExp\", \"3\")\n_set_parm(parm, \"definitionExp\", \"x\")\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_xor = OperationWithDefaultValue(xor)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\n\nclass PlusOp(AbstractIntOperation):\n    def intValueAt(self, args):\n        return (int(args[0]) + int(args[1])) % self.getSetSize()\nplus_op = PlusOp(\"plus\", 2, 3)\n\ndef _vars(lst):\n    return [str(v) for v in list(lst)]\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(x) for x in list(t)]\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "ow_def.getDefaultValue()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "default value 7",
+      "expected_exception": null,
+      "id": "ow_default_value",
+      "kwargs": {},
+      "method": "OperationWithDefaultValue.getDefaultValue",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 7,
+        "string_repr": "7",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, OperationSymbol, OperationWithDefaultValue,\n    Operations, ParameterizedOperation, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nplus2 = OperationSymbol(\"+\", 2)\njoin2 = OperationSymbol(\"join\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nterm_c2 = NonVariableTerm(plus2, _varlist(x, y))\nterm_lat = NonVariableTerm(join2, _varlist(x, y))\ntoi_c2 = TermOperationImp(term_c2, _varlist(x, y), c2)\ntoi_c3 = TermOperationImp(term_c2, _varlist(x, y), c3)\ntoi_lat = TermOperationImp(term_lat, _varlist(x, y), lat2)\ntoi_named = TermOperationImp(\"plusTerm\", term_c2, _varlist(x, y), c2)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\naio_name = AbstractIntOperation(\"f\", 1, 4)\n\ndef _set_parm(obj, name, value):\n    try:\n        f = obj.getClass().getDeclaredField(name)\n        f.setAccessible(True)\n        f.set(obj, value)\n        return\n    except Exception:\n        pass\n    setattr(obj, name, value)\n\nparm = ParameterizedOperation()\n_set_parm(parm, \"symbolName\", \"m\")\n_set_parm(parm, \"arityExp\", \"2\")\n_set_parm(parm, \"setSizeExp\", \"3\")\n_set_parm(parm, \"definitionExp\", \"x\")\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_xor = OperationWithDefaultValue(xor)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\n\nclass PlusOp(AbstractIntOperation):\n    def intValueAt(self, args):\n        return (int(args[0]) + int(args[1])) % self.getSetSize()\nplus_op = PlusOp(\"plus\", 2, 3)\n\ndef _vars(lst):\n    return [str(v) for v in list(lst)]\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(x) for x in list(t)]\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "ow_def.getSetSize()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "OWDV getSetSize",
+      "expected_exception": null,
+      "id": "ow_set_size",
+      "kwargs": {},
+      "method": "OperationWithDefaultValue.getSetSize",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, OperationSymbol, OperationWithDefaultValue,\n    Operations, ParameterizedOperation, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nplus2 = OperationSymbol(\"+\", 2)\njoin2 = OperationSymbol(\"join\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nterm_c2 = NonVariableTerm(plus2, _varlist(x, y))\nterm_lat = NonVariableTerm(join2, _varlist(x, y))\ntoi_c2 = TermOperationImp(term_c2, _varlist(x, y), c2)\ntoi_c3 = TermOperationImp(term_c2, _varlist(x, y), c3)\ntoi_lat = TermOperationImp(term_lat, _varlist(x, y), lat2)\ntoi_named = TermOperationImp(\"plusTerm\", term_c2, _varlist(x, y), c2)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\naio_name = AbstractIntOperation(\"f\", 1, 4)\n\ndef _set_parm(obj, name, value):\n    try:\n        f = obj.getClass().getDeclaredField(name)\n        f.setAccessible(True)\n        f.set(obj, value)\n        return\n    except Exception:\n        pass\n    setattr(obj, name, value)\n\nparm = ParameterizedOperation()\n_set_parm(parm, \"symbolName\", \"m\")\n_set_parm(parm, \"arityExp\", \"2\")\n_set_parm(parm, \"setSizeExp\", \"3\")\n_set_parm(parm, \"definitionExp\", \"x\")\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_xor = OperationWithDefaultValue(xor)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\n\nclass PlusOp(AbstractIntOperation):\n    def intValueAt(self, args):\n        return (int(args[0]) + int(args[1])) % self.getSetSize()\nplus_op = PlusOp(\"plus\", 2, 3)\n\ndef _vars(lst):\n    return [str(v) for v in list(lst)]\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(x) for x in list(t)]\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "ow_def.isTotal()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "defaultValue>=0 is total",
+      "expected_exception": null,
+      "id": "ow_is_total_filled",
+      "kwargs": {},
+      "method": "OperationWithDefaultValue.isTotal",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, OperationSymbol, OperationWithDefaultValue,\n    Operations, ParameterizedOperation, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nplus2 = OperationSymbol(\"+\", 2)\njoin2 = OperationSymbol(\"join\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nterm_c2 = NonVariableTerm(plus2, _varlist(x, y))\nterm_lat = NonVariableTerm(join2, _varlist(x, y))\ntoi_c2 = TermOperationImp(term_c2, _varlist(x, y), c2)\ntoi_c3 = TermOperationImp(term_c2, _varlist(x, y), c3)\ntoi_lat = TermOperationImp(term_lat, _varlist(x, y), lat2)\ntoi_named = TermOperationImp(\"plusTerm\", term_c2, _varlist(x, y), c2)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\naio_name = AbstractIntOperation(\"f\", 1, 4)\n\ndef _set_parm(obj, name, value):\n    try:\n        f = obj.getClass().getDeclaredField(name)\n        f.setAccessible(True)\n        f.set(obj, value)\n        return\n    except Exception:\n        pass\n    setattr(obj, name, value)\n\nparm = ParameterizedOperation()\n_set_parm(parm, \"symbolName\", \"m\")\n_set_parm(parm, \"arityExp\", \"2\")\n_set_parm(parm, \"setSizeExp\", \"3\")\n_set_parm(parm, \"definitionExp\", \"x\")\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_xor = OperationWithDefaultValue(xor)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\n\nclass PlusOp(AbstractIntOperation):\n    def intValueAt(self, args):\n        return (int(args[0]) + int(args[1])) % self.getSetSize()\nplus_op = PlusOp(\"plus\", 2, 3)\n\ndef _vars(lst):\n    return [str(v) for v in list(lst)]\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(x) for x in list(t)]\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "ow_def.intValueAt([0, 1])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "undefined cell returns default 7",
+      "expected_exception": null,
+      "id": "ow_iva_default",
+      "kwargs": {},
+      "method": "OperationWithDefaultValue.intValueAt",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 7,
+        "string_repr": "7",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, OperationSymbol, OperationWithDefaultValue,\n    Operations, ParameterizedOperation, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nplus2 = OperationSymbol(\"+\", 2)\njoin2 = OperationSymbol(\"join\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nterm_c2 = NonVariableTerm(plus2, _varlist(x, y))\nterm_lat = NonVariableTerm(join2, _varlist(x, y))\ntoi_c2 = TermOperationImp(term_c2, _varlist(x, y), c2)\ntoi_c3 = TermOperationImp(term_c2, _varlist(x, y), c3)\ntoi_lat = TermOperationImp(term_lat, _varlist(x, y), lat2)\ntoi_named = TermOperationImp(\"plusTerm\", term_c2, _varlist(x, y), c2)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\naio_name = AbstractIntOperation(\"f\", 1, 4)\n\ndef _set_parm(obj, name, value):\n    try:\n        f = obj.getClass().getDeclaredField(name)\n        f.setAccessible(True)\n        f.set(obj, value)\n        return\n    except Exception:\n        pass\n    setattr(obj, name, value)\n\nparm = ParameterizedOperation()\n_set_parm(parm, \"symbolName\", \"m\")\n_set_parm(parm, \"arityExp\", \"2\")\n_set_parm(parm, \"setSizeExp\", \"3\")\n_set_parm(parm, \"definitionExp\", \"x\")\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_xor = OperationWithDefaultValue(xor)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\n\nclass PlusOp(AbstractIntOperation):\n    def intValueAt(self, args):\n        return (int(args[0]) + int(args[1])) % self.getSetSize()\nplus_op = PlusOp(\"plus\", 2, 3)\n\ndef _vars(lst):\n    return [str(v) for v in list(lst)]\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(x) for x in list(t)]\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "int(ow_def.valueAt([1, 0]))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "valueAt uses default",
+      "expected_exception": null,
+      "id": "ow_value_at",
+      "kwargs": {},
+      "method": "OperationWithDefaultValue.valueAt",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 7,
+        "string_repr": "7",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, OperationSymbol, OperationWithDefaultValue,\n    Operations, ParameterizedOperation, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nplus2 = OperationSymbol(\"+\", 2)\njoin2 = OperationSymbol(\"join\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nterm_c2 = NonVariableTerm(plus2, _varlist(x, y))\nterm_lat = NonVariableTerm(join2, _varlist(x, y))\ntoi_c2 = TermOperationImp(term_c2, _varlist(x, y), c2)\ntoi_c3 = TermOperationImp(term_c2, _varlist(x, y), c3)\ntoi_lat = TermOperationImp(term_lat, _varlist(x, y), lat2)\ntoi_named = TermOperationImp(\"plusTerm\", term_c2, _varlist(x, y), c2)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\naio_name = AbstractIntOperation(\"f\", 1, 4)\n\ndef _set_parm(obj, name, value):\n    try:\n        f = obj.getClass().getDeclaredField(name)\n        f.setAccessible(True)\n        f.set(obj, value)\n        return\n    except Exception:\n        pass\n    setattr(obj, name, value)\n\nparm = ParameterizedOperation()\n_set_parm(parm, \"symbolName\", \"m\")\n_set_parm(parm, \"arityExp\", \"2\")\n_set_parm(parm, \"setSizeExp\", \"3\")\n_set_parm(parm, \"definitionExp\", \"x\")\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_xor = OperationWithDefaultValue(xor)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\n\nclass PlusOp(AbstractIntOperation):\n    def intValueAt(self, args):\n        return (int(args[0]) + int(args[1])) % self.getSetSize()\nplus_op = PlusOp(\"plus\", 2, 3)\n\ndef _vars(lst):\n    return [str(v) for v in list(lst)]\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(x) for x in list(t)]\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_tab(ow_def)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "partial table is all -1",
+      "expected_exception": null,
+      "id": "ow_get_table",
+      "kwargs": {},
+      "method": "OperationWithDefaultValue.getTable",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          -1,
+          -1,
+          -1,
+          -1
+        ],
+        "string_repr": "[-1, -1, -1, -1]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, OperationSymbol, OperationWithDefaultValue,\n    Operations, ParameterizedOperation, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nplus2 = OperationSymbol(\"+\", 2)\njoin2 = OperationSymbol(\"join\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nterm_c2 = NonVariableTerm(plus2, _varlist(x, y))\nterm_lat = NonVariableTerm(join2, _varlist(x, y))\ntoi_c2 = TermOperationImp(term_c2, _varlist(x, y), c2)\ntoi_c3 = TermOperationImp(term_c2, _varlist(x, y), c3)\ntoi_lat = TermOperationImp(term_lat, _varlist(x, y), lat2)\ntoi_named = TermOperationImp(\"plusTerm\", term_c2, _varlist(x, y), c2)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\naio_name = AbstractIntOperation(\"f\", 1, 4)\n\ndef _set_parm(obj, name, value):\n    try:\n        f = obj.getClass().getDeclaredField(name)\n        f.setAccessible(True)\n        f.set(obj, value)\n        return\n    except Exception:\n        pass\n    setattr(obj, name, value)\n\nparm = ParameterizedOperation()\n_set_parm(parm, \"symbolName\", \"m\")\n_set_parm(parm, \"arityExp\", \"2\")\n_set_parm(parm, \"setSizeExp\", \"3\")\n_set_parm(parm, \"definitionExp\", \"x\")\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_xor = OperationWithDefaultValue(xor)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\n\nclass PlusOp(AbstractIntOperation):\n    def intValueAt(self, args):\n        return (int(args[0]) + int(args[1])) % self.getSetSize()\nplus_op = PlusOp(\"plus\", 2, 3)\n\ndef _vars(lst):\n    return [str(v) for v in list(lst)]\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(x) for x in list(t)]\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "(ow_def.setDefaultValue(1), ow_def.getDefaultValue(), ow_def.getTotalTable())[1:]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "setDefaultValue then getTotalTable",
+      "expected_exception": null,
+      "id": "ow_set_default",
+      "kwargs": {},
+      "method": "OperationWithDefaultValue.setDefaultValue",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "tuple",
+        "return_value": [
+          1,
+          [
+            1,
+            1,
+            1,
+            1
+          ]
+        ],
+        "string_repr": "(1, array('i', [1, 1, 1, 1]))",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, OperationSymbol, OperationWithDefaultValue,\n    Operations, ParameterizedOperation, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nplus2 = OperationSymbol(\"+\", 2)\njoin2 = OperationSymbol(\"join\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nterm_c2 = NonVariableTerm(plus2, _varlist(x, y))\nterm_lat = NonVariableTerm(join2, _varlist(x, y))\ntoi_c2 = TermOperationImp(term_c2, _varlist(x, y), c2)\ntoi_c3 = TermOperationImp(term_c2, _varlist(x, y), c3)\ntoi_lat = TermOperationImp(term_lat, _varlist(x, y), lat2)\ntoi_named = TermOperationImp(\"plusTerm\", term_c2, _varlist(x, y), c2)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\naio_name = AbstractIntOperation(\"f\", 1, 4)\n\ndef _set_parm(obj, name, value):\n    try:\n        f = obj.getClass().getDeclaredField(name)\n        f.setAccessible(True)\n        f.set(obj, value)\n        return\n    except Exception:\n        pass\n    setattr(obj, name, value)\n\nparm = ParameterizedOperation()\n_set_parm(parm, \"symbolName\", \"m\")\n_set_parm(parm, \"arityExp\", \"2\")\n_set_parm(parm, \"setSizeExp\", \"3\")\n_set_parm(parm, \"definitionExp\", \"x\")\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_xor = OperationWithDefaultValue(xor)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\n\nclass PlusOp(AbstractIntOperation):\n    def intValueAt(self, args):\n        return (int(args[0]) + int(args[1])) % self.getSetSize()\nplus_op = PlusOp(\"plus\", 2, 3)\n\ndef _vars(lst):\n    return [str(v) for v in list(lst)]\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(x) for x in list(t)]\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "ow_def.makeOrdinaryOperation().intValueAt([0, 0])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "makeOrdinaryOperation fills default",
+      "expected_exception": null,
+      "id": "ow_ordinary",
+      "kwargs": {},
+      "method": "OperationWithDefaultValue.makeOrdinaryOperation",
+      "notes": "Java Operation toString is Class@hex; values compared.",
+      "result": {
+        "return_type": "int",
+        "return_value": 7,
+        "string_repr": "7",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, OperationSymbol, OperationWithDefaultValue,\n    Operations, ParameterizedOperation, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nplus2 = OperationSymbol(\"+\", 2)\njoin2 = OperationSymbol(\"join\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nterm_c2 = NonVariableTerm(plus2, _varlist(x, y))\nterm_lat = NonVariableTerm(join2, _varlist(x, y))\ntoi_c2 = TermOperationImp(term_c2, _varlist(x, y), c2)\ntoi_c3 = TermOperationImp(term_c2, _varlist(x, y), c3)\ntoi_lat = TermOperationImp(term_lat, _varlist(x, y), lat2)\ntoi_named = TermOperationImp(\"plusTerm\", term_c2, _varlist(x, y), c2)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\naio_name = AbstractIntOperation(\"f\", 1, 4)\n\ndef _set_parm(obj, name, value):\n    try:\n        f = obj.getClass().getDeclaredField(name)\n        f.setAccessible(True)\n        f.set(obj, value)\n        return\n    except Exception:\n        pass\n    setattr(obj, name, value)\n\nparm = ParameterizedOperation()\n_set_parm(parm, \"symbolName\", \"m\")\n_set_parm(parm, \"arityExp\", \"2\")\n_set_parm(parm, \"setSizeExp\", \"3\")\n_set_parm(parm, \"definitionExp\", \"x\")\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_xor = OperationWithDefaultValue(xor)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\n\nclass PlusOp(AbstractIntOperation):\n    def intValueAt(self, args):\n        return (int(args[0]) + int(args[1])) % self.getSetSize()\nplus_op = PlusOp(\"plus\", 2, 3)\n\ndef _vars(lst):\n    return [str(v) for v in list(lst)]\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(x) for x in list(t)]\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "[ow_xor.intValueAt([0,0]), ow_xor.intValueAt([1,0]), ow_xor.isTotal()]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "OWDV wrapping xor table",
+      "expected_exception": null,
+      "id": "ow_xor_iva",
+      "kwargs": {},
+      "method": "OperationWithDefaultValue.intValueAt",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          0,
+          1,
+          true
+        ],
+        "string_repr": "[0, 1, True]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, OperationSymbol, OperationWithDefaultValue,\n    Operations, ParameterizedOperation, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nplus2 = OperationSymbol(\"+\", 2)\njoin2 = OperationSymbol(\"join\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nterm_c2 = NonVariableTerm(plus2, _varlist(x, y))\nterm_lat = NonVariableTerm(join2, _varlist(x, y))\ntoi_c2 = TermOperationImp(term_c2, _varlist(x, y), c2)\ntoi_c3 = TermOperationImp(term_c2, _varlist(x, y), c3)\ntoi_lat = TermOperationImp(term_lat, _varlist(x, y), lat2)\ntoi_named = TermOperationImp(\"plusTerm\", term_c2, _varlist(x, y), c2)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\naio_name = AbstractIntOperation(\"f\", 1, 4)\n\ndef _set_parm(obj, name, value):\n    try:\n        f = obj.getClass().getDeclaredField(name)\n        f.setAccessible(True)\n        f.set(obj, value)\n        return\n    except Exception:\n        pass\n    setattr(obj, name, value)\n\nparm = ParameterizedOperation()\n_set_parm(parm, \"symbolName\", \"m\")\n_set_parm(parm, \"arityExp\", \"2\")\n_set_parm(parm, \"setSizeExp\", \"3\")\n_set_parm(parm, \"definitionExp\", \"x\")\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_xor = OperationWithDefaultValue(xor)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\n\nclass PlusOp(AbstractIntOperation):\n    def intValueAt(self, args):\n        return (int(args[0]) + int(args[1])) % self.getSetSize()\nplus_op = PlusOp(\"plus\", 2, 3)\n\ndef _vars(lst):\n    return [str(v) for v in list(lst)]\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(x) for x in list(t)]\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "len(OperationWithDefaultValue.makeOrdinary([ow_xor]))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "makeOrdinary Java duplicate-append bug, len 2",
+      "expected_exception": null,
+      "id": "ow_make_ordinary_list",
+      "kwargs": {},
+      "method": "OperationWithDefaultValue.makeOrdinary",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, OperationSymbol, OperationWithDefaultValue,\n    Operations, ParameterizedOperation, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nplus2 = OperationSymbol(\"+\", 2)\njoin2 = OperationSymbol(\"join\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nterm_c2 = NonVariableTerm(plus2, _varlist(x, y))\nterm_lat = NonVariableTerm(join2, _varlist(x, y))\ntoi_c2 = TermOperationImp(term_c2, _varlist(x, y), c2)\ntoi_c3 = TermOperationImp(term_c2, _varlist(x, y), c3)\ntoi_lat = TermOperationImp(term_lat, _varlist(x, y), lat2)\ntoi_named = TermOperationImp(\"plusTerm\", term_c2, _varlist(x, y), c2)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\naio_name = AbstractIntOperation(\"f\", 1, 4)\n\ndef _set_parm(obj, name, value):\n    try:\n        f = obj.getClass().getDeclaredField(name)\n        f.setAccessible(True)\n        f.set(obj, value)\n        return\n    except Exception:\n        pass\n    setattr(obj, name, value)\n\nparm = ParameterizedOperation()\n_set_parm(parm, \"symbolName\", \"m\")\n_set_parm(parm, \"arityExp\", \"2\")\n_set_parm(parm, \"setSizeExp\", \"3\")\n_set_parm(parm, \"definitionExp\", \"x\")\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_xor = OperationWithDefaultValue(xor)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\n\nclass PlusOp(AbstractIntOperation):\n    def intValueAt(self, args):\n        return (int(args[0]) + int(args[1])) % self.getSetSize()\nplus_op = PlusOp(\"plus\", 2, 3)\n\ndef _vars(lst):\n    return [str(v) for v in list(lst)]\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(x) for x in list(t)]\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "[ow_tab.intValueAt([0,0]), ow_tab.intValueAt([1,0]), _tab(ow_tab)]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "table ctor uses default 5 at -1 cells",
+      "expected_exception": null,
+      "id": "ow_table_ctor",
+      "kwargs": {},
+      "method": "OperationWithDefaultValue.intValueAt",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          5,
+          0,
+          [
+            -1,
+            0,
+            1,
+            1
+          ]
+        ],
+        "string_repr": "[5, 0, [-1, 0, 1, 1]]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, OperationSymbol, OperationWithDefaultValue,\n    Operations, ParameterizedOperation, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nplus2 = OperationSymbol(\"+\", 2)\njoin2 = OperationSymbol(\"join\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nterm_c2 = NonVariableTerm(plus2, _varlist(x, y))\nterm_lat = NonVariableTerm(join2, _varlist(x, y))\ntoi_c2 = TermOperationImp(term_c2, _varlist(x, y), c2)\ntoi_c3 = TermOperationImp(term_c2, _varlist(x, y), c3)\ntoi_lat = TermOperationImp(term_lat, _varlist(x, y), lat2)\ntoi_named = TermOperationImp(\"plusTerm\", term_c2, _varlist(x, y), c2)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\naio_name = AbstractIntOperation(\"f\", 1, 4)\n\ndef _set_parm(obj, name, value):\n    try:\n        f = obj.getClass().getDeclaredField(name)\n        f.setAccessible(True)\n        f.set(obj, value)\n        return\n    except Exception:\n        pass\n    setattr(obj, name, value)\n\nparm = ParameterizedOperation()\n_set_parm(parm, \"symbolName\", \"m\")\n_set_parm(parm, \"arityExp\", \"2\")\n_set_parm(parm, \"setSizeExp\", \"3\")\n_set_parm(parm, \"definitionExp\", \"x\")\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_xor = OperationWithDefaultValue(xor)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\n\nclass PlusOp(AbstractIntOperation):\n    def intValueAt(self, args):\n        return (int(args[0]) + int(args[1])) % self.getSetSize()\nplus_op = PlusOp(\"plus\", 2, 3)\n\ndef _vars(lst):\n    return [str(v) for v in list(lst)]\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(x) for x in list(t)]\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "(ow_name.setIdempotent(True), ow_name.isIdempotentSet(), _tab(ow_name)[0])[1:]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "setIdempotent fills diagonal",
+      "expected_exception": null,
+      "id": "ow_idempotent",
+      "kwargs": {},
+      "method": "OperationWithDefaultValue.setIdempotent",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "tuple",
+        "return_value": [
+          true,
+          0
+        ],
+        "string_repr": "(True, 0)",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, OperationSymbol, OperationWithDefaultValue,\n    Operations, ParameterizedOperation, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nplus2 = OperationSymbol(\"+\", 2)\njoin2 = OperationSymbol(\"join\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nterm_c2 = NonVariableTerm(plus2, _varlist(x, y))\nterm_lat = NonVariableTerm(join2, _varlist(x, y))\ntoi_c2 = TermOperationImp(term_c2, _varlist(x, y), c2)\ntoi_c3 = TermOperationImp(term_c2, _varlist(x, y), c3)\ntoi_lat = TermOperationImp(term_lat, _varlist(x, y), lat2)\ntoi_named = TermOperationImp(\"plusTerm\", term_c2, _varlist(x, y), c2)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\naio_name = AbstractIntOperation(\"f\", 1, 4)\n\ndef _set_parm(obj, name, value):\n    try:\n        f = obj.getClass().getDeclaredField(name)\n        f.setAccessible(True)\n        f.set(obj, value)\n        return\n    except Exception:\n        pass\n    setattr(obj, name, value)\n\nparm = ParameterizedOperation()\n_set_parm(parm, \"symbolName\", \"m\")\n_set_parm(parm, \"arityExp\", \"2\")\n_set_parm(parm, \"setSizeExp\", \"3\")\n_set_parm(parm, \"definitionExp\", \"x\")\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_xor = OperationWithDefaultValue(xor)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\n\nclass PlusOp(AbstractIntOperation):\n    def intValueAt(self, args):\n        return (int(args[0]) + int(args[1])) % self.getSetSize()\nplus_op = PlusOp(\"plus\", 2, 3)\n\ndef _vars(lst):\n    return [str(v) for v in list(lst)]\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(x) for x in list(t)]\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "ow_name.isDiagonal(0, 0)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "isDiagonal(0,0) for binary",
+      "expected_exception": null,
+      "id": "ow_is_diagonal",
+      "kwargs": {},
+      "method": "OperationWithDefaultValue.isDiagonal",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, OperationSymbol, OperationWithDefaultValue,\n    Operations, ParameterizedOperation, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nplus2 = OperationSymbol(\"+\", 2)\njoin2 = OperationSymbol(\"join\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nterm_c2 = NonVariableTerm(plus2, _varlist(x, y))\nterm_lat = NonVariableTerm(join2, _varlist(x, y))\ntoi_c2 = TermOperationImp(term_c2, _varlist(x, y), c2)\ntoi_c3 = TermOperationImp(term_c2, _varlist(x, y), c3)\ntoi_lat = TermOperationImp(term_lat, _varlist(x, y), lat2)\ntoi_named = TermOperationImp(\"plusTerm\", term_c2, _varlist(x, y), c2)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\naio_name = AbstractIntOperation(\"f\", 1, 4)\n\ndef _set_parm(obj, name, value):\n    try:\n        f = obj.getClass().getDeclaredField(name)\n        f.setAccessible(True)\n        f.set(obj, value)\n        return\n    except Exception:\n        pass\n    setattr(obj, name, value)\n\nparm = ParameterizedOperation()\n_set_parm(parm, \"symbolName\", \"m\")\n_set_parm(parm, \"arityExp\", \"2\")\n_set_parm(parm, \"setSizeExp\", \"3\")\n_set_parm(parm, \"definitionExp\", \"x\")\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_xor = OperationWithDefaultValue(xor)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\n\nclass PlusOp(AbstractIntOperation):\n    def intValueAt(self, args):\n        return (int(args[0]) + int(args[1])) % self.getSetSize()\nplus_op = PlusOp(\"plus\", 2, 3)\n\ndef _vars(lst):\n    return [str(v) for v in list(lst)]\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(x) for x in list(t)]\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "OperationWithDefaultValue(OperationSymbol('r', 2), 4, -2).getRandomValueTable()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "defaultValue==-2 random table is not deterministic",
+      "expected_exception": null,
+      "id": "ow_random_xfail",
+      "kwargs": {},
+      "method": "OperationWithDefaultValue.getRandomValueTable",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "array",
+        "return_value": [
+          1,
+          1,
+          1,
+          3,
+          2,
+          3,
+          0,
+          3,
+          3,
+          2,
+          1,
+          3,
+          3,
+          0,
+          2,
+          0
+        ],
+        "string_repr": "array('i', [1, 1, 1, 3, 2, 3, 0, 3, 3, 2, 1, 3, 3, 0, 2, 0])",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, OperationSymbol, OperationWithDefaultValue,\n    Operations, ParameterizedOperation, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nplus2 = OperationSymbol(\"+\", 2)\njoin2 = OperationSymbol(\"join\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nterm_c2 = NonVariableTerm(plus2, _varlist(x, y))\nterm_lat = NonVariableTerm(join2, _varlist(x, y))\ntoi_c2 = TermOperationImp(term_c2, _varlist(x, y), c2)\ntoi_c3 = TermOperationImp(term_c2, _varlist(x, y), c3)\ntoi_lat = TermOperationImp(term_lat, _varlist(x, y), lat2)\ntoi_named = TermOperationImp(\"plusTerm\", term_c2, _varlist(x, y), c2)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\naio_name = AbstractIntOperation(\"f\", 1, 4)\n\ndef _set_parm(obj, name, value):\n    try:\n        f = obj.getClass().getDeclaredField(name)\n        f.setAccessible(True)\n        f.set(obj, value)\n        return\n    except Exception:\n        pass\n    setattr(obj, name, value)\n\nparm = ParameterizedOperation()\n_set_parm(parm, \"symbolName\", \"m\")\n_set_parm(parm, \"arityExp\", \"2\")\n_set_parm(parm, \"setSizeExp\", \"3\")\n_set_parm(parm, \"definitionExp\", \"x\")\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_xor = OperationWithDefaultValue(xor)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\n\nclass PlusOp(AbstractIntOperation):\n    def intValueAt(self, args):\n        return (int(args[0]) + int(args[1])) % self.getSetSize()\nplus_op = PlusOp(\"plus\", 2, 3)\n\ndef _vars(lst):\n    return [str(v) for v in list(lst)]\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(x) for x in list(t)]\n",
+      "skip_string_check": true,
+      "xfail_reason": "Java RandomGenerator (UI) vs Python random; defaultValue==-2 tables are not comparable"
+    },
     {
       "args": [],
       "call": "xor2.arity()",
@@ -230,7 +952,7 @@
       },
       "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
       "skip_string_check": true,
-      "xfail_reason": "owner: Java IntOperationImp does not override isTableBased, so table-constructed ops report false; Python IntOperation reports true"
+      "xfail_reason": null
     },
     {
       "args": [],
@@ -790,7 +1512,7 @@
             0
           ]
         },
-        "string_repr": "org.uacalc.alg.op.Operations$IntOperationImp@46a488c2",
+        "string_repr": "org.uacalc.alg.op.Operations$IntOperationImp@4eaf7902",
         "success": true
       },
       "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
@@ -821,7 +1543,7 @@
             0
           ]
         },
-        "string_repr": "org.uacalc.alg.op.Operations$IntOperationImp@7ee8130e",
+        "string_repr": "org.uacalc.alg.op.Operations$IntOperationImp@3281dfc2",
         "success": true
       },
       "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
@@ -854,7 +1576,7 @@
             0
           ]
         },
-        "string_repr": "org.uacalc.alg.op.Operations$8@5cc9d3d0",
+        "string_repr": "org.uacalc.alg.op.Operations$8@68ddd415",
         "success": true
       },
       "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
@@ -911,7 +1633,7 @@
             0
           ]
         },
-        "string_repr": "org.uacalc.alg.op.Operations$IntOperationImp@7b6c6e70",
+        "string_repr": "org.uacalc.alg.op.Operations$IntOperationImp@6d672bd4",
         "success": true
       },
       "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
@@ -941,7 +1663,7 @@
             1
           ]
         },
-        "string_repr": "org.uacalc.alg.op.Operations$11@67de7a99",
+        "string_repr": "org.uacalc.alg.op.Operations$11@3d620a1",
         "success": true
       },
       "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
@@ -971,7 +1693,7 @@
             2
           ]
         },
-        "string_repr": "org.uacalc.alg.op.Operations$11@423c5404",
+        "string_repr": "org.uacalc.alg.op.Operations$11@1095d23a",
         "success": true
       },
       "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
@@ -1075,7 +1797,7 @@
             1
           ]
         },
-        "string_repr": "org.uacalc.alg.op.Operations$1@4779aae6",
+        "string_repr": "org.uacalc.alg.op.Operations$1@c02670f",
         "success": true
       },
       "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
@@ -1150,7 +1872,7 @@
             1
           ]
         },
-        "string_repr": "org.uacalc.alg.op.Operations$2@279dd959",
+        "string_repr": "org.uacalc.alg.op.Operations$2@73afe2b7",
         "success": true
       },
       "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
@@ -1247,7 +1969,7 @@
             3
           ]
         },
-        "string_repr": "org.uacalc.alg.op.Operations$3@12a14b74",
+        "string_repr": "org.uacalc.alg.op.Operations$3@c1050f2",
         "success": true
       },
       "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
@@ -1292,7 +2014,7 @@
             3
           ]
         },
-        "string_repr": "org.uacalc.alg.op.Operations$4@65eb76cd",
+        "string_repr": "org.uacalc.alg.op.Operations$4@603cabc4",
         "success": true
       },
       "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
@@ -1337,7 +2059,7 @@
             3
           ]
         },
-        "string_repr": "org.uacalc.alg.op.Operations$5@330c1f61",
+        "string_repr": "org.uacalc.alg.op.Operations$5@22d7fd41",
         "success": true
       },
       "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",
@@ -1403,7 +2125,7 @@
             3
           ]
         },
-        "string_repr": "org.uacalc.alg.op.Operations$7@4f3faa70",
+        "string_repr": "org.uacalc.alg.op.Operations$7@5fcd1f0a",
         "success": true
       },
       "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol, SimilarityType\ndef _op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\nxor2 = _op(\"xor\", 2, 2, [0, 1, 1, 0])\nand2 = _op(\"and\", 2, 2, [0, 0, 0, 1])\nor2 = _op(\"or\", 2, 2, [0, 1, 1, 1])\nid1 = _op(\"id\", 1, 2, [0, 1])\nnot1 = _op(\"not\", 1, 2, [1, 0])\nc0 = Operations.makeConstantIntOperation(2, 0)\nproj = _op(\"proj\", 2, 2, [0, 0, 1, 1])\nadd3 = _op(\"add\", 2, 3, [0, 1, 2, 1, 2, 0, 2, 0, 1])\ndisc = Operations.ternaryDiscriminator(2)\njoin = OperationSymbol(\"join\", 2)\nmeet = OperationSymbol(\"meet\", 2)\nprod = OperationSymbol(\"prod\", 2)\ninv = OperationSymbol(\"inv\", 1)\nident = OperationSymbol(\"id\", 0)\nst = SimilarityType([join, meet])\nst_unsorted = SimilarityType([prod, inv, ident], False)\nst_sorted = SimilarityType([prod, inv, ident], True)\n",

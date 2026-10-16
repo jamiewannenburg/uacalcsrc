@@ -99,6 +99,25 @@ def _op_vals(op):
         return None
     n = int(op.getSetSize()) if hasattr(op, "getSetSize") else int(op.get_set_size())
     return [int(op.intValueAt([i])) for i in range(n)]
+
+def _varmap(alg):
+    m = alg.getVariableToGeneratorMap()
+    if m is None:
+        return None
+    items = []
+    iterable = m.entrySet() if hasattr(m, "entrySet") else (m.items() if hasattr(m, "items") else None)
+    if iterable is not None:
+        for item in iterable:
+            if hasattr(item, "getKey"):
+                k, v = item.getKey(), item.getValue()
+            else:
+                k, v = item
+            items.append([str(k).replace(" ", ""), _coords(v)])
+    else:
+        for k in m:
+            items.append([str(k).replace(" ", ""), _coords(m[k])])
+    items.sort()
+    return items
 """
 
 _BOOL = dict(skip_string_check=True, notes="Java str(true/false) vs Python str(True/False).")
@@ -218,6 +237,22 @@ TEST_CASES = [
         call="_terms(f1.getVariables())",
         description="F(1) getVariables",
         **_LIST
+    ),
+    TestCaseSpec(
+        id="fa_varmap_c2_f1",
+        method="FreeAlgebra.getVariableToGeneratorMap",
+        setup=_SETUP,
+        call="_varmap(f1)",
+        description="F(1) over cyclic2 variable-to-generator map",
+        **_MAP
+    ),
+    TestCaseSpec(
+        id="fa_varmap_c2_f2",
+        method="FreeAlgebra.getVariableToGeneratorMap",
+        setup=_SETUP + "\nf2 = FreeAlgebra(c2, 2)\nf2.setName('F2')\n",
+        call="_varmap(f2)",
+        description="F(2) over cyclic2 variable-to-generator map",
+        **_MAP
     ),
     TestCaseSpec(
         id="fa_idempotent_terms",
@@ -1329,5 +1364,37 @@ TEST_CASES.extend([
         call="_qcc('resources/algebras/z3.ua')",
         description="quasiCriticalCongruences(z3)",
         **_LIST
+    ),
+    TestCaseSpec(
+        id="fa_varmap_c3_f1",
+        method="FreeAlgebra.getVariableToGeneratorMap",
+        setup=_WIDE,
+        call="_varmap(FreeAlgebra(c3, 1))",
+        description="F(1) over cyclic3 variable-to-generator map",
+        **_MAP
+    ),
+    TestCaseSpec(
+        id="fa_varmap_lat2_f1",
+        method="FreeAlgebra.getVariableToGeneratorMap",
+        setup=_WIDE,
+        call="_varmap(FreeAlgebra(lat2, 1))",
+        description="F(1) over lat2 variable-to-generator map",
+        **_MAP
+    ),
+    TestCaseSpec(
+        id="fa_varmap_n5_f1",
+        method="FreeAlgebra.getVariableToGeneratorMap",
+        setup=_WIDE,
+        call="_varmap(FreeAlgebra(n5, 1))",
+        description="F(1) over n5 variable-to-generator map",
+        **_MAP
+    ),
+    TestCaseSpec(
+        id="fa_varmap_m3_f1",
+        method="FreeAlgebra.getVariableToGeneratorMap",
+        setup=_WIDE,
+        call="_varmap(FreeAlgebra(m3, 1))",
+        description="F(1) over m3 variable-to-generator map",
+        **_MAP
     ),
 ])

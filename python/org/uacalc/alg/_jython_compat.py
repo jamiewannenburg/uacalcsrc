@@ -145,6 +145,9 @@ def _install(alg_module_globals: dict) -> None:
         def get_set_size(self) -> int:
             return self._set_size
 
+        def getSetSize(self) -> int:
+            return self._set_size
+
         def _as_int_operation(self) -> Any:
             if self._cached_int_op is not None:
                 return self._cached_int_op
@@ -155,6 +158,22 @@ def _install(alg_module_globals: dict) -> None:
                 lambda args, _self=self: int(_self.intValueAt(list(args))),
             )
             return self._cached_int_op
+
+    class AbstractIntOperation(AbstractOperation):
+        """Java ``org.uacalc.alg.op.AbstractIntOperation``: concrete for Jython.
+
+        ``valueAt(List)`` is always UOE (Java override). ``intValueAt`` stays
+        UOE unless a subclass implements it.
+        """
+
+        def valueAt(self, args: Any) -> Any:
+            raise UnsupportedOperationException()
+
+        def intValueAt(self, args: Any) -> int:
+            raise UnsupportedOperationException()
+
+        def int_value_at(self, args: Sequence[int]) -> int:
+            return int(self.intValueAt(list(args)))
 
     class _BasicAlgebraMeta(type):
         """Treat native ``uacalc_lib`` BasicAlgebra values as this Jython type."""
@@ -2866,6 +2885,7 @@ def _install(alg_module_globals: dict) -> None:
 
     # Export replacements
     alg_module_globals["AbstractOperation"] = AbstractOperation
+    alg_module_globals["AbstractIntOperation"] = AbstractIntOperation
     alg_module_globals["Algebra"] = Algebra
     alg_module_globals["AlgebraType"] = AlgebraType
     alg_module_globals["SmallAlgebra"] = SmallAlgebra

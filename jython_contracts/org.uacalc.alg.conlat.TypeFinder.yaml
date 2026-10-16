@@ -1,0 +1,38 @@
+target: org.uacalc.alg.conlat.TypeFinder
+level: file
+status: implemented
+java_source: org/uacalc/alg/conlat/TypeFinder.java
+notes: |
+  Jython TypeFinder surface on uacalc_lib. Constructors TypeFinder(alg) and
+  TypeFinder(alg, alpha); init / findTypeSet / isSubtrace / findSubtrace /
+  findType overloads dispatch to the Rust TypeFinder. nextPairForSubtrace is
+  wrapped as NotImplementedError (mutates caller HashSet/List of IntArray;
+  PyO3 does not expose it). main is not wrapped. printSubtrace is a public
+  static field, not a method.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    init: init
+    findTypeSet: find_type_set
+    isSubtrace: is_subtrace
+    findSubtrace: find_subtrace
+    findType: find_type
+    nextPairForSubtrace: nextPairForSubtrace
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    Goldens in tests/parity/conlat cover findTypeSet / findSubtrace / findType
+    on cyclic2, cyclic3, lat2, m3, and n5, plus init(alpha) and exception paths.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/conlat_leftovers.py
+      covers:
+        - init
+        - findTypeSet
+        - isSubtrace
+        - findSubtrace
+        - findType
+        - nextPairForSubtrace
+      ignore_lines: []

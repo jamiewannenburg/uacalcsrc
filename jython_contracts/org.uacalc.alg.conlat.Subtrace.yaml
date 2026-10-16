@@ -1,0 +1,36 @@
+target: org.uacalc.alg.conlat.Subtrace
+level: file
+status: implemented
+java_source: org/uacalc/alg/conlat/Subtrace.java
+notes: |
+  Subtrace(a, b, inv) and Subtrace(a, b, inv, type) over uacalc_lib, with
+  camelCase first/second/type/hasInvolution/get/set universe helpers and
+  toString(brief).
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    hasInvolution: has_involution
+    getSubtraceUniverse: get_subtrace_universe
+    setSubtraceUniverse: set_subtrace_universe
+    getMatrixUniverse: get_matrix_universe
+    setMatrixUniverse: set_matrix_universe
+    setType: set_type
+    toString: toString
+  static_methods: []
+  str_parity: true
+testing:
+  notes: |
+    Goldens cover both constructors, getters/setters, brief/full toString.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/conlat_leftovers.py
+      covers:
+        - hasInvolution
+        - getSubtraceUniverse
+        - setSubtraceUniverse
+        - getMatrixUniverse
+        - setMatrixUniverse
+        - setType
+        - toString
+      ignore_lines: []

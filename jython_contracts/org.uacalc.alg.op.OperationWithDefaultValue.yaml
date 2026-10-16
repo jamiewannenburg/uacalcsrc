@@ -1,0 +1,61 @@
+target: org.uacalc.alg.op.OperationWithDefaultValue
+level: file
+status: implemented
+java_source: org/uacalc/alg/op/OperationWithDefaultValue.java
+notes: |
+  Jython constructors and default-value semantics in the org wrapper.
+  Partial tables use -1 sentinels (Rust makeIntOperation rejects negatives,
+  so evaluation is table-based in the wrapper). defaultValue==-2 random
+  fill uses Python random (Java uses UI RandomGenerator) and is not
+  asserted. makeOrdinary matches the Java bug of also appending the original
+  op. (op, algSize) leaves this.op null as in Java.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    getSetSize: get_set_size
+    intValueAt: intValueAt
+    valueAt: valueAt
+    getDefaultValue: getDefaultValue
+    setDefaultValue: setDefaultValue
+    isIdempotentSet: isIdempotentSet
+    setIdempotent: setIdempotent
+    makeIdempotent: makeIdempotent
+    isDiagonal: isDiagonal
+    updateRandomValueTable: updateRandomValueTable
+    getRandomValueTable: getRandomValueTable
+    isTotal: isTotal
+    makeTable: makeTable
+    getTable: getTable
+    getTotalTable: getTotalTable
+    makeOrdinaryOperation: makeOrdinaryOperation
+  static_methods:
+    - makeOrdinary
+  str_parity: false
+testing:
+  notes: |
+    Goldens cover constructors, default fill, isTotal, idempotent diagonal,
+    makeOrdinaryOperation, and makeOrdinary list (Java duplicate-append).
+    Random defaultValue==-2 is a strict xfail.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/op_leftovers.py
+      covers:
+        - getSetSize
+        - intValueAt
+        - valueAt
+        - getDefaultValue
+        - setDefaultValue
+        - isIdempotentSet
+        - setIdempotent
+        - makeIdempotent
+        - isDiagonal
+        - updateRandomValueTable
+        - getRandomValueTable
+        - isTotal
+        - makeTable
+        - getTable
+        - getTotalTable
+        - makeOrdinaryOperation
+        - makeOrdinary
+      ignore_lines: []

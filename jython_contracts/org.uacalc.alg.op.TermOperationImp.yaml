@@ -1,0 +1,41 @@
+target: org.uacalc.alg.op.TermOperationImp
+level: file
+status: implemented
+java_source: org/uacalc/alg/op/TermOperationImp.java
+notes: |
+  Constructors TermOperationImp(term, vars, alg) and (name, term, vars, alg)
+  over uacalc_lib.terms.TermOperationImp (argument order matches Java; the
+  optional name is last on the Rust binding). getTerm / getOrderedVariables
+  return the original objects. intValueAt matches the interpreted operation.
+  valueAt(List) is the Java interpretation stub (always null). getTable()
+  NPEs until getTable(true) builds interpretation.tableOp. toString is the
+  term.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    getTerm: get_term
+    getOrderedVariables: get_ordered_variables
+    intValueAt: int_value_at
+    valueAt: valueAt
+    getTable: getTable
+    makeTable: makeTable
+    toString: toString
+  static_methods: []
+  str_parity: true
+testing:
+  notes: |
+    Goldens evaluate + on cyclic2/cyclic3/lat2 and a named constructor.
+    valueAt is null (Java stub); getTable() NPE; getTable(True) is the table.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/op_leftovers.py
+      covers:
+        - getTerm
+        - getOrderedVariables
+        - intValueAt
+        - valueAt
+        - getTable
+        - makeTable
+        - toString
+      ignore_lines: []

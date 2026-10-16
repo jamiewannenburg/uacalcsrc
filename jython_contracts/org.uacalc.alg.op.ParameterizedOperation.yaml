@@ -1,0 +1,30 @@
+target: org.uacalc.alg.op.ParameterizedOperation
+level: file
+status: implemented
+java_source: org/uacalc/alg/op/ParameterizedOperation.java
+notes: |
+  Java has a default constructor, package-private fields, makeOp(Map), and
+  static subParmValues (currently identity). makeOp parses arity/setSize
+  then returns an AbstractOperation whose intValueAt is Math.max of the
+  first two args (Java ignores the Groovy eval result). Groovy scripting
+  is not run. The Rust 8-arg constructor is not the Java API.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    makeOp: makeOp
+    subParmValues: subParmValues
+  static_methods:
+    - subParmValues
+  str_parity: false
+testing:
+  notes: |
+    Goldens cover default constructor field assignment, subParmValues identity,
+    and makeOp max on several sizes.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/op_leftovers.py
+      covers:
+        - makeOp
+        - subParmValues
+      ignore_lines: []

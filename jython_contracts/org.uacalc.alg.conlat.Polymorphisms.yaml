@@ -1,0 +1,23 @@
+target: org.uacalc.alg.conlat.Polymorphisms
+level: file
+status: implemented
+java_source: org/uacalc/alg/conlat/Polymorphisms.java
+notes: |
+  Java public API is the constructor plus an empty main(). Fields are
+  package-private. CPython constructs via uacalc_lib.Polymorphisms.
+  main is not wrapped.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases: {}
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    Goldens construct Polymorphisms on small partition lists (empty list is
+    IndexOutOfBoundsException like Java pars.get(0)).
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/conlat_leftovers.py
+      covers: []
+      ignore_lines: []

@@ -35,6 +35,12 @@ def test_conlat_shim_public_names_match_uacalc_lib():
         "BasicPartition",
         "CongruenceLattice",
         "PrintType",
+        "BinaryRelation",
+        "BasicBinaryRelation",
+        "CentralityData",
+        "Polymorphisms",
+        "Subtrace",
+        "TypeFinder",
     )
     for name in expected:
         if not hasattr(alg, name) and name == "PrintType":

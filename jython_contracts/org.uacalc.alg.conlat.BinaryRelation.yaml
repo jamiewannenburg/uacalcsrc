@@ -1,0 +1,29 @@
+target: org.uacalc.alg.conlat.BinaryRelation
+level: file
+status: implemented
+java_source: org/uacalc/alg/conlat/BinaryRelation.java
+notes: |
+  Java interface. CPython instances are BasicBinaryRelation (and Partition,
+  which extends BinaryRelation). Interface methods are on the concrete types.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    universeSize: universe_size
+    isRelated: is_related
+    getPairs: get_pairs
+    compose: compose
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    Exercised via BasicBinaryRelation goldens (universeSize/isRelated/getPairs/compose).
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/conlat_leftovers.py
+      covers:
+        - universeSize
+        - isRelated
+        - getPairs
+        - compose
+      ignore_lines: []
