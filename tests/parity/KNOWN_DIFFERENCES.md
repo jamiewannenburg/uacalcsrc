@@ -245,9 +245,36 @@ Malcev is intentionally left alone.
   `join_irreducibles()` on the congruence lattice (Java `makeOrderedSet` does
   the same) before `new_from_lattice`, so cardinality is **2**.
 - **Status**: Fixed in the library
-- **Tests**: `basic_lattice_from_con_c2`, `basic_lattice_from_con_lat2`
+- **Tests**: `basic_lattice_from_con_c2`, `basic_lattice_from_con_lat2`,
+  plus `basic_from_con_*` for C3, N5, M3, ba2
 - **Owner vs shim**: Owner/library — `PyBasicLattice::new` /
   `BasicLattice::new_from_lattice`.
+
+### BasicLattice from SubalgebraLattice
+
+- **Java**: `BasicLattice(name, lat)` accepts any `Lattice`, including
+  `SubalgebraLattice`.
+- **Python**: `PyBasicLattice::new` now also accepts a `SubalgebraLattice`,
+  computes `universe` + `join_irreducibles`, and builds
+  `BasicLattice<BasicSet>`. Cardinality matches Java. Join/meet/leq on that
+  BasicSet view stay Int32-only (same limitation as before).
+- **Status**: Fixed in the library
+- **Tests**: `basic_from_sub_c2_card`, `basic_from_sub_c3_card`,
+  `basic_from_sub_lat2_card`, `basic_from_sub_ba2_card`,
+  `sub_get_basic_lattice_c2`
+- **Owner vs shim**: Owner/library — `PyBasicLattice::try_from_subalgebra_lattice`.
+
+### Deliberately unwrapped lat methods
+
+- **Java**: `getVertices`, `main`, `run` are Swing/latdraw drawing helpers;
+  `intValueAt` / `valueAt` are methods of the anonymous join/meet
+  `Operation`s inside `BasicLattice`, not of the lattice itself.
+  `getDiagram` is also GUI (dotted return type, not in the 41-method scan).
+- **Python**: not bound. Filter/ideal/covers/leq/univ are covered via
+  `BasicLattice` and `OrderedSet`.
+- **Status**: Skipped by design (GUI / scanner false-positives). Malcev is
+  out of scope.
+- **Tests**: none (noted in `PENDING_BINDINGS` and `parity_slices`).
 
 ### Universe list order
 

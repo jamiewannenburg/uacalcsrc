@@ -19,8 +19,9 @@ surface:
 testing:
   notes: |
     lattices_facade_smoke.py builds a 2-element chain via latticeFromJoin and
-    latticeFromMeet. Golden tests/parity/lat cover dual NPE and
-    conToSmallLattice null.
+    latticeFromMeet. Golden tests/parity/lat cover dual NPE,
+    conToSmallLattice null, chains of several lengths, N5, M3, Boolean 2^n,
+    products, and latticeFromJoin adding a bottom when the join has no zero.
   task_refs: []
   scripts:
     - path: jython_comparison/scripts/lattices_facade_smoke.py

@@ -10,7 +10,8 @@ notes: |
   (Java returns latdraw OrderedSet). GUI (getDiagram, getVertices, main, run)
   is not bound. findJoinIrred / findMeetIrred / irredundant* / makeIrredundant*
   / con / sub are bound on the org wrapper (Java algorithms). BasicLattice
-  from CongruenceLattice computes universe + join irreducibles first.
+  from CongruenceLattice or SubalgebraLattice computes universe + join
+  irreducibles first (Java Lattice / Con constructors).
 ignore_reason: null
 surface:
   package_export: true
@@ -54,6 +55,9 @@ testing:
     cardinality, order, join/meet, irreducibles, covers, filter/ideal,
     algebraType, getUniverseOrder, convertToDefaultValueOps, findJoinIrred /
     findMeetIrred, irredundant join/meet decompositions, con, and sub.
+    Extended goldens cover chains of several lengths, N5, M3, Boolean 2^n,
+    products, Con(A)/Sub(A) of C2/C3/lat2/N5/M3/ba2, list join/meet,
+    filters/ideals, and covers.
   task_refs: []
   scripts:
     - path: jython_comparison/scripts/basic_lattice_api.py

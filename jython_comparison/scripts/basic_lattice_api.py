@@ -137,6 +137,48 @@ def test():
         con_null = True
     print("conToSmallLatticeNull=" + str(con_null).lower())
 
+    def _chain_join(n):
+        table = []
+        for i in range(n):
+            for j in range(n):
+                table.append(i if i > j else j)
+        return _make_int_op("v", 2, n, table)
+
+    chain3 = Lattices.latticeFromJoin("chain3", _chain_join(3))
+    print("chain3card=" + str(chain3.cardinality()))
+    print("chain3atoms=" + str(_labs(chain3.atoms())))
+    jis3 = chain3.joinIrreducibles() if hasattr(chain3, "joinIrreducibles") else chain3.join_irreducibles()
+    print("chain3jis=" + str(_labs(jis3)))
+
+    from org.uacalc.io import AlgebraIO
+    from org.uacalc.alg.op import OperationSymbol as _OpSym
+    n5alg = AlgebraIO.readAlgebraFile("resources/algebras/n5.ua")
+    n5 = Lattices.latticeFromJoin("N5", n5alg.getOperation(_OpSym("join", 2)))
+    print("n5card=" + str(n5.cardinality()))
+    print("n5atoms=" + str(_labs(n5.atoms())))
+    m3alg = AlgebraIO.readAlgebraFile("resources/algebras/m3.ua")
+    m3 = Lattices.latticeFromJoin("M3real", m3alg.getOperation(_OpSym("join", 2)))
+    print("m3card=" + str(m3.cardinality()))
+    print("m3atoms=" + str(_labs(m3.atoms())))
+    size = 8
+    bor = []
+    for i in range(size):
+        for j in range(size):
+            bor.append(i | j)
+    bool3 = Lattices.latticeFromJoin("B3", _make_int_op("v", 2, size, bor))
+    print("bool3card=" + str(bool3.cardinality()))
+    print("bool3atoms=" + str(_labs(bool3.atoms())))
+    lat2 = AlgebraIO.readAlgebraFile("resources/algebras/lat2.ua")
+    try:
+        from org.uacalc.alg import ProductAlgebra
+        prod = ProductAlgebra("C2xC2", [lat2, lat2])
+        plat = Lattices.latticeFromJoin("C2xC2", prod.getOperation(_OpSym("join", 2)))
+        print("prodcard=" + str(plat.cardinality()))
+    except Exception:
+        print("prodcard=err")
+    except:
+        print("prodcard=err")
+
 
 if __name__ == "__main__":
     test()
