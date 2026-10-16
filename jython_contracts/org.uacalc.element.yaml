@@ -1,0 +1,21 @@
+target: org.uacalc.element
+level: package
+status: implemented
+java_source: null
+notes: |
+  Thin package index. File-level contracts cover Element and SubProductElement.
+  Parent methods are Java stubs (identically null). Equality/hashing are
+  identity (Object), matching Java.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases: {}
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    Behavioral golden tests live in tests/parity/element. element_ops.py covers
+    the declared file-level surfaces on free algebras, subproducts, and mixed
+    products.
+  task_refs: []
+  scripts: []

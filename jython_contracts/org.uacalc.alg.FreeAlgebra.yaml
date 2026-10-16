@@ -35,6 +35,7 @@ surface:
     getProductAlgebra: get_product_algebra
     generators: generators
     getVariables: get_variables
+    getVariableToGeneratorMap: get_variable_to_generator_map
     getIdempotentTerms: get_idempotent_terms
     superAlgebra: super_algebra
     algebraType: algebra_type
@@ -82,6 +83,7 @@ testing:
         - getProductAlgebra
         - generators
         - getVariables
+        - getVariableToGeneratorMap
         - getIdempotentTerms
         - superAlgebra
         - algebraType

@@ -1,0 +1,49 @@
+target: org.uacalc.element.SubProductElement
+level: file
+status: implemented
+java_source: org/uacalc/element/SubProductElement.java
+notes: |
+  SubProductElement(IntArray, SubProductAlgebra) including FreeAlgebra.
+  getTerm / getVariableList / getVariableMap require findTerms (or a free
+  algebra). Parent methods are Java stubs (null). toString keeps the trailing
+  ", " after each var mapping (the Java "delete the last ," is commented out).
+  equals/hashCode are identity.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    getAlgebra: get_algebra
+    index: index
+    getTerm: get_term
+    getVariableList: get_variable_list
+    getVariableMap: get_variable_map
+    getParent: get_parent
+    getParentArray: get_parent_array
+    parentIndexArray: parent_index_array
+    toString: toString
+  static_methods: []
+  str_parity: true
+testing:
+  notes: |
+    Goldens cover F(1)/F(2) over cyclic2, F(2) over cyclic3 and lat2,
+    C2^2 and C2^3 subproducts, and a mixed C2 x C3 product, including
+    getTerm, getVariableList, getAlgebra, index, parent stubs, toString,
+    and identity equality/hashing.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/element_ops.py
+      covers:
+        - getAlgebra
+        - index
+        - getTerm
+        - getVariableList
+        - getVariableMap
+        - getParent
+        - getParentArray
+        - parentIndexArray
+        - toString
+        - __str__
+      ignore_lines:
+        - "pass:"
+        - "Constructing free"
+        - "done constructing"

@@ -1,15 +1,19 @@
-use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
+use pyo3::prelude::*;
 use pyo3::types::PyAny;
 use uacalc::alg::{Algebra, SmallAlgebra};
 use uacalc::util::int_array::{IntArray, IntArrayTrait};
 
-use crate::alg::big_product_algebra::PyBigProductAlgebra;
-use crate::alg::convert::{algebra_type_java_name, ops_to_basic_algebra, operation_to_py, operations_to_py};
 use crate::alg::basic_algebra::PyBasicAlgebra;
+use crate::alg::big_product_algebra::PyBigProductAlgebra;
 use crate::alg::conlat::congruence_lattice::PyCongruenceLattice;
+use crate::alg::convert::{
+    algebra_type_java_name, operation_to_py, operations_to_py, ops_to_basic_algebra, term_to_py,
+    vars_map_to_py,
+};
 use crate::alg::op::similarity_type::PySimilarityType;
 use crate::alg::sublat::subalgebra_lattice::PySubalgebraLattice;
+use crate::terms::PyVariableImp;
 use crate::util::PyIntArray;
 
 /// Python wrapper for SubProductAlgebra
@@ -18,23 +22,35 @@ pub struct PySubProductAlgebra {
     inner: uacalc::alg::SubProductAlgebra<i32>,
 }
 
+pub(crate) fn extract_int_array(obj: &Bound<'_, PyAny>) -> PyResult<IntArray> {
+    if let Ok(ia) = obj.extract::<PyRef<PyIntArray>>() {
+        return Ok(ia.inner.clone());
+    }
+    if let Ok(v) = obj.extract::<Vec<i32>>() {
+        return IntArray::from_array(v).map_err(PyValueError::new_err);
+    }
+    for meth in ["to_array", "getArray", "get_array"] {
+        if let Ok(arr) = obj.call_method0(meth) {
+            if let Ok(v) = arr.extract::<Vec<i32>>() {
+                return IntArray::from_array(v).map_err(PyValueError::new_err);
+            }
+        }
+    }
+    Err(PyValueError::new_err("expected IntArray or list[int]"))
+}
+
 fn extract_int_arrays(obj: &Bound<'_, PyAny>) -> PyResult<Vec<IntArray>> {
     let mut out = Vec::new();
     for item in obj.iter()? {
-        let item = item?;
-        if let Ok(ia) = item.extract::<PyRef<PyIntArray>>() {
-            out.push(ia.inner.clone());
-            continue;
-        }
-        if let Ok(v) = item.extract::<Vec<i32>>() {
-            out.push(IntArray::from_array(v).map_err(PyValueError::new_err)?);
-            continue;
-        }
-        return Err(PyValueError::new_err(
-            "generators must be IntArray or list[int]",
-        ));
+        out.push(extract_int_array(&item?)?);
     }
     Ok(out)
+}
+
+impl PySubProductAlgebra {
+    pub(crate) fn as_inner(&self) -> &uacalc::alg::SubProductAlgebra<i32> {
+        &self.inner
+    }
 }
 
 #[pymethods]
@@ -182,8 +198,44 @@ impl PySubProductAlgebra {
         None
     }
 
-    fn get_terms(&self) -> Option<Vec<PyObject>> {
-        None
+    fn get_terms(&self, py: Python<'_>) -> PyResult<Option<Vec<PyObject>>> {
+        if self.inner.get_terms().is_none() {
+            return Ok(None);
+        }
+        let mut out = Vec::new();
+        for elt in self.inner.get_universe_list() {
+            match self.inner.get_term(elt) {
+                Some(term) => out.push(term_to_py(py, term)?),
+                None => out.push(py.None()),
+            }
+        }
+        Ok(Some(out))
+    }
+
+    /// Java `getTerm(IntArray)`.
+    fn get_term(&self, py: Python<'_>, elt: &Bound<'_, PyAny>) -> PyResult<Option<PyObject>> {
+        let ia = extract_int_array(elt)?;
+        match self.inner.get_term(&ia) {
+            Some(term) => Ok(Some(term_to_py(py, term)?)),
+            None => Ok(None),
+        }
+    }
+
+    /// Java `getVariableToGeneratorMap()`.
+    fn get_variable_to_generator_map(&self, py: Python<'_>) -> PyResult<Option<PyObject>> {
+        match self.inner.get_variable_to_generator_map() {
+            Some(map) => Ok(Some(vars_map_to_py(py, map)?)),
+            None => Ok(None),
+        }
+    }
+
+    /// Java `getVariables()`.
+    fn get_variables(&self) -> Option<Vec<PyVariableImp>> {
+        self.inner.get_variables().map(|vars| {
+            vars.into_iter()
+                .map(|inner| PyVariableImp { inner })
+                .collect()
+        })
     }
 
     fn con(&mut self) -> PyResult<PyCongruenceLattice> {

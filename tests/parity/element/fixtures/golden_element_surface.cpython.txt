@@ -1,3 +1,5 @@
 MODULE: org.uacalc.element
 RUNTIME: cpython
-PUBLIC_COUNT: 0
+PUBLIC_COUNT: 2
+NAME: Element
+NAME: SubProductElement

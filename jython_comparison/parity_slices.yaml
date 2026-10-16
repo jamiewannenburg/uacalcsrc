@@ -160,12 +160,14 @@ slices:
       - core-alg-base
     owner: agent-e
     status: parity_golden
-    last_updated: "2026-04-18"
+    last_updated: "2026-10-16"
     workstreams: []
     parity_tests_dir: tests/parity/element
     notes: >-
-      parity_golden: golden_element_surface.py + fixtures + export checks. Deeper behavioral parity
-      still tracks uacalc_lib.element coverage vs the JAR.
+      Behavioral parity for Element and SubProductElement (branch element-coverage).
+      Goldens from Jython on free algebras, subproducts, and mixed products.
+      Parent accessors match Java stubs (null). Identity equals/hashCode.
+      Malcev/GUI out of scope.
 
   - id: core-eq
     title: Equations and presentations

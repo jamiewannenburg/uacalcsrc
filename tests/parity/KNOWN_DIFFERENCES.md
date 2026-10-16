@@ -583,6 +583,51 @@ the org shim's `leftSide` / `rightSide` return term objects via
 
 ---
 
+## org.uacalc.element
+
+### Element / SubProductElement parent accessors
+
+- **Java**: `getParent()`, `getParentArray()`, and `parentIndexArray()` are
+  empty stubs (`return null`).
+- **Python**: org shim / `uacalc_lib` return `None`.
+- **Status**: Matched
+- **Tests**: `f1_0_parent`, `f1_0_parent_array`, `f1_0_parent_index_array`,
+  `sp_parent`
+
+### SubProductElement.equals / hashCode
+
+- **Java**: no overrides; `Object` identity equality and identity hash.
+- **Python**: no `__eq__` / `__hash__` on the PyO3 class; identity as well.
+  Two separately constructed elements with the same IntArray and algebra
+  are not equal.
+- **Status**: Matched
+- **Tests**: `f1_0_eq_self`, `f1_0_eq_copy`, `f1_0_hash_stable`
+
+### SubProductElement.toString trailing comma
+
+- **Java**: `toString` appends `"var -> [coords], "` per variable and leaves
+  the trailing `", "` (the "delete the last ," line is commented out).
+- **Python**: matches that form, including the trailing comma-space.
+- **Status**: Matched
+- **Tests**: `f1_0_to_string`, `sp_0_to_string`, `spn_to_string`
+
+### SubProductElement.getVariableList when findTerms is false
+
+- **Java**: `getTerm()` is null, so `getVariableList()` NPEs.
+- **Python**: shim raises `NullPointerException`.
+- **Status**: Matched
+- **Tests**: `spn_vars_npe`
+
+### Element instantiation
+
+- **Java**: interface; cannot `new Element()`.
+- **Python**: `Element()` raises `ValueError` ("interface and cannot be
+  instantiated"). Not compared in goldens.
+- **Status**: Accepted (pending binding note)
+- **Owner vs shim**: Library constructor guard on `uacalc_lib.element.Element`
+
+---
+
 ## org.uacalc.alg.Malcev
 
 Left alone, as specified. `minority_term` / `weak_nu_term` are not part of this

@@ -440,6 +440,20 @@ def _install(alg_module_globals: dict) -> None:
                     return _LibBigProductAlgebra.new_from_algebras_named(
                         str(a0), _product_factors(a1)
                     )
+                # Java BigProductAlgebra(List, int[] powers).
+                try:
+                    powers = [int(x) for x in list(a1)]
+                except (TypeError, ValueError):
+                    powers = None
+                if powers is not None:
+                    expanded = []
+                    for i, alg in enumerate(_product_factors(a0)):
+                        copies = powers[i] if i < len(powers) else 1
+                        for _ in range(int(copies)):
+                            expanded.append(alg)
+                    return _LibBigProductAlgebra.new_from_algebras(
+                        expanded or _product_factors(a0)
+                    )
                 return _LibBigProductAlgebra.new_from_algebras(_product_factors(a0))
             if len(args) == 3:
                 name, alg, power = args
@@ -1790,6 +1804,24 @@ def _install(alg_module_globals: dict) -> None:
             return fn()
         return None
 
+    def getTerm(self: Any, elt: Any) -> Any:
+        fn = getattr(self, "get_term", None)
+        if callable(fn):
+            return fn(elt)
+        return None
+
+    def getVariableToGeneratorMap(self: Any) -> Any:
+        fn = getattr(self, "get_variable_to_generator_map", None)
+        if callable(fn):
+            return fn()
+        return None
+
+    def getVariables(self: Any) -> Any:
+        fn = getattr(self, "get_variables", None)
+        if callable(fn):
+            return fn()
+        return None
+
     def parent(self: Any) -> Any:
         # Java BasicAlgebra / GeneralAlgebra.parent() is identically null.
         return None
@@ -2095,6 +2127,9 @@ def _install(alg_module_globals: dict) -> None:
         "generators": subproductGeneratorsBound,
         "getProductAlgebra": getProductAlgebra,
         "getTerms": getTerms,
+        "getTerm": getTerm,
+        "getVariableToGeneratorMap": getVariableToGeneratorMap,
+        "getVariables": getVariables,
         "convertToDefaultValueOps": convertToDefaultValueOps_uoe,
         "iterator": _algebra_iterator,
         "parent": parent,
@@ -2917,6 +2952,7 @@ def _install(alg_module_globals: dict) -> None:
             "getProductAlgebra": "get_product_algebra",
             "generators": "generators",
             "getVariables": "get_variables",
+            "getVariableToGeneratorMap": "get_variable_to_generator_map",
             "getIdempotentTerms": "get_idempotent_terms",
             "superAlgebra": "super_algebra",
             "algebraType": "algebra_type",
@@ -3060,6 +3096,9 @@ def _install(alg_module_globals: dict) -> None:
             "algebraType": "algebra_type",
             "convertToDefaultValueOps": "convertToDefaultValueOps",
             "getTerms": "get_terms",
+            "getTerm": "get_term",
+            "getVariableToGeneratorMap": "get_variable_to_generator_map",
+            "getVariables": "get_variables",
             "con": "con",
             "sub": "sub",
             "makeOperationTables": "make_operation_tables",

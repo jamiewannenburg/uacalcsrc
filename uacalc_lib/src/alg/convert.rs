@@ -2,15 +2,18 @@
 
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
-use pyo3::types::PyAny;
+use pyo3::types::{PyAny, PyDict};
+use std::collections::HashMap;
 use uacalc::alg::op::{IntOperation, Operation};
 use uacalc::alg::AlgebraType;
 use uacalc::terms::{NonVariableTerm, Term, VariableImp};
 use uacalc::util::horner;
+use uacalc::util::int_array::IntArray;
 
 use crate::alg::basic_algebra::PyBasicAlgebra;
 use crate::alg::op::int_operation::PyIntOperation;
 use crate::terms::{PyNonVariableTerm, PyVariableImp};
+use crate::util::PyIntArray;
 
 /// Java `SmallAlgebra.AlgebraType` enum names (e.g. `FREE`, `REDUCT`).
 pub fn algebra_type_java_name(t: AlgebraType) -> String {
@@ -47,6 +50,17 @@ pub fn py_to_term(item: &Bound<'_, PyAny>) -> PyResult<Box<dyn Term>> {
     ))
 }
 
+/// Java `Map<Variable,IntArray>` as a Python dict of VariableImp → IntArray.
+pub fn vars_map_to_py(py: Python<'_>, map: &HashMap<VariableImp, IntArray>) -> PyResult<PyObject> {
+    let dict = PyDict::new_bound(py);
+    for (var, ia) in map {
+        let key = Py::new(py, PyVariableImp { inner: var.clone() })?;
+        let val = Py::new(py, PyIntArray { inner: ia.clone() })?;
+        dict.set_item(key, val)?;
+    }
+    Ok(dict.to_object(py))
+}
+
 /// Wrap a Rust term as a Python VariableImp or NonVariableTerm.
 pub fn term_to_py(py: Python<'_>, term: &dyn Term) -> PyResult<PyObject> {
     if term.isa_variable() {
@@ -57,9 +71,7 @@ pub fn term_to_py(py: Python<'_>, term: &dyn Term) -> PyResult<PyObject> {
     }
     let sym = term
         .leading_operation_symbol()
-        .ok_or_else(|| {
-            PyValueError::new_err("non-variable term is missing an operation symbol")
-        })?
+        .ok_or_else(|| PyValueError::new_err("non-variable term is missing an operation symbol"))?
         .clone();
     let children = term.get_children().unwrap_or_default();
     let nvt = PyNonVariableTerm {
