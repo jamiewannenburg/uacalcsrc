@@ -83,6 +83,16 @@ def test():
     else:
         print("makeOrderedSetCard=" + str(len(list(os2.univ()))))
     print("universeOrder=" + str(lat.getUniverseOrder()))
+    print("findJoinIrred=" + str(_lab(lat.findJoinIrred(e1, e0))))
+    print("findMeetIrred=" + str(_lab(lat.findMeetIrred(e0, e1))))
+    print("irredundantJoinDecomp=" + str(_labs(lat.irredundantJoinDecomposition(e1))))
+    print("irredundantMeetDecomp=" + str(_labs(lat.irredundantMeetDecomposition(e0))))
+    print("makeIrredundantJoin=" + str(_labs(lat.makeIrredundantJoin(list(jis)))))
+    print("makeIrredundantMeet=" + str(_labs(lat.makeIrredundantMeet(list(mis)))))
+    con = lat.con()
+    print("conCard=" + str(con.cardinality() if con is not None else None))
+    sub = lat.sub()
+    print("subCard=" + str(sub.cardinality() if sub is not None else None))
 
     try:
         from org.uacalc.lat import DivisibilityOrder

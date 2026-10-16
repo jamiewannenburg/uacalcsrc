@@ -198,10 +198,13 @@ slices:
       SmallLattice; Lattice ignored (interface, methods on BasicLattice).
       Behavioral goldens cover join/meet/order, irreducibles, covers, filter/ideal,
       OrderedSet univ/leq/covers, makeOrderedSet, generic Order.leq maximals
-      (ints, lists, objects, callable). SmallLattice.upperCoversIndices is a
-      strict owner/library xfail (Java conToSmallLattice is always null).
-      GUI/drawing, latdraw POElem class, and Malcev left as leftovers. Branch
-      cursor/order-coverage.
+      (ints, lists, objects, callable), findJoinIrred / findMeetIrred,
+      irredundant join/meet decompositions, con/sub, and BasicLattice from
+      Con(C2)/Con(lat2). SmallLattice.upperCoversIndices is a strict xfail for
+      a known Java bug (conToSmallLattice always null -> AttributeError;
+      Python DiamondLattice.upperCoversIndices(0) is [1, 2]). GUI/drawing,
+      latdraw POElem class, and Malcev left as leftovers. Branch
+      cursor/basic-lattice-finish-000f.
 
   - id: core-terms
     title: Terms and Taylor operations

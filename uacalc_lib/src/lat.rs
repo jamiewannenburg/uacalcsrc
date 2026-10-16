@@ -777,25 +777,42 @@ impl PyBasicLattice {
     #[new]
     #[pyo3(signature = (name, con_lat, label=true))]
     fn new(name: String, con_lat: &Bound<'_, PyAny>, label: bool) -> PyResult<Self> {
-        // Try to extract PyCongruenceLattice
+        let _ = label;
+        // Try to extract PyCongruenceLattice (or an org wrapper with `_inner`).
         use crate::alg::conlat::congruence_lattice::PyCongruenceLattice;
         use uacalc::lat::Lattice;
-        if let Ok(py_con_lat) = con_lat.extract::<PyRef<'_, PyCongruenceLattice>>() {
-            // Create BasicLattice from the Rust CongruenceLattice using new_from_lattice
-            // since PyCongruenceLattice uses CongruenceLattice<i32> which implements Lattice<Partition>
-            match uacalc::lat::BasicLattice::new_from_lattice(
-                name,
-                &py_con_lat.inner as &dyn Lattice<uacalc::alg::conlat::Partition>,
-            ) {
-                Ok(basic_lat) => {
-                    Ok(PyBasicLattice {
-                        inner: BasicLatticeInner::Partition(std::sync::Arc::new(std::sync::Mutex::new(basic_lat))),
-                    })
-                }
-                Err(e) => Err(PyValueError::new_err(format!("Failed to create BasicLattice: {}", e))),
-            }
+        let bound = if con_lat.extract::<PyRef<'_, PyCongruenceLattice>>().is_ok() {
+            con_lat.clone()
+        } else if let Ok(inner) = con_lat.getattr("_inner") {
+            inner
         } else {
-            Err(PyValueError::new_err("BasicLattice creation requires a CongruenceLattice instance"))
+            return Err(PyValueError::new_err(
+                "BasicLattice creation requires a CongruenceLattice instance",
+            ));
+        };
+        let mut py_con_lat = bound.extract::<PyRefMut<'_, PyCongruenceLattice>>()?;
+        // Java makeOrderedSet(lat) calls lat.universe() and lat.joinIrreducibles().
+        // Use UFCS so we hit CongruenceLattice's `&mut self` inherent methods
+        // (Algebra::universe is `&self` and returns empty until those caches exist).
+        {
+            use uacalc::alg::conlat::CongruenceLattice;
+            let inner = &mut py_con_lat.inner;
+            let _ = CongruenceLattice::universe(inner);
+            let _ = CongruenceLattice::join_irreducibles(inner);
+        }
+        match uacalc::lat::BasicLattice::new_from_lattice(
+            name,
+            &py_con_lat.inner as &dyn Lattice<uacalc::alg::conlat::Partition>,
+        ) {
+            Ok(basic_lat) => Ok(PyBasicLattice {
+                inner: BasicLatticeInner::Partition(std::sync::Arc::new(std::sync::Mutex::new(
+                    basic_lat,
+                ))),
+            }),
+            Err(e) => Err(PyValueError::new_err(format!(
+                "Failed to create BasicLattice: {}",
+                e
+            ))),
         }
     }
     

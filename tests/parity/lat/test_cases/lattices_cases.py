@@ -269,6 +269,8 @@ else:
     a1 = 1
     join_args = [a0, a1]
     empty_args = []
+m_bot = m3.getElement(0)
+m_top = m3.getElement(m3.cardinality() - 1)
 """
 
 _FILE_LATTICE = """
@@ -490,10 +492,6 @@ con_lat = BasicLattice("ConC2", con, False)
         call="con_lat.cardinality()",
         description="BasicLattice from Con(C2) cardinality",
         skip_string_check=True,
-        xfail_reason=(
-            "Owner/library: BasicLattice(name, CongruenceLattice, label) on "
-            "Python yields cardinality 0; Java Con(C2) has cardinality 2."
-        ),
     ),
     TestCaseSpec(
         id="lattice_from_join_lat2_file",
@@ -550,10 +548,6 @@ else:
         call="_lab(lat.findJoinIrred(a1, a0))",
         description="findJoinIrred(1, 0) in the 2-chain",
         skip_string_check=True,
-        xfail_reason=(
-            "Owner/library: findJoinIrred is not bound on PyBasicLattice. "
-            "Java returns 1 on the 2-chain."
-        ),
     ),
     TestCaseSpec(
         id="basic_lattice_find_meet_irred",
@@ -562,10 +556,6 @@ else:
         call="_lab(lat.findMeetIrred(a0, a1))",
         description="findMeetIrred(0, 1) in the 2-chain",
         skip_string_check=True,
-        xfail_reason=(
-            "Owner/library: findMeetIrred is not bound on PyBasicLattice. "
-            "Java returns 0 on the 2-chain."
-        ),
     ),
     TestCaseSpec(
         id="basic_lattice_irredundant_join_decomp",
@@ -574,10 +564,6 @@ else:
         call="_labs(lat.irredundantJoinDecomposition(a1))",
         description="irredundantJoinDecomposition of 1 in the 2-chain",
         skip_string_check=True,
-        xfail_reason=(
-            "Owner/library: irredundantJoinDecomposition is not bound on "
-            "PyBasicLattice."
-        ),
     ),
     TestCaseSpec(
         id="basic_lattice_irredundant_meet_decomp",
@@ -586,10 +572,6 @@ else:
         call="_labs(lat.irredundantMeetDecomposition(a0))",
         description="irredundantMeetDecomposition of 0 in the 2-chain",
         skip_string_check=True,
-        xfail_reason=(
-            "Owner/library: irredundantMeetDecomposition is not bound on "
-            "PyBasicLattice."
-        ),
     ),
     TestCaseSpec(
         id="basic_lattice_make_irredundant_join",
@@ -600,9 +582,6 @@ jis = list(lat.joinIrreducibles() if hasattr(lat, 'joinIrreducibles') else lat.j
         call="_labs(lat.makeIrredundantJoin(jis))",
         description="makeIrredundantJoin of join-irreducibles",
         skip_string_check=True,
-        xfail_reason=(
-            "Owner/library: makeIrredundantJoin is not bound on PyBasicLattice."
-        ),
     ),
     TestCaseSpec(
         id="basic_lattice_make_irredundant_meet",
@@ -613,9 +592,6 @@ mis = list(lat.meetIrreducibles() if hasattr(lat, 'meetIrreducibles') else lat.m
         call="_labs(lat.makeIrredundantMeet(mis))",
         description="makeIrredundantMeet of meet-irreducibles",
         skip_string_check=True,
-        xfail_reason=(
-            "Owner/library: makeIrredundantMeet is not bound on PyBasicLattice."
-        ),
     ),
     TestCaseSpec(
         id="basic_lattice_con",
@@ -624,10 +600,6 @@ mis = list(lat.meetIrreducibles() if hasattr(lat, 'meetIrreducibles') else lat.m
         call="lat.con().cardinality() if lat.con() is not None else None",
         description="con() of a 2-chain BasicLattice",
         skip_string_check=True,
-        xfail_reason=(
-            "Owner/library: BasicLattice.con is not bound on PyBasicLattice. "
-            "Java Con(chain2) has cardinality 2."
-        ),
     ),
     TestCaseSpec(
         id="basic_lattice_sub",
@@ -636,10 +608,6 @@ mis = list(lat.meetIrreducibles() if hasattr(lat, 'meetIrreducibles') else lat.m
         call="lat.sub().cardinality() if lat.sub() is not None else None",
         description="sub() of a 2-chain BasicLattice",
         skip_string_check=True,
-        xfail_reason=(
-            "Owner/library: BasicLattice.sub is not bound on PyBasicLattice. "
-            "Java Sub(chain2) has cardinality 4."
-        ),
     ),
     TestCaseSpec(
         id="ordered_set_upper_covers_via_poset",
@@ -900,6 +868,153 @@ else:
         skip_string_check=True,
     ),
     TestCaseSpec(
+        id="basic_lattice_name",
+        method="BasicLattice.getName",
+        setup=_CHAIN,
+        call="lat.getName() if hasattr(lat, 'getName') else lat.name()",
+        description="getName of the 2-chain BasicLattice",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="basic_lattice_meet_empty_list",
+        method="BasicLattice.meet",
+        setup=_CHAIN,
+        call="_lab(lat.meet(empty_args))",
+        description="meet([]) is one",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="basic_lattice_find_join_irred_leq",
+        method="BasicLattice.findJoinIrred",
+        setup=_CHAIN,
+        call="_lab(lat.findJoinIrred(a0, a1))",
+        description="findJoinIrred(0, 1) is null when 0 <= 1",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="basic_lattice_find_meet_irred_leq",
+        method="BasicLattice.findMeetIrred",
+        setup=_CHAIN,
+        call="_lab(lat.findMeetIrred(a1, a0))",
+        description="findMeetIrred(1, 0) is null when 0 <= 1",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="basic_lattice_irredundant_join_decomp_zero",
+        method="BasicLattice.irredundantJoinDecomposition",
+        setup=_CHAIN,
+        call="_labs(lat.irredundantJoinDecomposition(a0))",
+        description="irredundantJoinDecomposition of 0 (no lower covers) is empty",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="basic_lattice_irredundant_meet_decomp_one",
+        method="BasicLattice.irredundantMeetDecomposition",
+        setup=_CHAIN,
+        call="_labs(lat.irredundantMeetDecomposition(a1))",
+        description="irredundantMeetDecomposition of 1 (no upper covers) is empty",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="basic_lattice_find_join_irred_m3",
+        method="BasicLattice.findJoinIrred",
+        setup=_CHAIN,
+        call="_lab(m3.findJoinIrred(m_top, m_bot))",
+        description="findJoinIrred(top, bottom) in the 4-element diamond",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="basic_lattice_find_meet_irred_m3",
+        method="BasicLattice.findMeetIrred",
+        setup=_CHAIN,
+        call="_lab(m3.findMeetIrred(m_bot, m_top))",
+        description="findMeetIrred(bottom, top) in the 4-element diamond",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="basic_lattice_irredundant_join_decomp_m3",
+        method="BasicLattice.irredundantJoinDecomposition",
+        setup=_CHAIN,
+        call="_labs(m3.irredundantJoinDecomposition(m_top))",
+        description="irredundantJoinDecomposition of top in the 4-element diamond",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="basic_lattice_irredundant_meet_decomp_m3",
+        method="BasicLattice.irredundantMeetDecomposition",
+        setup=_CHAIN,
+        call="_labs(m3.irredundantMeetDecomposition(m_bot))",
+        description="irredundantMeetDecomposition of bottom in the 4-element diamond",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="basic_lattice_join_irreds_below_m3",
+        method="BasicLattice.joinIrredsBelow",
+        setup=_CHAIN,
+        call="_labs(m3.joinIrredsBelow(m_top))",
+        description="joinIrredsBelow(top) in the 4-element diamond",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="basic_lattice_meet_irreds_above_m3",
+        method="BasicLattice.meetIrredsAbove",
+        setup=_CHAIN,
+        call="_labs(m3.meetIrredsAbove(m_bot))",
+        description="meetIrredsAbove(bottom) in the 4-element diamond",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="basic_lattice_filter_m3",
+        method="BasicLattice.filter",
+        setup=_CHAIN,
+        call="_labs(m3.filter(m_bot))",
+        description="Filter of bottom in the 4-element diamond",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="basic_lattice_ideal_m3",
+        method="BasicLattice.ideal",
+        setup=_CHAIN,
+        call="_labs(m3.ideal(m_top))",
+        description="Ideal of top in the 4-element diamond",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="basic_lattice_universe_m3",
+        method="BasicLattice.universe",
+        setup=_CHAIN,
+        call="_labs(m3.universe())",
+        description="universe() of the 4-element diamond as sorted labels",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="basic_lattice_con_m3",
+        method="BasicLattice.con",
+        setup=_CHAIN,
+        call="m3.con().cardinality() if m3.con() is not None else None",
+        description="con() of the 4-element diamond BasicLattice",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="basic_lattice_sub_m3",
+        method="BasicLattice.sub",
+        setup=_CHAIN,
+        call="m3.sub().cardinality() if m3.sub() is not None else None",
+        description="sub() of the 4-element diamond BasicLattice",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="basic_lattice_from_con_lat2",
+        method="BasicLattice.cardinality",
+        setup=_FILE_LATTICE + """
+con = lat2.con()
+con_lat = BasicLattice("ConLat2", con, False)
+""",
+        call="con_lat.cardinality()",
+        description="BasicLattice from Con(lat2) cardinality",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
         id="small_lattice_upper_covers_indices",
         method="SmallLattice.upperCoversIndices",
         setup=_MAKE_OPS + """
@@ -925,9 +1040,11 @@ else:
         description="SmallLattice.upperCoversIndices: Java has no instance; Python DiamondLattice",
         skip_string_check=True,
         xfail_reason=(
-            "Owner/library: Java Lattices.conToSmallLattice always returns null; "
-            "Jython then raises AttributeError: 'NoneType' object has no attribute "
-            "'upperCoversIndices'. Python DiamondLattice.upperCoversIndices(0) is [1, 2]."
+            "Known Java bug: Lattices.conToSmallLattice always returns null, so "
+            "Jython raises AttributeError: 'NoneType' object has no attribute "
+            "'upperCoversIndices'. Python DiamondLattice.upperCoversIndices(0) "
+            "is [1, 2] (the desired SmallLattice behaviour). Java golden values "
+            "are left unchanged."
         ),
     ),
 ])
