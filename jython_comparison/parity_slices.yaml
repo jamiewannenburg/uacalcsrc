@@ -169,13 +169,14 @@ slices:
       - core-alg-base
     owner: agent-d
     status: parity_golden
-    last_updated: "2026-04-18"
+    last_updated: "2026-10-16"
     workstreams: []
     parity_tests_dir: tests/parity/eq
     notes: >-
-      Golden tests/parity/eq/golden_eq_surface.py + fixtures + test_eq_golden_surface.py (Jython vs CPython).
-      JAR has Equation/Equations/Presentation only; uacalc_lib adds associative_law helpers (fixtures differ).
-      agent-d.
+      Behavioral golden tests/parity/eq plus surface fixtures. Equation / Equations /
+      Presentation match the Java API (term objects, Variable lists, identity laws).
+      ProgressReport overloads and Equations.main are not bound. Native uacalc_lib
+      still exposes snake_case string helpers alongside the org shim.
 
   - id: core-lat
     title: Lattices and ordered sets
@@ -201,12 +202,13 @@ slices:
       - core-alg-base
     owner: agent-d
     status: parity_golden
-    last_updated: "2026-04-18"
+    last_updated: "2026-10-16"
     workstreams: []
     parity_tests_dir: tests/parity/terms
     notes: >-
-      Golden tests/parity/terms/golden_terms_surface.py + fixtures + test_terms_golden_surface.py. JAR vs
-      uacalc_lib differ in package-level helpers and PUBLIC_COUNT (separate fixtures). agent-d.
+      Behavioral golden tests/parity/terms cover Term / VariableImp / NonVariableTerm /
+      Terms (parse, eval, interpretation, substitute). Taylor/MMS is ignored with
+      Malcev. Nested anonymous Operation methods inside interpretation() are leftover.
 
   - id: core-group
     title: Permutation groups

@@ -3,24 +3,18 @@ level: package
 status: implemented
 java_source: null
 notes: |
-  Package facade for Terms.stringToTerm plus Variable / NonVariableTerm /
-  VariableImp re-exports. Matches ~/uacalc get_subreducts.py, dmm.py,
-  associativity_of_iff.py, structural_completeness.py.
+  Thin package index. File-level contracts cover Terms, VariableImp,
+  NonVariableTerm, and Variable. Taylor is ignored (Malcev/MMS). Term is an
+  interface implemented by VariableImp / NonVariableTerm.
 ignore_reason: null
 surface:
   package_export: true
   aliases: {}
-  static_methods:
-    - Terms.stringToTerm
-    - NonVariableTerm.makeConstantTerm
+  static_methods: []
   str_parity: false
 testing:
   notes: |
-    terms_string_to_term.py parses a variable term and builds a constant term.
+    Behavioral golden tests live in tests/parity/terms. Dual-runtime scripts
+    under jython_comparison/scripts cover the declared file-level surfaces.
   task_refs: []
-  scripts:
-    - path: jython_comparison/scripts/terms_string_to_term.py
-      covers:
-        - Terms.stringToTerm
-        - NonVariableTerm.makeConstantTerm
-      ignore_lines: []
+  scripts: []

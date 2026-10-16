@@ -26,6 +26,27 @@ PENDING_BINDINGS = {
             "uacalc_lib; a Python reimplementation is not allowed",
         ),
     ],
+    "terms": [
+        (
+            "Taylor / MMS (canonicalForm, interprets, markovicMcKenzieTerm, …)",
+            "Malcev-adjacent; skipped with Malcev",
+        ),
+        (
+            "anonymous Operation methods inside interpretation()",
+            "intValueAt/makeTable/getTable/valueAt/getTerm/getOrderedvariables "
+            "are on the returned operation, not on VariableImp/NonVariableTerm",
+        ),
+        (
+            "Terms.main / Terms.testFlatten",
+            "Java development helpers",
+        ),
+    ],
+    "eq": [
+        (
+            "ProgressReport overloads / Equations.main",
+            "org.uacalc.ui.tm.ProgressReport is not bound; main is a Java stub",
+        ),
+    ],
     "conlat": [
         (
             "ProgressReport overloads / UI (getDiagram, getConTable)",

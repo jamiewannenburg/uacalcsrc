@@ -80,7 +80,7 @@ def test_make_constant_term_isinstance_and_constructor():
     assert str(const) == "e()"
     assert const.depth() == 1
     assert const.length() == 1
-    assert list(const.getVariableList()) == []
+    assert [getattr(v, "getName", lambda: v)() for v in list(const.getVariableList())] == []
     assert const.isaVariable() is False
 
     x = VariableImp("x")
@@ -90,7 +90,7 @@ def test_make_constant_term_isinstance_and_constructor():
     assert str(compound) == "f(x,e())"
     assert compound.depth() == 2
     assert compound.length() == 3
-    assert list(compound.getVariableList()) == ["x"]
+    assert [v.getName() for v in list(compound.getVariableList())] == ["x"]
 
 
 def test_make_constant_term_java_outputs():
@@ -106,7 +106,7 @@ def test_make_constant_term_java_outputs():
         assert str(term) == "{}()".format(name)
         assert term.depth() == 1
         assert term.length() == 1
-        assert list(term.getVariableList()) == []
+        assert [v.getName() for v in list(term.getVariableList())] == []
 
     x = VariableImp("x")
     y = VariableImp("y")

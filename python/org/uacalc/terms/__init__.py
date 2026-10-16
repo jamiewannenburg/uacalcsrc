@@ -9,9 +9,29 @@ _CLASS_ALIASES = {
     "NonVariableTerm": {
         "makeConstantTerm": "make_constant_term",
         "intEval": "int_eval",
+        "isaVariable": "isa_variable",
+        "getVariableList": "get_variable_list",
+        "leadingOperationSymbol": "leading_operation_symbol",
+        "getOperationSymbols": "get_operation_symbols",
+        "getChildren": "get_children",
+        "writeStringBuffer": "write_string_buffer",
+        "toString": "to_string",
+        "hashCode": "hashCode",
     },
     "VariableImp": {
         "intEval": "int_eval",
+        "isaVariable": "isa_variable",
+        "getName": "get_name",
+        "getVariableList": "get_variable_list",
+        "leadingOperationSymbol": "leading_operation_symbol",
+        "getOperationSymbols": "get_operation_symbols",
+        "getChildren": "get_children",
+        "writeStringBuffer": "write_string_buffer",
+        "toString": "to_string",
+        "hashCode": "hashCode",
+    },
+    "Variable": {
+        "getName": "get_name",
     },
     "Terms": {},
 }
@@ -44,23 +64,6 @@ else:
     NonVariableTerm = _LibNonVariableTerm
     NonVariableTerm.makeConstantTerm = staticmethod(_make_constant_term)
 
-    if not hasattr(_LibNonVariableTerm, "isaVariable") and hasattr(
-        _LibNonVariableTerm, "isa_variable"
-    ):
-        NonVariableTerm.isaVariable = _LibNonVariableTerm.isa_variable
-    if not hasattr(VariableImp, "isaVariable") and hasattr(VariableImp, "isa_variable"):
-        VariableImp.isaVariable = VariableImp.isa_variable
-    if not hasattr(VariableImp, "intEval") and hasattr(VariableImp, "int_eval"):
-        VariableImp.intEval = VariableImp.int_eval
-    if not hasattr(VariableImp, "getName") and hasattr(VariableImp, "get_name"):
-        VariableImp.getName = VariableImp.get_name
-    if not hasattr(VariableImp, "getVariableList") and hasattr(VariableImp, "get_variable_list"):
-        VariableImp.getVariableList = VariableImp.get_variable_list
-    if not hasattr(_LibNonVariableTerm, "getVariableList") and hasattr(
-        _LibNonVariableTerm, "get_variable_list"
-    ):
-        NonVariableTerm.getVariableList = _LibNonVariableTerm.get_variable_list
-
     for _vname in ("x", "y", "z"):
         _attr = getattr(VariableImp, _vname, None)
         if callable(_attr):
@@ -91,14 +94,45 @@ else:
 
         @staticmethod
         def isValidVarString(s):
+            from org.uacalc._exceptions import NullPointerException
+
+            if s is None:
+                raise NullPointerException()
             return Terms._lib.is_valid_var_string(str(s))
 
         @staticmethod
         def isValidOpNameString(s):
+            from org.uacalc._exceptions import NullPointerException
+
+            if s is None:
+                raise NullPointerException()
             return Terms._lib.is_valid_op_name_string(str(s))
 
         @staticmethod
         def flatten(term):
-            return Terms._lib.flatten(term)
+            from org.uacalc._exceptions import (
+                NullPointerException,
+                translate_illegal_argument,
+            )
 
-    del _uacalc_lib, _terms, _name, _vname, _attr, _LibNonVariableTerm, _make_constant_term
+            if term is None:
+                raise NullPointerException()
+            try:
+                return Terms._lib.flatten(term)
+            except ValueError as exc:
+                translate_illegal_argument(exc)
+
+    from org.uacalc.terms._jython_compat import _install as _install_jython_compat
+
+    _install_jython_compat(globals())
+
+    del (
+        _uacalc_lib,
+        _terms,
+        _name,
+        _vname,
+        _attr,
+        _LibNonVariableTerm,
+        _make_constant_term,
+        _install_jython_compat,
+    )

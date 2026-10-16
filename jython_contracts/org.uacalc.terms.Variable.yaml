@@ -1,0 +1,24 @@
+target: org.uacalc.terms.Variable
+level: file
+status: implemented
+java_source: org/uacalc/terms/Variable.java
+notes: |
+  Interface. CPython binds Variable = VariableImp and exposes x/y/z instances
+  matching the Java static fields.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    getName: get_name
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    terms_string_to_term.py prints Variable.x.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/terms_string_to_term.py
+      covers:
+        - getName
+      ignore_lines:
+        - "depth is"

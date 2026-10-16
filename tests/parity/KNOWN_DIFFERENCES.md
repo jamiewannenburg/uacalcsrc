@@ -339,6 +339,54 @@ Malcev is intentionally left alone.
 
 ---
 
+## org.uacalc.terms
+
+Taylor / MMS (`markovicMcKenzieTerm`, `siggersTerm`, `interprets`, `canonicalForm`,
+`makeBalancedTayorTerm`) is Malcev-adjacent and is not wrapped in this pass.
+
+Anonymous `Operation` methods nested inside `interpretation()` (`intValueAt`,
+`makeTable`, `getTable`, `valueAt`, `getTerm`, `getOrderedvariables`) are not
+methods of `VariableImp` / `NonVariableTerm`. They appear in the Java-file
+heuristic. Exercise them on the returned operation instead.
+
+`Terms.main` / `Terms.testFlatten` are Java development helpers.
+
+### VariableImp.interpretation (varlist omits the variable)
+
+- **Java**: `varlist.indexOf(this)` is `-1`; interpretation still returns a
+  projection operation. `intValueAt` later throws
+  `ArrayIndexOutOfBoundsException`.
+- **Python**: `uacalc_lib` rejects the missing name (`ValueError`); the org shim
+  maps that to `NullPointerException` at construction.
+- **Status**: To Be Fixed
+- **Tests**: `variable_interp_missing_var` strict xfail
+- **Owner vs shim**: Owner/library — construction-time check in
+  `src/terms/mod.rs`. Not a rename in the shim.
+
+### Term.interpretation operation symbol
+
+- **Java**: anonymous op named `"Op_" + term`.
+- **Python**: library `IntOperation` uses `Op_{name}` for variables and the
+  term string (no `Op_` prefix) for compound terms. Tests compare
+  `intValueAt` tables, not symbol names.
+- **Status**: Accepted
+- **Owner vs shim**: Owner/library — symbol naming in `src/terms/mod.rs`.
+
+---
+
+## org.uacalc.eq
+
+`Equation.findFailure(alg, ProgressReport)` / `findFailureMap(alg, report)`
+overloads are not bound (`org.uacalc.ui.tm.ProgressReport`). `Equations.main`
+is a Java stub.
+
+Native `uacalc_lib.eq.Equation.left_side` / `right_side` still return strings;
+the org shim's `leftSide` / `rightSide` return term objects via
+`left_side_term` / `right_side_term`. Same split for
+`Presentation.get_relations` (strings) vs `getRelations` (Equation objects).
+
+---
+
 ## org.uacalc.alg.Malcev
 
 Left alone, as specified. `minority_term` / `weak_nu_term` are not part of this

@@ -1,0 +1,50 @@
+target: org.uacalc.terms.VariableImp
+level: file
+status: implemented
+java_source: org/uacalc/terms/VariableImp.java
+notes: |
+  Variable terms. Org shim adapts Map keys (Variable vs name), varlist of
+  Variable objects, 1-arg interpretation -> TermOperationImp, and getVariableList
+  to VariableImp objects. Nested anonymous Operation methods inside
+  interpretation() are not on this type.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    getName: get_name
+    isaVariable: isa_variable
+    intEval: int_eval
+    getVariableList: get_variable_list
+    leadingOperationSymbol: leading_operation_symbol
+    getOperationSymbols: get_operation_symbols
+    getChildren: get_children
+    writeStringBuffer: write_string_buffer
+    toString: to_string
+    hashCode: hashCode
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    terms_variable_eval.py constructs VariableImp, evaluates on cyclic2, and
+    checks interpretation / substitute / toString.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/terms_variable_eval.py
+      covers:
+        - getName
+        - isaVariable
+        - intEval
+        - eval
+        - getVariableList
+        - leadingOperationSymbol
+        - getOperationSymbols
+        - getChildren
+        - interpretation
+        - substitute
+        - toString
+        - writeStringBuffer
+        - equals
+        - hashCode
+        - depth
+        - length
+      ignore_lines: []

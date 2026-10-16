@@ -1,0 +1,31 @@
+target: org.uacalc.terms.Terms
+level: file
+status: implemented
+java_source: org/uacalc/terms/Terms.java
+notes: |
+  Static facade. stringToTerm / isValidVarString / isValidOpNameString / flatten.
+  main and testFlatten are Java-only development helpers.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases: {}
+  static_methods:
+    - Terms.stringToTerm
+    - Terms.isValidVarString
+    - Terms.isValidOpNameString
+    - Terms.flatten
+  str_parity: false
+testing:
+  notes: |
+    terms_string_to_term.py parses, validates names, and flattens an associative
+    nest. Golden tests/parity/terms cover errors and round trips.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/terms_string_to_term.py
+      covers:
+        - Terms.stringToTerm
+        - Terms.isValidVarString
+        - Terms.isValidOpNameString
+        - Terms.flatten
+      ignore_lines:
+        - "depth is"

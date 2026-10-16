@@ -5,24 +5,33 @@ java_source: org/uacalc/eq/Equation.java
 notes: |
   structural_completeness.py / get_idempotents.py / dmm.py construct
   Equation(left, right) and call findFailureMap / leftSide / rightSide.
+  ProgressReport overloads are not bound.
 ignore_reason: null
 surface:
   package_export: true
   aliases:
     findFailureMap: find_failure_map
+    findFailure: find_failure
     leftSide: left_side
     rightSide: right_side
+    getOperationSymbols: get_operation_symbols
+    getVariableList: get_variable_list
+    toString: toString
   static_methods: []
   str_parity: false
 testing:
   notes: |
-    equation_smoke.py builds a tautology Equation(x, x) and prints sides /
-    findFailureMap result on cyclic2.
+    equation_smoke.py builds tautology and failing equations on cyclic2 and
+    prints sides / findFailure / findFailureMap.
   task_refs: []
   scripts:
     - path: jython_comparison/scripts/equation_smoke.py
       covers:
         - findFailureMap
+        - findFailure
         - leftSide
         - rightSide
+        - getOperationSymbols
+        - getVariableList
+        - toString
       ignore_lines: []

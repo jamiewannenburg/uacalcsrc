@@ -1,0 +1,26 @@
+target: org.uacalc.eq.Equations
+level: file
+status: implemented
+java_source: org/uacalc/eq/Equations.java
+notes: |
+  Static identity factories. main is a Java-only stub.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases: {}
+  static_methods:
+    - Equations.associativeLaw
+    - Equations.cyclicLaw
+    - Equations.firstSecondSymmetricLaw
+  str_parity: false
+testing:
+  notes: |
+    equation_smoke.py prints associative / cyclic / first-second laws.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/equation_smoke.py
+      covers:
+        - Equations.associativeLaw
+        - Equations.cyclicLaw
+        - Equations.firstSecondSymmetricLaw
+      ignore_lines: []
