@@ -26,6 +26,14 @@ _CLASS_ALIASES = {
         "meet": "meet",
         "cardinality": "cardinality",
         "makeOrderedSet": "makeOrderedSet",
+        "findJoinIrred": "findJoinIrred",
+        "findMeetIrred": "findMeetIrred",
+        "irredundantJoinDecomposition": "irredundantJoinDecomposition",
+        "irredundantMeetDecomposition": "irredundantMeetDecomposition",
+        "makeIrredundantJoin": "makeIrredundantJoin",
+        "makeIrredundantMeet": "makeIrredundantMeet",
+        "con": "con",
+        "sub": "sub",
     },
     "SmallLattice": {
         "upperCoversIndices": "upper_covers_indices",
@@ -260,6 +268,131 @@ if not is_jython:
                 raise _UnsupportedOperationException("OrderedSet is not bound")
             return _OrderedSet.from_lattice(lat)
 
+        def _irreds(self, join=True):
+            if join:
+                fn = getattr(self, "joinIrreducibles", None) or self.join_irreducibles
+            else:
+                fn = getattr(self, "meetIrreducibles", None) or self.meet_irreducibles
+            return list(fn())
+
+        def _covers(self, v, upper=True):
+            if upper:
+                fn = getattr(self, "upperCovers", None) or self.upper_covers
+            else:
+                fn = getattr(self, "lowerCovers", None) or self.lower_covers
+            return list(fn(v))
+
+        def findJoinIrred(self, a, b):
+            # Java: minimal join-irreducible below a and not below b, by
+            # walking meet-irreducibles (BasicLattice.findJoinIrred).
+            if self.leq(a, b):
+                return None
+            for e in _irreds(self, join=False):
+                if not self.leq(a, e):
+                    test = self.meet(a, e)
+                    if not self.leq(test, b):
+                        a = test
+            return a
+
+        def findMeetIrred(self, a, b):
+            if self.leq(b, a):
+                return None
+            for e in _irreds(self, join=True):
+                if not self.leq(e, a):
+                    test = self.join(a, e)
+                    if not self.leq(b, test):
+                        a = test
+            return a
+
+        def makeIrredundantJoin(self, lst):
+            items = list(lst)
+            top = join(self, items)
+            ans = []
+            ans_join = self.zero()
+            for i, a in enumerate(items):
+                rest_join = join(self, items[i + 1 :])
+                b = join(self, ans_join, rest_join)
+                if b != top:
+                    ans.append(a)
+                    ans_join = join(self, ans_join, a)
+            return ans
+
+        def makeIrredundantMeet(self, lst):
+            items = list(lst)
+            bot = meet(self, items)
+            ans = []
+            ans_meet = self.one()
+            for i, a in enumerate(items):
+                rest_meet = meet(self, items[i + 1 :])
+                b = meet(self, ans_meet, rest_meet)
+                if b != bot:
+                    ans.append(a)
+                    ans_meet = meet(self, ans_meet, a)
+            return ans
+
+        def irredundantJoinDecomposition(self, v):
+            decomp = []
+            lc = _covers(self, v, upper=False)
+            if not lc:
+                return decomp
+            join_so_far = self.zero()
+            for lcov in lc:
+                ji = findJoinIrred(self, v, lcov)
+                if ji is not None and not self.leq(ji, join_so_far):
+                    join_so_far = join(self, join_so_far, ji)
+                    decomp.append(ji)
+                    if self.leq(v, join_so_far):
+                        break
+            return makeIrredundantJoin(self, decomp)
+
+        def irredundantMeetDecomposition(self, v):
+            decomp = []
+            uc = _covers(self, v, upper=True)
+            if not uc:
+                return decomp
+            meet_so_far = self.one()
+            for cov in uc:
+                mi = findMeetIrred(self, v, cov)
+                if mi is not None and not self.leq(meet_so_far, mi):
+                    meet_so_far = meet(self, meet_so_far, mi)
+                    decomp.append(mi)
+                    if self.leq(meet_so_far, v):
+                        break
+            return makeIrredundantMeet(self, decomp)
+
+        def _as_basic_algebra(self):
+            from org.uacalc.alg import BasicAlgebra
+            from org.uacalc.alg.op import Operations, OperationSymbol
+
+            n = int(self.cardinality())
+            join_table = []
+            meet_table = []
+            elems = [self.getElement(i) for i in range(n)]
+            for ei in elems:
+                for ej in elems:
+                    join_table.append(int(self.elementIndex(join(self, ei, ej))))
+                    meet_table.append(int(self.elementIndex(meet(self, ei, ej))))
+            make = getattr(Operations, "makeIntOperation", None)
+            if make is None:
+                make = Operations.make_int_operation
+            join_op = make(OperationSymbol("join", 2), n, join_table)
+            meet_op = make(OperationSymbol("meet", 2), n, meet_table)
+            name_fn = getattr(self, "getName", None) or self.name
+            name = name_fn() if callable(name_fn) else name_fn
+            return BasicAlgebra(str(name), n, [join_op, meet_op])
+
+        def con(self):
+            from org.uacalc.alg.conlat import CongruenceLattice
+
+            return CongruenceLattice(_as_basic_algebra(self))
+
+        def sub(self):
+            from org.uacalc.alg.sublat import SubalgebraLattice
+
+            alg = _as_basic_algebra(self)
+            inner = getattr(alg, "_inner", alg)
+            return SubalgebraLattice(inner)
+
         try:
             _BasicLattice.join = join
             _BasicLattice.meet = meet
@@ -267,6 +400,14 @@ if not is_jython:
             _BasicLattice.convertToDefaultValueOps = convertToDefaultValueOps
             _BasicLattice.dual = dual
             _BasicLattice.makeOrderedSet = makeOrderedSet
+            _BasicLattice.findJoinIrred = findJoinIrred
+            _BasicLattice.findMeetIrred = findMeetIrred
+            _BasicLattice.makeIrredundantJoin = makeIrredundantJoin
+            _BasicLattice.makeIrredundantMeet = makeIrredundantMeet
+            _BasicLattice.irredundantJoinDecomposition = irredundantJoinDecomposition
+            _BasicLattice.irredundantMeetDecomposition = irredundantMeetDecomposition
+            _BasicLattice.con = con
+            _BasicLattice.sub = sub
         except (TypeError, AttributeError):
             pass
 

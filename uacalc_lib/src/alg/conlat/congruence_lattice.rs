@@ -218,9 +218,14 @@ impl PyCongruenceLattice {
         use crate::lat::PyBasicLattice;
         let make = make_if_null.unwrap_or(true);
         
-        // Ensure universe is computed
-        let _ = self.inner.con_cardinality();
-        
+        // Java makeOrderedSet calls universe() and joinIrreducibles().
+        // UFCS so we hit the `&mut self` inherent methods, not Algebra::universe.
+        {
+            use uacalc::alg::conlat::CongruenceLattice;
+            let _ = CongruenceLattice::universe(&mut self.inner);
+            let _ = CongruenceLattice::join_irreducibles(&mut self.inner);
+        }
+
         // Convert CongruenceLattice<i32> to BasicLattice using new_from_lattice
         // CongruenceLattice<i32> implements Lattice<Partition>
         match uacalc::lat::BasicLattice::new_from_lattice(

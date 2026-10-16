@@ -4,10 +4,11 @@ status: implemented
 java_source: org/uacalc/lat/SmallLattice.java
 notes: |
   Java interface. upperCoversIndices is the only extra method. Java
-  Lattices.conToSmallLattice always returns null, so there is no
-  Java-constructible SmallLattice. Python DiamondLattice / BooleanLattice /
+  Lattices.conToSmallLattice always returns null (known Java bug), so there
+  is no Java-constructible SmallLattice and Jython raises AttributeError on
+  null.upperCoversIndices. Python DiamondLattice / BooleanLattice /
   uacalc_lib SmallLattice expose upperCoversIndices; the org wrapper still
-  returns None from conToSmallLattice to match Java.
+  returns None from conToSmallLattice to match Java's null.
 ignore_reason: null
 surface:
   package_export: true
@@ -19,8 +20,8 @@ surface:
   str_parity: false
 testing:
   notes: |
-    Golden small_lattice_upper_covers_indices is a strict xfail: Jython
-    AttributeError on the null conToSmallLattice result; Python
-    DiamondLattice.upperCoversIndices(0) is [1, 2].
+    Golden small_lattice_upper_covers_indices is a strict xfail for a known
+    Java bug: Jython AttributeError on the null conToSmallLattice result;
+    Python DiamondLattice.upperCoversIndices(0) is [1, 2].
   task_refs: []
   scripts: []

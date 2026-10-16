@@ -186,20 +186,22 @@ Malcev is intentionally left alone.
 - **Owner vs shim**: Thin shim (`Order` + null checks). Algorithm is
   `uacalc_lib/src/lat.rs` `maximals`.
 
-### SmallLattice.upperCoversIndices
+### SmallLattice.upperCoversIndices (known Java bug)
 
-- **Java/Jython**: `Lattices.conToSmallLattice` always returns null. Calling
-  `null.upperCoversIndices(0)` is Jython `AttributeError`
-  (`'NoneType' object has no attribute 'upperCoversIndices'`). There is no
-  public Java class that implements `SmallLattice`.
+- **Java/Jython**: `Lattices.conToSmallLattice` always returns null (the
+  constructed poset is discarded). Calling `null.upperCoversIndices(0)` is
+  Jython `AttributeError` (`'NoneType' object has no attribute
+  'upperCoversIndices'`). There is no public Java class that implements
+  `SmallLattice`. This is a **known Java bug**, not a shim or library defect.
+  Java golden expected values are left unchanged.
 - **Python**: org `conToSmallLattice` still returns `None` (Java null).
   `DiamondLattice.upperCoversIndices(0)` is `[1, 2]` (bottom covered by the
-  two atoms).
-- **Status**: Strict xfail / roadmap
-- **Tests**: `small_lattice_upper_covers_indices`
-- **Owner vs shim**: Owner/library — Java has no constructible `SmallLattice`.
-  Python extras (`DiamondLattice` / `BooleanLattice` / `uacalc_lib.SmallLattice`)
-  implement the method.
+  two atoms) — the desired SmallLattice behaviour.
+- **Status**: Known Java bug — intentional difference; Python is the desired
+  behavior
+- **Tests**: `small_lattice_upper_covers_indices` strict xfail (Java golden
+  still records the AttributeError)
+- **Owner vs shim**: Known Java bug. Not a shim issue and not a library issue.
 
 ### BasicLattice.makeOrderedSet
 
@@ -215,31 +217,35 @@ Malcev is intentionally left alone.
 - **Java**: `findJoinIrred(1, 0)` on the 2-chain is `1`; `findMeetIrred(0, 1)` is
   `0`; `irredundantJoinDecomposition(1)` / `makeIrredundantJoin(jis)` are `[1]`;
   `irredundantMeetDecomposition(0)` / `makeIrredundantMeet(mis)` are `[0]`.
-- **Python**: these methods are not bound on `PyBasicLattice` (`AttributeError`).
-- **Status**: Strict xfail / roadmap
+- **Python**: org wrapper implements the Java algorithms on `BasicLattice`
+  using existing `join` / `meet` / `leq` / irreducibles / covers.
+- **Status**: Implemented
 - **Tests**: `basic_lattice_find_join_irred`, `basic_lattice_find_meet_irred`,
   `basic_lattice_irredundant_join_decomp`, `basic_lattice_irredundant_meet_decomp`,
-  `basic_lattice_make_irredundant_join`, `basic_lattice_make_irredundant_meet`
-- **Owner vs shim**: Owner/library — algorithms live on Java `BasicLattice` and
-  are not wrapped in `uacalc_lib/src/lat.rs`.
+  `basic_lattice_make_irredundant_join`, `basic_lattice_make_irredundant_meet`,
+  plus diamond (`_m3`) and empty/null (`_leq`, `_zero`, `_one`) cases
+- **Owner vs shim**: Shim — Java algorithms in `python/org/uacalc/lat`.
 
 ### BasicLattice.con / sub
 
 - **Java**: `con()` of the 2-chain has cardinality **2**; `sub()` has cardinality
   **4**.
-- **Python**: `PyBasicLattice` has no `con` / `sub` (`AttributeError`).
-- **Status**: Strict xfail / roadmap
-- **Tests**: `basic_lattice_con`, `basic_lattice_sub`
-- **Owner vs shim**: Owner/library — CongruenceLattice / SubalgebraLattice from
-  a BasicLattice.
+- **Python**: org wrapper builds a `BasicAlgebra` from the join/meet tables and
+  returns `CongruenceLattice` / `SubalgebraLattice`.
+- **Status**: Implemented
+- **Tests**: `basic_lattice_con`, `basic_lattice_sub`, `basic_lattice_con_m3`,
+  `basic_lattice_sub_m3`
+- **Owner vs shim**: Shim — table extract in `python/org/uacalc/lat`; lattices
+  from `uacalc_lib`.
 
 ### BasicLattice from CongruenceLattice
 
 - **Java**: `BasicLattice("ConC2", C2.con(), false)` has cardinality **2**.
-- **Python**: the same constructor yields cardinality **0** (the Partition
-  variant does not populate the universe the way Java's latdraw poset does).
-- **Status**: Strict xfail / roadmap
-- **Tests**: `basic_lattice_from_con_c2`
+- **Python**: `PyBasicLattice::new` now calls `universe()` and
+  `join_irreducibles()` on the congruence lattice (Java `makeOrderedSet` does
+  the same) before `new_from_lattice`, so cardinality is **2**.
+- **Status**: Fixed in the library
+- **Tests**: `basic_lattice_from_con_c2`, `basic_lattice_from_con_lat2`
 - **Owner vs shim**: Owner/library — `PyBasicLattice::new` /
   `BasicLattice::new_from_lattice`.
 

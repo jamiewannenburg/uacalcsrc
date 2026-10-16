@@ -8,8 +8,9 @@ notes: |
   convertToDefaultValueOps raises UnsupportedOperationException. Instance
   dual NPEs via Lattices.dual. makeOrderedSet returns uacalc_lib OrderedSet
   (Java returns latdraw OrderedSet). GUI (getDiagram, getVertices, main, run)
-  is not bound. findJoinIrred / irredundant* are golden-tested and xfailed
-  where the library has no binding yet.
+  is not bound. findJoinIrred / findMeetIrred / irredundant* / makeIrredundant*
+  / con / sub are bound on the org wrapper (Java algorithms). BasicLattice
+  from CongruenceLattice computes universe + join irreducibles first.
 ignore_reason: null
 surface:
   package_export: true
@@ -37,13 +38,22 @@ surface:
     meet: meet
     cardinality: cardinality
     makeOrderedSet: makeOrderedSet
+    findJoinIrred: findJoinIrred
+    findMeetIrred: findMeetIrred
+    irredundantJoinDecomposition: irredundantJoinDecomposition
+    irredundantMeetDecomposition: irredundantMeetDecomposition
+    makeIrredundantJoin: makeIrredundantJoin
+    makeIrredundantMeet: makeIrredundantMeet
+    con: con
+    sub: sub
   static_methods: []
   str_parity: false
 testing:
   notes: |
     basic_lattice_api.py plus golden cases in tests/parity/lat cover
     cardinality, order, join/meet, irreducibles, covers, filter/ideal,
-    algebraType, getUniverseOrder, and convertToDefaultValueOps.
+    algebraType, getUniverseOrder, convertToDefaultValueOps, findJoinIrred /
+    findMeetIrred, irredundant join/meet decompositions, con, and sub.
   task_refs: []
   scripts:
     - path: jython_comparison/scripts/basic_lattice_api.py
@@ -71,6 +81,14 @@ testing:
         - meet
         - cardinality
         - makeOrderedSet
+        - findJoinIrred
+        - findMeetIrred
+        - irredundantJoinDecomposition
+        - irredundantMeetDecomposition
+        - makeIrredundantJoin
+        - makeIrredundantMeet
+        - con
+        - sub
       ignore_lines:
         - "labels has size"
         - "ucs has size"
