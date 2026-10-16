@@ -168,6 +168,12 @@ def test():
     _show("empty_nops", lambda: _nops(empty))
     _show("empty_super", lambda: _super_info(empty))
 
+    cong = alg.con().Cg(0, 1)
+    caa = ReductAlgebra.congruenceAsAlgebra(alg, cong)
+    print("caa_card=" + str(caa.cardinality()))
+    named_caa = ReductAlgebra.congruenceAsAlgebra("CA", alg, cong)
+    print("caa_name=" + str(named_caa.getName()))
+
 
 if __name__ == "__main__":
     test()

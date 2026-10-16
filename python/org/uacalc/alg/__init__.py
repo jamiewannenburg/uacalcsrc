@@ -284,6 +284,7 @@ if not is_jython:
             "getElement": "get_element",
             "getUniverseList": "get_universe_list",
             "algebraType": "algebra_type",
+            "congruenceAsAlgebra": "congruenceAsAlgebra",
         },
         "AlgebraFromMinimalSets": {
             "getName": "name",
@@ -322,6 +323,8 @@ if not is_jython:
             "convertToDefaultValueOps": "convertToDefaultValueOps",
             "con": "con",
             "sub": "sub",
+            "polinizeOperation": "polinize_operation",
+            "constructPolinAlgebra": "construct_polin_algebra",
         },
         "UnaryTermsMonoid": {
             "getName": "name",
@@ -354,6 +357,7 @@ if not is_jython:
             "isImageOf": "is_image_of",
             "toString": "toString",
             "compareTo": "compareTo",
+            "equals": "equals",
             "siDecompose": "siDecompose",
         },
         "ParameterizedAlgebra": {

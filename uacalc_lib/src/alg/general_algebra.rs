@@ -27,7 +27,7 @@ impl PyGeneralAlgebra {
     ///     GeneralAlgebra: A new GeneralAlgebra instance
     ///
     /// Raises:
-    ///     ValueError: If universe is empty or contains duplicates
+    ///     ValueError: If the universe argument is not iterable
     #[new]
     #[pyo3(signature = (name, universe, operations=None))]
     fn new(
@@ -49,10 +49,7 @@ impl PyGeneralAlgebra {
             return Err(PyValueError::new_err("Universe must be a list, set, or iterable"));
         };
 
-        if universe_list.is_empty() {
-            return Err(PyValueError::new_err("Universe cannot be empty"));
-        }
-
+        // Java GeneralAlgebra(name, univ) accepts the empty set.
         let universe = PyUniverseMap::from_objects(py, universe_list, true)?;
 
         // Extract operations
@@ -115,7 +112,7 @@ impl PyGeneralAlgebra {
     ///     GeneralAlgebra: A new GeneralAlgebra instance
     ///
     /// Raises:
-    ///     ValueError: If universe is empty or contains duplicates
+    ///     ValueError: If the universe argument is not iterable
     #[staticmethod]
     fn with_universe(py: Python<'_>, name: String, universe: &Bound<'_, PyAny>) -> PyResult<Self> {
         // Extract universe as a list of PyObjects
@@ -131,10 +128,7 @@ impl PyGeneralAlgebra {
             return Err(PyValueError::new_err("Universe must be a list, set, or iterable"));
         };
 
-        if universe_list.is_empty() {
-            return Err(PyValueError::new_err("Universe cannot be empty"));
-        }
-
+        // Java GeneralAlgebra(name, univ) accepts the empty set.
         let universe = PyUniverseMap::from_objects(py, universe_list, true)?;
 
         Ok(PyGeneralAlgebra {

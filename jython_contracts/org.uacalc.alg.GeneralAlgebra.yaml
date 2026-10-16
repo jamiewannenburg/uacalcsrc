@@ -7,8 +7,8 @@ notes: |
   (name, univ, ops). parent() is null; parents() is null; con()/sub()
   throw UnsupportedOperationException; makeOperationTables is a no-op.
   Monitor is a static ProgressReport (already patched on BasicAlgebra).
-  toString is Object identity; skip_string_check. Empty-universe constructor
-  is not the wrap focus (Python rejects empty universe).
+  toString is Object identity; skip_string_check. The empty-universe
+  constructor is accepted (Java Set size 0).
 ignore_reason: null
 surface:
   package_export: true
@@ -29,8 +29,9 @@ surface:
 testing:
   notes: |
     general_algebra_smoke.py plus remaining_alg_cases.py. Tiny {0,1} universe
-    with one unary op. AlgebraIO.writeAlgebraFile rejects GeneralAlgebra in
-    Java (not a SmallAlgebra), so there is no write/read round-trip.
+    with one unary op; empty universe cardinality 0. AlgebraIO.writeAlgebraFile
+    rejects GeneralAlgebra in Java (not a SmallAlgebra), so there is no
+    write/read round-trip.
   task_refs:
     - tests/parity/alg/test_cases/remaining_alg_cases.py
   scripts:
@@ -48,4 +49,5 @@ testing:
         - con
         - sub
         - cardinality
+        - size
       ignore_lines: []

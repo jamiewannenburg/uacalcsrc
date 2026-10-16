@@ -628,6 +628,16 @@ def _install(alg_module_globals: dict) -> None:
                 int(bot_const),
             )
 
+        @staticmethod
+        def constructPolinAlgebra(alg: Any, elem: Any) -> Any:
+            # Java stub: both overloads end at the unimplemented int version.
+            if _LibPolinLikeAlgebra is None:
+                return None
+            fn = getattr(_LibPolinLikeAlgebra, "construct_polin_algebra", None)
+            if callable(fn):
+                return _lib_call(fn, alg, elem)
+            return None
+
     class _UnaryTermsMonoidMeta(type):
         def __instancecheck__(cls, instance: Any) -> bool:
             return _LibUnaryTermsMonoid is not None and isinstance(
@@ -702,17 +712,27 @@ def _install(alg_module_globals: dict) -> None:
         def siDecompose(alg: Any, vec: Any, relations: Any = None) -> Any:
             if _LibAlgebraWithGeneratingVector is None:
                 raise TypeError("AlgebraWithGeneratingVector is not bound")
+            if vec is None:
+                _raise_npe()
+            vec_list = [int(x) for x in list(vec)]
             if relations is None:
                 return _lib_call(
                     _LibAlgebraWithGeneratingVector.si_decompose,
                     _as_product_factor(alg),
-                    [int(x) for x in list(vec)],
+                    vec_list,
+                )
+            rels = list(relations)
+            if not rels:
+                return _lib_call(
+                    _LibAlgebraWithGeneratingVector.si_decompose,
+                    _as_product_factor(alg),
+                    vec_list,
                 )
             return _lib_call(
                 _LibAlgebraWithGeneratingVector.si_decompose_with_relations,
                 _as_product_factor(alg),
-                [int(x) for x in list(vec)],
-                list(relations),
+                vec_list,
+                rels,
             )
 
     class ParameterizedAlgebra(object):
@@ -796,6 +816,22 @@ def _install(alg_module_globals: dict) -> None:
                     cong,
                 )
             raise TypeError("congruenceAsAlgebra() takes 2 or 3 arguments")
+
+    class _ReductAlgebraClassMeta(type):
+        def __instancecheck__(cls, instance: Any) -> bool:
+            return _LibReductAlgebra is not None and isinstance(
+                instance, _LibReductAlgebra
+            )
+
+    class ReductAlgebra(object, metaclass=_ReductAlgebraClassMeta):
+        """``ReductAlgebra(alg, terms)`` or ``ReductAlgebra(name, alg, terms)``."""
+
+        def __new__(cls, *args: Any) -> Any:
+            return _reduct_algebra(*args)
+
+        @staticmethod
+        def congruenceAsAlgebra(*args: Any) -> Any:
+            return Subalgebra.congruenceAsAlgebra(*args)
 
     class _HomomorphismMeta(type):
         def __instancecheck__(cls, instance: Any) -> bool:
@@ -2162,6 +2198,12 @@ def _install(alg_module_globals: dict) -> None:
         # Java PolinLikeAlgebra.elementIndex is a stub that always returns -1.
         return -1
 
+    def polinizeOperation(self: Any, sym: Any) -> Any:
+        fn = getattr(self, "polinize_operation", None)
+        if callable(fn):
+            return _lib_call(fn, sym)
+        return None
+
     _POLIN_EXTRA = {
         "getElement": polinGetElement,
         "elementIndex": polinElementIndex,
@@ -2169,9 +2211,20 @@ def _install(alg_module_globals: dict) -> None:
         "getUniverseOrder": lambda self: None,
         "convertToDefaultValueOps": convertToDefaultValueOps_uoe,
         "iterator": _algebra_iterator,
+        "polinizeOperation": polinizeOperation,
+        "constructPolinAlgebra": PolinLikeAlgebra.constructPolinAlgebra,
     }
     for camel, impl in _POLIN_EXTRA.items():
         _bind(_LibPolinLikeAlgebra, camel, impl)
+    if _LibPolinLikeAlgebra is not None:
+        try:
+            _LibPolinLikeAlgebra.constructPolinAlgebra = staticmethod(
+                PolinLikeAlgebra.constructPolinAlgebra
+            )
+        except (TypeError, AttributeError):
+            _LibPolinLikeAlgebra.constructPolinAlgebra = (
+                PolinLikeAlgebra.constructPolinAlgebra
+            )
 
     def unaryGetElement(self: Any, index: Any) -> Any:
         # Java UnaryTermsMonoid.getElement is a TODO stub (always null).
@@ -2229,6 +2282,14 @@ def _install(alg_module_globals: dict) -> None:
             return 1
         return 0
 
+    def awgvEquals(self: Any, other: Any) -> bool:
+        if other is None:
+            return False
+        try:
+            return bool(awgvIsImageOf(self, other) and awgvIsImageOf(other, self))
+        except Exception:
+            return False
+
     if _LibAlgebraWithGeneratingVector is not None:
         for camel, impl in (
             ("getAlgebra", awgvGetAlgebra),
@@ -2236,6 +2297,7 @@ def _install(alg_module_globals: dict) -> None:
             ("isImageOf", awgvIsImageOf),
             ("toString", awgvToString),
             ("compareTo", awgvCompareTo),
+            ("equals", awgvEquals),
             ("siDecompose", AlgebraWithGeneratingVector.siDecompose),
         ):
             _bind(_LibAlgebraWithGeneratingVector, camel, impl)
@@ -2742,8 +2804,14 @@ def _install(alg_module_globals: dict) -> None:
     alg_module_globals["SubProductAlgebra"] = SubProductAlgebra
     alg_module_globals["BigProductAlgebra"] = BigProductAlgebra
     if _LibReductAlgebra is not None:
-        alg_module_globals["ReductAlgebra"] = _reduct_algebra
+        alg_module_globals["ReductAlgebra"] = ReductAlgebra
         alg_module_globals["_LibReductAlgebra"] = _LibReductAlgebra
+        try:
+            _LibReductAlgebra.congruenceAsAlgebra = staticmethod(
+                ReductAlgebra.congruenceAsAlgebra
+            )
+        except (TypeError, AttributeError):
+            _LibReductAlgebra.congruenceAsAlgebra = ReductAlgebra.congruenceAsAlgebra
     if _LibSubalgebra is not None:
         alg_module_globals["Subalgebra"] = Subalgebra
         alg_module_globals["_LibSubalgebra"] = _LibSubalgebra
@@ -3010,6 +3078,7 @@ def _install(alg_module_globals: dict) -> None:
             "getElement": "get_element",
             "getUniverseList": "get_universe_list",
             "algebraType": "algebra_type",
+            "congruenceAsAlgebra": "congruenceAsAlgebra",
         },
         "AlgebraFromMinimalSets": {
             "getName": "name",
@@ -3048,6 +3117,8 @@ def _install(alg_module_globals: dict) -> None:
             "convertToDefaultValueOps": "convertToDefaultValueOps",
             "con": "con",
             "sub": "sub",
+            "polinizeOperation": "polinize_operation",
+            "constructPolinAlgebra": "construct_polin_algebra",
         },
         "UnaryTermsMonoid": {
             "getName": "name",
@@ -3080,6 +3151,7 @@ def _install(alg_module_globals: dict) -> None:
             "isImageOf": "is_image_of",
             "toString": "toString",
             "compareTo": "compareTo",
+            "equals": "equals",
             "siDecompose": "siDecompose",
         },
         "ParameterizedAlgebra": {

@@ -32,6 +32,9 @@ def test():
     print("getElement0=" + str(p.getElement(0)))
     print("eidx=" + str(p.elementIndex(0)))
     _show("op_plus", lambda: p.getOperation(plus) is not None)
+    _show("construct", lambda: PolinLikeAlgebra.constructPolinAlgebra(c2, 0))
+    _show("polinize00", lambda: p.polinizeOperation(plus).intValueAt([0, 0]))
+    _show("intValueAt00", lambda: p.getOperation(plus).intValueAt([0, 0]))
     _show("convert", lambda: p.convertToDefaultValueOps())
 
 

@@ -178,12 +178,16 @@ impl PyAlgebraWithGeneratingVector {
         relations: Option<Vec<crate::eq::PyEquation>>,
     ) -> Vec<PyAlgebraWithGeneratingVector> {
         let alg_box = Box::new(alg.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
-        let relations_opt = relations.map(|eqs| eqs.into_iter().map(|eq| eq.inner).collect());
-        let decomposition = uacalc::alg::AlgebraWithGeneratingVector::si_decompose_with_relations(
-            alg_box,
-            &vec,
-            relations_opt,
-        );
+        let relations_opt: Option<Vec<_>> =
+            relations.map(|eqs| eqs.into_iter().map(|eq| eq.inner).collect());
+        let decomposition = match relations_opt {
+            Some(rels) if !rels.is_empty() => {
+                uacalc::alg::AlgebraWithGeneratingVector::si_decompose_with_equation_relations(
+                    alg_box, &vec, rels,
+                )
+            }
+            _ => uacalc::alg::AlgebraWithGeneratingVector::si_decompose(alg_box, &vec),
+        };
         decomposition.into_iter()
             .map(|item| {
                 let card = item.get_algebra().cardinality();

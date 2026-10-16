@@ -7,6 +7,7 @@ use crate::util::PyIntArray;
 use crate::alg::convert::{algebra_type_java_name, operation_to_py, py_to_term};
 use crate::alg::PyBasicAlgebra;
 use crate::alg::PySubalgebraLattice;
+use crate::alg::subalgebra::PySubalgebra;
 use crate::alg::conlat::congruence_lattice::PyCongruenceLattice;
 use crate::alg::universe_map::PyUniverseMap;
 
@@ -289,28 +290,35 @@ impl PyReductAlgebra {
     /// Returns:
     ///     SmallAlgebra: The congruence as an algebra
     #[staticmethod]
-    fn congruence_as_algebra(alg: &PyBasicAlgebra, cong: &crate::alg::PyPartition) -> PyResult<PyBasicAlgebra> {
-        // This would require implementing the static method in Rust first
-        // For now, return an error indicating it's not yet implemented
-        Err(PyValueError::new_err("congruence_as_algebra() static method not yet implemented in Rust"))
+    fn congruence_as_algebra(
+        py: Python<'_>,
+        alg: &PyBasicAlgebra,
+        cong: &crate::alg::PyPartition,
+    ) -> PyResult<PySubalgebra> {
+        crate::alg::subalgebra::PySubalgebra::congruence_as_algebra(py, alg, cong)
     }
-    
+
     /// Create a congruence as an algebra with a name (static method).
-    /// 
+    ///
     /// This gives the congruence as a subalgebra of A^2.
-    /// 
+    ///
     /// Args:
     ///     name (str): The name for the algebra
     ///     alg (BasicAlgebra): The algebra
     ///     cong (Partition): The congruence partition
-    /// 
+    ///
     /// Returns:
-    ///     SmallAlgebra: The congruence as an algebra
+    ///     Subalgebra: The congruence as an algebra
     #[staticmethod]
-    fn congruence_as_algebra_with_name(name: String, alg: &PyBasicAlgebra, cong: &crate::alg::PyPartition) -> PyResult<PyBasicAlgebra> {
-        // This would require implementing the static method in Rust first
-        // For now, return an error indicating it's not yet implemented
-        Err(PyValueError::new_err("congruence_as_algebra_with_name() static method not yet implemented in Rust"))
+    fn congruence_as_algebra_with_name(
+        py: Python<'_>,
+        name: String,
+        alg: &PyBasicAlgebra,
+        cong: &crate::alg::PyPartition,
+    ) -> PyResult<PySubalgebra> {
+        crate::alg::subalgebra::PySubalgebra::congruence_as_algebra_with_name(
+            py, name, alg, cong,
+        )
     }
 }
 

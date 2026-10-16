@@ -40,6 +40,15 @@ def test():
     g2 = GeneralAlgebra("U", univ)
     ops = g2.operations()
     print("noops=" + str(0 if ops is None else len(list(ops))))
+    try:
+        from java.util import HashSet
+        empty = HashSet()
+    except ImportError:
+        empty = []
+    g0 = GeneralAlgebra("E", empty)
+    print("empty_card=" + str(g0.cardinality()))
+    eops = g0.operations()
+    print("empty_ops=" + str(0 if eops is None else len(list(eops))))
 
 
 if __name__ == "__main__":

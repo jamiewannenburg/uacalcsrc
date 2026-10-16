@@ -4,7 +4,8 @@ use pyo3::types::PyAny;
 use uacalc::alg::{SmallAlgebra, Algebra};
 use uacalc::alg::op::Operation;
 use crate::alg::convert::{
-    algebra_type_java_name, get_operation_by_symbol, operations_to_py, ops_to_basic_algebra,
+    algebra_type_java_name, get_operation_by_symbol, operation_to_py, operations_to_py,
+    ops_to_basic_algebra,
 };
 use crate::alg::PyBasicAlgebra;
 use crate::alg::conlat::congruence_lattice::PyCongruenceLattice;
@@ -195,6 +196,46 @@ impl PyPolinLikeAlgebra {
     /// Python repr representation
     fn __repr__(&self) -> String {
         format!("PolinLikeAlgebra({})", self.inner.borrow().name())
+    }
+
+    /// Java `constructPolinAlgebra` is unimplemented and always returns null.
+    #[staticmethod]
+    fn construct_polin_algebra(
+        alg: &Bound<'_, PyAny>,
+        elem: &Bound<'_, PyAny>,
+    ) -> Option<PyObject> {
+        let _ = (alg, elem);
+        None
+    }
+
+    /// Java `polinizeOperation(OperationSymbol)`.
+    fn polinize_operation(
+        &self,
+        py: Python<'_>,
+        sym: &Bound<'_, PyAny>,
+    ) -> PyResult<Option<PyObject>> {
+        let name = if let Ok(s) = sym.extract::<String>() {
+            s
+        } else if let Ok(n) = sym.call_method0("name") {
+            n.extract::<String>()?
+        } else {
+            return Ok(None);
+        };
+        let arity = if let Ok(a) = sym.call_method0("arity") {
+            a.extract::<i32>().ok()
+        } else {
+            None
+        };
+        let inner = self.inner.borrow();
+        for op_sym in inner.top_algebra().similarity_type().get_operation_symbols() {
+            if op_sym.name() == name && arity.map(|a| op_sym.arity() == a).unwrap_or(true) {
+                let op = inner
+                    .polinize_operation(op_sym)
+                    .map_err(PyValueError::new_err)?;
+                return Ok(Some(operation_to_py(py, op.as_ref())?));
+            }
+        }
+        Ok(None)
     }
 }
 

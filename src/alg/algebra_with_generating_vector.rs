@@ -270,12 +270,11 @@ where
         let sub_alg = Box::new(subalgebra.clone()) as Box<dyn SmallAlgebra<UniverseItem = T>>;
         let mut con_lat = crate::alg::conlat::CongruenceLattice::new(sub_alg);
         
-        // Get irredundant meet decomposition
+        // Get irredundant meet decomposition. Java returns an empty list when
+        // there are no meet-irreducibles (e.g. a 1-element algebra).
         let decomposition = con_lat.irredundant_meet_decomposition();
-        
         if decomposition.is_empty() {
-            // No decomposition possible, return the original algebra
-            return vec![AlgebraWithGeneratingVector::new(alg, vec.to_vec())];
+            return Vec::new();
         }
         
         // Convert elements in vec to indices in the subalgebra B
@@ -380,6 +379,154 @@ where
                 >(result)
             }
         }
+    }
+}
+
+impl AlgebraWithGeneratingVector<i32> {
+    /// Java `siDecompose(alg, vec, relations)` when `relations` is non-empty.
+    ///
+    /// Forms `B = Sg(vec)`, joins principal congruences of failed equations, then
+    /// decomposes the quotient. Empty or missing relations use `si_decompose`.
+    pub fn si_decompose_with_equation_relations(
+        alg: Box<dyn SmallAlgebra<UniverseItem = i32>>,
+        vec: &[i32],
+        relations: Vec<crate::eq::Equation>,
+    ) -> Vec<Self> {
+        use crate::alg::algebra::Algebra;
+        use crate::alg::conlat::CongruenceLattice;
+        use crate::alg::op::{IntOperation, Operation};
+        use crate::alg::small_algebra::BasicAlgebra;
+        use crate::util::horner::horner_inv_same_size_safe;
+        use std::collections::{HashMap, HashSet};
+
+        if relations.is_empty() {
+            return Self::si_decompose(alg, vec);
+        }
+
+        let indices: Vec<i32> = match vec
+            .iter()
+            .map(|elem| alg.element_index(elem))
+            .collect::<Option<Vec<_>>>()
+        {
+            Some(indices) => indices.into_iter().map(|i| i as i32).collect(),
+            None => {
+                return vec![AlgebraWithGeneratingVector::new(alg, vec.to_vec())];
+            }
+        };
+
+        let sub_lat = match SubalgebraLattice::new_safe(alg.clone_box()) {
+            Ok(lat) => lat,
+            Err(_) => {
+                return vec![AlgebraWithGeneratingVector::new(alg, vec.to_vec())];
+            }
+        };
+
+        let subalgebra = sub_lat.sg_from_gens(&indices);
+        let index_vec: Vec<usize> = match vec
+            .iter()
+            .map(|elem| {
+                alg.element_index(elem)
+                    .and_then(|orig_idx| subalgebra.index(orig_idx as i32))
+            })
+            .collect::<Option<Vec<_>>>()
+        {
+            Some(v) => v,
+            None => {
+                return vec![AlgebraWithGeneratingVector::new(alg, vec.to_vec())];
+            }
+        };
+
+        let vars = relations[0].get_variable_list();
+        let mut map = HashMap::new();
+        for (k, var) in vars.iter().enumerate() {
+            if k < index_vec.len() {
+                map.insert(var.clone(), index_vec[k] as i32);
+            }
+        }
+
+        let sub_for_eval = sub_lat.sg_from_gens(&indices);
+        let mut con_lat = CongruenceLattice::new(
+            Box::new(sub_for_eval.clone()) as Box<dyn SmallAlgebra<UniverseItem = i32>>,
+        );
+        let mut gamma = con_lat.zero();
+        {
+            let sub_ref: &dyn SmallAlgebra<UniverseItem = i32> = &sub_for_eval;
+            for eq in &relations {
+                let left = eq.left_side().int_eval(sub_ref, &map);
+                let right = eq.right_side().int_eval(sub_ref, &map);
+                if let (Ok(left), Ok(right)) = (left, right) {
+                    if left != right {
+                        let cg = con_lat.cg(left as usize, right as usize);
+                        if let Ok(joined) = gamma.join(&cg) {
+                            gamma = joined;
+                        }
+                    }
+                }
+            }
+        }
+
+        let sub_for_quot = sub_lat.sg_from_gens(&indices);
+        let quotient = match QuotientAlgebra::<i32>::new_safe(
+            Box::new(sub_for_quot) as Box<dyn SmallAlgebra<UniverseItem = i32>>,
+            gamma.clone(),
+        ) {
+            Ok(q) => q,
+            Err(_) => return Self::si_decompose(alg, vec),
+        };
+
+        let mut v = Vec::with_capacity(index_vec.len());
+        for &idx in &index_vec {
+            let rep = gamma.representative(idx);
+            match quotient.representative_index(rep) {
+                Ok(qidx) => v.push(qidx as i32),
+                Err(_) => return Self::si_decompose(alg, vec),
+            }
+        }
+
+        let card = quotient.cardinality();
+        if card < 0 {
+            return Self::si_decompose(alg, vec);
+        }
+        let mut rust_ops: Vec<Box<dyn Operation>> = Vec::new();
+        for op in Algebra::operations(&quotient) {
+            let symbol = op.symbol().clone();
+            let arity = op.arity();
+            let table_size = if arity == 0 {
+                1usize
+            } else {
+                match (card as usize).checked_pow(arity as u32) {
+                    Some(n) => n,
+                    None => continue,
+                }
+            };
+            let mut table = Vec::with_capacity(table_size);
+            let mut ok = true;
+            for i in 0..table_size {
+                let args = match horner_inv_same_size_safe(i as i32, card, arity as usize) {
+                    Ok(a) => a,
+                    Err(_) => {
+                        ok = false;
+                        break;
+                    }
+                };
+                match op.int_value_at(&args) {
+                    Ok(val) => table.push(val),
+                    Err(_) => {
+                        ok = false;
+                        break;
+                    }
+                }
+            }
+            if !ok {
+                continue;
+            }
+            if let Ok(int_op) = IntOperation::new(symbol, card, table) {
+                rust_ops.push(Box::new(int_op) as Box<dyn Operation>);
+            }
+        }
+        let universe: HashSet<i32> = (0..card).collect();
+        let basic = BasicAlgebra::new(quotient.name().to_string(), universe, rust_ops);
+        Self::si_decompose(Box::new(basic), &v)
     }
 }
 
