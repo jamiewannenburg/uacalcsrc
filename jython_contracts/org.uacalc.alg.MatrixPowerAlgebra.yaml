@@ -1,0 +1,60 @@
+target: org.uacalc.alg.MatrixPowerAlgebra
+level: file
+status: implemented
+java_source: org/uacalc/alg/MatrixPowerAlgebra.java
+notes: |
+  MatrixPowerAlgebra(alg, power) and MatrixPowerAlgebra(name, alg, power).
+  Java empty constructor-name default is alg.getName()+"^["+power+"]" when
+  getName() is non-null (including "") or power+"-matrix pwoer" when
+  getName() is null (Java typo, matched in the org wrapper). power==0
+  hits ProductAlgebra.makeOperations IOBE (shim raises IndexOutOfBoundsException).
+  getRoot / getPower / getPowerAlgebra / parent / parents; getElement is a
+  Horner tuple. convertToDefaultValueOps throws UnsupportedOperationException.
+  algebraType is MATRIX_POWER. Java source comments "Not working yet".
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    getName: name
+    setName: set_name
+    getOperation: getOperation
+    getRoot: get_root
+    getPower: get_power
+    getPowerAlgebra: get_power_algebra
+    parent: parent
+    parents: parents
+    getElement: getElement
+    elementIndex: elementIndex
+    getUniverseList: getUniverseList
+    algebraType: algebra_type
+    convertToDefaultValueOps: convertToDefaultValueOps
+    con: con
+    sub: sub
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    matrix_power_algebra_smoke.py plus remaining_alg_cases.py. cyclic2 power 1
+    (card 2) and power 2 (card 4). AlgebraIO write/read flattens to BasicAlgebra.
+  task_refs:
+    - tests/parity/alg/test_cases/remaining_alg_cases.py
+  scripts:
+    - path: jython_comparison/scripts/matrix_power_algebra_smoke.py
+      covers:
+        - getName
+        - setName
+        - getOperation
+        - getRoot
+        - getPower
+        - getPowerAlgebra
+        - parent
+        - parents
+        - getElement
+        - elementIndex
+        - getUniverseList
+        - algebraType
+        - convertToDefaultValueOps
+        - con
+        - sub
+        - cardinality
+      ignore_lines: []

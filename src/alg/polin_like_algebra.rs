@@ -314,6 +314,11 @@ impl Operation for PolinizedOperation {
         if args.is_empty() {
             return Err("No arguments provided".to_string());
         }
+
+        // Java installs "^+" as a plain AbstractOperation, not via polinizeOperation.
+        if self.symbol.name() == "^+" {
+            return self.bot_operation.int_value_at(args);
+        }
         
         let arg_type = Self::arg_type(args, self.bot_size);
         

@@ -1,7 +1,11 @@
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
+use pyo3::types::PyAny;
 use std::collections::HashMap;
 use uacalc::alg::*;
+use crate::alg::convert::{
+    algebra_type_java_name, get_operation_by_symbol, operations_to_py, ops_to_basic_algebra,
+};
 use crate::alg::PyBasicAlgebra;
 use crate::alg::power_algebra::PyPowerAlgebra;
 
@@ -9,6 +13,7 @@ use crate::alg::power_algebra::PyPowerAlgebra;
 #[pyclass]
 pub struct PyMatrixPowerAlgebra {
     inner: uacalc::alg::MatrixPowerAlgebra,
+    root: uacalc::alg::BasicAlgebra<i32>,
 }
 
 #[pymethods]
@@ -26,7 +31,10 @@ impl PyMatrixPowerAlgebra {
         let rust_root = Box::new(root.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
 
         match uacalc::alg::MatrixPowerAlgebra::new_safe(rust_root, power) {
-            Ok(inner) => Ok(PyMatrixPowerAlgebra { inner }),
+            Ok(inner) => Ok(PyMatrixPowerAlgebra {
+                inner,
+                root: root.inner.clone(),
+            }),
             Err(e) => Err(PyValueError::new_err(e)),
         }
     }
@@ -45,7 +53,10 @@ impl PyMatrixPowerAlgebra {
         let rust_root = Box::new(root.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
 
         match uacalc::alg::MatrixPowerAlgebra::new_with_name_safe(name, rust_root, power) {
-            Ok(inner) => Ok(PyMatrixPowerAlgebra { inner }),
+            Ok(inner) => Ok(PyMatrixPowerAlgebra {
+                inner,
+                root: root.inner.clone(),
+            }),
             Err(e) => Err(PyValueError::new_err(e)),
         }
     }
@@ -55,13 +66,7 @@ impl PyMatrixPowerAlgebra {
     /// Returns:
     ///     BasicAlgebra: The root algebra
     fn get_root(&self) -> PyBasicAlgebra {
-        // We can't return a reference to the root algebra since it's boxed
-        // This is a limitation of the current design
-        PyBasicAlgebra::from_inner(uacalc::alg::BasicAlgebra::new(
-            "Root".to_string(),
-            std::collections::HashSet::new(),
-            Vec::new()
-        ))
+        PyBasicAlgebra::from_inner(self.root.clone())
     }
 
     /// Get the parent algebra (same as root for matrix power algebra).
@@ -69,12 +74,7 @@ impl PyMatrixPowerAlgebra {
     /// Returns:
     ///     BasicAlgebra: The parent algebra
     fn parent(&self) -> PyBasicAlgebra {
-        // Same limitation as get_root
-        PyBasicAlgebra::from_inner(uacalc::alg::BasicAlgebra::new(
-            "Parent".to_string(),
-            std::collections::HashSet::new(),
-            Vec::new()
-        ))
+        self.get_root()
     }
 
     /// Get the parent algebras (list containing the root algebra).
@@ -82,29 +82,20 @@ impl PyMatrixPowerAlgebra {
     /// Returns:
     ///     list[BasicAlgebra]: List containing the root algebra
     fn parents(&self) -> Vec<PyBasicAlgebra> {
-        // Same limitation as get_root
-        vec![PyBasicAlgebra::from_inner(uacalc::alg::BasicAlgebra::new(
-            "Parent".to_string(),
-            std::collections::HashSet::new(),
-            Vec::new()
-        ))]
+        vec![self.get_root()]
     }
 
     /// Get the underlying power algebra.
     ///
     /// Returns:
     ///     PowerAlgebra: The underlying power algebra
-    fn get_power_algebra(&self) -> PyPowerAlgebra {
-        // We can't return a reference to the power algebra since it's not cloneable
-        // This is a limitation of the current design
-        PyPowerAlgebra::from_inner(uacalc::alg::PowerAlgebra::new_safe(
-            Box::new(uacalc::alg::BasicAlgebra::new(
-                "Dummy".to_string(),
-                std::collections::HashSet::new(),
-                Vec::new()
-            )) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>,
-            1
-        ).unwrap())
+    fn get_power_algebra(&self) -> PyResult<PyPowerAlgebra> {
+        let rust_root = Box::new(self.root.clone())
+            as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
+        match uacalc::alg::PowerAlgebra::new_safe(rust_root, self.inner.get_power()) {
+            Ok(inner) => Ok(PyPowerAlgebra::from_inner(inner)),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
     }
 
     /// Get the power/exponent.
@@ -166,7 +157,23 @@ impl PyMatrixPowerAlgebra {
     /// Returns:
     ///     str: The algebra type ("MATRIX_POWER")
     fn algebra_type(&self) -> String {
-        "MATRIX_POWER".to_string()
+        algebra_type_java_name(self.inner.algebra_type())
+    }
+
+    fn operations(&self, py: Python<'_>) -> PyResult<Vec<PyObject>> {
+        operations_to_py(py, Algebra::operations(&self.inner))
+    }
+
+    fn get_operation(&self, py: Python<'_>, sym: &Bound<'_, PyAny>) -> PyResult<Option<PyObject>> {
+        get_operation_by_symbol(py, Algebra::operations(&self.inner), sym)
+    }
+
+    fn to_basic_algebra(&self) -> PyResult<PyBasicAlgebra> {
+        ops_to_basic_algebra(
+            self.inner.name().to_string(),
+            self.inner.cardinality(),
+            Algebra::operations(&self.inner),
+        )
     }
 
     /// Get the cardinality of this algebra.

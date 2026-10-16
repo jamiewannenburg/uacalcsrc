@@ -1,0 +1,39 @@
+target: org.uacalc.alg.AlgebraWithGeneratingVector
+level: file
+status: implemented
+java_source: org/uacalc/alg/AlgebraWithGeneratingVector.java
+notes: |
+  Helper, not an Algebra. Constructor (alg, vec). getAlgebra / getVector /
+  isImageOf / compareTo / equals / toString. Static siDecompose(alg, vec)
+  and siDecompose(alg, vec, relations). toString is
+  "Alg with vector, alg size = N, vec = [a,b]" (ArrayString, no spaces).
+  siDecompose is large (Sg + irredundantMeetDecomposition) and is only
+  smoke-tested on cyclic2.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    getAlgebra: get_algebra
+    getVector: get_vector
+    isImageOf: is_image_of
+    toString: toString
+    compareTo: compareTo
+    siDecompose: siDecompose
+  static_methods:
+    - siDecompose
+  str_parity: true
+testing:
+  notes: |
+    algebra_with_generating_vector_smoke.py plus remaining_alg_cases.py.
+  task_refs:
+    - tests/parity/alg/test_cases/remaining_alg_cases.py
+  scripts:
+    - path: jython_comparison/scripts/algebra_with_generating_vector_smoke.py
+      covers:
+        - getAlgebra
+        - getVector
+        - isImageOf
+        - toString
+        - compareTo
+        - siDecompose
+      ignore_lines: []

@@ -280,6 +280,19 @@ impl PyGeneralAlgebra {
         self.operations.clone()
     }
 
+    /// Java `operations()`.
+    fn operations(&self, py: Python<'_>) -> Vec<PyObject> {
+        self.get_operations(py)
+    }
+
+    fn parent(&self) -> Option<PyObject> {
+        None
+    }
+
+    fn parents(&self) -> Option<Vec<PyObject>> {
+        None
+    }
+
     /// Add an operation to this algebra.
     ///
     /// Args:
@@ -305,11 +318,43 @@ impl PyGeneralAlgebra {
     ///
     /// Raises:
     ///     IndexError: If index is out of bounds
-    fn get_operation(&self, py: Python<'_>, index: usize) -> PyResult<PyObject> {
-        if index >= self.operations.len() {
-            return Err(PyValueError::new_err(format!("Operation index {} out of bounds", index)));
+    fn get_operation(&self, py: Python<'_>, key: &Bound<'_, PyAny>) -> PyResult<Option<PyObject>> {
+        if let Ok(index) = key.extract::<usize>() {
+            if index >= self.operations.len() {
+                return Err(PyValueError::new_err(format!("Operation index {} out of bounds", index)));
+            }
+            return Ok(Some(self.operations[index].clone()));
         }
-        Ok(self.operations[index].clone())
+        let name = if let Ok(s) = key.extract::<String>() {
+            s
+        } else if let Ok(n) = key.call_method0("name") {
+            n.extract::<String>()?
+        } else {
+            return Ok(None);
+        };
+        let arity = if let Ok(a) = key.call_method0("arity") {
+            a.extract::<i32>().ok()
+        } else {
+            None
+        };
+        for op in &self.operations {
+            let bound = op.bind(py);
+            let symbol = bound.getattr("symbol")?.call0()?;
+            let op_name: String = if let Ok(n) = symbol.call_method0("name") {
+                n.extract()?
+            } else {
+                continue;
+            };
+            let op_arity: Option<i32> = bound
+                .getattr("arity")
+                .ok()
+                .and_then(|a| a.call0().ok())
+                .and_then(|a| a.extract().ok());
+            if op_name == name && arity.map(|a| op_arity == Some(a)).unwrap_or(true) {
+                return Ok(Some(op.clone()));
+            }
+        }
+        Ok(None)
     }
 
     /// Get the number of operations.

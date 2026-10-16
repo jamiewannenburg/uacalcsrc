@@ -53,17 +53,23 @@ slices:
       - core-io
     owner: cursor-agent
     status: parity_golden
-    last_updated: "2026-10-15"
+    last_updated: "2026-10-16"
     workstreams: []
     parity_tests_dir: tests/parity/alg
     notes: >-
       Algebra / SmallAlgebra / BasicAlgebra plus Subalgebra, ProductAlgebra,
       PowerAlgebra, QuotientAlgebra/QuotientElement, SubProductAlgebra,
-      FreeAlgebra, Homomorphism, Closer, and Algebras (no Malcev) Jython shims
-      on org.uacalc.alg with golden behavioral cases in tests/parity/alg,
-      including AlgebraIO write/read value round-trips, homomorphism kernels,
-      Closer term maps, and Java-named conversion-path exceptions. CloserTiming
-      is UI-only and is not wrapped. Branch cursor/free-hom-closer.
+      FreeAlgebra, Homomorphism, Closer, Algebras, AlgebraFromMinimalSets,
+      AlgebraWithGeneratingVector, GeneralAlgebra, MatrixPowerAlgebra,
+      ParameterizedAlgebra, PolinLikeAlgebra, ReductAlgebra, and
+      UnaryTermsMonoid (no Malcev) Jython shims on org.uacalc.alg with golden
+      behavioral cases in tests/parity/alg, including AlgebraIO write/read
+      value round-trips and Java-named conversion-path exceptions. CloserTiming
+      is UI-only and is not wrapped. Branch cursor/remaining-alg-types.
+      Left: ReductAlgebra.congruenceAsAlgebra; PolinLikeAlgebra.constructPolinAlgebra
+      / polinizeOperation; AlgebraWithGeneratingVector.siDecompose relations
+      overload depth; GeneralAlgebra empty-universe constructor;
+      UnaryTermsMonoid.getUniverseList (Java term objects vs Python IntArrays).
 
   - id: core-alg-op
     title: Operation symbols and operations

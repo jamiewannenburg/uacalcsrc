@@ -1,0 +1,52 @@
+target: org.uacalc.alg.UnaryTermsMonoid
+level: file
+status: implemented
+java_source: org/uacalc/alg/UnaryTermsMonoid.java
+notes: |
+  UnaryTermsMonoid(alg) and UnaryTermsMonoid(alg, includeId). includeId is
+  unused in Java. Builds FreeAlgebra(alg,1) and a binary PRODUCT table.
+  algebraType is UNARY_TERMS_MONOID. Java stubs: getElement null,
+  elementIndex 0, con null, sub null, isUnary false. parent is the
+  generating algebra. getUniverseList is the term list (Java Terms vs
+  Python IntArrays — known owner difference). Constructor prints debug
+  lines (ignored in smoke).
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    getName: name
+    setName: set_name
+    getOperation: getOperation
+    getElement: getElement
+    elementIndex: elementIndex
+    getUniverseList: get_universe_list
+    algebraType: algebra_type
+    parent: parent
+    convertToDefaultValueOps: convertToDefaultValueOps
+    isUnary: isUnary
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    unary_terms_monoid_smoke.py plus remaining_alg_cases.py. cyclic2 only.
+  task_refs:
+    - tests/parity/alg/test_cases/remaining_alg_cases.py
+  scripts:
+    - path: jython_comparison/scripts/unary_terms_monoid_smoke.py
+      covers:
+        - getName
+        - setName
+        - getOperation
+        - getElement
+        - elementIndex
+        - getUniverseList
+        - algebraType
+        - parent
+        - convertToDefaultValueOps
+        - isUnary
+        - cardinality
+      ignore_lines:
+        - "pass"
+        - "thin"
+        - "Constructing free"
+        - "done constructing"

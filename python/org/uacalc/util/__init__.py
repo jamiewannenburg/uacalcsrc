@@ -28,6 +28,14 @@ else:
             _LibIntArray.universeSize = _LibIntArray.universe_size
         if not hasattr(_LibIntArray, "getArray") and hasattr(_LibIntArray, "to_array"):
             _LibIntArray.getArray = _LibIntArray.to_array
+        if not hasattr(_LibIntArray, "__iter__"):
+            def _int_array_iter(self):
+                getter = getattr(self, "to_array", None) or getattr(self, "getArray", None)
+                if callable(getter):
+                    return iter(list(getter()))
+                return iter(())
+
+            _LibIntArray.__iter__ = _int_array_iter
 
         class _IntArrayMeta(type):
             def __instancecheck__(cls, instance):

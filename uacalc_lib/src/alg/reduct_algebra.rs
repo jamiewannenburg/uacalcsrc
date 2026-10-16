@@ -198,6 +198,18 @@ impl PyReductAlgebra {
         }
         Ok(result)
     }
+
+    fn get_operation(&self, py: Python<'_>, sym: &Bound<'_, PyAny>) -> PyResult<Option<PyObject>> {
+        crate::alg::convert::get_operation_by_symbol(py, self.inner.operations(), sym)
+    }
+
+    fn to_basic_algebra(&self) -> PyResult<PyBasicAlgebra> {
+        crate::alg::convert::ops_to_basic_algebra(
+            self.inner.name().to_string(),
+            self.inner.cardinality(),
+            self.inner.operations(),
+        )
+    }
     
     /// Python string representation
     fn __str__(&self) -> String {

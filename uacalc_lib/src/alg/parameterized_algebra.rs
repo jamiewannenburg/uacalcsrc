@@ -20,20 +20,25 @@ impl PyParameterizedAlgebra {
     ///     description (str): Description of the algebra
     ///     ops (list[ParameterizedOperation]): List of parameterized operations
     #[new]
+    #[pyo3(signature = (parameter_names=None, name=None, set_size_exp=None, description=None, ops=None))]
     fn new(
-        parameter_names: Vec<String>,
-        name: String,
-        set_size_exp: String,
-        description: String,
-        ops: Vec<PyParameterizedOperation>,
+        parameter_names: Option<Vec<String>>,
+        name: Option<String>,
+        set_size_exp: Option<String>,
+        description: Option<String>,
+        ops: Option<Vec<PyParameterizedOperation>>,
     ) -> Self {
-        let rust_ops = ops.into_iter().map(|op| op.get_inner()).collect();
+        let rust_ops = ops
+            .unwrap_or_default()
+            .into_iter()
+            .map(|op| op.get_inner())
+            .collect();
         PyParameterizedAlgebra {
             inner: uacalc::alg::ParameterizedAlgebra::new(
-                parameter_names,
-                name,
-                set_size_exp,
-                description,
+                parameter_names.unwrap_or_default(),
+                name.unwrap_or_default(),
+                set_size_exp.unwrap_or_default(),
+                description.unwrap_or_default(),
                 rust_ops,
             )
         }
@@ -62,6 +67,10 @@ impl PyParameterizedAlgebra {
     ///     list[str]: List of parameter names
     fn get_parameter_names(&self) -> Vec<String> {
         self.inner.parameter_names.clone()
+    }
+
+    fn set_parameter_names(&mut self, names: Vec<String>) {
+        self.inner.parameter_names = names;
     }
     
     /// Get the algebra name.

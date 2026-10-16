@@ -127,3 +127,69 @@ def test_free_hom_closer_algebras_constructors():
     trans = Algebras.fullTransformationSemigroup(2, False, False)
     assert trans.cardinality() == 4
     assert Algebras.unaryCloneAlgFromPartitions([c2.con().zero()], [c2.con().zero()]) is None
+
+
+def test_remaining_alg_constructors():
+    _ensure_python_org_on_path()
+    from org.uacalc.alg import (  # noqa: PLC0415
+        Algebra,
+        AlgebraFromMinimalSets,
+        AlgebraWithGeneratingVector,
+        GeneralAlgebra,
+        MatrixPowerAlgebra,
+        ParameterizedAlgebra,
+        PolinLikeAlgebra,
+        ReductAlgebra,
+        SmallAlgebra,
+        UnaryTermsMonoid,
+    )
+    from org.uacalc.alg.op import OperationSymbol, Operations  # noqa: PLC0415
+    from org.uacalc.io import AlgebraIO  # noqa: PLC0415
+    from org.uacalc.terms import NonVariableTerm, Variable  # noqa: PLC0415
+
+    c2 = AlgebraIO.readAlgebraFile(str(REPO_ROOT / "resources/algebras/cyclic2.ua"))
+    afms = AlgebraFromMinimalSets("fromC2", c2)
+    assert isinstance(afms, AlgebraFromMinimalSets)
+    assert isinstance(afms, SmallAlgebra)
+    assert afms.cardinality() == 4
+    assert str(afms.algebraType()) == "BASIC"
+
+    mp = MatrixPowerAlgebra(c2, 1)
+    assert isinstance(mp, MatrixPowerAlgebra)
+    assert isinstance(mp, Algebra)
+    assert mp.cardinality() == 2
+    assert str(mp.algebraType()) == "MATRIX_POWER"
+    assert mp.getRoot().getName() == c2.getName()
+
+    pol = PolinLikeAlgebra("pol", c2, c2, None, 0, 0)
+    assert isinstance(pol, PolinLikeAlgebra)
+    assert pol.cardinality() == 4
+    assert str(pol.algebraType()) == "POLIN_LIKE"
+    assert pol.getElement(0) is None
+    assert pol.elementIndex(0) == -1
+
+    id1 = Operations.makeIntOperation(OperationSymbol("id", 1), 2, [0, 1])
+    ga = GeneralAlgebra("G", [0, 1], [id1])
+    assert isinstance(ga, GeneralAlgebra)
+    assert ga.cardinality() == 2
+    assert ga.parent() is None
+
+    v = AlgebraWithGeneratingVector(c2, [0, 1])
+    assert list(v.getVector()) == [0, 1]
+    assert "alg size = 2" in v.toString()
+
+    p = ParameterizedAlgebra()
+    p.parameterNames = ["n"]
+    assert p.getParameterMap([4])["n"] == "4"
+
+    plus = NonVariableTerm(OperationSymbol("+", 2), [Variable.x, Variable.y])
+    red = ReductAlgebra("R", c2, [plus])
+    assert str(red.algebraType()) == "REDUCT"
+    assert red.cardinality() == 2
+
+    utm = UnaryTermsMonoid(c2)
+    assert isinstance(utm, UnaryTermsMonoid)
+    assert str(utm.algebraType()) == "UNARY_TERMS_MONOID"
+    assert utm.isUnary() is False
+    assert utm.getElement(0) is None
+    assert utm.elementIndex(0) == 0

@@ -1,6 +1,10 @@
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
+use pyo3::types::PyAny;
 use uacalc::alg::*;
+use crate::alg::convert::{
+    algebra_type_java_name, get_operation_by_symbol, operations_to_py, ops_to_basic_algebra,
+};
 use crate::alg::PyBasicAlgebra;
 use crate::util::PyIntArray;
 
@@ -8,6 +12,7 @@ use crate::util::PyIntArray;
 #[pyclass]
 pub struct PyUnaryTermsMonoid {
     inner: uacalc::alg::UnaryTermsMonoid,
+    generating: uacalc::alg::BasicAlgebra<i32>,
 }
 
 #[pymethods]
@@ -24,7 +29,10 @@ impl PyUnaryTermsMonoid {
         let rust_alg = Box::new(algebra.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
 
         match uacalc::alg::UnaryTermsMonoid::new_safe(rust_alg) {
-            Ok(inner) => Ok(PyUnaryTermsMonoid { inner }),
+            Ok(inner) => Ok(PyUnaryTermsMonoid {
+                inner,
+                generating: algebra.inner.clone(),
+            }),
             Err(e) => Err(PyValueError::new_err(e)),
         }
     }
@@ -42,7 +50,10 @@ impl PyUnaryTermsMonoid {
         let rust_alg = Box::new(algebra.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
 
         match uacalc::alg::UnaryTermsMonoid::new_with_id_safe(rust_alg, include_id) {
-            Ok(inner) => Ok(PyUnaryTermsMonoid { inner }),
+            Ok(inner) => Ok(PyUnaryTermsMonoid {
+                inner,
+                generating: algebra.inner.clone(),
+            }),
             Err(e) => Err(PyValueError::new_err(e)),
         }
     }
@@ -52,10 +63,27 @@ impl PyUnaryTermsMonoid {
     /// Returns:
     ///     str: The algebra type
     fn algebra_type(&self) -> String {
-        match self.inner.algebra_type() {
-            uacalc::alg::AlgebraType::UnaryTermsMonoid => "UNARY_TERMS_MONOID".to_string(),
-            _ => "UNKNOWN".to_string(),
-        }
+        algebra_type_java_name(self.inner.algebra_type())
+    }
+
+    fn operations(&self, py: Python<'_>) -> PyResult<Vec<PyObject>> {
+        operations_to_py(py, Algebra::operations(&self.inner))
+    }
+
+    fn get_operation(&self, py: Python<'_>, sym: &Bound<'_, PyAny>) -> PyResult<Option<PyObject>> {
+        get_operation_by_symbol(py, Algebra::operations(&self.inner), sym)
+    }
+
+    fn to_basic_algebra(&self) -> PyResult<PyBasicAlgebra> {
+        ops_to_basic_algebra(
+            self.inner.name().to_string(),
+            self.inner.cardinality(),
+            Algebra::operations(&self.inner),
+        )
+    }
+
+    fn parent(&self) -> PyBasicAlgebra {
+        PyBasicAlgebra::from_inner(self.generating.clone())
     }
 
     /// Get the cardinality of the algebra.

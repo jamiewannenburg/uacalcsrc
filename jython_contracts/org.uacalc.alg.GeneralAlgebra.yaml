@@ -1,0 +1,51 @@
+target: org.uacalc.alg.GeneralAlgebra
+level: file
+status: implemented
+java_source: org/uacalc/alg/GeneralAlgebra.java
+notes: |
+  Base Algebra (not SmallAlgebra). Constructors (name, univ) and
+  (name, univ, ops). parent() is null; parents() is null; con()/sub()
+  throw UnsupportedOperationException; makeOperationTables is a no-op.
+  Monitor is a static ProgressReport (already patched on BasicAlgebra).
+  toString is Object identity; skip_string_check. Empty-universe constructor
+  is not the wrap focus (Python rejects empty universe).
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    getName: name
+    setName: set_name
+    getOperation: getOperation
+    getDescription: description
+    setDescription: set_description
+    universe: universe
+    operations: operations
+    parent: parent
+    parents: parents
+    con: con
+    sub: sub
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    general_algebra_smoke.py plus remaining_alg_cases.py. Tiny {0,1} universe
+    with one unary op. AlgebraIO.writeAlgebraFile rejects GeneralAlgebra in
+    Java (not a SmallAlgebra), so there is no write/read round-trip.
+  task_refs:
+    - tests/parity/alg/test_cases/remaining_alg_cases.py
+  scripts:
+    - path: jython_comparison/scripts/general_algebra_smoke.py
+      covers:
+        - getName
+        - setName
+        - getOperation
+        - getDescription
+        - setDescription
+        - universe
+        - operations
+        - parent
+        - parents
+        - con
+        - sub
+        - cardinality
+      ignore_lines: []

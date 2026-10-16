@@ -12,6 +12,7 @@ from org.uacalc._exceptions import (
     ArrayIndexOutOfBoundsException,
     IllegalArgumentException,
     IndexOutOfBoundsException,
+    NoSuchElementException,
     NullPointerException,
     UnsupportedOperationException,
     translate_illegal_argument,
@@ -37,6 +38,13 @@ def _install(alg_module_globals: dict) -> None:
     _LibAbstractOperation = alg_module_globals.get("AbstractOperation")
     _LibHomomorphism = alg_module_globals.get("Homomorphism")
     _LibCloser = alg_module_globals.get("Closer")
+    _LibAlgebraFromMinimalSets = alg_module_globals.get("AlgebraFromMinimalSets")
+    _LibAlgebraWithGeneratingVector = alg_module_globals.get("AlgebraWithGeneratingVector")
+    _LibGeneralAlgebra = alg_module_globals.get("GeneralAlgebra")
+    _LibMatrixPowerAlgebra = alg_module_globals.get("MatrixPowerAlgebra")
+    _LibParameterizedAlgebra = alg_module_globals.get("ParameterizedAlgebra")
+    _LibPolinLikeAlgebra = alg_module_globals.get("PolinLikeAlgebra")
+    _LibUnaryTermsMonoid = alg_module_globals.get("UnaryTermsMonoid")
 
     def _sym_name(sym: Any) -> str:
         name = getattr(sym, "name", None)
@@ -507,6 +515,247 @@ def _install(alg_module_globals: dict) -> None:
         if name is not None:
             reduct.set_name(str(name))
         return reduct
+
+    class _AlgebraFromMinimalSetsMeta(type):
+        def __instancecheck__(cls, instance: Any) -> bool:
+            return _LibAlgebraFromMinimalSets is not None and isinstance(
+                instance, _LibAlgebraFromMinimalSets
+            )
+
+    class AlgebraFromMinimalSets(object, metaclass=_AlgebraFromMinimalSetsMeta):
+        """Java constructor overloads over the Rust ``new_*`` factories."""
+
+        def __new__(cls, *args: Any) -> Any:
+            if _LibAlgebraFromMinimalSets is None:
+                raise TypeError("AlgebraFromMinimalSets is not bound")
+            if len(args) == 1:
+                return _lib_call(_LibAlgebraFromMinimalSets, _as_product_factor(args[0]))
+            if len(args) == 2:
+                name, alg = args
+                return _lib_call(
+                    _LibAlgebraFromMinimalSets.new_with_name,
+                    _as_product_factor(alg),
+                    str(name) if name is not None else None,
+                )
+            if len(args) == 3:
+                if isinstance(args[0], (str, bytes)) or args[0] is None:
+                    name, alg, connect_pts = args
+                    return _lib_call(
+                        _LibAlgebraFromMinimalSets.new_with_connecting_pts,
+                        _as_product_factor(alg),
+                        str(name) if name is not None else None,
+                        None if connect_pts is None else [int(x) for x in list(connect_pts)],
+                    )
+                min_alg, alg_size, maps = args
+                return _lib_call(
+                    _LibAlgebraFromMinimalSets.new_with_size,
+                    _as_product_factor(min_alg),
+                    int(alg_size),
+                    None if maps is None else list(maps),
+                )
+            if len(args) == 5:
+                name, alg, alg_size, maps, connect_pts = args
+                return _lib_call(
+                    _LibAlgebraFromMinimalSets.new_full,
+                    _as_product_factor(alg),
+                    int(alg_size),
+                    str(name) if name is not None else None,
+                    None if maps is None else list(maps),
+                    None if connect_pts is None else [int(x) for x in list(connect_pts)],
+                )
+            raise TypeError("AlgebraFromMinimalSets() takes 1, 2, 3, or 5 arguments")
+
+    class _MatrixPowerAlgebraMeta(type):
+        def __instancecheck__(cls, instance: Any) -> bool:
+            return _LibMatrixPowerAlgebra is not None and isinstance(
+                instance, _LibMatrixPowerAlgebra
+            )
+
+    class MatrixPowerAlgebra(object, metaclass=_MatrixPowerAlgebraMeta):
+        """``MatrixPowerAlgebra(alg, power)`` or ``MatrixPowerAlgebra(name, alg, power)``."""
+
+        def __new__(cls, *args: Any) -> Any:
+            if _LibMatrixPowerAlgebra is None:
+                raise TypeError("MatrixPowerAlgebra is not bound")
+            if len(args) == 2:
+                alg, power = args
+                name = None
+            elif len(args) == 3:
+                name, alg, power = args
+            else:
+                raise TypeError("MatrixPowerAlgebra() takes 2 or 3 arguments")
+            if int(power) == 0:
+                raise IndexOutOfBoundsException(
+                    "Index 0 out of bounds for length 0"
+                )
+            root = _as_product_factor(alg)
+            if name is None or name == "":
+                getter = getattr(root, "getName", None) or getattr(root, "name", None)
+                root_name = getter() if callable(getter) else getter
+                if root_name is None:
+                    name = "{}-matrix pwoer".format(int(power))
+                else:
+                    name = "{}^[{}]".format(root_name, int(power))
+            return _lib_call(
+                _LibMatrixPowerAlgebra.new_with_name,
+                str(name),
+                root,
+                int(power),
+            )
+
+    class _PolinLikeAlgebraMeta(type):
+        def __instancecheck__(cls, instance: Any) -> bool:
+            return _LibPolinLikeAlgebra is not None and isinstance(
+                instance, _LibPolinLikeAlgebra
+            )
+
+    class PolinLikeAlgebra(object, metaclass=_PolinLikeAlgebraMeta):
+        """Java ``PolinLikeAlgebra(name, topAlg, botAlg, map, topConst, botConst)``."""
+
+        def __new__(cls, *args: Any) -> Any:
+            if _LibPolinLikeAlgebra is None:
+                raise TypeError("PolinLikeAlgebra is not bound")
+            if len(args) != 6:
+                raise TypeError("PolinLikeAlgebra() takes 6 arguments")
+            name, top, bot, mapping, top_const, bot_const = args
+            return _lib_call(
+                _LibPolinLikeAlgebra,
+                str(name),
+                _as_product_factor(top),
+                _as_product_factor(bot),
+                mapping,
+                int(top_const),
+                int(bot_const),
+            )
+
+    class _UnaryTermsMonoidMeta(type):
+        def __instancecheck__(cls, instance: Any) -> bool:
+            return _LibUnaryTermsMonoid is not None and isinstance(
+                instance, _LibUnaryTermsMonoid
+            )
+
+    class UnaryTermsMonoid(object, metaclass=_UnaryTermsMonoidMeta):
+        """``UnaryTermsMonoid(alg)`` or ``UnaryTermsMonoid(alg, includeId)``."""
+
+        def __new__(cls, *args: Any) -> Any:
+            if _LibUnaryTermsMonoid is None:
+                raise TypeError("UnaryTermsMonoid is not bound")
+            if len(args) == 1:
+                return _lib_call(_LibUnaryTermsMonoid, _as_product_factor(args[0]))
+            if len(args) == 2:
+                return _lib_call(
+                    _LibUnaryTermsMonoid.new_with_id,
+                    _as_product_factor(args[0]),
+                    bool(args[1]),
+                )
+            raise TypeError("UnaryTermsMonoid() takes 1 or 2 arguments")
+
+    class _GeneralAlgebraMeta(type):
+        def __instancecheck__(cls, instance: Any) -> bool:
+            return _LibGeneralAlgebra is not None and isinstance(
+                instance, _LibGeneralAlgebra
+            )
+
+    class GeneralAlgebra(object, metaclass=_GeneralAlgebraMeta):
+        """``GeneralAlgebra(name, univ)`` or ``GeneralAlgebra(name, univ, ops)``."""
+
+        def __new__(cls, *args: Any) -> Any:
+            if _LibGeneralAlgebra is None:
+                raise TypeError("GeneralAlgebra is not bound")
+            if len(args) == 2:
+                name, univ = args
+                return _lib_call(_LibGeneralAlgebra, str(name), list(univ), None)
+            if len(args) == 3:
+                name, univ, ops = args
+                return _lib_call(
+                    _LibGeneralAlgebra,
+                    str(name),
+                    list(univ),
+                    None if ops is None else list(ops),
+                )
+            raise TypeError("GeneralAlgebra() takes 2 or 3 arguments")
+
+    class _AlgebraWithGeneratingVectorMeta(type):
+        def __instancecheck__(cls, instance: Any) -> bool:
+            return _LibAlgebraWithGeneratingVector is not None and isinstance(
+                instance, _LibAlgebraWithGeneratingVector
+            )
+
+    class AlgebraWithGeneratingVector(object, metaclass=_AlgebraWithGeneratingVectorMeta):
+        """``AlgebraWithGeneratingVector(alg, vec)``."""
+
+        def __new__(cls, *args: Any) -> Any:
+            if _LibAlgebraWithGeneratingVector is None:
+                raise TypeError("AlgebraWithGeneratingVector is not bound")
+            if len(args) != 2:
+                raise TypeError("AlgebraWithGeneratingVector() takes 2 arguments")
+            alg, vec = args
+            if vec is None:
+                _raise_npe()
+            return _lib_call(
+                _LibAlgebraWithGeneratingVector,
+                _as_product_factor(alg),
+                [int(x) for x in list(vec)],
+            )
+
+        @staticmethod
+        def siDecompose(alg: Any, vec: Any, relations: Any = None) -> Any:
+            if _LibAlgebraWithGeneratingVector is None:
+                raise TypeError("AlgebraWithGeneratingVector is not bound")
+            if relations is None:
+                return _lib_call(
+                    _LibAlgebraWithGeneratingVector.si_decompose,
+                    _as_product_factor(alg),
+                    [int(x) for x in list(vec)],
+                )
+            return _lib_call(
+                _LibAlgebraWithGeneratingVector.si_decompose_with_relations,
+                _as_product_factor(alg),
+                [int(x) for x in list(vec)],
+                list(relations),
+            )
+
+    class ParameterizedAlgebra(object):
+        """Java default constructor plus package-private fields Jython can set."""
+
+        def __init__(self, *args: Any) -> None:
+            if len(args) == 0:
+                self.parameterNames = None
+                self.name = None
+                self.setSizeExp = None
+                self.description = None
+                self.ops = None
+                self._inner = None
+                return
+            if len(args) == 5 and _LibParameterizedAlgebra is not None:
+                names, name, set_size_exp, description, ops = args
+                self.parameterNames = list(names) if names is not None else None
+                self.name = name
+                self.setSizeExp = set_size_exp
+                self.description = description
+                self.ops = ops
+                self._inner = _lib_call(
+                    _LibParameterizedAlgebra,
+                    [] if names is None else list(names),
+                    "" if name is None else str(name),
+                    "" if set_size_exp is None else str(set_size_exp),
+                    "" if description is None else str(description),
+                    [] if ops is None else list(ops),
+                )
+                return
+            raise TypeError("ParameterizedAlgebra() takes 0 or 5 arguments")
+
+        def getParameterMap(self, values: Any) -> Any:
+            if self.parameterNames is None:
+                _raise_npe()
+            iterator = iter([] if values is None else list(values))
+            out = {}
+            try:
+                for name in list(self.parameterNames):
+                    out[str(name)] = str(int(next(iterator)))
+            except StopIteration:
+                raise NoSuchElementException()
+            return out
 
     class _SubalgebraMeta(type):
         def __instancecheck__(cls, instance: Any) -> bool:
@@ -1618,6 +1867,10 @@ def _install(alg_module_globals: dict) -> None:
         "QuotientAlgebra",
         "SubProductAlgebra",
         "GeneralAlgebra",
+        "AlgebraFromMinimalSets",
+        "MatrixPowerAlgebra",
+        "PolinLikeAlgebra",
+        "UnaryTermsMonoid",
     ):
         # Patch the *library* class (what AlgebraIO returns), not only wrappers.
         lib_cls = alg_module_globals.get(cls_name)
@@ -1633,6 +1886,11 @@ def _install(alg_module_globals: dict) -> None:
             "PowerAlgebra": _LibPowerAlgebra,
             "QuotientAlgebra": _LibQuotientAlgebra,
             "SubProductAlgebra": _LibSubProductAlgebra,
+            "GeneralAlgebra": _LibGeneralAlgebra,
+            "AlgebraFromMinimalSets": _LibAlgebraFromMinimalSets,
+            "MatrixPowerAlgebra": _LibMatrixPowerAlgebra,
+            "PolinLikeAlgebra": _LibPolinLikeAlgebra,
+            "UnaryTermsMonoid": _LibUnaryTermsMonoid,
         }.get(cls_name, lib_cls)
         if target is None:
             continue
@@ -1810,6 +2068,185 @@ def _install(alg_module_globals: dict) -> None:
     }
     for camel, impl in _SUBPROD_EXTRA.items():
         _bind(_LibSubProductAlgebra, camel, impl)
+
+    def generalAlgebraCon(self: Any) -> Any:
+        raise UnsupportedOperationException()
+
+    def generalAlgebraSub(self: Any) -> Any:
+        raise UnsupportedOperationException()
+
+    def generalAlgebraParent(self: Any) -> Any:
+        return None
+
+    def generalAlgebraParents(self: Any) -> Any:
+        return None
+
+    _orig_ga_ops = (
+        getattr(_LibGeneralAlgebra, "operations", None)
+        if _LibGeneralAlgebra is not None
+        else None
+    )
+
+    def generalAlgebraOperations(self: Any, _orig: Any = _orig_ga_ops) -> Any:
+        if _orig is None:
+            return None
+        ops = _orig(self)
+        if ops is None:
+            return None
+        try:
+            seq = list(ops)
+        except TypeError:
+            return ops
+        # Java 2-arg constructor leaves the operations field null.
+        # Rust stores an empty vec for that path.
+        if not seq:
+            return None
+        return seq
+
+    _GENERAL_EXTRA = {
+        "con": generalAlgebraCon,
+        "sub": generalAlgebraSub,
+        "parent": generalAlgebraParent,
+        "parents": generalAlgebraParents,
+        "operations": generalAlgebraOperations,
+        "getUniverseList": lambda self: list(self.universe()) if hasattr(self, "universe") else None,
+        "iterator": _algebra_iterator,
+        "convertToDefaultValueOps": convertToDefaultValueOps_uoe,
+    }
+    for camel, impl in _GENERAL_EXTRA.items():
+        _bind(_LibGeneralAlgebra, camel, impl)
+
+    def matrixGetRoot(self: Any) -> Any:
+        return self.get_root()
+
+    def matrixGetPower(self: Any) -> int:
+        return int(self.get_power())
+
+    def matrixGetPowerAlgebra(self: Any) -> Any:
+        return self.get_power_algebra()
+
+    def matrixGetElement(self: Any, index: Any) -> Any:
+        from org.uacalc.util import IntArray
+
+        return IntArray([int(x) for x in list(self.get_element(int(index)))])
+
+    def matrixElementIndex(self: Any, obj: Any) -> int:
+        if obj is None:
+            _raise_npe()
+        coords = _as_universe_indices(obj)
+        return int(self.element_index(coords))
+
+    _MATRIX_EXTRA = {
+        "getRoot": matrixGetRoot,
+        "getPower": matrixGetPower,
+        "getPowerAlgebra": matrixGetPowerAlgebra,
+        "getElement": matrixGetElement,
+        "elementIndex": matrixElementIndex,
+        "getUniverseList": lambda self: [
+            matrixGetElement(self, i) for i in range(int(self.cardinality()))
+        ],
+        "getUniverseOrder": lambda self: None,
+        "convertToDefaultValueOps": convertToDefaultValueOps_uoe,
+        "parent": lambda self: self.get_root(),
+        "parents": lambda self: [self.get_root()],
+        "iterator": _algebra_iterator,
+    }
+    for camel, impl in _MATRIX_EXTRA.items():
+        _bind(_LibMatrixPowerAlgebra, camel, impl)
+
+    def polinGetElement(self: Any, index: Any) -> Any:
+        # Java PolinLikeAlgebra.getElement is a stub that always returns null.
+        return None
+
+    def polinElementIndex(self: Any, elem: Any) -> int:
+        # Java PolinLikeAlgebra.elementIndex is a stub that always returns -1.
+        return -1
+
+    _POLIN_EXTRA = {
+        "getElement": polinGetElement,
+        "elementIndex": polinElementIndex,
+        "getUniverseList": lambda self: None,
+        "getUniverseOrder": lambda self: None,
+        "convertToDefaultValueOps": convertToDefaultValueOps_uoe,
+        "iterator": _algebra_iterator,
+    }
+    for camel, impl in _POLIN_EXTRA.items():
+        _bind(_LibPolinLikeAlgebra, camel, impl)
+
+    def unaryGetElement(self: Any, index: Any) -> Any:
+        # Java UnaryTermsMonoid.getElement is a TODO stub (always null).
+        return None
+
+    def unaryElementIndex(self: Any, elem: Any) -> int:
+        # Java UnaryTermsMonoid.elementIndex is a TODO stub (always 0).
+        return 0
+
+    def unaryCon(self: Any) -> Any:
+        return None
+
+    def unarySub(self: Any) -> Any:
+        return None
+
+    def unaryIsUnary(self: Any) -> bool:
+        # Java isUnary() is false: the monoid operation is binary PRODUCT.
+        return False
+
+    _UNARY_EXTRA = {
+        "getElement": unaryGetElement,
+        "elementIndex": unaryElementIndex,
+        "con": unaryCon,
+        "sub": unarySub,
+        "isUnary": unaryIsUnary,
+        "getUniverseOrder": lambda self: None,
+        "convertToDefaultValueOps": convertToDefaultValueOps_uoe,
+        "makeOperationTables": lambda self: None,
+    }
+    for camel, impl in _UNARY_EXTRA.items():
+        _bind(_LibUnaryTermsMonoid, camel, impl)
+
+    def awgvGetAlgebra(self: Any) -> Any:
+        return self.get_algebra()
+
+    def awgvGetVector(self: Any) -> Any:
+        return list(self.get_vector())
+
+    def awgvIsImageOf(self: Any, other: Any) -> bool:
+        return bool(self.is_image_of(other))
+
+    def awgvToString(self: Any) -> str:
+        vec = list(self.get_vector())
+        body = "[" + ",".join(str(int(x)) for x in vec) + "]"
+        alg = self.get_algebra()
+        card = int(alg.cardinality())
+        return "Alg with vector, alg size = {}, vec = {}".format(card, body)
+
+    def awgvCompareTo(self: Any, other: Any) -> int:
+        if awgvIsImageOf(self, other):
+            if awgvIsImageOf(other, self):
+                return 0
+            return -1
+        if awgvIsImageOf(other, self):
+            return 1
+        return 0
+
+    if _LibAlgebraWithGeneratingVector is not None:
+        for camel, impl in (
+            ("getAlgebra", awgvGetAlgebra),
+            ("getVector", awgvGetVector),
+            ("isImageOf", awgvIsImageOf),
+            ("toString", awgvToString),
+            ("compareTo", awgvCompareTo),
+            ("siDecompose", AlgebraWithGeneratingVector.siDecompose),
+        ):
+            _bind(_LibAlgebraWithGeneratingVector, camel, impl)
+        try:
+            _LibAlgebraWithGeneratingVector.siDecompose = staticmethod(
+                AlgebraWithGeneratingVector.siDecompose
+            )
+        except (TypeError, AttributeError):
+            _LibAlgebraWithGeneratingVector.siDecompose = (
+                AlgebraWithGeneratingVector.siDecompose
+            )
 
     def switchXandYAutomorphism(self: Any) -> Any:
         fn = getattr(self, "switch_x_and_y_automorphism", None)
@@ -2170,7 +2607,8 @@ def _install(alg_module_globals: dict) -> None:
                 return True
             name = type(instance).__name__
             if "Algebra" not in name and "algebra" not in name:
-                return False
+                if "UnaryTermsMonoid" not in name:
+                    return False
             if any(tag in name for tag in ("Similarity", "Operation", "Type")):
                 return False
             if cls.__name__ == "Algebra":
@@ -2312,6 +2750,27 @@ def _install(alg_module_globals: dict) -> None:
     if _LibQuotientElement is not None:
         alg_module_globals["QuotientElement"] = _LibQuotientElement
         alg_module_globals["_LibQuotientElement"] = _LibQuotientElement
+    if _LibAlgebraFromMinimalSets is not None:
+        alg_module_globals["AlgebraFromMinimalSets"] = AlgebraFromMinimalSets
+        alg_module_globals["_LibAlgebraFromMinimalSets"] = _LibAlgebraFromMinimalSets
+    if _LibMatrixPowerAlgebra is not None:
+        alg_module_globals["MatrixPowerAlgebra"] = MatrixPowerAlgebra
+        alg_module_globals["_LibMatrixPowerAlgebra"] = _LibMatrixPowerAlgebra
+    if _LibPolinLikeAlgebra is not None:
+        alg_module_globals["PolinLikeAlgebra"] = PolinLikeAlgebra
+        alg_module_globals["_LibPolinLikeAlgebra"] = _LibPolinLikeAlgebra
+    if _LibUnaryTermsMonoid is not None:
+        alg_module_globals["UnaryTermsMonoid"] = UnaryTermsMonoid
+        alg_module_globals["_LibUnaryTermsMonoid"] = _LibUnaryTermsMonoid
+    if _LibGeneralAlgebra is not None:
+        alg_module_globals["GeneralAlgebra"] = GeneralAlgebra
+        alg_module_globals["_LibGeneralAlgebra"] = _LibGeneralAlgebra
+    if _LibAlgebraWithGeneratingVector is not None:
+        alg_module_globals["AlgebraWithGeneratingVector"] = AlgebraWithGeneratingVector
+        alg_module_globals["_LibAlgebraWithGeneratingVector"] = _LibAlgebraWithGeneratingVector
+    alg_module_globals["ParameterizedAlgebra"] = ParameterizedAlgebra
+    if _LibParameterizedAlgebra is not None:
+        alg_module_globals["_LibParameterizedAlgebra"] = _LibParameterizedAlgebra
     # Keep native classes available for isinstance checks / advanced use
     alg_module_globals["_LibBasicAlgebra"] = _LibBasicAlgebra
     alg_module_globals["_LibFreeAlgebra"] = _LibFreeAlgebra
@@ -2552,6 +3011,80 @@ def _install(alg_module_globals: dict) -> None:
             "getUniverseList": "get_universe_list",
             "algebraType": "algebra_type",
         },
+        "AlgebraFromMinimalSets": {
+            "getName": "name",
+            "setName": "set_name",
+            "getOperation": "getOperation",
+            "getElement": "get_element",
+            "elementIndex": "element_index",
+            "getUniverseList": "get_universe_list",
+            "algebraType": "algebra_type",
+        },
+        "MatrixPowerAlgebra": {
+            "getName": "name",
+            "setName": "set_name",
+            "getOperation": "getOperation",
+            "getRoot": "get_root",
+            "getPower": "get_power",
+            "getPowerAlgebra": "get_power_algebra",
+            "parent": "parent",
+            "parents": "parents",
+            "getElement": "getElement",
+            "elementIndex": "elementIndex",
+            "getUniverseList": "getUniverseList",
+            "algebraType": "algebra_type",
+            "convertToDefaultValueOps": "convertToDefaultValueOps",
+            "con": "con",
+            "sub": "sub",
+        },
+        "PolinLikeAlgebra": {
+            "getName": "name",
+            "setName": "set_name",
+            "getOperation": "getOperation",
+            "getElement": "getElement",
+            "elementIndex": "elementIndex",
+            "getUniverseList": "getUniverseList",
+            "algebraType": "algebra_type",
+            "convertToDefaultValueOps": "convertToDefaultValueOps",
+            "con": "con",
+            "sub": "sub",
+        },
+        "UnaryTermsMonoid": {
+            "getName": "name",
+            "setName": "set_name",
+            "getOperation": "getOperation",
+            "getElement": "getElement",
+            "elementIndex": "elementIndex",
+            "getUniverseList": "get_universe_list",
+            "algebraType": "algebra_type",
+            "parent": "parent",
+            "convertToDefaultValueOps": "convertToDefaultValueOps",
+            "isUnary": "isUnary",
+        },
+        "GeneralAlgebra": {
+            "getName": "name",
+            "setName": "set_name",
+            "getOperation": "getOperation",
+            "getDescription": "description",
+            "setDescription": "set_description",
+            "universe": "universe",
+            "operations": "operations",
+            "parent": "parent",
+            "parents": "parents",
+            "con": "con",
+            "sub": "sub",
+        },
+        "AlgebraWithGeneratingVector": {
+            "getAlgebra": "get_algebra",
+            "getVector": "get_vector",
+            "isImageOf": "is_image_of",
+            "toString": "toString",
+            "compareTo": "compareTo",
+            "siDecompose": "siDecompose",
+        },
+        "ParameterizedAlgebra": {
+            "getParameterMap": "getParameterMap",
+        },
         "Subalgebra": {
             "getName": "name",
             "setName": "set_name",
@@ -2595,6 +3128,13 @@ def _install(alg_module_globals: dict) -> None:
                 "SubalgebraLattice": _LibSubalgebraLattice,
                 "ReductAlgebra": _LibReductAlgebra,
                 "Subalgebra": _LibSubalgebra,
+                "AlgebraFromMinimalSets": _LibAlgebraFromMinimalSets,
+                "MatrixPowerAlgebra": _LibMatrixPowerAlgebra,
+                "PolinLikeAlgebra": _LibPolinLikeAlgebra,
+                "UnaryTermsMonoid": _LibUnaryTermsMonoid,
+                "GeneralAlgebra": _LibGeneralAlgebra,
+                "AlgebraWithGeneratingVector": _LibAlgebraWithGeneratingVector,
+                "ParameterizedAlgebra": ParameterizedAlgebra,
             }.get(class_name, alg_module_globals.get(class_name))
             if cls is None:
                 continue
