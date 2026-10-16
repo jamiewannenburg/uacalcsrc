@@ -14,7 +14,8 @@ surface:
   str_parity: false
 testing:
   notes: |
-    increment() is exercised via SequenceGenerator / PermutationGenerator goldens.
+    Dedicated increment() goldens plus SequenceGenerator / PermutationGenerator
+    full-sequence collections.
   task_refs: []
   scripts:
     - path: jython_comparison/scripts/util_ops.py

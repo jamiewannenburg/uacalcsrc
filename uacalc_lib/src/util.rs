@@ -518,6 +518,11 @@ impl PySimpleList {
             inner: self.inner.rest(),
         }
     }
+
+    /// Spine identity, matching Java ``SimpleList`` reference equality.
+    fn ptr_eq(&self, other: &PySimpleList) -> bool {
+        Arc::ptr_eq(&self.inner, &other.inner)
+    }
     
     /// Add an element to the front of the list (cons operation)
     fn cons(&self, obj: PyObject) -> PyResult<Self> {
