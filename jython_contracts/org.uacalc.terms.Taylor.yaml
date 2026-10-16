@@ -1,0 +1,17 @@
+target: org.uacalc.terms.Taylor
+level: file
+status: ignored
+java_source: org/uacalc/terms/Taylor.java
+notes: |
+  Markovic-McKenzie-Siggers / Taylor-term machinery used from Malcev. Left
+  alone per the terms/eq wrap scope.
+ignore_reason: Malcev/MMS-adjacent Taylor term machinery; skip with Malcev.
+surface:
+  package_export: false
+  aliases: {}
+  static_methods: []
+  str_parity: false
+testing:
+  notes: ""
+  task_refs: []
+  scripts: []

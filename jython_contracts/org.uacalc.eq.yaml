@@ -1,0 +1,19 @@
+target: org.uacalc.eq
+level: package
+status: implemented
+java_source: null
+notes: |
+  Thin package index. File-level contracts cover Equation, Equations, and
+  Presentation. ProgressReport overloads are not bound.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases: {}
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    Behavioral golden tests live in tests/parity/eq. equation_smoke.py covers
+    the declared file-level surfaces.
+  task_refs: []
+  scripts: []

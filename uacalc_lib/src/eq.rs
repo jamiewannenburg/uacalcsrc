@@ -1,10 +1,12 @@
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
+use pyo3::types::PyList;
 use uacalc::eq::{Equation, equations, Presentation};
 use uacalc::terms::Term;  // Import Term trait for clone_box method
 use std::collections::HashMap;
 use std::sync::Arc;
 use crate::alg::op::operation_symbol::PyOperationSymbol;
+use crate::terms::{term_to_py, PyVariableImp};
 
 /// Python wrapper for Equation
 #[pyclass]
@@ -45,18 +47,34 @@ impl PyEquation {
     
     /// Get the left side term as a string representation.
     /// 
-    /// # Returns
-    /// String representation of the left side term
+    /// Native Python API keeps this as a string. The org.uacalc shim uses
+    /// ``left_side_term`` so Java ``leftSide()`` can return a Term object.
     fn left_side(&self) -> String {
         format!("{}", self.inner.left_side())
     }
     
     /// Get the right side term as a string representation.
-    /// 
-    /// # Returns
-    /// String representation of the right side term
     fn right_side(&self) -> String {
         format!("{}", self.inner.right_side())
+    }
+
+    /// Left-hand term object (Java ``Equation.leftSide()``).
+    fn left_side_term(&self, py: Python<'_>) -> PyResult<PyObject> {
+        term_to_py(py, self.inner.left_side())
+    }
+
+    /// Right-hand term object (Java ``Equation.rightSide()``).
+    fn right_side_term(&self, py: Python<'_>) -> PyResult<PyObject> {
+        term_to_py(py, self.inner.right_side())
+    }
+
+    /// Operation symbols as ``OperationSymbol`` objects (Java ``getOperationSymbols``).
+    fn get_operation_symbol_objects(&self) -> Vec<PyOperationSymbol> {
+        self.inner
+            .get_operation_symbols()
+            .into_iter()
+            .map(PyOperationSymbol::from_inner)
+            .collect()
     }
     
     /// Get the variable list for this equation.
@@ -232,15 +250,26 @@ impl PyPresentation {
     /// # Returns
     /// A new Presentation instance
     #[new]
-    fn new(variables: Vec<String>, relations: Vec<PyEquation>) -> PyResult<Self> {
-        // Extract equations from PyEquation wrappers
+    fn new(variables: &Bound<'_, PyList>, relations: Vec<PyEquation>) -> PyResult<Self> {
+        let mut names: Vec<String> = Vec::new();
+        for item in variables.iter() {
+            if let Ok(var) = item.extract::<pyo3::PyRef<PyVariableImp>>() {
+                names.push(var.inner.name.clone());
+            } else if let Ok(s) = item.extract::<String>() {
+                names.push(s);
+            } else {
+                return Err(PyValueError::new_err(
+                    "variables must be VariableImp instances or strings",
+                ));
+            }
+        }
         let eqs: Vec<Equation> = relations
             .into_iter()
             .map(|py_eq| py_eq.inner)
             .collect();
-        
-        let inner = Presentation::new(variables, eqs);
-        Ok(PyPresentation { inner })
+        Ok(PyPresentation {
+            inner: Presentation::new(names, eqs),
+        })
     }
     
     /// Get the variables in this presentation.
@@ -253,12 +282,21 @@ impl PyPresentation {
     
     /// Get the relations (equations) in this presentation.
     /// 
-    /// # Returns
-    /// List of equation string representations
+    /// Native Python API keeps this as formatted strings. The org.uacalc shim
+    /// uses ``get_relation_objects`` so Java ``getRelations()`` returns Equations.
     fn get_relations(&self) -> Vec<String> {
         self.inner.relations
             .iter()
             .map(|eq| format!("{}", eq))
+            .collect()
+    }
+
+    /// Relation list as ``Equation`` objects (Java ``Presentation.getRelations()``).
+    fn get_relation_objects(&self) -> Vec<PyEquation> {
+        self.inner
+            .get_relations()
+            .iter()
+            .map(|eq| PyEquation { inner: eq.clone() })
             .collect()
     }
     

@@ -1,0 +1,25 @@
+target: org.uacalc.eq.Presentation
+level: file
+status: implemented
+java_source: org/uacalc/eq/Presentation.java
+notes: |
+  Finitely presented algebra generators + relations. Constructor accepts
+  Variable objects or names; getVariables / getRelations return objects.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    getVariables: get_variables
+    getRelations: get_relations
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    equation_smoke.py builds a two-variable presentation.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/equation_smoke.py
+      covers:
+        - getVariables
+        - getRelations
+      ignore_lines: []

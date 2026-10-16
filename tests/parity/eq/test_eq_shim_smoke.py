@@ -43,9 +43,12 @@ def test_eq_shim_public_names_match_uacalc_lib():
 
     lib_public = {n for n in dir(lib_eq) if not n.startswith("_")}
     shim_public = {n for n in dir(shim) if not n.startswith("_")}
-    assert shim_public == lib_public
+    assert lib_public <= shim_public
     for name in lib_public:
         assert getattr(shim, name) is getattr(lib_eq, name)
+    assert "Equations" in shim_public
+    assert "Equation" in shim_public
+    assert "Presentation" in shim_public
 
 
 def test_eq_minimal_if_bindings():

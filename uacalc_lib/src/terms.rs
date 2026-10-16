@@ -168,6 +168,43 @@ impl PyVariableImp {
         self.inner.hash(&mut hasher);
         hasher.finish()
     }
+
+    /// Leading operation symbol; always ``None`` for a variable (Java returns null).
+    fn leading_operation_symbol(&self) -> Option<PyOperationSymbol> {
+        None
+    }
+
+    /// Operation symbols in this term; empty for a variable.
+    fn get_operation_symbols(&self) -> Vec<PyOperationSymbol> {
+        Vec::new()
+    }
+
+    /// Children of this term; ``None`` for a variable (Java returns null).
+    fn get_children(&self) -> Option<Vec<PyObject>> {
+        None
+    }
+
+    /// Substitute terms for variables according to the given map (keys are names).
+    fn substitute(&self, var_map: HashMap<String, Bound<'_, PyAny>>) -> PyResult<PyObject> {
+        Python::with_gil(|py| {
+            let rust_map = python_var_map_to_rust(var_map)?;
+            let result = self.inner.substitute(&rust_map)
+                .map_err(PyValueError::new_err)?;
+            term_to_py(py, result.as_ref())
+        })
+    }
+
+    /// Append this variable's name to a string buffer (Java ``writeStringBuffer``).
+    fn write_string_buffer(&self, sb: String) -> String {
+        let mut buffer = sb;
+        self.inner.write_string_buffer(&mut buffer);
+        buffer
+    }
+
+    /// Java ``toString`` alias.
+    fn to_string(&self) -> String {
+        format!("{}", self.inner)
+    }
 }
 
 /// Python wrapper for NonVariableTerm
@@ -328,33 +365,10 @@ impl PyNonVariableTerm {
     /// The term with substitutions applied
     fn substitute(&self, var_map: std::collections::HashMap<String, Bound<'_, PyAny>>) -> PyResult<PyObject> {
         Python::with_gil(|py| {
-            // Convert Python objects to Rust terms
-            let mut rust_map = std::collections::HashMap::new();
-            for (key, value) in var_map {
-                let term: Box<dyn Term> = if let Ok(var) = value.extract::<PyRef<PyVariableImp>>() {
-                    Box::new(var.inner.clone())
-                } else if let Ok(nvt) = value.extract::<PyRef<PyNonVariableTerm>>() {
-                    nvt.inner.clone_box()
-                } else {
-                    return Err(PyValueError::new_err("Values must be VariableImp or NonVariableTerm"));
-                };
-                rust_map.insert(key, term);
-            }
-
+            let rust_map = python_var_map_to_rust(var_map)?;
             let result = self.inner.substitute(&rust_map)
                 .map_err(|e| PyValueError::new_err(e))?;
-
-            // Convert back to Python
-            if result.isa_variable() {
-                let var_name = format!("{}", result);
-                let py_var = PyVariableImp {
-                    inner: VariableImp::new(&var_name),
-                };
-                Ok(py_var.into_py(py))
-            } else {
-                let py_term = reconstruct_non_variable_term(result.as_ref())?;
-                Ok(py_term.into_py(py))
-            }
+            term_to_py(py, result.as_ref())
         })
     }
 
@@ -374,6 +388,46 @@ impl PyNonVariableTerm {
         let mut buffer = sb;
         self.inner.write_string_buffer(&mut buffer);
         buffer
+    }
+
+    /// Leading operation symbol of this compound term.
+    fn leading_operation_symbol(&self) -> PyOperationSymbol {
+        PyOperationSymbol::from_inner(self.inner.leading_operation_symbol.clone())
+    }
+
+    /// Immediate children of this term (empty list for a constant).
+    fn get_children(&self, py: Python<'_>) -> PyResult<Vec<PyObject>> {
+        let children = self.inner.get_children().unwrap_or_default();
+        let mut out = Vec::with_capacity(children.len());
+        for child in children {
+            out.push(term_to_py(py, child.as_ref())?);
+        }
+        Ok(out)
+    }
+
+    /// Operation symbols appearing in this term.
+    fn get_operation_symbols(&self) -> Vec<PyOperationSymbol> {
+        self.inner
+            .get_operation_symbols()
+            .into_iter()
+            .map(PyOperationSymbol::from_inner)
+            .collect()
+    }
+
+    fn __eq__(&self, other: &Bound<'_, PyAny>) -> bool {
+        if let Ok(nvt) = other.extract::<PyRef<PyNonVariableTerm>>() {
+            format!("{}", self.inner) == format!("{}", nvt.inner)
+        } else {
+            false
+        }
+    }
+
+    fn __hash__(&self) -> u64 {
+        use std::collections::hash_map::DefaultHasher;
+        use std::hash::{Hash, Hasher};
+        let mut hasher = DefaultHasher::new();
+        format!("{}", self.inner).hash(&mut hasher);
+        hasher.finish()
     }
 }
 
@@ -637,6 +691,38 @@ fn string_to_term(s: String) -> PyResult<PyObject> {
             Err(e) => Err(PyValueError::new_err(e)),
         }
     })
+}
+
+fn python_var_map_to_rust(
+    var_map: HashMap<String, Bound<'_, PyAny>>,
+) -> PyResult<HashMap<String, Box<dyn Term>>> {
+    let mut rust_map = HashMap::new();
+    for (key, value) in var_map {
+        let term: Box<dyn Term> = if let Ok(var) = value.extract::<PyRef<PyVariableImp>>() {
+            Box::new(var.inner.clone())
+        } else if let Ok(nvt) = value.extract::<PyRef<PyNonVariableTerm>>() {
+            nvt.inner.clone_box()
+        } else {
+            return Err(PyValueError::new_err(
+                "Values must be VariableImp or NonVariableTerm",
+            ));
+        };
+        rust_map.insert(key, term);
+    }
+    Ok(rust_map)
+}
+
+/// Convert a core ``Term`` into a Python ``VariableImp`` or ``NonVariableTerm``.
+pub(crate) fn term_to_py(py: Python<'_>, term: &dyn Term) -> PyResult<PyObject> {
+    if term.isa_variable() {
+        let var_name = format!("{}", term);
+        Ok(PyVariableImp {
+            inner: VariableImp::new(&var_name),
+        }
+        .into_py(py))
+    } else {
+        Ok(reconstruct_non_variable_term(term)?.into_py(py))
+    }
 }
 
 // Helper function to reconstruct a PyNonVariableTerm from a Term trait object

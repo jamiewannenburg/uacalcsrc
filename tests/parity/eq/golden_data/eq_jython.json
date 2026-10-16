@@ -1,0 +1,403 @@
+{
+  "metadata": {
+    "generated_at": "2026-10-16T05:25:51.300315+00:00",
+    "jar": "uacalc.jar",
+    "package": "org.uacalc.eq",
+    "runtime": "jython",
+    "test_cases": 18,
+    "type": "package"
+  },
+  "test_cases": [
+    {
+      "args": [],
+      "call": "str(eq_xy.leftSide())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "leftSide of x = y is the term x",
+      "expected_exception": null,
+      "id": "equation_left_side",
+      "kwargs": {},
+      "method": "Equation.leftSide",
+      "notes": "",
+      "result": {
+        "return_type": "str",
+        "return_value": "x",
+        "string_repr": "x",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.eq import Equation, Equations, Presentation\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        if getter is not None:\n            out.append(getter())\n        else:\n            out.append(str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _failmap(m):\n    if m is None:\n        return None\n    items = m.entrySet() if hasattr(m, \"entrySet\") else m.items()\n    out = {}\n    for item in items:\n        if hasattr(item, \"getKey\"):\n            k, v = item.getKey(), item.getValue()\n        else:\n            k, v = item\n        getter = getattr(k, \"getName\", None)\n        name = getter() if getter is not None else str(k)\n        out[name] = int(v)\n    return out\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nplus = OperationSymbol(\"+\", 2)\nf = OperationSymbol(\"f\", 2)\ng3 = OperationSymbol(\"g\", 3)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nz = VariableImp(\"z\")\nfxy = NonVariableTerm(plus, [x, y])\neq_xx = Equation(x, x)\neq_xy = Equation(x, y)\neq_plus = Equation(fxy, x)\npres = Presentation([x, y], [eq_xy])\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "str(eq_xy.rightSide())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "rightSide of x = y is the term y",
+      "expected_exception": null,
+      "id": "equation_right_side",
+      "kwargs": {},
+      "method": "Equation.rightSide",
+      "notes": "",
+      "result": {
+        "return_type": "str",
+        "return_value": "y",
+        "string_repr": "y",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.eq import Equation, Equations, Presentation\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        if getter is not None:\n            out.append(getter())\n        else:\n            out.append(str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _failmap(m):\n    if m is None:\n        return None\n    items = m.entrySet() if hasattr(m, \"entrySet\") else m.items()\n    out = {}\n    for item in items:\n        if hasattr(item, \"getKey\"):\n            k, v = item.getKey(), item.getValue()\n        else:\n            k, v = item\n        getter = getattr(k, \"getName\", None)\n        name = getter() if getter is not None else str(k)\n        out[name] = int(v)\n    return out\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nplus = OperationSymbol(\"+\", 2)\nf = OperationSymbol(\"f\", 2)\ng3 = OperationSymbol(\"g\", 3)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nz = VariableImp(\"z\")\nfxy = NonVariableTerm(plus, [x, y])\neq_xx = Equation(x, x)\neq_xy = Equation(x, y)\neq_plus = Equation(fxy, x)\npres = Presentation([x, y], [eq_xy])\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "eq_xy.toString()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Equation toString is 'left = right'",
+      "expected_exception": null,
+      "id": "equation_to_string",
+      "kwargs": {},
+      "method": "Equation.toString",
+      "notes": "",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "x = y",
+        "string_repr": "x = y",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.eq import Equation, Equations, Presentation\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        if getter is not None:\n            out.append(getter())\n        else:\n            out.append(str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _failmap(m):\n    if m is None:\n        return None\n    items = m.entrySet() if hasattr(m, \"entrySet\") else m.items()\n    out = {}\n    for item in items:\n        if hasattr(item, \"getKey\"):\n            k, v = item.getKey(), item.getValue()\n        else:\n            k, v = item\n        getter = getattr(k, \"getName\", None)\n        name = getter() if getter is not None else str(k)\n        out[name] = int(v)\n    return out\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nplus = OperationSymbol(\"+\", 2)\nf = OperationSymbol(\"f\", 2)\ng3 = OperationSymbol(\"g\", 3)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nz = VariableImp(\"z\")\nfxy = NonVariableTerm(plus, [x, y])\neq_xx = Equation(x, x)\neq_xy = Equation(x, y)\neq_plus = Equation(fxy, x)\npres = Presentation([x, y], [eq_xy])\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_names(eq_xy.getVariableList())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Variable list merges left then right-only vars",
+      "expected_exception": null,
+      "id": "equation_get_variable_list",
+      "kwargs": {},
+      "method": "Equation.getVariableList",
+      "notes": "",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "x,y",
+        "string_repr": "x,y",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.eq import Equation, Equations, Presentation\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        if getter is not None:\n            out.append(getter())\n        else:\n            out.append(str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _failmap(m):\n    if m is None:\n        return None\n    items = m.entrySet() if hasattr(m, \"entrySet\") else m.items()\n    out = {}\n    for item in items:\n        if hasattr(item, \"getKey\"):\n            k, v = item.getKey(), item.getValue()\n        else:\n            k, v = item\n        getter = getattr(k, \"getName\", None)\n        name = getter() if getter is not None else str(k)\n        out[name] = int(v)\n    return out\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nplus = OperationSymbol(\"+\", 2)\nf = OperationSymbol(\"f\", 2)\ng3 = OperationSymbol(\"g\", 3)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nz = VariableImp(\"z\")\nfxy = NonVariableTerm(plus, [x, y])\neq_xx = Equation(x, x)\neq_xy = Equation(x, y)\neq_plus = Equation(fxy, x)\npres = Presentation([x, y], [eq_xy])\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_syms(eq_plus.getOperationSymbols())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Operation symbols from both sides",
+      "expected_exception": null,
+      "id": "equation_get_operation_symbols",
+      "kwargs": {},
+      "method": "Equation.getOperationSymbols",
+      "notes": "",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "+/2",
+        "string_repr": "+/2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.eq import Equation, Equations, Presentation\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        if getter is not None:\n            out.append(getter())\n        else:\n            out.append(str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _failmap(m):\n    if m is None:\n        return None\n    items = m.entrySet() if hasattr(m, \"entrySet\") else m.items()\n    out = {}\n    for item in items:\n        if hasattr(item, \"getKey\"):\n            k, v = item.getKey(), item.getValue()\n        else:\n            k, v = item\n        getter = getattr(k, \"getName\", None)\n        name = getter() if getter is not None else str(k)\n        out[name] = int(v)\n    return out\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nplus = OperationSymbol(\"+\", 2)\nf = OperationSymbol(\"f\", 2)\ng3 = OperationSymbol(\"g\", 3)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nz = VariableImp(\"z\")\nfxy = NonVariableTerm(plus, [x, y])\neq_xx = Equation(x, x)\neq_xy = Equation(x, y)\neq_plus = Equation(fxy, x)\npres = Presentation([x, y], [eq_xy])\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "eq_xx.findFailure(c2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "x = x holds on cyclic2",
+      "expected_exception": null,
+      "id": "equation_find_failure_holds",
+      "kwargs": {},
+      "method": "Equation.findFailure",
+      "notes": "",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.eq import Equation, Equations, Presentation\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        if getter is not None:\n            out.append(getter())\n        else:\n            out.append(str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _failmap(m):\n    if m is None:\n        return None\n    items = m.entrySet() if hasattr(m, \"entrySet\") else m.items()\n    out = {}\n    for item in items:\n        if hasattr(item, \"getKey\"):\n            k, v = item.getKey(), item.getValue()\n        else:\n            k, v = item\n        getter = getattr(k, \"getName\", None)\n        name = getter() if getter is not None else str(k)\n        out[name] = int(v)\n    return out\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nplus = OperationSymbol(\"+\", 2)\nf = OperationSymbol(\"f\", 2)\ng3 = OperationSymbol(\"g\", 3)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nz = VariableImp(\"z\")\nfxy = NonVariableTerm(plus, [x, y])\neq_xx = Equation(x, x)\neq_xy = Equation(x, y)\neq_plus = Equation(fxy, x)\npres = Presentation([x, y], [eq_xy])\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "eq_xy.findFailure(c2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "x = y fails on cyclic2 at the first differing tuple",
+      "expected_exception": null,
+      "id": "equation_find_failure_xy",
+      "kwargs": {},
+      "method": "Equation.findFailure",
+      "notes": "",
+      "result": {
+        "return_type": "array",
+        "return_value": [
+          0,
+          1
+        ],
+        "string_repr": "array('i', [0, 1])",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.eq import Equation, Equations, Presentation\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        if getter is not None:\n            out.append(getter())\n        else:\n            out.append(str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _failmap(m):\n    if m is None:\n        return None\n    items = m.entrySet() if hasattr(m, \"entrySet\") else m.items()\n    out = {}\n    for item in items:\n        if hasattr(item, \"getKey\"):\n            k, v = item.getKey(), item.getValue()\n        else:\n            k, v = item\n        getter = getattr(k, \"getName\", None)\n        name = getter() if getter is not None else str(k)\n        out[name] = int(v)\n    return out\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nplus = OperationSymbol(\"+\", 2)\nf = OperationSymbol(\"f\", 2)\ng3 = OperationSymbol(\"g\", 3)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nz = VariableImp(\"z\")\nfxy = NonVariableTerm(plus, [x, y])\neq_xx = Equation(x, x)\neq_xy = Equation(x, y)\neq_plus = Equation(fxy, x)\npres = Presentation([x, y], [eq_xy])\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_failmap(eq_xx.findFailureMap(c2))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "findFailureMap is null when the equation holds",
+      "expected_exception": null,
+      "id": "equation_find_failure_map_holds",
+      "kwargs": {},
+      "method": "Equation.findFailureMap",
+      "notes": "",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.eq import Equation, Equations, Presentation\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        if getter is not None:\n            out.append(getter())\n        else:\n            out.append(str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _failmap(m):\n    if m is None:\n        return None\n    items = m.entrySet() if hasattr(m, \"entrySet\") else m.items()\n    out = {}\n    for item in items:\n        if hasattr(item, \"getKey\"):\n            k, v = item.getKey(), item.getValue()\n        else:\n            k, v = item\n        getter = getattr(k, \"getName\", None)\n        name = getter() if getter is not None else str(k)\n        out[name] = int(v)\n    return out\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nplus = OperationSymbol(\"+\", 2)\nf = OperationSymbol(\"f\", 2)\ng3 = OperationSymbol(\"g\", 3)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nz = VariableImp(\"z\")\nfxy = NonVariableTerm(plus, [x, y])\neq_xx = Equation(x, x)\neq_xy = Equation(x, y)\neq_plus = Equation(fxy, x)\npres = Presentation([x, y], [eq_xy])\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_failmap(eq_xy.findFailureMap(c2))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "findFailureMap for x = y on cyclic2",
+      "expected_exception": null,
+      "id": "equation_find_failure_map_xy",
+      "kwargs": {},
+      "method": "Equation.findFailureMap",
+      "notes": "",
+      "result": {
+        "return_type": "dict",
+        "return_value": {
+          "x": 0,
+          "y": 1
+        },
+        "string_repr": "{u'x': 0, u'y': 1}",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.eq import Equation, Equations, Presentation\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        if getter is not None:\n            out.append(getter())\n        else:\n            out.append(str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _failmap(m):\n    if m is None:\n        return None\n    items = m.entrySet() if hasattr(m, \"entrySet\") else m.items()\n    out = {}\n    for item in items:\n        if hasattr(item, \"getKey\"):\n            k, v = item.getKey(), item.getValue()\n        else:\n            k, v = item\n        getter = getattr(k, \"getName\", None)\n        name = getter() if getter is not None else str(k)\n        out[name] = int(v)\n    return out\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nplus = OperationSymbol(\"+\", 2)\nf = OperationSymbol(\"f\", 2)\ng3 = OperationSymbol(\"g\", 3)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nz = VariableImp(\"z\")\nfxy = NonVariableTerm(plus, [x, y])\neq_xx = Equation(x, x)\neq_xy = Equation(x, y)\neq_plus = Equation(fxy, x)\npres = Presentation([x, y], [eq_xy])\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "eq_plus.findFailure(c2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "+(x,y) = x fails on cyclic2",
+      "expected_exception": null,
+      "id": "equation_plus_failure",
+      "kwargs": {},
+      "method": "Equation.findFailure",
+      "notes": "",
+      "result": {
+        "return_type": "array",
+        "return_value": [
+          0,
+          1
+        ],
+        "string_repr": "array('i', [0, 1])",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.eq import Equation, Equations, Presentation\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        if getter is not None:\n            out.append(getter())\n        else:\n            out.append(str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _failmap(m):\n    if m is None:\n        return None\n    items = m.entrySet() if hasattr(m, \"entrySet\") else m.items()\n    out = {}\n    for item in items:\n        if hasattr(item, \"getKey\"):\n            k, v = item.getKey(), item.getValue()\n        else:\n            k, v = item\n        getter = getattr(k, \"getName\", None)\n        name = getter() if getter is not None else str(k)\n        out[name] = int(v)\n    return out\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nplus = OperationSymbol(\"+\", 2)\nf = OperationSymbol(\"f\", 2)\ng3 = OperationSymbol(\"g\", 3)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nz = VariableImp(\"z\")\nfxy = NonVariableTerm(plus, [x, y])\neq_xx = Equation(x, x)\neq_xy = Equation(x, y)\neq_plus = Equation(fxy, x)\npres = Presentation([x, y], [eq_xy])\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "str(Equations.associativeLaw(f))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Associative law for a binary symbol",
+      "expected_exception": null,
+      "id": "equations_associative_law",
+      "kwargs": {},
+      "method": "Equations.associativeLaw",
+      "notes": "",
+      "result": {
+        "return_type": "str",
+        "return_value": "f(x,f(y,z)) = f(f(x,y),z)",
+        "string_repr": "f(x,f(y,z)) = f(f(x,y),z)",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.eq import Equation, Equations, Presentation\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        if getter is not None:\n            out.append(getter())\n        else:\n            out.append(str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _failmap(m):\n    if m is None:\n        return None\n    items = m.entrySet() if hasattr(m, \"entrySet\") else m.items()\n    out = {}\n    for item in items:\n        if hasattr(item, \"getKey\"):\n            k, v = item.getKey(), item.getValue()\n        else:\n            k, v = item\n        getter = getattr(k, \"getName\", None)\n        name = getter() if getter is not None else str(k)\n        out[name] = int(v)\n    return out\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nplus = OperationSymbol(\"+\", 2)\nf = OperationSymbol(\"f\", 2)\ng3 = OperationSymbol(\"g\", 3)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nz = VariableImp(\"z\")\nfxy = NonVariableTerm(plus, [x, y])\neq_xx = Equation(x, x)\neq_xy = Equation(x, y)\neq_plus = Equation(fxy, x)\npres = Presentation([x, y], [eq_xy])\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Equations.associativeLaw(OperationSymbol('h', 1))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Associative law requires arity 2",
+      "expected_exception": "IllegalArgumentException",
+      "id": "equations_associative_law_arity",
+      "kwargs": {},
+      "method": "Equations.associativeLaw",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.IllegalArgumentException: The arity must be 2",
+          "type": "IllegalArgumentException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.eq import Equation, Equations, Presentation\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        if getter is not None:\n            out.append(getter())\n        else:\n            out.append(str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _failmap(m):\n    if m is None:\n        return None\n    items = m.entrySet() if hasattr(m, \"entrySet\") else m.items()\n    out = {}\n    for item in items:\n        if hasattr(item, \"getKey\"):\n            k, v = item.getKey(), item.getValue()\n        else:\n            k, v = item\n        getter = getattr(k, \"getName\", None)\n        name = getter() if getter is not None else str(k)\n        out[name] = int(v)\n    return out\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nplus = OperationSymbol(\"+\", 2)\nf = OperationSymbol(\"f\", 2)\ng3 = OperationSymbol(\"g\", 3)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nz = VariableImp(\"z\")\nfxy = NonVariableTerm(plus, [x, y])\neq_xx = Equation(x, x)\neq_xy = Equation(x, y)\neq_plus = Equation(fxy, x)\npres = Presentation([x, y], [eq_xy])\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "str(Equations.cyclicLaw(g3))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Cyclic law for a ternary symbol",
+      "expected_exception": null,
+      "id": "equations_cyclic_law",
+      "kwargs": {},
+      "method": "Equations.cyclicLaw",
+      "notes": "",
+      "result": {
+        "return_type": "str",
+        "return_value": "g(x0,x1,x2) = g(x2,x0,x1)",
+        "string_repr": "g(x0,x1,x2) = g(x2,x0,x1)",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.eq import Equation, Equations, Presentation\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        if getter is not None:\n            out.append(getter())\n        else:\n            out.append(str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _failmap(m):\n    if m is None:\n        return None\n    items = m.entrySet() if hasattr(m, \"entrySet\") else m.items()\n    out = {}\n    for item in items:\n        if hasattr(item, \"getKey\"):\n            k, v = item.getKey(), item.getValue()\n        else:\n            k, v = item\n        getter = getattr(k, \"getName\", None)\n        name = getter() if getter is not None else str(k)\n        out[name] = int(v)\n    return out\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nplus = OperationSymbol(\"+\", 2)\nf = OperationSymbol(\"f\", 2)\ng3 = OperationSymbol(\"g\", 3)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nz = VariableImp(\"z\")\nfxy = NonVariableTerm(plus, [x, y])\neq_xx = Equation(x, x)\neq_xy = Equation(x, y)\neq_plus = Equation(fxy, x)\npres = Presentation([x, y], [eq_xy])\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "str(Equations.firstSecondSymmetricLaw(g3))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "First-second symmetric law for a ternary symbol",
+      "expected_exception": null,
+      "id": "equations_first_second_symmetric_law",
+      "kwargs": {},
+      "method": "Equations.firstSecondSymmetricLaw",
+      "notes": "",
+      "result": {
+        "return_type": "str",
+        "return_value": "g(x0,x1,x2) = g(x1,x0,x2)",
+        "string_repr": "g(x0,x1,x2) = g(x1,x0,x2)",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.eq import Equation, Equations, Presentation\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        if getter is not None:\n            out.append(getter())\n        else:\n            out.append(str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _failmap(m):\n    if m is None:\n        return None\n    items = m.entrySet() if hasattr(m, \"entrySet\") else m.items()\n    out = {}\n    for item in items:\n        if hasattr(item, \"getKey\"):\n            k, v = item.getKey(), item.getValue()\n        else:\n            k, v = item\n        getter = getattr(k, \"getName\", None)\n        name = getter() if getter is not None else str(k)\n        out[name] = int(v)\n    return out\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nplus = OperationSymbol(\"+\", 2)\nf = OperationSymbol(\"f\", 2)\ng3 = OperationSymbol(\"g\", 3)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nz = VariableImp(\"z\")\nfxy = NonVariableTerm(plus, [x, y])\neq_xx = Equation(x, x)\neq_xy = Equation(x, y)\neq_plus = Equation(fxy, x)\npres = Presentation([x, y], [eq_xy])\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Equations.firstSecondSymmetricLaw(OperationSymbol('h', 1))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "First-second symmetric law requires arity >= 2",
+      "expected_exception": "IllegalArgumentException",
+      "id": "equations_first_second_arity",
+      "kwargs": {},
+      "method": "Equations.firstSecondSymmetricLaw",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.IllegalArgumentException: The arity must be at least 2, got 1",
+          "type": "IllegalArgumentException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.eq import Equation, Equations, Presentation\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        if getter is not None:\n            out.append(getter())\n        else:\n            out.append(str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _failmap(m):\n    if m is None:\n        return None\n    items = m.entrySet() if hasattr(m, \"entrySet\") else m.items()\n    out = {}\n    for item in items:\n        if hasattr(item, \"getKey\"):\n            k, v = item.getKey(), item.getValue()\n        else:\n            k, v = item\n        getter = getattr(k, \"getName\", None)\n        name = getter() if getter is not None else str(k)\n        out[name] = int(v)\n    return out\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nplus = OperationSymbol(\"+\", 2)\nf = OperationSymbol(\"f\", 2)\ng3 = OperationSymbol(\"g\", 3)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nz = VariableImp(\"z\")\nfxy = NonVariableTerm(plus, [x, y])\neq_xx = Equation(x, x)\neq_xy = Equation(x, y)\neq_plus = Equation(fxy, x)\npres = Presentation([x, y], [eq_xy])\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_names(pres.getVariables())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Presentation variables in constructor order",
+      "expected_exception": null,
+      "id": "presentation_get_variables",
+      "kwargs": {},
+      "method": "Presentation.getVariables",
+      "notes": "",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "x,y",
+        "string_repr": "x,y",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.eq import Equation, Equations, Presentation\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        if getter is not None:\n            out.append(getter())\n        else:\n            out.append(str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _failmap(m):\n    if m is None:\n        return None\n    items = m.entrySet() if hasattr(m, \"entrySet\") else m.items()\n    out = {}\n    for item in items:\n        if hasattr(item, \"getKey\"):\n            k, v = item.getKey(), item.getValue()\n        else:\n            k, v = item\n        getter = getattr(k, \"getName\", None)\n        name = getter() if getter is not None else str(k)\n        out[name] = int(v)\n    return out\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nplus = OperationSymbol(\"+\", 2)\nf = OperationSymbol(\"f\", 2)\ng3 = OperationSymbol(\"g\", 3)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nz = VariableImp(\"z\")\nfxy = NonVariableTerm(plus, [x, y])\neq_xx = Equation(x, x)\neq_xy = Equation(x, y)\neq_plus = Equation(fxy, x)\npres = Presentation([x, y], [eq_xy])\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "[str(e) for e in list(pres.getRelations())]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Presentation relations are Equation objects",
+      "expected_exception": null,
+      "id": "presentation_get_relations",
+      "kwargs": {},
+      "method": "Presentation.getRelations",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "x = y"
+        ],
+        "string_repr": "['x = y']",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.eq import Equation, Equations, Presentation\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        if getter is not None:\n            out.append(getter())\n        else:\n            out.append(str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _failmap(m):\n    if m is None:\n        return None\n    items = m.entrySet() if hasattr(m, \"entrySet\") else m.items()\n    out = {}\n    for item in items:\n        if hasattr(item, \"getKey\"):\n            k, v = item.getKey(), item.getValue()\n        else:\n            k, v = item\n        getter = getattr(k, \"getName\", None)\n        name = getter() if getter is not None else str(k)\n        out[name] = int(v)\n    return out\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nplus = OperationSymbol(\"+\", 2)\nf = OperationSymbol(\"f\", 2)\ng3 = OperationSymbol(\"g\", 3)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nz = VariableImp(\"z\")\nfxy = NonVariableTerm(plus, [x, y])\neq_xx = Equation(x, x)\neq_xy = Equation(x, y)\neq_plus = Equation(fxy, x)\npres = Presentation([x, y], [eq_xy])\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "[str(e) for e in list(Presentation([x], []).getRelations())]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Empty relation list",
+      "expected_exception": null,
+      "id": "presentation_empty_relations",
+      "kwargs": {},
+      "method": "Presentation.getRelations",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [],
+        "string_repr": "[]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.eq import Equation, Equations, Presentation\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        if getter is not None:\n            out.append(getter())\n        else:\n            out.append(str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _failmap(m):\n    if m is None:\n        return None\n    items = m.entrySet() if hasattr(m, \"entrySet\") else m.items()\n    out = {}\n    for item in items:\n        if hasattr(item, \"getKey\"):\n            k, v = item.getKey(), item.getValue()\n        else:\n            k, v = item\n        getter = getattr(k, \"getName\", None)\n        name = getter() if getter is not None else str(k)\n        out[name] = int(v)\n    return out\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nplus = OperationSymbol(\"+\", 2)\nf = OperationSymbol(\"f\", 2)\ng3 = OperationSymbol(\"g\", 3)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nz = VariableImp(\"z\")\nfxy = NonVariableTerm(plus, [x, y])\neq_xx = Equation(x, x)\neq_xy = Equation(x, y)\neq_plus = Equation(fxy, x)\npres = Presentation([x, y], [eq_xy])\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    }
+  ]
+}
