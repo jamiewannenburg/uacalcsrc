@@ -527,15 +527,20 @@ class BehavioralParityTest(TestCase):
     def _compare_values(
         self, test_id: str, actual: Any, expected: Any, context: str
     ) -> None:
-        if actual != expected:
-            self.fail(
-                "{0}: {1} mismatch\n  Expected: {2}\n  Actual:   {3}".format(
-                    test_id,
-                    context,
-                    json.dumps(expected, indent=2, sort_keys=True),
-                    json.dumps(actual, indent=2, sort_keys=True),
-                )
+        if actual == expected:
+            return
+        # Java Object.toString() is Class@identityHashCode. Golden files freeze
+        # one JVM run's hex; compare the class prefix only.
+        if _normalize_java_identity(actual) == _normalize_java_identity(expected):
+            return
+        self.fail(
+            "{0}: {1} mismatch\n  Expected: {2}\n  Actual:   {3}".format(
+                test_id,
+                context,
+                json.dumps(expected, indent=2, sort_keys=True),
+                json.dumps(actual, indent=2, sort_keys=True),
             )
+        )
 
     def _messages_match(self, actual: str, expected: str) -> bool:
         if actual == expected:
@@ -554,3 +559,19 @@ class BehavioralParityTest(TestCase):
 
 def looks_like_java_identity(text: str) -> bool:
     return bool(_JAVA_IDENTITY_TOSTRING.match(text or ""))
+
+
+_JAVA_IDENTITY_IN_STRING = re.compile(r"[\w.$]+@[0-9a-fA-F]+")
+
+
+def _normalize_java_identity(obj: Any) -> Any:
+    """Replace Java identity-hash suffixes so Class@hex compares equal across runs."""
+    if isinstance(obj, str):
+        return _JAVA_IDENTITY_IN_STRING.sub(
+            lambda m: m.group(0).rsplit("@", 1)[0] + "@<id>", obj
+        )
+    if isinstance(obj, list):
+        return [_normalize_java_identity(item) for item in obj]
+    if isinstance(obj, dict):
+        return {k: _normalize_java_identity(v) for k, v in obj.items()}
+    return obj

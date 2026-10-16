@@ -266,24 +266,53 @@ Malcev is intentionally left alone.
 
 ### FreeAlgebra AlgebraIO write/read table order
 
-- **Java**: writing F(1) over cyclic2 and reading it back yields cardinality 2
-  and `+` table `[0,1,1,0]` (universe indices after IO differ from the live
-  free algebra, whose table is `[1,0,0,1]`).
-- **Python**: write/read keeps the live table `[1,0,0,1]`. Cardinality and
-  `getTerms()` (`x`, `+(x,x)`) match.
-- **Status**: To Be Fixed
-- **Tests**: `fa_roundtrip_write_read` strict xfail
-- **Owner vs shim**: Owner/library — AlgebraIO serialization of FreeAlgebra
-  universe order. Not a rename in the shim.
+- **Java (live)**: F(1) over cyclic2 has cardinality 2, universe
+  `[[0,1],[0,0]]` (generator identity, then `+(x,x)`), terms `x`, `+(x,x)`,
+  and `+` table `[1,0,0,1]`. Generation already matches Python (`fa_card`,
+  `fa_universe_list`, `fa_get_operation`, `fa_get_terms`).
+- **Java (AlgebraIO)**: `writeFreeAlgebra` emits `<freeAlgebra>` with
+  coordinate-tuple generators/universe. After read, integer indices follow
+  the reconstructed tuple order. For F(1)/C2 that order is the 0↔1 relabel
+  of the live table: `[0,1,1,0]` instead of `[1,0,0,1]`. Not an endian flip
+  and not “translate to integers first” in the generator; the live FreeAlgebra
+  is already integer-indexed in generation order. The permutation happens
+  only in write/read.
+- **Python**: `org.uacalc.io.AlgebraIO.writeAlgebraFile` calls
+  `to_basic_algebra()` (integer operation tables) because `uacalc_lib`
+  writers take `PyBasicAlgebra`. Roundtrip therefore keeps the live table
+  `[1,0,0,1]`. `src/io/mod.rs` `write_free_algebra` is still a hardcoded
+  stub; implementing Java’s FreeAlgebra XML on `Box<dyn SmallAlgebra<i32>>`
+  (which has already forgotten the `IntArray` coordinates) is not a clean
+  element-order tweak and would knock on every FreeAlgebra IO path.
+- **Status**: Strict xfail / roadmap. Live generation is the source of
+  truth and already agrees. Do not reorder Python’s live universe to match
+  Java’s after-IO labels.
+- **Wider roundtrips** (live snap matches in every case; only the read-back
+  differs):
+  - F(1)/C3: Java after-IO `+` table `[0,1,2,1,2,0,2,0,1]` vs Python live
+    `[1,2,0,2,0,1,0,1,2]` (a 0/1/2 relabel; both card 3).
+  - F(1)/lat2: Java after-IO card **2** with the base-lattice tables vs
+    Python live card **1**.
+  - F(1)/ba2: Java after-IO card **2** (the base algebra) vs Python live
+    card **4**.
+- **Tests**: `fa_roundtrip_write_read`, `fa_roundtrip_c3_f1`,
+  `fa_roundtrip_lat2_f1`, `fa_roundtrip_ba2_f1` strict xfail. Live coverage
+  `fa_live_*` (C2 F(1..3), C3 F(1..2), lat2 F(1..2), ba2/z3/n5/M3 F(1))
+  passes.
+- **Owner vs shim**: Owner/library — FreeAlgebra XML write/read. The org
+  wrapper’s BasicAlgebra materialization preserves live indices on purpose.
 
 ### Algebras.quasiCriticalCongruences
 
-- **Java**: on cyclic2 the list is the one-block congruence `|0,1|`.
-- **Python**: `uacalc_lib` `quasi_critical_congruences` returns an empty list.
-- **Status**: To Be Fixed
-- **Tests**: `algs_quasi_crit_congs` strict xfail
-- **Owner vs shim**: Owner/library — incomplete `quasi_critical_congruences`.
-  Not a shim issue.
+- **Java**: on cyclic2 the list is the *zero* congruence `|0|1|` (one
+  singleton block each). Earlier notes that said `|0,1|` were wrong; the
+  golden value is `|0|1|`.
+- **Python**: `uacalc_lib` now matches Java. The previous empty list was
+  `Algebra::universe()` on a congruence lattice whose universe had not been
+  computed (`make_universe` lives on the inherent `universe(&mut self)`).
+- **Status**: Fixed in the library
+- **Tests**: `algs_quasi_crit_congs` plus wider `algs_quasi_crit_*`
+- **Owner vs shim**: Owner/library — `src/alg/algebras.rs`.
 
 ### QuotientAlgebra.elementIndex (known Java quirk)
 
@@ -304,38 +333,43 @@ Malcev is intentionally left alone.
 
 - **Java**: `"Congruence Lattice of " + alg` uses `Algebra.toString()`, i.e.
   `org.uacalc.alg.BasicAlgebra@hex`.
-- **Python**: library `get_description` uses the algebra name (`C2`).
-- **Status**: To Be Fixed
-- **Tests**: `cl_get_description` strict xfail
-- **Owner vs shim**: Owner/library — default description is built in Rust from
-  `alg.name()`, not Java identity `toString()`. After `setDescription` the
-  strings match (`cl_set_description`).
+- **Python**: library `get_description` now uses the same
+  `org.uacalc.alg.<Type>@hex` identity form. The hex is not stable across
+  processes; the parity harness compares class prefixes.
+- **Status**: Fixed in the library
+- **Tests**: `cl_get_description` passes. After `setDescription` the
+  strings still match (`cl_set_description`).
+- **Owner vs shim**: Owner/library — `src/alg/conlat/congruence_lattice.rs`.
 
 ### CongruenceLattice.Delta
 
 - **Java**: `Delta(zero, one)` on cyclic2 is the one partition `|0,1|`.
-- **Python**: library `delta` is a stub that returns zero `|0|1|`.
-- **Status**: To Be Fixed
-- **Tests**: `cl_delta` strict xfail
-- **Owner vs shim**: Owner/library — stub in `src/alg/conlat/congruence_lattice.rs`.
-  Not a rename in the shim.
+- **Python**: library implements Java’s algorithm (congruence-as-algebra of
+  `alpha`, then join of `Cg((a,a),(b,b))` for pairs in `beta`).
+- **Status**: Fixed in the library
+- **Tests**: `cl_delta` passes
+- **Owner vs shim**: Owner/library — `src/alg/conlat/congruence_lattice.rs`.
 
 ### CongruenceLattice.idempotentPolynomials
 
-- **Java**: one idempotent polynomial on cyclic2.
-- **Python**: library returns an empty list.
-- **Status**: To Be Fixed
-- **Tests**: `cl_idempotent_polys` strict xfail
-- **Owner vs shim**: Owner/library — incomplete `idempotent_polynomials`.
+- **Java**: one nonconstant idempotent unary polynomial on cyclic2.
+- **Python**: library now generates Pol_1(A) from the identity tuple in
+  `A^{|A|}` plus constants (Java’s `includeConstants`), then filters
+  idempotent non-constants.
+- **Status**: Fixed in the library
+- **Tests**: `cl_idempotent_polys` passes
+- **Owner vs shim**: Owner/library — `src/alg/conlat/congruence_lattice.rs`.
 
 ### CongruenceLattice.getPermutabilityLevelWitnesses
 
-- **Java**: after `permutabilityLevel()` on cyclic2 the witness array is two
-  nulls (`None` in Jython).
-- **Python**: library returns the zero/zero pair.
-- **Status**: To Be Fixed
-- **Tests**: `cl_perm_witnesses` strict xfail
-- **Owner vs shim**: Owner/library — witness storage differs. Not a shim issue.
+- **Java**: after `permutabilityLevel()` on cyclic2 (a chain, no incomparable
+  pair) the witness array is two nulls (`None` in Jython). Incomparable
+  pairs use `BasicPartition.permutabilityLevel(par0, par1)`.
+- **Python**: library stores `[None, None]` until an incomparable pair is
+  found, and uses `Partition::permutability_level_of_join`.
+- **Status**: Fixed in the library
+- **Tests**: `cl_perm_witnesses` passes
+- **Owner vs shim**: Owner/library — `src/alg/conlat/congruence_lattice.rs`.
 
 ---
 
@@ -357,11 +391,13 @@ heuristic. Exercise them on the returned operation instead.
   projection operation. `intValueAt` later throws
   `ArrayIndexOutOfBoundsException`.
 - **Python**: `uacalc_lib` rejects the missing name (`ValueError`); the org shim
-  maps that to `NullPointerException` at construction.
-- **Status**: To Be Fixed
-- **Tests**: `variable_interp_missing_var` strict xfail
-- **Owner vs shim**: Owner/library — construction-time check in
-  `src/terms/mod.rs`. Not a rename in the shim.
+  maps that to `NullPointerException` at construction. Left as-is: building a
+  projection at index `-1` is not desirable.
+- **Status**: Known Java bug — intentional difference; Python is the desired
+  behavior
+- **Tests**: `variable_interp_missing_var` strict xfail (Java golden still
+  records arity 1)
+- **Owner vs shim**: Known Java bug. Not a shim issue and not a library issue.
 
 ### Term.interpretation operation symbol
 

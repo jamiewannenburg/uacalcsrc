@@ -10,8 +10,12 @@ use std::fmt::{self, Display, Debug};
 use std::hash::Hash;
 use once_cell::sync::Lazy;
 
-use crate::alg::{SmallAlgebra, Algebra};
+use crate::alg::{
+    Algebra, AlgebraType, BasicAlgebra, BigProductAlgebra, SmallAlgebra, Subalgebra,
+    SubProductAlgebra,
+};
 use crate::alg::op::{Operation, OperationSymbol, SimilarityType};
+use crate::util::horner;
 use crate::alg::conlat::{Partition, BinaryRelation, BasicBinaryRelation};
 use crate::util::simple_list::SimpleList;
 use crate::util::int_array::{IntArray, IntArrayTrait};
@@ -20,6 +24,30 @@ use crate::lat::{Lattice, Order};
 /// Maximum lattice size for drawing
 pub const MAX_DRAWABLE_SIZE: usize = 150;
 pub const MAX_DRAWABLE_INPUT_SIZE: usize = 2500;
+
+/// Java `Object.toString()` for a `SmallAlgebra`: `ClassName@hexIdentityHash`.
+fn java_algebra_identity<T>(alg: &dyn SmallAlgebra<UniverseItem = T>) -> String
+where
+    T: Clone + PartialEq + Eq + Hash + Debug + Display + Send + Sync + 'static,
+{
+    let class = match alg.algebra_type() {
+        AlgebraType::Basic => "org.uacalc.alg.BasicAlgebra",
+        AlgebraType::BasicLattice => "org.uacalc.lat.BasicLattice",
+        AlgebraType::Quotient => "org.uacalc.alg.QuotientAlgebra",
+        AlgebraType::Subalgebra => "org.uacalc.alg.Subalgebra",
+        AlgebraType::Product => "org.uacalc.alg.ProductAlgebra",
+        AlgebraType::Power => "org.uacalc.alg.PowerAlgebra",
+        AlgebraType::MatrixPower => "org.uacalc.alg.MatrixPowerAlgebra",
+        AlgebraType::Reduct => "org.uacalc.alg.ReductAlgebra",
+        AlgebraType::Subproduct => "org.uacalc.alg.SubProductAlgebra",
+        AlgebraType::Free => "org.uacalc.alg.FreeAlgebra",
+        AlgebraType::PolinLike => "org.uacalc.alg.PolinLikeAlgebra",
+        AlgebraType::UnaryTermsMonoid => "org.uacalc.alg.UnaryTermsMonoid",
+        AlgebraType::FiniteField => "org.uacalc.example.FiniteField",
+    };
+    let id = alg as *const dyn SmallAlgebra<UniverseItem = T> as *const u8 as usize;
+    format!("{}@{:x}", class, id as u32)
+}
 
 /// A congruence lattice of a SmallAlgebra.
 ///
@@ -101,8 +129,9 @@ where
     /// Permutability level (-1 if not computed)
     permutability_level: i32,
     
-    /// Permutability level witnesses
-    permutability_level_witnesses: Option<[Partition; 2]>,
+    /// Permutability level witnesses. Java stores a two-slot array that stays
+    /// `[null, null]` when Con is a chain (no incomparable pair).
+    permutability_level_witnesses: Option<[Option<Partition>; 2]>,
     
     /// Size computed during universe generation
     size_computed: usize,
@@ -275,11 +304,15 @@ where
     }
     
     /// Get or set the description.
+    ///
+    /// Java `CongruenceLattice.getDescription()` is
+    /// `"Congruence Lattice of " + alg`, and default `Algebra.toString()` is
+    /// `getClass().getName() + "@" + identityHashCode`. Match that form.
     pub fn get_description(&self) -> String {
         if let Some(ref desc) = self.description {
             desc.clone()
         } else {
-            format!("Congruence Lattice of {}", self.alg.name())
+            format!("Congruence Lattice of {}", java_algebra_identity(self.alg.as_ref()))
         }
     }
     
@@ -1072,7 +1105,8 @@ where
         let univ: Vec<Partition> = self.universe.as_ref().unwrap().iter().cloned().collect();
         let size = univ.len();
         let mut level = 0;
-        let mut hi_level_pars = [self.zero(), self.zero()];
+        // Java `new Partition[2]` is `[null, null]` until an incomparable pair is found.
+        let mut hi_level_pars: [Option<Partition>; 2] = [None, None];
         
         for i in 0..size {
             let par0 = &univ[i];
@@ -1084,11 +1118,10 @@ where
                     continue;
                 }
                 
-                // Permutability level computation is complex, use a simple heuristic for now
-                let lev = 2; // Default value - real implementation requires more complexity
+                let lev = Partition::permutability_level_of_join(par0, par1).unwrap_or(-1);
                 if lev > level {
                     level = lev;
-                    hi_level_pars = [par0.clone(), par1.clone()];
+                    hi_level_pars = [Some(par0.clone()), Some(par1.clone())];
                 }
             }
         }
@@ -1100,7 +1133,10 @@ where
     }
     
     /// Get the permutability level witnesses.
-    pub fn get_permutability_level_witnesses(&self) -> Option<&[Partition; 2]> {
+    ///
+    /// After `permutability_level()`, Java always returns a two-element array
+    /// (slots may be null). Before it is computed the field is null.
+    pub fn get_permutability_level_witnesses(&self) -> Option<&[Option<Partition>; 2]> {
         self.permutability_level_witnesses.as_ref()
     }
     
@@ -1632,17 +1668,56 @@ where
     
     /// Compute the Delta congruence on alpha as a subalgebra.
     ///
+    /// Java: the congruence on `alpha` as a subalgebra of `A × A` generated
+    /// by `((a,a),(b,b))` for `(a,b)` in `beta`.
+    ///
     /// # Arguments
     /// * `alpha` - The congruence to use as subalgebra
     /// * `beta` - The congruence to compute Delta for
     ///
     /// # Returns
     /// The Delta congruence
-    pub fn delta(&mut self, _alpha: &Partition, _beta: &Partition) -> Partition {
-        // This is a simplified implementation
-        // The full implementation would create a subalgebra from alpha
-        // and compute the congruence generated by beta on that subalgebra
-        self.zero()
+    pub fn delta(&mut self, alpha: &Partition, beta: &Partition) -> Partition {
+        match self.delta_matching_java(alpha, beta) {
+            Ok(part) => part,
+            Err(_) => self.zero(),
+        }
+    }
+
+    fn delta_matching_java(
+        &mut self,
+        alpha: &Partition,
+        beta: &Partition,
+    ) -> Result<Partition, String> {
+        let universe: HashSet<i32> = (0..self.alg_size as i32).collect();
+        let ops = crate::alg::op::ops::make_int_operations(self.alg.operations())?;
+        let snapshot = BasicAlgebra::new(self.alg.name().to_string(), universe, ops);
+        let alg_box = Box::new(snapshot) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+        let alpha_as_alg = Subalgebra::<i32>::congruence_as_algebra(alg_box, alpha)?;
+        let mut alpha_con = CongruenceLattice::new(alpha_as_alg);
+        let mut delta = alpha_con.zero();
+        let n = self.alg_size as i32;
+        for block in beta.get_blocks() {
+            if block.len() < 2 {
+                continue;
+            }
+            let lead = block[0];
+            let aa_enc = horner::horner_same_size(&[lead as i32, lead as i32], n);
+            let aa = match alpha_con.alg.element_index(&aa_enc) {
+                Some(idx) => idx,
+                None => continue,
+            };
+            for &elem in &block[1..] {
+                let bb_enc = horner::horner_same_size(&[elem as i32, elem as i32], n);
+                let bb = match alpha_con.alg.element_index(&bb_enc) {
+                    Some(idx) => idx,
+                    None => continue,
+                };
+                let cong = alpha_con.cg(aa, bb);
+                delta = delta.join(&cong)?;
+            }
+        }
+        Ok(delta)
     }
     
     /// Alternative commutator using Delta.
@@ -1674,36 +1749,36 @@ where
         true
     }
     
-    /// Find idempotent unary polynomials.
+    /// Find nonconstant idempotent members of Pol_1(A).
+    ///
+    /// Java builds `A^{|A|}` generated by the identity tuple `(0,…,n-1)` and
+    /// the constants (via `includeConstants`). The source writes power `1`,
+    /// but the identity generator has length `algSize`, which is the unary
+    /// function space `A^A`.
     ///
     /// # Returns
     /// List of idempotent unary polynomials as IntArray
     pub fn idempotent_polynomials(&mut self) -> Result<Vec<IntArray>, String> {
-        use crate::alg::{BigProductAlgebra, SubProductAlgebra};
-        
-        // Create A^1 (unary polynomials)
+        if self.alg_size == 0 {
+            return Ok(Vec::new());
+        }
         let alg_clone = self.alg.clone_box();
-        let product = BigProductAlgebra::new_power_safe(alg_clone, 1)?;
-        
-        // Create a subproduct algebra to get the universe
-        let sub_prod = SubProductAlgebra::new_safe(
-            "Polynomials".to_string(),
+        let product = BigProductAlgebra::new_power_safe(alg_clone, self.alg_size)?;
+        let identity: Vec<i32> = (0..self.alg_size as i32).collect();
+        let gens = vec![IntArray::from_array(identity)?];
+        let sub_prod = SubProductAlgebra::new_full_safe(
+            String::new(),
             product,
-            Vec::new(), // Empty generators means we get all elements
-            false
+            gens,
+            false,
+            true,
         )?;
-        
-        // Get all unary polynomials
-        let univ = sub_prod.get_universe_list();
-        
-        // Filter for idempotent ones
         let mut idempotent = Vec::new();
-        for poly in univ.iter() {
+        for poly in sub_prod.get_universe_list().iter() {
             if poly.is_idempotent() && !poly.is_constant() {
                 idempotent.push(poly.clone());
             }
         }
-        
         Ok(idempotent)
     }
     

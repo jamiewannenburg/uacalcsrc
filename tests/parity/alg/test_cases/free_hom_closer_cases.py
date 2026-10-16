@@ -317,8 +317,14 @@ os.unlink(path)
         call="[read.cardinality(), _tbl(read), _terms(f1.getTerms())]",
         description="write FreeAlgebra, read back, compare card/table; terms from original",
         xfail_reason=(
-            "Owner/library: AlgebraIO write/read of FreeAlgebra permutes universe "
-            "indices on Java ([0,1,1,0]) vs Python ([1,0,0,1]); card and terms match."
+            "Owner/library: live F(1) generation already matches Java "
+            "(table [1,0,0,1], universe [[0,1],[0,0]]). Java AlgebraIO writes "
+            "<freeAlgebra> coordinate tuples and rereads them in a different "
+            "order ([0,1,1,0] is the 0/1 relabel of the live table). Python "
+            "writeAlgebraFile materializes to_basic_algebra() integer tables "
+            "and preserves live indices. FreeAlgebra XML write in uacalc_lib "
+            "is a stub; matching Java's IO permutation is not a clean element-"
+            "order tweak. Card and terms match."
         ),
         **_LIST
     ),
@@ -1051,10 +1057,6 @@ os.unlink(path)
         setup=_SETUP,
         call="sorted([str(p) for p in Algebras.quasiCriticalCongruences(c2, None)])",
         description="quasiCriticalCongruences(C2)",
-        xfail_reason=(
-            "Owner/library: Java returns the one-block congruence |0,1|; "
-            "uacalc_lib quasi_critical_congruences returns an empty list on C2."
-        ),
         **_LIST
     ),
     TestCaseSpec(
@@ -1098,3 +1100,222 @@ os.unlink(path)
         expected_exception="NullPointerException",
     ),
 ]
+
+_WIDE = _SETUP + r"""
+c3 = AlgebraIO.readAlgebraFile("resources/algebras/cyclic3.ua")
+lat2 = AlgebraIO.readAlgebraFile("resources/algebras/lat2.ua")
+ba2 = AlgebraIO.readAlgebraFile("resources/algebras/ba2.ua")
+z3 = AlgebraIO.readAlgebraFile("resources/algebras/z3.ua")
+n5 = AlgebraIO.readAlgebraFile("resources/algebras/n5.ua")
+m3 = AlgebraIO.readAlgebraFile("resources/algebras/m3.ua")
+
+def _symname(op):
+    sym = None
+    if hasattr(op, "symbol"):
+        try:
+            sym = op.symbol() if callable(op.symbol) else op.symbol
+        except Exception:
+            sym = None
+    if sym is None:
+        return ""
+    getter = getattr(sym, "name", None) or getattr(sym, "getName", None)
+    if callable(getter):
+        return str(getter())
+    return str(sym)
+
+def _op_table_any(op, n):
+    ar = int(op.arity())
+    iva = op.intValueAt
+    if ar == 0:
+        return [int(iva([]))]
+    if ar == 1:
+        return [int(iva([i])) for i in range(n)]
+    if ar == 2:
+        return [int(iva([i, j])) for i in range(n) for j in range(n)]
+    return []
+
+def _fa_snap(base, n):
+    f = FreeAlgebra(base, n)
+    card = int(f.cardinality())
+    ops = []
+    for op in list(f.operations()):
+        ops.append([_symname(op), int(op.arity()), _op_table_any(op, card)])
+    ops.sort()
+    return [card, _ias(f.generators()), _ias(f.getUniverseList()), _terms(f.getTerms()), ops]
+
+def _fa_roundtrip(base, n):
+    import os, tempfile
+    f = FreeAlgebra(base, n)
+    live = _fa_snap(base, n)
+    fd, path = tempfile.mkstemp(suffix=".ua")
+    os.close(fd)
+    AlgebraIO.writeAlgebraFile(f, path)
+    read = AlgebraIO.readAlgebraFile(path)
+    os.unlink(path)
+    card = int(read.cardinality())
+    ops = []
+    for op in list(read.operations()):
+        ops.append([_symname(op), int(op.arity()), _op_table_any(op, card)])
+    ops.sort()
+    return [live, [card, ops]]
+
+def _qcc(path):
+    a = AlgebraIO.readAlgebraFile(path)
+    return sorted([str(p) for p in Algebras.quasiCriticalCongruences(a, None)])
+"""
+
+TEST_CASES.extend([
+    TestCaseSpec(
+        id="fa_live_c2_f2",
+        method="FreeAlgebra.cardinality",
+        setup=_WIDE,
+        call="_fa_snap(c2, 2)",
+        description="live F(2) over cyclic2: card/gens/universe/terms/ops",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="fa_live_c2_f3",
+        method="FreeAlgebra.cardinality",
+        setup=_WIDE,
+        call="_fa_snap(c2, 3)",
+        description="live F(3) over cyclic2: card/gens/universe/terms/ops",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="fa_live_c3_f1",
+        method="FreeAlgebra.cardinality",
+        setup=_WIDE,
+        call="_fa_snap(c3, 1)",
+        description="live F(1) over cyclic3: card/gens/universe/terms/ops",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="fa_live_c3_f2",
+        method="FreeAlgebra.cardinality",
+        setup=_WIDE,
+        call="_fa_snap(c3, 2)",
+        description="live F(2) over cyclic3: card/gens/universe/terms/ops",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="fa_live_lat2_f1",
+        method="FreeAlgebra.cardinality",
+        setup=_WIDE,
+        call="_fa_snap(lat2, 1)",
+        description="live F(1) over lat2: card/gens/universe/terms/ops",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="fa_live_lat2_f2",
+        method="FreeAlgebra.cardinality",
+        setup=_WIDE,
+        call="_fa_snap(lat2, 2)",
+        description="live F(2) over lat2: card/gens/universe/terms/ops",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="fa_live_ba2_f1",
+        method="FreeAlgebra.cardinality",
+        setup=_WIDE,
+        call="_fa_snap(ba2, 1)",
+        description="live F(1) over ba2: card/gens/universe/terms/ops",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="fa_live_z3_f1",
+        method="FreeAlgebra.cardinality",
+        setup=_WIDE,
+        call="_fa_snap(z3, 1)",
+        description="live F(1) over z3: card/gens/universe/terms/ops",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="fa_live_n5_f1",
+        method="FreeAlgebra.cardinality",
+        setup=_WIDE,
+        call="_fa_snap(n5, 1)",
+        description="live F(1) over n5: card/gens/universe/terms/ops",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="fa_live_m3_f1",
+        method="FreeAlgebra.cardinality",
+        setup=_WIDE,
+        call="_fa_snap(m3, 1)",
+        description="live F(1) over M3: card/gens/universe/terms/ops",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="fa_roundtrip_c3_f1",
+        method="AlgebraIO.writeAlgebraFile",
+        setup=_WIDE,
+        call="_fa_roundtrip(c3, 1)",
+        description="write/read F(1) over cyclic3: live snap plus read card/tables",
+        xfail_reason=(
+            "Owner/library: live F(1)/C3 matches Java (card 3, table "
+            "[1,2,0,2,0,1,0,1,2]). After AlgebraIO, Java rereads [0,1,2,1,2,0,2,0,1] "
+            "(0/1/2 relabel); Python to_basic_algebra write keeps the live table. "
+            "Same FreeAlgebra XML vs integer-table split as fa_roundtrip_write_read."
+        ),
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="fa_roundtrip_lat2_f1",
+        method="AlgebraIO.writeAlgebraFile",
+        setup=_WIDE,
+        call="_fa_roundtrip(lat2, 1)",
+        description="write/read F(1) over lat2: live snap plus read card/tables",
+        xfail_reason=(
+            "Owner/library: live F(1)/lat2 matches Java (card 1). After AlgebraIO, "
+            "Java rereads card 2 with the base-lattice tables; Python keeps live "
+            "card 1. FreeAlgebra XML reconstruction, not a live-generation mismatch."
+        ),
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="fa_roundtrip_ba2_f1",
+        method="AlgebraIO.writeAlgebraFile",
+        setup=_WIDE,
+        call="_fa_roundtrip(ba2, 1)",
+        description="write/read F(1) over ba2: live snap plus read card/tables",
+        xfail_reason=(
+            "Owner/library: live F(1)/ba2 matches Java (card 4, terms x/one/zero/"
+            "comp(x)). After AlgebraIO, Java rereads card 2 (the base algebra); "
+            "Python keeps live card 4. FreeAlgebra XML reconstruction, not a "
+            "live-generation mismatch."
+        ),
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="algs_quasi_crit_c3",
+        method="Algebras.quasiCriticalCongruences",
+        setup=_WIDE,
+        call="_qcc('resources/algebras/cyclic3.ua')",
+        description="quasiCriticalCongruences(cyclic3)",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="algs_quasi_crit_lat2",
+        method="Algebras.quasiCriticalCongruences",
+        setup=_WIDE,
+        call="_qcc('resources/algebras/lat2.ua')",
+        description="quasiCriticalCongruences(lat2)",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="algs_quasi_crit_ba2",
+        method="Algebras.quasiCriticalCongruences",
+        setup=_WIDE,
+        call="_qcc('resources/algebras/ba2.ua')",
+        description="quasiCriticalCongruences(ba2)",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="algs_quasi_crit_z3",
+        method="Algebras.quasiCriticalCongruences",
+        setup=_WIDE,
+        call="_qcc('resources/algebras/z3.ua')",
+        description="quasiCriticalCongruences(z3)",
+        **_LIST
+    ),
+])

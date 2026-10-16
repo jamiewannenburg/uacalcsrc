@@ -900,10 +900,6 @@ _rt = {
         setup=_SETUP,
         call="con.getDescription()",
         description="getDescription default",
-        xfail_reason=(
-            "owner: Java getDescription uses alg.toString() Class@hex; "
-            "library uses the algebra name"
-        ),
         **_LAT
     ),
     TestCaseSpec(
@@ -1024,10 +1020,6 @@ _rt = {
         setup=_SETUP,
         call="len(con.idempotentPolynomials())",
         description="idempotentPolynomials count",
-        xfail_reason=(
-            "owner: library idempotent_polynomials is incomplete vs Java "
-            "on cyclic2 (0 vs 1)"
-        ),
         **_LIST
     ),
     TestCaseSpec(
@@ -1134,10 +1126,6 @@ _rt = {
         setup=_SETUP,
         call="(lambda w: None if w is None else sorted(str(p) for p in w))((con.permutabilityLevel(), con.getPermutabilityLevelWitnesses())[1])",
         description="permutability witnesses after computing level",
-        xfail_reason=(
-            "owner: Java permutabilityLevelWitnesses stay null on cyclic2; "
-            "library returns the zero partition pair"
-        ),
         **_LIST
     ),
     TestCaseSpec(
@@ -1154,10 +1142,6 @@ _rt = {
         setup=_SETUP,
         call="con.Delta(con.zero(), con.one())",
         description="Delta(zero, one)",
-        xfail_reason=(
-            "owner: library Delta is a stub returning zero; Java returns one "
-            "on cyclic2"
-        ),
     ),
     TestCaseSpec(
         id="cl_commutator2",

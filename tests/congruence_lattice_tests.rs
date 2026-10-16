@@ -345,7 +345,7 @@ fn test_idempotent_polynomials() {
 }
 
 #[test]
-fn test_delta_stubbed() {
+fn test_delta_zero_one_is_one() {
     let alg = Box::new(BasicAlgebra::new(
         "TestAlg".to_string(),
         HashSet::from([0, 1, 2]),
@@ -354,13 +354,12 @@ fn test_delta_stubbed() {
     
     let mut con_lat = CongruenceLattice::new(alg);
     
-    // Test delta (stubbed method)
+    // Delta(zero, one) joins the diagonal pairs of the full relation, so
+    // the result is the one-congruence (Java CongruenceLattice.Delta).
     let zero = con_lat.zero();
     let one = con_lat.one();
     let delta = con_lat.delta(&zero, &one);
-    
-    // Should return zero (stubbed implementation)
-    assert_eq!(delta.number_of_blocks(), 3);
+    assert_eq!(delta.number_of_blocks(), 1);
 }
 
 #[test]
@@ -405,4 +404,50 @@ fn test_centralizes_stubbed() {
     
     // Should return true (stubbed implementation)
     assert!(centralizes);
+}
+
+fn cyclic2() -> Box<dyn SmallAlgebra<UniverseItem = i32>> {
+    let plus = operations::make_int_operation(
+        OperationSymbol::new("+", 2, true),
+        2,
+        vec![0, 1, 1, 0],
+    )
+    .expect("C2 plus");
+    Box::new(BasicAlgebra::new(
+        "C2".to_string(),
+        HashSet::from([0, 1]),
+        vec![plus],
+    )) as Box<dyn SmallAlgebra<UniverseItem = i32>>
+}
+
+#[test]
+fn test_get_description_java_identity_form() {
+    let con_lat = CongruenceLattice::new(cyclic2());
+    let desc = con_lat.get_description();
+    assert!(
+        desc.starts_with("Congruence Lattice of org.uacalc.alg.BasicAlgebra@"),
+        "unexpected description: {desc}"
+    );
+}
+
+#[test]
+fn test_delta_cyclic2_zero_one() {
+    let mut con_lat = CongruenceLattice::new(cyclic2());
+    let delta = con_lat.delta(&con_lat.zero(), &con_lat.one());
+    assert_eq!(format!("{delta}"), "|0,1|");
+}
+
+#[test]
+fn test_idempotent_polynomials_cyclic2() {
+    let mut con_lat = CongruenceLattice::new(cyclic2());
+    let polys = con_lat.idempotent_polynomials().expect("polys");
+    assert_eq!(polys.len(), 1);
+}
+
+#[test]
+fn test_permutability_witnesses_cyclic2_are_null() {
+    let mut con_lat = CongruenceLattice::new(cyclic2());
+    assert_eq!(con_lat.permutability_level(), 0);
+    let witnesses = con_lat.get_permutability_level_witnesses().expect("computed");
+    assert!(witnesses[0].is_none() && witnesses[1].is_none());
 }

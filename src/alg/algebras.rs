@@ -1693,15 +1693,16 @@ pub fn quasi_critical_congruences(
     
     use crate::alg::QuotientAlgebra;
     
-    let a_con = CongruenceLattice::new(a.clone_box());
+    let mut a_con = CongruenceLattice::new(a.clone_box());
     let one = a_con.one();
     let zero = a_con.zero();
     let mut meet_of_non_zeros = one.clone();
     
     let mut critical_congs = Vec::new();
     
-    // Get all congruences
-    let univ = a_con.universe();
+    // Java uses `A.con().getUniverseList()`, which computes the universe.
+    // The Algebra-trait `universe()` iterator is empty until `make_universe()`.
+    let univ = CongruenceLattice::universe(&mut a_con).clone();
     
     for par in univ {
         // Skip the one congruence
@@ -2491,6 +2492,25 @@ mod quasi_critical_tests {
         let critical_congs = result.unwrap();
         // The result depends on the algebra structure
         assert!(critical_congs.len() >= 0);
+    }
+
+    #[test]
+    fn test_quasi_critical_congruences_cyclic2() {
+        use crate::alg::op::{OperationSymbol, operations};
+        let plus = operations::make_int_operation(
+            OperationSymbol::new("+", 2, true),
+            2,
+            vec![0, 1, 1, 0],
+        )
+        .expect("C2 plus");
+        let universe: HashSet<i32> = (0..2).collect();
+        let alg = BasicAlgebra::new("C2".to_string(), universe, vec![plus]);
+        let a = Box::new(alg) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+        let critical = quasi_critical_congruences(a, None).expect("q-critical");
+        // Java: the zero congruence |0|1| is the unique quasi-critical congruence of C2.
+        assert_eq!(critical.len(), 1);
+        assert_eq!(critical[0].number_of_blocks(), 2);
+        assert_eq!(format!("{}", critical[0]), "|0|1|");
     }
 
     #[test]
