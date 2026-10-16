@@ -20,10 +20,13 @@ _EXPECTED_DIR_SUBSET = (
     "DiamondLattice",
     "DivisibilityOrder",
     "LatticeGraphData",
+    "Lattices",
     "NaturalOrder",
+    "Order",
     "OrderedSet",
     "OrderedSetBasicSet",
     "OrderedSetPartition",
+    "OrderedSets",
     "PrefixOrder",
     "SmallLattice",
 )

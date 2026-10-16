@@ -286,3 +286,29 @@ class TestParityTooling:
         text = inv.read_text(encoding="utf-8", errors="replace")
         assert "generated_at_utc:" in text
         assert "meta:" in text
+
+
+class TestOrderLeqAndMaximals:
+    """Jython-style ``Order.leq`` plus ``OrderedSets.maximals`` on CPython."""
+
+    def test_order_subclass_and_callable_maximals(self):
+        _ensure_python_org_on_path()
+        from org.uacalc.lat import Order, OrderedSets  # pylint: disable=import-outside-toplevel
+
+        class Div(Order):
+            def leq(self, a, b):
+                if a == 0:
+                    return True
+                if b == 0:
+                    return a == 0
+                return (b % a) == 0
+
+        assert Div().leq(2, 6) is True
+        assert Div().leq(6, 2) is False
+        assert list(OrderedSets.maximals([2, 3, 6, 35, 175], Div())) == [6, 175]
+        assert list(OrderedSets.maximals([3, 1, 4, 2], lambda a, b: a <= b)) == [4]
+        wrapped = Order(lambda a, b: a <= b)
+        assert wrapped.leq(1, 2) is True
+        assert list(OrderedSets.maximals([[1], [1, 2], [9]], Order(
+            lambda a, b: list(b)[: len(list(a))] == list(a)
+        ))) == [[1, 2], [9]]

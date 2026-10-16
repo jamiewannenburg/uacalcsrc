@@ -1,5 +1,5 @@
 use pyo3::prelude::*;
-use pyo3::exceptions::PyValueError;
+use pyo3::exceptions::{PyTypeError, PyValueError};
 use pyo3::types::PyDict;
 use uacalc::lat::*;
 use uacalc::alg::algebra::Algebra;
@@ -111,6 +111,22 @@ impl PyNaturalOrder {
     fn leq_string(&self, a: String, b: String) -> bool {
         self.inner.leq(&a, &b)
     }
+
+    /// Java-style `leq(a, b)` for ints or strings.
+    fn leq(&self, a: &Bound<'_, PyAny>, b: &Bound<'_, PyAny>) -> PyResult<bool> {
+        if let (Ok(x), Ok(y)) = (a.extract::<i32>(), b.extract::<i32>()) {
+            return Ok(self.inner.leq(&x, &y));
+        }
+        if let (Ok(x), Ok(y)) = (a.extract::<u32>(), b.extract::<u32>()) {
+            return Ok(self.inner.leq(&x, &y));
+        }
+        if let (Ok(x), Ok(y)) = (a.extract::<String>(), b.extract::<String>()) {
+            return Ok(self.inner.leq(&x, &y));
+        }
+        Err(PyValueError::new_err(
+            "NaturalOrder.leq expects ints or strs",
+        ))
+    }
     
     /// Python string representation
     fn __str__(&self) -> String {
@@ -149,6 +165,58 @@ fn maximals_natural_i32(elems: Vec<i32>) -> PyResult<Vec<i32>> {
 fn maximals_natural_string(elems: Vec<String>) -> PyResult<Vec<String>> {
     let order = uacalc::lat::NaturalOrder;
     Ok(uacalc::lat::ordered_sets::maximals(&elems, &order))
+}
+
+/// Pull a `leq(a, b)` callable from a Python order.
+///
+/// Accepts an object with a callable `leq` attribute (Jython `Order`
+/// implementations, `DivisibilityOrder`, …) or a two-argument callable.
+fn extract_leq_fn(order: &Bound<'_, PyAny>) -> PyResult<PyObject> {
+    if let Ok(leq) = order.getattr("leq") {
+        if leq.is_callable() {
+            return Ok(leq.unbind());
+        }
+    }
+    if order.is_callable() {
+        return Ok(order.clone().unbind());
+    }
+    Err(PyTypeError::new_err(
+        "order must implement leq(a, b) or be a callable (a, b) -> bool",
+    ))
+}
+
+fn call_leq(py: Python<'_>, leq_fn: &PyObject, a: &PyObject, b: &PyObject) -> PyResult<bool> {
+    let value = leq_fn.call1(py, (a.clone_ref(py), b.clone_ref(py)))?;
+    value.extract(py)
+}
+
+/// Maximal elements under a Python `Order.leq` or two-argument callable.
+///
+/// Mirrors `org.uacalc.lat.OrderedSets.maximals` / `ordered_sets::maximals`
+/// so the algorithm stays in Rust while `leq` is evaluated in Python. Elements
+/// may be any Python objects (ints, lists, user classes).
+#[pyfunction]
+fn maximals(py: Python<'_>, elems: Vec<PyObject>, order: &Bound<'_, PyAny>) -> PyResult<Vec<PyObject>> {
+    let leq_fn = extract_leq_fn(order)?;
+    let mut ans: Vec<PyObject> = Vec::new();
+    for candidate in elems {
+        let mut candidate_below = false;
+        let mut new_ans: Vec<PyObject> = Vec::new();
+        for e in &ans {
+            if call_leq(py, &leq_fn, &candidate, e)? {
+                candidate_below = true;
+                break;
+            }
+            if !call_leq(py, &leq_fn, e, &candidate)? {
+                new_ans.push(e.clone_ref(py));
+            }
+        }
+        if !candidate_below {
+            ans = new_ans;
+            ans.push(candidate);
+        }
+    }
+    Ok(ans)
 }
 
 /// Run the main test function for ordered_sets
@@ -1308,6 +1376,11 @@ impl PyOrderedSet {
     fn cardinality(&self) -> usize {
         self.inner.lock().unwrap().univ().len()
     }
+
+    /// latdraw `OrderedSet.card()` alias.
+    fn card(&self) -> usize {
+        self.cardinality()
+    }
     
     /// Get the universe as a list of integers.
     fn universe(&self) -> Vec<i32> {
@@ -1316,6 +1389,11 @@ impl PyOrderedSet {
             .iter()
             .map(|elem| *elem.get_underlying_object())
             .collect()
+    }
+
+    /// latdraw `OrderedSet.univ()` alias.
+    fn univ(&self) -> Vec<i32> {
+        self.universe()
     }
     
     /// Check if a ≤ b in this poset.
@@ -1683,6 +1761,7 @@ pub fn register_lat_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     m.add("DiamondLattice", m.getattr("PyDiamondLattice")?)?;
     m.add("BooleanLattice", m.getattr("PyBooleanLattice")?)?;
     // Add OrderedSets functions
+    m.add_function(wrap_pyfunction!(maximals, m)?)?;
     m.add_function(wrap_pyfunction!(maximals_divisibility, m)?)?;
     m.add_function(wrap_pyfunction!(maximals_prefix, m)?)?;
     m.add_function(wrap_pyfunction!(maximals_natural_i32, m)?)?;

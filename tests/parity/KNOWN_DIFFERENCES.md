@@ -174,12 +174,41 @@ Malcev is intentionally left alone.
 
 ### OrderedSets.maximals generic `Order`
 
-- **Java**: `maximals(elems, Order)` accepts any `Order.leq`.
-- **Python**: only `DivisibilityOrder`, `PrefixOrder`, and `NaturalOrder` route through
-  `uacalc_lib`. Any other order raises `NotImplementedError` (no Python reimplementation).
-- **Status**: Pending binding
-- **Tests**: divisibility, prefix, and natural cases exercise the routed orders;
-  generic `Order.leq` is listed as pending in `parity-coverage`, not as a silent skip.
+- **Java**: `maximals(elems, Order)` accepts any `Order.leq`. Jython implements the
+  interface with a Python class.
+- **Python**: `org.uacalc.lat.Order` is a subclassable class with `leq(a, b)` (or
+  `Order(callable)`). `OrderedSets.maximals` always calls `uacalc_lib.lat.maximals`,
+  which evaluates Python `leq` (object method or two-arg callable) inside the Rust
+  maximals algorithm. Ints, lists, tuples, and user objects work.
+- **Status**: Implemented
+- **Tests**: `order_leq_*`, `ordered_sets_maximals_generic_divisibility`,
+  `_callable`, `_lists`, `_objects`, `_empty`, `_null_order`
+- **Owner vs shim**: Thin shim (`Order` + null checks). Algorithm is
+  `uacalc_lib/src/lat.rs` `maximals`.
+
+### SmallLattice.upperCoversIndices
+
+- **Java/Jython**: `Lattices.conToSmallLattice` always returns null. Calling
+  `null.upperCoversIndices(0)` is Jython `AttributeError`
+  (`'NoneType' object has no attribute 'upperCoversIndices'`). There is no
+  public Java class that implements `SmallLattice`.
+- **Python**: org `conToSmallLattice` still returns `None` (Java null).
+  `DiamondLattice.upperCoversIndices(0)` is `[1, 2]` (bottom covered by the
+  two atoms).
+- **Status**: Strict xfail / roadmap
+- **Tests**: `small_lattice_upper_covers_indices`
+- **Owner vs shim**: Owner/library — Java has no constructible `SmallLattice`.
+  Python extras (`DiamondLattice` / `BooleanLattice` / `uacalc_lib.SmallLattice`)
+  implement the method.
+
+### BasicLattice.makeOrderedSet
+
+- **Java**: returns `org.latdraw.orderedset.OrderedSet` (POElem universe).
+- **Python**: returns `uacalc_lib` `OrderedSet` (int labels) via
+  `OrderedSet.from_lattice`. Cardinality matches.
+- **Status**: Accepted for comparison — golden cases compare cardinality, not
+  the latdraw type.
+- **Tests**: `basic_lattice_make_ordered_set`, `ordered_set_*_via_poset`
 
 ### BasicLattice.findJoinIrred / findMeetIrred / irredundant* / makeIrredundant*
 

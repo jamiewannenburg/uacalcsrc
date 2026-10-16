@@ -21,11 +21,6 @@ from . import PROJECT_ROOT
 PENDING_BINDINGS = {
     "lat": [
         (
-            "maximals (generic Order.leq)",
-            "only DivisibilityOrder/PrefixOrder/NaturalOrder route through "
-            "uacalc_lib; a Python reimplementation is not allowed",
-        ),
-        (
             "GUI / drawing (getDiagram, getVertices, FrameShower, main, run)",
             "Swing/latdraw diagram code is out of scope",
         ),
@@ -38,16 +33,9 @@ PENDING_BINDINGS = {
             "scanner false-positives; methods of the join/meet operations, not BasicLattice",
         ),
         (
-            "SmallLattice.upperCoversIndices",
-            "Java Lattices.conToSmallLattice always returns null; no Java-constructible SmallLattice",
-        ),
-        (
-            "POElem / org.latdraw.orderedset.OrderedSet",
-            "not in org.uacalc.lat; Python uses int labels and uacalc_lib OrderedSet",
-        ),
-        (
-            "makeOrderedSet (latdraw OrderedSet factory)",
-            "builds org.latdraw.orderedset.OrderedSet; drawing-adjacent, not bound",
+            "POElem class (org.latdraw.orderedset)",
+            "not in org.uacalc.lat; filter/ideal/covers/leq/univ are covered via "
+            "BasicLattice and uacalc_lib OrderedSet dual-runtime goldens",
         ),
     ],
     "terms": [

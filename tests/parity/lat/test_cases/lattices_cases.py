@@ -656,3 +656,278 @@ else:
         skip_string_check=True,
     ),
 ])
+
+_GENERIC_ORDER = """
+from org.uacalc.lat import Order, OrderedSets
+class _Div(Order):
+    def leq(self, a, b):
+        if a == 0:
+            return True
+        if b == 0:
+            return a == 0
+        return (b % a) == 0
+class _Nat(Order):
+    def leq(self, a, b):
+        return a <= b
+class _PrefSeq(Order):
+    def leq(self, a, b):
+        sa = list(a)
+        sb = list(b)
+        n = len(sa)
+        if n > len(sb):
+            return False
+        return sb[:n] == sa
+class _Age(Order):
+    def leq(self, a, b):
+        return a[1] <= b[1]
+div_order = _Div()
+nat_order = _Nat()
+pref_order = _PrefSeq()
+age_order = _Age()
+"""
+
+_CALLABLE_ORDER = _GENERIC_ORDER + """
+import sys
+if sys.platform.startswith("java"):
+    callable_order = nat_order
+else:
+    def callable_order(a, b):
+        return a <= b
+"""
+
+_POSET = _CHAIN + """
+p = lat.getPoset()
+if sys.platform.startswith("java"):
+    lc_vals = _labs(a1.lowerCovers())
+    filter_vals = _labs(a0.filter())
+    ideal_vals = _labs(a1.ideal())
+    os2 = lat.makeOrderedSet(lat)
+    os_card = len(list(os2.univ()))
+else:
+    lc_fn = getattr(p, "getLowerCovers", None) or p.get_lower_covers
+    lc_vals = _labs(lc_fn(a1))
+    filter_vals = _labs(p.filter(a0))
+    ideal_vals = _labs(p.ideal(a1))
+    os2 = lat.makeOrderedSet(lat)
+    os_card = os2.card() if hasattr(os2, "card") else os2.cardinality()
+"""
+
+TEST_CASES.extend([
+    TestCaseSpec(
+        id="order_leq_true",
+        method="Order.leq",
+        setup=_GENERIC_ORDER,
+        call="nat_order.leq(1, 2)",
+        description="Jython-style Order subclass: 1 <= 2",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="order_leq_false",
+        method="Order.leq",
+        setup=_GENERIC_ORDER,
+        call="nat_order.leq(2, 1)",
+        description="Jython-style Order subclass: 2 <= 1 is false",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="order_leq_divisibility",
+        method="Order.leq",
+        setup=_GENERIC_ORDER,
+        call="div_order.leq(2, 6)",
+        description="Custom Order.leq: 2 divides 6",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="ordered_sets_maximals_generic_divisibility",
+        method="OrderedSets.maximals",
+        setup=_GENERIC_ORDER,
+        call="list(OrderedSets.maximals([2, 3, 6, 35, 175], div_order))",
+        description="maximals with a Python class implementing Order.leq",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="ordered_sets_maximals_callable",
+        method="OrderedSets.maximals",
+        setup=_CALLABLE_ORDER,
+        call="list(OrderedSets.maximals([3, 1, 4, 2], callable_order))",
+        description="maximals with a Python callable on CPython (Order class on Jython)",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="ordered_sets_maximals_lists",
+        method="OrderedSets.maximals",
+        setup=_GENERIC_ORDER,
+        call="list(OrderedSets.maximals([[1], [1, 2], [1, 2, 3], [9]], pref_order))",
+        description="maximals of lists under prefix order",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="ordered_sets_maximals_objects",
+        method="OrderedSets.maximals",
+        setup=_GENERIC_ORDER,
+        call="list(OrderedSets.maximals([('a', 1), ('b', 3), ('c', 2)], age_order))",
+        description="maximals of tuples under an age/order on the second field",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="ordered_sets_maximals_empty",
+        method="OrderedSets.maximals",
+        setup=_GENERIC_ORDER,
+        call="list(OrderedSets.maximals([], nat_order))",
+        description="maximals of an empty collection",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="ordered_sets_maximals_null_order",
+        method="OrderedSets.maximals",
+        setup=_GENERIC_ORDER,
+        call="OrderedSets.maximals([1, 2], None)",
+        description="maximals with a null order NPEs once two elements are compared",
+        expected_exception="NullPointerException",
+    ),
+    TestCaseSpec(
+        id="basic_lattice_leq_false",
+        method="BasicLattice.leq",
+        setup=_CHAIN,
+        call="lat.leq(a1, a0)",
+        description="1 <= 0 is false in the 2-chain",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="basic_lattice_leq_reflexive",
+        method="BasicLattice.leq",
+        setup=_CHAIN,
+        call="lat.leq(a0, a0)",
+        description="leq is reflexive on the bottom of the 2-chain",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="basic_lattice_join_same",
+        method="BasicLattice.join",
+        setup=_CHAIN,
+        call="_lab(lat.join(a0, a0))",
+        description="join(0, 0) is 0 in the 2-chain",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="basic_lattice_meet_same",
+        method="BasicLattice.meet",
+        setup=_CHAIN,
+        call="_lab(lat.meet(a1, a1))",
+        description="meet(1, 1) is 1 in the 2-chain",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="ordered_set_leq_via_poset",
+        method="OrderedSet.leq",
+        setup=_POSET,
+        call="p.leq(a0, a1)",
+        description="Poset leq(0, 1) in the 2-chain (Java POElem, Python int)",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="ordered_set_leq_false_via_poset",
+        method="OrderedSet.leq",
+        setup=_POSET,
+        call="p.leq(a1, a0)",
+        description="Poset leq(1, 0) is false in the 2-chain",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="ordered_set_univ",
+        method="OrderedSet.univ",
+        setup=_POSET,
+        call="_labs(p.univ())",
+        description="OrderedSet.univ labels of the 2-chain poset",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="ordered_set_card",
+        method="OrderedSet.card",
+        setup=_POSET,
+        call="p.card()",
+        description="OrderedSet.card of the 2-chain poset",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="ordered_set_lower_covers_via_poset",
+        method="OrderedSet.getLowerCovers",
+        setup=_POSET,
+        call="lc_vals",
+        description="Lower covers of 1 via poset (Java POElem, Python OrderedSet)",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="ordered_set_filter_via_poset",
+        method="OrderedSet.filter",
+        setup=_POSET,
+        call="filter_vals",
+        description="Filter of 0 via poset (Java POElem.filter, Python OrderedSet.filter)",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="ordered_set_ideal_via_poset",
+        method="OrderedSet.ideal",
+        setup=_POSET,
+        call="ideal_vals",
+        description="Ideal of 1 via poset (Java POElem.ideal, Python OrderedSet.ideal)",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="basic_lattice_make_ordered_set",
+        method="BasicLattice.makeOrderedSet",
+        setup=_POSET,
+        call="os_card",
+        description="makeOrderedSet of the 2-chain has cardinality 2",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="ordered_set_from_filters",
+        method="OrderedSet.from_filters",
+        setup="""
+import sys
+if sys.platform.startswith("java"):
+    from org.latdraw.orderedset import OrderedSet as _LDOrderedSet
+    os_f = _LDOrderedSet.orderedSetFromFilters("c2", [0, 1], [[0, 1], [1]])
+    from_filters_card = os_f.card()
+else:
+    from org.uacalc.lat import OrderedSet
+    os_f = OrderedSet.from_filters([0, 1], [[0, 1], [1]], name="c2")
+    from_filters_card = os_f.card() if hasattr(os_f, "card") else os_f.cardinality()
+""",
+        call="from_filters_card",
+        description="2-chain OrderedSet from filters (Java latdraw, Python OrderedSet)",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="small_lattice_upper_covers_indices",
+        method="SmallLattice.upperCoversIndices",
+        setup=_MAKE_OPS + """
+import sys
+if sys.platform.startswith("java"):
+    from org.uacalc.io import AlgebraIO
+    from org.uacalc.alg.conlat import CongruenceLattice
+    alg = AlgebraIO.readAlgebraFile("resources/algebras/cyclic2.ua")
+    con = CongruenceLattice(alg)
+    _ctors = Lattices.getDeclaredConstructors()
+    _ctors[0].setAccessible(True)
+    _helper = _ctors[0].newInstance()
+    def _uci():
+        return list(_helper.conToSmallLattice(con).upperCoversIndices(0))
+else:
+    from org.uacalc.lat import DiamondLattice
+    d = DiamondLattice()
+    def _uci():
+        fn = getattr(d, "upperCoversIndices", None) or d.upper_covers_indices
+        return [int(x) for x in list(fn(0))]
+""",
+        call="_uci()",
+        description="SmallLattice.upperCoversIndices: Java has no instance; Python DiamondLattice",
+        skip_string_check=True,
+        xfail_reason=(
+            "Owner/library: Java Lattices.conToSmallLattice always returns null; "
+            "Jython then raises AttributeError: 'NoneType' object has no attribute "
+            "'upperCoversIndices'. Python DiamondLattice.upperCoversIndices(0) is [1, 2]."
+        ),
+    ),
+])

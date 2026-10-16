@@ -63,8 +63,25 @@ def test():
     p = lat.getPoset()
     if hasattr(p, "univ"):
         print("posetCard=" + str(len(list(p.univ()))))
+        print("posetUniv=" + str(_labs(p.univ())))
     else:
         print("posetCard=" + str(p.cardinality()))
+        print("posetUniv=" + str(_labs(p.universe())))
+    print("posetLeq=" + str(bool(p.leq(e0, e1))).lower())
+    if hasattr(e0, "lowerCovers"):
+        print("posetLowerCovers1=" + str(_labs(e1.lowerCovers())))
+        print("posetFilter0=" + str(_labs(e0.filter())))
+        print("posetIdeal1=" + str(_labs(e1.ideal())))
+    else:
+        lc = p.getLowerCovers(e1) if hasattr(p, "getLowerCovers") else p.get_lower_covers(e1)
+        print("posetLowerCovers1=" + str(_labs(lc)))
+        print("posetFilter0=" + str(_labs(p.filter(e0))))
+        print("posetIdeal1=" + str(_labs(p.ideal(e1))))
+    os2 = lat.makeOrderedSet(lat)
+    if hasattr(os2, "card"):
+        print("makeOrderedSetCard=" + str(os2.card()))
+    else:
+        print("makeOrderedSetCard=" + str(len(list(os2.univ()))))
     print("universeOrder=" + str(lat.getUniverseOrder()))
 
     try:

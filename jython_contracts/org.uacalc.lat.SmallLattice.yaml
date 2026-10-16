@@ -1,18 +1,26 @@
 target: org.uacalc.lat.SmallLattice
 level: file
-status: ignored
+status: implemented
 java_source: org/uacalc/lat/SmallLattice.java
 notes: |
   Java interface. upperCoversIndices is the only extra method. Java
   Lattices.conToSmallLattice always returns null, so there is no
-  Java-constructible SmallLattice to exercise.
-ignore_reason: Interface only; Java conToSmallLattice always returns null.
+  Java-constructible SmallLattice. Python DiamondLattice / BooleanLattice /
+  uacalc_lib SmallLattice expose upperCoversIndices; the org wrapper still
+  returns None from conToSmallLattice to match Java.
+ignore_reason: null
 surface:
-  package_export: false
-  aliases: {}
+  package_export: true
+  aliases:
+    upperCoversIndices: upper_covers_indices
+    getName: name
+    getUniverseList: universe
   static_methods: []
   str_parity: false
 testing:
-  notes: ""
+  notes: |
+    Golden small_lattice_upper_covers_indices is a strict xfail: Jython
+    AttributeError on the null conToSmallLattice result; Python
+    DiamondLattice.upperCoversIndices(0) is [1, 2].
   task_refs: []
   scripts: []

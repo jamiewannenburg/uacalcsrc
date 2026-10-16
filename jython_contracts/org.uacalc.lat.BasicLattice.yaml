@@ -6,9 +6,10 @@ notes: |
   CamelCase aliases onto uacalc_lib BasicLattice. Java elements are latdraw
   POElems; Python uses int labels. getUniverseOrder is always null (Java).
   convertToDefaultValueOps raises UnsupportedOperationException. Instance
-  dual NPEs via Lattices.dual. GUI (getDiagram, getVertices, main, run) and
-  latdraw makeOrderedSet are not bound. findJoinIrred / irredundant* are
-  golden-tested and xfailed where the library has no binding yet.
+  dual NPEs via Lattices.dual. makeOrderedSet returns uacalc_lib OrderedSet
+  (Java returns latdraw OrderedSet). GUI (getDiagram, getVertices, main, run)
+  is not bound. findJoinIrred / irredundant* are golden-tested and xfailed
+  where the library has no binding yet.
 ignore_reason: null
 surface:
   package_export: true
@@ -35,6 +36,7 @@ surface:
     join: join
     meet: meet
     cardinality: cardinality
+    makeOrderedSet: makeOrderedSet
   static_methods: []
   str_parity: false
 testing:
@@ -68,6 +70,7 @@ testing:
         - join
         - meet
         - cardinality
+        - makeOrderedSet
       ignore_lines:
         - "labels has size"
         - "ucs has size"
