@@ -708,6 +708,40 @@ the org shim's `leftSide` / `rightSide` return term objects via
 
 ---
 
+## org.uacalc.group
+
+### PermutationGroup constructors do not close the group
+
+- **Java**: `PermutationGroup(name, generators)` / `(name, generators, universeList)`
+  only store the lists. `universe` and `operations` stay null, so
+  `cardinality()` is `-1`. `universeList` is unused.
+- **Python (shim)**: matches that shell. Group elements are obtained by closing
+  generators under the static `prod` / `inv` / `id` operations (goldens).
+- **Status**: Matched
+- **Tests**: `s2_cardinality`, `s3u_cardinality`, `empty_cardinality`, `close_*`
+
+### PermutationGroup.toString
+
+- **Java**: default `Object.toString()` (`PermutationGroup@hex`).
+- **Python**: semantic `PermutationGroup(name)`.
+- **Status**: Accepted
+- **Tests**: surface smoke uses `getName`; behavioral cases `skip_string_check`
+  on the group object itself. IntArray `toString` of `prod`/`inv`/`id` **is**
+  compared exactly (`[1, 0, 2]`).
+
+### uacalc_lib extras (`to_basic_algebra`, `automorphism_group`)
+
+- **Java**: no such methods on `org.uacalc.group.PermutationGroup`.
+- **Python (`uacalc_lib`)**: `to_basic_algebra` builds a `BasicAlgebra` on the
+  underlying set `{0,…,n-1}` with product/inverse/identity operations that take
+  integer args, not a Cayley table of the generated permutation group.
+  `automorphism_group` enumerates `Aut(A)` and is Rust-only.
+- **Status**: Documented gap / roadmap (Cayley-table conversion). Not in the
+  Java goldens.
+- **Owner vs shim**: Owner — deep; leave the Java class as the parity target.
+
+---
+
 ## org.uacalc.alg.Malcev
 
 Left alone, as specified. `minority_term` / `weak_nu_term` are not part of this

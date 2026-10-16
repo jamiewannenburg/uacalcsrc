@@ -36,16 +36,18 @@ def test_org_uacalc_group_import_smoke():
     assert grp.__name__ == "org.uacalc.group"
 
 
-def test_group_shim_public_names_match_uacalc_lib():
+def test_group_shim_exposes_permutation_group():
     lib_group = _uacalc_lib_group()
     _ensure_python_org_on_path()
     import org.uacalc.group as shim  # noqa: PLC0415
 
     lib_public = {n for n in dir(lib_group) if not n.startswith("_")}
     shim_public = {n for n in dir(shim) if not n.startswith("_")}
-    assert shim_public == lib_public
-    for name in lib_public:
-        assert getattr(shim, name) is getattr(lib_group, name)
+    assert "PermutationGroup" in lib_public
+    assert "PermutationGroup" in shim_public
+    # Java-shaped facade replaces the raw PyO3 class on the org.uacalc path.
+    for name in ("prod", "inv", "id", "makeProdOp", "makeInvOp", "makeIdOp", "getName"):
+        assert hasattr(shim.PermutationGroup, name), name
 
 
 def test_group_minimal_if_bindings():
@@ -55,3 +57,5 @@ def test_group_minimal_if_bindings():
 
     g = grp.PermutationGroup("S2", [(0, 1)])
     assert "S2" in str(g)
+    assert g.getName() == "S2"
+    assert g.cardinality() == -1

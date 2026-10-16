@@ -240,14 +240,23 @@ slices:
       - org.uacalc.group
     depends_on:
       - core-alg-base
-    owner: agent-d
+    owner: group-coverage
     status: parity_golden
-    last_updated: "2026-04-18"
+    last_updated: "2026-10-16"
     workstreams: []
     parity_tests_dir: tests/parity/group
     notes: >-
-      Golden tests/parity/group/golden_group_surface.py + fixtures + test_group_golden_surface.py. Golden uses
-      getName/get_name for stable label (avoid Java default str @ identity). agent-d.
+      File-level contract for PermutationGroup (only public class in
+      org.uacalc.group). 7/7 Java public methods wrapped and behaviorally
+      tested (100%). Goldens cover static prod/inv/id, make*Op.valueAt,
+      constructors, GeneralAlgebra shell (cardinality -1, null
+      universe/operations), and closure of S_n / C_n / D_n / V4 plus
+      degree-1 and empty-generator edges. Java never installs operations on
+      the instance; group listing is computed from the static ops. Surface
+      golden still uses getName (avoid Java default str @ identity).
+      uacalc_lib extras to_basic_algebra / automorphism_group are not on the
+      Java class (Rust to_basic_algebra uses the underlying set, not |G|).
+      0 strict xfails. Branch group-coverage.
 
   - id: core-fplat
     title: Partially defined lattices (flat representation)

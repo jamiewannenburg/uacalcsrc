@@ -67,6 +67,18 @@ PENDING_BINDINGS = {
             "Java interface; CPython rejects Element()",
         ),
     ],
+    "group": [
+        (
+            "to_basic_algebra / automorphism_group / new_safe",
+            "Rust extras; Java PermutationGroup has no Aut(A) or conversion. "
+            "uacalc_lib to_basic_algebra uses the underlying set {0..n-1}, not |G|",
+        ),
+        (
+            "valueAt on anonymous make*Op Operations",
+            "scanner sees valueAt inside PermutationGroup.java; covered via "
+            "makeProdOp/makeInvOp/makeIdOp.valueAt goldens",
+        ),
+    ],
     "util": [
         (
             "IntArray.getArray live alias / setIntArray replace",
