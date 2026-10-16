@@ -1,0 +1,20 @@
+target: org.uacalc.fplat
+level: package
+status: implemented
+java_source: null
+notes: |
+  Thin package index. The only public class is PartiallyDefinedLattice.
+  Java main() is an empty stub and is not wrapped.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases: {}
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    Behavioral golden tests live in tests/parity/fplat. fplat_ops.py covers
+    the Java constructor (name, order, joins, meets), leq on several orders,
+    stored join/meet lists, and null-order NPE.
+  task_refs: []
+  scripts: []

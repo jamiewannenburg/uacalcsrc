@@ -145,6 +145,7 @@ if not is_jython:
         "Closer": {
             "getAnswer": "get_answer",
             "sgClose": "sg_close",
+            "sgCloseParallel": "sgCloseParallel",
             "sgClosePower": "sg_close_power",
             "close": "close",
             "getmaxSize": "getmaxSize",

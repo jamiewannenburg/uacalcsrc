@@ -936,8 +936,35 @@ def _install(alg_module_globals: dict) -> None:
         def getAnswer(self) -> Any:
             return self._ans if self._ans_set else None
 
+        doParallel = False
+
         def sgClose(self) -> Any:
+            # Java Closer.doParallel routes sgClose() through sgCloseParallel.
+            if getattr(Closer, "doParallel", False):
+                fn = getattr(self._inner, "sg_close_parallel", None)
+                if callable(fn):
+                    self._ans = _lib_call(fn)
+                    self._ans_set = True
+                    return self._ans
             self._ans = _lib_call(self._inner.sg_close)
+            self._ans_set = True
+            return self._ans
+
+        def sgCloseParallel(self, elems: Any = None, closedMark: Any = None, termMap: Any = None) -> Any:
+            """No-arg form uses the library parallel closer on the stored gens.
+
+            The Java 3-arg ``(elems, closedMark, ConcurrentMap)`` overload plus
+            thread/timing internals are not reimplemented here.
+            """
+            if elems is not None or closedMark is not None or termMap is not None:
+                raise TypeError(
+                    "sgCloseParallel(elems, closedMark, termMap) is not wrapped; "
+                    "use sgClose() with Closer.doParallel = True"
+                )
+            fn = getattr(self._inner, "sg_close_parallel", None)
+            if not callable(fn):
+                raise TypeError("sgCloseParallel is not bound")
+            self._ans = _lib_call(fn)
             self._ans_set = True
             return self._ans
 
@@ -2451,7 +2478,21 @@ def _install(alg_module_globals: dict) -> None:
         return getattr(self, "_ans", None)
 
     def closerSgClose(self: Any) -> Any:
+        if getattr(Closer, "doParallel", False):
+            fn = getattr(self, "sg_close_parallel", None)
+            if callable(fn):
+                return _mark_closer_answer(self, _lib_call(fn))
         return _mark_closer_answer(self, _lib_call(self.sg_close))
+
+    def closerSgCloseParallel(self: Any, elems: Any = None, closedMark: Any = None, termMap: Any = None) -> Any:
+        if elems is not None or closedMark is not None or termMap is not None:
+            raise TypeError(
+                "sgCloseParallel(elems, closedMark, termMap) is not wrapped"
+            )
+        fn = getattr(self, "sg_close_parallel", None)
+        if not callable(fn):
+            raise TypeError("sgCloseParallel is not bound")
+        return _mark_closer_answer(self, _lib_call(fn))
 
     def closerSgClosePower(self: Any) -> Any:
         return _mark_closer_answer(self, _lib_call(self.sg_close_power))
@@ -2604,6 +2645,7 @@ def _install(alg_module_globals: dict) -> None:
     _CLOSER_EXTRA = {
         "getAnswer": closerGetAnswer,
         "sgClose": closerSgClose,
+        "sgCloseParallel": closerSgCloseParallel,
         "sgClosePower": closerSgClosePower,
         "close": closerClose,
         "getmaxSize": closerGetmaxSize,
@@ -2973,6 +3015,7 @@ def _install(alg_module_globals: dict) -> None:
         "Closer": {
             "getAnswer": "get_answer",
             "sgClose": "sg_close",
+            "sgCloseParallel": "sgCloseParallel",
             "sgClosePower": "sg_close_power",
             "close": "close",
             "getmaxSize": "getmaxSize",

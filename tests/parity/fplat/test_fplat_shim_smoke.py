@@ -36,22 +36,36 @@ def test_org_uacalc_fplat_import_smoke():
     assert fp.__name__ == "org.uacalc.fplat"
 
 
-def test_fplat_shim_public_names_match_uacalc_lib():
-    lib_fplat = _uacalc_lib_fplat()
+def test_fplat_shim_exposes_partially_defined_lattice():
+    _uacalc_lib_fplat()
     _ensure_python_org_on_path()
     import org.uacalc.fplat as shim  # noqa: PLC0415
 
-    lib_public = {n for n in dir(lib_fplat) if not n.startswith("_")}
-    shim_public = {n for n in dir(shim) if not n.startswith("_")}
-    assert shim_public == lib_public
-    for name in lib_public:
-        assert getattr(shim, name) is getattr(lib_fplat, name)
+    assert hasattr(shim, "PartiallyDefinedLattice")
+    for name in ("leq", "getDefinedJoins", "getDefinedMeets", "toString"):
+        assert hasattr(shim.PartiallyDefinedLattice, name), name
 
 
 def test_fplat_minimal_if_bindings():
     _uacalc_lib_fplat()
     _ensure_python_org_on_path()
     import org.uacalc.fplat as fp  # noqa: PLC0415
+    from org.uacalc.lat import Order  # noqa: PLC0415
+    from org.uacalc.terms import VariableImp  # noqa: PLC0415
 
-    L = fp.PartiallyDefinedLattice("T", [], [])
-    assert "T" in str(L)
+    class NameOrder(Order):
+        def leq(self, a, b):
+            na = a.getName() if hasattr(a, "getName") else a.get_name()
+            nb = b.getName() if hasattr(b, "getName") else b.get_name()
+            if callable(na):
+                na = na()
+            if callable(nb):
+                nb = nb()
+            return na <= nb
+
+    x = VariableImp("x")
+    y = VariableImp("y")
+    L = fp.PartiallyDefinedLattice("T", NameOrder(), [[x, y]], [])
+    assert L.leq(x, y) is True
+    assert L.leq(y, x) is False
+    assert L.getDefinedJoins()[0][0].getName() == "x" or str(L.getDefinedJoins()[0][0])

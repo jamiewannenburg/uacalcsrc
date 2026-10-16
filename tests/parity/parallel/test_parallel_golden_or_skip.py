@@ -1,10 +1,8 @@
 """
 Golden stdout checks for ``tests/parity/parallel/golden_parallel_surface.py``.
 
-Documents where ``Pool`` lives: on Jython/ Java it is ``org.uacalc.alg.parallel.Pool``.
-On CPython, ``uacalc_lib`` currently exposes ``Pool`` on ``uacalc_lib.alg`` (``PyPool``)
-while ``org.uacalc.alg.parallel`` may remain an empty shim until the parallel submodule
-is wired in Rust.
+Documents ``Pool`` and ``SingleClose`` on ``org.uacalc.alg.parallel`` for both
+Jython (Java classpath) and CPython (``uacalc_lib.alg.parallel`` + org facade).
 """
 
 from __future__ import annotations

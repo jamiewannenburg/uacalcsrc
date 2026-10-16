@@ -1,8 +1,22 @@
 """Compatibility shim for ``org.uacalc.alg.parallel`` (parallel pool / closers).
 
-CPython loads from ``uacalc_lib.alg.parallel`` when present; otherwise the
-namespace may be empty. Jython uses the Java package from the classpath.
+CPython loads ``Pool`` / ``SingleClose`` from ``uacalc_lib.alg.parallel`` when
+present (falling back to ``uacalc_lib.alg.Pool``) and applies a Java-shaped
+facade. Jython uses the Java package from the classpath.
 """
+
+# Literal map for jython_contracts validate() (also applied by _jython_compat).
+_CLASS_ALIASES = {
+    "Pool": {
+        "fj_pool": "fj_pool",
+        "is_initialized": "is_initialized",
+        "toString": "toString",
+    },
+    "SingleClose": {
+        "doOneStep": "doOneStep",
+        "toString": "toString",
+    },
+}
 
 
 def _load_cp() -> None:
@@ -16,11 +30,20 @@ def _load_cp() -> None:
         try:
             _sub = importlib.import_module("uacalc_lib.alg.parallel")
         except ImportError:
-            return
+            _sub = None
     g = globals()
-    for _name in dir(_sub):
-        if not _name.startswith("_"):
-            g[_name] = getattr(_sub, _name)
+    if _sub is not None:
+        for _name in dir(_sub):
+            if not _name.startswith("_"):
+                g[_name] = getattr(_sub, _name)
+    if "Pool" not in g:
+        _pool = getattr(_alg, "Pool", None)
+        if _pool is not None:
+            g["Pool"] = _pool
+
+    from org.uacalc.alg.parallel._jython_compat import _install as _install_jython_compat
+
+    _install_jython_compat(g)
 
 
 if __import__("sys").platform.startswith("java"):

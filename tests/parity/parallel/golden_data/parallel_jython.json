@@ -1,0 +1,625 @@
+{
+  "metadata": {
+    "generated_at": "2026-10-16T21:19:09.938377+00:00",
+    "jar": "uacalc.jar",
+    "package": "org.uacalc.parallel",
+    "runtime": "jython",
+    "test_cases": 23,
+    "type": "package"
+  },
+  "test_cases": [
+    {
+      "args": [],
+      "call": "Pool.__name__",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Pool is importable",
+      "expected_exception": null,
+      "id": "pool_class_name",
+      "kwargs": {},
+      "method": "Pool",
+      "notes": "",
+      "result": {
+        "return_type": "str",
+        "return_value": "Pool",
+        "string_repr": "Pool",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Closer, BigProductAlgebra\nfrom org.uacalc.alg.parallel import Pool, SingleClose\nfrom org.uacalc.util import IntArray\nfrom org.uacalc.terms import VariableImp\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_m3 = BigProductAlgebra(m3, 1)\nbp_n5 = BigProductAlgebra(n5, 1)\nbp_lat2 = BigProductAlgebra(lat2, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\ng10 = IntArray([1, 0])\ng0 = IntArray([0])\ng1 = IntArray([1])\ng2 = IntArray([2])\n\ndef _coords(elem):\n    if elem is None:\n        return None\n    try:\n        return [int(x) for x in list(elem)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(elem, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(elem)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_coords(x) for x in list(lst)]\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _quiet(closer):\n    fn = getattr(closer, 'setSuppressOutput', None) or getattr(closer, 'set_suppress_output', None)\n    if callable(fn):\n        fn(True)\n    return closer\n\ndef _seq_close(alg, gens):\n    old = getattr(Closer, 'doParallel', False)\n    try:\n        Closer.doParallel = False\n        return _sorted_ias(_quiet(Closer(alg, gens)).sgClose())\n    finally:\n        Closer.doParallel = old\n\ndef _par_close(alg, gens):\n    old = getattr(Closer, 'doParallel', False)\n    try:\n        Closer.doParallel = True\n        # Java sgCloseParallel NPEs if termMap is null; makeTermMap=True.\n        return _sorted_ias(_quiet(Closer(alg, gens, True)).sgClose())\n    finally:\n        Closer.doParallel = old\n\ndef _one_step(univ, op, min_i, max_i):\n    univ = list(univ)\n    if sys.platform.startswith('java'):\n        from java.util.concurrent import ConcurrentHashMap, ForkJoinPool\n        from java.util.concurrent.atomic import AtomicInteger\n        from java.lang import Thread\n        mmap = ConcurrentHashMap()\n        for i, el in enumerate(univ):\n            mmap.put(el, VariableImp('x' + str(i)))\n        sc = SingleClose(univ, mmap, op, min_i, max_i, AtomicInteger(len(univ)))\n        results = sc.doOneStep(ForkJoinPool(), Thread.currentThread(), None, None)\n    else:\n        sc = SingleClose(univ, None, op, min_i, max_i, len(univ))\n        results = sc.doOneStep()\n    out = []\n    if results is None:\n        return None\n    for chunk in results:\n        if chunk is None:\n            continue\n        for x in chunk:\n            out.append(_coords(x))\n    out.sort()\n    return out\n\ndef _ops(alg):\n    ops = getattr(alg, 'operations', None)\n    if callable(ops):\n        ops = ops()\n    if ops is None:\n        ops = alg.getOperations()\n    return list(ops)\n\ndef _first_op(alg):\n    return _ops(alg)[0]\n\nc2_op = _first_op(c2)\nm3_join = _ops(m3)[0]\n\nCloser.doParallel = False\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Pool().__class__.__name__",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Pool() default constructor",
+      "expected_exception": null,
+      "id": "pool_construct",
+      "kwargs": {},
+      "method": "Pool",
+      "notes": "",
+      "result": {
+        "return_type": "str",
+        "return_value": "Pool",
+        "string_repr": "Pool",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Closer, BigProductAlgebra\nfrom org.uacalc.alg.parallel import Pool, SingleClose\nfrom org.uacalc.util import IntArray\nfrom org.uacalc.terms import VariableImp\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_m3 = BigProductAlgebra(m3, 1)\nbp_n5 = BigProductAlgebra(n5, 1)\nbp_lat2 = BigProductAlgebra(lat2, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\ng10 = IntArray([1, 0])\ng0 = IntArray([0])\ng1 = IntArray([1])\ng2 = IntArray([2])\n\ndef _coords(elem):\n    if elem is None:\n        return None\n    try:\n        return [int(x) for x in list(elem)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(elem, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(elem)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_coords(x) for x in list(lst)]\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _quiet(closer):\n    fn = getattr(closer, 'setSuppressOutput', None) or getattr(closer, 'set_suppress_output', None)\n    if callable(fn):\n        fn(True)\n    return closer\n\ndef _seq_close(alg, gens):\n    old = getattr(Closer, 'doParallel', False)\n    try:\n        Closer.doParallel = False\n        return _sorted_ias(_quiet(Closer(alg, gens)).sgClose())\n    finally:\n        Closer.doParallel = old\n\ndef _par_close(alg, gens):\n    old = getattr(Closer, 'doParallel', False)\n    try:\n        Closer.doParallel = True\n        # Java sgCloseParallel NPEs if termMap is null; makeTermMap=True.\n        return _sorted_ias(_quiet(Closer(alg, gens, True)).sgClose())\n    finally:\n        Closer.doParallel = old\n\ndef _one_step(univ, op, min_i, max_i):\n    univ = list(univ)\n    if sys.platform.startswith('java'):\n        from java.util.concurrent import ConcurrentHashMap, ForkJoinPool\n        from java.util.concurrent.atomic import AtomicInteger\n        from java.lang import Thread\n        mmap = ConcurrentHashMap()\n        for i, el in enumerate(univ):\n            mmap.put(el, VariableImp('x' + str(i)))\n        sc = SingleClose(univ, mmap, op, min_i, max_i, AtomicInteger(len(univ)))\n        results = sc.doOneStep(ForkJoinPool(), Thread.currentThread(), None, None)\n    else:\n        sc = SingleClose(univ, None, op, min_i, max_i, len(univ))\n        results = sc.doOneStep()\n    out = []\n    if results is None:\n        return None\n    for chunk in results:\n        if chunk is None:\n            continue\n        for x in chunk:\n            out.append(_coords(x))\n    out.sort()\n    return out\n\ndef _ops(alg):\n    ops = getattr(alg, 'operations', None)\n    if callable(ops):\n        ops = ops()\n    if ops is None:\n        ops = alg.getOperations()\n    return list(ops)\n\ndef _first_op(alg):\n    return _ops(alg)[0]\n\nc2_op = _first_op(c2)\nm3_join = _ops(m3)[0]\n\nCloser.doParallel = False\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "len(Pool().toString()) > 0",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Pool toString is non-empty (Java Class@hex)",
+      "expected_exception": null,
+      "id": "pool_toString",
+      "kwargs": {},
+      "method": "Pool.toString",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Closer, BigProductAlgebra\nfrom org.uacalc.alg.parallel import Pool, SingleClose\nfrom org.uacalc.util import IntArray\nfrom org.uacalc.terms import VariableImp\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_m3 = BigProductAlgebra(m3, 1)\nbp_n5 = BigProductAlgebra(n5, 1)\nbp_lat2 = BigProductAlgebra(lat2, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\ng10 = IntArray([1, 0])\ng0 = IntArray([0])\ng1 = IntArray([1])\ng2 = IntArray([2])\n\ndef _coords(elem):\n    if elem is None:\n        return None\n    try:\n        return [int(x) for x in list(elem)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(elem, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(elem)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_coords(x) for x in list(lst)]\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _quiet(closer):\n    fn = getattr(closer, 'setSuppressOutput', None) or getattr(closer, 'set_suppress_output', None)\n    if callable(fn):\n        fn(True)\n    return closer\n\ndef _seq_close(alg, gens):\n    old = getattr(Closer, 'doParallel', False)\n    try:\n        Closer.doParallel = False\n        return _sorted_ias(_quiet(Closer(alg, gens)).sgClose())\n    finally:\n        Closer.doParallel = old\n\ndef _par_close(alg, gens):\n    old = getattr(Closer, 'doParallel', False)\n    try:\n        Closer.doParallel = True\n        # Java sgCloseParallel NPEs if termMap is null; makeTermMap=True.\n        return _sorted_ias(_quiet(Closer(alg, gens, True)).sgClose())\n    finally:\n        Closer.doParallel = old\n\ndef _one_step(univ, op, min_i, max_i):\n    univ = list(univ)\n    if sys.platform.startswith('java'):\n        from java.util.concurrent import ConcurrentHashMap, ForkJoinPool\n        from java.util.concurrent.atomic import AtomicInteger\n        from java.lang import Thread\n        mmap = ConcurrentHashMap()\n        for i, el in enumerate(univ):\n            mmap.put(el, VariableImp('x' + str(i)))\n        sc = SingleClose(univ, mmap, op, min_i, max_i, AtomicInteger(len(univ)))\n        results = sc.doOneStep(ForkJoinPool(), Thread.currentThread(), None, None)\n    else:\n        sc = SingleClose(univ, None, op, min_i, max_i, len(univ))\n        results = sc.doOneStep()\n    out = []\n    if results is None:\n        return None\n    for chunk in results:\n        if chunk is None:\n            continue\n        for x in chunk:\n            out.append(_coords(x))\n    out.sort()\n    return out\n\ndef _ops(alg):\n    ops = getattr(alg, 'operations', None)\n    if callable(ops):\n        ops = ops()\n    if ops is None:\n        ops = alg.getOperations()\n    return list(ops)\n\ndef _first_op(alg):\n    return _ops(alg)[0]\n\nc2_op = _first_op(c2)\nm3_join = _ops(m3)[0]\n\nCloser.doParallel = False\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_seq_close(bp2, [g00, g11])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "sequential close C2^2 diagonal gens",
+      "expected_exception": null,
+      "id": "seq_c2_2_diag",
+      "kwargs": {},
+      "method": "Closer.sgClose",
+      "notes": "Java List toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            0,
+            0
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "string_repr": "[[0, 0], [1, 1]]",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Closer, BigProductAlgebra\nfrom org.uacalc.alg.parallel import Pool, SingleClose\nfrom org.uacalc.util import IntArray\nfrom org.uacalc.terms import VariableImp\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_m3 = BigProductAlgebra(m3, 1)\nbp_n5 = BigProductAlgebra(n5, 1)\nbp_lat2 = BigProductAlgebra(lat2, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\ng10 = IntArray([1, 0])\ng0 = IntArray([0])\ng1 = IntArray([1])\ng2 = IntArray([2])\n\ndef _coords(elem):\n    if elem is None:\n        return None\n    try:\n        return [int(x) for x in list(elem)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(elem, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(elem)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_coords(x) for x in list(lst)]\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _quiet(closer):\n    fn = getattr(closer, 'setSuppressOutput', None) or getattr(closer, 'set_suppress_output', None)\n    if callable(fn):\n        fn(True)\n    return closer\n\ndef _seq_close(alg, gens):\n    old = getattr(Closer, 'doParallel', False)\n    try:\n        Closer.doParallel = False\n        return _sorted_ias(_quiet(Closer(alg, gens)).sgClose())\n    finally:\n        Closer.doParallel = old\n\ndef _par_close(alg, gens):\n    old = getattr(Closer, 'doParallel', False)\n    try:\n        Closer.doParallel = True\n        # Java sgCloseParallel NPEs if termMap is null; makeTermMap=True.\n        return _sorted_ias(_quiet(Closer(alg, gens, True)).sgClose())\n    finally:\n        Closer.doParallel = old\n\ndef _one_step(univ, op, min_i, max_i):\n    univ = list(univ)\n    if sys.platform.startswith('java'):\n        from java.util.concurrent import ConcurrentHashMap, ForkJoinPool\n        from java.util.concurrent.atomic import AtomicInteger\n        from java.lang import Thread\n        mmap = ConcurrentHashMap()\n        for i, el in enumerate(univ):\n            mmap.put(el, VariableImp('x' + str(i)))\n        sc = SingleClose(univ, mmap, op, min_i, max_i, AtomicInteger(len(univ)))\n        results = sc.doOneStep(ForkJoinPool(), Thread.currentThread(), None, None)\n    else:\n        sc = SingleClose(univ, None, op, min_i, max_i, len(univ))\n        results = sc.doOneStep()\n    out = []\n    if results is None:\n        return None\n    for chunk in results:\n        if chunk is None:\n            continue\n        for x in chunk:\n            out.append(_coords(x))\n    out.sort()\n    return out\n\ndef _ops(alg):\n    ops = getattr(alg, 'operations', None)\n    if callable(ops):\n        ops = ops()\n    if ops is None:\n        ops = alg.getOperations()\n    return list(ops)\n\ndef _first_op(alg):\n    return _ops(alg)[0]\n\nc2_op = _first_op(c2)\nm3_join = _ops(m3)[0]\n\nCloser.doParallel = False\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_seq_close(bp2, [g00, g01, g10, g11])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "sequential close C2^2 all tuples",
+      "expected_exception": null,
+      "id": "seq_c2_2_all",
+      "kwargs": {},
+      "method": "Closer.sgClose",
+      "notes": "Java List toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "string_repr": "[[0, 0], [0, 1], [1, 0], [1, 1]]",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Closer, BigProductAlgebra\nfrom org.uacalc.alg.parallel import Pool, SingleClose\nfrom org.uacalc.util import IntArray\nfrom org.uacalc.terms import VariableImp\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_m3 = BigProductAlgebra(m3, 1)\nbp_n5 = BigProductAlgebra(n5, 1)\nbp_lat2 = BigProductAlgebra(lat2, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\ng10 = IntArray([1, 0])\ng0 = IntArray([0])\ng1 = IntArray([1])\ng2 = IntArray([2])\n\ndef _coords(elem):\n    if elem is None:\n        return None\n    try:\n        return [int(x) for x in list(elem)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(elem, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(elem)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_coords(x) for x in list(lst)]\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _quiet(closer):\n    fn = getattr(closer, 'setSuppressOutput', None) or getattr(closer, 'set_suppress_output', None)\n    if callable(fn):\n        fn(True)\n    return closer\n\ndef _seq_close(alg, gens):\n    old = getattr(Closer, 'doParallel', False)\n    try:\n        Closer.doParallel = False\n        return _sorted_ias(_quiet(Closer(alg, gens)).sgClose())\n    finally:\n        Closer.doParallel = old\n\ndef _par_close(alg, gens):\n    old = getattr(Closer, 'doParallel', False)\n    try:\n        Closer.doParallel = True\n        # Java sgCloseParallel NPEs if termMap is null; makeTermMap=True.\n        return _sorted_ias(_quiet(Closer(alg, gens, True)).sgClose())\n    finally:\n        Closer.doParallel = old\n\ndef _one_step(univ, op, min_i, max_i):\n    univ = list(univ)\n    if sys.platform.startswith('java'):\n        from java.util.concurrent import ConcurrentHashMap, ForkJoinPool\n        from java.util.concurrent.atomic import AtomicInteger\n        from java.lang import Thread\n        mmap = ConcurrentHashMap()\n        for i, el in enumerate(univ):\n            mmap.put(el, VariableImp('x' + str(i)))\n        sc = SingleClose(univ, mmap, op, min_i, max_i, AtomicInteger(len(univ)))\n        results = sc.doOneStep(ForkJoinPool(), Thread.currentThread(), None, None)\n    else:\n        sc = SingleClose(univ, None, op, min_i, max_i, len(univ))\n        results = sc.doOneStep()\n    out = []\n    if results is None:\n        return None\n    for chunk in results:\n        if chunk is None:\n            continue\n        for x in chunk:\n            out.append(_coords(x))\n    out.sort()\n    return out\n\ndef _ops(alg):\n    ops = getattr(alg, 'operations', None)\n    if callable(ops):\n        ops = ops()\n    if ops is None:\n        ops = alg.getOperations()\n    return list(ops)\n\ndef _first_op(alg):\n    return _ops(alg)[0]\n\nc2_op = _first_op(c2)\nm3_join = _ops(m3)[0]\n\nCloser.doParallel = False\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_seq_close(bp2, [g00])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "sequential close C2^2 from zero",
+      "expected_exception": null,
+      "id": "seq_c2_2_zero",
+      "kwargs": {},
+      "method": "Closer.sgClose",
+      "notes": "Java List toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            0,
+            0
+          ]
+        ],
+        "string_repr": "[[0, 0]]",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Closer, BigProductAlgebra\nfrom org.uacalc.alg.parallel import Pool, SingleClose\nfrom org.uacalc.util import IntArray\nfrom org.uacalc.terms import VariableImp\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_m3 = BigProductAlgebra(m3, 1)\nbp_n5 = BigProductAlgebra(n5, 1)\nbp_lat2 = BigProductAlgebra(lat2, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\ng10 = IntArray([1, 0])\ng0 = IntArray([0])\ng1 = IntArray([1])\ng2 = IntArray([2])\n\ndef _coords(elem):\n    if elem is None:\n        return None\n    try:\n        return [int(x) for x in list(elem)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(elem, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(elem)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_coords(x) for x in list(lst)]\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _quiet(closer):\n    fn = getattr(closer, 'setSuppressOutput', None) or getattr(closer, 'set_suppress_output', None)\n    if callable(fn):\n        fn(True)\n    return closer\n\ndef _seq_close(alg, gens):\n    old = getattr(Closer, 'doParallel', False)\n    try:\n        Closer.doParallel = False\n        return _sorted_ias(_quiet(Closer(alg, gens)).sgClose())\n    finally:\n        Closer.doParallel = old\n\ndef _par_close(alg, gens):\n    old = getattr(Closer, 'doParallel', False)\n    try:\n        Closer.doParallel = True\n        # Java sgCloseParallel NPEs if termMap is null; makeTermMap=True.\n        return _sorted_ias(_quiet(Closer(alg, gens, True)).sgClose())\n    finally:\n        Closer.doParallel = old\n\ndef _one_step(univ, op, min_i, max_i):\n    univ = list(univ)\n    if sys.platform.startswith('java'):\n        from java.util.concurrent import ConcurrentHashMap, ForkJoinPool\n        from java.util.concurrent.atomic import AtomicInteger\n        from java.lang import Thread\n        mmap = ConcurrentHashMap()\n        for i, el in enumerate(univ):\n            mmap.put(el, VariableImp('x' + str(i)))\n        sc = SingleClose(univ, mmap, op, min_i, max_i, AtomicInteger(len(univ)))\n        results = sc.doOneStep(ForkJoinPool(), Thread.currentThread(), None, None)\n    else:\n        sc = SingleClose(univ, None, op, min_i, max_i, len(univ))\n        results = sc.doOneStep()\n    out = []\n    if results is None:\n        return None\n    for chunk in results:\n        if chunk is None:\n            continue\n        for x in chunk:\n            out.append(_coords(x))\n    out.sort()\n    return out\n\ndef _ops(alg):\n    ops = getattr(alg, 'operations', None)\n    if callable(ops):\n        ops = ops()\n    if ops is None:\n        ops = alg.getOperations()\n    return list(ops)\n\ndef _first_op(alg):\n    return _ops(alg)[0]\n\nc2_op = _first_op(c2)\nm3_join = _ops(m3)[0]\n\nCloser.doParallel = False\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_seq_close(bp3, [IntArray([0,0]), IntArray([1,1]), IntArray([2,2])])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "sequential close C3^2 diagonal",
+      "expected_exception": null,
+      "id": "seq_c3_2_diag",
+      "kwargs": {},
+      "method": "Closer.sgClose",
+      "notes": "Java List toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            0,
+            0
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            2
+          ]
+        ],
+        "string_repr": "[[0, 0], [1, 1], [2, 2]]",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Closer, BigProductAlgebra\nfrom org.uacalc.alg.parallel import Pool, SingleClose\nfrom org.uacalc.util import IntArray\nfrom org.uacalc.terms import VariableImp\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_m3 = BigProductAlgebra(m3, 1)\nbp_n5 = BigProductAlgebra(n5, 1)\nbp_lat2 = BigProductAlgebra(lat2, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\ng10 = IntArray([1, 0])\ng0 = IntArray([0])\ng1 = IntArray([1])\ng2 = IntArray([2])\n\ndef _coords(elem):\n    if elem is None:\n        return None\n    try:\n        return [int(x) for x in list(elem)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(elem, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(elem)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_coords(x) for x in list(lst)]\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _quiet(closer):\n    fn = getattr(closer, 'setSuppressOutput', None) or getattr(closer, 'set_suppress_output', None)\n    if callable(fn):\n        fn(True)\n    return closer\n\ndef _seq_close(alg, gens):\n    old = getattr(Closer, 'doParallel', False)\n    try:\n        Closer.doParallel = False\n        return _sorted_ias(_quiet(Closer(alg, gens)).sgClose())\n    finally:\n        Closer.doParallel = old\n\ndef _par_close(alg, gens):\n    old = getattr(Closer, 'doParallel', False)\n    try:\n        Closer.doParallel = True\n        # Java sgCloseParallel NPEs if termMap is null; makeTermMap=True.\n        return _sorted_ias(_quiet(Closer(alg, gens, True)).sgClose())\n    finally:\n        Closer.doParallel = old\n\ndef _one_step(univ, op, min_i, max_i):\n    univ = list(univ)\n    if sys.platform.startswith('java'):\n        from java.util.concurrent import ConcurrentHashMap, ForkJoinPool\n        from java.util.concurrent.atomic import AtomicInteger\n        from java.lang import Thread\n        mmap = ConcurrentHashMap()\n        for i, el in enumerate(univ):\n            mmap.put(el, VariableImp('x' + str(i)))\n        sc = SingleClose(univ, mmap, op, min_i, max_i, AtomicInteger(len(univ)))\n        results = sc.doOneStep(ForkJoinPool(), Thread.currentThread(), None, None)\n    else:\n        sc = SingleClose(univ, None, op, min_i, max_i, len(univ))\n        results = sc.doOneStep()\n    out = []\n    if results is None:\n        return None\n    for chunk in results:\n        if chunk is None:\n            continue\n        for x in chunk:\n            out.append(_coords(x))\n    out.sort()\n    return out\n\ndef _ops(alg):\n    ops = getattr(alg, 'operations', None)\n    if callable(ops):\n        ops = ops()\n    if ops is None:\n        ops = alg.getOperations()\n    return list(ops)\n\ndef _first_op(alg):\n    return _ops(alg)[0]\n\nc2_op = _first_op(c2)\nm3_join = _ops(m3)[0]\n\nCloser.doParallel = False\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_seq_close(bp_m3, [g0, g1])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "sequential close M3^1 two gens",
+      "expected_exception": null,
+      "id": "seq_m3_1",
+      "kwargs": {},
+      "method": "Closer.sgClose",
+      "notes": "Java List toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            0
+          ],
+          [
+            1
+          ]
+        ],
+        "string_repr": "[[0], [1]]",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Closer, BigProductAlgebra\nfrom org.uacalc.alg.parallel import Pool, SingleClose\nfrom org.uacalc.util import IntArray\nfrom org.uacalc.terms import VariableImp\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_m3 = BigProductAlgebra(m3, 1)\nbp_n5 = BigProductAlgebra(n5, 1)\nbp_lat2 = BigProductAlgebra(lat2, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\ng10 = IntArray([1, 0])\ng0 = IntArray([0])\ng1 = IntArray([1])\ng2 = IntArray([2])\n\ndef _coords(elem):\n    if elem is None:\n        return None\n    try:\n        return [int(x) for x in list(elem)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(elem, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(elem)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_coords(x) for x in list(lst)]\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _quiet(closer):\n    fn = getattr(closer, 'setSuppressOutput', None) or getattr(closer, 'set_suppress_output', None)\n    if callable(fn):\n        fn(True)\n    return closer\n\ndef _seq_close(alg, gens):\n    old = getattr(Closer, 'doParallel', False)\n    try:\n        Closer.doParallel = False\n        return _sorted_ias(_quiet(Closer(alg, gens)).sgClose())\n    finally:\n        Closer.doParallel = old\n\ndef _par_close(alg, gens):\n    old = getattr(Closer, 'doParallel', False)\n    try:\n        Closer.doParallel = True\n        # Java sgCloseParallel NPEs if termMap is null; makeTermMap=True.\n        return _sorted_ias(_quiet(Closer(alg, gens, True)).sgClose())\n    finally:\n        Closer.doParallel = old\n\ndef _one_step(univ, op, min_i, max_i):\n    univ = list(univ)\n    if sys.platform.startswith('java'):\n        from java.util.concurrent import ConcurrentHashMap, ForkJoinPool\n        from java.util.concurrent.atomic import AtomicInteger\n        from java.lang import Thread\n        mmap = ConcurrentHashMap()\n        for i, el in enumerate(univ):\n            mmap.put(el, VariableImp('x' + str(i)))\n        sc = SingleClose(univ, mmap, op, min_i, max_i, AtomicInteger(len(univ)))\n        results = sc.doOneStep(ForkJoinPool(), Thread.currentThread(), None, None)\n    else:\n        sc = SingleClose(univ, None, op, min_i, max_i, len(univ))\n        results = sc.doOneStep()\n    out = []\n    if results is None:\n        return None\n    for chunk in results:\n        if chunk is None:\n            continue\n        for x in chunk:\n            out.append(_coords(x))\n    out.sort()\n    return out\n\ndef _ops(alg):\n    ops = getattr(alg, 'operations', None)\n    if callable(ops):\n        ops = ops()\n    if ops is None:\n        ops = alg.getOperations()\n    return list(ops)\n\ndef _first_op(alg):\n    return _ops(alg)[0]\n\nc2_op = _first_op(c2)\nm3_join = _ops(m3)[0]\n\nCloser.doParallel = False\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_seq_close(bp_n5, [g0])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "sequential close N5^1 from zero",
+      "expected_exception": null,
+      "id": "seq_n5_1",
+      "kwargs": {},
+      "method": "Closer.sgClose",
+      "notes": "Java List toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            0
+          ]
+        ],
+        "string_repr": "[[0]]",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Closer, BigProductAlgebra\nfrom org.uacalc.alg.parallel import Pool, SingleClose\nfrom org.uacalc.util import IntArray\nfrom org.uacalc.terms import VariableImp\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_m3 = BigProductAlgebra(m3, 1)\nbp_n5 = BigProductAlgebra(n5, 1)\nbp_lat2 = BigProductAlgebra(lat2, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\ng10 = IntArray([1, 0])\ng0 = IntArray([0])\ng1 = IntArray([1])\ng2 = IntArray([2])\n\ndef _coords(elem):\n    if elem is None:\n        return None\n    try:\n        return [int(x) for x in list(elem)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(elem, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(elem)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_coords(x) for x in list(lst)]\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _quiet(closer):\n    fn = getattr(closer, 'setSuppressOutput', None) or getattr(closer, 'set_suppress_output', None)\n    if callable(fn):\n        fn(True)\n    return closer\n\ndef _seq_close(alg, gens):\n    old = getattr(Closer, 'doParallel', False)\n    try:\n        Closer.doParallel = False\n        return _sorted_ias(_quiet(Closer(alg, gens)).sgClose())\n    finally:\n        Closer.doParallel = old\n\ndef _par_close(alg, gens):\n    old = getattr(Closer, 'doParallel', False)\n    try:\n        Closer.doParallel = True\n        # Java sgCloseParallel NPEs if termMap is null; makeTermMap=True.\n        return _sorted_ias(_quiet(Closer(alg, gens, True)).sgClose())\n    finally:\n        Closer.doParallel = old\n\ndef _one_step(univ, op, min_i, max_i):\n    univ = list(univ)\n    if sys.platform.startswith('java'):\n        from java.util.concurrent import ConcurrentHashMap, ForkJoinPool\n        from java.util.concurrent.atomic import AtomicInteger\n        from java.lang import Thread\n        mmap = ConcurrentHashMap()\n        for i, el in enumerate(univ):\n            mmap.put(el, VariableImp('x' + str(i)))\n        sc = SingleClose(univ, mmap, op, min_i, max_i, AtomicInteger(len(univ)))\n        results = sc.doOneStep(ForkJoinPool(), Thread.currentThread(), None, None)\n    else:\n        sc = SingleClose(univ, None, op, min_i, max_i, len(univ))\n        results = sc.doOneStep()\n    out = []\n    if results is None:\n        return None\n    for chunk in results:\n        if chunk is None:\n            continue\n        for x in chunk:\n            out.append(_coords(x))\n    out.sort()\n    return out\n\ndef _ops(alg):\n    ops = getattr(alg, 'operations', None)\n    if callable(ops):\n        ops = ops()\n    if ops is None:\n        ops = alg.getOperations()\n    return list(ops)\n\ndef _first_op(alg):\n    return _ops(alg)[0]\n\nc2_op = _first_op(c2)\nm3_join = _ops(m3)[0]\n\nCloser.doParallel = False\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_seq_close(bp_lat2, [g00, g11])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "sequential close lat2^2 diagonal",
+      "expected_exception": null,
+      "id": "seq_lat2_2",
+      "kwargs": {},
+      "method": "Closer.sgClose",
+      "notes": "Java List toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            0,
+            0
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "string_repr": "[[0, 0], [1, 1]]",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Closer, BigProductAlgebra\nfrom org.uacalc.alg.parallel import Pool, SingleClose\nfrom org.uacalc.util import IntArray\nfrom org.uacalc.terms import VariableImp\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_m3 = BigProductAlgebra(m3, 1)\nbp_n5 = BigProductAlgebra(n5, 1)\nbp_lat2 = BigProductAlgebra(lat2, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\ng10 = IntArray([1, 0])\ng0 = IntArray([0])\ng1 = IntArray([1])\ng2 = IntArray([2])\n\ndef _coords(elem):\n    if elem is None:\n        return None\n    try:\n        return [int(x) for x in list(elem)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(elem, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(elem)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_coords(x) for x in list(lst)]\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _quiet(closer):\n    fn = getattr(closer, 'setSuppressOutput', None) or getattr(closer, 'set_suppress_output', None)\n    if callable(fn):\n        fn(True)\n    return closer\n\ndef _seq_close(alg, gens):\n    old = getattr(Closer, 'doParallel', False)\n    try:\n        Closer.doParallel = False\n        return _sorted_ias(_quiet(Closer(alg, gens)).sgClose())\n    finally:\n        Closer.doParallel = old\n\ndef _par_close(alg, gens):\n    old = getattr(Closer, 'doParallel', False)\n    try:\n        Closer.doParallel = True\n        # Java sgCloseParallel NPEs if termMap is null; makeTermMap=True.\n        return _sorted_ias(_quiet(Closer(alg, gens, True)).sgClose())\n    finally:\n        Closer.doParallel = old\n\ndef _one_step(univ, op, min_i, max_i):\n    univ = list(univ)\n    if sys.platform.startswith('java'):\n        from java.util.concurrent import ConcurrentHashMap, ForkJoinPool\n        from java.util.concurrent.atomic import AtomicInteger\n        from java.lang import Thread\n        mmap = ConcurrentHashMap()\n        for i, el in enumerate(univ):\n            mmap.put(el, VariableImp('x' + str(i)))\n        sc = SingleClose(univ, mmap, op, min_i, max_i, AtomicInteger(len(univ)))\n        results = sc.doOneStep(ForkJoinPool(), Thread.currentThread(), None, None)\n    else:\n        sc = SingleClose(univ, None, op, min_i, max_i, len(univ))\n        results = sc.doOneStep()\n    out = []\n    if results is None:\n        return None\n    for chunk in results:\n        if chunk is None:\n            continue\n        for x in chunk:\n            out.append(_coords(x))\n    out.sort()\n    return out\n\ndef _ops(alg):\n    ops = getattr(alg, 'operations', None)\n    if callable(ops):\n        ops = ops()\n    if ops is None:\n        ops = alg.getOperations()\n    return list(ops)\n\ndef _first_op(alg):\n    return _ops(alg)[0]\n\nc2_op = _first_op(c2)\nm3_join = _ops(m3)[0]\n\nCloser.doParallel = False\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_par_close(bp2, [g00, g11])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "parallel close C2^2 diagonal gens",
+      "expected_exception": null,
+      "id": "par_c2_2_diag",
+      "kwargs": {},
+      "method": "Closer.sgClose",
+      "notes": "Java List toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            0,
+            0
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "string_repr": "[[0, 0], [1, 1]]",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Closer, BigProductAlgebra\nfrom org.uacalc.alg.parallel import Pool, SingleClose\nfrom org.uacalc.util import IntArray\nfrom org.uacalc.terms import VariableImp\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_m3 = BigProductAlgebra(m3, 1)\nbp_n5 = BigProductAlgebra(n5, 1)\nbp_lat2 = BigProductAlgebra(lat2, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\ng10 = IntArray([1, 0])\ng0 = IntArray([0])\ng1 = IntArray([1])\ng2 = IntArray([2])\n\ndef _coords(elem):\n    if elem is None:\n        return None\n    try:\n        return [int(x) for x in list(elem)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(elem, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(elem)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_coords(x) for x in list(lst)]\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _quiet(closer):\n    fn = getattr(closer, 'setSuppressOutput', None) or getattr(closer, 'set_suppress_output', None)\n    if callable(fn):\n        fn(True)\n    return closer\n\ndef _seq_close(alg, gens):\n    old = getattr(Closer, 'doParallel', False)\n    try:\n        Closer.doParallel = False\n        return _sorted_ias(_quiet(Closer(alg, gens)).sgClose())\n    finally:\n        Closer.doParallel = old\n\ndef _par_close(alg, gens):\n    old = getattr(Closer, 'doParallel', False)\n    try:\n        Closer.doParallel = True\n        # Java sgCloseParallel NPEs if termMap is null; makeTermMap=True.\n        return _sorted_ias(_quiet(Closer(alg, gens, True)).sgClose())\n    finally:\n        Closer.doParallel = old\n\ndef _one_step(univ, op, min_i, max_i):\n    univ = list(univ)\n    if sys.platform.startswith('java'):\n        from java.util.concurrent import ConcurrentHashMap, ForkJoinPool\n        from java.util.concurrent.atomic import AtomicInteger\n        from java.lang import Thread\n        mmap = ConcurrentHashMap()\n        for i, el in enumerate(univ):\n            mmap.put(el, VariableImp('x' + str(i)))\n        sc = SingleClose(univ, mmap, op, min_i, max_i, AtomicInteger(len(univ)))\n        results = sc.doOneStep(ForkJoinPool(), Thread.currentThread(), None, None)\n    else:\n        sc = SingleClose(univ, None, op, min_i, max_i, len(univ))\n        results = sc.doOneStep()\n    out = []\n    if results is None:\n        return None\n    for chunk in results:\n        if chunk is None:\n            continue\n        for x in chunk:\n            out.append(_coords(x))\n    out.sort()\n    return out\n\ndef _ops(alg):\n    ops = getattr(alg, 'operations', None)\n    if callable(ops):\n        ops = ops()\n    if ops is None:\n        ops = alg.getOperations()\n    return list(ops)\n\ndef _first_op(alg):\n    return _ops(alg)[0]\n\nc2_op = _first_op(c2)\nm3_join = _ops(m3)[0]\n\nCloser.doParallel = False\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_par_close(bp2, [g00, g01, g10, g11])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "parallel close C2^2 all tuples",
+      "expected_exception": null,
+      "id": "par_c2_2_all",
+      "kwargs": {},
+      "method": "Closer.sgClose",
+      "notes": "Java List toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "string_repr": "[[0, 0], [0, 1], [1, 0], [1, 1]]",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Closer, BigProductAlgebra\nfrom org.uacalc.alg.parallel import Pool, SingleClose\nfrom org.uacalc.util import IntArray\nfrom org.uacalc.terms import VariableImp\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_m3 = BigProductAlgebra(m3, 1)\nbp_n5 = BigProductAlgebra(n5, 1)\nbp_lat2 = BigProductAlgebra(lat2, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\ng10 = IntArray([1, 0])\ng0 = IntArray([0])\ng1 = IntArray([1])\ng2 = IntArray([2])\n\ndef _coords(elem):\n    if elem is None:\n        return None\n    try:\n        return [int(x) for x in list(elem)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(elem, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(elem)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_coords(x) for x in list(lst)]\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _quiet(closer):\n    fn = getattr(closer, 'setSuppressOutput', None) or getattr(closer, 'set_suppress_output', None)\n    if callable(fn):\n        fn(True)\n    return closer\n\ndef _seq_close(alg, gens):\n    old = getattr(Closer, 'doParallel', False)\n    try:\n        Closer.doParallel = False\n        return _sorted_ias(_quiet(Closer(alg, gens)).sgClose())\n    finally:\n        Closer.doParallel = old\n\ndef _par_close(alg, gens):\n    old = getattr(Closer, 'doParallel', False)\n    try:\n        Closer.doParallel = True\n        # Java sgCloseParallel NPEs if termMap is null; makeTermMap=True.\n        return _sorted_ias(_quiet(Closer(alg, gens, True)).sgClose())\n    finally:\n        Closer.doParallel = old\n\ndef _one_step(univ, op, min_i, max_i):\n    univ = list(univ)\n    if sys.platform.startswith('java'):\n        from java.util.concurrent import ConcurrentHashMap, ForkJoinPool\n        from java.util.concurrent.atomic import AtomicInteger\n        from java.lang import Thread\n        mmap = ConcurrentHashMap()\n        for i, el in enumerate(univ):\n            mmap.put(el, VariableImp('x' + str(i)))\n        sc = SingleClose(univ, mmap, op, min_i, max_i, AtomicInteger(len(univ)))\n        results = sc.doOneStep(ForkJoinPool(), Thread.currentThread(), None, None)\n    else:\n        sc = SingleClose(univ, None, op, min_i, max_i, len(univ))\n        results = sc.doOneStep()\n    out = []\n    if results is None:\n        return None\n    for chunk in results:\n        if chunk is None:\n            continue\n        for x in chunk:\n            out.append(_coords(x))\n    out.sort()\n    return out\n\ndef _ops(alg):\n    ops = getattr(alg, 'operations', None)\n    if callable(ops):\n        ops = ops()\n    if ops is None:\n        ops = alg.getOperations()\n    return list(ops)\n\ndef _first_op(alg):\n    return _ops(alg)[0]\n\nc2_op = _first_op(c2)\nm3_join = _ops(m3)[0]\n\nCloser.doParallel = False\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_par_close(bp2, [g00])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "parallel close C2^2 from zero",
+      "expected_exception": null,
+      "id": "par_c2_2_zero",
+      "kwargs": {},
+      "method": "Closer.sgClose",
+      "notes": "Java List toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            0,
+            0
+          ]
+        ],
+        "string_repr": "[[0, 0]]",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Closer, BigProductAlgebra\nfrom org.uacalc.alg.parallel import Pool, SingleClose\nfrom org.uacalc.util import IntArray\nfrom org.uacalc.terms import VariableImp\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_m3 = BigProductAlgebra(m3, 1)\nbp_n5 = BigProductAlgebra(n5, 1)\nbp_lat2 = BigProductAlgebra(lat2, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\ng10 = IntArray([1, 0])\ng0 = IntArray([0])\ng1 = IntArray([1])\ng2 = IntArray([2])\n\ndef _coords(elem):\n    if elem is None:\n        return None\n    try:\n        return [int(x) for x in list(elem)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(elem, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(elem)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_coords(x) for x in list(lst)]\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _quiet(closer):\n    fn = getattr(closer, 'setSuppressOutput', None) or getattr(closer, 'set_suppress_output', None)\n    if callable(fn):\n        fn(True)\n    return closer\n\ndef _seq_close(alg, gens):\n    old = getattr(Closer, 'doParallel', False)\n    try:\n        Closer.doParallel = False\n        return _sorted_ias(_quiet(Closer(alg, gens)).sgClose())\n    finally:\n        Closer.doParallel = old\n\ndef _par_close(alg, gens):\n    old = getattr(Closer, 'doParallel', False)\n    try:\n        Closer.doParallel = True\n        # Java sgCloseParallel NPEs if termMap is null; makeTermMap=True.\n        return _sorted_ias(_quiet(Closer(alg, gens, True)).sgClose())\n    finally:\n        Closer.doParallel = old\n\ndef _one_step(univ, op, min_i, max_i):\n    univ = list(univ)\n    if sys.platform.startswith('java'):\n        from java.util.concurrent import ConcurrentHashMap, ForkJoinPool\n        from java.util.concurrent.atomic import AtomicInteger\n        from java.lang import Thread\n        mmap = ConcurrentHashMap()\n        for i, el in enumerate(univ):\n            mmap.put(el, VariableImp('x' + str(i)))\n        sc = SingleClose(univ, mmap, op, min_i, max_i, AtomicInteger(len(univ)))\n        results = sc.doOneStep(ForkJoinPool(), Thread.currentThread(), None, None)\n    else:\n        sc = SingleClose(univ, None, op, min_i, max_i, len(univ))\n        results = sc.doOneStep()\n    out = []\n    if results is None:\n        return None\n    for chunk in results:\n        if chunk is None:\n            continue\n        for x in chunk:\n            out.append(_coords(x))\n    out.sort()\n    return out\n\ndef _ops(alg):\n    ops = getattr(alg, 'operations', None)\n    if callable(ops):\n        ops = ops()\n    if ops is None:\n        ops = alg.getOperations()\n    return list(ops)\n\ndef _first_op(alg):\n    return _ops(alg)[0]\n\nc2_op = _first_op(c2)\nm3_join = _ops(m3)[0]\n\nCloser.doParallel = False\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_par_close(bp3, [IntArray([0,0]), IntArray([1,1]), IntArray([2,2])])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "parallel close C3^2 diagonal",
+      "expected_exception": null,
+      "id": "par_c3_2_diag",
+      "kwargs": {},
+      "method": "Closer.sgClose",
+      "notes": "Java List toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            0,
+            0
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            2
+          ]
+        ],
+        "string_repr": "[[0, 0], [1, 1], [2, 2]]",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Closer, BigProductAlgebra\nfrom org.uacalc.alg.parallel import Pool, SingleClose\nfrom org.uacalc.util import IntArray\nfrom org.uacalc.terms import VariableImp\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_m3 = BigProductAlgebra(m3, 1)\nbp_n5 = BigProductAlgebra(n5, 1)\nbp_lat2 = BigProductAlgebra(lat2, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\ng10 = IntArray([1, 0])\ng0 = IntArray([0])\ng1 = IntArray([1])\ng2 = IntArray([2])\n\ndef _coords(elem):\n    if elem is None:\n        return None\n    try:\n        return [int(x) for x in list(elem)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(elem, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(elem)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_coords(x) for x in list(lst)]\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _quiet(closer):\n    fn = getattr(closer, 'setSuppressOutput', None) or getattr(closer, 'set_suppress_output', None)\n    if callable(fn):\n        fn(True)\n    return closer\n\ndef _seq_close(alg, gens):\n    old = getattr(Closer, 'doParallel', False)\n    try:\n        Closer.doParallel = False\n        return _sorted_ias(_quiet(Closer(alg, gens)).sgClose())\n    finally:\n        Closer.doParallel = old\n\ndef _par_close(alg, gens):\n    old = getattr(Closer, 'doParallel', False)\n    try:\n        Closer.doParallel = True\n        # Java sgCloseParallel NPEs if termMap is null; makeTermMap=True.\n        return _sorted_ias(_quiet(Closer(alg, gens, True)).sgClose())\n    finally:\n        Closer.doParallel = old\n\ndef _one_step(univ, op, min_i, max_i):\n    univ = list(univ)\n    if sys.platform.startswith('java'):\n        from java.util.concurrent import ConcurrentHashMap, ForkJoinPool\n        from java.util.concurrent.atomic import AtomicInteger\n        from java.lang import Thread\n        mmap = ConcurrentHashMap()\n        for i, el in enumerate(univ):\n            mmap.put(el, VariableImp('x' + str(i)))\n        sc = SingleClose(univ, mmap, op, min_i, max_i, AtomicInteger(len(univ)))\n        results = sc.doOneStep(ForkJoinPool(), Thread.currentThread(), None, None)\n    else:\n        sc = SingleClose(univ, None, op, min_i, max_i, len(univ))\n        results = sc.doOneStep()\n    out = []\n    if results is None:\n        return None\n    for chunk in results:\n        if chunk is None:\n            continue\n        for x in chunk:\n            out.append(_coords(x))\n    out.sort()\n    return out\n\ndef _ops(alg):\n    ops = getattr(alg, 'operations', None)\n    if callable(ops):\n        ops = ops()\n    if ops is None:\n        ops = alg.getOperations()\n    return list(ops)\n\ndef _first_op(alg):\n    return _ops(alg)[0]\n\nc2_op = _first_op(c2)\nm3_join = _ops(m3)[0]\n\nCloser.doParallel = False\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_par_close(bp_m3, [g0, g1])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "parallel close M3^1 two gens",
+      "expected_exception": null,
+      "id": "par_m3_1",
+      "kwargs": {},
+      "method": "Closer.sgClose",
+      "notes": "Java List toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            0
+          ],
+          [
+            1
+          ]
+        ],
+        "string_repr": "[[0], [1]]",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Closer, BigProductAlgebra\nfrom org.uacalc.alg.parallel import Pool, SingleClose\nfrom org.uacalc.util import IntArray\nfrom org.uacalc.terms import VariableImp\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_m3 = BigProductAlgebra(m3, 1)\nbp_n5 = BigProductAlgebra(n5, 1)\nbp_lat2 = BigProductAlgebra(lat2, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\ng10 = IntArray([1, 0])\ng0 = IntArray([0])\ng1 = IntArray([1])\ng2 = IntArray([2])\n\ndef _coords(elem):\n    if elem is None:\n        return None\n    try:\n        return [int(x) for x in list(elem)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(elem, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(elem)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_coords(x) for x in list(lst)]\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _quiet(closer):\n    fn = getattr(closer, 'setSuppressOutput', None) or getattr(closer, 'set_suppress_output', None)\n    if callable(fn):\n        fn(True)\n    return closer\n\ndef _seq_close(alg, gens):\n    old = getattr(Closer, 'doParallel', False)\n    try:\n        Closer.doParallel = False\n        return _sorted_ias(_quiet(Closer(alg, gens)).sgClose())\n    finally:\n        Closer.doParallel = old\n\ndef _par_close(alg, gens):\n    old = getattr(Closer, 'doParallel', False)\n    try:\n        Closer.doParallel = True\n        # Java sgCloseParallel NPEs if termMap is null; makeTermMap=True.\n        return _sorted_ias(_quiet(Closer(alg, gens, True)).sgClose())\n    finally:\n        Closer.doParallel = old\n\ndef _one_step(univ, op, min_i, max_i):\n    univ = list(univ)\n    if sys.platform.startswith('java'):\n        from java.util.concurrent import ConcurrentHashMap, ForkJoinPool\n        from java.util.concurrent.atomic import AtomicInteger\n        from java.lang import Thread\n        mmap = ConcurrentHashMap()\n        for i, el in enumerate(univ):\n            mmap.put(el, VariableImp('x' + str(i)))\n        sc = SingleClose(univ, mmap, op, min_i, max_i, AtomicInteger(len(univ)))\n        results = sc.doOneStep(ForkJoinPool(), Thread.currentThread(), None, None)\n    else:\n        sc = SingleClose(univ, None, op, min_i, max_i, len(univ))\n        results = sc.doOneStep()\n    out = []\n    if results is None:\n        return None\n    for chunk in results:\n        if chunk is None:\n            continue\n        for x in chunk:\n            out.append(_coords(x))\n    out.sort()\n    return out\n\ndef _ops(alg):\n    ops = getattr(alg, 'operations', None)\n    if callable(ops):\n        ops = ops()\n    if ops is None:\n        ops = alg.getOperations()\n    return list(ops)\n\ndef _first_op(alg):\n    return _ops(alg)[0]\n\nc2_op = _first_op(c2)\nm3_join = _ops(m3)[0]\n\nCloser.doParallel = False\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_par_close(bp_n5, [g0])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "parallel close N5^1 from zero",
+      "expected_exception": null,
+      "id": "par_n5_1",
+      "kwargs": {},
+      "method": "Closer.sgClose",
+      "notes": "Java List toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            0
+          ]
+        ],
+        "string_repr": "[[0]]",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Closer, BigProductAlgebra\nfrom org.uacalc.alg.parallel import Pool, SingleClose\nfrom org.uacalc.util import IntArray\nfrom org.uacalc.terms import VariableImp\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_m3 = BigProductAlgebra(m3, 1)\nbp_n5 = BigProductAlgebra(n5, 1)\nbp_lat2 = BigProductAlgebra(lat2, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\ng10 = IntArray([1, 0])\ng0 = IntArray([0])\ng1 = IntArray([1])\ng2 = IntArray([2])\n\ndef _coords(elem):\n    if elem is None:\n        return None\n    try:\n        return [int(x) for x in list(elem)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(elem, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(elem)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_coords(x) for x in list(lst)]\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _quiet(closer):\n    fn = getattr(closer, 'setSuppressOutput', None) or getattr(closer, 'set_suppress_output', None)\n    if callable(fn):\n        fn(True)\n    return closer\n\ndef _seq_close(alg, gens):\n    old = getattr(Closer, 'doParallel', False)\n    try:\n        Closer.doParallel = False\n        return _sorted_ias(_quiet(Closer(alg, gens)).sgClose())\n    finally:\n        Closer.doParallel = old\n\ndef _par_close(alg, gens):\n    old = getattr(Closer, 'doParallel', False)\n    try:\n        Closer.doParallel = True\n        # Java sgCloseParallel NPEs if termMap is null; makeTermMap=True.\n        return _sorted_ias(_quiet(Closer(alg, gens, True)).sgClose())\n    finally:\n        Closer.doParallel = old\n\ndef _one_step(univ, op, min_i, max_i):\n    univ = list(univ)\n    if sys.platform.startswith('java'):\n        from java.util.concurrent import ConcurrentHashMap, ForkJoinPool\n        from java.util.concurrent.atomic import AtomicInteger\n        from java.lang import Thread\n        mmap = ConcurrentHashMap()\n        for i, el in enumerate(univ):\n            mmap.put(el, VariableImp('x' + str(i)))\n        sc = SingleClose(univ, mmap, op, min_i, max_i, AtomicInteger(len(univ)))\n        results = sc.doOneStep(ForkJoinPool(), Thread.currentThread(), None, None)\n    else:\n        sc = SingleClose(univ, None, op, min_i, max_i, len(univ))\n        results = sc.doOneStep()\n    out = []\n    if results is None:\n        return None\n    for chunk in results:\n        if chunk is None:\n            continue\n        for x in chunk:\n            out.append(_coords(x))\n    out.sort()\n    return out\n\ndef _ops(alg):\n    ops = getattr(alg, 'operations', None)\n    if callable(ops):\n        ops = ops()\n    if ops is None:\n        ops = alg.getOperations()\n    return list(ops)\n\ndef _first_op(alg):\n    return _ops(alg)[0]\n\nc2_op = _first_op(c2)\nm3_join = _ops(m3)[0]\n\nCloser.doParallel = False\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_par_close(bp_lat2, [g00, g11])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "parallel close lat2^2 diagonal",
+      "expected_exception": null,
+      "id": "par_lat2_2",
+      "kwargs": {},
+      "method": "Closer.sgClose",
+      "notes": "Java List toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            0,
+            0
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "string_repr": "[[0, 0], [1, 1]]",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Closer, BigProductAlgebra\nfrom org.uacalc.alg.parallel import Pool, SingleClose\nfrom org.uacalc.util import IntArray\nfrom org.uacalc.terms import VariableImp\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_m3 = BigProductAlgebra(m3, 1)\nbp_n5 = BigProductAlgebra(n5, 1)\nbp_lat2 = BigProductAlgebra(lat2, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\ng10 = IntArray([1, 0])\ng0 = IntArray([0])\ng1 = IntArray([1])\ng2 = IntArray([2])\n\ndef _coords(elem):\n    if elem is None:\n        return None\n    try:\n        return [int(x) for x in list(elem)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(elem, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(elem)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_coords(x) for x in list(lst)]\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _quiet(closer):\n    fn = getattr(closer, 'setSuppressOutput', None) or getattr(closer, 'set_suppress_output', None)\n    if callable(fn):\n        fn(True)\n    return closer\n\ndef _seq_close(alg, gens):\n    old = getattr(Closer, 'doParallel', False)\n    try:\n        Closer.doParallel = False\n        return _sorted_ias(_quiet(Closer(alg, gens)).sgClose())\n    finally:\n        Closer.doParallel = old\n\ndef _par_close(alg, gens):\n    old = getattr(Closer, 'doParallel', False)\n    try:\n        Closer.doParallel = True\n        # Java sgCloseParallel NPEs if termMap is null; makeTermMap=True.\n        return _sorted_ias(_quiet(Closer(alg, gens, True)).sgClose())\n    finally:\n        Closer.doParallel = old\n\ndef _one_step(univ, op, min_i, max_i):\n    univ = list(univ)\n    if sys.platform.startswith('java'):\n        from java.util.concurrent import ConcurrentHashMap, ForkJoinPool\n        from java.util.concurrent.atomic import AtomicInteger\n        from java.lang import Thread\n        mmap = ConcurrentHashMap()\n        for i, el in enumerate(univ):\n            mmap.put(el, VariableImp('x' + str(i)))\n        sc = SingleClose(univ, mmap, op, min_i, max_i, AtomicInteger(len(univ)))\n        results = sc.doOneStep(ForkJoinPool(), Thread.currentThread(), None, None)\n    else:\n        sc = SingleClose(univ, None, op, min_i, max_i, len(univ))\n        results = sc.doOneStep()\n    out = []\n    if results is None:\n        return None\n    for chunk in results:\n        if chunk is None:\n            continue\n        for x in chunk:\n            out.append(_coords(x))\n    out.sort()\n    return out\n\ndef _ops(alg):\n    ops = getattr(alg, 'operations', None)\n    if callable(ops):\n        ops = ops()\n    if ops is None:\n        ops = alg.getOperations()\n    return list(ops)\n\ndef _first_op(alg):\n    return _ops(alg)[0]\n\nc2_op = _first_op(c2)\nm3_join = _ops(m3)[0]\n\nCloser.doParallel = False\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_par_close(bp2, [g00, g11]) == _seq_close(bp2, [g00, g11])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "parallel C2^2 equals sequential",
+      "expected_exception": null,
+      "id": "par_matches_seq_c2",
+      "kwargs": {},
+      "method": "Closer.sgClose",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Closer, BigProductAlgebra\nfrom org.uacalc.alg.parallel import Pool, SingleClose\nfrom org.uacalc.util import IntArray\nfrom org.uacalc.terms import VariableImp\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_m3 = BigProductAlgebra(m3, 1)\nbp_n5 = BigProductAlgebra(n5, 1)\nbp_lat2 = BigProductAlgebra(lat2, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\ng10 = IntArray([1, 0])\ng0 = IntArray([0])\ng1 = IntArray([1])\ng2 = IntArray([2])\n\ndef _coords(elem):\n    if elem is None:\n        return None\n    try:\n        return [int(x) for x in list(elem)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(elem, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(elem)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_coords(x) for x in list(lst)]\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _quiet(closer):\n    fn = getattr(closer, 'setSuppressOutput', None) or getattr(closer, 'set_suppress_output', None)\n    if callable(fn):\n        fn(True)\n    return closer\n\ndef _seq_close(alg, gens):\n    old = getattr(Closer, 'doParallel', False)\n    try:\n        Closer.doParallel = False\n        return _sorted_ias(_quiet(Closer(alg, gens)).sgClose())\n    finally:\n        Closer.doParallel = old\n\ndef _par_close(alg, gens):\n    old = getattr(Closer, 'doParallel', False)\n    try:\n        Closer.doParallel = True\n        # Java sgCloseParallel NPEs if termMap is null; makeTermMap=True.\n        return _sorted_ias(_quiet(Closer(alg, gens, True)).sgClose())\n    finally:\n        Closer.doParallel = old\n\ndef _one_step(univ, op, min_i, max_i):\n    univ = list(univ)\n    if sys.platform.startswith('java'):\n        from java.util.concurrent import ConcurrentHashMap, ForkJoinPool\n        from java.util.concurrent.atomic import AtomicInteger\n        from java.lang import Thread\n        mmap = ConcurrentHashMap()\n        for i, el in enumerate(univ):\n            mmap.put(el, VariableImp('x' + str(i)))\n        sc = SingleClose(univ, mmap, op, min_i, max_i, AtomicInteger(len(univ)))\n        results = sc.doOneStep(ForkJoinPool(), Thread.currentThread(), None, None)\n    else:\n        sc = SingleClose(univ, None, op, min_i, max_i, len(univ))\n        results = sc.doOneStep()\n    out = []\n    if results is None:\n        return None\n    for chunk in results:\n        if chunk is None:\n            continue\n        for x in chunk:\n            out.append(_coords(x))\n    out.sort()\n    return out\n\ndef _ops(alg):\n    ops = getattr(alg, 'operations', None)\n    if callable(ops):\n        ops = ops()\n    if ops is None:\n        ops = alg.getOperations()\n    return list(ops)\n\ndef _first_op(alg):\n    return _ops(alg)[0]\n\nc2_op = _first_op(c2)\nm3_join = _ops(m3)[0]\n\nCloser.doParallel = False\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_par_close(bp_m3, [g0, g1]) == _seq_close(bp_m3, [g0, g1])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "parallel M3 equals sequential",
+      "expected_exception": null,
+      "id": "par_matches_seq_m3",
+      "kwargs": {},
+      "method": "Closer.sgClose",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Closer, BigProductAlgebra\nfrom org.uacalc.alg.parallel import Pool, SingleClose\nfrom org.uacalc.util import IntArray\nfrom org.uacalc.terms import VariableImp\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_m3 = BigProductAlgebra(m3, 1)\nbp_n5 = BigProductAlgebra(n5, 1)\nbp_lat2 = BigProductAlgebra(lat2, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\ng10 = IntArray([1, 0])\ng0 = IntArray([0])\ng1 = IntArray([1])\ng2 = IntArray([2])\n\ndef _coords(elem):\n    if elem is None:\n        return None\n    try:\n        return [int(x) for x in list(elem)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(elem, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(elem)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_coords(x) for x in list(lst)]\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _quiet(closer):\n    fn = getattr(closer, 'setSuppressOutput', None) or getattr(closer, 'set_suppress_output', None)\n    if callable(fn):\n        fn(True)\n    return closer\n\ndef _seq_close(alg, gens):\n    old = getattr(Closer, 'doParallel', False)\n    try:\n        Closer.doParallel = False\n        return _sorted_ias(_quiet(Closer(alg, gens)).sgClose())\n    finally:\n        Closer.doParallel = old\n\ndef _par_close(alg, gens):\n    old = getattr(Closer, 'doParallel', False)\n    try:\n        Closer.doParallel = True\n        # Java sgCloseParallel NPEs if termMap is null; makeTermMap=True.\n        return _sorted_ias(_quiet(Closer(alg, gens, True)).sgClose())\n    finally:\n        Closer.doParallel = old\n\ndef _one_step(univ, op, min_i, max_i):\n    univ = list(univ)\n    if sys.platform.startswith('java'):\n        from java.util.concurrent import ConcurrentHashMap, ForkJoinPool\n        from java.util.concurrent.atomic import AtomicInteger\n        from java.lang import Thread\n        mmap = ConcurrentHashMap()\n        for i, el in enumerate(univ):\n            mmap.put(el, VariableImp('x' + str(i)))\n        sc = SingleClose(univ, mmap, op, min_i, max_i, AtomicInteger(len(univ)))\n        results = sc.doOneStep(ForkJoinPool(), Thread.currentThread(), None, None)\n    else:\n        sc = SingleClose(univ, None, op, min_i, max_i, len(univ))\n        results = sc.doOneStep()\n    out = []\n    if results is None:\n        return None\n    for chunk in results:\n        if chunk is None:\n            continue\n        for x in chunk:\n            out.append(_coords(x))\n    out.sort()\n    return out\n\ndef _ops(alg):\n    ops = getattr(alg, 'operations', None)\n    if callable(ops):\n        ops = ops()\n    if ops is None:\n        ops = alg.getOperations()\n    return list(ops)\n\ndef _first_op(alg):\n    return _ops(alg)[0]\n\nc2_op = _first_op(c2)\nm3_join = _ops(m3)[0]\n\nCloser.doParallel = False\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_par_close(bp_n5, [g0]) == _seq_close(bp_n5, [g0])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "parallel N5 equals sequential",
+      "expected_exception": null,
+      "id": "par_matches_seq_n5",
+      "kwargs": {},
+      "method": "Closer.sgClose",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Closer, BigProductAlgebra\nfrom org.uacalc.alg.parallel import Pool, SingleClose\nfrom org.uacalc.util import IntArray\nfrom org.uacalc.terms import VariableImp\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_m3 = BigProductAlgebra(m3, 1)\nbp_n5 = BigProductAlgebra(n5, 1)\nbp_lat2 = BigProductAlgebra(lat2, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\ng10 = IntArray([1, 0])\ng0 = IntArray([0])\ng1 = IntArray([1])\ng2 = IntArray([2])\n\ndef _coords(elem):\n    if elem is None:\n        return None\n    try:\n        return [int(x) for x in list(elem)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(elem, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(elem)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_coords(x) for x in list(lst)]\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _quiet(closer):\n    fn = getattr(closer, 'setSuppressOutput', None) or getattr(closer, 'set_suppress_output', None)\n    if callable(fn):\n        fn(True)\n    return closer\n\ndef _seq_close(alg, gens):\n    old = getattr(Closer, 'doParallel', False)\n    try:\n        Closer.doParallel = False\n        return _sorted_ias(_quiet(Closer(alg, gens)).sgClose())\n    finally:\n        Closer.doParallel = old\n\ndef _par_close(alg, gens):\n    old = getattr(Closer, 'doParallel', False)\n    try:\n        Closer.doParallel = True\n        # Java sgCloseParallel NPEs if termMap is null; makeTermMap=True.\n        return _sorted_ias(_quiet(Closer(alg, gens, True)).sgClose())\n    finally:\n        Closer.doParallel = old\n\ndef _one_step(univ, op, min_i, max_i):\n    univ = list(univ)\n    if sys.platform.startswith('java'):\n        from java.util.concurrent import ConcurrentHashMap, ForkJoinPool\n        from java.util.concurrent.atomic import AtomicInteger\n        from java.lang import Thread\n        mmap = ConcurrentHashMap()\n        for i, el in enumerate(univ):\n            mmap.put(el, VariableImp('x' + str(i)))\n        sc = SingleClose(univ, mmap, op, min_i, max_i, AtomicInteger(len(univ)))\n        results = sc.doOneStep(ForkJoinPool(), Thread.currentThread(), None, None)\n    else:\n        sc = SingleClose(univ, None, op, min_i, max_i, len(univ))\n        results = sc.doOneStep()\n    out = []\n    if results is None:\n        return None\n    for chunk in results:\n        if chunk is None:\n            continue\n        for x in chunk:\n            out.append(_coords(x))\n    out.sort()\n    return out\n\ndef _ops(alg):\n    ops = getattr(alg, 'operations', None)\n    if callable(ops):\n        ops = ops()\n    if ops is None:\n        ops = alg.getOperations()\n    return list(ops)\n\ndef _first_op(alg):\n    return _ops(alg)[0]\n\nc2_op = _first_op(c2)\nm3_join = _ops(m3)[0]\n\nCloser.doParallel = False\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "SingleClose.__name__",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "SingleClose is importable",
+      "expected_exception": null,
+      "id": "single_close_class",
+      "kwargs": {},
+      "method": "SingleClose",
+      "notes": "",
+      "result": {
+        "return_type": "str",
+        "return_value": "SingleClose",
+        "string_repr": "SingleClose",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Closer, BigProductAlgebra\nfrom org.uacalc.alg.parallel import Pool, SingleClose\nfrom org.uacalc.util import IntArray\nfrom org.uacalc.terms import VariableImp\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_m3 = BigProductAlgebra(m3, 1)\nbp_n5 = BigProductAlgebra(n5, 1)\nbp_lat2 = BigProductAlgebra(lat2, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\ng10 = IntArray([1, 0])\ng0 = IntArray([0])\ng1 = IntArray([1])\ng2 = IntArray([2])\n\ndef _coords(elem):\n    if elem is None:\n        return None\n    try:\n        return [int(x) for x in list(elem)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(elem, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(elem)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_coords(x) for x in list(lst)]\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _quiet(closer):\n    fn = getattr(closer, 'setSuppressOutput', None) or getattr(closer, 'set_suppress_output', None)\n    if callable(fn):\n        fn(True)\n    return closer\n\ndef _seq_close(alg, gens):\n    old = getattr(Closer, 'doParallel', False)\n    try:\n        Closer.doParallel = False\n        return _sorted_ias(_quiet(Closer(alg, gens)).sgClose())\n    finally:\n        Closer.doParallel = old\n\ndef _par_close(alg, gens):\n    old = getattr(Closer, 'doParallel', False)\n    try:\n        Closer.doParallel = True\n        # Java sgCloseParallel NPEs if termMap is null; makeTermMap=True.\n        return _sorted_ias(_quiet(Closer(alg, gens, True)).sgClose())\n    finally:\n        Closer.doParallel = old\n\ndef _one_step(univ, op, min_i, max_i):\n    univ = list(univ)\n    if sys.platform.startswith('java'):\n        from java.util.concurrent import ConcurrentHashMap, ForkJoinPool\n        from java.util.concurrent.atomic import AtomicInteger\n        from java.lang import Thread\n        mmap = ConcurrentHashMap()\n        for i, el in enumerate(univ):\n            mmap.put(el, VariableImp('x' + str(i)))\n        sc = SingleClose(univ, mmap, op, min_i, max_i, AtomicInteger(len(univ)))\n        results = sc.doOneStep(ForkJoinPool(), Thread.currentThread(), None, None)\n    else:\n        sc = SingleClose(univ, None, op, min_i, max_i, len(univ))\n        results = sc.doOneStep()\n    out = []\n    if results is None:\n        return None\n    for chunk in results:\n        if chunk is None:\n            continue\n        for x in chunk:\n            out.append(_coords(x))\n    out.sort()\n    return out\n\ndef _ops(alg):\n    ops = getattr(alg, 'operations', None)\n    if callable(ops):\n        ops = ops()\n    if ops is None:\n        ops = alg.getOperations()\n    return list(ops)\n\ndef _first_op(alg):\n    return _ops(alg)[0]\n\nc2_op = _first_op(c2)\nm3_join = _ops(m3)[0]\n\nCloser.doParallel = False\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_one_step([IntArray([1])], c2_op, 0, 0)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "one pass of SingleClose on C2 from {1}",
+      "expected_exception": null,
+      "id": "single_close_c2_one_step",
+      "kwargs": {},
+      "method": "SingleClose.doOneStep",
+      "notes": "Java List toString vs Python list.",
+      "result": {
+        "exception": {
+          "message": "java.lang.UnsupportedOperationException: java.lang.UnsupportedOperationException",
+          "type": "UnsupportedOperationException"
+        },
+        "success": false
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Closer, BigProductAlgebra\nfrom org.uacalc.alg.parallel import Pool, SingleClose\nfrom org.uacalc.util import IntArray\nfrom org.uacalc.terms import VariableImp\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_m3 = BigProductAlgebra(m3, 1)\nbp_n5 = BigProductAlgebra(n5, 1)\nbp_lat2 = BigProductAlgebra(lat2, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\ng10 = IntArray([1, 0])\ng0 = IntArray([0])\ng1 = IntArray([1])\ng2 = IntArray([2])\n\ndef _coords(elem):\n    if elem is None:\n        return None\n    try:\n        return [int(x) for x in list(elem)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(elem, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(elem)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_coords(x) for x in list(lst)]\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _quiet(closer):\n    fn = getattr(closer, 'setSuppressOutput', None) or getattr(closer, 'set_suppress_output', None)\n    if callable(fn):\n        fn(True)\n    return closer\n\ndef _seq_close(alg, gens):\n    old = getattr(Closer, 'doParallel', False)\n    try:\n        Closer.doParallel = False\n        return _sorted_ias(_quiet(Closer(alg, gens)).sgClose())\n    finally:\n        Closer.doParallel = old\n\ndef _par_close(alg, gens):\n    old = getattr(Closer, 'doParallel', False)\n    try:\n        Closer.doParallel = True\n        # Java sgCloseParallel NPEs if termMap is null; makeTermMap=True.\n        return _sorted_ias(_quiet(Closer(alg, gens, True)).sgClose())\n    finally:\n        Closer.doParallel = old\n\ndef _one_step(univ, op, min_i, max_i):\n    univ = list(univ)\n    if sys.platform.startswith('java'):\n        from java.util.concurrent import ConcurrentHashMap, ForkJoinPool\n        from java.util.concurrent.atomic import AtomicInteger\n        from java.lang import Thread\n        mmap = ConcurrentHashMap()\n        for i, el in enumerate(univ):\n            mmap.put(el, VariableImp('x' + str(i)))\n        sc = SingleClose(univ, mmap, op, min_i, max_i, AtomicInteger(len(univ)))\n        results = sc.doOneStep(ForkJoinPool(), Thread.currentThread(), None, None)\n    else:\n        sc = SingleClose(univ, None, op, min_i, max_i, len(univ))\n        results = sc.doOneStep()\n    out = []\n    if results is None:\n        return None\n    for chunk in results:\n        if chunk is None:\n            continue\n        for x in chunk:\n            out.append(_coords(x))\n    out.sort()\n    return out\n\ndef _ops(alg):\n    ops = getattr(alg, 'operations', None)\n    if callable(ops):\n        ops = ops()\n    if ops is None:\n        ops = alg.getOperations()\n    return list(ops)\n\ndef _first_op(alg):\n    return _ops(alg)[0]\n\nc2_op = _first_op(c2)\nm3_join = _ops(m3)[0]\n\nCloser.doParallel = False\n",
+      "skip_string_check": true,
+      "xfail_reason": "Java IntOperation.valueAt(int[][]) is UOE; Rust SingleClose uses value_at_arrays and returns new elements. Product-algebra operations() are not bound on CPython BigProductAlgebra, so the script-usable parallel closer is Closer.doParallel / sgClose."
+    },
+    {
+      "args": [],
+      "call": "_one_step([IntArray([1]), IntArray([2])], m3_join, 0, 1)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "one pass of SingleClose on M3 join of 1 and 2",
+      "expected_exception": null,
+      "id": "single_close_m3_one_step",
+      "kwargs": {},
+      "method": "SingleClose.doOneStep",
+      "notes": "Java List toString vs Python list.",
+      "result": {
+        "exception": {
+          "message": "java.lang.UnsupportedOperationException: java.lang.UnsupportedOperationException",
+          "type": "UnsupportedOperationException"
+        },
+        "success": false
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Closer, BigProductAlgebra\nfrom org.uacalc.alg.parallel import Pool, SingleClose\nfrom org.uacalc.util import IntArray\nfrom org.uacalc.terms import VariableImp\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_m3 = BigProductAlgebra(m3, 1)\nbp_n5 = BigProductAlgebra(n5, 1)\nbp_lat2 = BigProductAlgebra(lat2, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\ng10 = IntArray([1, 0])\ng0 = IntArray([0])\ng1 = IntArray([1])\ng2 = IntArray([2])\n\ndef _coords(elem):\n    if elem is None:\n        return None\n    try:\n        return [int(x) for x in list(elem)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(elem, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(elem)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_coords(x) for x in list(lst)]\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _quiet(closer):\n    fn = getattr(closer, 'setSuppressOutput', None) or getattr(closer, 'set_suppress_output', None)\n    if callable(fn):\n        fn(True)\n    return closer\n\ndef _seq_close(alg, gens):\n    old = getattr(Closer, 'doParallel', False)\n    try:\n        Closer.doParallel = False\n        return _sorted_ias(_quiet(Closer(alg, gens)).sgClose())\n    finally:\n        Closer.doParallel = old\n\ndef _par_close(alg, gens):\n    old = getattr(Closer, 'doParallel', False)\n    try:\n        Closer.doParallel = True\n        # Java sgCloseParallel NPEs if termMap is null; makeTermMap=True.\n        return _sorted_ias(_quiet(Closer(alg, gens, True)).sgClose())\n    finally:\n        Closer.doParallel = old\n\ndef _one_step(univ, op, min_i, max_i):\n    univ = list(univ)\n    if sys.platform.startswith('java'):\n        from java.util.concurrent import ConcurrentHashMap, ForkJoinPool\n        from java.util.concurrent.atomic import AtomicInteger\n        from java.lang import Thread\n        mmap = ConcurrentHashMap()\n        for i, el in enumerate(univ):\n            mmap.put(el, VariableImp('x' + str(i)))\n        sc = SingleClose(univ, mmap, op, min_i, max_i, AtomicInteger(len(univ)))\n        results = sc.doOneStep(ForkJoinPool(), Thread.currentThread(), None, None)\n    else:\n        sc = SingleClose(univ, None, op, min_i, max_i, len(univ))\n        results = sc.doOneStep()\n    out = []\n    if results is None:\n        return None\n    for chunk in results:\n        if chunk is None:\n            continue\n        for x in chunk:\n            out.append(_coords(x))\n    out.sort()\n    return out\n\ndef _ops(alg):\n    ops = getattr(alg, 'operations', None)\n    if callable(ops):\n        ops = ops()\n    if ops is None:\n        ops = alg.getOperations()\n    return list(ops)\n\ndef _first_op(alg):\n    return _ops(alg)[0]\n\nc2_op = _first_op(c2)\nm3_join = _ops(m3)[0]\n\nCloser.doParallel = False\n",
+      "skip_string_check": true,
+      "xfail_reason": "Java IntOperation.valueAt(int[][]) is UOE; Rust SingleClose uses value_at_arrays. Parallel element-set parity is covered by Closer.doParallel sgClose goldens."
+    }
+  ]
+}

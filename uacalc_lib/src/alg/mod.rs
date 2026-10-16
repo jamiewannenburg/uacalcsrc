@@ -120,6 +120,13 @@ pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     m.add_class::<PyPool>()?;
     m.add_class::<PyAlgebraWithGeneratingVector>()?;
 
+    let parallel_module = PyModule::new_bound(_py, "parallel")?;
+    crate::alg::parallel::register_parallel_module(_py, &parallel_module)?;
+    m.add_submodule(&parallel_module)?;
+    let sys = PyModule::import_bound(_py, "sys")?;
+    sys.getattr("modules")?
+        .set_item("uacalc_lib.alg.parallel", &parallel_module)?;
+
     // Register closer module components
     closer::register_closer(_py, m)?;
     closer_timing::register_closer_timing(_py, m)?;

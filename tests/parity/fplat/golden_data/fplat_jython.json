@@ -1,0 +1,848 @@
+{
+  "metadata": {
+    "generated_at": "2026-10-16T21:19:06.362784+00:00",
+    "jar": "uacalc.jar",
+    "package": "org.uacalc.fplat",
+    "runtime": "jython",
+    "test_cases": 37,
+    "type": "package"
+  },
+  "test_cases": [
+    {
+      "args": [],
+      "call": "named.leq(x, y)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "name order: x <= y",
+      "expected_exception": null,
+      "id": "leq_name_x_y",
+      "kwargs": {},
+      "method": "PartiallyDefinedLattice.leq",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.fplat import PartiallyDefinedLattice\nfrom org.uacalc.lat import Order\nfrom org.uacalc.terms import VariableImp\n\ndef _name(v):\n    if v is None:\n        return v.getName()\n    fn = getattr(v, 'getName', None) or getattr(v, 'get_name', None)\n    if callable(fn):\n        return str(fn())\n    return str(v)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for group in lst:\n        if group is None:\n            out.append(None)\n        else:\n            out.append([_name(v) for v in list(group)])\n    return out\n\ndef _field(obj, java_name, getter=None):\n    if getter:\n        fn = getattr(obj, getter, None)\n        if callable(fn):\n            return fn()\n    if hasattr(obj, java_name):\n        return getattr(obj, java_name)\n    try:\n        f = obj.getClass().getDeclaredField(java_name)\n        f.setAccessible(True)\n        return f.get(obj)\n    except Exception:\n        return None\n\ndef _in_groups(groups, names):\n    got = _names(groups)\n    if got is None:\n        return False\n    return list(names) in got\n\nclass NameOrder(Order):\n    def leq(self, a, b):\n        return _name(a) <= _name(b)\n\nclass AntiOrder(Order):\n    def leq(self, a, b):\n        return _name(a) == _name(b)\n\nclass ChainXYZ(Order):\n    _rank = {'x': 0, 'y': 1, 'z': 2}\n    def leq(self, a, b):\n        return self._rank[_name(a)] <= self._rank[_name(b)]\n\nclass VeeOrder(Order):\n    # a,b < c; a incomparable to b\n    def leq(self, a, b):\n        na, nb = _name(a), _name(b)\n        if na == nb:\n            return True\n        if nb == 'c' and na in ('a', 'b'):\n            return True\n        return False\n\nx = VariableImp('x')\ny = VariableImp('y')\nz = VariableImp('z')\na = VariableImp('a')\nb = VariableImp('b')\nc = VariableImp('c')\nw = VariableImp('w')\nnat = NameOrder()\nanti = AntiOrder()\nchain = ChainXYZ()\nvee = VeeOrder()\nempty_lat = PartiallyDefinedLattice('empty', nat, [], [])\nnamed = PartiallyDefinedLattice('T', nat, [[x, y]], [[y, z]])\nmulti = PartiallyDefinedLattice('M', nat, [[x, y], [z, w]], [[x, z], [y, w]])\nchain_lat = PartiallyDefinedLattice('C', chain, [[x, y], [y, z]], [[x, y]])\nvee_lat = PartiallyDefinedLattice('V', vee, [[a, b]], [[a, c], [b, c]])\nanti_lat = PartiallyDefinedLattice('A', anti, [], [])\nnull_order = PartiallyDefinedLattice('N', None, [], [])\nnull_lists = PartiallyDefinedLattice('NL', nat, None, None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "named.leq(y, x)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "name order: y <= x is false",
+      "expected_exception": null,
+      "id": "leq_name_y_x",
+      "kwargs": {},
+      "method": "PartiallyDefinedLattice.leq",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": false,
+        "string_repr": "False",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.fplat import PartiallyDefinedLattice\nfrom org.uacalc.lat import Order\nfrom org.uacalc.terms import VariableImp\n\ndef _name(v):\n    if v is None:\n        return v.getName()\n    fn = getattr(v, 'getName', None) or getattr(v, 'get_name', None)\n    if callable(fn):\n        return str(fn())\n    return str(v)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for group in lst:\n        if group is None:\n            out.append(None)\n        else:\n            out.append([_name(v) for v in list(group)])\n    return out\n\ndef _field(obj, java_name, getter=None):\n    if getter:\n        fn = getattr(obj, getter, None)\n        if callable(fn):\n            return fn()\n    if hasattr(obj, java_name):\n        return getattr(obj, java_name)\n    try:\n        f = obj.getClass().getDeclaredField(java_name)\n        f.setAccessible(True)\n        return f.get(obj)\n    except Exception:\n        return None\n\ndef _in_groups(groups, names):\n    got = _names(groups)\n    if got is None:\n        return False\n    return list(names) in got\n\nclass NameOrder(Order):\n    def leq(self, a, b):\n        return _name(a) <= _name(b)\n\nclass AntiOrder(Order):\n    def leq(self, a, b):\n        return _name(a) == _name(b)\n\nclass ChainXYZ(Order):\n    _rank = {'x': 0, 'y': 1, 'z': 2}\n    def leq(self, a, b):\n        return self._rank[_name(a)] <= self._rank[_name(b)]\n\nclass VeeOrder(Order):\n    # a,b < c; a incomparable to b\n    def leq(self, a, b):\n        na, nb = _name(a), _name(b)\n        if na == nb:\n            return True\n        if nb == 'c' and na in ('a', 'b'):\n            return True\n        return False\n\nx = VariableImp('x')\ny = VariableImp('y')\nz = VariableImp('z')\na = VariableImp('a')\nb = VariableImp('b')\nc = VariableImp('c')\nw = VariableImp('w')\nnat = NameOrder()\nanti = AntiOrder()\nchain = ChainXYZ()\nvee = VeeOrder()\nempty_lat = PartiallyDefinedLattice('empty', nat, [], [])\nnamed = PartiallyDefinedLattice('T', nat, [[x, y]], [[y, z]])\nmulti = PartiallyDefinedLattice('M', nat, [[x, y], [z, w]], [[x, z], [y, w]])\nchain_lat = PartiallyDefinedLattice('C', chain, [[x, y], [y, z]], [[x, y]])\nvee_lat = PartiallyDefinedLattice('V', vee, [[a, b]], [[a, c], [b, c]])\nanti_lat = PartiallyDefinedLattice('A', anti, [], [])\nnull_order = PartiallyDefinedLattice('N', None, [], [])\nnull_lists = PartiallyDefinedLattice('NL', nat, None, None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "named.leq(x, x)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "name order is reflexive",
+      "expected_exception": null,
+      "id": "leq_name_x_x",
+      "kwargs": {},
+      "method": "PartiallyDefinedLattice.leq",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.fplat import PartiallyDefinedLattice\nfrom org.uacalc.lat import Order\nfrom org.uacalc.terms import VariableImp\n\ndef _name(v):\n    if v is None:\n        return v.getName()\n    fn = getattr(v, 'getName', None) or getattr(v, 'get_name', None)\n    if callable(fn):\n        return str(fn())\n    return str(v)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for group in lst:\n        if group is None:\n            out.append(None)\n        else:\n            out.append([_name(v) for v in list(group)])\n    return out\n\ndef _field(obj, java_name, getter=None):\n    if getter:\n        fn = getattr(obj, getter, None)\n        if callable(fn):\n            return fn()\n    if hasattr(obj, java_name):\n        return getattr(obj, java_name)\n    try:\n        f = obj.getClass().getDeclaredField(java_name)\n        f.setAccessible(True)\n        return f.get(obj)\n    except Exception:\n        return None\n\ndef _in_groups(groups, names):\n    got = _names(groups)\n    if got is None:\n        return False\n    return list(names) in got\n\nclass NameOrder(Order):\n    def leq(self, a, b):\n        return _name(a) <= _name(b)\n\nclass AntiOrder(Order):\n    def leq(self, a, b):\n        return _name(a) == _name(b)\n\nclass ChainXYZ(Order):\n    _rank = {'x': 0, 'y': 1, 'z': 2}\n    def leq(self, a, b):\n        return self._rank[_name(a)] <= self._rank[_name(b)]\n\nclass VeeOrder(Order):\n    # a,b < c; a incomparable to b\n    def leq(self, a, b):\n        na, nb = _name(a), _name(b)\n        if na == nb:\n            return True\n        if nb == 'c' and na in ('a', 'b'):\n            return True\n        return False\n\nx = VariableImp('x')\ny = VariableImp('y')\nz = VariableImp('z')\na = VariableImp('a')\nb = VariableImp('b')\nc = VariableImp('c')\nw = VariableImp('w')\nnat = NameOrder()\nanti = AntiOrder()\nchain = ChainXYZ()\nvee = VeeOrder()\nempty_lat = PartiallyDefinedLattice('empty', nat, [], [])\nnamed = PartiallyDefinedLattice('T', nat, [[x, y]], [[y, z]])\nmulti = PartiallyDefinedLattice('M', nat, [[x, y], [z, w]], [[x, z], [y, w]])\nchain_lat = PartiallyDefinedLattice('C', chain, [[x, y], [y, z]], [[x, y]])\nvee_lat = PartiallyDefinedLattice('V', vee, [[a, b]], [[a, c], [b, c]])\nanti_lat = PartiallyDefinedLattice('A', anti, [], [])\nnull_order = PartiallyDefinedLattice('N', None, [], [])\nnull_lists = PartiallyDefinedLattice('NL', nat, None, None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "empty_lat.leq(a, c)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "name order: a <= c",
+      "expected_exception": null,
+      "id": "leq_name_a_c",
+      "kwargs": {},
+      "method": "PartiallyDefinedLattice.leq",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.fplat import PartiallyDefinedLattice\nfrom org.uacalc.lat import Order\nfrom org.uacalc.terms import VariableImp\n\ndef _name(v):\n    if v is None:\n        return v.getName()\n    fn = getattr(v, 'getName', None) or getattr(v, 'get_name', None)\n    if callable(fn):\n        return str(fn())\n    return str(v)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for group in lst:\n        if group is None:\n            out.append(None)\n        else:\n            out.append([_name(v) for v in list(group)])\n    return out\n\ndef _field(obj, java_name, getter=None):\n    if getter:\n        fn = getattr(obj, getter, None)\n        if callable(fn):\n            return fn()\n    if hasattr(obj, java_name):\n        return getattr(obj, java_name)\n    try:\n        f = obj.getClass().getDeclaredField(java_name)\n        f.setAccessible(True)\n        return f.get(obj)\n    except Exception:\n        return None\n\ndef _in_groups(groups, names):\n    got = _names(groups)\n    if got is None:\n        return False\n    return list(names) in got\n\nclass NameOrder(Order):\n    def leq(self, a, b):\n        return _name(a) <= _name(b)\n\nclass AntiOrder(Order):\n    def leq(self, a, b):\n        return _name(a) == _name(b)\n\nclass ChainXYZ(Order):\n    _rank = {'x': 0, 'y': 1, 'z': 2}\n    def leq(self, a, b):\n        return self._rank[_name(a)] <= self._rank[_name(b)]\n\nclass VeeOrder(Order):\n    # a,b < c; a incomparable to b\n    def leq(self, a, b):\n        na, nb = _name(a), _name(b)\n        if na == nb:\n            return True\n        if nb == 'c' and na in ('a', 'b'):\n            return True\n        return False\n\nx = VariableImp('x')\ny = VariableImp('y')\nz = VariableImp('z')\na = VariableImp('a')\nb = VariableImp('b')\nc = VariableImp('c')\nw = VariableImp('w')\nnat = NameOrder()\nanti = AntiOrder()\nchain = ChainXYZ()\nvee = VeeOrder()\nempty_lat = PartiallyDefinedLattice('empty', nat, [], [])\nnamed = PartiallyDefinedLattice('T', nat, [[x, y]], [[y, z]])\nmulti = PartiallyDefinedLattice('M', nat, [[x, y], [z, w]], [[x, z], [y, w]])\nchain_lat = PartiallyDefinedLattice('C', chain, [[x, y], [y, z]], [[x, y]])\nvee_lat = PartiallyDefinedLattice('V', vee, [[a, b]], [[a, c], [b, c]])\nanti_lat = PartiallyDefinedLattice('A', anti, [], [])\nnull_order = PartiallyDefinedLattice('N', None, [], [])\nnull_lists = PartiallyDefinedLattice('NL', nat, None, None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "empty_lat.leq(c, a)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "name order: c <= a is false",
+      "expected_exception": null,
+      "id": "leq_name_c_a",
+      "kwargs": {},
+      "method": "PartiallyDefinedLattice.leq",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": false,
+        "string_repr": "False",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.fplat import PartiallyDefinedLattice\nfrom org.uacalc.lat import Order\nfrom org.uacalc.terms import VariableImp\n\ndef _name(v):\n    if v is None:\n        return v.getName()\n    fn = getattr(v, 'getName', None) or getattr(v, 'get_name', None)\n    if callable(fn):\n        return str(fn())\n    return str(v)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for group in lst:\n        if group is None:\n            out.append(None)\n        else:\n            out.append([_name(v) for v in list(group)])\n    return out\n\ndef _field(obj, java_name, getter=None):\n    if getter:\n        fn = getattr(obj, getter, None)\n        if callable(fn):\n            return fn()\n    if hasattr(obj, java_name):\n        return getattr(obj, java_name)\n    try:\n        f = obj.getClass().getDeclaredField(java_name)\n        f.setAccessible(True)\n        return f.get(obj)\n    except Exception:\n        return None\n\ndef _in_groups(groups, names):\n    got = _names(groups)\n    if got is None:\n        return False\n    return list(names) in got\n\nclass NameOrder(Order):\n    def leq(self, a, b):\n        return _name(a) <= _name(b)\n\nclass AntiOrder(Order):\n    def leq(self, a, b):\n        return _name(a) == _name(b)\n\nclass ChainXYZ(Order):\n    _rank = {'x': 0, 'y': 1, 'z': 2}\n    def leq(self, a, b):\n        return self._rank[_name(a)] <= self._rank[_name(b)]\n\nclass VeeOrder(Order):\n    # a,b < c; a incomparable to b\n    def leq(self, a, b):\n        na, nb = _name(a), _name(b)\n        if na == nb:\n            return True\n        if nb == 'c' and na in ('a', 'b'):\n            return True\n        return False\n\nx = VariableImp('x')\ny = VariableImp('y')\nz = VariableImp('z')\na = VariableImp('a')\nb = VariableImp('b')\nc = VariableImp('c')\nw = VariableImp('w')\nnat = NameOrder()\nanti = AntiOrder()\nchain = ChainXYZ()\nvee = VeeOrder()\nempty_lat = PartiallyDefinedLattice('empty', nat, [], [])\nnamed = PartiallyDefinedLattice('T', nat, [[x, y]], [[y, z]])\nmulti = PartiallyDefinedLattice('M', nat, [[x, y], [z, w]], [[x, z], [y, w]])\nchain_lat = PartiallyDefinedLattice('C', chain, [[x, y], [y, z]], [[x, y]])\nvee_lat = PartiallyDefinedLattice('V', vee, [[a, b]], [[a, c], [b, c]])\nanti_lat = PartiallyDefinedLattice('A', anti, [], [])\nnull_order = PartiallyDefinedLattice('N', None, [], [])\nnull_lists = PartiallyDefinedLattice('NL', nat, None, None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "chain_lat.leq(x, z)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "custom chain x < y < z",
+      "expected_exception": null,
+      "id": "leq_chain_x_z",
+      "kwargs": {},
+      "method": "PartiallyDefinedLattice.leq",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.fplat import PartiallyDefinedLattice\nfrom org.uacalc.lat import Order\nfrom org.uacalc.terms import VariableImp\n\ndef _name(v):\n    if v is None:\n        return v.getName()\n    fn = getattr(v, 'getName', None) or getattr(v, 'get_name', None)\n    if callable(fn):\n        return str(fn())\n    return str(v)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for group in lst:\n        if group is None:\n            out.append(None)\n        else:\n            out.append([_name(v) for v in list(group)])\n    return out\n\ndef _field(obj, java_name, getter=None):\n    if getter:\n        fn = getattr(obj, getter, None)\n        if callable(fn):\n            return fn()\n    if hasattr(obj, java_name):\n        return getattr(obj, java_name)\n    try:\n        f = obj.getClass().getDeclaredField(java_name)\n        f.setAccessible(True)\n        return f.get(obj)\n    except Exception:\n        return None\n\ndef _in_groups(groups, names):\n    got = _names(groups)\n    if got is None:\n        return False\n    return list(names) in got\n\nclass NameOrder(Order):\n    def leq(self, a, b):\n        return _name(a) <= _name(b)\n\nclass AntiOrder(Order):\n    def leq(self, a, b):\n        return _name(a) == _name(b)\n\nclass ChainXYZ(Order):\n    _rank = {'x': 0, 'y': 1, 'z': 2}\n    def leq(self, a, b):\n        return self._rank[_name(a)] <= self._rank[_name(b)]\n\nclass VeeOrder(Order):\n    # a,b < c; a incomparable to b\n    def leq(self, a, b):\n        na, nb = _name(a), _name(b)\n        if na == nb:\n            return True\n        if nb == 'c' and na in ('a', 'b'):\n            return True\n        return False\n\nx = VariableImp('x')\ny = VariableImp('y')\nz = VariableImp('z')\na = VariableImp('a')\nb = VariableImp('b')\nc = VariableImp('c')\nw = VariableImp('w')\nnat = NameOrder()\nanti = AntiOrder()\nchain = ChainXYZ()\nvee = VeeOrder()\nempty_lat = PartiallyDefinedLattice('empty', nat, [], [])\nnamed = PartiallyDefinedLattice('T', nat, [[x, y]], [[y, z]])\nmulti = PartiallyDefinedLattice('M', nat, [[x, y], [z, w]], [[x, z], [y, w]])\nchain_lat = PartiallyDefinedLattice('C', chain, [[x, y], [y, z]], [[x, y]])\nvee_lat = PartiallyDefinedLattice('V', vee, [[a, b]], [[a, c], [b, c]])\nanti_lat = PartiallyDefinedLattice('A', anti, [], [])\nnull_order = PartiallyDefinedLattice('N', None, [], [])\nnull_lists = PartiallyDefinedLattice('NL', nat, None, None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "chain_lat.leq(z, x)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "custom chain z not <= x",
+      "expected_exception": null,
+      "id": "leq_chain_z_x",
+      "kwargs": {},
+      "method": "PartiallyDefinedLattice.leq",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": false,
+        "string_repr": "False",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.fplat import PartiallyDefinedLattice\nfrom org.uacalc.lat import Order\nfrom org.uacalc.terms import VariableImp\n\ndef _name(v):\n    if v is None:\n        return v.getName()\n    fn = getattr(v, 'getName', None) or getattr(v, 'get_name', None)\n    if callable(fn):\n        return str(fn())\n    return str(v)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for group in lst:\n        if group is None:\n            out.append(None)\n        else:\n            out.append([_name(v) for v in list(group)])\n    return out\n\ndef _field(obj, java_name, getter=None):\n    if getter:\n        fn = getattr(obj, getter, None)\n        if callable(fn):\n            return fn()\n    if hasattr(obj, java_name):\n        return getattr(obj, java_name)\n    try:\n        f = obj.getClass().getDeclaredField(java_name)\n        f.setAccessible(True)\n        return f.get(obj)\n    except Exception:\n        return None\n\ndef _in_groups(groups, names):\n    got = _names(groups)\n    if got is None:\n        return False\n    return list(names) in got\n\nclass NameOrder(Order):\n    def leq(self, a, b):\n        return _name(a) <= _name(b)\n\nclass AntiOrder(Order):\n    def leq(self, a, b):\n        return _name(a) == _name(b)\n\nclass ChainXYZ(Order):\n    _rank = {'x': 0, 'y': 1, 'z': 2}\n    def leq(self, a, b):\n        return self._rank[_name(a)] <= self._rank[_name(b)]\n\nclass VeeOrder(Order):\n    # a,b < c; a incomparable to b\n    def leq(self, a, b):\n        na, nb = _name(a), _name(b)\n        if na == nb:\n            return True\n        if nb == 'c' and na in ('a', 'b'):\n            return True\n        return False\n\nx = VariableImp('x')\ny = VariableImp('y')\nz = VariableImp('z')\na = VariableImp('a')\nb = VariableImp('b')\nc = VariableImp('c')\nw = VariableImp('w')\nnat = NameOrder()\nanti = AntiOrder()\nchain = ChainXYZ()\nvee = VeeOrder()\nempty_lat = PartiallyDefinedLattice('empty', nat, [], [])\nnamed = PartiallyDefinedLattice('T', nat, [[x, y]], [[y, z]])\nmulti = PartiallyDefinedLattice('M', nat, [[x, y], [z, w]], [[x, z], [y, w]])\nchain_lat = PartiallyDefinedLattice('C', chain, [[x, y], [y, z]], [[x, y]])\nvee_lat = PartiallyDefinedLattice('V', vee, [[a, b]], [[a, c], [b, c]])\nanti_lat = PartiallyDefinedLattice('A', anti, [], [])\nnull_order = PartiallyDefinedLattice('N', None, [], [])\nnull_lists = PartiallyDefinedLattice('NL', nat, None, None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "chain_lat.leq(y, y)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "custom chain reflexive",
+      "expected_exception": null,
+      "id": "leq_chain_y_y",
+      "kwargs": {},
+      "method": "PartiallyDefinedLattice.leq",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.fplat import PartiallyDefinedLattice\nfrom org.uacalc.lat import Order\nfrom org.uacalc.terms import VariableImp\n\ndef _name(v):\n    if v is None:\n        return v.getName()\n    fn = getattr(v, 'getName', None) or getattr(v, 'get_name', None)\n    if callable(fn):\n        return str(fn())\n    return str(v)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for group in lst:\n        if group is None:\n            out.append(None)\n        else:\n            out.append([_name(v) for v in list(group)])\n    return out\n\ndef _field(obj, java_name, getter=None):\n    if getter:\n        fn = getattr(obj, getter, None)\n        if callable(fn):\n            return fn()\n    if hasattr(obj, java_name):\n        return getattr(obj, java_name)\n    try:\n        f = obj.getClass().getDeclaredField(java_name)\n        f.setAccessible(True)\n        return f.get(obj)\n    except Exception:\n        return None\n\ndef _in_groups(groups, names):\n    got = _names(groups)\n    if got is None:\n        return False\n    return list(names) in got\n\nclass NameOrder(Order):\n    def leq(self, a, b):\n        return _name(a) <= _name(b)\n\nclass AntiOrder(Order):\n    def leq(self, a, b):\n        return _name(a) == _name(b)\n\nclass ChainXYZ(Order):\n    _rank = {'x': 0, 'y': 1, 'z': 2}\n    def leq(self, a, b):\n        return self._rank[_name(a)] <= self._rank[_name(b)]\n\nclass VeeOrder(Order):\n    # a,b < c; a incomparable to b\n    def leq(self, a, b):\n        na, nb = _name(a), _name(b)\n        if na == nb:\n            return True\n        if nb == 'c' and na in ('a', 'b'):\n            return True\n        return False\n\nx = VariableImp('x')\ny = VariableImp('y')\nz = VariableImp('z')\na = VariableImp('a')\nb = VariableImp('b')\nc = VariableImp('c')\nw = VariableImp('w')\nnat = NameOrder()\nanti = AntiOrder()\nchain = ChainXYZ()\nvee = VeeOrder()\nempty_lat = PartiallyDefinedLattice('empty', nat, [], [])\nnamed = PartiallyDefinedLattice('T', nat, [[x, y]], [[y, z]])\nmulti = PartiallyDefinedLattice('M', nat, [[x, y], [z, w]], [[x, z], [y, w]])\nchain_lat = PartiallyDefinedLattice('C', chain, [[x, y], [y, z]], [[x, y]])\nvee_lat = PartiallyDefinedLattice('V', vee, [[a, b]], [[a, c], [b, c]])\nanti_lat = PartiallyDefinedLattice('A', anti, [], [])\nnull_order = PartiallyDefinedLattice('N', None, [], [])\nnull_lists = PartiallyDefinedLattice('NL', nat, None, None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "anti_lat.leq(x, y)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "antichain: distinct vars incomparable",
+      "expected_exception": null,
+      "id": "leq_anti_x_y",
+      "kwargs": {},
+      "method": "PartiallyDefinedLattice.leq",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": false,
+        "string_repr": "False",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.fplat import PartiallyDefinedLattice\nfrom org.uacalc.lat import Order\nfrom org.uacalc.terms import VariableImp\n\ndef _name(v):\n    if v is None:\n        return v.getName()\n    fn = getattr(v, 'getName', None) or getattr(v, 'get_name', None)\n    if callable(fn):\n        return str(fn())\n    return str(v)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for group in lst:\n        if group is None:\n            out.append(None)\n        else:\n            out.append([_name(v) for v in list(group)])\n    return out\n\ndef _field(obj, java_name, getter=None):\n    if getter:\n        fn = getattr(obj, getter, None)\n        if callable(fn):\n            return fn()\n    if hasattr(obj, java_name):\n        return getattr(obj, java_name)\n    try:\n        f = obj.getClass().getDeclaredField(java_name)\n        f.setAccessible(True)\n        return f.get(obj)\n    except Exception:\n        return None\n\ndef _in_groups(groups, names):\n    got = _names(groups)\n    if got is None:\n        return False\n    return list(names) in got\n\nclass NameOrder(Order):\n    def leq(self, a, b):\n        return _name(a) <= _name(b)\n\nclass AntiOrder(Order):\n    def leq(self, a, b):\n        return _name(a) == _name(b)\n\nclass ChainXYZ(Order):\n    _rank = {'x': 0, 'y': 1, 'z': 2}\n    def leq(self, a, b):\n        return self._rank[_name(a)] <= self._rank[_name(b)]\n\nclass VeeOrder(Order):\n    # a,b < c; a incomparable to b\n    def leq(self, a, b):\n        na, nb = _name(a), _name(b)\n        if na == nb:\n            return True\n        if nb == 'c' and na in ('a', 'b'):\n            return True\n        return False\n\nx = VariableImp('x')\ny = VariableImp('y')\nz = VariableImp('z')\na = VariableImp('a')\nb = VariableImp('b')\nc = VariableImp('c')\nw = VariableImp('w')\nnat = NameOrder()\nanti = AntiOrder()\nchain = ChainXYZ()\nvee = VeeOrder()\nempty_lat = PartiallyDefinedLattice('empty', nat, [], [])\nnamed = PartiallyDefinedLattice('T', nat, [[x, y]], [[y, z]])\nmulti = PartiallyDefinedLattice('M', nat, [[x, y], [z, w]], [[x, z], [y, w]])\nchain_lat = PartiallyDefinedLattice('C', chain, [[x, y], [y, z]], [[x, y]])\nvee_lat = PartiallyDefinedLattice('V', vee, [[a, b]], [[a, c], [b, c]])\nanti_lat = PartiallyDefinedLattice('A', anti, [], [])\nnull_order = PartiallyDefinedLattice('N', None, [], [])\nnull_lists = PartiallyDefinedLattice('NL', nat, None, None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "anti_lat.leq(x, x)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "antichain is reflexive",
+      "expected_exception": null,
+      "id": "leq_anti_x_x",
+      "kwargs": {},
+      "method": "PartiallyDefinedLattice.leq",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.fplat import PartiallyDefinedLattice\nfrom org.uacalc.lat import Order\nfrom org.uacalc.terms import VariableImp\n\ndef _name(v):\n    if v is None:\n        return v.getName()\n    fn = getattr(v, 'getName', None) or getattr(v, 'get_name', None)\n    if callable(fn):\n        return str(fn())\n    return str(v)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for group in lst:\n        if group is None:\n            out.append(None)\n        else:\n            out.append([_name(v) for v in list(group)])\n    return out\n\ndef _field(obj, java_name, getter=None):\n    if getter:\n        fn = getattr(obj, getter, None)\n        if callable(fn):\n            return fn()\n    if hasattr(obj, java_name):\n        return getattr(obj, java_name)\n    try:\n        f = obj.getClass().getDeclaredField(java_name)\n        f.setAccessible(True)\n        return f.get(obj)\n    except Exception:\n        return None\n\ndef _in_groups(groups, names):\n    got = _names(groups)\n    if got is None:\n        return False\n    return list(names) in got\n\nclass NameOrder(Order):\n    def leq(self, a, b):\n        return _name(a) <= _name(b)\n\nclass AntiOrder(Order):\n    def leq(self, a, b):\n        return _name(a) == _name(b)\n\nclass ChainXYZ(Order):\n    _rank = {'x': 0, 'y': 1, 'z': 2}\n    def leq(self, a, b):\n        return self._rank[_name(a)] <= self._rank[_name(b)]\n\nclass VeeOrder(Order):\n    # a,b < c; a incomparable to b\n    def leq(self, a, b):\n        na, nb = _name(a), _name(b)\n        if na == nb:\n            return True\n        if nb == 'c' and na in ('a', 'b'):\n            return True\n        return False\n\nx = VariableImp('x')\ny = VariableImp('y')\nz = VariableImp('z')\na = VariableImp('a')\nb = VariableImp('b')\nc = VariableImp('c')\nw = VariableImp('w')\nnat = NameOrder()\nanti = AntiOrder()\nchain = ChainXYZ()\nvee = VeeOrder()\nempty_lat = PartiallyDefinedLattice('empty', nat, [], [])\nnamed = PartiallyDefinedLattice('T', nat, [[x, y]], [[y, z]])\nmulti = PartiallyDefinedLattice('M', nat, [[x, y], [z, w]], [[x, z], [y, w]])\nchain_lat = PartiallyDefinedLattice('C', chain, [[x, y], [y, z]], [[x, y]])\nvee_lat = PartiallyDefinedLattice('V', vee, [[a, b]], [[a, c], [b, c]])\nanti_lat = PartiallyDefinedLattice('A', anti, [], [])\nnull_order = PartiallyDefinedLattice('N', None, [], [])\nnull_lists = PartiallyDefinedLattice('NL', nat, None, None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "vee_lat.leq(a, c)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "vee order: a <= c",
+      "expected_exception": null,
+      "id": "leq_vee_a_c",
+      "kwargs": {},
+      "method": "PartiallyDefinedLattice.leq",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.fplat import PartiallyDefinedLattice\nfrom org.uacalc.lat import Order\nfrom org.uacalc.terms import VariableImp\n\ndef _name(v):\n    if v is None:\n        return v.getName()\n    fn = getattr(v, 'getName', None) or getattr(v, 'get_name', None)\n    if callable(fn):\n        return str(fn())\n    return str(v)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for group in lst:\n        if group is None:\n            out.append(None)\n        else:\n            out.append([_name(v) for v in list(group)])\n    return out\n\ndef _field(obj, java_name, getter=None):\n    if getter:\n        fn = getattr(obj, getter, None)\n        if callable(fn):\n            return fn()\n    if hasattr(obj, java_name):\n        return getattr(obj, java_name)\n    try:\n        f = obj.getClass().getDeclaredField(java_name)\n        f.setAccessible(True)\n        return f.get(obj)\n    except Exception:\n        return None\n\ndef _in_groups(groups, names):\n    got = _names(groups)\n    if got is None:\n        return False\n    return list(names) in got\n\nclass NameOrder(Order):\n    def leq(self, a, b):\n        return _name(a) <= _name(b)\n\nclass AntiOrder(Order):\n    def leq(self, a, b):\n        return _name(a) == _name(b)\n\nclass ChainXYZ(Order):\n    _rank = {'x': 0, 'y': 1, 'z': 2}\n    def leq(self, a, b):\n        return self._rank[_name(a)] <= self._rank[_name(b)]\n\nclass VeeOrder(Order):\n    # a,b < c; a incomparable to b\n    def leq(self, a, b):\n        na, nb = _name(a), _name(b)\n        if na == nb:\n            return True\n        if nb == 'c' and na in ('a', 'b'):\n            return True\n        return False\n\nx = VariableImp('x')\ny = VariableImp('y')\nz = VariableImp('z')\na = VariableImp('a')\nb = VariableImp('b')\nc = VariableImp('c')\nw = VariableImp('w')\nnat = NameOrder()\nanti = AntiOrder()\nchain = ChainXYZ()\nvee = VeeOrder()\nempty_lat = PartiallyDefinedLattice('empty', nat, [], [])\nnamed = PartiallyDefinedLattice('T', nat, [[x, y]], [[y, z]])\nmulti = PartiallyDefinedLattice('M', nat, [[x, y], [z, w]], [[x, z], [y, w]])\nchain_lat = PartiallyDefinedLattice('C', chain, [[x, y], [y, z]], [[x, y]])\nvee_lat = PartiallyDefinedLattice('V', vee, [[a, b]], [[a, c], [b, c]])\nanti_lat = PartiallyDefinedLattice('A', anti, [], [])\nnull_order = PartiallyDefinedLattice('N', None, [], [])\nnull_lists = PartiallyDefinedLattice('NL', nat, None, None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "vee_lat.leq(b, c)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "vee order: b <= c",
+      "expected_exception": null,
+      "id": "leq_vee_b_c",
+      "kwargs": {},
+      "method": "PartiallyDefinedLattice.leq",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.fplat import PartiallyDefinedLattice\nfrom org.uacalc.lat import Order\nfrom org.uacalc.terms import VariableImp\n\ndef _name(v):\n    if v is None:\n        return v.getName()\n    fn = getattr(v, 'getName', None) or getattr(v, 'get_name', None)\n    if callable(fn):\n        return str(fn())\n    return str(v)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for group in lst:\n        if group is None:\n            out.append(None)\n        else:\n            out.append([_name(v) for v in list(group)])\n    return out\n\ndef _field(obj, java_name, getter=None):\n    if getter:\n        fn = getattr(obj, getter, None)\n        if callable(fn):\n            return fn()\n    if hasattr(obj, java_name):\n        return getattr(obj, java_name)\n    try:\n        f = obj.getClass().getDeclaredField(java_name)\n        f.setAccessible(True)\n        return f.get(obj)\n    except Exception:\n        return None\n\ndef _in_groups(groups, names):\n    got = _names(groups)\n    if got is None:\n        return False\n    return list(names) in got\n\nclass NameOrder(Order):\n    def leq(self, a, b):\n        return _name(a) <= _name(b)\n\nclass AntiOrder(Order):\n    def leq(self, a, b):\n        return _name(a) == _name(b)\n\nclass ChainXYZ(Order):\n    _rank = {'x': 0, 'y': 1, 'z': 2}\n    def leq(self, a, b):\n        return self._rank[_name(a)] <= self._rank[_name(b)]\n\nclass VeeOrder(Order):\n    # a,b < c; a incomparable to b\n    def leq(self, a, b):\n        na, nb = _name(a), _name(b)\n        if na == nb:\n            return True\n        if nb == 'c' and na in ('a', 'b'):\n            return True\n        return False\n\nx = VariableImp('x')\ny = VariableImp('y')\nz = VariableImp('z')\na = VariableImp('a')\nb = VariableImp('b')\nc = VariableImp('c')\nw = VariableImp('w')\nnat = NameOrder()\nanti = AntiOrder()\nchain = ChainXYZ()\nvee = VeeOrder()\nempty_lat = PartiallyDefinedLattice('empty', nat, [], [])\nnamed = PartiallyDefinedLattice('T', nat, [[x, y]], [[y, z]])\nmulti = PartiallyDefinedLattice('M', nat, [[x, y], [z, w]], [[x, z], [y, w]])\nchain_lat = PartiallyDefinedLattice('C', chain, [[x, y], [y, z]], [[x, y]])\nvee_lat = PartiallyDefinedLattice('V', vee, [[a, b]], [[a, c], [b, c]])\nanti_lat = PartiallyDefinedLattice('A', anti, [], [])\nnull_order = PartiallyDefinedLattice('N', None, [], [])\nnull_lists = PartiallyDefinedLattice('NL', nat, None, None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "vee_lat.leq(a, b)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "vee order: a incomparable to b",
+      "expected_exception": null,
+      "id": "leq_vee_a_b",
+      "kwargs": {},
+      "method": "PartiallyDefinedLattice.leq",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": false,
+        "string_repr": "False",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.fplat import PartiallyDefinedLattice\nfrom org.uacalc.lat import Order\nfrom org.uacalc.terms import VariableImp\n\ndef _name(v):\n    if v is None:\n        return v.getName()\n    fn = getattr(v, 'getName', None) or getattr(v, 'get_name', None)\n    if callable(fn):\n        return str(fn())\n    return str(v)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for group in lst:\n        if group is None:\n            out.append(None)\n        else:\n            out.append([_name(v) for v in list(group)])\n    return out\n\ndef _field(obj, java_name, getter=None):\n    if getter:\n        fn = getattr(obj, getter, None)\n        if callable(fn):\n            return fn()\n    if hasattr(obj, java_name):\n        return getattr(obj, java_name)\n    try:\n        f = obj.getClass().getDeclaredField(java_name)\n        f.setAccessible(True)\n        return f.get(obj)\n    except Exception:\n        return None\n\ndef _in_groups(groups, names):\n    got = _names(groups)\n    if got is None:\n        return False\n    return list(names) in got\n\nclass NameOrder(Order):\n    def leq(self, a, b):\n        return _name(a) <= _name(b)\n\nclass AntiOrder(Order):\n    def leq(self, a, b):\n        return _name(a) == _name(b)\n\nclass ChainXYZ(Order):\n    _rank = {'x': 0, 'y': 1, 'z': 2}\n    def leq(self, a, b):\n        return self._rank[_name(a)] <= self._rank[_name(b)]\n\nclass VeeOrder(Order):\n    # a,b < c; a incomparable to b\n    def leq(self, a, b):\n        na, nb = _name(a), _name(b)\n        if na == nb:\n            return True\n        if nb == 'c' and na in ('a', 'b'):\n            return True\n        return False\n\nx = VariableImp('x')\ny = VariableImp('y')\nz = VariableImp('z')\na = VariableImp('a')\nb = VariableImp('b')\nc = VariableImp('c')\nw = VariableImp('w')\nnat = NameOrder()\nanti = AntiOrder()\nchain = ChainXYZ()\nvee = VeeOrder()\nempty_lat = PartiallyDefinedLattice('empty', nat, [], [])\nnamed = PartiallyDefinedLattice('T', nat, [[x, y]], [[y, z]])\nmulti = PartiallyDefinedLattice('M', nat, [[x, y], [z, w]], [[x, z], [y, w]])\nchain_lat = PartiallyDefinedLattice('C', chain, [[x, y], [y, z]], [[x, y]])\nvee_lat = PartiallyDefinedLattice('V', vee, [[a, b]], [[a, c], [b, c]])\nanti_lat = PartiallyDefinedLattice('A', anti, [], [])\nnull_order = PartiallyDefinedLattice('N', None, [], [])\nnull_lists = PartiallyDefinedLattice('NL', nat, None, None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "vee_lat.leq(c, a)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "vee order: c not <= a",
+      "expected_exception": null,
+      "id": "leq_vee_c_a",
+      "kwargs": {},
+      "method": "PartiallyDefinedLattice.leq",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": false,
+        "string_repr": "False",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.fplat import PartiallyDefinedLattice\nfrom org.uacalc.lat import Order\nfrom org.uacalc.terms import VariableImp\n\ndef _name(v):\n    if v is None:\n        return v.getName()\n    fn = getattr(v, 'getName', None) or getattr(v, 'get_name', None)\n    if callable(fn):\n        return str(fn())\n    return str(v)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for group in lst:\n        if group is None:\n            out.append(None)\n        else:\n            out.append([_name(v) for v in list(group)])\n    return out\n\ndef _field(obj, java_name, getter=None):\n    if getter:\n        fn = getattr(obj, getter, None)\n        if callable(fn):\n            return fn()\n    if hasattr(obj, java_name):\n        return getattr(obj, java_name)\n    try:\n        f = obj.getClass().getDeclaredField(java_name)\n        f.setAccessible(True)\n        return f.get(obj)\n    except Exception:\n        return None\n\ndef _in_groups(groups, names):\n    got = _names(groups)\n    if got is None:\n        return False\n    return list(names) in got\n\nclass NameOrder(Order):\n    def leq(self, a, b):\n        return _name(a) <= _name(b)\n\nclass AntiOrder(Order):\n    def leq(self, a, b):\n        return _name(a) == _name(b)\n\nclass ChainXYZ(Order):\n    _rank = {'x': 0, 'y': 1, 'z': 2}\n    def leq(self, a, b):\n        return self._rank[_name(a)] <= self._rank[_name(b)]\n\nclass VeeOrder(Order):\n    # a,b < c; a incomparable to b\n    def leq(self, a, b):\n        na, nb = _name(a), _name(b)\n        if na == nb:\n            return True\n        if nb == 'c' and na in ('a', 'b'):\n            return True\n        return False\n\nx = VariableImp('x')\ny = VariableImp('y')\nz = VariableImp('z')\na = VariableImp('a')\nb = VariableImp('b')\nc = VariableImp('c')\nw = VariableImp('w')\nnat = NameOrder()\nanti = AntiOrder()\nchain = ChainXYZ()\nvee = VeeOrder()\nempty_lat = PartiallyDefinedLattice('empty', nat, [], [])\nnamed = PartiallyDefinedLattice('T', nat, [[x, y]], [[y, z]])\nmulti = PartiallyDefinedLattice('M', nat, [[x, y], [z, w]], [[x, z], [y, w]])\nchain_lat = PartiallyDefinedLattice('C', chain, [[x, y], [y, z]], [[x, y]])\nvee_lat = PartiallyDefinedLattice('V', vee, [[a, b]], [[a, c], [b, c]])\nanti_lat = PartiallyDefinedLattice('A', anti, [], [])\nnull_order = PartiallyDefinedLattice('N', None, [], [])\nnull_lists = PartiallyDefinedLattice('NL', nat, None, None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "multi.leq(z, x)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "stored joins do not affect leq",
+      "expected_exception": null,
+      "id": "leq_independent_of_joins",
+      "kwargs": {},
+      "method": "PartiallyDefinedLattice.leq",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": false,
+        "string_repr": "False",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.fplat import PartiallyDefinedLattice\nfrom org.uacalc.lat import Order\nfrom org.uacalc.terms import VariableImp\n\ndef _name(v):\n    if v is None:\n        return v.getName()\n    fn = getattr(v, 'getName', None) or getattr(v, 'get_name', None)\n    if callable(fn):\n        return str(fn())\n    return str(v)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for group in lst:\n        if group is None:\n            out.append(None)\n        else:\n            out.append([_name(v) for v in list(group)])\n    return out\n\ndef _field(obj, java_name, getter=None):\n    if getter:\n        fn = getattr(obj, getter, None)\n        if callable(fn):\n            return fn()\n    if hasattr(obj, java_name):\n        return getattr(obj, java_name)\n    try:\n        f = obj.getClass().getDeclaredField(java_name)\n        f.setAccessible(True)\n        return f.get(obj)\n    except Exception:\n        return None\n\ndef _in_groups(groups, names):\n    got = _names(groups)\n    if got is None:\n        return False\n    return list(names) in got\n\nclass NameOrder(Order):\n    def leq(self, a, b):\n        return _name(a) <= _name(b)\n\nclass AntiOrder(Order):\n    def leq(self, a, b):\n        return _name(a) == _name(b)\n\nclass ChainXYZ(Order):\n    _rank = {'x': 0, 'y': 1, 'z': 2}\n    def leq(self, a, b):\n        return self._rank[_name(a)] <= self._rank[_name(b)]\n\nclass VeeOrder(Order):\n    # a,b < c; a incomparable to b\n    def leq(self, a, b):\n        na, nb = _name(a), _name(b)\n        if na == nb:\n            return True\n        if nb == 'c' and na in ('a', 'b'):\n            return True\n        return False\n\nx = VariableImp('x')\ny = VariableImp('y')\nz = VariableImp('z')\na = VariableImp('a')\nb = VariableImp('b')\nc = VariableImp('c')\nw = VariableImp('w')\nnat = NameOrder()\nanti = AntiOrder()\nchain = ChainXYZ()\nvee = VeeOrder()\nempty_lat = PartiallyDefinedLattice('empty', nat, [], [])\nnamed = PartiallyDefinedLattice('T', nat, [[x, y]], [[y, z]])\nmulti = PartiallyDefinedLattice('M', nat, [[x, y], [z, w]], [[x, z], [y, w]])\nchain_lat = PartiallyDefinedLattice('C', chain, [[x, y], [y, z]], [[x, y]])\nvee_lat = PartiallyDefinedLattice('V', vee, [[a, b]], [[a, c], [b, c]])\nanti_lat = PartiallyDefinedLattice('A', anti, [], [])\nnull_order = PartiallyDefinedLattice('N', None, [], [])\nnull_lists = PartiallyDefinedLattice('NL', nat, None, None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_names(_field(empty_lat, 'definedJoins', 'getDefinedJoins'))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "empty defined joins",
+      "expected_exception": null,
+      "id": "joins_empty",
+      "kwargs": {},
+      "method": "PartiallyDefinedLattice.getDefinedJoins",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [],
+        "string_repr": "[]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.fplat import PartiallyDefinedLattice\nfrom org.uacalc.lat import Order\nfrom org.uacalc.terms import VariableImp\n\ndef _name(v):\n    if v is None:\n        return v.getName()\n    fn = getattr(v, 'getName', None) or getattr(v, 'get_name', None)\n    if callable(fn):\n        return str(fn())\n    return str(v)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for group in lst:\n        if group is None:\n            out.append(None)\n        else:\n            out.append([_name(v) for v in list(group)])\n    return out\n\ndef _field(obj, java_name, getter=None):\n    if getter:\n        fn = getattr(obj, getter, None)\n        if callable(fn):\n            return fn()\n    if hasattr(obj, java_name):\n        return getattr(obj, java_name)\n    try:\n        f = obj.getClass().getDeclaredField(java_name)\n        f.setAccessible(True)\n        return f.get(obj)\n    except Exception:\n        return None\n\ndef _in_groups(groups, names):\n    got = _names(groups)\n    if got is None:\n        return False\n    return list(names) in got\n\nclass NameOrder(Order):\n    def leq(self, a, b):\n        return _name(a) <= _name(b)\n\nclass AntiOrder(Order):\n    def leq(self, a, b):\n        return _name(a) == _name(b)\n\nclass ChainXYZ(Order):\n    _rank = {'x': 0, 'y': 1, 'z': 2}\n    def leq(self, a, b):\n        return self._rank[_name(a)] <= self._rank[_name(b)]\n\nclass VeeOrder(Order):\n    # a,b < c; a incomparable to b\n    def leq(self, a, b):\n        na, nb = _name(a), _name(b)\n        if na == nb:\n            return True\n        if nb == 'c' and na in ('a', 'b'):\n            return True\n        return False\n\nx = VariableImp('x')\ny = VariableImp('y')\nz = VariableImp('z')\na = VariableImp('a')\nb = VariableImp('b')\nc = VariableImp('c')\nw = VariableImp('w')\nnat = NameOrder()\nanti = AntiOrder()\nchain = ChainXYZ()\nvee = VeeOrder()\nempty_lat = PartiallyDefinedLattice('empty', nat, [], [])\nnamed = PartiallyDefinedLattice('T', nat, [[x, y]], [[y, z]])\nmulti = PartiallyDefinedLattice('M', nat, [[x, y], [z, w]], [[x, z], [y, w]])\nchain_lat = PartiallyDefinedLattice('C', chain, [[x, y], [y, z]], [[x, y]])\nvee_lat = PartiallyDefinedLattice('V', vee, [[a, b]], [[a, c], [b, c]])\nanti_lat = PartiallyDefinedLattice('A', anti, [], [])\nnull_order = PartiallyDefinedLattice('N', None, [], [])\nnull_lists = PartiallyDefinedLattice('NL', nat, None, None)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_names(_field(empty_lat, 'definedMeets', 'getDefinedMeets'))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "empty defined meets",
+      "expected_exception": null,
+      "id": "meets_empty",
+      "kwargs": {},
+      "method": "PartiallyDefinedLattice.getDefinedMeets",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [],
+        "string_repr": "[]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.fplat import PartiallyDefinedLattice\nfrom org.uacalc.lat import Order\nfrom org.uacalc.terms import VariableImp\n\ndef _name(v):\n    if v is None:\n        return v.getName()\n    fn = getattr(v, 'getName', None) or getattr(v, 'get_name', None)\n    if callable(fn):\n        return str(fn())\n    return str(v)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for group in lst:\n        if group is None:\n            out.append(None)\n        else:\n            out.append([_name(v) for v in list(group)])\n    return out\n\ndef _field(obj, java_name, getter=None):\n    if getter:\n        fn = getattr(obj, getter, None)\n        if callable(fn):\n            return fn()\n    if hasattr(obj, java_name):\n        return getattr(obj, java_name)\n    try:\n        f = obj.getClass().getDeclaredField(java_name)\n        f.setAccessible(True)\n        return f.get(obj)\n    except Exception:\n        return None\n\ndef _in_groups(groups, names):\n    got = _names(groups)\n    if got is None:\n        return False\n    return list(names) in got\n\nclass NameOrder(Order):\n    def leq(self, a, b):\n        return _name(a) <= _name(b)\n\nclass AntiOrder(Order):\n    def leq(self, a, b):\n        return _name(a) == _name(b)\n\nclass ChainXYZ(Order):\n    _rank = {'x': 0, 'y': 1, 'z': 2}\n    def leq(self, a, b):\n        return self._rank[_name(a)] <= self._rank[_name(b)]\n\nclass VeeOrder(Order):\n    # a,b < c; a incomparable to b\n    def leq(self, a, b):\n        na, nb = _name(a), _name(b)\n        if na == nb:\n            return True\n        if nb == 'c' and na in ('a', 'b'):\n            return True\n        return False\n\nx = VariableImp('x')\ny = VariableImp('y')\nz = VariableImp('z')\na = VariableImp('a')\nb = VariableImp('b')\nc = VariableImp('c')\nw = VariableImp('w')\nnat = NameOrder()\nanti = AntiOrder()\nchain = ChainXYZ()\nvee = VeeOrder()\nempty_lat = PartiallyDefinedLattice('empty', nat, [], [])\nnamed = PartiallyDefinedLattice('T', nat, [[x, y]], [[y, z]])\nmulti = PartiallyDefinedLattice('M', nat, [[x, y], [z, w]], [[x, z], [y, w]])\nchain_lat = PartiallyDefinedLattice('C', chain, [[x, y], [y, z]], [[x, y]])\nvee_lat = PartiallyDefinedLattice('V', vee, [[a, b]], [[a, c], [b, c]])\nanti_lat = PartiallyDefinedLattice('A', anti, [], [])\nnull_order = PartiallyDefinedLattice('N', None, [], [])\nnull_lists = PartiallyDefinedLattice('NL', nat, None, None)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_names(_field(named, 'definedJoins', 'getDefinedJoins'))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "one defined join [x,y]",
+      "expected_exception": null,
+      "id": "joins_named",
+      "kwargs": {},
+      "method": "PartiallyDefinedLattice.getDefinedJoins",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            "x",
+            "y"
+          ]
+        ],
+        "string_repr": "[['x', 'y']]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.fplat import PartiallyDefinedLattice\nfrom org.uacalc.lat import Order\nfrom org.uacalc.terms import VariableImp\n\ndef _name(v):\n    if v is None:\n        return v.getName()\n    fn = getattr(v, 'getName', None) or getattr(v, 'get_name', None)\n    if callable(fn):\n        return str(fn())\n    return str(v)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for group in lst:\n        if group is None:\n            out.append(None)\n        else:\n            out.append([_name(v) for v in list(group)])\n    return out\n\ndef _field(obj, java_name, getter=None):\n    if getter:\n        fn = getattr(obj, getter, None)\n        if callable(fn):\n            return fn()\n    if hasattr(obj, java_name):\n        return getattr(obj, java_name)\n    try:\n        f = obj.getClass().getDeclaredField(java_name)\n        f.setAccessible(True)\n        return f.get(obj)\n    except Exception:\n        return None\n\ndef _in_groups(groups, names):\n    got = _names(groups)\n    if got is None:\n        return False\n    return list(names) in got\n\nclass NameOrder(Order):\n    def leq(self, a, b):\n        return _name(a) <= _name(b)\n\nclass AntiOrder(Order):\n    def leq(self, a, b):\n        return _name(a) == _name(b)\n\nclass ChainXYZ(Order):\n    _rank = {'x': 0, 'y': 1, 'z': 2}\n    def leq(self, a, b):\n        return self._rank[_name(a)] <= self._rank[_name(b)]\n\nclass VeeOrder(Order):\n    # a,b < c; a incomparable to b\n    def leq(self, a, b):\n        na, nb = _name(a), _name(b)\n        if na == nb:\n            return True\n        if nb == 'c' and na in ('a', 'b'):\n            return True\n        return False\n\nx = VariableImp('x')\ny = VariableImp('y')\nz = VariableImp('z')\na = VariableImp('a')\nb = VariableImp('b')\nc = VariableImp('c')\nw = VariableImp('w')\nnat = NameOrder()\nanti = AntiOrder()\nchain = ChainXYZ()\nvee = VeeOrder()\nempty_lat = PartiallyDefinedLattice('empty', nat, [], [])\nnamed = PartiallyDefinedLattice('T', nat, [[x, y]], [[y, z]])\nmulti = PartiallyDefinedLattice('M', nat, [[x, y], [z, w]], [[x, z], [y, w]])\nchain_lat = PartiallyDefinedLattice('C', chain, [[x, y], [y, z]], [[x, y]])\nvee_lat = PartiallyDefinedLattice('V', vee, [[a, b]], [[a, c], [b, c]])\nanti_lat = PartiallyDefinedLattice('A', anti, [], [])\nnull_order = PartiallyDefinedLattice('N', None, [], [])\nnull_lists = PartiallyDefinedLattice('NL', nat, None, None)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_names(_field(named, 'definedMeets', 'getDefinedMeets'))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "one defined meet [y,z]",
+      "expected_exception": null,
+      "id": "meets_named",
+      "kwargs": {},
+      "method": "PartiallyDefinedLattice.getDefinedMeets",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            "y",
+            "z"
+          ]
+        ],
+        "string_repr": "[['y', 'z']]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.fplat import PartiallyDefinedLattice\nfrom org.uacalc.lat import Order\nfrom org.uacalc.terms import VariableImp\n\ndef _name(v):\n    if v is None:\n        return v.getName()\n    fn = getattr(v, 'getName', None) or getattr(v, 'get_name', None)\n    if callable(fn):\n        return str(fn())\n    return str(v)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for group in lst:\n        if group is None:\n            out.append(None)\n        else:\n            out.append([_name(v) for v in list(group)])\n    return out\n\ndef _field(obj, java_name, getter=None):\n    if getter:\n        fn = getattr(obj, getter, None)\n        if callable(fn):\n            return fn()\n    if hasattr(obj, java_name):\n        return getattr(obj, java_name)\n    try:\n        f = obj.getClass().getDeclaredField(java_name)\n        f.setAccessible(True)\n        return f.get(obj)\n    except Exception:\n        return None\n\ndef _in_groups(groups, names):\n    got = _names(groups)\n    if got is None:\n        return False\n    return list(names) in got\n\nclass NameOrder(Order):\n    def leq(self, a, b):\n        return _name(a) <= _name(b)\n\nclass AntiOrder(Order):\n    def leq(self, a, b):\n        return _name(a) == _name(b)\n\nclass ChainXYZ(Order):\n    _rank = {'x': 0, 'y': 1, 'z': 2}\n    def leq(self, a, b):\n        return self._rank[_name(a)] <= self._rank[_name(b)]\n\nclass VeeOrder(Order):\n    # a,b < c; a incomparable to b\n    def leq(self, a, b):\n        na, nb = _name(a), _name(b)\n        if na == nb:\n            return True\n        if nb == 'c' and na in ('a', 'b'):\n            return True\n        return False\n\nx = VariableImp('x')\ny = VariableImp('y')\nz = VariableImp('z')\na = VariableImp('a')\nb = VariableImp('b')\nc = VariableImp('c')\nw = VariableImp('w')\nnat = NameOrder()\nanti = AntiOrder()\nchain = ChainXYZ()\nvee = VeeOrder()\nempty_lat = PartiallyDefinedLattice('empty', nat, [], [])\nnamed = PartiallyDefinedLattice('T', nat, [[x, y]], [[y, z]])\nmulti = PartiallyDefinedLattice('M', nat, [[x, y], [z, w]], [[x, z], [y, w]])\nchain_lat = PartiallyDefinedLattice('C', chain, [[x, y], [y, z]], [[x, y]])\nvee_lat = PartiallyDefinedLattice('V', vee, [[a, b]], [[a, c], [b, c]])\nanti_lat = PartiallyDefinedLattice('A', anti, [], [])\nnull_order = PartiallyDefinedLattice('N', None, [], [])\nnull_lists = PartiallyDefinedLattice('NL', nat, None, None)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_names(_field(multi, 'definedJoins', 'getDefinedJoins'))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "two defined joins",
+      "expected_exception": null,
+      "id": "joins_multi",
+      "kwargs": {},
+      "method": "PartiallyDefinedLattice.getDefinedJoins",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            "x",
+            "y"
+          ],
+          [
+            "z",
+            "w"
+          ]
+        ],
+        "string_repr": "[['x', 'y'], ['z', 'w']]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.fplat import PartiallyDefinedLattice\nfrom org.uacalc.lat import Order\nfrom org.uacalc.terms import VariableImp\n\ndef _name(v):\n    if v is None:\n        return v.getName()\n    fn = getattr(v, 'getName', None) or getattr(v, 'get_name', None)\n    if callable(fn):\n        return str(fn())\n    return str(v)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for group in lst:\n        if group is None:\n            out.append(None)\n        else:\n            out.append([_name(v) for v in list(group)])\n    return out\n\ndef _field(obj, java_name, getter=None):\n    if getter:\n        fn = getattr(obj, getter, None)\n        if callable(fn):\n            return fn()\n    if hasattr(obj, java_name):\n        return getattr(obj, java_name)\n    try:\n        f = obj.getClass().getDeclaredField(java_name)\n        f.setAccessible(True)\n        return f.get(obj)\n    except Exception:\n        return None\n\ndef _in_groups(groups, names):\n    got = _names(groups)\n    if got is None:\n        return False\n    return list(names) in got\n\nclass NameOrder(Order):\n    def leq(self, a, b):\n        return _name(a) <= _name(b)\n\nclass AntiOrder(Order):\n    def leq(self, a, b):\n        return _name(a) == _name(b)\n\nclass ChainXYZ(Order):\n    _rank = {'x': 0, 'y': 1, 'z': 2}\n    def leq(self, a, b):\n        return self._rank[_name(a)] <= self._rank[_name(b)]\n\nclass VeeOrder(Order):\n    # a,b < c; a incomparable to b\n    def leq(self, a, b):\n        na, nb = _name(a), _name(b)\n        if na == nb:\n            return True\n        if nb == 'c' and na in ('a', 'b'):\n            return True\n        return False\n\nx = VariableImp('x')\ny = VariableImp('y')\nz = VariableImp('z')\na = VariableImp('a')\nb = VariableImp('b')\nc = VariableImp('c')\nw = VariableImp('w')\nnat = NameOrder()\nanti = AntiOrder()\nchain = ChainXYZ()\nvee = VeeOrder()\nempty_lat = PartiallyDefinedLattice('empty', nat, [], [])\nnamed = PartiallyDefinedLattice('T', nat, [[x, y]], [[y, z]])\nmulti = PartiallyDefinedLattice('M', nat, [[x, y], [z, w]], [[x, z], [y, w]])\nchain_lat = PartiallyDefinedLattice('C', chain, [[x, y], [y, z]], [[x, y]])\nvee_lat = PartiallyDefinedLattice('V', vee, [[a, b]], [[a, c], [b, c]])\nanti_lat = PartiallyDefinedLattice('A', anti, [], [])\nnull_order = PartiallyDefinedLattice('N', None, [], [])\nnull_lists = PartiallyDefinedLattice('NL', nat, None, None)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_names(_field(multi, 'definedMeets', 'getDefinedMeets'))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "two defined meets",
+      "expected_exception": null,
+      "id": "meets_multi",
+      "kwargs": {},
+      "method": "PartiallyDefinedLattice.getDefinedMeets",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            "x",
+            "z"
+          ],
+          [
+            "y",
+            "w"
+          ]
+        ],
+        "string_repr": "[['x', 'z'], ['y', 'w']]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.fplat import PartiallyDefinedLattice\nfrom org.uacalc.lat import Order\nfrom org.uacalc.terms import VariableImp\n\ndef _name(v):\n    if v is None:\n        return v.getName()\n    fn = getattr(v, 'getName', None) or getattr(v, 'get_name', None)\n    if callable(fn):\n        return str(fn())\n    return str(v)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for group in lst:\n        if group is None:\n            out.append(None)\n        else:\n            out.append([_name(v) for v in list(group)])\n    return out\n\ndef _field(obj, java_name, getter=None):\n    if getter:\n        fn = getattr(obj, getter, None)\n        if callable(fn):\n            return fn()\n    if hasattr(obj, java_name):\n        return getattr(obj, java_name)\n    try:\n        f = obj.getClass().getDeclaredField(java_name)\n        f.setAccessible(True)\n        return f.get(obj)\n    except Exception:\n        return None\n\ndef _in_groups(groups, names):\n    got = _names(groups)\n    if got is None:\n        return False\n    return list(names) in got\n\nclass NameOrder(Order):\n    def leq(self, a, b):\n        return _name(a) <= _name(b)\n\nclass AntiOrder(Order):\n    def leq(self, a, b):\n        return _name(a) == _name(b)\n\nclass ChainXYZ(Order):\n    _rank = {'x': 0, 'y': 1, 'z': 2}\n    def leq(self, a, b):\n        return self._rank[_name(a)] <= self._rank[_name(b)]\n\nclass VeeOrder(Order):\n    # a,b < c; a incomparable to b\n    def leq(self, a, b):\n        na, nb = _name(a), _name(b)\n        if na == nb:\n            return True\n        if nb == 'c' and na in ('a', 'b'):\n            return True\n        return False\n\nx = VariableImp('x')\ny = VariableImp('y')\nz = VariableImp('z')\na = VariableImp('a')\nb = VariableImp('b')\nc = VariableImp('c')\nw = VariableImp('w')\nnat = NameOrder()\nanti = AntiOrder()\nchain = ChainXYZ()\nvee = VeeOrder()\nempty_lat = PartiallyDefinedLattice('empty', nat, [], [])\nnamed = PartiallyDefinedLattice('T', nat, [[x, y]], [[y, z]])\nmulti = PartiallyDefinedLattice('M', nat, [[x, y], [z, w]], [[x, z], [y, w]])\nchain_lat = PartiallyDefinedLattice('C', chain, [[x, y], [y, z]], [[x, y]])\nvee_lat = PartiallyDefinedLattice('V', vee, [[a, b]], [[a, c], [b, c]])\nanti_lat = PartiallyDefinedLattice('A', anti, [], [])\nnull_order = PartiallyDefinedLattice('N', None, [], [])\nnull_lists = PartiallyDefinedLattice('NL', nat, None, None)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_in_groups(_field(named, 'definedJoins', 'getDefinedJoins'), ['x', 'y'])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "join x,y is defined",
+      "expected_exception": null,
+      "id": "join_xy_defined",
+      "kwargs": {},
+      "method": "PartiallyDefinedLattice.getDefinedJoins",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.fplat import PartiallyDefinedLattice\nfrom org.uacalc.lat import Order\nfrom org.uacalc.terms import VariableImp\n\ndef _name(v):\n    if v is None:\n        return v.getName()\n    fn = getattr(v, 'getName', None) or getattr(v, 'get_name', None)\n    if callable(fn):\n        return str(fn())\n    return str(v)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for group in lst:\n        if group is None:\n            out.append(None)\n        else:\n            out.append([_name(v) for v in list(group)])\n    return out\n\ndef _field(obj, java_name, getter=None):\n    if getter:\n        fn = getattr(obj, getter, None)\n        if callable(fn):\n            return fn()\n    if hasattr(obj, java_name):\n        return getattr(obj, java_name)\n    try:\n        f = obj.getClass().getDeclaredField(java_name)\n        f.setAccessible(True)\n        return f.get(obj)\n    except Exception:\n        return None\n\ndef _in_groups(groups, names):\n    got = _names(groups)\n    if got is None:\n        return False\n    return list(names) in got\n\nclass NameOrder(Order):\n    def leq(self, a, b):\n        return _name(a) <= _name(b)\n\nclass AntiOrder(Order):\n    def leq(self, a, b):\n        return _name(a) == _name(b)\n\nclass ChainXYZ(Order):\n    _rank = {'x': 0, 'y': 1, 'z': 2}\n    def leq(self, a, b):\n        return self._rank[_name(a)] <= self._rank[_name(b)]\n\nclass VeeOrder(Order):\n    # a,b < c; a incomparable to b\n    def leq(self, a, b):\n        na, nb = _name(a), _name(b)\n        if na == nb:\n            return True\n        if nb == 'c' and na in ('a', 'b'):\n            return True\n        return False\n\nx = VariableImp('x')\ny = VariableImp('y')\nz = VariableImp('z')\na = VariableImp('a')\nb = VariableImp('b')\nc = VariableImp('c')\nw = VariableImp('w')\nnat = NameOrder()\nanti = AntiOrder()\nchain = ChainXYZ()\nvee = VeeOrder()\nempty_lat = PartiallyDefinedLattice('empty', nat, [], [])\nnamed = PartiallyDefinedLattice('T', nat, [[x, y]], [[y, z]])\nmulti = PartiallyDefinedLattice('M', nat, [[x, y], [z, w]], [[x, z], [y, w]])\nchain_lat = PartiallyDefinedLattice('C', chain, [[x, y], [y, z]], [[x, y]])\nvee_lat = PartiallyDefinedLattice('V', vee, [[a, b]], [[a, c], [b, c]])\nanti_lat = PartiallyDefinedLattice('A', anti, [], [])\nnull_order = PartiallyDefinedLattice('N', None, [], [])\nnull_lists = PartiallyDefinedLattice('NL', nat, None, None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_in_groups(_field(named, 'definedJoins', 'getDefinedJoins'), ['x', 'z'])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "join x,z is not defined",
+      "expected_exception": null,
+      "id": "join_xz_not_defined",
+      "kwargs": {},
+      "method": "PartiallyDefinedLattice.getDefinedJoins",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": false,
+        "string_repr": "False",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.fplat import PartiallyDefinedLattice\nfrom org.uacalc.lat import Order\nfrom org.uacalc.terms import VariableImp\n\ndef _name(v):\n    if v is None:\n        return v.getName()\n    fn = getattr(v, 'getName', None) or getattr(v, 'get_name', None)\n    if callable(fn):\n        return str(fn())\n    return str(v)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for group in lst:\n        if group is None:\n            out.append(None)\n        else:\n            out.append([_name(v) for v in list(group)])\n    return out\n\ndef _field(obj, java_name, getter=None):\n    if getter:\n        fn = getattr(obj, getter, None)\n        if callable(fn):\n            return fn()\n    if hasattr(obj, java_name):\n        return getattr(obj, java_name)\n    try:\n        f = obj.getClass().getDeclaredField(java_name)\n        f.setAccessible(True)\n        return f.get(obj)\n    except Exception:\n        return None\n\ndef _in_groups(groups, names):\n    got = _names(groups)\n    if got is None:\n        return False\n    return list(names) in got\n\nclass NameOrder(Order):\n    def leq(self, a, b):\n        return _name(a) <= _name(b)\n\nclass AntiOrder(Order):\n    def leq(self, a, b):\n        return _name(a) == _name(b)\n\nclass ChainXYZ(Order):\n    _rank = {'x': 0, 'y': 1, 'z': 2}\n    def leq(self, a, b):\n        return self._rank[_name(a)] <= self._rank[_name(b)]\n\nclass VeeOrder(Order):\n    # a,b < c; a incomparable to b\n    def leq(self, a, b):\n        na, nb = _name(a), _name(b)\n        if na == nb:\n            return True\n        if nb == 'c' and na in ('a', 'b'):\n            return True\n        return False\n\nx = VariableImp('x')\ny = VariableImp('y')\nz = VariableImp('z')\na = VariableImp('a')\nb = VariableImp('b')\nc = VariableImp('c')\nw = VariableImp('w')\nnat = NameOrder()\nanti = AntiOrder()\nchain = ChainXYZ()\nvee = VeeOrder()\nempty_lat = PartiallyDefinedLattice('empty', nat, [], [])\nnamed = PartiallyDefinedLattice('T', nat, [[x, y]], [[y, z]])\nmulti = PartiallyDefinedLattice('M', nat, [[x, y], [z, w]], [[x, z], [y, w]])\nchain_lat = PartiallyDefinedLattice('C', chain, [[x, y], [y, z]], [[x, y]])\nvee_lat = PartiallyDefinedLattice('V', vee, [[a, b]], [[a, c], [b, c]])\nanti_lat = PartiallyDefinedLattice('A', anti, [], [])\nnull_order = PartiallyDefinedLattice('N', None, [], [])\nnull_lists = PartiallyDefinedLattice('NL', nat, None, None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_in_groups(_field(named, 'definedMeets', 'getDefinedMeets'), ['y', 'z'])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "meet y,z is defined",
+      "expected_exception": null,
+      "id": "meet_yz_defined",
+      "kwargs": {},
+      "method": "PartiallyDefinedLattice.getDefinedMeets",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.fplat import PartiallyDefinedLattice\nfrom org.uacalc.lat import Order\nfrom org.uacalc.terms import VariableImp\n\ndef _name(v):\n    if v is None:\n        return v.getName()\n    fn = getattr(v, 'getName', None) or getattr(v, 'get_name', None)\n    if callable(fn):\n        return str(fn())\n    return str(v)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for group in lst:\n        if group is None:\n            out.append(None)\n        else:\n            out.append([_name(v) for v in list(group)])\n    return out\n\ndef _field(obj, java_name, getter=None):\n    if getter:\n        fn = getattr(obj, getter, None)\n        if callable(fn):\n            return fn()\n    if hasattr(obj, java_name):\n        return getattr(obj, java_name)\n    try:\n        f = obj.getClass().getDeclaredField(java_name)\n        f.setAccessible(True)\n        return f.get(obj)\n    except Exception:\n        return None\n\ndef _in_groups(groups, names):\n    got = _names(groups)\n    if got is None:\n        return False\n    return list(names) in got\n\nclass NameOrder(Order):\n    def leq(self, a, b):\n        return _name(a) <= _name(b)\n\nclass AntiOrder(Order):\n    def leq(self, a, b):\n        return _name(a) == _name(b)\n\nclass ChainXYZ(Order):\n    _rank = {'x': 0, 'y': 1, 'z': 2}\n    def leq(self, a, b):\n        return self._rank[_name(a)] <= self._rank[_name(b)]\n\nclass VeeOrder(Order):\n    # a,b < c; a incomparable to b\n    def leq(self, a, b):\n        na, nb = _name(a), _name(b)\n        if na == nb:\n            return True\n        if nb == 'c' and na in ('a', 'b'):\n            return True\n        return False\n\nx = VariableImp('x')\ny = VariableImp('y')\nz = VariableImp('z')\na = VariableImp('a')\nb = VariableImp('b')\nc = VariableImp('c')\nw = VariableImp('w')\nnat = NameOrder()\nanti = AntiOrder()\nchain = ChainXYZ()\nvee = VeeOrder()\nempty_lat = PartiallyDefinedLattice('empty', nat, [], [])\nnamed = PartiallyDefinedLattice('T', nat, [[x, y]], [[y, z]])\nmulti = PartiallyDefinedLattice('M', nat, [[x, y], [z, w]], [[x, z], [y, w]])\nchain_lat = PartiallyDefinedLattice('C', chain, [[x, y], [y, z]], [[x, y]])\nvee_lat = PartiallyDefinedLattice('V', vee, [[a, b]], [[a, c], [b, c]])\nanti_lat = PartiallyDefinedLattice('A', anti, [], [])\nnull_order = PartiallyDefinedLattice('N', None, [], [])\nnull_lists = PartiallyDefinedLattice('NL', nat, None, None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_in_groups(_field(named, 'definedMeets', 'getDefinedMeets'), ['x', 'y'])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "meet x,y is not defined",
+      "expected_exception": null,
+      "id": "meet_xy_not_defined",
+      "kwargs": {},
+      "method": "PartiallyDefinedLattice.getDefinedMeets",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": false,
+        "string_repr": "False",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.fplat import PartiallyDefinedLattice\nfrom org.uacalc.lat import Order\nfrom org.uacalc.terms import VariableImp\n\ndef _name(v):\n    if v is None:\n        return v.getName()\n    fn = getattr(v, 'getName', None) or getattr(v, 'get_name', None)\n    if callable(fn):\n        return str(fn())\n    return str(v)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for group in lst:\n        if group is None:\n            out.append(None)\n        else:\n            out.append([_name(v) for v in list(group)])\n    return out\n\ndef _field(obj, java_name, getter=None):\n    if getter:\n        fn = getattr(obj, getter, None)\n        if callable(fn):\n            return fn()\n    if hasattr(obj, java_name):\n        return getattr(obj, java_name)\n    try:\n        f = obj.getClass().getDeclaredField(java_name)\n        f.setAccessible(True)\n        return f.get(obj)\n    except Exception:\n        return None\n\ndef _in_groups(groups, names):\n    got = _names(groups)\n    if got is None:\n        return False\n    return list(names) in got\n\nclass NameOrder(Order):\n    def leq(self, a, b):\n        return _name(a) <= _name(b)\n\nclass AntiOrder(Order):\n    def leq(self, a, b):\n        return _name(a) == _name(b)\n\nclass ChainXYZ(Order):\n    _rank = {'x': 0, 'y': 1, 'z': 2}\n    def leq(self, a, b):\n        return self._rank[_name(a)] <= self._rank[_name(b)]\n\nclass VeeOrder(Order):\n    # a,b < c; a incomparable to b\n    def leq(self, a, b):\n        na, nb = _name(a), _name(b)\n        if na == nb:\n            return True\n        if nb == 'c' and na in ('a', 'b'):\n            return True\n        return False\n\nx = VariableImp('x')\ny = VariableImp('y')\nz = VariableImp('z')\na = VariableImp('a')\nb = VariableImp('b')\nc = VariableImp('c')\nw = VariableImp('w')\nnat = NameOrder()\nanti = AntiOrder()\nchain = ChainXYZ()\nvee = VeeOrder()\nempty_lat = PartiallyDefinedLattice('empty', nat, [], [])\nnamed = PartiallyDefinedLattice('T', nat, [[x, y]], [[y, z]])\nmulti = PartiallyDefinedLattice('M', nat, [[x, y], [z, w]], [[x, z], [y, w]])\nchain_lat = PartiallyDefinedLattice('C', chain, [[x, y], [y, z]], [[x, y]])\nvee_lat = PartiallyDefinedLattice('V', vee, [[a, b]], [[a, c], [b, c]])\nanti_lat = PartiallyDefinedLattice('A', anti, [], [])\nnull_order = PartiallyDefinedLattice('N', None, [], [])\nnull_lists = PartiallyDefinedLattice('NL', nat, None, None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_field(null_lists, 'definedJoins', 'getDefinedJoins')",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "null joins list is stored as null",
+      "expected_exception": null,
+      "id": "joins_null_lists",
+      "kwargs": {},
+      "method": "PartiallyDefinedLattice.getDefinedJoins",
+      "notes": "",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.fplat import PartiallyDefinedLattice\nfrom org.uacalc.lat import Order\nfrom org.uacalc.terms import VariableImp\n\ndef _name(v):\n    if v is None:\n        return v.getName()\n    fn = getattr(v, 'getName', None) or getattr(v, 'get_name', None)\n    if callable(fn):\n        return str(fn())\n    return str(v)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for group in lst:\n        if group is None:\n            out.append(None)\n        else:\n            out.append([_name(v) for v in list(group)])\n    return out\n\ndef _field(obj, java_name, getter=None):\n    if getter:\n        fn = getattr(obj, getter, None)\n        if callable(fn):\n            return fn()\n    if hasattr(obj, java_name):\n        return getattr(obj, java_name)\n    try:\n        f = obj.getClass().getDeclaredField(java_name)\n        f.setAccessible(True)\n        return f.get(obj)\n    except Exception:\n        return None\n\ndef _in_groups(groups, names):\n    got = _names(groups)\n    if got is None:\n        return False\n    return list(names) in got\n\nclass NameOrder(Order):\n    def leq(self, a, b):\n        return _name(a) <= _name(b)\n\nclass AntiOrder(Order):\n    def leq(self, a, b):\n        return _name(a) == _name(b)\n\nclass ChainXYZ(Order):\n    _rank = {'x': 0, 'y': 1, 'z': 2}\n    def leq(self, a, b):\n        return self._rank[_name(a)] <= self._rank[_name(b)]\n\nclass VeeOrder(Order):\n    # a,b < c; a incomparable to b\n    def leq(self, a, b):\n        na, nb = _name(a), _name(b)\n        if na == nb:\n            return True\n        if nb == 'c' and na in ('a', 'b'):\n            return True\n        return False\n\nx = VariableImp('x')\ny = VariableImp('y')\nz = VariableImp('z')\na = VariableImp('a')\nb = VariableImp('b')\nc = VariableImp('c')\nw = VariableImp('w')\nnat = NameOrder()\nanti = AntiOrder()\nchain = ChainXYZ()\nvee = VeeOrder()\nempty_lat = PartiallyDefinedLattice('empty', nat, [], [])\nnamed = PartiallyDefinedLattice('T', nat, [[x, y]], [[y, z]])\nmulti = PartiallyDefinedLattice('M', nat, [[x, y], [z, w]], [[x, z], [y, w]])\nchain_lat = PartiallyDefinedLattice('C', chain, [[x, y], [y, z]], [[x, y]])\nvee_lat = PartiallyDefinedLattice('V', vee, [[a, b]], [[a, c], [b, c]])\nanti_lat = PartiallyDefinedLattice('A', anti, [], [])\nnull_order = PartiallyDefinedLattice('N', None, [], [])\nnull_lists = PartiallyDefinedLattice('NL', nat, None, None)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_field(null_lists, 'definedMeets', 'getDefinedMeets')",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "null meets list is stored as null",
+      "expected_exception": null,
+      "id": "meets_null_lists",
+      "kwargs": {},
+      "method": "PartiallyDefinedLattice.getDefinedMeets",
+      "notes": "",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.fplat import PartiallyDefinedLattice\nfrom org.uacalc.lat import Order\nfrom org.uacalc.terms import VariableImp\n\ndef _name(v):\n    if v is None:\n        return v.getName()\n    fn = getattr(v, 'getName', None) or getattr(v, 'get_name', None)\n    if callable(fn):\n        return str(fn())\n    return str(v)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for group in lst:\n        if group is None:\n            out.append(None)\n        else:\n            out.append([_name(v) for v in list(group)])\n    return out\n\ndef _field(obj, java_name, getter=None):\n    if getter:\n        fn = getattr(obj, getter, None)\n        if callable(fn):\n            return fn()\n    if hasattr(obj, java_name):\n        return getattr(obj, java_name)\n    try:\n        f = obj.getClass().getDeclaredField(java_name)\n        f.setAccessible(True)\n        return f.get(obj)\n    except Exception:\n        return None\n\ndef _in_groups(groups, names):\n    got = _names(groups)\n    if got is None:\n        return False\n    return list(names) in got\n\nclass NameOrder(Order):\n    def leq(self, a, b):\n        return _name(a) <= _name(b)\n\nclass AntiOrder(Order):\n    def leq(self, a, b):\n        return _name(a) == _name(b)\n\nclass ChainXYZ(Order):\n    _rank = {'x': 0, 'y': 1, 'z': 2}\n    def leq(self, a, b):\n        return self._rank[_name(a)] <= self._rank[_name(b)]\n\nclass VeeOrder(Order):\n    # a,b < c; a incomparable to b\n    def leq(self, a, b):\n        na, nb = _name(a), _name(b)\n        if na == nb:\n            return True\n        if nb == 'c' and na in ('a', 'b'):\n            return True\n        return False\n\nx = VariableImp('x')\ny = VariableImp('y')\nz = VariableImp('z')\na = VariableImp('a')\nb = VariableImp('b')\nc = VariableImp('c')\nw = VariableImp('w')\nnat = NameOrder()\nanti = AntiOrder()\nchain = ChainXYZ()\nvee = VeeOrder()\nempty_lat = PartiallyDefinedLattice('empty', nat, [], [])\nnamed = PartiallyDefinedLattice('T', nat, [[x, y]], [[y, z]])\nmulti = PartiallyDefinedLattice('M', nat, [[x, y], [z, w]], [[x, z], [y, w]])\nchain_lat = PartiallyDefinedLattice('C', chain, [[x, y], [y, z]], [[x, y]])\nvee_lat = PartiallyDefinedLattice('V', vee, [[a, b]], [[a, c], [b, c]])\nanti_lat = PartiallyDefinedLattice('A', anti, [], [])\nnull_order = PartiallyDefinedLattice('N', None, [], [])\nnull_lists = PartiallyDefinedLattice('NL', nat, None, None)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_names(_field(chain_lat, 'definedJoins', 'getDefinedJoins'))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "chain joins [x,y] and [y,z]",
+      "expected_exception": null,
+      "id": "joins_chain",
+      "kwargs": {},
+      "method": "PartiallyDefinedLattice.getDefinedJoins",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            "x",
+            "y"
+          ],
+          [
+            "y",
+            "z"
+          ]
+        ],
+        "string_repr": "[['x', 'y'], ['y', 'z']]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.fplat import PartiallyDefinedLattice\nfrom org.uacalc.lat import Order\nfrom org.uacalc.terms import VariableImp\n\ndef _name(v):\n    if v is None:\n        return v.getName()\n    fn = getattr(v, 'getName', None) or getattr(v, 'get_name', None)\n    if callable(fn):\n        return str(fn())\n    return str(v)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for group in lst:\n        if group is None:\n            out.append(None)\n        else:\n            out.append([_name(v) for v in list(group)])\n    return out\n\ndef _field(obj, java_name, getter=None):\n    if getter:\n        fn = getattr(obj, getter, None)\n        if callable(fn):\n            return fn()\n    if hasattr(obj, java_name):\n        return getattr(obj, java_name)\n    try:\n        f = obj.getClass().getDeclaredField(java_name)\n        f.setAccessible(True)\n        return f.get(obj)\n    except Exception:\n        return None\n\ndef _in_groups(groups, names):\n    got = _names(groups)\n    if got is None:\n        return False\n    return list(names) in got\n\nclass NameOrder(Order):\n    def leq(self, a, b):\n        return _name(a) <= _name(b)\n\nclass AntiOrder(Order):\n    def leq(self, a, b):\n        return _name(a) == _name(b)\n\nclass ChainXYZ(Order):\n    _rank = {'x': 0, 'y': 1, 'z': 2}\n    def leq(self, a, b):\n        return self._rank[_name(a)] <= self._rank[_name(b)]\n\nclass VeeOrder(Order):\n    # a,b < c; a incomparable to b\n    def leq(self, a, b):\n        na, nb = _name(a), _name(b)\n        if na == nb:\n            return True\n        if nb == 'c' and na in ('a', 'b'):\n            return True\n        return False\n\nx = VariableImp('x')\ny = VariableImp('y')\nz = VariableImp('z')\na = VariableImp('a')\nb = VariableImp('b')\nc = VariableImp('c')\nw = VariableImp('w')\nnat = NameOrder()\nanti = AntiOrder()\nchain = ChainXYZ()\nvee = VeeOrder()\nempty_lat = PartiallyDefinedLattice('empty', nat, [], [])\nnamed = PartiallyDefinedLattice('T', nat, [[x, y]], [[y, z]])\nmulti = PartiallyDefinedLattice('M', nat, [[x, y], [z, w]], [[x, z], [y, w]])\nchain_lat = PartiallyDefinedLattice('C', chain, [[x, y], [y, z]], [[x, y]])\nvee_lat = PartiallyDefinedLattice('V', vee, [[a, b]], [[a, c], [b, c]])\nanti_lat = PartiallyDefinedLattice('A', anti, [], [])\nnull_order = PartiallyDefinedLattice('N', None, [], [])\nnull_lists = PartiallyDefinedLattice('NL', nat, None, None)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_names(_field(vee_lat, 'definedMeets', 'getDefinedMeets'))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "vee meets [a,c] and [b,c]",
+      "expected_exception": null,
+      "id": "meets_vee",
+      "kwargs": {},
+      "method": "PartiallyDefinedLattice.getDefinedMeets",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            "a",
+            "c"
+          ],
+          [
+            "b",
+            "c"
+          ]
+        ],
+        "string_repr": "[['a', 'c'], ['b', 'c']]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.fplat import PartiallyDefinedLattice\nfrom org.uacalc.lat import Order\nfrom org.uacalc.terms import VariableImp\n\ndef _name(v):\n    if v is None:\n        return v.getName()\n    fn = getattr(v, 'getName', None) or getattr(v, 'get_name', None)\n    if callable(fn):\n        return str(fn())\n    return str(v)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for group in lst:\n        if group is None:\n            out.append(None)\n        else:\n            out.append([_name(v) for v in list(group)])\n    return out\n\ndef _field(obj, java_name, getter=None):\n    if getter:\n        fn = getattr(obj, getter, None)\n        if callable(fn):\n            return fn()\n    if hasattr(obj, java_name):\n        return getattr(obj, java_name)\n    try:\n        f = obj.getClass().getDeclaredField(java_name)\n        f.setAccessible(True)\n        return f.get(obj)\n    except Exception:\n        return None\n\ndef _in_groups(groups, names):\n    got = _names(groups)\n    if got is None:\n        return False\n    return list(names) in got\n\nclass NameOrder(Order):\n    def leq(self, a, b):\n        return _name(a) <= _name(b)\n\nclass AntiOrder(Order):\n    def leq(self, a, b):\n        return _name(a) == _name(b)\n\nclass ChainXYZ(Order):\n    _rank = {'x': 0, 'y': 1, 'z': 2}\n    def leq(self, a, b):\n        return self._rank[_name(a)] <= self._rank[_name(b)]\n\nclass VeeOrder(Order):\n    # a,b < c; a incomparable to b\n    def leq(self, a, b):\n        na, nb = _name(a), _name(b)\n        if na == nb:\n            return True\n        if nb == 'c' and na in ('a', 'b'):\n            return True\n        return False\n\nx = VariableImp('x')\ny = VariableImp('y')\nz = VariableImp('z')\na = VariableImp('a')\nb = VariableImp('b')\nc = VariableImp('c')\nw = VariableImp('w')\nnat = NameOrder()\nanti = AntiOrder()\nchain = ChainXYZ()\nvee = VeeOrder()\nempty_lat = PartiallyDefinedLattice('empty', nat, [], [])\nnamed = PartiallyDefinedLattice('T', nat, [[x, y]], [[y, z]])\nmulti = PartiallyDefinedLattice('M', nat, [[x, y], [z, w]], [[x, z], [y, w]])\nchain_lat = PartiallyDefinedLattice('C', chain, [[x, y], [y, z]], [[x, y]])\nvee_lat = PartiallyDefinedLattice('V', vee, [[a, b]], [[a, c], [b, c]])\nanti_lat = PartiallyDefinedLattice('A', anti, [], [])\nnull_order = PartiallyDefinedLattice('N', None, [], [])\nnull_lists = PartiallyDefinedLattice('NL', nat, None, None)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "len(named.toString()) > 0",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "toString is non-empty (Java Class@hex)",
+      "expected_exception": null,
+      "id": "toString_named",
+      "kwargs": {},
+      "method": "PartiallyDefinedLattice.toString",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.fplat import PartiallyDefinedLattice\nfrom org.uacalc.lat import Order\nfrom org.uacalc.terms import VariableImp\n\ndef _name(v):\n    if v is None:\n        return v.getName()\n    fn = getattr(v, 'getName', None) or getattr(v, 'get_name', None)\n    if callable(fn):\n        return str(fn())\n    return str(v)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for group in lst:\n        if group is None:\n            out.append(None)\n        else:\n            out.append([_name(v) for v in list(group)])\n    return out\n\ndef _field(obj, java_name, getter=None):\n    if getter:\n        fn = getattr(obj, getter, None)\n        if callable(fn):\n            return fn()\n    if hasattr(obj, java_name):\n        return getattr(obj, java_name)\n    try:\n        f = obj.getClass().getDeclaredField(java_name)\n        f.setAccessible(True)\n        return f.get(obj)\n    except Exception:\n        return None\n\ndef _in_groups(groups, names):\n    got = _names(groups)\n    if got is None:\n        return False\n    return list(names) in got\n\nclass NameOrder(Order):\n    def leq(self, a, b):\n        return _name(a) <= _name(b)\n\nclass AntiOrder(Order):\n    def leq(self, a, b):\n        return _name(a) == _name(b)\n\nclass ChainXYZ(Order):\n    _rank = {'x': 0, 'y': 1, 'z': 2}\n    def leq(self, a, b):\n        return self._rank[_name(a)] <= self._rank[_name(b)]\n\nclass VeeOrder(Order):\n    # a,b < c; a incomparable to b\n    def leq(self, a, b):\n        na, nb = _name(a), _name(b)\n        if na == nb:\n            return True\n        if nb == 'c' and na in ('a', 'b'):\n            return True\n        return False\n\nx = VariableImp('x')\ny = VariableImp('y')\nz = VariableImp('z')\na = VariableImp('a')\nb = VariableImp('b')\nc = VariableImp('c')\nw = VariableImp('w')\nnat = NameOrder()\nanti = AntiOrder()\nchain = ChainXYZ()\nvee = VeeOrder()\nempty_lat = PartiallyDefinedLattice('empty', nat, [], [])\nnamed = PartiallyDefinedLattice('T', nat, [[x, y]], [[y, z]])\nmulti = PartiallyDefinedLattice('M', nat, [[x, y], [z, w]], [[x, z], [y, w]])\nchain_lat = PartiallyDefinedLattice('C', chain, [[x, y], [y, z]], [[x, y]])\nvee_lat = PartiallyDefinedLattice('V', vee, [[a, b]], [[a, c], [b, c]])\nanti_lat = PartiallyDefinedLattice('A', anti, [], [])\nnull_order = PartiallyDefinedLattice('N', None, [], [])\nnull_lists = PartiallyDefinedLattice('NL', nat, None, None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "len(empty_lat.toString()) > 0",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "toString of empty lattice is non-empty",
+      "expected_exception": null,
+      "id": "toString_empty",
+      "kwargs": {},
+      "method": "PartiallyDefinedLattice.toString",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.fplat import PartiallyDefinedLattice\nfrom org.uacalc.lat import Order\nfrom org.uacalc.terms import VariableImp\n\ndef _name(v):\n    if v is None:\n        return v.getName()\n    fn = getattr(v, 'getName', None) or getattr(v, 'get_name', None)\n    if callable(fn):\n        return str(fn())\n    return str(v)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for group in lst:\n        if group is None:\n            out.append(None)\n        else:\n            out.append([_name(v) for v in list(group)])\n    return out\n\ndef _field(obj, java_name, getter=None):\n    if getter:\n        fn = getattr(obj, getter, None)\n        if callable(fn):\n            return fn()\n    if hasattr(obj, java_name):\n        return getattr(obj, java_name)\n    try:\n        f = obj.getClass().getDeclaredField(java_name)\n        f.setAccessible(True)\n        return f.get(obj)\n    except Exception:\n        return None\n\ndef _in_groups(groups, names):\n    got = _names(groups)\n    if got is None:\n        return False\n    return list(names) in got\n\nclass NameOrder(Order):\n    def leq(self, a, b):\n        return _name(a) <= _name(b)\n\nclass AntiOrder(Order):\n    def leq(self, a, b):\n        return _name(a) == _name(b)\n\nclass ChainXYZ(Order):\n    _rank = {'x': 0, 'y': 1, 'z': 2}\n    def leq(self, a, b):\n        return self._rank[_name(a)] <= self._rank[_name(b)]\n\nclass VeeOrder(Order):\n    # a,b < c; a incomparable to b\n    def leq(self, a, b):\n        na, nb = _name(a), _name(b)\n        if na == nb:\n            return True\n        if nb == 'c' and na in ('a', 'b'):\n            return True\n        return False\n\nx = VariableImp('x')\ny = VariableImp('y')\nz = VariableImp('z')\na = VariableImp('a')\nb = VariableImp('b')\nc = VariableImp('c')\nw = VariableImp('w')\nnat = NameOrder()\nanti = AntiOrder()\nchain = ChainXYZ()\nvee = VeeOrder()\nempty_lat = PartiallyDefinedLattice('empty', nat, [], [])\nnamed = PartiallyDefinedLattice('T', nat, [[x, y]], [[y, z]])\nmulti = PartiallyDefinedLattice('M', nat, [[x, y], [z, w]], [[x, z], [y, w]])\nchain_lat = PartiallyDefinedLattice('C', chain, [[x, y], [y, z]], [[x, y]])\nvee_lat = PartiallyDefinedLattice('V', vee, [[a, b]], [[a, c], [b, c]])\nanti_lat = PartiallyDefinedLattice('A', anti, [], [])\nnull_order = PartiallyDefinedLattice('N', None, [], [])\nnull_lists = PartiallyDefinedLattice('NL', nat, None, None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "null_order.leq(x, y)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "leq with null order NPEs",
+      "expected_exception": null,
+      "id": "leq_null_order",
+      "kwargs": {},
+      "method": "PartiallyDefinedLattice.leq",
+      "notes": "NPE message text differs; type matches.",
+      "result": {
+        "exception": {
+          "message": "java.lang.NullPointerException: Cannot invoke \"org.uacalc.lat.Order.leq(Object, Object)\" because \"this.order\" is null",
+          "type": "NullPointerException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.fplat import PartiallyDefinedLattice\nfrom org.uacalc.lat import Order\nfrom org.uacalc.terms import VariableImp\n\ndef _name(v):\n    if v is None:\n        return v.getName()\n    fn = getattr(v, 'getName', None) or getattr(v, 'get_name', None)\n    if callable(fn):\n        return str(fn())\n    return str(v)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for group in lst:\n        if group is None:\n            out.append(None)\n        else:\n            out.append([_name(v) for v in list(group)])\n    return out\n\ndef _field(obj, java_name, getter=None):\n    if getter:\n        fn = getattr(obj, getter, None)\n        if callable(fn):\n            return fn()\n    if hasattr(obj, java_name):\n        return getattr(obj, java_name)\n    try:\n        f = obj.getClass().getDeclaredField(java_name)\n        f.setAccessible(True)\n        return f.get(obj)\n    except Exception:\n        return None\n\ndef _in_groups(groups, names):\n    got = _names(groups)\n    if got is None:\n        return False\n    return list(names) in got\n\nclass NameOrder(Order):\n    def leq(self, a, b):\n        return _name(a) <= _name(b)\n\nclass AntiOrder(Order):\n    def leq(self, a, b):\n        return _name(a) == _name(b)\n\nclass ChainXYZ(Order):\n    _rank = {'x': 0, 'y': 1, 'z': 2}\n    def leq(self, a, b):\n        return self._rank[_name(a)] <= self._rank[_name(b)]\n\nclass VeeOrder(Order):\n    # a,b < c; a incomparable to b\n    def leq(self, a, b):\n        na, nb = _name(a), _name(b)\n        if na == nb:\n            return True\n        if nb == 'c' and na in ('a', 'b'):\n            return True\n        return False\n\nx = VariableImp('x')\ny = VariableImp('y')\nz = VariableImp('z')\na = VariableImp('a')\nb = VariableImp('b')\nc = VariableImp('c')\nw = VariableImp('w')\nnat = NameOrder()\nanti = AntiOrder()\nchain = ChainXYZ()\nvee = VeeOrder()\nempty_lat = PartiallyDefinedLattice('empty', nat, [], [])\nnamed = PartiallyDefinedLattice('T', nat, [[x, y]], [[y, z]])\nmulti = PartiallyDefinedLattice('M', nat, [[x, y], [z, w]], [[x, z], [y, w]])\nchain_lat = PartiallyDefinedLattice('C', chain, [[x, y], [y, z]], [[x, y]])\nvee_lat = PartiallyDefinedLattice('V', vee, [[a, b]], [[a, c], [b, c]])\nanti_lat = PartiallyDefinedLattice('A', anti, [], [])\nnull_order = PartiallyDefinedLattice('N', None, [], [])\nnull_lists = PartiallyDefinedLattice('NL', nat, None, None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "named.leq(None, y)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "leq null left: Order.getName on None",
+      "expected_exception": null,
+      "id": "leq_null_left",
+      "kwargs": {},
+      "method": "PartiallyDefinedLattice.leq",
+      "notes": "Jython Order subclass: None.getName is AttributeError.",
+      "result": {
+        "exception": {
+          "message": "'NoneType' object has no attribute 'getName'",
+          "type": "AttributeError"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.fplat import PartiallyDefinedLattice\nfrom org.uacalc.lat import Order\nfrom org.uacalc.terms import VariableImp\n\ndef _name(v):\n    if v is None:\n        return v.getName()\n    fn = getattr(v, 'getName', None) or getattr(v, 'get_name', None)\n    if callable(fn):\n        return str(fn())\n    return str(v)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for group in lst:\n        if group is None:\n            out.append(None)\n        else:\n            out.append([_name(v) for v in list(group)])\n    return out\n\ndef _field(obj, java_name, getter=None):\n    if getter:\n        fn = getattr(obj, getter, None)\n        if callable(fn):\n            return fn()\n    if hasattr(obj, java_name):\n        return getattr(obj, java_name)\n    try:\n        f = obj.getClass().getDeclaredField(java_name)\n        f.setAccessible(True)\n        return f.get(obj)\n    except Exception:\n        return None\n\ndef _in_groups(groups, names):\n    got = _names(groups)\n    if got is None:\n        return False\n    return list(names) in got\n\nclass NameOrder(Order):\n    def leq(self, a, b):\n        return _name(a) <= _name(b)\n\nclass AntiOrder(Order):\n    def leq(self, a, b):\n        return _name(a) == _name(b)\n\nclass ChainXYZ(Order):\n    _rank = {'x': 0, 'y': 1, 'z': 2}\n    def leq(self, a, b):\n        return self._rank[_name(a)] <= self._rank[_name(b)]\n\nclass VeeOrder(Order):\n    # a,b < c; a incomparable to b\n    def leq(self, a, b):\n        na, nb = _name(a), _name(b)\n        if na == nb:\n            return True\n        if nb == 'c' and na in ('a', 'b'):\n            return True\n        return False\n\nx = VariableImp('x')\ny = VariableImp('y')\nz = VariableImp('z')\na = VariableImp('a')\nb = VariableImp('b')\nc = VariableImp('c')\nw = VariableImp('w')\nnat = NameOrder()\nanti = AntiOrder()\nchain = ChainXYZ()\nvee = VeeOrder()\nempty_lat = PartiallyDefinedLattice('empty', nat, [], [])\nnamed = PartiallyDefinedLattice('T', nat, [[x, y]], [[y, z]])\nmulti = PartiallyDefinedLattice('M', nat, [[x, y], [z, w]], [[x, z], [y, w]])\nchain_lat = PartiallyDefinedLattice('C', chain, [[x, y], [y, z]], [[x, y]])\nvee_lat = PartiallyDefinedLattice('V', vee, [[a, b]], [[a, c], [b, c]])\nanti_lat = PartiallyDefinedLattice('A', anti, [], [])\nnull_order = PartiallyDefinedLattice('N', None, [], [])\nnull_lists = PartiallyDefinedLattice('NL', nat, None, None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "named.leq(x, None)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "leq null right: Order.getName on None",
+      "expected_exception": null,
+      "id": "leq_null_right",
+      "kwargs": {},
+      "method": "PartiallyDefinedLattice.leq",
+      "notes": "Jython Order subclass: None.getName is AttributeError.",
+      "result": {
+        "exception": {
+          "message": "'NoneType' object has no attribute 'getName'",
+          "type": "AttributeError"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.fplat import PartiallyDefinedLattice\nfrom org.uacalc.lat import Order\nfrom org.uacalc.terms import VariableImp\n\ndef _name(v):\n    if v is None:\n        return v.getName()\n    fn = getattr(v, 'getName', None) or getattr(v, 'get_name', None)\n    if callable(fn):\n        return str(fn())\n    return str(v)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for group in lst:\n        if group is None:\n            out.append(None)\n        else:\n            out.append([_name(v) for v in list(group)])\n    return out\n\ndef _field(obj, java_name, getter=None):\n    if getter:\n        fn = getattr(obj, getter, None)\n        if callable(fn):\n            return fn()\n    if hasattr(obj, java_name):\n        return getattr(obj, java_name)\n    try:\n        f = obj.getClass().getDeclaredField(java_name)\n        f.setAccessible(True)\n        return f.get(obj)\n    except Exception:\n        return None\n\ndef _in_groups(groups, names):\n    got = _names(groups)\n    if got is None:\n        return False\n    return list(names) in got\n\nclass NameOrder(Order):\n    def leq(self, a, b):\n        return _name(a) <= _name(b)\n\nclass AntiOrder(Order):\n    def leq(self, a, b):\n        return _name(a) == _name(b)\n\nclass ChainXYZ(Order):\n    _rank = {'x': 0, 'y': 1, 'z': 2}\n    def leq(self, a, b):\n        return self._rank[_name(a)] <= self._rank[_name(b)]\n\nclass VeeOrder(Order):\n    # a,b < c; a incomparable to b\n    def leq(self, a, b):\n        na, nb = _name(a), _name(b)\n        if na == nb:\n            return True\n        if nb == 'c' and na in ('a', 'b'):\n            return True\n        return False\n\nx = VariableImp('x')\ny = VariableImp('y')\nz = VariableImp('z')\na = VariableImp('a')\nb = VariableImp('b')\nc = VariableImp('c')\nw = VariableImp('w')\nnat = NameOrder()\nanti = AntiOrder()\nchain = ChainXYZ()\nvee = VeeOrder()\nempty_lat = PartiallyDefinedLattice('empty', nat, [], [])\nnamed = PartiallyDefinedLattice('T', nat, [[x, y]], [[y, z]])\nmulti = PartiallyDefinedLattice('M', nat, [[x, y], [z, w]], [[x, z], [y, w]])\nchain_lat = PartiallyDefinedLattice('C', chain, [[x, y], [y, z]], [[x, y]])\nvee_lat = PartiallyDefinedLattice('V', vee, [[a, b]], [[a, c], [b, c]])\nanti_lat = PartiallyDefinedLattice('A', anti, [], [])\nnull_order = PartiallyDefinedLattice('N', None, [], [])\nnull_lists = PartiallyDefinedLattice('NL', nat, None, None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "PartiallyDefinedLattice('', nat, [], []).leq(x, x)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "empty name still constructs",
+      "expected_exception": null,
+      "id": "ctor_empty_name",
+      "kwargs": {},
+      "method": "PartiallyDefinedLattice.leq",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.fplat import PartiallyDefinedLattice\nfrom org.uacalc.lat import Order\nfrom org.uacalc.terms import VariableImp\n\ndef _name(v):\n    if v is None:\n        return v.getName()\n    fn = getattr(v, 'getName', None) or getattr(v, 'get_name', None)\n    if callable(fn):\n        return str(fn())\n    return str(v)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for group in lst:\n        if group is None:\n            out.append(None)\n        else:\n            out.append([_name(v) for v in list(group)])\n    return out\n\ndef _field(obj, java_name, getter=None):\n    if getter:\n        fn = getattr(obj, getter, None)\n        if callable(fn):\n            return fn()\n    if hasattr(obj, java_name):\n        return getattr(obj, java_name)\n    try:\n        f = obj.getClass().getDeclaredField(java_name)\n        f.setAccessible(True)\n        return f.get(obj)\n    except Exception:\n        return None\n\ndef _in_groups(groups, names):\n    got = _names(groups)\n    if got is None:\n        return False\n    return list(names) in got\n\nclass NameOrder(Order):\n    def leq(self, a, b):\n        return _name(a) <= _name(b)\n\nclass AntiOrder(Order):\n    def leq(self, a, b):\n        return _name(a) == _name(b)\n\nclass ChainXYZ(Order):\n    _rank = {'x': 0, 'y': 1, 'z': 2}\n    def leq(self, a, b):\n        return self._rank[_name(a)] <= self._rank[_name(b)]\n\nclass VeeOrder(Order):\n    # a,b < c; a incomparable to b\n    def leq(self, a, b):\n        na, nb = _name(a), _name(b)\n        if na == nb:\n            return True\n        if nb == 'c' and na in ('a', 'b'):\n            return True\n        return False\n\nx = VariableImp('x')\ny = VariableImp('y')\nz = VariableImp('z')\na = VariableImp('a')\nb = VariableImp('b')\nc = VariableImp('c')\nw = VariableImp('w')\nnat = NameOrder()\nanti = AntiOrder()\nchain = ChainXYZ()\nvee = VeeOrder()\nempty_lat = PartiallyDefinedLattice('empty', nat, [], [])\nnamed = PartiallyDefinedLattice('T', nat, [[x, y]], [[y, z]])\nmulti = PartiallyDefinedLattice('M', nat, [[x, y], [z, w]], [[x, z], [y, w]])\nchain_lat = PartiallyDefinedLattice('C', chain, [[x, y], [y, z]], [[x, y]])\nvee_lat = PartiallyDefinedLattice('V', vee, [[a, b]], [[a, c], [b, c]])\nanti_lat = PartiallyDefinedLattice('A', anti, [], [])\nnull_order = PartiallyDefinedLattice('N', None, [], [])\nnull_lists = PartiallyDefinedLattice('NL', nat, None, None)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_names(_field(PartiallyDefinedLattice('S', nat, [[x]], [[y]]), 'definedJoins', 'getDefinedJoins'))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "single-variable join list",
+      "expected_exception": null,
+      "id": "ctor_single_var_join",
+      "kwargs": {},
+      "method": "PartiallyDefinedLattice.getDefinedJoins",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            "x"
+          ]
+        ],
+        "string_repr": "[['x']]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.fplat import PartiallyDefinedLattice\nfrom org.uacalc.lat import Order\nfrom org.uacalc.terms import VariableImp\n\ndef _name(v):\n    if v is None:\n        return v.getName()\n    fn = getattr(v, 'getName', None) or getattr(v, 'get_name', None)\n    if callable(fn):\n        return str(fn())\n    return str(v)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for group in lst:\n        if group is None:\n            out.append(None)\n        else:\n            out.append([_name(v) for v in list(group)])\n    return out\n\ndef _field(obj, java_name, getter=None):\n    if getter:\n        fn = getattr(obj, getter, None)\n        if callable(fn):\n            return fn()\n    if hasattr(obj, java_name):\n        return getattr(obj, java_name)\n    try:\n        f = obj.getClass().getDeclaredField(java_name)\n        f.setAccessible(True)\n        return f.get(obj)\n    except Exception:\n        return None\n\ndef _in_groups(groups, names):\n    got = _names(groups)\n    if got is None:\n        return False\n    return list(names) in got\n\nclass NameOrder(Order):\n    def leq(self, a, b):\n        return _name(a) <= _name(b)\n\nclass AntiOrder(Order):\n    def leq(self, a, b):\n        return _name(a) == _name(b)\n\nclass ChainXYZ(Order):\n    _rank = {'x': 0, 'y': 1, 'z': 2}\n    def leq(self, a, b):\n        return self._rank[_name(a)] <= self._rank[_name(b)]\n\nclass VeeOrder(Order):\n    # a,b < c; a incomparable to b\n    def leq(self, a, b):\n        na, nb = _name(a), _name(b)\n        if na == nb:\n            return True\n        if nb == 'c' and na in ('a', 'b'):\n            return True\n        return False\n\nx = VariableImp('x')\ny = VariableImp('y')\nz = VariableImp('z')\na = VariableImp('a')\nb = VariableImp('b')\nc = VariableImp('c')\nw = VariableImp('w')\nnat = NameOrder()\nanti = AntiOrder()\nchain = ChainXYZ()\nvee = VeeOrder()\nempty_lat = PartiallyDefinedLattice('empty', nat, [], [])\nnamed = PartiallyDefinedLattice('T', nat, [[x, y]], [[y, z]])\nmulti = PartiallyDefinedLattice('M', nat, [[x, y], [z, w]], [[x, z], [y, w]])\nchain_lat = PartiallyDefinedLattice('C', chain, [[x, y], [y, z]], [[x, y]])\nvee_lat = PartiallyDefinedLattice('V', vee, [[a, b]], [[a, c], [b, c]])\nanti_lat = PartiallyDefinedLattice('A', anti, [], [])\nnull_order = PartiallyDefinedLattice('N', None, [], [])\nnull_lists = PartiallyDefinedLattice('NL', nat, None, None)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_names(_field(PartiallyDefinedLattice('S3', nat, [[x, y, z]], []), 'definedJoins', 'getDefinedJoins'))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "three-variable join list",
+      "expected_exception": null,
+      "id": "ctor_three_var_join",
+      "kwargs": {},
+      "method": "PartiallyDefinedLattice.getDefinedJoins",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            "x",
+            "y",
+            "z"
+          ]
+        ],
+        "string_repr": "[['x', 'y', 'z']]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.fplat import PartiallyDefinedLattice\nfrom org.uacalc.lat import Order\nfrom org.uacalc.terms import VariableImp\n\ndef _name(v):\n    if v is None:\n        return v.getName()\n    fn = getattr(v, 'getName', None) or getattr(v, 'get_name', None)\n    if callable(fn):\n        return str(fn())\n    return str(v)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for group in lst:\n        if group is None:\n            out.append(None)\n        else:\n            out.append([_name(v) for v in list(group)])\n    return out\n\ndef _field(obj, java_name, getter=None):\n    if getter:\n        fn = getattr(obj, getter, None)\n        if callable(fn):\n            return fn()\n    if hasattr(obj, java_name):\n        return getattr(obj, java_name)\n    try:\n        f = obj.getClass().getDeclaredField(java_name)\n        f.setAccessible(True)\n        return f.get(obj)\n    except Exception:\n        return None\n\ndef _in_groups(groups, names):\n    got = _names(groups)\n    if got is None:\n        return False\n    return list(names) in got\n\nclass NameOrder(Order):\n    def leq(self, a, b):\n        return _name(a) <= _name(b)\n\nclass AntiOrder(Order):\n    def leq(self, a, b):\n        return _name(a) == _name(b)\n\nclass ChainXYZ(Order):\n    _rank = {'x': 0, 'y': 1, 'z': 2}\n    def leq(self, a, b):\n        return self._rank[_name(a)] <= self._rank[_name(b)]\n\nclass VeeOrder(Order):\n    # a,b < c; a incomparable to b\n    def leq(self, a, b):\n        na, nb = _name(a), _name(b)\n        if na == nb:\n            return True\n        if nb == 'c' and na in ('a', 'b'):\n            return True\n        return False\n\nx = VariableImp('x')\ny = VariableImp('y')\nz = VariableImp('z')\na = VariableImp('a')\nb = VariableImp('b')\nc = VariableImp('c')\nw = VariableImp('w')\nnat = NameOrder()\nanti = AntiOrder()\nchain = ChainXYZ()\nvee = VeeOrder()\nempty_lat = PartiallyDefinedLattice('empty', nat, [], [])\nnamed = PartiallyDefinedLattice('T', nat, [[x, y]], [[y, z]])\nmulti = PartiallyDefinedLattice('M', nat, [[x, y], [z, w]], [[x, z], [y, w]])\nchain_lat = PartiallyDefinedLattice('C', chain, [[x, y], [y, z]], [[x, y]])\nvee_lat = PartiallyDefinedLattice('V', vee, [[a, b]], [[a, c], [b, c]])\nanti_lat = PartiallyDefinedLattice('A', anti, [], [])\nnull_order = PartiallyDefinedLattice('N', None, [], [])\nnull_lists = PartiallyDefinedLattice('NL', nat, None, None)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    }
+  ]
+}

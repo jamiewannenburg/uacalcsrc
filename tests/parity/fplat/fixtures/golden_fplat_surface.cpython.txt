@@ -3,4 +3,5 @@ RUNTIME: cpython
 PUBLIC_COUNT: 1
 HAS_PARTIALLY_DEFINED_LATTICE: yes
 NAME: PartiallyDefinedLattice
-SMOKE_T_STR: PartiallyDefinedLattice(T)
+SMOKE_LEQ_XY: true
+SMOKE_LEQ_YX: false

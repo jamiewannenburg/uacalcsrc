@@ -1,0 +1,23 @@
+target: org.uacalc.alg.parallel
+level: package
+status: implemented
+java_source: null
+notes: |
+  Thin package index. Public classes are Pool and SingleClose.
+  SingleCloseSerial is package-private. Timing, thread counts, ForkJoinPool
+  internals, ProgressReport, CloserTiming, and the term map from a parallel
+  pass are deliberately not tested (non-deterministic / thread-internal).
+  main() stubs are not wrapped.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases: {}
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    Behavioral golden tests live in tests/parity/parallel. parallel_ops.py
+    covers Pool construction and deterministic SingleClose/Closer parallel
+    closures versus sequential sgClose on several algebras.
+  task_refs: []
+  scripts: []
