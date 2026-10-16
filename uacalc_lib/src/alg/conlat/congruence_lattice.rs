@@ -382,15 +382,11 @@ impl PyCongruenceLattice {
         self.inner.join_irreducibles_found()
     }
 
-    fn get_permutability_level_witnesses(&self) -> Option<Vec<PyPartition>> {
+    fn get_permutability_level_witnesses(&self) -> Option<Vec<Option<PyPartition>>> {
         self.inner.get_permutability_level_witnesses().map(|pair| {
             vec![
-                PyPartition {
-                    inner: pair[0].clone(),
-                },
-                PyPartition {
-                    inner: pair[1].clone(),
-                },
+                pair[0].as_ref().map(|p| PyPartition { inner: p.clone() }),
+                pair[1].as_ref().map(|p| PyPartition { inner: p.clone() }),
             ]
         })
     }

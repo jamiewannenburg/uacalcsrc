@@ -481,9 +481,10 @@ t = NonVariableTerm.makeConstantTerm(OperationSymbol("c", 0))
         call="int(x.interpretation(c2, _varlist(y), True).arity())",
         description="Java still builds a projection if the variable is omitted",
         xfail_reason=(
-            "Owner/library: Java VariableImp.interpretation with a varlist that "
-            "omits the variable still returns a projection (index -1; later AIOOBE "
-            "on eval). Python raises NullPointerException at construction."
+            "Known Java bug: VariableImp.interpretation with a varlist that "
+            "omits the variable still returns a projection (index -1; later "
+            "AIOOBE on eval). Python raises NullPointerException at construction. "
+            "Java golden values are left unchanged."
         ),
     ),
 ]
