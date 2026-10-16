@@ -1,0 +1,30 @@
+target: org.uacalc.alg.op.AbstractIntOperation
+level: file
+status: implemented
+java_source: org/uacalc/alg/op/AbstractIntOperation.java
+notes: |
+  Concrete AbstractOperation for Jython subclassing. Constructors
+  AbstractIntOperation(name, arity, algSize) and (symbol, algSize).
+  valueAt(List) is always UOE as in Java; intValueAt is UOE unless a
+  subclass implements it. main is not wrapped.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    intValueAt: int_value_at
+    valueAt: value_at
+    getSetSize: get_set_size
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    Goldens cover both constructors, UOE on valueAt/intValueAt, getSetSize,
+    and a subclass that implements intValueAt.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/op_leftovers.py
+      covers:
+        - intValueAt
+        - valueAt
+        - getSetSize
+      ignore_lines: []

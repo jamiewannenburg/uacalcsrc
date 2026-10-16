@@ -39,6 +39,46 @@ _CLASS_ALIASES = {
     "AbstractOperation": {
         "intValueAt": "int_value_at",
     },
+    "AbstractIntOperation": {
+        "intValueAt": "int_value_at",
+        "valueAt": "value_at",
+        "getSetSize": "get_set_size",
+    },
+    "TermOperation": {
+        "getTerm": "get_term",
+        "getOrderedVariables": "get_ordered_variables",
+    },
+    "TermOperationImp": {
+        "getTerm": "get_term",
+        "getOrderedVariables": "get_ordered_variables",
+        "intValueAt": "int_value_at",
+        "valueAt": "valueAt",
+        "getTable": "getTable",
+        "makeTable": "makeTable",
+        "toString": "toString",
+    },
+    "ParameterizedOperation": {
+        "makeOp": "makeOp",
+        "subParmValues": "subParmValues",
+    },
+    "OperationWithDefaultValue": {
+        "getSetSize": "get_set_size",
+        "intValueAt": "intValueAt",
+        "valueAt": "valueAt",
+        "getDefaultValue": "getDefaultValue",
+        "setDefaultValue": "setDefaultValue",
+        "isIdempotentSet": "isIdempotentSet",
+        "setIdempotent": "setIdempotent",
+        "makeIdempotent": "makeIdempotent",
+        "isDiagonal": "isDiagonal",
+        "updateRandomValueTable": "updateRandomValueTable",
+        "getRandomValueTable": "getRandomValueTable",
+        "isTotal": "isTotal",
+        "makeTable": "makeTable",
+        "getTable": "getTable",
+        "getTotalTable": "getTotalTable",
+        "makeOrdinaryOperation": "makeOrdinaryOperation",
+    },
     "SimilarityType": {
         "getOperationSymbols": "get_operation_symbols",
         "getSortedOperationSymbols": "get_sorted_operation_symbols",
@@ -73,17 +113,33 @@ def _load_cp() -> None:
         if hasattr(_alg, name):
             globals()[name] = getattr(_alg, name)
 
+    if "TermOperationImp" not in globals() or globals().get("TermOperationImp") is None:
+        try:
+            import uacalc_lib as _uacalc_lib
+
+            _toi = getattr(getattr(_uacalc_lib, "terms", None), "TermOperationImp", None)
+            if _toi is not None:
+                globals()["TermOperationImp"] = _toi
+        except Exception:
+            pass
+
     from org.uacalc.alg.op._jython_compat import _install as _install_jython_compat
 
     _install_jython_compat(globals())
 
     # Keep org.uacalc.alg facades in sync with this package.
-    if "Operations" in globals():
-        setattr(_alg, "Operations", globals()["Operations"])
-    if "SimilarityType" in globals():
-        setattr(_alg, "SimilarityType", globals()["SimilarityType"])
-    if "Operation" in globals():
-        setattr(_alg, "Operation", globals()["Operation"])
+    for _sync in (
+        "Operations",
+        "SimilarityType",
+        "Operation",
+        "AbstractIntOperation",
+        "TermOperation",
+        "TermOperationImp",
+        "ParameterizedOperation",
+        "OperationWithDefaultValue",
+    ):
+        if _sync in globals():
+            setattr(_alg, _sync, globals()[_sync])
 
 
 if __import__("sys").platform.startswith("java"):

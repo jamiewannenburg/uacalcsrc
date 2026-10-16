@@ -1,0 +1,42 @@
+target: org.uacalc.alg.conlat.BasicBinaryRelation
+level: file
+status: implemented
+java_source: org/uacalc/alg/conlat/BasicBinaryRelation.java
+notes: |
+  Constructors BasicBinaryRelation(n) and (collection, n), plus add / compose
+  / identity / isReflexive / isSymmetric / getPairs / compareTo. toString
+  matches Java TreeSet of IntArray. main is not wrapped. Rust extras
+  (universal/empty/clear/remove/isTransitive) are not on the Java class.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    universeSize: universe_size
+    isRelated: is_related
+    getPairs: get_pairs
+    compose: compose
+    compareTo: compareTo
+    isReflexive: is_reflexive
+    isSymmetric: is_symmetric
+    toString: toString
+  static_methods:
+    - identity
+  str_parity: true
+testing:
+  notes: |
+    Goldens cover constructors, add/compose/identity, reflexivity/symmetry,
+    compareTo, and toString on several small universes.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/conlat_leftovers.py
+      covers:
+        - universeSize
+        - isRelated
+        - getPairs
+        - compose
+        - compareTo
+        - isReflexive
+        - isSymmetric
+        - toString
+        - identity
+      ignore_lines: []

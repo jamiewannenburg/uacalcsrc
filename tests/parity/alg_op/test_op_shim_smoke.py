@@ -60,6 +60,8 @@ def test_op_shim_public_names_match_uacalc_lib():
         "Operations",
         "ParameterizedOperation",
         "SimilarityType",
+        "TermOperation",
+        "TermOperationImp",
     )
     for name in expected:
         if not hasattr(alg, name):

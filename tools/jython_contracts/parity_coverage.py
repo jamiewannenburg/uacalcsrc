@@ -166,6 +166,31 @@ PENDING_BINDINGS = {
             "CongruenceLattice type theory / commutator SubProduct overloads",
             "typeSet/type/subtrace/matrices/commutator-with-report stay on uacalc_lib stubs",
         ),
+        (
+            "TypeFinder.nextPairForSubtrace",
+            "mutates caller HashSet/List of IntArray; not bound in PyO3 "
+            "(strict xfail tf_next_pair_unbound)",
+        ),
+        (
+            "TypeFinder.main / Polymorphisms.main / BasicBinaryRelation.main / "
+            "CentralityData.main",
+            "Java development helpers",
+        ),
+    ],
+    "alg_op": [
+        (
+            "Operations.makeOperationFromScript (Groovy)",
+            "Groovy scripting is not wrapped",
+        ),
+        (
+            "OperationWithDefaultValue defaultValue==-2 random tables",
+            "Java uses UI RandomGenerator; Python uses random "
+            "(strict xfail ow_random_xfail)",
+        ),
+        (
+            "AbstractIntOperation.main / OperationWithDefaultValue.main",
+            "Java development helpers",
+        ),
     ],
 }
 

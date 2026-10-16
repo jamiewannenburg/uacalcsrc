@@ -969,13 +969,653 @@ def _install(conlat_globals: dict) -> None:
                 raise TypeError("CongruenceLattice is not bound")
             return list(_LibCongruenceLattice.minimal_elements(list(pars)))
 
-    _LibBBR = conlat_globals.get("BasicBinaryRelation")
-    if _LibBBR is not None:
+    def _as_int_array(obj: Any) -> Any:
+        if obj is None:
+            _raise_npe()
+        from org.uacalc.util import IntArray
+
+        if isinstance(obj, IntArray):
+            return obj
+        tname = type(obj).__name__
+        if tname in ("PyIntArray", "IntArray"):
+            return obj
         try:
-            if not hasattr(_LibBBR, "getPairs") and hasattr(_LibBBR, "get_pairs"):
-                _LibBBR.getPairs = _LibBBR.get_pairs
+            return IntArray([int(x) for x in list(obj)])
+        except TypeError:
+            return obj
+
+    def _int_row(row: Any) -> list:
+        if row is None:
+            _raise_npe()
+        for attr in ("getArray", "get_array", "toArray", "to_array"):
+            fn = getattr(row, attr, None)
+            if callable(fn):
+                try:
+                    return [int(x) for x in fn()]
+                except TypeError:
+                    continue
+        getter = getattr(row, "get", None)
+        if callable(getter):
+            try:
+                n = int(row.universeSize()) if hasattr(row, "universeSize") else None
+            except Exception:
+                n = None
+            if n is None:
+                length = getattr(row, "length", None)
+                n = int(length() if callable(length) else length) if length is not None else None
+            if n is not None:
+                return [int(getter(i)) for i in range(n)]
+            try:
+                return [int(getter(0)), int(getter(1))]
+            except Exception:
+                pass
+        try:
+            return [int(x) for x in list(row)]
+        except TypeError as exc:
+            raise TypeError(str(exc)) from exc
+
+    def _pair_ij(pair: Any) -> tuple:
+        seq = _int_row(pair)
+        return int(seq[0]), int(seq[1])
+
+    def _is_partition(obj: Any) -> bool:
+        if obj is None:
+            return False
+        return any(
+            hasattr(obj, name)
+            for name in ("joinBlocks", "join_blocks", "numberOfBlocks", "number_of_blocks")
+        )
+
+    def _is_subtrace(obj: Any) -> bool:
+        if obj is None:
+            return False
+        return any(
+            hasattr(obj, name) for name in ("hasInvolution", "has_involution", "setType", "set_type")
+        )
+
+    def _pairs_to_intarrays(pairs: Any) -> list:
+        from org.uacalc.util import IntArray
+
+        out = []
+        for p in list(pairs or []):
+            if isinstance(p, IntArray) or type(p).__name__ in ("PyIntArray", "IntArray"):
+                out.append(p)
+            else:
+                out.append(IntArray([int(x) for x in list(p)]))
+        return out
+
+    def _bbr_to_string(pairs: Any) -> str:
+        items = _pairs_to_intarrays(pairs)
+        return "[" + ", ".join(str(p) for p in items) + "]"
+
+    # --- BasicBinaryRelation ---
+    _LibBBR = conlat_globals.get("BasicBinaryRelation")
+    _BBR_STATE: dict = {}
+
+    def _patch_bbr() -> None:
+        if _LibBBR is None:
+            return
+
+        _orig_add = getattr(_LibBBR, "add", None)
+        _orig_compose = getattr(_LibBBR, "compose", None)
+        _orig_get_pairs = getattr(_LibBBR, "get_pairs", None) or getattr(_LibBBR, "getPairs", None)
+        _orig_is_related = getattr(_LibBBR, "is_related", None)
+        _orig_universe_size = getattr(_LibBBR, "universe_size", None)
+        _orig_is_reflexive = getattr(_LibBBR, "is_reflexive", None)
+        _orig_is_symmetric = getattr(_LibBBR, "is_symmetric", None)
+        _orig_identity = getattr(_LibBBR, "identity", None)
+
+        def getPairs(self: Any) -> list:
+            return _pairs_to_intarrays(_orig_get_pairs(self) if callable(_orig_get_pairs) else [])
+
+        def universeSize(self: Any) -> int:
+            return int(_orig_universe_size(self) if callable(_orig_universe_size) else self.universe_size())
+
+        def isRelated(self: Any, i: Any, j: Any) -> bool:
+            if i is None or j is None:
+                _raise_npe()
+            if callable(_orig_is_related):
+                return bool(_orig_is_related(self, int(i), int(j)))
+            return bool(self.is_related(int(i), int(j)))
+
+        def add(self: Any, i: Any, j: Any) -> None:
+            if i is None or j is None:
+                _raise_npe()
+            _lib_call(_orig_add, self, int(i), int(j))
+
+        def compose(self: Any, beta: Any) -> Any:
+            if beta is None:
+                _raise_npe()
+            return _lib_call(_orig_compose, self, beta)
+
+        def compareTo(self: Any, other: Any) -> int:
+            if other is None:
+                _raise_npe()
+            getter = getattr(other, "getPairs", None) or getattr(other, "get_pairs", None)
+            other_pairs = list(getter()) if callable(getter) else list(other)
+            return len(getPairs(self)) - len(other_pairs)
+
+        def isReflexive(self: Any) -> bool:
+            return bool(_orig_is_reflexive(self) if callable(_orig_is_reflexive) else self.is_reflexive())
+
+        def isSymmetric(self: Any) -> bool:
+            return bool(_orig_is_symmetric(self) if callable(_orig_is_symmetric) else self.is_symmetric())
+
+        def iterator(self: Any) -> Any:
+            return iter(getPairs(self))
+
+        def toString(self: Any) -> str:
+            return _bbr_to_string(getPairs(self))
+
+        def equals(self: Any, other: Any) -> bool:
+            return self == other
+
+        _BBR_PATCHES = {
+            "getPairs": getPairs,
+            "universeSize": universeSize,
+            "isRelated": isRelated,
+            "add": add,
+            "compose": compose,
+            "compareTo": compareTo,
+            "isReflexive": isReflexive,
+            "isSymmetric": isSymmetric,
+            "iterator": iterator,
+            "toString": toString,
+            "equals": equals,
+        }
+        for camel, impl in _BBR_PATCHES.items():
+            try:
+                setattr(_LibBBR, camel, impl)
+            except (TypeError, AttributeError):
+                pass
+        try:
+            _LibBBR.__str__ = toString
+            _LibBBR.__iter__ = iterator
         except (TypeError, AttributeError):
             pass
+
+        if callable(_orig_identity):
+            try:
+                _LibBBR.identity = staticmethod(_orig_identity)
+            except (TypeError, AttributeError):
+                pass
+
+    _patch_bbr()
+
+    class _BBRMeta(type):
+        def __instancecheck__(cls, instance: Any) -> bool:
+            if instance is None:
+                return False
+            if type(instance) is cls:
+                return True
+            return isinstance(instance, _LibBBR) if _LibBBR else False
+
+    class _BRMeta(type):
+        def __instancecheck__(cls, instance: Any) -> bool:
+            if instance is None:
+                return False
+            if type(instance) is cls:
+                return True
+            if _LibBBR is not None and isinstance(instance, _LibBBR):
+                return True
+            if _LibPartition is not None and isinstance(instance, _LibPartition):
+                return True
+            return False
+
+    class BinaryRelation(object, metaclass=_BRMeta):
+        """Java ``org.uacalc.alg.conlat.BinaryRelation`` surface."""
+
+        def universeSize(self):
+            raise NotImplementedError
+
+        def isRelated(self, i, j):
+            raise NotImplementedError
+
+        def getPairs(self):
+            raise NotImplementedError
+
+        def compose(self, beta):
+            raise NotImplementedError
+
+    class BasicBinaryRelation(object, metaclass=_BBRMeta):
+        """Java ``BasicBinaryRelation`` constructors and static identity."""
+
+        def __new__(cls, univ_or_coll: Any = _MISSING, univSize: Any = _MISSING):
+            if _LibBBR is None:
+                raise TypeError("BasicBinaryRelation is not bound")
+            if univ_or_coll is _MISSING and univSize is _MISSING:
+                raise TypeError("BasicBinaryRelation() missing argument")
+            if univSize is _MISSING:
+                if univ_or_coll is None:
+                    _raise_npe()
+                return _lib_call(_LibBBR, int(univ_or_coll))
+            if univSize is None:
+                _raise_npe()
+            obj = _lib_call(_LibBBR, int(univSize))
+            if univ_or_coll is None:
+                _raise_npe()
+            for pair in list(univ_or_coll):
+                i, j = _pair_ij(pair)
+                obj.add(i, j)
+            return obj
+
+        @staticmethod
+        def identity(size):
+            if size is None:
+                _raise_npe()
+            if _LibBBR is None:
+                raise TypeError("BasicBinaryRelation is not bound")
+            return _lib_call(_LibBBR.identity, int(size))
+
+        def universeSize(self):
+            raise NotImplementedError
+
+        def isRelated(self, i, j):
+            raise NotImplementedError
+
+        def getPairs(self):
+            raise NotImplementedError
+
+        def compose(self, beta):
+            raise NotImplementedError
+
+        def add(self, i, j):
+            raise NotImplementedError
+
+        def compareTo(self, other):
+            raise NotImplementedError
+
+        def isReflexive(self):
+            raise NotImplementedError
+
+        def isSymmetric(self):
+            raise NotImplementedError
+
+        def iterator(self):
+            raise NotImplementedError
+
+        def toString(self):
+            raise NotImplementedError
+
+    # --- Subtrace ---
+    _LibSubtrace = conlat_globals.get("Subtrace")
+
+    def _patch_subtrace() -> None:
+        if _LibSubtrace is None:
+            return
+        _orig_has_inv = getattr(_LibSubtrace, "has_involution", None)
+        _orig_get_su = getattr(_LibSubtrace, "get_subtrace_universe", None)
+        _orig_set_su = getattr(_LibSubtrace, "set_subtrace_universe", None)
+        _orig_get_mu = getattr(_LibSubtrace, "get_matrix_universe", None)
+        _orig_set_mu = getattr(_LibSubtrace, "set_matrix_universe", None)
+        _orig_set_type = getattr(_LibSubtrace, "set_type", None)
+        _orig_brief = getattr(_LibSubtrace, "to_string_brief", None)
+
+        def hasInvolution(self: Any) -> bool:
+            return bool(_orig_has_inv(self) if callable(_orig_has_inv) else self.has_involution())
+
+        def getSubtraceUniverse(self: Any) -> Any:
+            univ = _orig_get_su(self) if callable(_orig_get_su) else None
+            if univ is None:
+                return None
+            return _pairs_to_intarrays(univ)
+
+        def setSubtraceUniverse(self: Any, univ: Any) -> None:
+            if univ is None:
+                _lib_call(_orig_set_su, self, [])
+                return
+            rows = [_int_row(row) for row in list(univ)]
+            _lib_call(_orig_set_su, self, rows)
+
+        def getMatrixUniverse(self: Any) -> Any:
+            univ = _orig_get_mu(self) if callable(_orig_get_mu) else None
+            if univ is None:
+                return None
+            return _pairs_to_intarrays(univ)
+
+        def setMatrixUniverse(self: Any, univ: Any) -> None:
+            if univ is None:
+                _lib_call(_orig_set_mu, self, [])
+                return
+            rows = [_int_row(row) for row in list(univ)]
+            _lib_call(_orig_set_mu, self, rows)
+
+        def setType(self: Any, t: Any) -> None:
+            _orig_set_type(self, int(t))
+
+        def toString(self: Any, brief: Any = None) -> str:
+            if brief is None:
+                return str(self)
+            if callable(_orig_brief):
+                return str(_orig_brief(self, bool(brief)))
+            if brief:
+                return "[{0}, {1}]".format(self.first(), self.second())
+            return str(self)
+
+        _ST_PATCHES = {
+            "hasInvolution": hasInvolution,
+            "getSubtraceUniverse": getSubtraceUniverse,
+            "setSubtraceUniverse": setSubtraceUniverse,
+            "getMatrixUniverse": getMatrixUniverse,
+            "setMatrixUniverse": setMatrixUniverse,
+            "setType": setType,
+            "toString": toString,
+        }
+        for camel, impl in _ST_PATCHES.items():
+            try:
+                setattr(_LibSubtrace, camel, impl)
+            except (TypeError, AttributeError):
+                pass
+
+    _patch_subtrace()
+
+    class _SubtraceMeta(type):
+        def __instancecheck__(cls, instance: Any) -> bool:
+            if instance is None:
+                return False
+            if type(instance) is cls:
+                return True
+            return isinstance(instance, _LibSubtrace) if _LibSubtrace else False
+
+    class Subtrace(object, metaclass=_SubtraceMeta):
+        def __new__(cls, a: Any, b: Any, inv: Any, type_value: Any = _MISSING):
+            if _LibSubtrace is None:
+                raise TypeError("Subtrace is not bound")
+            if a is None or b is None:
+                _raise_npe()
+            if type_value is _MISSING:
+                return _LibSubtrace(int(a), int(b), bool(inv))
+            return _LibSubtrace.new_with_type(int(a), int(b), bool(inv), int(type_value))
+
+        def first(self):
+            raise NotImplementedError
+
+        def second(self):
+            raise NotImplementedError
+
+        def type(self):
+            raise NotImplementedError
+
+        def hasInvolution(self):
+            raise NotImplementedError
+
+        def getSubtraceUniverse(self):
+            raise NotImplementedError
+
+        def setSubtraceUniverse(self, univ):
+            raise NotImplementedError
+
+        def getMatrixUniverse(self):
+            raise NotImplementedError
+
+        def setMatrixUniverse(self, univ):
+            raise NotImplementedError
+
+        def setType(self, t):
+            raise NotImplementedError
+
+        def toString(self, brief=None):
+            raise NotImplementedError
+
+    # --- Polymorphisms ---
+    _LibPoly = conlat_globals.get("Polymorphisms")
+
+    class _PolyMeta(type):
+        def __instancecheck__(cls, instance: Any) -> bool:
+            if instance is None:
+                return False
+            if type(instance) is cls:
+                return True
+            return isinstance(instance, _LibPoly) if _LibPoly else False
+
+    class Polymorphisms(object, metaclass=_PolyMeta):
+        def __new__(cls, arity: Any, pars: Any, idempotent: Any, fixedValues: Any = None):
+            if _LibPoly is None:
+                raise TypeError("Polymorphisms is not bound")
+            if pars is None:
+                _raise_npe()
+            items = list(pars)
+            if not items:
+                raise IndexOutOfBoundsException("Index: 0, Size: 0")
+            fv = None if fixedValues is None else [int(x) for x in list(fixedValues)]
+            return _lib_call(_LibPoly, int(arity), items, bool(idempotent), fv)
+
+        def make_graph(self):
+            raise NotImplementedError
+
+    def _patch_poly() -> None:
+        if _LibPoly is None:
+            return
+
+        def make_graph(self: Any) -> None:
+            _lib_call(self.make_graph)
+
+        try:
+            _LibPoly.make_graph = make_graph
+        except (TypeError, AttributeError):
+            pass
+
+    _patch_poly()
+
+    # --- CentralityData ---
+    _LibCD = conlat_globals.get("CentralityData")
+    _CD_FAIL: dict = {}
+
+    def _cd_fail(self: Any) -> dict:
+        slot = _CD_FAIL.get(id(self))
+        if slot is None or slot[0] is not self:
+            slot = (self, {})
+            _CD_FAIL[id(self)] = slot
+        return slot[1]
+
+    def _patch_cd() -> None:
+        if _LibCD is None:
+            return
+        _orig_left = getattr(_LibCD, "left", None)
+        _orig_right = getattr(_LibCD, "right", None)
+        _orig_delta = getattr(_LibCD, "delta", None)
+        _orig_compare = getattr(_LibCD, "compare_to", None)
+
+        def getLeft(self: Any) -> Any:
+            return _orig_left(self) if callable(_orig_left) else self.left()
+
+        def getRight(self: Any) -> Any:
+            return _orig_right(self) if callable(_orig_right) else self.right()
+
+        def getDelta(self: Any) -> Any:
+            return _orig_delta(self) if callable(_orig_delta) else self.delta()
+
+        def compareTo(self: Any, other: Any) -> int:
+            if other is None:
+                _raise_npe()
+            if callable(_orig_compare):
+                return int(_orig_compare(self, other))
+            return int(getDelta(self).compareTo(other.getDelta()))
+
+        def setCentralityFailure(self: Any, failure: Any) -> None:
+            _cd_fail(self)["centrality"] = failure
+
+        def getCentralityFailure(self: Any) -> Any:
+            return _cd_fail(self).get("centrality")
+
+        def setWeakCentralityFailure(self: Any, failure: Any) -> None:
+            _cd_fail(self)["weak"] = failure
+
+        def getWeakCentralityFailure(self: Any) -> Any:
+            return _cd_fail(self).get("weak")
+
+        def setStrongRectangularityFailure(self: Any, failure: Any) -> None:
+            _cd_fail(self)["strong"] = failure
+
+        def getStrongRectangularityFailure(self: Any) -> Any:
+            return _cd_fail(self).get("strong")
+
+        def toString(self: Any) -> str:
+            left = getLeft(self)
+            right = getRight(self)
+            delta = getDelta(self)
+            left_fn = getattr(left, "toString", None)
+            right_fn = getattr(right, "toString", None)
+            left_s = str(left_fn()) if callable(left_fn) else str(left)
+            right_s = str(right_fn()) if callable(right_fn) else str(right)
+
+            def _java_null(obj: Any) -> str:
+                return "null" if obj is None else str(obj)
+
+            return (
+                "left: {0}, right: {1}, delta: {2}, centralityFailure: {3}, "
+                "weakCentralityFailure: {4}, strongRectangularityFailure: {5}"
+            ).format(
+                left_s,
+                right_s,
+                delta,
+                _java_null(getCentralityFailure(self)),
+                _java_null(getWeakCentralityFailure(self)),
+                _java_null(getStrongRectangularityFailure(self)),
+            )
+
+        _CD_PATCHES = {
+            "getLeft": getLeft,
+            "getRight": getRight,
+            "getDelta": getDelta,
+            "compareTo": compareTo,
+            "setCentralityFailure": setCentralityFailure,
+            "getCentralityFailure": getCentralityFailure,
+            "setWeakCentralityFailure": setWeakCentralityFailure,
+            "getWeakCentralityFailure": getWeakCentralityFailure,
+            "setStrongRectangularityFailure": setStrongRectangularityFailure,
+            "getStrongRectangularityFailure": getStrongRectangularityFailure,
+            "toString": toString,
+        }
+        for camel, impl in _CD_PATCHES.items():
+            try:
+                setattr(_LibCD, camel, impl)
+            except (TypeError, AttributeError):
+                pass
+        try:
+            _LibCD.__str__ = toString
+        except (TypeError, AttributeError):
+            pass
+
+    _patch_cd()
+
+    class _CDMeta(type):
+        def __instancecheck__(cls, instance: Any) -> bool:
+            if instance is None:
+                return False
+            if type(instance) is cls:
+                return True
+            return isinstance(instance, _LibCD) if _LibCD else False
+
+    class CentralityData(object, metaclass=_CDMeta):
+        def __new__(cls, left: Any, right: Any, delta: Any):
+            if _LibCD is None:
+                raise TypeError("CentralityData is not bound")
+            if left is None or right is None or delta is None:
+                _raise_npe()
+            return _lib_call(_LibCD, left, right, delta)
+
+        def compareTo(self, other):
+            raise NotImplementedError
+
+        def getLeft(self):
+            raise NotImplementedError
+
+        def getRight(self):
+            raise NotImplementedError
+
+        def getDelta(self):
+            raise NotImplementedError
+
+        def setCentralityFailure(self, failure):
+            raise NotImplementedError
+
+        def getCentralityFailure(self):
+            raise NotImplementedError
+
+        def setWeakCentralityFailure(self, failure):
+            raise NotImplementedError
+
+        def getWeakCentralityFailure(self):
+            raise NotImplementedError
+
+        def setStrongRectangularityFailure(self, failure):
+            raise NotImplementedError
+
+        def getStrongRectangularityFailure(self):
+            raise NotImplementedError
+
+        def toString(self):
+            raise NotImplementedError
+
+    # --- TypeFinder ---
+    _LibTF = conlat_globals.get("TypeFinder")
+
+    def _tf_alg(alg: Any) -> Any:
+        if alg is None:
+            _raise_npe(
+                'Cannot invoke "org.uacalc.alg.SmallAlgebra.cardinality()" because "alg" is null'
+            )
+        inner = getattr(alg, "_inner", alg)
+        conv = getattr(inner, "to_basic_algebra", None) or getattr(alg, "to_basic_algebra", None)
+        tname = type(inner).__name__
+        if tname not in ("PyBasicAlgebra", "BasicAlgebra") and callable(conv):
+            return conv()
+        return inner
+
+    class TypeFinder(object):
+        printSubtrace = False
+
+        def __init__(self, alg: Any, alpha: Any = _MISSING) -> None:
+            if _LibTF is None:
+                raise TypeError("TypeFinder is not bound")
+            self._inner = _lib_call(_LibTF, _tf_alg(alg))
+            if alpha is not _MISSING and alpha is not None:
+                _lib_call(self._inner.init_with_alpha, alpha)
+
+        def init(self, alpha: Any = None) -> None:
+            if alpha is None:
+                _lib_call(self._inner.init)
+            else:
+                _lib_call(self._inner.init_with_alpha, alpha)
+
+        def findTypeSet(self) -> Any:
+            return _lib_call(self._inner.find_type_set)
+
+        def isSubtrace(self, ia: Any, beta: Any) -> bool:
+            if ia is None or beta is None:
+                _raise_npe()
+            return bool(_lib_call(self._inner.is_subtrace, _as_int_array(ia), beta))
+
+        def findSubtrace(self, first: Any, second: Any = _MISSING) -> Any:
+            if first is None:
+                _raise_npe()
+            if second is not _MISSING:
+                if second is None:
+                    _raise_npe()
+                return _lib_call(self._inner.find_subtrace_with_alpha, first, second)
+            if _is_partition(first):
+                return _lib_call(self._inner.find_subtrace, first)
+            return _lib_call(self._inner.find_subtrace_from_pair, _as_int_array(first))
+
+        def findType(self, first: Any, second: Any = _MISSING) -> int:
+            if first is None:
+                _raise_npe()
+            if second is not _MISSING:
+                if second is None:
+                    _raise_npe()
+                return int(_lib_call(self._inner.find_type_with_alpha, first, second))
+            if _is_subtrace(first):
+                return int(_lib_call(self._inner.find_type_from_subtrace, first))
+            return int(_lib_call(self._inner.find_type, first))
+
+        def nextPairForSubtrace(self, pair, univHS, unorderedUnivHS, univ):
+            raise NotImplementedError(
+                "nextPairForSubtrace is not bound; it mutates caller HashSet/List of IntArray"
+            )
+
+        def algSize(self) -> int:
+            return int(self._inner.alg_size())
 
     Partition.PrintType = PrintType
     BasicPartition.PrintType = PrintType
@@ -984,6 +1624,12 @@ def _install(conlat_globals: dict) -> None:
     conlat_globals["Partition"] = Partition
     conlat_globals["BasicPartition"] = BasicPartition
     conlat_globals["CongruenceLattice"] = CongruenceLattice
+    conlat_globals["BinaryRelation"] = BinaryRelation
+    conlat_globals["BasicBinaryRelation"] = BasicBinaryRelation
+    conlat_globals["Subtrace"] = Subtrace
+    conlat_globals["Polymorphisms"] = Polymorphisms
+    conlat_globals["CentralityData"] = CentralityData
+    conlat_globals["TypeFinder"] = TypeFinder
     conlat_globals["_LibPartition"] = _LibPartition
     conlat_globals["_LibCongruenceLattice"] = _LibCongruenceLattice
     conlat_globals["_CLASS_ALIASES"] = {
@@ -1046,4 +1692,51 @@ def _install(conlat_globals: dict) -> None:
             "meetIrreducible": "meet_irreducible",
             "inputSize": "input_size",
         },
+        "BinaryRelation": {
+            "universeSize": "universe_size",
+            "isRelated": "is_related",
+            "getPairs": "get_pairs",
+            "compose": "compose",
+        },
+        "BasicBinaryRelation": {
+            "universeSize": "universe_size",
+            "isRelated": "is_related",
+            "getPairs": "get_pairs",
+            "compose": "compose",
+            "compareTo": "compareTo",
+            "isReflexive": "is_reflexive",
+            "isSymmetric": "is_symmetric",
+            "toString": "toString",
+        },
+        "Subtrace": {
+            "hasInvolution": "has_involution",
+            "getSubtraceUniverse": "get_subtrace_universe",
+            "setSubtraceUniverse": "set_subtrace_universe",
+            "getMatrixUniverse": "get_matrix_universe",
+            "setMatrixUniverse": "set_matrix_universe",
+            "setType": "set_type",
+            "toString": "toString",
+        },
+        "CentralityData": {
+            "getLeft": "left",
+            "getRight": "right",
+            "getDelta": "delta",
+            "compareTo": "compare_to",
+            "getCentralityFailure": "getCentralityFailure",
+            "setCentralityFailure": "setCentralityFailure",
+            "getWeakCentralityFailure": "getWeakCentralityFailure",
+            "setWeakCentralityFailure": "setWeakCentralityFailure",
+            "getStrongRectangularityFailure": "getStrongRectangularityFailure",
+            "setStrongRectangularityFailure": "setStrongRectangularityFailure",
+            "toString": "toString",
+        },
+        "TypeFinder": {
+            "init": "init",
+            "findTypeSet": "find_type_set",
+            "isSubtrace": "is_subtrace",
+            "findSubtrace": "find_subtrace",
+            "findType": "find_type",
+            "nextPairForSubtrace": "nextPairForSubtrace",
+        },
+        "Polymorphisms": {},
     }
