@@ -1613,9 +1613,8 @@ def _install(alg_module_globals: dict) -> None:
 
     def productSg(self: Any, elems: Any) -> Any:
         gens = [productElementIndex(self, e) for e in list(elems)]
-        univ = self.sub().Sg(gens)
-        # Java SubalgebraLattice.Sg returns a Subalgebra, not a BasicSet.
-        return Subalgebra(self, univ)
+        # Java ProductAlgebra.Sg is `return sub().Sg(gens)` (already a Subalgebra).
+        return self.sub().Sg(gens)
 
     def sgClose(self: Any, elems: Any) -> Any:
         fn = getattr(self, "sg_close", None)
@@ -3180,7 +3179,8 @@ def _install(alg_module_globals: dict) -> None:
         },
         "SubalgebraLattice": {
             "iterator": "iterator",
-            "Sg": "sg",
+            "Sg": "Sg",
+            "sg": "sg",
         },
     }
 

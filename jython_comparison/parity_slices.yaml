@@ -141,12 +141,15 @@ slices:
       - core-alg-conlat
     owner: agent-e
     status: parity_golden
-    last_updated: "2026-04-18"
+    last_updated: "2026-10-16"
     workstreams: []
     parity_tests_dir: tests/parity/sublat
     notes: >-
-      parity_golden: golden_sublat_surface.py + fixtures (Jython BasicSet sample; CPython empty).
-      uacalc_lib.alg.sublat remains a future binding target.
+      Behavioral parity for BasicSet and SubalgebraLattice (branch sublat-coverage).
+      Goldens from Jython; org shim matches Java stubs (meet/join(List)/atoms null),
+      Sg→Subalgebra, and the BasicSet.union index bug. Strict xfails: getDiagram
+      (GUI), Sub.con/sub of the lattice (BasicSet BasicLattice tables), and Java
+      union duplicate-keeping. Malcev/GUI out of scope.
 
   - id: core-element
     title: Elements and subproduct elements

@@ -44,6 +44,11 @@ def test():
     print("universe=" + str(items))
     one = sl.Sg([0])
     print("sg0_card=" + str(_card(one)))
+    print("zero=" + _norm_set(sl.zero()))
+    print("one=" + _norm_set(sl.one()))
+    print("join=" + _norm_set(sl.join(sl.zero(), sl.one())))
+    print("leq=" + ("1" if sl.leq(sl.zero(), sl.one()) else "0"))
+    print("sg=" + _norm_set(sl.sg([0])))
 
 
 if __name__ == "__main__":

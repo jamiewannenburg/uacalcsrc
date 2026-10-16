@@ -1,0 +1,2505 @@
+{
+  "metadata": {
+    "generated_at": "2026-10-16T13:15:33.835594+00:00",
+    "jar": "uacalc.jar",
+    "package": "org.uacalc.sublat",
+    "runtime": "jython",
+    "test_cases": 106,
+    "type": "package"
+  },
+  "test_cases": [
+    {
+      "args": [],
+      "call": "empty",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "EMPTY_SET string",
+      "expected_exception": null,
+      "id": "bs_empty_str",
+      "kwargs": {},
+      "method": "BasicSet.EMPTY_SET",
+      "notes": "",
+      "result": {
+        "return_type": "BasicSet",
+        "return_value": {
+          "__type__": "basic_set",
+          "class": "BasicSet",
+          "elements": [],
+          "string": "[]",
+          "universe_size": 0
+        },
+        "string_repr": "[]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "s01",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "BasicSet([0, 1])",
+      "expected_exception": null,
+      "id": "bs_ctor_sort",
+      "kwargs": {},
+      "method": "BasicSet.BasicSet",
+      "notes": "",
+      "result": {
+        "return_type": "BasicSet",
+        "return_value": {
+          "__type__": "basic_set",
+          "class": "BasicSet",
+          "elements": [
+            0,
+            1
+          ],
+          "string": "[0, 1]",
+          "universe_size": 2
+        },
+        "string_repr": "[0, 1]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "BasicSet([2, 0, 1])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "constructor sorts",
+      "expected_exception": null,
+      "id": "bs_ctor_unsorted",
+      "kwargs": {},
+      "method": "BasicSet.BasicSet",
+      "notes": "",
+      "result": {
+        "return_type": "BasicSet",
+        "return_value": {
+          "__type__": "basic_set",
+          "class": "BasicSet",
+          "elements": [
+            0,
+            1,
+            2
+          ],
+          "string": "[0, 1, 2]",
+          "universe_size": 3
+        },
+        "string_repr": "[0, 1, 2]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "s01.universeSize()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "universeSize of {0,1}",
+      "expected_exception": null,
+      "id": "bs_universe_size",
+      "kwargs": {},
+      "method": "BasicSet.universeSize",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "s01.get(1)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "get(1)",
+      "expected_exception": null,
+      "id": "bs_get",
+      "kwargs": {},
+      "method": "BasicSet.get",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 1,
+        "string_repr": "1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "list(s01.toArray())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "toArray",
+      "expected_exception": null,
+      "id": "bs_to_array",
+      "kwargs": {},
+      "method": "BasicSet.toArray",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          0,
+          1
+        ],
+        "string_repr": "[0, 1]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "list(s01.getArray())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getArray",
+      "expected_exception": null,
+      "id": "bs_get_array",
+      "kwargs": {},
+      "method": "BasicSet.getArray",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          0,
+          1
+        ],
+        "string_repr": "[0, 1]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "s01.toString() if hasattr(s01, 'toString') else str(s01)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "toString [0, 1]",
+      "expected_exception": null,
+      "id": "bs_to_string",
+      "kwargs": {},
+      "method": "BasicSet.toString",
+      "notes": "",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "[0, 1]",
+        "string_repr": "[0, 1]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "str(s012)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "str of {0,1,2}",
+      "expected_exception": null,
+      "id": "bs_str",
+      "kwargs": {},
+      "method": "BasicSet.toString",
+      "notes": "",
+      "result": {
+        "return_type": "str",
+        "return_value": "[0, 1, 2]",
+        "string_repr": "[0, 1, 2]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "s01.contains(0)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "contains 0",
+      "expected_exception": null,
+      "id": "bs_contains_true",
+      "kwargs": {},
+      "method": "BasicSet.contains",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "s01.contains(2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "contains 2",
+      "expected_exception": null,
+      "id": "bs_contains_false",
+      "kwargs": {},
+      "method": "BasicSet.contains",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": false,
+        "string_repr": "False",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "s01.leq(s012)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "instance leq subset",
+      "expected_exception": null,
+      "id": "bs_leq_true",
+      "kwargs": {},
+      "method": "BasicSet.leq",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "s012.leq(s01)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "instance leq not subset",
+      "expected_exception": null,
+      "id": "bs_leq_false",
+      "kwargs": {},
+      "method": "BasicSet.leq",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": false,
+        "string_repr": "False",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "BasicSet.leq([0], [0, 1])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "static leq arrays",
+      "expected_exception": null,
+      "id": "bs_leq_static",
+      "kwargs": {},
+      "method": "BasicSet.leq",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "s012.intersection(s123)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "intersection",
+      "expected_exception": null,
+      "id": "bs_intersection",
+      "kwargs": {},
+      "method": "BasicSet.intersection",
+      "notes": "",
+      "result": {
+        "return_type": "BasicSet",
+        "return_value": {
+          "__type__": "basic_set",
+          "class": "BasicSet",
+          "elements": [
+            1,
+            2
+          ],
+          "string": "[1, 2]",
+          "universe_size": 2
+        },
+        "string_repr": "[1, 2]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "BasicSet.intersection(s012, s123)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "static intersection",
+      "expected_exception": null,
+      "id": "bs_intersection_static",
+      "kwargs": {},
+      "method": "BasicSet.intersection",
+      "notes": "",
+      "result": {
+        "return_type": "BasicSet",
+        "return_value": {
+          "__type__": "basic_set",
+          "class": "BasicSet",
+          "elements": [
+            1,
+            2
+          ],
+          "string": "[1, 2]",
+          "universe_size": 2
+        },
+        "string_repr": "[1, 2]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "s012.setDifference(s12)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "setDifference",
+      "expected_exception": null,
+      "id": "bs_difference",
+      "kwargs": {},
+      "method": "BasicSet.setDifference",
+      "notes": "",
+      "result": {
+        "return_type": "BasicSet",
+        "return_value": {
+          "__type__": "basic_set",
+          "class": "BasicSet",
+          "elements": [
+            0
+          ],
+          "string": "[0]",
+          "universe_size": 1
+        },
+        "string_repr": "[0]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "s02.union(s13)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Java union uses contains(index); {0,2} u {1,3} drops 1",
+      "expected_exception": null,
+      "id": "bs_union_index_bug",
+      "kwargs": {},
+      "method": "BasicSet.union",
+      "notes": "",
+      "result": {
+        "return_type": "BasicSet",
+        "return_value": {
+          "__type__": "basic_set",
+          "class": "BasicSet",
+          "elements": [
+            0,
+            2,
+            3
+          ],
+          "string": "[0, 2, 3]",
+          "universe_size": 3
+        },
+        "string_repr": "[0, 2, 3]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "BasicSet.union(BasicSet([0]), BasicSet([1]))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "static union disjoint",
+      "expected_exception": null,
+      "id": "bs_union_static",
+      "kwargs": {},
+      "method": "BasicSet.union",
+      "notes": "",
+      "result": {
+        "return_type": "BasicSet",
+        "return_value": {
+          "__type__": "basic_set",
+          "class": "BasicSet",
+          "elements": [
+            0
+          ],
+          "string": "[0]",
+          "universe_size": 1
+        },
+        "string_repr": "[0]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "BasicSet([5, 6]).union(BasicSet([5]))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Java union+normalize keeps sorted duplicates",
+      "expected_exception": null,
+      "id": "bs_union_keeps_dups",
+      "kwargs": {},
+      "method": "BasicSet.union",
+      "notes": "",
+      "result": {
+        "return_type": "BasicSet",
+        "return_value": {
+          "__type__": "basic_set",
+          "class": "BasicSet",
+          "elements": [
+            5,
+            5,
+            6
+          ],
+          "string": "[5, 5, 6]",
+          "universe_size": 3
+        },
+        "string_repr": "[5, 5, 6]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": "Java BasicSet.normalize only sorts, so union can keep duplicate values ([5, 5, 6]); uacalc_lib BasicSet::new dedupes. Owner: keep library sets unique."
+    },
+    {
+      "args": [],
+      "call": "s01.compareTo(s012)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "compareTo by size then lex",
+      "expected_exception": null,
+      "id": "bs_compare_to",
+      "kwargs": {},
+      "method": "BasicSet.compareTo",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": -1,
+        "string_repr": "-1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "empty.leq(s01)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "empty leq any",
+      "expected_exception": null,
+      "id": "bs_empty_leq",
+      "kwargs": {},
+      "method": "BasicSet.leq",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "s01.get(9)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "get OOB",
+      "expected_exception": "ArrayIndexOutOfBoundsException",
+      "id": "bs_get_oob",
+      "kwargs": {},
+      "method": "BasicSet.get",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.ArrayIndexOutOfBoundsException: Index 9 out of bounds for length 2",
+          "type": "ArrayIndexOutOfBoundsException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "BasicSet(None)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "BasicSet(null) NPE",
+      "expected_exception": "NullPointerException",
+      "id": "bs_ctor_null",
+      "kwargs": {},
+      "method": "BasicSet.BasicSet",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.NullPointerException: Cannot read the array length because \"array\" is null",
+          "type": "NullPointerException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "(_cls(sl), sl.cardinality())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "SubalgebraLattice of cyclic2 constructs",
+      "expected_exception": null,
+      "id": "sl_ctor_cyclic2",
+      "kwargs": {},
+      "method": "SubalgebraLattice.SubalgebraLattice",
+      "notes": "Java lattice toString is Class@hex; values compared.",
+      "result": {
+        "return_type": "tuple",
+        "return_value": [
+          "SubalgebraLattice",
+          3
+        ],
+        "string_repr": "('SubalgebraLattice', 3)",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sl.cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Sub(C2) cardinality 3",
+      "expected_exception": null,
+      "id": "sl_card_c2",
+      "kwargs": {},
+      "method": "SubalgebraLattice.cardinality",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 3,
+        "string_repr": "3",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sl2.cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Sub(lat2) cardinality 4",
+      "expected_exception": null,
+      "id": "sl_card_lat2",
+      "kwargs": {},
+      "method": "SubalgebraLattice.cardinality",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 4,
+        "string_repr": "4",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "slm.cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Sub(M3) cardinality 20",
+      "expected_exception": null,
+      "id": "sl_card_m3",
+      "kwargs": {},
+      "method": "SubalgebraLattice.cardinality",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 20,
+        "string_repr": "20",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "SubalgebraLattice(n5).cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Sub(N5) cardinality 23",
+      "expected_exception": null,
+      "id": "sl_card_n5",
+      "kwargs": {},
+      "method": "SubalgebraLattice.cardinality",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 23,
+        "string_repr": "23",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "SubalgebraLattice(c3).cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Sub(C3) cardinality 3",
+      "expected_exception": null,
+      "id": "sl_card_c3",
+      "kwargs": {},
+      "method": "SubalgebraLattice.cardinality",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 3,
+        "string_repr": "3",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "SubalgebraLattice(ba2).cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Sub(BA2) cardinality 1",
+      "expected_exception": null,
+      "id": "sl_card_ba2",
+      "kwargs": {},
+      "method": "SubalgebraLattice.cardinality",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 1,
+        "string_repr": "1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sl.zero()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "zero subalgebra of C2",
+      "expected_exception": null,
+      "id": "sl_zero",
+      "kwargs": {},
+      "method": "SubalgebraLattice.zero",
+      "notes": "",
+      "result": {
+        "return_type": "BasicSet",
+        "return_value": {
+          "__type__": "basic_set",
+          "class": "BasicSet",
+          "elements": [],
+          "string": "[]",
+          "universe_size": 0
+        },
+        "string_repr": "[]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sl.one()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "one subalgebra of C2",
+      "expected_exception": null,
+      "id": "sl_one",
+      "kwargs": {},
+      "method": "SubalgebraLattice.one",
+      "notes": "",
+      "result": {
+        "return_type": "BasicSet",
+        "return_value": {
+          "__type__": "basic_set",
+          "class": "BasicSet",
+          "elements": [
+            0,
+            1
+          ],
+          "string": "[0, 1]",
+          "universe_size": 2
+        },
+        "string_repr": "[0, 1]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sorted(str(x) for x in sl.universe())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "universe strings C2",
+      "expected_exception": null,
+      "id": "sl_universe",
+      "kwargs": {},
+      "method": "SubalgebraLattice.universe",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "[0, 1]",
+          "[0]",
+          "[]"
+        ],
+        "string_repr": "['[0, 1]', '[0]', '[]']",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sorted(str(x) for x in sl2.universe())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "universe strings lat2",
+      "expected_exception": null,
+      "id": "sl_universe_lat2",
+      "kwargs": {},
+      "method": "SubalgebraLattice.universe",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "[0, 1]",
+          "[0]",
+          "[1]",
+          "[]"
+        ],
+        "string_repr": "['[0, 1]', '[0]', '[1]', '[]']",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sorted(str(x) for x in slm.universe())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "universe strings M3",
+      "expected_exception": null,
+      "id": "sl_universe_m3",
+      "kwargs": {},
+      "method": "SubalgebraLattice.universe",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "[0, 1, 2, 3, 4]",
+          "[0, 1, 2, 4]",
+          "[0, 1, 3, 4]",
+          "[0, 1, 4]",
+          "[0, 1]",
+          "[0, 2, 3, 4]",
+          "[0, 2, 4]",
+          "[0, 2]",
+          "[0, 3, 4]",
+          "[0, 3]",
+          "[0, 4]",
+          "[0]",
+          "[1, 4]",
+          "[1]",
+          "[2, 4]",
+          "[2]",
+          "[3, 4]",
+          "[3]",
+          "[4]",
+          "[]"
+        ],
+        "string_repr": "['[0, 1, 2, 3, 4]', '[0, 1, 2, 4]', '[0, 1, 3, 4]', '[0, 1, 4]', '[0, 1]', '[0, 2, 3, 4]', '[0, 2, 4]', '[0, 2]', '[0, 3, 4]', '[0, 3]', '[0, 4]', '[0]', '[1, 4]', '[1]', '[2, 4]', '[2]', '[3, 4]', '[3]', '[4]', '[]']",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sorted(str(x) for x in sl.iterator())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "iterator strings",
+      "expected_exception": null,
+      "id": "sl_iterator",
+      "kwargs": {},
+      "method": "SubalgebraLattice.iterator",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "[0, 1]",
+          "[0]",
+          "[]"
+        ],
+        "string_repr": "['[0, 1]', '[0]', '[]']",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sl.sg([0])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "sg([0]) BasicSet",
+      "expected_exception": null,
+      "id": "sl_sg0",
+      "kwargs": {},
+      "method": "SubalgebraLattice.sg",
+      "notes": "",
+      "result": {
+        "return_type": "BasicSet",
+        "return_value": {
+          "__type__": "basic_set",
+          "class": "BasicSet",
+          "elements": [
+            0
+          ],
+          "string": "[0]",
+          "universe_size": 1
+        },
+        "string_repr": "[0]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sl.sg([])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "sg([]) is zero",
+      "expected_exception": null,
+      "id": "sl_sg_empty",
+      "kwargs": {},
+      "method": "SubalgebraLattice.sg",
+      "notes": "",
+      "result": {
+        "return_type": "BasicSet",
+        "return_value": {
+          "__type__": "basic_set",
+          "class": "BasicSet",
+          "elements": [],
+          "string": "[]",
+          "universe_size": 0
+        },
+        "string_repr": "[]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sl.sg(set([0]))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "sg(Set) is identically null",
+      "expected_exception": null,
+      "id": "sl_sg_set_null",
+      "kwargs": {},
+      "method": "SubalgebraLattice.sg",
+      "notes": "Java null vs Python None.",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sl.Sg([0]).cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Sg([0]) returns Subalgebra of card 1",
+      "expected_exception": null,
+      "id": "sl_Sg_card",
+      "kwargs": {},
+      "method": "SubalgebraLattice.Sg",
+      "notes": "Java Algebra toString is Class@hex; values compared.",
+      "result": {
+        "return_type": "int",
+        "return_value": 1,
+        "string_repr": "1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sl.Sg([0]).getName()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Sg name Subalgebra Of C2",
+      "expected_exception": null,
+      "id": "sl_Sg_name",
+      "kwargs": {},
+      "method": "SubalgebraLattice.Sg",
+      "notes": "",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "Subalgebra Of C2",
+        "string_repr": "Subalgebra Of C2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sl.Sg(sl.sg([0])).cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Sg(BasicSet)",
+      "expected_exception": null,
+      "id": "sl_Sg_from_set",
+      "kwargs": {},
+      "method": "SubalgebraLattice.Sg",
+      "notes": "Java Algebra toString is Class@hex; values compared.",
+      "result": {
+        "return_type": "int",
+        "return_value": 1,
+        "string_repr": "1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "[str(x) for x in sl.oneGeneratedSubalgebras()]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "one-generated subalgebras C2",
+      "expected_exception": null,
+      "id": "sl_one_generated",
+      "kwargs": {},
+      "method": "SubalgebraLattice.oneGeneratedSubalgebras",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "[0]",
+          "[0, 1]"
+        ],
+        "string_repr": "['[0]', '[0, 1]']",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "[str(x) for x in slm.oneGeneratedSubalgebras()]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "one-generated subalgebras M3",
+      "expected_exception": null,
+      "id": "sl_one_generated_m3",
+      "kwargs": {},
+      "method": "SubalgebraLattice.oneGeneratedSubalgebras",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "[0]",
+          "[1]",
+          "[2]",
+          "[3]",
+          "[4]"
+        ],
+        "string_repr": "['[0]', '[1]', '[2]', '[3]', '[4]']",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "[str(x) for x in sl.joinIrreducibles()]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "join irreducibles C2",
+      "expected_exception": null,
+      "id": "sl_join_irreducibles",
+      "kwargs": {},
+      "method": "SubalgebraLattice.joinIrreducibles",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "[0]",
+          "[0, 1]"
+        ],
+        "string_repr": "['[0]', '[0, 1]']",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "[str(x) for x in sl2.joinIrreducibles()]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "join irreducibles lat2",
+      "expected_exception": null,
+      "id": "sl_join_irreducibles_lat2",
+      "kwargs": {},
+      "method": "SubalgebraLattice.joinIrreducibles",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "[0]",
+          "[1]"
+        ],
+        "string_repr": "['[0]', '[1]']",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sl.joinIrreducible(sl.sg([0]))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "joinIrreducible(sg(0))",
+      "expected_exception": null,
+      "id": "sl_join_irreducible_true",
+      "kwargs": {},
+      "method": "SubalgebraLattice.joinIrreducible",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sl.meetIrreducibles()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "meetIrreducibles is null (Java stub)",
+      "expected_exception": null,
+      "id": "sl_meet_irreducibles",
+      "kwargs": {},
+      "method": "SubalgebraLattice.meetIrreducibles",
+      "notes": "Java null vs Python None.",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sl.atoms()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "atoms is null (Java TODO)",
+      "expected_exception": null,
+      "id": "sl_atoms",
+      "kwargs": {},
+      "method": "SubalgebraLattice.atoms",
+      "notes": "Java null vs Python None.",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sl.coatoms()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "coatoms is null (Java TODO)",
+      "expected_exception": null,
+      "id": "sl_coatoms",
+      "kwargs": {},
+      "method": "SubalgebraLattice.coatoms",
+      "notes": "Java null vs Python None.",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sl.join(sl.zero(), sl.one())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "join zero, one",
+      "expected_exception": null,
+      "id": "sl_join",
+      "kwargs": {},
+      "method": "SubalgebraLattice.join",
+      "notes": "",
+      "result": {
+        "return_type": "BasicSet",
+        "return_value": {
+          "__type__": "basic_set",
+          "class": "BasicSet",
+          "elements": [
+            0,
+            1
+          ],
+          "string": "[0, 1]",
+          "universe_size": 2
+        },
+        "string_repr": "[0, 1]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sl2.join(sl2.sg([0]), sl2.sg([1]))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "join of two atoms of lat2",
+      "expected_exception": null,
+      "id": "sl_join_proper",
+      "kwargs": {},
+      "method": "SubalgebraLattice.join",
+      "notes": "",
+      "result": {
+        "return_type": "BasicSet",
+        "return_value": {
+          "__type__": "basic_set",
+          "class": "BasicSet",
+          "elements": [
+            0,
+            1
+          ],
+          "string": "[0, 1]",
+          "universe_size": 2
+        },
+        "string_repr": "[0, 1]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sl.join([sl.zero(), sl.one()])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "join(List) is identically null",
+      "expected_exception": null,
+      "id": "sl_join_list",
+      "kwargs": {},
+      "method": "SubalgebraLattice.join",
+      "notes": "Java null vs Python None.",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sl.meet(sl.zero(), sl.one())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "meet is identically null (Java stub)",
+      "expected_exception": null,
+      "id": "sl_meet",
+      "kwargs": {},
+      "method": "SubalgebraLattice.meet",
+      "notes": "Java null vs Python None.",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sl.leq(sl.zero(), sl.one())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "leq zero, one",
+      "expected_exception": null,
+      "id": "sl_leq",
+      "kwargs": {},
+      "method": "SubalgebraLattice.leq",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sorted(str(x) for x in sl.filter(sl.sg([0])))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "filter of sg(0)",
+      "expected_exception": null,
+      "id": "sl_filter",
+      "kwargs": {},
+      "method": "SubalgebraLattice.filter",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "[0, 1]",
+          "[0]"
+        ],
+        "string_repr": "['[0, 1]', '[0]']",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sl.findMinimalSizedGeneratingSet()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "minimal generating set C2",
+      "expected_exception": null,
+      "id": "sl_min_gen_c2",
+      "kwargs": {},
+      "method": "SubalgebraLattice.findMinimalSizedGeneratingSet",
+      "notes": "",
+      "result": {
+        "return_type": "BasicSet",
+        "return_value": {
+          "__type__": "basic_set",
+          "class": "BasicSet",
+          "elements": [
+            1
+          ],
+          "string": "[1]",
+          "universe_size": 1
+        },
+        "string_repr": "[1]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sl2.findMinimalSizedGeneratingSet()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "minimal generating set lat2",
+      "expected_exception": null,
+      "id": "sl_min_gen_lat2",
+      "kwargs": {},
+      "method": "SubalgebraLattice.findMinimalSizedGeneratingSet",
+      "notes": "",
+      "result": {
+        "return_type": "BasicSet",
+        "return_value": {
+          "__type__": "basic_set",
+          "class": "BasicSet",
+          "elements": [
+            0,
+            1
+          ],
+          "string": "[0, 1]",
+          "universe_size": 2
+        },
+        "string_repr": "[0, 1]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "slm.findMinimalSizedGeneratingSet()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "minimal generating set M3",
+      "expected_exception": null,
+      "id": "sl_min_gen_m3",
+      "kwargs": {},
+      "method": "SubalgebraLattice.findMinimalSizedGeneratingSet",
+      "notes": "",
+      "result": {
+        "return_type": "BasicSet",
+        "return_value": {
+          "__type__": "basic_set",
+          "class": "BasicSet",
+          "elements": [
+            1,
+            2,
+            3
+          ],
+          "string": "[1, 2, 3]",
+          "universe_size": 3
+        },
+        "string_repr": "[1, 2, 3]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sl.getName()[:4]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getName starts with Sub(",
+      "expected_exception": null,
+      "id": "sl_get_name_prefix",
+      "kwargs": {},
+      "method": "SubalgebraLattice.getName",
+      "notes": "",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "Sub(",
+        "string_repr": "Sub(",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sl.getDescription()[:22]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getDescription prefix",
+      "expected_exception": null,
+      "id": "sl_get_description_prefix",
+      "kwargs": {},
+      "method": "SubalgebraLattice.getDescription",
+      "notes": "",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "Subalgebra Lattice of ",
+        "string_repr": "Subalgebra Lattice of ",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "(sl.setDescription('hello'), sl.getDescription())[1]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "setDescription round-trip",
+      "expected_exception": null,
+      "id": "sl_set_description",
+      "kwargs": {},
+      "method": "SubalgebraLattice.setDescription",
+      "notes": "",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "hello",
+        "string_repr": "hello",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sl.setName('x')",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "setName is UOE",
+      "expected_exception": "UnsupportedOperationException",
+      "id": "sl_set_name",
+      "kwargs": {},
+      "method": "SubalgebraLattice.setName",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.UnsupportedOperationException",
+          "type": "UnsupportedOperationException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sl.isTotal()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "isTotal true",
+      "expected_exception": null,
+      "id": "sl_is_total",
+      "kwargs": {},
+      "method": "SubalgebraLattice.isTotal",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sl.isUnary()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "isUnary false",
+      "expected_exception": null,
+      "id": "sl_is_unary",
+      "kwargs": {},
+      "method": "SubalgebraLattice.isUnary",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": false,
+        "string_repr": "False",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sl.isIdempotent()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "isIdempotent true",
+      "expected_exception": null,
+      "id": "sl_is_idempotent",
+      "kwargs": {},
+      "method": "SubalgebraLattice.isIdempotent",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sl.operations()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "operations is null",
+      "expected_exception": null,
+      "id": "sl_operations",
+      "kwargs": {},
+      "method": "SubalgebraLattice.operations",
+      "notes": "Java null vs Python None.",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sl.getOperation(None)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getOperation is null",
+      "expected_exception": null,
+      "id": "sl_get_operation",
+      "kwargs": {},
+      "method": "SubalgebraLattice.getOperation",
+      "notes": "Java null vs Python None.",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sl.getOperationsMap()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getOperationsMap is null",
+      "expected_exception": null,
+      "id": "sl_get_ops_map",
+      "kwargs": {},
+      "method": "SubalgebraLattice.getOperationsMap",
+      "notes": "Java null vs Python None.",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "list(sl.constantOperations())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "constantOperations empty",
+      "expected_exception": null,
+      "id": "sl_constant_ops",
+      "kwargs": {},
+      "method": "SubalgebraLattice.constantOperations",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [],
+        "string_repr": "[]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "(sl.universe(), sl.universeFound())[1]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "universeFound after universe()",
+      "expected_exception": null,
+      "id": "sl_universe_found",
+      "kwargs": {},
+      "method": "SubalgebraLattice.universeFound",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sl.isDrawable()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "isDrawable C2",
+      "expected_exception": null,
+      "id": "sl_is_drawable",
+      "kwargs": {},
+      "method": "SubalgebraLattice.isDrawable",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sl.isSmallerThan(10)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "isSmallerThan(10)",
+      "expected_exception": null,
+      "id": "sl_is_smaller_than",
+      "kwargs": {},
+      "method": "SubalgebraLattice.isSmallerThan",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sl.isSmallerThan(2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "isSmallerThan(2) false",
+      "expected_exception": null,
+      "id": "sl_is_smaller_than_false",
+      "kwargs": {},
+      "method": "SubalgebraLattice.isSmallerThan",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": false,
+        "string_repr": "False",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sl.inputSize()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "inputSize of Sub(C2)",
+      "expected_exception": null,
+      "id": "sl_input_size",
+      "kwargs": {},
+      "method": "SubalgebraLattice.inputSize",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 18,
+        "string_repr": "18",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sl.isSimilarTo(sl)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "isSimilarTo self",
+      "expected_exception": null,
+      "id": "sl_similarity",
+      "kwargs": {},
+      "method": "SubalgebraLattice.isSimilarTo",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "(sl.makeUniverse(), sl.cardinality())[1]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "makeUniverse then cardinality",
+      "expected_exception": null,
+      "id": "sl_make_universe",
+      "kwargs": {},
+      "method": "SubalgebraLattice.makeUniverse",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 3,
+        "string_repr": "3",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "(sl.makeJoinIrreducibles(), len(sl.joinIrreducibles()))[1]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "makeJoinIrreducibles then count",
+      "expected_exception": null,
+      "id": "sl_make_jis",
+      "kwargs": {},
+      "method": "SubalgebraLattice.makeJoinIrreducibles",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sl.stopMakeUniverse()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "stopMakeUniverse is void",
+      "expected_exception": null,
+      "id": "sl_stop_make",
+      "kwargs": {},
+      "method": "SubalgebraLattice.stopMakeUniverse",
+      "notes": "",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "(sl.cardinality(), sl.getSizeComputed())[1]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getSizeComputed after universe",
+      "expected_exception": null,
+      "id": "sl_size_computed",
+      "kwargs": {},
+      "method": "SubalgebraLattice.getSizeComputed",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "(s01.normalize(), str(s01))[1]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "normalize is in-place sort",
+      "expected_exception": null,
+      "id": "bs_normalize",
+      "kwargs": {},
+      "method": "BasicSet.normalize",
+      "notes": "",
+      "result": {
+        "return_type": "str",
+        "return_value": "[0, 1]",
+        "string_repr": "[0, 1]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sl.similarityType() is not None",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "similarityType is lattice type",
+      "expected_exception": null,
+      "id": "sl_similarity_type_eq",
+      "kwargs": {},
+      "method": "SubalgebraLattice.similarityType",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sl.updateSimilarityType()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "updateSimilarityType is void",
+      "expected_exception": null,
+      "id": "sl_update_sim",
+      "kwargs": {},
+      "method": "SubalgebraLattice.updateSimilarityType",
+      "notes": "",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sl.makeOperationTables()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "makeOperationTables is void",
+      "expected_exception": null,
+      "id": "sl_make_op_tables",
+      "kwargs": {},
+      "method": "SubalgebraLattice.makeOperationTables",
+      "notes": "",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "(sl.setMonitor(None), sl.monitoring())[1]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "monitoring after setMonitor(None)",
+      "expected_exception": null,
+      "id": "sl_monitoring",
+      "kwargs": {},
+      "method": "SubalgebraLattice.monitoring",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": false,
+        "string_repr": "False",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sl.getMonitor()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getMonitor default None",
+      "expected_exception": null,
+      "id": "sl_get_monitor",
+      "kwargs": {},
+      "method": "SubalgebraLattice.getMonitor",
+      "notes": "Java null vs Python None.",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sl.setMonitor(1)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "setMonitor(int) TypeError",
+      "expected_exception": "TypeError",
+      "id": "sl_set_monitor_bad",
+      "kwargs": {},
+      "method": "SubalgebraLattice.setMonitor",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "setMonitor(): 1st arg can't be coerced to org.uacalc.ui.tm.ProgressReport",
+          "type": "TypeError"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "SubalgebraLattice(None)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "SubalgebraLattice(null) NPE",
+      "expected_exception": "NullPointerException",
+      "id": "sl_ctor_null",
+      "kwargs": {},
+      "method": "SubalgebraLattice.SubalgebraLattice",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.NullPointerException: Cannot invoke \"org.uacalc.alg.SmallAlgebra.cardinality()\" because \"alg\" is null",
+          "type": "NullPointerException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "list(SubalgebraLattice.noDuplicates([1, 1, 2, 2, 3]))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "noDuplicates sorted blocks",
+      "expected_exception": null,
+      "id": "sl_no_duplicates",
+      "kwargs": {},
+      "method": "SubalgebraLattice.noDuplicates",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          1,
+          2,
+          3
+        ],
+        "string_repr": "[1, 2, 3]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sl.makeSg([0])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "makeSg([0])",
+      "expected_exception": null,
+      "id": "sl_make_sg",
+      "kwargs": {},
+      "method": "SubalgebraLattice.makeSg",
+      "notes": "",
+      "result": {
+        "return_type": "BasicSet",
+        "return_value": {
+          "__type__": "basic_set",
+          "class": "BasicSet",
+          "elements": [
+            0
+          ],
+          "string": "[0]",
+          "universe_size": 1
+        },
+        "string_repr": "[0]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sorted(str(x) for x in sl.joinClosure([sl.sg([0])]))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "joinClosure of sg(0)",
+      "expected_exception": null,
+      "id": "sl_join_closure",
+      "kwargs": {},
+      "method": "SubalgebraLattice.joinClosure",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "[0]"
+        ],
+        "string_repr": "['[0]']",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sl.getAlgebra().getName()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getAlgebra name C2",
+      "expected_exception": null,
+      "id": "sl_get_algebra_name",
+      "kwargs": {},
+      "method": "SubalgebraLattice.getAlgebra",
+      "notes": "Java Algebra toString is Class@hex; values compared.",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "C2",
+        "string_repr": "C2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sl.getBasicLattice().cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getBasicLattice cardinality",
+      "expected_exception": null,
+      "id": "sl_get_basic_lattice_card",
+      "kwargs": {},
+      "method": "SubalgebraLattice.getBasicLattice",
+      "notes": "Java lattice toString is Class@hex; values compared.",
+      "result": {
+        "return_type": "int",
+        "return_value": 3,
+        "string_repr": "3",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "SubalgebraLattice.MAX_DRAWABLE_SIZE",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "MAX_DRAWABLE_SIZE 100",
+      "expected_exception": null,
+      "id": "sl_max_drawable",
+      "kwargs": {},
+      "method": "SubalgebraLattice.MAX_DRAWABLE_SIZE",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 100,
+        "string_repr": "100",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "(sl.cardinality(), sl.getMakeUniverseK())[1]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getMakeUniverseK stays 0",
+      "expected_exception": null,
+      "id": "sl_make_universe_k",
+      "kwargs": {},
+      "method": "SubalgebraLattice.getMakeUniverseK",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 0,
+        "string_repr": "0",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "dict((int(k), int(v)) for k, v in (SubalgebraLattice.extendToHomomorphism([0], [0], c2, c2) or {}).items())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "extendToHomomorphism identity on 0",
+      "expected_exception": null,
+      "id": "sl_homo_id",
+      "kwargs": {},
+      "method": "SubalgebraLattice.extendToHomomorphism",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "dict",
+        "return_value": {
+          "0": 0
+        },
+        "string_repr": "{0: 0}",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "SubalgebraLattice.extendToHomomorphism([0], [1], c2, c2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "no homo 0 -> 1 on C2",
+      "expected_exception": null,
+      "id": "sl_homo_none",
+      "kwargs": {},
+      "method": "SubalgebraLattice.extendToHomomorphism",
+      "notes": "Java null vs Python None.",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "SubalgebraLattice.extendToHomomorphism([0], [0, 1], c2, c2)",
+      "capture_file": false,
+      "compare_exception_message": true,
+      "description": "mismatched gens IAE",
+      "expected_exception": "IllegalArgumentException",
+      "id": "sl_homo_len",
+      "kwargs": {},
+      "method": "SubalgebraLattice.extendToHomomorphism",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.IllegalArgumentException: generating sets must have the same size",
+          "type": "IllegalArgumentException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "ProductAlgebra('C2xC2', [c2, c2]).sub().cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Sub(C2xC2) cardinality 6",
+      "expected_exception": null,
+      "id": "sl_product_card",
+      "kwargs": {},
+      "method": "SubalgebraLattice.cardinality",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 6,
+        "string_repr": "6",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sorted(str(x) for x in ProductAlgebra('C2xC2', [c2, c2]).sub().universe())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Sub(C2xC2) universe",
+      "expected_exception": null,
+      "id": "sl_product_universe",
+      "kwargs": {},
+      "method": "SubalgebraLattice.universe",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "[0, 1, 2, 3]",
+          "[0, 1]",
+          "[0, 2]",
+          "[0, 3]",
+          "[0]",
+          "[]"
+        ],
+        "string_repr": "['[0, 1, 2, 3]', '[0, 1]', '[0, 2]', '[0, 3]', '[0]', '[]']",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "QuotientAlgebra('Q', c2, c2.con().zero()).sub().cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Sub(C2/0) cardinality 3",
+      "expected_exception": null,
+      "id": "sl_quot_card",
+      "kwargs": {},
+      "method": "SubalgebraLattice.cardinality",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 3,
+        "string_repr": "3",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sl.con().cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Con(Sub(C2)) cardinality",
+      "expected_exception": null,
+      "id": "sl_con",
+      "kwargs": {},
+      "method": "SubalgebraLattice.con",
+      "notes": "Java lattice toString is Class@hex; values compared.",
+      "result": {
+        "return_type": "int",
+        "return_value": 4,
+        "string_repr": "4",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": "SubalgebraLattice.con() builds Con of the lattice via BasicLattice; uacalc_lib BasicLattice from a BasicSet universe cannot yet extract i32 join/meet tables (get_element is i32-ops only)."
+    },
+    {
+      "args": [],
+      "call": "sl.sub().cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Sub(Sub(C2)) cardinality",
+      "expected_exception": null,
+      "id": "sl_sub",
+      "kwargs": {},
+      "method": "SubalgebraLattice.sub",
+      "notes": "Java lattice toString is Class@hex; values compared.",
+      "result": {
+        "return_type": "int",
+        "return_value": 8,
+        "string_repr": "8",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": "SubalgebraLattice.sub() builds Sub of the lattice via BasicLattice; uacalc_lib BasicLattice from a BasicSet universe cannot yet extract i32 join/meet tables (get_element is i32-ops only)."
+    },
+    {
+      "args": [],
+      "call": "sl.getDiagram()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getDiagram latdraw GUI",
+      "expected_exception": null,
+      "id": "sl_get_diagram",
+      "kwargs": {},
+      "method": "SubalgebraLattice.getDiagram",
+      "notes": "Java null vs Python None.",
+      "result": {
+        "return_type": "Diagram",
+        "return_value": {
+          "__repr__": "org.latdraw.diagram.Diagram@4d634127",
+          "__type__": "Diagram",
+          "string": "org.latdraw.diagram.Diagram@4d634127"
+        },
+        "string_repr": "org.latdraw.diagram.Diagram@4d634127",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": true,
+      "xfail_reason": "getDiagram() returns a latdraw Diagram; Swing/latdraw GUI is out of scope."
+    },
+    {
+      "args": [],
+      "call": "_rt",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Round-trip Sub(C2): card, universe, join, meet-null, leq, sg, JIs",
+      "expected_exception": null,
+      "id": "sl_value_roundtrip",
+      "kwargs": {},
+      "method": "SubalgebraLattice",
+      "notes": "",
+      "result": {
+        "return_type": "dict",
+        "return_value": {
+          "card": 3,
+          "jis": [
+            "[0]",
+            "[0, 1]"
+          ],
+          "join": "[0, 1]",
+          "leq": true,
+          "meet_is_null": true,
+          "mingen": "[1]",
+          "onegens": [
+            "[0]",
+            "[0, 1]"
+          ],
+          "sg0": "[0]",
+          "univ": [
+            "[0, 1]",
+            "[0]",
+            "[]"
+          ]
+        },
+        "string_repr": "{'onegens': ['[0]', '[0, 1]'], 'mingen': '[1]', 'meet_is_null': True, 'univ': ['[0, 1]', '[0]', '[]'], 'jis': ['[0]', '[0, 1]'], 'leq': True, 'join': '[0, 1]', 'sg0': '[0]', 'card': 3}",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n\n_univ = sorted(str(x) for x in sl.universe())\n_z = sl.zero()\n_o = sl.one()\n_a = sl.sg([0])\n_rt = {\n    'card': int(sl.cardinality()),\n    'univ': _univ,\n    'join': str(sl.join(_z, _o)),\n    'meet_is_null': sl.meet(_z, _o) is None,\n    'leq': bool(sl.leq(_z, _o)),\n    'sg0': str(_a),\n    'onegens': [str(x) for x in sl.oneGeneratedSubalgebras()],\n    'jis': [str(x) for x in sl.joinIrreducibles()],\n    'mingen': str(sl.findMinimalSizedGeneratingSet()),\n}\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    }
+  ]
+}

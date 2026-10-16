@@ -1,0 +1,49 @@
+target: org.uacalc.alg.sublat.BasicSet
+level: file
+status: implemented
+java_source: org/uacalc/alg/sublat/BasicSet.java
+notes: |
+  Sorted integer sets used as elements of SubalgebraLattice. Extends IntArray;
+  toString matches IntArray ([0, 1]). Java union uses lst.contains(i) on the
+  loop index (not the element); the org shim reproduces that. Duplicate-preserving
+  union after normalize is a library xfail (BasicSet::new dedupes).
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    universeSize: universe_size
+    setDifference: set_difference
+    toArray: to_array
+    getArray: get_array
+    compareTo: compare_to
+    toString: toString
+    leq: leq
+    intersection: intersection
+    union: union
+    contains: contains
+    get: get
+    normalize: normalize
+  static_methods:
+    - BasicSet.intersection
+    - BasicSet.union
+    - BasicSet.leq
+  str_parity: true
+testing:
+  notes: |
+    Golden cases in tests/parity/sublat cover constructors, leq, intersection,
+    union (including the Java index bug), setDifference, toString, compareTo,
+    and EMPTY_SET.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/basic_set_ops.py
+      covers:
+        - universeSize
+        - leq
+        - intersection
+        - union
+        - setDifference
+        - contains
+        - toString
+        - get
+        - compareTo
+      ignore_lines: []

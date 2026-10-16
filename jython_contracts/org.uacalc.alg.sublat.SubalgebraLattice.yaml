@@ -4,27 +4,90 @@ status: implemented
 java_source: org/uacalc/alg/sublat/SubalgebraLattice.java
 notes: |
   Used by ~/uacalc as SubalgebraLattice(alg), then .iterator() over subuniverses
-  (get_subreducts.py, 2subalgebras.py, jep_check.py) and alg.sub().Sg(gens)
-  (free_algebras.py, sc_joins_of_covers.py).
+  and alg.sub().Sg(gens) (Sg returns a Subalgebra; sg returns a BasicSet).
+  Java meet / join(List) / atoms / coatoms / meetIrreducibles / operations are
+  identically null and are wrapped as such. GUI (getDiagram, ProgressReport) is
+  not bound. con()/sub() of the lattice itself need BasicLattice i32 tables and
+  are strict xfails.
 ignore_reason: null
 surface:
   package_export: true
   aliases:
     iterator: iterator
-    Sg: sg
-  static_methods: []
+    Sg: Sg
+    sg: sg
+    getName: getName
+    getAlgebra: getAlgebra
+    getDescription: getDescription
+    setDescription: setDescription
+    joinIrreducibles: joinIrreducibles
+    meetIrreducibles: meetIrreducibles
+    oneGeneratedSubalgebras: oneGeneratedSubalgebras
+    findMinimalSizedGeneratingSet: findMinimalSizedGeneratingSet
+    getBasicLattice: getBasicLattice
+    universeFound: universeFound
+    makeUniverse: makeUniverse
+    makeJoinIrreducibles: makeJoinIrreducibles
+    joinIrreducible: joinIrreducible
+    inputSize: inputSize
+    similarityType: similarityType
+    isSimilarTo: isSimilarTo
+    isSmallerThan: isSmallerThan
+    isDrawable: isDrawable
+    constantOperations: constantOperations
+    makeSg: makeSg
+    joinClosure: joinClosure
+    noDuplicates: noDuplicates
+    extendToHomomorphism: extendToHomomorphism
+    getMakeUniverseK: getMakeUniverseK
+    getSizeComputed: getSizeComputed
+    stopMakeUniverse: stopMakeUniverse
+    setMonitor: setMonitor
+    getMonitor: getMonitor
+    monitoring: monitoring
+    updateSimilarityType: updateSimilarityType
+    makeOperationTables: makeOperationTables
+    getOperation: getOperation
+    getOperationsMap: getOperationsMap
+    operations: operations
+    atoms: atoms
+    coatoms: coatoms
+    meet: meet
+    join: join
+    leq: leq
+    filter: filter
+    cardinality: cardinality
+    universe: universe
+    zero: zero
+    one: one
+    con: con
+    sub: sub
+    setName: setName
+    isTotal: isTotal
+    isUnary: isUnary
+    isIdempotent: isIdempotent
+  static_methods:
+    - SubalgebraLattice.noDuplicates
+    - SubalgebraLattice.extendToHomomorphism
   str_parity: false
 testing:
   notes: |
-    subalgebra_lattice_smoke.py builds SubalgebraLattice on cyclic2 and prints
-    sorted universe descriptions from iterator().
+    Golden cases in tests/parity/sublat cover Sub(A) for cyclic2, lat2, M3, N5,
+    C3, BA2, C2xC2 and C2/0; Sg/sg; join irreducibles; join/meet/leq; generating
+    sets; Java stubs (meet null, atoms null).
   task_refs: []
   scripts:
     - path: jython_comparison/scripts/subalgebra_lattice_smoke.py
       covers:
         - iterator
         - Sg
+        - sg
         - cardinality
+        - universe
+        - zero
+        - one
+        - join
+        - leq
       ignore_lines:
         - "oneGenerated size"
         - "pass 0 of"

@@ -59,6 +59,24 @@ PENDING_BINDINGS = {
             "org.uacalc.ui.tm.ProgressReport is not bound; main is a Java stub",
         ),
     ],
+    "sublat": [
+        (
+            "GUI / drawing (getDiagram) and ProgressReport monitor overloads",
+            "Swing/latdraw and org.uacalc.ui.tm.ProgressReport are out of scope",
+        ),
+        (
+            "SubalgebraLattice.con / sub of the lattice itself",
+            "BasicLattice from a BasicSet universe cannot yet extract i32 join/meet tables",
+        ),
+        (
+            "commented Task helpers (getUniverseTask, percentDone, …)",
+            "Java methods live in a comment block; not part of the live API",
+        ),
+        (
+            "SubalgebraLattice.main",
+            "Java development helper",
+        ),
+    ],
     "conlat": [
         (
             "ProgressReport overloads / UI (getDiagram, getConTable)",
