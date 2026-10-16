@@ -611,6 +611,32 @@ where
     pub fn map(&self) -> Option<&Arc<dyn Operation>> {
         self.map.as_ref()
     }
+
+    /// Java `constructPolinAlgebra` is a stub that always returns null.
+    pub fn construct_polin_algebra(
+        _alg: &dyn SmallAlgebra<UniverseItem = T>,
+        _elt: i32,
+    ) -> Option<Box<dyn SmallAlgebra<UniverseItem = i32>>> {
+        None
+    }
+
+    /// Java `polinizeOperation(OperationSymbol)` — a new polinized op each call.
+    pub fn polinize_operation(&self, sym: &OperationSymbol) -> Result<Box<dyn Operation>, String> {
+        let bot_op = self.bot_alg.get_operation(sym).ok_or_else(|| {
+            format!("Operation {} not found in bot algebra", sym)
+        })?;
+        let top_op = self.top_alg.get_operation(sym).ok_or_else(|| {
+            format!("Operation {} not found in top algebra", sym)
+        })?;
+        Ok(Box::new(PolinizedOperation {
+            symbol: sym.clone(),
+            bot_operation: Arc::<dyn Operation>::from(bot_op),
+            top_operation: Arc::<dyn Operation>::from(top_op),
+            map: self.map.clone(),
+            bot_size: self.bot_size,
+            total_size: self.bot_size + self.top_size,
+        }))
+    }
 }
 
 impl<T> Clone for PolinLikeAlgebra<T>

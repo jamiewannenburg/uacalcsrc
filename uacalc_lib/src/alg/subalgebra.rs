@@ -391,7 +391,7 @@ impl PySubalgebra {
     /// Raises:
     ///     ValueError: If creation fails
     #[staticmethod]
-    fn congruence_as_algebra(py: Python<'_>, alg: &PyBasicAlgebra, cong: &PyPartition) -> PyResult<PySubalgebra> {
+    pub(crate) fn congruence_as_algebra(py: Python<'_>, alg: &PyBasicAlgebra, cong: &PyPartition) -> PyResult<PySubalgebra> {
         Self::congruence_as_algebra_with_name(py, "".to_string(), alg, cong)
     }
     
@@ -410,7 +410,7 @@ impl PySubalgebra {
     /// Raises:
     ///     ValueError: If creation fails
     #[staticmethod]
-    fn congruence_as_algebra_with_name(
+    pub(crate) fn congruence_as_algebra_with_name(
         py: Python<'_>,
         name: String,
         alg: &PyBasicAlgebra,

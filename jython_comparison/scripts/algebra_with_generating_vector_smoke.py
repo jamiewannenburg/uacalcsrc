@@ -6,6 +6,8 @@ import sys
 
 from org.uacalc.io import AlgebraIO
 from org.uacalc.alg import AlgebraWithGeneratingVector
+from org.uacalc.eq import Equation
+from org.uacalc.terms import Variable
 
 
 def _show(label, thunk):
@@ -27,8 +29,19 @@ def test():
     v2 = AlgebraWithGeneratingVector(c2, [0, 1])
     print("isImage=" + str(v.isImageOf(v2)))
     print("compare=" + str(v.compareTo(v2)))
+    print("equals=" + str(v.equals(v2)))
     parts = AlgebraWithGeneratingVector.siDecompose(c2, [1])
     print("si_n=" + str(len(list(parts))))
+    empty_rels = AlgebraWithGeneratingVector.siDecompose(c2, [1], [])
+    print("si_empty_rels=" + str(len(list(empty_rels))))
+    id_rel = AlgebraWithGeneratingVector.siDecompose(
+        c2, [0, 1], [Equation(Variable.x, Variable.x)]
+    )
+    print("si_id_rel=" + str(len(list(id_rel))))
+    xy = AlgebraWithGeneratingVector.siDecompose(
+        c2, [0, 1], [Equation(Variable.x, Variable.y)]
+    )
+    print("si_xy_n=" + str(len(list(xy))))
 
 
 if __name__ == "__main__":

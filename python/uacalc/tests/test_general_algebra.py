@@ -293,10 +293,11 @@ class TestGeneralAlgebra(unittest.TestCase):
         self.assertEqual(alg.cardinality(), 0)
         self.assertEqual(alg.operations_count(), 0)
     
-    def test_empty_universe_error(self):
-        """Test that empty universe raises an error."""
-        with self.assertRaises(Exception):  # Should raise ValueError
-            GeneralAlgebra("Test", [])
+    def test_empty_universe_allowed(self):
+        """Java GeneralAlgebra(name, univ) accepts an empty universe."""
+        alg = GeneralAlgebra("Test", [])
+        self.assertEqual(alg.cardinality(), 0)
+        self.assertEqual(alg.operations_count(), 0)
     
     def test_duplicate_universe_elements(self):
         """Test that duplicate universe elements are handled."""

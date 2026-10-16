@@ -65,11 +65,12 @@ slices:
       UnaryTermsMonoid (no Malcev) Jython shims on org.uacalc.alg with golden
       behavioral cases in tests/parity/alg, including AlgebraIO write/read
       value round-trips and Java-named conversion-path exceptions. CloserTiming
-      is UI-only and is not wrapped. Branch cursor/remaining-alg-types.
-      Left: ReductAlgebra.congruenceAsAlgebra; PolinLikeAlgebra.constructPolinAlgebra
-      / polinizeOperation; AlgebraWithGeneratingVector.siDecompose relations
-      overload depth; GeneralAlgebra empty-universe constructor;
-      UnaryTermsMonoid.getUniverseList (Java term objects vs Python IntArrays).
+      is UI-only and is not wrapped. Branch cursor/alg-leftovers.
+      Leftovers from PR #58: ReductAlgebra.congruenceAsAlgebra;
+      PolinLikeAlgebra.constructPolinAlgebra / polinizeOperation;
+      AlgebraWithGeneratingVector.siDecompose relations overload;
+      GeneralAlgebra empty-universe constructor;
+      UnaryTermsMonoid.getUniverseList (Java-style terms).
 
   - id: core-alg-op
     title: Operation symbols and operations

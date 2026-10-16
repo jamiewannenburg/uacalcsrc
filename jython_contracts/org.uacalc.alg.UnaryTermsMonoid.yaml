@@ -7,8 +7,8 @@ notes: |
   unused in Java. Builds FreeAlgebra(alg,1) and a binary PRODUCT table.
   algebraType is UNARY_TERMS_MONOID. Java stubs: getElement null,
   elementIndex 0, con null, sub null, isUnary false. parent is the
-  generating algebra. getUniverseList is the term list (Java Terms vs
-  Python IntArrays — known owner difference). Constructor prints debug
+  generating algebra. getUniverseList is the unary term list (Java-style
+  Term objects, not free-algebra IntArrays). Constructor prints debug
   lines (ignored in smoke).
 ignore_reason: null
 surface:
@@ -45,6 +45,7 @@ testing:
         - convertToDefaultValueOps
         - isUnary
         - cardinality
+        - intValueAt
       ignore_lines:
         - "pass"
         - "thin"

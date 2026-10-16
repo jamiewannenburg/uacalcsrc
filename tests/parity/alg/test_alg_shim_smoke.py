@@ -162,21 +162,30 @@ def test_remaining_alg_constructors():
     assert mp.getRoot().getName() == c2.getName()
 
     pol = PolinLikeAlgebra("pol", c2, c2, None, 0, 0)
+    plus_sym = OperationSymbol("+", 2)
     assert isinstance(pol, PolinLikeAlgebra)
     assert pol.cardinality() == 4
     assert str(pol.algebraType()) == "POLIN_LIKE"
     assert pol.getElement(0) is None
     assert pol.elementIndex(0) == -1
+    assert PolinLikeAlgebra.constructPolinAlgebra(c2, 0) is None
+    assert pol.polinizeOperation(plus_sym).intValueAt([0, 0]) == 0
 
     id1 = Operations.makeIntOperation(OperationSymbol("id", 1), 2, [0, 1])
     ga = GeneralAlgebra("G", [0, 1], [id1])
     assert isinstance(ga, GeneralAlgebra)
     assert ga.cardinality() == 2
     assert ga.parent() is None
+    empty = GeneralAlgebra("E", [])
+    assert empty.cardinality() == 0
+    assert empty.operations() is None
 
     v = AlgebraWithGeneratingVector(c2, [0, 1])
+    v2 = AlgebraWithGeneratingVector(c2, [0, 1])
     assert list(v.getVector()) == [0, 1]
     assert "alg size = 2" in v.toString()
+    assert v.equals(v2) is True
+    assert len(list(AlgebraWithGeneratingVector.siDecompose(c2, [1], []))) >= 1
 
     p = ParameterizedAlgebra()
     p.parameterNames = ["n"]
@@ -186,6 +195,8 @@ def test_remaining_alg_constructors():
     red = ReductAlgebra("R", c2, [plus])
     assert str(red.algebraType()) == "REDUCT"
     assert red.cardinality() == 2
+    caa = ReductAlgebra.congruenceAsAlgebra(c2, c2.con().Cg(0, 1))
+    assert caa.cardinality() > 0
 
     utm = UnaryTermsMonoid(c2)
     assert isinstance(utm, UnaryTermsMonoid)
@@ -193,3 +204,6 @@ def test_remaining_alg_constructors():
     assert utm.isUnary() is False
     assert utm.getElement(0) is None
     assert utm.elementIndex(0) == 0
+    univ = list(utm.getUniverseList())
+    assert len(univ) == utm.cardinality()
+    assert "IntArray" not in type(univ[0]).__name__

@@ -12,9 +12,10 @@ notes: |
 
   Implemented: ReductAlgebra accepts VariableImp / NonVariableTerm / str;
   Java-style interpretation skips variables; operations() and superAlgebra()
-  work; getUniverseList() is null; algebraType() is REDUCT. Scripts still
-  build NonVariableTerm from the cyclic2 "+" symbol (stringToTerm cannot
-  parse "+").
+  work; getUniverseList() is null; algebraType() is REDUCT. Static
+  congruenceAsAlgebra(alg, cong) / (name, alg, cong) delegates to the
+  Subalgebra implementation (same Java body). Scripts still build
+  NonVariableTerm from the cyclic2 "+" symbol (stringToTerm cannot parse "+").
 ignore_reason: null
 surface:
   package_export: true
@@ -27,7 +28,9 @@ surface:
     getElement: get_element
     getUniverseList: get_universe_list
     algebraType: algebra_type
-  static_methods: []
+    congruenceAsAlgebra: congruenceAsAlgebra
+  static_methods:
+    - congruenceAsAlgebra
   str_parity: false
 testing:
   notes: |
@@ -59,4 +62,5 @@ testing:
         - algebraType
         - cardinality
         - operations
+        - congruenceAsAlgebra
       ignore_lines: []

@@ -7,8 +7,9 @@ notes: |
   Cardinality is top.card+bot.card. algebraType is POLIN_LIKE.
   Java getElement always returns null and elementIndex always -1 (stubs);
   getUniverseList / getUniverseOrder are null. convertToDefaultValueOps
-  throws UnsupportedOperationException. constructPolinAlgebra and
-  polinizeOperation are not the wrap focus.
+  throws UnsupportedOperationException. constructPolinAlgebra is Java's
+  unimplemented stub (always null). polinizeOperation rebuilds the mixed
+  top/bot operation for a symbol.
 ignore_reason: null
 surface:
   package_export: true
@@ -23,7 +24,10 @@ surface:
     convertToDefaultValueOps: convertToDefaultValueOps
     con: con
     sub: sub
-  static_methods: []
+    polinizeOperation: polinize_operation
+    constructPolinAlgebra: construct_polin_algebra
+  static_methods:
+    - constructPolinAlgebra
   str_parity: false
 testing:
   notes: |
@@ -45,4 +49,7 @@ testing:
         - con
         - sub
         - cardinality
+        - constructPolinAlgebra
+        - polinizeOperation
+        - intValueAt
       ignore_lines: []

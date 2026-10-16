@@ -4,6 +4,7 @@ use pyo3::types::PyAny;
 use uacalc::alg::*;
 use crate::alg::convert::{
     algebra_type_java_name, get_operation_by_symbol, operations_to_py, ops_to_basic_algebra,
+    term_to_py,
 };
 use crate::alg::PyBasicAlgebra;
 use crate::util::PyIntArray;
@@ -142,15 +143,13 @@ impl PyUnaryTermsMonoid {
         self.inner.get_operations_ref().len()
     }
 
-    /// Get the universe as a list.
-    ///
-    /// Returns:
-    ///     List[IntArray]: The universe elements
-    fn get_universe_list(&self) -> Vec<PyIntArray> {
-        self.inner.get_universe_list()
-            .unwrap_or_default()
-            .into_iter()
-            .map(|item| PyIntArray { inner: item })
+    /// Java `UnaryTermsMonoid.getUniverseList()` returns the unary term list
+    /// (`List<Term>`), not the free-algebra `IntArray` coordinates.
+    fn get_universe_list(&self, py: Python<'_>) -> PyResult<Vec<PyObject>> {
+        self.inner
+            .unary_term_list
+            .iter()
+            .map(|term| term_to_py(py, term.as_ref()))
             .collect()
     }
 
