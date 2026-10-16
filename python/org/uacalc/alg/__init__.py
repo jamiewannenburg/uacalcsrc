@@ -386,7 +386,13 @@ if not is_jython:
         },
         "SubalgebraLattice": {
             "iterator": "iterator",
-            "Sg": "sg",
+            "Sg": "Sg",
+            "sg": "sg",
+            "getName": "getName",
+            "getAlgebra": "getAlgebra",
+            "joinIrreducibles": "joinIrreducibles",
+            "oneGeneratedSubalgebras": "oneGeneratedSubalgebras",
+            "findMinimalSizedGeneratingSet": "findMinimalSizedGeneratingSet",
         },
     }
 
@@ -402,6 +408,8 @@ if not is_jython:
     import org.uacalc.alg.op  # noqa: F401
     # Apply Partition / CongruenceLattice facades so alg.con().Cg matches Java.
     import org.uacalc.alg.conlat  # noqa: F401
+    # Apply SubalgebraLattice / BasicSet facades so alg.sub().Sg matches Java.
+    import org.uacalc.alg.sublat  # noqa: F401
 else:
     # In Jython, import from the Java package
     from org.uacalc.alg import *  # noqa: F403,F401

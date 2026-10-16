@@ -3180,7 +3180,8 @@ def _install(alg_module_globals: dict) -> None:
         },
         "SubalgebraLattice": {
             "iterator": "iterator",
-            "Sg": "sg",
+            "Sg": "Sg",
+            "sg": "sg",
         },
     }
 

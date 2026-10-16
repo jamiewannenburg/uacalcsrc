@@ -529,6 +529,60 @@ the org shim's `leftSide` / `rightSide` return term objects via
 
 ---
 
+## org.uacalc.alg.sublat
+
+### BasicSet.union index bug
+
+- **Java**: `union` loops `if (!lst.contains(i)) lst.add(set2.get(i))` using the
+  *index* `i`, not the element. `{0,2} ∪ {1,3}` is `{0,2,3}` (drops 1).
+- **Python**: org shim reproduces that Java loop. `uacalc_lib` still does a
+  correct set-union.
+- **Status**: Matched in the shim
+- **Tests**: `bs_union_index_bug` passes
+- **Owner vs shim**: Shim — `python/org/uacalc/alg/sublat/_jython_compat.py`
+
+### BasicSet.union duplicate-preserving normalize
+
+- **Java**: `normalize()` only sorts, so `union({5,6}, {5})` is `[5, 5, 6]`.
+- **Python**: `BasicSet::new` dedupes to `[5, 6]`.
+- **Status**: Strict xfail (library keeps unique sets)
+- **Tests**: `bs_union_keeps_dups`
+- **Owner vs shim**: Owner/library — do not teach `BasicSet` to store duplicates.
+
+### SubalgebraLattice.meet / join(List) / atoms / coatoms / meetIrreducibles
+
+- **Java**: these methods are identically `null` (empty stubs / TODOs).
+- **Python**: org shim returns `None`. `uacalc_lib` still implements lattice
+  meet as intersection and `join_list` as a fold.
+- **Status**: Matched in the shim
+- **Owner vs shim**: Shim
+
+### SubalgebraLattice.Sg vs sg
+
+- **Java**: `sg(int[])` returns `BasicSet`; `Sg(...)` returns `Subalgebra`.
+- **Python**: org shim dispatches the same way (previously aliased `Sg` to `sg`).
+- **Status**: Fixed in the shim
+- **Tests**: `sl_sg0`, `sl_Sg_card`, `sl_Sg_name`
+
+### SubalgebraLattice.con / sub of the lattice
+
+- **Java**: `con()` / `sub()` go through `getBasicLattice()` and compute
+  `Con(Sub(A))` / `Sub(Sub(A))` (card 4 and 8 on cyclic2).
+- **Python**: `BasicLattice` built from a `BasicSet` universe cannot extract i32
+  join/meet tables (`get_element` is ops-only).
+- **Status**: Strict xfail (roadmap)
+- **Tests**: `sl_con`, `sl_sub`
+- **Owner vs shim**: Owner/library — BasicLattice over `BasicSet`
+
+### SubalgebraLattice.getDiagram
+
+- **Java**: latdraw `Diagram` when drawable.
+- **Python**: not bound (GUI / Swing out of scope).
+- **Status**: Strict xfail
+- **Tests**: `sl_get_diagram`
+
+---
+
 ## org.uacalc.alg.Malcev
 
 Left alone, as specified. `minority_term` / `weak_nu_term` are not part of this

@@ -1,6 +1,6 @@
-﻿MODULE: org.uacalc.alg.sublat
+MODULE: org.uacalc.alg.sublat
 RUNTIME: cpython
 PUBLIC_COUNT: 2
 NAME: BasicSet
 NAME: SubalgebraLattice
-SAMPLE_BASIC_SET_UNIVERSE_SIZE: skip (no BasicSet on this runtime)
+SAMPLE_BASIC_SET_UNIVERSE_SIZE: 2

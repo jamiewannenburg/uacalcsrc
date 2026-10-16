@@ -34,7 +34,7 @@ def main():
     for n in names:
         print("NAME: " + n)
 
-    if is_java and "BasicSet" in names:
+    if "BasicSet" in names:
         from org.uacalc.alg.sublat import BasicSet  # noqa: F401
 
         s = BasicSet([0, 1])

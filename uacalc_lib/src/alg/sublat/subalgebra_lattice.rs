@@ -271,6 +271,36 @@ impl PySubalgebraLattice {
         uacalc::alg::sublat::SubalgebraLattice::<i32>::no_duplicates(lst)
     }
 
+    /// Java ``makeSg(List)`` / ``makeSg(List, closedMark)``.
+    fn make_sg(&self, gens: Vec<i32>, closed_mark: Option<usize>) -> PyBasicSet {
+        let inner = self.inner.borrow();
+        let mark = closed_mark.unwrap_or(0);
+        PyBasicSet::from_inner(inner.make_sg(gens, mark))
+    }
+
+    /// Java ``SubalgebraLattice.extendToHomomorphism(int[], int[], A, B)``.
+    ///
+    /// Length mismatch raises ``ValueError`` (org shim maps to
+    /// ``IllegalArgumentException``). Missing homomorphism is ``None``.
+    #[staticmethod]
+    fn extend_to_homomorphism(
+        gens: Vec<i32>,
+        gens_b: Vec<i32>,
+        a: &PyBasicAlgebra,
+        b: &PyBasicAlgebra,
+    ) -> PyResult<Option<std::collections::HashMap<i32, i32>>> {
+        if gens.len() != gens_b.len() {
+            return Err(PyValueError::new_err(
+                "generating sets must have the same size",
+            ));
+        }
+        Ok(
+            uacalc::alg::sublat::SubalgebraLattice::<i32>::extend_to_homomorphism(
+                &gens, &gens_b, &a.inner, &b.inner,
+            ),
+        )
+    }
+
     /// Python string representation
     fn __str__(&self) -> String {
         let inner = self.inner.borrow();

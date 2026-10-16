@@ -51,6 +51,36 @@ impl PyBasicSet {
         self.inner.universe_size()
     }
 
+    /// Java ``IntArray.get(i)``: element at index ``i``.
+    fn get(&self, index: usize) -> PyResult<i32> {
+        self.inner.elements().get(index).copied().ok_or_else(|| {
+            PyValueError::new_err(format!(
+                "Index {} out of bounds for length {}",
+                index,
+                self.inner.size()
+            ))
+        })
+    }
+
+    /// Java ``IntArray.toArray()`` / ``getArray()``.
+    fn to_array(&self) -> Vec<i32> {
+        self.inner.elements().clone()
+    }
+
+    /// Java ``IntArray.getArray()``.
+    fn get_array(&self) -> Vec<i32> {
+        self.to_array()
+    }
+
+    /// Java ``Comparable.compareTo``.
+    fn compare_to(&self, other: &PyBasicSet) -> i32 {
+        match self.inner.cmp(&other.inner) {
+            std::cmp::Ordering::Less => -1,
+            std::cmp::Ordering::Equal => 0,
+            std::cmp::Ordering::Greater => 1,
+        }
+    }
+
     /// Normalize the set by sorting elements and removing duplicates.
     fn normalize(&mut self) {
         self.inner.normalize();
@@ -150,14 +180,26 @@ impl PyBasicSet {
         PyBasicSet { inner: uacalc::alg::sublat::BasicSet::union_static(&set1.inner, &set2.inner) }
     }
 
-    /// Python string representation
+    /// Match Java ``IntArray.toString()``: ``[0, 1]`` with comma-space.
     fn __str__(&self) -> String {
-        self.inner.to_string()
+        let elems = self.inner.elements();
+        if elems.is_empty() {
+            return "[]".to_string();
+        }
+        let mut sb = String::from("[");
+        for (i, v) in elems.iter().enumerate() {
+            if i > 0 {
+                sb.push_str(", ");
+            }
+            sb.push_str(&v.to_string());
+        }
+        sb.push(']');
+        sb
     }
 
     /// Python repr representation
     fn __repr__(&self) -> String {
-        format!("BasicSet({})", self.inner.to_string())
+        format!("BasicSet({})", self.__str__())
     }
 
     /// Python equality comparison

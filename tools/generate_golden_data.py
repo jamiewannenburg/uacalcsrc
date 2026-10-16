@@ -160,40 +160,6 @@ def serialize(obj):
     class_name = obj.__class__.__name__
     if class_name.startswith("Py") and len(class_name) > 2:
         class_name = class_name[2:]
-    if "Algebra" in class_name:
-        ops = call_or_get(obj, "operations", "getOperations") or []
-        ops = list(ops)
-        symbols = []
-        arities = []
-        tables = []
-        for op in ops:
-            symbols.append(op_symbol_name(op))
-            arities.append(op_arity(op))
-            tables.append(op_table(op))
-        return {
-            "__type__": "algebra",
-            "class": class_name,
-            "name": str(call_or_get(obj, "name", "getName") or ""),
-            "cardinality": int(call_or_get(obj, "cardinality") or 0),
-            "operation_count": len(ops),
-            "symbols": symbols,
-            "arities": arities,
-            "tables": tables,
-        }
-    if "Partition" in class_name and "Lattice" not in class_name:
-        arr = call_or_get(obj, "toArray", "to_array", "getArray", "get_array") or []
-        us = call_or_get(obj, "universeSize", "universe_size")
-        nb = call_or_get(obj, "numberOfBlocks", "number_of_blocks")
-        if class_name == "Partition":
-            class_name = "BasicPartition"
-        return {
-            "__type__": "partition",
-            "class": class_name,
-            "string": str(obj),
-            "array": [int(x) for x in list(arr)],
-            "universe_size": int(us) if us is not None else 0,
-            "number_of_blocks": int(nb) if nb is not None else 0,
-        }
     if "Lattice" in class_name:
         univ = call_or_get(obj, "universe", "getUniverseList")
         univ_ser = None
@@ -224,6 +190,58 @@ def serialize(obj):
             "cardinality": int(call_or_get(obj, "cardinality") or 0),
             "universe": univ_ser,
             "zero": zero_ser,
+        }
+    if "Algebra" in class_name:
+        ops = call_or_get(obj, "operations", "getOperations") or []
+        ops = list(ops)
+        symbols = []
+        arities = []
+        tables = []
+        for op in ops:
+            symbols.append(op_symbol_name(op))
+            arities.append(op_arity(op))
+            tables.append(op_table(op))
+        return {
+            "__type__": "algebra",
+            "class": class_name,
+            "name": str(call_or_get(obj, "name", "getName") or ""),
+            "cardinality": int(call_or_get(obj, "cardinality") or 0),
+            "operation_count": len(ops),
+            "symbols": symbols,
+            "arities": arities,
+            "tables": tables,
+        }
+    if class_name == "BasicSet":
+        arr = call_or_get(obj, "toArray", "to_array", "getArray", "get_array", "elements")
+        if arr is None:
+            n_raw = call_or_get(obj, "universeSize", "universe_size", "size")
+            try:
+                n = int(n_raw)
+            except Exception:
+                n = 0
+            getter = getattr(obj, "get", None)
+            arr = [int(getter(i)) for i in range(n)] if getter is not None and callable(getter) else []
+        us = call_or_get(obj, "universeSize", "universe_size", "size")
+        return {
+            "__type__": "basic_set",
+            "class": "BasicSet",
+            "string": str(obj),
+            "elements": [int(x) for x in list(arr)],
+            "universe_size": int(us) if us is not None else 0,
+        }
+    if "Partition" in class_name and "Lattice" not in class_name:
+        arr = call_or_get(obj, "toArray", "to_array", "getArray", "get_array") or []
+        us = call_or_get(obj, "universeSize", "universe_size")
+        nb = call_or_get(obj, "numberOfBlocks", "number_of_blocks")
+        if class_name == "Partition":
+            class_name = "BasicPartition"
+        return {
+            "__type__": "partition",
+            "class": class_name,
+            "string": str(obj),
+            "array": [int(x) for x in list(arr)],
+            "universe_size": int(us) if us is not None else 0,
+            "number_of_blocks": int(nb) if nb is not None else 0,
         }
     if "Term" in class_name or class_name in ("VariableImp", "NonVariableTerm"):
         isa = call_or_get(obj, "isaVariable", "isa_variable")

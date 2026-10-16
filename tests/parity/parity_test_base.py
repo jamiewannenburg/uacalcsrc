@@ -191,47 +191,7 @@ def serialize_for_golden(obj: Any) -> Any:
     if class_name.startswith("Py") and len(class_name) > 2 and class_name[2].isupper():
         class_name = class_name[2:]
 
-    # Algebra-like
-    if any(tag in class_name for tag in ("Algebra", "algebra")):
-        ops = _call_or_get(obj, "operations", "getOperations") or []
-        ops = list(ops)
-        symbols = []
-        arities = []
-        tables = []
-        for op in ops:
-            symbols.append(_op_symbol_name(op))
-            arities.append(_op_arity(op))
-            tables.append(_op_table(op))
-        return {
-            "__type__": "algebra",
-            "class": class_name,
-            "name": str(_call_or_get(obj, "name", "getName") or ""),
-            "cardinality": int(_call_or_get(obj, "cardinality") or 0),
-            "operation_count": len(ops),
-            "symbols": symbols,
-            "arities": arities,
-            "tables": tables,
-        }
-
-    # Partition / BasicPartition (before Lattice: CongruenceLattice is a lattice)
-    if "Partition" in class_name and "Lattice" not in class_name:
-        arr = _call_or_get(obj, "toArray", "to_array", "getArray", "get_array") or []
-        if class_name == "Partition":
-            class_name = "BasicPartition"
-        return {
-            "__type__": "partition",
-            "class": class_name,
-            "string": str(obj),
-            "array": [int(x) for x in list(arr)],
-            "universe_size": int(
-                _call_or_get(obj, "universeSize", "universe_size") or 0
-            ),
-            "number_of_blocks": int(
-                _call_or_get(obj, "numberOfBlocks", "number_of_blocks") or 0
-            ),
-        }
-
-    # Lattice-like
+    # Lattice-like (before Algebra: SubalgebraLattice contains both names)
     if "Lattice" in class_name or "lattice" in class_name:
         univ = _call_or_get(obj, "universe", "getUniverseList")
         univ_ser = None
@@ -254,6 +214,63 @@ def serialize_for_golden(obj: Any) -> Any:
             "cardinality": int(_call_or_get(obj, "cardinality") or 0),
             "universe": univ_ser,
             "zero": _lattice_zero_ser(_call_or_get(obj, "zero")),
+        }
+
+    # Algebra-like
+    if any(tag in class_name for tag in ("Algebra", "algebra")):
+        ops = _call_or_get(obj, "operations", "getOperations") or []
+        ops = list(ops)
+        symbols = []
+        arities = []
+        tables = []
+        for op in ops:
+            symbols.append(_op_symbol_name(op))
+            arities.append(_op_arity(op))
+            tables.append(_op_table(op))
+        return {
+            "__type__": "algebra",
+            "class": class_name,
+            "name": str(_call_or_get(obj, "name", "getName") or ""),
+            "cardinality": int(_call_or_get(obj, "cardinality") or 0),
+            "operation_count": len(ops),
+            "symbols": symbols,
+            "arities": arities,
+            "tables": tables,
+        }
+
+    # BasicSet (before Lattice: SubalgebraLattice is a lattice)
+    if class_name == "BasicSet":
+        arr = _call_or_get(obj, "toArray", "to_array", "getArray", "get_array", "elements")
+        if arr is None:
+            n = int(_call_or_get(obj, "universeSize", "universe_size", "size") or 0)
+            getter = getattr(obj, "get", None)
+            arr = [int(getter(i)) for i in range(n)] if callable(getter) else []
+        return {
+            "__type__": "basic_set",
+            "class": "BasicSet",
+            "string": str(obj),
+            "elements": [int(x) for x in list(arr)],
+            "universe_size": int(
+                _call_or_get(obj, "universeSize", "universe_size", "size") or 0
+            ),
+        }
+
+    # Partition / BasicPartition (before Lattice: CongruenceLattice is a lattice)
+    if "Partition" in class_name and "Lattice" not in class_name:
+        arr = _call_or_get(obj, "toArray", "to_array", "getArray", "get_array") or []
+        if class_name == "Partition":
+            class_name = "BasicPartition"
+        return {
+            "__type__": "partition",
+            "class": class_name,
+            "string": str(obj),
+            "array": [int(x) for x in list(arr)],
+            "universe_size": int(
+                _call_or_get(obj, "universeSize", "universe_size") or 0
+            ),
+            "number_of_blocks": int(
+                _call_or_get(obj, "numberOfBlocks", "number_of_blocks") or 0
+            ),
         }
 
     # Term-like
