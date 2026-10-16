@@ -682,18 +682,20 @@ def _install(sublat_globals: dict) -> None:
             "PolinLikeAlgebra",
             "UnaryTermsMonoid",
         ):
-            cls = getattr(_algmod, _name, None)
-            if cls is None or not hasattr(cls, "sub"):
-                continue
-            orig = cls.sub
-            if getattr(orig, "_sublat_remember", False):
-                continue
-            wrapped = _wrap_alg_sub(orig)
-            wrapped._sublat_remember = True
-            try:
-                cls.sub = wrapped
-            except (TypeError, AttributeError):
-                pass
+            # Python wrappers often have no .sub; AlgebraIO/ctors return _Lib* PyO3 types.
+            for attr in (_name, "_Lib" + _name):
+                cls = getattr(_algmod, attr, None)
+                if cls is None or not hasattr(cls, "sub"):
+                    continue
+                orig = cls.sub
+                if getattr(orig, "_sublat_remember", False):
+                    continue
+                wrapped = _wrap_alg_sub(orig)
+                wrapped._sublat_remember = True
+                try:
+                    cls.sub = wrapped
+                except (TypeError, AttributeError):
+                    pass
 
     _CLASS_ALIASES = {
         "BasicSet": {
