@@ -773,47 +773,23 @@ pub struct PyBasicLattice {
 
 #[pymethods]
 impl PyBasicLattice {
-    /// Create a BasicLattice from a CongruenceLattice
+    /// Create a BasicLattice from a CongruenceLattice or SubalgebraLattice.
+    ///
+    /// Java overloads: `BasicLattice(name, CongruenceLattice, boolean)` and
+    /// `BasicLattice(name, Lattice)` (SubalgebraLattice implements Lattice).
     #[new]
-    #[pyo3(signature = (name, con_lat, label=true))]
-    fn new(name: String, con_lat: &Bound<'_, PyAny>, label: bool) -> PyResult<Self> {
+    #[pyo3(signature = (name, lat, label=true))]
+    fn new(name: String, lat: &Bound<'_, PyAny>, label: bool) -> PyResult<Self> {
         let _ = label;
-        // Try to extract PyCongruenceLattice (or an org wrapper with `_inner`).
-        use crate::alg::conlat::congruence_lattice::PyCongruenceLattice;
-        use uacalc::lat::Lattice;
-        let bound = if con_lat.extract::<PyRef<'_, PyCongruenceLattice>>().is_ok() {
-            con_lat.clone()
-        } else if let Ok(inner) = con_lat.getattr("_inner") {
-            inner
-        } else {
-            return Err(PyValueError::new_err(
-                "BasicLattice creation requires a CongruenceLattice instance",
-            ));
-        };
-        let mut py_con_lat = bound.extract::<PyRefMut<'_, PyCongruenceLattice>>()?;
-        // Java makeOrderedSet(lat) calls lat.universe() and lat.joinIrreducibles().
-        // Use UFCS so we hit CongruenceLattice's `&mut self` inherent methods
-        // (Algebra::universe is `&self` and returns empty until those caches exist).
-        {
-            use uacalc::alg::conlat::CongruenceLattice;
-            let inner = &mut py_con_lat.inner;
-            let _ = CongruenceLattice::universe(inner);
-            let _ = CongruenceLattice::join_irreducibles(inner);
+        if let Some(result) = Self::try_from_congruence_lattice(name.clone(), lat) {
+            return result;
         }
-        match uacalc::lat::BasicLattice::new_from_lattice(
-            name,
-            &py_con_lat.inner as &dyn Lattice<uacalc::alg::conlat::Partition>,
-        ) {
-            Ok(basic_lat) => Ok(PyBasicLattice {
-                inner: BasicLatticeInner::Partition(std::sync::Arc::new(std::sync::Mutex::new(
-                    basic_lat,
-                ))),
-            }),
-            Err(e) => Err(PyValueError::new_err(format!(
-                "Failed to create BasicLattice: {}",
-                e
-            ))),
+        if let Some(result) = Self::try_from_subalgebra_lattice(name, lat) {
+            return result;
         }
+        Err(PyValueError::new_err(
+            "BasicLattice creation requires a CongruenceLattice or SubalgebraLattice instance",
+        ))
     }
     
     /// Create a BasicLattice from an OrderedSet<i32>
@@ -1349,6 +1325,84 @@ impl PyBasicLattice {
             }
             _ => Err(PyValueError::new_err("get_poset() is only available for BasicLattice<i32> created from operations")),
         }
+    }
+}
+
+impl PyBasicLattice {
+    fn unwrap_inner<'py>(lat: &Bound<'py, PyAny>) -> Bound<'py, PyAny> {
+        if let Ok(inner) = lat.getattr("_inner") {
+            inner
+        } else {
+            lat.clone()
+        }
+    }
+
+    fn try_from_congruence_lattice(
+        name: String,
+        lat: &Bound<'_, PyAny>,
+    ) -> Option<PyResult<Self>> {
+        use crate::alg::conlat::congruence_lattice::PyCongruenceLattice;
+        use uacalc::lat::Lattice;
+        let bound = Self::unwrap_inner(lat);
+        if bound.extract::<PyRef<'_, PyCongruenceLattice>>().is_err() {
+            return None;
+        }
+        Some((|| {
+            let mut py_con_lat = bound.extract::<PyRefMut<'_, PyCongruenceLattice>>()?;
+            // Java makeOrderedSet(lat) calls lat.universe() and lat.joinIrreducibles().
+            {
+                use uacalc::alg::conlat::CongruenceLattice;
+                let inner = &mut py_con_lat.inner;
+                let _ = CongruenceLattice::universe(inner);
+                let _ = CongruenceLattice::join_irreducibles(inner);
+            }
+            match uacalc::lat::BasicLattice::new_from_lattice(
+                name,
+                &py_con_lat.inner as &dyn Lattice<uacalc::alg::conlat::Partition>,
+            ) {
+                Ok(basic_lat) => Ok(PyBasicLattice {
+                    inner: BasicLatticeInner::Partition(std::sync::Arc::new(std::sync::Mutex::new(
+                        basic_lat,
+                    ))),
+                }),
+                Err(e) => Err(PyValueError::new_err(format!(
+                    "Failed to create BasicLattice: {}",
+                    e
+                ))),
+            }
+        })())
+    }
+
+    fn try_from_subalgebra_lattice(
+        name: String,
+        lat: &Bound<'_, PyAny>,
+    ) -> Option<PyResult<Self>> {
+        use crate::alg::sublat::subalgebra_lattice::PySubalgebraLattice;
+        use uacalc::lat::Lattice;
+        let bound = Self::unwrap_inner(lat);
+        if bound.extract::<PyRef<'_, PySubalgebraLattice>>().is_err() {
+            return None;
+        }
+        Some((|| {
+            let py_sub = bound.extract::<PyRef<'_, PySubalgebraLattice>>()?;
+            let mut inner = py_sub.inner.borrow_mut();
+            let _ = inner.universe_mut();
+            let _ = inner.join_irreducibles_mut();
+            match uacalc::lat::BasicLattice::new_from_lattice(
+                name,
+                &*inner as &dyn Lattice<uacalc::alg::sublat::BasicSet>,
+            ) {
+                Ok(basic_lat) => Ok(PyBasicLattice {
+                    inner: BasicLatticeInner::BasicSet(std::sync::Arc::new(std::sync::Mutex::new(
+                        basic_lat,
+                    ))),
+                }),
+                Err(e) => Err(PyValueError::new_err(format!(
+                    "Failed to create BasicLattice: {}",
+                    e
+                ))),
+            }
+        })())
     }
 }
 

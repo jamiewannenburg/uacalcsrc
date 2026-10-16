@@ -7,7 +7,7 @@ use crate::alg::PyBasicSet;
 /// Python wrapper for SubalgebraLattice
 #[pyclass]
 pub struct PySubalgebraLattice {
-    inner: std::cell::RefCell<uacalc::alg::sublat::SubalgebraLattice<i32>>,
+    pub(crate) inner: std::cell::RefCell<uacalc::alg::sublat::SubalgebraLattice<i32>>,
 }
 
 #[pymethods]
@@ -328,9 +328,10 @@ impl PySubalgebraLattice {
         // Get the inner SubalgebraLattice (mutable borrow to compute universe)
         let mut inner = self.inner.borrow_mut();
         
-        // Ensure universe is computed
+        // Java makeOrderedSet(lat) calls lat.universe() and lat.joinIrreducibles().
         let _ = inner.universe_mut();
-        
+        let _ = inner.join_irreducibles_mut();
+
         // Create BasicLattice from the lattice using new_from_lattice
         // SubalgebraLattice implements Lattice<BasicSet>
         // We need to use a reference that outlives the borrow, so we'll create the lattice

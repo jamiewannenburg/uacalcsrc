@@ -34,6 +34,7 @@ _CLASS_ALIASES = {
         "makeIrredundantMeet": "makeIrredundantMeet",
         "con": "con",
         "sub": "sub",
+        "universe": "universe",
     },
     "SmallLattice": {
         "upperCoversIndices": "upper_covers_indices",
@@ -134,9 +135,17 @@ if not is_jython:
 
         @staticmethod
         def latticeFromMeet(name, meet_op_or_univ, meet_op=None):
-            if meet_op is None:
-                return _lattice_from_meet(name, meet_op_or_univ)
-            return _lattice_from_meet_with_universe(name, list(meet_op_or_univ), meet_op)
+            # Java catches NonOrderedSetException and returns null. A meet
+            # table that is not a semilattice can still induce a poset
+            # (unlike some join tables), so only map library failures to None.
+            try:
+                if meet_op is None:
+                    return _lattice_from_meet(name, meet_op_or_univ)
+                return _lattice_from_meet_with_universe(
+                    name, list(meet_op_or_univ), meet_op
+                )
+            except ValueError:
+                return None
 
         @staticmethod
         def dual(lat):

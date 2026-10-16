@@ -17,7 +17,7 @@ testing:
   notes: |
     order_api.py subclasses Order the way Jython implements the Java
     interface and prints leq plus maximals. Golden tests cover ints, lists,
-    tuples, and a CPython callable.
+    tuples, a CPython callable, reverse order, and reflexivity.
   task_refs: []
   scripts:
     - path: jython_comparison/scripts/order_api.py

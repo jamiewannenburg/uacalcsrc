@@ -17,7 +17,8 @@ testing:
   notes: |
     order_api.py and basic_lattice_api.py print maximals. Golden tests cover
     divisibility, prefix, natural, generic Order classes, lists, tuples,
-    callables, empty input, and a null-order NPE.
+    callables, empty input, a null-order NPE, a null collection NPE,
+    singletons, duplicates, reverse order, and length order.
   task_refs: []
   scripts:
     - path: jython_comparison/scripts/basic_lattice_api.py

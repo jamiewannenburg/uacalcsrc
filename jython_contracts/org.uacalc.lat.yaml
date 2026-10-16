@@ -5,8 +5,11 @@ java_source: null
 notes: |
   Thin package index. File-level contracts cover Lattices, BasicLattice,
   OrderedSets, Order, SmallLattice. Lattice is still an interface (ignored;
-  methods live on BasicLattice). GUI/drawing (getDiagram, getVertices,
-  FrameShower, main) and Malcev are out of scope. POElem lives in
+  methods live on BasicLattice). Deliberately unwrapped (5 of 41 Java
+  methods): getVertices, main, run (Swing/latdraw GUI), plus scanner
+  false-positives intValueAt/valueAt on the anonymous join/meet
+  Operations inside BasicLattice. getDiagram is also GUI (dotted Java
+  return type, not in the 41). Malcev is out of scope. POElem lives in
   org.latdraw; its order methods are covered via OrderedSet / BasicLattice.
 ignore_reason: null
 surface:

@@ -201,15 +201,20 @@ slices:
     notes: >-
       File-level contracts for Lattices / BasicLattice / OrderedSets / Order /
       SmallLattice; Lattice ignored (interface, methods on BasicLattice).
-      Behavioral goldens cover join/meet/order, irreducibles, covers, filter/ideal,
-      OrderedSet univ/leq/covers, makeOrderedSet, generic Order.leq maximals
-      (ints, lists, objects, callable), findJoinIrred / findMeetIrred,
-      irredundant join/meet decompositions, con/sub, and BasicLattice from
-      Con(C2)/Con(lat2). SmallLattice.upperCoversIndices is a strict xfail for
-      a known Java bug (conToSmallLattice always null -> AttributeError;
-      Python DiamondLattice.upperCoversIndices(0) is [1, 2]). GUI/drawing,
-      latdraw POElem class, and Malcev left as leftovers. Branch
-      cursor/basic-lattice-finish-000f.
+      36/41 Java methods wrapped and tested (100% of wrapped). Deliberately
+      skipped unwrapped: getVertices/main/run (Swing/latdraw GUI) and
+      intValueAt/valueAt (scanner false-positives on anonymous join/meet
+      Operations). getDiagram is also GUI. Behavioral goldens cover
+      join/meet/order, irreducibles, covers, filter/ideal, OrderedSet
+      univ/leq/covers, makeOrderedSet, generic Order.leq maximals (ints,
+      lists, objects, callable, reverse, length, singleton, duplicates,
+      null elems), findJoinIrred / findMeetIrred, irredundant join/meet
+      decompositions, con/sub, chains of several lengths, N5, M3, Boolean
+      2^n, products (C2xC3 and ProductAlgebra(lat2,lat2)), and BasicLattice
+      from Con(A)/Sub(A) of C2, C3, lat2, N5, M3, ba2. SmallLattice.upperCoversIndices
+      is a strict xfail for a known Java bug (conToSmallLattice always null
+      -> AttributeError; Python DiamondLattice.upperCoversIndices(0) is
+      [1, 2]). Malcev left as leftovers. Branch lat-coverage-extend.
 
   - id: core-terms
     title: Terms and Taylor operations

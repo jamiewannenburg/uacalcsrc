@@ -22,7 +22,9 @@ PENDING_BINDINGS = {
     "lat": [
         (
             "GUI / drawing (getDiagram, getVertices, FrameShower, main, run)",
-            "Swing/latdraw diagram code is out of scope",
+            "Swing/latdraw diagram code is out of scope; the 5 unwrapped of 41 "
+            "are getVertices, main, run plus scanner false-positives "
+            "intValueAt/valueAt",
         ),
         (
             "LatticeGraphData drawing helpers",
