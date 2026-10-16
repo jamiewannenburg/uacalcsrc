@@ -159,6 +159,23 @@ def _dump_free(label, f, plus_sym):
 
     _show(label + "_getVariables", _vars)
 
+    def _varmap():
+        m = f.getVariableToGeneratorMap()
+        if m is None:
+            return "None"
+        items = m.entrySet() if hasattr(m, "entrySet") else m.items()
+        parts = []
+        for item in items:
+            if hasattr(item, "getKey"):
+                k, v = item.getKey(), item.getValue()
+            else:
+                k, v = item
+            parts.append(_term_str(k) + "->" + _coords(v))
+        parts.sort()
+        return "{" + ",".join(parts) + "}"
+
+    _show(label + "_getVariableToGeneratorMap", _varmap)
+
     def _idem():
         terms = f.getIdempotentTerms()
         return "[" + ",".join(_term_str(t) for t in _as_list(terms)) + "]"

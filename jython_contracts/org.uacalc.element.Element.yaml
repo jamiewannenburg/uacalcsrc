@@ -1,0 +1,36 @@
+target: org.uacalc.element.Element
+level: file
+status: implemented
+java_source: org/uacalc/element/Element.java
+notes: |
+  Interface. Concrete type is SubProductElement. Parent accessors are stubs
+  that return null. Instantiation is rejected (Java interface).
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    getAlgebra: get_algebra
+    index: index
+    getParent: get_parent
+    getParentArray: get_parent_array
+    parentIndexArray: parent_index_array
+    toString: toString
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    Exercised via SubProductElement instances of free algebras and subproducts.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/element_ops.py
+      covers:
+        - getAlgebra
+        - index
+        - getParent
+        - getParentArray
+        - parentIndexArray
+        - toString
+      ignore_lines:
+        - "pass:"
+        - "Constructing free"
+        - "done constructing"

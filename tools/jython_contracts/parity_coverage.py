@@ -59,6 +59,12 @@ PENDING_BINDINGS = {
             "org.uacalc.ui.tm.ProgressReport is not bound; main is a Java stub",
         ),
     ],
+    "element": [
+        (
+            "Element instantiation",
+            "Java interface; CPython rejects Element()",
+        ),
+    ],
     "sublat": [
         (
             "GUI / drawing (getDiagram) and ProgressReport monitor overloads",

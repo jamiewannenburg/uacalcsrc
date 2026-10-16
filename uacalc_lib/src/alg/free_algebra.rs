@@ -2,6 +2,7 @@ use crate::alg::big_product_algebra::PyBigProductAlgebra;
 use crate::alg::conlat::congruence_lattice::PyCongruenceLatticeIntArray;
 use crate::alg::convert::{
     algebra_type_java_name, operation_to_py, ops_to_basic_algebra, py_to_term, term_to_py,
+    vars_map_to_py,
 };
 use crate::alg::universe_map::PyUniverseMap;
 use crate::alg::PyBasicAlgebra;
@@ -415,6 +416,14 @@ impl PyFreeAlgebra {
             .into_iter()
             .map(|inner| PyVariableImp { inner })
             .collect()
+    }
+
+    /// Java `getVariableToGeneratorMap()`.
+    fn get_variable_to_generator_map(&self, py: Python<'_>) -> PyResult<Option<PyObject>> {
+        match self.inner.get_inner().get_variable_to_generator_map() {
+            Some(map) => Ok(Some(vars_map_to_py(py, map)?)),
+            None => Ok(None),
+        }
     }
 
     /// Get the universe as a list.

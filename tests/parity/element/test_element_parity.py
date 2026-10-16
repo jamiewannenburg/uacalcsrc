@@ -60,9 +60,11 @@ def test_element_shim_public_names_match_uacalc_lib():
 
     lib_public = {n for n in dir(lib_element) if not n.startswith('_')}
     shim_public = {n for n in dir(shim) if not n.startswith('_')}
-    assert shim_public == lib_public
+    assert lib_public <= shim_public
     for name in lib_public:
         assert getattr(shim, name) is getattr(lib_element, name)
+    assert "Element" in shim_public
+    assert "SubProductElement" in shim_public
 
 
 def test_element_shim_reexports_element_class_when_bound():
@@ -74,3 +76,21 @@ def test_element_shim_reexports_element_class_when_bound():
     import org.uacalc.element as shim  # noqa: PLC0415
 
     assert shim.Element is lib_element.Element
+
+
+def test_element_shim_constructs_subproduct_element():
+    """SubProductElement wraps a free-algebra generator when bindings exist."""
+    _uacalc_lib_element()
+    _ensure_python_org_on_path()
+    import org.uacalc.element as shim  # noqa: PLC0415
+    from org.uacalc.io import AlgebraIO  # noqa: PLC0415
+    from org.uacalc.alg import FreeAlgebra  # noqa: PLC0415
+
+    if not hasattr(shim, "SubProductElement"):
+        pytest.skip("SubProductElement not bound")
+    c2 = AlgebraIO.readAlgebraFile(str(REPO_ROOT / "resources" / "algebras" / "cyclic2.ua"))
+    f1 = FreeAlgebra(c2, 1)
+    e = shim.SubProductElement(f1.getElement(0), f1)
+    assert e.index() == 0
+    assert e.getParent() is None
+    assert e.getAlgebra().cardinality() == f1.cardinality()

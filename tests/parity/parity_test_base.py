@@ -273,6 +273,17 @@ def serialize_for_golden(obj: Any) -> Any:
             ),
         }
 
+    # SubProductElement (before Algebra: getAlgebra would otherwise match)
+    if class_name == "SubProductElement":
+        term = _call_or_get(obj, "getTerm", "get_term")
+        return {
+            "__type__": "sub_product_element",
+            "class": "SubProductElement",
+            "string": str(obj),
+            "index": int(_call_or_get(obj, "index") if _call_or_get(obj, "index") is not None else -1),
+            "term": None if term is None else str(term),
+        }
+
     # Term-like
     if "Term" in class_name or class_name in ("VariableImp", "NonVariableTerm"):
         isa = _call_or_get(obj, "isaVariable", "isa_variable")

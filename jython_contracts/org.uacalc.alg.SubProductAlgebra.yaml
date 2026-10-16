@@ -25,6 +25,9 @@ surface:
     algebraType: algebra_type
     convertToDefaultValueOps: convertToDefaultValueOps
     getTerms: get_terms
+    getTerm: get_term
+    getVariableToGeneratorMap: get_variable_to_generator_map
+    getVariables: get_variables
     con: con
     sub: sub
     makeOperationTables: make_operation_tables
@@ -52,6 +55,9 @@ testing:
         - algebraType
         - convertToDefaultValueOps
         - getTerms
+        - getTerm
+        - getVariableToGeneratorMap
+        - getVariables
         - con
         - sub
         - makeOperationTables

@@ -243,6 +243,20 @@ def serialize(obj):
             "universe_size": int(us) if us is not None else 0,
             "number_of_blocks": int(nb) if nb is not None else 0,
         }
+    if class_name == "SubProductElement":
+        term = call_or_get(obj, "getTerm", "get_term")
+        idx = call_or_get(obj, "index")
+        try:
+            idx_i = int(idx) if idx is not None else -1
+        except Exception:
+            idx_i = -1
+        return {
+            "__type__": "sub_product_element",
+            "class": "SubProductElement",
+            "string": str(obj),
+            "index": idx_i,
+            "term": None if term is None else str(term),
+        }
     if "Term" in class_name or class_name in ("VariableImp", "NonVariableTerm"):
         isa = call_or_get(obj, "isaVariable", "isa_variable")
         return {
