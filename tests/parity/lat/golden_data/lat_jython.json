@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "generated_at": "2026-10-16T08:53:54.045116+00:00",
+    "generated_at": "2026-10-16T10:37:41.857396+00:00",
     "jar": "uacalc.jar",
     "package": "org.uacalc.lat",
     "runtime": "jython",
-    "test_cases": 53,
+    "test_cases": 76,
     "type": "package"
   },
   "test_cases": [
@@ -1238,6 +1238,521 @@
       "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nm3 = Lattices.latticeFromJoin(\"M3\", join_m3)\ndef _labs(xs):\n    if xs is None:\n        return None\n    return sorted([int(str(x)) for x in list(xs)])\ndef _lab(x):\n    if x is None:\n        return None\n    try:\n        return int(str(x))\n    except Exception:\n        return str(x)\nif sys.platform.startswith(\"java\"):\n    a0 = lat.getElement(0)\n    a1 = lat.getElement(1)\n    try:\n        from java.util import ArrayList\n        join_args = ArrayList()\n        join_args.add(a0)\n        join_args.add(a1)\n        empty_args = ArrayList()\n    except Exception:\n        join_args = [a0, a1]\n        empty_args = []\nelse:\n    a0 = 0\n    a1 = 1\n    join_args = [a0, a1]\n    empty_args = []\n\np = lat.getPoset()\nif sys.platform.startswith(\"java\"):\n    uc_vals = _labs(a0.upperCovers())\nelse:\n    uc_vals = _labs(p.getUpperCovers(0) if hasattr(p, \"getUpperCovers\") else p.get_upper_covers(0))\n",
       "skip_string_check": true,
       "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "nat_order.leq(1, 2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Jython-style Order subclass: 1 <= 2",
+      "expected_exception": null,
+      "id": "order_leq_true",
+      "kwargs": {},
+      "method": "Order.leq",
+      "notes": "",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.lat import Order, OrderedSets\nclass _Div(Order):\n    def leq(self, a, b):\n        if a == 0:\n            return True\n        if b == 0:\n            return a == 0\n        return (b % a) == 0\nclass _Nat(Order):\n    def leq(self, a, b):\n        return a <= b\nclass _PrefSeq(Order):\n    def leq(self, a, b):\n        sa = list(a)\n        sb = list(b)\n        n = len(sa)\n        if n > len(sb):\n            return False\n        return sb[:n] == sa\nclass _Age(Order):\n    def leq(self, a, b):\n        return a[1] <= b[1]\ndiv_order = _Div()\nnat_order = _Nat()\npref_order = _PrefSeq()\nage_order = _Age()\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "nat_order.leq(2, 1)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Jython-style Order subclass: 2 <= 1 is false",
+      "expected_exception": null,
+      "id": "order_leq_false",
+      "kwargs": {},
+      "method": "Order.leq",
+      "notes": "",
+      "result": {
+        "return_type": "bool",
+        "return_value": false,
+        "string_repr": "False",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.lat import Order, OrderedSets\nclass _Div(Order):\n    def leq(self, a, b):\n        if a == 0:\n            return True\n        if b == 0:\n            return a == 0\n        return (b % a) == 0\nclass _Nat(Order):\n    def leq(self, a, b):\n        return a <= b\nclass _PrefSeq(Order):\n    def leq(self, a, b):\n        sa = list(a)\n        sb = list(b)\n        n = len(sa)\n        if n > len(sb):\n            return False\n        return sb[:n] == sa\nclass _Age(Order):\n    def leq(self, a, b):\n        return a[1] <= b[1]\ndiv_order = _Div()\nnat_order = _Nat()\npref_order = _PrefSeq()\nage_order = _Age()\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "div_order.leq(2, 6)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Custom Order.leq: 2 divides 6",
+      "expected_exception": null,
+      "id": "order_leq_divisibility",
+      "kwargs": {},
+      "method": "Order.leq",
+      "notes": "",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.lat import Order, OrderedSets\nclass _Div(Order):\n    def leq(self, a, b):\n        if a == 0:\n            return True\n        if b == 0:\n            return a == 0\n        return (b % a) == 0\nclass _Nat(Order):\n    def leq(self, a, b):\n        return a <= b\nclass _PrefSeq(Order):\n    def leq(self, a, b):\n        sa = list(a)\n        sb = list(b)\n        n = len(sa)\n        if n > len(sb):\n            return False\n        return sb[:n] == sa\nclass _Age(Order):\n    def leq(self, a, b):\n        return a[1] <= b[1]\ndiv_order = _Div()\nnat_order = _Nat()\npref_order = _PrefSeq()\nage_order = _Age()\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "list(OrderedSets.maximals([2, 3, 6, 35, 175], div_order))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "maximals with a Python class implementing Order.leq",
+      "expected_exception": null,
+      "id": "ordered_sets_maximals_generic_divisibility",
+      "kwargs": {},
+      "method": "OrderedSets.maximals",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          6,
+          175
+        ],
+        "string_repr": "[6, 175]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.lat import Order, OrderedSets\nclass _Div(Order):\n    def leq(self, a, b):\n        if a == 0:\n            return True\n        if b == 0:\n            return a == 0\n        return (b % a) == 0\nclass _Nat(Order):\n    def leq(self, a, b):\n        return a <= b\nclass _PrefSeq(Order):\n    def leq(self, a, b):\n        sa = list(a)\n        sb = list(b)\n        n = len(sa)\n        if n > len(sb):\n            return False\n        return sb[:n] == sa\nclass _Age(Order):\n    def leq(self, a, b):\n        return a[1] <= b[1]\ndiv_order = _Div()\nnat_order = _Nat()\npref_order = _PrefSeq()\nage_order = _Age()\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "list(OrderedSets.maximals([3, 1, 4, 2], callable_order))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "maximals with a Python callable on CPython (Order class on Jython)",
+      "expected_exception": null,
+      "id": "ordered_sets_maximals_callable",
+      "kwargs": {},
+      "method": "OrderedSets.maximals",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          4
+        ],
+        "string_repr": "[4]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.lat import Order, OrderedSets\nclass _Div(Order):\n    def leq(self, a, b):\n        if a == 0:\n            return True\n        if b == 0:\n            return a == 0\n        return (b % a) == 0\nclass _Nat(Order):\n    def leq(self, a, b):\n        return a <= b\nclass _PrefSeq(Order):\n    def leq(self, a, b):\n        sa = list(a)\n        sb = list(b)\n        n = len(sa)\n        if n > len(sb):\n            return False\n        return sb[:n] == sa\nclass _Age(Order):\n    def leq(self, a, b):\n        return a[1] <= b[1]\ndiv_order = _Div()\nnat_order = _Nat()\npref_order = _PrefSeq()\nage_order = _Age()\n\nimport sys\nif sys.platform.startswith(\"java\"):\n    callable_order = nat_order\nelse:\n    def callable_order(a, b):\n        return a <= b\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "list(OrderedSets.maximals([[1], [1, 2], [1, 2, 3], [9]], pref_order))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "maximals of lists under prefix order",
+      "expected_exception": null,
+      "id": "ordered_sets_maximals_lists",
+      "kwargs": {},
+      "method": "OrderedSets.maximals",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            1,
+            2,
+            3
+          ],
+          [
+            9
+          ]
+        ],
+        "string_repr": "[[1, 2, 3], [9]]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.lat import Order, OrderedSets\nclass _Div(Order):\n    def leq(self, a, b):\n        if a == 0:\n            return True\n        if b == 0:\n            return a == 0\n        return (b % a) == 0\nclass _Nat(Order):\n    def leq(self, a, b):\n        return a <= b\nclass _PrefSeq(Order):\n    def leq(self, a, b):\n        sa = list(a)\n        sb = list(b)\n        n = len(sa)\n        if n > len(sb):\n            return False\n        return sb[:n] == sa\nclass _Age(Order):\n    def leq(self, a, b):\n        return a[1] <= b[1]\ndiv_order = _Div()\nnat_order = _Nat()\npref_order = _PrefSeq()\nage_order = _Age()\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "list(OrderedSets.maximals([('a', 1), ('b', 3), ('c', 2)], age_order))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "maximals of tuples under an age/order on the second field",
+      "expected_exception": null,
+      "id": "ordered_sets_maximals_objects",
+      "kwargs": {},
+      "method": "OrderedSets.maximals",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            "b",
+            3
+          ]
+        ],
+        "string_repr": "[('b', 3)]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.lat import Order, OrderedSets\nclass _Div(Order):\n    def leq(self, a, b):\n        if a == 0:\n            return True\n        if b == 0:\n            return a == 0\n        return (b % a) == 0\nclass _Nat(Order):\n    def leq(self, a, b):\n        return a <= b\nclass _PrefSeq(Order):\n    def leq(self, a, b):\n        sa = list(a)\n        sb = list(b)\n        n = len(sa)\n        if n > len(sb):\n            return False\n        return sb[:n] == sa\nclass _Age(Order):\n    def leq(self, a, b):\n        return a[1] <= b[1]\ndiv_order = _Div()\nnat_order = _Nat()\npref_order = _PrefSeq()\nage_order = _Age()\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "list(OrderedSets.maximals([], nat_order))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "maximals of an empty collection",
+      "expected_exception": null,
+      "id": "ordered_sets_maximals_empty",
+      "kwargs": {},
+      "method": "OrderedSets.maximals",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [],
+        "string_repr": "[]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.lat import Order, OrderedSets\nclass _Div(Order):\n    def leq(self, a, b):\n        if a == 0:\n            return True\n        if b == 0:\n            return a == 0\n        return (b % a) == 0\nclass _Nat(Order):\n    def leq(self, a, b):\n        return a <= b\nclass _PrefSeq(Order):\n    def leq(self, a, b):\n        sa = list(a)\n        sb = list(b)\n        n = len(sa)\n        if n > len(sb):\n            return False\n        return sb[:n] == sa\nclass _Age(Order):\n    def leq(self, a, b):\n        return a[1] <= b[1]\ndiv_order = _Div()\nnat_order = _Nat()\npref_order = _PrefSeq()\nage_order = _Age()\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "OrderedSets.maximals([1, 2], None)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "maximals with a null order NPEs once two elements are compared",
+      "expected_exception": "NullPointerException",
+      "id": "ordered_sets_maximals_null_order",
+      "kwargs": {},
+      "method": "OrderedSets.maximals",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.NullPointerException: Cannot invoke \"org.uacalc.lat.Order.leq(Object, Object)\" because \"order\" is null",
+          "type": "NullPointerException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.lat import Order, OrderedSets\nclass _Div(Order):\n    def leq(self, a, b):\n        if a == 0:\n            return True\n        if b == 0:\n            return a == 0\n        return (b % a) == 0\nclass _Nat(Order):\n    def leq(self, a, b):\n        return a <= b\nclass _PrefSeq(Order):\n    def leq(self, a, b):\n        sa = list(a)\n        sb = list(b)\n        n = len(sa)\n        if n > len(sb):\n            return False\n        return sb[:n] == sa\nclass _Age(Order):\n    def leq(self, a, b):\n        return a[1] <= b[1]\ndiv_order = _Div()\nnat_order = _Nat()\npref_order = _PrefSeq()\nage_order = _Age()\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "lat.leq(a1, a0)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "1 <= 0 is false in the 2-chain",
+      "expected_exception": null,
+      "id": "basic_lattice_leq_false",
+      "kwargs": {},
+      "method": "BasicLattice.leq",
+      "notes": "",
+      "result": {
+        "return_type": "bool",
+        "return_value": false,
+        "string_repr": "False",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nm3 = Lattices.latticeFromJoin(\"M3\", join_m3)\ndef _labs(xs):\n    if xs is None:\n        return None\n    return sorted([int(str(x)) for x in list(xs)])\ndef _lab(x):\n    if x is None:\n        return None\n    try:\n        return int(str(x))\n    except Exception:\n        return str(x)\nif sys.platform.startswith(\"java\"):\n    a0 = lat.getElement(0)\n    a1 = lat.getElement(1)\n    try:\n        from java.util import ArrayList\n        join_args = ArrayList()\n        join_args.add(a0)\n        join_args.add(a1)\n        empty_args = ArrayList()\n    except Exception:\n        join_args = [a0, a1]\n        empty_args = []\nelse:\n    a0 = 0\n    a1 = 1\n    join_args = [a0, a1]\n    empty_args = []\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "lat.leq(a0, a0)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "leq is reflexive on the bottom of the 2-chain",
+      "expected_exception": null,
+      "id": "basic_lattice_leq_reflexive",
+      "kwargs": {},
+      "method": "BasicLattice.leq",
+      "notes": "",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nm3 = Lattices.latticeFromJoin(\"M3\", join_m3)\ndef _labs(xs):\n    if xs is None:\n        return None\n    return sorted([int(str(x)) for x in list(xs)])\ndef _lab(x):\n    if x is None:\n        return None\n    try:\n        return int(str(x))\n    except Exception:\n        return str(x)\nif sys.platform.startswith(\"java\"):\n    a0 = lat.getElement(0)\n    a1 = lat.getElement(1)\n    try:\n        from java.util import ArrayList\n        join_args = ArrayList()\n        join_args.add(a0)\n        join_args.add(a1)\n        empty_args = ArrayList()\n    except Exception:\n        join_args = [a0, a1]\n        empty_args = []\nelse:\n    a0 = 0\n    a1 = 1\n    join_args = [a0, a1]\n    empty_args = []\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_lab(lat.join(a0, a0))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "join(0, 0) is 0 in the 2-chain",
+      "expected_exception": null,
+      "id": "basic_lattice_join_same",
+      "kwargs": {},
+      "method": "BasicLattice.join",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 0,
+        "string_repr": "0",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nm3 = Lattices.latticeFromJoin(\"M3\", join_m3)\ndef _labs(xs):\n    if xs is None:\n        return None\n    return sorted([int(str(x)) for x in list(xs)])\ndef _lab(x):\n    if x is None:\n        return None\n    try:\n        return int(str(x))\n    except Exception:\n        return str(x)\nif sys.platform.startswith(\"java\"):\n    a0 = lat.getElement(0)\n    a1 = lat.getElement(1)\n    try:\n        from java.util import ArrayList\n        join_args = ArrayList()\n        join_args.add(a0)\n        join_args.add(a1)\n        empty_args = ArrayList()\n    except Exception:\n        join_args = [a0, a1]\n        empty_args = []\nelse:\n    a0 = 0\n    a1 = 1\n    join_args = [a0, a1]\n    empty_args = []\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_lab(lat.meet(a1, a1))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "meet(1, 1) is 1 in the 2-chain",
+      "expected_exception": null,
+      "id": "basic_lattice_meet_same",
+      "kwargs": {},
+      "method": "BasicLattice.meet",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 1,
+        "string_repr": "1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nm3 = Lattices.latticeFromJoin(\"M3\", join_m3)\ndef _labs(xs):\n    if xs is None:\n        return None\n    return sorted([int(str(x)) for x in list(xs)])\ndef _lab(x):\n    if x is None:\n        return None\n    try:\n        return int(str(x))\n    except Exception:\n        return str(x)\nif sys.platform.startswith(\"java\"):\n    a0 = lat.getElement(0)\n    a1 = lat.getElement(1)\n    try:\n        from java.util import ArrayList\n        join_args = ArrayList()\n        join_args.add(a0)\n        join_args.add(a1)\n        empty_args = ArrayList()\n    except Exception:\n        join_args = [a0, a1]\n        empty_args = []\nelse:\n    a0 = 0\n    a1 = 1\n    join_args = [a0, a1]\n    empty_args = []\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "p.leq(a0, a1)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Poset leq(0, 1) in the 2-chain (Java POElem, Python int)",
+      "expected_exception": null,
+      "id": "ordered_set_leq_via_poset",
+      "kwargs": {},
+      "method": "OrderedSet.leq",
+      "notes": "",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nm3 = Lattices.latticeFromJoin(\"M3\", join_m3)\ndef _labs(xs):\n    if xs is None:\n        return None\n    return sorted([int(str(x)) for x in list(xs)])\ndef _lab(x):\n    if x is None:\n        return None\n    try:\n        return int(str(x))\n    except Exception:\n        return str(x)\nif sys.platform.startswith(\"java\"):\n    a0 = lat.getElement(0)\n    a1 = lat.getElement(1)\n    try:\n        from java.util import ArrayList\n        join_args = ArrayList()\n        join_args.add(a0)\n        join_args.add(a1)\n        empty_args = ArrayList()\n    except Exception:\n        join_args = [a0, a1]\n        empty_args = []\nelse:\n    a0 = 0\n    a1 = 1\n    join_args = [a0, a1]\n    empty_args = []\n\np = lat.getPoset()\nif sys.platform.startswith(\"java\"):\n    lc_vals = _labs(a1.lowerCovers())\n    filter_vals = _labs(a0.filter())\n    ideal_vals = _labs(a1.ideal())\n    os2 = lat.makeOrderedSet(lat)\n    os_card = len(list(os2.univ()))\nelse:\n    lc_fn = getattr(p, \"getLowerCovers\", None) or p.get_lower_covers\n    lc_vals = _labs(lc_fn(a1))\n    filter_vals = _labs(p.filter(a0))\n    ideal_vals = _labs(p.ideal(a1))\n    os2 = lat.makeOrderedSet(lat)\n    os_card = os2.card() if hasattr(os2, \"card\") else os2.cardinality()\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "p.leq(a1, a0)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Poset leq(1, 0) is false in the 2-chain",
+      "expected_exception": null,
+      "id": "ordered_set_leq_false_via_poset",
+      "kwargs": {},
+      "method": "OrderedSet.leq",
+      "notes": "",
+      "result": {
+        "return_type": "bool",
+        "return_value": false,
+        "string_repr": "False",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nm3 = Lattices.latticeFromJoin(\"M3\", join_m3)\ndef _labs(xs):\n    if xs is None:\n        return None\n    return sorted([int(str(x)) for x in list(xs)])\ndef _lab(x):\n    if x is None:\n        return None\n    try:\n        return int(str(x))\n    except Exception:\n        return str(x)\nif sys.platform.startswith(\"java\"):\n    a0 = lat.getElement(0)\n    a1 = lat.getElement(1)\n    try:\n        from java.util import ArrayList\n        join_args = ArrayList()\n        join_args.add(a0)\n        join_args.add(a1)\n        empty_args = ArrayList()\n    except Exception:\n        join_args = [a0, a1]\n        empty_args = []\nelse:\n    a0 = 0\n    a1 = 1\n    join_args = [a0, a1]\n    empty_args = []\n\np = lat.getPoset()\nif sys.platform.startswith(\"java\"):\n    lc_vals = _labs(a1.lowerCovers())\n    filter_vals = _labs(a0.filter())\n    ideal_vals = _labs(a1.ideal())\n    os2 = lat.makeOrderedSet(lat)\n    os_card = len(list(os2.univ()))\nelse:\n    lc_fn = getattr(p, \"getLowerCovers\", None) or p.get_lower_covers\n    lc_vals = _labs(lc_fn(a1))\n    filter_vals = _labs(p.filter(a0))\n    ideal_vals = _labs(p.ideal(a1))\n    os2 = lat.makeOrderedSet(lat)\n    os_card = os2.card() if hasattr(os2, \"card\") else os2.cardinality()\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_labs(p.univ())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "OrderedSet.univ labels of the 2-chain poset",
+      "expected_exception": null,
+      "id": "ordered_set_univ",
+      "kwargs": {},
+      "method": "OrderedSet.univ",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          0,
+          1
+        ],
+        "string_repr": "[0, 1]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nm3 = Lattices.latticeFromJoin(\"M3\", join_m3)\ndef _labs(xs):\n    if xs is None:\n        return None\n    return sorted([int(str(x)) for x in list(xs)])\ndef _lab(x):\n    if x is None:\n        return None\n    try:\n        return int(str(x))\n    except Exception:\n        return str(x)\nif sys.platform.startswith(\"java\"):\n    a0 = lat.getElement(0)\n    a1 = lat.getElement(1)\n    try:\n        from java.util import ArrayList\n        join_args = ArrayList()\n        join_args.add(a0)\n        join_args.add(a1)\n        empty_args = ArrayList()\n    except Exception:\n        join_args = [a0, a1]\n        empty_args = []\nelse:\n    a0 = 0\n    a1 = 1\n    join_args = [a0, a1]\n    empty_args = []\n\np = lat.getPoset()\nif sys.platform.startswith(\"java\"):\n    lc_vals = _labs(a1.lowerCovers())\n    filter_vals = _labs(a0.filter())\n    ideal_vals = _labs(a1.ideal())\n    os2 = lat.makeOrderedSet(lat)\n    os_card = len(list(os2.univ()))\nelse:\n    lc_fn = getattr(p, \"getLowerCovers\", None) or p.get_lower_covers\n    lc_vals = _labs(lc_fn(a1))\n    filter_vals = _labs(p.filter(a0))\n    ideal_vals = _labs(p.ideal(a1))\n    os2 = lat.makeOrderedSet(lat)\n    os_card = os2.card() if hasattr(os2, \"card\") else os2.cardinality()\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "p.card()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "OrderedSet.card of the 2-chain poset",
+      "expected_exception": null,
+      "id": "ordered_set_card",
+      "kwargs": {},
+      "method": "OrderedSet.card",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nm3 = Lattices.latticeFromJoin(\"M3\", join_m3)\ndef _labs(xs):\n    if xs is None:\n        return None\n    return sorted([int(str(x)) for x in list(xs)])\ndef _lab(x):\n    if x is None:\n        return None\n    try:\n        return int(str(x))\n    except Exception:\n        return str(x)\nif sys.platform.startswith(\"java\"):\n    a0 = lat.getElement(0)\n    a1 = lat.getElement(1)\n    try:\n        from java.util import ArrayList\n        join_args = ArrayList()\n        join_args.add(a0)\n        join_args.add(a1)\n        empty_args = ArrayList()\n    except Exception:\n        join_args = [a0, a1]\n        empty_args = []\nelse:\n    a0 = 0\n    a1 = 1\n    join_args = [a0, a1]\n    empty_args = []\n\np = lat.getPoset()\nif sys.platform.startswith(\"java\"):\n    lc_vals = _labs(a1.lowerCovers())\n    filter_vals = _labs(a0.filter())\n    ideal_vals = _labs(a1.ideal())\n    os2 = lat.makeOrderedSet(lat)\n    os_card = len(list(os2.univ()))\nelse:\n    lc_fn = getattr(p, \"getLowerCovers\", None) or p.get_lower_covers\n    lc_vals = _labs(lc_fn(a1))\n    filter_vals = _labs(p.filter(a0))\n    ideal_vals = _labs(p.ideal(a1))\n    os2 = lat.makeOrderedSet(lat)\n    os_card = os2.card() if hasattr(os2, \"card\") else os2.cardinality()\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "lc_vals",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Lower covers of 1 via poset (Java POElem, Python OrderedSet)",
+      "expected_exception": null,
+      "id": "ordered_set_lower_covers_via_poset",
+      "kwargs": {},
+      "method": "OrderedSet.getLowerCovers",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          0
+        ],
+        "string_repr": "[0]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nm3 = Lattices.latticeFromJoin(\"M3\", join_m3)\ndef _labs(xs):\n    if xs is None:\n        return None\n    return sorted([int(str(x)) for x in list(xs)])\ndef _lab(x):\n    if x is None:\n        return None\n    try:\n        return int(str(x))\n    except Exception:\n        return str(x)\nif sys.platform.startswith(\"java\"):\n    a0 = lat.getElement(0)\n    a1 = lat.getElement(1)\n    try:\n        from java.util import ArrayList\n        join_args = ArrayList()\n        join_args.add(a0)\n        join_args.add(a1)\n        empty_args = ArrayList()\n    except Exception:\n        join_args = [a0, a1]\n        empty_args = []\nelse:\n    a0 = 0\n    a1 = 1\n    join_args = [a0, a1]\n    empty_args = []\n\np = lat.getPoset()\nif sys.platform.startswith(\"java\"):\n    lc_vals = _labs(a1.lowerCovers())\n    filter_vals = _labs(a0.filter())\n    ideal_vals = _labs(a1.ideal())\n    os2 = lat.makeOrderedSet(lat)\n    os_card = len(list(os2.univ()))\nelse:\n    lc_fn = getattr(p, \"getLowerCovers\", None) or p.get_lower_covers\n    lc_vals = _labs(lc_fn(a1))\n    filter_vals = _labs(p.filter(a0))\n    ideal_vals = _labs(p.ideal(a1))\n    os2 = lat.makeOrderedSet(lat)\n    os_card = os2.card() if hasattr(os2, \"card\") else os2.cardinality()\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "filter_vals",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Filter of 0 via poset (Java POElem.filter, Python OrderedSet.filter)",
+      "expected_exception": null,
+      "id": "ordered_set_filter_via_poset",
+      "kwargs": {},
+      "method": "OrderedSet.filter",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          0,
+          1
+        ],
+        "string_repr": "[0, 1]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nm3 = Lattices.latticeFromJoin(\"M3\", join_m3)\ndef _labs(xs):\n    if xs is None:\n        return None\n    return sorted([int(str(x)) for x in list(xs)])\ndef _lab(x):\n    if x is None:\n        return None\n    try:\n        return int(str(x))\n    except Exception:\n        return str(x)\nif sys.platform.startswith(\"java\"):\n    a0 = lat.getElement(0)\n    a1 = lat.getElement(1)\n    try:\n        from java.util import ArrayList\n        join_args = ArrayList()\n        join_args.add(a0)\n        join_args.add(a1)\n        empty_args = ArrayList()\n    except Exception:\n        join_args = [a0, a1]\n        empty_args = []\nelse:\n    a0 = 0\n    a1 = 1\n    join_args = [a0, a1]\n    empty_args = []\n\np = lat.getPoset()\nif sys.platform.startswith(\"java\"):\n    lc_vals = _labs(a1.lowerCovers())\n    filter_vals = _labs(a0.filter())\n    ideal_vals = _labs(a1.ideal())\n    os2 = lat.makeOrderedSet(lat)\n    os_card = len(list(os2.univ()))\nelse:\n    lc_fn = getattr(p, \"getLowerCovers\", None) or p.get_lower_covers\n    lc_vals = _labs(lc_fn(a1))\n    filter_vals = _labs(p.filter(a0))\n    ideal_vals = _labs(p.ideal(a1))\n    os2 = lat.makeOrderedSet(lat)\n    os_card = os2.card() if hasattr(os2, \"card\") else os2.cardinality()\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "ideal_vals",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Ideal of 1 via poset (Java POElem.ideal, Python OrderedSet.ideal)",
+      "expected_exception": null,
+      "id": "ordered_set_ideal_via_poset",
+      "kwargs": {},
+      "method": "OrderedSet.ideal",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          0,
+          1
+        ],
+        "string_repr": "[0, 1]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nm3 = Lattices.latticeFromJoin(\"M3\", join_m3)\ndef _labs(xs):\n    if xs is None:\n        return None\n    return sorted([int(str(x)) for x in list(xs)])\ndef _lab(x):\n    if x is None:\n        return None\n    try:\n        return int(str(x))\n    except Exception:\n        return str(x)\nif sys.platform.startswith(\"java\"):\n    a0 = lat.getElement(0)\n    a1 = lat.getElement(1)\n    try:\n        from java.util import ArrayList\n        join_args = ArrayList()\n        join_args.add(a0)\n        join_args.add(a1)\n        empty_args = ArrayList()\n    except Exception:\n        join_args = [a0, a1]\n        empty_args = []\nelse:\n    a0 = 0\n    a1 = 1\n    join_args = [a0, a1]\n    empty_args = []\n\np = lat.getPoset()\nif sys.platform.startswith(\"java\"):\n    lc_vals = _labs(a1.lowerCovers())\n    filter_vals = _labs(a0.filter())\n    ideal_vals = _labs(a1.ideal())\n    os2 = lat.makeOrderedSet(lat)\n    os_card = len(list(os2.univ()))\nelse:\n    lc_fn = getattr(p, \"getLowerCovers\", None) or p.get_lower_covers\n    lc_vals = _labs(lc_fn(a1))\n    filter_vals = _labs(p.filter(a0))\n    ideal_vals = _labs(p.ideal(a1))\n    os2 = lat.makeOrderedSet(lat)\n    os_card = os2.card() if hasattr(os2, \"card\") else os2.cardinality()\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "os_card",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "makeOrderedSet of the 2-chain has cardinality 2",
+      "expected_exception": null,
+      "id": "basic_lattice_make_ordered_set",
+      "kwargs": {},
+      "method": "BasicLattice.makeOrderedSet",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nm3 = Lattices.latticeFromJoin(\"M3\", join_m3)\ndef _labs(xs):\n    if xs is None:\n        return None\n    return sorted([int(str(x)) for x in list(xs)])\ndef _lab(x):\n    if x is None:\n        return None\n    try:\n        return int(str(x))\n    except Exception:\n        return str(x)\nif sys.platform.startswith(\"java\"):\n    a0 = lat.getElement(0)\n    a1 = lat.getElement(1)\n    try:\n        from java.util import ArrayList\n        join_args = ArrayList()\n        join_args.add(a0)\n        join_args.add(a1)\n        empty_args = ArrayList()\n    except Exception:\n        join_args = [a0, a1]\n        empty_args = []\nelse:\n    a0 = 0\n    a1 = 1\n    join_args = [a0, a1]\n    empty_args = []\n\np = lat.getPoset()\nif sys.platform.startswith(\"java\"):\n    lc_vals = _labs(a1.lowerCovers())\n    filter_vals = _labs(a0.filter())\n    ideal_vals = _labs(a1.ideal())\n    os2 = lat.makeOrderedSet(lat)\n    os_card = len(list(os2.univ()))\nelse:\n    lc_fn = getattr(p, \"getLowerCovers\", None) or p.get_lower_covers\n    lc_vals = _labs(lc_fn(a1))\n    filter_vals = _labs(p.filter(a0))\n    ideal_vals = _labs(p.ideal(a1))\n    os2 = lat.makeOrderedSet(lat)\n    os_card = os2.card() if hasattr(os2, \"card\") else os2.cardinality()\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "from_filters_card",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "2-chain OrderedSet from filters (Java latdraw, Python OrderedSet)",
+      "expected_exception": null,
+      "id": "ordered_set_from_filters",
+      "kwargs": {},
+      "method": "OrderedSet.from_filters",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nimport sys\nif sys.platform.startswith(\"java\"):\n    from org.latdraw.orderedset import OrderedSet as _LDOrderedSet\n    os_f = _LDOrderedSet.orderedSetFromFilters(\"c2\", [0, 1], [[0, 1], [1]])\n    from_filters_card = os_f.card()\nelse:\n    from org.uacalc.lat import OrderedSet\n    os_f = OrderedSet.from_filters([0, 1], [[0, 1], [1]], name=\"c2\")\n    from_filters_card = os_f.card() if hasattr(os_f, \"card\") else os_f.cardinality()\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_uci()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "SmallLattice.upperCoversIndices: Java has no instance; Python DiamondLattice",
+      "expected_exception": null,
+      "id": "small_lattice_upper_covers_indices",
+      "kwargs": {},
+      "method": "SmallLattice.upperCoversIndices",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "'NoneType' object has no attribute 'upperCoversIndices'",
+          "type": "AttributeError"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nif sys.platform.startswith(\"java\"):\n    from org.uacalc.io import AlgebraIO\n    from org.uacalc.alg.conlat import CongruenceLattice\n    alg = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\n    con = CongruenceLattice(alg)\n    _ctors = Lattices.getDeclaredConstructors()\n    _ctors[0].setAccessible(True)\n    _helper = _ctors[0].newInstance()\n    def _uci():\n        return list(_helper.conToSmallLattice(con).upperCoversIndices(0))\nelse:\n    from org.uacalc.lat import DiamondLattice\n    d = DiamondLattice()\n    def _uci():\n        fn = getattr(d, \"upperCoversIndices\", None) or d.upper_covers_indices\n        return [int(x) for x in list(fn(0))]\n",
+      "skip_string_check": true,
+      "xfail_reason": "Owner/library: Java Lattices.conToSmallLattice always returns null; Jython then raises AttributeError: 'NoneType' object has no attribute 'upperCoversIndices'. Python DiamondLattice.upperCoversIndices(0) is [1, 2]."
     }
   ]
 }

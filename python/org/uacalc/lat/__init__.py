@@ -25,15 +25,27 @@ _CLASS_ALIASES = {
         "join": "join",
         "meet": "meet",
         "cardinality": "cardinality",
+        "makeOrderedSet": "makeOrderedSet",
     },
     "SmallLattice": {
         "upperCoversIndices": "upper_covers_indices",
         "getName": "name",
         "getUniverseList": "universe",
     },
+    "DiamondLattice": {
+        "upperCoversIndices": "upper_covers_indices",
+    },
+    "BooleanLattice": {
+        "upperCoversIndices": "upper_covers_indices",
+    },
     "OrderedSet": {
         "getUpperCovers": "get_upper_covers",
         "getLowerCovers": "get_lower_covers",
+        "univ": "univ",
+        "card": "card",
+        "leq": "leq",
+        "filter": "filter",
+        "ideal": "ideal",
     },
     "Order": {
         "leq": "leq",
@@ -57,13 +69,12 @@ if not is_jython:
     _lattice_from_meet_with_universe = globals()["lattice_from_meet_with_universe"]
     from org.uacalc._exceptions import NullPointerException as _NullPointerException
 
-    _maximals_divisibility = globals()["maximals_divisibility"]
-    _maximals_prefix = globals()["maximals_prefix"]
-    _maximals_natural_i32 = globals()["maximals_natural_i32"]
-    _maximals_natural_string = globals()["maximals_natural_string"]
+    _maximals = globals()["maximals"]
     _BasicLattice = globals()["BasicLattice"]
     _SmallLattice = globals().get("SmallLattice")
     _OrderedSet = globals().get("OrderedSet")
+    _DiamondLattice = globals().get("DiamondLattice")
+    _BooleanLattice = globals().get("BooleanLattice")
     from org.uacalc._exceptions import (
         UnsupportedOperationException as _UnsupportedOperationException,
     )
@@ -141,26 +152,42 @@ if not is_jython:
                 )
             return None
 
+    class Order(object):
+        """Jython-style ``org.uacalc.lat.Order``: implement ``leq(a, b)``.
+
+        Pass a subclass, any object with ``leq``, or wrap a two-argument
+        callable as ``Order(leq_fn)``. ``OrderedSets.maximals`` accepts all
+        three, matching Jython classes that implement the Java interface.
+        """
+
+        def __init__(self, leq=None):
+            self._leq_fn = leq
+
+        def leq(self, a, b):
+            if self._leq_fn is not None:
+                return bool(self._leq_fn(a, b))
+            raise NotImplementedError("Order.leq")
+
     class OrderedSets(object):
         """Static facade matching Java ``org.uacalc.lat.OrderedSets``."""
 
         @staticmethod
         def maximals(elems, order):
-            # Route only through uacalc_lib. Generic Order.leq is not bound.
-            name = type(order).__name__ if order is not None else "DivisibilityOrder"
+            # Java NPEs on a null collection before calling leq.
+            if elems is None:
+                raise _NullPointerException(
+                    'Cannot invoke "java.util.Collection.iterator()" because '
+                    '"elems" is null'
+                )
+            # Java NPEs on a null order as soon as it compares two elements.
+            # Empty / singleton collections never call leq.
             items = list(elems)
-            if name in ("DivisibilityOrder", "PyDivisibilityOrder"):
-                return _maximals_divisibility([int(x) for x in items])
-            if name in ("PrefixOrder", "PyPrefixOrder"):
-                return _maximals_prefix([str(x) for x in items])
-            if name in ("NaturalOrder", "PyNaturalOrder"):
-                if items and isinstance(items[0], str):
-                    return _maximals_natural_string(items)
-                return _maximals_natural_i32([int(x) for x in items])
-            raise NotImplementedError(
-                "OrderedSets.maximals only routes DivisibilityOrder, PrefixOrder, "
-                "and NaturalOrder through uacalc_lib; generic Order.leq is not bound"
-            )
+            if order is None and len(items) > 1:
+                raise _NullPointerException(
+                    'Cannot invoke "org.uacalc.lat.Order.leq(Object, Object)" '
+                    'because "order" is null'
+                )
+            return list(_maximals(items, order))
 
     def _apply_aliases(cls, aliases):
         if cls is None:
@@ -178,7 +205,10 @@ if not is_jython:
 
     _apply_aliases(_BasicLattice, _CLASS_ALIASES["BasicLattice"])
     _apply_aliases(_SmallLattice, _CLASS_ALIASES["SmallLattice"])
+    _apply_aliases(_DiamondLattice, _CLASS_ALIASES["DiamondLattice"])
+    _apply_aliases(_BooleanLattice, _CLASS_ALIASES["BooleanLattice"])
     _apply_aliases(_OrderedSet, _CLASS_ALIASES["OrderedSet"])
+    _apply_aliases(Order, _CLASS_ALIASES["Order"])
 
     if _BasicLattice is not None:
         _orig_join = getattr(_BasicLattice, "join", None)
@@ -219,17 +249,30 @@ if not is_jython:
             # Instance dual delegates to Lattices.dual, which NPEs (known Java bug).
             return Lattices.dual(self)
 
+        def makeOrderedSet(self, lat):
+            # Java builds a latdraw OrderedSet; Python returns uacalc_lib OrderedSet.
+            if lat is None:
+                raise _NullPointerException(
+                    'Cannot invoke "org.uacalc.lat.Lattice.universe()" because '
+                    '"lat" is null'
+                )
+            if _OrderedSet is None:
+                raise _UnsupportedOperationException("OrderedSet is not bound")
+            return _OrderedSet.from_lattice(lat)
+
         try:
             _BasicLattice.join = join
             _BasicLattice.meet = meet
             _BasicLattice.getUniverseOrder = getUniverseOrder
             _BasicLattice.convertToDefaultValueOps = convertToDefaultValueOps
             _BasicLattice.dual = dual
+            _BasicLattice.makeOrderedSet = makeOrderedSet
         except (TypeError, AttributeError):
             pass
 
     globals()["Lattices"] = Lattices
     globals()["OrderedSets"] = OrderedSets
+    globals()["Order"] = Order
     globals()["_CLASS_ALIASES"] = _CLASS_ALIASES
 else:
     from org.uacalc.lat import *  # noqa: F403

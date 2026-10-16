@@ -4,9 +4,10 @@ status: implemented
 java_source: null
 notes: |
   Thin package index. File-level contracts cover Lattices, BasicLattice,
-  OrderedSets. Lattice / SmallLattice / Order are interfaces (ignored).
-  GUI/drawing (getDiagram, getVertices, FrameShower, main) and Malcev are
-  out of scope. POElem and latdraw OrderedSet live in org.latdraw.
+  OrderedSets, Order, SmallLattice. Lattice is still an interface (ignored;
+  methods live on BasicLattice). GUI/drawing (getDiagram, getVertices,
+  FrameShower, main) and Malcev are out of scope. POElem lives in
+  org.latdraw; its order methods are covered via OrderedSet / BasicLattice.
 ignore_reason: null
 surface:
   package_export: true

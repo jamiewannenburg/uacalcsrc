@@ -1,18 +1,26 @@
 target: org.uacalc.lat.Order
 level: file
-status: ignored
+status: implemented
 java_source: org/uacalc/lat/Order.java
 notes: |
-  Java interface (leq). Implemented on BasicLattice and the concrete
-  DivisibilityOrder / PrefixOrder / NaturalOrder types. Generic Order.leq
-  is not routed through uacalc_lib.
-ignore_reason: Interface only; leq is tested on BasicLattice.
+  Java interface (leq). CPython exports a subclassable Order with leq(a, b),
+  also accepting Order(callable). OrderedSets.maximals routes any object with
+  leq (or a two-arg callable) through uacalc_lib.lat.maximals.
+ignore_reason: null
 surface:
-  package_export: false
-  aliases: {}
+  package_export: true
+  aliases:
+    leq: leq
   static_methods: []
   str_parity: false
 testing:
-  notes: ""
+  notes: |
+    order_api.py subclasses Order the way Jython implements the Java
+    interface and prints leq plus maximals. Golden tests cover ints, lists,
+    tuples, and a CPython callable.
   task_refs: []
-  scripts: []
+  scripts:
+    - path: jython_comparison/scripts/order_api.py
+      covers:
+        - leq
+      ignore_lines: []

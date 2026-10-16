@@ -194,12 +194,14 @@ slices:
     workstreams: []
     parity_tests_dir: tests/parity/lat
     notes: >-
-      File-level contracts for Lattices / BasicLattice / OrderedSets; Lattice /
-      SmallLattice / Order ignored (interfaces). Behavioral goldens cover
-      join/meet/order, irreducibles, covers, filter/ideal, algebraType, dual NPE,
-      conToSmallLattice null, maximals (divisibility/prefix/natural). GUI/drawing,
-      latdraw POElem, makeOrderedSet, and Malcev left as leftovers. Branch
-      cursor/lat-coverage.
+      File-level contracts for Lattices / BasicLattice / OrderedSets / Order /
+      SmallLattice; Lattice ignored (interface, methods on BasicLattice).
+      Behavioral goldens cover join/meet/order, irreducibles, covers, filter/ideal,
+      OrderedSet univ/leq/covers, makeOrderedSet, generic Order.leq maximals
+      (ints, lists, objects, callable). SmallLattice.upperCoversIndices is a
+      strict owner/library xfail (Java conToSmallLattice is always null).
+      GUI/drawing, latdraw POElem class, and Malcev left as leftovers. Branch
+      cursor/order-coverage.
 
   - id: core-terms
     title: Terms and Taylor operations
