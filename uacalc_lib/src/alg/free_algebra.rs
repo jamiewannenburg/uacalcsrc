@@ -23,6 +23,10 @@ pub struct PyFreeAlgebra {
 }
 
 impl PyFreeAlgebra {
+    pub(crate) fn as_inner(&self) -> &uacalc::alg::FreeAlgebra {
+        &self.inner
+    }
+
     fn element_to_python(&self, py: Python<'_>, element: IntArray) -> PyResult<PyObject> {
         if let Some(map) = &self.element_map {
             let labels = element

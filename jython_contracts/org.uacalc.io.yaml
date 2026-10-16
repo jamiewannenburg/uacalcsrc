@@ -3,33 +3,18 @@ level: package
 status: implemented
 java_source: null
 notes: |
-  Small package — package-level contract is sufficient.
-  Provides AlgebraIO static facade matching Java/Jython usage.
-  Heavily used by ~/uacalc scripts (readAlgebraFile / writeAlgebraFile).
+  Thin package index. File-level contracts cover AlgebraIO, AlgebraReader,
+  AlgebraWriter, ExtFileFilter, Mace4Reader, BadAlgebraFileException, and
+  JSONChannel. SAX handler methods and Java main() are not bound.
 ignore_reason: null
 surface:
   package_export: true
   aliases: {}
-  static_methods:
-    - AlgebraIO.readAlgebraFile
-    - AlgebraIO.writeAlgebraFile
+  static_methods: []
   str_parity: false
 testing:
   notes: |
-    Load a known .ua file via AlgebraIO.readAlgebraFile and print algebra
-    name/cardinality. writeAlgebraFile is declared for ~/uacalc writers.
-    AlgebraWriter.flush is a no-op (Java never flushes writeAlgebra).
-    readAlgebraListFile returns the full algebra list (Java last-only is a
-    known Java bug; goldens stay last-only as a strict xfail).
+    Behavioral goldens live in tests/parity/io. io_surface.py plus
+    load_cyclic2.py / basic_algebra_ops.py cover the declared file surfaces.
   task_refs: []
-  scripts:
-    - path: jython_comparison/scripts/load_cyclic2.py
-      covers:
-        - AlgebraIO.readAlgebraFile
-      ignore_lines:
-        - "Universe:"
-    - path: jython_comparison/scripts/basic_algebra_ops.py
-      covers:
-        - AlgebraIO.readAlgebraFile
-        - AlgebraIO.writeAlgebraFile
-      ignore_lines: []
+  scripts: []

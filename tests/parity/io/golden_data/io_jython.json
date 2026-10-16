@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "generated_at": "2026-10-13T12:59:03.756339+00:00",
+    "generated_at": "2026-10-16T08:17:33.811028+00:00",
     "jar": "uacalc.jar",
     "package": "org.uacalc.io",
     "runtime": "jython",
-    "test_cases": 21,
+    "test_cases": 50,
     "type": "package"
   },
   "test_cases": [
@@ -42,7 +42,7 @@
             ]
           ]
         },
-        "string_repr": "org.uacalc.alg.BasicAlgebra@4601203a",
+        "string_repr": "org.uacalc.alg.BasicAlgebra@80bfa9d",
         "success": true
       },
       "setup": "\nfrom org.uacalc.io import AlgebraIO, AlgebraReader, AlgebraWriter, Mace4Reader, BadAlgebraFileException\n",
@@ -88,7 +88,7 @@
             ]
           ]
         },
-        "string_repr": "org.uacalc.alg.BasicAlgebra@507d64aa",
+        "string_repr": "org.uacalc.alg.BasicAlgebra@4aa21f9d",
         "success": true
       },
       "setup": "\nfrom org.uacalc.io import AlgebraIO, AlgebraReader, AlgebraWriter, Mace4Reader, BadAlgebraFileException\n",
@@ -137,7 +137,7 @@
             ]
           ]
         },
-        "string_repr": "org.uacalc.alg.BasicAlgebra@440e3ce6",
+        "string_repr": "org.uacalc.alg.BasicAlgebra@4527f70a",
         "success": true
       },
       "setup": "\nfrom org.uacalc.io import AlgebraIO, AlgebraReader, AlgebraWriter, Mace4Reader, BadAlgebraFileException\n",
@@ -228,7 +228,7 @@
             ]
           ]
         },
-        "string_repr": "org.uacalc.alg.BasicAlgebra@2da66a44",
+        "string_repr": "org.uacalc.alg.BasicAlgebra@2c7106d9",
         "success": true
       },
       "setup": "\nfrom org.uacalc.io import AlgebraIO, AlgebraReader, AlgebraWriter, Mace4Reader, BadAlgebraFileException\n",
@@ -277,7 +277,7 @@
       },
       "setup": "\nfrom org.uacalc.io import AlgebraIO, AlgebraReader, AlgebraWriter, Mace4Reader, BadAlgebraFileException\n",
       "skip_string_check": false,
-      "xfail_reason": "Java raises FileNotFoundException; Python currently raises ValueError('No algebras found in file')."
+      "xfail_reason": null
     },
     {
       "args": [],
@@ -313,7 +313,7 @@
             ]
           ]
         },
-        "string_repr": "org.uacalc.alg.BasicAlgebra@64aad809",
+        "string_repr": "org.uacalc.alg.BasicAlgebra@3bbf6abe",
         "success": true
       },
       "setup": "\nimport sys\nfrom org.uacalc.io import AlgebraIO, AlgebraReader, Mace4Reader\npath = 'resources/algebras/cyclic2.ua'\nif sys.platform.startswith(\"java\"):\n    from java.io import FileInputStream\n    stream = FileInputStream(path)\nelse:\n    stream = open(path, \"rb\")\n",
@@ -361,12 +361,12 @@
             ]
           }
         ],
-        "string_repr": "[org.uacalc.alg.BasicAlgebra@358ab600]",
+        "string_repr": "[org.uacalc.alg.BasicAlgebra@3791f50e]",
         "success": true
       },
       "setup": "\nfrom org.uacalc.io import AlgebraIO, AlgebraReader, AlgebraWriter, Mace4Reader, BadAlgebraFileException\n",
       "skip_string_check": true,
-      "xfail_reason": null
+      "xfail_reason": "Known Java bug: AlgebraIO.readAlgebraListFile returns only the last algebra (C3). The org wrapper deliberately returns the full list (C2 and C3). Java golden values are left unchanged."
     },
     {
       "args": [],
@@ -402,7 +402,7 @@
             ]
           ]
         },
-        "string_repr": "org.uacalc.alg.BasicAlgebra@a96d56c",
+        "string_repr": "org.uacalc.alg.BasicAlgebra@235d29d6",
         "success": true
       },
       "setup": "\nimport sys\nfrom org.uacalc.io import AlgebraIO, AlgebraReader, Mace4Reader\npath = 'resources/algebras/cyclic2.ua'\nif sys.platform.startswith(\"java\"):\n    from java.io import FileInputStream\n    stream = FileInputStream(path)\nelse:\n    stream = open(path, \"rb\")\n",
@@ -432,7 +432,7 @@
       },
       "setup": "\nimport os, tempfile\nfrom org.uacalc.io import AlgebraIO, AlgebraWriter\nalg = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nfd, OUT_PATH = tempfile.mkstemp(suffix='.ua')\nos.close(fd)\nCAPTURE_PATH = OUT_PATH\n",
       "skip_string_check": true,
-      "xfail_reason": "Python XML includes a <universe> element that Java AlgebraWriter omits. Operation tables and names otherwise match."
+      "xfail_reason": null
     },
     {
       "args": [],
@@ -518,7 +518,7 @@
             ]
           ]
         },
-        "string_repr": "org.uacalc.alg.BasicAlgebra@1eff3cfb",
+        "string_repr": "org.uacalc.alg.BasicAlgebra@234cff57",
         "success": true
       },
       "setup": "\nfrom org.uacalc.io import AlgebraIO, AlgebraReader, AlgebraWriter, Mace4Reader, BadAlgebraFileException\n\nimport sys\npath = \"resources/algebras/cyclic2.ua\"\nif sys.platform.startswith(\"java\"):\n    from java.io import File\n    reader = AlgebraReader(File(path))\nelse:\n    reader = AlgebraReader(path)\n",
@@ -564,7 +564,7 @@
             ]
           ]
         },
-        "string_repr": "org.uacalc.alg.BasicAlgebra@3976ebfa",
+        "string_repr": "org.uacalc.alg.BasicAlgebra@6bc24e72",
         "success": true
       },
       "setup": "\nimport sys\nfrom org.uacalc.io import AlgebraIO, AlgebraReader, Mace4Reader\npath = 'resources/algebras/cyclic3.ua'\nif sys.platform.startswith(\"java\"):\n    from java.io import FileInputStream\n    stream = FileInputStream(path)\nelse:\n    stream = open(path, \"rb\")\n\nif sys.platform.startswith(\"java\"):\n    reader = AlgebraReader(stream)\nelse:\n    data = stream.read()\n    stream.close()\n    reader = AlgebraReader(data)\n",
@@ -612,12 +612,12 @@
             ]
           }
         ],
-        "string_repr": "[org.uacalc.alg.BasicAlgebra@5a49af50]",
+        "string_repr": "[org.uacalc.alg.BasicAlgebra@31b7d869]",
         "success": true
       },
       "setup": "\nfrom org.uacalc.io import AlgebraIO, AlgebraReader, AlgebraWriter, Mace4Reader, BadAlgebraFileException\n\nimport sys\npath = \"resources/algebras/cyclic2_cyclic3_list.ua\"\nif sys.platform.startswith(\"java\"):\n    from java.io import File\n    reader = AlgebraReader(File(path))\nelse:\n    reader = AlgebraReader(path)\n",
       "skip_string_check": true,
-      "xfail_reason": null
+      "xfail_reason": "Known Java bug: AlgebraReader.readAlgebraListFile returns only the last algebra (C3). The org wrapper deliberately returns the full list (C2 and C3). Java golden values are left unchanged."
     },
     {
       "args": [],
@@ -642,7 +642,7 @@
       },
       "setup": "\nimport os, tempfile\nfrom org.uacalc.io import AlgebraIO, AlgebraWriter\nalg = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nfd, OUT_PATH = tempfile.mkstemp(suffix='.xml')\nos.close(fd)\nCAPTURE_PATH = OUT_PATH\n\nwriter = AlgebraWriter(alg, OUT_PATH)\n",
       "skip_string_check": true,
-      "xfail_reason": "Python XML includes a <universe> element that Java AlgebraWriter omits."
+      "xfail_reason": null
     },
     {
       "args": [],
@@ -1009,7 +1009,7 @@
             ]
           ]
         },
-        "string_repr": "org.uacalc.alg.BasicAlgebra@235d659c",
+        "string_repr": "org.uacalc.alg.BasicAlgebra@58606c91",
         "success": true
       },
       "setup": "\nimport sys\nfrom org.uacalc.io import Mace4Reader\npath = \"resources/mace4/KR-8.model\"\nif sys.platform.startswith(\"java\"):\n    from java.io import FileInputStream\n    reader = Mace4Reader(FileInputStream(path))\nelse:\n    fh = open(path, \"rb\")\n    reader = Mace4Reader(fh)\n",
@@ -1635,7 +1635,7 @@
             ]
           }
         ],
-        "string_repr": "[org.uacalc.alg.BasicAlgebra@5ebffb44, org.uacalc.alg.BasicAlgebra@311ff287]",
+        "string_repr": "[org.uacalc.alg.BasicAlgebra@7d979d34, org.uacalc.alg.BasicAlgebra@350ec690]",
         "success": true
       },
       "setup": "\nimport sys\nfrom org.uacalc.io import Mace4Reader\npath = \"resources/mace4/KR-8-expl.model\"\nif sys.platform.startswith(\"java\"):\n    from java.io import FileInputStream\n    reader = Mace4Reader(FileInputStream(path))\nelse:\n    fh = open(path, \"rb\")\n    reader = Mace4Reader(fh)\n",
@@ -1663,6 +1663,1016 @@
       "setup": "\nimport sys\nfrom org.uacalc.io import Mace4Reader\npath = \"resources/mace4/does_not_exist.model\"\nif sys.platform.startswith(\"java\"):\n    from java.io import FileInputStream\n    reader = Mace4Reader(FileInputStream(path))\nelse:\n    reader = Mace4Reader.open(path) if hasattr(Mace4Reader, \"open\") else None\n    if reader is None:\n        fh = open(path, \"rb\")\n        reader = Mace4Reader(fh)\n",
       "skip_string_check": false,
       "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "AlgebraIO.parseLine(\"42\")",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "AlgebraIO.parseLine on an integer line",
+      "expected_exception": null,
+      "id": "parse_line_int",
+      "kwargs": {},
+      "method": "AlgebraIO.parseLine",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 42,
+        "string_repr": "42",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO, AlgebraReader, AlgebraWriter, Mace4Reader, BadAlgebraFileException\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "AlgebraIO.parseLine(\"% comment\")",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "AlgebraIO.parseLine on a % comment returns -1",
+      "expected_exception": null,
+      "id": "parse_line_comment",
+      "kwargs": {},
+      "method": "AlgebraIO.parseLine",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": -1,
+        "string_repr": "-1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO, AlgebraReader, AlgebraWriter, Mace4Reader, BadAlgebraFileException\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "[filt.accept(ua), filt.accept(txt), filt.getDescription()]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "ExtFileFilter.accept and getDescription",
+      "expected_exception": null,
+      "id": "ext_accept_and_description",
+      "kwargs": {},
+      "method": "ExtFileFilter.accept",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          true,
+          false,
+          "UA Files"
+        ],
+        "string_repr": "[True, False, u'UA Files']",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.io import ExtFileFilter\nfilt = ExtFileFilter(\"UA Files\", \"ua\")\nif sys.platform.startswith(\"java\"):\n    from java.io import File\n    ua = File(\"foo.ua\")\n    txt = File(\"foo.txt\")\nelse:\n    ua = \"foo.ua\"\n    txt = \"foo.txt\"\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "filt.getDescription()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "ExtFileFilter.getDescription",
+      "expected_exception": null,
+      "id": "ext_get_description",
+      "kwargs": {},
+      "method": "ExtFileFilter.getDescription",
+      "notes": "",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "UA Files",
+        "string_repr": "UA Files",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import ExtFileFilter\nfilt = ExtFileFilter(\"UA Files\", \"ua\")\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "ExtFileFilter.getExtension(path)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "ExtFileFilter.getExtension",
+      "expected_exception": null,
+      "id": "ext_get_extension",
+      "kwargs": {},
+      "method": "ExtFileFilter.getExtension",
+      "notes": "",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "ua",
+        "string_repr": "ua",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.io import ExtFileFilter\nif sys.platform.startswith(\"java\"):\n    from java.io import File\n    path = File(\"example.ua\")\nelse:\n    path = \"example.ua\"\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "list(ExtFileFilter.splitOffExtension(path))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "ExtFileFilter.splitOffExtension",
+      "expected_exception": null,
+      "id": "ext_split_off_extension",
+      "kwargs": {},
+      "method": "ExtFileFilter.splitOffExtension",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "example",
+          "ua"
+        ],
+        "string_repr": "[u'example', u'ua']",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.io import ExtFileFilter\nif sys.platform.startswith(\"java\"):\n    from java.io import File\n    path = File(\"example.ua\")\nelse:\n    path = \"example.ua\"\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "[Mace4Reader.isOrdinaryCharacter('a'), Mace4Reader.isOrdinaryCharacter('+')]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Mace4Reader.isOrdinaryCharacter",
+      "expected_exception": null,
+      "id": "mace4_is_ordinary_character",
+      "kwargs": {},
+      "method": "Mace4Reader.isOrdinaryCharacter",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          true,
+          false
+        ],
+        "string_repr": "[True, False]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO, AlgebraReader, AlgebraWriter, Mace4Reader, BadAlgebraFileException\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "[Mace4Reader.isSpecialCharacter('+'), Mace4Reader.isSpecialCharacter('a')]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Mace4Reader.isSpecialCharacter",
+      "expected_exception": null,
+      "id": "mace4_is_special_character",
+      "kwargs": {},
+      "method": "Mace4Reader.isSpecialCharacter",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          true,
+          false
+        ],
+        "string_repr": "[True, False]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO, AlgebraReader, AlgebraWriter, Mace4Reader, BadAlgebraFileException\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_wr(f)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "write then read F(1) over cyclic2",
+      "expected_exception": null,
+      "id": "wr_free_c2_f1",
+      "kwargs": {},
+      "method": "AlgebraIO.writeAlgebraFile",
+      "notes": "",
+      "result": {
+        "return_type": "BasicAlgebra",
+        "return_value": {
+          "__type__": "algebra",
+          "arities": [
+            2
+          ],
+          "cardinality": 2,
+          "class": "BasicAlgebra",
+          "name": "C2",
+          "operation_count": 1,
+          "symbols": [
+            "+"
+          ],
+          "tables": [
+            [
+              0,
+              1,
+              1,
+              0
+            ]
+          ]
+        },
+        "string_repr": "org.uacalc.alg.BasicAlgebra@3f5156a6",
+        "success": true
+      },
+      "setup": "\nimport os, tempfile\nfrom org.uacalc.io import AlgebraIO, AlgebraReader, AlgebraWriter\nfrom org.uacalc.alg import (\n    FreeAlgebra, ProductAlgebra, PowerAlgebra, QuotientAlgebra, Subalgebra,\n    BigProductAlgebra, SubProductAlgebra,\n)\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\n\ndef _wr(alg):\n    fd, path = tempfile.mkstemp(suffix=\".ua\")\n    os.close(fd)\n    AlgebraIO.writeAlgebraFile(alg, path)\n    read = AlgebraIO.readAlgebraFile(path)\n    os.unlink(path)\n    return read\n\ndef _xml_tags(alg):\n    fd, path = tempfile.mkstemp(suffix=\".ua\")\n    os.close(fd)\n    AlgebraIO.writeAlgebraFile(alg, path)\n    text = open(path).read()\n    os.unlink(path)\n    tags = []\n    for tag in (\n        \"basicAlgebra\", \"freeAlgebra\", \"productAlgebra\", \"powerAlgebra\",\n        \"quotientAlgebra\", \"subAlgebra\", \"bigProductAlgebra\", \"subProductAlgebra\",\n        \"productElem\", \"generators\", \"rootFactors\", \"factors\", \"superAlgebra\",\n        \"congruence\", \"subUniverse\", \"powers\",\n    ):\n        if \"<\" + tag + \">\" in text:\n            tags.append(tag)\n    return tags\n\nf = FreeAlgebra(c2, 1)\nf.setName(\"F1\")\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_wr(f)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "write then read F(1) over cyclic3",
+      "expected_exception": null,
+      "id": "wr_free_c3_f1",
+      "kwargs": {},
+      "method": "AlgebraIO.writeAlgebraFile",
+      "notes": "",
+      "result": {
+        "return_type": "BasicAlgebra",
+        "return_value": {
+          "__type__": "algebra",
+          "arities": [
+            2
+          ],
+          "cardinality": 3,
+          "class": "BasicAlgebra",
+          "name": "C3",
+          "operation_count": 1,
+          "symbols": [
+            "+"
+          ],
+          "tables": [
+            [
+              0,
+              1,
+              2,
+              1,
+              2,
+              0,
+              2,
+              0,
+              1
+            ]
+          ]
+        },
+        "string_repr": "org.uacalc.alg.BasicAlgebra@66de00f2",
+        "success": true
+      },
+      "setup": "\nimport os, tempfile\nfrom org.uacalc.io import AlgebraIO, AlgebraReader, AlgebraWriter\nfrom org.uacalc.alg import (\n    FreeAlgebra, ProductAlgebra, PowerAlgebra, QuotientAlgebra, Subalgebra,\n    BigProductAlgebra, SubProductAlgebra,\n)\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\n\ndef _wr(alg):\n    fd, path = tempfile.mkstemp(suffix=\".ua\")\n    os.close(fd)\n    AlgebraIO.writeAlgebraFile(alg, path)\n    read = AlgebraIO.readAlgebraFile(path)\n    os.unlink(path)\n    return read\n\ndef _xml_tags(alg):\n    fd, path = tempfile.mkstemp(suffix=\".ua\")\n    os.close(fd)\n    AlgebraIO.writeAlgebraFile(alg, path)\n    text = open(path).read()\n    os.unlink(path)\n    tags = []\n    for tag in (\n        \"basicAlgebra\", \"freeAlgebra\", \"productAlgebra\", \"powerAlgebra\",\n        \"quotientAlgebra\", \"subAlgebra\", \"bigProductAlgebra\", \"subProductAlgebra\",\n        \"productElem\", \"generators\", \"rootFactors\", \"factors\", \"superAlgebra\",\n        \"congruence\", \"subUniverse\", \"powers\",\n    ):\n        if \"<\" + tag + \">\" in text:\n            tags.append(tag)\n    return tags\n\nf = FreeAlgebra(c3, 1)\nf.setName(\"F1\")\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_wr(f)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "write then read F(1) over lat2 (Java rereads lat2, not F(1))",
+      "expected_exception": null,
+      "id": "wr_free_lat2_f1",
+      "kwargs": {},
+      "method": "AlgebraIO.writeAlgebraFile",
+      "notes": "",
+      "result": {
+        "return_type": "BasicAlgebra",
+        "return_value": {
+          "__type__": "algebra",
+          "arities": [
+            2,
+            2
+          ],
+          "cardinality": 2,
+          "class": "BasicAlgebra",
+          "name": "lat2",
+          "operation_count": 2,
+          "symbols": [
+            "join",
+            "meet"
+          ],
+          "tables": [
+            [
+              0,
+              1,
+              1,
+              1
+            ],
+            [
+              0,
+              0,
+              0,
+              1
+            ]
+          ]
+        },
+        "string_repr": "org.uacalc.alg.BasicAlgebra@708eb310",
+        "success": true
+      },
+      "setup": "\nimport os, tempfile\nfrom org.uacalc.io import AlgebraIO, AlgebraReader, AlgebraWriter\nfrom org.uacalc.alg import (\n    FreeAlgebra, ProductAlgebra, PowerAlgebra, QuotientAlgebra, Subalgebra,\n    BigProductAlgebra, SubProductAlgebra,\n)\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\n\ndef _wr(alg):\n    fd, path = tempfile.mkstemp(suffix=\".ua\")\n    os.close(fd)\n    AlgebraIO.writeAlgebraFile(alg, path)\n    read = AlgebraIO.readAlgebraFile(path)\n    os.unlink(path)\n    return read\n\ndef _xml_tags(alg):\n    fd, path = tempfile.mkstemp(suffix=\".ua\")\n    os.close(fd)\n    AlgebraIO.writeAlgebraFile(alg, path)\n    text = open(path).read()\n    os.unlink(path)\n    tags = []\n    for tag in (\n        \"basicAlgebra\", \"freeAlgebra\", \"productAlgebra\", \"powerAlgebra\",\n        \"quotientAlgebra\", \"subAlgebra\", \"bigProductAlgebra\", \"subProductAlgebra\",\n        \"productElem\", \"generators\", \"rootFactors\", \"factors\", \"superAlgebra\",\n        \"congruence\", \"subUniverse\", \"powers\",\n    ):\n        if \"<\" + tag + \">\" in text:\n            tags.append(tag)\n    return tags\n\nf = FreeAlgebra(lat2, 1)\nf.setName(\"F1\")\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_wr(f)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "write then read F(1) over ba2 (Java rereads ba2, not F(1))",
+      "expected_exception": null,
+      "id": "wr_free_ba2_f1",
+      "kwargs": {},
+      "method": "AlgebraIO.writeAlgebraFile",
+      "notes": "",
+      "result": {
+        "return_type": "BasicAlgebra",
+        "return_value": {
+          "__type__": "algebra",
+          "arities": [
+            2,
+            2,
+            1,
+            0,
+            0
+          ],
+          "cardinality": 2,
+          "class": "BasicAlgebra",
+          "name": "ba2",
+          "operation_count": 5,
+          "symbols": [
+            "join",
+            "meet",
+            "comp",
+            "one",
+            "zero"
+          ],
+          "tables": [
+            [
+              0,
+              1,
+              1,
+              1
+            ],
+            [
+              0,
+              0,
+              0,
+              1
+            ],
+            [
+              1,
+              0
+            ],
+            [
+              1
+            ],
+            [
+              0
+            ]
+          ]
+        },
+        "string_repr": "org.uacalc.alg.BasicAlgebra@68699afc",
+        "success": true
+      },
+      "setup": "\nimport os, tempfile\nfrom org.uacalc.io import AlgebraIO, AlgebraReader, AlgebraWriter\nfrom org.uacalc.alg import (\n    FreeAlgebra, ProductAlgebra, PowerAlgebra, QuotientAlgebra, Subalgebra,\n    BigProductAlgebra, SubProductAlgebra,\n)\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\n\ndef _wr(alg):\n    fd, path = tempfile.mkstemp(suffix=\".ua\")\n    os.close(fd)\n    AlgebraIO.writeAlgebraFile(alg, path)\n    read = AlgebraIO.readAlgebraFile(path)\n    os.unlink(path)\n    return read\n\ndef _xml_tags(alg):\n    fd, path = tempfile.mkstemp(suffix=\".ua\")\n    os.close(fd)\n    AlgebraIO.writeAlgebraFile(alg, path)\n    text = open(path).read()\n    os.unlink(path)\n    tags = []\n    for tag in (\n        \"basicAlgebra\", \"freeAlgebra\", \"productAlgebra\", \"powerAlgebra\",\n        \"quotientAlgebra\", \"subAlgebra\", \"bigProductAlgebra\", \"subProductAlgebra\",\n        \"productElem\", \"generators\", \"rootFactors\", \"factors\", \"superAlgebra\",\n        \"congruence\", \"subUniverse\", \"powers\",\n    ):\n        if \"<\" + tag + \">\" in text:\n            tags.append(tag)\n    return tags\n\nf = FreeAlgebra(ba2, 1)\nf.setName(\"F1\")\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_xml_tags(f)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "FreeAlgebra write emits <freeAlgebra> + productElem tags",
+      "expected_exception": null,
+      "id": "xml_free_c2_f1_tags",
+      "kwargs": {},
+      "method": "AlgebraWriter.writeAlgebraXML",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "basicAlgebra",
+          "freeAlgebra",
+          "bigProductAlgebra",
+          "productElem",
+          "generators",
+          "rootFactors",
+          "superAlgebra",
+          "powers"
+        ],
+        "string_repr": "['basicAlgebra', 'freeAlgebra', 'bigProductAlgebra', 'productElem', 'generators', 'rootFactors', 'superAlgebra', 'powers']",
+        "success": true
+      },
+      "setup": "\nimport os, tempfile\nfrom org.uacalc.io import AlgebraIO, AlgebraReader, AlgebraWriter\nfrom org.uacalc.alg import (\n    FreeAlgebra, ProductAlgebra, PowerAlgebra, QuotientAlgebra, Subalgebra,\n    BigProductAlgebra, SubProductAlgebra,\n)\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\n\ndef _wr(alg):\n    fd, path = tempfile.mkstemp(suffix=\".ua\")\n    os.close(fd)\n    AlgebraIO.writeAlgebraFile(alg, path)\n    read = AlgebraIO.readAlgebraFile(path)\n    os.unlink(path)\n    return read\n\ndef _xml_tags(alg):\n    fd, path = tempfile.mkstemp(suffix=\".ua\")\n    os.close(fd)\n    AlgebraIO.writeAlgebraFile(alg, path)\n    text = open(path).read()\n    os.unlink(path)\n    tags = []\n    for tag in (\n        \"basicAlgebra\", \"freeAlgebra\", \"productAlgebra\", \"powerAlgebra\",\n        \"quotientAlgebra\", \"subAlgebra\", \"bigProductAlgebra\", \"subProductAlgebra\",\n        \"productElem\", \"generators\", \"rootFactors\", \"factors\", \"superAlgebra\",\n        \"congruence\", \"subUniverse\", \"powers\",\n    ):\n        if \"<\" + tag + \">\" in text:\n            tags.append(tag)\n    return tags\n\nf = FreeAlgebra(c2, 1)\nf.setName(\"F1\")\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "AlgebraReader(\"resources/special/free_c2_f1.ua\").readAlgebraFile()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Java-written F(1)/C2 fixture (cross: Java write, both read)",
+      "expected_exception": null,
+      "id": "read_special_free_c2_f1",
+      "kwargs": {},
+      "method": "AlgebraReader.readAlgebraFile",
+      "notes": "",
+      "result": {
+        "return_type": "BasicAlgebra",
+        "return_value": {
+          "__type__": "algebra",
+          "arities": [
+            2
+          ],
+          "cardinality": 2,
+          "class": "BasicAlgebra",
+          "name": "C2",
+          "operation_count": 1,
+          "symbols": [
+            "+"
+          ],
+          "tables": [
+            [
+              0,
+              1,
+              1,
+              0
+            ]
+          ]
+        },
+        "string_repr": "org.uacalc.alg.BasicAlgebra@7b3cde6f",
+        "success": true
+      },
+      "setup": "\nimport os, tempfile\nfrom org.uacalc.io import AlgebraIO, AlgebraReader, AlgebraWriter\nfrom org.uacalc.alg import (\n    FreeAlgebra, ProductAlgebra, PowerAlgebra, QuotientAlgebra, Subalgebra,\n    BigProductAlgebra, SubProductAlgebra,\n)\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\n\ndef _wr(alg):\n    fd, path = tempfile.mkstemp(suffix=\".ua\")\n    os.close(fd)\n    AlgebraIO.writeAlgebraFile(alg, path)\n    read = AlgebraIO.readAlgebraFile(path)\n    os.unlink(path)\n    return read\n\ndef _xml_tags(alg):\n    fd, path = tempfile.mkstemp(suffix=\".ua\")\n    os.close(fd)\n    AlgebraIO.writeAlgebraFile(alg, path)\n    text = open(path).read()\n    os.unlink(path)\n    tags = []\n    for tag in (\n        \"basicAlgebra\", \"freeAlgebra\", \"productAlgebra\", \"powerAlgebra\",\n        \"quotientAlgebra\", \"subAlgebra\", \"bigProductAlgebra\", \"subProductAlgebra\",\n        \"productElem\", \"generators\", \"rootFactors\", \"factors\", \"superAlgebra\",\n        \"congruence\", \"subUniverse\", \"powers\",\n    ):\n        if \"<\" + tag + \">\" in text:\n            tags.append(tag)\n    return tags\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_wr(prod)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "write then read ProductAlgebra(C2, C2)",
+      "expected_exception": null,
+      "id": "wr_prod_c2_c2",
+      "kwargs": {},
+      "method": "AlgebraIO.writeAlgebraFile",
+      "notes": "",
+      "result": {
+        "return_type": "ProductAlgebra",
+        "return_value": {
+          "__type__": "algebra",
+          "arities": [
+            2
+          ],
+          "cardinality": 4,
+          "class": "ProductAlgebra",
+          "name": "",
+          "operation_count": 1,
+          "symbols": [
+            "+"
+          ],
+          "tables": [
+            [
+              0,
+              1,
+              2,
+              3,
+              1,
+              0,
+              3,
+              2,
+              2,
+              3,
+              0,
+              1,
+              3,
+              2,
+              1,
+              0
+            ]
+          ]
+        },
+        "string_repr": "org.uacalc.alg.ProductAlgebra@5584d9c6",
+        "success": true
+      },
+      "setup": "\nimport os, tempfile\nfrom org.uacalc.io import AlgebraIO, AlgebraReader, AlgebraWriter\nfrom org.uacalc.alg import (\n    FreeAlgebra, ProductAlgebra, PowerAlgebra, QuotientAlgebra, Subalgebra,\n    BigProductAlgebra, SubProductAlgebra,\n)\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\n\ndef _wr(alg):\n    fd, path = tempfile.mkstemp(suffix=\".ua\")\n    os.close(fd)\n    AlgebraIO.writeAlgebraFile(alg, path)\n    read = AlgebraIO.readAlgebraFile(path)\n    os.unlink(path)\n    return read\n\ndef _xml_tags(alg):\n    fd, path = tempfile.mkstemp(suffix=\".ua\")\n    os.close(fd)\n    AlgebraIO.writeAlgebraFile(alg, path)\n    text = open(path).read()\n    os.unlink(path)\n    tags = []\n    for tag in (\n        \"basicAlgebra\", \"freeAlgebra\", \"productAlgebra\", \"powerAlgebra\",\n        \"quotientAlgebra\", \"subAlgebra\", \"bigProductAlgebra\", \"subProductAlgebra\",\n        \"productElem\", \"generators\", \"rootFactors\", \"factors\", \"superAlgebra\",\n        \"congruence\", \"subUniverse\", \"powers\",\n    ):\n        if \"<\" + tag + \">\" in text:\n            tags.append(tag)\n    return tags\n\nprod = ProductAlgebra([c2, c2])\n",
+      "skip_string_check": true,
+      "xfail_reason": "Owner/library: AlgebraWriter.writeProductAlgebra is a hardcoded stub on Box<dyn SmallAlgebra<i32>> (no factors). The org shim still routes ProductAlgebra through to_basic_algebra(), so Python writes <basicAlgebra> tables. Java writes <productAlgebra> and rereads a ProductAlgebra."
+    },
+    {
+      "args": [],
+      "call": "_xml_tags(prod)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "ProductAlgebra write tags (Java productAlgebra vs Python basicAlgebra)",
+      "expected_exception": null,
+      "id": "xml_prod_c2_c2_tags",
+      "kwargs": {},
+      "method": "AlgebraWriter.writeAlgebraXML",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "basicAlgebra",
+          "productAlgebra",
+          "factors"
+        ],
+        "string_repr": "['basicAlgebra', 'productAlgebra', 'factors']",
+        "success": true
+      },
+      "setup": "\nimport os, tempfile\nfrom org.uacalc.io import AlgebraIO, AlgebraReader, AlgebraWriter\nfrom org.uacalc.alg import (\n    FreeAlgebra, ProductAlgebra, PowerAlgebra, QuotientAlgebra, Subalgebra,\n    BigProductAlgebra, SubProductAlgebra,\n)\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\n\ndef _wr(alg):\n    fd, path = tempfile.mkstemp(suffix=\".ua\")\n    os.close(fd)\n    AlgebraIO.writeAlgebraFile(alg, path)\n    read = AlgebraIO.readAlgebraFile(path)\n    os.unlink(path)\n    return read\n\ndef _xml_tags(alg):\n    fd, path = tempfile.mkstemp(suffix=\".ua\")\n    os.close(fd)\n    AlgebraIO.writeAlgebraFile(alg, path)\n    text = open(path).read()\n    os.unlink(path)\n    tags = []\n    for tag in (\n        \"basicAlgebra\", \"freeAlgebra\", \"productAlgebra\", \"powerAlgebra\",\n        \"quotientAlgebra\", \"subAlgebra\", \"bigProductAlgebra\", \"subProductAlgebra\",\n        \"productElem\", \"generators\", \"rootFactors\", \"factors\", \"superAlgebra\",\n        \"congruence\", \"subUniverse\", \"powers\",\n    ):\n        if \"<\" + tag + \">\" in text:\n            tags.append(tag)\n    return tags\n\nprod = ProductAlgebra([c2, c2])\n",
+      "skip_string_check": true,
+      "xfail_reason": "Owner/library: AlgebraWriter.writeProductAlgebra is a hardcoded stub on Box<dyn SmallAlgebra<i32>> (no factors). The org shim still routes ProductAlgebra through to_basic_algebra(), so Python writes <basicAlgebra> tables. Java writes <productAlgebra> and rereads a ProductAlgebra."
+    },
+    {
+      "args": [],
+      "call": "AlgebraReader(\"resources/special/product_c2_c2.ua\").readAlgebraFile()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Java-written product fixture (cross: Java write, both read)",
+      "expected_exception": null,
+      "id": "read_special_product",
+      "kwargs": {},
+      "method": "AlgebraReader.readAlgebraFile",
+      "notes": "",
+      "result": {
+        "return_type": "ProductAlgebra",
+        "return_value": {
+          "__type__": "algebra",
+          "arities": [
+            2
+          ],
+          "cardinality": 4,
+          "class": "ProductAlgebra",
+          "name": "",
+          "operation_count": 1,
+          "symbols": [
+            "+"
+          ],
+          "tables": [
+            [
+              0,
+              1,
+              2,
+              3,
+              1,
+              0,
+              3,
+              2,
+              2,
+              3,
+              0,
+              1,
+              3,
+              2,
+              1,
+              0
+            ]
+          ]
+        },
+        "string_repr": "org.uacalc.alg.ProductAlgebra@4ceff87d",
+        "success": true
+      },
+      "setup": "\nimport os, tempfile\nfrom org.uacalc.io import AlgebraIO, AlgebraReader, AlgebraWriter\nfrom org.uacalc.alg import (\n    FreeAlgebra, ProductAlgebra, PowerAlgebra, QuotientAlgebra, Subalgebra,\n    BigProductAlgebra, SubProductAlgebra,\n)\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\n\ndef _wr(alg):\n    fd, path = tempfile.mkstemp(suffix=\".ua\")\n    os.close(fd)\n    AlgebraIO.writeAlgebraFile(alg, path)\n    read = AlgebraIO.readAlgebraFile(path)\n    os.unlink(path)\n    return read\n\ndef _xml_tags(alg):\n    fd, path = tempfile.mkstemp(suffix=\".ua\")\n    os.close(fd)\n    AlgebraIO.writeAlgebraFile(alg, path)\n    text = open(path).read()\n    os.unlink(path)\n    tags = []\n    for tag in (\n        \"basicAlgebra\", \"freeAlgebra\", \"productAlgebra\", \"powerAlgebra\",\n        \"quotientAlgebra\", \"subAlgebra\", \"bigProductAlgebra\", \"subProductAlgebra\",\n        \"productElem\", \"generators\", \"rootFactors\", \"factors\", \"superAlgebra\",\n        \"congruence\", \"subUniverse\", \"powers\",\n    ):\n        if \"<\" + tag + \">\" in text:\n            tags.append(tag)\n    return tags\n",
+      "skip_string_check": true,
+      "xfail_reason": "Owner/library: Rust AlgebraReader only materializes BasicAlgebra. Java reconstructs ProductAlgebra / PowerAlgebra / QuotientAlgebra / Subalgebra / BigProductAlgebra / SubProductAlgebra from nested XML. Python keeps the last nested basicAlgebra (often a factor or the super algebra)."
+    },
+    {
+      "args": [],
+      "call": "_wr(pwr)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "write then read PowerAlgebra(C2, 2)",
+      "expected_exception": null,
+      "id": "wr_pwr_c2_2",
+      "kwargs": {},
+      "method": "AlgebraIO.writeAlgebraFile",
+      "notes": "",
+      "result": {
+        "return_type": "PowerAlgebra",
+        "return_value": {
+          "__type__": "algebra",
+          "arities": [
+            2
+          ],
+          "cardinality": 4,
+          "class": "PowerAlgebra",
+          "name": "",
+          "operation_count": 1,
+          "symbols": [
+            "+"
+          ],
+          "tables": [
+            [
+              0,
+              1,
+              2,
+              3,
+              1,
+              0,
+              3,
+              2,
+              2,
+              3,
+              0,
+              1,
+              3,
+              2,
+              1,
+              0
+            ]
+          ]
+        },
+        "string_repr": "org.uacalc.alg.PowerAlgebra@45c9b3",
+        "success": true
+      },
+      "setup": "\nimport os, tempfile\nfrom org.uacalc.io import AlgebraIO, AlgebraReader, AlgebraWriter\nfrom org.uacalc.alg import (\n    FreeAlgebra, ProductAlgebra, PowerAlgebra, QuotientAlgebra, Subalgebra,\n    BigProductAlgebra, SubProductAlgebra,\n)\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\n\ndef _wr(alg):\n    fd, path = tempfile.mkstemp(suffix=\".ua\")\n    os.close(fd)\n    AlgebraIO.writeAlgebraFile(alg, path)\n    read = AlgebraIO.readAlgebraFile(path)\n    os.unlink(path)\n    return read\n\ndef _xml_tags(alg):\n    fd, path = tempfile.mkstemp(suffix=\".ua\")\n    os.close(fd)\n    AlgebraIO.writeAlgebraFile(alg, path)\n    text = open(path).read()\n    os.unlink(path)\n    tags = []\n    for tag in (\n        \"basicAlgebra\", \"freeAlgebra\", \"productAlgebra\", \"powerAlgebra\",\n        \"quotientAlgebra\", \"subAlgebra\", \"bigProductAlgebra\", \"subProductAlgebra\",\n        \"productElem\", \"generators\", \"rootFactors\", \"factors\", \"superAlgebra\",\n        \"congruence\", \"subUniverse\", \"powers\",\n    ):\n        if \"<\" + tag + \">\" in text:\n            tags.append(tag)\n    return tags\n\npwr = PowerAlgebra(c2, 2)\n",
+      "skip_string_check": true,
+      "xfail_reason": "Owner/library: AlgebraWriter.writePowerAlgebra is a hardcoded stub (placeholder power=2 and nested basic of the power, not the root). The org shim still routes PowerAlgebra through to_basic_algebra()."
+    },
+    {
+      "args": [],
+      "call": "_xml_tags(pwr)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "PowerAlgebra write tags (Java powerAlgebra vs Python basicAlgebra)",
+      "expected_exception": null,
+      "id": "xml_pwr_c2_2_tags",
+      "kwargs": {},
+      "method": "AlgebraWriter.writeAlgebraXML",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "basicAlgebra",
+          "powerAlgebra"
+        ],
+        "string_repr": "['basicAlgebra', 'powerAlgebra']",
+        "success": true
+      },
+      "setup": "\nimport os, tempfile\nfrom org.uacalc.io import AlgebraIO, AlgebraReader, AlgebraWriter\nfrom org.uacalc.alg import (\n    FreeAlgebra, ProductAlgebra, PowerAlgebra, QuotientAlgebra, Subalgebra,\n    BigProductAlgebra, SubProductAlgebra,\n)\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\n\ndef _wr(alg):\n    fd, path = tempfile.mkstemp(suffix=\".ua\")\n    os.close(fd)\n    AlgebraIO.writeAlgebraFile(alg, path)\n    read = AlgebraIO.readAlgebraFile(path)\n    os.unlink(path)\n    return read\n\ndef _xml_tags(alg):\n    fd, path = tempfile.mkstemp(suffix=\".ua\")\n    os.close(fd)\n    AlgebraIO.writeAlgebraFile(alg, path)\n    text = open(path).read()\n    os.unlink(path)\n    tags = []\n    for tag in (\n        \"basicAlgebra\", \"freeAlgebra\", \"productAlgebra\", \"powerAlgebra\",\n        \"quotientAlgebra\", \"subAlgebra\", \"bigProductAlgebra\", \"subProductAlgebra\",\n        \"productElem\", \"generators\", \"rootFactors\", \"factors\", \"superAlgebra\",\n        \"congruence\", \"subUniverse\", \"powers\",\n    ):\n        if \"<\" + tag + \">\" in text:\n            tags.append(tag)\n    return tags\n\npwr = PowerAlgebra(c2, 2)\n",
+      "skip_string_check": true,
+      "xfail_reason": "Owner/library: AlgebraWriter.writePowerAlgebra is a hardcoded stub (placeholder power=2 and nested basic of the power, not the root). The org shim still routes PowerAlgebra through to_basic_algebra()."
+    },
+    {
+      "args": [],
+      "call": "AlgebraReader(\"resources/special/power_c2_sq.ua\").readAlgebraFile()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Java-written power fixture (cross: Java write, both read)",
+      "expected_exception": null,
+      "id": "read_special_power",
+      "kwargs": {},
+      "method": "AlgebraReader.readAlgebraFile",
+      "notes": "",
+      "result": {
+        "return_type": "PowerAlgebra",
+        "return_value": {
+          "__type__": "algebra",
+          "arities": [
+            2
+          ],
+          "cardinality": 4,
+          "class": "PowerAlgebra",
+          "name": "",
+          "operation_count": 1,
+          "symbols": [
+            "+"
+          ],
+          "tables": [
+            [
+              0,
+              1,
+              2,
+              3,
+              1,
+              0,
+              3,
+              2,
+              2,
+              3,
+              0,
+              1,
+              3,
+              2,
+              1,
+              0
+            ]
+          ]
+        },
+        "string_repr": "org.uacalc.alg.PowerAlgebra@6807a356",
+        "success": true
+      },
+      "setup": "\nimport os, tempfile\nfrom org.uacalc.io import AlgebraIO, AlgebraReader, AlgebraWriter\nfrom org.uacalc.alg import (\n    FreeAlgebra, ProductAlgebra, PowerAlgebra, QuotientAlgebra, Subalgebra,\n    BigProductAlgebra, SubProductAlgebra,\n)\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\n\ndef _wr(alg):\n    fd, path = tempfile.mkstemp(suffix=\".ua\")\n    os.close(fd)\n    AlgebraIO.writeAlgebraFile(alg, path)\n    read = AlgebraIO.readAlgebraFile(path)\n    os.unlink(path)\n    return read\n\ndef _xml_tags(alg):\n    fd, path = tempfile.mkstemp(suffix=\".ua\")\n    os.close(fd)\n    AlgebraIO.writeAlgebraFile(alg, path)\n    text = open(path).read()\n    os.unlink(path)\n    tags = []\n    for tag in (\n        \"basicAlgebra\", \"freeAlgebra\", \"productAlgebra\", \"powerAlgebra\",\n        \"quotientAlgebra\", \"subAlgebra\", \"bigProductAlgebra\", \"subProductAlgebra\",\n        \"productElem\", \"generators\", \"rootFactors\", \"factors\", \"superAlgebra\",\n        \"congruence\", \"subUniverse\", \"powers\",\n    ):\n        if \"<\" + tag + \">\" in text:\n            tags.append(tag)\n    return tags\n",
+      "skip_string_check": true,
+      "xfail_reason": "Owner/library: Rust AlgebraReader only materializes BasicAlgebra. Java reconstructs ProductAlgebra / PowerAlgebra / QuotientAlgebra / Subalgebra / BigProductAlgebra / SubProductAlgebra from nested XML. Python keeps the last nested basicAlgebra (often a factor or the super algebra)."
+    },
+    {
+      "args": [],
+      "call": "_wr(quot)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "write then read QuotientAlgebra of C2 by |0|1|",
+      "expected_exception": null,
+      "id": "wr_quot_c2",
+      "kwargs": {},
+      "method": "AlgebraIO.writeAlgebraFile",
+      "notes": "",
+      "result": {
+        "return_type": "QuotientAlgebra",
+        "return_value": {
+          "__type__": "algebra",
+          "arities": [
+            2
+          ],
+          "cardinality": 2,
+          "class": "QuotientAlgebra",
+          "name": "",
+          "operation_count": 1,
+          "symbols": [
+            "+"
+          ],
+          "tables": [
+            [
+              0,
+              1,
+              1,
+              0
+            ]
+          ]
+        },
+        "string_repr": "org.uacalc.alg.QuotientAlgebra@3472947a",
+        "success": true
+      },
+      "setup": "\nimport os, tempfile\nfrom org.uacalc.io import AlgebraIO, AlgebraReader, AlgebraWriter\nfrom org.uacalc.alg import (\n    FreeAlgebra, ProductAlgebra, PowerAlgebra, QuotientAlgebra, Subalgebra,\n    BigProductAlgebra, SubProductAlgebra,\n)\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\n\ndef _wr(alg):\n    fd, path = tempfile.mkstemp(suffix=\".ua\")\n    os.close(fd)\n    AlgebraIO.writeAlgebraFile(alg, path)\n    read = AlgebraIO.readAlgebraFile(path)\n    os.unlink(path)\n    return read\n\ndef _xml_tags(alg):\n    fd, path = tempfile.mkstemp(suffix=\".ua\")\n    os.close(fd)\n    AlgebraIO.writeAlgebraFile(alg, path)\n    text = open(path).read()\n    os.unlink(path)\n    tags = []\n    for tag in (\n        \"basicAlgebra\", \"freeAlgebra\", \"productAlgebra\", \"powerAlgebra\",\n        \"quotientAlgebra\", \"subAlgebra\", \"bigProductAlgebra\", \"subProductAlgebra\",\n        \"productElem\", \"generators\", \"rootFactors\", \"factors\", \"superAlgebra\",\n        \"congruence\", \"subUniverse\", \"powers\",\n    ):\n        if \"<\" + tag + \">\" in text:\n            tags.append(tag)\n    return tags\n\ncons = list(c2.con().universe())\nquot = QuotientAlgebra(c2, cons[0])\n",
+      "skip_string_check": true,
+      "xfail_reason": "Owner/library: AlgebraWriter.writeQuotientAlgebra is a hardcoded stub (partition 0,1). The org shim still routes QuotientAlgebra through to_basic_algebra()."
+    },
+    {
+      "args": [],
+      "call": "_xml_tags(quot)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "QuotientAlgebra write tags (Java quotientAlgebra vs Python basicAlgebra)",
+      "expected_exception": null,
+      "id": "xml_quot_c2_tags",
+      "kwargs": {},
+      "method": "AlgebraWriter.writeAlgebraXML",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "basicAlgebra",
+          "quotientAlgebra",
+          "superAlgebra",
+          "congruence"
+        ],
+        "string_repr": "['basicAlgebra', 'quotientAlgebra', 'superAlgebra', 'congruence']",
+        "success": true
+      },
+      "setup": "\nimport os, tempfile\nfrom org.uacalc.io import AlgebraIO, AlgebraReader, AlgebraWriter\nfrom org.uacalc.alg import (\n    FreeAlgebra, ProductAlgebra, PowerAlgebra, QuotientAlgebra, Subalgebra,\n    BigProductAlgebra, SubProductAlgebra,\n)\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\n\ndef _wr(alg):\n    fd, path = tempfile.mkstemp(suffix=\".ua\")\n    os.close(fd)\n    AlgebraIO.writeAlgebraFile(alg, path)\n    read = AlgebraIO.readAlgebraFile(path)\n    os.unlink(path)\n    return read\n\ndef _xml_tags(alg):\n    fd, path = tempfile.mkstemp(suffix=\".ua\")\n    os.close(fd)\n    AlgebraIO.writeAlgebraFile(alg, path)\n    text = open(path).read()\n    os.unlink(path)\n    tags = []\n    for tag in (\n        \"basicAlgebra\", \"freeAlgebra\", \"productAlgebra\", \"powerAlgebra\",\n        \"quotientAlgebra\", \"subAlgebra\", \"bigProductAlgebra\", \"subProductAlgebra\",\n        \"productElem\", \"generators\", \"rootFactors\", \"factors\", \"superAlgebra\",\n        \"congruence\", \"subUniverse\", \"powers\",\n    ):\n        if \"<\" + tag + \">\" in text:\n            tags.append(tag)\n    return tags\n\ncons = list(c2.con().universe())\nquot = QuotientAlgebra(c2, cons[0])\n",
+      "skip_string_check": true,
+      "xfail_reason": "Owner/library: AlgebraWriter.writeQuotientAlgebra is a hardcoded stub (partition 0,1). The org shim still routes QuotientAlgebra through to_basic_algebra()."
+    },
+    {
+      "args": [],
+      "call": "AlgebraReader(\"resources/special/quotient_example.ua\").readAlgebraFile()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Java-written quotient fixture (cross: Java write, both read)",
+      "expected_exception": null,
+      "id": "read_special_quotient",
+      "kwargs": {},
+      "method": "AlgebraReader.readAlgebraFile",
+      "notes": "",
+      "result": {
+        "return_type": "QuotientAlgebra",
+        "return_value": {
+          "__type__": "algebra",
+          "arities": [
+            2
+          ],
+          "cardinality": 2,
+          "class": "QuotientAlgebra",
+          "name": "",
+          "operation_count": 1,
+          "symbols": [
+            "+"
+          ],
+          "tables": [
+            [
+              0,
+              1,
+              1,
+              0
+            ]
+          ]
+        },
+        "string_repr": "org.uacalc.alg.QuotientAlgebra@6af90849",
+        "success": true
+      },
+      "setup": "\nimport os, tempfile\nfrom org.uacalc.io import AlgebraIO, AlgebraReader, AlgebraWriter\nfrom org.uacalc.alg import (\n    FreeAlgebra, ProductAlgebra, PowerAlgebra, QuotientAlgebra, Subalgebra,\n    BigProductAlgebra, SubProductAlgebra,\n)\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\n\ndef _wr(alg):\n    fd, path = tempfile.mkstemp(suffix=\".ua\")\n    os.close(fd)\n    AlgebraIO.writeAlgebraFile(alg, path)\n    read = AlgebraIO.readAlgebraFile(path)\n    os.unlink(path)\n    return read\n\ndef _xml_tags(alg):\n    fd, path = tempfile.mkstemp(suffix=\".ua\")\n    os.close(fd)\n    AlgebraIO.writeAlgebraFile(alg, path)\n    text = open(path).read()\n    os.unlink(path)\n    tags = []\n    for tag in (\n        \"basicAlgebra\", \"freeAlgebra\", \"productAlgebra\", \"powerAlgebra\",\n        \"quotientAlgebra\", \"subAlgebra\", \"bigProductAlgebra\", \"subProductAlgebra\",\n        \"productElem\", \"generators\", \"rootFactors\", \"factors\", \"superAlgebra\",\n        \"congruence\", \"subUniverse\", \"powers\",\n    ):\n        if \"<\" + tag + \">\" in text:\n            tags.append(tag)\n    return tags\n",
+      "skip_string_check": true,
+      "xfail_reason": "Owner/library: Rust AlgebraReader only materializes BasicAlgebra. Java reconstructs ProductAlgebra / PowerAlgebra / QuotientAlgebra / Subalgebra / BigProductAlgebra / SubProductAlgebra from nested XML. Python keeps the last nested basicAlgebra (often a factor or the super algebra)."
+    },
+    {
+      "args": [],
+      "call": "_wr(sub)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "write then read Subalgebra of C2 on {0}",
+      "expected_exception": null,
+      "id": "wr_sub_c2",
+      "kwargs": {},
+      "method": "AlgebraIO.writeAlgebraFile",
+      "notes": "",
+      "result": {
+        "return_type": "Subalgebra",
+        "return_value": {
+          "__repr__": "org.uacalc.alg.Subalgebra@10272bbb",
+          "__type__": "Subalgebra",
+          "string": "org.uacalc.alg.Subalgebra@10272bbb"
+        },
+        "string_repr": "org.uacalc.alg.Subalgebra@10272bbb",
+        "success": true
+      },
+      "setup": "\nimport os, tempfile\nfrom org.uacalc.io import AlgebraIO, AlgebraReader, AlgebraWriter\nfrom org.uacalc.alg import (\n    FreeAlgebra, ProductAlgebra, PowerAlgebra, QuotientAlgebra, Subalgebra,\n    BigProductAlgebra, SubProductAlgebra,\n)\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\n\ndef _wr(alg):\n    fd, path = tempfile.mkstemp(suffix=\".ua\")\n    os.close(fd)\n    AlgebraIO.writeAlgebraFile(alg, path)\n    read = AlgebraIO.readAlgebraFile(path)\n    os.unlink(path)\n    return read\n\ndef _xml_tags(alg):\n    fd, path = tempfile.mkstemp(suffix=\".ua\")\n    os.close(fd)\n    AlgebraIO.writeAlgebraFile(alg, path)\n    text = open(path).read()\n    os.unlink(path)\n    tags = []\n    for tag in (\n        \"basicAlgebra\", \"freeAlgebra\", \"productAlgebra\", \"powerAlgebra\",\n        \"quotientAlgebra\", \"subAlgebra\", \"bigProductAlgebra\", \"subProductAlgebra\",\n        \"productElem\", \"generators\", \"rootFactors\", \"factors\", \"superAlgebra\",\n        \"congruence\", \"subUniverse\", \"powers\",\n    ):\n        if \"<\" + tag + \">\" in text:\n            tags.append(tag)\n    return tags\n\nsub = Subalgebra(c2, [0])\n",
+      "skip_string_check": true,
+      "xfail_reason": "Owner/library: AlgebraWriter.writeSubalgebra is a hardcoded stub (subUniverse 0,1). The org shim still routes Subalgebra through to_basic_algebra()."
+    },
+    {
+      "args": [],
+      "call": "_xml_tags(sub)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Subalgebra write tags (Java subAlgebra vs Python basicAlgebra)",
+      "expected_exception": null,
+      "id": "xml_sub_c2_tags",
+      "kwargs": {},
+      "method": "AlgebraWriter.writeAlgebraXML",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "basicAlgebra",
+          "subAlgebra",
+          "superAlgebra",
+          "subUniverse"
+        ],
+        "string_repr": "['basicAlgebra', 'subAlgebra', 'superAlgebra', 'subUniverse']",
+        "success": true
+      },
+      "setup": "\nimport os, tempfile\nfrom org.uacalc.io import AlgebraIO, AlgebraReader, AlgebraWriter\nfrom org.uacalc.alg import (\n    FreeAlgebra, ProductAlgebra, PowerAlgebra, QuotientAlgebra, Subalgebra,\n    BigProductAlgebra, SubProductAlgebra,\n)\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\n\ndef _wr(alg):\n    fd, path = tempfile.mkstemp(suffix=\".ua\")\n    os.close(fd)\n    AlgebraIO.writeAlgebraFile(alg, path)\n    read = AlgebraIO.readAlgebraFile(path)\n    os.unlink(path)\n    return read\n\ndef _xml_tags(alg):\n    fd, path = tempfile.mkstemp(suffix=\".ua\")\n    os.close(fd)\n    AlgebraIO.writeAlgebraFile(alg, path)\n    text = open(path).read()\n    os.unlink(path)\n    tags = []\n    for tag in (\n        \"basicAlgebra\", \"freeAlgebra\", \"productAlgebra\", \"powerAlgebra\",\n        \"quotientAlgebra\", \"subAlgebra\", \"bigProductAlgebra\", \"subProductAlgebra\",\n        \"productElem\", \"generators\", \"rootFactors\", \"factors\", \"superAlgebra\",\n        \"congruence\", \"subUniverse\", \"powers\",\n    ):\n        if \"<\" + tag + \">\" in text:\n            tags.append(tag)\n    return tags\n\nsub = Subalgebra(c2, [0])\n",
+      "skip_string_check": true,
+      "xfail_reason": "Owner/library: AlgebraWriter.writeSubalgebra is a hardcoded stub (subUniverse 0,1). The org shim still routes Subalgebra through to_basic_algebra()."
+    },
+    {
+      "args": [],
+      "call": "AlgebraReader(\"resources/special/subalgebra_example.ua\").readAlgebraFile()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Java-written subalgebra fixture (cross: Java write, both read)",
+      "expected_exception": null,
+      "id": "read_special_subalgebra",
+      "kwargs": {},
+      "method": "AlgebraReader.readAlgebraFile",
+      "notes": "",
+      "result": {
+        "return_type": "Subalgebra",
+        "return_value": {
+          "__repr__": "org.uacalc.alg.Subalgebra@60e06f7d",
+          "__type__": "Subalgebra",
+          "string": "org.uacalc.alg.Subalgebra@60e06f7d"
+        },
+        "string_repr": "org.uacalc.alg.Subalgebra@60e06f7d",
+        "success": true
+      },
+      "setup": "\nimport os, tempfile\nfrom org.uacalc.io import AlgebraIO, AlgebraReader, AlgebraWriter\nfrom org.uacalc.alg import (\n    FreeAlgebra, ProductAlgebra, PowerAlgebra, QuotientAlgebra, Subalgebra,\n    BigProductAlgebra, SubProductAlgebra,\n)\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\n\ndef _wr(alg):\n    fd, path = tempfile.mkstemp(suffix=\".ua\")\n    os.close(fd)\n    AlgebraIO.writeAlgebraFile(alg, path)\n    read = AlgebraIO.readAlgebraFile(path)\n    os.unlink(path)\n    return read\n\ndef _xml_tags(alg):\n    fd, path = tempfile.mkstemp(suffix=\".ua\")\n    os.close(fd)\n    AlgebraIO.writeAlgebraFile(alg, path)\n    text = open(path).read()\n    os.unlink(path)\n    tags = []\n    for tag in (\n        \"basicAlgebra\", \"freeAlgebra\", \"productAlgebra\", \"powerAlgebra\",\n        \"quotientAlgebra\", \"subAlgebra\", \"bigProductAlgebra\", \"subProductAlgebra\",\n        \"productElem\", \"generators\", \"rootFactors\", \"factors\", \"superAlgebra\",\n        \"congruence\", \"subUniverse\", \"powers\",\n    ):\n        if \"<\" + tag + \">\" in text:\n            tags.append(tag)\n    return tags\n",
+      "skip_string_check": true,
+      "xfail_reason": "Owner/library: Rust AlgebraReader only materializes BasicAlgebra. Java reconstructs ProductAlgebra / PowerAlgebra / QuotientAlgebra / Subalgebra / BigProductAlgebra / SubProductAlgebra from nested XML. Python keeps the last nested basicAlgebra (often a factor or the super algebra)."
+    },
+    {
+      "args": [],
+      "call": "_wr(sp)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "write then read SubProductAlgebra of C2^2 on two gens",
+      "expected_exception": null,
+      "id": "wr_subprod_c2",
+      "kwargs": {},
+      "method": "AlgebraIO.writeAlgebraFile",
+      "notes": "",
+      "result": {
+        "return_type": "SubProductAlgebra",
+        "return_value": {
+          "__type__": "algebra",
+          "arities": [
+            2
+          ],
+          "cardinality": 2,
+          "class": "SubProductAlgebra",
+          "name": "",
+          "operation_count": 1,
+          "symbols": [
+            "+"
+          ],
+          "tables": [
+            [
+              0,
+              1,
+              1,
+              0
+            ]
+          ]
+        },
+        "string_repr": "org.uacalc.alg.SubProductAlgebra@6274670b",
+        "success": true
+      },
+      "setup": "\nimport os, tempfile\nfrom org.uacalc.io import AlgebraIO, AlgebraReader, AlgebraWriter\nfrom org.uacalc.alg import (\n    FreeAlgebra, ProductAlgebra, PowerAlgebra, QuotientAlgebra, Subalgebra,\n    BigProductAlgebra, SubProductAlgebra,\n)\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\n\ndef _wr(alg):\n    fd, path = tempfile.mkstemp(suffix=\".ua\")\n    os.close(fd)\n    AlgebraIO.writeAlgebraFile(alg, path)\n    read = AlgebraIO.readAlgebraFile(path)\n    os.unlink(path)\n    return read\n\ndef _xml_tags(alg):\n    fd, path = tempfile.mkstemp(suffix=\".ua\")\n    os.close(fd)\n    AlgebraIO.writeAlgebraFile(alg, path)\n    text = open(path).read()\n    os.unlink(path)\n    tags = []\n    for tag in (\n        \"basicAlgebra\", \"freeAlgebra\", \"productAlgebra\", \"powerAlgebra\",\n        \"quotientAlgebra\", \"subAlgebra\", \"bigProductAlgebra\", \"subProductAlgebra\",\n        \"productElem\", \"generators\", \"rootFactors\", \"factors\", \"superAlgebra\",\n        \"congruence\", \"subUniverse\", \"powers\",\n    ):\n        if \"<\" + tag + \">\" in text:\n            tags.append(tag)\n    return tags\n\nbp = BigProductAlgebra(c2, 2)\nsp = SubProductAlgebra(\"SP\", bp, [IntArray([0, 0]), IntArray([1, 1])])\n",
+      "skip_string_check": true,
+      "xfail_reason": "Owner/library: AlgebraWriter.writeSubProductAlgebra is a hardcoded stub (no IntArray generators). The org shim still routes SubProductAlgebra through to_basic_algebra()."
+    },
+    {
+      "args": [],
+      "call": "_xml_tags(sp)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "SubProductAlgebra write tags (Java subProductAlgebra vs Python basicAlgebra)",
+      "expected_exception": null,
+      "id": "xml_subprod_c2_tags",
+      "kwargs": {},
+      "method": "AlgebraWriter.writeAlgebraXML",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "basicAlgebra",
+          "bigProductAlgebra",
+          "subProductAlgebra",
+          "productElem",
+          "generators",
+          "rootFactors",
+          "superAlgebra",
+          "powers"
+        ],
+        "string_repr": "['basicAlgebra', 'bigProductAlgebra', 'subProductAlgebra', 'productElem', 'generators', 'rootFactors', 'superAlgebra', 'powers']",
+        "success": true
+      },
+      "setup": "\nimport os, tempfile\nfrom org.uacalc.io import AlgebraIO, AlgebraReader, AlgebraWriter\nfrom org.uacalc.alg import (\n    FreeAlgebra, ProductAlgebra, PowerAlgebra, QuotientAlgebra, Subalgebra,\n    BigProductAlgebra, SubProductAlgebra,\n)\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\n\ndef _wr(alg):\n    fd, path = tempfile.mkstemp(suffix=\".ua\")\n    os.close(fd)\n    AlgebraIO.writeAlgebraFile(alg, path)\n    read = AlgebraIO.readAlgebraFile(path)\n    os.unlink(path)\n    return read\n\ndef _xml_tags(alg):\n    fd, path = tempfile.mkstemp(suffix=\".ua\")\n    os.close(fd)\n    AlgebraIO.writeAlgebraFile(alg, path)\n    text = open(path).read()\n    os.unlink(path)\n    tags = []\n    for tag in (\n        \"basicAlgebra\", \"freeAlgebra\", \"productAlgebra\", \"powerAlgebra\",\n        \"quotientAlgebra\", \"subAlgebra\", \"bigProductAlgebra\", \"subProductAlgebra\",\n        \"productElem\", \"generators\", \"rootFactors\", \"factors\", \"superAlgebra\",\n        \"congruence\", \"subUniverse\", \"powers\",\n    ):\n        if \"<\" + tag + \">\" in text:\n            tags.append(tag)\n    return tags\n\nbp = BigProductAlgebra(c2, 2)\nsp = SubProductAlgebra(\"SP\", bp, [IntArray([0, 0]), IntArray([1, 1])])\n",
+      "skip_string_check": true,
+      "xfail_reason": "Owner/library: AlgebraWriter.writeSubProductAlgebra is a hardcoded stub (no IntArray generators). The org shim still routes SubProductAlgebra through to_basic_algebra()."
+    },
+    {
+      "args": [],
+      "call": "AlgebraReader(\"resources/special/subproduct_c2.ua\").readAlgebraFile()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Java-written subproduct fixture (cross: Java write, both read)",
+      "expected_exception": null,
+      "id": "read_special_subproduct",
+      "kwargs": {},
+      "method": "AlgebraReader.readAlgebraFile",
+      "notes": "",
+      "result": {
+        "return_type": "SubProductAlgebra",
+        "return_value": {
+          "__type__": "algebra",
+          "arities": [
+            2
+          ],
+          "cardinality": 2,
+          "class": "SubProductAlgebra",
+          "name": "",
+          "operation_count": 1,
+          "symbols": [
+            "+"
+          ],
+          "tables": [
+            [
+              0,
+              1,
+              1,
+              0
+            ]
+          ]
+        },
+        "string_repr": "org.uacalc.alg.SubProductAlgebra@7980cf2c",
+        "success": true
+      },
+      "setup": "\nimport os, tempfile\nfrom org.uacalc.io import AlgebraIO, AlgebraReader, AlgebraWriter\nfrom org.uacalc.alg import (\n    FreeAlgebra, ProductAlgebra, PowerAlgebra, QuotientAlgebra, Subalgebra,\n    BigProductAlgebra, SubProductAlgebra,\n)\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\n\ndef _wr(alg):\n    fd, path = tempfile.mkstemp(suffix=\".ua\")\n    os.close(fd)\n    AlgebraIO.writeAlgebraFile(alg, path)\n    read = AlgebraIO.readAlgebraFile(path)\n    os.unlink(path)\n    return read\n\ndef _xml_tags(alg):\n    fd, path = tempfile.mkstemp(suffix=\".ua\")\n    os.close(fd)\n    AlgebraIO.writeAlgebraFile(alg, path)\n    text = open(path).read()\n    os.unlink(path)\n    tags = []\n    for tag in (\n        \"basicAlgebra\", \"freeAlgebra\", \"productAlgebra\", \"powerAlgebra\",\n        \"quotientAlgebra\", \"subAlgebra\", \"bigProductAlgebra\", \"subProductAlgebra\",\n        \"productElem\", \"generators\", \"rootFactors\", \"factors\", \"superAlgebra\",\n        \"congruence\", \"subUniverse\", \"powers\",\n    ):\n        if \"<\" + tag + \">\" in text:\n            tags.append(tag)\n    return tags\n",
+      "skip_string_check": true,
+      "xfail_reason": "Owner/library: Rust AlgebraReader only materializes BasicAlgebra. Java reconstructs ProductAlgebra / PowerAlgebra / QuotientAlgebra / Subalgebra / BigProductAlgebra / SubProductAlgebra from nested XML. Python keeps the last nested basicAlgebra (often a factor or the super algebra)."
     }
   ]
 }

@@ -1,0 +1,34 @@
+target: org.uacalc.io.AlgebraReader
+level: file
+status: implemented
+java_source: org/uacalc/io/AlgebraReader.java
+notes: |
+  File and stream constructors plus the four read methods. SAX callbacks
+  (characters / startElement / endElement) and main are not bound.
+  Nested product/power/quotient/subalgebra XML is still materialized as
+  the last BasicAlgebra (owner/library roadmap). freeAlgebra XML is
+  consumed the same way Java does: no FreeAlgebra reconstruction.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases: {}
+  static_methods:
+    - AlgebraReader.readAlgebraFile
+    - AlgebraReader.readAlgebraFromStream
+    - AlgebraReader.readAlgebraListFile
+    - AlgebraReader.readAlgebraListFromStream
+  str_parity: false
+testing:
+  notes: |
+    algebraio_cases.py and type_io_cases.py read resources/algebras and
+    resources/special fixtures.
+  task_refs:
+    - tests/parity/io/CONTRACT.md
+  scripts:
+    - path: jython_comparison/scripts/io_surface.py
+      covers:
+        - AlgebraReader.readAlgebraFile
+        - AlgebraReader.readAlgebraFromStream
+        - AlgebraReader.readAlgebraListFile
+        - AlgebraReader.readAlgebraListFromStream
+      ignore_lines: []

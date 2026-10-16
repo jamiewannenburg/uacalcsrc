@@ -316,17 +316,12 @@ os.unlink(path)
 """,
         call="[read.cardinality(), _tbl(read), _terms(f1.getTerms())]",
         description="write FreeAlgebra, read back, compare card/table; terms from original",
-        xfail_reason=(
-            "Owner/library: live F(1) generation already matches Java "
-            "(table [1,0,0,1], universe [[0,1],[0,0]]). Java AlgebraIO writes "
-            "<freeAlgebra> coordinate tuples and rereads them in a different "
-            "order ([0,1,1,0] is the 0/1 relabel of the live table). Python "
-            "writeAlgebraFile materializes to_basic_algebra() integer tables "
-            "and preserves live indices. FreeAlgebra XML write in uacalc_lib "
-            "is a stub; matching Java's IO permutation is not a clean element-"
-            "order tweak. Card and terms match."
+        skip_string_check=True,
+        notes=(
+            "Python now writes Java <freeAlgebra> XML. Both runtimes reread "
+            "the generating algebra (Java AlgebraReader has no freeAlgebra "
+            "handler). See KNOWN_DIFFERENCES.md."
         ),
-        **_LIST
     ),
     # --- Homomorphism ---
     TestCaseSpec(
@@ -1251,13 +1246,11 @@ TEST_CASES.extend([
         setup=_WIDE,
         call="_fa_roundtrip(c3, 1)",
         description="write/read F(1) over cyclic3: live snap plus read card/tables",
-        xfail_reason=(
-            "Owner/library: live F(1)/C3 matches Java (card 3, table "
-            "[1,2,0,2,0,1,0,1,2]). After AlgebraIO, Java rereads [0,1,2,1,2,0,2,0,1] "
-            "(0/1/2 relabel); Python to_basic_algebra write keeps the live table. "
-            "Same FreeAlgebra XML vs integer-table split as fa_roundtrip_write_read."
+        skip_string_check=True,
+        notes=(
+            "Both runtimes reread C3 (generating algebra). Known Java "
+            "AlgebraReader gap: no </freeAlgebra> handler."
         ),
-        **_LIST
     ),
     TestCaseSpec(
         id="fa_roundtrip_lat2_f1",
@@ -1265,12 +1258,11 @@ TEST_CASES.extend([
         setup=_WIDE,
         call="_fa_roundtrip(lat2, 1)",
         description="write/read F(1) over lat2: live snap plus read card/tables",
-        xfail_reason=(
-            "Owner/library: live F(1)/lat2 matches Java (card 1). After AlgebraIO, "
-            "Java rereads card 2 with the base-lattice tables; Python keeps live "
-            "card 1. FreeAlgebra XML reconstruction, not a live-generation mismatch."
+        skip_string_check=True,
+        notes=(
+            "Live F(1)/lat2 is card 1. After AlgebraIO both runtimes reread "
+            "lat2 (card 2): Java AlgebraReader never constructs FreeAlgebra."
         ),
-        **_LIST
     ),
     TestCaseSpec(
         id="fa_roundtrip_ba2_f1",
@@ -1278,13 +1270,11 @@ TEST_CASES.extend([
         setup=_WIDE,
         call="_fa_roundtrip(ba2, 1)",
         description="write/read F(1) over ba2: live snap plus read card/tables",
-        xfail_reason=(
-            "Owner/library: live F(1)/ba2 matches Java (card 4, terms x/one/zero/"
-            "comp(x)). After AlgebraIO, Java rereads card 2 (the base algebra); "
-            "Python keeps live card 4. FreeAlgebra XML reconstruction, not a "
-            "live-generation mismatch."
+        skip_string_check=True,
+        notes=(
+            "Live F(1)/ba2 is card 4. After AlgebraIO both runtimes reread "
+            "ba2 (card 2): Java AlgebraReader never constructs FreeAlgebra."
         ),
-        **_LIST
     ),
     TestCaseSpec(
         id="algs_quasi_crit_c3",

@@ -72,13 +72,19 @@ Compatibility requirements:
   `readAlgebraFromStream`.
 - `convertToXML`: semantic parity by normalized XML comparison.
 - `writeAlgebraFile` without `oldStyle`: semantic parity by normalized XML
-  comparison.
+  comparison. `FreeAlgebra` is written as Java `<freeAlgebra>` (coordinate
+  tuples). Product / power / quotient / subalgebra / bigProduct / subProduct
+  still go through `to_basic_algebra()` until those writers leave stub
+  status. Nested `<bigProductAlgebra>` is written inside `<freeAlgebra>`
+  and `<subProductAlgebra>`; standalone `BigProductAlgebra` is not a
+  `SmallAlgebra` so Java `AlgebraWriter` cannot take it.
 - `writeAlgebraFile` with `oldStyle`: semantic parity by normalized XML
   comparison for both `oldStyle=True` and `oldStyle=False`.
 
+- `AlgebraIO.parseLine`: integer lines return the value; `%` comments return `-1`.
+
 Out of scope:
 
-- `AlgebraIO.parseLine`
 - `AlgebraIO.readProjectivePlane`
 - `AlgebraIO.readOp`
 - `AlgebraIO.readDepth2List`
@@ -151,6 +157,8 @@ Required Java/Jython syntax:
 - `Mace4Reader(stream)`
 - `reader.parseAlgebra()`
 - `reader.parseAlgebraList()`
+- `Mace4Reader.isOrdinaryCharacter(c)`
+- `Mace4Reader.isSpecialCharacter(c)`
 
 Compatibility requirements:
 
@@ -162,15 +170,22 @@ Compatibility requirements:
 - Malformed or incomplete inputs may be tested semantically by failure/no-failure
   behavior. Exact exception messages and line/column text are not part of the
   contract.
+- `isOrdinaryCharacter` / `isSpecialCharacter` match Java's tokenizer
+  character classes.
 
 Out of scope:
 
-- `Mace4Reader.isOrdinaryCharacter`
-- `Mace4Reader.isSpecialCharacter`
+- `Mace4Reader.main`
 
 ## ExtFileFilter
 
-`ExtFileFilter` is out of scope for this IO parity contract.
+Required Java/Jython syntax:
+
+- `ExtFileFilter(desc, ext)` / `ExtFileFilter(desc, exts)`
+- `filt.accept(path_or_file)`
+- `filt.getDescription()`
+- `ExtFileFilter.getExtension(path_or_file)`
+- `ExtFileFilter.splitOffExtension(path_or_file)`
 
 ## JSONChannel
 

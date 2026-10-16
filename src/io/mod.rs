@@ -9,12 +9,15 @@ mod mace4_reader_tests;
 
 use std::io::{Write, BufWriter};
 use std::fs::File;
-use crate::alg::{SmallAlgebra, AlgebraType};
+use std::collections::HashSet;
+use crate::alg::{Algebra, AlgebraType, BigProductAlgebra, FreeAlgebra, SmallAlgebra};
+use crate::alg::small_algebra::BasicAlgebra;
 use crate::alg::op::Operation;
 use crate::alg::conlat::partition::Partition;
 use crate::util::sequence_generator::SequenceGenerator;
 use crate::util::horner;
 use crate::util::array_string;
+use crate::util::int_array::IntArrayTrait;
 
 /// XML writer for algebras with support for multiple algebra types.
 /// 
@@ -381,16 +384,127 @@ impl AlgebraWriter {
         Ok(())
     }
     
-    /// Write a free algebra definition.
-    /// 
-    /// This method writes the XML for a free algebra (which is a special case
-    /// of SubProductAlgebra).
-    /// 
-    /// # Returns
-    /// * `Ok(())` - Successfully written
-    /// * `Err(String)` - If writing fails
+    /// Write a free algebra held only as `SmallAlgebra<i32>`.
+    ///
+    /// Real `FreeAlgebra` values have `UniverseItem = IntArray` and cannot
+    /// live in this writer. Use [`AlgebraWriter::write_free_algebra_xml_to_file`].
     fn write_free_algebra(&mut self) -> Result<(), String> {
-        self.write_sub_product_algebra_aux("<freeAlgebra>", "</freeAlgebra>")
+        Err(
+            "FreeAlgebra must be written via AlgebraWriter::write_free_algebra_xml_to_file \
+             (SmallAlgebra<i32> has already forgotten IntArray coordinates)"
+                .to_string(),
+        )
+    }
+
+    /// Write Java `<freeAlgebra>` XML (coordinate-tuple generators/universe).
+    ///
+    /// Matches `org.uacalc.io.AlgebraWriter.writeFreeAlgebra`: generators and
+    /// universe as `<productElem>` rows, super algebra as `<bigProductAlgebra>`
+    /// with `<powers>` and `<rootFactors>`.
+    pub fn write_free_algebra_xml_to_file(alg: &FreeAlgebra, file_path: &str) -> Result<(), String> {
+        let dummy = Box::new(BasicAlgebra::new(
+            String::new(),
+            HashSet::new(),
+            Vec::new(),
+        )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+        let mut writer = Self::new_with_file(dummy, file_path)?;
+        writeln!(writer.out, "<?xml version=\"1.0\"?>")
+            .map_err(|e| format!("Failed to write XML header: {}", e))?;
+        writer.write_tag("<algebra>")?;
+        writer.write_free_algebra_typed(alg)?;
+        writer.write_end_tag("</algebra>")?;
+        writer
+            .out
+            .flush()
+            .map_err(|e| format!("Failed to flush output: {}", e))?;
+        Ok(())
+    }
+
+    fn write_free_algebra_typed(&mut self, alg: &FreeAlgebra) -> Result<(), String> {
+        self.write_tag("<freeAlgebra>")?;
+        self.write_named_desc_card(alg.name(), alg.description(), alg.cardinality())?;
+
+        self.write_tag("<generators>")?;
+        for gen in alg.get_inner().generators() {
+            self.write_prod_elem(gen.as_slice())?;
+        }
+        self.write_end_tag("</generators>")?;
+
+        let univ = alg.get_inner().get_universe_list();
+        if !univ.is_empty() {
+            self.write_tag("<universe>")?;
+            for elem in univ {
+                self.write_prod_elem(elem.as_slice())?;
+            }
+            self.write_end_tag("</universe>")?;
+        }
+
+        self.write_tag("<superAlgebra>")?;
+        self.write_big_product_typed(alg.get_inner().get_product_algebra())?;
+        self.write_end_tag("</superAlgebra>")?;
+        self.write_end_tag("</freeAlgebra>")?;
+        Ok(())
+    }
+
+    fn write_named_desc_card(
+        &mut self,
+        name: &str,
+        desc: Option<&str>,
+        card: i32,
+    ) -> Result<(), String> {
+        if !name.is_empty() {
+            self.write_begin_end_tag("<algName>", "</algName>", name)?;
+        }
+        if let Some(d) = desc {
+            if !d.is_empty() {
+                self.write_begin_end_tag("<desc>", "</desc>", d)?;
+            }
+        }
+        self.write_begin_end_tag("<cardinality>", "</cardinality>", &card.to_string())?;
+        Ok(())
+    }
+
+    fn write_big_product_typed(&mut self, prod: &BigProductAlgebra<i32>) -> Result<(), String> {
+        self.write_tag("<bigProductAlgebra>")?;
+        let name = prod.name();
+        if !name.is_empty() {
+            self.write_begin_end_tag("<algName>", "</algName>", name)?;
+        }
+        if let Some(d) = prod.description() {
+            if !d.is_empty() {
+                self.write_begin_end_tag("<desc>", "</desc>", d)?;
+            }
+        }
+        // Java writeBigProductAlgebra omits <cardinality>.
+        self.write_tag("<powers>")?;
+        if let Some(powers) = prod.get_powers() {
+            if !powers.is_empty() {
+                self.write_int_array_with_line_break(powers, false)?;
+            }
+        }
+        self.write_end_tag("</powers>")?;
+        self.write_tag("<rootFactors>")?;
+        let factors = prod
+            .root_factors()
+            .unwrap_or_else(|| prod.factors());
+        for factor in factors {
+            self.write_tag("<factor>")?;
+            self.write_small_as_basic(factor.clone_box())?;
+            self.write_end_tag("</factor>")?;
+        }
+        self.write_end_tag("</rootFactors>")?;
+        self.write_end_tag("</bigProductAlgebra>")?;
+        Ok(())
+    }
+
+    fn write_small_as_basic(
+        &mut self,
+        alg: Box<dyn SmallAlgebra<UniverseItem = i32>>,
+    ) -> Result<(), String> {
+        let saved = std::mem::replace(&mut self.algebra, alg);
+        let result = self.write_basic_algebra();
+        self.algebra = saved;
+        result
     }
     
     /// Write a subproduct algebra definition.
@@ -1320,8 +1434,7 @@ pub struct JSONChannel {
 }
 
 use std::io::{BufRead, BufReader, Read};
-use std::collections::{HashMap, HashSet};
-use crate::alg::small_algebra::{BasicAlgebra};
+use std::collections::HashMap;
 use crate::alg::op::{OperationSymbol};
 use crate::alg::op::operations;
 

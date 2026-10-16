@@ -14,7 +14,10 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO_ROOT / "tests" / "parity"))
 
 from parity_test_base import BehavioralParityTest
-from tests.parity.io.test_cases.algebraio_cases import TEST_CASES
+from tests.parity.io.test_cases.algebraio_cases import TEST_CASES as _IO_CASES
+from tests.parity.io.test_cases.type_io_cases import TEST_CASES as _TYPE_CASES
+
+TEST_CASES = list(_IO_CASES) + list(_TYPE_CASES)
 
 pytestmark = pytest.mark.behavioral
 
