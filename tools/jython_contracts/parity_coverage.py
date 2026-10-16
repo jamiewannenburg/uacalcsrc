@@ -73,6 +73,13 @@ PENDING_BINDINGS = {
             "Java main() is an empty stub",
         ),
     ],
+    "example": [
+        (
+            "scanner false-positive `g`",
+            "python/org/uacalc/example/__init__.py uses a local `g = globals()`; "
+            "not a Java method. Demo classes are unbound; uacalc_lib.example is empty",
+        ),
+    ],
     "parallel": [
         (
             "SingleClose.main",

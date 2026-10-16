@@ -6,9 +6,11 @@ notes: |
   Closer(alg, gens) / term-map / makeTermMap overloads on BigProductAlgebra.
   close() is the Java stub (IAE unless isPower, else copies gens). sgClose
   and sgClosePower run the real closure. getmaxSize keeps Java's lowercase m.
-  ProgressReport (setProgressReport), parallel extra-arg sgClose overloads,
-  sgCloseParallel / sgCloseParallel_Old, countFuncApplications,
-  doOneStagePartialClosure, and CloserTiming (UI) are not wrapped.
+  No-arg sgCloseParallel (and Closer.doParallel routing sgClose through it)
+  is wrapped. The Java 3-arg sgCloseParallel(elems, closedMark, ConcurrentMap)
+  overload, sgCloseParallel_Old, ProgressReport (setProgressReport), extra-arg
+  sgClose overloads, countFuncApplications, doOneStagePartialClosure, and
+  CloserTiming (UI) are not wrapped.
 ignore_reason: null
 surface:
   package_export: true
