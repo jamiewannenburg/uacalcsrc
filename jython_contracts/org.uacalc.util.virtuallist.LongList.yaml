@@ -34,7 +34,8 @@ surface:
   str_parity: false
 testing:
   notes: |
-    Goldens dump get(k) for small full lists and util statics.
+    Goldens dump get(k) for small full lists, size, factorial/binomial/pow2/log2.
+    stream / parallelStream are strict xfails.
   task_refs: []
   scripts:
     - path: jython_comparison/scripts/util_ops.py

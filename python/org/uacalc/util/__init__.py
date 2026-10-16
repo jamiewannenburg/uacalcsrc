@@ -68,6 +68,16 @@ _CLASS_ALIASES = {
         "getIterator": "getIterator",
         "elements": "elements",
         "listIterator": "listIterator",
+        "rest": "rest",
+        "reverse": "reverse",
+        "hasMoreElements": "hasMoreElements",
+        "nextElement": "nextElement",
+        "hasPrevious": "hasPrevious",
+        "previous": "previous",
+        "previousIndex": "previousIndex",
+        "hasNext": "hasNext",
+        "next": "next",
+        "nextIndex": "nextIndex",
     },
 }
 

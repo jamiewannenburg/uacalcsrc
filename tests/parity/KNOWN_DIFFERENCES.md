@@ -651,8 +651,26 @@ the org shim's `leftSide` / `rightSide` return term objects via
 - **Java**: default Java 8 `Stream` / parallel stream over `get(k)`.
 - **Python**: not bound.
 - **Status**: Strict xfail
-- **Tests**: `ll_stream`
+- **Tests**: `ll_stream`, `ll_parallel_stream`
 - **Owner vs shim**: Out of scope (Java 8 Stream)
+
+### SimpleList.app / rev
+
+- **Java**: `app` / `rev` are commented out of the live class (scanner still
+  sees them in source). Calling them is `AttributeError`.
+- **Python**: aliases of `append` / `reverse`.
+- **Status**: Strict xfail
+- **Tests**: `sl_app_commented`, `sl_rev_commented`
+- **Owner vs shim**: Owner — do not expose commented-out Java
+
+### Commented-out Java (not wrapped)
+
+- **Java**: `IntArray.satisfiesConstraint`, `SimpleList` iterator
+  `regenerate` / `reinitialize` / `removeConflicts` live only in comments.
+  `*.main` methods are development helpers.
+- **Python**: not wrapped.
+- **Status**: Skipped (inventory / PENDING_BINDINGS notes)
+- **Owner vs shim**: Out of scope (dead / helper Java)
 
 ### SimpleList serialization
 

@@ -137,7 +137,36 @@ def _install(g: dict) -> None:
             raise IllegalArgumentException("arrayIndexerWithMin unavailable")
 
         _bind(VirtualLists, "arrayIndexerWithMin", staticmethod(arrayIndexerWithMin))
-        _bind(VirtualLists, "testPow", getattr(VirtualLists, "test_pow", None))
+
+        _vl_foo = getattr(VirtualLists, "foo", None)
+        _vl_bar = getattr(VirtualLists, "bar", None)
+        _vl_baz = getattr(VirtualLists, "baz", None)
+        _vl_test_pow = getattr(VirtualLists, "test_pow", None)
+
+        def foo(k, r):
+            if callable(_vl_foo):
+                return _vl_foo(int(k), int(r))
+            raise IllegalArgumentException("foo unavailable")
+
+        def bar(k, r):
+            if callable(_vl_bar):
+                return _vl_bar(int(k), int(r))
+            raise IllegalArgumentException("bar unavailable")
+
+        def baz(k, r):
+            if callable(_vl_baz):
+                return _vl_baz(int(k), int(r))
+            raise IllegalArgumentException("baz unavailable")
+
+        def testPow(k):
+            if callable(_vl_test_pow):
+                _vl_test_pow(int(k))
+            return None
+
+        _bind(VirtualLists, "foo", staticmethod(foo))
+        _bind(VirtualLists, "bar", staticmethod(bar))
+        _bind(VirtualLists, "baz", staticmethod(baz))
+        _bind(VirtualLists, "testPow", staticmethod(testPow))
 
     for cls in (IntTuples, IntTuplesWithMin, FixedSizedSubsets, Subsets, Permutations, TupleWithMin):
         if cls is None:

@@ -277,12 +277,16 @@ slices:
         uacalc_lib.types is a Rust stub module until IDE/type stubs land.
     parity_tests_dir: tests/parity/util
     notes: >-
-      Behavioral parity for IntArray, Horner (all overloads), SequenceGenerator
-      incrementors (nondecreasing/increasing/left/right/min/max/jump/partition),
-      PermutationGenerator, ArrayString, SimpleList, and virtuallist
-      LongList/VirtualLists/TupleWithMin (branch util-coverage). Goldens from
-      Jython on full sequences and Horner round-trips. Surface golden retained.
-      GUI/Swing out of scope. See workstreams for org.uacalc.types.
+      Finish wrap+test for org.uacalc.util (branch util-tests-finish). Behavioral
+      goldens cover previously wrapped-but-untested methods (SimpleList iterators,
+      List UOE mutators, IntArray.set/toArray/compare/congruence, LongList
+      binomial/pow2/size, VirtualLists.foo/bar/baz/testPow, ArrayIncrementor.increment)
+      plus newly wrapped rest/reverse/hasMoreElements/nextElement/hasPrevious/previous/
+      previousIndex. Skipped: main; commented-out Java (satisfiesConstraint,
+      regenerate, reinitialize, removeConflicts). GUI/Swing out of scope. Keep
+      xfails ia_getarray_copy, ia_setintarray_replace, ll_stream, plus
+      ll_parallel_stream and sl_app/sl_rev (commented Java). See workstreams for
+      org.uacalc.types.
 
   - id: examples-org
     title: org.uacalc.example scripts and demos

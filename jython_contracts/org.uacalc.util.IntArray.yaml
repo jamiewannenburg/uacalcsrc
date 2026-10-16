@@ -38,7 +38,10 @@ surface:
 testing:
   notes: |
     Goldens cover constructors (empty, size 0/1, list), get/set/clone,
-    toString, hashCode, equals, constraints, and static helpers.
+    toArray, toString, hashCode, equals, constraints (including congruence),
+    lexicographic compare, and static helpers. setIntArray length-change and
+    getArray live alias remain owner xfails. satisfiesConstraint is commented
+    out in Java (not wrapped).
   task_refs: []
   scripts:
     - path: jython_comparison/scripts/int_array_smoke.py

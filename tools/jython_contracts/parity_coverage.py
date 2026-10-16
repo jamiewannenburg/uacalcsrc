@@ -79,8 +79,17 @@ PENDING_BINDINGS = {
             "custom sharing-graph serialization is not bound",
         ),
         (
-            "SequenceGenerator.main / Horner.main / PermutationGenerator.main / SimpleList.main",
-            "Java development helpers",
+            "SequenceGenerator.main / Horner.main / PermutationGenerator.main / "
+            "SimpleList.main / LongList.main / VirtualLists.main / TupleWithMin.main",
+            "Java development helpers; skipped (not GUI, but main)",
+        ),
+        (
+            "satisfiesConstraint / regenerate / reinitialize / removeConflicts",
+            "commented out in Java source; scanner false-positives, not in the live class",
+        ),
+        (
+            "SimpleList.app / rev",
+            "commented out in Java; Python aliases append/reverse (strict xfail vs Java AttributeError)",
         ),
     ],
     "sublat": [

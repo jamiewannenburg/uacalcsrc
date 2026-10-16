@@ -4,6 +4,8 @@ status: implemented
 java_source: org/uacalc/util/virtuallist/VirtualLists.java
 notes: |
   intTuples / intTuplesWithMin / arrayIndexerWithMin match the Java indexers.
+  foo / bar / baz / testPow debug helpers are wrapped (testPow is void; Java
+  prints). main skipped. tuplesVirtualList is commented out in Java.
 ignore_reason: null
 surface:
   package_export: true
@@ -12,14 +14,22 @@ surface:
     intTuplesWithMin: intTuplesWithMin
     arrayIndexerWithMin: arrayIndexerWithMin
     testPow: testPow
+    foo: foo
+    bar: bar
+    baz: baz
   static_methods:
     - intTuples
     - intTuplesWithMin
     - arrayIndexerWithMin
+    - foo
+    - bar
+    - baz
+    - testPow
   str_parity: false
 testing:
   notes: |
-    Goldens compare VirtualLists factories to LongList and sample indexers.
+    Goldens compare VirtualLists factories to LongList, sample indexers, and
+    foo/bar/baz/testPow.
   task_refs: []
   scripts:
     - path: jython_comparison/scripts/util_ops.py

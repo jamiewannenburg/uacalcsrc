@@ -4,8 +4,14 @@ status: implemented
 java_source: org/uacalc/util/SimpleList.java
 notes: |
   makeList / cons / first / rest / isEmpty / size / append / reverse /
-  copyList / get / contains / indexOf. List mutators throw
-  UnsupportedOperationException matching Java. Serialization is not bound.
+  copyList / get / contains / indexOf / lastIndexOf / containsAll / toArray
+  (dest fill + realloc). Enumeration (elements/getIterator/iterator:
+  hasMoreElements/nextElement/hasNext/next) and ListIterator (hasPrevious/
+  previous/previousIndex). frontIterator stops on spine identity (ptr_eq).
+  List mutators throw UnsupportedOperationException matching Java.
+  app/rev are commented out in Java (Python aliases; strict xfail).
+  regenerate/reinitialize/removeConflicts are commented out (not wrapped).
+  Serialization is not bound. main skipped.
 ignore_reason: null
 surface:
   package_export: true
@@ -23,12 +29,24 @@ surface:
     getIterator: getIterator
     elements: elements
     listIterator: listIterator
+    rest: rest
+    reverse: reverse
+    hasMoreElements: hasMoreElements
+    nextElement: nextElement
+    hasPrevious: hasPrevious
+    previous: previous
+    previousIndex: previousIndex
+    hasNext: hasNext
+    next: next
+    nextIndex: nextIndex
   static_methods:
     - makeList
   str_parity: true
 testing:
   notes: |
-    Goldens cover cons/first/rest, empty list, append/reverse, and UOE mutators.
+    Goldens cover cons/first/rest, empty/size-1, append/reverse, iterators
+    (Enumeration + ListIterator both directions), toArray dest, and UOE mutators.
+    app/rev are strict xfails (commented out in Java).
   task_refs: []
   scripts:
     - path: jython_comparison/scripts/util_ops.py

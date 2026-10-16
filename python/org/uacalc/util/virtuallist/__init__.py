@@ -19,6 +19,9 @@ _CLASS_ALIASES = {
         "intTuplesWithMin": "intTuplesWithMin",
         "arrayIndexerWithMin": "arrayIndexerWithMin",
         "testPow": "testPow",
+        "foo": "foo",
+        "bar": "bar",
+        "baz": "baz",
     },
     "TupleWithMin": {
         "get": "get",
