@@ -1,0 +1,21 @@
+target: org.uacalc.alg.op
+level: package
+status: implemented
+java_source: null
+notes: |
+  Thin package index. File-level contracts cover Operation, Operations,
+  OperationSymbol, SimilarityType, AbstractIntOperation, AbstractOperation,
+  TermOperation, TermOperationImp, ParameterizedOperation, and
+  OperationWithDefaultValue. Groovy makeOperationFromScript is not wrapped.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases: {}
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    Behavioral golden tests live in tests/parity/alg_op. operation_similaritytype.py
+    and op_leftovers.py cover the declared file-level surfaces.
+  task_refs: []
+  scripts: []

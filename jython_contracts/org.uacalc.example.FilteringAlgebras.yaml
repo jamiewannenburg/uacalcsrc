@@ -1,0 +1,22 @@
+target: org.uacalc.example.FilteringAlgebras
+level: file
+status: implemented
+java_source: org/uacalc/example/FilteringAlgebras.java
+notes: |
+  filter(list, predicate.test). main uses Malcev and is xfail.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    filter: filter
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    Goldens in tests/parity/example. GUI/interactive mains are strict xfail.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/example_ops.py
+      covers:
+        - filter
+      ignore_lines: []

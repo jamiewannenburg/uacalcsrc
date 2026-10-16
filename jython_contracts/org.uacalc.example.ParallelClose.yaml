@@ -1,0 +1,17 @@
+target: org.uacalc.example.ParallelClose
+level: file
+status: ignored
+java_source: org/uacalc/example/ParallelClose.java
+notes: |
+  Unpackaged ForkJoinPool timing demo (no package declaration in some builds).
+  Not part of the constructable org.uacalc.example API.
+ignore_reason: ForkJoin timing demo; not a packaged example API.
+surface:
+  package_export: false
+  aliases: {}
+  static_methods: []
+  str_parity: false
+testing:
+  notes: ""
+  task_refs: []
+  scripts: []

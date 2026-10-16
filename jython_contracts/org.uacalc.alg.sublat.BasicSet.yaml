@@ -38,12 +38,19 @@ testing:
     - path: jython_comparison/scripts/basic_set_ops.py
       covers:
         - universeSize
+        - setDifference
+        - toArray
+        - getArray
+        - compareTo
+        - toString
         - leq
         - intersection
         - union
-        - setDifference
         - contains
-        - toString
         - get
-        - compareTo
+        - normalize
+        - BasicSet.intersection
+        - BasicSet.union
+        - BasicSet.leq
+        - __str__
       ignore_lines: []

@@ -1,0 +1,30 @@
+target: org.uacalc.example.TupleStream
+level: file
+status: implemented
+java_source: org/uacalc/example/TupleStream.java
+notes: |
+  pow/maxOfArray/hornerInvLong/intTupleStream/tupleStream. Java returns Stream; tests collect. main is a timing bench.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    pow: pow
+    maxOfArray: maxOfArray
+    hornerInvLong: hornerInvLong
+    intTupleStream: intTupleStream
+    tupleStream: tupleStream
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    Goldens in tests/parity/example. GUI/interactive mains are strict xfail.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/example_ops.py
+      covers:
+        - pow
+        - maxOfArray
+        - hornerInvLong
+        - intTupleStream
+        - tupleStream
+      ignore_lines: []

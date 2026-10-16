@@ -22,8 +22,8 @@ testing:
   scripts:
     - path: jython_comparison/scripts/io_surface.py
       covers:
-        - accept
-        - getDescription
-        - getExtension
-        - splitOffExtension
+        - ExtFileFilter.accept
+        - ExtFileFilter.getDescription
+        - ExtFileFilter.getExtension
+        - ExtFileFilter.splitOffExtension
       ignore_lines: []

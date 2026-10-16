@@ -1,0 +1,28 @@
+target: org.uacalc.example.Type1
+level: file
+status: implemented
+java_source: org/uacalc/example/Type1.java
+notes: |
+  Permutation-algebra constructors. reductAlg/main/subtraces are xfails or heavy.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    fullPermutationAlgebra: fullPermutationAlgebra
+    cyclicPermutationAlgebra: cyclicPermutationAlgebra
+    reductAlg: reductAlg
+    subtraces: subtraces
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    Goldens in tests/parity/example. GUI/interactive mains are strict xfail.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/example_ops.py
+      covers:
+        - fullPermutationAlgebra
+        - cyclicPermutationAlgebra
+        - reductAlg
+        - subtraces
+      ignore_lines: []

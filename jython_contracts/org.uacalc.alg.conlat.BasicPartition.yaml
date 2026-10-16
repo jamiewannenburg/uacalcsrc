@@ -52,10 +52,37 @@ testing:
   scripts:
     - path: jython_comparison/scripts/conlat_partition.py
       covers:
-        - zero
-        - one
-        - partToKissString
-        - firstProjection
+        - universeSize
+        - numberOfBlocks
+        - isRelated
+        - toArray
+        - joinBlocks
+        - getArray
+        - get
+        - getPairs
+        - compareTo
         - hashCode
-        - stringToPartition
+        - toString
+        - BasicPartition.zero
+        - BasicPartition.one
+        - BasicPartition.stringToPartition
+        - BasicPartition.jbToPartition
+        - BasicPartition.permutabilityLevel
+        - BasicPartition.leq
+        - BasicPartition.normalize
+        - BasicPartition.partToKissString
+        - BasicPartition.directProduct
+        - BasicPartition.unaryPolymorphisms
+        - BasicPartition.binaryPolymorphisms
+        - BasicPartition.unaryPolymorphismsAlgebra
+        - BasicPartition.binaryPolymorphismsAlgebra
+        - BasicPartition.isHereditary
+        - BasicPartition.funcToJIs
+        - BasicPartition.joinClosure
+        - BasicPartition.meetClosure
+        - BasicPartition.subUniverseGenerated
+        - BasicPartition.partitionFromMatrix
+        - BasicPartition.firstProjection
+        - BasicPartition.secondProjection
+        - __str__
       ignore_lines: []

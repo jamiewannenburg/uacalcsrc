@@ -54,46 +54,6 @@ def _xml_tags(alg):
 
 _SKIP = dict(skip_string_check=True)
 
-_PROD_XFAIL = (
-    "Owner/library: AlgebraWriter.writeProductAlgebra is a hardcoded stub on "
-    "Box<dyn SmallAlgebra<i32>> (no factors). The org shim still routes "
-    "ProductAlgebra through to_basic_algebra(), so Python writes "
-    "<basicAlgebra> tables. Java writes <productAlgebra> and rereads a "
-    "ProductAlgebra."
-)
-
-_PWR_XFAIL = (
-    "Owner/library: AlgebraWriter.writePowerAlgebra is a hardcoded stub "
-    "(placeholder power=2 and nested basic of the power, not the root). "
-    "The org shim still routes PowerAlgebra through to_basic_algebra()."
-)
-
-_QUOT_XFAIL = (
-    "Owner/library: AlgebraWriter.writeQuotientAlgebra is a hardcoded stub "
-    "(partition 0,1). The org shim still routes QuotientAlgebra through "
-    "to_basic_algebra()."
-)
-
-_SUB_XFAIL = (
-    "Owner/library: AlgebraWriter.writeSubalgebra is a hardcoded stub "
-    "(subUniverse 0,1). The org shim still routes Subalgebra through "
-    "to_basic_algebra()."
-)
-
-_SUBPROD_XFAIL = (
-    "Owner/library: AlgebraWriter.writeSubProductAlgebra is a hardcoded stub "
-    "(no IntArray generators). The org shim still routes SubProductAlgebra "
-    "through to_basic_algebra()."
-)
-
-_READER_NESTED_XFAIL = (
-    "Owner/library: Rust AlgebraReader only materializes BasicAlgebra. "
-    "Java reconstructs ProductAlgebra / PowerAlgebra / QuotientAlgebra / "
-    "Subalgebra / BigProductAlgebra / SubProductAlgebra from nested XML. "
-    "Python keeps the last nested basicAlgebra (often a factor or the "
-    "super algebra)."
-)
-
 _FA_JAVA_BUG_XFAIL = (
     "Known Java bug: AlgebraReader has no freeAlgebra end-element handler, "
     "so write-then-read returns the nested generating algebra instead of "
@@ -178,7 +138,6 @@ prod = ProductAlgebra([c2, c2])
 """,
         call="_wr(prod)",
         description="write then read ProductAlgebra(C2, C2)",
-        xfail_reason=_PROD_XFAIL,
         **_SKIP
     ),
     TestCaseSpec(
@@ -189,7 +148,6 @@ prod = ProductAlgebra([c2, c2])
 """,
         call="_xml_tags(prod)",
         description="ProductAlgebra write tags (Java productAlgebra vs Python basicAlgebra)",
-        xfail_reason=_PROD_XFAIL,
         **_SKIP
     ),
     TestCaseSpec(
@@ -198,7 +156,6 @@ prod = ProductAlgebra([c2, c2])
         setup=_SETUP,
         call='AlgebraReader("resources/special/product_c2_c2.ua").readAlgebraFile()',
         description="Java-written product fixture (cross: Java write, both read)",
-        xfail_reason=_READER_NESTED_XFAIL,
         **_SKIP
     ),
     TestCaseSpec(
@@ -209,7 +166,10 @@ pwr = PowerAlgebra(c2, 2)
 """,
         call="_wr(pwr)",
         description="write then read PowerAlgebra(C2, 2)",
-        xfail_reason=_PWR_XFAIL,
+        xfail_reason=(
+            "PowerAlgebra operation tables use a different Horner/tuple encoding "
+            "than Java C2^2 (Python is cyclic-on-4, Java is product-of-C2s)."
+        ),
         **_SKIP
     ),
     TestCaseSpec(
@@ -220,7 +180,6 @@ pwr = PowerAlgebra(c2, 2)
 """,
         call="_xml_tags(pwr)",
         description="PowerAlgebra write tags (Java powerAlgebra vs Python basicAlgebra)",
-        xfail_reason=_PWR_XFAIL,
         **_SKIP
     ),
     TestCaseSpec(
@@ -229,7 +188,10 @@ pwr = PowerAlgebra(c2, 2)
         setup=_SETUP,
         call='AlgebraReader("resources/special/power_c2_sq.ua").readAlgebraFile()',
         description="Java-written power fixture (cross: Java write, both read)",
-        xfail_reason=_READER_NESTED_XFAIL,
+        xfail_reason=(
+            "PowerAlgebra operation tables use a different Horner/tuple encoding "
+            "than Java C2^2 after typed rebuild."
+        ),
         **_SKIP
     ),
     TestCaseSpec(
@@ -241,7 +203,6 @@ quot = QuotientAlgebra(c2, cons[0])
 """,
         call="_wr(quot)",
         description="write then read QuotientAlgebra of C2 by |0|1|",
-        xfail_reason=_QUOT_XFAIL,
         **_SKIP
     ),
     TestCaseSpec(
@@ -253,7 +214,6 @@ quot = QuotientAlgebra(c2, cons[0])
 """,
         call="_xml_tags(quot)",
         description="QuotientAlgebra write tags (Java quotientAlgebra vs Python basicAlgebra)",
-        xfail_reason=_QUOT_XFAIL,
         **_SKIP
     ),
     TestCaseSpec(
@@ -262,7 +222,6 @@ quot = QuotientAlgebra(c2, cons[0])
         setup=_SETUP,
         call='AlgebraReader("resources/special/quotient_example.ua").readAlgebraFile()',
         description="Java-written quotient fixture (cross: Java write, both read)",
-        xfail_reason=_READER_NESTED_XFAIL,
         **_SKIP
     ),
     TestCaseSpec(
@@ -273,7 +232,10 @@ sub = Subalgebra(c2, [0])
 """,
         call="_wr(sub)",
         description="write then read Subalgebra of C2 on {0}",
-        xfail_reason=_SUB_XFAIL,
+        xfail_reason=(
+            "Jython serialize of Java Subalgebra falls back to Class@hex; "
+            "Python rebuilds a typed Subalgebra with tables."
+        ),
         **_SKIP
     ),
     TestCaseSpec(
@@ -284,7 +246,6 @@ sub = Subalgebra(c2, [0])
 """,
         call="_xml_tags(sub)",
         description="Subalgebra write tags (Java subAlgebra vs Python basicAlgebra)",
-        xfail_reason=_SUB_XFAIL,
         **_SKIP
     ),
     TestCaseSpec(
@@ -293,7 +254,10 @@ sub = Subalgebra(c2, [0])
         setup=_SETUP,
         call='AlgebraReader("resources/special/subalgebra_example.ua").readAlgebraFile()',
         description="Java-written subalgebra fixture (cross: Java write, both read)",
-        xfail_reason=_READER_NESTED_XFAIL,
+        xfail_reason=(
+            "Jython serialize of Java Subalgebra falls back to Class@hex; "
+            "Python rebuilds a typed Subalgebra with tables."
+        ),
         **_SKIP
     ),
     TestCaseSpec(
@@ -305,7 +269,6 @@ sp = SubProductAlgebra("SP", bp, [IntArray([0, 0]), IntArray([1, 1])])
 """,
         call="_wr(sp)",
         description="write then read SubProductAlgebra of C2^2 on two gens",
-        xfail_reason=_SUBPROD_XFAIL,
         **_SKIP
     ),
     TestCaseSpec(
@@ -317,7 +280,6 @@ sp = SubProductAlgebra("SP", bp, [IntArray([0, 0]), IntArray([1, 1])])
 """,
         call="_xml_tags(sp)",
         description="SubProductAlgebra write tags (Java subProductAlgebra vs Python basicAlgebra)",
-        xfail_reason=_SUBPROD_XFAIL,
         **_SKIP
     ),
     TestCaseSpec(
@@ -326,7 +288,6 @@ sp = SubProductAlgebra("SP", bp, [IntArray([0, 0]), IntArray([1, 1])])
         setup=_SETUP,
         call='AlgebraReader("resources/special/subproduct_c2.ua").readAlgebraFile()',
         description="Java-written subproduct fixture (cross: Java write, both read)",
-        xfail_reason=_READER_NESTED_XFAIL,
         **_SKIP
     ),
 ]

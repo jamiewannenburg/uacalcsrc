@@ -1,0 +1,1181 @@
+{
+  "metadata": {
+    "generated_at": "2026-10-16T23:19:57.491751+00:00",
+    "jar": "uacalc.jar",
+    "package": "org.uacalc.example",
+    "runtime": "jython",
+    "test_cases": 50,
+    "type": "package"
+  },
+  "test_cases": [
+    {
+      "args": [],
+      "call": "Average.ave(3, 3).intValueAt([0, 1, 2])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Average.ave(3,3) at (0,1,2)",
+      "expected_exception": null,
+      "id": "ave_3_3",
+      "kwargs": {},
+      "method": "Average.ave",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 1,
+        "string_repr": "1",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Average.ave(3, 3).intValueAt([0, 0, 0])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Average.ave(3,3) at (0,0,0)",
+      "expected_exception": null,
+      "id": "ave_3_3_000",
+      "kwargs": {},
+      "method": "Average.ave",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 0,
+        "string_repr": "0",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Average.ave(3, 3).intValueAt([2, 2, 2])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Average.ave(3,3) at (2,2,2)",
+      "expected_exception": null,
+      "id": "ave_3_3_222",
+      "kwargs": {},
+      "method": "Average.ave",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_alg_info(Average.averageAlg(3))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Average.averageAlg(3) default r=5",
+      "expected_exception": null,
+      "id": "average_alg_3",
+      "kwargs": {},
+      "method": "Average.averageAlg",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "AveAlgebra3,5",
+          3,
+          1
+        ],
+        "string_repr": "['AveAlgebra3,5', 3, 1]",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_alg_info(Average.averageAlg(3, 3))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Average.averageAlg(3, 3)",
+      "expected_exception": null,
+      "id": "average_alg_3_3",
+      "kwargs": {},
+      "method": "Average.averageAlg",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "AveAlgebra3,3",
+          3,
+          1
+        ],
+        "string_repr": "['AveAlgebra3,3', 3, 1]",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Average.main([])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Average.main writes /tmp sample algebras",
+      "expected_exception": null,
+      "id": "average_main",
+      "kwargs": {},
+      "method": "Average.main",
+      "notes": "",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": "GUI/interactive/demo main; not part of the constructable parity surface"
+    },
+    {
+      "args": [],
+      "call": "_alg_info(Type1.fullPermutationAlgebra(3))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Type1.fullPermutationAlgebra(3)",
+      "expected_exception": null,
+      "id": "type1_full_3",
+      "kwargs": {},
+      "method": "Type1.fullPermutationAlgebra",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "minType1-3",
+          3,
+          5
+        ],
+        "string_repr": "['minType1-3', 3, 5]",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_alg_info(Type1.cyclicPermutationAlgebra(3))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Type1.cyclicPermutationAlgebra(3)",
+      "expected_exception": null,
+      "id": "type1_cyc_3",
+      "kwargs": {},
+      "method": "Type1.cyclicPermutationAlgebra",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "minType1-3",
+          3,
+          4
+        ],
+        "string_repr": "['minType1-3', 3, 4]",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_alg_info(Type1.fullPermutationAlgebra(2))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Type1.fullPermutationAlgebra(2)",
+      "expected_exception": null,
+      "id": "type1_full_2",
+      "kwargs": {},
+      "method": "Type1.fullPermutationAlgebra",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "minType1-2",
+          2,
+          4
+        ],
+        "string_repr": "['minType1-2', 2, 4]",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_alg_info(kkm.makeAin(1))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "KKMVWExample(2).makeAin(1)",
+      "expected_exception": null,
+      "id": "kkm_a12",
+      "kwargs": {},
+      "method": "KKMVWExample.makeAin",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "'org.uacalc.example.KKMVWExample' object has no attribute 'makeAin'",
+          "type": "AttributeError"
+        },
+        "success": false
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": "Java method is package-private, so Jython scripts cannot call it. The CPython port exposes it as a public class method."
+    },
+    {
+      "args": [],
+      "call": "_alg_info(kkm.makeAn())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "KKMVWExample(2).makeAn product",
+      "expected_exception": null,
+      "id": "kkm_an",
+      "kwargs": {},
+      "method": "KKMVWExample.makeAn",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "'org.uacalc.example.KKMVWExample' object has no attribute 'makeAn'",
+          "type": "AttributeError"
+        },
+        "success": false
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": "Java method is package-private, so Jython scripts cannot call it. The CPython port exposes it as a public class method."
+    },
+    {
+      "args": [],
+      "call": "kkm.makeTin(1).intValueAt([1, 1, 1, 1, 1])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "KKMVWExample(2).makeTin(1) at all-1s",
+      "expected_exception": null,
+      "id": "kkm_tin",
+      "kwargs": {},
+      "method": "KKMVWExample.makeTin",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "'org.uacalc.example.KKMVWExample' object has no attribute 'makeTin'",
+          "type": "AttributeError"
+        },
+        "success": false
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": "Java method is package-private, so Jython scripts cannot call it. The CPython port exposes it as a public class method."
+    },
+    {
+      "args": [],
+      "call": "kkm.makeTin(1).intValueAt([0, 1, 1, 1, 1])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "KKMVWExample(2).makeTin(1) hits a leading 0",
+      "expected_exception": null,
+      "id": "kkm_tin_zero",
+      "kwargs": {},
+      "method": "KKMVWExample.makeTin",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "'org.uacalc.example.KKMVWExample' object has no attribute 'makeTin'",
+          "type": "AttributeError"
+        },
+        "success": false
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": "Java method is package-private, so Jython scripts cannot call it. The CPython port exposes it as a public class method."
+    },
+    {
+      "args": [],
+      "call": "KKMVWExample.main([])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "KKMVWExample.main writes /tmp/A2.ua",
+      "expected_exception": null,
+      "id": "kkm_main",
+      "kwargs": {},
+      "method": "KKMVWExample.main",
+      "notes": "",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": "GUI/interactive/demo main; not part of the constructable parity surface"
+    },
+    {
+      "args": [],
+      "call": "NoSymGroup.Addition(0, 1)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "NoSymGroup.Addition(0,1)",
+      "expected_exception": null,
+      "id": "nosym_add_01",
+      "kwargs": {},
+      "method": "NoSymGroup.Addition",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 1,
+        "string_repr": "1",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "NoSymGroup.Addition(1, 2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "NoSymGroup.Addition(1,2)",
+      "expected_exception": null,
+      "id": "nosym_add_12",
+      "kwargs": {},
+      "method": "NoSymGroup.Addition",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 3,
+        "string_repr": "3",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "NoSymGroup.Addition(2, 2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "NoSymGroup.Addition equal args",
+      "expected_exception": null,
+      "id": "nosym_add_eq",
+      "kwargs": {},
+      "method": "NoSymGroup.Addition",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 0,
+        "string_repr": "0",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "NoSymGroup.TernaryOp(1, 2, 0)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "NoSymGroup.TernaryOp(1,2,0)",
+      "expected_exception": null,
+      "id": "nosym_tern",
+      "kwargs": {},
+      "method": "NoSymGroup.TernaryOp",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 3,
+        "string_repr": "3",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "NoSymGroup.MakeIdTernaryOp(0, 4).intValueAt([1, 2, 3])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "NoSymGroup.MakeIdTernaryOp(0,4) at (1,2,3)",
+      "expected_exception": null,
+      "id": "nosym_idtern",
+      "kwargs": {},
+      "method": "NoSymGroup.MakeIdTernaryOp",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 0,
+        "string_repr": "0",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "TupleStream.pow(2, 3)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "TupleStream.pow(2,3)",
+      "expected_exception": null,
+      "id": "tuple_pow",
+      "kwargs": {},
+      "method": "TupleStream.pow",
+      "notes": "",
+      "result": {
+        "return_type": "long",
+        "return_value": 8,
+        "string_repr": "8",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "TupleStream.maxOfArray([1, 4, 2])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "TupleStream.maxOfArray",
+      "expected_exception": null,
+      "id": "tuple_max",
+      "kwargs": {},
+      "method": "TupleStream.maxOfArray",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 4,
+        "string_repr": "4",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "list(TupleStream.hornerInvLong(5, 3, 3))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "TupleStream.hornerInvLong(5,3,3) including Java index bug",
+      "expected_exception": null,
+      "id": "tuple_horner_5",
+      "kwargs": {},
+      "method": "TupleStream.hornerInvLong",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          0,
+          1,
+          2
+        ],
+        "string_repr": "[0, 1, 2]",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "list(TupleStream.hornerInvLong(0, 2, 3))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "TupleStream.hornerInvLong zero encoding",
+      "expected_exception": null,
+      "id": "tuple_horner_0",
+      "kwargs": {},
+      "method": "TupleStream.hornerInvLong",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          0,
+          0,
+          0
+        ],
+        "string_repr": "[0, 0, 0]",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_collect(TupleStream.intTupleStream(2, 2))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "TupleStream.intTupleStream(2,2)",
+      "expected_exception": null,
+      "id": "tuple_ints",
+      "kwargs": {},
+      "method": "TupleStream.intTupleStream",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "string_repr": "[[0, 0], [0, 1], [1, 0], [1, 1]]",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_collect(TupleStream.intTupleStream(2, 2, 1))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "TupleStream.intTupleStream(2,2,min=1)",
+      "expected_exception": null,
+      "id": "tuple_ints_min",
+      "kwargs": {},
+      "method": "TupleStream.intTupleStream",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "string_repr": "[[0, 1], [1, 0], [1, 1]]",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_collect(ts.tupleStream(2))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "TupleStream([10,20,30]).tupleStream(2)",
+      "expected_exception": null,
+      "id": "tuple_stream",
+      "kwargs": {},
+      "method": "TupleStream.tupleStream",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            10,
+            10
+          ],
+          [
+            10,
+            20
+          ],
+          [
+            10,
+            30
+          ],
+          [
+            20,
+            10
+          ],
+          [
+            20,
+            20
+          ],
+          [
+            20,
+            30
+          ],
+          [
+            30,
+            10
+          ],
+          [
+            30,
+            20
+          ],
+          [
+            30,
+            30
+          ]
+        ],
+        "string_repr": "[[10, 10], [10, 20], [10, 30], [20, 10], [20, 20], [20, 30], [30, 10], [30, 20], [30, 30]]",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "list(FiniteField.conwayPolynomial(2, 1) or [])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Conway polynomial for GF(2)",
+      "expected_exception": null,
+      "id": "ff_poly_2_1",
+      "kwargs": {},
+      "method": "FiniteField.conwayPolynomial",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [],
+        "string_repr": "[]",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": "Java FiniteField.conwayPolynomial loads CPimport-3500.txt from the classpath; the UACalc jar does not ship that resource, so Java returns null."
+    },
+    {
+      "args": [],
+      "call": "list(FiniteField.conwayPolynomial(2, 2) or [])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Conway polynomial for GF(4)",
+      "expected_exception": null,
+      "id": "ff_poly_2_2",
+      "kwargs": {},
+      "method": "FiniteField.conwayPolynomial",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [],
+        "string_repr": "[]",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": "Java FiniteField.conwayPolynomial loads CPimport-3500.txt from the classpath; the UACalc jar does not ship that resource, so Java returns null."
+    },
+    {
+      "args": [],
+      "call": "ff21.cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "FiniteField(2,1) cardinality",
+      "expected_exception": null,
+      "id": "ff_card",
+      "kwargs": {},
+      "method": "FiniteField.cardinality",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "ff21.getPrime()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "FiniteField(2,1) prime",
+      "expected_exception": null,
+      "id": "ff_prime",
+      "kwargs": {},
+      "method": "FiniteField.getPrime",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "ff21.getPower()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "FiniteField(2,1) power",
+      "expected_exception": null,
+      "id": "ff_power",
+      "kwargs": {},
+      "method": "FiniteField.getPower",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 1,
+        "string_repr": "1",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "ff21.plusInt(0, 1)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "FiniteField(2,1) plusInt",
+      "expected_exception": null,
+      "id": "ff_plus",
+      "kwargs": {},
+      "method": "FiniteField.plusInt",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 1,
+        "string_repr": "1",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "ff21.timesInt(1, 1)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "FiniteField(2,1) timesInt",
+      "expected_exception": null,
+      "id": "ff_times",
+      "kwargs": {},
+      "method": "FiniteField.timesInt",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 1,
+        "string_repr": "1",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "ff21.inverseInt(1)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "FiniteField(2,1) inverseInt(1)",
+      "expected_exception": null,
+      "id": "ff_inv",
+      "kwargs": {},
+      "method": "FiniteField.inverseInt",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "ff21.zeroIndex()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "FiniteField(2,1) zeroIndex",
+      "expected_exception": null,
+      "id": "ff_zero",
+      "kwargs": {},
+      "method": "FiniteField.zeroIndex",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 0,
+        "string_repr": "0",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "ff21.oneIndex()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "FiniteField(2,1) oneIndex",
+      "expected_exception": null,
+      "id": "ff_one",
+      "kwargs": {},
+      "method": "FiniteField.oneIndex",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 1,
+        "string_repr": "1",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "FiniteField.main([])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "FiniteField.main prints Conway tables",
+      "expected_exception": null,
+      "id": "ff_main",
+      "kwargs": {},
+      "method": "FiniteField.main",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.NullPointerException: Cannot load from int array because the return value of \"org.uacalc.example.FiniteField.getPolynomial()\" is null",
+          "type": "NullPointerException"
+        },
+        "success": false
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": "GUI/interactive/demo main; not part of the constructable parity surface"
+    },
+    {
+      "args": [],
+      "call": "_alg_info(Kearnes.makeKearnesAlg(3))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Kearnes.makeKearnesAlg(3)",
+      "expected_exception": null,
+      "id": "kearnes_3",
+      "kwargs": {},
+      "method": "Kearnes.makeKearnesAlg",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "Kearnes3",
+          3,
+          4
+        ],
+        "string_repr": "['Kearnes3', 3, 4]",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Kearnes.makeJoinOp(3).intValueAt([1, 2])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Kearnes.makeJoinOp(3) at (1,2)",
+      "expected_exception": null,
+      "id": "kearnes_join",
+      "kwargs": {},
+      "method": "Kearnes.makeJoinOp",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Kearnes.makeMeetOp(3).intValueAt([1, 2])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Kearnes.makeMeetOp(3) at (1,2)",
+      "expected_exception": null,
+      "id": "kearnes_meet",
+      "kwargs": {},
+      "method": "Kearnes.makeMeetOp",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 1,
+        "string_repr": "1",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Kearnes.main([])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Kearnes.main is a Java demo driver",
+      "expected_exception": null,
+      "id": "kearnes_main",
+      "kwargs": {},
+      "method": "Kearnes.main",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.NullPointerException: Cannot invoke \"org.uacalc.alg.op.Operation.getTable()\" because \"this.tableOp\" is null",
+          "type": "NullPointerException"
+        },
+        "success": false
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": "GUI/interactive/demo main; not part of the constructable parity surface"
+    },
+    {
+      "args": [],
+      "call": "[int(a.cardinality()) for a in FilteringAlgebras.filter([c2, c3], _card2_pred())]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "FilteringAlgebras.filter keeps cardinality-2 algebras",
+      "expected_exception": null,
+      "id": "filter_card2",
+      "kwargs": {},
+      "method": "FilteringAlgebras.filter",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "type object 'org.uacalc.example.FilteringAlgebras' has no attribute 'AlgebraPredicate'",
+          "type": "AttributeError"
+        },
+        "success": false
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": "Java AlgebraPredicate is a package-private nested interface; Jython cannot subclass it from a script. CPython accepts a callable."
+    },
+    {
+      "args": [],
+      "call": "str(FinitelyPresentedAlg.makeOrderRelation(Variable.x, Variable.y, [Variable.x, Variable.y]))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "FinitelyPresentedAlg.makeOrderRelation x <= y",
+      "expected_exception": null,
+      "id": "fp_eq",
+      "kwargs": {},
+      "method": "FinitelyPresentedAlg.makeOrderRelation",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "type object 'org.uacalc.example.FinitelyPresentedAlg' has no attribute 'makeOrderRelation'",
+          "type": "AttributeError"
+        },
+        "success": false
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": "Java method is package-private, so Jython scripts cannot call it. The CPython port exposes it as a public class method."
+    },
+    {
+      "args": [],
+      "call": "Jipsen.main([])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Jipsen.main with no args prints usage",
+      "expected_exception": null,
+      "id": "jipsen_noarg",
+      "kwargs": {},
+      "method": "Jipsen.main",
+      "notes": "",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "HasConstantTuple.hasConstantTuple(c2, 2, [IntArray([0, 0]), IntArray([1, 1])])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "HasConstantTuple on C2 arity 2 diagonal gens",
+      "expected_exception": null,
+      "id": "hct_c2",
+      "kwargs": {},
+      "method": "HasConstantTuple.hasConstantTuple",
+      "notes": "",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Michalewski.testJoinMeetMatPower([0], [1], lat2, [IntArray([i, i, i, i]) for i in range(int(lat2.cardinality()))])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Michalewski.testJoinMeetMatPower on lat2 k=1",
+      "expected_exception": null,
+      "id": "mich_test",
+      "kwargs": {},
+      "method": "Michalewski.testJoinMeetMatPower",
+      "notes": "",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "[list(a.toArray() if hasattr(a, 'toArray') else a.getArray()) for a in Michalewski.findJoinMeetMatPower(lat2, 1)]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Michalewski.findJoinMeetMatPower enumerates pairs",
+      "expected_exception": null,
+      "id": "mich_find",
+      "kwargs": {},
+      "method": "Michalewski.findJoinMeetMatPower",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            0
+          ],
+          [
+            1
+          ]
+        ],
+        "string_repr": "[[0], [1]]",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "ParallelClose8(None, [], None)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "ParallelClose8 constructor",
+      "expected_exception": null,
+      "id": "parallel8_ctor",
+      "kwargs": {},
+      "method": "ParallelClose8",
+      "notes": "",
+      "result": {
+        "return_type": "ParallelClose8",
+        "return_value": {
+          "__repr__": "org.uacalc.example.ParallelClose8@e111c7c",
+          "__type__": "ParallelClose8",
+          "string": "org.uacalc.example.ParallelClose8@e111c7c"
+        },
+        "string_repr": "org.uacalc.example.ParallelClose8@e111c7c",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": "Incomplete Java 8 stream closer; constructor is not a portable API"
+    },
+    {
+      "args": [],
+      "call": "ParallelClose8.main([])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "ParallelClose8.main is an empty/incomplete stub",
+      "expected_exception": null,
+      "id": "parallel8_main",
+      "kwargs": {},
+      "method": "ParallelClose8.main",
+      "notes": "",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": "Incomplete Java 8 stream closer; constructor is not a portable API"
+    },
+    {
+      "args": [],
+      "call": "MembershipTester.main([])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "MembershipTester.main hits the Java findEquationOfAnotB NPE",
+      "expected_exception": null,
+      "id": "mt_main",
+      "kwargs": {},
+      "method": "MembershipTester.main",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.NullPointerException: Cannot invoke \"org.uacalc.ui.tm.ProgressReport.addLine(String)\" because \"report\" is null",
+          "type": "NullPointerException"
+        },
+        "success": false
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.example import (\n    Average, ConLyndonF3, FilteringAlgebras, FiniteField, FinitelyPresentedAlg,\n    HasConstantTuple, HasKaryNU, Jipsen, KKMVWExample, Kearnes,\n    MembershipTester, Michalewski, NoSymGroup, ParallelClose8, TupleStream, Type1,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import Variable, VariableImp\nfrom org.uacalc.util import IntArray\n\ndef _collect(stream):\n    if stream is None:\n        return None\n    if isinstance(stream, (list, tuple)):\n        rows = list(stream)\n    else:\n        try:\n            from java.util.stream import Collectors\n            rows = list(stream.collect(Collectors.toList()))\n        except Exception:\n            rows = list(stream)\n    out = []\n    for row in rows:\n        if row is None:\n            out.append(None)\n            continue\n        try:\n            out.append([int(x) for x in list(row)])\n        except TypeError:\n            out.append([int(row[i]) for i in range(len(row))])\n    return out\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n\ndef _card2_pred():\n    if sys.platform.startswith('java'):\n        class P(FilteringAlgebras.AlgebraPredicate):\n            def test(self, alg):\n                return int(alg.cardinality()) == 2\n        return P()\n    class P(object):\n        def test(self, alg):\n            return int(alg.cardinality()) == 2\n        def __call__(self, alg):\n            return self.test(alg)\n    return P()\n\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\nff21 = FiniteField(2, 1)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    }
+  ]
+}

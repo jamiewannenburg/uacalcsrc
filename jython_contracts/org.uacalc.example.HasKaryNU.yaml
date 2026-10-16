@@ -1,0 +1,22 @@
+target: org.uacalc.example.HasKaryNU
+level: file
+status: implemented
+java_source: org/uacalc/example/HasKaryNU.java
+notes: |
+  hasNUHorowitz uses ProgressReport; strict xfail.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    hasNUHorowitz: hasNUHorowitz
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    Goldens in tests/parity/example. GUI/interactive mains are strict xfail.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/example_ops.py
+      covers:
+        - hasNUHorowitz
+      ignore_lines: []

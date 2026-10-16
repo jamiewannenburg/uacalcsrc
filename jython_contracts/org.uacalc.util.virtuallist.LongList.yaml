@@ -49,6 +49,6 @@ testing:
         - binomial
         - log2
         - pow2
-        - get
-        - size
+        - stream
+        - parallelStream
       ignore_lines: []

@@ -1,0 +1,24 @@
+target: org.uacalc.example.Michalewski
+level: file
+status: implemented
+java_source: org/uacalc/example/Michalewski.java
+notes: |
+  testJoinMeetMatPower. findJoinMeetMatPower enumerates A^k.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    findJoinMeetMatPower: findJoinMeetMatPower
+    testJoinMeetMatPower: testJoinMeetMatPower
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    Goldens in tests/parity/example. GUI/interactive mains are strict xfail.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/example_ops.py
+      covers:
+        - findJoinMeetMatPower
+        - testJoinMeetMatPower
+      ignore_lines: []

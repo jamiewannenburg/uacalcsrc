@@ -38,4 +38,5 @@ testing:
         - compareTo
         - equals
         - siDecompose
+        - __str__
       ignore_lines: []

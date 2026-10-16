@@ -39,4 +39,5 @@ testing:
         - isSymmetric
         - toString
         - identity
+        - __str__
       ignore_lines: []

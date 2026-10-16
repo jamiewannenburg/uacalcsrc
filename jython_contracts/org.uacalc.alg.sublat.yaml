@@ -1,0 +1,20 @@
+target: org.uacalc.alg.sublat
+level: package
+status: implemented
+java_source: null
+notes: |
+  Thin package index. File-level contracts cover BasicSet and SubalgebraLattice.
+  getDiagram is GUI. Sub.con/sub of the lattice and Java union duplicate-keeping
+  stay as tracked xfails. Malcev/GUI out of scope.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases: {}
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    Behavioral golden tests live in tests/parity/sublat. basic_set_ops.py and
+    subalgebra_lattice_smoke.py cover the declared file-level surfaces.
+  task_refs: []
+  scripts: []

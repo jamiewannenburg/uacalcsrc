@@ -279,6 +279,8 @@ if not is_jython:
         "BigProductAlgebra": {
             "numberOfFactors": "number_of_factors",
             "getNumberOfFactors": "number_of_factors",
+            "getPowers": "get_powers",
+            "rootFactors": "root_factors",
         },
         "ReductAlgebra": {
             "getName": "name",

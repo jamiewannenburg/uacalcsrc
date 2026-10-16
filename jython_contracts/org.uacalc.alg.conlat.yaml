@@ -1,0 +1,21 @@
+target: org.uacalc.alg.conlat
+level: package
+status: implemented
+java_source: null
+notes: |
+  Thin package index. File-level contracts cover Partition, BasicPartition,
+  CongruenceLattice, TypeFinder, Subtrace, Polymorphisms, CentralityData,
+  BinaryRelation, and BasicBinaryRelation. UI, ProgressReport, main, toMatt,
+  and selected overloads are not wrapped.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases: {}
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    Behavioral golden tests live in tests/parity/conlat. conlat_partition.py
+    and conlat_leftovers.py cover the declared file-level surfaces.
+  task_refs: []
+  scripts: []

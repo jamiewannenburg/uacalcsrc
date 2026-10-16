@@ -38,4 +38,5 @@ testing:
         - getTable
         - makeTable
         - toString
+        - __str__
       ignore_lines: []
