@@ -32,7 +32,9 @@ def main():
     sys.path.append(os.path.join(REPO_ROOT,"jars","LatDraw.jar"))
     from org.uacalc.io import AlgebraIO, AlgebraWriter  # noqa: F401
     from org.uacalc.alg import BasicAlgebra, ProductAlgebra, PowerAlgebra  # noqa: F401
-    from org.uacalc.alg import QuotientAlgebra, Subalgebra  # noqa: F401
+    from org.uacalc.alg import QuotientAlgebra, Subalgebra, FreeAlgebra  # noqa: F401
+    from org.uacalc.alg import BigProductAlgebra, SubProductAlgebra  # noqa: F401
+    from org.uacalc.util import IntArray  # noqa: F401
     
     try:
         os.makedirs(SPECIAL_DIR)
@@ -65,6 +67,24 @@ def main():
         AlgebraWriter(pwr, os.path.join(SPECIAL_DIR, "power_c2_sq.ua")).writeAlgebraXML()
     except Exception as exc:
         print("SKIP power_c2_sq.ua:", exc)
+
+    try:
+        f1 = FreeAlgebra(c2, 1)
+        f1.setName("F1")
+        AlgebraWriter(f1, os.path.join(SPECIAL_DIR, "free_c2_f1.ua")).writeAlgebraXML()
+    except Exception as exc:
+        print("SKIP free_c2_f1.ua:", exc)
+
+    # BigProductAlgebra is Algebra but not SmallAlgebra, so
+    # AlgebraWriter(alg, path) cannot take it. Nested <bigProductAlgebra>
+    # is already present in free_c2_f1.ua / subproduct_c2.ua.
+
+    try:
+        bp = BigProductAlgebra(c2, 2)
+        sp = SubProductAlgebra("SP", bp, [IntArray([0, 0]), IntArray([1, 1])])
+        AlgebraWriter(sp, os.path.join(SPECIAL_DIR, "subproduct_c2.ua")).writeAlgebraXML()
+    except Exception as exc:
+        print("SKIP subproduct_c2.ua:", exc)
 
     print("Wrote fixtures under", SPECIAL_DIR)
 

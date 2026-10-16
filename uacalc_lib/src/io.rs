@@ -5,6 +5,7 @@ use std::path::Path;
 use std::cell::RefCell;
 use uacalc::alg::SmallAlgebra;
 use crate::alg::PyBasicAlgebra;
+use crate::alg::free_algebra::PyFreeAlgebra;
 
 /// Python iterator for parsing algebras from a Mace4 file lazily
 #[pyclass(unsendable)]
@@ -555,6 +556,13 @@ impl PyAlgebraWriter {
             }
             Err(e) => Err(PyValueError::new_err(e)),
         }
+    }
+
+    /// Write Java `<freeAlgebra>` XML for a FreeAlgebra.
+    #[staticmethod]
+    fn write_free_algebra_xml_to_file(algebra: &PyFreeAlgebra, file_path: String) -> PyResult<()> {
+        uacalc::io::AlgebraWriter::write_free_algebra_xml_to_file(algebra.as_inner(), &file_path)
+            .map_err(PyValueError::new_err)
     }
     
     /// String representation

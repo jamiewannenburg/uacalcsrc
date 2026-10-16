@@ -264,43 +264,79 @@ Malcev is intentionally left alone.
 - **Tests**: `pwr_element_index` passes
 - **Owner vs shim**: Known Java bug. Shim matches Java; not a library defect.
 
-### FreeAlgebra AlgebraIO write/read table order
+### FreeAlgebra AlgebraIO write/read (known Java bug)
 
 - **Java (live)**: F(1) over cyclic2 has cardinality 2, universe
-  `[[0,1],[0,0]]` (generator identity, then `+(x,x)`), terms `x`, `+(x,x)`,
-  and `+` table `[1,0,0,1]`. Generation already matches Python (`fa_card`,
-  `fa_universe_list`, `fa_get_operation`, `fa_get_terms`).
+  `[[0,1],[0,0]]`, terms `x`, `+(x,x)`, and `+` table `[1,0,0,1]`. Live
+  generation already matches Python (`fa_live_*`).
 - **Java (AlgebraIO)**: `writeFreeAlgebra` emits `<freeAlgebra>` with
-  coordinate-tuple generators/universe. After read, integer indices follow
-  the reconstructed tuple order. For F(1)/C2 that order is the 0↔1 relabel
-  of the live table: `[0,1,1,0]` instead of `[1,0,0,1]`. Not an endian flip
-  and not “translate to integers first” in the generator; the live FreeAlgebra
-  is already integer-indexed in generation order. The permutation happens
-  only in write/read.
-- **Python**: `org.uacalc.io.AlgebraIO.writeAlgebraFile` calls
-  `to_basic_algebra()` (integer operation tables) because `uacalc_lib`
-  writers take `PyBasicAlgebra`. Roundtrip therefore keeps the live table
-  `[1,0,0,1]`. `src/io/mod.rs` `write_free_algebra` is still a hardcoded
-  stub; implementing Java’s FreeAlgebra XML on `Box<dyn SmallAlgebra<i32>>`
-  (which has already forgotten the `IntArray` coordinates) is not a clean
-  element-order tweak and would knock on every FreeAlgebra IO path.
-- **Status**: Strict xfail / roadmap. Live generation is the source of
-  truth and already agrees. Do not reorder Python’s live universe to match
-  Java’s after-IO labels.
-- **Wider roundtrips** (live snap matches in every case; only the read-back
-  differs):
-  - F(1)/C3: Java after-IO `+` table `[0,1,2,1,2,0,2,0,1]` vs Python live
-    `[1,2,0,2,0,1,0,1,2]` (a 0/1/2 relabel; both card 3).
-  - F(1)/lat2: Java after-IO card **2** with the base-lattice tables vs
-    Python live card **1**.
-  - F(1)/ba2: Java after-IO card **2** (the base algebra) vs Python live
-    card **4**.
+  coordinate-tuple generators/universe and a nested `<bigProductAlgebra>`
+  whose root factor is the *generating* algebra. `AlgebraReader` has
+  handlers for `basicAlgebra`, `productAlgebra`, `powerAlgebra`,
+  `quotientAlgebra`, `subAlgebra`, `bigProductAlgebra`, and
+  `subProductAlgebra`, but **no `freeAlgebra` end-element handler**. After
+  write/read the last nested `basicAlgebra` wins, so the result is the
+  generating algebra, not F(n):
+  - F(1)/C2: live table `[1,0,0,1]`; after IO, C2 table `[0,1,1,0]`, name
+    `C2` (not a relabel of F(1) — it *is* C2).
+  - F(1)/C3: live table `[1,2,0,2,0,1,0,1,2]`; after IO, C3 table
+    `[0,1,2,1,2,0,2,0,1]`.
+  - F(1)/lat2: live card **1**; after IO, lat2 card **2** (base lattice).
+  - F(1)/ba2: live card **4**; after IO, ba2 card **2** (base boolean
+    algebra).
+- **Python**: `writeAlgebraFile` now calls
+  `AlgebraWriter::write_free_algebra_xml_to_file` (coordinate tuples,
+  `<bigProductAlgebra>` super algebra). The reader consumes `<freeAlgebra>`
+  / `<productElem>` the same way Java does and also returns the generating
+  algebra. The four former `fa_roundtrip_*` xfails now pass.
+- **Status**: Write path fixed in the library. Reconstruction of a live
+  `FreeAlgebra` from `<freeAlgebra>` XML is a known Java bug / future
+  reader roadmap (do not “fix” Python to rebuild F(n) while Java still
+  returns the generating algebra).
 - **Tests**: `fa_roundtrip_write_read`, `fa_roundtrip_c3_f1`,
-  `fa_roundtrip_lat2_f1`, `fa_roundtrip_ba2_f1` strict xfail. Live coverage
-  `fa_live_*` (C2 F(1..3), C3 F(1..2), lat2 F(1..2), ba2/z3/n5/M3 F(1))
-  passes.
-- **Owner vs shim**: Owner/library — FreeAlgebra XML write/read. The org
-  wrapper’s BasicAlgebra materialization preserves live indices on purpose.
+  `fa_roundtrip_lat2_f1`, `fa_roundtrip_ba2_f1` plus `wr_free_*` /
+  `xml_free_c2_f1_tags` / `read_special_free_c2_f1` pass. Live coverage
+  `fa_live_*` still passes.
+- **Owner vs shim**: Known Java bug on read. Owner/library write is
+  implemented (`src/io/mod.rs` `write_free_algebra_xml_to_file`).
+
+### AlgebraWriter type-specific stubs (product / power / quotient / subalgebra)
+
+- **Java**: `writeAlgebra` dispatches to `writeProductAlgebra`,
+  `writePowerAlgebra`, `writeQuotientAlgebra`, `writeSubalgebra`,
+  `writeBigProductAlgebra`, `writeSubProductAlgebra` and writes nested
+  factors / root / congruence / subuniverse.
+- **Python**: those `src/io/mod.rs` writers are still hardcoded
+  placeholders (power=2, partition `0,1`, one dummy factor).
+  `write_big_product_typed` exists only as the nested super algebra of
+  `<freeAlgebra>` / `<subProductAlgebra>`. Standalone `BigProductAlgebra`
+  is not a `SmallAlgebra`, so Java `AlgebraWriter(alg, path)` cannot take
+  it. The org shim therefore still routes the SmallAlgebra-derived types
+  through
+  `to_basic_algebra()` so write/read stays semantically useful as flat
+  tables. Matching Java XML needs typed writers plus a reader that rebuilds
+  those kinds (the Rust reader only materializes `BasicAlgebra`).
+- **Status**: Strict xfail / roadmap.
+- **Tests**: `wr_prod_c2_c2`, `xml_prod_c2_c2_tags`, `wr_pwr_c2_2`,
+  `xml_pwr_c2_2_tags`, `wr_quot_c2`, `xml_quot_c2_tags`, `wr_sub_c2`,
+  `xml_sub_c2_tags`, `wr_subprod_c2`, `xml_subprod_c2_tags` strict xfail.
+- **Owner vs shim**: Owner/library — typed XML write/read.
+
+### AlgebraReader nested algebra kinds
+
+- **Java**: reconstructs `ProductAlgebra` / `PowerAlgebra` /
+  `QuotientAlgebra` / `Subalgebra` / `BigProductAlgebra` /
+  `SubProductAlgebra` from nested XML (card 4 for C2×C2 and C2², card 1
+  for the `{0}` subalgebra).
+- **Python**: `src/io/algebra_reader.rs` only builds `BasicAlgebra`. A
+  nested file yields the last nested basic algebra (a factor or the super
+  algebra). Example: `resources/special/product_c2_c2.ua` is Java
+  `ProductAlgebra` card 4 vs Python `BasicAlgebra` C2 card 2.
+- **Status**: Strict xfail / roadmap.
+- **Tests**: `read_special_product`, `read_special_power`,
+  `read_special_quotient`, `read_special_subalgebra`,
+  `read_special_subproduct` strict xfail.
+- **Owner vs shim**: Owner/library — typed XML read.
 
 ### Algebras.quasiCriticalCongruences
 

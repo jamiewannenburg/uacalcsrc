@@ -31,13 +31,17 @@ slices:
     depends_on: []
     owner: agent-a
     status: parity_golden
-    last_updated: "2026-04-18"
+    last_updated: "2026-10-16"
     workstreams: []
     parity_tests_dir: tests/parity/io
     notes: >-
-      python/org/uacalc/io re-exports uacalc_lib.io + AlgebraIO shim + JSONChannel placeholder until Rust
-      binds it. Golden stdout tests/parity/io/golden_io_surface.py + fixtures; test_io_shim_imports.py.
-      parity_inventory regenerated. agent-a.
+      File-level contracts for AlgebraIO / AlgebraReader / AlgebraWriter /
+      ExtFileFilter / Mace4Reader / BadAlgebraFileException; JSONChannel ignored.
+      write_free_algebra emits Java <freeAlgebra> coordinate tuples; reader
+      matches Java's missing freeAlgebra handler (returns the generating
+      algebra). Product/power/quotient/subalgebra writers remain stubs
+      (to_basic_algebra route) and nested typed reads are flagged. Branch
+      cursor/io-coverage.
 
   - id: core-alg-base
     title: Core algebras (BasicAlgebra, SmallAlgebra, products, …) excluding conlat/op subtrees

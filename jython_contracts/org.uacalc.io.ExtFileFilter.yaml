@@ -1,0 +1,29 @@
+target: org.uacalc.io.ExtFileFilter
+level: file
+status: implemented
+java_source: org/uacalc/io/ExtFileFilter.java
+notes: |
+  accept / getDescription / getExtension / splitOffExtension. Constructors
+  take (desc, ext) or (desc, list of exts). main is not bound.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases: {}
+  static_methods:
+    - ExtFileFilter.accept
+    - ExtFileFilter.getDescription
+    - ExtFileFilter.getExtension
+    - ExtFileFilter.splitOffExtension
+  str_parity: false
+testing:
+  notes: |
+    algebraio_cases.py ext_* cases use tiny filenames, not real directories.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/io_surface.py
+      covers:
+        - accept
+        - getDescription
+        - getExtension
+        - splitOffExtension
+      ignore_lines: []

@@ -1,0 +1,34 @@
+target: org.uacalc.io.AlgebraWriter
+level: file
+status: implemented
+java_source: org/uacalc/io/AlgebraWriter.java
+notes: |
+  writeAlgebraXML writes and closes. writeAlgebra / writeBasicAlgebra /
+  flush match Java's unflushed PrintWriter (no-op until writeAlgebraXML).
+  FreeAlgebra is written as <freeAlgebra> coordinate tuples. Product /
+  power / quotient / subalgebra / bigProduct writers remain stubs;
+  those types still go through to_basic_algebra() and are flagged.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases: {}
+  static_methods:
+    - AlgebraWriter.writeAlgebraXML
+    - AlgebraWriter.writeAlgebra
+    - AlgebraWriter.writeBasicAlgebra
+    - AlgebraWriter.flush
+  str_parity: false
+testing:
+  notes: |
+    algebraio_cases.py writer_* cases plus type_io_cases.py XML tag and
+    write/read cases.
+  task_refs:
+    - tests/parity/io/CONTRACT.md
+  scripts:
+    - path: jython_comparison/scripts/io_surface.py
+      covers:
+        - AlgebraWriter.writeAlgebraXML
+        - AlgebraWriter.writeAlgebra
+        - AlgebraWriter.writeBasicAlgebra
+        - AlgebraWriter.flush
+      ignore_lines: []

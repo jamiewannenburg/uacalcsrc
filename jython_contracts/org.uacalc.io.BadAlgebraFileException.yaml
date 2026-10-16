@@ -1,0 +1,21 @@
+target: org.uacalc.io.BadAlgebraFileException
+level: file
+status: implemented
+java_source: org/uacalc/io/BadAlgebraFileException.java
+notes: |
+  Semantic catchability only. Exact error text is not part of the contract.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases: {}
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    algebraio_cases.py read_invalid expects NumberFormatException from the
+    malformed fixture; BadAlgebraFileException is raised for other bad XML.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/io_surface.py
+      covers: []
+      ignore_lines: []

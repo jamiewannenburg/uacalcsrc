@@ -320,6 +320,10 @@ impl AlgebraParser {
             "productAlgebra" => self.alg_type = PRODUCT,
             "quotientAlgebra" => self.alg_type = QUOTIENT,
             "subAlgebra" => self.alg_type = SUBALGEBRA,
+            // Recognized so <freeAlgebra>/<bigProductAlgebra> XML is not an
+            // unknown element. Java AlgebraReader has no freeAlgebra end
+            // handler either; the last nested basicAlgebra becomes `algebra`.
+            "freeAlgebra" | "subProductAlgebra" | "bigProductAlgebra" => {}
             
             "opTable" => {
                 let size = (self.cardinality as usize).pow(self.arity as u32);
@@ -424,6 +428,14 @@ impl AlgebraParser {
             "row" => {
                 let row_str = self.row_string.trim().to_string();
                 self.int_row(&row_str)?;
+            }
+            "productElem" => {
+                // Coordinate tuples for free/subproduct generators and universe.
+                // Java only uses these when reconstructing SubProductAlgebra;
+                // it never handles </freeAlgebra>, so we consume the text and
+                // still return the last nested BasicAlgebra (the generating
+                // algebra), matching Java AlgebraReader.
+                let _ = self.product_elem_string.trim();
             }
             "intArray" if parent == Some("congruence".to_string()) => {
                 let trimmed = self.int_array_string.trim().to_string();

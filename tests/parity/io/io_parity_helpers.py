@@ -29,6 +29,8 @@ SPECIAL_FIXTURE_NAMES = (
     "quotient_example.ua",
     "subalgebra_example.ua",
     "power_c2_sq.ua",
+    "free_c2_f1.ua",
+    "subproduct_c2.ua",
 )
 
 

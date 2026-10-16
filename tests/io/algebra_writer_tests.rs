@@ -3,7 +3,7 @@
  */
 
 use uacalc::io::{AlgebraReader, AlgebraWriter};
-use uacalc::alg::{Algebra, BasicAlgebra};
+use uacalc::alg::{Algebra, BasicAlgebra, FreeAlgebra};
 use uacalc::alg::op::{OperationSymbol, BasicOperation};
 use std::path::Path;
 use std::fs;
@@ -165,6 +165,28 @@ fn test_write_algebra_with_description() {
     assert!(Path::new(output_path).exists(), "Output file was not created");
     
     // Clean up
+    let _ = fs::remove_file(output_path);
+}
+
+#[test]
+fn test_write_free_algebra_coordinate_tuples() {
+    let reader = AlgebraReader::new_from_file(Path::new("resources/algebras/cyclic2.ua"))
+        .expect("open cyclic2");
+    let c2 = reader.read_algebra_file().expect("read cyclic2");
+    let mut fa = FreeAlgebra::new_safe(Box::new(c2), 1).expect("F(1)");
+    fa.set_name("F1".to_string());
+
+    let output_path = "test_output_free.xml";
+    AlgebraWriter::write_free_algebra_xml_to_file(&fa, output_path)
+        .expect("write free algebra");
+    let xml = fs::read_to_string(output_path).expect("read xml");
+    assert!(xml.contains("<freeAlgebra>"), "missing freeAlgebra tag:\n{}", xml);
+    assert!(xml.contains("<productElem>"), "missing productElem:\n{}", xml);
+    assert!(xml.contains("0,1"), "missing generator coords:\n{}", xml);
+    assert!(xml.contains("<bigProductAlgebra>"), "missing bigProduct:\n{}", xml);
+    assert!(xml.contains("<powers>"), "missing powers:\n{}", xml);
+    assert!(xml.contains("<rootFactors>"), "missing rootFactors:\n{}", xml);
+    assert!(xml.contains("<algName>C2</algName>"), "missing nested C2:\n{}", xml);
     let _ = fs::remove_file(output_path);
 }
 

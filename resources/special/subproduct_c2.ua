@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<algebra>
+  <subProductAlgebra>
+    <algName>SP</algName>
+    <cardinality>2</cardinality>
+    <generators>
+      <productElem>
+        0,0
+      </productElem>
+      <productElem>
+        1,1
+      </productElem>
+    </generators>
+    <universe>
+      <productElem>
+        0,0
+      </productElem>
+      <productElem>
+        1,1
+      </productElem>
+    </universe>
+    <superAlgebra>
+      <bigProductAlgebra>
+        <powers>
+          <intArray>
+            2
+          </intArray>
+        </powers>
+        <rootFactors>
+          <factor>
+            <basicAlgebra>
+              <algName>C2</algName>
+              <desc>The two element group.</desc>
+              <cardinality>2</cardinality>
+              <operations>
+                <op>
+                  <opSymbol>
+                    <opName>+</opName>
+                    <arity>2</arity>
+                  </opSymbol>
+                  <opTable>
+                    <intArray>
+                      <row r="[0]">0,1</row>
+                      <row r="[1]">1,0</row>
+                    </intArray>
+                  </opTable>
+                </op>
+              </operations>
+            </basicAlgebra>
+          </factor>
+        </rootFactors>
+      </bigProductAlgebra>
+    </superAlgebra>
+  </subProductAlgebra>
+</algebra>

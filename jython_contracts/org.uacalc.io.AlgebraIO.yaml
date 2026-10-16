@@ -1,0 +1,50 @@
+target: org.uacalc.io.AlgebraIO
+level: file
+status: implemented
+java_source: org/uacalc/io/AlgebraIO.java
+notes: |
+  Static facade used by ~/uacalc scripts. writeAlgebraFile routes FreeAlgebra
+  to the typed <freeAlgebra> writer; other derived algebras still go through
+  to_basic_algebra() (product/power/quotient/subalgebra writers are stubs).
+  readAlgebraListFile returns every algebra (Java last-only is a known Java
+  bug; goldens stay last-only as a strict xfail). parseLine / convertToXML
+  / stream helpers are bound. readOp, readDepth2List, readProjectivePlane,
+  and main are not on the Jython surface.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases: {}
+  static_methods:
+    - AlgebraIO.readAlgebraFile
+    - AlgebraIO.readAlgebraFromStream
+    - AlgebraIO.readAlgebraListFile
+    - AlgebraIO.readAlgebraListFromStream
+    - AlgebraIO.writeAlgebraFile
+    - AlgebraIO.convertToXML
+    - AlgebraIO.parseLine
+  str_parity: false
+testing:
+  notes: |
+    tests/parity/io/test_cases/algebraio_cases.py and type_io_cases.py.
+    Tiny algebras and temp files only.
+  task_refs:
+    - tests/parity/io/CONTRACT.md
+  scripts:
+    - path: jython_comparison/scripts/load_cyclic2.py
+      covers:
+        - AlgebraIO.readAlgebraFile
+      ignore_lines:
+        - "Universe:"
+    - path: jython_comparison/scripts/basic_algebra_ops.py
+      covers:
+        - AlgebraIO.readAlgebraFile
+        - AlgebraIO.writeAlgebraFile
+      ignore_lines: []
+    - path: jython_comparison/scripts/io_surface.py
+      covers:
+        - AlgebraIO.parseLine
+        - AlgebraIO.convertToXML
+        - AlgebraIO.readAlgebraFromStream
+        - AlgebraIO.readAlgebraListFile
+        - AlgebraIO.readAlgebraListFromStream
+      ignore_lines: []

@@ -1,0 +1,29 @@
+target: org.uacalc.io.Mace4Reader
+level: file
+status: implemented
+java_source: org/uacalc/io/Mace4Reader.java
+notes: |
+  Stream constructor plus parseAlgebra / parseAlgebraList /
+  isOrdinaryCharacter / isSpecialCharacter. Uses resources/mace4.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases: {}
+  static_methods:
+    - Mace4Reader.parseAlgebra
+    - Mace4Reader.parseAlgebraList
+    - Mace4Reader.isOrdinaryCharacter
+    - Mace4Reader.isSpecialCharacter
+  str_parity: false
+testing:
+  notes: |
+    algebraio_cases.py mace4_* cases. Tiny model files only.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/io_surface.py
+      covers:
+        - Mace4Reader.parseAlgebra
+        - Mace4Reader.parseAlgebraList
+        - Mace4Reader.isOrdinaryCharacter
+        - Mace4Reader.isSpecialCharacter
+      ignore_lines: []

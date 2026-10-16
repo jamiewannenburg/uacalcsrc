@@ -31,6 +31,30 @@ def _coerce_path(path_or_file: Any) -> str:
     )
 
 
+_FREE_TYPE_NAMES = ("PyFreeAlgebra", "FreeAlgebra")
+_BASIC_TYPE_NAMES = ("PyBasicAlgebra", "BasicAlgebra")
+
+
+def _algebra_type_name(alg: Any) -> str:
+    return type(alg).__name__
+
+
+def _write_algebra_xml(algebra: Any, path: str) -> None:
+    """Dispatch type-specific XML writers. FreeAlgebra keeps coordinate tuples."""
+    alg = getattr(algebra, "_inner", algebra)
+    if _algebra_type_name(alg) in _FREE_TYPE_NAMES:
+        return _LibAlgebraWriter.write_free_algebra_xml_to_file(alg, path)
+    # Product/power/quotient/subalgebra/bigProduct writers in src/io are still
+    # hardcoded stubs (no factor/root/congruence access on SmallAlgebra<i32>).
+    # Materialize tables so write/read stays semantically useful; flag those
+    # type-specific XML gaps in KNOWN_DIFFERENCES and type_io_cases.
+    if _algebra_type_name(alg) not in _BASIC_TYPE_NAMES:
+        conv = getattr(alg, "to_basic_algebra", None)
+        if callable(conv):
+            alg = conv()
+    return _LibAlgebraWriter.write_algebra_xml_to_file(alg, path)
+
+
 def _raise_if_missing(path: str) -> None:
     """Raise Java ``FileNotFoundException`` before the library tries to parse.
 
@@ -106,23 +130,24 @@ class AlgebraIO:
             shutil.move(produced, java_dest)
 
     @staticmethod
+    def parseLine(line: Any) -> int:
+        return int(_io.parse_line(str(line)))
+
+    @staticmethod
     def writeAlgebraFile(algebra: Any, path_or_file: Any, oldStyle: Optional[bool] = None) -> None:
         path = _coerce_path(path_or_file)
-        # Unwrap org.uacalc.alg BasicAlgebra Jython compat wrapper if present.
         alg = getattr(algebra, "_inner", algebra)
-        # Java AlgebraIO.writeAlgebraFile accepts any SmallAlgebra. uacalc_lib
-        # writers take PyBasicAlgebra, so materialize tables when needed.
-        if type(alg).__name__ not in ("PyBasicAlgebra", "BasicAlgebra"):
-            conv = getattr(alg, "to_basic_algebra", None)
-            if callable(conv):
-                alg = conv()
         use_old_style = bool(oldStyle) if oldStyle is not None else False
         if use_old_style:
+            if _algebra_type_name(alg) not in _BASIC_TYPE_NAMES:
+                conv = getattr(alg, "to_basic_algebra", None)
+                if callable(conv):
+                    alg = conv()
             return _io.write_algebra_file_with_style(alg, path, True)
         # Java AlgebraIO.writeAlgebraFile writes XML to the given path whenever
         # the file has an extension (including .ua). uacalc_lib.write_algebra_file
         # appends ".xml" for non-.xml suffixes, so use AlgebraWriter instead.
-        return _LibAlgebraWriter.write_algebra_xml_to_file(alg, path)
+        return _write_algebra_xml(alg, path)
 
 
 class AlgebraReader:
@@ -226,7 +251,7 @@ class AlgebraWriter:
         return self.write_algebra_xml()
 
     def write_algebra_xml(self) -> None:
-        return _LibAlgebraWriter.write_algebra_xml_to_file(self._algebra, self._path)
+        return _write_algebra_xml(self._algebra, self._path)
 
     def writeAlgebra(self) -> None:
         return self.write_algebra()
@@ -259,6 +284,14 @@ class Mace4Reader:
     new_from_file = staticmethod(_LibMace4Reader.new_from_file)
     new_from_stream = staticmethod(_LibMace4Reader.new_from_stream)
     parse_algebra_from_file = staticmethod(_LibMace4Reader.parse_algebra_from_file)
+
+    @staticmethod
+    def isOrdinaryCharacter(c: Any) -> bool:
+        return bool(_LibMace4Reader.is_ordinary_character(c if isinstance(c, str) else chr(int(c))))
+
+    @staticmethod
+    def isSpecialCharacter(c: Any) -> bool:
+        return bool(_LibMace4Reader.is_special_character(c if isinstance(c, str) else chr(int(c))))
 
     @staticmethod
     def open(path: Any) -> "Mace4Reader":
@@ -296,4 +329,67 @@ class Mace4Reader:
 
 
 BadAlgebraFileException = _LibBadAlgebraFileException
-ExtFileFilter = _io.ExtFileFilter
+
+
+def _filter_path(path_or_file: Any) -> str:
+    if hasattr(path_or_file, "getName") and callable(path_or_file.getName):
+        # Java File: ExtFileFilter uses File.getName() only.
+        name = path_or_file.getName()
+        return str(name) if name is not None else ""
+    if hasattr(path_or_file, "getPath") and callable(path_or_file.getPath):
+        return str(path_or_file.getPath())
+    if isinstance(path_or_file, (str, os.PathLike)):
+        return os.fspath(path_or_file)
+    if hasattr(path_or_file, "name") and isinstance(getattr(path_or_file, "name", None), str):
+        return path_or_file.name
+    return str(path_or_file)
+
+
+class ExtFileFilter:
+    """Filter matching ``org.uacalc.io.ExtFileFilter``."""
+
+    def __init__(self, desc: Any, exts_or_ext: Any) -> None:
+        description = str(desc)
+        if isinstance(exts_or_ext, str):
+            self._inner = _io.ExtFileFilter.new_single(description, exts_or_ext)
+        else:
+            self._inner = _io.ExtFileFilter(description, [str(x) for x in list(exts_or_ext)])
+
+    def accept(self, path_or_file: Any) -> bool:
+        return bool(self._inner.accept(_filter_path(path_or_file)))
+
+    def getDescription(self) -> str:
+        return self._inner.get_description()
+
+    def get_description(self) -> str:
+        return self.getDescription()
+
+    @staticmethod
+    def getExtension(path_or_file: Any) -> Optional[str]:
+        return _io.ExtFileFilter.get_extension(_filter_path(path_or_file))
+
+    @staticmethod
+    def get_extension(path_or_file: Any) -> Optional[str]:
+        return ExtFileFilter.getExtension(path_or_file)
+
+    @staticmethod
+    def splitOffExtension(path_or_file: Any) -> Any:
+        return _io.ExtFileFilter.split_off_extension(_filter_path(path_or_file))
+
+    @staticmethod
+    def split_off_extension(path_or_file: Any) -> Any:
+        return ExtFileFilter.splitOffExtension(path_or_file)
+
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, ExtFileFilter):
+            return NotImplemented
+        return self._inner == other._inner
+
+    def __hash__(self) -> int:
+        return hash(self._inner)
+
+    def __str__(self) -> str:
+        return str(self._inner)
+
+    def __repr__(self) -> str:
+        return repr(self._inner)

@@ -1,0 +1,21 @@
+target: org.uacalc.io.JSONChannel
+level: file
+status: ignored
+java_source: org/uacalc/io/JSONChannel.java
+notes: |
+  Sage/JSON channel. Not bound in uacalc_lib. The org shim raises
+  NotImplementedError. doCongruenceLattices and main stay unwrapped.
+ignore_reason: |
+  JSONChannel is a Java main/Sage bridge, not a script IO API. Placeholder
+  only until uacalc_lib binds it.
+surface:
+  package_export: true
+  aliases: {}
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    JSONChannel is out of scope for IO parity. Constructor raises
+    NotImplementedError on CPython.
+  task_refs: []
+  scripts: []

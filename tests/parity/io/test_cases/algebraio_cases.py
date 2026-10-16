@@ -294,4 +294,94 @@ else:
         description="Mace4Reader on a missing file should raise",
         expected_exception="FileNotFoundException",
     ),
+    TestCaseSpec(
+        id="parse_line_int",
+        method="AlgebraIO.parseLine",
+        setup=_READ_SETUP,
+        call='AlgebraIO.parseLine("42")',
+        description="AlgebraIO.parseLine on an integer line",
+    ),
+    TestCaseSpec(
+        id="parse_line_comment",
+        method="AlgebraIO.parseLine",
+        setup=_READ_SETUP,
+        call='AlgebraIO.parseLine("% comment")',
+        description="AlgebraIO.parseLine on a % comment returns -1",
+    ),
+    TestCaseSpec(
+        id="ext_accept_and_description",
+        method="ExtFileFilter.accept",
+        setup="""
+import sys
+from org.uacalc.io import ExtFileFilter
+filt = ExtFileFilter("UA Files", "ua")
+if sys.platform.startswith("java"):
+    from java.io import File
+    ua = File("foo.ua")
+    txt = File("foo.txt")
+else:
+    ua = "foo.ua"
+    txt = "foo.txt"
+""",
+        call="[filt.accept(ua), filt.accept(txt), filt.getDescription()]",
+        description="ExtFileFilter.accept and getDescription",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="ext_get_description",
+        method="ExtFileFilter.getDescription",
+        setup="""
+from org.uacalc.io import ExtFileFilter
+filt = ExtFileFilter("UA Files", "ua")
+""",
+        call="filt.getDescription()",
+        description="ExtFileFilter.getDescription",
+    ),
+    TestCaseSpec(
+        id="ext_get_extension",
+        method="ExtFileFilter.getExtension",
+        setup="""
+import sys
+from org.uacalc.io import ExtFileFilter
+if sys.platform.startswith("java"):
+    from java.io import File
+    path = File("example.ua")
+else:
+    path = "example.ua"
+""",
+        call="ExtFileFilter.getExtension(path)",
+        description="ExtFileFilter.getExtension",
+    ),
+    TestCaseSpec(
+        id="ext_split_off_extension",
+        method="ExtFileFilter.splitOffExtension",
+        setup="""
+import sys
+from org.uacalc.io import ExtFileFilter
+if sys.platform.startswith("java"):
+    from java.io import File
+    path = File("example.ua")
+else:
+    path = "example.ua"
+""",
+        call="list(ExtFileFilter.splitOffExtension(path))",
+        description="ExtFileFilter.splitOffExtension",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="mace4_is_ordinary_character",
+        method="Mace4Reader.isOrdinaryCharacter",
+        setup=_READ_SETUP,
+        call="[Mace4Reader.isOrdinaryCharacter('a'), Mace4Reader.isOrdinaryCharacter('+')]",
+        description="Mace4Reader.isOrdinaryCharacter",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="mace4_is_special_character",
+        method="Mace4Reader.isSpecialCharacter",
+        setup=_READ_SETUP,
+        call="[Mace4Reader.isSpecialCharacter('+'), Mace4Reader.isSpecialCharacter('a')]",
+        description="Mace4Reader.isSpecialCharacter",
+        skip_string_check=True,
+    ),
 ]
