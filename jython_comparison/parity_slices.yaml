@@ -123,14 +123,20 @@ slices:
       - org.uacalc.alg.parallel
     depends_on:
       - core-alg-base
-    owner: agent-e
+    owner: cursor-agent
     status: parity_golden
-    last_updated: "2026-04-18"
+    last_updated: "2026-10-16"
     workstreams: []
     parity_tests_dir: tests/parity/parallel
     notes: >-
-      parity_golden: golden_parallel_surface.py documents Pool on Jython vs uacalc_lib.alg.Pool on
-      CPython while org.uacalc.alg.parallel shim may stay empty.
+      org.uacalc.alg.parallel exports Pool and SingleClose. Behavioral goldens
+      compare sequential vs parallel Closer.sgClose (Closer.doParallel) and
+      SingleClose.doOneStep on several algebras; results are sorted universes.
+      Timing, thread counts, ForkJoinPool/ProgressReport/CloserTiming, and the
+      parallel term map are deliberately skipped (non-deterministic /
+      thread-internal). SingleClose.main is an empty stub. Small algebras take
+      the serial SingleClose path (computationSize < 1e6). Branch
+      fplat-parallel-coverage.
 
   - id: core-alg-sublat
     title: Subalgebra lattice
@@ -265,14 +271,17 @@ slices:
       - org.uacalc.fplat
     depends_on:
       - core-lat
-    owner: agent-d
+    owner: cursor-agent
     status: parity_golden
-    last_updated: "2026-04-18"
+    last_updated: "2026-10-16"
     workstreams: []
     parity_tests_dir: tests/parity/fplat
     notes: >-
-      Golden tests/parity/fplat/golden_fplat_surface.py + fixtures + test_fplat_golden_surface.py. Rust shim ctor
-      differs from JAR (Jython fixture records ctor note; CPython prints SMOKE_T_STR). agent-d.
+      org wrapper constructor matches Java (name, Order, joins, meets); leq
+      delegates to the supplied order. Behavioral goldens cover several partial
+      orders, stored join/meet lists where defined, toString (skip Class@hex),
+      and null/empty edge cases. Java has no public join/meet methods; name is
+      unused. main() is an empty stub. Branch fplat-parallel-coverage.
 
   - id: core-util
     title: Shared util (IntArray, generators, …)

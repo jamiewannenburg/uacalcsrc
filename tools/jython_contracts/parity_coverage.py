@@ -67,6 +67,28 @@ PENDING_BINDINGS = {
             "Java interface; CPython rejects Element()",
         ),
     ],
+    "fplat": [
+        (
+            "PartiallyDefinedLattice.main",
+            "Java main() is an empty stub",
+        ),
+    ],
+    "parallel": [
+        (
+            "SingleClose.main",
+            "Java main() is an empty stub",
+        ),
+        (
+            "ForkJoinPool / Thread / ProgressReport / CloserTiming / increment",
+            "doOneStep accepts these Java thread-internal args and ignores them; "
+            "timing and thread counts are not asserted. Term map from a parallel "
+            "pass may differ across runs (Java comment on SingleClose)",
+        ),
+        (
+            "Pool.fjPool",
+            "Java static field is package-private; not a public method",
+        ),
+    ],
     "group": [
         (
             "to_basic_algebra / automorphism_group / new_safe",

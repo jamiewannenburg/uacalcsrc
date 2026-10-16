@@ -2231,6 +2231,22 @@ where
             Arc::new(Mutex::new(HashMap::new()))
         };
 
+        // Java sgCloseParallel requires generators (and constants) already in the
+        // term map. Seed dummy variables when the closer was built without one.
+        {
+            let mut map_guard = term_map_arc
+                .lock()
+                .map_err(|e| format!("term map lock: {}", e))?;
+            for (i, ia) in self.ans.iter().enumerate() {
+                if !map_guard.contains_key(ia) {
+                    map_guard.insert(
+                        ia.clone(),
+                        Box::new(VariableImp::new(&format!("x{}", i))) as Box<dyn Term>,
+                    );
+                }
+            }
+        }
+
         // Initialize timing if report exists
         let timing_arc = if let Some(ref report) = self.report {
             Some(Arc::new(Mutex::new(CloserTiming::new_from_algebra(

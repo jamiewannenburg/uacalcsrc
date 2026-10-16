@@ -1,8 +1,19 @@
 """Compatibility shim for ``org.uacalc.fplat`` (partially defined lattices).
 
-CPython re-exports ``uacalc_lib.fplat`` when available. Jython uses the Java
-package from the classpath.
+CPython: re-export ``uacalc_lib.fplat`` and apply a Java-shaped facade whose
+constructor matches the JAR: ``(name, order, joins, meets)``. Jython uses the
+Java package from the classpath.
 """
+
+# Literal map for jython_contracts validate() (also applied by _jython_compat).
+_CLASS_ALIASES = {
+    "PartiallyDefinedLattice": {
+        "leq": "leq",
+        "toString": "toString",
+        "getDefinedJoins": "getDefinedJoins",
+        "getDefinedMeets": "getDefinedMeets",
+    },
+}
 
 
 def _load_from_uacalc_lib() -> None:
@@ -15,6 +26,10 @@ def _load_from_uacalc_lib() -> None:
     for _name in dir(_fplat):
         if not _name.startswith("_"):
             g[_name] = getattr(_fplat, _name)
+
+    from org.uacalc.fplat._jython_compat import _install as _install_jython_compat
+
+    _install_jython_compat(g)
 
 
 if __import__("sys").platform.startswith("java"):

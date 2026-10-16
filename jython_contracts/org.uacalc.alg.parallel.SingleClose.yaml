@@ -1,0 +1,34 @@
+target: org.uacalc.alg.parallel.SingleClose
+level: file
+status: implemented
+java_source: org/uacalc/alg/parallel/SingleClose.java
+notes: |
+  Public API is the constructors plus doOneStep(ForkJoinPool, Thread,
+  ProgressReport, CloserTiming). compute() is the ForkJoin RecursiveTask
+  hook (thread-internal). The term map from a parallel pass may differ
+  across runs (Java comment); only the set of new elements is compared,
+  sorted. Timing, increment/thread counts, ProgressReport, and CloserTiming
+  are deliberately skipped. main() is an empty stub. Small test algebras
+  take the serial SingleClose path (computationSize < 1e6).
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    doOneStep: doOneStep
+    toString: toString
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    Goldens cover doOneStep on C2^2 and M3 generators (sorted new elements)
+    plus Closer.doParallel sgClose matching sequential close on several
+    algebras. ForkJoinPool/Thread args are accepted and ignored on CPython.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/parallel_ops.py
+      covers:
+        - doOneStep
+        - toString
+      ignore_lines:
+        - "pass:"
+        - "increment:"

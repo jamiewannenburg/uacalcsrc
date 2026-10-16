@@ -19,11 +19,8 @@ JAR = REPO_ROOT / "jars" / "uacalc.jar"
 def _normalize_output(text: str) -> str:
     """Normalize subprocess stdout for comparison.
 
-    Cosmetic: strip ``\\r``. CPython uses the Rust shim's 3-arg
-    ``PartiallyDefinedLattice`` and a readable ``str``; the JAR constructor
-    requires an ``Order`` plus join/meet lists, so the golden script records a
-    **smoke note** on Jython instead of comparing ``repr``/``str`` across
-    runtimes.
+    Cosmetic: strip ``\\r``. Both runtimes construct Java's 4-arg
+    ``PartiallyDefinedLattice(name, Order, joins, meets)`` and print ``leq``.
     """
     lines = [ln.rstrip("\r") for ln in text.strip().splitlines()]
     return "\n".join(lines) + "\n"

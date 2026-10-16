@@ -742,6 +742,49 @@ the org shim's `leftSide` / `rightSide` return term objects via
 
 ---
 
+## org.uacalc.fplat
+
+### PartiallyDefinedLattice constructor
+
+- **Java**: `(String name, Order<Variable> order, List<List<Variable>> joins, List<List<Variable>> meets)`. The name is unused (no field). `leq` delegates to `order.leq`. `definedJoins` / `definedMeets` are package-private fields; there are no public join/meet methods.
+- **Python (org wrapper)**: same 4-arg constructor. `getDefinedJoins` / `getDefinedMeets` expose the stored lists (Jython goldens also read the Java fields). `uacalc_lib.fplat` still has a 3-arg shortcut `(name, joins, meets)` with a name-order; that is not the org.uacalc API.
+- **Status**: Matched on `org.uacalc.fplat`
+- **Tests**: `tests/parity/fplat`
+
+### PartiallyDefinedLattice.toString
+
+- **Java**: default `Object.toString()` (`PartiallyDefinedLattice@hex`).
+- **Python**: semantic `PartiallyDefinedLattice(name)`.
+- **Status**: Accepted
+- **Tests**: `skip_string_check` on toString cases
+
+---
+
+## org.uacalc.alg.parallel
+
+### Pool has no public methods
+
+- **Java**: empty class; `static ForkJoinPool fjPool` is package-private.
+- **Python**: class + constructor; extras `fj_pool()` / `is_initialized()` only check that a runtime exists. Thread counts are not tested.
+- **Status**: Matched on the importable class; field/thread internals skipped
+- **Tests**: `pool_class_name`, `pool_construct`
+
+### SingleClose.doOneStep thread internals
+
+- **Java**: `doOneStep(ForkJoinPool, Thread, ProgressReport, CloserTiming)`. Constructor prints `increment: N`. Term map may differ across runs (Java comment). `compute()` is the ForkJoin hook.
+- **Python**: `doOneStep` accepts those args and ignores them; uses the library closer pass. Timing, thread counts, and term maps are not compared. New elements are sorted.
+- **Status**: Deterministic element sets compared; internals skipped
+- **Tests**: `single_close_*`, `par_*`
+
+### Closer.doParallel / sgCloseParallel
+
+- **Java**: static `Closer.doParallel` routes `sgClose()` through `sgCloseParallel(elems, closedMark, ConcurrentMap)`. The 3-arg overload plus debug `System.out` are not reimplemented on CPython.
+- **Python**: `Closer.doParallel = True` uses `sg_close_parallel()` (no-arg). Small algebras take the serial SingleClose path (`computationSize < 1e6`).
+- **Status**: Sorted universes compared to Java sequential/parallel close
+- **Tests**: `seq_*`, `par_*`, `par_matches_seq_*`
+
+---
+
 ## org.uacalc.alg.Malcev
 
 Left alone, as specified. `minority_term` / `weak_nu_term` are not part of this

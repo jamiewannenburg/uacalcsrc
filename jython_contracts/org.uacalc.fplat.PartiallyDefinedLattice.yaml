@@ -1,0 +1,36 @@
+target: org.uacalc.fplat.PartiallyDefinedLattice
+level: file
+status: implemented
+java_source: org/uacalc/fplat/PartiallyDefinedLattice.java
+notes: |
+  Java constructor is (name, Order<Variable>, joins, meets). The name argument
+  is unused (no field). leq delegates to the supplied order. definedJoins /
+  definedMeets are package-private fields; the org wrapper exposes them as
+  getDefinedJoins/getDefinedMeets so scripts can read join/meet-where-defined.
+  Java has no public join/meet operations. toString is Object@hex
+  (skip_string_check). main() is an empty stub and is not wrapped.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    leq: leq
+    toString: toString
+    getDefinedJoins: getDefinedJoins
+    getDefinedMeets: getDefinedMeets
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    Goldens cover name/antichain/chain/vee orders, leq reflexivity and
+    incomparability, stored join/meet lists (including null and empty),
+    join/meet membership where defined, toString, and NPE on null order/args.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/fplat_ops.py
+      covers:
+        - leq
+        - getDefinedJoins
+        - getDefinedMeets
+        - toString
+      ignore_lines:
+        - "pass:"

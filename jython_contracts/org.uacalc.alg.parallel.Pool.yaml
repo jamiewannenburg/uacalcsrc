@@ -1,0 +1,29 @@
+target: org.uacalc.alg.parallel.Pool
+level: file
+status: implemented
+java_source: org/uacalc/alg/parallel/Pool.java
+notes: |
+  Java Pool is an empty class with a package-private static ForkJoinPool
+  fjPool. There are no public methods. The org wrapper exports the class,
+  a default constructor, and extras fj_pool()/is_initialized() that only
+  check the runtime exists. Thread counts and the pool object itself are
+  not compared.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    toString: toString
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    Goldens cover import and construction. fjPool is package-private and
+    skipped. is_initialized/fj_pool are Rust extras, not Java API.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/parallel_ops.py
+      covers:
+        - toString
+      ignore_lines:
+        - "pass:"
+        - "increment:"
