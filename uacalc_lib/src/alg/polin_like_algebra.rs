@@ -1,7 +1,11 @@
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
+use pyo3::types::PyAny;
 use uacalc::alg::{SmallAlgebra, Algebra};
 use uacalc::alg::op::Operation;
+use crate::alg::convert::{
+    algebra_type_java_name, get_operation_by_symbol, operations_to_py, ops_to_basic_algebra,
+};
 use crate::alg::PyBasicAlgebra;
 use crate::alg::conlat::congruence_lattice::PyCongruenceLattice;
 use crate::alg::PySubalgebraLattice;
@@ -93,7 +97,44 @@ impl PyPolinLikeAlgebra {
     /// Returns:
     ///     str: The algebra type ("PolinLike")
     fn algebra_type(&self) -> String {
-        format!("{:?}", self.inner.borrow().algebra_type())
+        algebra_type_java_name(self.inner.borrow().algebra_type())
+    }
+
+    fn operations(&self, py: Python<'_>) -> PyResult<Vec<PyObject>> {
+        operations_to_py(py, Algebra::operations(&*self.inner.borrow()))
+    }
+
+    fn get_operation(&self, py: Python<'_>, sym: &Bound<'_, PyAny>) -> PyResult<Option<PyObject>> {
+        get_operation_by_symbol(py, Algebra::operations(&*self.inner.borrow()), sym)
+    }
+
+    fn to_basic_algebra(&self) -> PyResult<PyBasicAlgebra> {
+        let inner = self.inner.borrow();
+        ops_to_basic_algebra(
+            inner.name().to_string(),
+            inner.cardinality(),
+            Algebra::operations(&*inner),
+        )
+    }
+
+    fn get_universe_list(&self) -> Option<Vec<i32>> {
+        None
+    }
+
+    fn get_universe_order(&self) -> Option<Vec<i32>> {
+        None
+    }
+
+    fn is_unary(&self) -> bool {
+        Algebra::is_unary(&*self.inner.borrow())
+    }
+
+    fn is_idempotent(&self) -> bool {
+        Algebra::is_idempotent(&*self.inner.borrow())
+    }
+
+    fn is_total(&self) -> bool {
+        Algebra::is_total(&*self.inner.borrow())
     }
 
     /// Get the name of this algebra.

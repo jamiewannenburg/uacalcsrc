@@ -1,0 +1,48 @@
+target: org.uacalc.alg.PolinLikeAlgebra
+level: file
+status: implemented
+java_source: org/uacalc/alg/PolinLikeAlgebra.java
+notes: |
+  One constructor (name, topAlg, botAlg, map, topConstIndex, botConstIndex).
+  Cardinality is top.card+bot.card. algebraType is POLIN_LIKE.
+  Java getElement always returns null and elementIndex always -1 (stubs);
+  getUniverseList / getUniverseOrder are null. convertToDefaultValueOps
+  throws UnsupportedOperationException. constructPolinAlgebra and
+  polinizeOperation are not the wrap focus.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    getName: name
+    setName: set_name
+    getOperation: getOperation
+    getElement: getElement
+    elementIndex: elementIndex
+    getUniverseList: getUniverseList
+    algebraType: algebra_type
+    convertToDefaultValueOps: convertToDefaultValueOps
+    con: con
+    sub: sub
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    polin_like_algebra_smoke.py plus remaining_alg_cases.py. cyclic2 over
+    cyclic2 with null map and constants 0,0 (card 4).
+  task_refs:
+    - tests/parity/alg/test_cases/remaining_alg_cases.py
+  scripts:
+    - path: jython_comparison/scripts/polin_like_algebra_smoke.py
+      covers:
+        - getName
+        - setName
+        - getOperation
+        - getElement
+        - elementIndex
+        - getUniverseList
+        - algebraType
+        - convertToDefaultValueOps
+        - con
+        - sub
+        - cardinality
+      ignore_lines: []

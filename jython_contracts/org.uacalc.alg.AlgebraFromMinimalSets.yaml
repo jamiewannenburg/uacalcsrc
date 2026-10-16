@@ -1,0 +1,43 @@
+target: org.uacalc.alg.AlgebraFromMinimalSets
+level: file
+status: implemented
+java_source: org/uacalc/alg/AlgebraFromMinimalSets.java
+notes: |
+  Extends BasicAlgebra. Constructors: (minAlg), (minAlg, size, maps),
+  (name, minAlg), (name, minAlg, connectPts), (name, minAlg, size, maps,
+  connectPts). Default size is 3*minAlg.card-2. algebraType is BASIC.
+  Default maps install unary "s" plus lifted "op-*" operations. Inconsistent
+  custom maps throw IllegalArgumentException. getUniverseList is null (int
+  universe). con/sub inherited from BasicAlgebra; not the wrap focus.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    getName: name
+    setName: set_name
+    getOperation: getOperation
+    getElement: get_element
+    elementIndex: element_index
+    getUniverseList: get_universe_list
+    algebraType: algebra_type
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    algebra_from_minimal_sets_smoke.py plus remaining_alg_cases.py.
+    Tiny cyclic2 seed: default card 4, ops s + op-+, AlgebraIO write/read.
+  task_refs:
+    - tests/parity/alg/test_cases/remaining_alg_cases.py
+  scripts:
+    - path: jython_comparison/scripts/algebra_from_minimal_sets_smoke.py
+      covers:
+        - getName
+        - setName
+        - getOperation
+        - getElement
+        - elementIndex
+        - getUniverseList
+        - algebraType
+        - cardinality
+        - operations
+      ignore_lines: []

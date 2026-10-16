@@ -49,6 +49,10 @@ class ArrayIndexOutOfBoundsException(IndexOutOfBoundsException):
     """java.lang.ArrayIndexOutOfBoundsException."""
 
 
+class NoSuchElementException(RuntimeException):
+    """java.util.NoSuchElementException."""
+
+
 class StringIndexOutOfBoundsException(IndexOutOfBoundsException):
     """java.lang.StringIndexOutOfBoundsException."""
 

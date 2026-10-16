@@ -122,6 +122,32 @@ pub fn operations_to_py(
         .collect()
 }
 
+/// Look up an operation by Java `OperationSymbol` (or a name string).
+pub fn get_operation_by_symbol(
+    py: Python<'_>,
+    ops: impl IntoIterator<Item = Box<dyn Operation>>,
+    sym: &Bound<'_, PyAny>,
+) -> PyResult<Option<PyObject>> {
+    let name = if let Ok(s) = sym.extract::<String>() {
+        s
+    } else if let Ok(n) = sym.call_method0("name") {
+        n.extract::<String>()?
+    } else {
+        return Ok(None);
+    };
+    let arity = if let Ok(a) = sym.call_method0("arity") {
+        a.extract::<i32>().ok()
+    } else {
+        None
+    };
+    for op in ops {
+        if op.symbol().name() == name && arity.map(|a| op.arity() == a).unwrap_or(true) {
+            return Ok(Some(operation_to_py(py, op.as_ref())?));
+        }
+    }
+    Ok(None)
+}
+
 /// Materialize operations as a table-backed BasicAlgebra (Java write/read shape).
 pub fn ops_to_basic_algebra(
     name: String,

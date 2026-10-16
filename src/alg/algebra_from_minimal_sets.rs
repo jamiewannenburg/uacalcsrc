@@ -320,28 +320,9 @@ impl AlgebraFromMinimalSets {
             let op = make_int_operation(sym, size as i32, table)?;
             ops.push(op);
         }
-        
-        // Add operations from maps
-        let mut r = 0;
-        for map in &self.maps {
-            let size = self.base.cardinality() as usize;
-            let min_alg_size = self.min_alg_size;
-            
-            // Create table for 'p' operation: p(x) = map[map_to_b[x]]
-            let mut table = Vec::with_capacity(size);
-            for i in 0..size {
-                let map_to_b_val = self.map_to_b[i] as usize;
-                if map_to_b_val >= min_alg_size {
-                    return Err(format!("map_to_b[{}] = {} out of bounds", i, map_to_b_val));
-                }
-                table.push(map[map_to_b_val]);
-            }
-            
-            let sym = OperationSymbol::new_safe(&format!("p{}", r), 1, false)?;
-            let op = make_int_operation(sym, size as i32, table)?;
-            ops.push(op);
-            r += 1;
-        }
+
+        // Java setOperations(makeOps()) then replaces that list. The p0,p1,...
+        // map ops from makeOps() are not in the final algebra.
         
         // Add operations from minimal algebra
         let min_ops = self.minimal_algebra.get_operations_ref();

@@ -7,6 +7,7 @@ use uacalc::alg::BasicAlgebra;
 #[pyclass]
 pub struct PyAlgebraWithGeneratingVector {
     inner: uacalc::alg::AlgebraWithGeneratingVector<i32>,
+    algebra: uacalc::alg::BasicAlgebra<i32>,
 }
 
 #[pymethods]
@@ -26,6 +27,7 @@ impl PyAlgebraWithGeneratingVector {
                 Box::new(algebra.inner.clone()),
                 vector,
             ),
+            algebra: algebra.inner.clone(),
         }
     }
 
@@ -48,22 +50,7 @@ impl PyAlgebraWithGeneratingVector {
     /// Raises:
     ///     ValueError: If the algebra cannot be converted to BasicAlgebra
     fn get_algebra(&self) -> PyResult<PyBasicAlgebra> {
-        let alg = self.inner.get_algebra();
-        
-        // Try to reconstruct BasicAlgebra from SmallAlgebra properties
-        // This works for BasicAlgebra and some derived types
-        let name = alg.name().to_string();
-        let universe_list = alg.get_universe_list()
-            .ok_or_else(|| PyValueError::new_err("Cannot get universe list from algebra"))?;
-        let universe_set: std::collections::HashSet<i32> = universe_list.into_iter().collect();
-        
-        // Note: Operations are not cloned due to trait object limitations.
-        // This is a known limitation when converting from SmallAlgebra to BasicAlgebra.
-        let ops: Vec<Box<dyn uacalc::alg::op::Operation>> = Vec::new();
-        
-        // Create BasicAlgebra (operations will be empty due to trait object limitations)
-        let basic_alg = BasicAlgebra::new(name, universe_set, ops);
-        Ok(PyBasicAlgebra::from_inner(basic_alg))
+        Ok(PyBasicAlgebra::from_inner(self.algebra.clone()))
     }
 
     /// Get the generating vector.
@@ -87,9 +74,20 @@ impl PyAlgebraWithGeneratingVector {
 
     /// Python string representation.
     fn __str__(&self) -> String {
-        format!("AlgebraWithGeneratingVector(algebra={}, vector={:?})",
-                self.inner.get_algebra().name(),
-                self.inner.get_vector())
+        let vec = self.inner.get_vector();
+        let mut body = String::from("[");
+        for (i, v) in vec.iter().enumerate() {
+            if i > 0 {
+                body.push(',');
+            }
+            body.push_str(&v.to_string());
+        }
+        body.push(']');
+        format!(
+            "Alg with vector, alg size = {}, vec = {}",
+            self.inner.get_algebra().cardinality(),
+            body
+        )
     }
 
     /// Python repr representation.
@@ -147,7 +145,18 @@ impl PyAlgebraWithGeneratingVector {
         let alg_box = Box::new(alg.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
         let decomposition = uacalc::alg::AlgebraWithGeneratingVector::si_decompose(alg_box, &vec);
         decomposition.into_iter()
-            .map(|item| PyAlgebraWithGeneratingVector { inner: item })
+            .map(|item| {
+                let card = item.get_algebra().cardinality();
+                let reconstructed = BasicAlgebra::new(
+                    item.get_algebra().name().to_string(),
+                    (0..card).collect(),
+                    Vec::new(),
+                );
+                PyAlgebraWithGeneratingVector {
+                    inner: item,
+                    algebra: reconstructed,
+                }
+            })
             .collect()
     }
 
@@ -176,7 +185,18 @@ impl PyAlgebraWithGeneratingVector {
             relations_opt,
         );
         decomposition.into_iter()
-            .map(|item| PyAlgebraWithGeneratingVector { inner: item })
+            .map(|item| {
+                let card = item.get_algebra().cardinality();
+                let reconstructed = BasicAlgebra::new(
+                    item.get_algebra().name().to_string(),
+                    (0..card).collect(),
+                    Vec::new(),
+                );
+                PyAlgebraWithGeneratingVector {
+                    inner: item,
+                    algebra: reconstructed,
+                }
+            })
             .collect()
     }
 }

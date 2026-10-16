@@ -7,10 +7,12 @@ notes: |
   surface contract; real alias/str parity work lives in file-level contracts
   (BasicAlgebra, SmallAlgebra, FreeAlgebra, Homomorphism, Closer, Algebras,
   ProductAlgebra, PowerAlgebra, QuotientAlgebra, QuotientElement,
-  SubProductAlgebra, ReductAlgebra, Subalgebra, and op/sublat types). The
-  python/org shim re-exports uacalc_lib.alg and applies Jython call-shape
-  bridges from _jython_compat.py for ~/uacalc scripts. Malcev is not wrapped.
-  CloserTiming is UI-only and is not wrapped.
+  SubProductAlgebra, ReductAlgebra, Subalgebra, AlgebraFromMinimalSets,
+  AlgebraWithGeneratingVector, GeneralAlgebra, MatrixPowerAlgebra,
+  ParameterizedAlgebra, PolinLikeAlgebra, UnaryTermsMonoid, and op/sublat
+  types). The python/org shim re-exports uacalc_lib.alg and applies Jython
+  call-shape bridges from _jython_compat.py for ~/uacalc scripts. Malcev is
+  not wrapped. CloserTiming is UI-only and is not wrapped.
 ignore_reason: null
 surface:
   package_export: true

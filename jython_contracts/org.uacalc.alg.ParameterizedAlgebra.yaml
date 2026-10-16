@@ -1,0 +1,27 @@
+target: org.uacalc.alg.ParameterizedAlgebra
+level: file
+status: implemented
+java_source: org/uacalc/alg/ParameterizedAlgebra.java
+notes: |
+  Not an Algebra. Java default constructor plus package-private fields
+  (parameterNames, name, setSizeExp, description, ops) that Jython can set.
+  Only public method is getParameterMap(List<Integer>): pairs parameterNames
+  with values (extra values ignored). null parameterNames is NPE; too few
+  values is NoSuchElementException.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    getParameterMap: getParameterMap
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    parameterized_algebra_smoke.py plus remaining_alg_cases.py.
+  task_refs:
+    - tests/parity/alg/test_cases/remaining_alg_cases.py
+  scripts:
+    - path: jython_comparison/scripts/parameterized_algebra_smoke.py
+      covers:
+        - getParameterMap
+      ignore_lines: []
