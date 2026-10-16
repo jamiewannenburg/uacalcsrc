@@ -12,6 +12,7 @@ use quick_xml::events::Event;
 
 use crate::alg::Algebra;
 use crate::alg::BasicAlgebra;
+use crate::alg::FreeAlgebra;
 use crate::alg::op::Operation;
 use crate::alg::op::operations as Operations;
 use crate::util::horner as Horner;
@@ -216,6 +217,11 @@ struct AlgebraParser {
     tag_stack: Vec<String>,
     alg_name_stack: VecDeque<String>,
     name_desc_map: HashMap<String, Option<String>>,
+
+    // FreeAlgebra reconstruction (Java has no </freeAlgebra> handler).
+    in_generators: bool,
+    free_name: Option<String>,
+    free_generator_count: i32,
 }
 
 impl AlgebraParser {
@@ -251,7 +257,40 @@ impl AlgebraParser {
             tag_stack: Vec::new(),
             alg_name_stack: VecDeque::new(),
             name_desc_map: HashMap::new(),
+
+            in_generators: false,
+            free_name: None,
+            free_generator_count: 0,
         }
+    }
+
+    /// Rebuild F(n) from the nested generating algebra and `<generators>`.
+    ///
+    /// Java `AlgebraReader` never handles `</freeAlgebra>`, so it returns the
+    /// last nested `basicAlgebra` (the generating algebra). Python reconstructs
+    /// the actual free algebra and materializes it as a `BasicAlgebra` with
+    /// F(n)'s universe and operation tables.
+    fn rebuild_free_algebra(&mut self) -> Result<(), String> {
+        let n_gens = self.free_generator_count;
+        if n_gens <= 0 {
+            return Err("freeAlgebra XML has no generators; cannot rebuild F(n)".to_string());
+        }
+        let base = self.algebra.take().ok_or_else(|| {
+            "freeAlgebra XML has no nested generating algebra".to_string()
+        })?;
+        let name = self.free_name.clone().unwrap_or_else(|| {
+            format!("F({}) over {}", n_gens, base.name())
+        });
+        let fa = FreeAlgebra::new_with_name_safe(name, Box::new(base), n_gens)?;
+        let card = fa.cardinality();
+        let ops = Operations::make_int_operations(fa.operations())?;
+        let universe: HashSet<i32> = (0..card).collect();
+        let mut algebra = BasicAlgebra::new(fa.name().to_string(), universe, ops);
+        if let Some(desc) = fa.description() {
+            algebra.set_description(Some(desc.to_string()));
+        }
+        self.algebra = Some(algebra);
+        Ok(())
     }
     
     fn clear_strings(&mut self) {
@@ -320,10 +359,15 @@ impl AlgebraParser {
             "productAlgebra" => self.alg_type = PRODUCT,
             "quotientAlgebra" => self.alg_type = QUOTIENT,
             "subAlgebra" => self.alg_type = SUBALGEBRA,
-            // Recognized so <freeAlgebra>/<bigProductAlgebra> XML is not an
-            // unknown element. Java AlgebraReader has no freeAlgebra end
-            // handler either; the last nested basicAlgebra becomes `algebra`.
-            "freeAlgebra" | "subProductAlgebra" | "bigProductAlgebra" => {}
+            "freeAlgebra" => {
+                self.free_name = None;
+                self.free_generator_count = 0;
+                self.in_generators = false;
+            }
+            "generators" => self.in_generators = true,
+            // Recognized so nested <bigProductAlgebra> / <subProductAlgebra>
+            // XML is not an unknown element.
+            "subProductAlgebra" | "bigProductAlgebra" => {}
             
             "opTable" => {
                 let size = (self.cardinality as usize).pow(self.arity as u32);
@@ -397,7 +441,10 @@ impl AlgebraParser {
                 let name = self.alg_name_string.trim().to_string();
                 self.alg_name = Some(name.clone());
                 self.alg_name_stack.push_front(name.clone());
-                self.name_desc_map.insert(name, None);
+                self.name_desc_map.insert(name.clone(), None);
+                if parent.as_deref() == Some("freeAlgebra") {
+                    self.free_name = Some(name);
+                }
             }
             "opName" => {
                 self.op_name = Some(self.op_name_string.trim().to_string());
@@ -431,11 +478,17 @@ impl AlgebraParser {
             }
             "productElem" => {
                 // Coordinate tuples for free/subproduct generators and universe.
-                // Java only uses these when reconstructing SubProductAlgebra;
-                // it never handles </freeAlgebra>, so we consume the text and
-                // still return the last nested BasicAlgebra (the generating
-                // algebra), matching Java AlgebraReader.
-                let _ = self.product_elem_string.trim();
+                // Count generators so </freeAlgebra> can rebuild F(n).
+                if self.in_generators {
+                    self.free_generator_count += 1;
+                }
+                self.product_elem_string.clear();
+            }
+            "generators" => {
+                self.in_generators = false;
+            }
+            "freeAlgebra" => {
+                self.rebuild_free_algebra()?;
             }
             "intArray" if parent == Some("congruence".to_string()) => {
                 let trimmed = self.int_array_string.trim().to_string();
@@ -615,6 +668,27 @@ mod tests {
         assert_eq!(algebras[0].cardinality(), 2);
         assert_eq!(algebras[1].name(), "C3");
         assert_eq!(algebras[1].cardinality(), 3);
+    }
+
+    #[test]
+    fn test_free_algebra_reader_rebuilds_f1_not_generating_algebra() {
+        // Java AlgebraReader returns nested C2. We rebuild F(1), whose + table
+        // is [1,0,0,1] rather than C2's [0,1,1,0].
+        let xml = include_str!("../../resources/special/free_c2_f1.ua");
+        let reader = AlgebraReader::new_from_stream(xml.as_bytes().to_vec()).unwrap();
+        let algebra = reader.read_algebra_from_stream().unwrap();
+        assert_eq!(algebra.name(), "F1");
+        assert_eq!(algebra.cardinality(), 2);
+
+        let plus = crate::alg::op::OperationSymbol::new("+", 2, false);
+        let op = algebra.get_operation(&plus).expect("F(1) has +");
+        let mut table = Vec::new();
+        for i in 0..2 {
+            for j in 0..2 {
+                table.push(op.int_value_at(&[i, j]).unwrap());
+            }
+        }
+        assert_eq!(table, vec![1, 0, 0, 1], "F(1)/C2 table, not generating C2");
     }
 }
 

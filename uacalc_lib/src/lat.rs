@@ -1034,6 +1034,237 @@ impl PyBasicLattice {
             _ => Err(PyValueError::new_err("zero() is only available for BasicLattice<Partition> or BasicLattice<i32>")),
         }
     }
+
+    /// Top element (Java `one`).
+    fn one(&self, py: Python) -> PyResult<PyObject> {
+        match &self.inner {
+            BasicLatticeInner::Int32(inner) => {
+                let inner = inner.lock().unwrap();
+                let one = inner.one();
+                let po_elem: &uacalc::lat::ordered_set::POElem<i32> = one.deref();
+                Ok((*po_elem.get_underlying_object()).into_py(py))
+            }
+            _ => Err(PyValueError::new_err("one() is only available for BasicLattice<i32> created from operations")),
+        }
+    }
+
+    /// Atoms (covers of zero).
+    fn atoms(&self) -> PyResult<Vec<i32>> {
+        match &self.inner {
+            BasicLatticeInner::Int32(inner) => {
+                let inner = inner.lock().unwrap();
+                Ok(inner.atoms().iter().map(|e| *e.get_underlying_object()).collect())
+            }
+            _ => Err(PyValueError::new_err("atoms() is only available for BasicLattice<i32> created from operations")),
+        }
+    }
+
+    /// Coatoms (covered by one).
+    fn coatoms(&self) -> PyResult<Vec<i32>> {
+        match &self.inner {
+            BasicLatticeInner::Int32(inner) => {
+                let inner = inner.lock().unwrap();
+                Ok(inner.coatoms().iter().map(|e| *e.get_underlying_object()).collect())
+            }
+            _ => Err(PyValueError::new_err("coatoms() is only available for BasicLattice<i32> created from operations")),
+        }
+    }
+
+    /// Meet-irreducible elements.
+    fn meet_irreducibles(&self, py: Python) -> PyResult<PyObject> {
+        match &self.inner {
+            BasicLatticeInner::Int32(inner) => {
+                let mut inner = inner.lock().unwrap();
+                let mis: &[std::sync::Arc<uacalc::lat::ordered_set::POElem<i32>>] =
+                    uacalc::lat::BasicLattice::meet_irreducibles(&mut *inner);
+                let result: Vec<i32> = mis.iter().map(|e| *e.get_underlying_object()).collect();
+                Ok(result.into_py(py))
+            }
+            _ => Err(PyValueError::new_err("meet_irreducibles() is only available for BasicLattice<i32>")),
+        }
+    }
+
+    /// Join-irreducibles ≤ `element` (Java `joinIrredsBelow`).
+    fn join_irreds_below(&self, element: i32) -> PyResult<Vec<i32>> {
+        match &self.inner {
+            BasicLatticeInner::Int32(inner) => {
+                let mut inner = inner.lock().unwrap();
+                let jis: Vec<i32> = {
+                    let slice = uacalc::lat::BasicLattice::join_irreducibles(&mut *inner);
+                    slice.iter().map(|e| *e.get_underlying_object()).collect()
+                };
+                let mut out = Vec::new();
+                for ji in jis {
+                    let po_ji = inner
+                        .get_universe_list()
+                        .iter()
+                        .find(|e| *e.get_underlying_object() == ji)
+                        .cloned();
+                    let po_v = inner
+                        .get_universe_list()
+                        .iter()
+                        .find(|e| *e.get_underlying_object() == element)
+                        .cloned();
+                    match (po_ji, po_v) {
+                        (Some(pj), Some(pv)) => {
+                            if inner.leq(&pj, &pv) {
+                                out.push(ji);
+                            }
+                        }
+                        (_, None) => {
+                            return Err(PyValueError::new_err(format!(
+                                "Element {} not found in universe",
+                                element
+                            )));
+                        }
+                        _ => {}
+                    }
+                }
+                Ok(out)
+            }
+            _ => Err(PyValueError::new_err(
+                "join_irreds_below() is only available for BasicLattice<i32> created from operations",
+            )),
+        }
+    }
+
+    /// Meet-irreducibles ≥ `element` (Java `meetIrredsAbove`).
+    fn meet_irreds_above(&self, element: i32) -> PyResult<Vec<i32>> {
+        match &self.inner {
+            BasicLatticeInner::Int32(inner) => {
+                let mut inner = inner.lock().unwrap();
+                let mis: Vec<i32> = {
+                    let slice = uacalc::lat::BasicLattice::meet_irreducibles(&mut *inner);
+                    slice.iter().map(|e| *e.get_underlying_object()).collect()
+                };
+                let mut out = Vec::new();
+                for mi in mis {
+                    let po_mi = inner
+                        .get_universe_list()
+                        .iter()
+                        .find(|e| *e.get_underlying_object() == mi)
+                        .cloned();
+                    let po_v = inner
+                        .get_universe_list()
+                        .iter()
+                        .find(|e| *e.get_underlying_object() == element)
+                        .cloned();
+                    match (po_mi, po_v) {
+                        (Some(pm), Some(pv)) => {
+                            if inner.leq(&pv, &pm) {
+                                out.push(mi);
+                            }
+                        }
+                        (_, None) => {
+                            return Err(PyValueError::new_err(format!(
+                                "Element {} not found in universe",
+                                element
+                            )));
+                        }
+                        _ => {}
+                    }
+                }
+                Ok(out)
+            }
+            _ => Err(PyValueError::new_err(
+                "meet_irreds_above() is only available for BasicLattice<i32> created from operations",
+            )),
+        }
+    }
+
+    /// Upper covers of an element (label, not index).
+    fn upper_covers(&self, element: i32) -> PyResult<Vec<i32>> {
+        match &self.inner {
+            BasicLatticeInner::Int32(inner) => {
+                let inner = inner.lock().unwrap();
+                let poset = inner.get_poset();
+                let univ_list = inner.get_universe_list();
+                let po_elem = univ_list.iter()
+                    .find(|e| *e.get_underlying_object() == element)
+                    .ok_or_else(|| PyValueError::new_err(format!("Element {} not found in universe", element)))?;
+                Ok(poset.get_upper_covers(po_elem).iter().map(|e| *e.get_underlying_object()).collect())
+            }
+            _ => Err(PyValueError::new_err("upper_covers() is only available for BasicLattice<i32> created from operations")),
+        }
+    }
+
+    /// Lower covers of an element (label, not index).
+    fn lower_covers(&self, element: i32) -> PyResult<Vec<i32>> {
+        match &self.inner {
+            BasicLatticeInner::Int32(inner) => {
+                let inner = inner.lock().unwrap();
+                let poset = inner.get_poset();
+                let univ_list = inner.get_universe_list();
+                let po_elem = univ_list.iter()
+                    .find(|e| *e.get_underlying_object() == element)
+                    .ok_or_else(|| PyValueError::new_err(format!("Element {} not found in universe", element)))?;
+                Ok(poset.get_lower_covers(po_elem).iter().map(|e| *e.get_underlying_object()).collect())
+            }
+            _ => Err(PyValueError::new_err("lower_covers() is only available for BasicLattice<i32> created from operations")),
+        }
+    }
+
+    /// Universe element at index `k` (Java `getElement`).
+    fn get_element(&self, k: usize) -> PyResult<i32> {
+        match &self.inner {
+            BasicLatticeInner::Int32(inner) => {
+                let inner = inner.lock().unwrap();
+                let univ_list = inner.get_universe_list();
+                univ_list.get(k)
+                    .map(|e| *e.get_underlying_object())
+                    .ok_or_else(|| PyValueError::new_err(format!("index {} out of range", k)))
+            }
+            _ => Err(PyValueError::new_err("get_element() is only available for BasicLattice<i32> created from operations")),
+        }
+    }
+
+    /// Index of an element label (Java `elementIndex` on the POElem's label).
+    fn element_index(&self, element: i32) -> PyResult<i32> {
+        match &self.inner {
+            BasicLatticeInner::Int32(inner) => {
+                let inner = inner.lock().unwrap();
+                let univ_list = inner.get_universe_list();
+                univ_list.iter()
+                    .position(|e| *e.get_underlying_object() == element)
+                    .map(|i| i as i32)
+                    .ok_or_else(|| PyValueError::new_err(format!("Element {} not found in universe", element)))
+            }
+            _ => Err(PyValueError::new_err("element_index() is only available for BasicLattice<i32> created from operations")),
+        }
+    }
+
+    /// Java `algebraType()` → `BASIC_LATTICE`.
+    fn algebra_type(&self) -> String {
+        "BASIC_LATTICE".to_string()
+    }
+
+    /// The underlying poset as `OrderedSet` (Java `getPoset`).
+    fn get_poset(&self) -> PyResult<PyOrderedSet> {
+        match &self.inner {
+            BasicLatticeInner::Int32(inner) => {
+                let inner = inner.lock().unwrap();
+                let poset = inner.get_poset();
+                let univ_list = inner.get_universe_list();
+                let universe: Vec<i32> = univ_list.iter().map(|e| *e.get_underlying_object()).collect();
+                let mut upper_covers_list: Vec<Vec<i32>> = Vec::new();
+                for po_elem in univ_list {
+                    let covers = poset.get_upper_covers(&po_elem)
+                        .iter()
+                        .map(|e| *e.get_underlying_object())
+                        .collect();
+                    upper_covers_list.push(covers);
+                }
+                let name = inner.name().to_string();
+                match uacalc::lat::ordered_set::OrderedSet::new(Some(name), universe, upper_covers_list) {
+                    Ok(new_poset) => Ok(PyOrderedSet {
+                        inner: std::sync::Arc::new(std::sync::Mutex::new(new_poset)),
+                    }),
+                    Err(e) => Err(PyValueError::new_err(format!("Failed to clone poset: {}", e))),
+                }
+            }
+            _ => Err(PyValueError::new_err("get_poset() is only available for BasicLattice<i32> created from operations")),
+        }
+    }
 }
 
 /// Python wrapper for OrderedSet<i32>

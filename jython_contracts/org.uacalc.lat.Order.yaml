@@ -1,0 +1,18 @@
+target: org.uacalc.lat.Order
+level: file
+status: ignored
+java_source: org/uacalc/lat/Order.java
+notes: |
+  Java interface (leq). Implemented on BasicLattice and the concrete
+  DivisibilityOrder / PrefixOrder / NaturalOrder types. Generic Order.leq
+  is not routed through uacalc_lib.
+ignore_reason: Interface only; leq is tested on BasicLattice.
+surface:
+  package_export: false
+  aliases: {}
+  static_methods: []
+  str_parity: false
+testing:
+  notes: ""
+  task_refs: []
+  scripts: []

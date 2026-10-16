@@ -1,0 +1,73 @@
+target: org.uacalc.lat.BasicLattice
+level: file
+status: implemented
+java_source: org/uacalc/lat/BasicLattice.java
+notes: |
+  CamelCase aliases onto uacalc_lib BasicLattice. Java elements are latdraw
+  POElems; Python uses int labels. getUniverseOrder is always null (Java).
+  convertToDefaultValueOps raises UnsupportedOperationException. Instance
+  dual NPEs via Lattices.dual. GUI (getDiagram, getVertices, main, run) and
+  latdraw makeOrderedSet are not bound. findJoinIrred / irredundant* are
+  golden-tested and xfailed where the library has no binding yet.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    getName: name
+    getUniverseList: universe
+    joinIrreducibles: join_irreducibles
+    meetIrreducibles: meet_irreducibles
+    getElement: get_element
+    elementIndex: element_index
+    algebraType: algebra_type
+    getPoset: get_poset
+    upperCovers: upper_covers
+    lowerCovers: lower_covers
+    joinIrredsBelow: join_irreds_below
+    meetIrredsAbove: meet_irreds_above
+    one: one
+    zero: zero
+    atoms: atoms
+    coatoms: coatoms
+    filter: filter
+    ideal: ideal
+    leq: leq
+    join: join
+    meet: meet
+    cardinality: cardinality
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    basic_lattice_api.py plus golden cases in tests/parity/lat cover
+    cardinality, order, join/meet, irreducibles, covers, filter/ideal,
+    algebraType, getUniverseOrder, and convertToDefaultValueOps.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/basic_lattice_api.py
+      covers:
+        - getName
+        - getUniverseList
+        - joinIrreducibles
+        - meetIrreducibles
+        - getElement
+        - elementIndex
+        - algebraType
+        - getPoset
+        - upperCovers
+        - lowerCovers
+        - joinIrredsBelow
+        - meetIrredsAbove
+        - one
+        - zero
+        - atoms
+        - coatoms
+        - filter
+        - ideal
+        - leq
+        - join
+        - meet
+        - cardinality
+      ignore_lines:
+        - "labels has size"
+        - "ucs has size"

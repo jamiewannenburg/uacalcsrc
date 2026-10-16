@@ -1,5 +1,45 @@
 import sys
 
+# Literal map for jython_contracts validate() (also applied below).
+_CLASS_ALIASES = {
+    "BasicLattice": {
+        "getName": "name",
+        "getUniverseList": "universe",
+        "joinIrreducibles": "join_irreducibles",
+        "meetIrreducibles": "meet_irreducibles",
+        "getElement": "get_element",
+        "elementIndex": "element_index",
+        "algebraType": "algebra_type",
+        "getPoset": "get_poset",
+        "upperCovers": "upper_covers",
+        "lowerCovers": "lower_covers",
+        "joinIrredsBelow": "join_irreds_below",
+        "meetIrredsAbove": "meet_irreds_above",
+        "one": "one",
+        "zero": "zero",
+        "atoms": "atoms",
+        "coatoms": "coatoms",
+        "filter": "filter",
+        "ideal": "ideal",
+        "leq": "leq",
+        "join": "join",
+        "meet": "meet",
+        "cardinality": "cardinality",
+    },
+    "SmallLattice": {
+        "upperCoversIndices": "upper_covers_indices",
+        "getName": "name",
+        "getUniverseList": "universe",
+    },
+    "OrderedSet": {
+        "getUpperCovers": "get_upper_covers",
+        "getLowerCovers": "get_lower_covers",
+    },
+    "Order": {
+        "leq": "leq",
+    },
+}
+
 is_jython = sys.platform.startswith("java")
 
 if not is_jython:
@@ -23,6 +63,10 @@ if not is_jython:
     _maximals_natural_string = globals()["maximals_natural_string"]
     _BasicLattice = globals()["BasicLattice"]
     _SmallLattice = globals().get("SmallLattice")
+    _OrderedSet = globals().get("OrderedSet")
+    from org.uacalc._exceptions import (
+        UnsupportedOperationException as _UnsupportedOperationException,
+    )
 
     def _join_defines_lattice(join):
         """True when *join* is a join-semilattice (library property checks).
@@ -118,30 +162,74 @@ if not is_jython:
                 "and NaturalOrder through uacalc_lib; generic Order.leq is not bound"
             )
 
-    for _camel, _snake in (
-        ("joinIrreducibles", "join_irreducibles"),
-        ("getName", "name"),
-        ("getUniverseList", "universe"),
-    ):
-        if not hasattr(_BasicLattice, _camel) and hasattr(_BasicLattice, _snake):
+    def _apply_aliases(cls, aliases):
+        if cls is None:
+            return
+        for camel, snake in aliases.items():
+            if hasattr(cls, camel):
+                continue
+            impl = getattr(cls, snake, None)
+            if impl is None:
+                continue
             try:
-                setattr(_BasicLattice, _camel, getattr(_BasicLattice, _snake))
+                setattr(cls, camel, impl)
             except (TypeError, AttributeError):
                 pass
 
-    if _SmallLattice is not None:
-        for _camel, _snake in (
-            ("upperCoversIndices", "upper_covers_indices"),
-            ("getName", "name"),
-            ("getUniverseList", "universe"),
-        ):
-            if not hasattr(_SmallLattice, _camel) and hasattr(_SmallLattice, _snake):
-                try:
-                    setattr(_SmallLattice, _camel, getattr(_SmallLattice, _snake))
-                except (TypeError, AttributeError):
-                    pass
+    _apply_aliases(_BasicLattice, _CLASS_ALIASES["BasicLattice"])
+    _apply_aliases(_SmallLattice, _CLASS_ALIASES["SmallLattice"])
+    _apply_aliases(_OrderedSet, _CLASS_ALIASES["OrderedSet"])
+
+    if _BasicLattice is not None:
+        _orig_join = getattr(_BasicLattice, "join", None)
+        _orig_meet = getattr(_BasicLattice, "meet", None)
+
+        def join(self, a, b=None, _join=_orig_join):
+            # Java join(a,b) and join(List). Folding the list is dispatch,
+            # not a reimplementation of the lattice operation.
+            if b is None:
+                items = list(a)
+                if not items:
+                    return self.zero()
+                acc = items[0]
+                for x in items[1:]:
+                    acc = _join(self, acc, x)
+                return acc
+            return _join(self, a, b)
+
+        def meet(self, a, b=None, _meet=_orig_meet):
+            if b is None:
+                items = list(a)
+                if not items:
+                    return self.one()
+                acc = items[0]
+                for x in items[1:]:
+                    acc = _meet(self, acc, x)
+                return acc
+            return _meet(self, a, b)
+
+        def getUniverseOrder(self):
+            # Java BasicLattice.getUniverseOrder always returns null.
+            return None
+
+        def convertToDefaultValueOps(self):
+            raise _UnsupportedOperationException("Only for basic algebras")
+
+        def dual(self):
+            # Instance dual delegates to Lattices.dual, which NPEs (known Java bug).
+            return Lattices.dual(self)
+
+        try:
+            _BasicLattice.join = join
+            _BasicLattice.meet = meet
+            _BasicLattice.getUniverseOrder = getUniverseOrder
+            _BasicLattice.convertToDefaultValueOps = convertToDefaultValueOps
+            _BasicLattice.dual = dual
+        except (TypeError, AttributeError):
+            pass
 
     globals()["Lattices"] = Lattices
     globals()["OrderedSets"] = OrderedSets
+    globals()["_CLASS_ALIASES"] = _CLASS_ALIASES
 else:
     from org.uacalc.lat import *  # noqa: F403

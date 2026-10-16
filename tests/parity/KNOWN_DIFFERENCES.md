@@ -178,8 +178,41 @@ Malcev is intentionally left alone.
 - **Python**: only `DivisibilityOrder`, `PrefixOrder`, and `NaturalOrder` route through
   `uacalc_lib`. Any other order raises `NotImplementedError` (no Python reimplementation).
 - **Status**: Pending binding
-- **Tests**: divisibility case exercises `maximals_divisibility`; generic `Order.leq`
-  is listed as pending in `parity-coverage`, not as a silent skip.
+- **Tests**: divisibility, prefix, and natural cases exercise the routed orders;
+  generic `Order.leq` is listed as pending in `parity-coverage`, not as a silent skip.
+
+### BasicLattice.findJoinIrred / findMeetIrred / irredundant* / makeIrredundant*
+
+- **Java**: `findJoinIrred(1, 0)` on the 2-chain is `1`; `findMeetIrred(0, 1)` is
+  `0`; `irredundantJoinDecomposition(1)` / `makeIrredundantJoin(jis)` are `[1]`;
+  `irredundantMeetDecomposition(0)` / `makeIrredundantMeet(mis)` are `[0]`.
+- **Python**: these methods are not bound on `PyBasicLattice` (`AttributeError`).
+- **Status**: Strict xfail / roadmap
+- **Tests**: `basic_lattice_find_join_irred`, `basic_lattice_find_meet_irred`,
+  `basic_lattice_irredundant_join_decomp`, `basic_lattice_irredundant_meet_decomp`,
+  `basic_lattice_make_irredundant_join`, `basic_lattice_make_irredundant_meet`
+- **Owner vs shim**: Owner/library — algorithms live on Java `BasicLattice` and
+  are not wrapped in `uacalc_lib/src/lat.rs`.
+
+### BasicLattice.con / sub
+
+- **Java**: `con()` of the 2-chain has cardinality **2**; `sub()` has cardinality
+  **4**.
+- **Python**: `PyBasicLattice` has no `con` / `sub` (`AttributeError`).
+- **Status**: Strict xfail / roadmap
+- **Tests**: `basic_lattice_con`, `basic_lattice_sub`
+- **Owner vs shim**: Owner/library — CongruenceLattice / SubalgebraLattice from
+  a BasicLattice.
+
+### BasicLattice from CongruenceLattice
+
+- **Java**: `BasicLattice("ConC2", C2.con(), false)` has cardinality **2**.
+- **Python**: the same constructor yields cardinality **0** (the Partition
+  variant does not populate the universe the way Java's latdraw poset does).
+- **Status**: Strict xfail / roadmap
+- **Tests**: `basic_lattice_from_con_c2`
+- **Owner vs shim**: Owner/library — `PyBasicLattice::new` /
+  `BasicLattice::new_from_lattice`.
 
 ### Universe list order
 
@@ -284,21 +317,23 @@ Malcev is intentionally left alone.
   - F(1)/lat2: live card **1**; after IO, lat2 card **2** (base lattice).
   - F(1)/ba2: live card **4**; after IO, ba2 card **2** (base boolean
     algebra).
-- **Python**: `writeAlgebraFile` now calls
-  `AlgebraWriter::write_free_algebra_xml_to_file` (coordinate tuples,
-  `<bigProductAlgebra>` super algebra). The reader consumes `<freeAlgebra>`
-  / `<productElem>` the same way Java does and also returns the generating
-  algebra. The four former `fa_roundtrip_*` xfails now pass.
-- **Status**: Write path fixed in the library. Reconstruction of a live
-  `FreeAlgebra` from `<freeAlgebra>` XML is a known Java bug / future
-  reader roadmap (do not “fix” Python to rebuild F(n) while Java still
-  returns the generating algebra).
+- **Python**: `writeAlgebraFile` still emits Java `<freeAlgebra>` XML
+  (`AlgebraWriter::write_free_algebra_xml_to_file`). The reader **does
+  not** copy the Java bug: `</freeAlgebra>` rebuilds F(n) from the nested
+  generating algebra plus generator count and materializes a
+  `BasicAlgebra` with F(n)'s universe and tables. Python write-then-read
+  of F(n) therefore returns F(n)'s cardinality and tables (see
+  `test_python_write_read_free_algebra_restores_fn`).
+- **Status**: Known Java bug — intentional difference; Python is the
+  desired behavior. Java golden expected values are left unchanged.
 - **Tests**: `fa_roundtrip_write_read`, `fa_roundtrip_c3_f1`,
-  `fa_roundtrip_lat2_f1`, `fa_roundtrip_ba2_f1` plus `wr_free_*` /
-  `xml_free_c2_f1_tags` / `read_special_free_c2_f1` pass. Live coverage
-  `fa_live_*` still passes.
+  `fa_roundtrip_lat2_f1`, `fa_roundtrip_ba2_f1` strict xfail (Java golden
+  still records the generating algebra). IO cases `wr_free_*` and
+  `read_special_free_c2_f1` are the same bug and are also strict xfail.
+  `xml_free_c2_f1_tags` and live `fa_live_*` still pass.
 - **Owner vs shim**: Known Java bug on read. Owner/library write is
-  implemented (`src/io/mod.rs` `write_free_algebra_xml_to_file`).
+  implemented (`src/io/mod.rs` `write_free_algebra_xml_to_file`). Reader
+  reconstruction is in `src/io/algebra_reader.rs`.
 
 ### AlgebraWriter type-specific stubs (product / power / quotient / subalgebra)
 
