@@ -7,15 +7,18 @@ notes: |
 ignore_reason: null
 surface:
   package_export: true
-  aliases: {}
+  aliases:
+    BadAlgebraFileException: BadAlgebraFileException
   static_methods: []
   str_parity: false
 testing:
   notes: |
-    algebraio_cases.py read_invalid expects NumberFormatException from the
-    malformed fixture; BadAlgebraFileException is raised for other bad XML.
+    Semantic catchability only. algebraio_cases.py read_invalid expects
+    NumberFormatException from the malformed fixture; BadAlgebraFileException
+    is raised for other bad XML. io_surface.py re-exports the type.
   task_refs: []
   scripts:
     - path: jython_comparison/scripts/io_surface.py
-      covers: []
+      covers:
+        - BadAlgebraFileException
       ignore_lines: []

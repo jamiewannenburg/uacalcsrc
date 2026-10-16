@@ -75,9 +75,12 @@ PENDING_BINDINGS = {
     ],
     "example": [
         (
-            "scanner false-positive `g`",
-            "python/org/uacalc/example/__init__.py uses a local `g = globals()`; "
-            "not a Java method. Demo classes are unbound; uacalc_lib.example is empty",
+            "GUI / interactive / Malcev demo mains",
+            "16 packaged demo classes are ported under python/org/uacalc/example. "
+            "GUI/interactive mains, ParallelClose (unpackaged ForkJoin timing), "
+            "incomplete ParallelClose8, and FilteringAlgebras.main (Malcev) are "
+            "strict xfail or skip. uacalc_lib.example stays empty; the org wrapper "
+            "composes existing bindings.",
         ),
     ],
     "parallel": [

@@ -1,9 +1,11 @@
-use pyo3::prelude::*;
+use crate::alg::algebra_extract::extract_boxed_small_algebra;
+use crate::alg::convert::ops_to_basic_algebra;
+use crate::alg::PyBasicAlgebra;
 use pyo3::exceptions::PyValueError;
+use pyo3::prelude::*;
 use pyo3::types::PyAny;
 use std::sync::Arc;
-use uacalc::alg::{BigProductAlgebra, SmallAlgebra, Algebra};
-use crate::alg::algebra_extract::extract_boxed_small_algebra;
+use uacalc::alg::{Algebra, BigProductAlgebra, SmallAlgebra};
 
 /// Python wrapper for BigProductAlgebra
 #[pyclass(name = "BigProductAlgebra")]
@@ -32,11 +34,13 @@ impl PyBigProductAlgebra {
             rust_algs.push(extract_boxed_small_algebra(&item?)?);
         }
         match BigProductAlgebra::<i32>::new_with_name_safe(name, rust_algs) {
-            Ok(algebra) => Ok(PyBigProductAlgebra { inner: Arc::new(algebra) }),
+            Ok(algebra) => Ok(PyBigProductAlgebra {
+                inner: Arc::new(algebra),
+            }),
             Err(e) => Err(PyValueError::new_err(e)),
         }
     }
-    
+
     /// Create a new BigProductAlgebra as a power.
     ///
     /// # Arguments
@@ -54,11 +58,13 @@ impl PyBigProductAlgebra {
     fn new_power_named(name: String, algebra: &Bound<'_, PyAny>, power: usize) -> PyResult<Self> {
         let rust_alg = extract_boxed_small_algebra(algebra)?;
         match BigProductAlgebra::<i32>::new_power_with_name_safe(name, rust_alg, power) {
-            Ok(algebra) => Ok(PyBigProductAlgebra { inner: Arc::new(algebra) }),
+            Ok(algebra) => Ok(PyBigProductAlgebra {
+                inner: Arc::new(algebra),
+            }),
             Err(e) => Err(PyValueError::new_err(e)),
         }
     }
-    
+
     /// Get the number of factors.
     ///
     /// # Returns
@@ -66,7 +72,7 @@ impl PyBigProductAlgebra {
     fn get_number_of_factors(&self) -> usize {
         self.inner.get_number_of_factors()
     }
-    
+
     /// Check if this is a power algebra.
     ///
     /// # Returns
@@ -74,7 +80,7 @@ impl PyBigProductAlgebra {
     fn is_power(&self) -> bool {
         self.inner.is_power()
     }
-    
+
     /// Get the name of the algebra.
     ///
     /// # Returns
@@ -82,7 +88,7 @@ impl PyBigProductAlgebra {
     fn name(&self) -> String {
         self.inner.name().to_string()
     }
-    
+
     /// Get the cardinality.
     ///
     /// # Returns
@@ -106,12 +112,39 @@ impl PyBigProductAlgebra {
         self.inner.get_number_of_factors()
     }
 
-    fn __str__(&self) -> String {
-        format!("BigProductAlgebra(name: {}, factors: {})",
-            self.inner.name(),
-            self.inner.get_number_of_factors())
+    /// Java ``getPowers()``. Empty when this is not stored as a power.
+    fn get_powers(&self) -> Vec<i32> {
+        self.inner
+            .get_powers()
+            .map(|p| p.to_vec())
+            .unwrap_or_default()
     }
-    
+
+    /// Java ``rootFactors()`` materialized as table-backed BasicAlgebras.
+    fn root_factors(&self) -> PyResult<Vec<PyBasicAlgebra>> {
+        let factors = self
+            .inner
+            .root_factors()
+            .unwrap_or_else(|| self.inner.factors());
+        let mut out = Vec::new();
+        for factor in factors {
+            out.push(ops_to_basic_algebra(
+                factor.name().to_string(),
+                factor.cardinality(),
+                factor.operations(),
+            )?);
+        }
+        Ok(out)
+    }
+
+    fn __str__(&self) -> String {
+        format!(
+            "BigProductAlgebra(name: {}, factors: {})",
+            self.inner.name(),
+            self.inner.get_number_of_factors()
+        )
+    }
+
     fn __repr__(&self) -> String {
         self.__str__()
     }

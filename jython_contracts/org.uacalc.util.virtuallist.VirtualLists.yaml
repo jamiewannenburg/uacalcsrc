@@ -37,4 +37,8 @@ testing:
         - intTuples
         - intTuplesWithMin
         - arrayIndexerWithMin
+        - testPow
+        - foo
+        - bar
+        - baz
       ignore_lines: []

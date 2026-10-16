@@ -82,12 +82,58 @@ testing:
         - iterator
         - Sg
         - sg
+        - getName
+        - getAlgebra
+        - getDescription
+        - setDescription
+        - joinIrreducibles
+        - meetIrreducibles
+        - oneGeneratedSubalgebras
+        - findMinimalSizedGeneratingSet
+        - getBasicLattice
+        - universeFound
+        - makeUniverse
+        - makeJoinIrreducibles
+        - joinIrreducible
+        - inputSize
+        - similarityType
+        - isSimilarTo
+        - isSmallerThan
+        - isDrawable
+        - constantOperations
+        - makeSg
+        - joinClosure
+        - noDuplicates
+        - extendToHomomorphism
+        - getMakeUniverseK
+        - getSizeComputed
+        - stopMakeUniverse
+        - setMonitor
+        - getMonitor
+        - monitoring
+        - updateSimilarityType
+        - makeOperationTables
+        - getOperation
+        - getOperationsMap
+        - operations
+        - atoms
+        - coatoms
+        - meet
+        - join
+        - leq
+        - filter
         - cardinality
         - universe
         - zero
         - one
-        - join
-        - leq
+        - con
+        - sub
+        - setName
+        - isTotal
+        - isUnary
+        - isIdempotent
+        - SubalgebraLattice.noDuplicates
+        - SubalgebraLattice.extendToHomomorphism
       ignore_lines:
         - "oneGenerated size"
         - "pass 0 of"

@@ -35,9 +35,9 @@ testing:
       covers:
         - nondecreasingSequenceIncrementor
         - increasingSequenceIncrementor
+        - increasingSequenceIncrementorOld
         - sequenceIncrementor
         - leftSequenceIncrementor
         - initialPartition
         - partitionArrayIncrementor
-        - increment
       ignore_lines: []

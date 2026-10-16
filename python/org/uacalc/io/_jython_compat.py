@@ -41,13 +41,11 @@ def _algebra_type_name(alg: Any) -> str:
 
 def _write_algebra_xml(algebra: Any, path: str) -> None:
     """Dispatch type-specific XML writers. FreeAlgebra keeps coordinate tuples."""
+    from org.uacalc.io._typed_xml import write_typed_algebra_xml
+
     alg = getattr(algebra, "_inner", algebra)
-    if _algebra_type_name(alg) in _FREE_TYPE_NAMES:
-        return _LibAlgebraWriter.write_free_algebra_xml_to_file(alg, path)
-    # Product/power/quotient/subalgebra/bigProduct writers in src/io are still
-    # hardcoded stubs (no factor/root/congruence access on SmallAlgebra<i32>).
-    # Materialize tables so write/read stays semantically useful; flag those
-    # type-specific XML gaps in KNOWN_DIFFERENCES and type_io_cases.
+    if write_typed_algebra_xml(alg, path):
+        return None
     if _algebra_type_name(alg) not in _BASIC_TYPE_NAMES:
         conv = getattr(alg, "to_basic_algebra", None)
         if callable(conv):
@@ -190,7 +188,18 @@ class AlgebraReader:
             )
         if result is None:
             raise ValueError("no algebra read from source")
-        return result
+        from org.uacalc.io._typed_xml import rebuild_typed_algebra
+
+        xml_text = None
+        if self._path is not None and os.path.isfile(self._path):
+            with open(self._path) as handle:
+                xml_text = handle.read()
+        elif self._stream_data:
+            try:
+                xml_text = bytes(self._stream_data).decode("utf-8")
+            except Exception:
+                xml_text = None
+        return rebuild_typed_algebra(result, xml_text)
 
     def readAlgebraFromStream(self) -> Any:
         return self.read_algebra_from_stream()
@@ -204,7 +213,15 @@ class AlgebraReader:
             translate_io_error(exc, stream_text=self._stream_text())
         if result is None:
             raise ValueError("no algebra read from stream")
-        return result
+        from org.uacalc.io._typed_xml import rebuild_typed_algebra
+
+        xml_text = None
+        if self._stream_data:
+            try:
+                xml_text = bytes(self._stream_data).decode("utf-8")
+            except Exception:
+                xml_text = None
+        return rebuild_typed_algebra(result, xml_text)
 
     def _stream_text(self) -> Optional[str]:
         if not self._stream_data:

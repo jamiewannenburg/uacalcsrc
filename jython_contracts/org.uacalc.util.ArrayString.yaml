@@ -20,4 +20,5 @@ testing:
     - path: jython_comparison/scripts/util_ops.py
       covers:
         - toString
+        - __str__
       ignore_lines: []

@@ -46,15 +46,28 @@ testing:
   scripts:
     - path: jython_comparison/scripts/int_array_smoke.py
       covers:
-        - get
-        - set
         - clone
         - universeSize
+        - getArray
+        - toArray
+        - setIntArray
+        - isIdempotent
+        - isConstant
+        - satisfiesBlocksConstraint
+        - satisfiesValuesConstraint
+        - satisfiesSetConstraint
+        - satisfiesCongruenceConstraint
+        - intArrayToString
+        - stringToArray
+        - equalIntArrays
+        - lexicographicComparitor
+        - toString
+        - hashCode
+        - equals
+        - __str__
       ignore_lines: []
     - path: jython_comparison/scripts/util_ops.py
       covers:
-        - get
-        - set
         - clone
         - universeSize
         - getArray

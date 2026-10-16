@@ -1,0 +1,22 @@
+target: org.uacalc.example.FinitelyPresentedAlg
+level: file
+status: implemented
+java_source: org/uacalc/example/FinitelyPresentedAlg.java
+notes: |
+  makeOrderRelation. main builds F(4) over M3.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    makeOrderRelation: makeOrderRelation
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    Goldens in tests/parity/example. GUI/interactive mains are strict xfail.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/example_ops.py
+      covers:
+        - makeOrderRelation
+      ignore_lines: []

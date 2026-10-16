@@ -356,7 +356,8 @@ def _install(alg_module_globals: dict) -> None:
                     "Index 0 out of bounds for length 0"
                 )
             if len(args) == 1:
-                return _lib_call(_LibProductAlgebra, _product_name(algs), algs)
+                # Java ProductAlgebra(List) passes an empty name.
+                return _lib_call(_LibProductAlgebra, "", algs)
             return _lib_call(_LibProductAlgebra, str(args[0]), algs)
 
         @staticmethod
@@ -3169,6 +3170,8 @@ def _install(alg_module_globals: dict) -> None:
         "BigProductAlgebra": {
             "numberOfFactors": "number_of_factors",
             "getNumberOfFactors": "number_of_factors",
+            "getPowers": "get_powers",
+            "rootFactors": "root_factors",
         },
         "ReductAlgebra": {
             "getName": "name",

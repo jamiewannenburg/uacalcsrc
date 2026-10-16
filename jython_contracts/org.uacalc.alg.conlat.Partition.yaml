@@ -38,11 +38,17 @@ testing:
         - universeSize
         - numberOfBlocks
         - isRelated
-        - representative
-        - join
-        - meet
-        - leq
         - toArray
-        - equals
+        - joinBlocks
+        - isRepresentative
+        - blockIndex
+        - getBlocks
+        - isZero
+        - isUniform
+        - isInitialLexRepresentative
+        - getPairs
+        - compareTo
+        - hashCode
         - toString
+        - __str__
       ignore_lines: []

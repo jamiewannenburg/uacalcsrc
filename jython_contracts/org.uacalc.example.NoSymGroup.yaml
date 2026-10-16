@@ -1,0 +1,26 @@
+target: org.uacalc.example.NoSymGroup
+level: file
+status: implemented
+java_source: org/uacalc/example/NoSymGroup.java
+notes: |
+  Addition/TernaryOp/MakeIdTernaryOp. main writes a ua file.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    Addition: Addition
+    TernaryOp: TernaryOp
+    MakeIdTernaryOp: MakeIdTernaryOp
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    Goldens in tests/parity/example. GUI/interactive mains are strict xfail.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/example_ops.py
+      covers:
+        - Addition
+        - TernaryOp
+        - MakeIdTernaryOp
+      ignore_lines: []

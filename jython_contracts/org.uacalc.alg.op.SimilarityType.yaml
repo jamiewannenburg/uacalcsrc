@@ -35,4 +35,6 @@ testing:
         - getAritiesMap
         - getMaxArity
         - aritiesString
+        - hashCode
+        - __str__
       ignore_lines: []

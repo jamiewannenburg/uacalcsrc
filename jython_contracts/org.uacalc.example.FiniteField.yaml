@@ -1,0 +1,38 @@
+target: org.uacalc.example.FiniteField
+level: file
+status: implemented
+java_source: org/uacalc/example/FiniteField.java
+notes: |
+  Conway polynomial field over CPimport-3500.txt. main prints tables.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    conwayPolynomial: conwayPolynomial
+    cardinality: cardinality
+    getPrime: getPrime
+    getPower: getPower
+    plusInt: plusInt
+    timesInt: timesInt
+    inverseInt: inverseInt
+    zeroIndex: zeroIndex
+    oneIndex: oneIndex
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    Goldens in tests/parity/example. GUI/interactive mains are strict xfail.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/example_ops.py
+      covers:
+        - conwayPolynomial
+        - cardinality
+        - getPrime
+        - getPower
+        - plusInt
+        - timesInt
+        - inverseInt
+        - zeroIndex
+        - oneIndex
+      ignore_lines: []

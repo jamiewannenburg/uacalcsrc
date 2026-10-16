@@ -1,0 +1,22 @@
+target: org.uacalc.example.HasConstantTuple
+level: file
+status: implemented
+java_source: org/uacalc/example/HasConstantTuple.java
+notes: |
+  hasConstantTuple uses Closer.setBlocks; stdout prints; strict xfail.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    hasConstantTuple: hasConstantTuple
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    Goldens in tests/parity/example. GUI/interactive mains are strict xfail.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/example_ops.py
+      covers:
+        - hasConstantTuple
+      ignore_lines: []

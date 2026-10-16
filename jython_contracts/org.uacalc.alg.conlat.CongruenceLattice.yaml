@@ -49,12 +49,32 @@ testing:
   scripts:
     - path: jython_comparison/scripts/conlat_partition.py
       covers:
-        - cardinality
         - getName
-        - zero
-        - one
-        - join
-        - meet
-        - leq
-        - Cg
+        - getAlgebra
+        - getDescription
+        - joinIrreducibles
+        - meetIrreducibles
+        - getUniverseList
+        - isDistributive
+        - generatingPair
+        - findCoatomAbove
+        - findJoinIrred
+        - findMeetIrred
+        - findPrincipalChain
+        - findUpperCover
+        - irredundantMeetDecomposition
+        - permutabilityLevel
+        - getBasicLattice
+        - universeFound
+        - makeUniverse
+        - makePrincipals
+        - joinIrreducible
+        - meetIrreducible
+        - inputSize
+        - similarityType
+        - isSimilarTo
+        - upperCoversMap
+        - getPermutabilityLevelWitnesses
+        - joinIrreduciblesFound
+        - CongruenceLattice.minimalElements
       ignore_lines: []

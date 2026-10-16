@@ -1,0 +1,28 @@
+target: org.uacalc.example.Kearnes
+level: file
+status: implemented
+java_source: org/uacalc/example/Kearnes.java
+notes: |
+  Chain with unary retractions. JOIN/MEET symbols via OperationSymbol.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    makeKearnesAlg: makeKearnesAlg
+    makeKearnesOps: makeKearnesOps
+    makeJoinOp: makeJoinOp
+    makeMeetOp: makeMeetOp
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    Goldens in tests/parity/example. GUI/interactive mains are strict xfail.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/example_ops.py
+      covers:
+        - makeKearnesAlg
+        - makeKearnesOps
+        - makeJoinOp
+        - makeMeetOp
+      ignore_lines: []

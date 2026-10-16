@@ -31,7 +31,7 @@ slices:
     depends_on: []
     owner: agent-a
     status: parity_golden
-    last_updated: "2026-10-16"
+    last_updated: "2026-10-17"
     workstreams: []
     parity_tests_dir: tests/parity/io
     notes: >-
@@ -39,9 +39,13 @@ slices:
       ExtFileFilter / Mace4Reader / BadAlgebraFileException; JSONChannel ignored.
       write_free_algebra emits Java <freeAlgebra> coordinate tuples; reader
       rebuilds F(n) (known Java bug: Java returns the generating algebra).
-      Product/power/quotient/subalgebra writers remain stubs
-      (to_basic_algebra route) and nested typed reads are flagged. Branch
-      cursor/lat-coverage.
+      Product/power/quotient/subalgebra/subproduct typed XML is written and
+      rebuilt in the org.io wrapper (Rust SmallAlgebra writer stays a stub).
+      Nested Java fixtures reread as ProductAlgebra/PowerAlgebra/etc. Remaining
+      io xfails: FreeAlgebra reader Java bug; AlgebraIO/AlgebraReader list
+      last-only Java bug; PowerAlgebra Horner/tuple encoding vs cyclic-on-4;
+      Subalgebra Jython serialize Class@hex vs typed rebuild. Branch
+      example-io-tooling-leftovers.
 
   - id: core-alg-base
     title: Core algebras (BasicAlgebra, SmallAlgebra, products, …) excluding conlat/op subtrees
@@ -329,12 +333,16 @@ slices:
       - core-alg-base
     owner: agent-d
     status: parity_golden
-    last_updated: "2026-10-16"
+    last_updated: "2026-10-17"
     workstreams: []
     parity_tests_dir: tests/parity/example
     notes: >-
-      Surface-only: golden_example_surface.py + per-runtime fixtures (Jython imports
-      representative demo classes so ``dir(org.uacalc.example)`` is populated; CPython
-      matches empty uacalc_lib.example). No file-level contracts and no behavioral
-      goldens for the 16 demo classes. test_example_shim_smoke.py +
-      test_example_golden_surface.py. Demo bindings remain out of scope.
+      File-level contracts plus behavioral goldens for the 16 packaged demo
+      classes under python/org/uacalc/example. CPython ports constructable APIs
+      (Average, Type1, KKMVWExample, NoSymGroup, TupleStream, FiniteField,
+      Kearnes, FilteringAlgebras.filter, FinitelyPresentedAlg.makeOrderRelation,
+      Jipsen.main, Michalewski.testJoinMeetMatPower). GUI/interactive/Malcev
+      mains and incomplete ParallelClose8 are strict xfails. ParallelClose is
+      ignored (ForkJoin timing demo). HasConstantTuple, Type1.reductAlg,
+      HasKaryNU, ConLyndonF3, and MembershipTester.main (Java NPE) stay as
+      roadmap xfails. Branch example-io-tooling-leftovers.

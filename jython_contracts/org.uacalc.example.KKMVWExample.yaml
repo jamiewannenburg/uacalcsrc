@@ -1,0 +1,26 @@
+target: org.uacalc.example.KKMVWExample
+level: file
+status: implemented
+java_source: org/uacalc/example/KKMVWExample.java
+notes: |
+  makeTin/makeAin/makeAn. main writes /tmp/A2.ua.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    makeAn: makeAn
+    makeAin: makeAin
+    makeTin: makeTin
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    Goldens in tests/parity/example. GUI/interactive mains are strict xfail.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/example_ops.py
+      covers:
+        - makeAn
+        - makeAin
+        - makeTin
+      ignore_lines: []

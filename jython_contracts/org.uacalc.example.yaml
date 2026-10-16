@@ -1,0 +1,61 @@
+target: org.uacalc.example
+level: package
+status: implemented
+java_source: null
+notes: |
+  Demo classes ported under python/org/uacalc/example. GUI / interactive /
+  Malcev-only entry points are strict xfail or skip. ParallelClose is a
+  unpackaged ForkJoin timing demo. ParallelClose8 is an incomplete Java 8
+  stream closer.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases: {}
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    Behavioral goldens live in tests/parity/example. example_ops.py covers the
+    constructable demo APIs. GUI/interactive mains are skipped with reasons.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/example_ops.py
+      covers:
+        - ave
+        - averageAlg
+        - fullPermutationAlgebra
+        - cyclicPermutationAlgebra
+        - reductAlg
+        - subtraces
+        - makeAn
+        - makeAin
+        - makeTin
+        - hasConstantTuple
+        - Addition
+        - TernaryOp
+        - MakeIdTernaryOp
+        - pow
+        - maxOfArray
+        - hornerInvLong
+        - intTupleStream
+        - tupleStream
+        - conwayPolynomial
+        - cardinality
+        - getPrime
+        - getPower
+        - plusInt
+        - timesInt
+        - inverseInt
+        - zeroIndex
+        - oneIndex
+        - makeKearnesAlg
+        - makeKearnesOps
+        - makeJoinOp
+        - makeMeetOp
+        - filter
+        - makeOrderRelation
+        - hasNUHorowitz
+        - main
+        - findJoinMeetMatPower
+        - testJoinMeetMatPower
+      ignore_lines: []
