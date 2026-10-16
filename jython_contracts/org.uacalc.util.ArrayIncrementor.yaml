@@ -1,0 +1,23 @@
+target: org.uacalc.util.ArrayIncrementor
+level: file
+status: implemented
+java_source: org/uacalc/util/ArrayIncrementor.java
+notes: |
+  Interface with increment(). SequenceGenerator and PermutationGenerator
+  factories return in-place implementors.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    increment: increment
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    increment() is exercised via SequenceGenerator / PermutationGenerator goldens.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/util_ops.py
+      covers:
+        - increment
+      ignore_lines: []

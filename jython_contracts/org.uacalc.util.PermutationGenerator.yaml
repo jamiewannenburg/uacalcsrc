@@ -1,0 +1,34 @@
+target: org.uacalc.util.PermutationGenerator
+level: file
+status: implemented
+java_source: org/uacalc/util/PermutationGenerator.java
+notes: |
+  Johnson-Trotter nextIndex, iterator, in-place arrayIncrementor and
+  listIncrementor. n < 1 raises IllegalArgumentException("Min 1").
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    reset: reset
+    nextIndex: nextIndex
+    iterator: iterator
+    arrayIncrementor: arrayIncrementor
+    listIncrementor: listIncrementor
+  static_methods:
+    - iterator
+    - arrayIncrementor
+    - listIncrementor
+  str_parity: false
+testing:
+  notes: |
+    Goldens cover nextIndex sequences, full iterator listings, and incrementors.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/util_ops.py
+      covers:
+        - reset
+        - nextIndex
+        - iterator
+        - arrayIncrementor
+        - listIncrementor
+      ignore_lines: []

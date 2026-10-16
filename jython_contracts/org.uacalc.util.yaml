@@ -1,0 +1,21 @@
+target: org.uacalc.util
+level: package
+status: implemented
+java_source: null
+notes: |
+  Thin package index. File-level contracts cover IntArray, Horner,
+  SequenceGenerator, PermutationGenerator, ArrayString, ArrayIncrementor,
+  and SimpleList. virtuallist is a subpackage.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases: {}
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    Behavioral golden tests live in tests/parity/util. util_ops.py covers
+    incrementor sequences, Horner round-trips, IntArray, SimpleList, and
+    virtuallist factories.
+  task_refs: []
+  scripts: []

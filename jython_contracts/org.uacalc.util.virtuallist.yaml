@@ -1,0 +1,18 @@
+target: org.uacalc.util.virtuallist
+level: package
+status: implemented
+java_source: null
+notes: |
+  LongList static factories, VirtualLists indexers, TupleWithMin.
+  Java 8 stream/parallelStream are not bound.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases: {}
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    Behavioral goldens in tests/parity/util cover get/size over full small lists.
+  task_refs: []
+  scripts: []

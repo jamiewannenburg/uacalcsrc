@@ -65,6 +65,24 @@ PENDING_BINDINGS = {
             "Java interface; CPython rejects Element()",
         ),
     ],
+    "util": [
+        (
+            "IntArray.getArray live alias / setIntArray replace",
+            "uacalc_lib IntArray is copy-on-write; Java returns/replaces the backing int[]",
+        ),
+        (
+            "LongList.stream / parallelStream",
+            "Java 8 Stream API is not bound",
+        ),
+        (
+            "SimpleList writeObject/readObject",
+            "custom sharing-graph serialization is not bound",
+        ),
+        (
+            "SequenceGenerator.main / Horner.main / PermutationGenerator.main / SimpleList.main",
+            "Java development helpers",
+        ),
+    ],
     "sublat": [
         (
             "GUI / drawing (getDiagram) and ProgressReport monitor overloads",
@@ -313,7 +331,12 @@ def build_parity_coverage(
         # Scan Java sources for public methods
         java_package_dir = _java_package_dir(package)
         if java_package_dir.exists():
-            for java_file in java_package_dir.glob("*.java"):
+            java_iter = (
+                java_package_dir.rglob("*.java")
+                if package == "util"
+                else java_package_dir.glob("*.java")
+            )
+            for java_file in java_iter:
                 methods = scan_java_public_methods(java_file)
                 coverage.java_methods.update(methods)
         
@@ -321,7 +344,12 @@ def build_parity_coverage(
         python_package_dir = _python_package_dir(package)
         if python_package_dir.exists():
             python_names: Set[str] = set()
-            for python_file in python_package_dir.glob("*.py"):
+            py_iter = (
+                python_package_dir.rglob("*.py")
+                if package == "util"
+                else python_package_dir.glob("*.py")
+            )
+            for python_file in py_iter:
                 python_names.update(scan_python_wrapper_methods(python_file))
             # Wrapped := Java public methods that exist on the Python shim
             # (camelCase Java name or snake_case equivalent).

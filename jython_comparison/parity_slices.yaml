@@ -268,7 +268,7 @@ slices:
     depends_on: []
     owner: agent-a
     status: parity_golden
-    last_updated: "2026-04-18"
+    last_updated: "2026-10-16"
     workstreams:
       - >-
         core-types (agent-f): org.uacalc.types shim + tests/parity/types. There is no
@@ -277,9 +277,12 @@ slices:
         uacalc_lib.types is a Rust stub module until IDE/type stubs land.
     parity_tests_dir: tests/parity/util
     notes: >-
-      python/org/uacalc/util delegates to uacalc_lib.util with Java aliases; org.uacalc.util.virtuallist
-      shim maps LongList/TupleWithMin/VirtualLists. Golden tests/parity/util/golden_util_surface.py +
-      fixtures. parity_inventory regenerated. agent-a. See workstreams for org.uacalc.types.
+      Behavioral parity for IntArray, Horner (all overloads), SequenceGenerator
+      incrementors (nondecreasing/increasing/left/right/min/max/jump/partition),
+      PermutationGenerator, ArrayString, SimpleList, and virtuallist
+      LongList/VirtualLists/TupleWithMin (branch util-coverage). Goldens from
+      Jython on full sequences and Horner round-trips. Surface golden retained.
+      GUI/Swing out of scope. See workstreams for org.uacalc.types.
 
   - id: examples-org
     title: org.uacalc.example scripts and demos

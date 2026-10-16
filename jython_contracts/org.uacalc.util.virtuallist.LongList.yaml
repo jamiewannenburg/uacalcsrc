@@ -1,0 +1,53 @@
+target: org.uacalc.util.virtuallist.LongList
+level: file
+status: implemented
+java_source: org/uacalc/util/virtuallist/LongList.java
+notes: |
+  Interface static factories intTuples / intTuplesWithMin / fixedSizedSubsets /
+  subsets / permutations plus factorial / binomial / log2 / pow2.
+  stream / parallelStream are Java 8 and not bound (owner xfail).
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    intTuples: intTuples
+    intTuplesWithMin: intTuplesWithMin
+    fixedSizedSubsets: fixedSizedSubsets
+    subsets: subsets
+    permutations: permutations
+    factorial: factorial
+    binomial: binomial
+    log2: log2
+    pow2: pow2
+    stream: stream
+    parallelStream: parallelStream
+  static_methods:
+    - intTuples
+    - intTuplesWithMin
+    - fixedSizedSubsets
+    - subsets
+    - permutations
+    - factorial
+    - binomial
+    - log2
+    - pow2
+  str_parity: false
+testing:
+  notes: |
+    Goldens dump get(k) for small full lists and util statics.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/util_ops.py
+      covers:
+        - intTuples
+        - intTuplesWithMin
+        - fixedSizedSubsets
+        - subsets
+        - permutations
+        - factorial
+        - binomial
+        - log2
+        - pow2
+        - get
+        - size
+      ignore_lines: []

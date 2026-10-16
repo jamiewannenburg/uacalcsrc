@@ -3,8 +3,10 @@ level: file
 status: implemented
 java_source: org/uacalc/util/IntArray.java
 notes: |
-  Implemented: IntArray.get / set / clone / universeSize / getArray match
-  Java call shapes. FreeAlgebra.getElement returns IntArray values.
+  IntArray(size) / IntArray(list) / empty ctor (null, size -1).
+  get / set / clone / universeSize / getArray / toArray match Java call
+  shapes. Static intArrayToString / stringToArray / equalIntArrays /
+  lexicographicComparitor. Empty arrays (size 0) match Java.
 ignore_reason: null
 surface:
   package_export: true
@@ -12,13 +14,31 @@ surface:
     clone: clone_array
     universeSize: universe_size
     getArray: to_array
-  static_methods: []
-  str_parity: false
+    toArray: to_array
+    setIntArray: setIntArray
+    isIdempotent: is_idempotent
+    isConstant: is_constant
+    satisfiesBlocksConstraint: satisfies_blocks_constraint
+    satisfiesValuesConstraint: satisfies_values_constraint
+    satisfiesSetConstraint: satisfies_set_constraint
+    satisfiesCongruenceConstraint: satisfiesCongruenceConstraint
+    intArrayToString: intArrayToString
+    stringToArray: stringToArray
+    equalIntArrays: equalIntArrays
+    lexicographicComparitor: lexicographicComparitor
+    toString: toString
+    hashCode: hashCode
+    equals: equals
+  static_methods:
+    - intArrayToString
+    - stringToArray
+    - equalIntArrays
+    - lexicographicComparitor
+  str_parity: true
 testing:
   notes: |
-    int_array_smoke.py constructs IntArray(size) and IntArray(list), then
-    exercises get / set / clone / universeSize. FreeAlgebra.getElement returns
-    IntArray values.
+    Goldens cover constructors (empty, size 0/1, list), get/set/clone,
+    toString, hashCode, equals, constraints, and static helpers.
   task_refs: []
   scripts:
     - path: jython_comparison/scripts/int_array_smoke.py
@@ -27,4 +47,21 @@ testing:
         - set
         - clone
         - universeSize
+      ignore_lines: []
+    - path: jython_comparison/scripts/util_ops.py
+      covers:
+        - get
+        - set
+        - clone
+        - universeSize
+        - getArray
+        - toArray
+        - toString
+        - hashCode
+        - equals
+        - isIdempotent
+        - isConstant
+        - intArrayToString
+        - stringToArray
+        - equalIntArrays
       ignore_lines: []

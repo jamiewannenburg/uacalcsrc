@@ -1,0 +1,30 @@
+target: org.uacalc.util.virtuallist.VirtualLists
+level: file
+status: implemented
+java_source: org/uacalc/util/virtuallist/VirtualLists.java
+notes: |
+  intTuples / intTuplesWithMin / arrayIndexerWithMin match the Java indexers.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    intTuples: intTuples
+    intTuplesWithMin: intTuplesWithMin
+    arrayIndexerWithMin: arrayIndexerWithMin
+    testPow: testPow
+  static_methods:
+    - intTuples
+    - intTuplesWithMin
+    - arrayIndexerWithMin
+  str_parity: false
+testing:
+  notes: |
+    Goldens compare VirtualLists factories to LongList and sample indexers.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/util_ops.py
+      covers:
+        - intTuples
+        - intTuplesWithMin
+        - arrayIndexerWithMin
+      ignore_lines: []

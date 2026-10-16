@@ -1,0 +1,43 @@
+target: org.uacalc.util.SequenceGenerator
+level: file
+status: implemented
+java_source: org/uacalc/util/SequenceGenerator.java
+notes: |
+  All incrementor factories mutate the caller buffer in place: nondecreasing
+  (with lastMin), increasing, increasingOld, sequence (max / maxs / min / jump),
+  left, and partition (JB form). initialPartition matches Java.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    nondecreasingSequenceIncrementor: nondecreasingSequenceIncrementor
+    increasingSequenceIncrementor: increasingSequenceIncrementor
+    increasingSequenceIncrementorOld: increasingSequenceIncrementorOld
+    sequenceIncrementor: sequenceIncrementor
+    leftSequenceIncrementor: leftSequenceIncrementor
+    initialPartition: initialPartition
+    partitionArrayIncrementor: partitionArrayIncrementor
+  static_methods:
+    - nondecreasingSequenceIncrementor
+    - increasingSequenceIncrementor
+    - increasingSequenceIncrementorOld
+    - sequenceIncrementor
+    - leftSequenceIncrementor
+    - initialPartition
+    - partitionArrayIncrementor
+  str_parity: false
+testing:
+  notes: |
+    Goldens collect full sequences for several sizes/arities plus empty and size-1.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/util_ops.py
+      covers:
+        - nondecreasingSequenceIncrementor
+        - increasingSequenceIncrementor
+        - sequenceIncrementor
+        - leftSequenceIncrementor
+        - initialPartition
+        - partitionArrayIncrementor
+        - increment
+      ignore_lines: []

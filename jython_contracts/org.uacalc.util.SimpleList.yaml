@@ -1,0 +1,48 @@
+target: org.uacalc.util.SimpleList
+level: file
+status: implemented
+java_source: org/uacalc/util/SimpleList.java
+notes: |
+  makeList / cons / first / rest / isEmpty / size / append / reverse /
+  copyList / get / contains / indexOf. List mutators throw
+  UnsupportedOperationException matching Java. Serialization is not bound.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    makeList: makeList
+    isEmpty: isEmpty
+    copyList: copyList
+    indexOf: indexOf
+    lastIndexOf: lastIndexOf
+    containsAll: containsAll
+    subList: subList
+    toArray: toArray
+    toString: toString
+    frontIterator: frontIterator
+    getIterator: getIterator
+    elements: elements
+    listIterator: listIterator
+  static_methods:
+    - makeList
+  str_parity: true
+testing:
+  notes: |
+    Goldens cover cons/first/rest, empty list, append/reverse, and UOE mutators.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/util_ops.py
+      covers:
+        - makeList
+        - isEmpty
+        - first
+        - rest
+        - cons
+        - size
+        - append
+        - reverse
+        - copyList
+        - contains
+        - indexOf
+        - toString
+      ignore_lines: []
