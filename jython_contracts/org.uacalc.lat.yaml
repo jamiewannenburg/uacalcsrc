@@ -3,27 +3,19 @@ level: package
 status: implemented
 java_source: null
 notes: |
-  Lattices.latticeFromJoin / latticeFromMeet used by dmm.py when converting
-  algebras to lattices. latticeFromJoin returns None when the join is not a
-  lattice (Java catch-and-null). Package-level facade is enough.
+  Thin package index. File-level contracts cover Lattices, BasicLattice,
+  OrderedSets. Lattice / SmallLattice / Order are interfaces (ignored).
+  GUI/drawing (getDiagram, getVertices, FrameShower, main) and Malcev are
+  out of scope. POElem and latdraw OrderedSet live in org.latdraw.
 ignore_reason: null
 surface:
   package_export: true
   aliases: {}
-  static_methods:
-    - Lattices.latticeFromJoin
-    - Lattices.latticeFromMeet
+  static_methods: []
   str_parity: false
 testing:
   notes: |
-    lattices_facade_smoke.py builds a 2-element chain via latticeFromJoin and
-    latticeFromMeet using AbstractOperation join/meet tables.
+    Behavioral golden tests live in tests/parity/lat. Dual-runtime scripts
+    under jython_comparison/scripts cover the declared file-level surfaces.
   task_refs: []
-  scripts:
-    - path: jython_comparison/scripts/lattices_facade_smoke.py
-      covers:
-        - Lattices.latticeFromJoin
-        - Lattices.latticeFromMeet
-      ignore_lines:
-        - "labels has size"
-        - "ucs has size"
+  scripts: []

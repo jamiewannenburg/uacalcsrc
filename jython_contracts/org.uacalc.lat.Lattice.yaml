@@ -1,0 +1,16 @@
+target: org.uacalc.lat.Lattice
+level: file
+status: ignored
+java_source: org/uacalc/lat/Lattice.java
+notes: |
+  Java interface. Methods are implemented and tested on BasicLattice.
+ignore_reason: Interface only; methods live on BasicLattice.
+surface:
+  package_export: false
+  aliases: {}
+  static_methods: []
+  str_parity: false
+testing:
+  notes: ""
+  task_refs: []
+  scripts: []

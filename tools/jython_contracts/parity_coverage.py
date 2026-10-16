@@ -25,6 +25,30 @@ PENDING_BINDINGS = {
             "only DivisibilityOrder/PrefixOrder/NaturalOrder route through "
             "uacalc_lib; a Python reimplementation is not allowed",
         ),
+        (
+            "GUI / drawing (getDiagram, getVertices, FrameShower, main, run)",
+            "Swing/latdraw diagram code is out of scope",
+        ),
+        (
+            "LatticeGraphData drawing helpers",
+            "to_networkx/to_dot/to_mermaid are Python extras, not Java org.uacalc.lat",
+        ),
+        (
+            "intValueAt / valueAt (anonymous Operation in BasicLattice)",
+            "scanner false-positives; methods of the join/meet operations, not BasicLattice",
+        ),
+        (
+            "SmallLattice.upperCoversIndices",
+            "Java Lattices.conToSmallLattice always returns null; no Java-constructible SmallLattice",
+        ),
+        (
+            "POElem / org.latdraw.orderedset.OrderedSet",
+            "not in org.uacalc.lat; Python uses int labels and uacalc_lib OrderedSet",
+        ),
+        (
+            "makeOrderedSet (latdraw OrderedSet factory)",
+            "builds org.latdraw.orderedset.OrderedSet; drawing-adjacent, not bound",
+        ),
     ],
     "terms": [
         (

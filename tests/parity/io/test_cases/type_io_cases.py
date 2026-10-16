@@ -94,6 +94,13 @@ _READER_NESTED_XFAIL = (
     "super algebra)."
 )
 
+_FA_JAVA_BUG_XFAIL = (
+    "Known Java bug: AlgebraReader has no freeAlgebra end-element handler, "
+    "so write-then-read returns the nested generating algebra instead of "
+    "F(n). Python rebuilds F(n) from the <freeAlgebra> XML. Java golden "
+    "values are left unchanged."
+)
+
 TEST_CASES = [
     TestCaseSpec(
         id="wr_free_c2_f1",
@@ -104,6 +111,7 @@ f.setName("F1")
 """,
         call="_wr(f)",
         description="write then read F(1) over cyclic2",
+        xfail_reason=_FA_JAVA_BUG_XFAIL,
         **_SKIP
     ),
     TestCaseSpec(
@@ -115,6 +123,7 @@ f.setName("F1")
 """,
         call="_wr(f)",
         description="write then read F(1) over cyclic3",
+        xfail_reason=_FA_JAVA_BUG_XFAIL,
         **_SKIP
     ),
     TestCaseSpec(
@@ -126,6 +135,7 @@ f.setName("F1")
 """,
         call="_wr(f)",
         description="write then read F(1) over lat2 (Java rereads lat2, not F(1))",
+        xfail_reason=_FA_JAVA_BUG_XFAIL,
         **_SKIP
     ),
     TestCaseSpec(
@@ -137,6 +147,7 @@ f.setName("F1")
 """,
         call="_wr(f)",
         description="write then read F(1) over ba2 (Java rereads ba2, not F(1))",
+        xfail_reason=_FA_JAVA_BUG_XFAIL,
         **_SKIP
     ),
     TestCaseSpec(
@@ -156,6 +167,7 @@ f.setName("F1")
         setup=_SETUP,
         call='AlgebraReader("resources/special/free_c2_f1.ua").readAlgebraFile()',
         description="Java-written F(1)/C2 fixture (cross: Java write, both read)",
+        xfail_reason=_FA_JAVA_BUG_XFAIL,
         **_SKIP
     ),
     TestCaseSpec(

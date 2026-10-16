@@ -189,15 +189,9 @@ where
     /// Check if this element is meet irreducible.
     /// Note: This requires the poset to be passed in.
     pub fn is_meet_irreducible(&self, poset: &OrderedSet<T>) -> bool {
-        let lowers = self.lower_covers(poset);
-        if lowers.is_empty() {
-            return false; // Bottom element is not meet irreducible
-        }
-        if lowers.len() == 1 {
-            return true;
-        }
-        // An element is meet irreducible if it has exactly one lower cover
-        lowers.len() == 1
+        // Dual of join-irreducible: exactly one upper cover (the top is not MI).
+        let uppers = self.upper_covers(poset);
+        uppers.len() == 1
     }
 }
 

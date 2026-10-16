@@ -317,10 +317,14 @@ os.unlink(path)
         call="[read.cardinality(), _tbl(read), _terms(f1.getTerms())]",
         description="write FreeAlgebra, read back, compare card/table; terms from original",
         skip_string_check=True,
+        xfail_reason=(
+            "Known Java bug: AlgebraReader has no freeAlgebra end-element "
+            "handler, so write-then-read returns the generating algebra (C2 "
+            "table [0,1,1,0]) instead of F(1) (table [1,0,0,1]). Python "
+            "rebuilds F(n). Java golden values are left unchanged."
+        ),
         notes=(
-            "Python now writes Java <freeAlgebra> XML. Both runtimes reread "
-            "the generating algebra (Java AlgebraReader has no freeAlgebra "
-            "handler). See KNOWN_DIFFERENCES.md."
+            "Java rereads C2. Python rebuilds F(1). See KNOWN_DIFFERENCES.md."
         ),
     ),
     # --- Homomorphism ---
@@ -1247,9 +1251,15 @@ TEST_CASES.extend([
         call="_fa_roundtrip(c3, 1)",
         description="write/read F(1) over cyclic3: live snap plus read card/tables",
         skip_string_check=True,
+        xfail_reason=(
+            "Known Java bug: AlgebraReader has no freeAlgebra end-element "
+            "handler, so write-then-read returns C3 (table "
+            "[0,1,2,1,2,0,2,0,1]) instead of F(1) "
+            "([1,2,0,2,0,1,0,1,2]). Python rebuilds F(n). Java golden "
+            "values are left unchanged."
+        ),
         notes=(
-            "Both runtimes reread C3 (generating algebra). Known Java "
-            "AlgebraReader gap: no </freeAlgebra> handler."
+            "Java rereads C3. Python rebuilds F(1). See KNOWN_DIFFERENCES.md."
         ),
     ),
     TestCaseSpec(
@@ -1259,9 +1269,15 @@ TEST_CASES.extend([
         call="_fa_roundtrip(lat2, 1)",
         description="write/read F(1) over lat2: live snap plus read card/tables",
         skip_string_check=True,
+        xfail_reason=(
+            "Known Java bug: AlgebraReader has no freeAlgebra end-element "
+            "handler, so write-then-read returns lat2 (card 2) instead of "
+            "F(1) (card 1). Python rebuilds F(n). Java golden values are "
+            "left unchanged."
+        ),
         notes=(
-            "Live F(1)/lat2 is card 1. After AlgebraIO both runtimes reread "
-            "lat2 (card 2): Java AlgebraReader never constructs FreeAlgebra."
+            "Java rereads lat2 (card 2). Python rebuilds F(1) (card 1). "
+            "See KNOWN_DIFFERENCES.md."
         ),
     ),
     TestCaseSpec(
@@ -1271,9 +1287,15 @@ TEST_CASES.extend([
         call="_fa_roundtrip(ba2, 1)",
         description="write/read F(1) over ba2: live snap plus read card/tables",
         skip_string_check=True,
+        xfail_reason=(
+            "Known Java bug: AlgebraReader has no freeAlgebra end-element "
+            "handler, so write-then-read returns ba2 (card 2) instead of "
+            "F(1) (card 4). Python rebuilds F(n). Java golden values are "
+            "left unchanged."
+        ),
         notes=(
-            "Live F(1)/ba2 is card 4. After AlgebraIO both runtimes reread "
-            "ba2 (card 2): Java AlgebraReader never constructs FreeAlgebra."
+            "Java rereads ba2 (card 2). Python rebuilds F(1) (card 4). "
+            "See KNOWN_DIFFERENCES.md."
         ),
     ),
     TestCaseSpec(

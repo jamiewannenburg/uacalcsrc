@@ -463,11 +463,16 @@ where
     }
 
     /// Get meet irreducibles.
+    ///
+    /// An element is meet irreducible if it has exactly one upper cover
+    /// (i.e., exactly one element directly above it). The top element (one)
+    /// is not meet irreducible because it has no upper covers.
     pub fn meet_irreducibles(&mut self) -> &[Arc<POElem<T>>] {
         if self.meet_irreducibles.is_none() {
             let mut mis = Vec::new();
             for elem in &self.univ_list {
-                if elem.is_meet_irreducible(&self.poset) {
+                let upper_covers = self.poset.get_upper_covers(elem);
+                if upper_covers.len() == 1 {
                     mis.push(elem.clone());
                 }
             }

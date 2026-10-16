@@ -1,0 +1,26 @@
+target: org.uacalc.lat.OrderedSets
+level: file
+status: implemented
+java_source: org/uacalc/lat/OrderedSets.java
+notes: |
+  Static maximals. Python routes DivisibilityOrder / PrefixOrder / NaturalOrder
+  through uacalc_lib. Generic Order.leq is not bound.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases: {}
+  static_methods:
+    - OrderedSets.maximals
+  str_parity: false
+testing:
+  notes: |
+    basic_lattice_api.py prints maximals under divisibility. Golden tests
+    cover prefix and natural orders as well.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/basic_lattice_api.py
+      covers:
+        - OrderedSets.maximals
+      ignore_lines:
+        - "labels has size"
+        - "ucs has size"

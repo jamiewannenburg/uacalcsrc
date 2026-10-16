@@ -4,7 +4,7 @@
 
 use uacalc::io::{AlgebraReader, AlgebraWriter};
 use uacalc::alg::{Algebra, BasicAlgebra, FreeAlgebra};
-use uacalc::alg::op::{OperationSymbol, BasicOperation};
+use uacalc::alg::op::{Operation, OperationSymbol, BasicOperation};
 use std::path::Path;
 use std::fs;
 use std::collections::HashSet;
@@ -187,6 +187,23 @@ fn test_write_free_algebra_coordinate_tuples() {
     assert!(xml.contains("<powers>"), "missing powers:\n{}", xml);
     assert!(xml.contains("<rootFactors>"), "missing rootFactors:\n{}", xml);
     assert!(xml.contains("<algName>C2</algName>"), "missing nested C2:\n{}", xml);
+
+    let reread = AlgebraReader::new_from_file(Path::new(output_path))
+        .expect("open written free algebra")
+        .read_algebra_file()
+        .expect("read written free algebra");
+    assert_eq!(reread.name(), "F1");
+    assert_eq!(reread.cardinality(), fa.cardinality());
+    let ops = reread.operations();
+    assert!(!ops.is_empty(), "reread F(1) has operations");
+    let n = reread.cardinality();
+    let mut table = Vec::new();
+    for i in 0..n {
+        for j in 0..n {
+            table.push(ops[0].int_value_at(&[i, j]).unwrap());
+        }
+    }
+    assert_eq!(table, vec![1, 0, 0, 1], "write-then-read restores F(1)/C2 tables");
     let _ = fs::remove_file(output_path);
 }
 

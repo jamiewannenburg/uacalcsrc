@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "generated_at": "2026-10-13T13:18:51.973138+00:00",
+    "generated_at": "2026-10-16T08:53:54.045116+00:00",
     "jar": "uacalc.jar",
     "package": "org.uacalc.lat",
     "runtime": "jython",
-    "test_cases": 16,
+    "test_cases": 53,
     "type": "package"
   },
   "test_cases": [
@@ -32,7 +32,7 @@
           ],
           "zero": 0
         },
-        "string_repr": "org.uacalc.lat.BasicLattice@6ae62c7e",
+        "string_repr": "org.uacalc.lat.BasicLattice@5d497a91",
         "success": true
       },
       "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n",
@@ -63,7 +63,7 @@
           ],
           "zero": 0
         },
-        "string_repr": "org.uacalc.lat.BasicLattice@4b0f2299",
+        "string_repr": "org.uacalc.lat.BasicLattice@352ed70d",
         "success": true
       },
       "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n",
@@ -96,7 +96,7 @@
           ],
           "zero": 0
         },
-        "string_repr": "org.uacalc.lat.BasicLattice@7601bc96",
+        "string_repr": "org.uacalc.lat.BasicLattice@3722c145",
         "success": true
       },
       "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n",
@@ -127,7 +127,7 @@
           ],
           "zero": 0
         },
-        "string_repr": "org.uacalc.lat.BasicLattice@53d13cd4",
+        "string_repr": "org.uacalc.lat.BasicLattice@4d18b73a",
         "success": true
       },
       "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n",
@@ -158,7 +158,7 @@
           ],
           "zero": 0
         },
-        "string_repr": "org.uacalc.lat.BasicLattice@4e49ce2b",
+        "string_repr": "org.uacalc.lat.BasicLattice@435cc7f9",
         "success": true
       },
       "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n",
@@ -358,7 +358,7 @@
       },
       "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\n",
       "skip_string_check": true,
-      "xfail_reason": "Java Lattices.dual throws NullPointerException (known Java bug). Python dual currently raises ValueError about Clone/reference limits."
+      "xfail_reason": null
     },
     {
       "args": [],
@@ -379,7 +379,7 @@
       },
       "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nfrom org.uacalc.io import AlgebraIO\nalg = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nif sys.platform.startswith(\"java\"):\n    from org.uacalc.alg.conlat import CongruenceLattice\n    con = CongruenceLattice(alg)\n    _ctors = Lattices.getDeclaredConstructors()\n    _ctors[0].setAccessible(True)\n    _helper = _ctors[0].newInstance()\n    def _con_to_small():\n        return _helper.conToSmallLattice(con)\nelse:\n    from org.uacalc.alg import CongruenceLattice\n    con = CongruenceLattice(alg)\n    def _con_to_small():\n        return Lattices.conToSmallLattice(con)\n",
       "skip_string_check": true,
-      "xfail_reason": "Java Lattices.conToSmallLattice always returns null (OrderedSet is built then discarded). Python raises ValueError: needs a PySmallLattice wrapper."
+      "xfail_reason": null
     },
     {
       "args": [],
@@ -401,7 +401,843 @@
       },
       "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nif sys.platform.startswith(\"java\"):\n    _ctors = Lattices.getDeclaredConstructors()\n    _ctors[0].setAccessible(True)\n    _helper = _ctors[0].newInstance()\n    def _con_to_small():\n        return _helper.conToSmallLattice(None)\nelse:\n    def _con_to_small():\n        return Lattices.conToSmallLattice(None)\n",
       "skip_string_check": false,
-      "xfail_reason": "Java raises NullPointerException; Python raises ValueError (requires a CongruenceLattice instance)."
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_lab(lat.one())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Top element of the 2-chain",
+      "expected_exception": null,
+      "id": "basic_lattice_one",
+      "kwargs": {},
+      "method": "BasicLattice.one",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 1,
+        "string_repr": "1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nm3 = Lattices.latticeFromJoin(\"M3\", join_m3)\ndef _labs(xs):\n    if xs is None:\n        return None\n    return sorted([int(str(x)) for x in list(xs)])\ndef _lab(x):\n    if x is None:\n        return None\n    try:\n        return int(str(x))\n    except Exception:\n        return str(x)\nif sys.platform.startswith(\"java\"):\n    a0 = lat.getElement(0)\n    a1 = lat.getElement(1)\n    try:\n        from java.util import ArrayList\n        join_args = ArrayList()\n        join_args.add(a0)\n        join_args.add(a1)\n        empty_args = ArrayList()\n    except Exception:\n        join_args = [a0, a1]\n        empty_args = []\nelse:\n    a0 = 0\n    a1 = 1\n    join_args = [a0, a1]\n    empty_args = []\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_labs(lat.atoms())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Atoms of the 2-chain",
+      "expected_exception": null,
+      "id": "basic_lattice_atoms_chain",
+      "kwargs": {},
+      "method": "BasicLattice.atoms",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          1
+        ],
+        "string_repr": "[1]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nm3 = Lattices.latticeFromJoin(\"M3\", join_m3)\ndef _labs(xs):\n    if xs is None:\n        return None\n    return sorted([int(str(x)) for x in list(xs)])\ndef _lab(x):\n    if x is None:\n        return None\n    try:\n        return int(str(x))\n    except Exception:\n        return str(x)\nif sys.platform.startswith(\"java\"):\n    a0 = lat.getElement(0)\n    a1 = lat.getElement(1)\n    try:\n        from java.util import ArrayList\n        join_args = ArrayList()\n        join_args.add(a0)\n        join_args.add(a1)\n        empty_args = ArrayList()\n    except Exception:\n        join_args = [a0, a1]\n        empty_args = []\nelse:\n    a0 = 0\n    a1 = 1\n    join_args = [a0, a1]\n    empty_args = []\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_labs(m3.atoms())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Atoms of the 4-element diamond",
+      "expected_exception": null,
+      "id": "basic_lattice_atoms_diamond",
+      "kwargs": {},
+      "method": "BasicLattice.atoms",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          1,
+          2
+        ],
+        "string_repr": "[1, 2]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nm3 = Lattices.latticeFromJoin(\"M3\", join_m3)\ndef _labs(xs):\n    if xs is None:\n        return None\n    return sorted([int(str(x)) for x in list(xs)])\ndef _lab(x):\n    if x is None:\n        return None\n    try:\n        return int(str(x))\n    except Exception:\n        return str(x)\nif sys.platform.startswith(\"java\"):\n    a0 = lat.getElement(0)\n    a1 = lat.getElement(1)\n    try:\n        from java.util import ArrayList\n        join_args = ArrayList()\n        join_args.add(a0)\n        join_args.add(a1)\n        empty_args = ArrayList()\n    except Exception:\n        join_args = [a0, a1]\n        empty_args = []\nelse:\n    a0 = 0\n    a1 = 1\n    join_args = [a0, a1]\n    empty_args = []\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_labs(lat.coatoms())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Coatoms of the 2-chain",
+      "expected_exception": null,
+      "id": "basic_lattice_coatoms_chain",
+      "kwargs": {},
+      "method": "BasicLattice.coatoms",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          0
+        ],
+        "string_repr": "[0]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nm3 = Lattices.latticeFromJoin(\"M3\", join_m3)\ndef _labs(xs):\n    if xs is None:\n        return None\n    return sorted([int(str(x)) for x in list(xs)])\ndef _lab(x):\n    if x is None:\n        return None\n    try:\n        return int(str(x))\n    except Exception:\n        return str(x)\nif sys.platform.startswith(\"java\"):\n    a0 = lat.getElement(0)\n    a1 = lat.getElement(1)\n    try:\n        from java.util import ArrayList\n        join_args = ArrayList()\n        join_args.add(a0)\n        join_args.add(a1)\n        empty_args = ArrayList()\n    except Exception:\n        join_args = [a0, a1]\n        empty_args = []\nelse:\n    a0 = 0\n    a1 = 1\n    join_args = [a0, a1]\n    empty_args = []\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_labs(m3.coatoms())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Coatoms of the 4-element diamond",
+      "expected_exception": null,
+      "id": "basic_lattice_coatoms_diamond",
+      "kwargs": {},
+      "method": "BasicLattice.coatoms",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          1,
+          2
+        ],
+        "string_repr": "[1, 2]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nm3 = Lattices.latticeFromJoin(\"M3\", join_m3)\ndef _labs(xs):\n    if xs is None:\n        return None\n    return sorted([int(str(x)) for x in list(xs)])\ndef _lab(x):\n    if x is None:\n        return None\n    try:\n        return int(str(x))\n    except Exception:\n        return str(x)\nif sys.platform.startswith(\"java\"):\n    a0 = lat.getElement(0)\n    a1 = lat.getElement(1)\n    try:\n        from java.util import ArrayList\n        join_args = ArrayList()\n        join_args.add(a0)\n        join_args.add(a1)\n        empty_args = ArrayList()\n    except Exception:\n        join_args = [a0, a1]\n        empty_args = []\nelse:\n    a0 = 0\n    a1 = 1\n    join_args = [a0, a1]\n    empty_args = []\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_labs(lat.meetIrreducibles() if hasattr(lat, 'meetIrreducibles') else lat.meet_irreducibles())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Meet-irreducibles of the 2-chain",
+      "expected_exception": null,
+      "id": "basic_lattice_meet_irreducibles",
+      "kwargs": {},
+      "method": "BasicLattice.meetIrreducibles",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          0
+        ],
+        "string_repr": "[0]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nm3 = Lattices.latticeFromJoin(\"M3\", join_m3)\ndef _labs(xs):\n    if xs is None:\n        return None\n    return sorted([int(str(x)) for x in list(xs)])\ndef _lab(x):\n    if x is None:\n        return None\n    try:\n        return int(str(x))\n    except Exception:\n        return str(x)\nif sys.platform.startswith(\"java\"):\n    a0 = lat.getElement(0)\n    a1 = lat.getElement(1)\n    try:\n        from java.util import ArrayList\n        join_args = ArrayList()\n        join_args.add(a0)\n        join_args.add(a1)\n        empty_args = ArrayList()\n    except Exception:\n        join_args = [a0, a1]\n        empty_args = []\nelse:\n    a0 = 0\n    a1 = 1\n    join_args = [a0, a1]\n    empty_args = []\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_labs(lat.filter(a0))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Filter of 0 in the 2-chain",
+      "expected_exception": null,
+      "id": "basic_lattice_filter",
+      "kwargs": {},
+      "method": "BasicLattice.filter",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          0,
+          1
+        ],
+        "string_repr": "[0, 1]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nm3 = Lattices.latticeFromJoin(\"M3\", join_m3)\ndef _labs(xs):\n    if xs is None:\n        return None\n    return sorted([int(str(x)) for x in list(xs)])\ndef _lab(x):\n    if x is None:\n        return None\n    try:\n        return int(str(x))\n    except Exception:\n        return str(x)\nif sys.platform.startswith(\"java\"):\n    a0 = lat.getElement(0)\n    a1 = lat.getElement(1)\n    try:\n        from java.util import ArrayList\n        join_args = ArrayList()\n        join_args.add(a0)\n        join_args.add(a1)\n        empty_args = ArrayList()\n    except Exception:\n        join_args = [a0, a1]\n        empty_args = []\nelse:\n    a0 = 0\n    a1 = 1\n    join_args = [a0, a1]\n    empty_args = []\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_labs(lat.ideal(a1))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Ideal of 1 in the 2-chain",
+      "expected_exception": null,
+      "id": "basic_lattice_ideal",
+      "kwargs": {},
+      "method": "BasicLattice.ideal",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          0,
+          1
+        ],
+        "string_repr": "[0, 1]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nm3 = Lattices.latticeFromJoin(\"M3\", join_m3)\ndef _labs(xs):\n    if xs is None:\n        return None\n    return sorted([int(str(x)) for x in list(xs)])\ndef _lab(x):\n    if x is None:\n        return None\n    try:\n        return int(str(x))\n    except Exception:\n        return str(x)\nif sys.platform.startswith(\"java\"):\n    a0 = lat.getElement(0)\n    a1 = lat.getElement(1)\n    try:\n        from java.util import ArrayList\n        join_args = ArrayList()\n        join_args.add(a0)\n        join_args.add(a1)\n        empty_args = ArrayList()\n    except Exception:\n        join_args = [a0, a1]\n        empty_args = []\nelse:\n    a0 = 0\n    a1 = 1\n    join_args = [a0, a1]\n    empty_args = []\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_labs(lat.upperCovers(a0) if hasattr(lat, 'upperCovers') else lat.upper_covers(a0))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Upper covers of 0 in the 2-chain",
+      "expected_exception": null,
+      "id": "basic_lattice_upper_covers",
+      "kwargs": {},
+      "method": "BasicLattice.upperCovers",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          1
+        ],
+        "string_repr": "[1]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nm3 = Lattices.latticeFromJoin(\"M3\", join_m3)\ndef _labs(xs):\n    if xs is None:\n        return None\n    return sorted([int(str(x)) for x in list(xs)])\ndef _lab(x):\n    if x is None:\n        return None\n    try:\n        return int(str(x))\n    except Exception:\n        return str(x)\nif sys.platform.startswith(\"java\"):\n    a0 = lat.getElement(0)\n    a1 = lat.getElement(1)\n    try:\n        from java.util import ArrayList\n        join_args = ArrayList()\n        join_args.add(a0)\n        join_args.add(a1)\n        empty_args = ArrayList()\n    except Exception:\n        join_args = [a0, a1]\n        empty_args = []\nelse:\n    a0 = 0\n    a1 = 1\n    join_args = [a0, a1]\n    empty_args = []\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_labs(lat.lowerCovers(a1) if hasattr(lat, 'lowerCovers') else lat.lower_covers(a1))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Lower covers of 1 in the 2-chain",
+      "expected_exception": null,
+      "id": "basic_lattice_lower_covers",
+      "kwargs": {},
+      "method": "BasicLattice.lowerCovers",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          0
+        ],
+        "string_repr": "[0]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nm3 = Lattices.latticeFromJoin(\"M3\", join_m3)\ndef _labs(xs):\n    if xs is None:\n        return None\n    return sorted([int(str(x)) for x in list(xs)])\ndef _lab(x):\n    if x is None:\n        return None\n    try:\n        return int(str(x))\n    except Exception:\n        return str(x)\nif sys.platform.startswith(\"java\"):\n    a0 = lat.getElement(0)\n    a1 = lat.getElement(1)\n    try:\n        from java.util import ArrayList\n        join_args = ArrayList()\n        join_args.add(a0)\n        join_args.add(a1)\n        empty_args = ArrayList()\n    except Exception:\n        join_args = [a0, a1]\n        empty_args = []\nelse:\n    a0 = 0\n    a1 = 1\n    join_args = [a0, a1]\n    empty_args = []\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_lab(lat.getElement(0))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getElement(0) of the 2-chain",
+      "expected_exception": null,
+      "id": "basic_lattice_get_element",
+      "kwargs": {},
+      "method": "BasicLattice.getElement",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 0,
+        "string_repr": "0",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nm3 = Lattices.latticeFromJoin(\"M3\", join_m3)\ndef _labs(xs):\n    if xs is None:\n        return None\n    return sorted([int(str(x)) for x in list(xs)])\ndef _lab(x):\n    if x is None:\n        return None\n    try:\n        return int(str(x))\n    except Exception:\n        return str(x)\nif sys.platform.startswith(\"java\"):\n    a0 = lat.getElement(0)\n    a1 = lat.getElement(1)\n    try:\n        from java.util import ArrayList\n        join_args = ArrayList()\n        join_args.add(a0)\n        join_args.add(a1)\n        empty_args = ArrayList()\n    except Exception:\n        join_args = [a0, a1]\n        empty_args = []\nelse:\n    a0 = 0\n    a1 = 1\n    join_args = [a0, a1]\n    empty_args = []\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "lat.elementIndex(a0) if hasattr(lat, 'elementIndex') else lat.element_index(a0)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "elementIndex of bottom in the 2-chain",
+      "expected_exception": null,
+      "id": "basic_lattice_element_index",
+      "kwargs": {},
+      "method": "BasicLattice.elementIndex",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 0,
+        "string_repr": "0",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nm3 = Lattices.latticeFromJoin(\"M3\", join_m3)\ndef _labs(xs):\n    if xs is None:\n        return None\n    return sorted([int(str(x)) for x in list(xs)])\ndef _lab(x):\n    if x is None:\n        return None\n    try:\n        return int(str(x))\n    except Exception:\n        return str(x)\nif sys.platform.startswith(\"java\"):\n    a0 = lat.getElement(0)\n    a1 = lat.getElement(1)\n    try:\n        from java.util import ArrayList\n        join_args = ArrayList()\n        join_args.add(a0)\n        join_args.add(a1)\n        empty_args = ArrayList()\n    except Exception:\n        join_args = [a0, a1]\n        empty_args = []\nelse:\n    a0 = 0\n    a1 = 1\n    join_args = [a0, a1]\n    empty_args = []\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "str(lat.algebraType())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "algebraType of a BasicLattice",
+      "expected_exception": null,
+      "id": "basic_lattice_algebra_type",
+      "kwargs": {},
+      "method": "BasicLattice.algebraType",
+      "notes": "",
+      "result": {
+        "return_type": "str",
+        "return_value": "BASIC_LATTICE",
+        "string_repr": "BASIC_LATTICE",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nm3 = Lattices.latticeFromJoin(\"M3\", join_m3)\ndef _labs(xs):\n    if xs is None:\n        return None\n    return sorted([int(str(x)) for x in list(xs)])\ndef _lab(x):\n    if x is None:\n        return None\n    try:\n        return int(str(x))\n    except Exception:\n        return str(x)\nif sys.platform.startswith(\"java\"):\n    a0 = lat.getElement(0)\n    a1 = lat.getElement(1)\n    try:\n        from java.util import ArrayList\n        join_args = ArrayList()\n        join_args.add(a0)\n        join_args.add(a1)\n        empty_args = ArrayList()\n    except Exception:\n        join_args = [a0, a1]\n        empty_args = []\nelse:\n    a0 = 0\n    a1 = 1\n    join_args = [a0, a1]\n    empty_args = []\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "lat.getUniverseOrder()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getUniverseOrder always returns null/None",
+      "expected_exception": null,
+      "id": "basic_lattice_get_universe_order",
+      "kwargs": {},
+      "method": "BasicLattice.getUniverseOrder",
+      "notes": "",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nm3 = Lattices.latticeFromJoin(\"M3\", join_m3)\ndef _labs(xs):\n    if xs is None:\n        return None\n    return sorted([int(str(x)) for x in list(xs)])\ndef _lab(x):\n    if x is None:\n        return None\n    try:\n        return int(str(x))\n    except Exception:\n        return str(x)\nif sys.platform.startswith(\"java\"):\n    a0 = lat.getElement(0)\n    a1 = lat.getElement(1)\n    try:\n        from java.util import ArrayList\n        join_args = ArrayList()\n        join_args.add(a0)\n        join_args.add(a1)\n        empty_args = ArrayList()\n    except Exception:\n        join_args = [a0, a1]\n        empty_args = []\nelse:\n    a0 = 0\n    a1 = 1\n    join_args = [a0, a1]\n    empty_args = []\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "lat.convertToDefaultValueOps()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "convertToDefaultValueOps raises UnsupportedOperationException",
+      "expected_exception": "UnsupportedOperationException",
+      "id": "basic_lattice_convert_to_default_value_ops",
+      "kwargs": {},
+      "method": "BasicLattice.convertToDefaultValueOps",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.UnsupportedOperationException: Only for basic algebras",
+          "type": "UnsupportedOperationException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nm3 = Lattices.latticeFromJoin(\"M3\", join_m3)\ndef _labs(xs):\n    if xs is None:\n        return None\n    return sorted([int(str(x)) for x in list(xs)])\ndef _lab(x):\n    if x is None:\n        return None\n    try:\n        return int(str(x))\n    except Exception:\n        return str(x)\nif sys.platform.startswith(\"java\"):\n    a0 = lat.getElement(0)\n    a1 = lat.getElement(1)\n    try:\n        from java.util import ArrayList\n        join_args = ArrayList()\n        join_args.add(a0)\n        join_args.add(a1)\n        empty_args = ArrayList()\n    except Exception:\n        join_args = [a0, a1]\n        empty_args = []\nelse:\n    a0 = 0\n    a1 = 1\n    join_args = [a0, a1]\n    empty_args = []\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "lat.dual()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Instance dual delegates to Lattices.dual (Java NPE)",
+      "expected_exception": null,
+      "id": "basic_lattice_instance_dual",
+      "kwargs": {},
+      "method": "BasicLattice.dual",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.NullPointerException: Cannot invoke \"java.lang.Integer.intValue()\" because the return value of \"java.util.HashMap.get(Object)\" is null",
+          "type": "NullPointerException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nm3 = Lattices.latticeFromJoin(\"M3\", join_m3)\ndef _labs(xs):\n    if xs is None:\n        return None\n    return sorted([int(str(x)) for x in list(xs)])\ndef _lab(x):\n    if x is None:\n        return None\n    try:\n        return int(str(x))\n    except Exception:\n        return str(x)\nif sys.platform.startswith(\"java\"):\n    a0 = lat.getElement(0)\n    a1 = lat.getElement(1)\n    try:\n        from java.util import ArrayList\n        join_args = ArrayList()\n        join_args.add(a0)\n        join_args.add(a1)\n        empty_args = ArrayList()\n    except Exception:\n        join_args = [a0, a1]\n        empty_args = []\nelse:\n    a0 = 0\n    a1 = 1\n    join_args = [a0, a1]\n    empty_args = []\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "poset_card",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getPoset cardinality matches the lattice",
+      "expected_exception": null,
+      "id": "basic_lattice_get_poset",
+      "kwargs": {},
+      "method": "BasicLattice.getPoset",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nm3 = Lattices.latticeFromJoin(\"M3\", join_m3)\ndef _labs(xs):\n    if xs is None:\n        return None\n    return sorted([int(str(x)) for x in list(xs)])\ndef _lab(x):\n    if x is None:\n        return None\n    try:\n        return int(str(x))\n    except Exception:\n        return str(x)\nif sys.platform.startswith(\"java\"):\n    a0 = lat.getElement(0)\n    a1 = lat.getElement(1)\n    try:\n        from java.util import ArrayList\n        join_args = ArrayList()\n        join_args.add(a0)\n        join_args.add(a1)\n        empty_args = ArrayList()\n    except Exception:\n        join_args = [a0, a1]\n        empty_args = []\nelse:\n    a0 = 0\n    a1 = 1\n    join_args = [a0, a1]\n    empty_args = []\n\np = lat.getPoset()\nif hasattr(p, \"univ\"):\n    poset_card = len(list(p.univ()))\nelse:\n    poset_card = p.cardinality()\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_lab(lat.join(join_args))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "join(List) of {0,1} in the 2-chain",
+      "expected_exception": null,
+      "id": "basic_lattice_join_list",
+      "kwargs": {},
+      "method": "BasicLattice.join",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 1,
+        "string_repr": "1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nm3 = Lattices.latticeFromJoin(\"M3\", join_m3)\ndef _labs(xs):\n    if xs is None:\n        return None\n    return sorted([int(str(x)) for x in list(xs)])\ndef _lab(x):\n    if x is None:\n        return None\n    try:\n        return int(str(x))\n    except Exception:\n        return str(x)\nif sys.platform.startswith(\"java\"):\n    a0 = lat.getElement(0)\n    a1 = lat.getElement(1)\n    try:\n        from java.util import ArrayList\n        join_args = ArrayList()\n        join_args.add(a0)\n        join_args.add(a1)\n        empty_args = ArrayList()\n    except Exception:\n        join_args = [a0, a1]\n        empty_args = []\nelse:\n    a0 = 0\n    a1 = 1\n    join_args = [a0, a1]\n    empty_args = []\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_lab(lat.join(empty_args))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "join([]) is zero",
+      "expected_exception": null,
+      "id": "basic_lattice_join_empty_list",
+      "kwargs": {},
+      "method": "BasicLattice.join",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 0,
+        "string_repr": "0",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nm3 = Lattices.latticeFromJoin(\"M3\", join_m3)\ndef _labs(xs):\n    if xs is None:\n        return None\n    return sorted([int(str(x)) for x in list(xs)])\ndef _lab(x):\n    if x is None:\n        return None\n    try:\n        return int(str(x))\n    except Exception:\n        return str(x)\nif sys.platform.startswith(\"java\"):\n    a0 = lat.getElement(0)\n    a1 = lat.getElement(1)\n    try:\n        from java.util import ArrayList\n        join_args = ArrayList()\n        join_args.add(a0)\n        join_args.add(a1)\n        empty_args = ArrayList()\n    except Exception:\n        join_args = [a0, a1]\n        empty_args = []\nelse:\n    a0 = 0\n    a1 = 1\n    join_args = [a0, a1]\n    empty_args = []\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_lab(lat.meet(join_args))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "meet(List) of {0,1} in the 2-chain",
+      "expected_exception": null,
+      "id": "basic_lattice_meet_list",
+      "kwargs": {},
+      "method": "BasicLattice.meet",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 0,
+        "string_repr": "0",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nm3 = Lattices.latticeFromJoin(\"M3\", join_m3)\ndef _labs(xs):\n    if xs is None:\n        return None\n    return sorted([int(str(x)) for x in list(xs)])\ndef _lab(x):\n    if x is None:\n        return None\n    try:\n        return int(str(x))\n    except Exception:\n        return str(x)\nif sys.platform.startswith(\"java\"):\n    a0 = lat.getElement(0)\n    a1 = lat.getElement(1)\n    try:\n        from java.util import ArrayList\n        join_args = ArrayList()\n        join_args.add(a0)\n        join_args.add(a1)\n        empty_args = ArrayList()\n    except Exception:\n        join_args = [a0, a1]\n        empty_args = []\nelse:\n    a0 = 0\n    a1 = 1\n    join_args = [a0, a1]\n    empty_args = []\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_labs(lat.universe())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "universe() of the 2-chain as sorted labels",
+      "expected_exception": null,
+      "id": "basic_lattice_universe",
+      "kwargs": {},
+      "method": "BasicLattice.universe",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          0,
+          1
+        ],
+        "string_repr": "[0, 1]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nm3 = Lattices.latticeFromJoin(\"M3\", join_m3)\ndef _labs(xs):\n    if xs is None:\n        return None\n    return sorted([int(str(x)) for x in list(xs)])\ndef _lab(x):\n    if x is None:\n        return None\n    try:\n        return int(str(x))\n    except Exception:\n        return str(x)\nif sys.platform.startswith(\"java\"):\n    a0 = lat.getElement(0)\n    a1 = lat.getElement(1)\n    try:\n        from java.util import ArrayList\n        join_args = ArrayList()\n        join_args.add(a0)\n        join_args.add(a1)\n        empty_args = ArrayList()\n    except Exception:\n        join_args = [a0, a1]\n        empty_args = []\nelse:\n    a0 = 0\n    a1 = 1\n    join_args = [a0, a1]\n    empty_args = []\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_labs(lat.getUniverseList())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getUniverseList of the 2-chain as sorted labels",
+      "expected_exception": null,
+      "id": "basic_lattice_get_universe_list",
+      "kwargs": {},
+      "method": "BasicLattice.getUniverseList",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          0,
+          1
+        ],
+        "string_repr": "[0, 1]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nm3 = Lattices.latticeFromJoin(\"M3\", join_m3)\ndef _labs(xs):\n    if xs is None:\n        return None\n    return sorted([int(str(x)) for x in list(xs)])\ndef _lab(x):\n    if x is None:\n        return None\n    try:\n        return int(str(x))\n    except Exception:\n        return str(x)\nif sys.platform.startswith(\"java\"):\n    a0 = lat.getElement(0)\n    a1 = lat.getElement(1)\n    try:\n        from java.util import ArrayList\n        join_args = ArrayList()\n        join_args.add(a0)\n        join_args.add(a1)\n        empty_args = ArrayList()\n    except Exception:\n        join_args = [a0, a1]\n        empty_args = []\nelse:\n    a0 = 0\n    a1 = 1\n    join_args = [a0, a1]\n    empty_args = []\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_labs(lat.joinIrredsBelow(a1))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "joinIrredsBelow(1) in the 2-chain",
+      "expected_exception": null,
+      "id": "basic_lattice_join_irreds_below",
+      "kwargs": {},
+      "method": "BasicLattice.joinIrredsBelow",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          1
+        ],
+        "string_repr": "[1]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nm3 = Lattices.latticeFromJoin(\"M3\", join_m3)\ndef _labs(xs):\n    if xs is None:\n        return None\n    return sorted([int(str(x)) for x in list(xs)])\ndef _lab(x):\n    if x is None:\n        return None\n    try:\n        return int(str(x))\n    except Exception:\n        return str(x)\nif sys.platform.startswith(\"java\"):\n    a0 = lat.getElement(0)\n    a1 = lat.getElement(1)\n    try:\n        from java.util import ArrayList\n        join_args = ArrayList()\n        join_args.add(a0)\n        join_args.add(a1)\n        empty_args = ArrayList()\n    except Exception:\n        join_args = [a0, a1]\n        empty_args = []\nelse:\n    a0 = 0\n    a1 = 1\n    join_args = [a0, a1]\n    empty_args = []\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_labs(lat.meetIrredsAbove(a0))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "meetIrredsAbove(0) in the 2-chain",
+      "expected_exception": null,
+      "id": "basic_lattice_meet_irreds_above",
+      "kwargs": {},
+      "method": "BasicLattice.meetIrredsAbove",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          0
+        ],
+        "string_repr": "[0]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nm3 = Lattices.latticeFromJoin(\"M3\", join_m3)\ndef _labs(xs):\n    if xs is None:\n        return None\n    return sorted([int(str(x)) for x in list(xs)])\ndef _lab(x):\n    if x is None:\n        return None\n    try:\n        return int(str(x))\n    except Exception:\n        return str(x)\nif sys.platform.startswith(\"java\"):\n    a0 = lat.getElement(0)\n    a1 = lat.getElement(1)\n    try:\n        from java.util import ArrayList\n        join_args = ArrayList()\n        join_args.add(a0)\n        join_args.add(a1)\n        empty_args = ArrayList()\n    except Exception:\n        join_args = [a0, a1]\n        empty_args = []\nelse:\n    a0 = 0\n    a1 = 1\n    join_args = [a0, a1]\n    empty_args = []\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "con_lat.cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "BasicLattice from Con(C2) cardinality",
+      "expected_exception": null,
+      "id": "basic_lattice_from_con_c2",
+      "kwargs": {},
+      "method": "BasicLattice.cardinality",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.lat import Lattices, BasicLattice\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\njoin_sym = OperationSymbol(\"join\", 2)\nlat2_join = lat2.getOperation(join_sym)\n\ncon = c2.con()\ncon_lat = BasicLattice(\"ConC2\", con, False)\n",
+      "skip_string_check": true,
+      "xfail_reason": "Owner/library: BasicLattice(name, CongruenceLattice, label) on Python yields cardinality 0; Java Con(C2) has cardinality 2."
+    },
+    {
+      "args": [],
+      "call": "Lattices.latticeFromJoin(\"from_lat2\", lat2_join)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "latticeFromJoin of join table from lat2.ua",
+      "expected_exception": null,
+      "id": "lattice_from_join_lat2_file",
+      "kwargs": {},
+      "method": "Lattices.latticeFromJoin",
+      "notes": "",
+      "result": {
+        "return_type": "BasicLattice",
+        "return_value": {
+          "__type__": "lattice",
+          "cardinality": 2,
+          "class": "BasicLattice",
+          "name": "from_lat2",
+          "universe": [
+            0,
+            1
+          ],
+          "zero": 0
+        },
+        "string_repr": "org.uacalc.lat.BasicLattice@3f36e8d1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.lat import Lattices, BasicLattice\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\njoin_sym = OperationSymbol(\"join\", 2)\nlat2_join = lat2.getOperation(join_sym)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "list(OrderedSets.maximals(['ab', 'a', 'abc', 'xy'], order))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Maximals under prefix order",
+      "expected_exception": null,
+      "id": "ordered_sets_maximals_prefix",
+      "kwargs": {},
+      "method": "OrderedSets.maximals",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "abc",
+          "xy"
+        ],
+        "string_repr": "[u'abc', u'xy']",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nif sys.platform.startswith(\"java\"):\n    from org.uacalc.lat import Order\n    class _Pref(Order):\n        def leq(self, a, b):\n            sa = str(a)\n            sb = str(b)\n            return sb.startswith(sa)\n    order = _Pref()\nelse:\n    from org.uacalc.lat import PrefixOrder\n    order = PrefixOrder()\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "list(OrderedSets.maximals([3, 1, 4, 2], order))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Maximals under natural integer order",
+      "expected_exception": null,
+      "id": "ordered_sets_maximals_natural",
+      "kwargs": {},
+      "method": "OrderedSets.maximals",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          4
+        ],
+        "string_repr": "[4]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nif sys.platform.startswith(\"java\"):\n    from org.uacalc.lat import Order\n    class _Nat(Order):\n        def leq(self, a, b):\n            return a <= b\n    order = _Nat()\nelse:\n    from org.uacalc.lat import NaturalOrder\n    order = NaturalOrder()\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_lab(lat.findJoinIrred(a1, a0))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "findJoinIrred(1, 0) in the 2-chain",
+      "expected_exception": null,
+      "id": "basic_lattice_find_join_irred",
+      "kwargs": {},
+      "method": "BasicLattice.findJoinIrred",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 1,
+        "string_repr": "1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nm3 = Lattices.latticeFromJoin(\"M3\", join_m3)\ndef _labs(xs):\n    if xs is None:\n        return None\n    return sorted([int(str(x)) for x in list(xs)])\ndef _lab(x):\n    if x is None:\n        return None\n    try:\n        return int(str(x))\n    except Exception:\n        return str(x)\nif sys.platform.startswith(\"java\"):\n    a0 = lat.getElement(0)\n    a1 = lat.getElement(1)\n    try:\n        from java.util import ArrayList\n        join_args = ArrayList()\n        join_args.add(a0)\n        join_args.add(a1)\n        empty_args = ArrayList()\n    except Exception:\n        join_args = [a0, a1]\n        empty_args = []\nelse:\n    a0 = 0\n    a1 = 1\n    join_args = [a0, a1]\n    empty_args = []\n",
+      "skip_string_check": true,
+      "xfail_reason": "Owner/library: findJoinIrred is not bound on PyBasicLattice. Java returns 1 on the 2-chain."
+    },
+    {
+      "args": [],
+      "call": "_lab(lat.findMeetIrred(a0, a1))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "findMeetIrred(0, 1) in the 2-chain",
+      "expected_exception": null,
+      "id": "basic_lattice_find_meet_irred",
+      "kwargs": {},
+      "method": "BasicLattice.findMeetIrred",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 0,
+        "string_repr": "0",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nm3 = Lattices.latticeFromJoin(\"M3\", join_m3)\ndef _labs(xs):\n    if xs is None:\n        return None\n    return sorted([int(str(x)) for x in list(xs)])\ndef _lab(x):\n    if x is None:\n        return None\n    try:\n        return int(str(x))\n    except Exception:\n        return str(x)\nif sys.platform.startswith(\"java\"):\n    a0 = lat.getElement(0)\n    a1 = lat.getElement(1)\n    try:\n        from java.util import ArrayList\n        join_args = ArrayList()\n        join_args.add(a0)\n        join_args.add(a1)\n        empty_args = ArrayList()\n    except Exception:\n        join_args = [a0, a1]\n        empty_args = []\nelse:\n    a0 = 0\n    a1 = 1\n    join_args = [a0, a1]\n    empty_args = []\n",
+      "skip_string_check": true,
+      "xfail_reason": "Owner/library: findMeetIrred is not bound on PyBasicLattice. Java returns 0 on the 2-chain."
+    },
+    {
+      "args": [],
+      "call": "_labs(lat.irredundantJoinDecomposition(a1))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "irredundantJoinDecomposition of 1 in the 2-chain",
+      "expected_exception": null,
+      "id": "basic_lattice_irredundant_join_decomp",
+      "kwargs": {},
+      "method": "BasicLattice.irredundantJoinDecomposition",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          1
+        ],
+        "string_repr": "[1]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nm3 = Lattices.latticeFromJoin(\"M3\", join_m3)\ndef _labs(xs):\n    if xs is None:\n        return None\n    return sorted([int(str(x)) for x in list(xs)])\ndef _lab(x):\n    if x is None:\n        return None\n    try:\n        return int(str(x))\n    except Exception:\n        return str(x)\nif sys.platform.startswith(\"java\"):\n    a0 = lat.getElement(0)\n    a1 = lat.getElement(1)\n    try:\n        from java.util import ArrayList\n        join_args = ArrayList()\n        join_args.add(a0)\n        join_args.add(a1)\n        empty_args = ArrayList()\n    except Exception:\n        join_args = [a0, a1]\n        empty_args = []\nelse:\n    a0 = 0\n    a1 = 1\n    join_args = [a0, a1]\n    empty_args = []\n",
+      "skip_string_check": true,
+      "xfail_reason": "Owner/library: irredundantJoinDecomposition is not bound on PyBasicLattice."
+    },
+    {
+      "args": [],
+      "call": "_labs(lat.irredundantMeetDecomposition(a0))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "irredundantMeetDecomposition of 0 in the 2-chain",
+      "expected_exception": null,
+      "id": "basic_lattice_irredundant_meet_decomp",
+      "kwargs": {},
+      "method": "BasicLattice.irredundantMeetDecomposition",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          0
+        ],
+        "string_repr": "[0]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nm3 = Lattices.latticeFromJoin(\"M3\", join_m3)\ndef _labs(xs):\n    if xs is None:\n        return None\n    return sorted([int(str(x)) for x in list(xs)])\ndef _lab(x):\n    if x is None:\n        return None\n    try:\n        return int(str(x))\n    except Exception:\n        return str(x)\nif sys.platform.startswith(\"java\"):\n    a0 = lat.getElement(0)\n    a1 = lat.getElement(1)\n    try:\n        from java.util import ArrayList\n        join_args = ArrayList()\n        join_args.add(a0)\n        join_args.add(a1)\n        empty_args = ArrayList()\n    except Exception:\n        join_args = [a0, a1]\n        empty_args = []\nelse:\n    a0 = 0\n    a1 = 1\n    join_args = [a0, a1]\n    empty_args = []\n",
+      "skip_string_check": true,
+      "xfail_reason": "Owner/library: irredundantMeetDecomposition is not bound on PyBasicLattice."
+    },
+    {
+      "args": [],
+      "call": "_labs(lat.makeIrredundantJoin(jis))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "makeIrredundantJoin of join-irreducibles",
+      "expected_exception": null,
+      "id": "basic_lattice_make_irredundant_join",
+      "kwargs": {},
+      "method": "BasicLattice.makeIrredundantJoin",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          1
+        ],
+        "string_repr": "[1]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nm3 = Lattices.latticeFromJoin(\"M3\", join_m3)\ndef _labs(xs):\n    if xs is None:\n        return None\n    return sorted([int(str(x)) for x in list(xs)])\ndef _lab(x):\n    if x is None:\n        return None\n    try:\n        return int(str(x))\n    except Exception:\n        return str(x)\nif sys.platform.startswith(\"java\"):\n    a0 = lat.getElement(0)\n    a1 = lat.getElement(1)\n    try:\n        from java.util import ArrayList\n        join_args = ArrayList()\n        join_args.add(a0)\n        join_args.add(a1)\n        empty_args = ArrayList()\n    except Exception:\n        join_args = [a0, a1]\n        empty_args = []\nelse:\n    a0 = 0\n    a1 = 1\n    join_args = [a0, a1]\n    empty_args = []\n\njis = list(lat.joinIrreducibles() if hasattr(lat, 'joinIrreducibles') else lat.join_irreducibles())\n",
+      "skip_string_check": true,
+      "xfail_reason": "Owner/library: makeIrredundantJoin is not bound on PyBasicLattice."
+    },
+    {
+      "args": [],
+      "call": "_labs(lat.makeIrredundantMeet(mis))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "makeIrredundantMeet of meet-irreducibles",
+      "expected_exception": null,
+      "id": "basic_lattice_make_irredundant_meet",
+      "kwargs": {},
+      "method": "BasicLattice.makeIrredundantMeet",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          0
+        ],
+        "string_repr": "[0]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nm3 = Lattices.latticeFromJoin(\"M3\", join_m3)\ndef _labs(xs):\n    if xs is None:\n        return None\n    return sorted([int(str(x)) for x in list(xs)])\ndef _lab(x):\n    if x is None:\n        return None\n    try:\n        return int(str(x))\n    except Exception:\n        return str(x)\nif sys.platform.startswith(\"java\"):\n    a0 = lat.getElement(0)\n    a1 = lat.getElement(1)\n    try:\n        from java.util import ArrayList\n        join_args = ArrayList()\n        join_args.add(a0)\n        join_args.add(a1)\n        empty_args = ArrayList()\n    except Exception:\n        join_args = [a0, a1]\n        empty_args = []\nelse:\n    a0 = 0\n    a1 = 1\n    join_args = [a0, a1]\n    empty_args = []\n\nmis = list(lat.meetIrreducibles() if hasattr(lat, 'meetIrreducibles') else lat.meet_irreducibles())\n",
+      "skip_string_check": true,
+      "xfail_reason": "Owner/library: makeIrredundantMeet is not bound on PyBasicLattice."
+    },
+    {
+      "args": [],
+      "call": "lat.con().cardinality() if lat.con() is not None else None",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "con() of a 2-chain BasicLattice",
+      "expected_exception": null,
+      "id": "basic_lattice_con",
+      "kwargs": {},
+      "method": "BasicLattice.con",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nm3 = Lattices.latticeFromJoin(\"M3\", join_m3)\ndef _labs(xs):\n    if xs is None:\n        return None\n    return sorted([int(str(x)) for x in list(xs)])\ndef _lab(x):\n    if x is None:\n        return None\n    try:\n        return int(str(x))\n    except Exception:\n        return str(x)\nif sys.platform.startswith(\"java\"):\n    a0 = lat.getElement(0)\n    a1 = lat.getElement(1)\n    try:\n        from java.util import ArrayList\n        join_args = ArrayList()\n        join_args.add(a0)\n        join_args.add(a1)\n        empty_args = ArrayList()\n    except Exception:\n        join_args = [a0, a1]\n        empty_args = []\nelse:\n    a0 = 0\n    a1 = 1\n    join_args = [a0, a1]\n    empty_args = []\n",
+      "skip_string_check": true,
+      "xfail_reason": "Owner/library: BasicLattice.con is not bound on PyBasicLattice. Java Con(chain2) has cardinality 2."
+    },
+    {
+      "args": [],
+      "call": "lat.sub().cardinality() if lat.sub() is not None else None",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "sub() of a 2-chain BasicLattice",
+      "expected_exception": null,
+      "id": "basic_lattice_sub",
+      "kwargs": {},
+      "method": "BasicLattice.sub",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 4,
+        "string_repr": "4",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nm3 = Lattices.latticeFromJoin(\"M3\", join_m3)\ndef _labs(xs):\n    if xs is None:\n        return None\n    return sorted([int(str(x)) for x in list(xs)])\ndef _lab(x):\n    if x is None:\n        return None\n    try:\n        return int(str(x))\n    except Exception:\n        return str(x)\nif sys.platform.startswith(\"java\"):\n    a0 = lat.getElement(0)\n    a1 = lat.getElement(1)\n    try:\n        from java.util import ArrayList\n        join_args = ArrayList()\n        join_args.add(a0)\n        join_args.add(a1)\n        empty_args = ArrayList()\n    except Exception:\n        join_args = [a0, a1]\n        empty_args = []\nelse:\n    a0 = 0\n    a1 = 1\n    join_args = [a0, a1]\n    empty_args = []\n",
+      "skip_string_check": true,
+      "xfail_reason": "Owner/library: BasicLattice.sub is not bound on PyBasicLattice. Java Sub(chain2) has cardinality 4."
+    },
+    {
+      "args": [],
+      "call": "uc_vals",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Upper covers of 0 via poset (Java POElem, Python OrderedSet)",
+      "expected_exception": null,
+      "id": "ordered_set_upper_covers_via_poset",
+      "kwargs": {},
+      "method": "OrderedSet.getUpperCovers",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          1
+        ],
+        "string_repr": "[1]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nm3 = Lattices.latticeFromJoin(\"M3\", join_m3)\ndef _labs(xs):\n    if xs is None:\n        return None\n    return sorted([int(str(x)) for x in list(xs)])\ndef _lab(x):\n    if x is None:\n        return None\n    try:\n        return int(str(x))\n    except Exception:\n        return str(x)\nif sys.platform.startswith(\"java\"):\n    a0 = lat.getElement(0)\n    a1 = lat.getElement(1)\n    try:\n        from java.util import ArrayList\n        join_args = ArrayList()\n        join_args.add(a0)\n        join_args.add(a1)\n        empty_args = ArrayList()\n    except Exception:\n        join_args = [a0, a1]\n        empty_args = []\nelse:\n    a0 = 0\n    a1 = 1\n    join_args = [a0, a1]\n    empty_args = []\n\np = lat.getPoset()\nif sys.platform.startswith(\"java\"):\n    uc_vals = _labs(a0.upperCovers())\nelse:\n    uc_vals = _labs(p.getUpperCovers(0) if hasattr(p, \"getUpperCovers\") else p.get_upper_covers(0))\n",
+      "skip_string_check": true,
+      "xfail_reason": null
     }
   ]
 }

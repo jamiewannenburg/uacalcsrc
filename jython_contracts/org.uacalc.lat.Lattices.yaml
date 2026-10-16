@@ -1,0 +1,39 @@
+target: org.uacalc.lat.Lattices
+level: file
+status: implemented
+java_source: org/uacalc/lat/Lattices.java
+notes: |
+  Static facade. latticeFromJoin returns null when the join is not a lattice
+  (Java catch-and-null). dual NPEs (known Java bug; shim matches).
+  conToSmallLattice always returns null in Java (known Java bug; shim matches).
+ignore_reason: null
+surface:
+  package_export: true
+  aliases: {}
+  static_methods:
+    - Lattices.latticeFromJoin
+    - Lattices.latticeFromMeet
+    - Lattices.dual
+    - Lattices.conToSmallLattice
+  str_parity: false
+testing:
+  notes: |
+    lattices_facade_smoke.py builds a 2-element chain via latticeFromJoin and
+    latticeFromMeet. Golden tests/parity/lat cover dual NPE and
+    conToSmallLattice null.
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/lattices_facade_smoke.py
+      covers:
+        - Lattices.latticeFromJoin
+        - Lattices.latticeFromMeet
+      ignore_lines:
+        - "labels has size"
+        - "ucs has size"
+    - path: jython_comparison/scripts/basic_lattice_api.py
+      covers:
+        - Lattices.dual
+        - Lattices.conToSmallLattice
+      ignore_lines:
+        - "labels has size"
+        - "ucs has size"

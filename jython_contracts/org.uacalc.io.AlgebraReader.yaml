@@ -6,8 +6,9 @@ notes: |
   File and stream constructors plus the four read methods. SAX callbacks
   (characters / startElement / endElement) and main are not bound.
   Nested product/power/quotient/subalgebra XML is still materialized as
-  the last BasicAlgebra (owner/library roadmap). freeAlgebra XML is
-  consumed the same way Java does: no FreeAlgebra reconstruction.
+  the last BasicAlgebra (owner/library roadmap). freeAlgebra XML rebuilds
+  F(n) from the nested generating algebra (known Java bug: Java has no
+  freeAlgebra end-element handler and returns the generating algebra).
 ignore_reason: null
 surface:
   package_export: true

@@ -38,10 +38,10 @@ slices:
       File-level contracts for AlgebraIO / AlgebraReader / AlgebraWriter /
       ExtFileFilter / Mace4Reader / BadAlgebraFileException; JSONChannel ignored.
       write_free_algebra emits Java <freeAlgebra> coordinate tuples; reader
-      matches Java's missing freeAlgebra handler (returns the generating
-      algebra). Product/power/quotient/subalgebra writers remain stubs
+      rebuilds F(n) (known Java bug: Java returns the generating algebra).
+      Product/power/quotient/subalgebra writers remain stubs
       (to_basic_algebra route) and nested typed reads are flagged. Branch
-      cursor/io-coverage.
+      cursor/lat-coverage.
 
   - id: core-alg-base
     title: Core algebras (BasicAlgebra, SmallAlgebra, products, …) excluding conlat/op subtrees
@@ -190,12 +190,16 @@ slices:
     depends_on: []
     owner: agent-a
     status: parity_golden
-    last_updated: "2026-04-18"
+    last_updated: "2026-10-16"
     workstreams: []
     parity_tests_dir: tests/parity/lat
     notes: >-
-      Golden surface tests/parity/lat/golden_lat_surface.py; test_lat_shim_exports.py for CPython
-      dir()/identity checks vs uacalc_lib.lat. agent-a.
+      File-level contracts for Lattices / BasicLattice / OrderedSets; Lattice /
+      SmallLattice / Order ignored (interfaces). Behavioral goldens cover
+      join/meet/order, irreducibles, covers, filter/ideal, algebraType, dual NPE,
+      conToSmallLattice null, maximals (divisibility/prefix/natural). GUI/drawing,
+      latdraw POElem, makeOrderedSet, and Malcev left as leftovers. Branch
+      cursor/lat-coverage.
 
   - id: core-terms
     title: Terms and Taylor operations

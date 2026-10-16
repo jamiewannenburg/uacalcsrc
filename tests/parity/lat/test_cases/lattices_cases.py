@@ -236,3 +236,423 @@ else:
         expected_exception="NullPointerException",
     ),
 ]
+
+_CHAIN = _MAKE_OPS + """
+import sys
+lat = Lattices.latticeFromJoin("chain2j", join2)
+m3 = Lattices.latticeFromJoin("M3", join_m3)
+def _labs(xs):
+    if xs is None:
+        return None
+    return sorted([int(str(x)) for x in list(xs)])
+def _lab(x):
+    if x is None:
+        return None
+    try:
+        return int(str(x))
+    except Exception:
+        return str(x)
+if sys.platform.startswith("java"):
+    a0 = lat.getElement(0)
+    a1 = lat.getElement(1)
+    try:
+        from java.util import ArrayList
+        join_args = ArrayList()
+        join_args.add(a0)
+        join_args.add(a1)
+        empty_args = ArrayList()
+    except Exception:
+        join_args = [a0, a1]
+        empty_args = []
+else:
+    a0 = 0
+    a1 = 1
+    join_args = [a0, a1]
+    empty_args = []
+"""
+
+_FILE_LATTICE = """
+from org.uacalc.io import AlgebraIO
+from org.uacalc.alg.op import OperationSymbol
+from org.uacalc.lat import Lattices, BasicLattice
+lat2 = AlgebraIO.readAlgebraFile("resources/algebras/lat2.ua")
+c2 = AlgebraIO.readAlgebraFile("resources/algebras/cyclic2.ua")
+join_sym = OperationSymbol("join", 2)
+lat2_join = lat2.getOperation(join_sym)
+"""
+
+TEST_CASES.extend([
+    TestCaseSpec(
+        id="basic_lattice_one",
+        method="BasicLattice.one",
+        setup=_CHAIN,
+        call="_lab(lat.one())",
+        description="Top element of the 2-chain",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="basic_lattice_atoms_chain",
+        method="BasicLattice.atoms",
+        setup=_CHAIN,
+        call="_labs(lat.atoms())",
+        description="Atoms of the 2-chain",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="basic_lattice_atoms_diamond",
+        method="BasicLattice.atoms",
+        setup=_CHAIN,
+        call="_labs(m3.atoms())",
+        description="Atoms of the 4-element diamond",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="basic_lattice_coatoms_chain",
+        method="BasicLattice.coatoms",
+        setup=_CHAIN,
+        call="_labs(lat.coatoms())",
+        description="Coatoms of the 2-chain",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="basic_lattice_coatoms_diamond",
+        method="BasicLattice.coatoms",
+        setup=_CHAIN,
+        call="_labs(m3.coatoms())",
+        description="Coatoms of the 4-element diamond",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="basic_lattice_meet_irreducibles",
+        method="BasicLattice.meetIrreducibles",
+        setup=_CHAIN,
+        call="_labs(lat.meetIrreducibles() if hasattr(lat, 'meetIrreducibles') else lat.meet_irreducibles())",
+        description="Meet-irreducibles of the 2-chain",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="basic_lattice_filter",
+        method="BasicLattice.filter",
+        setup=_CHAIN,
+        call="_labs(lat.filter(a0))",
+        description="Filter of 0 in the 2-chain",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="basic_lattice_ideal",
+        method="BasicLattice.ideal",
+        setup=_CHAIN,
+        call="_labs(lat.ideal(a1))",
+        description="Ideal of 1 in the 2-chain",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="basic_lattice_upper_covers",
+        method="BasicLattice.upperCovers",
+        setup=_CHAIN,
+        call="_labs(lat.upperCovers(a0) if hasattr(lat, 'upperCovers') else lat.upper_covers(a0))",
+        description="Upper covers of 0 in the 2-chain",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="basic_lattice_lower_covers",
+        method="BasicLattice.lowerCovers",
+        setup=_CHAIN,
+        call="_labs(lat.lowerCovers(a1) if hasattr(lat, 'lowerCovers') else lat.lower_covers(a1))",
+        description="Lower covers of 1 in the 2-chain",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="basic_lattice_get_element",
+        method="BasicLattice.getElement",
+        setup=_CHAIN,
+        call="_lab(lat.getElement(0))",
+        description="getElement(0) of the 2-chain",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="basic_lattice_element_index",
+        method="BasicLattice.elementIndex",
+        setup=_CHAIN,
+        call="lat.elementIndex(a0) if hasattr(lat, 'elementIndex') else lat.element_index(a0)",
+        description="elementIndex of bottom in the 2-chain",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="basic_lattice_algebra_type",
+        method="BasicLattice.algebraType",
+        setup=_CHAIN,
+        call="str(lat.algebraType())",
+        description="algebraType of a BasicLattice",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="basic_lattice_get_universe_order",
+        method="BasicLattice.getUniverseOrder",
+        setup=_CHAIN,
+        call="lat.getUniverseOrder()",
+        description="getUniverseOrder always returns null/None",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="basic_lattice_convert_to_default_value_ops",
+        method="BasicLattice.convertToDefaultValueOps",
+        setup=_CHAIN,
+        call="lat.convertToDefaultValueOps()",
+        description="convertToDefaultValueOps raises UnsupportedOperationException",
+        expected_exception="UnsupportedOperationException",
+    ),
+    TestCaseSpec(
+        id="basic_lattice_instance_dual",
+        method="BasicLattice.dual",
+        setup=_CHAIN,
+        call="lat.dual()",
+        description="Instance dual delegates to Lattices.dual (Java NPE)",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="basic_lattice_get_poset",
+        method="BasicLattice.getPoset",
+        setup=_CHAIN + """
+p = lat.getPoset()
+if hasattr(p, "univ"):
+    poset_card = len(list(p.univ()))
+else:
+    poset_card = p.cardinality()
+""",
+        call="poset_card",
+        description="getPoset cardinality matches the lattice",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="basic_lattice_join_list",
+        method="BasicLattice.join",
+        setup=_CHAIN,
+        call="_lab(lat.join(join_args))",
+        description="join(List) of {0,1} in the 2-chain",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="basic_lattice_join_empty_list",
+        method="BasicLattice.join",
+        setup=_CHAIN,
+        call="_lab(lat.join(empty_args))",
+        description="join([]) is zero",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="basic_lattice_meet_list",
+        method="BasicLattice.meet",
+        setup=_CHAIN,
+        call="_lab(lat.meet(join_args))",
+        description="meet(List) of {0,1} in the 2-chain",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="basic_lattice_universe",
+        method="BasicLattice.universe",
+        setup=_CHAIN,
+        call="_labs(lat.universe())",
+        description="universe() of the 2-chain as sorted labels",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="basic_lattice_get_universe_list",
+        method="BasicLattice.getUniverseList",
+        setup=_CHAIN,
+        call="_labs(lat.getUniverseList())",
+        description="getUniverseList of the 2-chain as sorted labels",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="basic_lattice_join_irreds_below",
+        method="BasicLattice.joinIrredsBelow",
+        setup=_CHAIN,
+        call="_labs(lat.joinIrredsBelow(a1))",
+        description="joinIrredsBelow(1) in the 2-chain",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="basic_lattice_meet_irreds_above",
+        method="BasicLattice.meetIrredsAbove",
+        setup=_CHAIN,
+        call="_labs(lat.meetIrredsAbove(a0))",
+        description="meetIrredsAbove(0) in the 2-chain",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="basic_lattice_from_con_c2",
+        method="BasicLattice.cardinality",
+        setup=_FILE_LATTICE + """
+con = c2.con()
+con_lat = BasicLattice("ConC2", con, False)
+""",
+        call="con_lat.cardinality()",
+        description="BasicLattice from Con(C2) cardinality",
+        skip_string_check=True,
+        xfail_reason=(
+            "Owner/library: BasicLattice(name, CongruenceLattice, label) on "
+            "Python yields cardinality 0; Java Con(C2) has cardinality 2."
+        ),
+    ),
+    TestCaseSpec(
+        id="lattice_from_join_lat2_file",
+        method="Lattices.latticeFromJoin",
+        setup=_FILE_LATTICE,
+        call='Lattices.latticeFromJoin("from_lat2", lat2_join)',
+        description="latticeFromJoin of join table from lat2.ua",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="ordered_sets_maximals_prefix",
+        method="OrderedSets.maximals",
+        setup=_MAKE_OPS + """
+import sys
+if sys.platform.startswith("java"):
+    from org.uacalc.lat import Order
+    class _Pref(Order):
+        def leq(self, a, b):
+            sa = str(a)
+            sb = str(b)
+            return sb.startswith(sa)
+    order = _Pref()
+else:
+    from org.uacalc.lat import PrefixOrder
+    order = PrefixOrder()
+""",
+        call="list(OrderedSets.maximals(['ab', 'a', 'abc', 'xy'], order))",
+        description="Maximals under prefix order",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="ordered_sets_maximals_natural",
+        method="OrderedSets.maximals",
+        setup=_MAKE_OPS + """
+import sys
+if sys.platform.startswith("java"):
+    from org.uacalc.lat import Order
+    class _Nat(Order):
+        def leq(self, a, b):
+            return a <= b
+    order = _Nat()
+else:
+    from org.uacalc.lat import NaturalOrder
+    order = NaturalOrder()
+""",
+        call="list(OrderedSets.maximals([3, 1, 4, 2], order))",
+        description="Maximals under natural integer order",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="basic_lattice_find_join_irred",
+        method="BasicLattice.findJoinIrred",
+        setup=_CHAIN,
+        call="_lab(lat.findJoinIrred(a1, a0))",
+        description="findJoinIrred(1, 0) in the 2-chain",
+        skip_string_check=True,
+        xfail_reason=(
+            "Owner/library: findJoinIrred is not bound on PyBasicLattice. "
+            "Java returns 1 on the 2-chain."
+        ),
+    ),
+    TestCaseSpec(
+        id="basic_lattice_find_meet_irred",
+        method="BasicLattice.findMeetIrred",
+        setup=_CHAIN,
+        call="_lab(lat.findMeetIrred(a0, a1))",
+        description="findMeetIrred(0, 1) in the 2-chain",
+        skip_string_check=True,
+        xfail_reason=(
+            "Owner/library: findMeetIrred is not bound on PyBasicLattice. "
+            "Java returns 0 on the 2-chain."
+        ),
+    ),
+    TestCaseSpec(
+        id="basic_lattice_irredundant_join_decomp",
+        method="BasicLattice.irredundantJoinDecomposition",
+        setup=_CHAIN,
+        call="_labs(lat.irredundantJoinDecomposition(a1))",
+        description="irredundantJoinDecomposition of 1 in the 2-chain",
+        skip_string_check=True,
+        xfail_reason=(
+            "Owner/library: irredundantJoinDecomposition is not bound on "
+            "PyBasicLattice."
+        ),
+    ),
+    TestCaseSpec(
+        id="basic_lattice_irredundant_meet_decomp",
+        method="BasicLattice.irredundantMeetDecomposition",
+        setup=_CHAIN,
+        call="_labs(lat.irredundantMeetDecomposition(a0))",
+        description="irredundantMeetDecomposition of 0 in the 2-chain",
+        skip_string_check=True,
+        xfail_reason=(
+            "Owner/library: irredundantMeetDecomposition is not bound on "
+            "PyBasicLattice."
+        ),
+    ),
+    TestCaseSpec(
+        id="basic_lattice_make_irredundant_join",
+        method="BasicLattice.makeIrredundantJoin",
+        setup=_CHAIN + """
+jis = list(lat.joinIrreducibles() if hasattr(lat, 'joinIrreducibles') else lat.join_irreducibles())
+""",
+        call="_labs(lat.makeIrredundantJoin(jis))",
+        description="makeIrredundantJoin of join-irreducibles",
+        skip_string_check=True,
+        xfail_reason=(
+            "Owner/library: makeIrredundantJoin is not bound on PyBasicLattice."
+        ),
+    ),
+    TestCaseSpec(
+        id="basic_lattice_make_irredundant_meet",
+        method="BasicLattice.makeIrredundantMeet",
+        setup=_CHAIN + """
+mis = list(lat.meetIrreducibles() if hasattr(lat, 'meetIrreducibles') else lat.meet_irreducibles())
+""",
+        call="_labs(lat.makeIrredundantMeet(mis))",
+        description="makeIrredundantMeet of meet-irreducibles",
+        skip_string_check=True,
+        xfail_reason=(
+            "Owner/library: makeIrredundantMeet is not bound on PyBasicLattice."
+        ),
+    ),
+    TestCaseSpec(
+        id="basic_lattice_con",
+        method="BasicLattice.con",
+        setup=_CHAIN,
+        call="lat.con().cardinality() if lat.con() is not None else None",
+        description="con() of a 2-chain BasicLattice",
+        skip_string_check=True,
+        xfail_reason=(
+            "Owner/library: BasicLattice.con is not bound on PyBasicLattice. "
+            "Java Con(chain2) has cardinality 2."
+        ),
+    ),
+    TestCaseSpec(
+        id="basic_lattice_sub",
+        method="BasicLattice.sub",
+        setup=_CHAIN,
+        call="lat.sub().cardinality() if lat.sub() is not None else None",
+        description="sub() of a 2-chain BasicLattice",
+        skip_string_check=True,
+        xfail_reason=(
+            "Owner/library: BasicLattice.sub is not bound on PyBasicLattice. "
+            "Java Sub(chain2) has cardinality 4."
+        ),
+    ),
+    TestCaseSpec(
+        id="ordered_set_upper_covers_via_poset",
+        method="OrderedSet.getUpperCovers",
+        setup=_CHAIN + """
+p = lat.getPoset()
+if sys.platform.startswith("java"):
+    uc_vals = _labs(a0.upperCovers())
+else:
+    uc_vals = _labs(p.getUpperCovers(0) if hasattr(p, "getUpperCovers") else p.get_upper_covers(0))
+""",
+        call="uc_vals",
+        description="Upper covers of 0 via poset (Java POElem, Python OrderedSet)",
+        skip_string_check=True,
+    ),
+])
