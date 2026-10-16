@@ -40,11 +40,9 @@ def main():
         print('NAME: ' + n)
 
     g = PermutationGroup('S2', [(0, 1)])
-    # Java default __str__ is unstable (object id); Rust/Python use a readable repr.
-    if is_java:
-        print('SMOKE_S2_NAME: ' + str(g.getName()))
-    else:
-        print('SMOKE_S2_NAME: ' + str(g.get_name()))
+    # Java default __str__ is unstable (object id); use getName on both runtimes.
+    getter = getattr(g, 'getName', None) or getattr(g, 'get_name')
+    print('SMOKE_S2_NAME: ' + str(getter()))
 
 
 if __name__ == '__main__':

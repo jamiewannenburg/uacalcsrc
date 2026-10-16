@@ -1,0 +1,19 @@
+target: org.uacalc.group
+level: package
+status: implemented
+java_source: null
+notes: |
+  Thin package index. The only public class is PermutationGroup.
+  Anonymous Operation.valueAt inside make*Op is covered via the factories.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases: {}
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    Behavioral golden tests live in tests/parity/group. group_ops.py covers
+    static prod/inv/id, make*Op.valueAt, constructors, and group closure.
+  task_refs: []
+  scripts: []

@@ -1,8 +1,29 @@
 """Compatibility shim for ``org.uacalc.group`` (permutation groups).
 
-CPython re-exports ``uacalc_lib.group`` when available. Jython uses the Java
-package from the classpath.
+CPython: re-export ``uacalc_lib.group`` and apply a Java-shaped facade.
+Jython uses the Java package from the classpath.
 """
+
+# Literal map for jython_contracts validate() (also applied by _jython_compat).
+_CLASS_ALIASES = {
+    "PermutationGroup": {
+        "getName": "get_name",
+        "setName": "setName",
+        "getDescription": "getDescription",
+        "setDescription": "setDescription",
+        "cardinality": "cardinality",
+        "universe": "universe",
+        "operations": "operations",
+        "inputSize": "inputSize",
+        "toString": "toString",
+        "prod": "prod",
+        "inv": "inv",
+        "id": "id",
+        "makeProdOp": "makeProdOp",
+        "makeInvOp": "makeInvOp",
+        "makeIdOp": "makeIdOp",
+    },
+}
 
 
 def _load_from_uacalc_lib() -> None:
@@ -15,6 +36,10 @@ def _load_from_uacalc_lib() -> None:
     for _name in dir(_group):
         if not _name.startswith("_"):
             g[_name] = getattr(_group, _name)
+
+    from org.uacalc.group._jython_compat import _install as _install_jython_compat
+
+    _install_jython_compat(g)
 
 
 if __import__("sys").platform.startswith("java"):

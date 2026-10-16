@@ -1,0 +1,60 @@
+target: org.uacalc.group.PermutationGroup
+level: file
+status: implemented
+java_source: org/uacalc/group/PermutationGroup.java
+notes: |
+  Extends GeneralAlgebra but never installs a universe or operations, so
+  cardinality() is -1 and universe()/operations() are null. Live API is the
+  two constructors plus static prod/inv/id and makeProdOp/makeInvOp/makeIdOp.
+  Java toString is Object@hex (skip_string_check). uacalc_lib extras
+  (to_basic_algebra, automorphism_group) are not on the Java class.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    getName: get_name
+    setName: setName
+    getDescription: getDescription
+    setDescription: setDescription
+    cardinality: cardinality
+    universe: universe
+    operations: operations
+    inputSize: inputSize
+    toString: toString
+    prod: prod
+    inv: inv
+    id: id
+    makeProdOp: makeProdOp
+    makeInvOp: makeInvOp
+    makeIdOp: makeIdOp
+  static_methods:
+    - prod
+    - inv
+    - id
+    - makeProdOp
+    - makeInvOp
+    - makeIdOp
+  str_parity: false
+testing:
+  notes: |
+    Goldens cover identity/product/inverse on degrees 0–5, closure of
+    symmetric/cyclic/dihedral/Klein groups, element listing order,
+    instance GeneralAlgebra shell (cardinality -1), make*Op.valueAt,
+    and edge cases (degree 1, empty generators, null/cast/bounds).
+  task_refs: []
+  scripts:
+    - path: jython_comparison/scripts/group_ops.py
+      covers:
+        - prod
+        - inv
+        - id
+        - makeProdOp
+        - makeInvOp
+        - makeIdOp
+        - getName
+        - cardinality
+        - universe
+        - operations
+        - toString
+      ignore_lines:
+        - "pass:"
