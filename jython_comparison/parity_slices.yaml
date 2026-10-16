@@ -69,12 +69,13 @@ slices:
       UnaryTermsMonoid (no Malcev) Jython shims on org.uacalc.alg with golden
       behavioral cases in tests/parity/alg, including AlgebraIO write/read
       value round-trips and Java-named conversion-path exceptions. CloserTiming
-      is UI-only and is not wrapped. Branch cursor/alg-leftovers.
-      Leftovers from PR #58: ReductAlgebra.congruenceAsAlgebra;
-      PolinLikeAlgebra.constructPolinAlgebra / polinizeOperation;
-      AlgebraWithGeneratingVector.siDecompose relations overload;
-      GeneralAlgebra empty-universe constructor;
-      UnaryTermsMonoid.getUniverseList (Java-style terms).
+      is UI-only and is not wrapped. Former PR #58 leftovers now have passing
+      goldens: ReductAlgebra.congruenceAsAlgebra, PolinLikeAlgebra.constructPolinAlgebra
+      / polinizeOperation, AlgebraWithGeneratingVector.siDecompose relations,
+      GeneralAlgebra empty-universe constructor, UnaryTermsMonoid.getUniverseList.
+      FreeAlgebra.getVariableToGeneratorMap is on the smoke script / contract
+      covers list but has no behavioral golden. Malcev and BigProductAlgebra
+      remain pending.
 
   - id: core-alg-op
     title: Operation symbols and operations
@@ -135,7 +136,9 @@ slices:
       Timing, thread counts, ForkJoinPool/ProgressReport/CloserTiming, and the
       parallel term map are deliberately skipped (non-deterministic /
       thread-internal). SingleClose.main is an empty stub. Small algebras take
-      the serial SingleClose path (computationSize < 1e6). Branch
+      the serial SingleClose path (computationSize < 1e6). Strict xfails:
+      single_close_c2_one_step / single_close_m3_one_step (Java
+      IntOperation.valueAt(int[][]) is UOE; Rust uses value_at_arrays). Branch
       fplat-parallel-coverage.
 
   - id: core-alg-sublat
@@ -321,10 +324,12 @@ slices:
       - core-alg-base
     owner: agent-d
     status: parity_golden
-    last_updated: "2026-04-18"
+    last_updated: "2026-10-16"
     workstreams: []
     parity_tests_dir: tests/parity/example
     notes: >-
-      parity_golden: golden_example_surface.py + per-runtime fixtures (Jython imports representative
-      demo classes so ``dir(org.uacalc.example)`` is populated; CPython matches empty uacalc_lib.example).
-      test_example_shim_smoke.py + test_example_golden_surface.py.
+      Surface-only: golden_example_surface.py + per-runtime fixtures (Jython imports
+      representative demo classes so ``dir(org.uacalc.example)`` is populated; CPython
+      matches empty uacalc_lib.example). No file-level contracts and no behavioral
+      goldens for the 16 demo classes. test_example_shim_smoke.py +
+      test_example_golden_surface.py. Demo bindings remain out of scope.

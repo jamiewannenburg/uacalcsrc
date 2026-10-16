@@ -774,7 +774,15 @@ the org shim's `leftSide` / `rightSide` return term objects via
 - **Java**: `doOneStep(ForkJoinPool, Thread, ProgressReport, CloserTiming)`. Constructor prints `increment: N`. Term map may differ across runs (Java comment). `compute()` is the ForkJoin hook.
 - **Python**: `doOneStep` accepts those args and ignores them; uses the library closer pass. Timing, thread counts, and term maps are not compared. New elements are sorted.
 - **Status**: Deterministic element sets compared; internals skipped
-- **Tests**: `single_close_*`, `par_*`
+- **Tests**: `par_*` pass. Direct `single_close_*` one-step goldens are strict xfail (below).
+
+### SingleClose.doOneStep on a Java IntOperation (`valueAt(int[][])`)
+
+- **Java**: `IntOperation.valueAt(int[][])` is `UnsupportedOperationException`. Calling `SingleClose.doOneStep` with a table operation from `Operations.makeIntOperation` therefore does not produce new elements that way.
+- **Python**: Rust `SingleClose` uses `value_at_arrays` and returns new elements. CPython `BigProductAlgebra.operations()` is also not bound, so the script-usable parallel closer remains `Closer.doParallel` / `sgClose`.
+- **Status**: Strict xfail (roadmap). Parallel element-set parity is covered by the `Closer.doParallel` `sgClose` goldens.
+- **Tests**: `single_close_c2_one_step`, `single_close_m3_one_step` strict xfail
+- **Owner vs shim**: Owner/library — `value_at_arrays` vs Java UOE. Not a shim issue.
 
 ### Closer.doParallel / sgCloseParallel
 
