@@ -65,6 +65,12 @@ _CLASS_ALIASES = {
         "joinIrreducible": "join_irreducible",
         "meetIrreducible": "meet_irreducible",
         "inputSize": "input_size",
+        "typeJI": "typeJI",
+        "typeSet": "typeSet",
+        "type": "type",
+        "subtrace": "subtrace",
+        "getTypeFinder": "getTypeFinder",
+        "getJoinIrredToSubtraceMap": "getJoinIrredToSubtraceMap",
     },
     "BinaryRelation": {
         "universeSize": "universe_size",

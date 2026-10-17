@@ -20,7 +20,7 @@ def _ensure_python_org_on_path() -> None:
 # Full term-finding suite on tiny SI algebras. z3/polin only run cheap probes
 # (F(2)^4 / path search on polin is too large for a 5-repeat loop).
 _FULL = ("cyclic2.ua", "cyclic3.ua", "lat2.ua")
-_CHEAP = ("z3.ua", "polin.ua")
+_CHEAP = ("z3.ua", "polin.ua", "n5.ua", "m3.ua", "ba2.ua")
 _REPEATS = 5
 
 
@@ -41,6 +41,8 @@ def _full_probes(Malcev, alg):
         ("jonssonLevel", lambda: Malcev.jonssonLevel(alg)),
         ("sdmeetTerms", lambda: _term(Malcev.sdmeetTerms(alg))),
         ("congruenceModularVariety", lambda: Malcev.congruenceModularVariety(alg)),
+        ("fixedKEdgeIdempotent", lambda: Malcev.fixedKEdgeIdempotent(alg, 2, None)),
+        ("nuTermIdempotent_Bad", lambda: Malcev.nuTermIdempotent_Bad(alg, 3, None)),
     )
 
 

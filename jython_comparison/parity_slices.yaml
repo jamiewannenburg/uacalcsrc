@@ -82,8 +82,13 @@ slices:
       over cyclic2 plus F(1) over cyclic3, lat2, n5, and m3. Malcev is wrapped
       with malcev_jython.json goldens plus a 5-run determinism test; FreeAlgebra
       with decompose=true is used for Malcev and compared on SI and non-SI
-      F(n). gummTerms/primalityTerms NPEs remain known Java bugs. BigProductAlgebra
-      remains pending.
+      F(n). Path internals (jonssonLevelPath, gummLevelPath,
+      hagemannMitschkeLevelPath, jonssonLevelAux) and Horowitz searches
+      (nuTermIdempotent_Bad, fixedKEdgeIdempotent, fixedKPermIdempotent,
+      permLevelIdempotent) are bound in uacalc_lib. Goldens also cover N5,
+      M3, ba2, a 2-element semilattice, S3, a 3-element quasigroup, Type1
+      unary, and seeded random algebras. gummTerms/primalityTerms NPEs remain
+      known Java bugs. BigProductAlgebra remains pending.
 
   - id: core-alg-op
     title: Operation symbols and operations
@@ -127,7 +132,10 @@ slices:
       round-trips and Java-named conversion-path exceptions. UI, ProgressReport,
       main, toMatt, generalizedWeakClosure, closureAt, projection, and termMap
       overloads are not wrapped. nextPairForSubtrace mutates caller Set/List
-      of IntArray in the org shim. Branch wrap-remaining-java-surface.
+      of IntArray in the org shim. TCT typeSet/type/typeJI/subtrace and
+      TypeFinder/Subtrace goldens cover types 1-5 (unary permutation, C2,
+      ba2, lat2/N5/M3, 2-element semilattice). subtrace(one, zero) matches
+      Java IAE. Branch malcev-taylor-tct-coverage.
 
   - id: core-alg-parallel
     title: Parallel closers / pool (if exposed to scripts)
@@ -246,13 +254,17 @@ slices:
       - core-alg-base
     owner: agent-d
     status: parity_golden
-    last_updated: "2026-10-16"
+    last_updated: "2026-10-17"
     workstreams: []
     parity_tests_dir: tests/parity/terms
     notes: >-
       Behavioral golden tests/parity/terms cover Term / VariableImp / NonVariableTerm /
-      Terms (parse, eval, interpretation, substitute). Taylor/MMS is ignored with
-      Malcev. Nested anonymous Operation methods inside interpretation() are leftover.
+      Terms (parse, eval, interpretation, substitute) and Taylor/MMS (constructors,
+      canonicalForm, interprets, markovicMcKenzieTerm, siggersTerm,
+      makeBalancedTayorTerm, lexicographicallyCompare). Nested anonymous Operation
+      methods inside interpretation() are leftover. canonicalForm(IntArray) is a
+      known Java ArrayStoreException xfail. interprets copies Java's
+      return-null-on-success bug.
 
   - id: core-group
     title: Permutation groups

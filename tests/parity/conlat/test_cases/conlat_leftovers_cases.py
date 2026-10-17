@@ -124,6 +124,21 @@ TEST_CASES = [
         **_LIST
     ),
     TestCaseSpec(
+        id="st_second",
+        method="Subtrace.second",
+        setup=_SETUP,
+        call="st.second()",
+        description="Subtrace.second()",
+    ),
+    TestCaseSpec(
+        id="st_has_involution",
+        method="Subtrace.hasInvolution",
+        setup=_SETUP,
+        call="st.hasInvolution()",
+        description="Subtrace.hasInvolution()",
+        **_BOOL
+    ),
+    TestCaseSpec(
         id="st_set_type",
         method="Subtrace.setType",
         setup=_SETUP,
@@ -132,18 +147,34 @@ TEST_CASES = [
     ),
     TestCaseSpec(
         id="st_set_get_universe",
-        method="Subtrace.getSubtraceUniverse",
+        method="Subtrace.setSubtraceUniverse",
         setup=_SETUP,
         call="(st.setSubtraceUniverse([IntArray([0,1]), IntArray([1,0])]), _ias(st.getSubtraceUniverse()))[1]",
         description="set/get subtrace universe",
         **_LIST
     ),
     TestCaseSpec(
+        id="st_get_universe",
+        method="Subtrace.getSubtraceUniverse",
+        setup=_SETUP,
+        call="_ias(st.getSubtraceUniverse())",
+        description="getSubtraceUniverse default",
+        **_LIST
+    ),
+    TestCaseSpec(
         id="st_set_get_matrix",
-        method="Subtrace.getMatrixUniverse",
+        method="Subtrace.setMatrixUniverse",
         setup=_SETUP,
         call="(st.setMatrixUniverse([IntArray([0,0,1,1])]), _ias(st.getMatrixUniverse()))[1]",
         description="set/get matrix universe",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="st_get_matrix",
+        method="Subtrace.getMatrixUniverse",
+        setup=_SETUP,
+        call="_ias(st.getMatrixUniverse())",
+        description="getMatrixUniverse default",
         **_LIST
     ),
     TestCaseSpec(
@@ -423,3 +454,187 @@ TEST_CASES = [
         **_LIST
     ),
 ]
+
+_TCT_SETUP = _SETUP + r"""
+from org.uacalc.alg import BasicAlgebra
+from org.uacalc.alg.op import OperationSymbol, Operations
+from org.uacalc.example import Type1
+ba2 = AlgebraIO.readAlgebraFile("resources/algebras/ba2.ua")
+z3a = AlgebraIO.readAlgebraFile("resources/algebras/z3.ua")
+s3 = AlgebraIO.readAlgebraFile("resources/algebras/sym3.ua")
+meet = Operations.makeIntOperation(OperationSymbol("m", 2), 2, [0, 0, 0, 1])
+sem2 = BasicAlgebra("sem2", 2, [meet])
+unary3 = Type1.cyclicPermutationAlgebra(3)
+tf_ba2 = TypeFinder(ba2)
+tf_sem2 = TypeFinder(sem2)
+tf_unary3 = TypeFinder(unary3)
+tf_z3 = TypeFinder(z3a)
+jis_lat2 = list(lat2.con().joinIrreducibles())
+"""
+
+TEST_CASES.extend([
+    TestCaseSpec(
+        id="tf_ba2_typeset",
+        method="TypeFinder.findTypeSet",
+        setup=_TCT_SETUP,
+        call="sorted(list(tf_ba2.findTypeSet()))",
+        description="2-element Boolean algebra TCT type set",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="tf_sem2_typeset",
+        method="TypeFinder.findTypeSet",
+        setup=_TCT_SETUP,
+        call="sorted(list(tf_sem2.findTypeSet()))",
+        description="2-element meet-semilattice TCT type set (type 5)",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="tf_unary3_typeset",
+        method="TypeFinder.findTypeSet",
+        setup=_TCT_SETUP,
+        call="sorted(list(tf_unary3.findTypeSet()))",
+        description="cyclic permutation algebra TCT type set (type 1)",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="tf_z3_typeset",
+        method="TypeFinder.findTypeSet",
+        setup=_TCT_SETUP,
+        call="sorted(list(tf_z3.findTypeSet()))",
+        description="z3 vector space TCT type set (type 2)",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="cl_type_set_ba2",
+        method="CongruenceLattice.typeSet",
+        setup=_TCT_SETUP,
+        call="sorted(int(x) for x in list(ba2.con().typeSet()))",
+        description="Con(ba2) TCT type set",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="cl_type_set_sem2",
+        method="CongruenceLattice.typeSet",
+        setup=_TCT_SETUP,
+        call="sorted(int(x) for x in list(sem2.con().typeSet()))",
+        description="Con(sem2) TCT type set",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="cl_type_set_n5",
+        method="CongruenceLattice.typeSet",
+        setup=_TCT_SETUP,
+        call="sorted(int(x) for x in list(n5.con().typeSet()))",
+        description="Con(N5) TCT type set",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="cl_type_set_m3",
+        method="CongruenceLattice.typeSet",
+        setup=_TCT_SETUP,
+        call="sorted(int(x) for x in list(m3.con().typeSet()))",
+        description="Con(M3) TCT type set",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="tf_find_type_subtrace_c2",
+        method="TypeFinder.findType",
+        setup=_TCT_SETUP,
+        call="tf_c2.findType(tf_c2.findSubtrace(jis_c2[0]))",
+        description="findType(Subtrace) of C2 unique JI",
+    ),
+    TestCaseSpec(
+        id="tf_find_subtrace_pair_c2",
+        method="TypeFinder.findSubtrace",
+        setup=_TCT_SETUP,
+        call="_st(tf_c2.findSubtrace(IntArray([0, 1])))",
+        description="findSubtrace(IntArray pair) on C2",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="cl_type_beta_alpha_c2",
+        method="CongruenceLattice.type",
+        setup=_TCT_SETUP,
+        call="c2.con().type(c2.con().one(), c2.con().zero())",
+        description="type(one, zero) of Con(C2)",
+    ),
+    TestCaseSpec(
+        id="cl_subtrace_beta_alpha_c2",
+        method="CongruenceLattice.subtrace",
+        setup=_TCT_SETUP,
+        call="_st(c2.con().subtrace(c2.con().one(), c2.con().zero()))",
+        description="subtrace(one, zero) of Con(C2) is IAE (Java findJoinIrred swapped)",
+        expected_exception="IllegalArgumentException",
+        skip_string_check=True,
+        notes="Java findJoinIrred(one, zero) is null; findSubtrace then IAE.",
+    ),
+    TestCaseSpec(
+        id="cl_subtrace_covering_c2",
+        method="CongruenceLattice.subtrace",
+        setup=_TCT_SETUP,
+        call="_st(c2.con().subtrace(c2.con().zero(), c2.con().one()))",
+        description="subtrace(zero, one) of Con(C2): Java's unswapped findJoinIrred",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="cl_join_irred_subtrace_map_c2",
+        method="CongruenceLattice.getJoinIrredToSubtraceMap",
+        setup=_TCT_SETUP,
+        call="(lambda con: (con.subtrace(jis_c2[0]), len(con.getJoinIrredToSubtraceMap())))(c2.con())[1]",
+        description="getJoinIrredToSubtraceMap populated after subtrace()",
+    ),
+    TestCaseSpec(
+        id="tf_lat2_find_type",
+        method="TypeFinder.findType",
+        setup=_TCT_SETUP,
+        call="tf_lat2.findType(jis_lat2[0])",
+        description="lat2 findType of a join irreducible",
+    ),
+    TestCaseSpec(
+        id="cl_type_unary3",
+        method="CongruenceLattice.type",
+        setup=_TCT_SETUP,
+        call="unary3.con().type(list(unary3.con().joinIrreducibles())[0])",
+        description="type() of a JI in the cyclic permutation algebra (type 1)",
+    ),
+    TestCaseSpec(
+        id="cl_type_ba2",
+        method="CongruenceLattice.type",
+        setup=_TCT_SETUP,
+        call="ba2.con().type(list(ba2.con().joinIrreducibles())[0])",
+        description="type() of a JI in ba2 (type 3)",
+    ),
+    TestCaseSpec(
+        id="cl_type_sem2",
+        method="CongruenceLattice.type",
+        setup=_TCT_SETUP,
+        call="sem2.con().type(list(sem2.con().joinIrreducibles())[0])",
+        description="type() of a JI in the 2-element semilattice (type 5)",
+    ),
+    TestCaseSpec(
+        id="cl_type_set_unary3",
+        method="CongruenceLattice.typeSet",
+        setup=_TCT_SETUP,
+        call="sorted(int(x) for x in list(unary3.con().typeSet()))",
+        description="Con(unary3) TCT type set (type 1)",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="cl_type_set_s3",
+        method="CongruenceLattice.typeSet",
+        setup=_TCT_SETUP,
+        call="sorted(int(x) for x in list(s3.con().typeSet()))",
+        description="Con(S3) TCT type set (non-idempotent group)",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="tf_find_subtrace_npe",
+        method="TypeFinder.findSubtrace",
+        setup=_TCT_SETUP,
+        call="tf_c2.findSubtrace(None)",
+        description="findSubtrace(null) is IAE (not join irreducible)",
+        expected_exception="IllegalArgumentException",
+        skip_string_check=True,
+    ),
+])

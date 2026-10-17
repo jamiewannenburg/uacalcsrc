@@ -34,6 +34,18 @@ _CLASS_ALIASES = {
         "getName": "get_name",
     },
     "Terms": {},
+    "Taylor": {
+        "markovicMcKenzieTerm": "markovicMcKenzieTerm",
+        "siggersTerm": "siggersTerm",
+        "canonicalForm": "canonicalForm",
+        "interprets": "interprets",
+        "termFromArray": "termFromArray",
+        "makeBalancedTayorTerm": "makeBalancedTayorTerm",
+        "lexicographicallyCompare": "lexicographicallyCompare",
+        "arity": "arity",
+        "inteqs": "inteqs",
+        "equations": "equations",
+    },
 }
 
 if __import__("sys").platform.startswith("java"):

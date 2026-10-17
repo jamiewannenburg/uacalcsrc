@@ -43,6 +43,7 @@ def _install(alg_module_globals: dict) -> None:
         "MaltsevProductDecomposition"
     )
     _CON_ALGEBRAS: dict = {}
+    _CON_CACHE: dict = {}
     _MISSING = object()
     _LibAlgebraFromMinimalSets = alg_module_globals.get("AlgebraFromMinimalSets")
     _LibAlgebraWithGeneratingVector = alg_module_globals.get("AlgebraWithGeneratingVector")
@@ -1350,9 +1351,7 @@ def _install(alg_module_globals: dict) -> None:
     class Malcev(object):
         """Static facade matching Java ``org.uacalc.alg.Malcev``.
 
-        ProgressReport overloads accept ``None`` only. Unbound Java helpers
-        (TCT type-set, cube-term blockers, ``main``, path internals) stay
-        off this surface.
+        ProgressReport overloads accept ``None`` only. ``main`` is not wrapped.
         """
 
         @staticmethod
@@ -1967,57 +1966,101 @@ def _install(alg_module_globals: dict) -> None:
 
         @staticmethod
         def jonssonLevelPath(middleZero: Any, g0: Any, g2: Any, alvinVariant: Any = False) -> Any:
-            raise NotImplementedError(
-                "jonssonLevelPath is a Java path-search helper used inside "
-                "jonssonLevel; call jonssonLevel/jonssonTerms instead"
+            if middleZero is None or g0 is None or g2 is None:
+                _raise_npe()
+            path = _lib_call(
+                _malcev_fn("jonsson_level_path"),
+                [_int_array_values(x) for x in list(middleZero)],
+                _int_array_values(g0),
+                _int_array_values(g2),
+                bool(alvinVariant),
             )
+            return _path_to_intarrays(path)
 
         @staticmethod
         def gummLevelPath(middleZero: Any, firstOne: Any, g0: Any, g2: Any) -> Any:
-            raise NotImplementedError(
-                "gummLevelPath is a Java path-search helper used inside gummTerms; "
-                "call gummTerms instead"
+            if middleZero is None or firstOne is None or g0 is None or g2 is None:
+                _raise_npe()
+            path = _lib_call(
+                _malcev_fn("gumm_level_path"),
+                [_int_array_values(x) for x in list(middleZero)],
+                [_int_array_values(x) for x in list(firstOne)],
+                _int_array_values(g0),
+                _int_array_values(g2),
             )
+            return _path_to_intarrays(path)
 
         @staticmethod
         def hagemannMitschkeLevelPath(sub: Any, g0: Any, g2: Any) -> Any:
-            raise NotImplementedError(
-                "hagemannMitschkeLevelPath is a Java path-search helper used inside "
-                "hagemannMitschkeTerms; call hagemannMitschkeTerms instead"
+            if sub is None or g0 is None or g2 is None:
+                _raise_npe()
+            path = _lib_call(
+                _malcev_fn("hagemann_mitschke_level_path"),
+                [_int_array_values(x) for x in list(sub)],
+                _int_array_values(g0),
+                _int_array_values(g2),
             )
+            return _path_to_intarrays(path)
 
         @staticmethod
         def jonssonLevelAux(middleZero: Any, g0: Any, g2: Any) -> Any:
-            raise NotImplementedError(
-                "jonssonLevelAux is a Java path-search helper used inside "
-                "jonssonLevel; call jonssonLevel instead"
+            if middleZero is None or g0 is None or g2 is None:
+                _raise_npe()
+            return int(
+                _lib_call(
+                    _malcev_fn("jonsson_level_aux"),
+                    [_int_array_values(x) for x in list(middleZero)],
+                    _int_array_values(g0),
+                    _int_array_values(g2),
+                )
             )
 
         @staticmethod
         def nuTermIdempotent_Bad(testalg: Any, arity: Any, report: Any = None) -> Any:
-            raise NotImplementedError(
-                "nuTermIdempotent_Bad is Java's discarded Horowitz NU search; "
-                "call nuTermIdempotent instead"
+            if testalg is None:
+                _raise_npe()
+            _reject_progress_report(report, "nuTermIdempotent_Bad")
+            return bool(
+                _lib_call(
+                    _malcev_fn("nu_term_idempotent_bad"),
+                    _as_basic_algebra(testalg),
+                    int(arity),
+                )
             )
 
         @staticmethod
         def fixedKEdgeIdempotent(testalg: Any, level: Any, report: Any = None) -> Any:
-            raise NotImplementedError(
-                "fixedKEdgeIdempotent is not bound; use fixedKEdgeTerm / "
-                "isCongruenceModularIdempotent"
+            if testalg is None:
+                _raise_npe()
+            _reject_progress_report(report, "fixedKEdgeIdempotent")
+            return bool(
+                _lib_call(
+                    _malcev_fn("fixed_k_edge_idempotent"),
+                    _as_basic_algebra(testalg),
+                    int(level),
+                )
             )
 
         @staticmethod
         def fixedKPermIdempotent(alg: Any, level: Any, report: Any = None) -> Any:
-            raise NotImplementedError(
-                "fixedKPermIdempotent is not bound; use hagemannMitschkeTerms / "
-                "permLevel via jonsson-level tests"
+            if alg is None:
+                _raise_npe()
+            _reject_progress_report(report, "fixedKPermIdempotent")
+            return bool(
+                _lib_call(
+                    _malcev_fn("fixed_k_perm_idempotent"),
+                    _as_basic_algebra(alg),
+                    int(level),
+                )
             )
 
         @staticmethod
         def permLevelIdempotent(alg: Any, report: Any = None) -> Any:
-            raise NotImplementedError(
-                "permLevelIdempotent is not bound; use hagemannMitschkeTerms"
+            if alg is None:
+                _raise_npe()
+            _reject_progress_report(report, "permLevelIdempotent")
+            return int(
+                _lib_call(_malcev_fn("perm_level_idempotent"), _as_basic_algebra(alg))
             )
 
     def _cube_term_blocker_alg(alg: Any) -> Any:
@@ -2408,6 +2451,13 @@ def _install(alg_module_globals: dict) -> None:
             if callable(fn):
                 return [int(x) for x in fn()]
         return [int(x) for x in list(elem)]
+
+    def _path_to_intarrays(path: Any) -> Any:
+        if path is None:
+            return None
+        from org.uacalc.util import IntArray
+
+        return [IntArray([int(x) for x in list(row)]) for row in list(path)]
 
     def productGetElement(self: Any, k: Any) -> Any:
         idx = int(k)
@@ -3700,7 +3750,15 @@ def _install(alg_module_globals: dict) -> None:
             return
 
         def con(self: Any, _orig: Any = orig) -> Any:
-            return _stash_con_result(self, _orig(self))
+            # Java SmallAlgebra.con() caches the lattice. Keep one wrapper so
+            # getJoinIrredToSubtraceMap / typeJI persist across con() calls.
+            key = id(self)
+            cached = _CON_CACHE.get(key)
+            if cached is not None:
+                return cached
+            lat = _stash_con_result(self, _orig(self))
+            _CON_CACHE[key] = lat
+            return lat
 
         con._stashes_algebra = True  # type: ignore[attr-defined]
         _bind(cls, "con", con)

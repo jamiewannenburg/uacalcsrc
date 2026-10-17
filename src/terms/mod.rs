@@ -1248,6 +1248,20 @@ impl Taylor {
     pub fn equations(&self) -> Option<&Vec<crate::eq::Equation>> {
         self.eqs.as_ref()
     }
+
+    /// Java `canonicalForm(IntArray)`. When `arr.length == arity`, rewrite via
+    /// `findRoot`. Nested lengths hit Java's unfinished helper and come back
+    /// unchanged after a no-op merge.
+    pub fn canonical_form_int_array(
+        &self,
+        arr: &crate::util::int_array::IntArray,
+    ) -> crate::util::int_array::IntArray {
+        use crate::util::int_array::IntArrayTrait;
+        if arr.universe_size() == self.arity as usize {
+            return self.find_root(arr);
+        }
+        arr.clone()
+    }
     
     // Private helper methods
     

@@ -515,6 +515,22 @@ Malcev is wrapped; remaining gaps are listed under org.uacalc.alg.Malcev.
 - **Tests**: `cl_idempotent_polys` passes
 - **Owner vs shim**: Owner/library — `src/alg/conlat/congruence_lattice.rs`.
 
+### CongruenceLattice.subtrace(beta, alpha) vs type(beta, alpha)
+
+- **Java**: `type(beta, alpha)` calls `findJoinIrred(alpha, beta)`;
+  `subtrace(beta, alpha)` calls `findJoinIrred(beta, alpha)`. On Con(C2),
+  `type(one, zero)` is 2 but `subtrace(one, zero)` raises
+  `IllegalArgumentException: beta = null is not join irreducible`.
+- **Python**: Same swapped argument order. `findSubtrace(null)` raises the
+  same IAE. `alg.con()` is cached like Java so `getJoinIrredToSubtraceMap`
+  persists. TCT type sets: unary permutation 1, C2/C3 2, ba2 3, lat2/N5/M3
+  4, 2-element semilattice 5.
+- **Status**: Wrapped; goldens match Java including the IAE.
+- **Tests**: `cl_type_beta_alpha_c2`, `cl_subtrace_beta_alpha_c2`,
+  `cl_subtrace_covering_c2` (zero, one — the order Java's unswapped
+  findJoinIrred actually accepts), `cl_type_unary3`, `cl_type_ba2`,
+  `cl_type_sem2`, `tf_find_subtrace_npe`
+
 ### CongruenceLattice.getPermutabilityLevelWitnesses
 
 - **Java**: after `permutabilityLevel()` on cyclic2 (a chain, no incomparable
@@ -530,8 +546,20 @@ Malcev is wrapped; remaining gaps are listed under org.uacalc.alg.Malcev.
 
 ## org.uacalc.terms
 
-Taylor / MMS (`markovicMcKenzieTerm`, `siggersTerm`, `interprets`, `canonicalForm`,
-`makeBalancedTayorTerm`) is Malcev-adjacent and is not wrapped in this pass.
+Taylor / MMS is wrapped (`markovicMcKenzieTerm`, `siggersTerm`, `canonicalForm`,
+`termFromArray`, `makeBalancedTayorTerm`, `lexicographicallyCompare`,
+`interprets`, constructors, `arity` / `inteqs` / `equations`).
+
+### terms.Taylor.interprets returns null on success
+
+- **Java**: `interprets` prints `"this works: ..."` then `return null`. Failure
+  also returns null. `canonicalForm(IntArray)` nested merge is unfinished
+  (`// here !!!`). `makeRootMapFromEqs` is TODO.
+- **Python**: Matches Java: `interprets` runs the search then returns `None`.
+  The Term+eqs constructor stores eqs but does not build a root map (Java TODO).
+- **Status**: Known Java bugs, copied for parity.
+- **Tests**: `taylor_interprets_java_null`, `taylor_canonical_form_intarray`,
+  `taylor_ctor_term_eqs`
 
 Anonymous `Operation` methods nested inside `interpretation()` (`intValueAt`,
 `makeTable`, `getTable`, `valueAt`, `getTerm`, `getOrderedvariables`) are not
@@ -875,13 +903,14 @@ count match.
 - **Java**: `jonssonLevelPath`, `gummLevelPath`, `hagemannMitschkeLevelPath`,
   `jonssonLevelAux` are helpers used inside term search. `nuTermIdempotent_Bad`,
   `fixedKEdgeIdempotent`, `fixedKPermIdempotent`, `permLevelIdempotent` are
-  discarded or unbound-on-CPython searches.
-- **Python**: Strict `NotImplementedError` with a reason. Call the public
-  term-finding entry points instead.
-- **Status**: Strict xfail.
-- **Tests**: `jonsson_level_path_xfail`, `gumm_level_path_xfail`,
-  `hm_level_path_xfail`, `jonsson_level_aux_xfail`, `nu_term_bad_xfail`,
-  `fixed_k_edge_idem_xfail`, `fixed_k_perm_idem_xfail`, `perm_level_idem_xfail`
+  Horowitz / Valeriote-Willard searches.
+- **Python**: Implemented in `uacalc_lib` (`src/alg/malcev.rs`) and exposed on
+  the Malcev facade. Null arguments NPE like Java. `permLevelIdempotent` loops
+  until some k works (same as Java) so it is only goldened on permutable
+  algebras.
+- **Status**: Wrapped; goldens on unique-path instances plus C2/C3/lat2.
+- **Tests**: `jonsson_level_path_npe`, `jonsson_level_path_midp`,
+  `nu_term_bad_c2`, `fixed_k_edge_idem_c2`, `perm_level_idem_c2`, …
 
 ### alg.BigProductAlgebra.sg (scanner false-positive)
 

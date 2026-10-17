@@ -669,19 +669,50 @@ def _install(conlat_globals: dict) -> None:
                 raise TypeError("CongruenceLattice.getTypeFinder requires the originating algebra")
             return _TF(alg)
 
-        def subtrace(self: Any, beta: Any) -> Any:
-            if beta is None:
-                _raise_npe()
-            return getTypeFinder(self).findSubtrace(beta)
+        _CL_ST_MAPS: dict = {}
+
+        def getJoinIrredToSubtraceMap(self: Any) -> Any:
+            key = id(self)
+            m = _CL_ST_MAPS.get(key)
+            if m is None:
+                m = {}
+                _CL_ST_MAPS[key] = m
+            return m
+
+        def subtrace(self: Any, beta: Any, alpha: Any = _MISSING) -> Any:
+            if alpha is not _MISSING:
+                # Java findJoinIrred NPEs if either argument is null.
+                if beta is None or alpha is None:
+                    _raise_npe()
+                # Java subtrace(beta, alpha) calls findJoinIrred(beta, alpha).
+                # That can be null (e.g. subtrace(one, zero) on a chain); the
+                # 1-arg path then raises IAE from TypeFinder.findSubtrace.
+                gamma = self.findJoinIrred(beta, alpha)
+                return subtrace(self, gamma)
+            smap = getJoinIrredToSubtraceMap(self)
+            st = smap.get(beta)
+            if st is None:
+                st = getTypeFinder(self).findSubtrace(beta)
+                try:
+                    smap[beta] = st
+                except TypeError:
+                    smap[id(beta)] = st
+            return st
 
         def typeJI(self: Any, beta: Any, report: Any = None) -> int:
-            if beta is None:
-                _raise_npe()
             if report is not None:
                 raise TypeError(
                     "typeJI(): expected org.uacalc.ui.tm.ProgressReport or None"
                 )
-            return int(getTypeFinder(self).findType(beta))
+            # Java HashMap.get(null) then subtrace(null) → IAE from findSubtrace.
+            smap = getJoinIrredToSubtraceMap(self)
+            st = smap.get(beta)
+            if st is None:
+                st = subtrace(self, beta)
+            t = int(st.type()) if st is not None and hasattr(st, "type") else 0
+            if t <= 0:
+                t = int(getTypeFinder(self).findType(st if _is_subtrace(st) else beta))
+            return t
 
         def typeSet(self: Any, report: Any = None) -> Any:
             if report is not None:
@@ -690,7 +721,15 @@ def _install(conlat_globals: dict) -> None:
                 )
             return set(getTypeFinder(self).findTypeSet())
 
-        def type_cong(self: Any, beta: Any) -> int:
+        def type_cong(self: Any, beta: Any, alpha: Any = _MISSING) -> int:
+            if beta is None:
+                _raise_npe()
+            if alpha is not _MISSING:
+                if alpha is None:
+                    _raise_npe()
+                # Java type(beta, alpha) calls findJoinIrred(alpha, beta).
+                gamma = self.findJoinIrred(alpha, beta)
+                return typeJI(self, gamma)
             return typeJI(self, beta)
 
         def getAlgebra(self: Any) -> Any:
@@ -948,6 +987,7 @@ def _install(conlat_globals: dict) -> None:
             "type": type_cong,
             "subtrace": subtrace,
             "getTypeFinder": getTypeFinder,
+            "getJoinIrredToSubtraceMap": getJoinIrredToSubtraceMap,
         }
         for camel, impl in _CL_PATCHES.items():
             try:
@@ -1644,8 +1684,12 @@ def _install(conlat_globals: dict) -> None:
             return bool(_lib_call(self._inner.is_subtrace, _as_int_array(ia), beta))
 
         def findSubtrace(self, first: Any, second: Any = _MISSING) -> Any:
+            # Java findSubtrace(Partition) goes through lowerStar; a null beta
+            # is not join irreducible ("beta = null is not join irreducible").
             if first is None:
-                _raise_npe()
+                raise IllegalArgumentException(
+                    "beta = null is not join irreducible"
+                )
             if second is not _MISSING:
                 if second is None:
                     _raise_npe()
@@ -1824,8 +1868,10 @@ def _install(conlat_globals: dict) -> None:
             "inputSize": "input_size",
             "typeJI": "typeJI",
             "typeSet": "typeSet",
+            "type": "type",
             "subtrace": "subtrace",
             "getTypeFinder": "getTypeFinder",
+            "getJoinIrredToSubtraceMap": "getJoinIrredToSubtraceMap",
         },
         "BinaryRelation": {
             "universeSize": "universe_size",

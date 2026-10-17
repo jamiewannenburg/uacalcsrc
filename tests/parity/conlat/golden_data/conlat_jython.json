@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "generated_at": "2026-10-17T04:43:41.483451+00:00",
+    "generated_at": "2026-10-17T05:43:29.653773+00:00",
     "jar": "uacalc.jar",
     "package": "org.uacalc.conlat",
     "runtime": "jython",
-    "test_cases": 187,
+    "test_cases": 212,
     "type": "package"
   },
   "test_cases": [
@@ -2711,8 +2711,8 @@
       "notes": "Java lattice toString is Class@hex; values compared.",
       "result": {
         "return_type": "unicode",
-        "return_value": "Congruence Lattice of org.uacalc.alg.BasicAlgebra@27df95e",
-        "string_repr": "Congruence Lattice of org.uacalc.alg.BasicAlgebra@27df95e",
+        "return_value": "Congruence Lattice of org.uacalc.alg.BasicAlgebra@3138953b",
+        "string_repr": "Congruence Lattice of org.uacalc.alg.BasicAlgebra@3138953b",
         "success": true
       },
       "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
@@ -3630,6 +3630,48 @@
     },
     {
       "args": [],
+      "call": "st.second()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Subtrace.second()",
+      "expected_exception": null,
+      "id": "st_second",
+      "kwargs": {},
+      "method": "Subtrace.second",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 1,
+        "string_repr": "1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, BinaryRelation, CentralityData,\n    Polymorphisms, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\ntf_c2 = TypeFinder(c2)\ntf_c3 = TypeFinder(c3)\ntf_lat2 = TypeFinder(lat2)\ntf_m3 = TypeFinder(m3)\ntf_n5 = TypeFinder(n5)\nst = Subtrace(0, 1, True)\nst_t = Subtrace(1, 2, False, 3)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nident = BasicBinaryRelation.identity(3)\nbeta_rel = BasicBinaryRelation(3)\nbeta_rel.add(1, 0)\ncoll = BasicBinaryRelation([IntArray([0, 1]), IntArray([1, 0])], 3)\nzero3 = BasicPartition.zero(3)\ncd = CentralityData(ident, ident, zero3)\npoly = Polymorphisms(1, [BasicPartition.zero(2)], True, None)\njis_c2 = list(c2.con().joinIrreducibles())\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ia(x) for x in list(lst)]\n\ndef _st(s):\n    if s is None:\n        return None\n    return [int(s.first()), int(s.second()), int(s.type()), bool(s.hasInvolution()), str(s.toString())]\n\ndef _hs():\n    try:\n        from java.util import HashSet\n        return HashSet()\n    except ImportError:\n        return set()\n\ndef _al():\n    try:\n        from java.util import ArrayList\n        return ArrayList()\n    except ImportError:\n        return []\n\ndef _ia_sorted(coll):\n    rows = [_ia(x) for x in list(coll)]\n    rows.sort()\n    return rows\n\ndef _next_snap(tf, pair):\n    univHS = _hs()\n    unordered = _hs()\n    univ = _al()\n    result = tf.nextPairForSubtrace(pair, univHS, unordered, univ)\n    return [_ia(result), _ia_sorted(univHS), _ia_sorted(unordered), [_ia(x) for x in list(univ)]]\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "st.hasInvolution()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Subtrace.hasInvolution()",
+      "expected_exception": null,
+      "id": "st_has_involution",
+      "kwargs": {},
+      "method": "Subtrace.hasInvolution",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, BinaryRelation, CentralityData,\n    Polymorphisms, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\ntf_c2 = TypeFinder(c2)\ntf_c3 = TypeFinder(c3)\ntf_lat2 = TypeFinder(lat2)\ntf_m3 = TypeFinder(m3)\ntf_n5 = TypeFinder(n5)\nst = Subtrace(0, 1, True)\nst_t = Subtrace(1, 2, False, 3)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nident = BasicBinaryRelation.identity(3)\nbeta_rel = BasicBinaryRelation(3)\nbeta_rel.add(1, 0)\ncoll = BasicBinaryRelation([IntArray([0, 1]), IntArray([1, 0])], 3)\nzero3 = BasicPartition.zero(3)\ncd = CentralityData(ident, ident, zero3)\npoly = Polymorphisms(1, [BasicPartition.zero(2)], True, None)\njis_c2 = list(c2.con().joinIrreducibles())\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ia(x) for x in list(lst)]\n\ndef _st(s):\n    if s is None:\n        return None\n    return [int(s.first()), int(s.second()), int(s.type()), bool(s.hasInvolution()), str(s.toString())]\n\ndef _hs():\n    try:\n        from java.util import HashSet\n        return HashSet()\n    except ImportError:\n        return set()\n\ndef _al():\n    try:\n        from java.util import ArrayList\n        return ArrayList()\n    except ImportError:\n        return []\n\ndef _ia_sorted(coll):\n    rows = [_ia(x) for x in list(coll)]\n    rows.sort()\n    return rows\n\ndef _next_snap(tf, pair):\n    univHS = _hs()\n    unordered = _hs()\n    univ = _al()\n    result = tf.nextPairForSubtrace(pair, univHS, unordered, univ)\n    return [_ia(result), _ia_sorted(univHS), _ia_sorted(unordered), [_ia(x) for x in list(univ)]]\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
       "call": "(st.setType(4), st.type())[1]",
       "capture_file": false,
       "compare_exception_message": false,
@@ -3658,7 +3700,7 @@
       "expected_exception": null,
       "id": "st_set_get_universe",
       "kwargs": {},
-      "method": "Subtrace.getSubtraceUniverse",
+      "method": "Subtrace.setSubtraceUniverse",
       "notes": "Java List/Set toString vs Python list.",
       "result": {
         "return_type": "list",
@@ -3681,6 +3723,27 @@
     },
     {
       "args": [],
+      "call": "_ias(st.getSubtraceUniverse())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getSubtraceUniverse default",
+      "expected_exception": null,
+      "id": "st_get_universe",
+      "kwargs": {},
+      "method": "Subtrace.getSubtraceUniverse",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, BinaryRelation, CentralityData,\n    Polymorphisms, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\ntf_c2 = TypeFinder(c2)\ntf_c3 = TypeFinder(c3)\ntf_lat2 = TypeFinder(lat2)\ntf_m3 = TypeFinder(m3)\ntf_n5 = TypeFinder(n5)\nst = Subtrace(0, 1, True)\nst_t = Subtrace(1, 2, False, 3)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nident = BasicBinaryRelation.identity(3)\nbeta_rel = BasicBinaryRelation(3)\nbeta_rel.add(1, 0)\ncoll = BasicBinaryRelation([IntArray([0, 1]), IntArray([1, 0])], 3)\nzero3 = BasicPartition.zero(3)\ncd = CentralityData(ident, ident, zero3)\npoly = Polymorphisms(1, [BasicPartition.zero(2)], True, None)\njis_c2 = list(c2.con().joinIrreducibles())\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ia(x) for x in list(lst)]\n\ndef _st(s):\n    if s is None:\n        return None\n    return [int(s.first()), int(s.second()), int(s.type()), bool(s.hasInvolution()), str(s.toString())]\n\ndef _hs():\n    try:\n        from java.util import HashSet\n        return HashSet()\n    except ImportError:\n        return set()\n\ndef _al():\n    try:\n        from java.util import ArrayList\n        return ArrayList()\n    except ImportError:\n        return []\n\ndef _ia_sorted(coll):\n    rows = [_ia(x) for x in list(coll)]\n    rows.sort()\n    return rows\n\ndef _next_snap(tf, pair):\n    univHS = _hs()\n    unordered = _hs()\n    univ = _al()\n    result = tf.nextPairForSubtrace(pair, univHS, unordered, univ)\n    return [_ia(result), _ia_sorted(univHS), _ia_sorted(unordered), [_ia(x) for x in list(univ)]]\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
       "call": "(st.setMatrixUniverse([IntArray([0,0,1,1])]), _ias(st.getMatrixUniverse()))[1]",
       "capture_file": false,
       "compare_exception_message": false,
@@ -3688,7 +3751,7 @@
       "expected_exception": null,
       "id": "st_set_get_matrix",
       "kwargs": {},
-      "method": "Subtrace.getMatrixUniverse",
+      "method": "Subtrace.setMatrixUniverse",
       "notes": "Java List/Set toString vs Python list.",
       "result": {
         "return_type": "list",
@@ -3701,6 +3764,27 @@
           ]
         ],
         "string_repr": "[[0, 0, 1, 1]]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, BinaryRelation, CentralityData,\n    Polymorphisms, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\ntf_c2 = TypeFinder(c2)\ntf_c3 = TypeFinder(c3)\ntf_lat2 = TypeFinder(lat2)\ntf_m3 = TypeFinder(m3)\ntf_n5 = TypeFinder(n5)\nst = Subtrace(0, 1, True)\nst_t = Subtrace(1, 2, False, 3)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nident = BasicBinaryRelation.identity(3)\nbeta_rel = BasicBinaryRelation(3)\nbeta_rel.add(1, 0)\ncoll = BasicBinaryRelation([IntArray([0, 1]), IntArray([1, 0])], 3)\nzero3 = BasicPartition.zero(3)\ncd = CentralityData(ident, ident, zero3)\npoly = Polymorphisms(1, [BasicPartition.zero(2)], True, None)\njis_c2 = list(c2.con().joinIrreducibles())\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ia(x) for x in list(lst)]\n\ndef _st(s):\n    if s is None:\n        return None\n    return [int(s.first()), int(s.second()), int(s.type()), bool(s.hasInvolution()), str(s.toString())]\n\ndef _hs():\n    try:\n        from java.util import HashSet\n        return HashSet()\n    except ImportError:\n        return set()\n\ndef _al():\n    try:\n        from java.util import ArrayList\n        return ArrayList()\n    except ImportError:\n        return []\n\ndef _ia_sorted(coll):\n    rows = [_ia(x) for x in list(coll)]\n    rows.sort()\n    return rows\n\ndef _next_snap(tf, pair):\n    univHS = _hs()\n    unordered = _hs()\n    univ = _al()\n    result = tf.nextPairForSubtrace(pair, univHS, unordered, univ)\n    return [_ia(result), _ia_sorted(univHS), _ia_sorted(unordered), [_ia(x) for x in list(univ)]]\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_ias(st.getMatrixUniverse())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getMatrixUniverse default",
+      "expected_exception": null,
+      "id": "st_get_matrix",
+      "kwargs": {},
+      "method": "Subtrace.getMatrixUniverse",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
         "success": true
       },
       "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, BinaryRelation, CentralityData,\n    Polymorphisms, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\ntf_c2 = TypeFinder(c2)\ntf_c3 = TypeFinder(c3)\ntf_lat2 = TypeFinder(lat2)\ntf_m3 = TypeFinder(m3)\ntf_n5 = TypeFinder(n5)\nst = Subtrace(0, 1, True)\nst_t = Subtrace(1, 2, False, 3)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nident = BasicBinaryRelation.identity(3)\nbeta_rel = BasicBinaryRelation(3)\nbeta_rel.add(1, 0)\ncoll = BasicBinaryRelation([IntArray([0, 1]), IntArray([1, 0])], 3)\nzero3 = BasicPartition.zero(3)\ncd = CentralityData(ident, ident, zero3)\npoly = Polymorphisms(1, [BasicPartition.zero(2)], True, None)\njis_c2 = list(c2.con().joinIrreducibles())\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ia(x) for x in list(lst)]\n\ndef _st(s):\n    if s is None:\n        return None\n    return [int(s.first()), int(s.second()), int(s.type()), bool(s.hasInvolution()), str(s.toString())]\n\ndef _hs():\n    try:\n        from java.util import HashSet\n        return HashSet()\n    except ImportError:\n        return set()\n\ndef _al():\n    try:\n        from java.util import ArrayList\n        return ArrayList()\n    except ImportError:\n        return []\n\ndef _ia_sorted(coll):\n    rows = [_ia(x) for x in list(coll)]\n    rows.sort()\n    return rows\n\ndef _next_snap(tf, pair):\n    univHS = _hs()\n    unordered = _hs()\n    univ = _al()\n    result = tf.nextPairForSubtrace(pair, univHS, unordered, univ)\n    return [_ia(result), _ia_sorted(univHS), _ia_sorted(unordered), [_ia(x) for x in list(univ)]]\n",
@@ -4644,6 +4728,482 @@
         "success": true
       },
       "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, BinaryRelation, CentralityData,\n    Polymorphisms, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\ntf_c2 = TypeFinder(c2)\ntf_c3 = TypeFinder(c3)\ntf_lat2 = TypeFinder(lat2)\ntf_m3 = TypeFinder(m3)\ntf_n5 = TypeFinder(n5)\nst = Subtrace(0, 1, True)\nst_t = Subtrace(1, 2, False, 3)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nident = BasicBinaryRelation.identity(3)\nbeta_rel = BasicBinaryRelation(3)\nbeta_rel.add(1, 0)\ncoll = BasicBinaryRelation([IntArray([0, 1]), IntArray([1, 0])], 3)\nzero3 = BasicPartition.zero(3)\ncd = CentralityData(ident, ident, zero3)\npoly = Polymorphisms(1, [BasicPartition.zero(2)], True, None)\njis_c2 = list(c2.con().joinIrreducibles())\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ia(x) for x in list(lst)]\n\ndef _st(s):\n    if s is None:\n        return None\n    return [int(s.first()), int(s.second()), int(s.type()), bool(s.hasInvolution()), str(s.toString())]\n\ndef _hs():\n    try:\n        from java.util import HashSet\n        return HashSet()\n    except ImportError:\n        return set()\n\ndef _al():\n    try:\n        from java.util import ArrayList\n        return ArrayList()\n    except ImportError:\n        return []\n\ndef _ia_sorted(coll):\n    rows = [_ia(x) for x in list(coll)]\n    rows.sort()\n    return rows\n\ndef _next_snap(tf, pair):\n    univHS = _hs()\n    unordered = _hs()\n    univ = _al()\n    result = tf.nextPairForSubtrace(pair, univHS, unordered, univ)\n    return [_ia(result), _ia_sorted(univHS), _ia_sorted(unordered), [_ia(x) for x in list(univ)]]\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sorted(list(tf_ba2.findTypeSet()))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "2-element Boolean algebra TCT type set",
+      "expected_exception": null,
+      "id": "tf_ba2_typeset",
+      "kwargs": {},
+      "method": "TypeFinder.findTypeSet",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          3
+        ],
+        "string_repr": "[3]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, BinaryRelation, CentralityData,\n    Polymorphisms, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\ntf_c2 = TypeFinder(c2)\ntf_c3 = TypeFinder(c3)\ntf_lat2 = TypeFinder(lat2)\ntf_m3 = TypeFinder(m3)\ntf_n5 = TypeFinder(n5)\nst = Subtrace(0, 1, True)\nst_t = Subtrace(1, 2, False, 3)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nident = BasicBinaryRelation.identity(3)\nbeta_rel = BasicBinaryRelation(3)\nbeta_rel.add(1, 0)\ncoll = BasicBinaryRelation([IntArray([0, 1]), IntArray([1, 0])], 3)\nzero3 = BasicPartition.zero(3)\ncd = CentralityData(ident, ident, zero3)\npoly = Polymorphisms(1, [BasicPartition.zero(2)], True, None)\njis_c2 = list(c2.con().joinIrreducibles())\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ia(x) for x in list(lst)]\n\ndef _st(s):\n    if s is None:\n        return None\n    return [int(s.first()), int(s.second()), int(s.type()), bool(s.hasInvolution()), str(s.toString())]\n\ndef _hs():\n    try:\n        from java.util import HashSet\n        return HashSet()\n    except ImportError:\n        return set()\n\ndef _al():\n    try:\n        from java.util import ArrayList\n        return ArrayList()\n    except ImportError:\n        return []\n\ndef _ia_sorted(coll):\n    rows = [_ia(x) for x in list(coll)]\n    rows.sort()\n    return rows\n\ndef _next_snap(tf, pair):\n    univHS = _hs()\n    unordered = _hs()\n    univ = _al()\n    result = tf.nextPairForSubtrace(pair, univHS, unordered, univ)\n    return [_ia(result), _ia_sorted(univHS), _ia_sorted(unordered), [_ia(x) for x in list(univ)]]\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\nz3a = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\ntf_ba2 = TypeFinder(ba2)\ntf_sem2 = TypeFinder(sem2)\ntf_unary3 = TypeFinder(unary3)\ntf_z3 = TypeFinder(z3a)\njis_lat2 = list(lat2.con().joinIrreducibles())\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sorted(list(tf_sem2.findTypeSet()))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "2-element meet-semilattice TCT type set (type 5)",
+      "expected_exception": null,
+      "id": "tf_sem2_typeset",
+      "kwargs": {},
+      "method": "TypeFinder.findTypeSet",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          5
+        ],
+        "string_repr": "[5]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, BinaryRelation, CentralityData,\n    Polymorphisms, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\ntf_c2 = TypeFinder(c2)\ntf_c3 = TypeFinder(c3)\ntf_lat2 = TypeFinder(lat2)\ntf_m3 = TypeFinder(m3)\ntf_n5 = TypeFinder(n5)\nst = Subtrace(0, 1, True)\nst_t = Subtrace(1, 2, False, 3)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nident = BasicBinaryRelation.identity(3)\nbeta_rel = BasicBinaryRelation(3)\nbeta_rel.add(1, 0)\ncoll = BasicBinaryRelation([IntArray([0, 1]), IntArray([1, 0])], 3)\nzero3 = BasicPartition.zero(3)\ncd = CentralityData(ident, ident, zero3)\npoly = Polymorphisms(1, [BasicPartition.zero(2)], True, None)\njis_c2 = list(c2.con().joinIrreducibles())\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ia(x) for x in list(lst)]\n\ndef _st(s):\n    if s is None:\n        return None\n    return [int(s.first()), int(s.second()), int(s.type()), bool(s.hasInvolution()), str(s.toString())]\n\ndef _hs():\n    try:\n        from java.util import HashSet\n        return HashSet()\n    except ImportError:\n        return set()\n\ndef _al():\n    try:\n        from java.util import ArrayList\n        return ArrayList()\n    except ImportError:\n        return []\n\ndef _ia_sorted(coll):\n    rows = [_ia(x) for x in list(coll)]\n    rows.sort()\n    return rows\n\ndef _next_snap(tf, pair):\n    univHS = _hs()\n    unordered = _hs()\n    univ = _al()\n    result = tf.nextPairForSubtrace(pair, univHS, unordered, univ)\n    return [_ia(result), _ia_sorted(univHS), _ia_sorted(unordered), [_ia(x) for x in list(univ)]]\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\nz3a = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\ntf_ba2 = TypeFinder(ba2)\ntf_sem2 = TypeFinder(sem2)\ntf_unary3 = TypeFinder(unary3)\ntf_z3 = TypeFinder(z3a)\njis_lat2 = list(lat2.con().joinIrreducibles())\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sorted(list(tf_unary3.findTypeSet()))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "cyclic permutation algebra TCT type set (type 1)",
+      "expected_exception": null,
+      "id": "tf_unary3_typeset",
+      "kwargs": {},
+      "method": "TypeFinder.findTypeSet",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          1
+        ],
+        "string_repr": "[1]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, BinaryRelation, CentralityData,\n    Polymorphisms, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\ntf_c2 = TypeFinder(c2)\ntf_c3 = TypeFinder(c3)\ntf_lat2 = TypeFinder(lat2)\ntf_m3 = TypeFinder(m3)\ntf_n5 = TypeFinder(n5)\nst = Subtrace(0, 1, True)\nst_t = Subtrace(1, 2, False, 3)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nident = BasicBinaryRelation.identity(3)\nbeta_rel = BasicBinaryRelation(3)\nbeta_rel.add(1, 0)\ncoll = BasicBinaryRelation([IntArray([0, 1]), IntArray([1, 0])], 3)\nzero3 = BasicPartition.zero(3)\ncd = CentralityData(ident, ident, zero3)\npoly = Polymorphisms(1, [BasicPartition.zero(2)], True, None)\njis_c2 = list(c2.con().joinIrreducibles())\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ia(x) for x in list(lst)]\n\ndef _st(s):\n    if s is None:\n        return None\n    return [int(s.first()), int(s.second()), int(s.type()), bool(s.hasInvolution()), str(s.toString())]\n\ndef _hs():\n    try:\n        from java.util import HashSet\n        return HashSet()\n    except ImportError:\n        return set()\n\ndef _al():\n    try:\n        from java.util import ArrayList\n        return ArrayList()\n    except ImportError:\n        return []\n\ndef _ia_sorted(coll):\n    rows = [_ia(x) for x in list(coll)]\n    rows.sort()\n    return rows\n\ndef _next_snap(tf, pair):\n    univHS = _hs()\n    unordered = _hs()\n    univ = _al()\n    result = tf.nextPairForSubtrace(pair, univHS, unordered, univ)\n    return [_ia(result), _ia_sorted(univHS), _ia_sorted(unordered), [_ia(x) for x in list(univ)]]\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\nz3a = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\ntf_ba2 = TypeFinder(ba2)\ntf_sem2 = TypeFinder(sem2)\ntf_unary3 = TypeFinder(unary3)\ntf_z3 = TypeFinder(z3a)\njis_lat2 = list(lat2.con().joinIrreducibles())\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sorted(list(tf_z3.findTypeSet()))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "z3 vector space TCT type set (type 2)",
+      "expected_exception": null,
+      "id": "tf_z3_typeset",
+      "kwargs": {},
+      "method": "TypeFinder.findTypeSet",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          2,
+          5
+        ],
+        "string_repr": "[2, 5]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, BinaryRelation, CentralityData,\n    Polymorphisms, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\ntf_c2 = TypeFinder(c2)\ntf_c3 = TypeFinder(c3)\ntf_lat2 = TypeFinder(lat2)\ntf_m3 = TypeFinder(m3)\ntf_n5 = TypeFinder(n5)\nst = Subtrace(0, 1, True)\nst_t = Subtrace(1, 2, False, 3)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nident = BasicBinaryRelation.identity(3)\nbeta_rel = BasicBinaryRelation(3)\nbeta_rel.add(1, 0)\ncoll = BasicBinaryRelation([IntArray([0, 1]), IntArray([1, 0])], 3)\nzero3 = BasicPartition.zero(3)\ncd = CentralityData(ident, ident, zero3)\npoly = Polymorphisms(1, [BasicPartition.zero(2)], True, None)\njis_c2 = list(c2.con().joinIrreducibles())\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ia(x) for x in list(lst)]\n\ndef _st(s):\n    if s is None:\n        return None\n    return [int(s.first()), int(s.second()), int(s.type()), bool(s.hasInvolution()), str(s.toString())]\n\ndef _hs():\n    try:\n        from java.util import HashSet\n        return HashSet()\n    except ImportError:\n        return set()\n\ndef _al():\n    try:\n        from java.util import ArrayList\n        return ArrayList()\n    except ImportError:\n        return []\n\ndef _ia_sorted(coll):\n    rows = [_ia(x) for x in list(coll)]\n    rows.sort()\n    return rows\n\ndef _next_snap(tf, pair):\n    univHS = _hs()\n    unordered = _hs()\n    univ = _al()\n    result = tf.nextPairForSubtrace(pair, univHS, unordered, univ)\n    return [_ia(result), _ia_sorted(univHS), _ia_sorted(unordered), [_ia(x) for x in list(univ)]]\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\nz3a = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\ntf_ba2 = TypeFinder(ba2)\ntf_sem2 = TypeFinder(sem2)\ntf_unary3 = TypeFinder(unary3)\ntf_z3 = TypeFinder(z3a)\njis_lat2 = list(lat2.con().joinIrreducibles())\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sorted(int(x) for x in list(ba2.con().typeSet()))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Con(ba2) TCT type set",
+      "expected_exception": null,
+      "id": "cl_type_set_ba2",
+      "kwargs": {},
+      "method": "CongruenceLattice.typeSet",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          3
+        ],
+        "string_repr": "[3]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, BinaryRelation, CentralityData,\n    Polymorphisms, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\ntf_c2 = TypeFinder(c2)\ntf_c3 = TypeFinder(c3)\ntf_lat2 = TypeFinder(lat2)\ntf_m3 = TypeFinder(m3)\ntf_n5 = TypeFinder(n5)\nst = Subtrace(0, 1, True)\nst_t = Subtrace(1, 2, False, 3)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nident = BasicBinaryRelation.identity(3)\nbeta_rel = BasicBinaryRelation(3)\nbeta_rel.add(1, 0)\ncoll = BasicBinaryRelation([IntArray([0, 1]), IntArray([1, 0])], 3)\nzero3 = BasicPartition.zero(3)\ncd = CentralityData(ident, ident, zero3)\npoly = Polymorphisms(1, [BasicPartition.zero(2)], True, None)\njis_c2 = list(c2.con().joinIrreducibles())\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ia(x) for x in list(lst)]\n\ndef _st(s):\n    if s is None:\n        return None\n    return [int(s.first()), int(s.second()), int(s.type()), bool(s.hasInvolution()), str(s.toString())]\n\ndef _hs():\n    try:\n        from java.util import HashSet\n        return HashSet()\n    except ImportError:\n        return set()\n\ndef _al():\n    try:\n        from java.util import ArrayList\n        return ArrayList()\n    except ImportError:\n        return []\n\ndef _ia_sorted(coll):\n    rows = [_ia(x) for x in list(coll)]\n    rows.sort()\n    return rows\n\ndef _next_snap(tf, pair):\n    univHS = _hs()\n    unordered = _hs()\n    univ = _al()\n    result = tf.nextPairForSubtrace(pair, univHS, unordered, univ)\n    return [_ia(result), _ia_sorted(univHS), _ia_sorted(unordered), [_ia(x) for x in list(univ)]]\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\nz3a = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\ntf_ba2 = TypeFinder(ba2)\ntf_sem2 = TypeFinder(sem2)\ntf_unary3 = TypeFinder(unary3)\ntf_z3 = TypeFinder(z3a)\njis_lat2 = list(lat2.con().joinIrreducibles())\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sorted(int(x) for x in list(sem2.con().typeSet()))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Con(sem2) TCT type set",
+      "expected_exception": null,
+      "id": "cl_type_set_sem2",
+      "kwargs": {},
+      "method": "CongruenceLattice.typeSet",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          5
+        ],
+        "string_repr": "[5]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, BinaryRelation, CentralityData,\n    Polymorphisms, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\ntf_c2 = TypeFinder(c2)\ntf_c3 = TypeFinder(c3)\ntf_lat2 = TypeFinder(lat2)\ntf_m3 = TypeFinder(m3)\ntf_n5 = TypeFinder(n5)\nst = Subtrace(0, 1, True)\nst_t = Subtrace(1, 2, False, 3)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nident = BasicBinaryRelation.identity(3)\nbeta_rel = BasicBinaryRelation(3)\nbeta_rel.add(1, 0)\ncoll = BasicBinaryRelation([IntArray([0, 1]), IntArray([1, 0])], 3)\nzero3 = BasicPartition.zero(3)\ncd = CentralityData(ident, ident, zero3)\npoly = Polymorphisms(1, [BasicPartition.zero(2)], True, None)\njis_c2 = list(c2.con().joinIrreducibles())\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ia(x) for x in list(lst)]\n\ndef _st(s):\n    if s is None:\n        return None\n    return [int(s.first()), int(s.second()), int(s.type()), bool(s.hasInvolution()), str(s.toString())]\n\ndef _hs():\n    try:\n        from java.util import HashSet\n        return HashSet()\n    except ImportError:\n        return set()\n\ndef _al():\n    try:\n        from java.util import ArrayList\n        return ArrayList()\n    except ImportError:\n        return []\n\ndef _ia_sorted(coll):\n    rows = [_ia(x) for x in list(coll)]\n    rows.sort()\n    return rows\n\ndef _next_snap(tf, pair):\n    univHS = _hs()\n    unordered = _hs()\n    univ = _al()\n    result = tf.nextPairForSubtrace(pair, univHS, unordered, univ)\n    return [_ia(result), _ia_sorted(univHS), _ia_sorted(unordered), [_ia(x) for x in list(univ)]]\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\nz3a = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\ntf_ba2 = TypeFinder(ba2)\ntf_sem2 = TypeFinder(sem2)\ntf_unary3 = TypeFinder(unary3)\ntf_z3 = TypeFinder(z3a)\njis_lat2 = list(lat2.con().joinIrreducibles())\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sorted(int(x) for x in list(n5.con().typeSet()))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Con(N5) TCT type set",
+      "expected_exception": null,
+      "id": "cl_type_set_n5",
+      "kwargs": {},
+      "method": "CongruenceLattice.typeSet",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          4
+        ],
+        "string_repr": "[4]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, BinaryRelation, CentralityData,\n    Polymorphisms, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\ntf_c2 = TypeFinder(c2)\ntf_c3 = TypeFinder(c3)\ntf_lat2 = TypeFinder(lat2)\ntf_m3 = TypeFinder(m3)\ntf_n5 = TypeFinder(n5)\nst = Subtrace(0, 1, True)\nst_t = Subtrace(1, 2, False, 3)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nident = BasicBinaryRelation.identity(3)\nbeta_rel = BasicBinaryRelation(3)\nbeta_rel.add(1, 0)\ncoll = BasicBinaryRelation([IntArray([0, 1]), IntArray([1, 0])], 3)\nzero3 = BasicPartition.zero(3)\ncd = CentralityData(ident, ident, zero3)\npoly = Polymorphisms(1, [BasicPartition.zero(2)], True, None)\njis_c2 = list(c2.con().joinIrreducibles())\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ia(x) for x in list(lst)]\n\ndef _st(s):\n    if s is None:\n        return None\n    return [int(s.first()), int(s.second()), int(s.type()), bool(s.hasInvolution()), str(s.toString())]\n\ndef _hs():\n    try:\n        from java.util import HashSet\n        return HashSet()\n    except ImportError:\n        return set()\n\ndef _al():\n    try:\n        from java.util import ArrayList\n        return ArrayList()\n    except ImportError:\n        return []\n\ndef _ia_sorted(coll):\n    rows = [_ia(x) for x in list(coll)]\n    rows.sort()\n    return rows\n\ndef _next_snap(tf, pair):\n    univHS = _hs()\n    unordered = _hs()\n    univ = _al()\n    result = tf.nextPairForSubtrace(pair, univHS, unordered, univ)\n    return [_ia(result), _ia_sorted(univHS), _ia_sorted(unordered), [_ia(x) for x in list(univ)]]\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\nz3a = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\ntf_ba2 = TypeFinder(ba2)\ntf_sem2 = TypeFinder(sem2)\ntf_unary3 = TypeFinder(unary3)\ntf_z3 = TypeFinder(z3a)\njis_lat2 = list(lat2.con().joinIrreducibles())\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sorted(int(x) for x in list(m3.con().typeSet()))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Con(M3) TCT type set",
+      "expected_exception": null,
+      "id": "cl_type_set_m3",
+      "kwargs": {},
+      "method": "CongruenceLattice.typeSet",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          4
+        ],
+        "string_repr": "[4]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, BinaryRelation, CentralityData,\n    Polymorphisms, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\ntf_c2 = TypeFinder(c2)\ntf_c3 = TypeFinder(c3)\ntf_lat2 = TypeFinder(lat2)\ntf_m3 = TypeFinder(m3)\ntf_n5 = TypeFinder(n5)\nst = Subtrace(0, 1, True)\nst_t = Subtrace(1, 2, False, 3)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nident = BasicBinaryRelation.identity(3)\nbeta_rel = BasicBinaryRelation(3)\nbeta_rel.add(1, 0)\ncoll = BasicBinaryRelation([IntArray([0, 1]), IntArray([1, 0])], 3)\nzero3 = BasicPartition.zero(3)\ncd = CentralityData(ident, ident, zero3)\npoly = Polymorphisms(1, [BasicPartition.zero(2)], True, None)\njis_c2 = list(c2.con().joinIrreducibles())\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ia(x) for x in list(lst)]\n\ndef _st(s):\n    if s is None:\n        return None\n    return [int(s.first()), int(s.second()), int(s.type()), bool(s.hasInvolution()), str(s.toString())]\n\ndef _hs():\n    try:\n        from java.util import HashSet\n        return HashSet()\n    except ImportError:\n        return set()\n\ndef _al():\n    try:\n        from java.util import ArrayList\n        return ArrayList()\n    except ImportError:\n        return []\n\ndef _ia_sorted(coll):\n    rows = [_ia(x) for x in list(coll)]\n    rows.sort()\n    return rows\n\ndef _next_snap(tf, pair):\n    univHS = _hs()\n    unordered = _hs()\n    univ = _al()\n    result = tf.nextPairForSubtrace(pair, univHS, unordered, univ)\n    return [_ia(result), _ia_sorted(univHS), _ia_sorted(unordered), [_ia(x) for x in list(univ)]]\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\nz3a = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\ntf_ba2 = TypeFinder(ba2)\ntf_sem2 = TypeFinder(sem2)\ntf_unary3 = TypeFinder(unary3)\ntf_z3 = TypeFinder(z3a)\njis_lat2 = list(lat2.con().joinIrreducibles())\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "tf_c2.findType(tf_c2.findSubtrace(jis_c2[0]))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "findType(Subtrace) of C2 unique JI",
+      "expected_exception": null,
+      "id": "tf_find_type_subtrace_c2",
+      "kwargs": {},
+      "method": "TypeFinder.findType",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, BinaryRelation, CentralityData,\n    Polymorphisms, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\ntf_c2 = TypeFinder(c2)\ntf_c3 = TypeFinder(c3)\ntf_lat2 = TypeFinder(lat2)\ntf_m3 = TypeFinder(m3)\ntf_n5 = TypeFinder(n5)\nst = Subtrace(0, 1, True)\nst_t = Subtrace(1, 2, False, 3)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nident = BasicBinaryRelation.identity(3)\nbeta_rel = BasicBinaryRelation(3)\nbeta_rel.add(1, 0)\ncoll = BasicBinaryRelation([IntArray([0, 1]), IntArray([1, 0])], 3)\nzero3 = BasicPartition.zero(3)\ncd = CentralityData(ident, ident, zero3)\npoly = Polymorphisms(1, [BasicPartition.zero(2)], True, None)\njis_c2 = list(c2.con().joinIrreducibles())\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ia(x) for x in list(lst)]\n\ndef _st(s):\n    if s is None:\n        return None\n    return [int(s.first()), int(s.second()), int(s.type()), bool(s.hasInvolution()), str(s.toString())]\n\ndef _hs():\n    try:\n        from java.util import HashSet\n        return HashSet()\n    except ImportError:\n        return set()\n\ndef _al():\n    try:\n        from java.util import ArrayList\n        return ArrayList()\n    except ImportError:\n        return []\n\ndef _ia_sorted(coll):\n    rows = [_ia(x) for x in list(coll)]\n    rows.sort()\n    return rows\n\ndef _next_snap(tf, pair):\n    univHS = _hs()\n    unordered = _hs()\n    univ = _al()\n    result = tf.nextPairForSubtrace(pair, univHS, unordered, univ)\n    return [_ia(result), _ia_sorted(univHS), _ia_sorted(unordered), [_ia(x) for x in list(univ)]]\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\nz3a = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\ntf_ba2 = TypeFinder(ba2)\ntf_sem2 = TypeFinder(sem2)\ntf_unary3 = TypeFinder(unary3)\ntf_z3 = TypeFinder(z3a)\njis_lat2 = list(lat2.con().joinIrreducibles())\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_st(tf_c2.findSubtrace(IntArray([0, 1])))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "findSubtrace(IntArray pair) on C2",
+      "expected_exception": null,
+      "id": "tf_find_subtrace_pair_c2",
+      "kwargs": {},
+      "method": "TypeFinder.findSubtrace",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          0,
+          1,
+          -1,
+          true,
+          "subtrace [0, 1] typ = -1 inv: true"
+        ],
+        "string_repr": "[0, 1, -1, True, 'subtrace [0, 1] typ = -1 inv: true']",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, BinaryRelation, CentralityData,\n    Polymorphisms, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\ntf_c2 = TypeFinder(c2)\ntf_c3 = TypeFinder(c3)\ntf_lat2 = TypeFinder(lat2)\ntf_m3 = TypeFinder(m3)\ntf_n5 = TypeFinder(n5)\nst = Subtrace(0, 1, True)\nst_t = Subtrace(1, 2, False, 3)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nident = BasicBinaryRelation.identity(3)\nbeta_rel = BasicBinaryRelation(3)\nbeta_rel.add(1, 0)\ncoll = BasicBinaryRelation([IntArray([0, 1]), IntArray([1, 0])], 3)\nzero3 = BasicPartition.zero(3)\ncd = CentralityData(ident, ident, zero3)\npoly = Polymorphisms(1, [BasicPartition.zero(2)], True, None)\njis_c2 = list(c2.con().joinIrreducibles())\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ia(x) for x in list(lst)]\n\ndef _st(s):\n    if s is None:\n        return None\n    return [int(s.first()), int(s.second()), int(s.type()), bool(s.hasInvolution()), str(s.toString())]\n\ndef _hs():\n    try:\n        from java.util import HashSet\n        return HashSet()\n    except ImportError:\n        return set()\n\ndef _al():\n    try:\n        from java.util import ArrayList\n        return ArrayList()\n    except ImportError:\n        return []\n\ndef _ia_sorted(coll):\n    rows = [_ia(x) for x in list(coll)]\n    rows.sort()\n    return rows\n\ndef _next_snap(tf, pair):\n    univHS = _hs()\n    unordered = _hs()\n    univ = _al()\n    result = tf.nextPairForSubtrace(pair, univHS, unordered, univ)\n    return [_ia(result), _ia_sorted(univHS), _ia_sorted(unordered), [_ia(x) for x in list(univ)]]\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\nz3a = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\ntf_ba2 = TypeFinder(ba2)\ntf_sem2 = TypeFinder(sem2)\ntf_unary3 = TypeFinder(unary3)\ntf_z3 = TypeFinder(z3a)\njis_lat2 = list(lat2.con().joinIrreducibles())\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "c2.con().type(c2.con().one(), c2.con().zero())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "type(one, zero) of Con(C2)",
+      "expected_exception": null,
+      "id": "cl_type_beta_alpha_c2",
+      "kwargs": {},
+      "method": "CongruenceLattice.type",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, BinaryRelation, CentralityData,\n    Polymorphisms, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\ntf_c2 = TypeFinder(c2)\ntf_c3 = TypeFinder(c3)\ntf_lat2 = TypeFinder(lat2)\ntf_m3 = TypeFinder(m3)\ntf_n5 = TypeFinder(n5)\nst = Subtrace(0, 1, True)\nst_t = Subtrace(1, 2, False, 3)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nident = BasicBinaryRelation.identity(3)\nbeta_rel = BasicBinaryRelation(3)\nbeta_rel.add(1, 0)\ncoll = BasicBinaryRelation([IntArray([0, 1]), IntArray([1, 0])], 3)\nzero3 = BasicPartition.zero(3)\ncd = CentralityData(ident, ident, zero3)\npoly = Polymorphisms(1, [BasicPartition.zero(2)], True, None)\njis_c2 = list(c2.con().joinIrreducibles())\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ia(x) for x in list(lst)]\n\ndef _st(s):\n    if s is None:\n        return None\n    return [int(s.first()), int(s.second()), int(s.type()), bool(s.hasInvolution()), str(s.toString())]\n\ndef _hs():\n    try:\n        from java.util import HashSet\n        return HashSet()\n    except ImportError:\n        return set()\n\ndef _al():\n    try:\n        from java.util import ArrayList\n        return ArrayList()\n    except ImportError:\n        return []\n\ndef _ia_sorted(coll):\n    rows = [_ia(x) for x in list(coll)]\n    rows.sort()\n    return rows\n\ndef _next_snap(tf, pair):\n    univHS = _hs()\n    unordered = _hs()\n    univ = _al()\n    result = tf.nextPairForSubtrace(pair, univHS, unordered, univ)\n    return [_ia(result), _ia_sorted(univHS), _ia_sorted(unordered), [_ia(x) for x in list(univ)]]\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\nz3a = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\ntf_ba2 = TypeFinder(ba2)\ntf_sem2 = TypeFinder(sem2)\ntf_unary3 = TypeFinder(unary3)\ntf_z3 = TypeFinder(z3a)\njis_lat2 = list(lat2.con().joinIrreducibles())\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_st(c2.con().subtrace(c2.con().one(), c2.con().zero()))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "subtrace(one, zero) of Con(C2) is IAE (Java findJoinIrred swapped)",
+      "expected_exception": "IllegalArgumentException",
+      "id": "cl_subtrace_beta_alpha_c2",
+      "kwargs": {},
+      "method": "CongruenceLattice.subtrace",
+      "notes": "Java findJoinIrred(one, zero) is null; findSubtrace then IAE.",
+      "result": {
+        "exception": {
+          "message": "java.lang.IllegalArgumentException: beta = null is not join irreducible",
+          "type": "IllegalArgumentException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, BinaryRelation, CentralityData,\n    Polymorphisms, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\ntf_c2 = TypeFinder(c2)\ntf_c3 = TypeFinder(c3)\ntf_lat2 = TypeFinder(lat2)\ntf_m3 = TypeFinder(m3)\ntf_n5 = TypeFinder(n5)\nst = Subtrace(0, 1, True)\nst_t = Subtrace(1, 2, False, 3)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nident = BasicBinaryRelation.identity(3)\nbeta_rel = BasicBinaryRelation(3)\nbeta_rel.add(1, 0)\ncoll = BasicBinaryRelation([IntArray([0, 1]), IntArray([1, 0])], 3)\nzero3 = BasicPartition.zero(3)\ncd = CentralityData(ident, ident, zero3)\npoly = Polymorphisms(1, [BasicPartition.zero(2)], True, None)\njis_c2 = list(c2.con().joinIrreducibles())\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ia(x) for x in list(lst)]\n\ndef _st(s):\n    if s is None:\n        return None\n    return [int(s.first()), int(s.second()), int(s.type()), bool(s.hasInvolution()), str(s.toString())]\n\ndef _hs():\n    try:\n        from java.util import HashSet\n        return HashSet()\n    except ImportError:\n        return set()\n\ndef _al():\n    try:\n        from java.util import ArrayList\n        return ArrayList()\n    except ImportError:\n        return []\n\ndef _ia_sorted(coll):\n    rows = [_ia(x) for x in list(coll)]\n    rows.sort()\n    return rows\n\ndef _next_snap(tf, pair):\n    univHS = _hs()\n    unordered = _hs()\n    univ = _al()\n    result = tf.nextPairForSubtrace(pair, univHS, unordered, univ)\n    return [_ia(result), _ia_sorted(univHS), _ia_sorted(unordered), [_ia(x) for x in list(univ)]]\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\nz3a = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\ntf_ba2 = TypeFinder(ba2)\ntf_sem2 = TypeFinder(sem2)\ntf_unary3 = TypeFinder(unary3)\ntf_z3 = TypeFinder(z3a)\njis_lat2 = list(lat2.con().joinIrreducibles())\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_st(c2.con().subtrace(c2.con().zero(), c2.con().one()))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "subtrace(zero, one) of Con(C2): Java's unswapped findJoinIrred",
+      "expected_exception": null,
+      "id": "cl_subtrace_covering_c2",
+      "kwargs": {},
+      "method": "CongruenceLattice.subtrace",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          0,
+          1,
+          -1,
+          true,
+          "subtrace [0, 1] typ = -1 inv: true"
+        ],
+        "string_repr": "[0, 1, -1, True, 'subtrace [0, 1] typ = -1 inv: true']",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, BinaryRelation, CentralityData,\n    Polymorphisms, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\ntf_c2 = TypeFinder(c2)\ntf_c3 = TypeFinder(c3)\ntf_lat2 = TypeFinder(lat2)\ntf_m3 = TypeFinder(m3)\ntf_n5 = TypeFinder(n5)\nst = Subtrace(0, 1, True)\nst_t = Subtrace(1, 2, False, 3)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nident = BasicBinaryRelation.identity(3)\nbeta_rel = BasicBinaryRelation(3)\nbeta_rel.add(1, 0)\ncoll = BasicBinaryRelation([IntArray([0, 1]), IntArray([1, 0])], 3)\nzero3 = BasicPartition.zero(3)\ncd = CentralityData(ident, ident, zero3)\npoly = Polymorphisms(1, [BasicPartition.zero(2)], True, None)\njis_c2 = list(c2.con().joinIrreducibles())\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ia(x) for x in list(lst)]\n\ndef _st(s):\n    if s is None:\n        return None\n    return [int(s.first()), int(s.second()), int(s.type()), bool(s.hasInvolution()), str(s.toString())]\n\ndef _hs():\n    try:\n        from java.util import HashSet\n        return HashSet()\n    except ImportError:\n        return set()\n\ndef _al():\n    try:\n        from java.util import ArrayList\n        return ArrayList()\n    except ImportError:\n        return []\n\ndef _ia_sorted(coll):\n    rows = [_ia(x) for x in list(coll)]\n    rows.sort()\n    return rows\n\ndef _next_snap(tf, pair):\n    univHS = _hs()\n    unordered = _hs()\n    univ = _al()\n    result = tf.nextPairForSubtrace(pair, univHS, unordered, univ)\n    return [_ia(result), _ia_sorted(univHS), _ia_sorted(unordered), [_ia(x) for x in list(univ)]]\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\nz3a = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\ntf_ba2 = TypeFinder(ba2)\ntf_sem2 = TypeFinder(sem2)\ntf_unary3 = TypeFinder(unary3)\ntf_z3 = TypeFinder(z3a)\njis_lat2 = list(lat2.con().joinIrreducibles())\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "(lambda con: (con.subtrace(jis_c2[0]), len(con.getJoinIrredToSubtraceMap())))(c2.con())[1]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getJoinIrredToSubtraceMap populated after subtrace()",
+      "expected_exception": null,
+      "id": "cl_join_irred_subtrace_map_c2",
+      "kwargs": {},
+      "method": "CongruenceLattice.getJoinIrredToSubtraceMap",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 1,
+        "string_repr": "1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, BinaryRelation, CentralityData,\n    Polymorphisms, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\ntf_c2 = TypeFinder(c2)\ntf_c3 = TypeFinder(c3)\ntf_lat2 = TypeFinder(lat2)\ntf_m3 = TypeFinder(m3)\ntf_n5 = TypeFinder(n5)\nst = Subtrace(0, 1, True)\nst_t = Subtrace(1, 2, False, 3)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nident = BasicBinaryRelation.identity(3)\nbeta_rel = BasicBinaryRelation(3)\nbeta_rel.add(1, 0)\ncoll = BasicBinaryRelation([IntArray([0, 1]), IntArray([1, 0])], 3)\nzero3 = BasicPartition.zero(3)\ncd = CentralityData(ident, ident, zero3)\npoly = Polymorphisms(1, [BasicPartition.zero(2)], True, None)\njis_c2 = list(c2.con().joinIrreducibles())\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ia(x) for x in list(lst)]\n\ndef _st(s):\n    if s is None:\n        return None\n    return [int(s.first()), int(s.second()), int(s.type()), bool(s.hasInvolution()), str(s.toString())]\n\ndef _hs():\n    try:\n        from java.util import HashSet\n        return HashSet()\n    except ImportError:\n        return set()\n\ndef _al():\n    try:\n        from java.util import ArrayList\n        return ArrayList()\n    except ImportError:\n        return []\n\ndef _ia_sorted(coll):\n    rows = [_ia(x) for x in list(coll)]\n    rows.sort()\n    return rows\n\ndef _next_snap(tf, pair):\n    univHS = _hs()\n    unordered = _hs()\n    univ = _al()\n    result = tf.nextPairForSubtrace(pair, univHS, unordered, univ)\n    return [_ia(result), _ia_sorted(univHS), _ia_sorted(unordered), [_ia(x) for x in list(univ)]]\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\nz3a = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\ntf_ba2 = TypeFinder(ba2)\ntf_sem2 = TypeFinder(sem2)\ntf_unary3 = TypeFinder(unary3)\ntf_z3 = TypeFinder(z3a)\njis_lat2 = list(lat2.con().joinIrreducibles())\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "tf_lat2.findType(jis_lat2[0])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "lat2 findType of a join irreducible",
+      "expected_exception": null,
+      "id": "tf_lat2_find_type",
+      "kwargs": {},
+      "method": "TypeFinder.findType",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 4,
+        "string_repr": "4",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, BinaryRelation, CentralityData,\n    Polymorphisms, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\ntf_c2 = TypeFinder(c2)\ntf_c3 = TypeFinder(c3)\ntf_lat2 = TypeFinder(lat2)\ntf_m3 = TypeFinder(m3)\ntf_n5 = TypeFinder(n5)\nst = Subtrace(0, 1, True)\nst_t = Subtrace(1, 2, False, 3)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nident = BasicBinaryRelation.identity(3)\nbeta_rel = BasicBinaryRelation(3)\nbeta_rel.add(1, 0)\ncoll = BasicBinaryRelation([IntArray([0, 1]), IntArray([1, 0])], 3)\nzero3 = BasicPartition.zero(3)\ncd = CentralityData(ident, ident, zero3)\npoly = Polymorphisms(1, [BasicPartition.zero(2)], True, None)\njis_c2 = list(c2.con().joinIrreducibles())\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ia(x) for x in list(lst)]\n\ndef _st(s):\n    if s is None:\n        return None\n    return [int(s.first()), int(s.second()), int(s.type()), bool(s.hasInvolution()), str(s.toString())]\n\ndef _hs():\n    try:\n        from java.util import HashSet\n        return HashSet()\n    except ImportError:\n        return set()\n\ndef _al():\n    try:\n        from java.util import ArrayList\n        return ArrayList()\n    except ImportError:\n        return []\n\ndef _ia_sorted(coll):\n    rows = [_ia(x) for x in list(coll)]\n    rows.sort()\n    return rows\n\ndef _next_snap(tf, pair):\n    univHS = _hs()\n    unordered = _hs()\n    univ = _al()\n    result = tf.nextPairForSubtrace(pair, univHS, unordered, univ)\n    return [_ia(result), _ia_sorted(univHS), _ia_sorted(unordered), [_ia(x) for x in list(univ)]]\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\nz3a = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\ntf_ba2 = TypeFinder(ba2)\ntf_sem2 = TypeFinder(sem2)\ntf_unary3 = TypeFinder(unary3)\ntf_z3 = TypeFinder(z3a)\njis_lat2 = list(lat2.con().joinIrreducibles())\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "unary3.con().type(list(unary3.con().joinIrreducibles())[0])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "type() of a JI in the cyclic permutation algebra (type 1)",
+      "expected_exception": null,
+      "id": "cl_type_unary3",
+      "kwargs": {},
+      "method": "CongruenceLattice.type",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 1,
+        "string_repr": "1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, BinaryRelation, CentralityData,\n    Polymorphisms, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\ntf_c2 = TypeFinder(c2)\ntf_c3 = TypeFinder(c3)\ntf_lat2 = TypeFinder(lat2)\ntf_m3 = TypeFinder(m3)\ntf_n5 = TypeFinder(n5)\nst = Subtrace(0, 1, True)\nst_t = Subtrace(1, 2, False, 3)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nident = BasicBinaryRelation.identity(3)\nbeta_rel = BasicBinaryRelation(3)\nbeta_rel.add(1, 0)\ncoll = BasicBinaryRelation([IntArray([0, 1]), IntArray([1, 0])], 3)\nzero3 = BasicPartition.zero(3)\ncd = CentralityData(ident, ident, zero3)\npoly = Polymorphisms(1, [BasicPartition.zero(2)], True, None)\njis_c2 = list(c2.con().joinIrreducibles())\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ia(x) for x in list(lst)]\n\ndef _st(s):\n    if s is None:\n        return None\n    return [int(s.first()), int(s.second()), int(s.type()), bool(s.hasInvolution()), str(s.toString())]\n\ndef _hs():\n    try:\n        from java.util import HashSet\n        return HashSet()\n    except ImportError:\n        return set()\n\ndef _al():\n    try:\n        from java.util import ArrayList\n        return ArrayList()\n    except ImportError:\n        return []\n\ndef _ia_sorted(coll):\n    rows = [_ia(x) for x in list(coll)]\n    rows.sort()\n    return rows\n\ndef _next_snap(tf, pair):\n    univHS = _hs()\n    unordered = _hs()\n    univ = _al()\n    result = tf.nextPairForSubtrace(pair, univHS, unordered, univ)\n    return [_ia(result), _ia_sorted(univHS), _ia_sorted(unordered), [_ia(x) for x in list(univ)]]\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\nz3a = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\ntf_ba2 = TypeFinder(ba2)\ntf_sem2 = TypeFinder(sem2)\ntf_unary3 = TypeFinder(unary3)\ntf_z3 = TypeFinder(z3a)\njis_lat2 = list(lat2.con().joinIrreducibles())\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "ba2.con().type(list(ba2.con().joinIrreducibles())[0])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "type() of a JI in ba2 (type 3)",
+      "expected_exception": null,
+      "id": "cl_type_ba2",
+      "kwargs": {},
+      "method": "CongruenceLattice.type",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 3,
+        "string_repr": "3",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, BinaryRelation, CentralityData,\n    Polymorphisms, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\ntf_c2 = TypeFinder(c2)\ntf_c3 = TypeFinder(c3)\ntf_lat2 = TypeFinder(lat2)\ntf_m3 = TypeFinder(m3)\ntf_n5 = TypeFinder(n5)\nst = Subtrace(0, 1, True)\nst_t = Subtrace(1, 2, False, 3)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nident = BasicBinaryRelation.identity(3)\nbeta_rel = BasicBinaryRelation(3)\nbeta_rel.add(1, 0)\ncoll = BasicBinaryRelation([IntArray([0, 1]), IntArray([1, 0])], 3)\nzero3 = BasicPartition.zero(3)\ncd = CentralityData(ident, ident, zero3)\npoly = Polymorphisms(1, [BasicPartition.zero(2)], True, None)\njis_c2 = list(c2.con().joinIrreducibles())\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ia(x) for x in list(lst)]\n\ndef _st(s):\n    if s is None:\n        return None\n    return [int(s.first()), int(s.second()), int(s.type()), bool(s.hasInvolution()), str(s.toString())]\n\ndef _hs():\n    try:\n        from java.util import HashSet\n        return HashSet()\n    except ImportError:\n        return set()\n\ndef _al():\n    try:\n        from java.util import ArrayList\n        return ArrayList()\n    except ImportError:\n        return []\n\ndef _ia_sorted(coll):\n    rows = [_ia(x) for x in list(coll)]\n    rows.sort()\n    return rows\n\ndef _next_snap(tf, pair):\n    univHS = _hs()\n    unordered = _hs()\n    univ = _al()\n    result = tf.nextPairForSubtrace(pair, univHS, unordered, univ)\n    return [_ia(result), _ia_sorted(univHS), _ia_sorted(unordered), [_ia(x) for x in list(univ)]]\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\nz3a = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\ntf_ba2 = TypeFinder(ba2)\ntf_sem2 = TypeFinder(sem2)\ntf_unary3 = TypeFinder(unary3)\ntf_z3 = TypeFinder(z3a)\njis_lat2 = list(lat2.con().joinIrreducibles())\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sem2.con().type(list(sem2.con().joinIrreducibles())[0])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "type() of a JI in the 2-element semilattice (type 5)",
+      "expected_exception": null,
+      "id": "cl_type_sem2",
+      "kwargs": {},
+      "method": "CongruenceLattice.type",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 5,
+        "string_repr": "5",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, BinaryRelation, CentralityData,\n    Polymorphisms, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\ntf_c2 = TypeFinder(c2)\ntf_c3 = TypeFinder(c3)\ntf_lat2 = TypeFinder(lat2)\ntf_m3 = TypeFinder(m3)\ntf_n5 = TypeFinder(n5)\nst = Subtrace(0, 1, True)\nst_t = Subtrace(1, 2, False, 3)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nident = BasicBinaryRelation.identity(3)\nbeta_rel = BasicBinaryRelation(3)\nbeta_rel.add(1, 0)\ncoll = BasicBinaryRelation([IntArray([0, 1]), IntArray([1, 0])], 3)\nzero3 = BasicPartition.zero(3)\ncd = CentralityData(ident, ident, zero3)\npoly = Polymorphisms(1, [BasicPartition.zero(2)], True, None)\njis_c2 = list(c2.con().joinIrreducibles())\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ia(x) for x in list(lst)]\n\ndef _st(s):\n    if s is None:\n        return None\n    return [int(s.first()), int(s.second()), int(s.type()), bool(s.hasInvolution()), str(s.toString())]\n\ndef _hs():\n    try:\n        from java.util import HashSet\n        return HashSet()\n    except ImportError:\n        return set()\n\ndef _al():\n    try:\n        from java.util import ArrayList\n        return ArrayList()\n    except ImportError:\n        return []\n\ndef _ia_sorted(coll):\n    rows = [_ia(x) for x in list(coll)]\n    rows.sort()\n    return rows\n\ndef _next_snap(tf, pair):\n    univHS = _hs()\n    unordered = _hs()\n    univ = _al()\n    result = tf.nextPairForSubtrace(pair, univHS, unordered, univ)\n    return [_ia(result), _ia_sorted(univHS), _ia_sorted(unordered), [_ia(x) for x in list(univ)]]\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\nz3a = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\ntf_ba2 = TypeFinder(ba2)\ntf_sem2 = TypeFinder(sem2)\ntf_unary3 = TypeFinder(unary3)\ntf_z3 = TypeFinder(z3a)\njis_lat2 = list(lat2.con().joinIrreducibles())\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sorted(int(x) for x in list(unary3.con().typeSet()))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Con(unary3) TCT type set (type 1)",
+      "expected_exception": null,
+      "id": "cl_type_set_unary3",
+      "kwargs": {},
+      "method": "CongruenceLattice.typeSet",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          1
+        ],
+        "string_repr": "[1]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, BinaryRelation, CentralityData,\n    Polymorphisms, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\ntf_c2 = TypeFinder(c2)\ntf_c3 = TypeFinder(c3)\ntf_lat2 = TypeFinder(lat2)\ntf_m3 = TypeFinder(m3)\ntf_n5 = TypeFinder(n5)\nst = Subtrace(0, 1, True)\nst_t = Subtrace(1, 2, False, 3)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nident = BasicBinaryRelation.identity(3)\nbeta_rel = BasicBinaryRelation(3)\nbeta_rel.add(1, 0)\ncoll = BasicBinaryRelation([IntArray([0, 1]), IntArray([1, 0])], 3)\nzero3 = BasicPartition.zero(3)\ncd = CentralityData(ident, ident, zero3)\npoly = Polymorphisms(1, [BasicPartition.zero(2)], True, None)\njis_c2 = list(c2.con().joinIrreducibles())\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ia(x) for x in list(lst)]\n\ndef _st(s):\n    if s is None:\n        return None\n    return [int(s.first()), int(s.second()), int(s.type()), bool(s.hasInvolution()), str(s.toString())]\n\ndef _hs():\n    try:\n        from java.util import HashSet\n        return HashSet()\n    except ImportError:\n        return set()\n\ndef _al():\n    try:\n        from java.util import ArrayList\n        return ArrayList()\n    except ImportError:\n        return []\n\ndef _ia_sorted(coll):\n    rows = [_ia(x) for x in list(coll)]\n    rows.sort()\n    return rows\n\ndef _next_snap(tf, pair):\n    univHS = _hs()\n    unordered = _hs()\n    univ = _al()\n    result = tf.nextPairForSubtrace(pair, univHS, unordered, univ)\n    return [_ia(result), _ia_sorted(univHS), _ia_sorted(unordered), [_ia(x) for x in list(univ)]]\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\nz3a = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\ntf_ba2 = TypeFinder(ba2)\ntf_sem2 = TypeFinder(sem2)\ntf_unary3 = TypeFinder(unary3)\ntf_z3 = TypeFinder(z3a)\njis_lat2 = list(lat2.con().joinIrreducibles())\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sorted(int(x) for x in list(s3.con().typeSet()))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Con(S3) TCT type set (non-idempotent group)",
+      "expected_exception": null,
+      "id": "cl_type_set_s3",
+      "kwargs": {},
+      "method": "CongruenceLattice.typeSet",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          2
+        ],
+        "string_repr": "[2]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, BinaryRelation, CentralityData,\n    Polymorphisms, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\ntf_c2 = TypeFinder(c2)\ntf_c3 = TypeFinder(c3)\ntf_lat2 = TypeFinder(lat2)\ntf_m3 = TypeFinder(m3)\ntf_n5 = TypeFinder(n5)\nst = Subtrace(0, 1, True)\nst_t = Subtrace(1, 2, False, 3)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nident = BasicBinaryRelation.identity(3)\nbeta_rel = BasicBinaryRelation(3)\nbeta_rel.add(1, 0)\ncoll = BasicBinaryRelation([IntArray([0, 1]), IntArray([1, 0])], 3)\nzero3 = BasicPartition.zero(3)\ncd = CentralityData(ident, ident, zero3)\npoly = Polymorphisms(1, [BasicPartition.zero(2)], True, None)\njis_c2 = list(c2.con().joinIrreducibles())\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ia(x) for x in list(lst)]\n\ndef _st(s):\n    if s is None:\n        return None\n    return [int(s.first()), int(s.second()), int(s.type()), bool(s.hasInvolution()), str(s.toString())]\n\ndef _hs():\n    try:\n        from java.util import HashSet\n        return HashSet()\n    except ImportError:\n        return set()\n\ndef _al():\n    try:\n        from java.util import ArrayList\n        return ArrayList()\n    except ImportError:\n        return []\n\ndef _ia_sorted(coll):\n    rows = [_ia(x) for x in list(coll)]\n    rows.sort()\n    return rows\n\ndef _next_snap(tf, pair):\n    univHS = _hs()\n    unordered = _hs()\n    univ = _al()\n    result = tf.nextPairForSubtrace(pair, univHS, unordered, univ)\n    return [_ia(result), _ia_sorted(univHS), _ia_sorted(unordered), [_ia(x) for x in list(univ)]]\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\nz3a = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\ntf_ba2 = TypeFinder(ba2)\ntf_sem2 = TypeFinder(sem2)\ntf_unary3 = TypeFinder(unary3)\ntf_z3 = TypeFinder(z3a)\njis_lat2 = list(lat2.con().joinIrreducibles())\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "tf_c2.findSubtrace(None)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "findSubtrace(null) is IAE (not join irreducible)",
+      "expected_exception": "IllegalArgumentException",
+      "id": "tf_find_subtrace_npe",
+      "kwargs": {},
+      "method": "TypeFinder.findSubtrace",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.IllegalArgumentException: beta = null is not join irreducible",
+          "type": "IllegalArgumentException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, BinaryRelation, CentralityData,\n    Polymorphisms, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\ntf_c2 = TypeFinder(c2)\ntf_c3 = TypeFinder(c3)\ntf_lat2 = TypeFinder(lat2)\ntf_m3 = TypeFinder(m3)\ntf_n5 = TypeFinder(n5)\nst = Subtrace(0, 1, True)\nst_t = Subtrace(1, 2, False, 3)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nident = BasicBinaryRelation.identity(3)\nbeta_rel = BasicBinaryRelation(3)\nbeta_rel.add(1, 0)\ncoll = BasicBinaryRelation([IntArray([0, 1]), IntArray([1, 0])], 3)\nzero3 = BasicPartition.zero(3)\ncd = CentralityData(ident, ident, zero3)\npoly = Polymorphisms(1, [BasicPartition.zero(2)], True, None)\njis_c2 = list(c2.con().joinIrreducibles())\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ia(x) for x in list(lst)]\n\ndef _st(s):\n    if s is None:\n        return None\n    return [int(s.first()), int(s.second()), int(s.type()), bool(s.hasInvolution()), str(s.toString())]\n\ndef _hs():\n    try:\n        from java.util import HashSet\n        return HashSet()\n    except ImportError:\n        return set()\n\ndef _al():\n    try:\n        from java.util import ArrayList\n        return ArrayList()\n    except ImportError:\n        return []\n\ndef _ia_sorted(coll):\n    rows = [_ia(x) for x in list(coll)]\n    rows.sort()\n    return rows\n\ndef _next_snap(tf, pair):\n    univHS = _hs()\n    unordered = _hs()\n    univ = _al()\n    result = tf.nextPairForSubtrace(pair, univHS, unordered, univ)\n    return [_ia(result), _ia_sorted(univHS), _ia_sorted(unordered), [_ia(x) for x in list(univ)]]\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\nz3a = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\ntf_ba2 = TypeFinder(ba2)\ntf_sem2 = TypeFinder(sem2)\ntf_unary3 = TypeFinder(unary3)\ntf_z3 = TypeFinder(z3a)\njis_lat2 = list(lat2.con().joinIrreducibles())\n",
       "skip_string_check": true,
       "xfail_reason": null
     }
