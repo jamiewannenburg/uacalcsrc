@@ -265,7 +265,6 @@ def _install(g: dict) -> None:
         _orig_mbt = getattr(_LibTaylor, "make_balanced_taylor_term", None)
         _orig_lex_terms = getattr(_LibTaylor, "lexicographically_compare_terms", None)
         _orig_eqs = getattr(_LibTaylor, "equations", None)
-        _EQS: dict = {}
 
         def _taylor_new(cls: Any, first: Any, second: Any) -> Any:
             if first is None or second is None:
@@ -285,9 +284,8 @@ def _install(g: dict) -> None:
                 raise IllegalArgumentException(
                     "Taylor term must have an operation symbol"
                 )
-            inst = cls.from_symbol(sym, [])
-            _EQS[id(inst)] = list(second)
-            return inst
+            # Java stores eqs but makeRootMapFromEqs is TODO; inteqs stay empty.
+            return cls.from_symbol(sym, [])
 
         def markovicMcKenzieTerm() -> Any:
             return _LibTaylor.markovic_mckenzie_term()
@@ -346,9 +344,6 @@ def _install(g: dict) -> None:
             return _cmp_arrays(a, b)
 
         def equations(self: Any) -> Any:
-            stored = _EQS.get(id(self))
-            if stored is not None:
-                return stored
             return _orig_eqs(self) if callable(_orig_eqs) else None
 
         try:
