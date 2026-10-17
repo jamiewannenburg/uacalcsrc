@@ -76,9 +76,9 @@ Compatibility requirements:
   tuples). Python reads `<freeAlgebra>` back as F(n) (cardinality and
   tables); Java AlgebraReader has no freeAlgebra handler and returns the
   generating algebra (known Java bug, strict xfail). Product / power /
-  quotient / subalgebra / bigProduct / subProduct still go through
-  `to_basic_algebra()` until those writers leave stub status. Nested
-  `<bigProductAlgebra>` is written inside `<freeAlgebra>` and
+  quotient / subalgebra / subProduct are written with the same nested
+  Java tags via dedicated Rust writers and reread as those types.
+  Nested `<bigProductAlgebra>` is written inside `<freeAlgebra>` and
   `<subProductAlgebra>`; standalone `BigProductAlgebra` is not a
   `SmallAlgebra` so Java `AlgebraWriter` cannot take it.
 - `writeAlgebraFile` with `oldStyle`: semantic parity by normalized XML

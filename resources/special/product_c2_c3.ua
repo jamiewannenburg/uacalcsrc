@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<algebra>
+  <productAlgebra>
+    <cardinality>6</cardinality>
+    <factors>
+      <factor>
+        <basicAlgebra>
+          <algName>C2</algName>
+          <desc>The two element group.</desc>
+          <cardinality>2</cardinality>
+          <operations>
+            <op>
+              <opSymbol>
+                <opName>+</opName>
+                <arity>2</arity>
+              </opSymbol>
+              <opTable>
+                <intArray>
+                  <row r="[0]">0,1</row>
+                  <row r="[1]">1,0</row>
+                </intArray>
+              </opTable>
+            </op>
+          </operations>
+        </basicAlgebra>
+      </factor>
+      <factor>
+        <basicAlgebra>
+          <algName>C3</algName>
+          <desc>The group of order 3.</desc>
+          <cardinality>3</cardinality>
+          <operations>
+            <op>
+              <opSymbol>
+                <opName>+</opName>
+                <arity>2</arity>
+              </opSymbol>
+              <opTable>
+                <intArray>
+                  <row r="[0]">0,1,2</row>
+                  <row r="[1]">1,2,0</row>
+                  <row r="[2]">2,0,1</row>
+                </intArray>
+              </opTable>
+            </op>
+          </operations>
+        </basicAlgebra>
+      </factor>
+    </factors>
+  </productAlgebra>
+</algebra>

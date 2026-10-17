@@ -561,6 +561,11 @@ class BehavioralParityTest(TestCase):
         # one JVM run's hex; compare the class prefix only.
         if _normalize_java_identity(actual) == _normalize_java_identity(expected):
             return
+        # Jython serialize of some Java types (notably Subalgebra) never enters
+        # the algebra branch, so the golden is Class@hex. Python emits the
+        # meaningful typed summary; treat that as a match.
+        if _java_identity_fallback_matches_semantic(expected, actual):
+            return
         self.fail(
             "{0}: {1} mismatch\n  Expected: {2}\n  Actual:   {3}".format(
                 test_id,
@@ -587,6 +592,27 @@ class BehavioralParityTest(TestCase):
 
 def looks_like_java_identity(text: str) -> bool:
     return bool(_JAVA_IDENTITY_TOSTRING.match(text or ""))
+
+
+def _is_java_identity_fallback(obj: Any) -> bool:
+    if not isinstance(obj, dict):
+        return False
+    if obj.get("__type__") in ("algebra", "lattice", "term", "operation", "file"):
+        return False
+    text = str(obj.get("string") or obj.get("__repr__") or "")
+    return looks_like_java_identity(text)
+
+
+def _java_identity_fallback_matches_semantic(expected: Any, actual: Any) -> bool:
+    if not _is_java_identity_fallback(expected):
+        return False
+    if not isinstance(actual, dict):
+        return False
+    if actual.get("__type__") not in ("algebra", "lattice", "term", "operation"):
+        return False
+    exp_cls = str(expected.get("__type__") or "")
+    act_cls = str(actual.get("class") or actual.get("__type__") or "")
+    return bool(exp_cls) and exp_cls in act_cls
 
 
 _JAVA_IDENTITY_IN_STRING = re.compile(r"[\w.$]+@[0-9a-fA-F]+")

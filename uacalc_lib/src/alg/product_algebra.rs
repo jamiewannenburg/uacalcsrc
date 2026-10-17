@@ -224,6 +224,10 @@ impl PyProductAlgebra {
 }
 
 impl PyProductAlgebra {
+    pub(crate) fn as_inner(&self) -> &uacalc::alg::ProductAlgebra {
+        &self.inner
+    }
+
     pub(crate) fn from_inner(inner: uacalc::alg::ProductAlgebra) -> Self {
         let factors = inner
             .factors()

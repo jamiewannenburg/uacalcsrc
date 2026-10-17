@@ -39,13 +39,13 @@ slices:
       ExtFileFilter / Mace4Reader / BadAlgebraFileException; JSONChannel ignored.
       write_free_algebra emits Java <freeAlgebra> coordinate tuples; reader
       rebuilds F(n) (known Java bug: Java returns the generating algebra).
-      Product/power/quotient/subalgebra/subproduct typed XML is written and
-      rebuilt in the org.io wrapper (Rust SmallAlgebra writer stays a stub).
-      Nested Java fixtures reread as ProductAlgebra/PowerAlgebra/etc. Remaining
-      io xfails: FreeAlgebra reader Java bug; AlgebraIO/AlgebraReader list
-      last-only Java bug; PowerAlgebra Horner/tuple encoding vs cyclic-on-4;
-      Subalgebra Jython serialize Class@hex vs typed rebuild. Branch
-      example-io-tooling-leftovers.
+      Product/power/quotient/subalgebra/subproduct typed XML is written by
+      dedicated Rust AlgebraWriter APIs; the org shim rebuilds those kinds
+      on read. PowerAlgebra tables use Horner/product encoding (Java C2^2).
+      Subalgebra Jython serialize is Class@hex; Python emits the typed
+      summary. Remaining io xfails: FreeAlgebra reader Java bug;
+      AlgebraIO/AlgebraReader list last-only Java bug. Branch
+      remaining-io-formats.
 
   - id: core-alg-base
     title: Core algebras (BasicAlgebra, SmallAlgebra, products, …) excluding conlat/op subtrees

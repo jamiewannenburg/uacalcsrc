@@ -6,6 +6,11 @@ use std::cell::RefCell;
 use uacalc::alg::SmallAlgebra;
 use crate::alg::PyBasicAlgebra;
 use crate::alg::free_algebra::PyFreeAlgebra;
+use crate::alg::power_algebra::PyPowerAlgebra;
+use crate::alg::product_algebra::PyProductAlgebra;
+use crate::alg::quotient_algebra::PyQuotientAlgebra;
+use crate::alg::sub_product_algebra::PySubProductAlgebra;
+use crate::alg::subalgebra::PySubalgebra;
 
 /// Python iterator for parsing algebras from a Mace4 file lazily
 #[pyclass(unsendable)]
@@ -562,6 +567,44 @@ impl PyAlgebraWriter {
     #[staticmethod]
     fn write_free_algebra_xml_to_file(algebra: &PyFreeAlgebra, file_path: String) -> PyResult<()> {
         uacalc::io::AlgebraWriter::write_free_algebra_xml_to_file(algebra.as_inner(), &file_path)
+            .map_err(PyValueError::new_err)
+    }
+
+    /// Write Java `<productAlgebra>` XML for a ProductAlgebra.
+    #[staticmethod]
+    fn write_product_algebra_xml_to_file(algebra: &PyProductAlgebra, file_path: String) -> PyResult<()> {
+        uacalc::io::AlgebraWriter::write_product_algebra_xml_to_file(algebra.as_inner(), &file_path)
+            .map_err(PyValueError::new_err)
+    }
+
+    /// Write Java `<powerAlgebra>` XML for a PowerAlgebra.
+    #[staticmethod]
+    fn write_power_algebra_xml_to_file(algebra: &PyPowerAlgebra, file_path: String) -> PyResult<()> {
+        uacalc::io::AlgebraWriter::write_power_algebra_xml_to_file(algebra.as_inner(), &file_path)
+            .map_err(PyValueError::new_err)
+    }
+
+    /// Write Java `<quotientAlgebra>` XML for a QuotientAlgebra.
+    #[staticmethod]
+    fn write_quotient_algebra_xml_to_file(algebra: &PyQuotientAlgebra, file_path: String) -> PyResult<()> {
+        uacalc::io::AlgebraWriter::write_quotient_algebra_xml_to_file(algebra.as_inner(), &file_path)
+            .map_err(PyValueError::new_err)
+    }
+
+    /// Write Java `<subAlgebra>` XML for a Subalgebra.
+    #[staticmethod]
+    fn write_subalgebra_xml_to_file(algebra: &PySubalgebra, file_path: String) -> PyResult<()> {
+        uacalc::io::AlgebraWriter::write_subalgebra_xml_to_file(algebra.as_inner(), &file_path)
+            .map_err(PyValueError::new_err)
+    }
+
+    /// Write Java `<subProductAlgebra>` XML for a SubProductAlgebra.
+    #[staticmethod]
+    fn write_sub_product_algebra_xml_to_file(
+        algebra: &PySubProductAlgebra,
+        file_path: String,
+    ) -> PyResult<()> {
+        uacalc::io::AlgebraWriter::write_sub_product_algebra_xml_to_file(algebra.as_inner(), &file_path)
             .map_err(PyValueError::new_err)
     }
     

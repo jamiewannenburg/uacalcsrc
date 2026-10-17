@@ -10,7 +10,10 @@ mod mace4_reader_tests;
 use std::io::{Write, BufWriter};
 use std::fs::File;
 use std::collections::HashSet;
-use crate::alg::{Algebra, AlgebraType, BigProductAlgebra, FreeAlgebra, SmallAlgebra};
+use crate::alg::{
+    Algebra, AlgebraType, BigProductAlgebra, FreeAlgebra, PowerAlgebra, ProductAlgebra,
+    QuotientAlgebra, SmallAlgebra, Subalgebra, SubProductAlgebra,
+};
 use crate::alg::small_algebra::BasicAlgebra;
 use crate::alg::op::Operation;
 use crate::alg::conlat::partition::Partition;
@@ -257,131 +260,52 @@ impl AlgebraWriter {
         Ok(())
     }
     
-    /// Write a power algebra definition.
-    /// 
-    /// This method writes the XML for a power algebra, including its root algebra
-    /// and power information.
-    /// 
-    /// # Returns
-    /// * `Ok(())` - Successfully written
-    /// * `Err(String)` - If writing fails
+    /// Write a power algebra held only as `SmallAlgebra<i32>`.
+    ///
+    /// Real `PowerAlgebra` values must use
+    /// [`AlgebraWriter::write_power_algebra_xml_to_file`].
     fn write_power_algebra(&mut self) -> Result<(), String> {
-        self.write_tag("<powerAlgebra>")?;
-        self.write_alg_name()?;
-        self.write_desc()?;
-        self.write_cardinality()?;
-        self.write_power()?;
-        
-        self.write_tag("<root>")?;
-        // Note: In a real implementation, we would need to access the root algebra
-        // For now, we'll write a placeholder
-        self.write_tag("<basicAlgebra>")?;
-        self.write_alg_name()?;
-        self.write_desc()?;
-        self.write_cardinality()?;
-        self.write_end_tag("</basicAlgebra>")?;
-        self.write_end_tag("</root>")?;
-        
-        self.write_end_tag("</powerAlgebra>")?;
-        Ok(())
+        Err(
+            "PowerAlgebra must be written via AlgebraWriter::write_power_algebra_xml_to_file \
+             (SmallAlgebra<i32> has already forgotten the root algebra)"
+                .to_string(),
+        )
     }
     
-    /// Write a product algebra definition.
-    /// 
-    /// This method writes the XML for a product algebra, including all its factors.
-    /// 
-    /// # Returns
-    /// * `Ok(())` - Successfully written
-    /// * `Err(String)` - If writing fails
+    /// Write a product algebra held only as `SmallAlgebra<i32>`.
+    ///
+    /// Real `ProductAlgebra` values must use
+    /// [`AlgebraWriter::write_product_algebra_xml_to_file`].
     fn write_product_algebra(&mut self) -> Result<(), String> {
-        self.write_tag("<productAlgebra>")?;
-        self.write_alg_name()?;
-        self.write_desc()?;
-        self.write_cardinality()?;
-        
-        self.write_tag("<factors>")?;
-        // Note: In a real implementation, we would need to access the factors
-        // For now, we'll write a placeholder
-        self.write_tag("<factor>")?;
-        self.write_tag("<basicAlgebra>")?;
-        self.write_alg_name()?;
-        self.write_desc()?;
-        self.write_cardinality()?;
-        self.write_end_tag("</basicAlgebra>")?;
-        self.write_end_tag("</factor>")?;
-        self.write_end_tag("</factors>")?;
-        
-        self.write_end_tag("</productAlgebra>")?;
-        Ok(())
+        Err(
+            "ProductAlgebra must be written via AlgebraWriter::write_product_algebra_xml_to_file \
+             (SmallAlgebra<i32> has already forgotten the factors)"
+                .to_string(),
+        )
     }
     
-    /// Write a quotient algebra definition.
-    /// 
-    /// This method writes the XML for a quotient algebra, including its super algebra
-    /// and congruence relation.
-    /// 
-    /// # Returns
-    /// * `Ok(())` - Successfully written
-    /// * `Err(String)` - If writing fails
+    /// Write a quotient algebra held only as `SmallAlgebra<i32>`.
+    ///
+    /// Real `QuotientAlgebra` values must use
+    /// [`AlgebraWriter::write_quotient_algebra_xml_to_file`].
     fn write_quotient_algebra(&mut self) -> Result<(), String> {
-        self.write_tag("<quotientAlgebra>")?;
-        self.write_alg_name()?;
-        self.write_desc()?;
-        self.write_cardinality()?;
-        
-        self.write_tag("<superAlgebra>")?;
-        // Note: In a real implementation, we would need to access the super algebra
-        self.write_tag("<basicAlgebra>")?;
-        self.write_alg_name()?;
-        self.write_desc()?;
-        self.write_cardinality()?;
-        self.write_end_tag("</basicAlgebra>")?;
-        self.write_end_tag("</superAlgebra>")?;
-        
-        self.write_tag("<congruence>")?;
-        // Note: In a real implementation, we would need to access the congruence
-        self.write_tag("<partition>")?;
-        self.write_indent()?;
-        writeln!(self.out, "0,1")
-            .map_err(|e| format!("Failed to write partition: {}", e))?;
-        self.write_end_tag("</partition>")?;
-        self.write_int_array(&[0, 1])?;
-        self.write_end_tag("</congruence>")?;
-        
-        self.write_end_tag("</quotientAlgebra>")?;
-        Ok(())
+        Err(
+            "QuotientAlgebra must be written via AlgebraWriter::write_quotient_algebra_xml_to_file \
+             (SmallAlgebra<i32> has already forgotten the super algebra and congruence)"
+                .to_string(),
+        )
     }
     
-    /// Write a subalgebra definition.
-    /// 
-    /// This method writes the XML for a subalgebra, including its super algebra
-    /// and subuniverse.
-    /// 
-    /// # Returns
-    /// * `Ok(())` - Successfully written
-    /// * `Err(String)` - If writing fails
+    /// Write a subalgebra held only as `SmallAlgebra<i32>`.
+    ///
+    /// Real `Subalgebra` values must use
+    /// [`AlgebraWriter::write_subalgebra_xml_to_file`].
     fn write_subalgebra(&mut self) -> Result<(), String> {
-        self.write_tag("<subAlgebra>")?;
-        self.write_alg_name()?;
-        self.write_desc()?;
-        self.write_cardinality()?;
-        
-        self.write_tag("<superAlgebra>")?;
-        // Note: In a real implementation, we would need to access the super algebra
-        self.write_tag("<basicAlgebra>")?;
-        self.write_alg_name()?;
-        self.write_desc()?;
-        self.write_cardinality()?;
-        self.write_end_tag("</basicAlgebra>")?;
-        self.write_end_tag("</superAlgebra>")?;
-        
-        self.write_tag("<subUniverse>")?;
-        // Note: In a real implementation, we would need to access the subuniverse
-        self.write_int_array(&[0, 1])?;
-        self.write_end_tag("</subUniverse>")?;
-        
-        self.write_end_tag("</subAlgebra>")?;
-        Ok(())
+        Err(
+            "Subalgebra must be written via AlgebraWriter::write_subalgebra_xml_to_file \
+             (SmallAlgebra<i32> has already forgotten the super algebra and subuniverse)"
+                .to_string(),
+        )
     }
     
     /// Write a free algebra held only as `SmallAlgebra<i32>`.
@@ -396,27 +320,159 @@ impl AlgebraWriter {
         )
     }
 
+    fn dummy_small_algebra() -> Box<dyn SmallAlgebra<UniverseItem = i32>> {
+        Box::new(BasicAlgebra::new(
+            String::new(),
+            HashSet::new(),
+            Vec::new(),
+        ))
+    }
+
+    fn write_typed_xml_to_file<F>(file_path: &str, body: F) -> Result<(), String>
+    where
+        F: FnOnce(&mut Self) -> Result<(), String>,
+    {
+        let mut writer = Self::new_with_file(Self::dummy_small_algebra(), file_path)?;
+        writeln!(writer.out, "<?xml version=\"1.0\"?>")
+            .map_err(|e| format!("Failed to write XML header: {}", e))?;
+        writer.write_tag("<algebra>")?;
+        body(&mut writer)?;
+        writer.write_end_tag("</algebra>")?;
+        writer
+            .out
+            .flush()
+            .map_err(|e| format!("Failed to flush output: {}", e))?;
+        Ok(())
+    }
+
     /// Write Java `<freeAlgebra>` XML (coordinate-tuple generators/universe).
     ///
     /// Matches `org.uacalc.io.AlgebraWriter.writeFreeAlgebra`: generators and
     /// universe as `<productElem>` rows, super algebra as `<bigProductAlgebra>`
     /// with `<powers>` and `<rootFactors>`.
     pub fn write_free_algebra_xml_to_file(alg: &FreeAlgebra, file_path: &str) -> Result<(), String> {
-        let dummy = Box::new(BasicAlgebra::new(
-            String::new(),
-            HashSet::new(),
-            Vec::new(),
-        )) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
-        let mut writer = Self::new_with_file(dummy, file_path)?;
-        writeln!(writer.out, "<?xml version=\"1.0\"?>")
-            .map_err(|e| format!("Failed to write XML header: {}", e))?;
-        writer.write_tag("<algebra>")?;
-        writer.write_free_algebra_typed(alg)?;
-        writer.write_end_tag("</algebra>")?;
-        writer
-            .out
-            .flush()
-            .map_err(|e| format!("Failed to flush output: {}", e))?;
+        Self::write_typed_xml_to_file(file_path, |writer| writer.write_free_algebra_typed(alg))
+    }
+
+    /// Write Java `<productAlgebra>` XML with nested `<factor>` basic algebras.
+    pub fn write_product_algebra_xml_to_file(
+        alg: &ProductAlgebra,
+        file_path: &str,
+    ) -> Result<(), String> {
+        Self::write_typed_xml_to_file(file_path, |writer| writer.write_product_algebra_typed(alg))
+    }
+
+    /// Write Java `<powerAlgebra>` XML with `<power>` and nested `<root>`.
+    pub fn write_power_algebra_xml_to_file(
+        alg: &PowerAlgebra,
+        file_path: &str,
+    ) -> Result<(), String> {
+        Self::write_typed_xml_to_file(file_path, |writer| writer.write_power_algebra_typed(alg))
+    }
+
+    /// Write Java `<quotientAlgebra>` XML with `<superAlgebra>` and `<congruence>`.
+    pub fn write_quotient_algebra_xml_to_file(
+        alg: &QuotientAlgebra<i32>,
+        file_path: &str,
+    ) -> Result<(), String> {
+        Self::write_typed_xml_to_file(file_path, |writer| writer.write_quotient_algebra_typed(alg))
+    }
+
+    /// Write Java `<subAlgebra>` XML with `<superAlgebra>` and `<subUniverse>`.
+    pub fn write_subalgebra_xml_to_file(
+        alg: &Subalgebra<i32>,
+        file_path: &str,
+    ) -> Result<(), String> {
+        Self::write_typed_xml_to_file(file_path, |writer| writer.write_subalgebra_typed(alg))
+    }
+
+    /// Write Java `<subProductAlgebra>` XML (generators, universe, big product).
+    pub fn write_sub_product_algebra_xml_to_file(
+        alg: &SubProductAlgebra<i32>,
+        file_path: &str,
+    ) -> Result<(), String> {
+        Self::write_typed_xml_to_file(file_path, |writer| writer.write_sub_product_algebra_typed(alg))
+    }
+
+    fn write_product_algebra_typed(&mut self, alg: &ProductAlgebra) -> Result<(), String> {
+        self.write_tag("<productAlgebra>")?;
+        self.write_named_desc_card(alg.name(), alg.description(), alg.cardinality())?;
+        self.write_tag("<factors>")?;
+        for factor in alg.factors() {
+            self.write_tag("<factor>")?;
+            self.write_small_as_basic(factor.clone_box())?;
+            self.write_end_tag("</factor>")?;
+        }
+        self.write_end_tag("</factors>")?;
+        self.write_end_tag("</productAlgebra>")?;
+        Ok(())
+    }
+
+    fn write_power_algebra_typed(&mut self, alg: &PowerAlgebra) -> Result<(), String> {
+        self.write_tag("<powerAlgebra>")?;
+        self.write_named_desc_card(alg.name(), alg.description(), alg.cardinality())?;
+        self.write_begin_end_tag("<power>", "</power>", &alg.get_power().to_string())?;
+        self.write_tag("<root>")?;
+        self.write_small_as_basic(alg.get_root().clone_box())?;
+        self.write_end_tag("</root>")?;
+        self.write_end_tag("</powerAlgebra>")?;
+        Ok(())
+    }
+
+    fn write_quotient_algebra_typed(&mut self, alg: &QuotientAlgebra<i32>) -> Result<(), String> {
+        self.write_tag("<quotientAlgebra>")?;
+        self.write_named_desc_card(alg.name(), alg.description(), alg.cardinality())?;
+        self.write_tag("<superAlgebra>")?;
+        self.write_small_as_basic(alg.super_algebra().clone_box())?;
+        self.write_end_tag("</superAlgebra>")?;
+        self.write_tag("<congruence>")?;
+        self.write_human_partition(alg.get_congruence())?;
+        self.write_int_array_with_card(
+            &alg.get_congruence().to_array(),
+            alg.cardinality(),
+            true,
+        )?;
+        self.write_end_tag("</congruence>")?;
+        self.write_end_tag("</quotientAlgebra>")?;
+        Ok(())
+    }
+
+    fn write_subalgebra_typed(&mut self, alg: &Subalgebra<i32>) -> Result<(), String> {
+        self.write_tag("<subAlgebra>")?;
+        self.write_named_desc_card(alg.name(), alg.description(), alg.cardinality())?;
+        self.write_tag("<superAlgebra>")?;
+        self.write_small_as_basic(alg.super_algebra().clone_box())?;
+        self.write_end_tag("</superAlgebra>")?;
+        self.write_tag("<subUniverse>")?;
+        self.write_int_array_with_card(alg.get_subuniverse_array(), alg.cardinality(), true)?;
+        self.write_end_tag("</subUniverse>")?;
+        self.write_end_tag("</subAlgebra>")?;
+        Ok(())
+    }
+
+    fn write_sub_product_algebra_typed(
+        &mut self,
+        alg: &SubProductAlgebra<i32>,
+    ) -> Result<(), String> {
+        self.write_tag("<subProductAlgebra>")?;
+        self.write_named_desc_card(alg.name(), alg.description(), alg.cardinality())?;
+        self.write_tag("<generators>")?;
+        for gen in alg.generators() {
+            self.write_prod_elem(gen.as_slice())?;
+        }
+        self.write_end_tag("</generators>")?;
+        let univ = alg.get_universe_list();
+        if !univ.is_empty() {
+            self.write_tag("<universe>")?;
+            for elem in univ {
+                self.write_prod_elem(elem.as_slice())?;
+            }
+            self.write_end_tag("</universe>")?;
+        }
+        self.write_tag("<superAlgebra>")?;
+        self.write_big_product_typed(alg.get_product_algebra())?;
+        self.write_end_tag("</superAlgebra>")?;
+        self.write_end_tag("</subProductAlgebra>")?;
         Ok(())
     }
 
@@ -515,63 +571,11 @@ impl AlgebraWriter {
     /// * `Ok(())` - Successfully written
     /// * `Err(String)` - If writing fails
     fn write_sub_product_algebra(&mut self) -> Result<(), String> {
-        self.write_sub_product_algebra_aux("<subProductAlgebra>", "</subProductAlgebra>")
-    }
-    
-    /// Write a subproduct algebra with custom tags.
-    /// 
-    /// This is a helper method used by both free algebra and subproduct algebra
-    /// writing methods.
-    /// 
-    /// # Arguments
-    /// * `start_tag` - The opening tag
-    /// * `end_tag` - The closing tag
-    /// 
-    /// # Returns
-    /// * `Ok(())` - Successfully written
-    /// * `Err(String)` - If writing fails
-    fn write_sub_product_algebra_aux(&mut self, start_tag: &str, end_tag: &str) -> Result<(), String> {
-        self.write_tag(start_tag)?;
-        self.write_alg_name()?;
-        self.write_desc()?;
-        self.write_cardinality()?;
-        
-        self.write_tag("<generators>")?;
-        // Note: In a real implementation, we would need to access the generators
-        self.write_prod_elem(&[0, 0])?;
-        self.write_prod_elem(&[1, 0])?;
-        self.write_end_tag("</generators>")?;
-        
-        self.write_tag("<universe>")?;
-        // Note: In a real implementation, we would need to access the universe
-        self.write_prod_elem(&[0, 0])?;
-        self.write_prod_elem(&[0, 1])?;
-        self.write_prod_elem(&[1, 0])?;
-        self.write_prod_elem(&[1, 1])?;
-        self.write_end_tag("</universe>")?;
-        
-        self.write_tag("<superAlgebra>")?;
-        // Note: In a real implementation, we would need to access the super algebra
-        self.write_tag("<bigProductAlgebra>")?;
-        self.write_alg_name()?;
-        self.write_desc()?;
-        self.write_tag("<powers>")?;
-        self.write_int_array_with_line_break(&[2, 2], false)?;
-        self.write_end_tag("</powers>")?;
-        self.write_tag("<rootFactors>")?;
-        self.write_tag("<factor>")?;
-        self.write_tag("<basicAlgebra>")?;
-        self.write_alg_name()?;
-        self.write_desc()?;
-        self.write_cardinality()?;
-        self.write_end_tag("</basicAlgebra>")?;
-        self.write_end_tag("</factor>")?;
-        self.write_end_tag("</rootFactors>")?;
-        self.write_end_tag("</bigProductAlgebra>")?;
-        self.write_end_tag("</superAlgebra>")?;
-        
-        self.write_end_tag(end_tag)?;
-        Ok(())
+        Err(
+            "SubProductAlgebra must be written via AlgebraWriter::write_sub_product_algebra_xml_to_file \
+             (SmallAlgebra<i32> has already forgotten generators and the big product)"
+                .to_string(),
+        )
     }
     
     /// Write the algebra name.
@@ -617,9 +621,8 @@ impl AlgebraWriter {
     /// # Returns
     /// * `Ok(())` - Successfully written
     /// * `Err(String)` - If writing fails
+    #[allow(dead_code)]
     fn write_power(&mut self) -> Result<(), String> {
-        // Note: In a real implementation, we would need to access the power
-        // For now, we'll write a placeholder
         self.write_begin_end_tag("<power>", "</power>", "2")?;
         Ok(())
     }
@@ -920,17 +923,26 @@ impl AlgebraWriter {
     /// * `Ok(())` - Successfully written
     /// * `Err(String)` - If writing fails
     fn write_int_array_impl(&mut self, arr: &[i32], line_break: bool) -> Result<(), String> {
+        self.write_int_array_with_card(arr, self.algebra.cardinality(), line_break)
+    }
+
+    /// Write an integer array using ``card`` for Java-style line breaks.
+    fn write_int_array_with_card(
+        &mut self,
+        arr: &[i32],
+        card: i32,
+        line_break: bool,
+    ) -> Result<(), String> {
         self.write_tag("<intArray>")?;
-        let card = self.algebra.cardinality();
-        
+        if arr.is_empty() {
+            self.write_end_tag("</intArray>")?;
+            return Ok(());
+        }
         self.write_indent()?;
         for i in 0..arr.len() - 1 {
-            write!(self.out, "{}", arr[i])
+            write!(self.out, "{},", arr[i])
                 .map_err(|e| format!("Failed to write int array: {}", e))?;
-            write!(self.out, ",")
-                .map_err(|e| format!("Failed to write int array: {}", e))?;
-            
-            if line_break && (i + 1) % card as usize == 0 {
+            if line_break && card > 0 && (i + 1) % card as usize == 0 {
                 writeln!(self.out)
                     .map_err(|e| format!("Failed to write int array: {}", e))?;
                 self.write_indent()?;
@@ -938,7 +950,6 @@ impl AlgebraWriter {
         }
         writeln!(self.out, "{}", arr[arr.len() - 1])
             .map_err(|e| format!("Failed to write int array: {}", e))?;
-        
         self.write_end_tag("</intArray>")?;
         Ok(())
     }

@@ -27,9 +27,12 @@ MACE4_LIST_FILE = "KR-8-expl.model"
 SPECIAL_FIXTURE_NAMES = (
     "basic_cyclic2.ua",
     "product_c2_c2.ua",
+    "product_c2_c3.ua",
     "quotient_example.ua",
     "subalgebra_example.ua",
+    "subalgebra_c3.ua",
     "power_c2_sq.ua",
+    "power_c3_sq.ua",
     "free_c2_f1.ua",
     "subproduct_c2.ua",
 )

@@ -235,6 +235,12 @@ impl PyQuotientAlgebra {
     }
 }
 
+impl PyQuotientAlgebra {
+    pub(crate) fn as_inner(&self) -> &uacalc::alg::QuotientAlgebra<i32> {
+        &self.inner
+    }
+}
+
 #[pymethods]
 impl PyQuotientElement {
     fn get_algebra(&self, py: Python<'_>) -> Py<PyQuotientAlgebra> {

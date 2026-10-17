@@ -191,7 +191,7 @@ def serialize(obj):
             "universe": univ_ser,
             "zero": zero_ser,
         }
-    if "Algebra" in class_name:
+    if "Algebra" in class_name or "algebra" in class_name:
         ops = call_or_get(obj, "operations", "getOperations") or []
         ops = list(ops)
         symbols = []
