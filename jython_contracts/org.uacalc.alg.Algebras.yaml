@@ -3,8 +3,8 @@ level: file
 status: implemented
 java_source: org/uacalc/alg/Algebras.java
 notes: |
-  Static facade matching Java org.uacalc.alg.Algebras. Malcev helpers
-  (findNUF, jonssonTerms, jonssonLevel) and main are not wrapped.
+  Static facade matching Java org.uacalc.alg.Algebras. findNUF, jonssonTerms,
+  and jonssonLevel delegate to Malcev. main is not wrapped.
   unaryCloneAlgFromPartitions(pars, decomp) is the Java stub that always
   returns null. ProgressReport overloads accept None; non-None is TypeError.
 ignore_reason: null
@@ -25,10 +25,14 @@ surface:
     - quasiCritical
     - unaryClone
     - unaryCloneAlgFromPartitions
+    - findNUF
+    - jonssonTerms
+    - jonssonLevel
   str_parity: false
 testing:
   notes: |
-    algebras_smoke.py plus tests/parity/alg/test_cases/free_hom_closer_cases.py.
+    algebras_smoke.py plus tests/parity/alg/test_cases/free_hom_closer_cases.py
+    and malcev_cases.py for findNUF / jonssonTerms / jonssonLevel.
     Tiny C2 inputs. Random algebras compare name/card only (RNG differs).
     fullTransformationSemigroup n=10 is IAE. findInClone empty/null is IAE.
     matrixPower k=0 is IOBE. 2-arg unaryCloneAlgFromPartitions is null.
@@ -50,3 +54,6 @@ testing:
         - quasiCritical
         - unaryClone
         - unaryCloneAlgFromPartitions
+        - findNUF
+        - jonssonTerms
+        - jonssonLevel

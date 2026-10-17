@@ -129,6 +129,25 @@ def test_free_hom_closer_algebras_constructors():
     assert Algebras.unaryCloneAlgFromPartitions([c2.con().zero()], [c2.con().zero()]) is None
 
 
+def test_malcev_static_facade_smoke():
+    _ensure_python_org_on_path()
+    from org.uacalc.alg import Algebras, Malcev  # noqa: PLC0415
+    from org.uacalc.io import AlgebraIO  # noqa: PLC0415
+
+    c2 = AlgebraIO.readAlgebraFile(str(REPO_ROOT / "resources/algebras/cyclic2.ua"))
+    lat2 = AlgebraIO.readAlgebraFile(str(REPO_ROOT / "resources/algebras/lat2.ua"))
+    term = Malcev.malcevTerm(c2)
+    assert term is not None
+    # Java returns 2 when a majority term exists (3 Jonsson terms: x, m, z).
+    assert Malcev.jonssonLevel(lat2) == 2
+    assert Algebras.jonssonLevel(lat2) == Malcev.jonssonLevel(lat2)
+    nuf = Algebras.findNUF(lat2, 3)
+    assert nuf is not None
+    first = Malcev.malcevTerm(c2)
+    for _ in range(4):
+        assert Malcev.malcevTerm(c2) == first
+
+
 def test_remaining_alg_constructors():
     _ensure_python_org_on_path()
     from org.uacalc.alg import (  # noqa: PLC0415

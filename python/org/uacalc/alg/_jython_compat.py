@@ -1115,10 +1115,7 @@ def _install(alg_module_globals: dict) -> None:
         return fn
 
     class Algebras(object):
-        """Static facade matching Java ``org.uacalc.alg.Algebras``.
-
-        Malcev helpers (findNUF, jonssonTerms, jonssonLevel) are not wrapped.
-        """
+        """Static facade matching Java ``org.uacalc.alg.Algebras``."""
 
         @staticmethod
         def isEndomorphism(endo: Any, alg: Any) -> bool:
@@ -1311,6 +1308,337 @@ def _install(alg_module_globals: dict) -> None:
                     eta1,
                 )
             raise TypeError("unaryCloneAlgFromPartitions() takes 2 or 3 arguments")
+
+        @staticmethod
+        def findNUF(alg: Any, arity: Any, report: Any = None) -> Any:
+            if alg is None:
+                _raise_npe()
+            _reject_progress_report(report, "findNUF")
+            return Malcev.nuTerm(alg, arity)
+
+        @staticmethod
+        def jonssonTerms(alg: Any, report: Any = None) -> Any:
+            if alg is None:
+                _raise_npe()
+            _reject_progress_report(report, "jonssonTerms")
+            return Malcev.jonssonTerms(alg)
+
+        @staticmethod
+        def jonssonLevel(alg: Any) -> Any:
+            if alg is None:
+                _raise_npe()
+            return Malcev.jonssonLevel(alg)
+
+    def _reject_progress_report(report: Any, name: str) -> None:
+        if report is not None:
+            raise TypeError(
+                "{}(): expected org.uacalc.ui.tm.ProgressReport or None".format(name)
+            )
+
+    def _malcev_fn(name: str) -> Any:
+        fn = alg_module_globals.get(name)
+        if fn is None:
+            raise TypeError("Malcev.{} is not bound".format(name))
+        return fn
+
+    class Malcev(object):
+        """Static facade matching Java ``org.uacalc.alg.Malcev``.
+
+        ProgressReport overloads accept ``None`` only. Unbound Java helpers
+        (TCT type-set, cube-term blockers, ``main``, path internals) stay
+        off this surface.
+        """
+
+        @staticmethod
+        def malcevTerm(alg: Any, report: Any = None) -> Any:
+            if alg is None:
+                _raise_npe()
+            _reject_progress_report(report, "malcevTerm")
+            return _lib_call(_malcev_fn("malcev_term"), _as_basic_algebra(alg))
+
+        @staticmethod
+        def majorityTerm(alg: Any, report: Any = None) -> Any:
+            if alg is None:
+                _raise_npe()
+            _reject_progress_report(report, "majorityTerm")
+            return _lib_call(_malcev_fn("majority_term"), _as_basic_algebra(alg))
+
+        @staticmethod
+        def minorityTerm(alg: Any, report: Any = None) -> Any:
+            if alg is None:
+                _raise_npe()
+            _reject_progress_report(report, "minorityTerm")
+            return _lib_call(_malcev_fn("minority_term"), _as_basic_algebra(alg))
+
+        @staticmethod
+        def pixleyTerm(alg: Any, report: Any = None) -> Any:
+            if alg is None:
+                _raise_npe()
+            _reject_progress_report(report, "pixleyTerm")
+            return _lib_call(_malcev_fn("pixley_term"), _as_basic_algebra(alg))
+
+        @staticmethod
+        def nuTerm(alg: Any, arity: Any, report: Any = None) -> Any:
+            if alg is None:
+                _raise_npe()
+            _reject_progress_report(report, "nuTerm")
+            return _lib_call(
+                _malcev_fn("nu_term"), _as_basic_algebra(alg), int(arity)
+            )
+
+        @staticmethod
+        def nuTermIdempotent(alg: Any, arity: Any, report: Any = None) -> Any:
+            if alg is None:
+                _raise_npe()
+            _reject_progress_report(report, "nuTermIdempotent")
+            return bool(
+                _lib_call(
+                    _malcev_fn("nu_term_idempotent"),
+                    _as_basic_algebra(alg),
+                    int(arity),
+                )
+            )
+
+        @staticmethod
+        def weakNUTerm(alg: Any, arity: Any, report: Any = None) -> Any:
+            if alg is None:
+                _raise_npe()
+            _reject_progress_report(report, "weakNUTerm")
+            return _lib_call(
+                _malcev_fn("weak_nu_term"), _as_basic_algebra(alg), int(arity)
+            )
+
+        @staticmethod
+        def findWeakNUTerm(alg: Any, arity: Any, report: Any = None) -> Any:
+            return Malcev.weakNUTerm(alg, arity, report)
+
+        @staticmethod
+        def weakMajorityTerm(alg: Any, report: Any = None) -> Any:
+            if alg is None:
+                _raise_npe()
+            _reject_progress_report(report, "weakMajorityTerm")
+            return _lib_call(
+                _malcev_fn("weak_majority_term"), _as_basic_algebra(alg)
+            )
+
+        @staticmethod
+        def semilatticeTerm(alg: Any, report: Any = None) -> Any:
+            if alg is None:
+                _raise_npe()
+            _reject_progress_report(report, "semilatticeTerm")
+            return _lib_call(
+                _malcev_fn("semilattice_term"), _as_basic_algebra(alg)
+            )
+
+        @staticmethod
+        def differenceTerm(alg: Any, report: Any = None) -> Any:
+            if alg is None:
+                _raise_npe()
+            _reject_progress_report(report, "differenceTerm")
+            return _lib_call(
+                _malcev_fn("difference_term"), _as_basic_algebra(alg)
+            )
+
+        @staticmethod
+        def jonssonTerms(alg: Any, report: Any = None) -> Any:
+            if alg is None:
+                _raise_npe()
+            _reject_progress_report(report, "jonssonTerms")
+            return _lib_call(_malcev_fn("jonsson_terms"), _as_basic_algebra(alg))
+
+        @staticmethod
+        def hagemannMitschkeTerms(alg: Any, report: Any = None) -> Any:
+            if alg is None:
+                _raise_npe()
+            _reject_progress_report(report, "hagemannMitschkeTerms")
+            return _lib_call(
+                _malcev_fn("hagemann_mitschke_terms"), _as_basic_algebra(alg)
+            )
+
+        @staticmethod
+        def gummTerms(alg: Any, report: Any = None) -> Any:
+            if alg is None:
+                _raise_npe()
+            _reject_progress_report(report, "gummTerms")
+            return _lib_call(_malcev_fn("gumm_terms"), _as_basic_algebra(alg))
+
+        @staticmethod
+        def joinTerm(alg: Any, report: Any = None) -> Any:
+            if alg is None:
+                _raise_npe()
+            _reject_progress_report(report, "joinTerm")
+            return _lib_call(_malcev_fn("join_term"), _as_basic_algebra(alg))
+
+        @staticmethod
+        def sdmeetTerms(alg: Any, report: Any = None) -> Any:
+            if alg is None:
+                _raise_npe()
+            _reject_progress_report(report, "sdmeetTerms")
+            return _lib_call(_malcev_fn("sd_meet_terms"), _as_basic_algebra(alg))
+
+        @staticmethod
+        def sdTerms(alg: Any, report: Any = None) -> Any:
+            if alg is None:
+                _raise_npe()
+            _reject_progress_report(report, "sdTerms")
+            return _lib_call(_malcev_fn("sd_terms"), _as_basic_algebra(alg))
+
+        @staticmethod
+        def markovicMcKenzieSiggersTaylorTerm(alg: Any, report: Any = None) -> Any:
+            if alg is None:
+                _raise_npe()
+            _reject_progress_report(report, "markovicMcKenzieSiggersTaylorTerm")
+            return _lib_call(
+                _malcev_fn("markovic_mckenzie_siggers_taylor_term"),
+                _as_basic_algebra(alg),
+            )
+
+        @staticmethod
+        def weak3EdgeTerm(alg: Any, report: Any = None) -> Any:
+            if alg is None:
+                _raise_npe()
+            _reject_progress_report(report, "weak3EdgeTerm")
+            return _lib_call(
+                _malcev_fn("weak_3_edge_term"), _as_basic_algebra(alg)
+            )
+
+        @staticmethod
+        def isCongruenceDistIdempotent(alg: Any, report: Any = None) -> Any:
+            if alg is None:
+                _raise_npe()
+            _reject_progress_report(report, "isCongruenceDistIdempotent")
+            return bool(
+                _lib_call(
+                    _malcev_fn("is_congruence_dist_idempotent"),
+                    _as_basic_algebra(alg),
+                )
+            )
+
+        @staticmethod
+        def isCongruenceModularIdempotent(alg: Any, report: Any = None) -> Any:
+            if alg is None:
+                _raise_npe()
+            _reject_progress_report(report, "isCongruenceModularIdempotent")
+            return bool(
+                _lib_call(
+                    _malcev_fn("is_congruence_modular_idempotent"),
+                    _as_basic_algebra(alg),
+                )
+            )
+
+        @staticmethod
+        def congruenceModularVariety(alg: Any, report: Any = None) -> Any:
+            if alg is None:
+                _raise_npe()
+            _reject_progress_report(report, "congruenceModularVariety")
+            return bool(
+                _lib_call(
+                    _malcev_fn("congruence_modular_variety"),
+                    _as_basic_algebra(alg),
+                )
+            )
+
+        @staticmethod
+        def jonssonLevel(alg: Any) -> Any:
+            if alg is None:
+                _raise_npe()
+            return int(
+                _lib_call(_malcev_fn("jonsson_level"), _as_basic_algebra(alg))
+            )
+
+        @staticmethod
+        def localDistributivityLevel(a: Any, b: Any, c: Any, alg: Any) -> Any:
+            if alg is None:
+                _raise_npe()
+            return int(
+                _lib_call(
+                    _malcev_fn("local_distributivity_level"),
+                    int(a),
+                    int(b),
+                    int(c),
+                    _as_basic_algebra(alg),
+                )
+            )
+
+        @staticmethod
+        def findDayQuadrupleInSquare(alg: Any, report: Any = None) -> Any:
+            if alg is None:
+                _raise_npe()
+            _reject_progress_report(report, "findDayQuadrupleInSquare")
+            return _lib_call(
+                _malcev_fn("find_day_quadruple_in_square"),
+                _as_basic_algebra(alg),
+            )
+
+        @staticmethod
+        def sdMeetIdempotent(alg: Any, report: Any = None) -> Any:
+            if alg is None:
+                _raise_npe()
+            _reject_progress_report(report, "sdMeetIdempotent")
+            return _lib_call(
+                _malcev_fn("sd_meet_idempotent"), _as_basic_algebra(alg)
+            )
+
+        @staticmethod
+        def dayQuadruple(a: Any, b: Any, c: Any, d: Any, alg: Any) -> Any:
+            if alg is None:
+                _raise_npe()
+            return bool(
+                _lib_call(
+                    _malcev_fn("day_quadruple"),
+                    int(a),
+                    int(b),
+                    int(c),
+                    int(d),
+                    alg,
+                )
+            )
+
+        @staticmethod
+        def cyclicTermIdempotent(alg: Any, arity: Any, report: Any = None) -> Any:
+            if alg is None:
+                _raise_npe()
+            _reject_progress_report(report, "cyclicTermIdempotent")
+            return bool(
+                _lib_call(
+                    _malcev_fn("cyclic_term_idempotent"),
+                    _as_basic_algebra(alg),
+                    int(arity),
+                )
+            )
+
+        @staticmethod
+        def primalityTerms(alg: Any, report: Any = None) -> Any:
+            if alg is None:
+                _raise_npe()
+            _reject_progress_report(report, "primalityTerms")
+            return _lib_call(
+                _malcev_fn("primality_terms"), _as_basic_algebra(alg)
+            )
+
+        @staticmethod
+        def fixedKEdgeTerm(alg: Any, k: Any, report: Any = None) -> Any:
+            if alg is None:
+                _raise_npe()
+            _reject_progress_report(report, "fixedKEdgeTerm")
+            return _lib_call(
+                _malcev_fn("fixed_k_edge_term"),
+                _as_basic_algebra(alg),
+                int(k),
+            )
+
+        @staticmethod
+        def fixedKQwnu(alg: Any, arity: Any, report: Any = None) -> Any:
+            if alg is None:
+                _raise_npe()
+            _reject_progress_report(report, "fixedKQwnu")
+            return bool(
+                _lib_call(
+                    _malcev_fn("fixed_k_qwnu"),
+                    _as_basic_algebra(alg),
+                    int(arity),
+                )
+            )
 
     def _raise_npe(what: str = "null") -> None:
         raise NullPointerException(what)
@@ -2895,6 +3223,7 @@ def _install(alg_module_globals: dict) -> None:
     alg_module_globals["Homomorphism"] = Homomorphism
     alg_module_globals["Closer"] = Closer
     alg_module_globals["Algebras"] = Algebras
+    alg_module_globals["Malcev"] = Malcev
     alg_module_globals["ProductAlgebra"] = ProductAlgebra
     alg_module_globals["PowerAlgebra"] = PowerAlgebra
     alg_module_globals["QuotientAlgebra"] = QuotientAlgebra
@@ -3287,6 +3616,7 @@ def _install(alg_module_globals: dict) -> None:
             "Sg": "Sg",
             "sg": "sg",
         },
+        "Malcev": {},
     }
 
     def _apply_class_aliases() -> None:

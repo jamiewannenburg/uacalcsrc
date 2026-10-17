@@ -1,0 +1,897 @@
+{
+  "metadata": {
+    "generated_at": "2026-10-17T00:54:46.445504+00:00",
+    "jar": "uacalc.jar",
+    "package": "org.uacalc.alg",
+    "runtime": "jython",
+    "test_cases": 41,
+    "type": "malcev"
+  },
+  "test_cases": [
+    {
+      "args": [],
+      "call": "_term(Malcev.malcevTerm(c2))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Malcev term of C2 (group of order 2)",
+      "expected_exception": null,
+      "id": "malcev_term_c2",
+      "kwargs": {},
+      "method": "Malcev.malcevTerm",
+      "notes": "Java Term toString vs Python term string.",
+      "result": {
+        "return_type": "str",
+        "return_value": "+(x,+(y,z))",
+        "string_repr": "+(x,+(y,z))",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_term(Malcev.malcevTerm(c3))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Malcev term of C3 (group of order 3)",
+      "expected_exception": null,
+      "id": "malcev_term_c3",
+      "kwargs": {},
+      "method": "Malcev.malcevTerm",
+      "notes": "Java Term toString vs Python term string.",
+      "result": {
+        "return_type": "str",
+        "return_value": "+(+(x,y),+(y,z))",
+        "string_repr": "+(+(x,y),+(y,z))",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_term(Malcev.malcevTerm(lat2))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "lat2 has no Malcev term",
+      "expected_exception": null,
+      "id": "malcev_term_lat2",
+      "kwargs": {},
+      "method": "Malcev.malcevTerm",
+      "notes": "Java null vs Python None.",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Malcev.malcevTerm(None)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "malcevTerm(null) NPE",
+      "expected_exception": "NullPointerException",
+      "id": "malcev_term_null",
+      "kwargs": {},
+      "method": "Malcev.malcevTerm",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.NullPointerException: Cannot invoke \"org.uacalc.alg.SmallAlgebra.cardinality()\" because \"alg\" is null",
+          "type": "NullPointerException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_term(Malcev.majorityTerm(lat2))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "majority term of the 2-element lattice",
+      "expected_exception": null,
+      "id": "majority_term_lat2",
+      "kwargs": {},
+      "method": "Malcev.majorityTerm",
+      "notes": "Java Term toString vs Python term string.",
+      "result": {
+        "return_type": "str",
+        "return_value": "join(meet(x,y),join(meet(x,z),meet(y,z)))",
+        "string_repr": "join(meet(x,y),join(meet(x,z),meet(y,z)))",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_term(Malcev.majorityTerm(c2))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "majority term of C2 if any",
+      "expected_exception": null,
+      "id": "majority_term_c2",
+      "kwargs": {},
+      "method": "Malcev.majorityTerm",
+      "notes": "Java Term toString vs Python term string.",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_term(Malcev.minorityTerm(c2))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "minority term of C2",
+      "expected_exception": null,
+      "id": "minority_term_c2",
+      "kwargs": {},
+      "method": "Malcev.minorityTerm",
+      "notes": "Java Term toString vs Python term string.",
+      "result": {
+        "return_type": "str",
+        "return_value": "+(x,+(y,z))",
+        "string_repr": "+(x,+(y,z))",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_term(Malcev.pixleyTerm(c2))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Pixley term of C2 if any",
+      "expected_exception": null,
+      "id": "pixley_term_c2",
+      "kwargs": {},
+      "method": "Malcev.pixleyTerm",
+      "notes": "Java Term toString vs Python term string.",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_term(Malcev.nuTerm(lat2, 3))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "ternary NU term of lat2",
+      "expected_exception": null,
+      "id": "nu_term_lat2_arity3",
+      "kwargs": {},
+      "method": "Malcev.nuTerm",
+      "notes": "Java Term toString vs Python term string.",
+      "result": {
+        "return_type": "str",
+        "return_value": "join(meet(x,y),join(meet(x,z),meet(y,z)))",
+        "string_repr": "join(meet(x,y),join(meet(x,z),meet(y,z)))",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_term(Malcev.nuTerm(c2, 3))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "ternary NU term of C2 if any",
+      "expected_exception": null,
+      "id": "nu_term_c2_arity3",
+      "kwargs": {},
+      "method": "Malcev.nuTerm",
+      "notes": "Java Term toString vs Python term string.",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Malcev.nuTermIdempotent(lat2, 3, None)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "lat2 has a ternary NU term (idempotent test)",
+      "expected_exception": null,
+      "id": "nu_term_idempotent_lat2",
+      "kwargs": {},
+      "method": "Malcev.nuTermIdempotent",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_term(Malcev.weakNUTerm(lat2, 3))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "weak NU term of lat2",
+      "expected_exception": null,
+      "id": "weak_nu_term_lat2",
+      "kwargs": {},
+      "method": "Malcev.weakNUTerm",
+      "notes": "Java Term toString vs Python term string.",
+      "result": {
+        "return_type": "str",
+        "return_value": "join(x,join(y,z))",
+        "string_repr": "join(x,join(y,z))",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_term(Malcev.findWeakNUTerm(lat2, 3, None))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "findWeakNUTerm aliases weakNUTerm",
+      "expected_exception": null,
+      "id": "find_weak_nu_term_alias",
+      "kwargs": {},
+      "method": "Malcev.findWeakNUTerm",
+      "notes": "Java Term toString vs Python term string.",
+      "result": {
+        "return_type": "str",
+        "return_value": "join(x,join(y,z))",
+        "string_repr": "join(x,join(y,z))",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_term(Malcev.weakMajorityTerm(lat2))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "weak majority term of lat2",
+      "expected_exception": null,
+      "id": "weak_majority_term_lat2",
+      "kwargs": {},
+      "method": "Malcev.weakMajorityTerm",
+      "notes": "Java Term toString vs Python term string.",
+      "result": {
+        "return_type": "str",
+        "return_value": "join(x,join(y,z))",
+        "string_repr": "join(x,join(y,z))",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_term(Malcev.semilatticeTerm(lat2))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "semilattice term of lat2",
+      "expected_exception": null,
+      "id": "semilattice_term_lat2",
+      "kwargs": {},
+      "method": "Malcev.semilatticeTerm",
+      "notes": "Java Term toString vs Python term string.",
+      "result": {
+        "return_type": "str",
+        "return_value": "join(x,y)",
+        "string_repr": "join(x,y)",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_term(Malcev.differenceTerm(c3))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "difference term of C3",
+      "expected_exception": null,
+      "id": "difference_term_c3",
+      "kwargs": {},
+      "method": "Malcev.differenceTerm",
+      "notes": "Java Term toString vs Python term string.",
+      "result": {
+        "return_type": "str",
+        "return_value": "+(+(x,y),+(y,z))",
+        "string_repr": "+(+(x,y),+(y,z))",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_terms(Malcev.jonssonTerms(lat2))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Jonsson terms of lat2",
+      "expected_exception": null,
+      "id": "jonsson_terms_lat2",
+      "kwargs": {},
+      "method": "Malcev.jonssonTerms",
+      "notes": "Java List/Term toString vs Python list/str.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "x",
+          "join(meet(x,y),join(meet(x,z),meet(y,z)))",
+          "z"
+        ],
+        "string_repr": "['x', 'join(meet(x,y),join(meet(x,z),meet(y,z)))', 'z']",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_terms(Malcev.jonssonTerms(c2))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Jonsson terms of C2",
+      "expected_exception": null,
+      "id": "jonsson_terms_c2",
+      "kwargs": {},
+      "method": "Malcev.jonssonTerms",
+      "notes": "Java List/Term toString vs Python list/str.",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Malcev.jonssonLevel(lat2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Jonsson level of lat2 is 2 (majority witness)",
+      "expected_exception": null,
+      "id": "jonsson_level_lat2",
+      "kwargs": {},
+      "method": "Malcev.jonssonLevel",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Malcev.jonssonLevel(c2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Jonsson level of C2",
+      "expected_exception": null,
+      "id": "jonsson_level_c2",
+      "kwargs": {},
+      "method": "Malcev.jonssonLevel",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": -1,
+        "string_repr": "-1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_terms(Malcev.hagemannMitschkeTerms(c3))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Hagemann-Mitschke terms of C3",
+      "expected_exception": null,
+      "id": "hagemann_mitschke_c3",
+      "kwargs": {},
+      "method": "Malcev.hagemannMitschkeTerms",
+      "notes": "Java List/Term toString vs Python list/str.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "x",
+          "+(+(x,y),+(y,z))",
+          "z"
+        ],
+        "string_repr": "['x', '+(+(x,y),+(y,z))', 'z']",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_terms(Malcev.gummTerms(lat2))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Gumm terms of lat2",
+      "expected_exception": null,
+      "id": "gumm_terms_lat2",
+      "kwargs": {},
+      "method": "Malcev.gummTerms",
+      "notes": "Java List/Term toString vs Python list/str.",
+      "result": {
+        "exception": {
+          "message": "java.lang.NullPointerException: Cannot invoke \"org.uacalc.ui.tm.ProgressReport.addStartLine(String)\" because \"report\" is null",
+          "type": "NullPointerException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n",
+      "skip_string_check": true,
+      "xfail_reason": "Java gummTerms(alg) NPEs: ProgressReport.addStartLine is invoked with a null report inside the no-arg overload."
+    },
+    {
+      "args": [],
+      "call": "_term(Malcev.joinTerm(lat2))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Kearnes-Kiss join term of lat2",
+      "expected_exception": null,
+      "id": "join_term_lat2",
+      "kwargs": {},
+      "method": "Malcev.joinTerm",
+      "notes": "Java Term toString vs Python term string.",
+      "result": {
+        "return_type": "str",
+        "return_value": "join(join(x,y),join(y,x))",
+        "string_repr": "join(join(x,y),join(y,x))",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_terms(Malcev.sdmeetTerms(lat2))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "SD-meet terms of lat2",
+      "expected_exception": null,
+      "id": "sdmeet_terms_lat2",
+      "kwargs": {},
+      "method": "Malcev.sdmeetTerms",
+      "notes": "Java List/Term toString vs Python list/str.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "join(x,join(y,z))"
+        ],
+        "string_repr": "['join(x,join(y,z))']",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_terms(Malcev.sdTerms(lat2, None))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "SD terms of lat2",
+      "expected_exception": null,
+      "id": "sd_terms_lat2",
+      "kwargs": {},
+      "method": "Malcev.sdTerms",
+      "notes": "Java List/Term toString vs Python list/str.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "x",
+          "join(meet(x,y),join(meet(x,z),meet(y,z)))",
+          "z"
+        ],
+        "string_repr": "['x', 'join(meet(x,y),join(meet(x,z),meet(y,z)))', 'z']",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_term(Malcev.markovicMcKenzieSiggersTaylorTerm(lat2))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "MMST term of lat2",
+      "expected_exception": null,
+      "id": "mmst_term_lat2",
+      "kwargs": {},
+      "method": "Malcev.markovicMcKenzieSiggersTaylorTerm",
+      "notes": "Java Term toString vs Python term string.",
+      "result": {
+        "return_type": "str",
+        "return_value": "join(x0,x3)",
+        "string_repr": "join(x0,x3)",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_term(Malcev.weak3EdgeTerm(c2, None))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "weak 3-edge term of C2",
+      "expected_exception": null,
+      "id": "weak_3_edge_term_c2",
+      "kwargs": {},
+      "method": "Malcev.weak3EdgeTerm",
+      "notes": "Java Term toString vs Python term string.",
+      "result": {
+        "return_type": "str",
+        "return_value": "+(x0,+(x1,x2))",
+        "string_repr": "+(x0,+(x1,x2))",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Malcev.isCongruenceDistIdempotent(lat2, None)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "lat2 is congruence distributive",
+      "expected_exception": null,
+      "id": "is_cd_idempotent_lat2",
+      "kwargs": {},
+      "method": "Malcev.isCongruenceDistIdempotent",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Malcev.isCongruenceModularIdempotent(lat2, None)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "lat2 is congruence modular",
+      "expected_exception": null,
+      "id": "is_cm_idempotent_lat2",
+      "kwargs": {},
+      "method": "Malcev.isCongruenceModularIdempotent",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Malcev.congruenceModularVariety(c3)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "C3 generates a CM variety",
+      "expected_exception": null,
+      "id": "cm_variety_c3",
+      "kwargs": {},
+      "method": "Malcev.congruenceModularVariety",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Malcev.congruenceModularVariety(polin)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Polin algebra is not congruence modular",
+      "expected_exception": null,
+      "id": "cm_variety_polin",
+      "kwargs": {},
+      "method": "Malcev.congruenceModularVariety",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": false,
+        "string_repr": "False",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_ints(Malcev.sdMeetIdempotent(z3, None))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "SD-meet witness on z3",
+      "expected_exception": null,
+      "id": "sd_meet_idempotent_z3",
+      "kwargs": {},
+      "method": "Malcev.sdMeetIdempotent",
+      "notes": "Java List/Term toString vs Python list/str.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          1,
+          2
+        ],
+        "string_repr": "[1, 2]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_ints(Malcev.findDayQuadrupleInSquare(lat2, None))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Day quadruple in lat2^2 if any",
+      "expected_exception": null,
+      "id": "find_day_quad_lat2",
+      "kwargs": {},
+      "method": "Malcev.findDayQuadrupleInSquare",
+      "notes": "Java List/Term toString vs Python list/str.",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Malcev.cyclicTermIdempotent(lat2, 3)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "cyclic term of arity 3 on lat2",
+      "expected_exception": null,
+      "id": "cyclic_term_idempotent_lat2",
+      "kwargs": {},
+      "method": "Malcev.cyclicTermIdempotent",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Malcev.fixedKQwnu(lat2, 3, None)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "QWNU arity 3 on lat2",
+      "expected_exception": null,
+      "id": "fixed_k_qwnu_lat2",
+      "kwargs": {},
+      "method": "Malcev.fixedKQwnu",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_term(Malcev.fixedKEdgeTerm(c2, 2, None))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "k-edge term of C2 for k=2",
+      "expected_exception": null,
+      "id": "fixed_k_edge_term_c2",
+      "kwargs": {},
+      "method": "Malcev.fixedKEdgeTerm",
+      "notes": "Java Term toString vs Python term string.",
+      "result": {
+        "return_type": "str",
+        "return_value": "+(x,+(y,z))",
+        "string_repr": "+(x,+(y,z))",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Malcev.localDistributivityLevel(0, 1, 2, c3)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "local distributivity level on C3",
+      "expected_exception": null,
+      "id": "local_dist_level_c3",
+      "kwargs": {},
+      "method": "Malcev.localDistributivityLevel",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 1,
+        "string_repr": "1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_terms(Malcev.primalityTerms(c2, None))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "primality terms of C2 if any",
+      "expected_exception": null,
+      "id": "primality_terms_c2",
+      "kwargs": {},
+      "method": "Malcev.primalityTerms",
+      "notes": "Java List/Term toString vs Python list/str.",
+      "result": {
+        "exception": {
+          "message": "java.lang.NullPointerException: Cannot invoke \"org.uacalc.ui.tm.ProgressReport.addStartLine(String)\" because \"report\" is null",
+          "type": "NullPointerException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n",
+      "skip_string_check": true,
+      "xfail_reason": "Java primalityTerms(alg, report) NPEs when report is null (semilatTerm calls report.addStartLine unconditionally)."
+    },
+    {
+      "args": [],
+      "call": "_term(Algebras.findNUF(lat2, 3))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Algebras.findNUF delegates to Malcev.nuTerm",
+      "expected_exception": null,
+      "id": "algebras_find_nuf_lat2",
+      "kwargs": {},
+      "method": "Algebras.findNUF",
+      "notes": "Java Term toString vs Python term string.",
+      "result": {
+        "return_type": "str",
+        "return_value": "join(meet(x,y),join(meet(x,z),meet(y,z)))",
+        "string_repr": "join(meet(x,y),join(meet(x,z),meet(y,z)))",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_terms(Algebras.jonssonTerms(lat2))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Algebras.jonssonTerms delegates to Malcev",
+      "expected_exception": null,
+      "id": "algebras_jonsson_terms_lat2",
+      "kwargs": {},
+      "method": "Algebras.jonssonTerms",
+      "notes": "Java List/Term toString vs Python list/str.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "x",
+          "join(meet(x,y),join(meet(x,z),meet(y,z)))",
+          "z"
+        ],
+        "string_repr": "['x', 'join(meet(x,y),join(meet(x,z),meet(y,z)))', 'z']",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Algebras.jonssonLevel(lat2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Algebras.jonssonLevel delegates to Malcev",
+      "expected_exception": null,
+      "id": "algebras_jonsson_level_lat2",
+      "kwargs": {},
+      "method": "Algebras.jonssonLevel",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    }
+  ]
+}

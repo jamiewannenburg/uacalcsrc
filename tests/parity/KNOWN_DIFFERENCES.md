@@ -4,7 +4,7 @@ This document records differences found by the exact golden-data parity suite.
 Java UACalc is the source of truth. These entries are **strict xfails** (unexpected
 pass is a failure), never silent skips.
 
-Malcev is intentionally left alone.
+Malcev is wrapped; remaining gaps are listed under org.uacalc.alg.Malcev.
 
 ---
 
@@ -817,16 +817,37 @@ the org shim's `leftSide` / `rightSide` return term objects via
 
 ## org.uacalc.alg.Malcev
 
-Left alone, as specified. `minority_term` / `weak_nu_term` are not part of this
-io / terms / lat golden suite.
+Wrapped as a static facade. Term-finding uses a deterministic F(n) (no
+HashMap candidate walks except `sdmeetTerms`, which now uses `BTreeMap`).
+Rust SI-decompose is not used: it currently feeds out-of-range operation
+arguments and produced wrong F(n) (C2 with no Malcev term). For SI algebras
+that matches Java's report constructor. Java's `sdmeetTerms` still iterates
+`HashMap.keySet()`, so exact term triples can differ from a given JVM run.
 
 ### alg.Malcev.sd_meet_terms (z3 Java comparison)
 
 - **Java / Rust**: Intermittent mismatch on `z3.ua` in
   `test_sd_meet_terms_with_z3_java_comparison` (`alg::malcev`). Java HashMap
-  iteration can change which terms are found; the comparison has been red on
-  `jython` since PR #52.
-- **Status**: Deferred — flaky Malcev mismatch; `#[ignore]` until the suite is
-  reliable. Not a lattice or parity-shim issue. Do not treat this as a Malcev
-  logic fix.
+  iteration can change which terms are found; Rust now picks the sorted-key
+  witness. The comparison stays `#[ignore]` because Java's order is not a
+  specified part of the algorithm.
+- **Status**: Documented — Rust is deterministic; exact Java string match is
+  not guaranteed on this method.
 - **Tests**: `#[ignore]` on `test_sd_meet_terms_with_z3_java_comparison`
+
+### alg.Malcev.gummTerms / primalityTerms (null ProgressReport)
+
+- **Java**: `gummTerms(alg)` and `primalityTerms(alg, null)` NPE because
+  `ProgressReport.addStartLine` is invoked on a null report.
+- **Python**: Returns the terms (no ProgressReport required).
+- **Status**: Accepted — Java null-report bug; CPython keeps the useful result.
+- **Tests**: strict xfail on `gumm_terms_lat2`, `primality_terms_c2`
+
+### alg.Malcev.dayQuadruple
+
+- **Java**: `dayQuadruple(a,b,c,d,alg)` tests four indices against `alg.con()`.
+- **Python**: Binding still requires a congruence-lattice argument and raises
+  `ValueError` pointing callers at `findDayQuadrupleInSquare`.
+- **Status**: Accepted gap — use `findDayQuadrupleInSquare` / the idempotent
+  CM tests instead.
+- **Tests**: not goldened; listed in `PENDING_BINDINGS`.
