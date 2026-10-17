@@ -6,9 +6,9 @@ notes: |
   Jython TypeFinder surface on uacalc_lib. Constructors TypeFinder(alg) and
   TypeFinder(alg, alpha); init / findTypeSet / isSubtrace / findSubtrace /
   findType overloads dispatch to the Rust TypeFinder. nextPairForSubtrace is
-  wrapped as NotImplementedError (mutates caller HashSet/List of IntArray;
-  PyO3 does not expose it). main is not wrapped. printSubtrace is a public
-  static field, not a method.
+  implemented in the org shim and mutates the caller Set/List the way Java
+  does (univHS cleared, unorderedUnivHS persisted, univ appended). main is
+  not wrapped. printSubtrace is a public static field, not a method.
 ignore_reason: null
 surface:
   package_export: true
@@ -24,7 +24,8 @@ surface:
 testing:
   notes: |
     Goldens in tests/parity/conlat cover findTypeSet / findSubtrace / findType
-    on cyclic2, cyclic3, lat2, m3, and n5, plus init(alpha) and exception paths.
+    on cyclic2, cyclic3, lat2, m3, and n5, plus init(alpha), exception paths,
+    and nextPairForSubtrace mutation of the caller Set/List.
   task_refs: []
   scripts:
     - path: jython_comparison/scripts/conlat_leftovers.py

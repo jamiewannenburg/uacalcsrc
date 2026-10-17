@@ -1,0 +1,736 @@
+{
+  "metadata": {
+    "generated_at": "2026-10-17T04:43:23.804306+00:00",
+    "jar": "uacalc.jar",
+    "package": "org.uacalc.alg",
+    "runtime": "jython",
+    "test_cases": 31,
+    "type": "bpa_closer"
+  },
+  "test_cases": [
+    {
+      "args": [],
+      "call": "bp2.cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "C2^2 big product cardinality",
+      "expected_exception": null,
+      "id": "bpa_c2_2_card",
+      "kwargs": {},
+      "method": "BigProductAlgebra.cardinality",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 4,
+        "string_repr": "4",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import BigProductAlgebra, CloserTiming, ProductAlgebra\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_lat = BigProductAlgebra(lat2, 2)\nbp_prod = BigProductAlgebra([c2, c3])\nbp_m3 = BigProductAlgebra(m3, 1)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nct = CloserTiming(bp2, None)\nct.updatePass(2)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _map_items(m):\n    if m is None:\n        return None\n    try:\n        return sorted((int(k), int(m[k])) for k in m)\n    except Exception:\n        return sorted((int(k), int(v)) for k, v in m.items())\n\ndef _op_meta(alg):\n    names = []\n    for op in list(alg.operations()):\n        sym = op.symbol()\n        name = sym.name() if callable(getattr(sym, \"name\", None)) else str(sym)\n        names.append((str(name), int(op.arity())))\n    names.sort()\n    return names\n\ndef _factor_cards(factors):\n    if factors is None:\n        return None\n    return [int(f.cardinality()) for f in list(factors)]\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "bp3.cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "C3^2 big product cardinality",
+      "expected_exception": null,
+      "id": "bpa_c3_2_card",
+      "kwargs": {},
+      "method": "BigProductAlgebra.cardinality",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 9,
+        "string_repr": "9",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import BigProductAlgebra, CloserTiming, ProductAlgebra\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_lat = BigProductAlgebra(lat2, 2)\nbp_prod = BigProductAlgebra([c2, c3])\nbp_m3 = BigProductAlgebra(m3, 1)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nct = CloserTiming(bp2, None)\nct.updatePass(2)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _map_items(m):\n    if m is None:\n        return None\n    try:\n        return sorted((int(k), int(m[k])) for k in m)\n    except Exception:\n        return sorted((int(k), int(v)) for k, v in m.items())\n\ndef _op_meta(alg):\n    names = []\n    for op in list(alg.operations()):\n        sym = op.symbol()\n        name = sym.name() if callable(getattr(sym, \"name\", None)) else str(sym)\n        names.append((str(name), int(op.arity())))\n    names.sort()\n    return names\n\ndef _factor_cards(factors):\n    if factors is None:\n        return None\n    return [int(f.cardinality()) for f in list(factors)]\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "bp_prod.cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "C2 x C3 big product cardinality",
+      "expected_exception": null,
+      "id": "bpa_prod_card",
+      "kwargs": {},
+      "method": "BigProductAlgebra.cardinality",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 6,
+        "string_repr": "6",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import BigProductAlgebra, CloserTiming, ProductAlgebra\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_lat = BigProductAlgebra(lat2, 2)\nbp_prod = BigProductAlgebra([c2, c3])\nbp_m3 = BigProductAlgebra(m3, 1)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nct = CloserTiming(bp2, None)\nct.updatePass(2)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _map_items(m):\n    if m is None:\n        return None\n    try:\n        return sorted((int(k), int(m[k])) for k in m)\n    except Exception:\n        return sorted((int(k), int(v)) for k, v in m.items())\n\ndef _op_meta(alg):\n    names = []\n    for op in list(alg.operations()):\n        sym = op.symbol()\n        name = sym.name() if callable(getattr(sym, \"name\", None)) else str(sym)\n        names.append((str(name), int(op.arity())))\n    names.sort()\n    return names\n\ndef _factor_cards(factors):\n    if factors is None:\n        return None\n    return [int(f.cardinality()) for f in list(factors)]\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "bp2.getNumberOfFactors()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "C2^2 number of factors",
+      "expected_exception": null,
+      "id": "bpa_c2_2_nfactors",
+      "kwargs": {},
+      "method": "BigProductAlgebra.getNumberOfFactors",
+      "notes": "Java List/Map toString vs Python list/dict.",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import BigProductAlgebra, CloserTiming, ProductAlgebra\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_lat = BigProductAlgebra(lat2, 2)\nbp_prod = BigProductAlgebra([c2, c3])\nbp_m3 = BigProductAlgebra(m3, 1)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nct = CloserTiming(bp2, None)\nct.updatePass(2)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _map_items(m):\n    if m is None:\n        return None\n    try:\n        return sorted((int(k), int(m[k])) for k in m)\n    except Exception:\n        return sorted((int(k), int(v)) for k, v in m.items())\n\ndef _op_meta(alg):\n    names = []\n    for op in list(alg.operations()):\n        sym = op.symbol()\n        name = sym.name() if callable(getattr(sym, \"name\", None)) else str(sym)\n        names.append((str(name), int(op.arity())))\n    names.sort()\n    return names\n\ndef _factor_cards(factors):\n    if factors is None:\n        return None\n    return [int(f.cardinality()) for f in list(factors)]\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "bp2.isPower()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "C2^2 is a power",
+      "expected_exception": null,
+      "id": "bpa_c2_2_is_power",
+      "kwargs": {},
+      "method": "BigProductAlgebra.isPower",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import BigProductAlgebra, CloserTiming, ProductAlgebra\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_lat = BigProductAlgebra(lat2, 2)\nbp_prod = BigProductAlgebra([c2, c3])\nbp_m3 = BigProductAlgebra(m3, 1)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nct = CloserTiming(bp2, None)\nct.updatePass(2)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _map_items(m):\n    if m is None:\n        return None\n    try:\n        return sorted((int(k), int(m[k])) for k in m)\n    except Exception:\n        return sorted((int(k), int(v)) for k, v in m.items())\n\ndef _op_meta(alg):\n    names = []\n    for op in list(alg.operations()):\n        sym = op.symbol()\n        name = sym.name() if callable(getattr(sym, \"name\", None)) else str(sym)\n        names.append((str(name), int(op.arity())))\n    names.sort()\n    return names\n\ndef _factor_cards(factors):\n    if factors is None:\n        return None\n    return [int(f.cardinality()) for f in list(factors)]\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "bp_prod.isPower()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "C2 x C3 is not a power",
+      "expected_exception": null,
+      "id": "bpa_prod_is_power",
+      "kwargs": {},
+      "method": "BigProductAlgebra.isPower",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": false,
+        "string_repr": "False",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import BigProductAlgebra, CloserTiming, ProductAlgebra\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_lat = BigProductAlgebra(lat2, 2)\nbp_prod = BigProductAlgebra([c2, c3])\nbp_m3 = BigProductAlgebra(m3, 1)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nct = CloserTiming(bp2, None)\nct.updatePass(2)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _map_items(m):\n    if m is None:\n        return None\n    try:\n        return sorted((int(k), int(m[k])) for k in m)\n    except Exception:\n        return sorted((int(k), int(v)) for k, v in m.items())\n\ndef _op_meta(alg):\n    names = []\n    for op in list(alg.operations()):\n        sym = op.symbol()\n        name = sym.name() if callable(getattr(sym, \"name\", None)) else str(sym)\n        names.append((str(name), int(op.arity())))\n    names.sort()\n    return names\n\ndef _factor_cards(factors):\n    if factors is None:\n        return None\n    return [int(f.cardinality()) for f in list(factors)]\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "None if bp2.getPowers() is None else [int(x) for x in list(bp2.getPowers())]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "C2^2 getPowers",
+      "expected_exception": null,
+      "id": "bpa_c2_2_powers",
+      "kwargs": {},
+      "method": "BigProductAlgebra.getPowers",
+      "notes": "Java List/Map toString vs Python list/dict.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          2
+        ],
+        "string_repr": "[2]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import BigProductAlgebra, CloserTiming, ProductAlgebra\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_lat = BigProductAlgebra(lat2, 2)\nbp_prod = BigProductAlgebra([c2, c3])\nbp_m3 = BigProductAlgebra(m3, 1)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nct = CloserTiming(bp2, None)\nct.updatePass(2)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _map_items(m):\n    if m is None:\n        return None\n    try:\n        return sorted((int(k), int(m[k])) for k in m)\n    except Exception:\n        return sorted((int(k), int(v)) for k, v in m.items())\n\ndef _op_meta(alg):\n    names = []\n    for op in list(alg.operations()):\n        sym = op.symbol()\n        name = sym.name() if callable(getattr(sym, \"name\", None)) else str(sym)\n        names.append((str(name), int(op.arity())))\n    names.sort()\n    return names\n\ndef _factor_cards(factors):\n    if factors is None:\n        return None\n    return [int(f.cardinality()) for f in list(factors)]\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "bp_prod.getPowers()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "non-power getPowers is null",
+      "expected_exception": null,
+      "id": "bpa_prod_powers",
+      "kwargs": {},
+      "method": "BigProductAlgebra.getPowers",
+      "notes": "Java null vs Python None.",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import BigProductAlgebra, CloserTiming, ProductAlgebra\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_lat = BigProductAlgebra(lat2, 2)\nbp_prod = BigProductAlgebra([c2, c3])\nbp_m3 = BigProductAlgebra(m3, 1)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nct = CloserTiming(bp2, None)\nct.updatePass(2)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _map_items(m):\n    if m is None:\n        return None\n    try:\n        return sorted((int(k), int(m[k])) for k in m)\n    except Exception:\n        return sorted((int(k), int(v)) for k, v in m.items())\n\ndef _op_meta(alg):\n    names = []\n    for op in list(alg.operations()):\n        sym = op.symbol()\n        name = sym.name() if callable(getattr(sym, \"name\", None)) else str(sym)\n        names.append((str(name), int(op.arity())))\n    names.sort()\n    return names\n\ndef _factor_cards(factors):\n    if factors is None:\n        return None\n    return [int(f.cardinality()) for f in list(factors)]\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_factor_cards(bp2.rootFactors())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "C2^2 rootFactors cardinalities",
+      "expected_exception": null,
+      "id": "bpa_c2_2_root",
+      "kwargs": {},
+      "method": "BigProductAlgebra.rootFactors",
+      "notes": "Java List/Map toString vs Python list/dict.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          2
+        ],
+        "string_repr": "[2]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import BigProductAlgebra, CloserTiming, ProductAlgebra\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_lat = BigProductAlgebra(lat2, 2)\nbp_prod = BigProductAlgebra([c2, c3])\nbp_m3 = BigProductAlgebra(m3, 1)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nct = CloserTiming(bp2, None)\nct.updatePass(2)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _map_items(m):\n    if m is None:\n        return None\n    try:\n        return sorted((int(k), int(m[k])) for k in m)\n    except Exception:\n        return sorted((int(k), int(v)) for k, v in m.items())\n\ndef _op_meta(alg):\n    names = []\n    for op in list(alg.operations()):\n        sym = op.symbol()\n        name = sym.name() if callable(getattr(sym, \"name\", None)) else str(sym)\n        names.append((str(name), int(op.arity())))\n    names.sort()\n    return names\n\ndef _factor_cards(factors):\n    if factors is None:\n        return None\n    return [int(f.cardinality()) for f in list(factors)]\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "bp_prod.rootFactors()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "non-power rootFactors is null",
+      "expected_exception": null,
+      "id": "bpa_prod_root",
+      "kwargs": {},
+      "method": "BigProductAlgebra.rootFactors",
+      "notes": "Java null vs Python None.",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import BigProductAlgebra, CloserTiming, ProductAlgebra\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_lat = BigProductAlgebra(lat2, 2)\nbp_prod = BigProductAlgebra([c2, c3])\nbp_m3 = BigProductAlgebra(m3, 1)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nct = CloserTiming(bp2, None)\nct.updatePass(2)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _map_items(m):\n    if m is None:\n        return None\n    try:\n        return sorted((int(k), int(m[k])) for k in m)\n    except Exception:\n        return sorted((int(k), int(v)) for k, v in m.items())\n\ndef _op_meta(alg):\n    names = []\n    for op in list(alg.operations()):\n        sym = op.symbol()\n        name = sym.name() if callable(getattr(sym, \"name\", None)) else str(sym)\n        names.append((str(name), int(op.arity())))\n    names.sort()\n    return names\n\ndef _factor_cards(factors):\n    if factors is None:\n        return None\n    return [int(f.cardinality()) for f in list(factors)]\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_factor_cards(bp2.factors())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "C2^2 factors cardinalities",
+      "expected_exception": null,
+      "id": "bpa_c2_2_factors",
+      "kwargs": {},
+      "method": "BigProductAlgebra.factors",
+      "notes": "Java List/Map toString vs Python list/dict.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          2,
+          2
+        ],
+        "string_repr": "[2, 2]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import BigProductAlgebra, CloserTiming, ProductAlgebra\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_lat = BigProductAlgebra(lat2, 2)\nbp_prod = BigProductAlgebra([c2, c3])\nbp_m3 = BigProductAlgebra(m3, 1)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nct = CloserTiming(bp2, None)\nct.updatePass(2)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _map_items(m):\n    if m is None:\n        return None\n    try:\n        return sorted((int(k), int(m[k])) for k in m)\n    except Exception:\n        return sorted((int(k), int(v)) for k, v in m.items())\n\ndef _op_meta(alg):\n    names = []\n    for op in list(alg.operations()):\n        sym = op.symbol()\n        name = sym.name() if callable(getattr(sym, \"name\", None)) else str(sym)\n        names.append((str(name), int(op.arity())))\n    names.sort()\n    return names\n\ndef _factor_cards(factors):\n    if factors is None:\n        return None\n    return [int(f.cardinality()) for f in list(factors)]\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_factor_cards(bp_prod.factors())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "C2 x C3 factors cardinalities",
+      "expected_exception": null,
+      "id": "bpa_prod_factors",
+      "kwargs": {},
+      "method": "BigProductAlgebra.factors",
+      "notes": "Java List/Map toString vs Python list/dict.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          2,
+          3
+        ],
+        "string_repr": "[2, 3]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import BigProductAlgebra, CloserTiming, ProductAlgebra\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_lat = BigProductAlgebra(lat2, 2)\nbp_prod = BigProductAlgebra([c2, c3])\nbp_m3 = BigProductAlgebra(m3, 1)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nct = CloserTiming(bp2, None)\nct.updatePass(2)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _map_items(m):\n    if m is None:\n        return None\n    try:\n        return sorted((int(k), int(m[k])) for k in m)\n    except Exception:\n        return sorted((int(k), int(v)) for k, v in m.items())\n\ndef _op_meta(alg):\n    names = []\n    for op in list(alg.operations()):\n        sym = op.symbol()\n        name = sym.name() if callable(getattr(sym, \"name\", None)) else str(sym)\n        names.append((str(name), int(op.arity())))\n    names.sort()\n    return names\n\ndef _factor_cards(factors):\n    if factors is None:\n        return None\n    return [int(f.cardinality()) for f in list(factors)]\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_map_items(bp2.sizeMultiplicities())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "C2^2 size multiplicities",
+      "expected_exception": null,
+      "id": "bpa_c2_2_size_mult",
+      "kwargs": {},
+      "method": "BigProductAlgebra.sizeMultiplicities",
+      "notes": "Java List/Map toString vs Python list/dict.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            2,
+            2
+          ]
+        ],
+        "string_repr": "[(2, 2)]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import BigProductAlgebra, CloserTiming, ProductAlgebra\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_lat = BigProductAlgebra(lat2, 2)\nbp_prod = BigProductAlgebra([c2, c3])\nbp_m3 = BigProductAlgebra(m3, 1)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nct = CloserTiming(bp2, None)\nct.updatePass(2)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _map_items(m):\n    if m is None:\n        return None\n    try:\n        return sorted((int(k), int(m[k])) for k in m)\n    except Exception:\n        return sorted((int(k), int(v)) for k, v in m.items())\n\ndef _op_meta(alg):\n    names = []\n    for op in list(alg.operations()):\n        sym = op.symbol()\n        name = sym.name() if callable(getattr(sym, \"name\", None)) else str(sym)\n        names.append((str(name), int(op.arity())))\n    names.sort()\n    return names\n\ndef _factor_cards(factors):\n    if factors is None:\n        return None\n    return [int(f.cardinality()) for f in list(factors)]\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_map_items(bp_prod.sizeMultiplicities())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "C2 x C3 size multiplicities",
+      "expected_exception": null,
+      "id": "bpa_prod_size_mult",
+      "kwargs": {},
+      "method": "BigProductAlgebra.sizeMultiplicities",
+      "notes": "Java List/Map toString vs Python list/dict.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            2,
+            1
+          ],
+          [
+            3,
+            1
+          ]
+        ],
+        "string_repr": "[(2, 1), (3, 1)]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import BigProductAlgebra, CloserTiming, ProductAlgebra\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_lat = BigProductAlgebra(lat2, 2)\nbp_prod = BigProductAlgebra([c2, c3])\nbp_m3 = BigProductAlgebra(m3, 1)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nct = CloserTiming(bp2, None)\nct.updatePass(2)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _map_items(m):\n    if m is None:\n        return None\n    try:\n        return sorted((int(k), int(m[k])) for k in m)\n    except Exception:\n        return sorted((int(k), int(v)) for k, v in m.items())\n\ndef _op_meta(alg):\n    names = []\n    for op in list(alg.operations()):\n        sym = op.symbol()\n        name = sym.name() if callable(getattr(sym, \"name\", None)) else str(sym)\n        names.append((str(name), int(op.arity())))\n    names.sort()\n    return names\n\ndef _factor_cards(factors):\n    if factors is None:\n        return None\n    return [int(f.cardinality()) for f in list(factors)]\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "bp2.projection(0).cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "C2^2 projection(0) cardinality",
+      "expected_exception": null,
+      "id": "bpa_c2_2_proj",
+      "kwargs": {},
+      "method": "BigProductAlgebra.projection",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import BigProductAlgebra, CloserTiming, ProductAlgebra\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_lat = BigProductAlgebra(lat2, 2)\nbp_prod = BigProductAlgebra([c2, c3])\nbp_m3 = BigProductAlgebra(m3, 1)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nct = CloserTiming(bp2, None)\nct.updatePass(2)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _map_items(m):\n    if m is None:\n        return None\n    try:\n        return sorted((int(k), int(m[k])) for k in m)\n    except Exception:\n        return sorted((int(k), int(v)) for k, v in m.items())\n\ndef _op_meta(alg):\n    names = []\n    for op in list(alg.operations()):\n        sym = op.symbol()\n        name = sym.name() if callable(getattr(sym, \"name\", None)) else str(sym)\n        names.append((str(name), int(op.arity())))\n    names.sort()\n    return names\n\ndef _factor_cards(factors):\n    if factors is None:\n        return None\n    return [int(f.cardinality()) for f in list(factors)]\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "bp2.projectionKernel(0)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "projectionKernel is a Java stub (null)",
+      "expected_exception": null,
+      "id": "bpa_c2_2_proj_kernel",
+      "kwargs": {},
+      "method": "BigProductAlgebra.projectionKernel",
+      "notes": "Java null vs Python None.",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import BigProductAlgebra, CloserTiming, ProductAlgebra\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_lat = BigProductAlgebra(lat2, 2)\nbp_prod = BigProductAlgebra([c2, c3])\nbp_m3 = BigProductAlgebra(m3, 1)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nct = CloserTiming(bp2, None)\nct.updatePass(2)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _map_items(m):\n    if m is None:\n        return None\n    try:\n        return sorted((int(k), int(m[k])) for k in m)\n    except Exception:\n        return sorted((int(k), int(v)) for k, v in m.items())\n\ndef _op_meta(alg):\n    names = []\n    for op in list(alg.operations()):\n        sym = op.symbol()\n        name = sym.name() if callable(getattr(sym, \"name\", None)) else str(sym)\n        names.append((str(name), int(op.arity())))\n    names.sort()\n    return names\n\ndef _factor_cards(factors):\n    if factors is None:\n        return None\n    return [int(f.cardinality()) for f in list(factors)]\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_op_meta(bp2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "C2^2 operation names and arities",
+      "expected_exception": null,
+      "id": "bpa_c2_2_ops",
+      "kwargs": {},
+      "method": "BigProductAlgebra.operations",
+      "notes": "Java List/Map toString vs Python list/dict.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            "+",
+            2
+          ]
+        ],
+        "string_repr": "[('+', 2)]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import BigProductAlgebra, CloserTiming, ProductAlgebra\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_lat = BigProductAlgebra(lat2, 2)\nbp_prod = BigProductAlgebra([c2, c3])\nbp_m3 = BigProductAlgebra(m3, 1)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nct = CloserTiming(bp2, None)\nct.updatePass(2)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _map_items(m):\n    if m is None:\n        return None\n    try:\n        return sorted((int(k), int(m[k])) for k in m)\n    except Exception:\n        return sorted((int(k), int(v)) for k, v in m.items())\n\ndef _op_meta(alg):\n    names = []\n    for op in list(alg.operations()):\n        sym = op.symbol()\n        name = sym.name() if callable(getattr(sym, \"name\", None)) else str(sym)\n        names.append((str(name), int(op.arity())))\n    names.sort()\n    return names\n\ndef _factor_cards(factors):\n    if factors is None:\n        return None\n    return [int(f.cardinality()) for f in list(factors)]\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_op_meta(bp_lat)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "lat2^2 operation names and arities",
+      "expected_exception": null,
+      "id": "bpa_lat2_2_ops",
+      "kwargs": {},
+      "method": "BigProductAlgebra.operations",
+      "notes": "Java List/Map toString vs Python list/dict.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            "join",
+            2
+          ],
+          [
+            "meet",
+            2
+          ]
+        ],
+        "string_repr": "[('join', 2), ('meet', 2)]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import BigProductAlgebra, CloserTiming, ProductAlgebra\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_lat = BigProductAlgebra(lat2, 2)\nbp_prod = BigProductAlgebra([c2, c3])\nbp_m3 = BigProductAlgebra(m3, 1)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nct = CloserTiming(bp2, None)\nct.updatePass(2)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _map_items(m):\n    if m is None:\n        return None\n    try:\n        return sorted((int(k), int(m[k])) for k in m)\n    except Exception:\n        return sorted((int(k), int(v)) for k, v in m.items())\n\ndef _op_meta(alg):\n    names = []\n    for op in list(alg.operations()):\n        sym = op.symbol()\n        name = sym.name() if callable(getattr(sym, \"name\", None)) else str(sym)\n        names.append((str(name), int(op.arity())))\n    names.sort()\n    return names\n\ndef _factor_cards(factors):\n    if factors is None:\n        return None\n    return [int(f.cardinality()) for f in list(factors)]\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "[int(x) for x in list(list(bp2.operations())[0].valueAt([[0, 0], [1, 1]]))]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "C2^2 first op valueAt on two tuples",
+      "expected_exception": null,
+      "id": "bpa_c2_2_value_at",
+      "kwargs": {},
+      "method": "BigProductAlgebra.operations",
+      "notes": "Java List/Map toString vs Python list/dict.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          1,
+          1
+        ],
+        "string_repr": "[1, 1]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import BigProductAlgebra, CloserTiming, ProductAlgebra\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_lat = BigProductAlgebra(lat2, 2)\nbp_prod = BigProductAlgebra([c2, c3])\nbp_m3 = BigProductAlgebra(m3, 1)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nct = CloserTiming(bp2, None)\nct.updatePass(2)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _map_items(m):\n    if m is None:\n        return None\n    try:\n        return sorted((int(k), int(m[k])) for k in m)\n    except Exception:\n        return sorted((int(k), int(v)) for k, v in m.items())\n\ndef _op_meta(alg):\n    names = []\n    for op in list(alg.operations()):\n        sym = op.symbol()\n        name = sym.name() if callable(getattr(sym, \"name\", None)) else str(sym)\n        names.append((str(name), int(op.arity())))\n    names.sort()\n    return names\n\ndef _factor_cards(factors):\n    if factors is None:\n        return None\n    return [int(f.cardinality()) for f in list(factors)]\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_ias(bp2.getConstants())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "C2^2 constants",
+      "expected_exception": null,
+      "id": "bpa_c2_2_constants",
+      "kwargs": {},
+      "method": "BigProductAlgebra.getConstants",
+      "notes": "Java List/Map toString vs Python list/dict.",
+      "result": {
+        "return_type": "list",
+        "return_value": [],
+        "string_repr": "[]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import BigProductAlgebra, CloserTiming, ProductAlgebra\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_lat = BigProductAlgebra(lat2, 2)\nbp_prod = BigProductAlgebra([c2, c3])\nbp_m3 = BigProductAlgebra(m3, 1)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nct = CloserTiming(bp2, None)\nct.updatePass(2)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _map_items(m):\n    if m is None:\n        return None\n    try:\n        return sorted((int(k), int(m[k])) for k in m)\n    except Exception:\n        return sorted((int(k), int(v)) for k, v in m.items())\n\ndef _op_meta(alg):\n    names = []\n    for op in list(alg.operations()):\n        sym = op.symbol()\n        name = sym.name() if callable(getattr(sym, \"name\", None)) else str(sym)\n        names.append((str(name), int(op.arity())))\n    names.sort()\n    return names\n\ndef _factor_cards(factors):\n    if factors is None:\n        return None\n    return [int(f.cardinality()) for f in list(factors)]\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_ias(bp_lat.getConstants())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "lat2^2 constants",
+      "expected_exception": null,
+      "id": "bpa_lat2_2_constants",
+      "kwargs": {},
+      "method": "BigProductAlgebra.getConstants",
+      "notes": "Java List/Map toString vs Python list/dict.",
+      "result": {
+        "return_type": "list",
+        "return_value": [],
+        "string_repr": "[]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import BigProductAlgebra, CloserTiming, ProductAlgebra\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_lat = BigProductAlgebra(lat2, 2)\nbp_prod = BigProductAlgebra([c2, c3])\nbp_m3 = BigProductAlgebra(m3, 1)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nct = CloserTiming(bp2, None)\nct.updatePass(2)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _map_items(m):\n    if m is None:\n        return None\n    try:\n        return sorted((int(k), int(m[k])) for k in m)\n    except Exception:\n        return sorted((int(k), int(v)) for k, v in m.items())\n\ndef _op_meta(alg):\n    names = []\n    for op in list(alg.operations()):\n        sym = op.symbol()\n        name = sym.name() if callable(getattr(sym, \"name\", None)) else str(sym)\n        names.append((str(name), int(op.arity())))\n    names.sort()\n    return names\n\ndef _factor_cards(factors):\n    if factors is None:\n        return None\n    return [int(f.cardinality()) for f in list(factors)]\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sorted(_ias(bp2.sgClose([g00, g11])))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "sgClose of the diagonal in C2^2",
+      "expected_exception": null,
+      "id": "bpa_c2_2_sg_close",
+      "kwargs": {},
+      "method": "BigProductAlgebra.sgClose",
+      "notes": "Java List/Map toString vs Python list/dict.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            0,
+            0
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "string_repr": "[[0, 0], [1, 1]]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import BigProductAlgebra, CloserTiming, ProductAlgebra\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_lat = BigProductAlgebra(lat2, 2)\nbp_prod = BigProductAlgebra([c2, c3])\nbp_m3 = BigProductAlgebra(m3, 1)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nct = CloserTiming(bp2, None)\nct.updatePass(2)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _map_items(m):\n    if m is None:\n        return None\n    try:\n        return sorted((int(k), int(m[k])) for k in m)\n    except Exception:\n        return sorted((int(k), int(v)) for k, v in m.items())\n\ndef _op_meta(alg):\n    names = []\n    for op in list(alg.operations()):\n        sym = op.symbol()\n        name = sym.name() if callable(getattr(sym, \"name\", None)) else str(sym)\n        names.append((str(name), int(op.arity())))\n    names.sort()\n    return names\n\ndef _factor_cards(factors):\n    if factors is None:\n        return None\n    return [int(f.cardinality()) for f in list(factors)]\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sorted(_ias(bp3.sgClose([IntArray([0, 0]), IntArray([1, 1])])))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "sgClose of two diagonal gens in C3^2",
+      "expected_exception": null,
+      "id": "bpa_c3_2_sg_close",
+      "kwargs": {},
+      "method": "BigProductAlgebra.sgClose",
+      "notes": "Java List/Map toString vs Python list/dict.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            0,
+            0
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            2
+          ]
+        ],
+        "string_repr": "[[0, 0], [1, 1], [2, 2]]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import BigProductAlgebra, CloserTiming, ProductAlgebra\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_lat = BigProductAlgebra(lat2, 2)\nbp_prod = BigProductAlgebra([c2, c3])\nbp_m3 = BigProductAlgebra(m3, 1)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nct = CloserTiming(bp2, None)\nct.updatePass(2)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _map_items(m):\n    if m is None:\n        return None\n    try:\n        return sorted((int(k), int(m[k])) for k in m)\n    except Exception:\n        return sorted((int(k), int(v)) for k, v in m.items())\n\ndef _op_meta(alg):\n    names = []\n    for op in list(alg.operations()):\n        sym = op.symbol()\n        name = sym.name() if callable(getattr(sym, \"name\", None)) else str(sym)\n        names.append((str(name), int(op.arity())))\n    names.sort()\n    return names\n\ndef _factor_cards(factors):\n    if factors is None:\n        return None\n    return [int(f.cardinality()) for f in list(factors)]\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sorted(_ias(bp_lat.sgClose([g00, g11])))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "sgClose of the diagonal in lat2^2",
+      "expected_exception": null,
+      "id": "bpa_lat2_2_sg_close",
+      "kwargs": {},
+      "method": "BigProductAlgebra.sgClose",
+      "notes": "Java List/Map toString vs Python list/dict.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            0,
+            0
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "string_repr": "[[0, 0], [1, 1]]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import BigProductAlgebra, CloserTiming, ProductAlgebra\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_lat = BigProductAlgebra(lat2, 2)\nbp_prod = BigProductAlgebra([c2, c3])\nbp_m3 = BigProductAlgebra(m3, 1)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nct = CloserTiming(bp2, None)\nct.updatePass(2)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _map_items(m):\n    if m is None:\n        return None\n    try:\n        return sorted((int(k), int(m[k])) for k in m)\n    except Exception:\n        return sorted((int(k), int(v)) for k, v in m.items())\n\ndef _op_meta(alg):\n    names = []\n    for op in list(alg.operations()):\n        sym = op.symbol()\n        name = sym.name() if callable(getattr(sym, \"name\", None)) else str(sym)\n        names.append((str(name), int(op.arity())))\n    names.sort()\n    return names\n\ndef _factor_cards(factors):\n    if factors is None:\n        return None\n    return [int(f.cardinality()) for f in list(factors)]\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "str(bp2.getName())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "default name of C2^2",
+      "expected_exception": null,
+      "id": "bpa_c2_2_name",
+      "kwargs": {},
+      "method": "BigProductAlgebra.getName",
+      "notes": "",
+      "result": {
+        "return_type": "str",
+        "return_value": "",
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import BigProductAlgebra, CloserTiming, ProductAlgebra\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_lat = BigProductAlgebra(lat2, 2)\nbp_prod = BigProductAlgebra([c2, c3])\nbp_m3 = BigProductAlgebra(m3, 1)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nct = CloserTiming(bp2, None)\nct.updatePass(2)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _map_items(m):\n    if m is None:\n        return None\n    try:\n        return sorted((int(k), int(m[k])) for k in m)\n    except Exception:\n        return sorted((int(k), int(v)) for k, v in m.items())\n\ndef _op_meta(alg):\n    names = []\n    for op in list(alg.operations()):\n        sym = op.symbol()\n        name = sym.name() if callable(getattr(sym, \"name\", None)) else str(sym)\n        names.append((str(name), int(op.arity())))\n    names.sort()\n    return names\n\ndef _factor_cards(factors):\n    if factors is None:\n        return None\n    return [int(f.cardinality()) for f in list(factors)]\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "(bp2.makeOperationTables(), bp2.cardinality())[1]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "makeOperationTables is a no-op that returns",
+      "expected_exception": null,
+      "id": "bpa_make_tables",
+      "kwargs": {},
+      "method": "BigProductAlgebra.makeOperationTables",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 4,
+        "string_repr": "4",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import BigProductAlgebra, CloserTiming, ProductAlgebra\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_lat = BigProductAlgebra(lat2, 2)\nbp_prod = BigProductAlgebra([c2, c3])\nbp_m3 = BigProductAlgebra(m3, 1)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nct = CloserTiming(bp2, None)\nct.updatePass(2)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _map_items(m):\n    if m is None:\n        return None\n    try:\n        return sorted((int(k), int(m[k])) for k in m)\n    except Exception:\n        return sorted((int(k), int(v)) for k, v in m.items())\n\ndef _op_meta(alg):\n    names = []\n    for op in list(alg.operations()):\n        sym = op.symbol()\n        name = sym.name() if callable(getattr(sym, \"name\", None)) else str(sym)\n        names.append((str(name), int(op.arity())))\n    names.sort()\n    return names\n\ndef _factor_cards(factors):\n    if factors is None:\n        return None\n    return [int(f.cardinality()) for f in list(factors)]\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "bp2.getConstantSymbol(None)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getConstantSymbol(null) NPE",
+      "expected_exception": "NullPointerException",
+      "id": "bpa_const_symbol_null",
+      "kwargs": {},
+      "method": "BigProductAlgebra.getConstantSymbol",
+      "notes": "",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import BigProductAlgebra, CloserTiming, ProductAlgebra\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_lat = BigProductAlgebra(lat2, 2)\nbp_prod = BigProductAlgebra([c2, c3])\nbp_m3 = BigProductAlgebra(m3, 1)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nct = CloserTiming(bp2, None)\nct.updatePass(2)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _map_items(m):\n    if m is None:\n        return None\n    try:\n        return sorted((int(k), int(m[k])) for k in m)\n    except Exception:\n        return sorted((int(k), int(v)) for k, v in m.items())\n\ndef _op_meta(alg):\n    names = []\n    for op in list(alg.operations()):\n        sym = op.symbol()\n        name = sym.name() if callable(getattr(sym, \"name\", None)) else str(sym)\n        names.append((str(name), int(op.arity())))\n    names.sort()\n    return names\n\ndef _factor_cards(factors):\n    if factors is None:\n        return None\n    return [int(f.cardinality()) for f in list(factors)]\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "(CloserTiming(bp3, None).updatePass(4), 4)[1]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "updatePass returns after resetting counters",
+      "expected_exception": null,
+      "id": "ct_update_pass",
+      "kwargs": {},
+      "method": "CloserTiming.updatePass",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 4,
+        "string_repr": "4",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import BigProductAlgebra, CloserTiming, ProductAlgebra\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_lat = BigProductAlgebra(lat2, 2)\nbp_prod = BigProductAlgebra([c2, c3])\nbp_m3 = BigProductAlgebra(m3, 1)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nct = CloserTiming(bp2, None)\nct.updatePass(2)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _map_items(m):\n    if m is None:\n        return None\n    try:\n        return sorted((int(k), int(m[k])) for k in m)\n    except Exception:\n        return sorted((int(k), int(v)) for k, v in m.items())\n\ndef _op_meta(alg):\n    names = []\n    for op in list(alg.operations()):\n        sym = op.symbol()\n        name = sym.name() if callable(getattr(sym, \"name\", None)) else str(sym)\n        names.append((str(name), int(op.arity())))\n    names.sort()\n    return names\n\ndef _factor_cards(factors):\n    if factors is None:\n        return None\n    return [int(f.cardinality()) for f in list(factors)]\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "(ct.incrementNextPassSize(), ct.incrementNextPassSize(), 1)[2]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "incrementNextPassSize is callable",
+      "expected_exception": null,
+      "id": "ct_increment_next",
+      "kwargs": {},
+      "method": "CloserTiming.incrementNextPassSize",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 1,
+        "string_repr": "1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import BigProductAlgebra, CloserTiming, ProductAlgebra\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_lat = BigProductAlgebra(lat2, 2)\nbp_prod = BigProductAlgebra([c2, c3])\nbp_m3 = BigProductAlgebra(m3, 1)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nct = CloserTiming(bp2, None)\nct.updatePass(2)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _map_items(m):\n    if m is None:\n        return None\n    try:\n        return sorted((int(k), int(m[k])) for k in m)\n    except Exception:\n        return sorted((int(k), int(v)) for k, v in m.items())\n\ndef _op_meta(alg):\n    names = []\n    for op in list(alg.operations()):\n        sym = op.symbol()\n        name = sym.name() if callable(getattr(sym, \"name\", None)) else str(sym)\n        names.append((str(name), int(op.arity())))\n    names.sort()\n    return names\n\ndef _factor_cards(factors):\n    if factors is None:\n        return None\n    return [int(f.cardinality()) for f in list(factors)]\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "(ct.incrementApps(), ct.incrementApps(), bp2.getNumberOfFactors())[2]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "incrementApps a few times stays below timing thresholds",
+      "expected_exception": null,
+      "id": "ct_increment_apps",
+      "kwargs": {},
+      "method": "CloserTiming.incrementApps",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import BigProductAlgebra, CloserTiming, ProductAlgebra\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_lat = BigProductAlgebra(lat2, 2)\nbp_prod = BigProductAlgebra([c2, c3])\nbp_m3 = BigProductAlgebra(m3, 1)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nct = CloserTiming(bp2, None)\nct.updatePass(2)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _map_items(m):\n    if m is None:\n        return None\n    try:\n        return sorted((int(k), int(m[k])) for k in m)\n    except Exception:\n        return sorted((int(k), int(v)) for k, v in m.items())\n\ndef _op_meta(alg):\n    names = []\n    for op in list(alg.operations()):\n        sym = op.symbol()\n        name = sym.name() if callable(getattr(sym, \"name\", None)) else str(sym)\n        names.append((str(name), int(op.arity())))\n    names.sort()\n    return names\n\ndef _factor_cards(factors):\n    if factors is None:\n        return None\n    return [int(f.cardinality()) for f in list(factors)]\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "CloserTiming(None, None)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "CloserTiming(null, null) NPE",
+      "expected_exception": "NullPointerException",
+      "id": "ct_null_alg",
+      "kwargs": {},
+      "method": "CloserTiming.updatePass",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.NullPointerException: Cannot invoke \"org.uacalc.alg.BigProductAlgebra.getNumberOfFactors()\" because \"algebra\" is null",
+          "type": "NullPointerException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import BigProductAlgebra, CloserTiming, ProductAlgebra\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\nbp_lat = BigProductAlgebra(lat2, 2)\nbp_prod = BigProductAlgebra([c2, c3])\nbp_m3 = BigProductAlgebra(m3, 1)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nct = CloserTiming(bp2, None)\nct.updatePass(2)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _map_items(m):\n    if m is None:\n        return None\n    try:\n        return sorted((int(k), int(m[k])) for k in m)\n    except Exception:\n        return sorted((int(k), int(v)) for k, v in m.items())\n\ndef _op_meta(alg):\n    names = []\n    for op in list(alg.operations()):\n        sym = op.symbol()\n        name = sym.name() if callable(getattr(sym, \"name\", None)) else str(sym)\n        names.append((str(name), int(op.arity())))\n    names.sort()\n    return names\n\ndef _factor_cards(factors):\n    if factors is None:\n        return None\n    return [int(f.cardinality()) for f in list(factors)]\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    }
+  ]
+}

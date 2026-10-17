@@ -12,7 +12,8 @@ notes: |
   ParameterizedAlgebra, PolinLikeAlgebra, UnaryTermsMonoid, and op/sublat
   types).   The python/org shim re-exports uacalc_lib.alg and applies Jython
   call-shape bridges from _jython_compat.py for ~/uacalc scripts. Malcev is
-  wrapped as a static facade. CloserTiming is UI-only and is not wrapped.
+  wrapped as a static facade. BigProductAlgebra and CloserTiming (report=None)
+  are wrapped.
 ignore_reason: null
 surface:
   package_export: true

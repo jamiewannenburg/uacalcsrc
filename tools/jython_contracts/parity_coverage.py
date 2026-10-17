@@ -21,14 +21,18 @@ from . import PROJECT_ROOT
 PENDING_BINDINGS = {
     "alg": [
         (
-            "Malcev TCT / cube-term / path internals / main",
-            "typesInSofA*, typeSetIdempotent, omittedIdealIdempotent, "
-            "cubeTermBlockerIdempotent, sdIdempotent, cpIdempotent, "
-            "fixedKPermIdempotent, permLevelIdempotent, congruenceModularForIdempotent, "
-            "fixedKEdgeIdempotent, nuTermIdempotent_Bad, makeCyclicGens, "
-            "sdPath/jonssonLevelPath/gummLevelPath/hagemannMitschkeLevelPath, "
-            "and main stay unbound. dayQuadruple is a stub pointing at "
-            "findDayQuadrupleInSquare.",
+            "Malcev path internals / discarded helpers / main",
+            "jonssonLevelPath, gummLevelPath, hagemannMitschkeLevelPath, "
+            "jonssonLevelAux, nuTermIdempotent_Bad, fixedKEdgeIdempotent, "
+            "fixedKPermIdempotent, permLevelIdempotent stay NotImplementedError "
+            "(strict xfails). main is a Java development helper. "
+            "sg() on BigProductAlgebra is commented out in Java (scanner FP). "
+            "sgClose_old / sgCloseXX are legacy public overloads, not bound.",
+        ),
+        (
+            "GUI / CloserTiming ProgressReport",
+            "CloserTiming(algebra, report) accepts report=None only; a live "
+            "org.uacalc.ui.tm.ProgressReport is out of scope.",
         ),
     ],
     "lat": [
@@ -179,12 +183,9 @@ PENDING_BINDINGS = {
         ),
         (
             "CongruenceLattice type theory / commutator SubProduct overloads",
-            "typeSet/type/subtrace/matrices/commutator-with-report stay on uacalc_lib stubs",
-        ),
-        (
-            "TypeFinder.nextPairForSubtrace",
-            "mutates caller HashSet/List of IntArray; not bound in PyO3 "
-            "(strict xfail tf_next_pair_unbound)",
+            "typeSet/type/typeJI/subtrace/getTypeFinder are wrapped in the "
+            "org shim (TypeFinder + originating algebra stashed on con()). "
+            "matrices / commutator-with-report / SubProduct overloads stay unbound.",
         ),
         (
             "TypeFinder.main / Polymorphisms.main / BasicBinaryRelation.main / "

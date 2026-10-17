@@ -61,6 +61,32 @@ def _st(s):
     if s is None:
         return None
     return [int(s.first()), int(s.second()), int(s.type()), bool(s.hasInvolution()), str(s.toString())]
+
+def _hs():
+    try:
+        from java.util import HashSet
+        return HashSet()
+    except ImportError:
+        return set()
+
+def _al():
+    try:
+        from java.util import ArrayList
+        return ArrayList()
+    except ImportError:
+        return []
+
+def _ia_sorted(coll):
+    rows = [_ia(x) for x in list(coll)]
+    rows.sort()
+    return rows
+
+def _next_snap(tf, pair):
+    univHS = _hs()
+    unordered = _hs()
+    univ = _al()
+    result = tf.nextPairForSubtrace(pair, univHS, unordered, univ)
+    return [_ia(result), _ia_sorted(univHS), _ia_sorted(unordered), [_ia(x) for x in list(univ)]]
 """
 
 _BOOL = dict(skip_string_check=True, notes="Java str(true/false) vs Python str(True/False).")
@@ -304,12 +330,96 @@ TEST_CASES = [
         **_LIST
     ),
     TestCaseSpec(
-        id="tf_next_pair_unbound",
+        id="tf_next_pair_c2",
+        method="TypeFinder.nextPairForSubtrace",
+        setup=_SETUP,
+        call="_next_snap(tf_c2, IntArray([0, 1]))",
+        description="nextPairForSubtrace mutates univ/univHS on C2 from (0,1)",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="tf_next_pair_c3",
+        method="TypeFinder.nextPairForSubtrace",
+        setup=_SETUP,
+        call="_next_snap(tf_c3, IntArray([0, 1]))",
+        description="nextPairForSubtrace mutates univ/univHS on C3 from (0,1)",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="tf_next_pair_lat2",
+        method="TypeFinder.nextPairForSubtrace",
+        setup=_SETUP,
+        call="_next_snap(tf_lat2, IntArray([0, 1]))",
+        description="nextPairForSubtrace mutates univ/univHS on lat2 from (0,1)",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="tf_next_pair_npe",
         method="TypeFinder.nextPairForSubtrace",
         setup=_SETUP,
         call="tf_c2.nextPairForSubtrace(IntArray([0, 1]), None, None, None)",
-        description="nextPairForSubtrace is not bound on CPython",
-        xfail_reason="nextPairForSubtrace is not bound; it mutates caller HashSet/List of IntArray",
-        skip_string_check=True,
+        description="nextPairForSubtrace NPE when the sets/list are null",
+        expected_exception="NullPointerException",
+    ),
+    TestCaseSpec(
+        id="cl_type_set_c2",
+        method="CongruenceLattice.typeSet",
+        setup=_SETUP,
+        call="sorted(int(x) for x in list(c2.con().typeSet()))",
+        description="Con(C2) TCT type set",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="cl_type_set_lat2",
+        method="CongruenceLattice.typeSet",
+        setup=_SETUP,
+        call="sorted(int(x) for x in list(lat2.con().typeSet()))",
+        description="Con(lat2) TCT type set",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="cl_type_set_c3",
+        method="CongruenceLattice.typeSet",
+        setup=_SETUP,
+        call="sorted(int(x) for x in list(c3.con().typeSet()))",
+        description="Con(C3) TCT type set",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="cl_type_ji_c2",
+        method="CongruenceLattice.typeJI",
+        setup=_SETUP,
+        call="c2.con().typeJI(jis_c2[0], None)",
+        description="typeJI of the unique JI in Con(C2)",
+    ),
+    TestCaseSpec(
+        id="cl_type_c2",
+        method="CongruenceLattice.type",
+        setup=_SETUP,
+        call="c2.con().type(jis_c2[0])",
+        description="type() of the unique JI in Con(C2)",
+    ),
+    TestCaseSpec(
+        id="cl_get_algebra_c2",
+        method="CongruenceLattice.getAlgebra",
+        setup=_SETUP,
+        call="c2.con().getAlgebra().cardinality()",
+        description="getAlgebra round-trips the originating algebra",
+    ),
+    TestCaseSpec(
+        id="cl_get_type_finder_c2",
+        method="CongruenceLattice.getTypeFinder",
+        setup=_SETUP,
+        call="sorted(list(c2.con().getTypeFinder().findTypeSet()))",
+        description="getTypeFinder().findTypeSet matches TypeFinder(c2)",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="cl_subtrace_c2",
+        method="CongruenceLattice.subtrace",
+        setup=_SETUP,
+        call="_st(c2.con().subtrace(jis_c2[0]))",
+        description="subtrace of the unique JI in Con(C2)",
+        **_LIST
     ),
 ]

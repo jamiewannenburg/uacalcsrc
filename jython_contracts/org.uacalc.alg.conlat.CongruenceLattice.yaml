@@ -6,7 +6,9 @@ notes: |
   Jython CongruenceLattice surface on uacalc_lib. UI (getDiagram/getConTable),
   ProgressReport overloads, main, and SubProduct type-theory/commutator
   overloads are not wrapped. coatoms/setName match Java UOE. operations() is
-  identically null as in Java.
+  identically null as in Java. typeSet / type / typeJI / subtrace /
+  getTypeFinder route through TypeFinder using the originating algebra
+  stashed on con().
 ignore_reason: null
 surface:
   package_export: true
@@ -38,6 +40,11 @@ surface:
     upperCoversMap: upper_covers_map
     getPermutabilityLevelWitnesses: get_permutability_level_witnesses
     joinIrreduciblesFound: join_irreducibles_found
+    typeJI: typeJI
+    typeSet: typeSet
+    type: type
+    subtrace: subtrace
+    getTypeFinder: getTypeFinder
   static_methods:
     - CongruenceLattice.minimalElements
   str_parity: false

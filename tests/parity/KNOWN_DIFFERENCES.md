@@ -849,8 +849,54 @@ count match.
 ### alg.Malcev.dayQuadruple
 
 - **Java**: `dayQuadruple(a,b,c,d,alg)` tests four indices against `alg.con()`.
-- **Python**: Binding still requires a congruence-lattice argument and raises
-  `ValueError` pointing callers at `findDayQuadrupleInSquare`.
-- **Status**: Accepted gap — use `findDayQuadrupleInSquare` / the idempotent
-  CM tests instead.
-- **Tests**: not goldened; listed in `PENDING_BINDINGS`.
+- **Python**: Same predicate via `alg.con()` Cg/join/meet/isRelated.
+- **Status**: Wrapped; goldens on C2, C3, lat2.
+- **Tests**: `day_quad_c2_0100`, `day_quad_c2_0101`, `day_quad_lat2_0011`,
+  `day_quad_c3_0120`, `day_quad_null_alg`
+
+### alg.Malcev.typeSetIdempotent types1.add(2) bug
+
+- **Java**: `types1.add(2)` after `types1` was `{1}` makes `types1 == {1,2}`
+  and leaves `types2` empty. The `{1}`-only branch is unreachable.
+- **Python**: Matches Java, including the bug.
+- **Status**: Known Java bug, copied for parity.
+- **Tests**: `type_set_idem_c2`, `type_set_idem_lat2`, `type_set_idem_c3`
+
+### alg.Malcev.makeCyclicGens shared-array copies
+
+- **Java**: Adds `new IntArray(w)` inside the inner fill loop while sharing one
+  `int[] w`, so each shift contributes `k` copies of the fully filled vector.
+- **Python**: Materializes the same final list (k copies of each completed shift).
+- **Status**: Matches Java's final state.
+- **Tests**: `make_cyclic_gens_012`, `make_cyclic_gens_01`
+
+### alg.Malcev path internals
+
+- **Java**: `jonssonLevelPath`, `gummLevelPath`, `hagemannMitschkeLevelPath`,
+  `jonssonLevelAux` are helpers used inside term search. `nuTermIdempotent_Bad`,
+  `fixedKEdgeIdempotent`, `fixedKPermIdempotent`, `permLevelIdempotent` are
+  discarded or unbound-on-CPython searches.
+- **Python**: Strict `NotImplementedError` with a reason. Call the public
+  term-finding entry points instead.
+- **Status**: Strict xfail.
+- **Tests**: `jonsson_level_path_xfail`, `gumm_level_path_xfail`,
+  `hm_level_path_xfail`, `jonsson_level_aux_xfail`, `nu_term_bad_xfail`,
+  `fixed_k_edge_idem_xfail`, `fixed_k_perm_idem_xfail`, `perm_level_idem_xfail`
+
+### alg.BigProductAlgebra.sg (scanner false-positive)
+
+- **Java**: `sg(List)` is commented out in `BigProductAlgebra.java`; the scanner
+  still sees the `public` signature. `sgClose_old` / `sgCloseXX` are live
+  legacy overloads. `main` is a development helper.
+- **Python**: not bound.
+- **Status**: Skipped by design (commented / legacy / main).
+- **Tests**: none (noted in `PENDING_BINDINGS`).
+
+### alg.CloserTiming ProgressReport
+
+- **Java**: `CloserTiming(BigProductAlgebra, ProgressReport)`; `incrementApps`
+  NPEs on a null report once past the 20_000_000-app timing threshold.
+- **Python**: `report` must be `None`; a live ProgressReport is out of scope.
+  A few `incrementApps` calls stay below the threshold and match Java.
+- **Status**: Wrapped for the null-report path used by scripts.
+- **Tests**: `ct_update_pass`, `ct_increment_next`, `ct_increment_apps`, `ct_null_alg`

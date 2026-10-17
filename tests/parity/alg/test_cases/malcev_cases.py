@@ -39,6 +39,24 @@ def _ints(v):
         if callable(fn):
             return [int(x) for x in fn()]
     return str(v)
+
+def _ias(lst):
+    if lst is None:
+        return None
+    return [_ints(x) for x in list(lst)]
+
+def _sets(lst):
+    if lst is None:
+        return None
+    return [sorted(int(x) for x in list(s)) for s in list(lst)]
+
+def _cyclic_gens(vals):
+    try:
+        from jarray import array
+        v = array(vals, 'i')
+    except ImportError:
+        v = vals
+    return _ias(Malcev.makeCyclicGens(v))
 """
 
 _BOOL = dict(skip_string_check=True, notes="Java str(true/false) vs Python str(True/False).")
@@ -378,5 +396,297 @@ TEST_CASES = [
         setup=_SETUP,
         call="Algebras.jonssonLevel(lat2)",
         description="Algebras.jonssonLevel delegates to Malcev",
+    ),
+    TestCaseSpec(
+        id="day_quad_c2_0100",
+        method="Malcev.dayQuadruple",
+        setup=_SETUP,
+        call="Malcev.dayQuadruple(0, 1, 0, 0, c2)",
+        description="dayQuadruple(0,1,0,0) on C2",
+        **_BOOL
+    ),
+    TestCaseSpec(
+        id="day_quad_c2_0101",
+        method="Malcev.dayQuadruple",
+        setup=_SETUP,
+        call="Malcev.dayQuadruple(0, 1, 0, 1, c2)",
+        description="dayQuadruple(0,1,0,1) on C2",
+        **_BOOL
+    ),
+    TestCaseSpec(
+        id="day_quad_lat2_0011",
+        method="Malcev.dayQuadruple",
+        setup=_SETUP,
+        call="Malcev.dayQuadruple(0, 0, 1, 1, lat2)",
+        description="dayQuadruple(0,0,1,1) on lat2",
+        **_BOOL
+    ),
+    TestCaseSpec(
+        id="day_quad_c3_0120",
+        method="Malcev.dayQuadruple",
+        setup=_SETUP,
+        call="Malcev.dayQuadruple(0, 1, 2, 0, c3)",
+        description="dayQuadruple(0,1,2,0) on C3",
+        **_BOOL
+    ),
+    TestCaseSpec(
+        id="day_quad_null_alg",
+        method="Malcev.dayQuadruple",
+        setup=_SETUP,
+        call="Malcev.dayQuadruple(0, 1, 0, 1, None)",
+        description="dayQuadruple with null algebra NPE",
+        expected_exception="NullPointerException",
+    ),
+    TestCaseSpec(
+        id="make_cyclic_gens_012",
+        method="Malcev.makeCyclicGens",
+        setup=_SETUP,
+        call="_cyclic_gens([0, 1, 2])",
+        description="makeCyclicGens of (0,1,2) including Java shared-array copies",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="make_cyclic_gens_01",
+        method="Malcev.makeCyclicGens",
+        setup=_SETUP,
+        call="_cyclic_gens([0, 1])",
+        description="makeCyclicGens of (0,1)",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="cm_for_idempotent_c2",
+        method="Malcev.congruenceModularForIdempotent",
+        setup=_SETUP,
+        call="Malcev.congruenceModularForIdempotent(c2, None)",
+        description="CM-for-idempotent on C2",
+        **_BOOL
+    ),
+    TestCaseSpec(
+        id="cm_for_idempotent_lat2",
+        method="Malcev.congruenceModularForIdempotent",
+        setup=_SETUP,
+        call="Malcev.congruenceModularForIdempotent(lat2, None)",
+        description="CM-for-idempotent on lat2",
+        **_BOOL
+    ),
+    TestCaseSpec(
+        id="cm_for_idempotent_c3",
+        method="Malcev.congruenceModularForIdempotent",
+        setup=_SETUP,
+        call="Malcev.congruenceModularForIdempotent(c3, None)",
+        description="CM-for-idempotent on C3",
+        **_BOOL
+    ),
+    TestCaseSpec(
+        id="type_set_idem_c2",
+        method="Malcev.typeSetIdempotent",
+        setup=_SETUP,
+        call="_sets(Malcev.typeSetIdempotent(c2, None))",
+        description="typeSetIdempotent bounds on C2",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="type_set_idem_lat2",
+        method="Malcev.typeSetIdempotent",
+        setup=_SETUP,
+        call="_sets(Malcev.typeSetIdempotent(lat2, None))",
+        description="typeSetIdempotent bounds on lat2",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="type_set_idem_c3",
+        method="Malcev.typeSetIdempotent",
+        setup=_SETUP,
+        call="_sets(Malcev.typeSetIdempotent(c3, None))",
+        description="typeSetIdempotent bounds on C3",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="omitted_ideal_c2",
+        method="Malcev.omittedIdealIdempotent",
+        setup=_SETUP,
+        call="sorted(int(x) for x in list(Malcev.omittedIdealIdempotent(c2, None)))",
+        description="omittedIdealIdempotent on C2",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="omitted_ideal_lat2",
+        method="Malcev.omittedIdealIdempotent",
+        setup=_SETUP,
+        call="sorted(int(x) for x in list(Malcev.omittedIdealIdempotent(lat2, None)))",
+        description="omittedIdealIdempotent on lat2",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="types_strict_simple_c2",
+        method="Malcev.typesInSofAStrictlySimpleIdempotent",
+        setup=_SETUP,
+        call="sorted(int(x) for x in list(Malcev.typesInSofAStrictlySimpleIdempotent(c2, set(), None)))",
+        description="types in strictly simple HS members of C2",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="types_in_s_c2",
+        method="Malcev.typesInSofAIdempotent",
+        setup=_SETUP,
+        call="sorted(int(x) for x in list(Malcev.typesInSofAIdempotent(c2, set(), None)))",
+        description="types in HS(C2) via meet-irredundant SI decomp",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="sd_idem_c2",
+        method="Malcev.sdIdempotent",
+        setup=_SETUP,
+        call="_ints(Malcev.sdIdempotent(c2, None))",
+        description="SD witness on C2",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="sd_idem_lat2",
+        method="Malcev.sdIdempotent",
+        setup=_SETUP,
+        call="_ints(Malcev.sdIdempotent(lat2, None))",
+        description="SD witness on lat2",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="cp_idem_c2",
+        method="Malcev.cpIdempotent",
+        setup=_SETUP,
+        call="_ints(Malcev.cpIdempotent(c2, None))",
+        description="CP witness on C2",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="cube_blocker_c2",
+        method="Malcev.cubeTermBlockerIdempotent",
+        setup=_SETUP,
+        call="Malcev.cubeTermBlockerIdempotent(c2, None) is None",
+        description="cube-term blocker search on C2 (group: none)",
+        **_BOOL
+    ),
+    TestCaseSpec(
+        id="cube_blocker_lat2",
+        method="Malcev.cubeTermBlockerIdempotent",
+        setup=_SETUP,
+        call="(lambda b: None if b is None else [sorted(int(x) for x in list(b[0])), sorted(int(x) for x in list(b[1]))])(Malcev.cubeTermBlockerIdempotent(lat2, None))",
+        description="cube-term blocker search on lat2",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="cube_blocker_op_c2",
+        method="Malcev.cubeTermBlockerIdempotent",
+        setup=_SETUP,
+        call="Malcev.cubeTermBlockerIdempotent(list(c2.operations())[0], c2.sub().sg([0]), c2.sub().sg([0, 1]))",
+        description="cube-term blocker of the C2 operation at C={0}, D=universe",
+    ),
+    TestCaseSpec(
+        id="sd_path_c2",
+        method="Malcev.sdPath",
+        setup=_SETUP + r"""
+from org.uacalc.alg import BigProductAlgebra, SubProductAlgebra
+from org.uacalc.util import IntArray
+bp3 = BigProductAlgebra(c2, 3)
+g0 = IntArray([0, 0, 0])
+g2 = IntArray([1, 1, 1])
+gmid = IntArray([0, 0, 1])
+sub = SubProductAlgebra("", bp3, [g0, g2, gmid])
+path_univ = list(sub.getUniverseList())
+""",
+        call="_ias(Malcev.sdPath(path_univ, g0, g2))",
+        description="sdPath on a tiny C2^3 subproduct",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="jonsson_level_path_xfail",
+        method="Malcev.jonssonLevelPath",
+        setup=_SETUP,
+        call="Malcev.jonssonLevelPath(None, None, None, False)",
+        description="jonssonLevelPath is a Java-internal helper",
+        xfail_reason=(
+            "jonssonLevelPath is a Java path-search helper used inside jonssonLevel; "
+            "CPython raises NotImplementedError (call jonssonLevel/jonssonTerms instead)"
+        ),
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="gumm_level_path_xfail",
+        method="Malcev.gummLevelPath",
+        setup=_SETUP,
+        call="Malcev.gummLevelPath(None, None, None, None)",
+        description="gummLevelPath is a Java-internal helper",
+        xfail_reason=(
+            "gummLevelPath is a Java path-search helper used inside gummTerms; "
+            "CPython raises NotImplementedError (call gummTerms instead)"
+        ),
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="hm_level_path_xfail",
+        method="Malcev.hagemannMitschkeLevelPath",
+        setup=_SETUP,
+        call="Malcev.hagemannMitschkeLevelPath(None, None, None)",
+        description="hagemannMitschkeLevelPath is a Java-internal helper",
+        xfail_reason=(
+            "hagemannMitschkeLevelPath is a Java path-search helper used inside "
+            "hagemannMitschkeTerms; CPython raises NotImplementedError"
+        ),
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="jonsson_level_aux_xfail",
+        method="Malcev.jonssonLevelAux",
+        setup=_SETUP,
+        call="Malcev.jonssonLevelAux(None, None, None)",
+        description="jonssonLevelAux is a Java-internal helper",
+        xfail_reason=(
+            "jonssonLevelAux is a Java path-search helper used inside jonssonLevel; "
+            "CPython raises NotImplementedError"
+        ),
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="nu_term_bad_xfail",
+        method="Malcev.nuTermIdempotent_Bad",
+        setup=_SETUP,
+        call="Malcev.nuTermIdempotent_Bad(c2, 3, None)",
+        description="nuTermIdempotent_Bad is Java's discarded Horowitz NU search",
+        xfail_reason=(
+            "nuTermIdempotent_Bad is Java's discarded Horowitz NU search; "
+            "CPython raises NotImplementedError (call nuTermIdempotent instead)"
+        ),
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="fixed_k_edge_idem_xfail",
+        method="Malcev.fixedKEdgeIdempotent",
+        setup=_SETUP,
+        call="Malcev.fixedKEdgeIdempotent(c2, 2, None)",
+        description="fixedKEdgeIdempotent is not bound",
+        xfail_reason=(
+            "fixedKEdgeIdempotent is not bound; use fixedKEdgeTerm / "
+            "isCongruenceModularIdempotent"
+        ),
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="fixed_k_perm_idem_xfail",
+        method="Malcev.fixedKPermIdempotent",
+        setup=_SETUP,
+        call="Malcev.fixedKPermIdempotent(c2, 2, None)",
+        description="fixedKPermIdempotent is not bound",
+        xfail_reason=(
+            "fixedKPermIdempotent is not bound; use hagemannMitschkeTerms"
+        ),
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="perm_level_idem_xfail",
+        method="Malcev.permLevelIdempotent",
+        setup=_SETUP,
+        call="Malcev.permLevelIdempotent(c2, None)",
+        description="permLevelIdempotent is not bound",
+        xfail_reason="permLevelIdempotent is not bound; use hagemannMitschkeTerms",
+        skip_string_check=True,
     ),
 ]

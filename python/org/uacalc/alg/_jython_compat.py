@@ -38,6 +38,12 @@ def _install(alg_module_globals: dict) -> None:
     _LibAbstractOperation = alg_module_globals.get("AbstractOperation")
     _LibHomomorphism = alg_module_globals.get("Homomorphism")
     _LibCloser = alg_module_globals.get("Closer")
+    _LibCloserTiming = alg_module_globals.get("CloserTiming")
+    _LibMaltsevProductDecomposition = alg_module_globals.get(
+        "MaltsevProductDecomposition"
+    )
+    _CON_ALGEBRAS: dict = {}
+    _MISSING = object()
     _LibAlgebraFromMinimalSets = alg_module_globals.get("AlgebraFromMinimalSets")
     _LibAlgebraWithGeneratingVector = alg_module_globals.get("AlgebraWithGeneratingVector")
     _LibGeneralAlgebra = alg_module_globals.get("GeneralAlgebra")
@@ -1583,16 +1589,11 @@ def _install(alg_module_globals: dict) -> None:
         def dayQuadruple(a: Any, b: Any, c: Any, d: Any, alg: Any) -> Any:
             if alg is None:
                 _raise_npe()
-            return bool(
-                _lib_call(
-                    _malcev_fn("day_quadruple"),
-                    int(a),
-                    int(b),
-                    int(c),
-                    int(d),
-                    alg,
-                )
-            )
+            con = alg.con()
+            cgcd = con.Cg(int(c), int(d))
+            cgab_cd = con.Cg(int(a), int(b)).join(cgcd)
+            cgac_bd = con.Cg(int(a), int(c)).join(con.Cg(int(b), int(d)))
+            return not cgcd.join(cgab_cd.meet(cgac_bd)).isRelated(int(a), int(b))
 
         @staticmethod
         def cyclicTermIdempotent(alg: Any, arity: Any, report: Any = None) -> Any:
@@ -1639,6 +1640,444 @@ def _install(alg_module_globals: dict) -> None:
                     int(arity),
                 )
             )
+
+        @staticmethod
+        def congruenceModularForIdempotent(alg: Any, report: Any = None) -> Any:
+            if alg is None:
+                _raise_npe()
+            _reject_progress_report(report, "congruenceModularForIdempotent")
+            return Malcev.findDayQuadrupleInSquare(alg, None) is None
+
+        @staticmethod
+        def makeCyclicGens(v: Any) -> Any:
+            if v is None:
+                _raise_npe()
+            from org.uacalc.util import IntArray
+
+            u = [int(x) for x in list(v)]
+            k = len(u)
+            ans = [IntArray(list(u))]
+            # Java adds inside the inner loop while sharing one backing array,
+            # so each shift contributes k copies of the fully filled vector.
+            for i in range(1, k):
+                w = [u[(j + i) % k] for j in range(k)]
+                for _ in range(k):
+                    ans.append(IntArray(list(w)))
+            return ans
+
+        @staticmethod
+        def typesInSofAStrictlySimpleIdempotent(
+            alg: Any, typesFound: Any, report: Any = None
+        ) -> Any:
+            if alg is None or typesFound is None:
+                _raise_npe()
+            _reject_progress_report(report, "typesInSofAStrictlySimpleIdempotent")
+            alg = _as_basic_algebra(alg)
+            n = int(alg.cardinality())
+            for a in range(n):
+                for b in range(a + 1, n):
+                    B = alg.sub().Sg([a, b])
+                    a_in_b = int(B.index(a))
+                    b_in_b = int(B.index(b))
+                    one = B.con().one()
+                    if not B.con().Cg(a_in_b, b_in_b).equals(one):
+                        continue
+                    if not B.con().joinIrreducible(one):
+                        continue
+                    typesFound.add(int(B.con().typeJI(one, None)))
+            return typesFound
+
+        @staticmethod
+        def typesInSofAIdempotent(alg: Any, typesFound: Any, report: Any = None) -> Any:
+            if alg is None or typesFound is None:
+                _raise_npe()
+            _reject_progress_report(report, "typesInSofAIdempotent")
+            from org.uacalc.alg import QuotientAlgebra
+
+            decomp = list(alg.con().irredundantMeetDecomposition())
+            for th in decomp:
+                Malcev.typesInSofAStrictlySimpleIdempotent(
+                    QuotientAlgebra(alg, th), typesFound, None
+                )
+            return typesFound
+
+        @staticmethod
+        def typesInSofAIRobustDecompdempotent(
+            alg: Any, typesFound: Any, report: Any = None
+        ) -> Any:
+            if alg is None or typesFound is None:
+                _raise_npe()
+            _reject_progress_report(report, "typesInSofAIRobustDecompdempotent")
+            if int(alg.cardinality()) == 1:
+                return typesFound
+            from org.uacalc.alg import MaltsevProductDecomposition
+
+            coatom = alg.con().findCoatomAbove(alg.con().zero())
+            decomp = MaltsevProductDecomposition(_as_basic_algebra(alg), coatom)
+            Malcev.typesInSofAStrictlySimpleIdempotent(
+                decomp.getQuotientAlgebra(), typesFound, None
+            )
+            for blk in decomp.getBlockAlgebras():
+                if int(blk.cardinality()) > 1:
+                    Malcev.typesInSofAIdempotent(blk, typesFound, None)
+            return typesFound
+
+        @staticmethod
+        def omittedIdealIdempotent(alg: Any, typesFound=None, report: Any = _MISSING) -> Any:
+            if alg is None:
+                _raise_npe()
+            # Java: (alg, report) vs (alg, typesFound, report).
+            if report is _MISSING:
+                report = typesFound
+                typesFound = None
+                _reject_progress_report(report, "omittedIdealIdempotent")
+                found = set()
+                Malcev.typesInSofAStrictlySimpleIdempotent(alg, found, None)
+                typesFound = found
+            else:
+                _reject_progress_report(report, "omittedIdealIdempotent")
+                if typesFound is None:
+                    _raise_npe()
+            ans = set()
+            if 1 not in typesFound:
+                ans.add(1)
+                if 2 not in typesFound:
+                    ans.add(2)
+                if 5 not in typesFound:
+                    ans.add(5)
+                    if 4 not in typesFound:
+                        ans.add(4)
+            return ans
+
+        @staticmethod
+        def typeSetIdempotent(alg: Any, report: Any = None) -> Any:
+            if alg is None:
+                _raise_npe()
+            _reject_progress_report(report, "typeSetIdempotent")
+            # Match Java including the types1.add(2) bug that aliases {1,2}.
+            types12 = set([1, 2])
+            types1 = set([1])
+            types2 = set()
+            types1.add(2)
+            types_of_a = set(int(x) for x in alg.con().typeSet())
+            if types_of_a == types1:
+                return [set(types1), set(types1)]
+            if types_of_a == types12:
+                return [set(types12), set(types12)]
+            types_found = set()
+            Malcev.typesInSofAIdempotent(alg, types_found, None)
+            if types_of_a == types2:
+                if 1 in types_found:
+                    return [set(types12), set(types12)]
+                return [set(types2), set(types2)]
+            possible = set([1, 2, 3, 4, 5])
+            types_found = set(types_found)
+            types_found.update(types_of_a)
+            ans = [types_found]
+            if 1 in types_found:
+                ans.append(possible)
+                return ans
+            possible.discard(1)
+            if 5 in types_found:
+                if 2 in types_found:
+                    ans.append(possible)
+                    return ans
+                possible.discard(2)
+                ans.append(possible)
+                return ans
+            possible.discard(5)
+            if 3 in types_found:
+                ans.append(set(types_found))
+                return ans
+            upper = set(types_found)
+            upper.add(3)
+            ans.append(upper)
+            return ans
+
+        @staticmethod
+        def cubeTermBlockerIdempotent(*args: Any) -> Any:
+            if not args:
+                raise TypeError("cubeTermBlockerIdempotent() takes at least 1 argument")
+            first = args[0]
+            tname = type(first).__name__ if first is not None else ""
+            if first is not None and (
+                "Algebra" in tname or hasattr(first, "cardinality")
+            ):
+                if len(args) == 2 or (len(args) == 3 and args[2] is None):
+                    alg, report = args[0], args[1] if len(args) > 1 else None
+                    _reject_progress_report(report, "cubeTermBlockerIdempotent")
+                    return _cube_term_blocker_alg(alg)
+                if len(args) >= 3:
+                    alg, C, D = args[0], args[1], args[2]
+                    if alg is None or C is None or D is None:
+                        _raise_npe()
+                    for op in alg.operations():
+                        if _cube_term_blocker_op(op, C, D) < 0:
+                            return False
+                    return True
+            if len(args) == 3:
+                op, C, D = args
+                if op is None or C is None or D is None:
+                    _raise_npe()
+                return _cube_term_blocker_op(op, C, D)
+            if len(args) == 4:
+                op, j, C, D = args
+                if op is None or C is None or D is None:
+                    _raise_npe()
+                return _cube_term_blocker_at(op, int(j), C, D)
+            raise TypeError("cubeTermBlockerIdempotent() argument mismatch")
+
+        @staticmethod
+        def sdIdempotent(alg: Any, report: Any = None) -> Any:
+            if alg is None:
+                _raise_npe()
+            _reject_progress_report(report, "sdIdempotent")
+            from org.uacalc.alg import BigProductAlgebra, SubProductAlgebra
+            from org.uacalc.util import IntArray
+
+            n = int(alg.cardinality())
+            sq = BigProductAlgebra(alg, 2)
+            a = IntArray(2)
+            b = IntArray(2)
+            c = IntArray(2)
+            gens = [a, b, c]
+            for x in range(n):
+                for y in range(n):
+                    if x == y:
+                        continue
+                    a.set(0, x)
+                    a.set(1, x)
+                    b.set(0, x)
+                    b.set(1, y)
+                    c.set(0, y)
+                    c.set(1, x)
+                    sub = SubProductAlgebra("", sq, gens)
+                    a_i = int(sub.elementIndex(a))
+                    b_i = int(sub.elementIndex(b))
+                    c_i = int(sub.elementIndex(c))
+                    alpha = sub.con().Cg(a_i, c_i)
+                    beta = sub.con().Cg(a_i, b_i)
+                    gamma = sub.con().Cg(b_i, c_i)
+                    if not alpha.meet(beta).join(gamma).isRelated(a_i, c_i):
+                        return IntArray([x, y])
+            return None
+
+        @staticmethod
+        def cpIdempotent(alg: Any, report: Any = None) -> Any:
+            if alg is None:
+                _raise_npe()
+            _reject_progress_report(report, "cpIdempotent")
+            from org.uacalc.alg import BigProductAlgebra, SubProductAlgebra
+            from org.uacalc.util import IntArray
+
+            n = int(alg.cardinality())
+            if n == 1:
+                return None
+            sq = BigProductAlgebra(alg, 2)
+            a = IntArray(2)
+            b = IntArray(2)
+            c = IntArray(2)
+            gens = [a, b, c]
+            for x0 in range(n):
+                for y0 in range(n):
+                    for x1 in range(n):
+                        for y1 in range(n):
+                            a.set(0, x0)
+                            a.set(1, y0)
+                            b.set(0, x0)
+                            b.set(1, y1)
+                            c.set(0, x1)
+                            c.set(1, y1)
+                            if a.equals(b) or a.equals(c) or b.equals(c):
+                                continue
+                            sub = SubProductAlgebra("", sq, gens)
+                            a_i = int(sub.elementIndex(a))
+                            b_i = int(sub.elementIndex(b))
+                            c_i = int(sub.elementIndex(c))
+                            alpha = sub.con().Cg(a_i, b_i)
+                            beta = sub.con().Cg(b_i, c_i)
+                            compose = getattr(alpha, "compose", None)
+                            related = compose(beta) if callable(compose) else None
+                            if related is None or not related.isRelated(c_i, a_i):
+                                return IntArray([x0, y0, x1, y1])
+            return None
+
+        @staticmethod
+        def sdPath(subalg: Any, g0: Any, g2: Any) -> Any:
+            if subalg is None or g0 is None or g2 is None:
+                _raise_npe()
+            from org.uacalc.util import IntArray
+
+            def _vals(ia: Any) -> list:
+                getter = getattr(ia, "getArray", None) or getattr(ia, "to_array", None)
+                if callable(getter):
+                    return [int(x) for x in getter()]
+                return [int(x) for x in list(ia)]
+
+            def _key(ia: Any):
+                return tuple(_vals(ia))
+
+            parent = {_key(g0): None}
+            current = [g0]
+            classes01 = {}
+            classes2 = {}
+            univ_fn = getattr(subalg, "getUniverseList", None) or getattr(
+                subalg, "get_universe_list", None
+            )
+            universe_elems = list(univ_fn()) if callable(univ_fn) else list(subalg)
+            for ia in universe_elems:
+                vals = _vals(ia)
+                k01 = (vals[0], vals[1])
+                classes01.setdefault(k01, []).append(ia)
+                classes2.setdefault(vals[2], []).append(ia)
+            even = False
+            first = True
+            while True:
+                even = not even
+                next_level = []
+                for ia in current:
+                    iv = _vals(ia)
+                    eqclass = (
+                        classes01.get((iv[0], iv[1]), [])
+                        if even
+                        else classes2.get(iv[2], [])
+                    )
+                    for ia2 in eqclass:
+                        k2 = _key(ia2)
+                        if k2 not in parent:
+                            parent[k2] = ia
+                            next_level.append(ia2)
+                        if _key(ia2) == _key(g2):
+                            path = [ia2]
+                            cur = parent.get(k2)
+                            while cur is not None:
+                                path.append(cur)
+                                ck = _key(cur)
+                                cur = parent.get(ck)
+                            path.reverse()
+                            return path
+                if not next_level:
+                    if not first:
+                        break
+                    first = False
+                    continue
+                first = False
+                current = next_level
+            return None
+
+        @staticmethod
+        def jonssonLevelPath(middleZero: Any, g0: Any, g2: Any, alvinVariant: Any = False) -> Any:
+            raise NotImplementedError(
+                "jonssonLevelPath is a Java path-search helper used inside "
+                "jonssonLevel; call jonssonLevel/jonssonTerms instead"
+            )
+
+        @staticmethod
+        def gummLevelPath(middleZero: Any, firstOne: Any, g0: Any, g2: Any) -> Any:
+            raise NotImplementedError(
+                "gummLevelPath is a Java path-search helper used inside gummTerms; "
+                "call gummTerms instead"
+            )
+
+        @staticmethod
+        def hagemannMitschkeLevelPath(sub: Any, g0: Any, g2: Any) -> Any:
+            raise NotImplementedError(
+                "hagemannMitschkeLevelPath is a Java path-search helper used inside "
+                "hagemannMitschkeTerms; call hagemannMitschkeTerms instead"
+            )
+
+        @staticmethod
+        def jonssonLevelAux(middleZero: Any, g0: Any, g2: Any) -> Any:
+            raise NotImplementedError(
+                "jonssonLevelAux is a Java path-search helper used inside "
+                "jonssonLevel; call jonssonLevel instead"
+            )
+
+        @staticmethod
+        def nuTermIdempotent_Bad(testalg: Any, arity: Any, report: Any = None) -> Any:
+            raise NotImplementedError(
+                "nuTermIdempotent_Bad is Java's discarded Horowitz NU search; "
+                "call nuTermIdempotent instead"
+            )
+
+        @staticmethod
+        def fixedKEdgeIdempotent(testalg: Any, level: Any, report: Any = None) -> Any:
+            raise NotImplementedError(
+                "fixedKEdgeIdempotent is not bound; use fixedKEdgeTerm / "
+                "isCongruenceModularIdempotent"
+            )
+
+        @staticmethod
+        def fixedKPermIdempotent(alg: Any, level: Any, report: Any = None) -> Any:
+            raise NotImplementedError(
+                "fixedKPermIdempotent is not bound; use hagemannMitschkeTerms / "
+                "permLevel via jonsson-level tests"
+            )
+
+        @staticmethod
+        def permLevelIdempotent(alg: Any, report: Any = None) -> Any:
+            raise NotImplementedError(
+                "permLevelIdempotent is not bound; use hagemannMitschkeTerms"
+            )
+
+    def _cube_term_blocker_alg(alg: Any) -> Any:
+        from org.uacalc.alg.sublat import BasicSet
+
+        if alg is None:
+            _raise_npe()
+        n = int(alg.cardinality())
+        for c in range(n):
+            S = set([c])
+            while len(S) < n:
+                ce = None
+                for e in range(n):
+                    if e not in S:
+                        ce2 = alg.sub().sg([c, e])
+                        if ce is None or ce2.leq(ce):
+                            ce = ce2
+                if ce is None:
+                    break
+                ce_arr = [int(x) for x in ce.getArray()]
+                intersection = [x for x in ce_arr if x in S]
+                C = BasicSet(intersection)
+                if Malcev.cubeTermBlockerIdempotent(alg, C, ce):
+                    return [C, ce]
+                for x in ce_arr:
+                    S.add(int(x))
+        return None
+
+    def _cube_term_blocker_op(op: Any, C: Any, D: Any) -> int:
+        arity = int(op.arity())
+        for j in range(arity):
+            if _cube_term_blocker_at(op, j, C, D):
+                return j
+        return -1
+
+    def _cube_term_blocker_at(op: Any, j: int, C: Any, D: Any) -> bool:
+        from org.uacalc.util import SequenceGenerator
+
+        arity = int(op.arity())
+        if arity < 2:
+            return True
+        c_size = int(C.universeSize())
+        d_size = int(D.universeSize())
+        if arity - 1 <= 0:
+            return True
+        arr = [0] * (arity - 1)
+        inc = SequenceGenerator.sequenceIncrementor(arr, d_size - 1)
+        while True:
+            args = [0] * arity
+            for k in range(j):
+                args[k] = int(D.get(arr[k]))
+            for k in range(j + 1, arity):
+                args[k] = int(D.get(arr[k - 1]))
+            for i in range(c_size):
+                args[j] = int(C.get(i))
+                if not C.contains(op.intValueAt(args)):
+                    return False
+            if not inc.increment():
+                break
+        return True
 
     def _raise_npe(what: str = "null") -> None:
         raise NullPointerException(what)
@@ -3049,16 +3488,238 @@ def _install(alg_module_globals: dict) -> None:
             _LibProductAlgebra.numberOfFactors = numberOfFactors
         except (TypeError, AttributeError):
             pass
+    class _BigProductOp(object):
+        """Product operation whose ``valueAt`` evaluates coordinate-wise."""
+
+        def __init__(self, prod: Any, index: int, name: str, arity: int) -> None:
+            self._prod = prod
+            self._index = int(index)
+            self._name = str(name)
+            self._arity = int(arity)
+
+        def arity(self) -> int:
+            return self._arity
+
+        def symbol(self) -> Any:
+            return OperationSymbol(self._name, self._arity)
+
+        def valueAt(self, args: Any) -> Any:
+            arrays = []
+            for a in args:
+                getter = getattr(a, "getArray", None) or getattr(a, "to_array", None)
+                if callable(getter):
+                    arrays.append([int(x) for x in getter()])
+                else:
+                    arrays.append([int(x) for x in list(a)])
+            return list(self._prod.value_at_arrays(self._index, arrays))
+
+    def operations(self: Any) -> Any:
+        meta = self.operations_meta()
+        return [
+            _BigProductOp(self, i, name, arity)
+            for i, (name, arity) in enumerate(meta)
+        ]
+
+    def getNumberOfFactors(self: Any) -> int:
+        return numberOfFactors(self)
+
+    def getPowers(self: Any) -> Any:
+        fn = getattr(self, "get_powers", None)
+        if not callable(fn):
+            return None
+        powers = [int(x) for x in list(fn())]
+        return None if not powers else powers
+
+    def isPower(self: Any) -> bool:
+        fn = getattr(self, "is_power", None)
+        if callable(fn):
+            return bool(fn())
+        powers = getPowers(self)
+        return powers is not None and len(powers) == 1
+
+    def rootFactors(self: Any) -> Any:
+        fn = getattr(self, "root_factors_or_none", None)
+        if callable(fn):
+            return fn()
+        fn2 = getattr(self, "root_factors", None)
+        return fn2() if callable(fn2) else None
+
+    def sizeMultiplicities(self: Any) -> Any:
+        fn = getattr(self, "size_multiplicities", None)
+        if not callable(fn):
+            return None
+        raw = fn()
+        if raw is None:
+            return None
+        if hasattr(raw, "items"):
+            return {int(k): int(v) for k, v in raw.items()}
+        return dict(raw)
+
+    def getConstants(self: Any) -> Any:
+        fn = getattr(self, "get_constants", None)
+        if not callable(fn):
+            return []
+        return list(fn())
+
+    def getConstantSymbol(self: Any, constant: Any) -> Any:
+        fn = getattr(self, "get_constant_symbol", None)
+        if constant is None or not callable(fn):
+            return None
+        return fn(_int_array(constant))
+
+    def getConstantTerm(self: Any, constant: Any) -> Any:
+        fn = getattr(self, "get_constant_term", None)
+        if constant is None or not callable(fn):
+            return None
+        return fn(_int_array(constant))
+
+    def bigProductSgClose(self: Any, elems: Any, *rest: Any) -> Any:
+        if elems is None:
+            _raise_npe()
+        ias = [_int_array(e) for e in list(elems)]
+        if rest:
+            elt = rest[-1] if rest[-1] is None or _is_int_array(rest[-1]) else None
+            fn = getattr(self, "sg_close_with_elt", None)
+            if callable(fn):
+                return list(fn(ias, elt))
+        fn = getattr(self, "sg_close", None)
+        if callable(fn):
+            return list(fn(ias))
+        return []
+
+    def getBlockAlgebras(self: Any) -> Any:
+        fn = getattr(self, "get_block_algebras", None)
+        return list(fn()) if callable(fn) else []
+
+    def getQuotientAlgebra(self: Any) -> Any:
+        fn = getattr(self, "get_quotient_algebra", None)
+        return fn() if callable(fn) else None
+
+    def updatePass(self: Any, size: Any) -> None:
+        self.update_pass(int(size))
+
+    def incrementApps(self: Any) -> None:
+        self.increment_apps()
+
+    def incrementNextPassSize(self: Any) -> None:
+        self.increment_next_pass_size()
+
     if _LibBigProductAlgebra is not None:
         for camel, impl in (
             ("numberOfFactors", numberOfFactors),
-            ("getNumberOfFactors", numberOfFactors),
+            ("getNumberOfFactors", getNumberOfFactors),
+            ("operations", operations),
+            ("getPowers", getPowers),
+            ("isPower", isPower),
+            ("rootFactors", rootFactors),
+            ("sizeMultiplicities", sizeMultiplicities),
+            ("getConstants", getConstants),
+            ("getConstantSymbol", getConstantSymbol),
+            ("getConstantTerm", getConstantTerm),
+            ("sgClose", bigProductSgClose),
+            ("projectionKernel", projectionKernel),
+            ("makeOperationTables", makeOperationTables),
+            ("getName", getName),
         ):
-            if not hasattr(_LibBigProductAlgebra, camel):
-                try:
-                    setattr(_LibBigProductAlgebra, camel, impl)
-                except (TypeError, AttributeError):
-                    pass
+            _bind(_LibBigProductAlgebra, camel, impl)
+
+    if _LibMaltsevProductDecomposition is not None:
+        for camel, impl in (
+            ("getBlockAlgebras", getBlockAlgebras),
+            ("getQuotientAlgebra", getQuotientAlgebra),
+            ("getCongruence", lambda self: self.get_congruence()),
+        ):
+            _bind(_LibMaltsevProductDecomposition, camel, impl)
+
+    if _LibCloserTiming is not None:
+        for camel, impl in (
+            ("updatePass", updatePass),
+            ("incrementApps", incrementApps),
+            ("incrementNextPassSize", incrementNextPassSize),
+        ):
+            _bind(_LibCloserTiming, camel, impl)
+
+    class _CloserTimingMeta(type):
+        def __instancecheck__(cls, instance: Any) -> bool:
+            return _LibCloserTiming is not None and isinstance(
+                instance, _LibCloserTiming
+            )
+
+    class CloserTiming(object, metaclass=_CloserTimingMeta):
+        """Java ``CloserTiming(BigProductAlgebra, ProgressReport)``."""
+
+        def __new__(cls, algebra: Any, report: Any = None) -> Any:
+            if algebra is None:
+                _raise_npe(
+                    'Cannot invoke "org.uacalc.alg.BigProductAlgebra.getNumberOfFactors()" '
+                    'because "algebra" is null'
+                )
+            if report is not None:
+                raise TypeError(
+                    "CloserTiming(): expected org.uacalc.ui.tm.ProgressReport or None"
+                )
+            if _LibCloserTiming is None:
+                raise TypeError("CloserTiming is not bound")
+            return _LibCloserTiming(algebra)
+
+        def updatePass(self, size: Any) -> None:
+            updatePass(self, size)
+
+        def incrementApps(self) -> None:
+            incrementApps(self)
+
+        def incrementNextPassSize(self) -> None:
+            incrementNextPassSize(self)
+
+    def _stash_con_result(alg: Any, lat: Any) -> Any:
+        if lat is None:
+            return lat
+        _CON_ALGEBRAS[id(lat)] = alg
+        try:
+            from org.uacalc.alg import conlat as _conlat_mod
+
+            store = getattr(_conlat_mod, "_CL_ALGEBRAS", None)
+            if isinstance(store, dict):
+                store[id(lat)] = alg
+        except Exception:
+            pass
+        try:
+            object.__setattr__(lat, "_uacalc_algebra", alg)
+        except Exception:
+            try:
+                lat._uacalc_algebra = alg
+            except Exception:
+                pass
+        return lat
+
+    def _wrap_con_stash(cls: Any) -> None:
+        if cls is None:
+            return
+        orig = getattr(cls, "con", None)
+        if orig is None or getattr(orig, "_stashes_algebra", False):
+            return
+
+        def con(self: Any, _orig: Any = orig) -> Any:
+            return _stash_con_result(self, _orig(self))
+
+        con._stashes_algebra = True  # type: ignore[attr-defined]
+        _bind(cls, "con", con)
+
+    for _cls in (
+        _LibBasicAlgebra,
+        _LibFreeAlgebra,
+        _LibProductAlgebra,
+        _LibPowerAlgebra,
+        _LibQuotientAlgebra,
+        _LibSubalgebra,
+        _LibReductAlgebra,
+        _LibPolinLikeAlgebra,
+        _LibSubProductAlgebra,
+        _LibMatrixPowerAlgebra,
+        _LibAlgebraFromMinimalSets,
+        _LibUnaryTermsMonoid,
+    ):
+        _wrap_con_stash(_cls)
 
     if not hasattr(_LibSubalgebraLattice, "iterator"):
         try:
@@ -3229,6 +3890,9 @@ def _install(alg_module_globals: dict) -> None:
     alg_module_globals["QuotientAlgebra"] = QuotientAlgebra
     alg_module_globals["SubProductAlgebra"] = SubProductAlgebra
     alg_module_globals["BigProductAlgebra"] = BigProductAlgebra
+    alg_module_globals["CloserTiming"] = CloserTiming
+    alg_module_globals["_LibCloserTiming"] = _LibCloserTiming
+    alg_module_globals["_CON_ALGEBRAS"] = _CON_ALGEBRAS
     if _LibReductAlgebra is not None:
         alg_module_globals["ReductAlgebra"] = ReductAlgebra
         alg_module_globals["_LibReductAlgebra"] = _LibReductAlgebra
@@ -3498,9 +4162,32 @@ def _install(alg_module_globals: dict) -> None:
         },
         "BigProductAlgebra": {
             "numberOfFactors": "number_of_factors",
-            "getNumberOfFactors": "number_of_factors",
-            "getPowers": "get_powers",
-            "rootFactors": "root_factors",
+            "getNumberOfFactors": "getNumberOfFactors",
+            "getPowers": "getPowers",
+            "isPower": "isPower",
+            "rootFactors": "rootFactors",
+            "sizeMultiplicities": "sizeMultiplicities",
+            "getConstants": "getConstants",
+            "getConstantSymbol": "getConstantSymbol",
+            "getConstantTerm": "getConstantTerm",
+            "sgClose": "sgClose",
+            "operations": "operations",
+            "projectionKernel": "projectionKernel",
+            "makeOperationTables": "makeOperationTables",
+            "getName": "getName",
+            "cardinality": "cardinality",
+            "factors": "factors",
+            "projection": "projection",
+        },
+        "CloserTiming": {
+            "updatePass": "updatePass",
+            "incrementApps": "incrementApps",
+            "incrementNextPassSize": "incrementNextPassSize",
+        },
+        "MaltsevProductDecomposition": {
+            "getBlockAlgebras": "getBlockAlgebras",
+            "getQuotientAlgebra": "getQuotientAlgebra",
+            "getCongruence": "getCongruence",
         },
         "ReductAlgebra": {
             "getName": "name",
@@ -3632,6 +4319,8 @@ def _install(alg_module_globals: dict) -> None:
                 "QuotientElement": _LibQuotientElement,
                 "SubProductAlgebra": _LibSubProductAlgebra,
                 "BigProductAlgebra": _LibBigProductAlgebra,
+                "CloserTiming": _LibCloserTiming,
+                "MaltsevProductDecomposition": _LibMaltsevProductDecomposition,
                 "SubalgebraLattice": _LibSubalgebraLattice,
                 "ReductAlgebra": _LibReductAlgebra,
                 "Subalgebra": _LibSubalgebra,
