@@ -41,10 +41,6 @@ where
 }
 
 /// Java `new FreeAlgebra(alg, n, report)` sets thinGens=true and decompose=true.
-/// Rust SI-decompose currently feeds out-of-range operation arguments (pointer-
-/// sized junk) and yields a wrong F(n) even on SI algebras (C2 with no Malcev
-/// term, lat2 majority `join(x,x)`). For SI algebras the decomposed product is
-/// the original algebra, so skip decompose/thin and keep the working universe.
 fn free_algebra_with_report(alg: BasicAlgebra<i32>, n: i32) -> Result<FreeAlgebra, String> {
     let name = format!("F({}) over {}", n, alg.name());
     FreeAlgebra::new_with_decompose_safe(
@@ -52,8 +48,8 @@ fn free_algebra_with_report(alg: BasicAlgebra<i32>, n: i32) -> Result<FreeAlgebr
         Box::new(alg),
         n,
         true,
-        false,
-        false,
+        true,
+        true,
         None,
         None,
     )
@@ -1840,7 +1836,7 @@ where
     
     // Filter to univX: for idempotent, all elements; for non-idempotent, elements with last coordinate = 0
     use crate::util::int_array::IntArrayTrait;
-    let univ_x: Vec<IntArray> = if is_idempotent {
+    let mut univ_x: Vec<IntArray> = if is_idempotent {
         closure.iter().cloned().collect()
     } else {
         closure.iter()
@@ -1848,7 +1844,10 @@ where
             .cloned()
             .collect()
     };
-    
+    // Closer insertion order follows HashMap operation walks. Sort so last-write
+    // map entries and the first weak-NU witness are independent of that order.
+    univ_x.sort_by(IntArray::lexicographic_comparator());
+
     // Build maps for patterns. Java uses HashMap and iterates keySet() — that
     // order is not specified. Use BTreeMap so candidate selection is
     // deterministic (natural integer order, as a TreeMap would give).
@@ -1867,19 +1866,13 @@ where
                     let auto_v0 = auto.int_value_at_horner(v0)?;
                     if v0 == auto_v0 {
                         // Found a weak NU term with s(x,x,y) = s(y,y,x)
-                        // Only return if term exists
-                        // Note: We filter to only process elements with terms, so this should always succeed
-                        // But we double-check to be safe and match Java's behavior (Java assumes term exists)
                         if let Some(term) = term_map_ref.get(ia).map(|t| t.clone_box()) {
                             let mut ans: Vec<Box<dyn Term>> = Vec::new();
                             ans.push(term);
                             return Ok(Some(ans));
                         }
-                        // If term doesn't exist (shouldn't happen since we filtered), continue
-                        continue;
                     }
                 }
-                // Only add to aaa_map if element has a term
                 aaa_map.insert(v0, ia.clone());
             }
             
@@ -4068,138 +4061,78 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "Flaky Malcev sd_meet_terms Rust vs Java mismatch on z3; deferred until the suite is reliable"]
     fn test_sd_meet_terms_with_z3_java_comparison() {
-        // Test sd_meet_terms with z3.ua comparing Rust vs Java
-        // Intermittent: Java HashMap iteration can change which terms are found.
-        use crate::common::{TestConfig, compare_with_java, run_java_cli_with_timeout, compare_outputs, JavaCliOutput};
-        use crate::alg::Algebra;
+        // Deterministic presence/count comparison with Java. Witness term
+        // strings can still differ because Java iterates HashMap.keySet().
+        use crate::common::{TestConfig, run_java_cli_with_timeout};
         use serde_json::json;
-        
+
         let config = TestConfig::default();
         let algebra_path = "resources/algebras/z3.ua";
-        
+
         if !std::path::Path::new(algebra_path).exists() {
             println!("Skipping test - z3.ua not found");
             return;
         }
-        
-        // Load algebra
+
         let reader = AlgebraReader::new_from_path(algebra_path).expect("Failed to read algebra");
         let alg = reader.read_algebra_file().expect("Failed to parse algebra");
-        
-        // Test with retry logic to handle non-determinism in Java's closure computation
-        // Java's HashMap iteration order can cause sporadic differences in which terms are found
-        // Each Java process is fresh, but HashMap iteration order can vary between runs
-        
-        let mut last_error = None;
-        let mut last_java_output: Option<JavaCliOutput> = None;
-        // Retry up to 5 times to handle non-determinism in Java's closure computation
-        // Java's HashMap iteration order can vary between runs, causing sporadic differences
-        for attempt in 0..5 {
-            // Run Java CLI
-            let java_output = match run_java_cli_with_timeout(
-                "java_wrapper.src.alg.MalcevWrapper",
-                &["sd_meet_terms", "--algebra", algebra_path],
-                &config,
-                config.default_timeout,
-            ) {
-                Ok(output) => {
-                    last_java_output = Some(output.clone());
-                    output
-                },
-                Err(e) => {
-                    last_error = Some(format!("Java CLI execution failed: {:?}", e));
-                    if attempt < 4 {
-                        continue; // Retry
-                    }
-                    panic!("Java CLI execution failed after 5 attempts: {:?}", last_error);
-                }
-            };
-            
-            // Run Rust function
-            let result = sd_meet_terms(&alg);
-            let rust_json = match result {
-                Ok(Some(terms)) => {
-                    let term_strings: Vec<String> = terms.iter().map(|t| format!("{}", t)).collect();
-                    serde_json::to_string_pretty(&json!({
-                        "command": "sd_meet_terms",
-                        "algebra": alg.name(),
-                        "terms_found": true,
-                        "terms": term_strings,
-                        "num_terms": terms.len()
-                    })).expect("Failed to serialize Rust result")
-                },
-                Ok(None) => {
-                    serde_json::to_string_pretty(&json!({
-                        "command": "sd_meet_terms",
-                        "algebra": alg.name(),
-                        "terms_found": false
-                    })).expect("Failed to serialize Rust result")
-                },
-                Err(e) => {
-                    serde_json::to_string_pretty(&json!({
-                        "command": "sd_meet_terms",
-                        "algebra": alg.name(),
-                        "error": e.to_string()
-                    })).expect("Failed to serialize Rust result")
-                }
-            };
-            
-            // Compare outputs
-            match compare_outputs(&rust_json, &java_output, None) {
-                Ok(_) => return, // Success!
-                Err(e) => {
-                    last_error = Some(format!("{:?}", e));
-                    if attempt < 4 {
-                        // Retry on mismatch (may be due to non-determinism in Java's closure computation)
-                        continue;
-                    }
-                }
+
+        let rust_keys: Vec<String> = (0..8)
+            .map(|_| terms_key(&sd_meet_terms(&alg).expect("sd_meet_terms")))
+            .collect();
+        assert!(
+            rust_keys.iter().all(|s| s == &rust_keys[0]),
+            "sd_meet_terms on z3 is non-deterministic: {rust_keys:?}"
+        );
+
+        let rust_result = sd_meet_terms(&alg).expect("sd_meet_terms");
+        let (rust_found, rust_n) = match &rust_result {
+            Some(terms) => (true, terms.len()),
+            None => (false, 0),
+        };
+
+        let java_output = run_java_cli_with_timeout(
+            "java_wrapper.src.alg.MalcevWrapper",
+            &["sd_meet_terms", "--algebra", algebra_path],
+            &config,
+            config.default_timeout,
+        )
+        .expect("Java CLI execution failed");
+
+        let java_json_str = java_output.stdout.trim();
+        let java_json_start = java_json_str.find('{').unwrap_or(0);
+        let java_json_str = &java_json_str[java_json_start..];
+        let java_wrapper_json: serde_json::Value =
+            serde_json::from_str(java_json_str).unwrap_or_else(|_| json!({}));
+        let java_json = if let Some(data) = java_wrapper_json.get("data") {
+            if let Some(data_str) = data.as_str() {
+                serde_json::from_str(data_str).unwrap_or_else(|_| data.clone())
+            } else {
+                data.clone()
             }
-        }
-        
-        // If all retries failed, check if it's a case where Rust found terms but Java didn't
-        // This is a known limitation due to non-determinism in Java's HashMap iteration order
-        // in closure computation, which can cause Java to miss terms that Rust finds
-        if let Some(e) = last_error {
-            // Parse the results to check if Rust found terms but Java didn't
-            let rust_result = sd_meet_terms(&alg);
-            let rust_found_terms = matches!(rust_result, Ok(Some(_)));
-            
-            // Try to parse Java output to see if it found terms
-            if let Some(ref java_output) = last_java_output {
-                // Extract JSON from Java output (handles wrapper format with "data" field)
-                let java_json_str = java_output.stdout.trim();
-                let java_json_start = java_json_str.find('{').unwrap_or(0);
-                let java_json_str = &java_json_str[java_json_start..];
-                let java_wrapper_json: serde_json::Value = serde_json::from_str(java_json_str)
-                    .unwrap_or_else(|_| json!({}));
-                
-                // Extract the "data" field if it exists
-                let java_json = if let Some(data) = java_wrapper_json.get("data") {
-                    if let Some(data_str) = data.as_str() {
-                        serde_json::from_str(data_str).unwrap_or_else(|_| data.clone())
-                    } else {
-                        data.clone()
-                    }
-                } else {
-                    java_wrapper_json
-                };
-                let java_found_terms = java_json.get("terms_found")
-                    .and_then(|v| v.as_bool())
-                    .unwrap_or(false);
-                
-                // If Rust found terms but Java didn't, this is a known limitation due to non-determinism
-                // We'll accept this as a pass since the Rust implementation is correct
-                if rust_found_terms && !java_found_terms {
-                    eprintln!("WARNING: Rust found SD-meet terms but Java did not (known limitation due to non-determinism in Java's closure computation)");
-                    return; // Accept as pass
-                }
-            }
-            
-            // Otherwise, fail the test
-            panic!("Rust and Java outputs do not match after 5 attempts: {}", e);
+        } else {
+            java_wrapper_json
+        };
+        let java_found = java_json
+            .get("terms_found")
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false);
+        let java_n = java_json
+            .get("num_terms")
+            .and_then(|v| v.as_u64())
+            .unwrap_or(0) as usize;
+
+        assert_eq!(
+            rust_found, java_found,
+            "sd_meet_terms(z3) terms_found Rust={rust_found} Java={java_found}; rust={:?} java={java_json}",
+            rust_keys[0]
+        );
+        if rust_found {
+            assert_eq!(
+                rust_n, java_n,
+                "sd_meet_terms(z3) term count Rust={rust_n} Java={java_n}"
+            );
         }
     }
 
@@ -4350,12 +4283,11 @@ mod tests {
 
     #[test]
     fn test_malcev_terms_are_deterministic() {
-        // z3 is omitted: sd_meet_terms still intermittently returns None
-        // (Java HashMap candidate order / remaining closer term-map gaps).
         let paths = [
             "resources/algebras/cyclic2.ua",
             "resources/algebras/cyclic3.ua",
             "resources/algebras/lat2.ua",
+            "resources/algebras/z3.ua",
         ];
         for path in paths {
             if !Path::new(path).exists() {

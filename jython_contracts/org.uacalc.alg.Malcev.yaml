@@ -7,9 +7,9 @@ notes: |
   accept None; non-None is TypeError. TCT type-set helpers, cube-term blockers,
   path internals (sdPath, jonssonLevelPath, …), nuTermIdempotent_Bad, main,
   and other unwrapped Java methods stay off this surface. Term-finding uses
-  Java's F(n) name but skips SI decompose: Rust decompose currently writes
-  out-of-range operation arguments. For SI algebras that matches Java's
-  report constructor.
+  Java's F(n) name with thinGens/decompose like `new FreeAlgebra(alg, n, report)`.
+  gummTerms(lat2) and primalityTerms(c2, None) are known Java NPEs (null
+  ProgressReport.addStartLine) and stay strict xfails.
 ignore_reason: null
 surface:
   package_export: true

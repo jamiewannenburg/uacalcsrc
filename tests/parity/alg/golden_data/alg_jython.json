@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "generated_at": "2026-10-16T22:50:59.701054+00:00",
+    "generated_at": "2026-10-17T01:23:56.094725+00:00",
     "jar": "uacalc.jar",
     "package": "org.uacalc.alg",
     "runtime": "jython",
-    "test_cases": 393,
+    "test_cases": 397,
     "type": "package"
   },
   "test_cases": [
@@ -10263,6 +10263,462 @@
         "success": true
       },
       "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    ProductAlgebra, PowerAlgebra, QuotientAlgebra, Subalgebra,\n    SubProductAlgebra, BigProductAlgebra, SmallAlgebra,\n)\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.util import IntArray\nfrom org.uacalc.alg.conlat import Partition\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nplus = OperationSymbol(\"+\", 2)\nprod = ProductAlgebra(\"C2xC2\", [c2, c2])\nprod_list = ProductAlgebra([c2, c2])\npwr = PowerAlgebra(\"C2^2\", c2, 2)\npwr_unnamed = PowerAlgebra(c2, 2)\ns0 = Subalgebra(\"S0\", c2, [0])\nfull = Subalgebra(c2, [0, 1])\ncong = c2.con().Cg(0, 1)\nzero_cong = c2.con().zero()\nq = QuotientAlgebra(\"Q\", c2, cong)\nq_unnamed = QuotientAlgebra(c2, cong)\nq_zero = QuotientAlgebra(\"Qz\", c2, zero_cong)\nbp = BigProductAlgebra(c2, 2)\nsp = SubProductAlgebra(\"SP\", bp, [IntArray([0, 0]), IntArray([1, 1])])\n\ndef _tbl(alg):\n    op = alg.getOperation(plus)\n    n = int(alg.cardinality())\n    return [int(op.intValueAt([i, j])) for i in range(n) for j in range(n)]\n\ndef _elems(alg):\n    n = int(alg.cardinality())\n    out = []\n    for i in range(n):\n        el = alg.getElement(i)\n        try:\n            out.append([int(x) for x in list(el)])\n        except TypeError:\n            out.append(el if not hasattr(el, \"toString\") else str(el))\n    return out\n\nimport os, tempfile\nfd, path = tempfile.mkstemp(suffix=\".ua\")\nos.close(fd)\nAlgebraIO.writeAlgebraFile(sp, path)\nread = AlgebraIO.readAlgebraFile(path)\nos.unlink(path)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_fa_snap_report(c2, 2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "F(2) over cyclic2 with Java report constructor (decompose=true)",
+      "expected_exception": null,
+      "id": "fa_decompose_c2_f2",
+      "kwargs": {},
+      "method": "FreeAlgebra.cardinality",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          4,
+          [
+            [
+              0,
+              1,
+              1
+            ],
+            [
+              1,
+              0,
+              1
+            ]
+          ],
+          [
+            [
+              0,
+              1,
+              1
+            ],
+            [
+              1,
+              0,
+              1
+            ],
+            [
+              0,
+              0,
+              0
+            ],
+            [
+              1,
+              1,
+              0
+            ]
+          ],
+          [
+            "x",
+            "y",
+            "+(x,x)",
+            "+(x,y)"
+          ],
+          [
+            [
+              "+",
+              2,
+              [
+                2,
+                3,
+                0,
+                1,
+                3,
+                2,
+                1,
+                0,
+                0,
+                1,
+                2,
+                3,
+                1,
+                0,
+                3,
+                2
+              ]
+            ]
+          ]
+        ],
+        "string_repr": "[4, [[0, 1, 1], [1, 0, 1]], [[0, 1, 1], [1, 0, 1], [0, 0, 0], [1, 1, 0]], ['x', 'y', '+(x,x)', '+(x,y)'], [['+', 2, [2, 3, 0, 1, 3, 2, 1, 0, 0, 1, 2, 3, 1, 0, 3, 2]]]]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    FreeAlgebra, Homomorphism, Closer, Algebras,\n    BigProductAlgebra, ProductAlgebra, SmallAlgebra,\n)\nfrom org.uacalc.alg.op import OperationSymbol, Operations, SimilarityType\nfrom org.uacalc.util import IntArray\nfrom org.uacalc.alg.conlat import Partition\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nplus = OperationSymbol(\"+\", 2)\nf1 = FreeAlgebra(c2, 1)\nf1.setName(\"F1\")\nf1thin = FreeAlgebra(c2, 1, True, True)\nf1thin.setName(\"F1thin\")\nfnamed = FreeAlgebra(\"NamedF\", c2, 1)\nbp = BigProductAlgebra(c2, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\ng10 = IntArray([1, 0])\ncloser = Closer(bp, [g00, g11])\ncloser_tm = Closer(bp, [g00, g11], True)\nid_map = {0: 0, 1: 1}\nh = Homomorphism(c2, c2, id_map)\nconst0 = Homomorphism(c2, c2, {0: 0, 1: 0})\nid1 = Operations.makeIntOperation(OperationSymbol(\"id\", 1), 2, [0, 1])\nswap1 = Operations.makeIntOperation(OperationSymbol(\"swap\", 1), 2, [1, 0])\nzero_p = c2.con().zero()\none_p = c2.con().one()\n\ndef _coords(elem):\n    if elem is None:\n        return None\n    try:\n        return [int(x) for x in list(elem)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(elem, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(elem)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_coords(x) for x in list(lst)]\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [str(t).replace(\" \", \"\") for t in list(lst)]\n\ndef _tbl(alg):\n    op = alg.getOperation(plus)\n    n = int(alg.cardinality())\n    return [int(op.intValueAt([i, j])) for i in range(n) for j in range(n)]\n\ndef _tm(m):\n    if m is None:\n        return None\n    items = []\n    for k in m:\n        items.append([_coords(k), str(m[k]).replace(\" \", \"\")])\n    items.sort(key=lambda row: (row[0], row[1]))\n    return items\n\ndef _hmap(m):\n    if m is None:\n        return None\n    items = []\n    for k in m:\n        items.append([int(k), int(m[k])])\n    items.sort()\n    return items\n\ndef _homo_img(m):\n    if m is None:\n        return None\n    items = []\n    for k in m:\n        items.append([_coords(k), int(m[k])])\n    items.sort(key=lambda row: (row[0], row[1]))\n    return items\n\ndef _op_vals(op):\n    if op is None:\n        return None\n    n = int(op.getSetSize()) if hasattr(op, \"getSetSize\") else int(op.get_set_size())\n    return [int(op.intValueAt([i])) for i in range(n)]\n\ndef _varmap(alg):\n    m = alg.getVariableToGeneratorMap()\n    if m is None:\n        return None\n    items = []\n    iterable = m.entrySet() if hasattr(m, \"entrySet\") else (m.items() if hasattr(m, \"items\") else None)\n    if iterable is not None:\n        for item in iterable:\n            if hasattr(item, \"getKey\"):\n                k, v = item.getKey(), item.getValue()\n            else:\n                k, v = item\n            items.append([str(k).replace(\" \", \"\"), _coords(v)])\n    else:\n        for k in m:\n            items.append([str(k).replace(\" \", \"\"), _coords(m[k])])\n    items.sort()\n    return items\n\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\n\ndef _symname(op):\n    sym = None\n    if hasattr(op, \"symbol\"):\n        try:\n            sym = op.symbol() if callable(op.symbol) else op.symbol\n        except Exception:\n            sym = None\n    if sym is None:\n        return \"\"\n    getter = getattr(sym, \"name\", None) or getattr(sym, \"getName\", None)\n    if callable(getter):\n        return str(getter())\n    return str(sym)\n\ndef _op_table_any(op, n):\n    ar = int(op.arity())\n    iva = op.intValueAt\n    if ar == 0:\n        return [int(iva([]))]\n    if ar == 1:\n        return [int(iva([i])) for i in range(n)]\n    if ar == 2:\n        return [int(iva([i, j])) for i in range(n) for j in range(n)]\n    return []\n\ndef _fa_snap(base, n):\n    f = FreeAlgebra(base, n)\n    card = int(f.cardinality())\n    ops = []\n    for op in list(f.operations()):\n        ops.append([_symname(op), int(op.arity()), _op_table_any(op, card)])\n    ops.sort()\n    return [card, _ias(f.generators()), _ias(f.getUniverseList()), _terms(f.getTerms()), ops]\n\ndef _fa_snap_report(base, n):\n    # Java FreeAlgebra(alg, n, report=null): thinGens=true, decompose=true.\n    f = FreeAlgebra(base, n, None)\n    card = int(f.cardinality())\n    ops = []\n    for op in list(f.operations()):\n        ops.append([_symname(op), int(op.arity()), _op_table_any(op, card)])\n    ops.sort()\n    return [card, _ias(f.generators()), _ias(f.getUniverseList()), _terms(f.getTerms()), ops]\n\ndef _fa_roundtrip(base, n):\n    import os, tempfile\n    f = FreeAlgebra(base, n)\n    live = _fa_snap(base, n)\n    fd, path = tempfile.mkstemp(suffix=\".ua\")\n    os.close(fd)\n    AlgebraIO.writeAlgebraFile(f, path)\n    read = AlgebraIO.readAlgebraFile(path)\n    os.unlink(path)\n    card = int(read.cardinality())\n    ops = []\n    for op in list(read.operations()):\n        ops.append([_symname(op), int(op.arity()), _op_table_any(op, card)])\n    ops.sort()\n    return [live, [card, ops]]\n\ndef _qcc(path):\n    a = AlgebraIO.readAlgebraFile(path)\n    return sorted([str(p) for p in Algebras.quasiCriticalCongruences(a, None)])\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_fa_snap_report(lat2, 2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "F(2) over lat2 with Java report constructor (decompose=true)",
+      "expected_exception": null,
+      "id": "fa_decompose_lat2_f2",
+      "kwargs": {},
+      "method": "FreeAlgebra.cardinality",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          4,
+          [
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              0
+            ]
+          ],
+          [
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              0
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              0,
+              0
+            ]
+          ],
+          [
+            "x",
+            "y",
+            "join(x,y)",
+            "meet(x,y)"
+          ],
+          [
+            [
+              "join",
+              2,
+              [
+                0,
+                2,
+                2,
+                0,
+                2,
+                1,
+                2,
+                1,
+                2,
+                2,
+                2,
+                2,
+                0,
+                1,
+                2,
+                3
+              ]
+            ],
+            [
+              "meet",
+              2,
+              [
+                0,
+                3,
+                0,
+                3,
+                3,
+                1,
+                1,
+                3,
+                0,
+                1,
+                2,
+                3,
+                3,
+                3,
+                3,
+                3
+              ]
+            ]
+          ]
+        ],
+        "string_repr": "[4, [[0, 1], [1, 0]], [[0, 1], [1, 0], [1, 1], [0, 0]], ['x', 'y', 'join(x,y)', 'meet(x,y)'], [['join', 2, [0, 2, 2, 0, 2, 1, 2, 1, 2, 2, 2, 2, 0, 1, 2, 3]], ['meet', 2, [0, 3, 0, 3, 3, 1, 1, 3, 0, 1, 2, 3, 3, 3, 3, 3]]]]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    FreeAlgebra, Homomorphism, Closer, Algebras,\n    BigProductAlgebra, ProductAlgebra, SmallAlgebra,\n)\nfrom org.uacalc.alg.op import OperationSymbol, Operations, SimilarityType\nfrom org.uacalc.util import IntArray\nfrom org.uacalc.alg.conlat import Partition\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nplus = OperationSymbol(\"+\", 2)\nf1 = FreeAlgebra(c2, 1)\nf1.setName(\"F1\")\nf1thin = FreeAlgebra(c2, 1, True, True)\nf1thin.setName(\"F1thin\")\nfnamed = FreeAlgebra(\"NamedF\", c2, 1)\nbp = BigProductAlgebra(c2, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\ng10 = IntArray([1, 0])\ncloser = Closer(bp, [g00, g11])\ncloser_tm = Closer(bp, [g00, g11], True)\nid_map = {0: 0, 1: 1}\nh = Homomorphism(c2, c2, id_map)\nconst0 = Homomorphism(c2, c2, {0: 0, 1: 0})\nid1 = Operations.makeIntOperation(OperationSymbol(\"id\", 1), 2, [0, 1])\nswap1 = Operations.makeIntOperation(OperationSymbol(\"swap\", 1), 2, [1, 0])\nzero_p = c2.con().zero()\none_p = c2.con().one()\n\ndef _coords(elem):\n    if elem is None:\n        return None\n    try:\n        return [int(x) for x in list(elem)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(elem, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(elem)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_coords(x) for x in list(lst)]\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [str(t).replace(\" \", \"\") for t in list(lst)]\n\ndef _tbl(alg):\n    op = alg.getOperation(plus)\n    n = int(alg.cardinality())\n    return [int(op.intValueAt([i, j])) for i in range(n) for j in range(n)]\n\ndef _tm(m):\n    if m is None:\n        return None\n    items = []\n    for k in m:\n        items.append([_coords(k), str(m[k]).replace(\" \", \"\")])\n    items.sort(key=lambda row: (row[0], row[1]))\n    return items\n\ndef _hmap(m):\n    if m is None:\n        return None\n    items = []\n    for k in m:\n        items.append([int(k), int(m[k])])\n    items.sort()\n    return items\n\ndef _homo_img(m):\n    if m is None:\n        return None\n    items = []\n    for k in m:\n        items.append([_coords(k), int(m[k])])\n    items.sort(key=lambda row: (row[0], row[1]))\n    return items\n\ndef _op_vals(op):\n    if op is None:\n        return None\n    n = int(op.getSetSize()) if hasattr(op, \"getSetSize\") else int(op.get_set_size())\n    return [int(op.intValueAt([i])) for i in range(n)]\n\ndef _varmap(alg):\n    m = alg.getVariableToGeneratorMap()\n    if m is None:\n        return None\n    items = []\n    iterable = m.entrySet() if hasattr(m, \"entrySet\") else (m.items() if hasattr(m, \"items\") else None)\n    if iterable is not None:\n        for item in iterable:\n            if hasattr(item, \"getKey\"):\n                k, v = item.getKey(), item.getValue()\n            else:\n                k, v = item\n            items.append([str(k).replace(\" \", \"\"), _coords(v)])\n    else:\n        for k in m:\n            items.append([str(k).replace(\" \", \"\"), _coords(m[k])])\n    items.sort()\n    return items\n\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\n\ndef _symname(op):\n    sym = None\n    if hasattr(op, \"symbol\"):\n        try:\n            sym = op.symbol() if callable(op.symbol) else op.symbol\n        except Exception:\n            sym = None\n    if sym is None:\n        return \"\"\n    getter = getattr(sym, \"name\", None) or getattr(sym, \"getName\", None)\n    if callable(getter):\n        return str(getter())\n    return str(sym)\n\ndef _op_table_any(op, n):\n    ar = int(op.arity())\n    iva = op.intValueAt\n    if ar == 0:\n        return [int(iva([]))]\n    if ar == 1:\n        return [int(iva([i])) for i in range(n)]\n    if ar == 2:\n        return [int(iva([i, j])) for i in range(n) for j in range(n)]\n    return []\n\ndef _fa_snap(base, n):\n    f = FreeAlgebra(base, n)\n    card = int(f.cardinality())\n    ops = []\n    for op in list(f.operations()):\n        ops.append([_symname(op), int(op.arity()), _op_table_any(op, card)])\n    ops.sort()\n    return [card, _ias(f.generators()), _ias(f.getUniverseList()), _terms(f.getTerms()), ops]\n\ndef _fa_snap_report(base, n):\n    # Java FreeAlgebra(alg, n, report=null): thinGens=true, decompose=true.\n    f = FreeAlgebra(base, n, None)\n    card = int(f.cardinality())\n    ops = []\n    for op in list(f.operations()):\n        ops.append([_symname(op), int(op.arity()), _op_table_any(op, card)])\n    ops.sort()\n    return [card, _ias(f.generators()), _ias(f.getUniverseList()), _terms(f.getTerms()), ops]\n\ndef _fa_roundtrip(base, n):\n    import os, tempfile\n    f = FreeAlgebra(base, n)\n    live = _fa_snap(base, n)\n    fd, path = tempfile.mkstemp(suffix=\".ua\")\n    os.close(fd)\n    AlgebraIO.writeAlgebraFile(f, path)\n    read = AlgebraIO.readAlgebraFile(path)\n    os.unlink(path)\n    card = int(read.cardinality())\n    ops = []\n    for op in list(read.operations()):\n        ops.append([_symname(op), int(op.arity()), _op_table_any(op, card)])\n    ops.sort()\n    return [live, [card, ops]]\n\ndef _qcc(path):\n    a = AlgebraIO.readAlgebraFile(path)\n    return sorted([str(p) for p in Algebras.quasiCriticalCongruences(a, None)])\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_fa_snap_report(z3, 2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "F(2) over z3 with Java report constructor (decompose=true)",
+      "expected_exception": null,
+      "id": "fa_decompose_z3_f2",
+      "kwargs": {},
+      "method": "FreeAlgebra.cardinality",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          8,
+          [
+            [
+              0,
+              0,
+              2,
+              1,
+              1
+            ],
+            [
+              2,
+              1,
+              0,
+              0,
+              1
+            ]
+          ],
+          [
+            [
+              0,
+              0,
+              2,
+              1,
+              1
+            ],
+            [
+              2,
+              1,
+              0,
+              0,
+              1
+            ],
+            [
+              0,
+              0,
+              1,
+              0,
+              0
+            ],
+            [
+              0,
+              1,
+              0,
+              1,
+              0
+            ],
+            [
+              1,
+              0,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              1,
+              0,
+              0,
+              1
+            ],
+            [
+              0,
+              0,
+              0,
+              1,
+              1
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          ],
+          [
+            "x",
+            "y",
+            "b_0(x,x)",
+            "b_0(x,y)",
+            "b_0(y,y)",
+            "b_0(x,b_0(x,y))",
+            "b_0(x,b_0(y,y))",
+            "b_0(b_0(x,x),b_0(y,y))"
+          ],
+          [
+            [
+              "b_0",
+              2,
+              [
+                2,
+                3,
+                0,
+                5,
+                6,
+                3,
+                7,
+                6,
+                3,
+                4,
+                5,
+                6,
+                1,
+                7,
+                3,
+                5,
+                0,
+                5,
+                2,
+                3,
+                7,
+                5,
+                6,
+                7,
+                5,
+                6,
+                3,
+                7,
+                3,
+                6,
+                5,
+                3,
+                6,
+                1,
+                7,
+                3,
+                4,
+                5,
+                6,
+                7,
+                3,
+                7,
+                5,
+                6,
+                5,
+                7,
+                3,
+                5,
+                7,
+                3,
+                6,
+                5,
+                6,
+                3,
+                7,
+                6,
+                6,
+                5,
+                7,
+                3,
+                7,
+                5,
+                6,
+                7
+              ]
+            ]
+          ]
+        ],
+        "string_repr": "[8, [[0, 0, 2, 1, 1], [2, 1, 0, 0, 1]], [[0, 0, 2, 1, 1], [2, 1, 0, 0, 1], [0, 0, 1, 0, 0], [0, 1, 0, 1, 0], [1, 0, 0, 0, 0], [0, 1, 0, 0, 1], [0, 0, 0, 1, 1], [0, 0, 0, 0, 0]], ['x', 'y', 'b_0(x,x)', 'b_0(x,y)', 'b_0(y,y)', 'b_0(x,b_0(x,y))', 'b_0(x,b_0(y,y))', 'b_0(b_0(x,x),b_0(y,y))'], [['b_0', 2, [2, 3, 0, 5, 6, 3, 7, 6, 3, 4, 5, 6, 1, 7, 3, 5, 0, 5, 2, 3, 7, 5, 6, 7, 5, 6, 3, 7, 3, 6, 5, 3, 6, 1, 7, 3, 4, 5, 6, 7, 3, 7, 5, 6, 5, 7, 3, 5, 7, 3, 6, 5, 6, 3, 7, 6, 6, 5, 7, 3, 7, 5, 6, 7]]]]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    FreeAlgebra, Homomorphism, Closer, Algebras,\n    BigProductAlgebra, ProductAlgebra, SmallAlgebra,\n)\nfrom org.uacalc.alg.op import OperationSymbol, Operations, SimilarityType\nfrom org.uacalc.util import IntArray\nfrom org.uacalc.alg.conlat import Partition\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nplus = OperationSymbol(\"+\", 2)\nf1 = FreeAlgebra(c2, 1)\nf1.setName(\"F1\")\nf1thin = FreeAlgebra(c2, 1, True, True)\nf1thin.setName(\"F1thin\")\nfnamed = FreeAlgebra(\"NamedF\", c2, 1)\nbp = BigProductAlgebra(c2, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\ng10 = IntArray([1, 0])\ncloser = Closer(bp, [g00, g11])\ncloser_tm = Closer(bp, [g00, g11], True)\nid_map = {0: 0, 1: 1}\nh = Homomorphism(c2, c2, id_map)\nconst0 = Homomorphism(c2, c2, {0: 0, 1: 0})\nid1 = Operations.makeIntOperation(OperationSymbol(\"id\", 1), 2, [0, 1])\nswap1 = Operations.makeIntOperation(OperationSymbol(\"swap\", 1), 2, [1, 0])\nzero_p = c2.con().zero()\none_p = c2.con().one()\n\ndef _coords(elem):\n    if elem is None:\n        return None\n    try:\n        return [int(x) for x in list(elem)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(elem, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(elem)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_coords(x) for x in list(lst)]\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [str(t).replace(\" \", \"\") for t in list(lst)]\n\ndef _tbl(alg):\n    op = alg.getOperation(plus)\n    n = int(alg.cardinality())\n    return [int(op.intValueAt([i, j])) for i in range(n) for j in range(n)]\n\ndef _tm(m):\n    if m is None:\n        return None\n    items = []\n    for k in m:\n        items.append([_coords(k), str(m[k]).replace(\" \", \"\")])\n    items.sort(key=lambda row: (row[0], row[1]))\n    return items\n\ndef _hmap(m):\n    if m is None:\n        return None\n    items = []\n    for k in m:\n        items.append([int(k), int(m[k])])\n    items.sort()\n    return items\n\ndef _homo_img(m):\n    if m is None:\n        return None\n    items = []\n    for k in m:\n        items.append([_coords(k), int(m[k])])\n    items.sort(key=lambda row: (row[0], row[1]))\n    return items\n\ndef _op_vals(op):\n    if op is None:\n        return None\n    n = int(op.getSetSize()) if hasattr(op, \"getSetSize\") else int(op.get_set_size())\n    return [int(op.intValueAt([i])) for i in range(n)]\n\ndef _varmap(alg):\n    m = alg.getVariableToGeneratorMap()\n    if m is None:\n        return None\n    items = []\n    iterable = m.entrySet() if hasattr(m, \"entrySet\") else (m.items() if hasattr(m, \"items\") else None)\n    if iterable is not None:\n        for item in iterable:\n            if hasattr(item, \"getKey\"):\n                k, v = item.getKey(), item.getValue()\n            else:\n                k, v = item\n            items.append([str(k).replace(\" \", \"\"), _coords(v)])\n    else:\n        for k in m:\n            items.append([str(k).replace(\" \", \"\"), _coords(m[k])])\n    items.sort()\n    return items\n\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\n\ndef _symname(op):\n    sym = None\n    if hasattr(op, \"symbol\"):\n        try:\n            sym = op.symbol() if callable(op.symbol) else op.symbol\n        except Exception:\n            sym = None\n    if sym is None:\n        return \"\"\n    getter = getattr(sym, \"name\", None) or getattr(sym, \"getName\", None)\n    if callable(getter):\n        return str(getter())\n    return str(sym)\n\ndef _op_table_any(op, n):\n    ar = int(op.arity())\n    iva = op.intValueAt\n    if ar == 0:\n        return [int(iva([]))]\n    if ar == 1:\n        return [int(iva([i])) for i in range(n)]\n    if ar == 2:\n        return [int(iva([i, j])) for i in range(n) for j in range(n)]\n    return []\n\ndef _fa_snap(base, n):\n    f = FreeAlgebra(base, n)\n    card = int(f.cardinality())\n    ops = []\n    for op in list(f.operations()):\n        ops.append([_symname(op), int(op.arity()), _op_table_any(op, card)])\n    ops.sort()\n    return [card, _ias(f.generators()), _ias(f.getUniverseList()), _terms(f.getTerms()), ops]\n\ndef _fa_snap_report(base, n):\n    # Java FreeAlgebra(alg, n, report=null): thinGens=true, decompose=true.\n    f = FreeAlgebra(base, n, None)\n    card = int(f.cardinality())\n    ops = []\n    for op in list(f.operations()):\n        ops.append([_symname(op), int(op.arity()), _op_table_any(op, card)])\n    ops.sort()\n    return [card, _ias(f.generators()), _ias(f.getUniverseList()), _terms(f.getTerms()), ops]\n\ndef _fa_roundtrip(base, n):\n    import os, tempfile\n    f = FreeAlgebra(base, n)\n    live = _fa_snap(base, n)\n    fd, path = tempfile.mkstemp(suffix=\".ua\")\n    os.close(fd)\n    AlgebraIO.writeAlgebraFile(f, path)\n    read = AlgebraIO.readAlgebraFile(path)\n    os.unlink(path)\n    card = int(read.cardinality())\n    ops = []\n    for op in list(read.operations()):\n        ops.append([_symname(op), int(op.arity()), _op_table_any(op, card)])\n    ops.sort()\n    return [live, [card, ops]]\n\ndef _qcc(path):\n    a = AlgebraIO.readAlgebraFile(path)\n    return sorted([str(p) for p in Algebras.quasiCriticalCongruences(a, None)])\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_fa_snap_report(ProductAlgebra([c2, c2]), 2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "F(2) over non-SI C2xC2 with Java report constructor (decompose=true)",
+      "expected_exception": null,
+      "id": "fa_decompose_c2c2_f2",
+      "kwargs": {},
+      "method": "FreeAlgebra.cardinality",
+      "notes": "Java List/Set toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          4,
+          [
+            [
+              0,
+              1,
+              1
+            ],
+            [
+              1,
+              0,
+              1
+            ]
+          ],
+          [
+            [
+              0,
+              1,
+              1
+            ],
+            [
+              1,
+              0,
+              1
+            ],
+            [
+              0,
+              0,
+              0
+            ],
+            [
+              1,
+              1,
+              0
+            ]
+          ],
+          [
+            "x",
+            "y",
+            "+(x,x)",
+            "+(x,y)"
+          ],
+          [
+            [
+              "+",
+              2,
+              [
+                2,
+                3,
+                0,
+                1,
+                3,
+                2,
+                1,
+                0,
+                0,
+                1,
+                2,
+                3,
+                1,
+                0,
+                3,
+                2
+              ]
+            ]
+          ]
+        ],
+        "string_repr": "[4, [[0, 1, 1], [1, 0, 1]], [[0, 1, 1], [1, 0, 1], [0, 0, 0], [1, 1, 0]], ['x', 'y', '+(x,x)', '+(x,y)'], [['+', 2, [2, 3, 0, 1, 3, 2, 1, 0, 0, 1, 2, 3, 1, 0, 3, 2]]]]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    FreeAlgebra, Homomorphism, Closer, Algebras,\n    BigProductAlgebra, ProductAlgebra, SmallAlgebra,\n)\nfrom org.uacalc.alg.op import OperationSymbol, Operations, SimilarityType\nfrom org.uacalc.util import IntArray\nfrom org.uacalc.alg.conlat import Partition\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nplus = OperationSymbol(\"+\", 2)\nf1 = FreeAlgebra(c2, 1)\nf1.setName(\"F1\")\nf1thin = FreeAlgebra(c2, 1, True, True)\nf1thin.setName(\"F1thin\")\nfnamed = FreeAlgebra(\"NamedF\", c2, 1)\nbp = BigProductAlgebra(c2, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\ng10 = IntArray([1, 0])\ncloser = Closer(bp, [g00, g11])\ncloser_tm = Closer(bp, [g00, g11], True)\nid_map = {0: 0, 1: 1}\nh = Homomorphism(c2, c2, id_map)\nconst0 = Homomorphism(c2, c2, {0: 0, 1: 0})\nid1 = Operations.makeIntOperation(OperationSymbol(\"id\", 1), 2, [0, 1])\nswap1 = Operations.makeIntOperation(OperationSymbol(\"swap\", 1), 2, [1, 0])\nzero_p = c2.con().zero()\none_p = c2.con().one()\n\ndef _coords(elem):\n    if elem is None:\n        return None\n    try:\n        return [int(x) for x in list(elem)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(elem, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(elem)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_coords(x) for x in list(lst)]\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [str(t).replace(\" \", \"\") for t in list(lst)]\n\ndef _tbl(alg):\n    op = alg.getOperation(plus)\n    n = int(alg.cardinality())\n    return [int(op.intValueAt([i, j])) for i in range(n) for j in range(n)]\n\ndef _tm(m):\n    if m is None:\n        return None\n    items = []\n    for k in m:\n        items.append([_coords(k), str(m[k]).replace(\" \", \"\")])\n    items.sort(key=lambda row: (row[0], row[1]))\n    return items\n\ndef _hmap(m):\n    if m is None:\n        return None\n    items = []\n    for k in m:\n        items.append([int(k), int(m[k])])\n    items.sort()\n    return items\n\ndef _homo_img(m):\n    if m is None:\n        return None\n    items = []\n    for k in m:\n        items.append([_coords(k), int(m[k])])\n    items.sort(key=lambda row: (row[0], row[1]))\n    return items\n\ndef _op_vals(op):\n    if op is None:\n        return None\n    n = int(op.getSetSize()) if hasattr(op, \"getSetSize\") else int(op.get_set_size())\n    return [int(op.intValueAt([i])) for i in range(n)]\n\ndef _varmap(alg):\n    m = alg.getVariableToGeneratorMap()\n    if m is None:\n        return None\n    items = []\n    iterable = m.entrySet() if hasattr(m, \"entrySet\") else (m.items() if hasattr(m, \"items\") else None)\n    if iterable is not None:\n        for item in iterable:\n            if hasattr(item, \"getKey\"):\n                k, v = item.getKey(), item.getValue()\n            else:\n                k, v = item\n            items.append([str(k).replace(\" \", \"\"), _coords(v)])\n    else:\n        for k in m:\n            items.append([str(k).replace(\" \", \"\"), _coords(m[k])])\n    items.sort()\n    return items\n\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\n\ndef _symname(op):\n    sym = None\n    if hasattr(op, \"symbol\"):\n        try:\n            sym = op.symbol() if callable(op.symbol) else op.symbol\n        except Exception:\n            sym = None\n    if sym is None:\n        return \"\"\n    getter = getattr(sym, \"name\", None) or getattr(sym, \"getName\", None)\n    if callable(getter):\n        return str(getter())\n    return str(sym)\n\ndef _op_table_any(op, n):\n    ar = int(op.arity())\n    iva = op.intValueAt\n    if ar == 0:\n        return [int(iva([]))]\n    if ar == 1:\n        return [int(iva([i])) for i in range(n)]\n    if ar == 2:\n        return [int(iva([i, j])) for i in range(n) for j in range(n)]\n    return []\n\ndef _fa_snap(base, n):\n    f = FreeAlgebra(base, n)\n    card = int(f.cardinality())\n    ops = []\n    for op in list(f.operations()):\n        ops.append([_symname(op), int(op.arity()), _op_table_any(op, card)])\n    ops.sort()\n    return [card, _ias(f.generators()), _ias(f.getUniverseList()), _terms(f.getTerms()), ops]\n\ndef _fa_snap_report(base, n):\n    # Java FreeAlgebra(alg, n, report=null): thinGens=true, decompose=true.\n    f = FreeAlgebra(base, n, None)\n    card = int(f.cardinality())\n    ops = []\n    for op in list(f.operations()):\n        ops.append([_symname(op), int(op.arity()), _op_table_any(op, card)])\n    ops.sort()\n    return [card, _ias(f.generators()), _ias(f.getUniverseList()), _terms(f.getTerms()), ops]\n\ndef _fa_roundtrip(base, n):\n    import os, tempfile\n    f = FreeAlgebra(base, n)\n    live = _fa_snap(base, n)\n    fd, path = tempfile.mkstemp(suffix=\".ua\")\n    os.close(fd)\n    AlgebraIO.writeAlgebraFile(f, path)\n    read = AlgebraIO.readAlgebraFile(path)\n    os.unlink(path)\n    card = int(read.cardinality())\n    ops = []\n    for op in list(read.operations()):\n        ops.append([_symname(op), int(op.arity()), _op_table_any(op, card)])\n    ops.sort()\n    return [live, [card, ops]]\n\ndef _qcc(path):\n    a = AlgebraIO.readAlgebraFile(path)\n    return sorted([str(p) for p in Algebras.quasiCriticalCongruences(a, None)])\n",
       "skip_string_check": true,
       "xfail_reason": null
     }

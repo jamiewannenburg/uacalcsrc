@@ -1255,10 +1255,13 @@ where
         ans
     }
     
-    /// Compute an irredundant meet decomposition of the one congruence.
+    /// Java `irredundantMeetDecomposition()`: an irredundant set of meet
+    /// irreducibles whose meet is zero.
     ///
-    /// This method finds a minimal set of meet irreducible congruences whose
-    /// meet equals the one congruence (all elements in one block).
+    /// Walks `atoms()`, takes `findMeetIrred(zero, atom)` for each, keeps a
+    /// factor when it is not already above the meet so far, and stops at
+    /// zero. Then `makeIrredundantMeet` drops redundant factors from the
+    /// front. This is the SI-factor order FreeAlgebra(`decompose=true`) uses.
     ///
     /// # Returns
     /// A list of meet irreducible congruences that form an irredundant meet decomposition
@@ -1280,36 +1283,44 @@ where
     /// // The decomposition should contain meet irreducible congruences
     /// ```
     pub fn irredundant_meet_decomposition(&mut self) -> Vec<Partition> {
-        // Ensure meet irreducibles are computed
-        if self.meet_irreducibles.is_none() {
-            self.make_meet_irreducibles();
+        if self.alg_size == 1 {
+            return Vec::new();
         }
-        
-        let meet_irreducibles = self.meet_irreducibles.as_ref().unwrap();
-        
-        // Start with all meet irreducibles
-        let mut candidates = meet_irreducibles.clone();
-        
-        // Greedily remove candidates that are not needed
-        for i in (0..candidates.len()).rev() {
-            let mut test_candidates = candidates.clone();
-            test_candidates.remove(i);
-            
-            // Check if the meet of remaining candidates still equals one
-            if !test_candidates.is_empty() {
-                let mut meet_result = test_candidates[0].clone();
-                for candidate in &test_candidates[1..] {
-                    meet_result = meet_result.meet(candidate).unwrap();
-                }
-                
-                // If meet still equals one, we can remove this candidate
-                if meet_result == self.one() {
-                    candidates.remove(i);
+
+        let mut decomp = Vec::new();
+        let mut theta = self.one();
+        let zero = self.zero();
+        let atoms = self.atoms().clone();
+        for atom in &atoms {
+            let Some(mi) = self.find_meet_irred(&zero, atom) else {
+                continue;
+            };
+            if !theta.leq(&mi) {
+                theta = theta.meet(&mi).unwrap();
+                decomp.push(mi);
+                if theta == zero {
+                    break;
                 }
             }
         }
-        
-        candidates
+        self.make_irredundant_meet(&decomp)
+    }
+
+    /// Java `makeIrredundantMeet(list)`: drop a factor when the meet of the
+    /// remaining factors still equals the meet of the whole list.
+    pub fn make_irredundant_meet(&self, list: &[Partition]) -> Vec<Partition> {
+        let bot = self.meet_list(list);
+        let mut ans = Vec::new();
+        let mut ans_meet = self.one();
+        for i in 0..list.len() {
+            let rest_meet = self.meet_list(&list[i + 1..]);
+            let b = ans_meet.meet(&rest_meet).unwrap();
+            if b != bot {
+                ans.push(list[i].clone());
+                ans_meet = ans_meet.meet(&list[i]).unwrap();
+            }
+        }
+        ans
     }
 }
 
@@ -1608,7 +1619,11 @@ where
         Some(result)
     }
     
-    /// Find a meet irreducible congruence between a and b.
+    /// Find a meet irreducible above `a` and not above `b`.
+    ///
+    /// Java's current `findMeetIrred`: join join-irreducibles into `a` while
+    /// the join stays below `b`. If `a` is covered by `b`, `[a,b]` transposes
+    /// up to `[m, m*]`.
     ///
     /// # Arguments
     /// * `a` - Lower congruence
@@ -1621,18 +1636,19 @@ where
         if b.leq(a) {
             return None;
         }
-        
-        if self.meet_irreducibles.is_none() {
-            self.make_meet_irreducibles();
+
+        if self.join_irreducibles.is_none() {
+            self.make_join_irreducibles();
         }
-        
+
         let mut result = a.clone();
-        for mi in self.meet_irreducibles.as_ref().unwrap() {
-            if a.leq(mi) && !b.leq(mi) {
-                result = mi.clone();
+        for ji in self.join_irreducibles.as_ref().unwrap() {
+            let j = ji.join(&result).unwrap();
+            if !b.leq(&j) {
+                result = j;
             }
         }
-        
+
         Some(result)
     }
     

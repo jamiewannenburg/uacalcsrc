@@ -220,8 +220,8 @@ TEST_CASES = [
         call="_terms(Malcev.gummTerms(lat2))",
         description="Gumm terms of lat2",
         xfail_reason=(
-            "Java gummTerms(alg) NPEs: ProgressReport.addStartLine is invoked "
-            "with a null report inside the no-arg overload."
+            "known Java bug: gummTerms(alg) NPEs because ProgressReport.addStartLine "
+            "is invoked on a null report inside the no-arg overload."
         ),
         **_LIST
     ),
@@ -351,7 +351,7 @@ TEST_CASES = [
         call="_terms(Malcev.primalityTerms(c2, None))",
         description="primality terms of C2 if any",
         xfail_reason=(
-            "Java primalityTerms(alg, report) NPEs when report is null "
+            "known Java bug: primalityTerms(alg, report) NPEs when report is null "
             "(semilatTerm calls report.addStartLine unconditionally)."
         ),
         **_LIST

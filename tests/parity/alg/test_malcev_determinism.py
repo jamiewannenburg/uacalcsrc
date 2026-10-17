@@ -48,6 +48,7 @@ def _cheap_probes(Malcev, alg):
     return (
         ("malcevTerm", lambda: _term(Malcev.malcevTerm(alg))),
         ("congruenceModularVariety", lambda: Malcev.congruenceModularVariety(alg)),
+        ("sdmeetTerms", lambda: _term(Malcev.sdmeetTerms(alg))),
     )
 
 

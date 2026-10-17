@@ -817,30 +817,33 @@ the org shim's `leftSide` / `rightSide` return term objects via
 
 ## org.uacalc.alg.Malcev
 
-Wrapped as a static facade. Term-finding uses a deterministic F(n) (no
-HashMap candidate walks except `sdmeetTerms`, which now uses `BTreeMap`).
-Rust SI-decompose is not used: it currently feeds out-of-range operation
-arguments and produced wrong F(n) (C2 with no Malcev term). For SI algebras
-that matches Java's report constructor. Java's `sdmeetTerms` still iterates
-`HashMap.keySet()`, so exact term triples can differ from a given JVM run.
+Wrapped as a static facade. Term-finding uses Java's report constructor
+(`thinGens=true`, `decompose=true`). SI factors are flattened to
+integer-universe algebras (no `QuotientElement` transmute). Congruence
+`irredundantMeetDecomposition` follows Java (atoms + `findMeetIrred` +
+`makeIrredundantMeet`). Free-algebra `getVariables()` is generator order,
+not HashMap key order, so `switchXandYAutomorphism` is stable.
+Candidate maps in `sdmeetTerms` use `BTreeMap` plus a lexicographic
+`univX` sort. Java's `sdmeetTerms` still iterates `HashMap.keySet()`, so
+exact term strings can differ from a given JVM run; presence and term
+count match.
 
 ### alg.Malcev.sd_meet_terms (z3 Java comparison)
 
-- **Java / Rust**: Intermittent mismatch on `z3.ua` in
-  `test_sd_meet_terms_with_z3_java_comparison` (`alg::malcev`). Java HashMap
-  iteration can change which terms are found; Rust now picks the sorted-key
-  witness. The comparison stays `#[ignore]` because Java's order is not a
-  specified part of the algorithm.
-- **Status**: Documented — Rust is deterministic; exact Java string match is
-  not guaranteed on this method.
-- **Tests**: `#[ignore]` on `test_sd_meet_terms_with_z3_java_comparison`
+- **Java / Rust**: Rust `sd_meet_terms` on `z3.ua` is run 8 times for
+  determinism. Java comparison checks `terms_found` and `num_terms`.
+  Witness term strings may still differ because Java iterates
+  `HashMap.keySet()`.
+- **Status**: Deterministic on Rust; presence/count compared to Java.
+- **Tests**: `test_sd_meet_terms_with_z3_java_comparison`
 
-### alg.Malcev.gummTerms / primalityTerms (null ProgressReport)
+### alg.Malcev.gummTerms / primalityTerms (known Java bugs)
 
 - **Java**: `gummTerms(alg)` and `primalityTerms(alg, null)` NPE because
-  `ProgressReport.addStartLine` is invoked on a null report.
+  `ProgressReport.addStartLine` is invoked on a null report. These are
+  **known Java bugs**, not CPython or library defects.
 - **Python**: Returns the terms (no ProgressReport required).
-- **Status**: Accepted — Java null-report bug; CPython keeps the useful result.
+- **Status**: Strict xfail — known Java bugs; CPython keeps the useful result.
 - **Tests**: strict xfail on `gumm_terms_lat2`, `primality_terms_c2`
 
 ### alg.Malcev.dayQuadruple
