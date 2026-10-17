@@ -449,7 +449,13 @@ impl PyTaylor {
     /// A new Taylor instance
     #[new]
     fn new(op_sym: &PyOperationSymbol, inteqs: Vec<Vec<crate::util::PyIntArray>>) -> Self {
-        // Convert PyIntArray to IntArray
+        Self::from_symbol(op_sym, inteqs)
+    }
+
+    /// Same as the `OperationSymbol` constructor; used by the org.uacalc shim
+    /// after it replaces `__new__` to dispatch Java overloads.
+    #[staticmethod]
+    fn from_symbol(op_sym: &PyOperationSymbol, inteqs: Vec<Vec<crate::util::PyIntArray>>) -> Self {
         let rust_inteqs: Vec<Vec<uacalc::util::int_array::IntArray>> = inteqs
             .iter()
             .map(|pair| {
@@ -458,7 +464,6 @@ impl PyTaylor {
                     .collect()
             })
             .collect();
-        
         PyTaylor {
             inner: uacalc::terms::Taylor::new_with_inteqs(op_sym.get_inner(), rust_inteqs),
         }

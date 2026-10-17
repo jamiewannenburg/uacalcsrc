@@ -255,107 +255,114 @@ def _install(g: dict) -> None:
                 obj, "getChildren"
             ) or hasattr(obj, "get_children")
 
-        class Taylor(object):
-            """Jython facade for Java ``org.uacalc.terms.Taylor``."""
+        # Keep the library class so ``org.uacalc.terms.Taylor is
+        # uacalc_lib.terms.Taylor`` (shim smoke). Bind Jython names and
+        # constructor overloads onto it.
+        _orig_cf = getattr(_LibTaylor, "canonical_form", None)
+        _orig_cf_ia = getattr(_LibTaylor, "canonical_form_int_array", None)
+        _orig_interprets = getattr(_LibTaylor, "interprets", None)
+        _orig_tfa = getattr(_LibTaylor, "term_from_array", None)
+        _orig_mbt = getattr(_LibTaylor, "make_balanced_taylor_term", None)
+        _orig_lex_terms = getattr(_LibTaylor, "lexicographically_compare_terms", None)
+        _orig_eqs = getattr(_LibTaylor, "equations", None)
+        _EQS: dict = {}
 
-            def __init__(self, first: Any, second: Any) -> None:
-                if first is None or second is None:
-                    raise NullPointerException()
-                self._eqs = None
-                tname = type(first).__name__
-                if isinstance(first, int) and not isinstance(first, bool):
-                    self._inner = _LibTaylor.new_with_arity(int(first), _as_inteqs(second))
-                elif tname in ("OperationSymbol", "PyOperationSymbol"):
-                    self._inner = _LibTaylor(first, _as_inteqs(second))
-                elif hasattr(first, "arity") and hasattr(first, "name") and not _is_term(first):
-                    self._inner = _LibTaylor(first, _as_inteqs(second))
-                else:
-                    los = getattr(first, "leadingOperationSymbol", None) or getattr(
-                        first, "leading_operation_symbol", None
-                    )
-                    sym = los() if callable(los) else los
-                    if sym is None:
-                        raise IllegalArgumentException(
-                            "Taylor term must have an operation symbol"
-                        )
-                    self._inner = _LibTaylor(sym, [])
-                    self._eqs = list(second)
+        def _taylor_new(cls: Any, first: Any, second: Any) -> Any:
+            if first is None or second is None:
+                raise NullPointerException()
+            tname = type(first).__name__
+            if isinstance(first, int) and not isinstance(first, bool):
+                return cls.new_with_arity(int(first), _as_inteqs(second))
+            if tname in ("OperationSymbol", "PyOperationSymbol") or (
+                hasattr(first, "arity") and hasattr(first, "name") and not _is_term(first)
+            ):
+                return cls.from_symbol(first, _as_inteqs(second))
+            los = getattr(first, "leadingOperationSymbol", None) or getattr(
+                first, "leading_operation_symbol", None
+            )
+            sym = los() if callable(los) else los
+            if sym is None:
+                raise IllegalArgumentException(
+                    "Taylor term must have an operation symbol"
+                )
+            inst = cls.from_symbol(sym, [])
+            _EQS[id(inst)] = list(second)
+            return inst
 
-            @classmethod
-            def _wrap(cls, inner: Any) -> "Taylor":
-                obj = cls.__new__(cls)
-                obj._inner = inner
-                obj._eqs = None
-                return obj
+        def markovicMcKenzieTerm() -> Any:
+            return _LibTaylor.markovic_mckenzie_term()
 
-            @staticmethod
-            def markovicMcKenzieTerm() -> "Taylor":
-                return Taylor._wrap(_LibTaylor.markovic_mckenzie_term())
+        def siggersTerm() -> Any:
+            return _LibTaylor.siggers_term()
 
-            @staticmethod
-            def siggersTerm() -> "Taylor":
-                return Taylor._wrap(_LibTaylor.siggers_term())
+        def canonicalForm(self: Any, t: Any) -> Any:
+            if t is None:
+                raise NullPointerException()
+            try:
+                if _is_int_array(t):
+                    return _orig_cf_ia(self, t)
+                return _orig_cf(self, t)
+            except Exception as exc:
+                _npe_or_iae(exc)
 
-            def canonicalForm(self, t: Any) -> Any:
-                if t is None:
-                    raise NullPointerException()
+        def interprets(self: Any, g: Any, level: Any) -> Any:
+            if g is None:
+                raise NullPointerException()
+            inner = getattr(g, "_inner", g)
+            # Java prints on success then `return null`. Match that.
+            try:
+                _orig_interprets(self, inner, int(level))
+            except Exception as exc:
+                _npe_or_iae(exc)
+            return None
+
+        def termFromArray(self: Any, arr: Any, start: Any = None, length: Any = None) -> Any:
+            if arr is None:
+                raise NullPointerException()
+            vals = _arr_vals(arr)
+            try:
+                if start is None:
+                    return _orig_tfa(self, vals)
+                return _orig_tfa(self, vals, int(start), int(length))
+            except Exception as exc:
+                _npe_or_iae(exc)
+
+        def makeBalancedTayorTerm(self: Any, f: Any, depth: Any, varList: Any) -> Any:
+            if f is None or varList is None:
+                raise NullPointerException()
+            try:
+                return _orig_mbt(self, f, int(depth), list(varList))
+            except Exception as exc:
+                _npe_or_iae(exc)
+
+        def lexicographicallyCompare(self: Any, a: Any, b: Any = None) -> int:
+            if b is None:
+                return _cmp_arrays(self, a)
+            if _is_term(a):
                 try:
-                    if _is_int_array(t):
-                        return self._inner.canonical_form_int_array(t)
-                    return self._inner.canonical_form(t)
+                    return int(_orig_lex_terms(self, a, b))
                 except Exception as exc:
                     _npe_or_iae(exc)
+            return _cmp_arrays(a, b)
 
-            def interprets(self, g: Any, level: Any) -> Any:
-                if g is None:
-                    raise NullPointerException()
-                inner = getattr(g, "_inner", g)
-                # Java prints on success then `return null`. Match that.
-                try:
-                    self._inner.interprets(inner, int(level))
-                except Exception as exc:
-                    _npe_or_iae(exc)
-                return None
+        def equations(self: Any) -> Any:
+            stored = _EQS.get(id(self))
+            if stored is not None:
+                return stored
+            return _orig_eqs(self) if callable(_orig_eqs) else None
 
-            def termFromArray(self, arr: Any, start: Any = None, length: Any = None) -> Any:
-                if arr is None:
-                    raise NullPointerException()
-                vals = _arr_vals(arr)
-                try:
-                    if start is None:
-                        return self._inner.term_from_array(vals)
-                    return self._inner.term_from_array(vals, int(start), int(length))
-                except Exception as exc:
-                    _npe_or_iae(exc)
-
-            def makeBalancedTayorTerm(self, f: Any, depth: Any, varList: Any) -> Any:
-                if f is None or varList is None:
-                    raise NullPointerException()
-                try:
-                    return self._inner.make_balanced_taylor_term(f, int(depth), list(varList))
-                except Exception as exc:
-                    _npe_or_iae(exc)
-
-            def lexicographicallyCompare(self, a: Any, b: Any = None) -> int:
-                if b is None:
-                    return _cmp_arrays(self, a)
-                if getattr(self, "_inner", None) is not None and _is_term(a):
-                    try:
-                        return int(self._inner.lexicographically_compare_terms(a, b))
-                    except Exception as exc:
-                        _npe_or_iae(exc)
-                return _cmp_arrays(a, b)
-
-            def arity(self) -> int:
-                return int(self._inner.arity())
-
-            def inteqs(self) -> Any:
-                return self._inner.inteqs()
-
-            def equations(self) -> Any:
-                if self._eqs is not None:
-                    return self._eqs
-                eqs = self._inner.equations()
-                return eqs
-
-        g["Taylor"] = Taylor
+        try:
+            _LibTaylor.__new__ = staticmethod(_taylor_new)
+        except (TypeError, AttributeError):
+            pass
+        for name, impl in (
+            ("markovicMcKenzieTerm", staticmethod(markovicMcKenzieTerm)),
+            ("siggersTerm", staticmethod(siggersTerm)),
+            ("canonicalForm", canonicalForm),
+            ("interprets", interprets),
+            ("termFromArray", termFromArray),
+            ("makeBalancedTayorTerm", makeBalancedTayorTerm),
+            ("lexicographicallyCompare", lexicographicallyCompare),
+            ("equations", equations),
+        ):
+            _bind(_LibTaylor, name, impl)
