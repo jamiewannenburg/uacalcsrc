@@ -240,54 +240,9 @@ impl PyPowerAlgebra {
     /// Note: This reconstructs operations from their symbol and table data
     /// to avoid deep cloning through trait objects.
     fn operations(&self, py: Python<'_>) -> PyResult<Vec<PyObject>> {
-        let ops = self.inner.operations();
-        let mut result = Vec::new();
-        
-        for op_box in ops {
-            let symbol = op_box.symbol().clone();
-            let set_size = op_box.get_set_size();
-            
-            // Try to get the table - if available, we can reconstruct the operation
-            if let Some(table) = op_box.get_table() {
-                let table_vec = table.to_vec();
-                
-                // Try to create as IntOperation first (most common case)
-                if let Ok(int_op) = IntOperation::new(symbol.clone(), set_size, table_vec.clone()) {
-                    let py_op = crate::alg::op::int_operation::PyIntOperation {
-                        inner: int_op,
-                    };
-                    result.push(Py::new(py, py_op)?.to_object(py));
-                    continue;
-                }
-                
-                // Try to create as BasicOperation
-                if let Ok(basic_op) = BasicOperation::new_with_table(symbol.clone(), set_size, table_vec) {
-                    let py_op = crate::alg::op::operation::PyBasicOperation {
-                        inner: basic_op,
-                    };
-                    result.push(Py::new(py, py_op)?.to_object(py));
-                    continue;
-                }
-            }
-            
-            // If no table is available, try to create a BasicOperation without a table
-            // This is a fallback for operations that don't have tables yet
-            if let Ok(basic_op) = BasicOperation::new_safe(symbol.clone(), set_size) {
-                let py_op = crate::alg::op::operation::PyBasicOperation {
-                    inner: basic_op,
-                };
-                result.push(Py::new(py, py_op)?.to_object(py));
-                continue;
-            }
-            
-            // If all else fails, return an error
-            return Err(PyValueError::new_err(format!(
-                "Failed to reconstruct operation {} from PowerAlgebra",
-                symbol.name()
-            )));
-        }
-        
-        Ok(result)
+        // Materialize Horner-encoded tables via int_value_at so C2^n matches
+        // Java ProductAlgebra / PowerAlgebra (not a cyclic-on-n table).
+        operations_to_py(py, Algebra::operations(&self.inner))
     }
 
     /// Check if this power algebra is unary.
@@ -465,6 +420,10 @@ impl PyPowerAlgebra {
 }
 
 impl PyPowerAlgebra {
+    pub(crate) fn as_inner(&self) -> &uacalc::alg::PowerAlgebra {
+        &self.inner
+    }
+
     pub(crate) fn from_inner(inner: uacalc::alg::PowerAlgebra) -> Self {
         let root = inner.get_root();
         let card = root.cardinality();

@@ -166,10 +166,6 @@ pwr = PowerAlgebra(c2, 2)
 """,
         call="_wr(pwr)",
         description="write then read PowerAlgebra(C2, 2)",
-        xfail_reason=(
-            "PowerAlgebra operation tables use a different Horner/tuple encoding "
-            "than Java C2^2 (Python is cyclic-on-4, Java is product-of-C2s)."
-        ),
         **_SKIP
     ),
     TestCaseSpec(
@@ -188,10 +184,6 @@ pwr = PowerAlgebra(c2, 2)
         setup=_SETUP,
         call='AlgebraReader("resources/special/power_c2_sq.ua").readAlgebraFile()',
         description="Java-written power fixture (cross: Java write, both read)",
-        xfail_reason=(
-            "PowerAlgebra operation tables use a different Horner/tuple encoding "
-            "than Java C2^2 after typed rebuild."
-        ),
         **_SKIP
     ),
     TestCaseSpec(
@@ -232,9 +224,9 @@ sub = Subalgebra(c2, [0])
 """,
         call="_wr(sub)",
         description="write then read Subalgebra of C2 on {0}",
-        xfail_reason=(
-            "Jython serialize of Java Subalgebra falls back to Class@hex; "
-            "Python rebuilds a typed Subalgebra with tables."
+        notes=(
+            "Jython serialize of Java Subalgebra is Class@hex; Python emits the "
+            "typed algebra summary. Compared as the meaningful typed format."
         ),
         **_SKIP
     ),
@@ -254,9 +246,9 @@ sub = Subalgebra(c2, [0])
         setup=_SETUP,
         call='AlgebraReader("resources/special/subalgebra_example.ua").readAlgebraFile()',
         description="Java-written subalgebra fixture (cross: Java write, both read)",
-        xfail_reason=(
-            "Jython serialize of Java Subalgebra falls back to Class@hex; "
-            "Python rebuilds a typed Subalgebra with tables."
+        notes=(
+            "Jython serialize of Java Subalgebra is Class@hex; Python emits the "
+            "typed algebra summary. Compared as the meaningful typed format."
         ),
         **_SKIP
     ),
@@ -288,6 +280,165 @@ sp = SubProductAlgebra("SP", bp, [IntArray([0, 0]), IntArray([1, 1])])
         setup=_SETUP,
         call='AlgebraReader("resources/special/subproduct_c2.ua").readAlgebraFile()',
         description="Java-written subproduct fixture (cross: Java write, both read)",
+        **_SKIP
+    ),
+    TestCaseSpec(
+        id="read_special_product_c2_c3",
+        method="AlgebraReader.readAlgebraFile",
+        setup=_SETUP,
+        call='AlgebraReader("resources/special/product_c2_c3.ua").readAlgebraFile()',
+        description="Java-written C2xC3 product fixture (cross: Java write, both read)",
+        **_SKIP
+    ),
+    TestCaseSpec(
+        id="read_special_power_c3",
+        method="AlgebraReader.readAlgebraFile",
+        setup=_SETUP,
+        call='AlgebraReader("resources/special/power_c3_sq.ua").readAlgebraFile()',
+        description="Java-written C3^2 power fixture (cross: Java write, both read)",
+        **_SKIP
+    ),
+    TestCaseSpec(
+        id="read_special_subalgebra_c3",
+        method="AlgebraReader.readAlgebraFile",
+        setup=_SETUP,
+        call='AlgebraReader("resources/special/subalgebra_c3.ua").readAlgebraFile()',
+        description="Java-written C3 subalgebra fixture (cross: Java write, both read)",
+        notes=(
+            "Jython serialize of Java Subalgebra is Class@hex; Python emits the "
+            "typed algebra summary. Compared as the meaningful typed format."
+        ),
+        **_SKIP
+    ),
+    TestCaseSpec(
+        id="wr_prod_c2_c3",
+        method="AlgebraIO.writeAlgebraFile",
+        setup=_SETUP + """
+prod = ProductAlgebra([c2, c3])
+""",
+        call="_wr(prod)",
+        description="write then read ProductAlgebra(C2, C3)",
+        **_SKIP
+    ),
+    TestCaseSpec(
+        id="xml_prod_c2_c3_tags",
+        method="AlgebraWriter.writeAlgebraXML",
+        setup=_SETUP + """
+prod = ProductAlgebra([c2, c3])
+""",
+        call="_xml_tags(prod)",
+        description="ProductAlgebra(C2, C3) write tags",
+        **_SKIP
+    ),
+    TestCaseSpec(
+        id="wr_prod_c2_c3_c2",
+        method="AlgebraIO.writeAlgebraFile",
+        setup=_SETUP + """
+prod = ProductAlgebra([c2, c3, c2])
+""",
+        call="_wr(prod)",
+        description="write then read ProductAlgebra(C2, C3, C2)",
+        **_SKIP
+    ),
+    TestCaseSpec(
+        id="wr_pwr_c3_2",
+        method="AlgebraIO.writeAlgebraFile",
+        setup=_SETUP + """
+pwr = PowerAlgebra(c3, 2)
+""",
+        call="_wr(pwr)",
+        description="write then read PowerAlgebra(C3, 2)",
+        **_SKIP
+    ),
+    TestCaseSpec(
+        id="xml_pwr_c3_2_tags",
+        method="AlgebraWriter.writeAlgebraXML",
+        setup=_SETUP + """
+pwr = PowerAlgebra(c3, 2)
+""",
+        call="_xml_tags(pwr)",
+        description="PowerAlgebra(C3, 2) write tags",
+        **_SKIP
+    ),
+    TestCaseSpec(
+        id="wr_pwr_c2_3",
+        method="AlgebraIO.writeAlgebraFile",
+        setup=_SETUP + """
+pwr = PowerAlgebra(c2, 3)
+""",
+        call="_wr(pwr)",
+        description="write then read PowerAlgebra(C2, 3)",
+        **_SKIP
+    ),
+    TestCaseSpec(
+        id="wr_sub_c3",
+        method="AlgebraIO.writeAlgebraFile",
+        setup=_SETUP + """
+sub = Subalgebra(c3, [0])
+""",
+        call="_wr(sub)",
+        description="write then read Subalgebra of C3 on {0}",
+        notes=(
+            "Jython serialize of Java Subalgebra is Class@hex; Python emits the "
+            "typed algebra summary. Compared as the meaningful typed format."
+        ),
+        **_SKIP
+    ),
+    TestCaseSpec(
+        id="xml_sub_c3_tags",
+        method="AlgebraWriter.writeAlgebraXML",
+        setup=_SETUP + """
+sub = Subalgebra(c3, [0])
+""",
+        call="_xml_tags(sub)",
+        description="Subalgebra of C3 on {0} write tags",
+        **_SKIP
+    ),
+    TestCaseSpec(
+        id="wr_sub_c2_full",
+        method="AlgebraIO.writeAlgebraFile",
+        setup=_SETUP + """
+sub = Subalgebra(c2, [0, 1])
+""",
+        call="_wr(sub)",
+        description="write then read Subalgebra of C2 on {0,1}",
+        notes=(
+            "Jython serialize of Java Subalgebra is Class@hex; Python emits the "
+            "typed algebra summary. Compared as the meaningful typed format."
+        ),
+        **_SKIP
+    ),
+    TestCaseSpec(
+        id="wr_quot_c3",
+        method="AlgebraIO.writeAlgebraFile",
+        setup=_SETUP + """
+cons = list(c3.con().universe())
+quot = QuotientAlgebra(c3, cons[0])
+""",
+        call="_wr(quot)",
+        description="write then read QuotientAlgebra of C3 by a congruence",
+        **_SKIP
+    ),
+    TestCaseSpec(
+        id="xml_quot_c3_tags",
+        method="AlgebraWriter.writeAlgebraXML",
+        setup=_SETUP + """
+cons = list(c3.con().universe())
+quot = QuotientAlgebra(c3, cons[0])
+""",
+        call="_xml_tags(quot)",
+        description="QuotientAlgebra of C3 write tags",
+        **_SKIP
+    ),
+    TestCaseSpec(
+        id="wr_subprod_c3",
+        method="AlgebraIO.writeAlgebraFile",
+        setup=_SETUP + """
+bp = BigProductAlgebra(c3, 2)
+sp = SubProductAlgebra("SP3", bp, [IntArray([0, 0]), IntArray([1, 1])])
+""",
+        call="_wr(sp)",
+        description="write then read SubProductAlgebra of C3^2 on two gens",
         **_SKIP
     ),
 ]

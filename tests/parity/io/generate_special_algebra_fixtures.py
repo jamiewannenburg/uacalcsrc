@@ -42,7 +42,9 @@ def main():
         pass # directory already exists
 
     c2_path = os.path.join(REPO_ROOT, "resources", "algebras", "cyclic2.ua")
+    c3_path = os.path.join(REPO_ROOT, "resources", "algebras", "cyclic3.ua")
     c2 = AlgebraIO.readAlgebraFile(c2_path)
+    c3 = AlgebraIO.readAlgebraFile(c3_path)
     AlgebraWriter(c2, os.path.join(SPECIAL_DIR, "basic_cyclic2.ua")).writeAlgebraXML()
 
     prod = ProductAlgebra([c2, c2])
@@ -85,6 +87,24 @@ def main():
         AlgebraWriter(sp, os.path.join(SPECIAL_DIR, "subproduct_c2.ua")).writeAlgebraXML()
     except Exception as exc:
         print("SKIP subproduct_c2.ua:", exc)
+
+    try:
+        prod = ProductAlgebra([c2, c3])
+        AlgebraWriter(prod, os.path.join(SPECIAL_DIR, "product_c2_c3.ua")).writeAlgebraXML()
+    except Exception as exc:
+        print("SKIP product_c2_c3.ua:", exc)
+
+    try:
+        pwr = PowerAlgebra(c3, 2)
+        AlgebraWriter(pwr, os.path.join(SPECIAL_DIR, "power_c3_sq.ua")).writeAlgebraXML()
+    except Exception as exc:
+        print("SKIP power_c3_sq.ua:", exc)
+
+    try:
+        sub = Subalgebra(c3, [0])
+        AlgebraWriter(sub, os.path.join(SPECIAL_DIR, "subalgebra_c3.ua")).writeAlgebraXML()
+    except Exception as exc:
+        print("SKIP subalgebra_c3.ua:", exc)
 
     print("Wrote fixtures under", SPECIAL_DIR)
 

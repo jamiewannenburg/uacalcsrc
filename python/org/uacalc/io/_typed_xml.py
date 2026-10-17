@@ -2,9 +2,9 @@
 
 Java AlgebraWriter emits nested ``<productAlgebra>`` / ``<powerAlgebra>`` /
 ``<quotientAlgebra>`` / ``<subAlgebra>`` / ``<subProductAlgebra>`` instead of
-flattening to ``<basicAlgebra>`` tables. The Rust ``SmallAlgebra<i32>`` writer
-cannot see factors/root/congruence, so the org shim builds that XML here and
-rebuilds the typed algebra when those tags are present on read.
+flattening to ``<basicAlgebra>`` tables. Dedicated Rust writers on the
+concrete types emit that XML; the org shim dispatches to them and rebuilds
+the typed algebra when those tags are present on read.
 
 FreeAlgebra stays on the dedicated Rust writer (coordinate tuples) and the
 known Java ``</freeAlgebra>`` reader bug is unchanged.
@@ -24,7 +24,6 @@ _LibAlgebraReader = _io.AlgebraReader
 _LibAlgebraWriter = _io.AlgebraWriter
 
 _FREE_TYPE_NAMES = ("PyFreeAlgebra", "FreeAlgebra")
-_BASIC_TYPE_NAMES = ("PyBasicAlgebra", "BasicAlgebra")
 _PRODUCT_TYPE_NAMES = ("PyProductAlgebra", "ProductAlgebra")
 _POWER_TYPE_NAMES = ("PyPowerAlgebra", "PowerAlgebra")
 _QUOTIENT_TYPE_NAMES = ("PyQuotientAlgebra", "QuotientAlgebra")
@@ -40,93 +39,6 @@ def _local(tag: str) -> str:
     if tag.startswith("{"):
         return tag.rsplit("}", 1)[-1]
     return tag
-
-
-def _call(obj: Any, *names: str, default: Any = None) -> Any:
-    for name in names:
-        if obj is None or not hasattr(obj, name):
-            continue
-        val = getattr(obj, name)
-        if callable(val):
-            try:
-                return val()
-            except TypeError:
-                continue
-        return val
-    return default
-
-
-def _int_row(row: Any) -> List[int]:
-    if row is None:
-        return []
-    for attr in ("toArray", "to_array", "getArray", "get_array"):
-        fn = getattr(row, attr, None)
-        if callable(fn):
-            try:
-                return [int(x) for x in list(fn())]
-            except TypeError:
-                continue
-    try:
-        return [int(x) for x in list(row)]
-    except TypeError:
-        return [int(row[i]) for i in range(len(row))]
-
-
-def _xml_escape(text: str) -> str:
-    return (
-        str(text)
-        .replace("&", "&amp;")
-        .replace("<", "&lt;")
-        .replace(">", "&gt;")
-        .replace('"', "&quot;")
-    )
-
-
-def _named_desc_card_xml(alg: Any) -> str:
-    parts = []
-    name = _call(alg, "getName", "name")
-    if name is not None and str(name):
-        parts.append("    <algName>{}</algName>\n".format(_xml_escape(str(name))))
-    desc = _call(alg, "getDescription", "description")
-    if desc is not None and str(desc):
-        parts.append("    <desc>{}</desc>\n".format(_xml_escape(str(desc))))
-    card = _call(alg, "cardinality")
-    if card is not None:
-        parts.append("    <cardinality>{}</cardinality>\n".format(int(card)))
-    return "".join(parts)
-
-
-def _indent_block(text: str, prefix: str) -> str:
-    lines = text.strip("\n").splitlines()
-    return "\n".join(prefix + line if line.strip() else line for line in lines)
-
-
-def _write_basic_document(alg: Any) -> str:
-    inner = getattr(alg, "_inner", alg)
-    if _tname(inner) not in _BASIC_TYPE_NAMES:
-        conv = getattr(inner, "to_basic_algebra", None)
-        if callable(conv):
-            inner = conv()
-    fd, path = tempfile.mkstemp(suffix=".ua")
-    os.close(fd)
-    try:
-        _LibAlgebraWriter.write_algebra_xml_to_file(inner, path)
-        with open(path) as handle:
-            return handle.read()
-    finally:
-        try:
-            os.unlink(path)
-        except OSError:
-            pass
-
-
-def _basic_algebra_xml(alg: Any) -> str:
-    text = _write_basic_document(alg)
-    start = text.find("<basicAlgebra>")
-    end = text.rfind("</basicAlgebra>")
-    if start < 0 or end < 0:
-        raise ValueError("basicAlgebra XML fragment missing")
-    return text[start : end + len("</basicAlgebra>")]
 
 
 def _read_basic_document(xml: str) -> Any:
@@ -179,11 +91,6 @@ def _parse_product_elems(parent: Optional[ET.Element]) -> List[List[int]]:
     return out
 
 
-def _write_int_array_xml(values: List[int], indent: str) -> str:
-    joined = ",".join(str(int(v)) for v in values)
-    return "{0}<intArray>\n{0}  {1}\n{0}</intArray>\n".format(indent, joined)
-
-
 def write_typed_algebra_xml(algebra: Any, path: str) -> bool:
     """Write Java-shaped typed XML when ``algebra`` is a known derived kind.
 
@@ -192,155 +99,19 @@ def write_typed_algebra_xml(algebra: Any, path: str) -> bool:
     """
     alg = getattr(algebra, "_inner", algebra)
     name = _tname(alg)
-    if name in _FREE_TYPE_NAMES:
-        _LibAlgebraWriter.write_free_algebra_xml_to_file(alg, path)
-        return True
-    if name in _PRODUCT_TYPE_NAMES:
-        _write_product(alg, path)
-        return True
-    if name in _POWER_TYPE_NAMES:
-        _write_power(alg, path)
-        return True
-    if name in _QUOTIENT_TYPE_NAMES:
-        _write_quotient(alg, path)
-        return True
-    if name in _SUB_TYPE_NAMES:
-        _write_subalgebra(alg, path)
-        return True
-    if name in _SUBPROD_TYPE_NAMES:
-        _write_subproduct(alg, path)
-        return True
+    writers = (
+        (_FREE_TYPE_NAMES, "write_free_algebra_xml_to_file"),
+        (_PRODUCT_TYPE_NAMES, "write_product_algebra_xml_to_file"),
+        (_POWER_TYPE_NAMES, "write_power_algebra_xml_to_file"),
+        (_QUOTIENT_TYPE_NAMES, "write_quotient_algebra_xml_to_file"),
+        (_SUB_TYPE_NAMES, "write_subalgebra_xml_to_file"),
+        (_SUBPROD_TYPE_NAMES, "write_sub_product_algebra_xml_to_file"),
+    )
+    for type_names, method in writers:
+        if name in type_names:
+            getattr(_LibAlgebraWriter, method)(alg, path)
+            return True
     return False
-
-
-def _write_product(alg: Any, path: str) -> None:
-    factors = list(_call(alg, "factors") or [])
-    chunks = [_indent_block(_basic_algebra_xml(factor), "        ") for factor in factors]
-    factor_xml = "".join(
-        "      <factor>\n{}\n      </factor>\n".format(chunk) for chunk in chunks
-    )
-    xml = (
-        '<?xml version="1.0"?>\n<algebra>\n  <productAlgebra>\n'
-        + _named_desc_card_xml(alg)
-        + "    <factors>\n"
-        + factor_xml
-        + "    </factors>\n  </productAlgebra>\n</algebra>\n"
-    )
-    with open(path, "w") as handle:
-        handle.write(xml)
-
-
-def _write_power(alg: Any, path: str) -> None:
-    root = _call(alg, "getRoot", "get_root")
-    power = int(_call(alg, "getPower", "get_power") or 0)
-    root_xml = _indent_block(_basic_algebra_xml(root), "      ")
-    xml = (
-        '<?xml version="1.0"?>\n<algebra>\n  <powerAlgebra>\n'
-        + _named_desc_card_xml(alg)
-        + "    <power>{}</power>\n    <root>\n{}\n    </root>\n".format(power, root_xml)
-        + "  </powerAlgebra>\n</algebra>\n"
-    )
-    with open(path, "w") as handle:
-        handle.write(xml)
-
-
-def _partition_block_string(part: Any) -> str:
-    for name in ("toString", "to_string"):
-        fn = getattr(part, name, None)
-        if callable(fn):
-            try:
-                return str(fn())
-            except TypeError:
-                try:
-                    return str(fn(None))
-                except Exception:
-                    pass
-    return str(part)
-
-
-def _partition_array(part: Any) -> List[int]:
-    arr = _call(part, "toArray", "to_array", "getArray", "get_array") or []
-    return [int(x) for x in list(arr)]
-
-
-def _write_quotient(alg: Any, path: str) -> None:
-    super_alg = _call(alg, "superAlgebra", "super_algebra")
-    cong = _call(alg, "getCongruence", "get_congruence")
-    super_xml = _indent_block(_basic_algebra_xml(super_alg), "      ")
-    xml = (
-        '<?xml version="1.0"?>\n<algebra>\n  <quotientAlgebra>\n'
-        + _named_desc_card_xml(alg)
-        + "    <superAlgebra>\n{}\n    </superAlgebra>\n".format(super_xml)
-        + "    <congruence>\n      <partition>\n        {}\n      </partition>\n".format(
-            _partition_block_string(cong)
-        )
-        + _write_int_array_xml(_partition_array(cong), "      ")
-        + "    </congruence>\n  </quotientAlgebra>\n</algebra>\n"
-    )
-    with open(path, "w") as handle:
-        handle.write(xml)
-
-
-def _write_subalgebra(alg: Any, path: str) -> None:
-    super_alg = _call(alg, "superAlgebra", "super_algebra")
-    univ = list(_call(alg, "getSubuniverseArray", "get_subuniverse_array") or [])
-    super_xml = _indent_block(_basic_algebra_xml(super_alg), "      ")
-    xml = (
-        '<?xml version="1.0"?>\n<algebra>\n  <subAlgebra>\n'
-        + _named_desc_card_xml(alg)
-        + "    <superAlgebra>\n{}\n    </superAlgebra>\n".format(super_xml)
-        + "    <subUniverse>\n"
-        + _write_int_array_xml([int(x) for x in univ], "      ")
-        + "    </subUniverse>\n  </subAlgebra>\n</algebra>\n"
-    )
-    with open(path, "w") as handle:
-        handle.write(xml)
-
-
-def _write_product_elems(rows: List[List[int]], indent: str) -> str:
-    parts = []
-    for row in rows:
-        joined = ",".join(str(int(v)) for v in row)
-        parts.append("{0}<productElem>\n{0}  {1}\n{0}</productElem>\n".format(indent, joined))
-    return "".join(parts)
-
-
-def _write_subproduct(alg: Any, path: str) -> None:
-    gens = [_int_row(g) for g in (_call(alg, "generators") or [])]
-    univ = [_int_row(u) for u in (_call(alg, "getUniverseList", "get_universe_list") or [])]
-    prod = _call(alg, "getProductAlgebra", "get_product_algebra", "superAlgebra", "super_algebra")
-    powers = list(_call(prod, "getPowers", "get_powers") or [])
-    roots = list(_call(prod, "rootFactors", "root_factors") or [])
-    root_xml = "".join(
-        "          <factor>\n{}\n          </factor>\n".format(
-            _indent_block(_basic_algebra_xml(root), "            ")
-        )
-        for root in roots
-    )
-    powers_xml = _write_int_array_xml([int(p) for p in powers], "        ") if powers else "        <intArray>\n        </intArray>\n"
-    xml = (
-        '<?xml version="1.0"?>\n<algebra>\n  <subProductAlgebra>\n'
-        + _named_desc_card_xml(alg)
-        + "    <generators>\n"
-        + _write_product_elems(gens, "      ")
-        + "    </generators>\n"
-    )
-    if univ:
-        xml += (
-            "    <universe>\n"
-            + _write_product_elems(univ, "      ")
-            + "    </universe>\n"
-        )
-    xml += (
-        "    <superAlgebra>\n      <bigProductAlgebra>\n        <powers>\n"
-        + powers_xml
-        + "        </powers>\n        <rootFactors>\n"
-        + root_xml
-        + "        </rootFactors>\n      </bigProductAlgebra>\n    </superAlgebra>\n"
-        + "  </subProductAlgebra>\n</algebra>\n"
-    )
-    with open(path, "w") as handle:
-        handle.write(xml)
 
 
 def rebuild_typed_algebra(result: Any, xml_text: Optional[str]) -> Any:

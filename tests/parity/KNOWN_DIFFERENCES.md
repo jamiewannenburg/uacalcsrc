@@ -397,27 +397,30 @@ Malcev is intentionally left alone.
   implemented (`src/io/mod.rs` `write_free_algebra_xml_to_file`). Reader
   reconstruction is in `src/io/algebra_reader.rs`.
 
-### AlgebraWriter type-specific stubs (product / power / quotient / subalgebra)
+### AlgebraWriter typed XML (product / power / quotient / subalgebra)
 
 - **Java**: `writeAlgebra` dispatches to `writeProductAlgebra`,
   `writePowerAlgebra`, `writeQuotientAlgebra`, `writeSubalgebra`,
   `writeBigProductAlgebra`, `writeSubProductAlgebra` and writes nested
   factors / root / congruence / subuniverse.
-- **Python**: those `src/io/mod.rs` writers are still hardcoded
-  placeholders (power=2, partition `0,1`, one dummy factor).
-  `write_big_product_typed` exists only as the nested super algebra of
+- **Python**: dedicated Rust writers emit the same nested tags
+  (`write_product_algebra_xml_to_file`, `write_power_algebra_xml_to_file`,
+  `write_quotient_algebra_xml_to_file`, `write_subalgebra_xml_to_file`,
+  `write_sub_product_algebra_xml_to_file`). The generic
+  `Box<dyn SmallAlgebra<i32>>` writer still cannot see factors/root, so
+  those paths error and the org shim dispatches to the dedicated APIs.
+  `write_big_product_typed` is the nested super algebra of
   `<freeAlgebra>` / `<subProductAlgebra>`. Standalone `BigProductAlgebra`
   is not a `SmallAlgebra`, so Java `AlgebraWriter(alg, path)` cannot take
-  it. The org shim therefore still routes the SmallAlgebra-derived types
-  through
-  `to_basic_algebra()` so write/read stays semantically useful as flat
-  tables. Matching Java XML needs typed writers plus a reader that rebuilds
-  those kinds (the Rust reader only materializes `BasicAlgebra`).
-- **Status**: Strict xfail / roadmap.
-- **Tests**: `wr_prod_c2_c2`, `xml_prod_c2_c2_tags`, `wr_pwr_c2_2`,
-  `xml_pwr_c2_2_tags`, `wr_quot_c2`, `xml_quot_c2_tags`, `wr_sub_c2`,
-  `xml_sub_c2_tags`, `wr_subprod_c2`, `xml_subprod_c2_tags` strict xfail.
-- **Owner vs shim**: Owner/library — typed XML write/read.
+  it. Nested derived factors are written as `<basicAlgebra>` tables (same
+  as the previous org shim) when the nested value is already a basic
+  algebra, which matches the checked-in Java fixtures.
+- **Status**: Implemented in the library
+- **Tests**: `wr_prod_*`, `wr_pwr_*`, `wr_quot_*`, `wr_sub_*`,
+  `wr_subprod_*`, `xml_*_tags`, plus
+  `test_typed_algebra_python_roundtrip.py`
+- **Owner vs shim**: Owner/library — `src/io/mod.rs` dedicated writers.
+  Org shim only dispatches.
 
 ### AlgebraReader nested algebra kinds
 
@@ -425,15 +428,34 @@ Malcev is intentionally left alone.
   `QuotientAlgebra` / `Subalgebra` / `BigProductAlgebra` /
   `SubProductAlgebra` from nested XML (card 4 for C2×C2 and C2², card 1
   for the `{0}` subalgebra).
-- **Python**: `src/io/algebra_reader.rs` only builds `BasicAlgebra`. A
-  nested file yields the last nested basic algebra (a factor or the super
-  algebra). Example: `resources/special/product_c2_c2.ua` is Java
-  `ProductAlgebra` card 4 vs Python `BasicAlgebra` C2 card 2.
-- **Status**: Strict xfail / roadmap.
+- **Python**: `src/io/algebra_reader.rs` still materializes a
+  `BasicAlgebra` (last nested basic, or a rebuilt `FreeAlgebra`). The org
+  shim then rebuilds the typed algebra from the raw XML
+  (`rebuild_typed_algebra` in `python/org/uacalc/io/_typed_xml.py`).
+  PowerAlgebra tables use Horner/product encoding, matching Java C2²
+  `[0,1,2,3,1,0,3,2,2,3,0,1,3,2,1,0]` rather than cyclic-on-4.
+- **Status**: Implemented (shim rebuild + library Horner tables)
 - **Tests**: `read_special_product`, `read_special_power`,
   `read_special_quotient`, `read_special_subalgebra`,
-  `read_special_subproduct` strict xfail.
-- **Owner vs shim**: Owner/library — typed XML read.
+  `read_special_subproduct` and the wider `read_special_*` / `wr_*` cases
+- **Owner vs shim**: Owner/library for write and PowerAlgebra tables;
+  org shim for typed rebuild on read.
+
+### Subalgebra Jython serialize is Class@hex
+
+- **Java**: `Subalgebra.toString()` is `org.uacalc.alg.Subalgebra@hex`.
+  The Jython golden generator historically missed `"algebra"` in the
+  class name (`Subalgebra` has a lowercase `a`), so the frozen golden
+  return value is that identity string instead of tables.
+- **Python**: write/read rebuilds a typed `Subalgebra` with cardinality
+  and Horner tables (C2 on `{0}` is card 1, table `[0]`). The parity
+  harness treats a Java `Class@hex` fallback golden as matching that
+  semantic algebra summary.
+- **Status**: Documented difference — Python is the meaningful format
+- **Tests**: `wr_sub_c2`, `read_special_subalgebra`, `wr_sub_c3`,
+  `wr_sub_c2_full`, `read_special_subalgebra_c3`
+- **Owner vs shim**: Known Java `toString` / golden-capture gap. Not a
+  library defect.
 
 ### Algebras.quasiCriticalCongruences
 
