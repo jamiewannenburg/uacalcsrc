@@ -9,8 +9,9 @@
  */
 
 use crate::alg::{Algebra, SmallAlgebra, BigProductAlgebra, FreeAlgebra, BasicAlgebra, Closer};
+use crate::alg::conlat::{BasicBinaryRelation, BinaryRelation};
 use crate::terms::{Term, VariableImp};
-use crate::util::int_array::IntArray;
+use crate::util::int_array::{IntArray, IntArrayTrait};
 use crate::util::sequence_generator::SequenceGenerator;
 use std::collections::{BTreeMap, HashMap, HashSet};
 use std::sync::Arc;
@@ -3589,6 +3590,535 @@ where
     
     // All pairs passed - QWNU term exists
     Ok(true)
+}
+
+fn increment_sequence(arr: &mut [i32], max: i32) -> bool {
+    let len = arr.len();
+    for i in (0..len).rev() {
+        if arr[i] < max {
+            arr[i] += 1;
+            for j in (i + 1)..len {
+                arr[j] = 0;
+            }
+            return true;
+        }
+    }
+    false
+}
+
+fn ia_from_vec(v: &[i32]) -> Result<IntArray, String> {
+    IntArray::from_array(v.to_vec())
+}
+
+fn ia_to_vec(ia: &IntArray) -> Vec<i32> {
+    ia.as_slice().to_vec()
+}
+
+fn vecs_to_ias(rows: &[Vec<i32>]) -> Result<Vec<IntArray>, String> {
+    rows.iter().map(|r| ia_from_vec(r)).collect()
+}
+
+/// Java `Malcev.jonssonLevelPath` (no pre-sort of `middleZero`).
+pub fn jonsson_level_path_pub(
+    middle_zero: &[Vec<i32>],
+    g0: &[i32],
+    g2: &[i32],
+    alvin_variant: bool,
+) -> Result<Option<Vec<Vec<i32>>>, String> {
+    let middle = vecs_to_ias(middle_zero)?;
+    let g0 = ia_from_vec(g0)?;
+    let g2 = ia_from_vec(g2)?;
+
+    let mut classes0: HashMap<i32, Vec<IntArray>> = HashMap::new();
+    let mut classes2: HashMap<i32, Vec<IntArray>> = HashMap::new();
+    for ia in &middle {
+        if let Some(v0) = ia.get(0) {
+            classes0.entry(v0).or_default().push(ia.clone());
+        }
+        if let Some(v2) = ia.get(2) {
+            classes2.entry(v2).or_default().push(ia.clone());
+        }
+    }
+
+    let mut parent_map: HashMap<IntArray, Option<IntArray>> = HashMap::new();
+    let mut current_level = vec![g0.clone()];
+    parent_map.insert(g0.clone(), None);
+    let mut even = alvin_variant;
+
+    loop {
+        even = !even;
+        let mut next_level = Vec::new();
+        for ia in &current_level {
+            let eqclass = if even {
+                ia.get(0).and_then(|v0| classes0.get(&v0))
+            } else {
+                ia.get(2).and_then(|v2| classes2.get(&v2))
+            };
+            let Some(class) = eqclass else {
+                continue;
+            };
+            for ia2 in class {
+                if !parent_map.contains_key(ia2) {
+                    parent_map.insert(ia2.clone(), Some(ia.clone()));
+                    next_level.push(ia2.clone());
+                }
+                if ia2 == &g2 {
+                    let mut path = vec![g2.clone()];
+                    let mut cur = parent_map.get(&g2).cloned().flatten();
+                    while let Some(prev) = cur {
+                        path.push(prev.clone());
+                        cur = parent_map.get(&prev).cloned().flatten();
+                    }
+                    path.reverse();
+                    return Ok(Some(path.iter().map(ia_to_vec).collect()));
+                }
+            }
+        }
+        if next_level.is_empty() {
+            break;
+        }
+        current_level = next_level;
+    }
+    Ok(None)
+}
+
+/// Java `Malcev.gummLevelPath`.
+pub fn gumm_level_path_pub(
+    middle_zero: &[Vec<i32>],
+    first_one: &[Vec<i32>],
+    g0: &[i32],
+    g2: &[i32],
+) -> Result<Option<Vec<Vec<i32>>>, String> {
+    let middle = vecs_to_ias(middle_zero)?;
+    let first = vecs_to_ias(first_one)?;
+    let g0 = ia_from_vec(g0)?;
+    let g2 = ia_from_vec(g2)?;
+
+    let mut classes0: HashMap<i32, Vec<IntArray>> = HashMap::new();
+    let mut classes2: HashMap<i32, Vec<IntArray>> = HashMap::new();
+    for ia in &middle {
+        if let Some(v0) = ia.get(0) {
+            classes0.entry(v0).or_default().push(ia.clone());
+        }
+        if let Some(v2) = ia.get(2) {
+            classes2.entry(v2).or_default().push(ia.clone());
+        }
+    }
+    let mut classes1: HashMap<i32, Vec<IntArray>> = HashMap::new();
+    for ia in &first {
+        if let Some(v2) = ia.get(2) {
+            classes1.entry(v2).or_default().push(ia.clone());
+        }
+    }
+
+    let mut parent_map: HashMap<IntArray, Option<IntArray>> = HashMap::new();
+    let mut current_level = vec![g0.clone()];
+    parent_map.insert(g0.clone(), None);
+    let mut even = false;
+
+    loop {
+        even = !even;
+        let mut next_level = Vec::new();
+        for ia in &current_level {
+            let eqclass = if even {
+                ia.get(0).and_then(|v0| classes0.get(&v0))
+            } else {
+                ia.get(2).and_then(|v2| classes2.get(&v2))
+            };
+            let Some(class) = eqclass else {
+                continue;
+            };
+            for ia2 in class {
+                if !parent_map.contains_key(ia2) {
+                    parent_map.insert(ia2.clone(), Some(ia.clone()));
+                    next_level.push(ia2.clone());
+                }
+                if let Some(v2) = ia2.get(2) {
+                    if let Some(first_class) = classes1.get(&v2) {
+                        let mut p = first_class[0].clone();
+                        if first_class.contains(&g2) {
+                            p = g2.clone();
+                        }
+                        let mut path = Vec::new();
+                        if !first_class.contains(ia2) {
+                            path.push(p);
+                        }
+                        path.push(ia2.clone());
+                        let mut cur = parent_map.get(ia2).cloned().flatten();
+                        while let Some(prev) = cur {
+                            path.push(prev.clone());
+                            cur = parent_map.get(&prev).cloned().flatten();
+                        }
+                        path.reverse();
+                        return Ok(Some(path.iter().map(ia_to_vec).collect()));
+                    }
+                }
+            }
+        }
+        if next_level.is_empty() {
+            break;
+        }
+        current_level = next_level;
+    }
+    Ok(None)
+}
+
+/// Java `Malcev.hagemannMitschkeLevelPath`.
+pub fn hagemann_mitschke_level_path_pub(
+    sub: &[Vec<i32>],
+    g0: &[i32],
+    g2: &[i32],
+) -> Result<Option<Vec<Vec<i32>>>, String> {
+    let sub = vecs_to_ias(sub)?;
+    let g0 = ia_from_vec(g0)?;
+    let g2 = ia_from_vec(g2)?;
+
+    let mut classes0: HashMap<i32, Vec<IntArray>> = HashMap::new();
+    let mut classes1: HashMap<i32, Vec<IntArray>> = HashMap::new();
+    for ia in &sub {
+        if let Some(v0) = ia.get(0) {
+            classes0.entry(v0).or_default().push(ia.clone());
+        }
+        if let Some(v1) = ia.get(1) {
+            classes1.entry(v1).or_default().push(ia.clone());
+        }
+    }
+
+    let mut parent_map: HashMap<IntArray, Option<IntArray>> = HashMap::new();
+    let mut current_level = vec![g0.clone()];
+    parent_map.insert(g0.clone(), None);
+
+    loop {
+        let mut next_level = Vec::new();
+        for ia in &current_level {
+            // Java indexes classes1 by the first coordinate of ia.
+            let Some(class) = ia.get(0).and_then(|v0| classes1.get(&v0)) else {
+                continue;
+            };
+            for ia2 in class {
+                if !parent_map.contains_key(ia2) {
+                    parent_map.insert(ia2.clone(), Some(ia.clone()));
+                    next_level.push(ia2.clone());
+                }
+                if ia2 == &g2 {
+                    let mut path = vec![g2.clone()];
+                    let mut cur = parent_map.get(&g2).cloned().flatten();
+                    while let Some(prev) = cur {
+                        path.push(prev.clone());
+                        cur = parent_map.get(&prev).cloned().flatten();
+                    }
+                    path.reverse();
+                    return Ok(Some(path.iter().map(ia_to_vec).collect()));
+                }
+            }
+        }
+        if next_level.is_empty() {
+            break;
+        }
+        current_level = next_level;
+    }
+    Ok(None)
+}
+
+/// Java `Malcev.jonssonLevelAux`.
+pub fn jonsson_level_aux_pub(
+    middle_zero: &[Vec<i32>],
+    g0: &[i32],
+    g2: &[i32],
+) -> Result<i32, String> {
+    let middle = vecs_to_ias(middle_zero)?;
+    let g0 = ia_from_vec(g0)?;
+    let g2 = ia_from_vec(g2)?;
+
+    let mut classes0: HashMap<i32, Vec<IntArray>> = HashMap::new();
+    let mut classes2: HashMap<i32, Vec<IntArray>> = HashMap::new();
+    for ia in &middle {
+        if let Some(v0) = ia.get(0) {
+            classes0.entry(v0).or_default().push(ia.clone());
+        }
+        if let Some(v2) = ia.get(2) {
+            classes2.entry(v2).or_default().push(ia.clone());
+        }
+    }
+
+    let mut visited: HashSet<IntArray> = HashSet::new();
+    let mut current_level = vec![g0.clone()];
+    visited.insert(g0.clone());
+    let mut levels_size = 1i32;
+    let mut even = false;
+
+    loop {
+        even = !even;
+        let mut next_level = Vec::new();
+        for ia in &current_level {
+            let eqclass = if even {
+                ia.get(0).and_then(|v0| classes0.get(&v0))
+            } else {
+                ia.get(2).and_then(|v2| classes2.get(&v2))
+            };
+            let Some(class) = eqclass else {
+                continue;
+            };
+            for ia2 in class {
+                if ia2 == &g2 {
+                    return Ok(levels_size);
+                }
+                if !visited.contains(ia2) {
+                    visited.insert(ia2.clone());
+                    next_level.push(ia2.clone());
+                }
+            }
+        }
+        if next_level.is_empty() {
+            break;
+        }
+        levels_size += 1;
+        current_level = next_level;
+    }
+    Ok(-1)
+}
+
+/// Java `Malcev.nuTermIdempotent_Bad` — Horowitz search with a full
+/// `sequenceIncrementor` on A (not the nondecreasing one) and `B[j] == A[j]`.
+pub fn nu_term_idempotent_bad<T>(
+    alg: &dyn SmallAlgebra<UniverseItem = T>,
+    arity: usize,
+) -> Result<bool, String>
+where
+    T: Clone + std::fmt::Debug + std::fmt::Display + std::hash::Hash + Eq + Send + Sync + 'static,
+{
+    if arity < 3 {
+        return Err("arity must be at least 3".to_string());
+    }
+    let card = alg.cardinality();
+    let i32_alg = as_i32_algebra(alg)?;
+    let product_alg = BigProductAlgebra::new_power_safe(Box::new(i32_alg), arity)?;
+    let product_alg_arc = Arc::new(product_alg);
+    let size = card as i32;
+    let mut a = vec![0i32; arity];
+    loop {
+        let a_array = ia_from_vec(&a)?;
+        let mut b = vec![0i32; arity];
+        loop {
+            let mut gens = Vec::with_capacity(arity);
+            for j in 0..arity {
+                let mut row = vec![0i32; arity];
+                for k in 0..arity {
+                    if j == k {
+                        if b[j] == a[j] {
+                            row[k] = b[j] + 1;
+                        } else {
+                            row[k] = b[j];
+                        }
+                    } else {
+                        row[k] = a[k];
+                    }
+                }
+                gens.push(ia_from_vec(&row)?);
+            }
+            let mut closer = Closer::new_safe(product_alg_arc.clone(), gens)?;
+            closer.set_element_to_find(Some(a_array.clone()));
+            closer.set_suppress_output(true);
+            let sub = closer.sg_close()?;
+            if !sub.contains(&a_array) {
+                return Ok(false);
+            }
+            if !increment_sequence(&mut b, size - 2) {
+                break;
+            }
+        }
+        if !increment_sequence(&mut a, size - 1) {
+            break;
+        }
+    }
+    Ok(true)
+}
+
+/// Java `Malcev.fixedKEdgeIdempotent`.
+pub fn fixed_k_edge_idempotent<T>(
+    alg: &dyn SmallAlgebra<UniverseItem = T>,
+    level: usize,
+) -> Result<bool, String>
+where
+    T: Clone + std::fmt::Debug + std::fmt::Display + std::hash::Hash + Eq + Send + Sync + 'static,
+{
+    if level < 2 {
+        return Err("level must be at least 2".to_string());
+    }
+    let n = level + 1;
+    let alg_size = alg.cardinality();
+    let max = alg_size as i32 - 1;
+    let i32_alg = as_i32_algebra(alg)?;
+    let product = Arc::new(BigProductAlgebra::new_power_safe(Box::new(i32_alg), level)?);
+    let mut a = vec![0i32; level];
+    loop {
+        let a_array = ia_from_vec(&a)?;
+        let mut b = vec![0i32; level];
+        loop {
+            let mut gens = Vec::new();
+            let mut no_projection = true;
+            let mut g: Vec<Vec<i32>> = vec![vec![0i32; level]; n];
+            for i in 0..level {
+                if a[i] == b[i] {
+                    no_projection = false;
+                    break;
+                }
+                g[i] = a.clone();
+                g[i][i] = b[i];
+                gens.push(ia_from_vec(&g[i])?);
+            }
+            if no_projection {
+                g[level][0] = b[0];
+                g[level][1] = b[1];
+                if level > 2 {
+                    g[n - 1][2..].copy_from_slice(&a[2..]);
+                }
+                gens.push(ia_from_vec(&g[n - 1])?);
+                let mut closer = Closer::new_safe(product.clone(), gens)?;
+                closer.set_element_to_find(Some(a_array.clone()));
+                closer.set_suppress_output(true);
+                let sub = closer.sg_close()?;
+                if !sub.contains(&a_array) {
+                    return Ok(false);
+                }
+            }
+            if !increment_sequence(&mut b, max) {
+                break;
+            }
+        }
+        if !increment_sequence(&mut a, max) {
+            break;
+        }
+    }
+    Ok(true)
+}
+
+fn is_equal_somewhere(a: &[i32], b: &[i32]) -> bool {
+    for i in (0..a.len()).rev() {
+        if a[i] == b[i] {
+            return true;
+        }
+    }
+    false
+}
+
+fn increment_until_some_inequality(a: &[i32], b: &mut [i32], max: i32) -> bool {
+    if !increment_sequence(b, max) {
+        return false;
+    }
+    if is_equal_somewhere(a, b) {
+        if !increment_sequence(b, max) {
+            return false;
+        }
+    }
+    true
+}
+
+/// Java `Malcev.fixedKPermIdempotent`.
+pub fn fixed_k_perm_idempotent<T>(
+    alg: &dyn SmallAlgebra<UniverseItem = T>,
+    level: usize,
+) -> Result<bool, String>
+where
+    T: Clone + std::fmt::Debug + std::fmt::Display + std::hash::Hash + Eq + Send + Sync + 'static,
+{
+    if level < 2 {
+        return Err("arity must be at least 3".to_string());
+    }
+    let n = level - 1;
+    let alg_size = alg.cardinality() as usize;
+    let max = alg_size as i32 - 1;
+    let i32_alg = as_i32_algebra(alg)?;
+    let alg_sq = Arc::new(BigProductAlgebra::new_power_safe(Box::new(i32_alg), 2)?);
+    let mut a = vec![0i32; n + 1];
+    loop {
+        let mut b = vec![0i32; n + 1];
+        loop {
+            let mut r = BasicBinaryRelation::identity(alg_size)?;
+            for i in 1..=n {
+                let gens = vec![
+                    ia_from_vec(&[a[i - 1], a[i]])?,
+                    ia_from_vec(&[b[i - 1], a[i]])?,
+                    ia_from_vec(&[b[i - 1], b[i]])?,
+                ];
+                let mut closer = Closer::new_safe(alg_sq.clone(), gens)?;
+                closer.set_suppress_output(true);
+                let sub = closer.sg_close()?;
+                let rel = BasicBinaryRelation::from_pairs(sub, alg_size)?;
+                r = match r.compose(&rel)? {
+                    boxed => {
+                        let pairs = boxed.get_pairs().into_iter().collect();
+                        BasicBinaryRelation::from_pairs(pairs, alg_size)?
+                    }
+                };
+            }
+            if !r.is_related(a[0] as usize, b[n] as usize) {
+                return Ok(false);
+            }
+            if !increment_sequence(&mut b, max) {
+                break;
+            }
+        }
+        if !increment_sequence(&mut a, max) {
+            break;
+        }
+    }
+    Ok(true)
+}
+
+/// Java `Malcev.permLevelIdempotent`. The variety must be k-permutable
+/// for some k or this never returns.
+pub fn perm_level_idempotent<T>(
+    alg: &dyn SmallAlgebra<UniverseItem = T>,
+) -> Result<i32, String>
+where
+    T: Clone + std::fmt::Debug + std::fmt::Display + std::hash::Hash + Eq + Send + Sync + 'static,
+{
+    let alg_size = alg.cardinality() as usize;
+    let max = alg_size as i32 - 1;
+    let mut n: usize = 1;
+    let i32_alg = as_i32_algebra(alg)?;
+    let alg_sq = Arc::new(BigProductAlgebra::new_power_safe(Box::new(i32_alg), 2)?);
+    let mut a = vec![0i32; n + 1];
+    loop {
+        let mut b = vec![0i32; n + 1];
+        loop {
+            let mut r = BasicBinaryRelation::identity(alg_size)?;
+            for i in 1..=n {
+                let gens = vec![
+                    ia_from_vec(&[a[i - 1], a[i]])?,
+                    ia_from_vec(&[b[i - 1], a[i]])?,
+                    ia_from_vec(&[b[i - 1], b[i]])?,
+                ];
+                let mut closer = Closer::new_safe(alg_sq.clone(), gens)?;
+                closer.set_suppress_output(true);
+                let sub = closer.sg_close()?;
+                let rel = BasicBinaryRelation::from_pairs(sub, alg_size)?;
+                r = match r.compose(&rel)? {
+                    boxed => {
+                        let pairs = boxed.get_pairs().into_iter().collect();
+                        BasicBinaryRelation::from_pairs(pairs, alg_size)?
+                    }
+                };
+            }
+            if !r.is_related(a[0] as usize, b[n] as usize) {
+                n += 1;
+                let mut aa = vec![0i32; n + 1];
+                let mut bb = vec![0i32; n + 1];
+                aa[..a.len()].copy_from_slice(&a);
+                bb[..b.len()].copy_from_slice(&b);
+                a = aa;
+                b = bb;
+            }
+            if !increment_until_some_inequality(&a, &mut b, max) {
+                break;
+            }
+        }
+        if !increment_sequence(&mut a, max) {
+            break;
+        }
+    }
+    Ok((n as i32) + 1)
 }
 
 #[cfg(test)]

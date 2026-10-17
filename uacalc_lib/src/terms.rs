@@ -449,7 +449,13 @@ impl PyTaylor {
     /// A new Taylor instance
     #[new]
     fn new(op_sym: &PyOperationSymbol, inteqs: Vec<Vec<crate::util::PyIntArray>>) -> Self {
-        // Convert PyIntArray to IntArray
+        Self::from_symbol(op_sym, inteqs)
+    }
+
+    /// Same as the `OperationSymbol` constructor; used by the org.uacalc shim
+    /// after it replaces `__new__` to dispatch Java overloads.
+    #[staticmethod]
+    fn from_symbol(op_sym: &PyOperationSymbol, inteqs: Vec<Vec<crate::util::PyIntArray>>) -> Self {
         let rust_inteqs: Vec<Vec<uacalc::util::int_array::IntArray>> = inteqs
             .iter()
             .map(|pair| {
@@ -458,7 +464,6 @@ impl PyTaylor {
                     .collect()
             })
             .collect();
-        
         PyTaylor {
             inner: uacalc::terms::Taylor::new_with_inteqs(op_sym.get_inner(), rust_inteqs),
         }
@@ -552,27 +557,93 @@ impl PyTaylor {
     }
     
     /// Create a term from an array of variable indices.
-    /// 
-    /// # Arguments
-    /// * `arr` - The array of variable indices (0 for x, 1 for y)
-    /// 
-    /// # Returns
-    /// The term represented by the array
-    fn term_from_array(&self, arr: Vec<i32>) -> PyResult<PyObject> {
+    ///
+    /// Java overloads: `termFromArray(int[])` and `termFromArray(int[], start, len)`.
+    #[pyo3(signature = (arr, start=None, len=None))]
+    fn term_from_array(
+        &self,
+        arr: Vec<i32>,
+        start: Option<i32>,
+        len: Option<i32>,
+    ) -> PyResult<PyObject> {
         Python::with_gil(|py| {
-            let term = self.inner.term_from_array(&arr);
-            
-            if term.isa_variable() {
-                let var_name = format!("{}", term);
-                let py_var = PyVariableImp {
-                    inner: VariableImp::new(&var_name),
-                };
-                Ok(py_var.into_py(py))
-            } else {
-                let py_term = reconstruct_non_variable_term(term.as_ref())?;
-                Ok(py_term.into_py(py))
-            }
+            let term = match (start, len) {
+                (Some(s), Some(l)) => {
+                    let start = s.max(0) as usize;
+                    let len = l.max(0) as usize;
+                    self.inner.term_from_array_range(&arr, start, len)
+                }
+                _ => self.inner.term_from_array(&arr),
+            };
+            term_to_py(py, term.as_ref())
         })
+    }
+
+    /// Find a term in this language that interprets `g` at the given depth.
+    ///
+    /// Java's success path returns `null` (it only prints). CPython returns the
+    /// interpreting term when one is found; the org.uacalc shim discards it so
+    /// Jython goldens stay `None`.
+    fn interprets(&self, g: &PyTaylor, level: i32) -> PyResult<Option<PyObject>> {
+        Python::with_gil(|py| match self.inner.interprets(&g.inner, level) {
+            Some(term) => Ok(Some(term_to_py(py, term.as_ref())?)),
+            None => Ok(None),
+        })
+    }
+
+    /// Java `makeBalancedTayorTerm` (typo preserved on the org shim).
+    fn make_balanced_taylor_term(
+        &self,
+        f: &PyOperationSymbol,
+        depth: i32,
+        var_list: Vec<Bound<'_, PyAny>>,
+    ) -> PyResult<PyObject> {
+        let mut vars = Vec::new();
+        for v in var_list {
+            if let Ok(var) = v.extract::<PyRef<PyVariableImp>>() {
+                vars.push(var.inner.clone());
+            } else {
+                return Err(PyValueError::new_err(
+                    "varList entries must be VariableImp instances",
+                ));
+            }
+        }
+        let sym = f.get_inner();
+        Python::with_gil(|py| {
+            let term = self.inner.make_balanced_taylor_term(&sym, depth, &vars);
+            term_to_py(py, term.as_ref())
+        })
+    }
+
+    /// Instance `lexicographicallyCompare(Term, Term)`.
+    fn lexicographically_compare_terms(
+        &self,
+        s: &Bound<'_, PyAny>,
+        t: &Bound<'_, PyAny>,
+    ) -> PyResult<i32> {
+        let s_term = extract_term(s)?;
+        let t_term = extract_term(t)?;
+        Ok(uacalc::terms::Taylor::lexicographically_compare_terms(
+            s_term.as_ref(),
+            t_term.as_ref(),
+        ))
+    }
+
+    /// Java `canonicalForm(IntArray)`.
+    fn canonical_form_int_array(
+        &self,
+        arr: &crate::util::PyIntArray,
+    ) -> crate::util::PyIntArray {
+        crate::util::PyIntArray {
+            inner: self.inner.canonical_form_int_array(&arr.inner),
+        }
+    }
+
+    /// Java `equations()` — `null` when the instance was built from inteqs.
+    fn equations(&self) -> Option<Vec<String>> {
+        self.inner
+            .equations()
+            .map(|eqs| eqs.iter().map(|e| format!("{}", e)).collect())
     }
     
     /// Lexicographically compare two IntArrays (static version).
@@ -710,6 +781,18 @@ fn python_var_map_to_rust(
         rust_map.insert(key, term);
     }
     Ok(rust_map)
+}
+
+fn extract_term(obj: &Bound<'_, PyAny>) -> PyResult<Box<dyn Term>> {
+    if let Ok(var) = obj.extract::<PyRef<PyVariableImp>>() {
+        return Ok(Box::new(var.inner.clone()));
+    }
+    if let Ok(nvt) = obj.extract::<PyRef<PyNonVariableTerm>>() {
+        return Ok(nvt.inner.clone_box());
+    }
+    Err(PyValueError::new_err(
+        "Term must be a VariableImp or NonVariableTerm instance",
+    ))
 }
 
 /// Convert a core ``Term`` into a Python ``VariableImp`` or ``NonVariableTerm``.

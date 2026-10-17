@@ -488,3 +488,184 @@ t = NonVariableTerm.makeConstantTerm(OperationSymbol("c", 0))
         ),
     ),
 ]
+
+_TAYLOR = _IMPORTS + r"""
+from org.uacalc.terms import Taylor
+from org.uacalc.util import IntArray
+
+def _ia(obj):
+    if obj is None:
+        return None
+    for attr in ("getArray", "to_array", "get_array"):
+        fn = getattr(obj, attr, None)
+        if callable(fn):
+            return [int(x) for x in fn()]
+    try:
+        return [int(x) for x in list(obj)]
+    except TypeError:
+        return str(obj)
+
+mms = Taylor.markovicMcKenzieTerm()
+sig = Taylor.siggersTerm()
+ia0000 = IntArray([1, 0, 0, 0])
+ia0011 = IntArray([0, 0, 1, 1])
+inteqs4 = [[ia0000, ia0011], [IntArray([0, 0, 1, 0]), IntArray([0, 1, 0, 0])]]
+t4 = Taylor(4, inteqs4)
+t_sym = Taylor(OperationSymbol("mm", 4), inteqs4)
+leaf = t4.termFromArray([0, 1, 0, 1])
+"""
+
+TEST_CASES.extend([
+    TestCaseSpec(
+        id="taylor_mms_term",
+        method="Taylor.markovicMcKenzieTerm",
+        setup=_TAYLOR,
+        call="mms.arity()",
+        description="markovicMcKenzieTerm() factory arity 4",
+    ),
+    TestCaseSpec(
+        id="taylor_siggers_term",
+        method="Taylor.siggersTerm",
+        setup=_TAYLOR,
+        call="sig.arity()",
+        description="siggersTerm() factory arity 6",
+    ),
+    TestCaseSpec(
+        id="taylor_mms_arity",
+        method="Taylor.arity",
+        setup=_TAYLOR,
+        call="[mms.arity(), sig.arity()]",
+        description="Markovic-McKenzie arity 4 and Siggers arity 6",
+        **dict(skip_string_check=True, notes="list vs Java toString"),
+    ),
+    TestCaseSpec(
+        id="taylor_mms_inteqs",
+        method="Taylor.inteqs",
+        setup=_TAYLOR,
+        call="[[_ia(ia) for ia in list(pair)] for pair in list(mms.inteqs())]",
+        description="Markovic-McKenzie integer equations",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="taylor_ctor_arity",
+        method="Taylor.Taylor",
+        setup=_TAYLOR,
+        call="t4.arity()",
+        description="Taylor(int, inteqs) arity",
+    ),
+    TestCaseSpec(
+        id="taylor_ctor_sym",
+        method="Taylor.Taylor",
+        setup=_TAYLOR,
+        call="t_sym.arity()",
+        description="Taylor(OperationSymbol, inteqs) arity",
+    ),
+    TestCaseSpec(
+        id="taylor_ctor_term_eqs",
+        method="Taylor.Taylor",
+        setup=_TAYLOR,
+        call="Taylor(fxy, []).arity()",
+        description="Taylor(Term, eqs) uses the term's leading symbol arity",
+    ),
+    TestCaseSpec(
+        id="taylor_term_from_array",
+        method="Taylor.termFromArray",
+        setup=_TAYLOR,
+        call="str(leaf).replace(' ', '')",
+        description="termFromArray([0,1,0,1]) for arity 4",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="taylor_term_from_array_range",
+        method="Taylor.termFromArray",
+        setup=_TAYLOR,
+        call="str(t4.termFromArray([9, 0, 1, 0, 1, 8], 1, 4)).replace(' ', '')",
+        description="termFromArray(arr, start, len) skip prefix/suffix",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="taylor_canonical_form_var",
+        method="Taylor.canonicalForm",
+        setup=_TAYLOR,
+        call="str(mms.canonicalForm(x))",
+        description="canonicalForm of a variable is the variable",
+    ),
+    TestCaseSpec(
+        id="taylor_canonical_form_leaf",
+        method="Taylor.canonicalForm",
+        setup=_TAYLOR,
+        call="str(t4.canonicalForm(leaf)).replace(' ', '')",
+        description="canonicalForm of a balanced mm-term",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="taylor_canonical_form_intarray",
+        method="Taylor.canonicalForm",
+        setup=_TAYLOR,
+        call="_ia(mms.canonicalForm(IntArray([1, 0, 0, 0])))",
+        description="canonicalForm(IntArray) of length arity via findRoot",
+        skip_string_check=True,
+        xfail_reason=(
+            "Known Java bug: canonicalForm(IntArray) System.arraycopy's the "
+            "IntArray object instead of getArray(), raising ArrayStoreException. "
+            "CPython rewrites via findRoot."
+        ),
+    ),
+    TestCaseSpec(
+        id="taylor_lex_arrays",
+        method="Taylor.lexicographicallyCompare",
+        setup=_TAYLOR,
+        call="[Taylor.lexicographicallyCompare(IntArray([0, 1]), IntArray([1, 0])), Taylor.lexicographicallyCompare([0, 0], [0, 0])]",
+        description="static lexicographicallyCompare on IntArray and int[]",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="taylor_lex_terms",
+        method="Taylor.lexicographicallyCompare",
+        setup=_TAYLOR,
+        call="mms.lexicographicallyCompare(x, y)",
+        description="instance lexicographicallyCompare(x, y) is -1",
+    ),
+    TestCaseSpec(
+        id="taylor_lex_len_mismatch",
+        method="Taylor.lexicographicallyCompare",
+        setup=_TAYLOR,
+        call="Taylor.lexicographicallyCompare([0, 1], [0])",
+        description="lexicographicallyCompare of unequal lengths is IAE",
+        expected_exception="IllegalArgumentException",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="taylor_balanced",
+        method="Taylor.makeBalancedTayorTerm",
+        setup=_TAYLOR,
+        call="str(mms.makeBalancedTayorTerm(OperationSymbol('f', 2), 1, _varlist(x, y))).replace(' ', '')",
+        description="makeBalancedTayorTerm depth 1",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="taylor_interprets_java_null",
+        method="Taylor.interprets",
+        setup=_TAYLOR,
+        call="mms.interprets(sig, 1)",
+        description="Java interprets returns null even on success; match that",
+        skip_string_check=True,
+        notes="Known Java bug: interprets prints then return null.",
+    ),
+    TestCaseSpec(
+        id="taylor_equations_null",
+        method="Taylor.equations",
+        setup=_TAYLOR,
+        call="mms.equations()",
+        description="inteqs-built Taylor.equations() is null",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="taylor_npe_canonical",
+        method="Taylor.canonicalForm",
+        setup=_TAYLOR,
+        call="mms.canonicalForm(None)",
+        description="canonicalForm(null) NPE",
+        expected_exception="NullPointerException",
+    ),
+])

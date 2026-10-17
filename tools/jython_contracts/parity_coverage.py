@@ -21,13 +21,10 @@ from . import PROJECT_ROOT
 PENDING_BINDINGS = {
     "alg": [
         (
-            "Malcev path internals / discarded helpers / main",
-            "jonssonLevelPath, gummLevelPath, hagemannMitschkeLevelPath, "
-            "jonssonLevelAux, nuTermIdempotent_Bad, fixedKEdgeIdempotent, "
-            "fixedKPermIdempotent, permLevelIdempotent stay NotImplementedError "
-            "(strict xfails). main is a Java development helper. "
-            "sg() on BigProductAlgebra is commented out in Java (scanner FP). "
-            "sgClose_old / sgCloseXX are legacy public overloads, not bound.",
+            "Malcev main / BigProductAlgebra scanner false-positives",
+            "main is a Java development helper. sg() on BigProductAlgebra is "
+            "commented out in Java (scanner FP). sgClose_old / sgCloseXX are "
+            "legacy public overloads, not bound.",
         ),
         (
             "GUI / CloserTiming ProgressReport",
@@ -58,8 +55,8 @@ PENDING_BINDINGS = {
     ],
     "terms": [
         (
-            "Taylor / MMS (canonicalForm, interprets, markovicMcKenzieTerm, …)",
-            "Malcev-adjacent; skipped with Malcev",
+            "Taylor.main",
+            "Java development helper; not wrapped",
         ),
         (
             "anonymous Operation methods inside interpretation()",

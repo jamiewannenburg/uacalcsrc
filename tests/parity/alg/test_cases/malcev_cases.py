@@ -598,95 +598,390 @@ path_univ = list(sub.getUniverseList())
         **_LIST
     ),
     TestCaseSpec(
-        id="jonsson_level_path_xfail",
+        id="jonsson_level_path_npe",
         method="Malcev.jonssonLevelPath",
         setup=_SETUP,
         call="Malcev.jonssonLevelPath(None, None, None, False)",
-        description="jonssonLevelPath is a Java-internal helper",
-        xfail_reason=(
-            "jonssonLevelPath is a Java path-search helper used inside jonssonLevel; "
-            "CPython raises NotImplementedError (call jonssonLevel/jonssonTerms instead)"
-        ),
+        description="jonssonLevelPath(null, ...) NPE",
+        expected_exception="NullPointerException",
         skip_string_check=True,
     ),
     TestCaseSpec(
-        id="gumm_level_path_xfail",
+        id="gumm_level_path_npe",
         method="Malcev.gummLevelPath",
         setup=_SETUP,
         call="Malcev.gummLevelPath(None, None, None, None)",
-        description="gummLevelPath is a Java-internal helper",
-        xfail_reason=(
-            "gummLevelPath is a Java path-search helper used inside gummTerms; "
-            "CPython raises NotImplementedError (call gummTerms instead)"
-        ),
+        description="gummLevelPath(null, ...) NPE",
+        expected_exception="NullPointerException",
         skip_string_check=True,
     ),
     TestCaseSpec(
-        id="hm_level_path_xfail",
+        id="hm_level_path_npe",
         method="Malcev.hagemannMitschkeLevelPath",
         setup=_SETUP,
         call="Malcev.hagemannMitschkeLevelPath(None, None, None)",
-        description="hagemannMitschkeLevelPath is a Java-internal helper",
-        xfail_reason=(
-            "hagemannMitschkeLevelPath is a Java path-search helper used inside "
-            "hagemannMitschkeTerms; CPython raises NotImplementedError"
-        ),
+        description="hagemannMitschkeLevelPath(null, ...) NPE",
+        expected_exception="NullPointerException",
         skip_string_check=True,
     ),
     TestCaseSpec(
-        id="jonsson_level_aux_xfail",
+        id="jonsson_level_aux_npe",
         method="Malcev.jonssonLevelAux",
         setup=_SETUP,
         call="Malcev.jonssonLevelAux(None, None, None)",
-        description="jonssonLevelAux is a Java-internal helper",
-        xfail_reason=(
-            "jonssonLevelAux is a Java path-search helper used inside jonssonLevel; "
-            "CPython raises NotImplementedError"
-        ),
+        description="jonssonLevelAux(null, ...) NPE",
+        expected_exception="NullPointerException",
         skip_string_check=True,
     ),
     TestCaseSpec(
-        id="nu_term_bad_xfail",
+        id="nu_term_bad_c2",
         method="Malcev.nuTermIdempotent_Bad",
         setup=_SETUP,
         call="Malcev.nuTermIdempotent_Bad(c2, 3, None)",
-        description="nuTermIdempotent_Bad is Java's discarded Horowitz NU search",
-        xfail_reason=(
-            "nuTermIdempotent_Bad is Java's discarded Horowitz NU search; "
-            "CPython raises NotImplementedError (call nuTermIdempotent instead)"
-        ),
-        skip_string_check=True,
+        description="nuTermIdempotent_Bad Horowitz search on C2 arity 3",
+        **_BOOL
     ),
     TestCaseSpec(
-        id="fixed_k_edge_idem_xfail",
+        id="fixed_k_edge_idem_c2",
         method="Malcev.fixedKEdgeIdempotent",
         setup=_SETUP,
         call="Malcev.fixedKEdgeIdempotent(c2, 2, None)",
-        description="fixedKEdgeIdempotent is not bound",
-        xfail_reason=(
-            "fixedKEdgeIdempotent is not bound; use fixedKEdgeTerm / "
-            "isCongruenceModularIdempotent"
-        ),
-        skip_string_check=True,
+        description="fixedKEdgeIdempotent level 2 on C2",
+        **_BOOL
     ),
     TestCaseSpec(
-        id="fixed_k_perm_idem_xfail",
+        id="fixed_k_perm_idem_c2",
         method="Malcev.fixedKPermIdempotent",
         setup=_SETUP,
         call="Malcev.fixedKPermIdempotent(c2, 2, None)",
-        description="fixedKPermIdempotent is not bound",
-        xfail_reason=(
-            "fixedKPermIdempotent is not bound; use hagemannMitschkeTerms"
-        ),
-        skip_string_check=True,
+        description="fixedKPermIdempotent level 2 on C2",
+        **_BOOL
     ),
     TestCaseSpec(
-        id="perm_level_idem_xfail",
+        id="perm_level_idem_c2",
         method="Malcev.permLevelIdempotent",
         setup=_SETUP,
         call="Malcev.permLevelIdempotent(c2, None)",
-        description="permLevelIdempotent is not bound",
-        xfail_reason="permLevelIdempotent is not bound; use hagemannMitschkeTerms",
-        skip_string_check=True,
+        description="permLevelIdempotent of C2",
     ),
 ]
+
+_PATH_SETUP = _SETUP + r"""
+from org.uacalc.util import IntArray
+g0p = IntArray([0, 0, 1])
+g2p = IntArray([1, 0, 0])
+midp = [g0p, IntArray([0, 0, 0]), g2p]
+firstp = [IntArray([0, 1, 0]), g2p]
+hmsub = [g0p, g2p]
+"""
+
+_WIDE_SETUP = _SETUP + r"""
+from org.uacalc.alg import BasicAlgebra
+from org.uacalc.alg.op import OperationSymbol, Operations
+from org.uacalc.example import Type1
+n5 = AlgebraIO.readAlgebraFile("resources/algebras/n5.ua")
+m3 = AlgebraIO.readAlgebraFile("resources/algebras/m3.ua")
+ba2 = AlgebraIO.readAlgebraFile("resources/algebras/ba2.ua")
+s3 = AlgebraIO.readAlgebraFile("resources/algebras/sym3.ua")
+meet = Operations.makeIntOperation(OperationSymbol("m", 2), 2, [0, 0, 0, 1])
+sem2 = BasicAlgebra("sem2", 2, [meet])
+unary3 = Type1.cyclicPermutationAlgebra(3)
+qstar = Operations.makeIntOperation(OperationSymbol("*", 2), 3, [0, 2, 1, 2, 1, 0, 1, 0, 2])
+quasi3 = BasicAlgebra("quasi3", 3, [qstar])
+rand2 = Algebras.makeRandomAlgebra(2, [1], 7)
+rand_bin = Algebras.makeRandomAlgebra(2, [2], 11)
+"""
+
+TEST_CASES.extend([
+    TestCaseSpec(
+        id="jonsson_level_path_midp",
+        method="Malcev.jonssonLevelPath",
+        setup=_PATH_SETUP,
+        call="_ias(Malcev.jonssonLevelPath(midp, g0p, g2p, False))",
+        description="jonssonLevelPath on a unique 3-vertex middleZero",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="jonsson_level_aux_midp",
+        method="Malcev.jonssonLevelAux",
+        setup=_PATH_SETUP,
+        call="Malcev.jonssonLevelAux(midp, g0p, g2p)",
+        description="jonssonLevelAux level of a unique 3-vertex middleZero",
+    ),
+    TestCaseSpec(
+        id="gumm_level_path_midp",
+        method="Malcev.gummLevelPath",
+        setup=_PATH_SETUP,
+        call="_ias(Malcev.gummLevelPath(midp, firstp, g0p, g2p))",
+        description="gummLevelPath on a tiny firstOne/middleZero instance",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="hm_level_path_hmsub",
+        method="Malcev.hagemannMitschkeLevelPath",
+        setup=_PATH_SETUP,
+        call="_ias(Malcev.hagemannMitschkeLevelPath(hmsub, g0p, g2p))",
+        description="hagemannMitschkeLevelPath on {g0,g2}",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="nu_term_bad_lat2",
+        method="Malcev.nuTermIdempotent_Bad",
+        setup=_SETUP,
+        call="Malcev.nuTermIdempotent_Bad(lat2, 3, None)",
+        description="nuTermIdempotent_Bad on lat2 arity 3",
+        **_BOOL
+    ),
+    TestCaseSpec(
+        id="fixed_k_edge_idem_lat2",
+        method="Malcev.fixedKEdgeIdempotent",
+        setup=_SETUP,
+        call="Malcev.fixedKEdgeIdempotent(lat2, 2, None)",
+        description="fixedKEdgeIdempotent level 2 on lat2",
+        **_BOOL
+    ),
+    TestCaseSpec(
+        id="fixed_k_perm_idem_lat2",
+        method="Malcev.fixedKPermIdempotent",
+        setup=_SETUP,
+        call="Malcev.fixedKPermIdempotent(lat2, 2, None)",
+        description="lat2 is not 2-permutable",
+        **_BOOL
+    ),
+    TestCaseSpec(
+        id="fixed_k_edge_idem_level1",
+        method="Malcev.fixedKEdgeIdempotent",
+        setup=_SETUP,
+        call="Malcev.fixedKEdgeIdempotent(c2, 1, None)",
+        description="fixedKEdgeIdempotent level 1 is IAE",
+        expected_exception="IllegalArgumentException",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
+        id="malcev_term_n5",
+        method="Malcev.malcevTerm",
+        setup=_WIDE_SETUP,
+        call="_term(Malcev.malcevTerm(n5))",
+        description="N5 has no Malcev term",
+        **_NONE
+    ),
+    TestCaseSpec(
+        id="malcev_term_m3",
+        method="Malcev.malcevTerm",
+        setup=_WIDE_SETUP,
+        call="_term(Malcev.malcevTerm(m3))",
+        description="M3 has no Malcev term",
+        **_NONE
+    ),
+    TestCaseSpec(
+        id="malcev_term_ba2",
+        method="Malcev.malcevTerm",
+        setup=_WIDE_SETUP,
+        call="_term(Malcev.malcevTerm(ba2))",
+        description="Malcev term of the 2-element Boolean algebra if any",
+        **_TERM
+    ),
+    TestCaseSpec(
+        id="malcev_term_sem2",
+        method="Malcev.malcevTerm",
+        setup=_WIDE_SETUP,
+        call="_term(Malcev.malcevTerm(sem2))",
+        description="2-element meet-semilattice has no Malcev term",
+        **_NONE
+    ),
+    TestCaseSpec(
+        id="malcev_term_s3",
+        method="Malcev.malcevTerm",
+        setup=_WIDE_SETUP,
+        call="_term(Malcev.malcevTerm(s3))",
+        description="Malcev term of S3 if any",
+        **_TERM
+    ),
+    TestCaseSpec(
+        id="malcev_term_quasi3",
+        method="Malcev.malcevTerm",
+        setup=_WIDE_SETUP,
+        call="_term(Malcev.malcevTerm(quasi3))",
+        description="Malcev term of a 3-element quasigroup if any",
+        **_TERM
+    ),
+    TestCaseSpec(
+        id="jonsson_level_n5",
+        method="Malcev.jonssonLevel",
+        setup=_WIDE_SETUP,
+        call="Malcev.jonssonLevel(n5)",
+        description="Jonsson level of N5",
+    ),
+    TestCaseSpec(
+        id="jonsson_level_m3",
+        method="Malcev.jonssonLevel",
+        setup=_WIDE_SETUP,
+        call="Malcev.jonssonLevel(m3)",
+        description="Jonsson level of M3",
+    ),
+    TestCaseSpec(
+        id="jonsson_level_ba2",
+        method="Malcev.jonssonLevel",
+        setup=_WIDE_SETUP,
+        call="Malcev.jonssonLevel(ba2)",
+        description="Jonsson level of ba2",
+    ),
+    TestCaseSpec(
+        id="cm_variety_n5",
+        method="Malcev.congruenceModularVariety",
+        setup=_WIDE_SETUP,
+        call="Malcev.congruenceModularVariety(n5)",
+        description="N5 does not generate a CM variety",
+        **_BOOL
+    ),
+    TestCaseSpec(
+        id="cm_variety_m3",
+        method="Malcev.congruenceModularVariety",
+        setup=_WIDE_SETUP,
+        call="Malcev.congruenceModularVariety(m3)",
+        description="M3 generates a CM variety",
+        **_BOOL
+    ),
+    TestCaseSpec(
+        id="type_set_idem_n5",
+        method="Malcev.typeSetIdempotent",
+        setup=_WIDE_SETUP,
+        call="_sets(Malcev.typeSetIdempotent(n5, None))",
+        description="typeSetIdempotent of N5",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="type_set_idem_m3",
+        method="Malcev.typeSetIdempotent",
+        setup=_WIDE_SETUP,
+        call="_sets(Malcev.typeSetIdempotent(m3, None))",
+        description="typeSetIdempotent of M3",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="type_set_idem_ba2",
+        method="Malcev.typeSetIdempotent",
+        setup=_WIDE_SETUP,
+        call="_sets(Malcev.typeSetIdempotent(ba2, None))",
+        description="typeSetIdempotent of ba2",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="type_set_idem_sem2",
+        method="Malcev.typeSetIdempotent",
+        setup=_WIDE_SETUP,
+        call="_sets(Malcev.typeSetIdempotent(sem2, None))",
+        description="typeSetIdempotent of a 2-element semilattice",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="omitted_ideal_sem2",
+        method="Malcev.omittedIdealIdempotent",
+        setup=_WIDE_SETUP,
+        call="sorted(int(x) for x in list(Malcev.omittedIdealIdempotent(sem2, None)))",
+        description="omittedIdealIdempotent of a 2-element semilattice",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="types_in_s_lat2",
+        method="Malcev.typesInSofAIdempotent",
+        setup=_WIDE_SETUP,
+        call="sorted(int(x) for x in list(Malcev.typesInSofAIdempotent(lat2, set(), None)))",
+        description="typesInSofAIdempotent of lat2",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="types_robust_c2",
+        method="Malcev.typesInSofAIRobustDecompdempotent",
+        setup=_WIDE_SETUP,
+        call="sorted(int(x) for x in list(Malcev.typesInSofAIRobustDecompdempotent(c2, set(), None)))",
+        description="typesInSofAIRobustDecompdempotent of C2",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="perm_level_idem_c3",
+        method="Malcev.permLevelIdempotent",
+        setup=_WIDE_SETUP,
+        call="Malcev.permLevelIdempotent(c3, None)",
+        description="permLevelIdempotent of C3",
+    ),
+    TestCaseSpec(
+        id="malcev_term_rand2",
+        method="Malcev.malcevTerm",
+        setup=_WIDE_SETUP,
+        call="[rand2.cardinality(), _term(Malcev.malcevTerm(rand2))]",
+        description="seeded random unary algebra of size 2: card and Malcev term",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="malcev_term_unary3",
+        method="Malcev.malcevTerm",
+        setup=_WIDE_SETUP,
+        call="_term(Malcev.malcevTerm(unary3))",
+        description="cyclic permutation algebra of size 3 has no Malcev term",
+        **_NONE
+    ),
+    TestCaseSpec(
+        id="malcev_term_rand_bin",
+        method="Malcev.malcevTerm",
+        setup=_WIDE_SETUP,
+        call="[rand_bin.cardinality(), _term(Malcev.malcevTerm(rand_bin))]",
+        description="seeded random binary algebra of size 2: card and Malcev term",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="type_set_idem_unary3",
+        method="Malcev.typeSetIdempotent",
+        setup=_WIDE_SETUP,
+        call="_sets(Malcev.typeSetIdempotent(unary3, None))",
+        description="typeSetIdempotent of a cyclic permutation algebra",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="omitted_ideal_n5",
+        method="Malcev.omittedIdealIdempotent",
+        setup=_WIDE_SETUP,
+        call="sorted(int(x) for x in list(Malcev.omittedIdealIdempotent(n5, None)))",
+        description="omittedIdealIdempotent of N5",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="omitted_ideal_ba2",
+        method="Malcev.omittedIdealIdempotent",
+        setup=_WIDE_SETUP,
+        call="sorted(int(x) for x in list(Malcev.omittedIdealIdempotent(ba2, None)))",
+        description="omittedIdealIdempotent of ba2",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="jonsson_level_sem2",
+        method="Malcev.jonssonLevel",
+        setup=_WIDE_SETUP,
+        call="Malcev.jonssonLevel(sem2)",
+        description="Jonsson level of a 2-element semilattice",
+    ),
+    TestCaseSpec(
+        id="cm_variety_ba2",
+        method="Malcev.congruenceModularVariety",
+        setup=_WIDE_SETUP,
+        call="Malcev.congruenceModularVariety(ba2)",
+        description="ba2 generates a CM variety",
+        **_BOOL
+    ),
+    TestCaseSpec(
+        id="fixed_k_perm_idem_c3",
+        method="Malcev.fixedKPermIdempotent",
+        setup=_WIDE_SETUP,
+        call="Malcev.fixedKPermIdempotent(c3, 2, None)",
+        description="fixedKPermIdempotent level 2 on C3",
+        **_BOOL
+    ),
+    TestCaseSpec(
+        id="nu_term_bad_ba2",
+        method="Malcev.nuTermIdempotent_Bad",
+        setup=_WIDE_SETUP,
+        call="Malcev.nuTermIdempotent_Bad(ba2, 3, None)",
+        description="nuTermIdempotent_Bad on ba2 arity 3",
+        **_BOOL
+    ),
+])

@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "generated_at": "2026-10-17T04:43:29.623416+00:00",
+    "generated_at": "2026-10-17T05:37:25.334444+00:00",
     "jar": "uacalc.jar",
     "package": "org.uacalc.alg",
     "runtime": "jython",
-    "test_cases": 73,
+    "test_cases": 110,
     "type": "malcev"
   },
   "test_cases": [
@@ -1507,9 +1507,9 @@
       "call": "Malcev.jonssonLevelPath(None, None, None, False)",
       "capture_file": false,
       "compare_exception_message": false,
-      "description": "jonssonLevelPath is a Java-internal helper",
-      "expected_exception": null,
-      "id": "jonsson_level_path_xfail",
+      "description": "jonssonLevelPath(null, ...) NPE",
+      "expected_exception": "NullPointerException",
+      "id": "jonsson_level_path_npe",
       "kwargs": {},
       "method": "Malcev.jonssonLevelPath",
       "notes": "",
@@ -1522,16 +1522,16 @@
       },
       "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ints(x) for x in list(lst)]\n\ndef _sets(lst):\n    if lst is None:\n        return None\n    return [sorted(int(x) for x in list(s)) for s in list(lst)]\n\ndef _cyclic_gens(vals):\n    try:\n        from jarray import array\n        v = array(vals, 'i')\n    except ImportError:\n        v = vals\n    return _ias(Malcev.makeCyclicGens(v))\n",
       "skip_string_check": true,
-      "xfail_reason": "jonssonLevelPath is a Java path-search helper used inside jonssonLevel; CPython raises NotImplementedError (call jonssonLevel/jonssonTerms instead)"
+      "xfail_reason": null
     },
     {
       "args": [],
       "call": "Malcev.gummLevelPath(None, None, None, None)",
       "capture_file": false,
       "compare_exception_message": false,
-      "description": "gummLevelPath is a Java-internal helper",
-      "expected_exception": null,
-      "id": "gumm_level_path_xfail",
+      "description": "gummLevelPath(null, ...) NPE",
+      "expected_exception": "NullPointerException",
+      "id": "gumm_level_path_npe",
       "kwargs": {},
       "method": "Malcev.gummLevelPath",
       "notes": "",
@@ -1544,16 +1544,16 @@
       },
       "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ints(x) for x in list(lst)]\n\ndef _sets(lst):\n    if lst is None:\n        return None\n    return [sorted(int(x) for x in list(s)) for s in list(lst)]\n\ndef _cyclic_gens(vals):\n    try:\n        from jarray import array\n        v = array(vals, 'i')\n    except ImportError:\n        v = vals\n    return _ias(Malcev.makeCyclicGens(v))\n",
       "skip_string_check": true,
-      "xfail_reason": "gummLevelPath is a Java path-search helper used inside gummTerms; CPython raises NotImplementedError (call gummTerms instead)"
+      "xfail_reason": null
     },
     {
       "args": [],
       "call": "Malcev.hagemannMitschkeLevelPath(None, None, None)",
       "capture_file": false,
       "compare_exception_message": false,
-      "description": "hagemannMitschkeLevelPath is a Java-internal helper",
-      "expected_exception": null,
-      "id": "hm_level_path_xfail",
+      "description": "hagemannMitschkeLevelPath(null, ...) NPE",
+      "expected_exception": "NullPointerException",
+      "id": "hm_level_path_npe",
       "kwargs": {},
       "method": "Malcev.hagemannMitschkeLevelPath",
       "notes": "",
@@ -1566,16 +1566,16 @@
       },
       "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ints(x) for x in list(lst)]\n\ndef _sets(lst):\n    if lst is None:\n        return None\n    return [sorted(int(x) for x in list(s)) for s in list(lst)]\n\ndef _cyclic_gens(vals):\n    try:\n        from jarray import array\n        v = array(vals, 'i')\n    except ImportError:\n        v = vals\n    return _ias(Malcev.makeCyclicGens(v))\n",
       "skip_string_check": true,
-      "xfail_reason": "hagemannMitschkeLevelPath is a Java path-search helper used inside hagemannMitschkeTerms; CPython raises NotImplementedError"
+      "xfail_reason": null
     },
     {
       "args": [],
       "call": "Malcev.jonssonLevelAux(None, None, None)",
       "capture_file": false,
       "compare_exception_message": false,
-      "description": "jonssonLevelAux is a Java-internal helper",
-      "expected_exception": null,
-      "id": "jonsson_level_aux_xfail",
+      "description": "jonssonLevelAux(null, ...) NPE",
+      "expected_exception": "NullPointerException",
+      "id": "jonsson_level_aux_npe",
       "kwargs": {},
       "method": "Malcev.jonssonLevelAux",
       "notes": "",
@@ -1588,19 +1588,19 @@
       },
       "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ints(x) for x in list(lst)]\n\ndef _sets(lst):\n    if lst is None:\n        return None\n    return [sorted(int(x) for x in list(s)) for s in list(lst)]\n\ndef _cyclic_gens(vals):\n    try:\n        from jarray import array\n        v = array(vals, 'i')\n    except ImportError:\n        v = vals\n    return _ias(Malcev.makeCyclicGens(v))\n",
       "skip_string_check": true,
-      "xfail_reason": "jonssonLevelAux is a Java path-search helper used inside jonssonLevel; CPython raises NotImplementedError"
+      "xfail_reason": null
     },
     {
       "args": [],
       "call": "Malcev.nuTermIdempotent_Bad(c2, 3, None)",
       "capture_file": false,
       "compare_exception_message": false,
-      "description": "nuTermIdempotent_Bad is Java's discarded Horowitz NU search",
+      "description": "nuTermIdempotent_Bad Horowitz search on C2 arity 3",
       "expected_exception": null,
-      "id": "nu_term_bad_xfail",
+      "id": "nu_term_bad_c2",
       "kwargs": {},
       "method": "Malcev.nuTermIdempotent_Bad",
-      "notes": "",
+      "notes": "Java str(true/false) vs Python str(True/False).",
       "result": {
         "return_type": "bool",
         "return_value": false,
@@ -1609,19 +1609,19 @@
       },
       "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ints(x) for x in list(lst)]\n\ndef _sets(lst):\n    if lst is None:\n        return None\n    return [sorted(int(x) for x in list(s)) for s in list(lst)]\n\ndef _cyclic_gens(vals):\n    try:\n        from jarray import array\n        v = array(vals, 'i')\n    except ImportError:\n        v = vals\n    return _ias(Malcev.makeCyclicGens(v))\n",
       "skip_string_check": true,
-      "xfail_reason": "nuTermIdempotent_Bad is Java's discarded Horowitz NU search; CPython raises NotImplementedError (call nuTermIdempotent instead)"
+      "xfail_reason": null
     },
     {
       "args": [],
       "call": "Malcev.fixedKEdgeIdempotent(c2, 2, None)",
       "capture_file": false,
       "compare_exception_message": false,
-      "description": "fixedKEdgeIdempotent is not bound",
+      "description": "fixedKEdgeIdempotent level 2 on C2",
       "expected_exception": null,
-      "id": "fixed_k_edge_idem_xfail",
+      "id": "fixed_k_edge_idem_c2",
       "kwargs": {},
       "method": "Malcev.fixedKEdgeIdempotent",
-      "notes": "",
+      "notes": "Java str(true/false) vs Python str(True/False).",
       "result": {
         "return_type": "bool",
         "return_value": true,
@@ -1630,19 +1630,19 @@
       },
       "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ints(x) for x in list(lst)]\n\ndef _sets(lst):\n    if lst is None:\n        return None\n    return [sorted(int(x) for x in list(s)) for s in list(lst)]\n\ndef _cyclic_gens(vals):\n    try:\n        from jarray import array\n        v = array(vals, 'i')\n    except ImportError:\n        v = vals\n    return _ias(Malcev.makeCyclicGens(v))\n",
       "skip_string_check": true,
-      "xfail_reason": "fixedKEdgeIdempotent is not bound; use fixedKEdgeTerm / isCongruenceModularIdempotent"
+      "xfail_reason": null
     },
     {
       "args": [],
       "call": "Malcev.fixedKPermIdempotent(c2, 2, None)",
       "capture_file": false,
       "compare_exception_message": false,
-      "description": "fixedKPermIdempotent is not bound",
+      "description": "fixedKPermIdempotent level 2 on C2",
       "expected_exception": null,
-      "id": "fixed_k_perm_idem_xfail",
+      "id": "fixed_k_perm_idem_c2",
       "kwargs": {},
       "method": "Malcev.fixedKPermIdempotent",
-      "notes": "",
+      "notes": "Java str(true/false) vs Python str(True/False).",
       "result": {
         "return_type": "bool",
         "return_value": true,
@@ -1651,16 +1651,16 @@
       },
       "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ints(x) for x in list(lst)]\n\ndef _sets(lst):\n    if lst is None:\n        return None\n    return [sorted(int(x) for x in list(s)) for s in list(lst)]\n\ndef _cyclic_gens(vals):\n    try:\n        from jarray import array\n        v = array(vals, 'i')\n    except ImportError:\n        v = vals\n    return _ias(Malcev.makeCyclicGens(v))\n",
       "skip_string_check": true,
-      "xfail_reason": "fixedKPermIdempotent is not bound; use hagemannMitschkeTerms"
+      "xfail_reason": null
     },
     {
       "args": [],
       "call": "Malcev.permLevelIdempotent(c2, None)",
       "capture_file": false,
       "compare_exception_message": false,
-      "description": "permLevelIdempotent is not bound",
+      "description": "permLevelIdempotent of C2",
       "expected_exception": null,
-      "id": "perm_level_idem_xfail",
+      "id": "perm_level_idem_c2",
       "kwargs": {},
       "method": "Malcev.permLevelIdempotent",
       "notes": "",
@@ -1671,8 +1671,894 @@
         "success": true
       },
       "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ints(x) for x in list(lst)]\n\ndef _sets(lst):\n    if lst is None:\n        return None\n    return [sorted(int(x) for x in list(s)) for s in list(lst)]\n\ndef _cyclic_gens(vals):\n    try:\n        from jarray import array\n        v = array(vals, 'i')\n    except ImportError:\n        v = vals\n    return _ias(Malcev.makeCyclicGens(v))\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_ias(Malcev.jonssonLevelPath(midp, g0p, g2p, False))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "jonssonLevelPath on a unique 3-vertex middleZero",
+      "expected_exception": null,
+      "id": "jonsson_level_path_midp",
+      "kwargs": {},
+      "method": "Malcev.jonssonLevelPath",
+      "notes": "Java List/Term toString vs Python list/str.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            0,
+            0,
+            1
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            1,
+            0,
+            0
+          ]
+        ],
+        "string_repr": "[[0, 0, 1], [0, 0, 0], [1, 0, 0]]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ints(x) for x in list(lst)]\n\ndef _sets(lst):\n    if lst is None:\n        return None\n    return [sorted(int(x) for x in list(s)) for s in list(lst)]\n\ndef _cyclic_gens(vals):\n    try:\n        from jarray import array\n        v = array(vals, 'i')\n    except ImportError:\n        v = vals\n    return _ias(Malcev.makeCyclicGens(v))\n\nfrom org.uacalc.util import IntArray\ng0p = IntArray([0, 0, 1])\ng2p = IntArray([1, 0, 0])\nmidp = [g0p, IntArray([0, 0, 0]), g2p]\nfirstp = [IntArray([0, 1, 0]), g2p]\nhmsub = [g0p, g2p]\n",
       "skip_string_check": true,
-      "xfail_reason": "permLevelIdempotent is not bound; use hagemannMitschkeTerms"
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Malcev.jonssonLevelAux(midp, g0p, g2p)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "jonssonLevelAux level of a unique 3-vertex middleZero",
+      "expected_exception": null,
+      "id": "jonsson_level_aux_midp",
+      "kwargs": {},
+      "method": "Malcev.jonssonLevelAux",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ints(x) for x in list(lst)]\n\ndef _sets(lst):\n    if lst is None:\n        return None\n    return [sorted(int(x) for x in list(s)) for s in list(lst)]\n\ndef _cyclic_gens(vals):\n    try:\n        from jarray import array\n        v = array(vals, 'i')\n    except ImportError:\n        v = vals\n    return _ias(Malcev.makeCyclicGens(v))\n\nfrom org.uacalc.util import IntArray\ng0p = IntArray([0, 0, 1])\ng2p = IntArray([1, 0, 0])\nmidp = [g0p, IntArray([0, 0, 0]), g2p]\nfirstp = [IntArray([0, 1, 0]), g2p]\nhmsub = [g0p, g2p]\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_ias(Malcev.gummLevelPath(midp, firstp, g0p, g2p))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "gummLevelPath on a tiny firstOne/middleZero instance",
+      "expected_exception": null,
+      "id": "gumm_level_path_midp",
+      "kwargs": {},
+      "method": "Malcev.gummLevelPath",
+      "notes": "Java List/Term toString vs Python list/str.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            0,
+            0,
+            1
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            1,
+            0,
+            0
+          ]
+        ],
+        "string_repr": "[[0, 0, 1], [0, 0, 0], [1, 0, 0]]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ints(x) for x in list(lst)]\n\ndef _sets(lst):\n    if lst is None:\n        return None\n    return [sorted(int(x) for x in list(s)) for s in list(lst)]\n\ndef _cyclic_gens(vals):\n    try:\n        from jarray import array\n        v = array(vals, 'i')\n    except ImportError:\n        v = vals\n    return _ias(Malcev.makeCyclicGens(v))\n\nfrom org.uacalc.util import IntArray\ng0p = IntArray([0, 0, 1])\ng2p = IntArray([1, 0, 0])\nmidp = [g0p, IntArray([0, 0, 0]), g2p]\nfirstp = [IntArray([0, 1, 0]), g2p]\nhmsub = [g0p, g2p]\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_ias(Malcev.hagemannMitschkeLevelPath(hmsub, g0p, g2p))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "hagemannMitschkeLevelPath on {g0,g2}",
+      "expected_exception": null,
+      "id": "hm_level_path_hmsub",
+      "kwargs": {},
+      "method": "Malcev.hagemannMitschkeLevelPath",
+      "notes": "Java List/Term toString vs Python list/str.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            0,
+            0,
+            1
+          ],
+          [
+            1,
+            0,
+            0
+          ]
+        ],
+        "string_repr": "[[0, 0, 1], [1, 0, 0]]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ints(x) for x in list(lst)]\n\ndef _sets(lst):\n    if lst is None:\n        return None\n    return [sorted(int(x) for x in list(s)) for s in list(lst)]\n\ndef _cyclic_gens(vals):\n    try:\n        from jarray import array\n        v = array(vals, 'i')\n    except ImportError:\n        v = vals\n    return _ias(Malcev.makeCyclicGens(v))\n\nfrom org.uacalc.util import IntArray\ng0p = IntArray([0, 0, 1])\ng2p = IntArray([1, 0, 0])\nmidp = [g0p, IntArray([0, 0, 0]), g2p]\nfirstp = [IntArray([0, 1, 0]), g2p]\nhmsub = [g0p, g2p]\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Malcev.nuTermIdempotent_Bad(lat2, 3, None)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "nuTermIdempotent_Bad on lat2 arity 3",
+      "expected_exception": null,
+      "id": "nu_term_bad_lat2",
+      "kwargs": {},
+      "method": "Malcev.nuTermIdempotent_Bad",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ints(x) for x in list(lst)]\n\ndef _sets(lst):\n    if lst is None:\n        return None\n    return [sorted(int(x) for x in list(s)) for s in list(lst)]\n\ndef _cyclic_gens(vals):\n    try:\n        from jarray import array\n        v = array(vals, 'i')\n    except ImportError:\n        v = vals\n    return _ias(Malcev.makeCyclicGens(v))\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Malcev.fixedKEdgeIdempotent(lat2, 2, None)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "fixedKEdgeIdempotent level 2 on lat2",
+      "expected_exception": null,
+      "id": "fixed_k_edge_idem_lat2",
+      "kwargs": {},
+      "method": "Malcev.fixedKEdgeIdempotent",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": false,
+        "string_repr": "False",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ints(x) for x in list(lst)]\n\ndef _sets(lst):\n    if lst is None:\n        return None\n    return [sorted(int(x) for x in list(s)) for s in list(lst)]\n\ndef _cyclic_gens(vals):\n    try:\n        from jarray import array\n        v = array(vals, 'i')\n    except ImportError:\n        v = vals\n    return _ias(Malcev.makeCyclicGens(v))\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Malcev.fixedKPermIdempotent(lat2, 2, None)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "lat2 is not 2-permutable",
+      "expected_exception": null,
+      "id": "fixed_k_perm_idem_lat2",
+      "kwargs": {},
+      "method": "Malcev.fixedKPermIdempotent",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": false,
+        "string_repr": "False",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ints(x) for x in list(lst)]\n\ndef _sets(lst):\n    if lst is None:\n        return None\n    return [sorted(int(x) for x in list(s)) for s in list(lst)]\n\ndef _cyclic_gens(vals):\n    try:\n        from jarray import array\n        v = array(vals, 'i')\n    except ImportError:\n        v = vals\n    return _ias(Malcev.makeCyclicGens(v))\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Malcev.fixedKEdgeIdempotent(c2, 1, None)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "fixedKEdgeIdempotent level 1 is IAE",
+      "expected_exception": "IllegalArgumentException",
+      "id": "fixed_k_edge_idem_level1",
+      "kwargs": {},
+      "method": "Malcev.fixedKEdgeIdempotent",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.IllegalArgumentException: level must be at least 2",
+          "type": "IllegalArgumentException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ints(x) for x in list(lst)]\n\ndef _sets(lst):\n    if lst is None:\n        return None\n    return [sorted(int(x) for x in list(s)) for s in list(lst)]\n\ndef _cyclic_gens(vals):\n    try:\n        from jarray import array\n        v = array(vals, 'i')\n    except ImportError:\n        v = vals\n    return _ias(Malcev.makeCyclicGens(v))\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_term(Malcev.malcevTerm(n5))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "N5 has no Malcev term",
+      "expected_exception": null,
+      "id": "malcev_term_n5",
+      "kwargs": {},
+      "method": "Malcev.malcevTerm",
+      "notes": "Java null vs Python None.",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ints(x) for x in list(lst)]\n\ndef _sets(lst):\n    if lst is None:\n        return None\n    return [sorted(int(x) for x in list(s)) for s in list(lst)]\n\ndef _cyclic_gens(vals):\n    try:\n        from jarray import array\n        v = array(vals, 'i')\n    except ImportError:\n        v = vals\n    return _ias(Malcev.makeCyclicGens(v))\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\nqstar = Operations.makeIntOperation(OperationSymbol(\"*\", 2), 3, [0, 2, 1, 2, 1, 0, 1, 0, 2])\nquasi3 = BasicAlgebra(\"quasi3\", 3, [qstar])\nrand2 = Algebras.makeRandomAlgebra(2, [1], 7)\nrand_bin = Algebras.makeRandomAlgebra(2, [2], 11)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_term(Malcev.malcevTerm(m3))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "M3 has no Malcev term",
+      "expected_exception": null,
+      "id": "malcev_term_m3",
+      "kwargs": {},
+      "method": "Malcev.malcevTerm",
+      "notes": "Java null vs Python None.",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ints(x) for x in list(lst)]\n\ndef _sets(lst):\n    if lst is None:\n        return None\n    return [sorted(int(x) for x in list(s)) for s in list(lst)]\n\ndef _cyclic_gens(vals):\n    try:\n        from jarray import array\n        v = array(vals, 'i')\n    except ImportError:\n        v = vals\n    return _ias(Malcev.makeCyclicGens(v))\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\nqstar = Operations.makeIntOperation(OperationSymbol(\"*\", 2), 3, [0, 2, 1, 2, 1, 0, 1, 0, 2])\nquasi3 = BasicAlgebra(\"quasi3\", 3, [qstar])\nrand2 = Algebras.makeRandomAlgebra(2, [1], 7)\nrand_bin = Algebras.makeRandomAlgebra(2, [2], 11)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_term(Malcev.malcevTerm(ba2))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Malcev term of the 2-element Boolean algebra if any",
+      "expected_exception": null,
+      "id": "malcev_term_ba2",
+      "kwargs": {},
+      "method": "Malcev.malcevTerm",
+      "notes": "Java Term toString vs Python term string.",
+      "result": {
+        "return_type": "str",
+        "return_value": "join(meet(x,z),meet(join(x,z),comp(y)))",
+        "string_repr": "join(meet(x,z),meet(join(x,z),comp(y)))",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ints(x) for x in list(lst)]\n\ndef _sets(lst):\n    if lst is None:\n        return None\n    return [sorted(int(x) for x in list(s)) for s in list(lst)]\n\ndef _cyclic_gens(vals):\n    try:\n        from jarray import array\n        v = array(vals, 'i')\n    except ImportError:\n        v = vals\n    return _ias(Malcev.makeCyclicGens(v))\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\nqstar = Operations.makeIntOperation(OperationSymbol(\"*\", 2), 3, [0, 2, 1, 2, 1, 0, 1, 0, 2])\nquasi3 = BasicAlgebra(\"quasi3\", 3, [qstar])\nrand2 = Algebras.makeRandomAlgebra(2, [1], 7)\nrand_bin = Algebras.makeRandomAlgebra(2, [2], 11)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_term(Malcev.malcevTerm(sem2))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "2-element meet-semilattice has no Malcev term",
+      "expected_exception": null,
+      "id": "malcev_term_sem2",
+      "kwargs": {},
+      "method": "Malcev.malcevTerm",
+      "notes": "Java null vs Python None.",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ints(x) for x in list(lst)]\n\ndef _sets(lst):\n    if lst is None:\n        return None\n    return [sorted(int(x) for x in list(s)) for s in list(lst)]\n\ndef _cyclic_gens(vals):\n    try:\n        from jarray import array\n        v = array(vals, 'i')\n    except ImportError:\n        v = vals\n    return _ias(Malcev.makeCyclicGens(v))\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\nqstar = Operations.makeIntOperation(OperationSymbol(\"*\", 2), 3, [0, 2, 1, 2, 1, 0, 1, 0, 2])\nquasi3 = BasicAlgebra(\"quasi3\", 3, [qstar])\nrand2 = Algebras.makeRandomAlgebra(2, [1], 7)\nrand_bin = Algebras.makeRandomAlgebra(2, [2], 11)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_term(Malcev.malcevTerm(s3))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Malcev term of S3 if any",
+      "expected_exception": null,
+      "id": "malcev_term_s3",
+      "kwargs": {},
+      "method": "Malcev.malcevTerm",
+      "notes": "Java Term toString vs Python term string.",
+      "result": {
+        "return_type": "str",
+        "return_value": "p(p(x,p(y,y)),p(p(y,y),p(y,z)))",
+        "string_repr": "p(p(x,p(y,y)),p(p(y,y),p(y,z)))",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ints(x) for x in list(lst)]\n\ndef _sets(lst):\n    if lst is None:\n        return None\n    return [sorted(int(x) for x in list(s)) for s in list(lst)]\n\ndef _cyclic_gens(vals):\n    try:\n        from jarray import array\n        v = array(vals, 'i')\n    except ImportError:\n        v = vals\n    return _ias(Malcev.makeCyclicGens(v))\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\nqstar = Operations.makeIntOperation(OperationSymbol(\"*\", 2), 3, [0, 2, 1, 2, 1, 0, 1, 0, 2])\nquasi3 = BasicAlgebra(\"quasi3\", 3, [qstar])\nrand2 = Algebras.makeRandomAlgebra(2, [1], 7)\nrand_bin = Algebras.makeRandomAlgebra(2, [2], 11)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_term(Malcev.malcevTerm(quasi3))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Malcev term of a 3-element quasigroup if any",
+      "expected_exception": null,
+      "id": "malcev_term_quasi3",
+      "kwargs": {},
+      "method": "Malcev.malcevTerm",
+      "notes": "Java Term toString vs Python term string.",
+      "result": {
+        "return_type": "str",
+        "return_value": "*(y,*(x,z))",
+        "string_repr": "*(y,*(x,z))",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ints(x) for x in list(lst)]\n\ndef _sets(lst):\n    if lst is None:\n        return None\n    return [sorted(int(x) for x in list(s)) for s in list(lst)]\n\ndef _cyclic_gens(vals):\n    try:\n        from jarray import array\n        v = array(vals, 'i')\n    except ImportError:\n        v = vals\n    return _ias(Malcev.makeCyclicGens(v))\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\nqstar = Operations.makeIntOperation(OperationSymbol(\"*\", 2), 3, [0, 2, 1, 2, 1, 0, 1, 0, 2])\nquasi3 = BasicAlgebra(\"quasi3\", 3, [qstar])\nrand2 = Algebras.makeRandomAlgebra(2, [1], 7)\nrand_bin = Algebras.makeRandomAlgebra(2, [2], 11)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Malcev.jonssonLevel(n5)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Jonsson level of N5",
+      "expected_exception": null,
+      "id": "jonsson_level_n5",
+      "kwargs": {},
+      "method": "Malcev.jonssonLevel",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ints(x) for x in list(lst)]\n\ndef _sets(lst):\n    if lst is None:\n        return None\n    return [sorted(int(x) for x in list(s)) for s in list(lst)]\n\ndef _cyclic_gens(vals):\n    try:\n        from jarray import array\n        v = array(vals, 'i')\n    except ImportError:\n        v = vals\n    return _ias(Malcev.makeCyclicGens(v))\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\nqstar = Operations.makeIntOperation(OperationSymbol(\"*\", 2), 3, [0, 2, 1, 2, 1, 0, 1, 0, 2])\nquasi3 = BasicAlgebra(\"quasi3\", 3, [qstar])\nrand2 = Algebras.makeRandomAlgebra(2, [1], 7)\nrand_bin = Algebras.makeRandomAlgebra(2, [2], 11)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Malcev.jonssonLevel(m3)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Jonsson level of M3",
+      "expected_exception": null,
+      "id": "jonsson_level_m3",
+      "kwargs": {},
+      "method": "Malcev.jonssonLevel",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ints(x) for x in list(lst)]\n\ndef _sets(lst):\n    if lst is None:\n        return None\n    return [sorted(int(x) for x in list(s)) for s in list(lst)]\n\ndef _cyclic_gens(vals):\n    try:\n        from jarray import array\n        v = array(vals, 'i')\n    except ImportError:\n        v = vals\n    return _ias(Malcev.makeCyclicGens(v))\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\nqstar = Operations.makeIntOperation(OperationSymbol(\"*\", 2), 3, [0, 2, 1, 2, 1, 0, 1, 0, 2])\nquasi3 = BasicAlgebra(\"quasi3\", 3, [qstar])\nrand2 = Algebras.makeRandomAlgebra(2, [1], 7)\nrand_bin = Algebras.makeRandomAlgebra(2, [2], 11)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Malcev.jonssonLevel(ba2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Jonsson level of ba2",
+      "expected_exception": null,
+      "id": "jonsson_level_ba2",
+      "kwargs": {},
+      "method": "Malcev.jonssonLevel",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ints(x) for x in list(lst)]\n\ndef _sets(lst):\n    if lst is None:\n        return None\n    return [sorted(int(x) for x in list(s)) for s in list(lst)]\n\ndef _cyclic_gens(vals):\n    try:\n        from jarray import array\n        v = array(vals, 'i')\n    except ImportError:\n        v = vals\n    return _ias(Malcev.makeCyclicGens(v))\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\nqstar = Operations.makeIntOperation(OperationSymbol(\"*\", 2), 3, [0, 2, 1, 2, 1, 0, 1, 0, 2])\nquasi3 = BasicAlgebra(\"quasi3\", 3, [qstar])\nrand2 = Algebras.makeRandomAlgebra(2, [1], 7)\nrand_bin = Algebras.makeRandomAlgebra(2, [2], 11)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Malcev.congruenceModularVariety(n5)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "N5 does not generate a CM variety",
+      "expected_exception": null,
+      "id": "cm_variety_n5",
+      "kwargs": {},
+      "method": "Malcev.congruenceModularVariety",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ints(x) for x in list(lst)]\n\ndef _sets(lst):\n    if lst is None:\n        return None\n    return [sorted(int(x) for x in list(s)) for s in list(lst)]\n\ndef _cyclic_gens(vals):\n    try:\n        from jarray import array\n        v = array(vals, 'i')\n    except ImportError:\n        v = vals\n    return _ias(Malcev.makeCyclicGens(v))\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\nqstar = Operations.makeIntOperation(OperationSymbol(\"*\", 2), 3, [0, 2, 1, 2, 1, 0, 1, 0, 2])\nquasi3 = BasicAlgebra(\"quasi3\", 3, [qstar])\nrand2 = Algebras.makeRandomAlgebra(2, [1], 7)\nrand_bin = Algebras.makeRandomAlgebra(2, [2], 11)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Malcev.congruenceModularVariety(m3)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "M3 generates a CM variety",
+      "expected_exception": null,
+      "id": "cm_variety_m3",
+      "kwargs": {},
+      "method": "Malcev.congruenceModularVariety",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ints(x) for x in list(lst)]\n\ndef _sets(lst):\n    if lst is None:\n        return None\n    return [sorted(int(x) for x in list(s)) for s in list(lst)]\n\ndef _cyclic_gens(vals):\n    try:\n        from jarray import array\n        v = array(vals, 'i')\n    except ImportError:\n        v = vals\n    return _ias(Malcev.makeCyclicGens(v))\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\nqstar = Operations.makeIntOperation(OperationSymbol(\"*\", 2), 3, [0, 2, 1, 2, 1, 0, 1, 0, 2])\nquasi3 = BasicAlgebra(\"quasi3\", 3, [qstar])\nrand2 = Algebras.makeRandomAlgebra(2, [1], 7)\nrand_bin = Algebras.makeRandomAlgebra(2, [2], 11)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_sets(Malcev.typeSetIdempotent(n5, None))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "typeSetIdempotent of N5",
+      "expected_exception": null,
+      "id": "type_set_idem_n5",
+      "kwargs": {},
+      "method": "Malcev.typeSetIdempotent",
+      "notes": "Java List/Term toString vs Python list/str.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            4
+          ],
+          [
+            3,
+            4
+          ]
+        ],
+        "string_repr": "[[4], [3, 4]]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ints(x) for x in list(lst)]\n\ndef _sets(lst):\n    if lst is None:\n        return None\n    return [sorted(int(x) for x in list(s)) for s in list(lst)]\n\ndef _cyclic_gens(vals):\n    try:\n        from jarray import array\n        v = array(vals, 'i')\n    except ImportError:\n        v = vals\n    return _ias(Malcev.makeCyclicGens(v))\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\nqstar = Operations.makeIntOperation(OperationSymbol(\"*\", 2), 3, [0, 2, 1, 2, 1, 0, 1, 0, 2])\nquasi3 = BasicAlgebra(\"quasi3\", 3, [qstar])\nrand2 = Algebras.makeRandomAlgebra(2, [1], 7)\nrand_bin = Algebras.makeRandomAlgebra(2, [2], 11)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_sets(Malcev.typeSetIdempotent(m3, None))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "typeSetIdempotent of M3",
+      "expected_exception": null,
+      "id": "type_set_idem_m3",
+      "kwargs": {},
+      "method": "Malcev.typeSetIdempotent",
+      "notes": "Java List/Term toString vs Python list/str.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            4
+          ],
+          [
+            3,
+            4
+          ]
+        ],
+        "string_repr": "[[4], [3, 4]]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ints(x) for x in list(lst)]\n\ndef _sets(lst):\n    if lst is None:\n        return None\n    return [sorted(int(x) for x in list(s)) for s in list(lst)]\n\ndef _cyclic_gens(vals):\n    try:\n        from jarray import array\n        v = array(vals, 'i')\n    except ImportError:\n        v = vals\n    return _ias(Malcev.makeCyclicGens(v))\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\nqstar = Operations.makeIntOperation(OperationSymbol(\"*\", 2), 3, [0, 2, 1, 2, 1, 0, 1, 0, 2])\nquasi3 = BasicAlgebra(\"quasi3\", 3, [qstar])\nrand2 = Algebras.makeRandomAlgebra(2, [1], 7)\nrand_bin = Algebras.makeRandomAlgebra(2, [2], 11)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_sets(Malcev.typeSetIdempotent(ba2, None))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "typeSetIdempotent of ba2",
+      "expected_exception": null,
+      "id": "type_set_idem_ba2",
+      "kwargs": {},
+      "method": "Malcev.typeSetIdempotent",
+      "notes": "Java List/Term toString vs Python list/str.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            3
+          ],
+          [
+            3
+          ]
+        ],
+        "string_repr": "[[3], [3]]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ints(x) for x in list(lst)]\n\ndef _sets(lst):\n    if lst is None:\n        return None\n    return [sorted(int(x) for x in list(s)) for s in list(lst)]\n\ndef _cyclic_gens(vals):\n    try:\n        from jarray import array\n        v = array(vals, 'i')\n    except ImportError:\n        v = vals\n    return _ias(Malcev.makeCyclicGens(v))\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\nqstar = Operations.makeIntOperation(OperationSymbol(\"*\", 2), 3, [0, 2, 1, 2, 1, 0, 1, 0, 2])\nquasi3 = BasicAlgebra(\"quasi3\", 3, [qstar])\nrand2 = Algebras.makeRandomAlgebra(2, [1], 7)\nrand_bin = Algebras.makeRandomAlgebra(2, [2], 11)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_sets(Malcev.typeSetIdempotent(sem2, None))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "typeSetIdempotent of a 2-element semilattice",
+      "expected_exception": null,
+      "id": "type_set_idem_sem2",
+      "kwargs": {},
+      "method": "Malcev.typeSetIdempotent",
+      "notes": "Java List/Term toString vs Python list/str.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            5
+          ],
+          [
+            3,
+            4,
+            5
+          ]
+        ],
+        "string_repr": "[[5], [3, 4, 5]]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ints(x) for x in list(lst)]\n\ndef _sets(lst):\n    if lst is None:\n        return None\n    return [sorted(int(x) for x in list(s)) for s in list(lst)]\n\ndef _cyclic_gens(vals):\n    try:\n        from jarray import array\n        v = array(vals, 'i')\n    except ImportError:\n        v = vals\n    return _ias(Malcev.makeCyclicGens(v))\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\nqstar = Operations.makeIntOperation(OperationSymbol(\"*\", 2), 3, [0, 2, 1, 2, 1, 0, 1, 0, 2])\nquasi3 = BasicAlgebra(\"quasi3\", 3, [qstar])\nrand2 = Algebras.makeRandomAlgebra(2, [1], 7)\nrand_bin = Algebras.makeRandomAlgebra(2, [2], 11)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sorted(int(x) for x in list(Malcev.omittedIdealIdempotent(sem2, None)))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "omittedIdealIdempotent of a 2-element semilattice",
+      "expected_exception": null,
+      "id": "omitted_ideal_sem2",
+      "kwargs": {},
+      "method": "Malcev.omittedIdealIdempotent",
+      "notes": "Java List/Term toString vs Python list/str.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          1,
+          2
+        ],
+        "string_repr": "[1, 2]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ints(x) for x in list(lst)]\n\ndef _sets(lst):\n    if lst is None:\n        return None\n    return [sorted(int(x) for x in list(s)) for s in list(lst)]\n\ndef _cyclic_gens(vals):\n    try:\n        from jarray import array\n        v = array(vals, 'i')\n    except ImportError:\n        v = vals\n    return _ias(Malcev.makeCyclicGens(v))\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\nqstar = Operations.makeIntOperation(OperationSymbol(\"*\", 2), 3, [0, 2, 1, 2, 1, 0, 1, 0, 2])\nquasi3 = BasicAlgebra(\"quasi3\", 3, [qstar])\nrand2 = Algebras.makeRandomAlgebra(2, [1], 7)\nrand_bin = Algebras.makeRandomAlgebra(2, [2], 11)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sorted(int(x) for x in list(Malcev.typesInSofAIdempotent(lat2, set(), None)))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "typesInSofAIdempotent of lat2",
+      "expected_exception": null,
+      "id": "types_in_s_lat2",
+      "kwargs": {},
+      "method": "Malcev.typesInSofAIdempotent",
+      "notes": "Java List/Term toString vs Python list/str.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          4
+        ],
+        "string_repr": "[4]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ints(x) for x in list(lst)]\n\ndef _sets(lst):\n    if lst is None:\n        return None\n    return [sorted(int(x) for x in list(s)) for s in list(lst)]\n\ndef _cyclic_gens(vals):\n    try:\n        from jarray import array\n        v = array(vals, 'i')\n    except ImportError:\n        v = vals\n    return _ias(Malcev.makeCyclicGens(v))\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\nqstar = Operations.makeIntOperation(OperationSymbol(\"*\", 2), 3, [0, 2, 1, 2, 1, 0, 1, 0, 2])\nquasi3 = BasicAlgebra(\"quasi3\", 3, [qstar])\nrand2 = Algebras.makeRandomAlgebra(2, [1], 7)\nrand_bin = Algebras.makeRandomAlgebra(2, [2], 11)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sorted(int(x) for x in list(Malcev.typesInSofAIRobustDecompdempotent(c2, set(), None)))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "typesInSofAIRobustDecompdempotent of C2",
+      "expected_exception": null,
+      "id": "types_robust_c2",
+      "kwargs": {},
+      "method": "Malcev.typesInSofAIRobustDecompdempotent",
+      "notes": "Java List/Term toString vs Python list/str.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          2
+        ],
+        "string_repr": "[2]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ints(x) for x in list(lst)]\n\ndef _sets(lst):\n    if lst is None:\n        return None\n    return [sorted(int(x) for x in list(s)) for s in list(lst)]\n\ndef _cyclic_gens(vals):\n    try:\n        from jarray import array\n        v = array(vals, 'i')\n    except ImportError:\n        v = vals\n    return _ias(Malcev.makeCyclicGens(v))\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\nqstar = Operations.makeIntOperation(OperationSymbol(\"*\", 2), 3, [0, 2, 1, 2, 1, 0, 1, 0, 2])\nquasi3 = BasicAlgebra(\"quasi3\", 3, [qstar])\nrand2 = Algebras.makeRandomAlgebra(2, [1], 7)\nrand_bin = Algebras.makeRandomAlgebra(2, [2], 11)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Malcev.permLevelIdempotent(c3, None)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "permLevelIdempotent of C3",
+      "expected_exception": null,
+      "id": "perm_level_idem_c3",
+      "kwargs": {},
+      "method": "Malcev.permLevelIdempotent",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ints(x) for x in list(lst)]\n\ndef _sets(lst):\n    if lst is None:\n        return None\n    return [sorted(int(x) for x in list(s)) for s in list(lst)]\n\ndef _cyclic_gens(vals):\n    try:\n        from jarray import array\n        v = array(vals, 'i')\n    except ImportError:\n        v = vals\n    return _ias(Malcev.makeCyclicGens(v))\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\nqstar = Operations.makeIntOperation(OperationSymbol(\"*\", 2), 3, [0, 2, 1, 2, 1, 0, 1, 0, 2])\nquasi3 = BasicAlgebra(\"quasi3\", 3, [qstar])\nrand2 = Algebras.makeRandomAlgebra(2, [1], 7)\nrand_bin = Algebras.makeRandomAlgebra(2, [2], 11)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "[rand2.cardinality(), _term(Malcev.malcevTerm(rand2))]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "seeded random unary algebra of size 2: card and Malcev term",
+      "expected_exception": null,
+      "id": "malcev_term_rand2",
+      "kwargs": {},
+      "method": "Malcev.malcevTerm",
+      "notes": "Java List/Term toString vs Python list/str.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          2,
+          null
+        ],
+        "string_repr": "[2, None]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ints(x) for x in list(lst)]\n\ndef _sets(lst):\n    if lst is None:\n        return None\n    return [sorted(int(x) for x in list(s)) for s in list(lst)]\n\ndef _cyclic_gens(vals):\n    try:\n        from jarray import array\n        v = array(vals, 'i')\n    except ImportError:\n        v = vals\n    return _ias(Malcev.makeCyclicGens(v))\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\nqstar = Operations.makeIntOperation(OperationSymbol(\"*\", 2), 3, [0, 2, 1, 2, 1, 0, 1, 0, 2])\nquasi3 = BasicAlgebra(\"quasi3\", 3, [qstar])\nrand2 = Algebras.makeRandomAlgebra(2, [1], 7)\nrand_bin = Algebras.makeRandomAlgebra(2, [2], 11)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_term(Malcev.malcevTerm(unary3))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "cyclic permutation algebra of size 3 has no Malcev term",
+      "expected_exception": null,
+      "id": "malcev_term_unary3",
+      "kwargs": {},
+      "method": "Malcev.malcevTerm",
+      "notes": "Java null vs Python None.",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ints(x) for x in list(lst)]\n\ndef _sets(lst):\n    if lst is None:\n        return None\n    return [sorted(int(x) for x in list(s)) for s in list(lst)]\n\ndef _cyclic_gens(vals):\n    try:\n        from jarray import array\n        v = array(vals, 'i')\n    except ImportError:\n        v = vals\n    return _ias(Malcev.makeCyclicGens(v))\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\nqstar = Operations.makeIntOperation(OperationSymbol(\"*\", 2), 3, [0, 2, 1, 2, 1, 0, 1, 0, 2])\nquasi3 = BasicAlgebra(\"quasi3\", 3, [qstar])\nrand2 = Algebras.makeRandomAlgebra(2, [1], 7)\nrand_bin = Algebras.makeRandomAlgebra(2, [2], 11)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "[rand_bin.cardinality(), _term(Malcev.malcevTerm(rand_bin))]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "seeded random binary algebra of size 2: card and Malcev term",
+      "expected_exception": null,
+      "id": "malcev_term_rand_bin",
+      "kwargs": {},
+      "method": "Malcev.malcevTerm",
+      "notes": "Java List/Term toString vs Python list/str.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          2,
+          null
+        ],
+        "string_repr": "[2, None]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ints(x) for x in list(lst)]\n\ndef _sets(lst):\n    if lst is None:\n        return None\n    return [sorted(int(x) for x in list(s)) for s in list(lst)]\n\ndef _cyclic_gens(vals):\n    try:\n        from jarray import array\n        v = array(vals, 'i')\n    except ImportError:\n        v = vals\n    return _ias(Malcev.makeCyclicGens(v))\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\nqstar = Operations.makeIntOperation(OperationSymbol(\"*\", 2), 3, [0, 2, 1, 2, 1, 0, 1, 0, 2])\nquasi3 = BasicAlgebra(\"quasi3\", 3, [qstar])\nrand2 = Algebras.makeRandomAlgebra(2, [1], 7)\nrand_bin = Algebras.makeRandomAlgebra(2, [2], 11)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_sets(Malcev.typeSetIdempotent(unary3, None))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "typeSetIdempotent of a cyclic permutation algebra",
+      "expected_exception": null,
+      "id": "type_set_idem_unary3",
+      "kwargs": {},
+      "method": "Malcev.typeSetIdempotent",
+      "notes": "Java List/Term toString vs Python list/str.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            1
+          ],
+          [
+            1,
+            2,
+            3,
+            4,
+            5
+          ]
+        ],
+        "string_repr": "[[1], [1, 2, 3, 4, 5]]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ints(x) for x in list(lst)]\n\ndef _sets(lst):\n    if lst is None:\n        return None\n    return [sorted(int(x) for x in list(s)) for s in list(lst)]\n\ndef _cyclic_gens(vals):\n    try:\n        from jarray import array\n        v = array(vals, 'i')\n    except ImportError:\n        v = vals\n    return _ias(Malcev.makeCyclicGens(v))\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\nqstar = Operations.makeIntOperation(OperationSymbol(\"*\", 2), 3, [0, 2, 1, 2, 1, 0, 1, 0, 2])\nquasi3 = BasicAlgebra(\"quasi3\", 3, [qstar])\nrand2 = Algebras.makeRandomAlgebra(2, [1], 7)\nrand_bin = Algebras.makeRandomAlgebra(2, [2], 11)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sorted(int(x) for x in list(Malcev.omittedIdealIdempotent(n5, None)))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "omittedIdealIdempotent of N5",
+      "expected_exception": null,
+      "id": "omitted_ideal_n5",
+      "kwargs": {},
+      "method": "Malcev.omittedIdealIdempotent",
+      "notes": "Java List/Term toString vs Python list/str.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          1,
+          2,
+          5
+        ],
+        "string_repr": "[1, 2, 5]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ints(x) for x in list(lst)]\n\ndef _sets(lst):\n    if lst is None:\n        return None\n    return [sorted(int(x) for x in list(s)) for s in list(lst)]\n\ndef _cyclic_gens(vals):\n    try:\n        from jarray import array\n        v = array(vals, 'i')\n    except ImportError:\n        v = vals\n    return _ias(Malcev.makeCyclicGens(v))\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\nqstar = Operations.makeIntOperation(OperationSymbol(\"*\", 2), 3, [0, 2, 1, 2, 1, 0, 1, 0, 2])\nquasi3 = BasicAlgebra(\"quasi3\", 3, [qstar])\nrand2 = Algebras.makeRandomAlgebra(2, [1], 7)\nrand_bin = Algebras.makeRandomAlgebra(2, [2], 11)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sorted(int(x) for x in list(Malcev.omittedIdealIdempotent(ba2, None)))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "omittedIdealIdempotent of ba2",
+      "expected_exception": null,
+      "id": "omitted_ideal_ba2",
+      "kwargs": {},
+      "method": "Malcev.omittedIdealIdempotent",
+      "notes": "Java List/Term toString vs Python list/str.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          1,
+          2,
+          4,
+          5
+        ],
+        "string_repr": "[1, 2, 4, 5]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ints(x) for x in list(lst)]\n\ndef _sets(lst):\n    if lst is None:\n        return None\n    return [sorted(int(x) for x in list(s)) for s in list(lst)]\n\ndef _cyclic_gens(vals):\n    try:\n        from jarray import array\n        v = array(vals, 'i')\n    except ImportError:\n        v = vals\n    return _ias(Malcev.makeCyclicGens(v))\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\nqstar = Operations.makeIntOperation(OperationSymbol(\"*\", 2), 3, [0, 2, 1, 2, 1, 0, 1, 0, 2])\nquasi3 = BasicAlgebra(\"quasi3\", 3, [qstar])\nrand2 = Algebras.makeRandomAlgebra(2, [1], 7)\nrand_bin = Algebras.makeRandomAlgebra(2, [2], 11)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Malcev.jonssonLevel(sem2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Jonsson level of a 2-element semilattice",
+      "expected_exception": null,
+      "id": "jonsson_level_sem2",
+      "kwargs": {},
+      "method": "Malcev.jonssonLevel",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": -1,
+        "string_repr": "-1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ints(x) for x in list(lst)]\n\ndef _sets(lst):\n    if lst is None:\n        return None\n    return [sorted(int(x) for x in list(s)) for s in list(lst)]\n\ndef _cyclic_gens(vals):\n    try:\n        from jarray import array\n        v = array(vals, 'i')\n    except ImportError:\n        v = vals\n    return _ias(Malcev.makeCyclicGens(v))\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\nqstar = Operations.makeIntOperation(OperationSymbol(\"*\", 2), 3, [0, 2, 1, 2, 1, 0, 1, 0, 2])\nquasi3 = BasicAlgebra(\"quasi3\", 3, [qstar])\nrand2 = Algebras.makeRandomAlgebra(2, [1], 7)\nrand_bin = Algebras.makeRandomAlgebra(2, [2], 11)\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Malcev.congruenceModularVariety(ba2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "ba2 generates a CM variety",
+      "expected_exception": null,
+      "id": "cm_variety_ba2",
+      "kwargs": {},
+      "method": "Malcev.congruenceModularVariety",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ints(x) for x in list(lst)]\n\ndef _sets(lst):\n    if lst is None:\n        return None\n    return [sorted(int(x) for x in list(s)) for s in list(lst)]\n\ndef _cyclic_gens(vals):\n    try:\n        from jarray import array\n        v = array(vals, 'i')\n    except ImportError:\n        v = vals\n    return _ias(Malcev.makeCyclicGens(v))\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\nqstar = Operations.makeIntOperation(OperationSymbol(\"*\", 2), 3, [0, 2, 1, 2, 1, 0, 1, 0, 2])\nquasi3 = BasicAlgebra(\"quasi3\", 3, [qstar])\nrand2 = Algebras.makeRandomAlgebra(2, [1], 7)\nrand_bin = Algebras.makeRandomAlgebra(2, [2], 11)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Malcev.fixedKPermIdempotent(c3, 2, None)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "fixedKPermIdempotent level 2 on C3",
+      "expected_exception": null,
+      "id": "fixed_k_perm_idem_c3",
+      "kwargs": {},
+      "method": "Malcev.fixedKPermIdempotent",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ints(x) for x in list(lst)]\n\ndef _sets(lst):\n    if lst is None:\n        return None\n    return [sorted(int(x) for x in list(s)) for s in list(lst)]\n\ndef _cyclic_gens(vals):\n    try:\n        from jarray import array\n        v = array(vals, 'i')\n    except ImportError:\n        v = vals\n    return _ias(Malcev.makeCyclicGens(v))\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\nqstar = Operations.makeIntOperation(OperationSymbol(\"*\", 2), 3, [0, 2, 1, 2, 1, 0, 1, 0, 2])\nquasi3 = BasicAlgebra(\"quasi3\", 3, [qstar])\nrand2 = Algebras.makeRandomAlgebra(2, [1], 7)\nrand_bin = Algebras.makeRandomAlgebra(2, [2], 11)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Malcev.nuTermIdempotent_Bad(ba2, 3, None)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "nuTermIdempotent_Bad on ba2 arity 3",
+      "expected_exception": null,
+      "id": "nu_term_bad_ba2",
+      "kwargs": {},
+      "method": "Malcev.nuTermIdempotent_Bad",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import Malcev, Algebras\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nz3 = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\npolin = AlgebraIO.readAlgebraFile(\"resources/algebras/polin.ua\")\n\ndef _term(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _terms(lst):\n    if lst is None:\n        return None\n    return [_term(t) for t in list(lst)]\n\ndef _ints(v):\n    if v is None:\n        return None\n    try:\n        return [int(x) for x in list(v)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(v, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(v)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ints(x) for x in list(lst)]\n\ndef _sets(lst):\n    if lst is None:\n        return None\n    return [sorted(int(x) for x in list(s)) for s in list(lst)]\n\ndef _cyclic_gens(vals):\n    try:\n        from jarray import array\n        v = array(vals, 'i')\n    except ImportError:\n        v = vals\n    return _ias(Malcev.makeCyclicGens(v))\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\nqstar = Operations.makeIntOperation(OperationSymbol(\"*\", 2), 3, [0, 2, 1, 2, 1, 0, 1, 0, 2])\nquasi3 = BasicAlgebra(\"quasi3\", 3, [qstar])\nrand2 = Algebras.makeRandomAlgebra(2, [1], 7)\nrand_bin = Algebras.makeRandomAlgebra(2, [2], 11)\n",
+      "skip_string_check": true,
+      "xfail_reason": null
     }
   ]
 }

@@ -4,8 +4,8 @@ status: implemented
 java_source: null
 notes: |
   Thin package index. File-level contracts cover Terms, VariableImp,
-  NonVariableTerm, and Variable. Taylor is ignored (Malcev/MMS). Term is an
-  interface implemented by VariableImp / NonVariableTerm.
+  NonVariableTerm, Variable, and Taylor. Term is an interface implemented
+  by VariableImp / NonVariableTerm.
 ignore_reason: null
 surface:
   package_export: true

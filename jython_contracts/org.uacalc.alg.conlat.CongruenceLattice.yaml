@@ -7,8 +7,10 @@ notes: |
   ProgressReport overloads, main, and SubProduct type-theory/commutator
   overloads are not wrapped. coatoms/setName match Java UOE. operations() is
   identically null as in Java. typeSet / type / typeJI / subtrace /
-  getTypeFinder route through TypeFinder using the originating algebra
-  stashed on con().
+  getTypeFinder / getJoinIrredToSubtraceMap route through TypeFinder using
+  the originating algebra stashed on con(). type(beta, alpha) uses
+  findJoinIrred(alpha, beta); subtrace(beta, alpha) uses findJoinIrred(beta, alpha)
+  to match Java's swapped argument order.
 ignore_reason: null
 surface:
   package_export: true
@@ -45,13 +47,15 @@ surface:
     type: type
     subtrace: subtrace
     getTypeFinder: getTypeFinder
+    getJoinIrredToSubtraceMap: getJoinIrredToSubtraceMap
   static_methods:
     - CongruenceLattice.minimalElements
   str_parity: false
 testing:
   notes: |
     Golden cases in tests/parity/conlat cover constructors, lattice operations,
-    exception paths, and round-trip of Con(cyclic2) partitions.
+    exception paths, Con(cyclic2) partitions, and TCT typeSet/type/typeJI/
+    subtrace on algebras of types 1-5.
   task_refs: []
   scripts:
     - path: jython_comparison/scripts/conlat_partition.py

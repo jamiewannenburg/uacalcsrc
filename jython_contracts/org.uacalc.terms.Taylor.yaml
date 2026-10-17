@@ -1,17 +1,37 @@
 target: org.uacalc.terms.Taylor
 level: file
-status: ignored
+status: implemented
 java_source: org/uacalc/terms/Taylor.java
 notes: |
-  Markovic-McKenzie-Siggers / Taylor-term machinery used from Malcev. Left
-  alone per the terms/eq wrap scope.
-ignore_reason: Malcev/MMS-adjacent Taylor term machinery; skip with Malcev.
+  Markovic-McKenzie-Siggers / Taylor-term machinery. Constructors, canonical
+  form, interprets, makeBalancedTayorTerm (Java typo), lexicographicallyCompare,
+  and the MMS/Siggers singletons match Java. interprets copies Java's
+  return-null-on-success bug. canonicalForm(IntArray) nested merge is Java's
+  unfinished helper. makeRootMapFromEqs is Java TODO. main is not wrapped.
+ignore_reason: null
 surface:
-  package_export: false
-  aliases: {}
-  static_methods: []
+  package_export: true
+  aliases:
+    markovicMcKenzieTerm: markovicMcKenzieTerm
+    siggersTerm: siggersTerm
+    canonicalForm: canonicalForm
+    interprets: interprets
+    termFromArray: termFromArray
+    makeBalancedTayorTerm: makeBalancedTayorTerm
+    lexicographicallyCompare: lexicographicallyCompare
+    arity: arity
+    inteqs: inteqs
+    equations: equations
+  static_methods:
+    - markovicMcKenzieTerm
+    - siggersTerm
+    - lexicographicallyCompare
   str_parity: false
 testing:
-  notes: ""
-  task_refs: []
+  notes: |
+    Behavioral goldens in tests/parity/terms cover constructors, MMS/Siggers
+    arity and inteqs, canonicalForm, termFromArray, lex compare, balanced
+    terms, and interprets (null).
+  task_refs:
+    - tests/parity/terms/test_cases/terms_cases.py
   scripts: []

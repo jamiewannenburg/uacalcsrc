@@ -46,6 +46,14 @@ pub fn register_malcev_functions(_py: Python, m: &Bound<'_, PyModule>) -> PyResu
     m.add_function(wrap_pyfunction!(primality_terms, m)?)?;
     m.add_function(wrap_pyfunction!(fixed_k_edge_term, m)?)?;
     m.add_function(wrap_pyfunction!(fixed_k_qwnu, m)?)?;
+    m.add_function(wrap_pyfunction!(jonsson_level_path, m)?)?;
+    m.add_function(wrap_pyfunction!(gumm_level_path, m)?)?;
+    m.add_function(wrap_pyfunction!(hagemann_mitschke_level_path, m)?)?;
+    m.add_function(wrap_pyfunction!(jonsson_level_aux, m)?)?;
+    m.add_function(wrap_pyfunction!(nu_term_idempotent_bad, m)?)?;
+    m.add_function(wrap_pyfunction!(fixed_k_edge_idempotent, m)?)?;
+    m.add_function(wrap_pyfunction!(fixed_k_perm_idempotent, m)?)?;
+    m.add_function(wrap_pyfunction!(perm_level_idempotent, m)?)?;
 
     Ok(())
 }
@@ -554,6 +562,61 @@ fn fixed_k_qwnu(algebra: &PyBasicAlgebra, arity: usize) -> PyResult<bool> {
         Ok(result) => Ok(result),
         Err(e) => Err(PyValueError::new_err(e)),
     }
+}
+
+#[pyfunction]
+fn jonsson_level_path(
+    middle_zero: Vec<Vec<i32>>,
+    g0: Vec<i32>,
+    g2: Vec<i32>,
+    alvin_variant: bool,
+) -> PyResult<Option<Vec<Vec<i32>>>> {
+    malcev::jonsson_level_path_pub(&middle_zero, &g0, &g2, alvin_variant)
+        .map_err(PyValueError::new_err)
+}
+
+#[pyfunction]
+fn gumm_level_path(
+    middle_zero: Vec<Vec<i32>>,
+    first_one: Vec<Vec<i32>>,
+    g0: Vec<i32>,
+    g2: Vec<i32>,
+) -> PyResult<Option<Vec<Vec<i32>>>> {
+    malcev::gumm_level_path_pub(&middle_zero, &first_one, &g0, &g2).map_err(PyValueError::new_err)
+}
+
+#[pyfunction]
+fn hagemann_mitschke_level_path(
+    sub: Vec<Vec<i32>>,
+    g0: Vec<i32>,
+    g2: Vec<i32>,
+) -> PyResult<Option<Vec<Vec<i32>>>> {
+    malcev::hagemann_mitschke_level_path_pub(&sub, &g0, &g2).map_err(PyValueError::new_err)
+}
+
+#[pyfunction]
+fn jonsson_level_aux(middle_zero: Vec<Vec<i32>>, g0: Vec<i32>, g2: Vec<i32>) -> PyResult<i32> {
+    malcev::jonsson_level_aux_pub(&middle_zero, &g0, &g2).map_err(PyValueError::new_err)
+}
+
+#[pyfunction]
+fn nu_term_idempotent_bad(algebra: &PyBasicAlgebra, arity: usize) -> PyResult<bool> {
+    malcev::nu_term_idempotent_bad(&algebra.inner, arity).map_err(PyValueError::new_err)
+}
+
+#[pyfunction]
+fn fixed_k_edge_idempotent(algebra: &PyBasicAlgebra, level: usize) -> PyResult<bool> {
+    malcev::fixed_k_edge_idempotent(&algebra.inner, level).map_err(PyValueError::new_err)
+}
+
+#[pyfunction]
+fn fixed_k_perm_idempotent(algebra: &PyBasicAlgebra, level: usize) -> PyResult<bool> {
+    malcev::fixed_k_perm_idempotent(&algebra.inner, level).map_err(PyValueError::new_err)
+}
+
+#[pyfunction]
+fn perm_level_idempotent(algebra: &PyBasicAlgebra) -> PyResult<i32> {
+    malcev::perm_level_idempotent(&algebra.inner).map_err(PyValueError::new_err)
 }
 
 

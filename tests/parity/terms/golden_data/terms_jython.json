@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "generated_at": "2026-10-16T05:30:25.665568+00:00",
+    "generated_at": "2026-10-17T05:43:21.040016+00:00",
     "jar": "uacalc.jar",
     "package": "org.uacalc.terms",
     "runtime": "jython",
-    "test_cases": 53,
+    "test_cases": 72,
     "type": "package"
   },
   "test_cases": [
@@ -1186,6 +1186,443 @@
       "setup": "\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _wsb(term, prefix=\"\"):\n    try:\n        from java.lang import StringBuffer\n        sb = StringBuffer(prefix)\n        term.writeStringBuffer(sb)\n        return sb.toString()\n    except ImportError:\n        return term.writeStringBuffer(prefix)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        if getter is not None:\n            out.append(getter())\n        else:\n            out.append(str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _vals(op, n=2):\n    ar = int(op.arity())\n    iva = op.intValueAt\n    if ar == 0:\n        return [int(iva([]))]\n    if ar == 1:\n        return [int(iva([i])) for i in range(n)]\n    return [int(iva([i, j])) for i in range(n) for j in range(n)]\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nplus = OperationSymbol(\"+\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nz = VariableImp(\"z\")\nfxy = NonVariableTerm(plus, [x, y])\nconst_e = NonVariableTerm.makeConstantTerm(OperationSymbol(\"e\", 0))\n",
       "skip_string_check": false,
       "xfail_reason": "Known Java bug: VariableImp.interpretation with a varlist that omits the variable still returns a projection (index -1; later AIOOBE on eval). Python raises NullPointerException at construction. Java golden values are left unchanged."
+    },
+    {
+      "args": [],
+      "call": "mms.arity()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "markovicMcKenzieTerm() factory arity 4",
+      "expected_exception": null,
+      "id": "taylor_mms_term",
+      "kwargs": {},
+      "method": "Taylor.markovicMcKenzieTerm",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 4,
+        "string_repr": "4",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _wsb(term, prefix=\"\"):\n    try:\n        from java.lang import StringBuffer\n        sb = StringBuffer(prefix)\n        term.writeStringBuffer(sb)\n        return sb.toString()\n    except ImportError:\n        return term.writeStringBuffer(prefix)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        if getter is not None:\n            out.append(getter())\n        else:\n            out.append(str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _vals(op, n=2):\n    ar = int(op.arity())\n    iva = op.intValueAt\n    if ar == 0:\n        return [int(iva([]))]\n    if ar == 1:\n        return [int(iva([i])) for i in range(n)]\n    return [int(iva([i, j])) for i in range(n) for j in range(n)]\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nplus = OperationSymbol(\"+\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nz = VariableImp(\"z\")\nfxy = NonVariableTerm(plus, [x, y])\nconst_e = NonVariableTerm.makeConstantTerm(OperationSymbol(\"e\", 0))\n\nfrom org.uacalc.terms import Taylor\nfrom org.uacalc.util import IntArray\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in (\"getArray\", \"to_array\", \"get_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\nmms = Taylor.markovicMcKenzieTerm()\nsig = Taylor.siggersTerm()\nia0000 = IntArray([1, 0, 0, 0])\nia0011 = IntArray([0, 0, 1, 1])\ninteqs4 = [[ia0000, ia0011], [IntArray([0, 0, 1, 0]), IntArray([0, 1, 0, 0])]]\nt4 = Taylor(4, inteqs4)\nt_sym = Taylor(OperationSymbol(\"mm\", 4), inteqs4)\nleaf = t4.termFromArray([0, 1, 0, 1])\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sig.arity()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "siggersTerm() factory arity 6",
+      "expected_exception": null,
+      "id": "taylor_siggers_term",
+      "kwargs": {},
+      "method": "Taylor.siggersTerm",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 6,
+        "string_repr": "6",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _wsb(term, prefix=\"\"):\n    try:\n        from java.lang import StringBuffer\n        sb = StringBuffer(prefix)\n        term.writeStringBuffer(sb)\n        return sb.toString()\n    except ImportError:\n        return term.writeStringBuffer(prefix)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        if getter is not None:\n            out.append(getter())\n        else:\n            out.append(str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _vals(op, n=2):\n    ar = int(op.arity())\n    iva = op.intValueAt\n    if ar == 0:\n        return [int(iva([]))]\n    if ar == 1:\n        return [int(iva([i])) for i in range(n)]\n    return [int(iva([i, j])) for i in range(n) for j in range(n)]\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nplus = OperationSymbol(\"+\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nz = VariableImp(\"z\")\nfxy = NonVariableTerm(plus, [x, y])\nconst_e = NonVariableTerm.makeConstantTerm(OperationSymbol(\"e\", 0))\n\nfrom org.uacalc.terms import Taylor\nfrom org.uacalc.util import IntArray\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in (\"getArray\", \"to_array\", \"get_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\nmms = Taylor.markovicMcKenzieTerm()\nsig = Taylor.siggersTerm()\nia0000 = IntArray([1, 0, 0, 0])\nia0011 = IntArray([0, 0, 1, 1])\ninteqs4 = [[ia0000, ia0011], [IntArray([0, 0, 1, 0]), IntArray([0, 1, 0, 0])]]\nt4 = Taylor(4, inteqs4)\nt_sym = Taylor(OperationSymbol(\"mm\", 4), inteqs4)\nleaf = t4.termFromArray([0, 1, 0, 1])\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "[mms.arity(), sig.arity()]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Markovic-McKenzie arity 4 and Siggers arity 6",
+      "expected_exception": null,
+      "id": "taylor_mms_arity",
+      "kwargs": {},
+      "method": "Taylor.arity",
+      "notes": "list vs Java toString",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          4,
+          6
+        ],
+        "string_repr": "[4, 6]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _wsb(term, prefix=\"\"):\n    try:\n        from java.lang import StringBuffer\n        sb = StringBuffer(prefix)\n        term.writeStringBuffer(sb)\n        return sb.toString()\n    except ImportError:\n        return term.writeStringBuffer(prefix)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        if getter is not None:\n            out.append(getter())\n        else:\n            out.append(str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _vals(op, n=2):\n    ar = int(op.arity())\n    iva = op.intValueAt\n    if ar == 0:\n        return [int(iva([]))]\n    if ar == 1:\n        return [int(iva([i])) for i in range(n)]\n    return [int(iva([i, j])) for i in range(n) for j in range(n)]\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nplus = OperationSymbol(\"+\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nz = VariableImp(\"z\")\nfxy = NonVariableTerm(plus, [x, y])\nconst_e = NonVariableTerm.makeConstantTerm(OperationSymbol(\"e\", 0))\n\nfrom org.uacalc.terms import Taylor\nfrom org.uacalc.util import IntArray\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in (\"getArray\", \"to_array\", \"get_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\nmms = Taylor.markovicMcKenzieTerm()\nsig = Taylor.siggersTerm()\nia0000 = IntArray([1, 0, 0, 0])\nia0011 = IntArray([0, 0, 1, 1])\ninteqs4 = [[ia0000, ia0011], [IntArray([0, 0, 1, 0]), IntArray([0, 1, 0, 0])]]\nt4 = Taylor(4, inteqs4)\nt_sym = Taylor(OperationSymbol(\"mm\", 4), inteqs4)\nleaf = t4.termFromArray([0, 1, 0, 1])\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "[[_ia(ia) for ia in list(pair)] for pair in list(mms.inteqs())]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Markovic-McKenzie integer equations",
+      "expected_exception": null,
+      "id": "taylor_mms_inteqs",
+      "kwargs": {},
+      "method": "Taylor.inteqs",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            [
+              1,
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              1,
+              1
+            ]
+          ],
+          [
+            [
+              0,
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              1,
+              0,
+              0
+            ]
+          ]
+        ],
+        "string_repr": "[[[1, 0, 0, 0], [0, 0, 1, 1]], [[0, 0, 1, 0], [0, 1, 0, 0]]]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _wsb(term, prefix=\"\"):\n    try:\n        from java.lang import StringBuffer\n        sb = StringBuffer(prefix)\n        term.writeStringBuffer(sb)\n        return sb.toString()\n    except ImportError:\n        return term.writeStringBuffer(prefix)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        if getter is not None:\n            out.append(getter())\n        else:\n            out.append(str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _vals(op, n=2):\n    ar = int(op.arity())\n    iva = op.intValueAt\n    if ar == 0:\n        return [int(iva([]))]\n    if ar == 1:\n        return [int(iva([i])) for i in range(n)]\n    return [int(iva([i, j])) for i in range(n) for j in range(n)]\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nplus = OperationSymbol(\"+\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nz = VariableImp(\"z\")\nfxy = NonVariableTerm(plus, [x, y])\nconst_e = NonVariableTerm.makeConstantTerm(OperationSymbol(\"e\", 0))\n\nfrom org.uacalc.terms import Taylor\nfrom org.uacalc.util import IntArray\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in (\"getArray\", \"to_array\", \"get_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\nmms = Taylor.markovicMcKenzieTerm()\nsig = Taylor.siggersTerm()\nia0000 = IntArray([1, 0, 0, 0])\nia0011 = IntArray([0, 0, 1, 1])\ninteqs4 = [[ia0000, ia0011], [IntArray([0, 0, 1, 0]), IntArray([0, 1, 0, 0])]]\nt4 = Taylor(4, inteqs4)\nt_sym = Taylor(OperationSymbol(\"mm\", 4), inteqs4)\nleaf = t4.termFromArray([0, 1, 0, 1])\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "t4.arity()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Taylor(int, inteqs) arity",
+      "expected_exception": null,
+      "id": "taylor_ctor_arity",
+      "kwargs": {},
+      "method": "Taylor.Taylor",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 4,
+        "string_repr": "4",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _wsb(term, prefix=\"\"):\n    try:\n        from java.lang import StringBuffer\n        sb = StringBuffer(prefix)\n        term.writeStringBuffer(sb)\n        return sb.toString()\n    except ImportError:\n        return term.writeStringBuffer(prefix)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        if getter is not None:\n            out.append(getter())\n        else:\n            out.append(str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _vals(op, n=2):\n    ar = int(op.arity())\n    iva = op.intValueAt\n    if ar == 0:\n        return [int(iva([]))]\n    if ar == 1:\n        return [int(iva([i])) for i in range(n)]\n    return [int(iva([i, j])) for i in range(n) for j in range(n)]\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nplus = OperationSymbol(\"+\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nz = VariableImp(\"z\")\nfxy = NonVariableTerm(plus, [x, y])\nconst_e = NonVariableTerm.makeConstantTerm(OperationSymbol(\"e\", 0))\n\nfrom org.uacalc.terms import Taylor\nfrom org.uacalc.util import IntArray\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in (\"getArray\", \"to_array\", \"get_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\nmms = Taylor.markovicMcKenzieTerm()\nsig = Taylor.siggersTerm()\nia0000 = IntArray([1, 0, 0, 0])\nia0011 = IntArray([0, 0, 1, 1])\ninteqs4 = [[ia0000, ia0011], [IntArray([0, 0, 1, 0]), IntArray([0, 1, 0, 0])]]\nt4 = Taylor(4, inteqs4)\nt_sym = Taylor(OperationSymbol(\"mm\", 4), inteqs4)\nleaf = t4.termFromArray([0, 1, 0, 1])\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "t_sym.arity()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Taylor(OperationSymbol, inteqs) arity",
+      "expected_exception": null,
+      "id": "taylor_ctor_sym",
+      "kwargs": {},
+      "method": "Taylor.Taylor",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 4,
+        "string_repr": "4",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _wsb(term, prefix=\"\"):\n    try:\n        from java.lang import StringBuffer\n        sb = StringBuffer(prefix)\n        term.writeStringBuffer(sb)\n        return sb.toString()\n    except ImportError:\n        return term.writeStringBuffer(prefix)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        if getter is not None:\n            out.append(getter())\n        else:\n            out.append(str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _vals(op, n=2):\n    ar = int(op.arity())\n    iva = op.intValueAt\n    if ar == 0:\n        return [int(iva([]))]\n    if ar == 1:\n        return [int(iva([i])) for i in range(n)]\n    return [int(iva([i, j])) for i in range(n) for j in range(n)]\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nplus = OperationSymbol(\"+\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nz = VariableImp(\"z\")\nfxy = NonVariableTerm(plus, [x, y])\nconst_e = NonVariableTerm.makeConstantTerm(OperationSymbol(\"e\", 0))\n\nfrom org.uacalc.terms import Taylor\nfrom org.uacalc.util import IntArray\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in (\"getArray\", \"to_array\", \"get_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\nmms = Taylor.markovicMcKenzieTerm()\nsig = Taylor.siggersTerm()\nia0000 = IntArray([1, 0, 0, 0])\nia0011 = IntArray([0, 0, 1, 1])\ninteqs4 = [[ia0000, ia0011], [IntArray([0, 0, 1, 0]), IntArray([0, 1, 0, 0])]]\nt4 = Taylor(4, inteqs4)\nt_sym = Taylor(OperationSymbol(\"mm\", 4), inteqs4)\nleaf = t4.termFromArray([0, 1, 0, 1])\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Taylor(fxy, []).arity()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Taylor(Term, eqs) uses the term's leading symbol arity",
+      "expected_exception": null,
+      "id": "taylor_ctor_term_eqs",
+      "kwargs": {},
+      "method": "Taylor.Taylor",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _wsb(term, prefix=\"\"):\n    try:\n        from java.lang import StringBuffer\n        sb = StringBuffer(prefix)\n        term.writeStringBuffer(sb)\n        return sb.toString()\n    except ImportError:\n        return term.writeStringBuffer(prefix)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        if getter is not None:\n            out.append(getter())\n        else:\n            out.append(str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _vals(op, n=2):\n    ar = int(op.arity())\n    iva = op.intValueAt\n    if ar == 0:\n        return [int(iva([]))]\n    if ar == 1:\n        return [int(iva([i])) for i in range(n)]\n    return [int(iva([i, j])) for i in range(n) for j in range(n)]\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nplus = OperationSymbol(\"+\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nz = VariableImp(\"z\")\nfxy = NonVariableTerm(plus, [x, y])\nconst_e = NonVariableTerm.makeConstantTerm(OperationSymbol(\"e\", 0))\n\nfrom org.uacalc.terms import Taylor\nfrom org.uacalc.util import IntArray\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in (\"getArray\", \"to_array\", \"get_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\nmms = Taylor.markovicMcKenzieTerm()\nsig = Taylor.siggersTerm()\nia0000 = IntArray([1, 0, 0, 0])\nia0011 = IntArray([0, 0, 1, 1])\ninteqs4 = [[ia0000, ia0011], [IntArray([0, 0, 1, 0]), IntArray([0, 1, 0, 0])]]\nt4 = Taylor(4, inteqs4)\nt_sym = Taylor(OperationSymbol(\"mm\", 4), inteqs4)\nleaf = t4.termFromArray([0, 1, 0, 1])\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "str(leaf).replace(' ', '')",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "termFromArray([0,1,0,1]) for arity 4",
+      "expected_exception": null,
+      "id": "taylor_term_from_array",
+      "kwargs": {},
+      "method": "Taylor.termFromArray",
+      "notes": "",
+      "result": {
+        "return_type": "str",
+        "return_value": "f(x,y,x,y)",
+        "string_repr": "f(x,y,x,y)",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _wsb(term, prefix=\"\"):\n    try:\n        from java.lang import StringBuffer\n        sb = StringBuffer(prefix)\n        term.writeStringBuffer(sb)\n        return sb.toString()\n    except ImportError:\n        return term.writeStringBuffer(prefix)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        if getter is not None:\n            out.append(getter())\n        else:\n            out.append(str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _vals(op, n=2):\n    ar = int(op.arity())\n    iva = op.intValueAt\n    if ar == 0:\n        return [int(iva([]))]\n    if ar == 1:\n        return [int(iva([i])) for i in range(n)]\n    return [int(iva([i, j])) for i in range(n) for j in range(n)]\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nplus = OperationSymbol(\"+\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nz = VariableImp(\"z\")\nfxy = NonVariableTerm(plus, [x, y])\nconst_e = NonVariableTerm.makeConstantTerm(OperationSymbol(\"e\", 0))\n\nfrom org.uacalc.terms import Taylor\nfrom org.uacalc.util import IntArray\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in (\"getArray\", \"to_array\", \"get_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\nmms = Taylor.markovicMcKenzieTerm()\nsig = Taylor.siggersTerm()\nia0000 = IntArray([1, 0, 0, 0])\nia0011 = IntArray([0, 0, 1, 1])\ninteqs4 = [[ia0000, ia0011], [IntArray([0, 0, 1, 0]), IntArray([0, 1, 0, 0])]]\nt4 = Taylor(4, inteqs4)\nt_sym = Taylor(OperationSymbol(\"mm\", 4), inteqs4)\nleaf = t4.termFromArray([0, 1, 0, 1])\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "str(t4.termFromArray([9, 0, 1, 0, 1, 8], 1, 4)).replace(' ', '')",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "termFromArray(arr, start, len) skip prefix/suffix",
+      "expected_exception": null,
+      "id": "taylor_term_from_array_range",
+      "kwargs": {},
+      "method": "Taylor.termFromArray",
+      "notes": "",
+      "result": {
+        "return_type": "str",
+        "return_value": "f(x,y,x,y)",
+        "string_repr": "f(x,y,x,y)",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _wsb(term, prefix=\"\"):\n    try:\n        from java.lang import StringBuffer\n        sb = StringBuffer(prefix)\n        term.writeStringBuffer(sb)\n        return sb.toString()\n    except ImportError:\n        return term.writeStringBuffer(prefix)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        if getter is not None:\n            out.append(getter())\n        else:\n            out.append(str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _vals(op, n=2):\n    ar = int(op.arity())\n    iva = op.intValueAt\n    if ar == 0:\n        return [int(iva([]))]\n    if ar == 1:\n        return [int(iva([i])) for i in range(n)]\n    return [int(iva([i, j])) for i in range(n) for j in range(n)]\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nplus = OperationSymbol(\"+\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nz = VariableImp(\"z\")\nfxy = NonVariableTerm(plus, [x, y])\nconst_e = NonVariableTerm.makeConstantTerm(OperationSymbol(\"e\", 0))\n\nfrom org.uacalc.terms import Taylor\nfrom org.uacalc.util import IntArray\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in (\"getArray\", \"to_array\", \"get_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\nmms = Taylor.markovicMcKenzieTerm()\nsig = Taylor.siggersTerm()\nia0000 = IntArray([1, 0, 0, 0])\nia0011 = IntArray([0, 0, 1, 1])\ninteqs4 = [[ia0000, ia0011], [IntArray([0, 0, 1, 0]), IntArray([0, 1, 0, 0])]]\nt4 = Taylor(4, inteqs4)\nt_sym = Taylor(OperationSymbol(\"mm\", 4), inteqs4)\nleaf = t4.termFromArray([0, 1, 0, 1])\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "str(mms.canonicalForm(x))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "canonicalForm of a variable is the variable",
+      "expected_exception": null,
+      "id": "taylor_canonical_form_var",
+      "kwargs": {},
+      "method": "Taylor.canonicalForm",
+      "notes": "",
+      "result": {
+        "return_type": "str",
+        "return_value": "x",
+        "string_repr": "x",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _wsb(term, prefix=\"\"):\n    try:\n        from java.lang import StringBuffer\n        sb = StringBuffer(prefix)\n        term.writeStringBuffer(sb)\n        return sb.toString()\n    except ImportError:\n        return term.writeStringBuffer(prefix)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        if getter is not None:\n            out.append(getter())\n        else:\n            out.append(str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _vals(op, n=2):\n    ar = int(op.arity())\n    iva = op.intValueAt\n    if ar == 0:\n        return [int(iva([]))]\n    if ar == 1:\n        return [int(iva([i])) for i in range(n)]\n    return [int(iva([i, j])) for i in range(n) for j in range(n)]\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nplus = OperationSymbol(\"+\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nz = VariableImp(\"z\")\nfxy = NonVariableTerm(plus, [x, y])\nconst_e = NonVariableTerm.makeConstantTerm(OperationSymbol(\"e\", 0))\n\nfrom org.uacalc.terms import Taylor\nfrom org.uacalc.util import IntArray\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in (\"getArray\", \"to_array\", \"get_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\nmms = Taylor.markovicMcKenzieTerm()\nsig = Taylor.siggersTerm()\nia0000 = IntArray([1, 0, 0, 0])\nia0011 = IntArray([0, 0, 1, 1])\ninteqs4 = [[ia0000, ia0011], [IntArray([0, 0, 1, 0]), IntArray([0, 1, 0, 0])]]\nt4 = Taylor(4, inteqs4)\nt_sym = Taylor(OperationSymbol(\"mm\", 4), inteqs4)\nleaf = t4.termFromArray([0, 1, 0, 1])\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "str(t4.canonicalForm(leaf)).replace(' ', '')",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "canonicalForm of a balanced mm-term",
+      "expected_exception": null,
+      "id": "taylor_canonical_form_leaf",
+      "kwargs": {},
+      "method": "Taylor.canonicalForm",
+      "notes": "",
+      "result": {
+        "return_type": "str",
+        "return_value": "f(x,y,x,y)",
+        "string_repr": "f(x,y,x,y)",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _wsb(term, prefix=\"\"):\n    try:\n        from java.lang import StringBuffer\n        sb = StringBuffer(prefix)\n        term.writeStringBuffer(sb)\n        return sb.toString()\n    except ImportError:\n        return term.writeStringBuffer(prefix)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        if getter is not None:\n            out.append(getter())\n        else:\n            out.append(str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _vals(op, n=2):\n    ar = int(op.arity())\n    iva = op.intValueAt\n    if ar == 0:\n        return [int(iva([]))]\n    if ar == 1:\n        return [int(iva([i])) for i in range(n)]\n    return [int(iva([i, j])) for i in range(n) for j in range(n)]\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nplus = OperationSymbol(\"+\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nz = VariableImp(\"z\")\nfxy = NonVariableTerm(plus, [x, y])\nconst_e = NonVariableTerm.makeConstantTerm(OperationSymbol(\"e\", 0))\n\nfrom org.uacalc.terms import Taylor\nfrom org.uacalc.util import IntArray\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in (\"getArray\", \"to_array\", \"get_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\nmms = Taylor.markovicMcKenzieTerm()\nsig = Taylor.siggersTerm()\nia0000 = IntArray([1, 0, 0, 0])\nia0011 = IntArray([0, 0, 1, 1])\ninteqs4 = [[ia0000, ia0011], [IntArray([0, 0, 1, 0]), IntArray([0, 1, 0, 0])]]\nt4 = Taylor(4, inteqs4)\nt_sym = Taylor(OperationSymbol(\"mm\", 4), inteqs4)\nleaf = t4.termFromArray([0, 1, 0, 1])\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_ia(mms.canonicalForm(IntArray([1, 0, 0, 0])))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "canonicalForm(IntArray) of length arity via findRoot",
+      "expected_exception": null,
+      "id": "taylor_canonical_form_intarray",
+      "kwargs": {},
+      "method": "Taylor.canonicalForm",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.ArrayStoreException: arraycopy: source type org.uacalc.util.IntArray is not an array",
+          "type": "ArrayStoreException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _wsb(term, prefix=\"\"):\n    try:\n        from java.lang import StringBuffer\n        sb = StringBuffer(prefix)\n        term.writeStringBuffer(sb)\n        return sb.toString()\n    except ImportError:\n        return term.writeStringBuffer(prefix)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        if getter is not None:\n            out.append(getter())\n        else:\n            out.append(str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _vals(op, n=2):\n    ar = int(op.arity())\n    iva = op.intValueAt\n    if ar == 0:\n        return [int(iva([]))]\n    if ar == 1:\n        return [int(iva([i])) for i in range(n)]\n    return [int(iva([i, j])) for i in range(n) for j in range(n)]\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nplus = OperationSymbol(\"+\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nz = VariableImp(\"z\")\nfxy = NonVariableTerm(plus, [x, y])\nconst_e = NonVariableTerm.makeConstantTerm(OperationSymbol(\"e\", 0))\n\nfrom org.uacalc.terms import Taylor\nfrom org.uacalc.util import IntArray\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in (\"getArray\", \"to_array\", \"get_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\nmms = Taylor.markovicMcKenzieTerm()\nsig = Taylor.siggersTerm()\nia0000 = IntArray([1, 0, 0, 0])\nia0011 = IntArray([0, 0, 1, 1])\ninteqs4 = [[ia0000, ia0011], [IntArray([0, 0, 1, 0]), IntArray([0, 1, 0, 0])]]\nt4 = Taylor(4, inteqs4)\nt_sym = Taylor(OperationSymbol(\"mm\", 4), inteqs4)\nleaf = t4.termFromArray([0, 1, 0, 1])\n",
+      "skip_string_check": true,
+      "xfail_reason": "Known Java bug: canonicalForm(IntArray) System.arraycopy's the IntArray object instead of getArray(), raising ArrayStoreException. CPython rewrites via findRoot."
+    },
+    {
+      "args": [],
+      "call": "[Taylor.lexicographicallyCompare(IntArray([0, 1]), IntArray([1, 0])), Taylor.lexicographicallyCompare([0, 0], [0, 0])]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "static lexicographicallyCompare on IntArray and int[]",
+      "expected_exception": null,
+      "id": "taylor_lex_arrays",
+      "kwargs": {},
+      "method": "Taylor.lexicographicallyCompare",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          -1,
+          0
+        ],
+        "string_repr": "[-1, 0]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _wsb(term, prefix=\"\"):\n    try:\n        from java.lang import StringBuffer\n        sb = StringBuffer(prefix)\n        term.writeStringBuffer(sb)\n        return sb.toString()\n    except ImportError:\n        return term.writeStringBuffer(prefix)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        if getter is not None:\n            out.append(getter())\n        else:\n            out.append(str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _vals(op, n=2):\n    ar = int(op.arity())\n    iva = op.intValueAt\n    if ar == 0:\n        return [int(iva([]))]\n    if ar == 1:\n        return [int(iva([i])) for i in range(n)]\n    return [int(iva([i, j])) for i in range(n) for j in range(n)]\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nplus = OperationSymbol(\"+\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nz = VariableImp(\"z\")\nfxy = NonVariableTerm(plus, [x, y])\nconst_e = NonVariableTerm.makeConstantTerm(OperationSymbol(\"e\", 0))\n\nfrom org.uacalc.terms import Taylor\nfrom org.uacalc.util import IntArray\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in (\"getArray\", \"to_array\", \"get_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\nmms = Taylor.markovicMcKenzieTerm()\nsig = Taylor.siggersTerm()\nia0000 = IntArray([1, 0, 0, 0])\nia0011 = IntArray([0, 0, 1, 1])\ninteqs4 = [[ia0000, ia0011], [IntArray([0, 0, 1, 0]), IntArray([0, 1, 0, 0])]]\nt4 = Taylor(4, inteqs4)\nt_sym = Taylor(OperationSymbol(\"mm\", 4), inteqs4)\nleaf = t4.termFromArray([0, 1, 0, 1])\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "mms.lexicographicallyCompare(x, y)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "instance lexicographicallyCompare(x, y) is -1",
+      "expected_exception": null,
+      "id": "taylor_lex_terms",
+      "kwargs": {},
+      "method": "Taylor.lexicographicallyCompare",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": -1,
+        "string_repr": "-1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _wsb(term, prefix=\"\"):\n    try:\n        from java.lang import StringBuffer\n        sb = StringBuffer(prefix)\n        term.writeStringBuffer(sb)\n        return sb.toString()\n    except ImportError:\n        return term.writeStringBuffer(prefix)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        if getter is not None:\n            out.append(getter())\n        else:\n            out.append(str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _vals(op, n=2):\n    ar = int(op.arity())\n    iva = op.intValueAt\n    if ar == 0:\n        return [int(iva([]))]\n    if ar == 1:\n        return [int(iva([i])) for i in range(n)]\n    return [int(iva([i, j])) for i in range(n) for j in range(n)]\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nplus = OperationSymbol(\"+\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nz = VariableImp(\"z\")\nfxy = NonVariableTerm(plus, [x, y])\nconst_e = NonVariableTerm.makeConstantTerm(OperationSymbol(\"e\", 0))\n\nfrom org.uacalc.terms import Taylor\nfrom org.uacalc.util import IntArray\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in (\"getArray\", \"to_array\", \"get_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\nmms = Taylor.markovicMcKenzieTerm()\nsig = Taylor.siggersTerm()\nia0000 = IntArray([1, 0, 0, 0])\nia0011 = IntArray([0, 0, 1, 1])\ninteqs4 = [[ia0000, ia0011], [IntArray([0, 0, 1, 0]), IntArray([0, 1, 0, 0])]]\nt4 = Taylor(4, inteqs4)\nt_sym = Taylor(OperationSymbol(\"mm\", 4), inteqs4)\nleaf = t4.termFromArray([0, 1, 0, 1])\n",
+      "skip_string_check": false,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "Taylor.lexicographicallyCompare([0, 1], [0])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "lexicographicallyCompare of unequal lengths is IAE",
+      "expected_exception": "IllegalArgumentException",
+      "id": "taylor_lex_len_mismatch",
+      "kwargs": {},
+      "method": "Taylor.lexicographicallyCompare",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.IllegalArgumentException: Arrays not of the same size",
+          "type": "IllegalArgumentException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _wsb(term, prefix=\"\"):\n    try:\n        from java.lang import StringBuffer\n        sb = StringBuffer(prefix)\n        term.writeStringBuffer(sb)\n        return sb.toString()\n    except ImportError:\n        return term.writeStringBuffer(prefix)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        if getter is not None:\n            out.append(getter())\n        else:\n            out.append(str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _vals(op, n=2):\n    ar = int(op.arity())\n    iva = op.intValueAt\n    if ar == 0:\n        return [int(iva([]))]\n    if ar == 1:\n        return [int(iva([i])) for i in range(n)]\n    return [int(iva([i, j])) for i in range(n) for j in range(n)]\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nplus = OperationSymbol(\"+\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nz = VariableImp(\"z\")\nfxy = NonVariableTerm(plus, [x, y])\nconst_e = NonVariableTerm.makeConstantTerm(OperationSymbol(\"e\", 0))\n\nfrom org.uacalc.terms import Taylor\nfrom org.uacalc.util import IntArray\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in (\"getArray\", \"to_array\", \"get_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\nmms = Taylor.markovicMcKenzieTerm()\nsig = Taylor.siggersTerm()\nia0000 = IntArray([1, 0, 0, 0])\nia0011 = IntArray([0, 0, 1, 1])\ninteqs4 = [[ia0000, ia0011], [IntArray([0, 0, 1, 0]), IntArray([0, 1, 0, 0])]]\nt4 = Taylor(4, inteqs4)\nt_sym = Taylor(OperationSymbol(\"mm\", 4), inteqs4)\nleaf = t4.termFromArray([0, 1, 0, 1])\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "str(mms.makeBalancedTayorTerm(OperationSymbol('f', 2), 1, _varlist(x, y))).replace(' ', '')",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "makeBalancedTayorTerm depth 1",
+      "expected_exception": null,
+      "id": "taylor_balanced",
+      "kwargs": {},
+      "method": "Taylor.makeBalancedTayorTerm",
+      "notes": "",
+      "result": {
+        "return_type": "str",
+        "return_value": "f(x,y)",
+        "string_repr": "f(x,y)",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _wsb(term, prefix=\"\"):\n    try:\n        from java.lang import StringBuffer\n        sb = StringBuffer(prefix)\n        term.writeStringBuffer(sb)\n        return sb.toString()\n    except ImportError:\n        return term.writeStringBuffer(prefix)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        if getter is not None:\n            out.append(getter())\n        else:\n            out.append(str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _vals(op, n=2):\n    ar = int(op.arity())\n    iva = op.intValueAt\n    if ar == 0:\n        return [int(iva([]))]\n    if ar == 1:\n        return [int(iva([i])) for i in range(n)]\n    return [int(iva([i, j])) for i in range(n) for j in range(n)]\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nplus = OperationSymbol(\"+\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nz = VariableImp(\"z\")\nfxy = NonVariableTerm(plus, [x, y])\nconst_e = NonVariableTerm.makeConstantTerm(OperationSymbol(\"e\", 0))\n\nfrom org.uacalc.terms import Taylor\nfrom org.uacalc.util import IntArray\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in (\"getArray\", \"to_array\", \"get_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\nmms = Taylor.markovicMcKenzieTerm()\nsig = Taylor.siggersTerm()\nia0000 = IntArray([1, 0, 0, 0])\nia0011 = IntArray([0, 0, 1, 1])\ninteqs4 = [[ia0000, ia0011], [IntArray([0, 0, 1, 0]), IntArray([0, 1, 0, 0])]]\nt4 = Taylor(4, inteqs4)\nt_sym = Taylor(OperationSymbol(\"mm\", 4), inteqs4)\nleaf = t4.termFromArray([0, 1, 0, 1])\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "mms.interprets(sig, 1)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Java interprets returns null even on success; match that",
+      "expected_exception": null,
+      "id": "taylor_interprets_java_null",
+      "kwargs": {},
+      "method": "Taylor.interprets",
+      "notes": "Known Java bug: interprets prints then return null.",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _wsb(term, prefix=\"\"):\n    try:\n        from java.lang import StringBuffer\n        sb = StringBuffer(prefix)\n        term.writeStringBuffer(sb)\n        return sb.toString()\n    except ImportError:\n        return term.writeStringBuffer(prefix)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        if getter is not None:\n            out.append(getter())\n        else:\n            out.append(str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _vals(op, n=2):\n    ar = int(op.arity())\n    iva = op.intValueAt\n    if ar == 0:\n        return [int(iva([]))]\n    if ar == 1:\n        return [int(iva([i])) for i in range(n)]\n    return [int(iva([i, j])) for i in range(n) for j in range(n)]\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nplus = OperationSymbol(\"+\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nz = VariableImp(\"z\")\nfxy = NonVariableTerm(plus, [x, y])\nconst_e = NonVariableTerm.makeConstantTerm(OperationSymbol(\"e\", 0))\n\nfrom org.uacalc.terms import Taylor\nfrom org.uacalc.util import IntArray\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in (\"getArray\", \"to_array\", \"get_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\nmms = Taylor.markovicMcKenzieTerm()\nsig = Taylor.siggersTerm()\nia0000 = IntArray([1, 0, 0, 0])\nia0011 = IntArray([0, 0, 1, 1])\ninteqs4 = [[ia0000, ia0011], [IntArray([0, 0, 1, 0]), IntArray([0, 1, 0, 0])]]\nt4 = Taylor(4, inteqs4)\nt_sym = Taylor(OperationSymbol(\"mm\", 4), inteqs4)\nleaf = t4.termFromArray([0, 1, 0, 1])\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "mms.equations()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "inteqs-built Taylor.equations() is null",
+      "expected_exception": null,
+      "id": "taylor_equations_null",
+      "kwargs": {},
+      "method": "Taylor.equations",
+      "notes": "",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _wsb(term, prefix=\"\"):\n    try:\n        from java.lang import StringBuffer\n        sb = StringBuffer(prefix)\n        term.writeStringBuffer(sb)\n        return sb.toString()\n    except ImportError:\n        return term.writeStringBuffer(prefix)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        if getter is not None:\n            out.append(getter())\n        else:\n            out.append(str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _vals(op, n=2):\n    ar = int(op.arity())\n    iva = op.intValueAt\n    if ar == 0:\n        return [int(iva([]))]\n    if ar == 1:\n        return [int(iva([i])) for i in range(n)]\n    return [int(iva([i, j])) for i in range(n) for j in range(n)]\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nplus = OperationSymbol(\"+\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nz = VariableImp(\"z\")\nfxy = NonVariableTerm(plus, [x, y])\nconst_e = NonVariableTerm.makeConstantTerm(OperationSymbol(\"e\", 0))\n\nfrom org.uacalc.terms import Taylor\nfrom org.uacalc.util import IntArray\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in (\"getArray\", \"to_array\", \"get_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\nmms = Taylor.markovicMcKenzieTerm()\nsig = Taylor.siggersTerm()\nia0000 = IntArray([1, 0, 0, 0])\nia0011 = IntArray([0, 0, 1, 1])\ninteqs4 = [[ia0000, ia0011], [IntArray([0, 0, 1, 0]), IntArray([0, 1, 0, 0])]]\nt4 = Taylor(4, inteqs4)\nt_sym = Taylor(OperationSymbol(\"mm\", 4), inteqs4)\nleaf = t4.termFromArray([0, 1, 0, 1])\n",
+      "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "mms.canonicalForm(None)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "canonicalForm(null) NPE",
+      "expected_exception": "NullPointerException",
+      "id": "taylor_npe_canonical",
+      "kwargs": {},
+      "method": "Taylor.canonicalForm",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.NullPointerException: Cannot invoke \"org.uacalc.terms.Term.isaVariable()\" because \"t\" is null",
+          "type": "NullPointerException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.terms import Terms, NonVariableTerm, VariableImp, Variable\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _wsb(term, prefix=\"\"):\n    try:\n        from java.lang import StringBuffer\n        sb = StringBuffer(prefix)\n        term.writeStringBuffer(sb)\n        return sb.toString()\n    except ImportError:\n        return term.writeStringBuffer(prefix)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        if getter is not None:\n            out.append(getter())\n        else:\n            out.append(str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _vals(op, n=2):\n    ar = int(op.arity())\n    iva = op.intValueAt\n    if ar == 0:\n        return [int(iva([]))]\n    if ar == 1:\n        return [int(iva([i])) for i in range(n)]\n    return [int(iva([i, j])) for i in range(n) for j in range(n)]\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nplus = OperationSymbol(\"+\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nz = VariableImp(\"z\")\nfxy = NonVariableTerm(plus, [x, y])\nconst_e = NonVariableTerm.makeConstantTerm(OperationSymbol(\"e\", 0))\n\nfrom org.uacalc.terms import Taylor\nfrom org.uacalc.util import IntArray\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in (\"getArray\", \"to_array\", \"get_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\nmms = Taylor.markovicMcKenzieTerm()\nsig = Taylor.siggersTerm()\nia0000 = IntArray([1, 0, 0, 0])\nia0011 = IntArray([0, 0, 1, 1])\ninteqs4 = [[ia0000, ia0011], [IntArray([0, 0, 1, 0]), IntArray([0, 1, 0, 0])]]\nt4 = Taylor(4, inteqs4)\nt_sym = Taylor(OperationSymbol(\"mm\", 4), inteqs4)\nleaf = t4.termFromArray([0, 1, 0, 1])\n",
+      "skip_string_check": false,
+      "xfail_reason": null
     }
   ]
 }
