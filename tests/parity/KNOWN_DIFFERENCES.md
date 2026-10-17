@@ -556,7 +556,8 @@ Taylor / MMS is wrapped (`markovicMcKenzieTerm`, `siggersTerm`, `canonicalForm`,
   also returns null. `canonicalForm(IntArray)` nested merge is unfinished
   (`// here !!!`). `makeRootMapFromEqs` is TODO.
 - **Python**: Matches Java: `interprets` runs the search then returns `None`.
-  The Term+eqs constructor stores eqs but does not build a root map (Java TODO).
+  `equations()` is null for inteqs-built instances. The Term+eqs constructor
+  does not build a root map (Java `makeRootMapFromEqs` TODO).
 - **Status**: Known Java bugs, copied for parity.
 - **Tests**: `taylor_interprets_java_null`, `taylor_canonical_form_intarray`,
   `taylor_ctor_term_eqs`
