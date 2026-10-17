@@ -1177,6 +1177,16 @@ def _fa_snap(base, n):
     ops.sort()
     return [card, _ias(f.generators()), _ias(f.getUniverseList()), _terms(f.getTerms()), ops]
 
+def _fa_snap_report(base, n):
+    # Java FreeAlgebra(alg, n, report=null): thinGens=true, decompose=true.
+    f = FreeAlgebra(base, n, None)
+    card = int(f.cardinality())
+    ops = []
+    for op in list(f.operations()):
+        ops.append([_symname(op), int(op.arity()), _op_table_any(op, card)])
+    ops.sort()
+    return [card, _ias(f.generators()), _ias(f.getUniverseList()), _terms(f.getTerms()), ops]
+
 def _fa_roundtrip(base, n):
     import os, tempfile
     f = FreeAlgebra(base, n)
@@ -1396,5 +1406,37 @@ TEST_CASES.extend([
         call="_varmap(FreeAlgebra(m3, 1))",
         description="F(1) over m3 variable-to-generator map",
         **_MAP
+    ),
+    TestCaseSpec(
+        id="fa_decompose_c2_f2",
+        method="FreeAlgebra.cardinality",
+        setup=_WIDE,
+        call="_fa_snap_report(c2, 2)",
+        description="F(2) over cyclic2 with Java report constructor (decompose=true)",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="fa_decompose_lat2_f2",
+        method="FreeAlgebra.cardinality",
+        setup=_WIDE,
+        call="_fa_snap_report(lat2, 2)",
+        description="F(2) over lat2 with Java report constructor (decompose=true)",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="fa_decompose_z3_f2",
+        method="FreeAlgebra.cardinality",
+        setup=_WIDE,
+        call="_fa_snap_report(z3, 2)",
+        description="F(2) over z3 with Java report constructor (decompose=true)",
+        **_LIST
+    ),
+    TestCaseSpec(
+        id="fa_decompose_c2c2_f2",
+        method="FreeAlgebra.cardinality",
+        setup=_WIDE,
+        call="_fa_snap_report(ProductAlgebra([c2, c2]), 2)",
+        description="F(2) over non-SI C2xC2 with Java report constructor (decompose=true)",
+        **_LIST
     ),
 ])

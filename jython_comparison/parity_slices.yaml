@@ -62,7 +62,8 @@ slices:
     owner: cursor-agent
     status: parity_golden
     last_updated: "2026-10-17"
-    workstreams: []
+    workstreams:
+      - malcev
     parity_tests_dir: tests/parity/alg
     notes: >-
       Algebra / SmallAlgebra / BasicAlgebra plus Subalgebra, ProductAlgebra,
@@ -70,7 +71,7 @@ slices:
       FreeAlgebra, Homomorphism, Closer, Algebras, AlgebraFromMinimalSets,
       AlgebraWithGeneratingVector, GeneralAlgebra, MatrixPowerAlgebra,
       ParameterizedAlgebra, PolinLikeAlgebra, ReductAlgebra, and
-      UnaryTermsMonoid (no Malcev) Jython shims on org.uacalc.alg with golden
+      UnaryTermsMonoid Jython shims on org.uacalc.alg with golden
       behavioral cases in tests/parity/alg, including AlgebraIO write/read
       value round-trips and Java-named conversion-path exceptions. CloserTiming
       is UI-only and is not wrapped. Former PR #58 leftovers now have passing
@@ -78,8 +79,11 @@ slices:
       / polinizeOperation, AlgebraWithGeneratingVector.siDecompose relations,
       GeneralAlgebra empty-universe constructor, UnaryTermsMonoid.getUniverseList.
       FreeAlgebra.getVariableToGeneratorMap has behavioral goldens on F(1)/F(2)
-      over cyclic2 plus F(1) over cyclic3, lat2, n5, and m3. Malcev and
-      BigProductAlgebra remain pending.
+      over cyclic2 plus F(1) over cyclic3, lat2, n5, and m3. Malcev is wrapped
+      with malcev_jython.json goldens plus a 5-run determinism test; FreeAlgebra
+      with decompose=true is used for Malcev and compared on SI and non-SI
+      F(n). gummTerms/primalityTerms NPEs remain known Java bugs. BigProductAlgebra
+      remains pending.
 
   - id: core-alg-op
     title: Operation symbols and operations

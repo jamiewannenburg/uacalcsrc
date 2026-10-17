@@ -19,6 +19,18 @@ from . import PROJECT_ROOT
 # Bindings that exist as Java APIs but are not fully routed through uacalc_lib.
 # These stay visible in coverage instead of being counted as tested or skipped.
 PENDING_BINDINGS = {
+    "alg": [
+        (
+            "Malcev TCT / cube-term / path internals / main",
+            "typesInSofA*, typeSetIdempotent, omittedIdealIdempotent, "
+            "cubeTermBlockerIdempotent, sdIdempotent, cpIdempotent, "
+            "fixedKPermIdempotent, permLevelIdempotent, congruenceModularForIdempotent, "
+            "fixedKEdgeIdempotent, nuTermIdempotent_Bad, makeCyclicGens, "
+            "sdPath/jonssonLevelPath/gummLevelPath/hagemannMitschkeLevelPath, "
+            "and main stay unbound. dayQuadruple is a stub pointing at "
+            "findDayQuadrupleInSquare.",
+        ),
+    ],
     "lat": [
         (
             "GUI / drawing (getDiagram, getVertices, FrameShower, main, run)",

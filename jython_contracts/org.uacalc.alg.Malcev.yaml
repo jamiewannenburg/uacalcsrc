@@ -1,0 +1,63 @@
+target: org.uacalc.alg.Malcev
+level: file
+status: implemented
+java_source: org/uacalc/alg/Malcev.java
+notes: |
+  Static facade matching Java org.uacalc.alg.Malcev. ProgressReport overloads
+  accept None; non-None is TypeError. TCT type-set helpers, cube-term blockers,
+  path internals (sdPath, jonssonLevelPath, …), nuTermIdempotent_Bad, main,
+  and other unwrapped Java methods stay off this surface. Term-finding uses
+  Java's F(n) name with thinGens/decompose like `new FreeAlgebra(alg, n, report)`.
+  gummTerms(lat2) and primalityTerms(c2, None) are known Java NPEs (null
+  ProgressReport.addStartLine) and stay strict xfails.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases: {}
+  static_methods:
+    - malcevTerm
+    - majorityTerm
+    - minorityTerm
+    - pixleyTerm
+    - nuTerm
+    - nuTermIdempotent
+    - weakNUTerm
+    - findWeakNUTerm
+    - weakMajorityTerm
+    - semilatticeTerm
+    - differenceTerm
+    - jonssonTerms
+    - hagemannMitschkeTerms
+    - gummTerms
+    - joinTerm
+    - sdmeetTerms
+    - sdTerms
+    - markovicMcKenzieSiggersTaylorTerm
+    - weak3EdgeTerm
+    - isCongruenceDistIdempotent
+    - isCongruenceModularIdempotent
+    - congruenceModularVariety
+    - jonssonLevel
+    - localDistributivityLevel
+    - findDayQuadrupleInSquare
+    - sdMeetIdempotent
+    - dayQuadruple
+    - cyclicTermIdempotent
+    - primalityTerms
+    - fixedKEdgeTerm
+    - fixedKQwnu
+  str_parity: false
+testing:
+  notes: |
+    malcev_smoke.py plus tests/parity/alg/test_cases/malcev_cases.py.
+    Tiny algebras: cyclic2, cyclic3, lat2, z3, polin. Each behavioral
+    method is also run 5 times in test_malcev_determinism.py.
+  task_refs:
+    - tests/parity/alg/test_cases/malcev_cases.py
+  scripts:
+    - path: jython_comparison/scripts/malcev_smoke.py
+      covers:
+        - malcevTerm
+        - majorityTerm
+        - jonssonLevel
+        - jonssonTerms

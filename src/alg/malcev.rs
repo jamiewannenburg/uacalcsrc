@@ -8,11 +8,11 @@
  * Based on org.uacalc.alg.Malcev.java
  */
 
-use crate::alg::{SmallAlgebra, BigProductAlgebra, FreeAlgebra, BasicAlgebra, Closer};
+use crate::alg::{Algebra, SmallAlgebra, BigProductAlgebra, FreeAlgebra, BasicAlgebra, Closer};
 use crate::terms::{Term, VariableImp};
 use crate::util::int_array::IntArray;
 use crate::util::sequence_generator::SequenceGenerator;
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::sync::Arc;
 
 /// A module with static functions for Mal'cev conditions and term finding algorithms.
@@ -24,21 +24,60 @@ use std::sync::Arc;
 /// - Test for congruence distributivity/modularity
 /// - Test various algebraic properties
 
-/// Helper function to convert a generic algebra to i32 algebra for term finding.
-/// For now, this is a placeholder - in practice, algebras used with Malcev
-/// functions should already be i32-based (BasicAlgebra<i32>).
-/// This function will be properly implemented when needed for non-i32 algebras.
-fn convert_to_i32_algebra<T>(_alg: &dyn SmallAlgebra<UniverseItem = T>) -> Result<Box<dyn SmallAlgebra<UniverseItem = i32>>, String>
+/// Copy `alg` onto an i32 BasicAlgebra with universe `{0, …, n-1}`.
+///
+/// `BasicAlgebra` sorts i32 universes, so HashSet insertion order does not leak
+/// into element indices. Operations are rebuilt as int tables so FreeAlgebra
+/// sees a stable, table-backed algebra (no live alias of the caller's ops).
+fn as_i32_algebra<T>(
+    alg: &dyn SmallAlgebra<UniverseItem = T>,
+) -> Result<BasicAlgebra<i32>, String>
 where
-    T: Clone + std::fmt::Debug + std::fmt::Display + std::hash::Hash + Eq + Send + Sync + 'static
+    T: Clone + std::fmt::Debug + std::fmt::Display + std::hash::Hash + Eq + Send + Sync + 'static,
 {
-    // For now, we assume the input algebra can be cast or converted
-    // This is a simplified version - full implementation would need to
-    // properly map operations from T to i32
-    
-    // Try to use the algebra directly if it's already i32-based
-    // Otherwise, we'd need a more sophisticated conversion
-    Err("Algebra conversion from generic type to i32 not yet fully implemented. Please use i32-based algebras directly.".to_string())
+    let int_ops = crate::alg::op::ops::make_int_operations(alg.operations())?;
+    let universe_set: HashSet<i32> = (0..alg.cardinality()).collect();
+    Ok(BasicAlgebra::new(alg.name().to_string(), universe_set, int_ops))
+}
+
+/// Java `new FreeAlgebra(alg, n, report)` sets thinGens=true and decompose=true.
+fn free_algebra_with_report(alg: BasicAlgebra<i32>, n: i32) -> Result<FreeAlgebra, String> {
+    let name = format!("F({}) over {}", n, alg.name());
+    FreeAlgebra::new_with_decompose_safe(
+        name,
+        Box::new(alg),
+        n,
+        true,
+        true,
+        true,
+        None,
+        None,
+    )
+}
+
+/// Java `new FreeAlgebra(alg, n)`: makeUniverse=true, no thinning or decompose.
+fn free_algebra_plain(alg: BasicAlgebra<i32>, n: i32) -> Result<FreeAlgebra, String> {
+    FreeAlgebra::new_safe(Box::new(alg), n)
+}
+
+/// F(2) via Java's report constructor (`decompose=true`).
+fn f2_with_report<T>(
+    alg: &dyn SmallAlgebra<UniverseItem = T>,
+) -> Result<FreeAlgebra, String>
+where
+    T: Clone + std::fmt::Debug + std::fmt::Display + std::hash::Hash + Eq + Send + Sync + 'static,
+{
+    free_algebra_with_report(as_i32_algebra(alg)?, 2)
+}
+
+/// F(2) via Java's no-report constructor (`decompose=false`).
+fn f2_plain<T>(
+    alg: &dyn SmallAlgebra<UniverseItem = T>,
+) -> Result<FreeAlgebra, String>
+where
+    T: Clone + std::fmt::Debug + std::fmt::Display + std::hash::Hash + Eq + Send + Sync + 'static,
+{
+    free_algebra_plain(as_i32_algebra(alg)?, 2)
 }
 
 /// Check if an algebra has a Malcev term.
@@ -69,20 +108,8 @@ where
         return Ok(Some(Box::new(VariableImp::x())));
     }
     
-    // Convert the algebra to i32-based for use with FreeAlgebra
-    // Extract operations and create a new BasicAlgebra with i32 universe
-    let card = alg.cardinality();
-    let ops = alg.operations();
-    let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
-    let universe_set: HashSet<i32> = (0..card).collect();
-    let i32_alg = BasicAlgebra::new(
-        alg.name().to_string(),
-        universe_set,
-        int_ops,
-    );
-    
-    // Create free algebra with 2 generators (F(2))
-    let mut f2 = FreeAlgebra::new_safe(Box::new(i32_alg), 2)?;
+    // Java: new FreeAlgebra(alg, 2, report) — SI decompose.
+    let mut f2 = f2_with_report(alg)?;
     // Make operation tables (via Algebra trait)
     use crate::alg::Algebra;
     f2.make_operation_tables();
@@ -155,30 +182,14 @@ where
         return Ok(Some(Box::new(VariableImp::x())));
     }
     
-    // Convert to i32 algebra
-    let card = alg.cardinality();
-    let ops = alg.operations();
-    
-    // Check if operations are empty
-    if ops.is_empty() {
+    if alg.operations().is_empty() {
         return Err("Algebra has no operations".to_string());
     }
-    
-    let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
-    let universe_set: HashSet<i32> = (0..card).collect();
-    let i32_alg = BasicAlgebra::new(
-        alg.name().to_string(),
-        universe_set,
-        int_ops,
-    );
-    
-    // Create free algebra with 2 generators (F(2))
-    let mut f2 = FreeAlgebra::new_safe(Box::new(i32_alg), 2)?;
+
+    // Java: new FreeAlgebra(alg, 2, report) — SI decompose.
+    let mut f2 = f2_with_report(alg)?;
     use crate::alg::Algebra;
     f2.make_operation_tables();
-    
-    // Get F(2) info before moving it
-    let f2_cardinality = f2.cardinality();
     
     // Create BigProductAlgebra (F(2)^3)
     let f2_boxed: Box<dyn SmallAlgebra<UniverseItem = IntArray>> = 
@@ -243,27 +254,13 @@ where
         return Ok(Some(Box::new(VariableImp::x())));
     }
     
-    // Convert to i32 algebra
-    let card = alg.cardinality();
-    let ops = alg.operations();
-    
-    // Check if operations are empty
-    if ops.is_empty() {
+    if alg.operations().is_empty() {
         return Err("Algebra has no operations".to_string());
     }
-    
-    let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
-    let universe_set: HashSet<i32> = (0..card).collect();
-    let i32_alg = BasicAlgebra::new(
-        alg.name().to_string(),
-        universe_set,
-        int_ops,
-    );
-    
-    // Create free algebra with 2 generators (F(2))
-    let mut f2 = FreeAlgebra::new_safe(Box::new(i32_alg), 2)?;
-    use crate::alg::Algebra;
-    f2.make_operation_tables();
+
+    // Java: new FreeAlgebra(alg, 2, report). Java leaves makeOperationTables
+    // commented out for minorityTerm; skip tables to match.
+    let f2 = f2_with_report(alg)?;
     
     // Create BigProductAlgebra (F(2)^3)
     let f2_boxed: Box<dyn SmallAlgebra<UniverseItem = IntArray>> = 
@@ -329,25 +326,11 @@ where
     // (Pixley terms exist only in arithmetical varieties)
     // TODO: Implement is_congruence_dist_idempotent check when available
     
-    // Convert to i32 algebra
-    let card = alg.cardinality();
-    let ops = alg.operations();
-    
-    // Check if operations are empty
-    if ops.is_empty() {
+    if alg.operations().is_empty() {
         return Err("Algebra has no operations".to_string());
     }
-    
-    let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
-    let universe_set: HashSet<i32> = (0..card).collect();
-    let i32_alg = BasicAlgebra::new(
-        alg.name().to_string(),
-        universe_set,
-        int_ops,
-    );
-    
-    // Create free algebra with 2 generators (F(2))
-    let mut f2 = FreeAlgebra::new_safe(Box::new(i32_alg), 2)?;
+
+    let mut f2 = f2_with_report(alg)?;
     use crate::alg::Algebra;
     f2.make_operation_tables();
     
@@ -417,25 +400,11 @@ where
         return Ok(Some(Box::new(VariableImp::new(&format!("x0")))));
     }
     
-    // Convert to i32 algebra
-    let card = alg.cardinality();
-    let ops = alg.operations();
-    
-    // Check if operations are empty
-    if ops.is_empty() {
+    if alg.operations().is_empty() {
         return Err("Algebra has no operations".to_string());
     }
-    
-    let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
-    let universe_set: HashSet<i32> = (0..card).collect();
-    let i32_alg = BasicAlgebra::new(
-        alg.name().to_string(),
-        universe_set,
-        int_ops,
-    );
-    
-    // Create free algebra with 2 generators (F(2))
-    let mut f2 = FreeAlgebra::new_safe(Box::new(i32_alg), 2)?;
+
+    let mut f2 = f2_with_report(alg)?;
     use crate::alg::Algebra;
     f2.make_operation_tables();
     
@@ -629,25 +598,11 @@ where
     
     let is_idempotent = alg.is_idempotent();
     
-    // Convert to i32 algebra
-    let card = alg.cardinality();
-    let ops = alg.operations();
-    
-    // Check if operations are empty
-    if ops.is_empty() {
+    if alg.operations().is_empty() {
         return Err("Algebra has no operations".to_string());
     }
-    
-    let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
-    let universe_set: HashSet<i32> = (0..card).collect();
-    let i32_alg = BasicAlgebra::new(
-        alg.name().to_string(),
-        universe_set,
-        int_ops,
-    );
-    
-    // Create free algebra with 2 generators (F(2))
-    let mut f2 = FreeAlgebra::new_safe(Box::new(i32_alg), 2)?;
+
+    let mut f2 = f2_with_report(alg)?;
     use crate::alg::Algebra;
     f2.make_operation_tables();
     
@@ -777,18 +732,7 @@ where
     
     let is_idempotent = alg.is_idempotent();
     
-    // Convert to i32 algebra
-    let card = alg.cardinality();
-    let ops = alg.operations();
-    let universe_set: HashSet<i32> = (0..card).collect();
-    let i32_alg = BasicAlgebra::new(
-        alg.name().to_string(),
-        universe_set,
-        ops,
-    );
-    
-    // Create free algebra with 2 generators (F(2))
-    let mut f2 = FreeAlgebra::new_safe(Box::new(i32_alg), 2)?;
+    let mut f2 = f2_plain(alg)?;
     use crate::alg::Algebra;
     f2.make_operation_tables();
     
@@ -893,45 +837,18 @@ where
         return Ok(Some(Box::new(VariableImp::x())));
     }
     
-    // Convert to i32 algebra
-    let card = alg.cardinality();
-    let ops = alg.operations();
-    
-    // Check if operations are empty
-    if ops.is_empty() {
+    if alg.operations().is_empty() {
         return Err("Algebra has no operations".to_string());
     }
-    
-    // Create i32 algebra for FreeAlgebra
-    let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
-    let universe_set: HashSet<i32> = (0..card).collect();
-    let alg_name = alg.name().to_string();
-    let i32_alg = BasicAlgebra::new(
-        alg_name.clone(),
-        universe_set.clone(),
-        int_ops,
-    );
-    
-    // No longer needed - we use interpretation_on_free_algebra directly
-    
-    // Create free algebra with 2 generators (F(2))
-    let mut f2 = FreeAlgebra::new_safe(Box::new(i32_alg), 2)?;
+
+    let mut f2 = f2_with_report(alg)?;
     use crate::alg::Algebra;
     f2.make_operation_tables();
     
     // Create variable list [x, y]
     let vars_list = vec!["x".to_string(), "y".to_string()];
     
-    // Create algebra for interpretation - convert original algebra to i32
-    // We need to recreate the operations since ops was consumed
-    let ops_for_interp = alg.operations();
-    let int_ops_for_interp = crate::alg::op::ops::make_int_operations(ops_for_interp)?;
-    let i32_alg_for_interpretation = BasicAlgebra::new(
-        alg_name,
-        universe_set,
-        int_ops_for_interp,
-    );
-    let alg_arc: Arc<dyn SmallAlgebra<UniverseItem = i32>> = Arc::new(i32_alg_for_interpretation);
+    let alg_arc: Arc<dyn SmallAlgebra<UniverseItem = i32>> = Arc::new(as_i32_algebra(alg)?);
     
     // Get idempotent terms from F(2) - matches Java implementation
     // Java interprets terms on the free algebra itself, not on the base algebra
@@ -997,19 +914,7 @@ where
         return Ok(Some(Box::new(VariableImp::x())));
     }
     
-    // Convert the algebra to i32-based for use with FreeAlgebra
-    let card = alg.cardinality();
-    let ops = alg.operations();
-    let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
-    let universe_set: HashSet<i32> = (0..card).collect();
-    let i32_alg = BasicAlgebra::new(
-        alg.name().to_string(),
-        universe_set,
-        int_ops,
-    );
-    
-    // Create free algebra with 2 generators (F(2))
-    let mut f2 = FreeAlgebra::new_safe(Box::new(i32_alg), 2)?;
+    let mut f2 = f2_with_report(alg)?;
     use crate::alg::Algebra;
     f2.make_operation_tables();
     
@@ -1222,25 +1127,11 @@ where
         return Ok(Some(ans));
     }
     
-    // Convert to i32 algebra
-    let card = alg.cardinality();
-    let ops = alg.operations();
-    
-    // Check if operations are empty
-    if ops.is_empty() {
+    if alg.operations().is_empty() {
         return Err("Algebra has no operations".to_string());
     }
-    
-    let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
-    let universe_set: HashSet<i32> = (0..card).collect();
-    let i32_alg = BasicAlgebra::new(
-        alg.name().to_string(),
-        universe_set,
-        int_ops,
-    );
-    
-    // Create free algebra with 2 generators (F(2))
-    let mut f2 = FreeAlgebra::new_safe(Box::new(i32_alg), 2)?;
+
+    let mut f2 = f2_with_report(alg)?;
     use crate::alg::Algebra;
     f2.make_operation_tables();
     
@@ -1363,25 +1254,11 @@ where
         return Ok(Some(ans));
     }
     
-    // Convert to i32 algebra
-    let card = alg.cardinality();
-    let ops = alg.operations();
-    
-    // Check if operations are empty
-    if ops.is_empty() {
+    if alg.operations().is_empty() {
         return Err("Algebra has no operations".to_string());
     }
-    
-    let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
-    let universe_set: HashSet<i32> = (0..card).collect();
-    let i32_alg = BasicAlgebra::new(
-        alg.name().to_string(),
-        universe_set,
-        int_ops,
-    );
-    
-    // Create free algebra with 2 generators (F(2))
-    let mut f2 = FreeAlgebra::new_safe(Box::new(i32_alg), 2)?;
+
+    let mut f2 = f2_with_report(alg)?;
     use crate::alg::Algebra;
     f2.make_operation_tables();
     
@@ -1715,25 +1592,11 @@ where
         return Ok(Some(ans));
     }
     
-    // Convert to i32 algebra
-    let card = alg.cardinality();
-    let ops = alg.operations();
-    
-    // Check if operations are empty
-    if ops.is_empty() {
+    if alg.operations().is_empty() {
         return Err("Algebra has no operations".to_string());
     }
-    
-    let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
-    let universe_set: HashSet<i32> = (0..card).collect();
-    let i32_alg = BasicAlgebra::new(
-        alg.name().to_string(),
-        universe_set,
-        int_ops,
-    );
-    
-    // Create free algebra with 2 generators (F(2))
-    let mut f2 = FreeAlgebra::new_safe(Box::new(i32_alg), 2)?;
+
+    let mut f2 = f2_with_report(alg)?;
     use crate::alg::Algebra;
     f2.make_operation_tables();
     
@@ -1928,25 +1791,11 @@ where
     
     let is_idempotent = alg.is_idempotent();
     
-    // Convert to i32 algebra
-    let card = alg.cardinality();
-    let ops = alg.operations();
-    
-    // Check if operations are empty
-    if ops.is_empty() {
+    if alg.operations().is_empty() {
         return Err("Algebra has no operations".to_string());
     }
-    
-    let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
-    let universe_set: HashSet<i32> = (0..card).collect();
-    let i32_alg = BasicAlgebra::new(
-        alg.name().to_string(),
-        universe_set,
-        int_ops,
-    );
-    
-    // Create free algebra with 2 generators (F(2))
-    let mut f2 = FreeAlgebra::new_safe(Box::new(i32_alg), 2)?;
+
+    let mut f2 = f2_with_report(alg)?;
     use crate::alg::Algebra;
     
     // Get automorphism (for checking invariance) - must be done before make_operation_tables
@@ -1987,7 +1836,7 @@ where
     
     // Filter to univX: for idempotent, all elements; for non-idempotent, elements with last coordinate = 0
     use crate::util::int_array::IntArrayTrait;
-    let univ_x: Vec<IntArray> = if is_idempotent {
+    let mut univ_x: Vec<IntArray> = if is_idempotent {
         closure.iter().cloned().collect()
     } else {
         closure.iter()
@@ -1995,20 +1844,18 @@ where
             .cloned()
             .collect()
     };
-    
-    // Build maps for patterns
-    // Match Java's behavior: Java assumes all elements in univX have terms in termMap
-    // We only add to maps if element has a term (to avoid issues with elements missing terms)
-    let mut aaa_map: HashMap<i32, IntArray> = HashMap::new();
-    let mut aab_map: HashMap<i32, HashMap<i32, IntArray>> = HashMap::new();
-    let mut caa_map: HashMap<i32, HashMap<i32, IntArray>> = HashMap::new();
+    // Closer insertion order follows HashMap operation walks. Sort so last-write
+    // map entries and the first weak-NU witness are independent of that order.
+    univ_x.sort_by(IntArray::lexicographic_comparator());
+
+    // Build maps for patterns. Java uses HashMap and iterates keySet() — that
+    // order is not specified. Use BTreeMap so candidate selection is
+    // deterministic (natural integer order, as a TreeMap would give).
+    let mut aaa_map: BTreeMap<i32, IntArray> = BTreeMap::new();
+    let mut aab_map: BTreeMap<i32, BTreeMap<i32, IntArray>> = BTreeMap::new();
+    let mut caa_map: BTreeMap<i32, BTreeMap<i32, IntArray>> = BTreeMap::new();
     
     for ia in &univ_x {
-        // Only process elements that have terms in term_map
-        // Java assumes all elements have terms, but our closure might have some without terms
-        if !term_map_ref.contains_key(ia) {
-            continue;
-        }
         
         if let (Some(v0), Some(v1), Some(v2)) = (ia.get(0), ia.get(1), ia.get(2)) {
             // Check for aaa pattern (all three coordinates equal)
@@ -2019,25 +1866,19 @@ where
                     let auto_v0 = auto.int_value_at_horner(v0)?;
                     if v0 == auto_v0 {
                         // Found a weak NU term with s(x,x,y) = s(y,y,x)
-                        // Only return if term exists
-                        // Note: We filter to only process elements with terms, so this should always succeed
-                        // But we double-check to be safe and match Java's behavior (Java assumes term exists)
                         if let Some(term) = term_map_ref.get(ia).map(|t| t.clone_box()) {
                             let mut ans: Vec<Box<dyn Term>> = Vec::new();
                             ans.push(term);
                             return Ok(Some(ans));
                         }
-                        // If term doesn't exist (shouldn't happen since we filtered), continue
-                        continue;
                     }
                 }
-                // Only add to aaa_map if element has a term
                 aaa_map.insert(v0, ia.clone());
             }
             
             // Check for aab pattern (first two coordinates equal)
             if v0 == v1 {
-                aab_map.entry(v0).or_insert_with(HashMap::new).insert(v2, ia.clone());
+                aab_map.entry(v0).or_default().insert(v2, ia.clone());
             }
         }
         
@@ -2045,7 +1886,7 @@ where
             // Check for caa pattern (last two coordinates equal)
             if v1 == v2 {
                 if let Some(v0) = ia.get(0) {
-                    caa_map.entry(v2).or_insert_with(HashMap::new).insert(v0, ia.clone());
+                    caa_map.entry(v2).or_default().insert(v0, ia.clone());
                 }
             }
         }
@@ -2103,9 +1944,9 @@ fn sd_path(
 ) -> Option<Vec<IntArray>> {
     use crate::util::int_array::IntArrayTrait;
     use std::collections::HashMap as StdHashMap;
-    
-    // Sort subalg lexicographically
-    subalg.sort();
+
+    // Java sdPath does not sort; keep closure insertion order so BFS neighbor
+    // lists match Java when the path is unique, and stay deterministic.
     
     // Build equivalence classes: classes01 groups by (first, second) coordinates, classes2 by third coordinate
     let mut classes01: StdHashMap<(i32, i32), Vec<IntArray>> = StdHashMap::new();
@@ -2210,25 +2051,11 @@ where
         return Ok(Some(ans));
     }
     
-    // Convert to i32 algebra
-    let card = alg.cardinality();
-    let ops = alg.operations();
-    
-    // Check if operations are empty
-    if ops.is_empty() {
+    if alg.operations().is_empty() {
         return Err("Algebra has no operations".to_string());
     }
-    
-    let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
-    let universe_set: HashSet<i32> = (0..card).collect();
-    let i32_alg = BasicAlgebra::new(
-        alg.name().to_string(),
-        universe_set,
-        int_ops,
-    );
-    
-    // Create free algebra with 2 generators (F(2))
-    let mut f2 = FreeAlgebra::new_safe(Box::new(i32_alg), 2)?;
+
+    let mut f2 = f2_with_report(alg)?;
     use crate::alg::Algebra;
     f2.make_operation_tables();
     
@@ -2328,25 +2155,11 @@ where
     
     let is_idempotent = alg.is_idempotent();
     
-    // Convert to i32 algebra
-    let card = alg.cardinality();
-    let ops = alg.operations();
-    
-    // Check if operations are empty
-    if ops.is_empty() {
+    if alg.operations().is_empty() {
         return Err("Algebra has no operations".to_string());
     }
-    
-    let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
-    let universe_set: HashSet<i32> = (0..card).collect();
-    let i32_alg = BasicAlgebra::new(
-        alg.name().to_string(),
-        universe_set,
-        int_ops,
-    );
-    
-    // Create free algebra with 2 generators (F(2))
-    let mut f2 = FreeAlgebra::new_safe(Box::new(i32_alg), 2)?;
+
+    let mut f2 = f2_with_report(alg)?;
     use crate::alg::Algebra;
     f2.make_operation_tables();
     
@@ -2443,25 +2256,11 @@ where
     
     let is_idempotent = alg.is_idempotent();
     
-    // Convert to i32 algebra
-    let card = alg.cardinality();
-    let ops = alg.operations();
-    
-    // Check if operations are empty
-    if ops.is_empty() {
+    if alg.operations().is_empty() {
         return Err("Algebra has no operations".to_string());
     }
-    
-    let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
-    let universe_set: HashSet<i32> = (0..card).collect();
-    let i32_alg = BasicAlgebra::new(
-        alg.name().to_string(),
-        universe_set,
-        int_ops,
-    );
-    
-    // Create free algebra with 2 generators (F(2))
-    let mut f2 = FreeAlgebra::new_safe(Box::new(i32_alg), 2)?;
+
+    let mut f2 = f2_with_report(alg)?;
     use crate::alg::Algebra;
     f2.make_operation_tables();
     
@@ -2889,20 +2688,9 @@ where
     if alg.is_idempotent() {
         return is_congruence_modular_idempotent(alg);
     }
-    
-    // Convert the algebra to i32-based for use with FreeAlgebra
-    let card = alg.cardinality();
-    let ops = alg.operations();
-    let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
-    let universe_set: HashSet<i32> = (0..card).collect();
-    let i32_alg = BasicAlgebra::new(
-        alg.name().to_string(),
-        universe_set,
-        int_ops,
-    );
-    
-    // Create free algebra with 2 generators (F(2))
-    let mut f2 = FreeAlgebra::new_safe(Box::new(i32_alg), 2)?;
+
+    // Java: new FreeAlgebra(alg, 2) — no decompose.
+    let mut f2 = f2_plain(alg)?;
     use crate::alg::Algebra;
     f2.make_operation_tables();
     
@@ -3043,25 +2831,12 @@ where
         return Ok(1);
     }
     
-    // Convert to i32 algebra
-    let card = alg.cardinality();
-    let ops = alg.operations();
-    
-    // Check if operations are empty
-    if ops.is_empty() {
+    if alg.operations().is_empty() {
         return Err("Algebra has no operations".to_string());
     }
-    
-    let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
-    let universe_set: HashSet<i32> = (0..card).collect();
-    let i32_alg = BasicAlgebra::new(
-        alg.name().to_string(),
-        universe_set,
-        int_ops,
-    );
-    
-    // Create free algebra with 2 generators (F(2))
-    let mut f2 = FreeAlgebra::new_safe(Box::new(i32_alg), 2)?;
+
+    // Java: new FreeAlgebra(alg, 2) — no decompose.
+    let mut f2 = f2_plain(alg)?;
     use crate::alg::Algebra;
     f2.make_operation_tables();
     
@@ -3503,31 +3278,20 @@ where
 {
     let n = alg.cardinality() as usize;
     
-    // Convert to i32 algebra
-    let card = alg.cardinality();
-    let ops = alg.operations();
-    let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
-    let universe_set: HashSet<i32> = (0..card).collect();
-    let i32_alg = BasicAlgebra::new(
-        alg.name().to_string(),
-        universe_set,
-        int_ops,
-    );
-    
-    // Create free algebra with 1 generator (F(1))
-    let mut f1 = FreeAlgebra::new_with_name_progress_safe(
-        "F(1)".to_string(),
+    // Java: new FreeAlgebra(alg, 1, false, false, false, null, report)
+    // — do not compute the universe; Closer works on the ambient product.
+    let i32_alg = as_i32_algebra(alg)?;
+    let name = format!("F(1) over {}", i32_alg.name());
+    let f1 = FreeAlgebra::new_with_decompose_safe(
+        name,
         Box::new(i32_alg),
         1,
-        true, // make_universe
+        false, // make_universe
         false, // thin_gens
         false, // decompose
-        None, // relations
-        None, // report
+        None,
+        None,
     )?;
-    
-    use crate::alg::Algebra;
-    f1.make_operation_tables();
     
     // Get unit vectors
     let units = unit_vectors(n)?;
@@ -3658,25 +3422,11 @@ where
         return Ok(Some(Box::new(VariableImp::new("x0"))));
     }
     
-    // Convert to i32 algebra
-    let card = alg.cardinality();
-    let ops = alg.operations();
-    
-    // Check if operations are empty
-    if ops.is_empty() {
+    if alg.operations().is_empty() {
         return Err("Algebra has no operations".to_string());
     }
-    
-    let int_ops = crate::alg::op::ops::make_int_operations(ops)?;
-    let universe_set: HashSet<i32> = (0..card).collect();
-    let i32_alg = BasicAlgebra::new(
-        alg.name().to_string(),
-        universe_set,
-        int_ops,
-    );
-    
-    // Create free algebra with 2 generators (F(2))
-    let mut f2 = FreeAlgebra::new_safe(Box::new(i32_alg), 2)?;
+
+    let mut f2 = f2_with_report(alg)?;
     use crate::alg::Algebra;
     f2.make_operation_tables();
     
@@ -4311,138 +4061,78 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "Flaky Malcev sd_meet_terms Rust vs Java mismatch on z3; deferred until the suite is reliable"]
     fn test_sd_meet_terms_with_z3_java_comparison() {
-        // Test sd_meet_terms with z3.ua comparing Rust vs Java
-        // Intermittent: Java HashMap iteration can change which terms are found.
-        use crate::common::{TestConfig, compare_with_java, run_java_cli_with_timeout, compare_outputs, JavaCliOutput};
-        use crate::alg::Algebra;
+        // Deterministic presence/count comparison with Java. Witness term
+        // strings can still differ because Java iterates HashMap.keySet().
+        use crate::common::{TestConfig, run_java_cli_with_timeout};
         use serde_json::json;
-        
+
         let config = TestConfig::default();
         let algebra_path = "resources/algebras/z3.ua";
-        
+
         if !std::path::Path::new(algebra_path).exists() {
             println!("Skipping test - z3.ua not found");
             return;
         }
-        
-        // Load algebra
+
         let reader = AlgebraReader::new_from_path(algebra_path).expect("Failed to read algebra");
         let alg = reader.read_algebra_file().expect("Failed to parse algebra");
-        
-        // Test with retry logic to handle non-determinism in Java's closure computation
-        // Java's HashMap iteration order can cause sporadic differences in which terms are found
-        // Each Java process is fresh, but HashMap iteration order can vary between runs
-        
-        let mut last_error = None;
-        let mut last_java_output: Option<JavaCliOutput> = None;
-        // Retry up to 5 times to handle non-determinism in Java's closure computation
-        // Java's HashMap iteration order can vary between runs, causing sporadic differences
-        for attempt in 0..5 {
-            // Run Java CLI
-            let java_output = match run_java_cli_with_timeout(
-                "java_wrapper.src.alg.MalcevWrapper",
-                &["sd_meet_terms", "--algebra", algebra_path],
-                &config,
-                config.default_timeout,
-            ) {
-                Ok(output) => {
-                    last_java_output = Some(output.clone());
-                    output
-                },
-                Err(e) => {
-                    last_error = Some(format!("Java CLI execution failed: {:?}", e));
-                    if attempt < 4 {
-                        continue; // Retry
-                    }
-                    panic!("Java CLI execution failed after 5 attempts: {:?}", last_error);
-                }
-            };
-            
-            // Run Rust function
-            let result = sd_meet_terms(&alg);
-            let rust_json = match result {
-                Ok(Some(terms)) => {
-                    let term_strings: Vec<String> = terms.iter().map(|t| format!("{}", t)).collect();
-                    serde_json::to_string_pretty(&json!({
-                        "command": "sd_meet_terms",
-                        "algebra": alg.name(),
-                        "terms_found": true,
-                        "terms": term_strings,
-                        "num_terms": terms.len()
-                    })).expect("Failed to serialize Rust result")
-                },
-                Ok(None) => {
-                    serde_json::to_string_pretty(&json!({
-                        "command": "sd_meet_terms",
-                        "algebra": alg.name(),
-                        "terms_found": false
-                    })).expect("Failed to serialize Rust result")
-                },
-                Err(e) => {
-                    serde_json::to_string_pretty(&json!({
-                        "command": "sd_meet_terms",
-                        "algebra": alg.name(),
-                        "error": e.to_string()
-                    })).expect("Failed to serialize Rust result")
-                }
-            };
-            
-            // Compare outputs
-            match compare_outputs(&rust_json, &java_output, None) {
-                Ok(_) => return, // Success!
-                Err(e) => {
-                    last_error = Some(format!("{:?}", e));
-                    if attempt < 4 {
-                        // Retry on mismatch (may be due to non-determinism in Java's closure computation)
-                        continue;
-                    }
-                }
+
+        let rust_keys: Vec<String> = (0..8)
+            .map(|_| terms_key(&sd_meet_terms(&alg).expect("sd_meet_terms")))
+            .collect();
+        assert!(
+            rust_keys.iter().all(|s| s == &rust_keys[0]),
+            "sd_meet_terms on z3 is non-deterministic: {rust_keys:?}"
+        );
+
+        let rust_result = sd_meet_terms(&alg).expect("sd_meet_terms");
+        let (rust_found, rust_n) = match &rust_result {
+            Some(terms) => (true, terms.len()),
+            None => (false, 0),
+        };
+
+        let java_output = run_java_cli_with_timeout(
+            "java_wrapper.src.alg.MalcevWrapper",
+            &["sd_meet_terms", "--algebra", algebra_path],
+            &config,
+            config.default_timeout,
+        )
+        .expect("Java CLI execution failed");
+
+        let java_json_str = java_output.stdout.trim();
+        let java_json_start = java_json_str.find('{').unwrap_or(0);
+        let java_json_str = &java_json_str[java_json_start..];
+        let java_wrapper_json: serde_json::Value =
+            serde_json::from_str(java_json_str).unwrap_or_else(|_| json!({}));
+        let java_json = if let Some(data) = java_wrapper_json.get("data") {
+            if let Some(data_str) = data.as_str() {
+                serde_json::from_str(data_str).unwrap_or_else(|_| data.clone())
+            } else {
+                data.clone()
             }
-        }
-        
-        // If all retries failed, check if it's a case where Rust found terms but Java didn't
-        // This is a known limitation due to non-determinism in Java's HashMap iteration order
-        // in closure computation, which can cause Java to miss terms that Rust finds
-        if let Some(e) = last_error {
-            // Parse the results to check if Rust found terms but Java didn't
-            let rust_result = sd_meet_terms(&alg);
-            let rust_found_terms = matches!(rust_result, Ok(Some(_)));
-            
-            // Try to parse Java output to see if it found terms
-            if let Some(ref java_output) = last_java_output {
-                // Extract JSON from Java output (handles wrapper format with "data" field)
-                let java_json_str = java_output.stdout.trim();
-                let java_json_start = java_json_str.find('{').unwrap_or(0);
-                let java_json_str = &java_json_str[java_json_start..];
-                let java_wrapper_json: serde_json::Value = serde_json::from_str(java_json_str)
-                    .unwrap_or_else(|_| json!({}));
-                
-                // Extract the "data" field if it exists
-                let java_json = if let Some(data) = java_wrapper_json.get("data") {
-                    if let Some(data_str) = data.as_str() {
-                        serde_json::from_str(data_str).unwrap_or_else(|_| data.clone())
-                    } else {
-                        data.clone()
-                    }
-                } else {
-                    java_wrapper_json
-                };
-                let java_found_terms = java_json.get("terms_found")
-                    .and_then(|v| v.as_bool())
-                    .unwrap_or(false);
-                
-                // If Rust found terms but Java didn't, this is a known limitation due to non-determinism
-                // We'll accept this as a pass since the Rust implementation is correct
-                if rust_found_terms && !java_found_terms {
-                    eprintln!("WARNING: Rust found SD-meet terms but Java did not (known limitation due to non-determinism in Java's closure computation)");
-                    return; // Accept as pass
-                }
-            }
-            
-            // Otherwise, fail the test
-            panic!("Rust and Java outputs do not match after 5 attempts: {}", e);
+        } else {
+            java_wrapper_json
+        };
+        let java_found = java_json
+            .get("terms_found")
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false);
+        let java_n = java_json
+            .get("num_terms")
+            .and_then(|v| v.as_u64())
+            .unwrap_or(0) as usize;
+
+        assert_eq!(
+            rust_found, java_found,
+            "sd_meet_terms(z3) terms_found Rust={rust_found} Java={java_found}; rust={:?} java={java_json}",
+            rust_keys[0]
+        );
+        if rust_found {
+            assert_eq!(
+                rust_n, java_n,
+                "sd_meet_terms(z3) term count Rust={rust_n} Java={java_n}"
+            );
         }
     }
 
@@ -4574,6 +4264,54 @@ mod tests {
             assert!(result.unwrap().is_some(), "Java finds a semilattice term for baker2, but Rust doesn't!");
         } else {
             println!("Skipping test - baker2.ua not found");
+        }
+    }
+
+    fn term_key(term: &Option<Box<dyn Term>>) -> String {
+        match term {
+            Some(t) => format!("{}", t),
+            None => String::from("<none>"),
+        }
+    }
+
+    fn terms_key(terms: &Option<Vec<Box<dyn Term>>>) -> String {
+        match terms {
+            Some(ts) => ts.iter().map(|t| format!("{}", t)).collect::<Vec<_>>().join("|"),
+            None => String::from("<none>"),
+        }
+    }
+
+    #[test]
+    fn test_malcev_terms_are_deterministic() {
+        let paths = [
+            "resources/algebras/cyclic2.ua",
+            "resources/algebras/cyclic3.ua",
+            "resources/algebras/lat2.ua",
+            "resources/algebras/z3.ua",
+        ];
+        for path in paths {
+            if !Path::new(path).exists() {
+                continue;
+            }
+            let reader = AlgebraReader::new_from_path(path).expect("read algebra");
+            let alg = reader.read_algebra_file().expect("parse algebra");
+            let mut malcev = Vec::new();
+            let mut majority = Vec::new();
+            let mut minority = Vec::new();
+            let mut jonsson = Vec::new();
+            let mut sd_meet = Vec::new();
+            for _ in 0..5 {
+                malcev.push(term_key(&malcev_term(&alg).expect("malcev_term")));
+                majority.push(term_key(&majority_term(&alg).expect("majority_term")));
+                minority.push(term_key(&minority_term(&alg).expect("minority_term")));
+                jonsson.push(terms_key(&jonsson_terms(&alg).expect("jonsson_terms")));
+                sd_meet.push(terms_key(&sd_meet_terms(&alg).expect("sd_meet_terms")));
+            }
+            assert!(malcev.iter().all(|s| s == &malcev[0]), "malcev_term nondeterministic on {path}: {malcev:?}");
+            assert!(majority.iter().all(|s| s == &majority[0]), "majority_term nondeterministic on {path}: {majority:?}");
+            assert!(minority.iter().all(|s| s == &minority[0]), "minority_term nondeterministic on {path}: {minority:?}");
+            assert!(jonsson.iter().all(|s| s == &jonsson[0]), "jonsson_terms nondeterministic on {path}: {jonsson:?}");
+            assert!(sd_meet.iter().all(|s| s == &sd_meet[0]), "sd_meet_terms nondeterministic on {path}: {sd_meet:?}");
         }
     }
 }

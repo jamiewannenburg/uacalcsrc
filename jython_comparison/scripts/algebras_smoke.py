@@ -1,6 +1,6 @@
 # coding: utf-8
 # Dual-runtime parity script for Algebras static helpers (Java/Jython source of truth).
-# Malcev helpers (findNUF, jonssonTerms, jonssonLevel) are not wrapped.
+# Malcev helpers (findNUF, jonssonTerms, jonssonLevel) delegate to Malcev.
 from __future__ import print_function
 
 import sys
@@ -42,6 +42,8 @@ def test():
     _show("findInClone_empty", lambda: Algebras.findInClone([], c2))
     _show("unary2arg", lambda: Algebras.unaryCloneAlgFromPartitions([zero_p], [zero_p]))
     _show("memberQV_null", lambda: Algebras.memberOfQuasivariety(None, c2))
+    _show("findNUF_c2", lambda: Algebras.findNUF(c2, 3))
+    _show("jonssonLevel_c2", lambda: Algebras.jonssonLevel(c2))
 
 
 if __name__ == "__main__":

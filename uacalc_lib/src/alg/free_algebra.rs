@@ -138,13 +138,17 @@ impl PyFreeAlgebra {
     ) -> PyResult<Self> {
         let rust_base =
             Box::new(base.inner.clone()) as Box<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>>;
-        let _ = decompose;
+        let name = format!("F({}) over {}", number_of_gens, base.inner.name());
 
-        match uacalc::alg::FreeAlgebra::new_with_thin_safe(
+        match uacalc::alg::FreeAlgebra::new_with_decompose_safe(
+            name,
             rust_base,
             number_of_gens,
             make_universe,
             thin_gens,
+            decompose,
+            None,
+            None,
         ) {
             Ok(inner) => Ok(PyFreeAlgebra {
                 inner,

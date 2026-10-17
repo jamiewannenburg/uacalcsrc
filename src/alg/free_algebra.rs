@@ -86,13 +86,14 @@ impl FreeAlgebra
         report: Option<Arc<dyn ProgressReport>>,
     ) -> Result<Self, String> {
         let name = format!("F({}) over {}", number_of_gens, alg.name());
+        // Java `new FreeAlgebra(alg, n, report)`: makeUniverse, thinGens, decompose.
         Self::new_with_name_progress_safe(
             name,
             alg,
             number_of_gens,
             true,
-            false,
-            false,
+            true,
+            true,
             None,
             report,
         )
@@ -417,8 +418,13 @@ impl FreeAlgebra
         if decompose {
             let si_projections = Self::setup_si_projections(alg.as_ref(), number_of_gens, relations)?;
             for alg_v in si_projections {
-                algs.push(alg_v.get_algebra().clone_box());
-                projs.push(IntArray::from_array(alg_v.get_vector().to_vec())?);
+                // Java: algs.add(algV.getAlgebra()); productAlgebra = new BigProductAlgebra(algs);
+                // Each SI factor is already a table-backed integer algebra; make tables
+                // the way Java does after inserting a new projection.
+                let mut factor = alg_v.alg;
+                factor.make_operation_tables();
+                algs.push(factor);
+                projs.push(IntArray::from_array(alg_v.gens_vector)?);
             }
         }
 
@@ -426,8 +432,7 @@ impl FreeAlgebra
             if let Some(ref report) = report {
                 report.add_start_line("using subdirect decompositions to eliminate some projections.");
             }
-            // Create a product algebra with the base algebra
-            let product_algebra = BigProductAlgebra::new_safe(vec![alg.clone_box()])?;
+            let product_algebra = BigProductAlgebra::new_safe(algs)?;
             let gens = SubProductAlgebra::<IntArray>::transpose(&projs)?;
             let size_multiplicities = product_algebra.size_multiplicities();
             let mut sb = String::new();
@@ -1268,5 +1273,114 @@ mod tests {
         );
         assert!(result.is_ok());
         // The result may be None if no distinguishing equation exists
+    }
+
+    fn load_ua(name: &str) -> Option<crate::alg::BasicAlgebra<i32>> {
+        let path = format!("resources/algebras/{}.ua", name);
+        if !std::path::Path::new(&path).exists() {
+            return None;
+        }
+        let reader = crate::io::AlgebraReader::new_from_path(&path).ok()?;
+        reader.read_algebra_file().ok()
+    }
+
+    fn assert_int_ops_in_range(alg: &dyn Algebra<UniverseItem = IntArray>) {
+        let n = alg.cardinality();
+        assert!(n > 0, "algebra {} has non-positive cardinality", alg.name());
+        for op in alg.operations() {
+            let arity = op.arity();
+            assert!(arity >= 0, "negative arity");
+            if arity > 2 {
+                continue;
+            }
+            let arity = arity as usize;
+            let total = (n as usize).pow(arity as u32);
+            for i in 0..total {
+                let mut args = vec![0i32; arity];
+                let mut t = i as i32;
+                for slot in args.iter_mut() {
+                    *slot = t % n;
+                    t /= n;
+                }
+                let value = op
+                    .int_value_at(&args)
+                    .unwrap_or_else(|e| panic!("{} {:?}: {}", op.symbol(), args, e));
+                assert!(
+                    value >= 0 && value < n,
+                    "operation {} at {:?} returned {} outside [0, {})",
+                    op.symbol(),
+                    args,
+                    value,
+                    n
+                );
+            }
+        }
+    }
+
+    fn free_decompose(alg: crate::alg::BasicAlgebra<i32>, n: i32) -> FreeAlgebra {
+        let name = format!("F({}) over {}", n, alg.name());
+        FreeAlgebra::new_with_decompose_safe(
+            name,
+            Box::new(alg),
+            n,
+            true,
+            true,
+            true,
+            None,
+            None,
+        )
+        .expect("FreeAlgebra with decompose=true")
+    }
+
+    #[test]
+    fn test_decompose_matches_plain_f2_on_si_algebras() {
+        for name in ["cyclic2", "cyclic3", "lat2", "z3"] {
+            let Some(alg) = load_ua(name) else {
+                continue;
+            };
+            let plain = FreeAlgebra::new_safe(Box::new(alg.clone()), 2).expect("plain F(2)");
+            let decomposed = free_decompose(alg, 2);
+            assert_eq!(
+                plain.cardinality(),
+                decomposed.cardinality(),
+                "F(2) size mismatch with decompose on {name}"
+            );
+            assert_int_ops_in_range(&decomposed);
+        }
+    }
+
+    #[test]
+    fn test_decompose_matches_plain_f2_on_non_si_product() {
+        let Some(c2) = load_ua("cyclic2") else {
+            return;
+        };
+        let product = crate::alg::ProductAlgebra::new_safe(
+            "C2xC2".to_string(),
+            vec![Box::new(c2.clone()), Box::new(c2.clone())],
+        )
+        .expect("C2 x C2");
+        let plain = FreeAlgebra::new_safe(
+            Box::new(product.clone()) as Box<dyn SmallAlgebra<UniverseItem = i32>>,
+            2,
+        )
+        .expect("plain F(2) over C2xC2");
+        let decomposed = FreeAlgebra::new_with_decompose_safe(
+            "F(2) over C2xC2".to_string(),
+            Box::new(product) as Box<dyn SmallAlgebra<UniverseItem = i32>>,
+            2,
+            true,
+            true,
+            true,
+            None,
+            None,
+        )
+        .expect("decompose F(2) over C2xC2");
+        assert_eq!(
+            plain.cardinality(),
+            decomposed.cardinality(),
+            "non-SI F(2) size mismatch"
+        );
+        assert!(decomposed.cardinality() > 0);
+        assert_int_ops_in_range(&decomposed);
     }
 }

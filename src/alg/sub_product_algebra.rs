@@ -202,15 +202,23 @@ where
 
         let (term_map, vars_map, variables) = if find_terms {
             let term_map = Self::setup_gens_to_vars_map(&gens)?;
-            let vars_map: HashMap<VariableImp, IntArray> = term_map
+            // Java `getVariables()` walks generators in order and takes the
+            // variable term of each. HashMap key order would shuffle x/y and
+            // make switchXandYAutomorphism an identity map on some runs.
+            let variables: Vec<VariableImp> = gens
                 .iter()
-                .filter_map(|(element, term)| {
-                    term.isa_variable().then(|| {
-                        (VariableImp::new(&term.to_string()), element.clone())
+                .filter_map(|g| {
+                    term_map.get(g).and_then(|term| {
+                        term.isa_variable()
+                            .then(|| VariableImp::new(&term.to_string()))
                     })
                 })
                 .collect();
-            let variables = vars_map.keys().cloned().collect();
+            let vars_map: HashMap<VariableImp, IntArray> = gens
+                .iter()
+                .zip(variables.iter())
+                .map(|(element, var)| (var.clone(), element.clone()))
+                .collect();
             (
                 Some(Arc::new(term_map)),
                 Some(vars_map),

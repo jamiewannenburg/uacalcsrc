@@ -370,6 +370,7 @@ if not is_jython:
         "ParameterizedAlgebra": {
             "getParameterMap": "getParameterMap",
         },
+        "Malcev": {},
         "Subalgebra": {
             "getName": "name",
             "setName": "set_name",
