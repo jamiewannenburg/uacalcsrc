@@ -126,9 +126,8 @@ slices:
       behavioral cases in tests/parity/conlat, including array/toString value
       round-trips and Java-named conversion-path exceptions. UI, ProgressReport,
       main, toMatt, generalizedWeakClosure, closureAt, projection, and termMap
-      overloads are not wrapped. Strict xfail: tf_next_pair_unbound
-      (nextPairForSubtrace mutates caller HashSet/List of IntArray; not in
-      PyO3). Branch conlat-op-leftovers.
+      overloads are not wrapped. nextPairForSubtrace mutates caller Set/List
+      of IntArray in the org shim. Branch wrap-remaining-java-surface.
 
   - id: core-alg-parallel
     title: Parallel closers / pool (if exposed to scripts)

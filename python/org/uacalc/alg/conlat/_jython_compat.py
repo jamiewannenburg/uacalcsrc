@@ -661,8 +661,53 @@ def _install(conlat_globals: dict) -> None:
             alg_name = str(name()) if callable(name) else "A"
             return "Con(" + alg_name + ")"
 
+        def getTypeFinder(self: Any) -> Any:
+            from org.uacalc.alg.conlat import TypeFinder as _TF
+
+            alg = getAlgebra(self)
+            if alg is None:
+                raise TypeError("CongruenceLattice.getTypeFinder requires the originating algebra")
+            return _TF(alg)
+
+        def subtrace(self: Any, beta: Any) -> Any:
+            if beta is None:
+                _raise_npe()
+            return getTypeFinder(self).findSubtrace(beta)
+
+        def typeJI(self: Any, beta: Any, report: Any = None) -> int:
+            if beta is None:
+                _raise_npe()
+            if report is not None:
+                raise TypeError(
+                    "typeJI(): expected org.uacalc.ui.tm.ProgressReport or None"
+                )
+            return int(getTypeFinder(self).findType(beta))
+
+        def typeSet(self: Any, report: Any = None) -> Any:
+            if report is not None:
+                raise TypeError(
+                    "typeSet(): expected org.uacalc.ui.tm.ProgressReport or None"
+                )
+            return set(getTypeFinder(self).findTypeSet())
+
+        def type_cong(self: Any, beta: Any) -> int:
+            return typeJI(self, beta)
+
         def getAlgebra(self: Any) -> Any:
-            return _CL_ALGEBRAS.get(id(self))
+            alg = _CL_ALGEBRAS.get(id(self)) or getattr(
+                self, "_uacalc_algebra", None
+            )
+            if alg is not None:
+                return alg
+            try:
+                from org.uacalc import alg as _alg_mod
+
+                store = getattr(_alg_mod, "_CON_ALGEBRAS", None)
+                if isinstance(store, dict):
+                    return store.get(id(self))
+            except Exception:
+                pass
+            return None
 
         def similarityType(self: Any) -> Any:
             from org.uacalc.alg.op import SimilarityType
@@ -898,6 +943,11 @@ def _install(conlat_globals: dict) -> None:
             "makeJoinIrreducibles": makeJoinIrreducibles,
             "inputSize": lambda self: int(self.input_size()),
             "algSize": lambda self: int(self.alg_size()),
+            "typeJI": typeJI,
+            "typeSet": typeSet,
+            "type": type_cong,
+            "subtrace": subtrace,
+            "getTypeFinder": getTypeFinder,
         }
         for camel, impl in _CL_PATCHES.items():
             try:
@@ -1569,14 +1619,20 @@ def _install(conlat_globals: dict) -> None:
         def __init__(self, alg: Any, alpha: Any = _MISSING) -> None:
             if _LibTF is None:
                 raise TypeError("TypeFinder is not bound")
+            self._alg = alg
             self._inner = _lib_call(_LibTF, _tf_alg(alg))
             if alpha is not _MISSING and alpha is not None:
+                self._alpha = alpha
                 _lib_call(self._inner.init_with_alpha, alpha)
+            else:
+                self._alpha = alg.con().zero() if alg is not None else None
 
         def init(self, alpha: Any = None) -> None:
             if alpha is None:
+                self._alpha = self._alg.con().zero()
                 _lib_call(self._inner.init)
             else:
+                self._alpha = alpha
                 _lib_call(self._inner.init_with_alpha, alpha)
 
         def findTypeSet(self) -> Any:
@@ -1610,9 +1666,83 @@ def _install(conlat_globals: dict) -> None:
             return int(_lib_call(self._inner.find_type, first))
 
         def nextPairForSubtrace(self, pair, univHS, unorderedUnivHS, univ):
-            raise NotImplementedError(
-                "nextPairForSubtrace is not bound; it mutates caller HashSet/List of IntArray"
-            )
+            if pair is None or univHS is None or unorderedUnivHS is None or univ is None:
+                _raise_npe()
+            from org.uacalc.alg import BigProductAlgebra
+            from org.uacalc.util import IntArray, SequenceGenerator
+
+            def _vals(ia: Any) -> list:
+                getter = getattr(ia, "getArray", None) or getattr(ia, "to_array", None)
+                if callable(getter):
+                    return [int(x) for x in getter()]
+                return [int(x) for x in list(ia)]
+
+            def _key(ia: Any):
+                return tuple(_vals(ia))
+
+            def _set_add(coll: Any, ia: Any) -> bool:
+                k = _key(ia)
+                for item in list(coll):
+                    if _key(item) == k:
+                        return False
+                coll.add(ia)
+                return True
+
+            def _list_add(coll: Any, ia: Any) -> None:
+                adder = getattr(coll, "add", None)
+                if callable(adder):
+                    adder(ia)
+                    return
+                coll.append(ia)
+
+            univHS.clear()
+            _list_add(univ, pair)
+            n = int(self._inner.alg_size())
+            for i in range(n):
+                _list_add(univ, IntArray([i, i]))
+            for ia in list(univ):
+                _set_add(univHS, ia)
+
+            alpha = self._alpha
+            if alpha is None:
+                alpha = self._alg.con().zero()
+            squared = BigProductAlgebra(self._alg, 2)
+            closed_mark = 0
+            current_mark = len(univ)
+            while closed_mark < current_mark:
+                for f in squared.operations():
+                    arity = int(f.arity())
+                    if arity == 0:
+                        continue
+                    arg_indices = [0] * arity
+                    arg_indices[arity - 1] = closed_mark
+                    inc = SequenceGenerator.sequenceIncrementor(
+                        arg_indices, current_mark - 1, closed_mark
+                    )
+                    while True:
+                        args = []
+                        for j in range(arity):
+                            args.append(_vals(univ[arg_indices[j]]))
+                        v_raw = f.valueAt(args)
+                        v_list = _vals(v_raw) if not isinstance(v_raw, list) else [
+                            int(x) for x in v_raw
+                        ]
+                        v = IntArray(list(v_list))
+                        v0, v1 = int(v_list[0]), int(v_list[1])
+                        if not alpha.isRelated(v0, v1):
+                            if v0 < v1:
+                                v_unordered = IntArray([v0, v1])
+                            else:
+                                v_unordered = IntArray([v1, v0])
+                            if _set_add(unorderedUnivHS, v_unordered):
+                                return v
+                            if _set_add(univHS, v):
+                                _list_add(univ, v)
+                        if not inc.increment():
+                            break
+                closed_mark = current_mark
+                current_mark = len(univ)
+            return None
 
         def algSize(self) -> int:
             return int(self._inner.alg_size())
@@ -1632,6 +1762,7 @@ def _install(conlat_globals: dict) -> None:
     conlat_globals["TypeFinder"] = TypeFinder
     conlat_globals["_LibPartition"] = _LibPartition
     conlat_globals["_LibCongruenceLattice"] = _LibCongruenceLattice
+    conlat_globals["_CL_ALGEBRAS"] = _CL_ALGEBRAS
     conlat_globals["_CLASS_ALIASES"] = {
         "Partition": {
             "universeSize": "universe_size",
@@ -1691,6 +1822,10 @@ def _install(conlat_globals: dict) -> None:
             "joinIrreducible": "join_irreducible",
             "meetIrreducible": "meet_irreducible",
             "inputSize": "input_size",
+            "typeJI": "typeJI",
+            "typeSet": "typeSet",
+            "subtrace": "subtrace",
+            "getTypeFinder": "getTypeFinder",
         },
         "BinaryRelation": {
             "universeSize": "universe_size",

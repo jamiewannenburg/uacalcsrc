@@ -1,0 +1,42 @@
+target: org.uacalc.alg.BigProductAlgebra
+level: file
+status: implemented
+java_source: org/uacalc/alg/BigProductAlgebra.java
+notes: |
+  Jython BigProductAlgebra surface on uacalc_lib. Constructors match Java
+  (list of factors, named list, power, named power, list+powers). operations()
+  returns product ops whose valueAt evaluates coordinate arrays. getPowers /
+  rootFactors are null when this is not stored as a power (Java).
+  projectionKernel is the Java stub (always null). sg() is commented out in
+  Java (scanner false-positive). sgClose_old / sgCloseXX / main are not bound.
+  ProgressReport overloads of sgClose are not bound.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    numberOfFactors: number_of_factors
+    getNumberOfFactors: getNumberOfFactors
+    getPowers: getPowers
+    isPower: isPower
+    rootFactors: rootFactors
+    sizeMultiplicities: sizeMultiplicities
+    getConstants: getConstants
+    getConstantSymbol: getConstantSymbol
+    getConstantTerm: getConstantTerm
+    sgClose: sgClose
+    operations: operations
+    projectionKernel: projectionKernel
+    makeOperationTables: makeOperationTables
+    getName: getName
+    cardinality: cardinality
+    factors: factors
+    projection: projection
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    Goldens in tests/parity/alg/test_cases/bpa_closer_cases.py cover C2, C3,
+    lat2, and C2xC3.
+  task_refs:
+    - tests/parity/alg/test_cases/bpa_closer_cases.py
+  scripts: []

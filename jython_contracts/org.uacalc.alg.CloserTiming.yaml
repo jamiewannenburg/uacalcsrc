@@ -1,0 +1,24 @@
+target: org.uacalc.alg.CloserTiming
+level: file
+status: implemented
+java_source: org/uacalc/alg/CloserTiming.java
+notes: |
+  UI timing helper. Constructor is CloserTiming(BigProductAlgebra, report);
+  report must be None (org.uacalc.ui.tm.ProgressReport is out of scope).
+  updatePass / incrementApps / incrementNextPassSize are bound. incrementApps
+  below Java's 20_000_000-app threshold does not touch the report.
+ignore_reason: null
+surface:
+  package_export: true
+  aliases:
+    updatePass: updatePass
+    incrementApps: incrementApps
+    incrementNextPassSize: incrementNextPassSize
+  static_methods: []
+  str_parity: false
+testing:
+  notes: |
+    Goldens in tests/parity/alg/test_cases/bpa_closer_cases.py.
+  task_refs:
+    - tests/parity/alg/test_cases/bpa_closer_cases.py
+  scripts: []

@@ -2,6 +2,7 @@ use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
 use uacalc::alg::*;
 use uacalc::alg::op::Operation;
+use crate::alg::convert::ops_to_basic_algebra;
 use crate::alg::PyBasicAlgebra;
 use crate::alg::conlat::partition::PyPartition;
 
@@ -64,6 +65,39 @@ impl PyMaltsevProductDecomposition {
     ///     int: The quotient algebra cardinality
     fn get_quotient_cardinality(&self) -> i32 {
         self.inner.get_quotient_algebra().cardinality()
+    }
+
+    /// Java ``getBlockAlgebras()`` as table-backed BasicAlgebras.
+    fn get_block_algebras(&self) -> PyResult<Vec<PyBasicAlgebra>> {
+        let mut out = Vec::new();
+        for blk in self.inner.get_block_algebras() {
+            out.push(ops_to_basic_algebra(
+                blk.name().to_string(),
+                blk.cardinality(),
+                blk.operations(),
+            )?);
+        }
+        Ok(out)
+    }
+
+    #[allow(non_snake_case)]
+    fn getBlockAlgebras(&self) -> PyResult<Vec<PyBasicAlgebra>> {
+        self.get_block_algebras()
+    }
+
+    /// Java ``getQuotientAlgebra()`` as a table-backed BasicAlgebra.
+    fn get_quotient_algebra(&self) -> PyResult<PyBasicAlgebra> {
+        let quot = self.inner.get_quotient_algebra();
+        ops_to_basic_algebra(
+            quot.name().to_string(),
+            quot.cardinality(),
+            quot.operations(),
+        )
+    }
+
+    #[allow(non_snake_case)]
+    fn getQuotientAlgebra(&self) -> PyResult<PyBasicAlgebra> {
+        self.get_quotient_algebra()
     }
 
     /// String representation of the decomposition.
