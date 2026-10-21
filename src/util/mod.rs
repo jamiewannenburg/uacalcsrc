@@ -6,6 +6,7 @@ pub mod permutation_generator;
 pub mod array_incrementor;
 pub mod int_array;
 pub mod sequence_generator;
+pub mod java_random;
 
 pub use permutation_generator::PermutationGenerator;
 pub use array_incrementor::{ArrayIncrementor, ArrayIncrementorImpl, SimpleArrayIncrementor};

@@ -822,16 +822,26 @@ where
     }
     
     /// Make operation tables for all operations.
-    /// 
-    /// This method creates operation tables up to a certain size limit.
+    ///
+    /// Matches Java `SubProductAlgebra.makeOperationTables`: when
+    /// `inputSize` fits in 8e6, replace each `SubProductOpWrapper` with a
+    /// table-backed `IntOperation` so later `sgClosePower` is an array lookup.
     pub fn make_operation_tables(&mut self) {
         const MAX_ALG_SIZE_FOR_OP_TABLES: i32 = 8000000;
-        
+
         let input_size = self.input_size();
         if input_size < 0 || input_size > MAX_ALG_SIZE_FOR_OP_TABLES {
             return;
         }
-        // SubProduct operations are lightweight; avoid table materialization here.
+
+        let mut new_ops = Vec::with_capacity(self.operations.len());
+        for op in &self.operations {
+            match crate::alg::op::ops::make_int_operation_from_dyn(op.as_ref()) {
+                Ok(table_op) => new_ops.push(Arc::from(table_op)),
+                Err(_) => new_ops.push(Arc::clone(op)),
+            }
+        }
+        self.operations = new_ops;
     }
     
     /// Borrowed access to Arc-backed operations to avoid cloning.
@@ -842,35 +852,13 @@ where
     }
     
     /// Calculate the input size for operation tables.
+    ///
+    /// Java: `similarityType().inputSize(cardinality())` — sum of
+    /// `size^arity` over all operations, or `-1` on overflow.
     fn input_size(&self) -> i32 {
-        // This is a simplified version
-        // The full implementation would compute size^max_arity
-        let size = self.cardinality();
-        if self.operations.is_empty() {
-            return 0;
-        }
-        
-        let mut max_arity = 0;
-        for op in &self.operations {
-            if op.arity() > max_arity {
-                max_arity = op.arity();
-            }
-        }
-        
-        if max_arity == 0 {
-            return 0;
-        }
-        
-        // Calculate size^max_arity with overflow check
-        let mut result: i64 = 1;
-        for _ in 0..max_arity {
-            result = result.saturating_mul(size as i64);
-            if result > i32::MAX as i64 {
-                return -1;
-            }
-        }
-        
-        result as i32
+        self.product_algebra
+            .similarity_type()
+            .input_size(self.cardinality())
     }
 }
 

@@ -259,9 +259,12 @@ where
         return Err("Algebra has no operations".to_string());
     }
 
-    // Java: new FreeAlgebra(alg, 2, report). Java leaves makeOperationTables
-    // commented out for minorityTerm; skip tables to match.
-    let f2 = f2_with_report(alg)?;
+    // Java minorityTerm leaves f2.makeOperationTables() commented out, but
+    // Closer.sgClose still calls it on the root of F(2)^3 because it is a
+    // power. Make tables here before the algebra is shared behind Arc.
+    let mut f2 = f2_with_report(alg)?;
+    use crate::alg::Algebra;
+    f2.make_operation_tables();
     
     // Create BigProductAlgebra (F(2)^3)
     let f2_boxed: Box<dyn SmallAlgebra<UniverseItem = IntArray>> = 
@@ -4843,6 +4846,211 @@ mod tests {
             assert!(jonsson.iter().all(|s| s == &jonsson[0]), "jonsson_terms nondeterministic on {path}: {jonsson:?}");
             assert!(sd_meet.iter().all(|s| s == &sd_meet[0]), "sd_meet_terms nondeterministic on {path}: {sd_meet:?}");
         }
+    }
+
+    /// Run one Malcev-style search on a seeded random magma and fail if it
+    /// exceeds `timeout` (a hang used to stall CI).
+    fn run_search_with_timeout<R, F>(
+        n: i32,
+        seed: i64,
+        timeout: std::time::Duration,
+        label: &str,
+        search: F,
+    ) -> R
+    where
+        R: Send + 'static,
+        F: FnOnce(&BasicAlgebra<i32>) -> R + Send + 'static,
+    {
+        use crate::alg::algebras;
+        use std::sync::mpsc;
+        use std::time::Instant;
+
+        let (tx, rx) = mpsc::channel();
+        std::thread::Builder::new()
+            .name(format!("malcev-magma-{n}-{seed}-{label}"))
+            .spawn(move || {
+                let alg = algebras::make_random_algebra_with_arities_and_seed(n, &[2], Some(seed))
+                    .expect("random magma");
+                let start = Instant::now();
+                let result = search(&alg);
+                let _ = tx.send((start.elapsed(), result));
+            })
+            .expect("spawn malcev magma thread");
+
+        let (elapsed, result) = rx.recv_timeout(timeout).unwrap_or_else(|_| {
+            panic!(
+                "{label} hung on random binary magma n={n} seed={seed} after {:?}",
+                timeout
+            )
+        });
+        println!("{label} n={n} seed={seed} in {:?}", elapsed);
+        result
+    }
+
+    /// F(2)^2 searches (malcev, Hagemann–Mitschke). Random magmas have no
+    /// useful identities; Java still returns quickly once F(2) is the Java
+    /// magma (tables fit in 8e6) and the product-universe bound is honoured.
+    fn run_f2_squared_searches_with_timeout(
+        n: i32,
+        seed: i64,
+        timeout: std::time::Duration,
+    ) {
+        let malcev = run_search_with_timeout(n, seed, timeout, "malcev_term", |alg| {
+            malcev_term(alg)
+        });
+        assert!(
+            malcev.is_ok(),
+            "malcev_term error n={n} seed={seed}: {:?}",
+            malcev.err()
+        );
+        println!(
+            "  malcev={:?}",
+            malcev
+                .as_ref()
+                .ok()
+                .and_then(|t| t.as_ref().map(|x| x.to_string()))
+        );
+
+        let hm = run_search_with_timeout(n, seed, timeout, "hagemann_mitschke_terms", |alg| {
+            hagemann_mitschke_terms(alg)
+        });
+        assert!(
+            hm.is_ok(),
+            "hagemann_mitschke_terms error n={n} seed={seed}: {:?}",
+            hm.err()
+        );
+        println!(
+            "  hm={:?}",
+            hm.as_ref().ok().and_then(|t| t.as_ref().map(|ts| {
+                ts.iter().map(|x| x.to_string()).collect::<Vec<_>>()
+            }))
+        );
+    }
+
+    /// F(2)^3 searches share the same closer/tables. Size-2 magmas finish;
+    /// size-3/4 random magmas fill a huge F(2)^3 even in Java (~10 min and
+    /// still growing), so they are not run here.
+    fn run_f2_cubed_searches_with_timeout(
+        n: i32,
+        seed: i64,
+        timeout: std::time::Duration,
+    ) {
+        let majority = run_search_with_timeout(n, seed, timeout, "majority_term", |alg| {
+            majority_term(alg)
+        });
+        let minority = run_search_with_timeout(n, seed, timeout, "minority_term", |alg| {
+            minority_term(alg)
+        });
+        let pixley = run_search_with_timeout(n, seed, timeout, "pixley_term", |alg| {
+            pixley_term(alg)
+        });
+        let nu = run_search_with_timeout(n, seed, timeout, "nu_term", |alg| nu_term(alg, 3));
+        let jonsson = run_search_with_timeout(n, seed, timeout, "jonsson_terms", |alg| {
+            jonsson_terms(alg)
+        });
+        let gumm = run_search_with_timeout(n, seed, timeout, "gumm_terms", |alg| gumm_terms(alg));
+        assert!(majority.is_ok(), "majority_term error: {:?}", majority.err());
+        assert!(minority.is_ok(), "minority_term error: {:?}", minority.err());
+        assert!(pixley.is_ok(), "pixley_term error: {:?}", pixley.err());
+        assert!(nu.is_ok(), "nu_term error: {:?}", nu.err());
+        assert!(jonsson.is_ok(), "jonsson_terms error: {:?}", jonsson.err());
+        assert!(gumm.is_ok(), "gumm_terms error: {:?}", gumm.err());
+        println!(
+            "F(2)^3 n={n} seed={seed}: majority={:?} minority={:?} pixley={:?} nu={:?} jonsson={:?} gumm={:?}",
+            majority.as_ref().ok().and_then(|t| t.as_ref().map(|x| x.to_string())),
+            minority.as_ref().ok().and_then(|t| t.as_ref().map(|x| x.to_string())),
+            pixley.as_ref().ok().and_then(|t| t.as_ref().map(|x| x.to_string())),
+            nu.as_ref().ok().and_then(|t| t.as_ref().map(|x| x.to_string())),
+            jonsson.as_ref().ok().and_then(|t| t.as_ref().map(|ts| ts.iter().map(|x| x.to_string()).collect::<Vec<_>>())),
+            gumm.as_ref().ok().and_then(|t| t.as_ref().map(|ts| ts.iter().map(|x| x.to_string()).collect::<Vec<_>>())),
+        );
+    }
+
+    #[test]
+    fn test_random_size3_seed11_f2_matches_java_and_has_tables() {
+        use crate::alg::algebras;
+        use std::time::Instant;
+
+        let alg = algebras::make_random_algebra_with_arities_and_seed(3, &[2], Some(11))
+            .expect("random magma");
+        let table: Vec<i32> = (0..9)
+            .map(|i| alg.operations()[0].int_value_at_horner(i).unwrap())
+            .collect();
+        assert_eq!(
+            table,
+            vec![0, 2, 0, 0, 0, 0, 1, 2, 0],
+            "seeded magma table must match java.util.Random(11).nextInt(3)"
+        );
+
+        let start = Instant::now();
+        let mut f2 = f2_with_report(&alg).expect("F(2)");
+        let f2_ms = start.elapsed();
+        let card = f2.cardinality();
+        println!("F(2) cardinality={} in {:?}", card, f2_ms);
+        // Java malcevTerm(RAlg3 seed 11): F(2)=409, projs=8.
+        assert_eq!(card, 409, "F(2) size should match Java (409), got {card}");
+
+        f2.make_operation_tables();
+        let ops = f2.operations();
+        assert!(
+            !ops.is_empty() && ops[0].is_table_based() && ops[0].get_table().is_some(),
+            "F(2) operations must be table-backed after make_operation_tables"
+        );
+    }
+
+    #[test]
+    fn test_malcev_term_on_random_size3_seed11_matches_java() {
+        use std::time::Duration;
+        // Java malcevTerm(RAlg3 seed 11): null in ~10s; Rust release ~28s.
+        // Debug is ~10× slower (HashSet/term-map overhead), so the full
+        // search is release-only; the F(2) tables test above still runs in
+        // debug and would fail if the magma or table path regressed.
+        if cfg!(debug_assertions) {
+            println!("skipping full malcev_term in debug (see test_random_size3_seed11_f2_matches_java_and_has_tables)");
+            return;
+        }
+        let malcev = run_search_with_timeout(3, 11, Duration::from_secs(60), "malcev_term", |alg| {
+            malcev_term(alg)
+        });
+        assert!(
+            malcev.is_ok(),
+            "malcev_term error n=3 seed=11: {:?}",
+            malcev.err()
+        );
+        assert!(
+            malcev.as_ref().ok().and_then(|t| t.as_ref()).is_none(),
+            "Java malcevTerm is null on this magma, got {:?}",
+            malcev.as_ref().ok().and_then(|t| t.as_ref().map(|x| x.to_string()))
+        );
+        let hm = run_search_with_timeout(
+            3,
+            11,
+            Duration::from_secs(60),
+            "hagemann_mitschke_terms",
+            |alg| hagemann_mitschke_terms(alg),
+        );
+        assert!(
+            hm.is_ok(),
+            "hagemann_mitschke_terms error n=3 seed=11: {:?}",
+            hm.err()
+        );
+    }
+
+    #[test]
+    fn test_malcev_searches_on_random_size3_binary_magmas() {
+        use std::time::Duration;
+        // Seeds whose F(2) is small enough that Java malcevTerm returns in
+        // well under a second (seed 11, the original hang, is tested above).
+        for seed in [13i64, 19, 97] {
+            run_f2_squared_searches_with_timeout(3, seed, Duration::from_secs(30));
+        }
+    }
+
+    #[test]
+    fn test_related_malcev_searches_on_random_size2_binary_magma() {
+        use std::time::Duration;
+        run_f2_squared_searches_with_timeout(2, 11, Duration::from_secs(15));
+        run_f2_cubed_searches_with_timeout(2, 11, Duration::from_secs(30));
     }
 }
 
