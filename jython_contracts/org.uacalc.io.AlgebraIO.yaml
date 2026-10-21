@@ -48,3 +48,7 @@ testing:
         - AlgebraIO.readAlgebraListFile
         - AlgebraIO.readAlgebraListFromStream
       ignore_lines: []
+    - path: jython_comparison/scripts/random_parity.py
+      covers:
+        - AlgebraIO.readAlgebraFile
+        - AlgebraIO.writeAlgebraFile

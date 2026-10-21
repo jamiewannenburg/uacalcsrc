@@ -47,3 +47,9 @@ testing:
         - toString
         - writeStringBuffer
       ignore_lines: []
+    - path: jython_comparison/scripts/random_parity.py
+      covers:
+        - NonVariableTerm.makeConstantTerm
+        - intEval
+        - isaVariable
+        - makeConstantTerm

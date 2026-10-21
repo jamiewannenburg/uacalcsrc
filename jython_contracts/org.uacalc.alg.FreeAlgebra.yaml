@@ -100,3 +100,6 @@ testing:
         - "thin coord"
         - "gens coord"
         - "name="
+    - path: jython_comparison/scripts/random_parity.py
+      covers:
+        - getName

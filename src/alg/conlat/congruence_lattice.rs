@@ -1004,27 +1004,33 @@ where
         
         for elem in &univ {
             let mut hs = HashSet::new();
-            let mut covs = Vec::new();
+            let mut covs: Vec<Partition> = Vec::new();
             
             for ji in &jis {
                 if !ji.leq(elem) {
                     let join = ji.join(elem).unwrap();
                     if !hs.contains(&join) {
                         hs.insert(join.clone());
-                        
-                        // Check if this is minimal among candidates
+
+                        // Match Java CongruenceLattice.makeUpperCovers ListIterator:
+                        // if cov.leq(join) { above = true; break; }  // keep cov
+                        // else if join.leq(cov) { remove cov }
+                        // Vec::retain is not equivalent: it would drop cov when
+                        // cov.leq(join) and would keep scanning after `above`.
                         let mut above = false;
-                        covs.retain(|cov: &Partition| {
-                            if cov.leq(&join) {
+                        let mut i = 0;
+                        while i < covs.len() {
+                            if covs[i].leq(&join) {
                                 above = true;
-                                false
-                            } else if join.leq(cov) {
-                                false
-                            } else {
-                                true
+                                break;
                             }
-                        });
-                        
+                            if join.leq(&covs[i]) {
+                                covs.remove(i);
+                            } else {
+                                i += 1;
+                            }
+                        }
+
                         if !above {
                             covs.push(join);
                         }

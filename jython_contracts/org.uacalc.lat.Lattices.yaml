@@ -39,3 +39,6 @@ testing:
       ignore_lines:
         - "labels has size"
         - "ucs has size"
+    - path: jython_comparison/scripts/random_parity.py
+      covers:
+        - Lattices.latticeFromJoin

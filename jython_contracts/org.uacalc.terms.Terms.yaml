@@ -29,3 +29,9 @@ testing:
         - Terms.flatten
       ignore_lines:
         - "depth is"
+    - path: jython_comparison/scripts/random_parity.py
+      covers:
+        - Terms.flatten
+        - Terms.isValidOpNameString
+        - Terms.isValidVarString
+        - Terms.stringToTerm

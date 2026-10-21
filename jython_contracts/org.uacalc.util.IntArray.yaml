@@ -64,3 +64,10 @@ testing:
         - stringToArray
         - equalIntArrays
       ignore_lines: []
+    - path: jython_comparison/scripts/random_parity.py
+      covers:
+        - equals
+        - isConstant
+        - isIdempotent
+        - toArray
+        - universeSize

@@ -62,3 +62,12 @@ testing:
       covers:
         - getName
       ignore_lines: []
+    - path: jython_comparison/scripts/random_parity.py
+      covers:
+        - getName
+        - isDistributive
+        - joinIrreducibles
+        - meetIrreducibles
+        - permutabilityLevel
+        - type
+        - typeSet

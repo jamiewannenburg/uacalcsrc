@@ -97,6 +97,27 @@ tests/parity/{package}/
 └── test_*_golden_surface.py     # Surface tests
 ```
 
+Randomized Java vs Python snapshots live in `tests/parity/random/` (not a
+Java package). CI uses the checked-in seed list in
+`jython_comparison/scripts/random_parity_config.py`. Goldens:
+
+```bash
+python3 tools/generate_golden_data.py --package random
+# or
+python3 tools/run_random_parity.py generate
+```
+
+Local live-Java sweep (hundreds–thousands of extra seeds):
+
+```bash
+python3 tools/run_random_parity.py sweep --seed-start 0 --count 1000
+# or
+RANDOM_PARITY_SEEDS=200 pytest tests/parity/random -k live
+```
+
+Each CI case has a 15s timeout. `RANDOM_PARITY_SEEDS` / `--seed-start`
+are opt-in and not run in CI.
+
 ## Workflow: Adding a New Behavioral Test
 
 ### Step 1: Create Test Case Specification
