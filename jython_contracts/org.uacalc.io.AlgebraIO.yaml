@@ -43,7 +43,7 @@ testing:
     - path: jython_comparison/scripts/io_surface.py
       covers:
         - AlgebraIO.parseLine
-        - AlgebraIO.convertToXML
+        - AlgebraIO.readAlgebraFile
         - AlgebraIO.readAlgebraFromStream
         - AlgebraIO.readAlgebraListFile
         - AlgebraIO.readAlgebraListFromStream

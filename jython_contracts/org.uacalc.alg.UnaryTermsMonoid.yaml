@@ -34,18 +34,15 @@ testing:
   scripts:
     - path: jython_comparison/scripts/unary_terms_monoid_smoke.py
       covers:
-        - getName
-        - setName
-        - getOperation
-        - getElement
-        - elementIndex
-        - getUniverseList
         - algebraType
-        - parent
         - convertToDefaultValueOps
+        - elementIndex
+        - getElement
+        - getName
+        - getUniverseList
         - isUnary
-        - cardinality
-        - intValueAt
+        - parent
+        - setName
       ignore_lines:
         - "pass"
         - "thin"

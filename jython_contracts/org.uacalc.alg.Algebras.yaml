@@ -41,19 +41,14 @@ testing:
   scripts:
     - path: jython_comparison/scripts/algebras_smoke.py
       covers:
+        - findInClone
+        - findNUF
+        - fullTransformationSemigroup
         - isEndomorphism
         - isHomomorphism
-        - matrixPower
-        - fullTransformationSemigroup
-        - ternaryDiscriminatorAlgebra
-        - makeRandomAlgebra
-        - findInClone
-        - memberOfQuasivariety
-        - memberOfQuasivarietyGenByProperSubs
-        - quasiCriticalCongruences
-        - quasiCritical
-        - unaryClone
-        - unaryCloneAlgFromPartitions
-        - findNUF
-        - jonssonTerms
         - jonssonLevel
+        - makeRandomAlgebra
+        - matrixPower
+        - memberOfQuasivariety
+        - ternaryDiscriminatorAlgebra
+        - unaryCloneAlgFromPartitions

@@ -48,23 +48,6 @@ testing:
       covers:
         - clone
         - universeSize
-        - getArray
-        - toArray
-        - setIntArray
-        - isIdempotent
-        - isConstant
-        - satisfiesBlocksConstraint
-        - satisfiesValuesConstraint
-        - satisfiesSetConstraint
-        - satisfiesCongruenceConstraint
-        - intArrayToString
-        - stringToArray
-        - equalIntArrays
-        - lexicographicComparitor
-        - toString
-        - hashCode
-        - equals
-        - __str__
       ignore_lines: []
     - path: jython_comparison/scripts/util_ops.py
       covers:

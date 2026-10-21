@@ -34,15 +34,14 @@ testing:
     - path: jython_comparison/scripts/element_ops.py
       covers:
         - getAlgebra
-        - index
+        - getParent
+        - getParentArray
         - getTerm
         - getVariableList
         - getVariableMap
-        - getParent
-        - getParentArray
+        - index
         - parentIndexArray
         - toString
-        - __str__
       ignore_lines:
         - "pass:"
         - "Constructing free"

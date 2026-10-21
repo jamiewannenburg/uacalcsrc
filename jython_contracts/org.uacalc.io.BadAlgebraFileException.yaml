@@ -19,6 +19,5 @@ testing:
   task_refs: []
   scripts:
     - path: jython_comparison/scripts/io_surface.py
-      covers:
-        - BadAlgebraFileException
+      covers: []
       ignore_lines: []

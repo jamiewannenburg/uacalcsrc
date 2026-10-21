@@ -101,17 +101,13 @@ testing:
         - "pass "
     - path: jython_comparison/scripts/basic_algebra_ops.py
       covers:
-        - getName
-        - setName
-        - getOperation
-        - universe
-        - similarityType
-        - constantOperations
         - cardinality
-        - elementIndex
-        - algebraType
-        - resetConAndSub
-        - getUniverseList
+        - constantOperations
+        - getName
+        - getOperation
+        - setName
+        - similarityType
+        - universe
       ignore_lines: []
     - path: jython_comparison/scripts/load_cyclic2.py
       covers:

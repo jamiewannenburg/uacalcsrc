@@ -30,14 +30,13 @@ testing:
   scripts:
     - path: jython_comparison/scripts/conlat_leftovers.py
       covers:
-        - universeSize
-        - isRelated
-        - getPairs
-        - compose
         - compareTo
+        - compose
+        - getPairs
+        - identity
         - isReflexive
+        - isRelated
         - isSymmetric
         - toString
-        - identity
-        - __str__
+        - universeSize
       ignore_lines: []

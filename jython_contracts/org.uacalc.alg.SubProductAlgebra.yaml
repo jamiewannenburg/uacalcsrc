@@ -42,26 +42,25 @@ testing:
   scripts:
     - path: jython_comparison/scripts/subproduct_algebra_smoke.py
       covers:
-        - getName
-        - setName
-        - getOperation
-        - generators
-        - getProductAlgebra
-        - superAlgebra
-        - getElement
+        - algebraType
+        - con
+        - convertToDefaultValueOps
         - elementIndex
+        - generators
+        - getElement
+        - getName
+        - getOperation
+        - getProductAlgebra
+        - getTerm
+        - getTerms
         - getUniverseList
         - getUniverseOrder
-        - algebraType
-        - convertToDefaultValueOps
-        - getTerms
-        - getTerm
         - getVariableToGeneratorMap
         - getVariables
-        - con
-        - sub
         - makeOperationTables
-        - cardinality
+        - setName
+        - sub
+        - superAlgebra
       ignore_lines:
         - "pass 0 of"
         - "pass 1 of"

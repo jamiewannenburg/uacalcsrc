@@ -37,17 +37,12 @@ testing:
   scripts:
     - path: jython_comparison/scripts/general_algebra_smoke.py
       covers:
+        - con
         - getName
-        - setName
         - getOperation
-        - getDescription
-        - setDescription
-        - universe
         - operations
         - parent
         - parents
-        - con
+        - setName
         - sub
-        - cardinality
-        - size
       ignore_lines: []

@@ -35,20 +35,10 @@ testing:
   scripts:
     - path: jython_comparison/scripts/conlat_partition.py
       covers:
-        - universeSize
-        - numberOfBlocks
-        - isRelated
-        - toArray
-        - joinBlocks
-        - isRepresentative
-        - blockIndex
-        - getBlocks
-        - isZero
-        - isUniform
-        - isInitialLexRepresentative
-        - getPairs
-        - compareTo
         - hashCode
+        - isRelated
+        - numberOfBlocks
+        - toArray
         - toString
-        - __str__
+        - universeSize
       ignore_lines: []

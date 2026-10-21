@@ -79,61 +79,14 @@ testing:
   scripts:
     - path: jython_comparison/scripts/subalgebra_lattice_smoke.py
       covers:
-        - iterator
         - Sg
-        - sg
-        - getName
-        - getAlgebra
-        - getDescription
-        - setDescription
-        - joinIrreducibles
-        - meetIrreducibles
-        - oneGeneratedSubalgebras
-        - findMinimalSizedGeneratingSet
-        - getBasicLattice
-        - universeFound
-        - makeUniverse
-        - makeJoinIrreducibles
-        - joinIrreducible
-        - inputSize
-        - similarityType
-        - isSimilarTo
-        - isSmallerThan
-        - isDrawable
-        - constantOperations
-        - makeSg
-        - joinClosure
-        - noDuplicates
-        - extendToHomomorphism
-        - getMakeUniverseK
-        - getSizeComputed
-        - stopMakeUniverse
-        - setMonitor
-        - getMonitor
-        - monitoring
-        - updateSimilarityType
-        - makeOperationTables
-        - getOperation
-        - getOperationsMap
-        - operations
-        - atoms
-        - coatoms
-        - meet
+        - cardinality
+        - iterator
         - join
         - leq
-        - filter
-        - cardinality
-        - universe
-        - zero
         - one
-        - con
-        - sub
-        - setName
-        - isTotal
-        - isUnary
-        - isIdempotent
-        - SubalgebraLattice.noDuplicates
-        - SubalgebraLattice.extendToHomomorphism
+        - sg
+        - zero
       ignore_lines:
         - "oneGenerated size"
         - "pass 0 of"

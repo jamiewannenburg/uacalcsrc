@@ -26,12 +26,11 @@ testing:
   scripts:
     - path: jython_comparison/scripts/conlat_leftovers.py
       covers:
-        - hasInvolution
-        - getSubtraceUniverse
-        - setSubtraceUniverse
         - getMatrixUniverse
+        - getSubtraceUniverse
+        - hasInvolution
         - setMatrixUniverse
+        - setSubtraceUniverse
         - setType
         - toString
-        - __str__
       ignore_lines: []

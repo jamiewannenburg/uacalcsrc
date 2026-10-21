@@ -45,20 +45,17 @@ testing:
   scripts:
     - path: jython_comparison/scripts/group_ops.py
       covers:
-        - getName
-        - setName
-        - getDescription
-        - setDescription
         - cardinality
-        - universe
-        - operations
-        - inputSize
-        - toString
-        - prod
-        - inv
+        - getName
         - id
-        - makeProdOp
-        - makeInvOp
+        - inputSize
+        - inv
         - makeIdOp
+        - makeInvOp
+        - makeProdOp
+        - operations
+        - prod
+        - toString
+        - universe
       ignore_lines:
         - "pass:"

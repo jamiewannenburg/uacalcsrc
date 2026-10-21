@@ -31,20 +31,14 @@ testing:
   scripts:
     - path: jython_comparison/scripts/terms_variable_eval.py
       covers:
-        - getName
-        - isaVariable
-        - intEval
-        - eval
-        - getVariableList
-        - leadingOperationSymbol
-        - getOperationSymbols
         - getChildren
-        - interpretation
-        - substitute
+        - getName
+        - getOperationSymbols
+        - getVariableList
+        - hashCode
+        - intEval
+        - isaVariable
+        - leadingOperationSymbol
         - toString
         - writeStringBuffer
-        - equals
-        - hashCode
-        - depth
-        - length
       ignore_lines: []

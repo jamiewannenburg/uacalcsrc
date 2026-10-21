@@ -34,11 +34,7 @@ testing:
   scripts:
     - path: jython_comparison/scripts/util_ops.py
       covers:
+        - arrayIndexerWithMin
         - intTuples
         - intTuplesWithMin
-        - arrayIndexerWithMin
-        - testPow
-        - foo
-        - bar
-        - baz
       ignore_lines: []

@@ -69,43 +69,15 @@ testing:
   scripts:
     - path: jython_comparison/scripts/closer_smoke.py
       covers:
-        - getAnswer
-        - sgClose
-        - sgClosePower
         - close
-        - getmaxSize
-        - setMaxSize
+        - getAnswer
         - getGenerators
-        - setGenerators
-        - getTermMap
-        - setTermMap
-        - getElementToFind
-        - setElementToFind
-        - getElementsToFind
-        - setElementsToFind
-        - allElementsFound
-        - getBlocks
-        - setBlocks
-        - getValues
-        - setValues
-        - getSetConstraint
-        - setConstraintSet
-        - getIndexForConstraintSet
-        - setIndexForConstraintSet
-        - getIndexForCongruenceConstraint
-        - setIndexForCongruenceConstraint
-        - getCongruenceConstraintElemIndex
-        - setCongruenceConstraintElemIndex
-        - getCongruenceForCongruenceConstraint
-        - setCongruenceForCongruenceConstraint
-        - setupCongruenceConstraint
-        - getFailingEquation
         - getImageAlgebra
-        - setImageAlgebra
-        - getHomomorphism
-        - setHomomorphism
-        - getTermMapForOperations
-        - setRootAlgebra
-        - setOperations
+        - getTermMap
+        - getmaxSize
         - isSuppressOutput
+        - setHomomorphism
+        - setImageAlgebra
+        - setMaxSize
         - setSuppressOutput
+        - sgClose

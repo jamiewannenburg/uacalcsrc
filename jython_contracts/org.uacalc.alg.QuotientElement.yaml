@@ -27,12 +27,11 @@ testing:
     - path: jython_comparison/scripts/quotient_algebra_smoke.py
       covers:
         - getAlgebra
-        - superAlgebra
         - getCongruence
         - getIndex
         - getIndexInSuperAlgebra
+        - superAlgebra
         - toString
-        - __str__
       ignore_lines:
         - "pass 0 of"
         - "pass 1 of"

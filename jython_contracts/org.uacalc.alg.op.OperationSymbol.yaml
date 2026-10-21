@@ -22,9 +22,7 @@ testing:
   task_refs: []
   scripts:
     - path: jython_comparison/scripts/basic_algebra_ops.py
-      covers:
-        - hashCode
-        - compareTo
+      covers: []
       ignore_lines: []
     - path: jython_comparison/scripts/terms_string_to_term.py
       covers: []

@@ -40,15 +40,13 @@ testing:
   scripts:
     - path: jython_comparison/scripts/util_ops.py
       covers:
+        - binomial
+        - factorial
+        - fixedSizedSubsets
         - intTuples
         - intTuplesWithMin
-        - fixedSizedSubsets
-        - subsets
-        - permutations
-        - factorial
-        - binomial
         - log2
+        - permutations
         - pow2
-        - stream
-        - parallelStream
+        - subsets
       ignore_lines: []

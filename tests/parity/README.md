@@ -22,8 +22,9 @@ pytest tests/parity/ -m smoke -v
 ### Generate Coverage Report
 
 ```bash
-# Show parity test coverage
+# Show parity test coverage (library surface, exclusions categorised)
 python3 tools/jython_contracts_cli.py parity-coverage
+python3 tools/jython_contracts_cli.py check-covers
 
 # Show detailed coverage for io package
 python3 tools/jython_contracts_cli.py parity-coverage --package io --verbose

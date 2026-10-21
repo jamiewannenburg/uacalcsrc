@@ -25,7 +25,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional, Set, Tuple
 
 
-GENERATOR_VERSION = 1
+GENERATOR_VERSION = 3
 
 _RE_META_UTC = re.compile(r"(?m)^[ \t]+generated_at_utc:[^\n]*\n")
 _RE_META_REPO_ROOT = re.compile(r"(?m)^([ \t]+)repo_root:[^\n]*\n")
@@ -153,46 +153,36 @@ _PUBLIC_TYPE_RE = re.compile(
 _IMPORT_ORG_UACALC = re.compile(r"^\s*import\s+(org\.uacalc\.[\w.]+)\s*;")
 
 
-def _extract_public_methods(java_source: str) -> List[str]:
-    """Heuristic public method names (excludes constructors with different rule). Skips obvious non-methods."""
-    names: Set[str] = set()
-    for line in java_source.splitlines():
-        s = line.strip()
-        if not s.startswith("public"):
-            continue
-        if re.search(r"\b(class|interface|enum)\b", s):
-            continue
-        if "(" not in s or ")" not in s:
-            continue
-        # Ignore likely field declarations with '='
-        if "=" in s and s.index("=") < s.rindex("("):
-            continue
-        pre = s.split("(", 1)[0]
-        m = re.search(r"(\w+)\s*$", pre)
-        if not m:
-            continue
-        name = m.group(1)
-        if name in ("if", "for", "while", "switch", "return", "throw", "new", "true", "false", "null"):
-            continue
-        if name[0].isupper() and "(" in s:
-            # could be constructor ClassName( - still a public surface in Jython
-            pass
-        names.add(name)
-    return sorted(names)
+def _repo_tools_on_path(repo: Path) -> None:
+    tools = str(repo / "tools")
+    if tools not in sys.path:
+        sys.path.insert(0, tools)
 
 
-def _parse_java_file(path: Path) -> Tuple[str, List[Tuple[str, str]], List[str]]:
-    text = path.read_text(encoding="utf-8", errors="replace")
-    pkg_m = _PACKAGE_RE.search(text)
-    package = pkg_m.group(1) if pkg_m else ""
-    types: List[Tuple[str, str]] = []
-    for line in text.splitlines():
-        m = _PUBLIC_TYPE_RE.match(line)
-        if m:
-            kind, name = m.group(1), m.group(2)
-            types.append((kind, name))
-    methods = _extract_public_methods(text)
-    return package, types, methods
+def _parse_java_file(path: Path, repo: Path):
+    """Return (package, types_meta) using the shared surface scanner."""
+    _repo_tools_on_path(repo)
+    from jython_contracts.java_surface import (  # pylint: disable=import-outside-toplevel
+        excluded_occurrence_counts,
+        scan_java_file,
+    )
+
+    surface = scan_java_file(path)
+    types = []
+    for typ in surface.types:
+        types.append(
+            {
+                "kind": typ.kind,
+                "name": typ.simple_name,
+                "visibility": typ.visibility,
+                "public_surface": typ.public_surface,
+                "public_methods": typ.public_methods,
+                "constructors": typ.public_constructors,
+                "excluded": typ.excluded_by_category(),
+                "excluded_counts": excluded_occurrence_counts([typ]),
+            }
+        )
+    return surface.package, types
 
 
 def _walk_org_uacalc_java(repo: Path) -> List[Path]:
@@ -277,9 +267,12 @@ def build_inventory(repo: Path) -> Dict[str, Any]:
 
     # fqcn -> metadata
     classes: Dict[str, Any] = {}
+    surface_n = 0
+    excluded_n = 0
+    excluded_by_cat: Dict[str, int] = defaultdict(int)
 
     for jf in java_files:
-        package, types, file_methods = _parse_java_file(jf)
+        package, types = _parse_java_file(jf, repo)
         rel = jf.relative_to(repo).as_posix()
         if not types:
             fq = f"{package}.<file:{jf.name}>" if package else f"<file:{rel}>"
@@ -287,22 +280,35 @@ def build_inventory(repo: Path) -> Dict[str, Any]:
                 "package": package or None,
                 "source_relpath": rel,
                 "kind": "file",
-                "public_methods_file_guess": file_methods,
+                "public_surface": [],
+                "excluded": {},
+                "excluded_counts": {},
                 "java_cli_wrappers": [],
                 "python_org_package_hint": package if package and pkg_has_shim(package, py_pkgs) else None,
                 "rust_uacalc_lib_submodule_hint": _map_java_package_to_rust_module(package),
             }
             continue
 
-        for kind, name in types:
-            fqcn = f"{package}.{name}"
-            type_methods = file_methods  # file-level heuristic; finer would need a Java parser
+        for typ in types:
+            name = typ["name"]
+            fqcn = f"{package}.{name}" if package else name
+            if fqcn in classes and classes[fqcn].get("source_relpath") not in (rel, None):
+                fqcn = f"{fqcn}#{jf.stem}"
+            surface_n += len(typ.get("public_surface") or [])
+            for cat, n in (typ.get("excluded_counts") or {}).items():
+                excluded_by_cat[cat] += int(n)
+                excluded_n += int(n)
             classes[fqcn] = {
                 "package": package,
                 "simple_name": name,
-                "kind": kind,
+                "kind": typ["kind"],
+                "visibility": typ["visibility"],
                 "source_relpath": rel,
-                "public_methods_heuristic": type_methods,
+                "public_surface": typ["public_surface"],
+                "public_methods": typ["public_methods"],
+                "constructors": typ["constructors"],
+                "excluded": typ["excluded"],
+                "excluded_counts": typ.get("excluded_counts") or {},
                 "java_cli_wrappers": wrappers_by_fq.get(fqcn, []),
                 "python_org_shim_directory_exists": pkg_has_shim(package, py_pkgs),
                 "rust_uacalc_lib_submodule_hint": _map_java_package_to_rust_module(package),
@@ -329,6 +335,14 @@ def build_inventory(repo: Path) -> Dict[str, Any]:
             "repo_root": repo.as_posix(),
             "java_org_uacalc_files_scanned": len(java_files),
             "java_org_uacalc_classes_and_units": len(classes),
+            "public_surface_members": surface_n,
+            "excluded_members": excluded_n,
+            "excluded_by_category": dict(sorted(excluded_by_cat.items())),
+            "counting": (
+                "public_surface_members are unique names per type "
+                "(overloads collapsed); excluded_members are declaration "
+                "occurrences"
+            ),
             "rust_uacalc_lib_submodules": sorted(rust_modules),
             "python_org_uacalc_packages_with_init": sorted(py_pkgs),
         },

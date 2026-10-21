@@ -17,7 +17,13 @@ from . import (
     VALID_STATUSES,
 )
 
-SURFACE_KEYS = ("package_export", "aliases", "static_methods", "str_parity")
+SURFACE_KEYS = (
+    "package_export",
+    "aliases",
+    "static_methods",
+    "constructors",
+    "str_parity",
+)
 
 
 @dataclass
@@ -55,10 +61,14 @@ def normalize_surface(surface: Optional[Dict[str, Any]]) -> Dict[str, Any]:
     static_methods = surface.get("static_methods") or []
     if not isinstance(static_methods, list):
         raise ValueError("surface.static_methods must be a list")
+    constructors = surface.get("constructors") or []
+    if not isinstance(constructors, list):
+        raise ValueError("surface.constructors must be a list")
     return {
         "package_export": bool(surface.get("package_export", True)),
         "aliases": {str(k): str(v) for k, v in aliases.items()},
         "static_methods": [str(m) for m in static_methods],
+        "constructors": [str(c) for c in constructors],
         "str_parity": bool(surface.get("str_parity", False)),
     }
 
@@ -145,6 +155,9 @@ def surface_symbols(surface: Dict[str, Any]) -> List[str]:
         symbols.append(alias)
     for method in s["static_methods"]:
         symbols.append(method)
+    for ctor in s["constructors"]:
+        if ctor not in symbols:
+            symbols.append(ctor)
     if s["str_parity"]:
         symbols.append("__str__")
     return symbols
@@ -300,12 +313,17 @@ def merge_surfaces(*surfaces: Dict[str, Any]) -> Dict[str, Any]:
         result["str_parity"] = s["str_parity"]
         # aliases: merge, later overwrites keys
         result["aliases"].update(s["aliases"])
-        # static_methods: union preserving order, later additions appended
+        # static_methods / constructors: union preserving order, later additions appended
         seen = set(result["static_methods"])
         for method in s["static_methods"]:
             if method not in seen:
                 result["static_methods"].append(method)
                 seen.add(method)
+        seen_ctors = set(result["constructors"])
+        for ctor in s["constructors"]:
+            if ctor not in seen_ctors:
+                result["constructors"].append(ctor)
+                seen_ctors.add(ctor)
             # If redefined conceptually we keep first listing; surface methods are names only
         # Prefer later list if it explicitly replaces? Plan says file wins — for lists,
         # if later has any static_methods, replace entirely when later is non-empty and

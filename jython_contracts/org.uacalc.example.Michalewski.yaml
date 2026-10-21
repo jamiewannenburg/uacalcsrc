@@ -19,6 +19,5 @@ testing:
   scripts:
     - path: jython_comparison/scripts/example_ops.py
       covers:
-        - findJoinMeetMatPower
         - testJoinMeetMatPower
       ignore_lines: []

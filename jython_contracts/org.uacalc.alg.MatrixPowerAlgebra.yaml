@@ -41,20 +41,14 @@ testing:
   scripts:
     - path: jython_comparison/scripts/matrix_power_algebra_smoke.py
       covers:
-        - getName
-        - setName
-        - getOperation
-        - getRoot
-        - getPower
-        - getPowerAlgebra
-        - parent
-        - parents
-        - getElement
-        - elementIndex
-        - getUniverseList
         - algebraType
         - convertToDefaultValueOps
-        - con
-        - sub
-        - cardinality
+        - getElement
+        - getName
+        - getOperation
+        - getPower
+        - getRoot
+        - parent
+        - parents
+        - setName
       ignore_lines: []

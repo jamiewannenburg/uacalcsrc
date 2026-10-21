@@ -17,6 +17,5 @@ testing:
   task_refs: []
   scripts:
     - path: jython_comparison/scripts/example_ops.py
-      covers:
-        - hasNUHorowitz
+      covers: []
       ignore_lines: []

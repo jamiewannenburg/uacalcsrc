@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Set
 
 from . import PROJECT_ROOT
+from .covers import derived_contract_covers
 from .registry import (
     collect_script_entries,
     load_all_contracts,
@@ -48,6 +49,8 @@ def build_coverage(
         covered: Set[str] = set()
         for script in testing["scripts"]:
             covered.update(script["covers"])
+        # Goldens / task_refs / script calls — YAML lists can lag; derive too.
+        covered.update(derived_contract_covers(contract))
 
         missing = [s for s in declared if s not in covered]
         report.by_contract[target] = {

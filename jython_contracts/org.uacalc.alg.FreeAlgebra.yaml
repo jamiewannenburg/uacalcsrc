@@ -73,26 +73,24 @@ testing:
   scripts:
     - path: jython_comparison/scripts/free_algebra_smoke.py
       covers:
-        - getName
-        - setName
-        - elementIndex
-        - getElement
-        - getOperation
-        - getUniverseList
-        - getTerms
-        - getTerm
-        - getElementFromTerm
-        - getProductAlgebra
-        - generators
-        - getVariables
-        - getVariableToGeneratorMap
-        - getIdempotentTerms
-        - superAlgebra
         - algebraType
-        - cardinality
-        - operations
-        - switchXandYAutomorphism
+        - elementIndex
         - findEquationOfAnotB
+        - generators
+        - getElement
+        - getElementFromTerm
+        - getIdempotentTerms
+        - getName
+        - getOperation
+        - getProductAlgebra
+        - getTerm
+        - getTerms
+        - getUniverseList
+        - getVariableToGeneratorMap
+        - getVariables
+        - setName
+        - superAlgebra
+        - switchXandYAutomorphism
       ignore_lines:
         - "Constructing free"
         - "pass:"

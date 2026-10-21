@@ -20,6 +20,7 @@ from .registry import (
 )
 from .validate import format_issues, validate_contracts
 from .coverage import build_coverage, format_coverage
+from .covers import collect_cover_mismatches, format_cover_mismatches, update_cover_lists
 from .parity_coverage import build_parity_coverage, format_parity_coverage
 
 
@@ -180,8 +181,26 @@ def cmd_parity_coverage(args: argparse.Namespace) -> int:
         report,
         show_unwrapped=args.unwrapped,
         show_untested=args.untested,
-        verbose=args.verbose
+        verbose=args.verbose or getattr(args, "full", False)
     ), end="")
+    return 0
+
+
+def cmd_check_covers(args: argparse.Namespace) -> int:
+    contracts_dir = _contracts_dir(args)
+    mismatches = collect_cover_mismatches(contracts_dir)
+    print(format_cover_mismatches(mismatches), end="")
+    return 1 if mismatches else 0
+
+
+def cmd_update_covers(args: argparse.Namespace) -> int:
+    contracts_dir = _contracts_dir(args)
+    changed = update_cover_lists(contracts_dir)
+    print(f"Updated covers lists in {changed} contract file(s).")
+    mismatches = collect_cover_mismatches(contracts_dir)
+    if mismatches:
+        print(format_cover_mismatches(mismatches), end="")
+        return 1
     return 0
 
 
@@ -283,7 +302,24 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Show detailed method lists",
     )
+    p_pcov.add_argument(
+        "--full",
+        action="store_true",
+        help="Same as --verbose (unwrapped + untested + exclusions)",
+    )
     p_pcov.set_defaults(func=cmd_parity_coverage)
+
+    p_chk = sub.add_parser(
+        "check-covers",
+        help="Fail if testing.scripts covers lists do not match script metadata",
+    )
+    p_chk.set_defaults(func=cmd_check_covers)
+
+    p_upd = sub.add_parser(
+        "update-covers",
+        help="Rewrite testing.scripts covers lists from script metadata",
+    )
+    p_upd.set_defaults(func=cmd_update_covers)
 
     return parser
 
