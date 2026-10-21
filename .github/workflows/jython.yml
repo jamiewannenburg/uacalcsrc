@@ -80,6 +80,22 @@ jobs:
       - name: Install Ant
         run: sudo apt-get update && sudo apt-get install -y ant
 
+      - name: Cache uacalc.jar
+        id: uacalc-jar
+        uses: actions/cache@v5
+        with:
+          path: jars/uacalc.jar
+          key: ${{ runner.os }}-uacalc-jar-${{ hashFiles('org/**/*.java', 'org/**/*.png', 'org/**/*.gif', 'org/**/*.jpg', 'resources/algebras/**', 'build.xml', 'manifest') }}
+
+      - name: Build uacalc.jar from Java sources
+        if: steps.uacalc-jar.outputs.cache-hit != 'true'
+        run: ant dist-jar
+
+      - name: Confirm jars/uacalc.jar
+        run: |
+          test -f jars/uacalc.jar
+          ls -l jars/uacalc.jar
+
       - name: Install Jython 2.7.3
         shell: bash
         run: |
@@ -108,9 +124,14 @@ jobs:
 
       - name: Pytest (parity + Jython example tests)
         run: |
+          set -o pipefail
           python -m pytest tests/parity python/uacalc/tests/test_jython_examples_parity.py \
             python/uacalc/tests/test_java_surface.py python/uacalc/tests/test_type_stubs.py \
-            -v --tb=short
+            -v --tb=short -rs | tee pytest-parity.log
+          if grep -E 'missing .*/uacalc\.jar|jython or uacalc\.jar not available' pytest-parity.log; then
+            echo "::error::uacalc.jar-dependent tests still skipped"
+            exit 1
+          fi
 
       - name: Jython tooling checks
         run: |

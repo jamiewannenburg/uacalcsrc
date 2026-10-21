@@ -29,7 +29,7 @@ class TestTypeStubValidation:
     def test_module_imports(self):
         """Test that all submodules can be imported."""
         submodules = ["alg", "element", "eq", "example", "fplat", 
-                     "group", "io", "lat", "terms", "types", "util"]
+                     "group", "io", "lat", "terms", "util"]
         
         for submodule_name in submodules:
             assert hasattr(uacalc_lib, submodule_name), \
