@@ -155,3 +155,17 @@ class TestTypeStubValidation:
         except SyntaxError as e:
             pytest.fail(f"Type stub file has syntax errors: {e}")
 
+    def test_validate_type_stubs_against_wrapper_surface(self):
+        """tools/validate_type_stubs.py must match the live uacalc_lib surface."""
+        import importlib.util
+
+        script = project_root / "tools" / "validate_type_stubs.py"
+        spec = importlib.util.spec_from_file_location("validate_type_stubs", script)
+        assert spec is not None and spec.loader is not None
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        ok, issues = mod.compare_exports()
+        missing = [item for item in issues if "Missing in .pyi" in item]
+        assert not missing, "\n".join(missing)
+        assert ok or not missing
+

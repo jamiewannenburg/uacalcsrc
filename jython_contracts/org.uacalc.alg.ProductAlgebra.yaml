@@ -46,28 +46,26 @@ testing:
   scripts:
     - path: jython_comparison/scripts/product_algebra_smoke.py
       covers:
-        - getName
-        - setName
-        - getOperation
-        - cardinality
-        - numberOfFactors
-        - getElement
+        - Sg
+        - algebraType
+        - calcCard
+        - con
+        - convertToDefaultValueOps
         - elementIndex
+        - factors
+        - getElement
+        - getName
+        - getOperation
         - getUniverseList
         - getUniverseOrder
-        - algebraType
-        - factors
-        - parents
+        - makeOperationTables
         - parent
+        - parents
         - projection
         - projectionKernel
-        - Sg
+        - setName
         - sgClose
-        - makeOperationTables
-        - convertToDefaultValueOps
-        - con
         - sub
-        - calcCard
       ignore_lines:
         - "pass 0 of"
         - "pass 1 of"

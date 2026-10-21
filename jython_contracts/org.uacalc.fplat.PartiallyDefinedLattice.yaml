@@ -29,8 +29,6 @@ testing:
     - path: jython_comparison/scripts/fplat_ops.py
       covers:
         - leq
-        - getDefinedJoins
-        - getDefinedMeets
         - toString
       ignore_lines:
         - "pass:"

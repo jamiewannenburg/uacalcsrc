@@ -21,8 +21,6 @@ testing:
   scripts:
     - path: jython_comparison/scripts/example_ops.py
       covers:
-        - fullPermutationAlgebra
         - cyclicPermutationAlgebra
-        - reductAlg
-        - subtraces
+        - fullPermutationAlgebra
       ignore_lines: []

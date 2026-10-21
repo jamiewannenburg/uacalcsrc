@@ -31,13 +31,11 @@ testing:
   scripts:
     - path: jython_comparison/scripts/algebra_from_minimal_sets_smoke.py
       covers:
-        - getName
-        - setName
-        - getOperation
-        - getElement
-        - elementIndex
-        - getUniverseList
         - algebraType
-        - cardinality
-        - operations
+        - elementIndex
+        - getElement
+        - getName
+        - getOperation
+        - getUniverseList
+        - setName
       ignore_lines: []

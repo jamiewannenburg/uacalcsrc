@@ -27,9 +27,7 @@ testing:
   scripts:
     - path: jython_comparison/scripts/util_ops.py
       covers:
-        - reset
-        - nextIndex
         - iterator
-        - arrayIncrementor
-        - listIncrementor
+        - nextIndex
+        - reset
       ignore_lines: []

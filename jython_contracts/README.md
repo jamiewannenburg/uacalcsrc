@@ -48,6 +48,7 @@ surface:
   aliases:
     getUniverseList: get_universe_list
   static_methods: []                  # e.g. AlgebraIO.readAlgebraFile
+  constructors: []                    # e.g. Polymorphisms — public constructors
   str_parity: false                   # __str__/__repr__ vs Java toString
 testing:
   notes: |
@@ -105,6 +106,9 @@ python3 tools/jython_contracts_cli.py inspect org.uacalc.alg.BasicAlgebra
 python3 tools/jython_contracts_cli.py show org.uacalc.alg.BasicAlgebra
 python3 tools/jython_contracts_cli.py validate
 python3 tools/jython_contracts_cli.py coverage -v
+python3 tools/jython_contracts_cli.py check-covers
+python3 tools/jython_contracts_cli.py update-covers
+python3 tools/jython_contracts_cli.py parity-coverage
 ```
 
 Or: `python3 -m jython_contracts …` with `PYTHONPATH=tools`.
@@ -117,7 +121,10 @@ Or: `python3 -m jython_contracts …` with `PYTHONPATH=tools`.
 | `inspect` | Location, Javadoc, public API, usage examples, binding hint |
 | `show` | Print effective merged contract |
 | `validate` | Check contracts against `python/org/` shims and script paths |
-| `coverage` | Which declared surface symbols are listed in `testing.scripts.covers` |
+| `coverage` | Which declared surface symbols are covered by scripts, goldens, or task_refs |
+| `check-covers` | Fail if `testing.scripts.covers` lists do not match script metadata |
+| `update-covers` | Rewrite stale `covers` lists from script calls / constructors |
+| `parity-coverage` | Java library surface vs wrappers vs behavioral tests, with exclusions |
 
 ## Migration notes
 

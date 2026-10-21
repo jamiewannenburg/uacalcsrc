@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 """
-Script to validate that all exported names from Rust registration functions
-are present in the uacalc_lib.pyi type stub file.
+Validate that uacalc_lib.pyi matches the actual wrapper surface.
 
-This script parses the Rust registration functions and compares them with
-the type stubs to ensure nothing is missing.
+The checker prefers a live ``import uacalc_lib`` (dir of each submodule).
+When the extension is not importable it falls back to parsing Rust
+``m.add`` / ``m.add_function`` / ``m.add_class`` / ``#[pyclass(name=...)]``.
 """
 
+import inspect
 import re
 import sys
 from pathlib import Path
-from typing import Dict, Set, List, Tuple
+from typing import Dict, Set, List, Tuple, Optional
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
@@ -24,6 +25,7 @@ def extract_exported_names_from_rust() -> Dict[str, Set[str]]:
     # Pattern to match m.add("ClassName", ...) or m.add_function(...)
     add_class_pattern = re.compile(r'm\.add\("([^"]+)",')
     add_function_pattern = re.compile(r'm\.add_function\(wrap_pyfunction!\((\w+),')
+    pyclass_name = re.compile(r'#\[pyclass\(name\s*=\s*"([^"]+)"')
     
     # First, find all actual top-level modules by reading lib.rs
     lib_rs = uacalc_lib_src / "lib.rs"
@@ -76,31 +78,65 @@ def extract_exported_names_from_rust() -> Dict[str, Set[str]]:
                 with open(main_file, 'r', encoding='utf-8') as f:
                     content = f.read()
                     
-                    # Extract class names
-                    for match in add_class_pattern.finditer(content):
-                        class_name = match.group(1)
-                        exports[module_name].add(class_name)
-                    
-                    # Extract function names
-                    for match in add_function_pattern.finditer(content):
-                        func_name = match.group(1)
-                        exports[module_name].add(func_name)
+                    _collect_rust_exports(
+                        content, exports[module_name],
+                        add_class_pattern, add_function_pattern, pyclass_name,
+                    )
         else:
             # Module has its own directory, search all files in that directory tree
             for rust_file in module_dir.rglob("*.rs"):
                 with open(rust_file, 'r', encoding='utf-8') as f:
                     content = f.read()
-                    
-                    # Extract class names
-                    for match in add_class_pattern.finditer(content):
-                        class_name = match.group(1)
-                        exports[module_name].add(class_name)
-                    
-                    # Extract function names
-                    for match in add_function_pattern.finditer(content):
-                        func_name = match.group(1)
-                        exports[module_name].add(func_name)
+                    _collect_rust_exports(
+                        content, exports[module_name],
+                        add_class_pattern, add_function_pattern, pyclass_name,
+                    )
     
+    return exports
+
+
+def _collect_rust_exports(
+    content: str,
+    bucket: Set[str],
+    add_class_pattern,
+    add_function_pattern,
+    pyclass_name,
+) -> None:
+    for match in add_class_pattern.finditer(content):
+        name = match.group(1)
+        if not name.startswith("Py"):
+            bucket.add(name)
+    for match in add_function_pattern.finditer(content):
+        bucket.add(match.group(1))
+    for match in pyclass_name.finditer(content):
+        bucket.add(match.group(1))
+
+
+def extract_runtime_exports() -> Optional[Dict[str, Set[str]]]:
+    """Live uacalc_lib submodule dir(); None if the extension is not importable."""
+    try:
+        import uacalc_lib  # pylint: disable=import-outside-toplevel
+    except ImportError:
+        return None
+    skip = {"general_algebra"}  # historical pyi module name, not a real submodule
+    exports: Dict[str, Set[str]] = {}
+    for name in dir(uacalc_lib):
+        if name.startswith("_"):
+            continue
+        obj = getattr(uacalc_lib, name)
+        if not inspect.ismodule(obj):
+            continue
+        if name in skip:
+            continue
+        names = set()
+        for item in dir(obj):
+            if item.startswith("_") or item.startswith("Py"):
+                continue
+            child = getattr(obj, item, None)
+            if inspect.ismodule(child):
+                continue
+            names.add(item)
+        exports[name] = names
     return exports
 
 def extract_names_from_pyi() -> Dict[str, Set[str]]:
@@ -152,31 +188,46 @@ def extract_names_from_pyi() -> Dict[str, Set[str]]:
     
     return exports
 
+# PyO3 classes present in source but never registered on a Python module.
+_UNREGISTERED_PYCLASSES = frozenset({"SmallAlgebra"})
+
+
 def compare_exports() -> Tuple[bool, List[str]]:
-    """Compare Rust exports with .pyi file exports."""
+    """Compare the actual wrapper surface with .pyi file exports."""
+    runtime_exports = extract_runtime_exports()
     rust_exports = extract_exported_names_from_rust()
     pyi_exports = extract_names_from_pyi()
+    source_exports: Dict[str, Set[str]] = {}
+    for module in set(rust_exports) | set(runtime_exports or {}):
+        names = set(rust_exports.get(module, set()))
+        if runtime_exports is not None:
+            names |= runtime_exports.get(module, set())
+        names -= _UNREGISTERED_PYCLASSES
+        source_exports[module] = names
+    source_label = "Rust+runtime" if runtime_exports is not None else "Rust"
     
     issues = []
     all_good = True
     
-    # Check each module
-    all_modules = set(rust_exports.keys()) | set(pyi_exports.keys())
+    all_modules = set(source_exports.keys()) | set(pyi_exports.keys())
     
     for module in sorted(all_modules):
-        rust_names = rust_exports.get(module, set())
+        source_names = source_exports.get(module, set())
         pyi_names = pyi_exports.get(module, set())
         
-        missing_in_pyi = rust_names - pyi_names
-        extra_in_pyi = pyi_names - rust_names
+        missing_in_pyi = source_names - pyi_names
+        extra_in_pyi = pyi_names - source_names
         
         if missing_in_pyi:
             all_good = False
-            issues.append(f"Module '{module}': Missing in .pyi: {sorted(missing_in_pyi)}")
+            issues.append(
+                f"Module '{module}': Missing in .pyi ({source_label}): {sorted(missing_in_pyi)}"
+            )
         
         if extra_in_pyi:
-            # This is less critical, but worth noting
-            issues.append(f"Module '{module}': Extra in .pyi (not in Rust): {sorted(extra_in_pyi)}")
+            issues.append(
+                f"Module '{module}': Extra in .pyi (not in {source_label}): {sorted(extra_in_pyi)}"
+            )
     
     return all_good, issues
 
@@ -196,16 +247,23 @@ def main():
     
     # Also print summary
     rust_exports = extract_exported_names_from_rust()
+    runtime_exports = extract_runtime_exports()
     pyi_exports = extract_names_from_pyi()
     
     print("\nSummary:")
     print(f"  Modules in Rust: {len(rust_exports)}")
+    print(f"  Modules in runtime: {len(runtime_exports) if runtime_exports else 'unavailable'}")
     print(f"  Modules in .pyi: {len(pyi_exports)}")
     
-    for module in sorted(set(rust_exports.keys()) | set(pyi_exports.keys())):
-        rust_count = len(rust_exports.get(module, set()))
+    modules = set(rust_exports.keys()) | set(pyi_exports.keys())
+    if runtime_exports:
+        modules |= set(runtime_exports.keys())
+    for module in sorted(modules):
+        rust_names = rust_exports.get(module, set()) - _UNREGISTERED_PYCLASSES
+        rust_count = len(rust_names)
         pyi_count = len(pyi_exports.get(module, set()))
-        print(f"  {module}: Rust={rust_count}, .pyi={pyi_count}")
+        runtime_count = len(runtime_exports.get(module, set())) if runtime_exports else "-"
+        print(f"  {module}: Rust={rust_count}, runtime={runtime_count}, .pyi={pyi_count}")
     
     return 0 if all_good else 1
 

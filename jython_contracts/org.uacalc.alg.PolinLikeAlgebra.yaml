@@ -38,18 +38,14 @@ testing:
   scripts:
     - path: jython_comparison/scripts/polin_like_algebra_smoke.py
       covers:
-        - getName
-        - setName
-        - getOperation
-        - getElement
-        - elementIndex
-        - getUniverseList
         - algebraType
-        - convertToDefaultValueOps
-        - con
-        - sub
-        - cardinality
         - constructPolinAlgebra
+        - convertToDefaultValueOps
+        - elementIndex
+        - getElement
+        - getName
+        - getOperation
+        - getUniverseList
         - polinizeOperation
-        - intValueAt
+        - setName
       ignore_lines: []

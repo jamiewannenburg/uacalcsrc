@@ -53,28 +53,26 @@ testing:
   scripts:
     - path: jython_comparison/scripts/subalgebra_smoke.py
       covers:
-        - getName
-        - setName
-        - getOperation
-        - superAlgebra
-        - getSubuniverseArray
+        - algebraType
+        - con
+        - congruenceAsAlgebra
+        - convertToDefaultValueOps
         - elementIndex
         - getElement
-        - index
-        - algebraType
+        - getName
+        - getOperation
+        - getSubuniverseArray
         - getUniverseList
         - getUniverseOrder
-        - restrictPartition
-        - convertToDefaultValueOps
-        - con
-        - sub
+        - index
         - makeOperationTables
-        - universe
         - parent
         - parents
-        - congruenceAsAlgebra
-        - cardinality
-        - operations
+        - restrictPartition
+        - setName
+        - sub
+        - superAlgebra
+        - universe
       ignore_lines:
         - "oneGenerated size"
         - "pass 0 of"

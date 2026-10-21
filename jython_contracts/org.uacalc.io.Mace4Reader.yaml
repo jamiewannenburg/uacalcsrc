@@ -22,8 +22,7 @@ testing:
   scripts:
     - path: jython_comparison/scripts/io_surface.py
       covers:
-        - Mace4Reader.parseAlgebra
-        - Mace4Reader.parseAlgebraList
         - Mace4Reader.isOrdinaryCharacter
         - Mace4Reader.isSpecialCharacter
+        - Mace4Reader.parseAlgebra
       ignore_lines: []

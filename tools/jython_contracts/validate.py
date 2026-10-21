@@ -177,7 +177,12 @@ def validate_contracts(
                 )
 
         surface = normalize_surface(contract.surface)
-        has_surface = bool(surface["aliases"] or surface["static_methods"] or surface["str_parity"])
+        has_surface = bool(
+            surface["aliases"]
+            or surface["static_methods"]
+            or surface["constructors"]
+            or surface["str_parity"]
+        )
 
         try:
             testing = normalize_testing(contract.testing)
@@ -292,6 +297,22 @@ def validate_contracts(
                             f"static method {cls_name}.{meth} not found in shim",
                         )
                     )
+
+            for ctor in surface["constructors"]:
+                ctor_cls = ctor.split(".")[-1]
+                if ctor_cls in statics_by_class:
+                    continue
+                if re.search(rf"\bclass\s+{re.escape(ctor_cls)}\b", shim):
+                    continue
+                if re.search(rf"['\"]{re.escape(ctor_cls)}['\"]", shim):
+                    continue
+                issues.append(
+                    ValidationIssue(
+                        "error",
+                        target,
+                        f"constructor {ctor_cls} not found in shim {package}",
+                    )
+                )
         else:
             # Package-level: check static_methods and any aliases mentioned
             for method in surface["static_methods"]:

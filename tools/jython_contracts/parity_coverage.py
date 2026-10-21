@@ -15,37 +15,32 @@ from pathlib import Path
 from typing import Dict, List, Optional, Set
 
 from . import PROJECT_ROOT
+from .java_surface import (
+    CATEGORY_REASONS,
+    EXCLUSION_CATEGORIES,
+    excluded_names_by_category,
+    excluded_occurrence_counts,
+    scan_java_file,
+)
 
-# Bindings that exist as Java APIs but are not fully routed through uacalc_lib.
-# These stay visible in coverage instead of being counted as tested or skipped.
+# Remaining genuine out-of-scope / unbound public surface (not scanner FPs).
+# Scanner FPs now appear under "Excluded by category" instead of here.
 PENDING_BINDINGS = {
     "alg": [
         (
-            "Malcev main / BigProductAlgebra scanner false-positives",
-            "main is a Java development helper. sg() on BigProductAlgebra is "
-            "commented out in Java (scanner FP). sgClose_old / sgCloseXX are "
-            "legacy public overloads, not bound.",
-        ),
-        (
-            "GUI / CloserTiming ProgressReport",
+            "CloserTiming ProgressReport",
             "CloserTiming(algebra, report) accepts report=None only; a live "
             "org.uacalc.ui.tm.ProgressReport is out of scope.",
         ),
     ],
     "lat": [
         (
-            "GUI / drawing (getDiagram, getVertices, FrameShower, main, run)",
-            "Swing/latdraw diagram code is out of scope; the 5 unwrapped of 41 "
-            "are getVertices, main, run plus scanner false-positives "
-            "intValueAt/valueAt",
+            "getDiagram / getVertices",
+            "Swing/latdraw diagram helpers on BasicLattice; drawing is out of scope",
         ),
         (
             "LatticeGraphData drawing helpers",
             "to_networkx/to_dot/to_mermaid are Python extras, not Java org.uacalc.lat",
-        ),
-        (
-            "intValueAt / valueAt (anonymous Operation in BasicLattice)",
-            "scanner false-positives; methods of the join/meet operations, not BasicLattice",
         ),
         (
             "POElem class (org.latdraw.orderedset)",
@@ -55,23 +50,14 @@ PENDING_BINDINGS = {
     ],
     "terms": [
         (
-            "Taylor.main",
+            "Terms.testFlatten",
             "Java development helper; not wrapped",
-        ),
-        (
-            "anonymous Operation methods inside interpretation()",
-            "intValueAt/makeTable/getTable/valueAt/getTerm/getOrderedvariables "
-            "are on the returned operation, not on VariableImp/NonVariableTerm",
-        ),
-        (
-            "Terms.main / Terms.testFlatten",
-            "Java development helpers",
         ),
     ],
     "eq": [
         (
-            "ProgressReport overloads / Equations.main",
-            "org.uacalc.ui.tm.ProgressReport is not bound; main is a Java stub",
+            "ProgressReport overloads",
+            "org.uacalc.ui.tm.ProgressReport is not bound",
         ),
     ],
     "element": [
@@ -80,36 +66,19 @@ PENDING_BINDINGS = {
             "Java interface; CPython rejects Element()",
         ),
     ],
-    "fplat": [
-        (
-            "PartiallyDefinedLattice.main",
-            "Java main() is an empty stub",
-        ),
-    ],
     "example": [
         (
-            "GUI / interactive / Malcev demo mains",
+            "GUI / interactive demos",
             "16 packaged demo classes are ported under python/org/uacalc/example. "
-            "GUI/interactive mains, ParallelClose (unpackaged ForkJoin timing), "
-            "incomplete ParallelClose8, and FilteringAlgebras.main (Malcev) are "
-            "strict xfail or skip. uacalc_lib.example stays empty; the org wrapper "
-            "composes existing bindings.",
+            "GUI/interactive mains and incomplete ParallelClose/ParallelClose8 "
+            "are strict xfail or skip. uacalc_lib.example stays empty.",
         ),
     ],
     "parallel": [
         (
-            "SingleClose.main",
-            "Java main() is an empty stub",
-        ),
-        (
             "ForkJoinPool / Thread / ProgressReport / CloserTiming / increment",
             "doOneStep accepts these Java thread-internal args and ignores them; "
-            "timing and thread counts are not asserted. Term map from a parallel "
-            "pass may differ across runs (Java comment on SingleClose)",
-        ),
-        (
-            "Pool.fjPool",
-            "Java static field is package-private; not a public method",
+            "timing and thread counts are not asserted.",
         ),
     ],
     "group": [
@@ -117,11 +86,6 @@ PENDING_BINDINGS = {
             "to_basic_algebra / automorphism_group / new_safe",
             "Rust extras; Java PermutationGroup has no Aut(A) or conversion. "
             "uacalc_lib to_basic_algebra uses the underlying set {0..n-1}, not |G|",
-        ),
-        (
-            "valueAt on anonymous make*Op Operations",
-            "scanner sees valueAt inside PermutationGroup.java; covered via "
-            "makeProdOp/makeInvOp/makeIdOp.valueAt goldens",
         ),
     ],
     "util": [
@@ -137,36 +101,15 @@ PENDING_BINDINGS = {
             "SimpleList writeObject/readObject",
             "custom sharing-graph serialization is not bound",
         ),
-        (
-            "SequenceGenerator.main / Horner.main / PermutationGenerator.main / "
-            "SimpleList.main / LongList.main / VirtualLists.main / TupleWithMin.main",
-            "Java development helpers; skipped (not GUI, but main)",
-        ),
-        (
-            "satisfiesConstraint / regenerate / reinitialize / removeConflicts",
-            "commented out in Java source; scanner false-positives, not in the live class",
-        ),
-        (
-            "SimpleList.app / rev",
-            "commented out in Java; Python aliases append/reverse (strict xfail vs Java AttributeError)",
-        ),
     ],
     "sublat": [
         (
-            "GUI / drawing (getDiagram) and ProgressReport monitor overloads",
+            "getDiagram and ProgressReport monitor overloads",
             "Swing/latdraw and org.uacalc.ui.tm.ProgressReport are out of scope",
         ),
         (
             "SubalgebraLattice.con / sub of the lattice itself",
             "BasicLattice from a BasicSet universe cannot yet extract i32 join/meet tables",
-        ),
-        (
-            "commented Task helpers (getUniverseTask, percentDone, …)",
-            "Java methods live in a comment block; not part of the live API",
-        ),
-        (
-            "SubalgebraLattice.main",
-            "Java development helper",
         ),
     ],
     "conlat": [
@@ -184,11 +127,6 @@ PENDING_BINDINGS = {
             "org shim (TypeFinder + originating algebra stashed on con()). "
             "matrices / commutator-with-report / SubProduct overloads stay unbound.",
         ),
-        (
-            "TypeFinder.main / Polymorphisms.main / BasicBinaryRelation.main / "
-            "CentralityData.main",
-            "Java development helpers",
-        ),
     ],
     "alg_op": [
         (
@@ -199,10 +137,6 @@ PENDING_BINDINGS = {
             "OperationWithDefaultValue defaultValue==-2 random tables",
             "Java uses UI RandomGenerator; Python uses random "
             "(strict xfail ow_random_xfail)",
-        ),
-        (
-            "AbstractIntOperation.main / OperationWithDefaultValue.main",
-            "Java development helpers",
         ),
     ],
 }
@@ -234,6 +168,7 @@ class ParityCoverageReport:
     total_java_methods: int = 0
     total_wrapped_methods: int = 0
     total_tested_methods: int = 0
+    total_excluded_methods: int = 0
 
 
 @dataclass
@@ -241,9 +176,11 @@ class PackageCoverage:
     """Coverage for one package."""
     
     package: str
-    java_methods: Set[str] = field(default_factory=set)  # Public methods in Java
+    java_methods: Set[str] = field(default_factory=set)  # Public library surface
     wrapped_methods: Set[str] = field(default_factory=set)  # Wrapped in Python
     tested_methods: Set[str] = field(default_factory=set)  # Have behavioral tests
+    excluded_by_category: Dict[str, Set[str]] = field(default_factory=dict)
+    excluded_counts: Dict[str, int] = field(default_factory=dict)
     
     @property
     def unwrapped_methods(self) -> Set[str]:
@@ -252,6 +189,17 @@ class PackageCoverage:
     @property
     def untested_methods(self) -> Set[str]:
         return self.wrapped_methods - self.tested_methods
+
+    @property
+    def excluded_methods(self) -> Set[str]:
+        names: Set[str] = set()
+        for group in self.excluded_by_category.values():
+            names.update(group)
+        return names - self.java_methods
+
+    @property
+    def excluded_occurrence_count(self) -> int:
+        return sum(self.excluded_counts.values())
     
     @property
     def wrapper_coverage_pct(self) -> float:
@@ -267,26 +215,25 @@ class PackageCoverage:
 
 
 def scan_java_public_methods(java_file: Path) -> Set[str]:
-    """Scan a Java file for public methods.
-    
-    Returns set of method names (simple names, not fully qualified).
-    """
+    """Scan a Java file for public library-surface methods and constructors."""
     if not java_file.exists():
         return set()
-    
-    content = java_file.read_text(encoding='utf-8', errors='ignore')
-    methods = set()
-    
-    # Simple regex for public methods (not perfect but good enough)
-    # Match: public [static] [final] ReturnType methodName(...)
-    pattern = r'\bpublic\s+(?:static\s+)?(?:final\s+)?(?:\w+(?:<[^>]+>)?(?:\[\])?)\s+(\w+)\s*\('
-    for match in re.finditer(pattern, content):
-        method_name = match.group(1)
-        # Skip constructors (same name as class)
-        if not method_name[0].isupper():  # Methods start with lowercase
-            methods.add(method_name)
-    
-    return methods
+    names: Set[str] = set()
+    for typ in scan_java_file(java_file).types:
+        names.update(typ.public_surface)
+    return names
+
+
+def scan_java_exclusions(java_file: Path) -> Dict[str, Set[str]]:
+    if not java_file.exists():
+        return {}
+    return excluded_names_by_category(scan_java_file(java_file).types)
+
+
+def scan_java_exclusion_counts(java_file: Path) -> Dict[str, int]:
+    if not java_file.exists():
+        return {}
+    return excluded_occurrence_counts(scan_java_file(java_file).types)
 
 
 def _snake_to_camel(name: str) -> str:
@@ -298,14 +245,15 @@ def _snake_to_camel(name: str) -> str:
     return parts[0] + "".join(p[:1].upper() + p[1:] for p in parts[1:])
 
 
-def _is_method_name(name: str) -> bool:
-    return bool(name) and name[0].islower() and not name.startswith("_")
+def _is_exported_name(name: str) -> bool:
+    return bool(name) and not name.startswith("_")
 
 
 def scan_python_wrapper_methods(python_file: Path) -> Set[str]:
-    """Scan a Python wrapper file for exported methods.
+    """Scan a Python wrapper file for exported methods and class names.
 
-    Returns Java-style (camelCase) method names that are wrapped.
+    Returns Java-style (camelCase) names that are wrapped, including
+    constructor names (ClassDef / imported class names).
     """
     if not python_file.exists():
         return set()
@@ -316,7 +264,7 @@ def scan_python_wrapper_methods(python_file: Path) -> Set[str]:
     try:
         tree = ast.parse(content)
         for node in ast.walk(tree):
-            if isinstance(node, ast.FunctionDef):
+            if isinstance(node, (ast.FunctionDef, ast.ClassDef)):
                 raw.add(node.name)
             elif isinstance(node, ast.ImportFrom):
                 for alias in node.names:
@@ -330,7 +278,7 @@ def scan_python_wrapper_methods(python_file: Path) -> Set[str]:
 
     methods = set()
     for name in raw:
-        if not _is_method_name(name):
+        if not _is_exported_name(name):
             continue
         methods.add(name)
         methods.add(_snake_to_camel(name))
@@ -414,21 +362,30 @@ def build_parity_coverage(
             p.name for p in parity_root.iterdir()
             if p.is_dir() and not p.name.startswith('_')
         ]
+        # UI packages have no parity tests but hold most GUI exclusions.
+        for extra in ("ui", "nbui"):
+            if extra not in packages:
+                packages.append(extra)
     
     for package in packages:
         coverage = PackageCoverage(package=package)
         
-        # Scan Java sources for public methods
+        # Scan Java sources for public library surface (exclusions categorised)
         java_package_dir = _java_package_dir(package)
         if java_package_dir.exists():
+            # Nested alg.* packages have their own coverage buckets; only
+            # util/ui/nbui should recurse into subdirectories.
             java_iter = (
                 java_package_dir.rglob("*.java")
-                if package == "util"
+                if package in {"util", "ui", "nbui"}
                 else java_package_dir.glob("*.java")
             )
             for java_file in java_iter:
-                methods = scan_java_public_methods(java_file)
-                coverage.java_methods.update(methods)
+                coverage.java_methods.update(scan_java_public_methods(java_file))
+                for cat, names in scan_java_exclusions(java_file).items():
+                    coverage.excluded_by_category.setdefault(cat, set()).update(names)
+                for cat, n in scan_java_exclusion_counts(java_file).items():
+                    coverage.excluded_counts[cat] = coverage.excluded_counts.get(cat, 0) + n
         
         # Scan Python wrappers (package dir, including _jython_compat)
         python_package_dir = _python_package_dir(package)
@@ -461,6 +418,7 @@ def build_parity_coverage(
         report.total_java_methods += len(coverage.java_methods)
         report.total_wrapped_methods += len(coverage.wrapped_methods)
         report.total_tested_methods += len(coverage.tested_methods)
+        report.total_excluded_methods += coverage.excluded_occurrence_count
     
     return report
 
@@ -478,20 +436,32 @@ def format_parity_coverage(
     lines.append("=" * 70)
     lines.append("")
     lines.append("Measures:")
-    lines.append("  1. Wrapper coverage: Java public methods wrapped in Python")
+    lines.append("  1. Wrapper coverage: Java public library surface wrapped in Python")
     lines.append("  2. Test coverage: Wrapped methods with behavioral parity tests")
+    lines.append("  3. Exclusions: scanner false-positives categorised (not in Java column)")
     lines.append("")
     
     # Per-package summary
-    lines.append(f"{'Package':<15} {'Java':<8} {'Wrapped':<10} {'Tested':<10} {'Wrapper %':<12} {'Test %':<10}")
-    lines.append("-" * 70)
+    lines.append(
+        f"{'Package':<15} {'Java':<8} {'Wrapped':<10} {'Tested':<10} "
+        f"{'Unwrapped':<10} {'Excluded':<10} {'Wrapper %':<12} {'Test %':<10}"
+    )
+    lines.append("-" * 95)
     
     for package, coverage in sorted(report.by_package.items()):
+        if (
+            not coverage.java_methods
+            and not coverage.excluded_methods
+            and not coverage.wrapped_methods
+        ):
+            continue
         lines.append(
             f"{package:<15} "
             f"{len(coverage.java_methods):<8} "
             f"{len(coverage.wrapped_methods):<10} "
             f"{len(coverage.tested_methods):<10} "
+            f"{len(coverage.unwrapped_methods):<10} "
+            f"{coverage.excluded_occurrence_count:<10} "
             f"{coverage.wrapper_coverage_pct:>6.1f}%     "
             f"{coverage.test_coverage_pct:>6.1f}%"
         )
@@ -511,13 +481,29 @@ def format_parity_coverage(
                     lines.append(f"    - {method}")
                 if len(coverage.untested_methods) > 20:
                     lines.append(f"    ... and {len(coverage.untested_methods) - 20} more")
+        if coverage.excluded_counts:
+            lines.append(
+                f"  Excluded by category ({coverage.excluded_occurrence_count} members):"
+            )
+            for cat in EXCLUSION_CATEGORIES:
+                n = coverage.excluded_counts.get(cat) or 0
+                names = coverage.excluded_by_category.get(cat) or set()
+                if not n:
+                    continue
+                reason = CATEGORY_REASONS.get(cat, cat)
+                sample = ", ".join(sorted(names)[:8])
+                extra = f", ... +{len(names) - 8}" if len(names) > 8 else ""
+                lines.append(
+                    f"    - {cat} ({n} members, {len(names)} names): {reason}. "
+                    f"e.g. {sample}{extra}"
+                )
         pending = PENDING_BINDINGS.get(package, [])
         if pending:
             lines.append(f"  Pending bindings ({len(pending)}):")
             for name, reason in pending:
                 lines.append(f"    - {name}: {reason}")
     
-    lines.append("-" * 70)
+    lines.append("-" * 95)
     
     # Totals
     total_wrapper_pct = (
@@ -528,12 +514,15 @@ def format_parity_coverage(
         100.0 * report.total_tested_methods / report.total_wrapped_methods
         if report.total_wrapped_methods > 0 else 100.0
     )
+    unwrapped_total = report.total_java_methods - report.total_wrapped_methods
     
     lines.append(
         f"{'TOTAL':<15} "
         f"{report.total_java_methods:<8} "
         f"{report.total_wrapped_methods:<10} "
         f"{report.total_tested_methods:<10} "
+        f"{unwrapped_total:<10} "
+        f"{report.total_excluded_methods:<10} "
         f"{total_wrapper_pct:>6.1f}%     "
         f"{total_test_pct:>6.1f}%"
     )
@@ -542,9 +531,26 @@ def format_parity_coverage(
     # Summary
     untested_total = report.total_wrapped_methods - report.total_tested_methods
     lines.append("Summary:")
-    lines.append(f"  - {report.total_java_methods} Java public methods found")
+    lines.append(f"  - {report.total_java_methods} Java public library-surface methods")
     lines.append(f"  - {report.total_wrapped_methods} wrapped in Python ({total_wrapper_pct:.1f}%)")
     lines.append(f"  - {report.total_tested_methods} have behavioral parity tests ({total_test_pct:.1f}%)")
+    lines.append(f"  - {unwrapped_total} public methods still unwrapped")
+    lines.append(
+        f"  - {report.total_excluded_methods} excluded member declarations "
+        f"(anonymous inner class, commented-out, GUI widgets, main, "
+        f"package-private, legacy, …)"
+    )
+    global_excl: Dict[str, int] = {}
+    for coverage in report.by_package.values():
+        for cat, n in coverage.excluded_counts.items():
+            global_excl[cat] = global_excl.get(cat, 0) + n
+    if global_excl:
+        parts = [
+            f"{cat} {global_excl[cat]}"
+            for cat in EXCLUSION_CATEGORIES
+            if cat in global_excl
+        ]
+        lines.append("      by category: " + ", ".join(parts))
     lines.append(f"  - {untested_total} wrapped methods need behavioral tests")
     pending_shown = [
         (package, name, reason)

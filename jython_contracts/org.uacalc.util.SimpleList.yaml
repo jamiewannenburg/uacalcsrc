@@ -51,28 +51,15 @@ testing:
   scripts:
     - path: jython_comparison/scripts/util_ops.py
       covers:
-        - makeList
-        - isEmpty
         - copyList
-        - indexOf
-        - lastIndexOf
-        - containsAll
-        - subList
-        - toArray
-        - toString
-        - frontIterator
-        - getIterator
-        - elements
-        - listIterator
-        - rest
-        - reverse
-        - hasMoreElements
-        - nextElement
-        - hasPrevious
-        - previous
-        - previousIndex
         - hasNext
+        - indexOf
+        - isEmpty
+        - makeList
         - next
         - nextIndex
-        - __str__
+        - rest
+        - reverse
+        - toArray
+        - toString
       ignore_lines: []

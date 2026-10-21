@@ -31,12 +31,11 @@ testing:
   scripts:
     - path: jython_comparison/scripts/algebra_with_generating_vector_smoke.py
       covers:
+        - compareTo
+        - equals
         - getAlgebra
         - getVector
         - isImageOf
-        - toString
-        - compareTo
-        - equals
         - siDecompose
-        - __str__
+        - toString
       ignore_lines: []

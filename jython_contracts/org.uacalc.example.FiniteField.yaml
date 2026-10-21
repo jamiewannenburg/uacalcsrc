@@ -26,13 +26,12 @@ testing:
   scripts:
     - path: jython_comparison/scripts/example_ops.py
       covers:
-        - conwayPolynomial
         - cardinality
-        - getPrime
+        - conwayPolynomial
         - getPower
+        - getPrime
+        - oneIndex
         - plusInt
         - timesInt
-        - inverseInt
         - zeroIndex
-        - oneIndex
       ignore_lines: []

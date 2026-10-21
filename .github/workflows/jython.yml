@@ -104,12 +104,21 @@ jobs:
       - name: Install wheel and test dependencies
         run: |
           python -m pip install dist/*.whl
-          python -m pip install -e ".[test]"
+          python -m pip install -e ".[test,jython_comparison]"
 
       - name: Pytest (parity + Jython example tests)
         run: |
           python -m pytest tests/parity python/uacalc/tests/test_jython_examples_parity.py \
+            python/uacalc/tests/test_java_surface.py python/uacalc/tests/test_type_stubs.py \
             -v --tb=short
+
+      - name: Jython tooling checks
+        run: |
+          python tools/validate_type_stubs.py
+          python tools/jython_contracts_cli.py validate
+          python tools/jython_contracts_cli.py check-covers
+          python jython_comparison/scripts/generate_parity_inventory.py --verify
+          python tools/jython_contracts_cli.py parity-coverage
 
       # - name: Jython vs CPython (default script)
       #   run: python jython_comparison/run_comparison.py -q

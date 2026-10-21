@@ -31,12 +31,11 @@ testing:
   scripts:
     - path: jython_comparison/scripts/op_leftovers.py
       covers:
-        - getTerm
         - getOrderedVariables
-        - intValueAt
-        - valueAt
         - getTable
+        - getTerm
+        - intValueAt
         - makeTable
         - toString
-        - __str__
+        - valueAt
       ignore_lines: []

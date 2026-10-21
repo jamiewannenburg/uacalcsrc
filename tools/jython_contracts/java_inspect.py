@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Set, Tuple
 
 from . import JAVA_ROOT, PROJECT_ROOT
 from .registry import fqcn_to_java_path, java_path_to_fqcn
@@ -123,6 +123,21 @@ def parse_java_class(path: Path) -> ClassInfo:
     for m in field_pat.finditer(text):
         fields.append(f"public {m.group(1)} {m.group(2)}")
 
+    docs_by_name: Dict[str, str] = {}
+    for item in methods + constructors:
+        docs_by_name[_method_info_name(item)] = item.javadoc
+
+    scan_methods, scan_ctors = _public_members_for_type(path, simple)
+    if scan_methods or scan_ctors:
+        methods = [
+            MethodInfo(signature=sig, javadoc=docs_by_name.get(name, ""))
+            for name, sig in scan_methods
+        ]
+        constructors = [
+            MethodInfo(signature=sig, javadoc=docs_by_name.get(name, ""))
+            for name, sig in scan_ctors
+        ]
+
     return ClassInfo(
         fqcn=fqcn,
         path=path,
@@ -132,6 +147,44 @@ def parse_java_class(path: Path) -> ClassInfo:
         constructors=constructors,
         fields=fields,
     )
+
+
+def _method_info_name(info: MethodInfo) -> str:
+    # "public Ret name(params)" or "public Name(params)"
+    sig = info.signature
+    before_paren = sig.split("(", 1)[0]
+    return before_paren.split()[-1]
+
+
+def _public_members_for_type(
+    path: Path, simple: str
+) -> Tuple[List[Tuple[str, str]], List[Tuple[str, str]]]:
+    """Library-surface (name, signature) pairs from the shared scanner."""
+    from .java_surface import scan_java_file  # pylint: disable=import-outside-toplevel
+
+    methods: List[Tuple[str, str]] = []
+    ctors: List[Tuple[str, str]] = []
+    seen_m: Set[str] = set()
+    seen_c: Set[str] = set()
+    try:
+        surface = scan_java_file(path)
+    except (OSError, ValueError):
+        return methods, ctors
+    for typ in surface.types:
+        if typ.simple_name != simple:
+            continue
+        for member in typ.members:
+            if member.exclusion is not None:
+                continue
+            pair = (member.name, member.signature)
+            if member.kind == "constructor":
+                if member.signature not in seen_c:
+                    ctors.append(pair)
+                    seen_c.add(member.signature)
+            elif member.signature not in seen_m:
+                methods.append(pair)
+                seen_m.add(member.signature)
+    return methods, ctors
 
 
 def find_usages(

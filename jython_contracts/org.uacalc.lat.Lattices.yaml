@@ -33,8 +33,9 @@ testing:
         - "ucs has size"
     - path: jython_comparison/scripts/basic_lattice_api.py
       covers:
-        - Lattices.dual
         - Lattices.conToSmallLattice
+        - Lattices.dual
+        - Lattices.latticeFromJoin
       ignore_lines:
         - "labels has size"
         - "ucs has size"

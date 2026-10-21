@@ -43,24 +43,23 @@ testing:
   scripts:
     - path: jython_comparison/scripts/quotient_algebra_smoke.py
       covers:
-        - getName
-        - setName
-        - getOperation
-        - superAlgebra
+        - algebraType
+        - canonicalHomomorphism
+        - con
+        - convertToDefaultValueOps
+        - elementIndex
         - getCongruence
         - getElement
-        - elementIndex
-        - representativeIndex
-        - canonicalHomomorphism
+        - getName
+        - getOperation
         - getUniverseList
         - getUniverseOrder
-        - algebraType
-        - convertToDefaultValueOps
-        - con
-        - sub
         - makeOperationTables
+        - representativeIndex
+        - setName
+        - sub
+        - superAlgebra
         - universe
-        - cardinality
       ignore_lines:
         - "pass 0 of"
         - "pass 1 of"

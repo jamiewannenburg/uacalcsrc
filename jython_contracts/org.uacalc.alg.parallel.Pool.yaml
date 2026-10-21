@@ -22,8 +22,7 @@ testing:
   task_refs: []
   scripts:
     - path: jython_comparison/scripts/parallel_ops.py
-      covers:
-        - toString
+      covers: []
       ignore_lines:
         - "pass:"
         - "increment:"

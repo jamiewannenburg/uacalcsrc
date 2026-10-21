@@ -44,25 +44,23 @@ testing:
   scripts:
     - path: jython_comparison/scripts/power_algebra_smoke.py
       covers:
+        - algebraType
+        - con
+        - convertToDefaultValueOps
+        - elementIndex
+        - factors
+        - getElement
         - getName
-        - setName
         - getOperation
-        - getRoot
         - getPower
+        - getRoot
+        - getUniverseList
+        - makeOperationTables
         - parent
         - parents
-        - getElement
-        - elementIndex
-        - getUniverseList
-        - algebraType
-        - factors
         - projection
-        - numberOfFactors
-        - convertToDefaultValueOps
-        - con
+        - setName
         - sub
-        - makeOperationTables
-        - cardinality
       ignore_lines:
         - "pass 0 of"
         - "pass 1 of"

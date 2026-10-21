@@ -52,15 +52,13 @@ testing:
   scripts:
     - path: jython_comparison/scripts/reduct_algebra_smoke.py
       covers:
-        - getName
-        - setName
-        - getOperation
-        - superAlgebra
+        - algebraType
+        - congruenceAsAlgebra
         - elementIndex
         - getElement
+        - getName
+        - getOperation
         - getUniverseList
-        - algebraType
-        - cardinality
-        - operations
-        - congruenceAsAlgebra
+        - setName
+        - superAlgebra
       ignore_lines: []

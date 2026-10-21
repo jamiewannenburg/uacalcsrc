@@ -139,15 +139,18 @@ Coverage is measured in two dimensions:
 
 ```bash
 # Show unwrapped methods
-python3 tools/jython_contracts_cli.py coverage --unwrapped
+python3 tools/jython_contracts_cli.py parity-coverage --unwrapped
 
 # Show wrapper coverage by package
-python3 tools/jython_contracts_cli.py coverage --by-package
+python3 tools/jython_contracts_cli.py parity-coverage
 ```
 
 **Computed from**:
-- Java source: parse public methods from org/uacalc/**/*.java
-- Python wrappers: parse python/org/uacalc/**/__init__.py
+- Java source: public library surface from `org/uacalc/**/*.java`
+  (anonymous inner-class ops, commented-out members, GUI widget classes,
+  `main`, package-private, and legacy `_old`/`XX` overloads are excluded by
+  category; library types such as `ExtFileFilter` stay on the surface)
+- Python wrappers: parse `python/org/uacalc/**/*.py`
 
 ### 2. Parity Test Coverage
 **Question**: Which wrapped methods have exact behavioral parity tests?

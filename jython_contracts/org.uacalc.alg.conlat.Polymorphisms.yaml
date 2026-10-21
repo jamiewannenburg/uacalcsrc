@@ -11,13 +11,18 @@ surface:
   package_export: true
   aliases: {}
   static_methods: []
+  constructors:
+    - Polymorphisms
   str_parity: false
 testing:
   notes: |
     Goldens construct Polymorphisms on small partition lists (empty list is
-    IndexOutOfBoundsException like Java pars.get(0)).
-  task_refs: []
+    IndexOutOfBoundsException like Java pars.get(0)). main is excluded as a
+    demo helper, not library surface.
+  task_refs:
+    - tests/parity/conlat/test_cases/conlat_leftovers_cases.py
   scripts:
     - path: jython_comparison/scripts/conlat_leftovers.py
-      covers: []
+      covers:
+        - Polymorphisms
       ignore_lines: []

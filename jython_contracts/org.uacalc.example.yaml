@@ -20,42 +20,5 @@ testing:
   task_refs: []
   scripts:
     - path: jython_comparison/scripts/example_ops.py
-      covers:
-        - ave
-        - averageAlg
-        - fullPermutationAlgebra
-        - cyclicPermutationAlgebra
-        - reductAlg
-        - subtraces
-        - makeAn
-        - makeAin
-        - makeTin
-        - hasConstantTuple
-        - Addition
-        - TernaryOp
-        - MakeIdTernaryOp
-        - pow
-        - maxOfArray
-        - hornerInvLong
-        - intTupleStream
-        - tupleStream
-        - conwayPolynomial
-        - cardinality
-        - getPrime
-        - getPower
-        - plusInt
-        - timesInt
-        - inverseInt
-        - zeroIndex
-        - oneIndex
-        - makeKearnesAlg
-        - makeKearnesOps
-        - makeJoinOp
-        - makeMeetOp
-        - filter
-        - makeOrderRelation
-        - hasNUHorowitz
-        - main
-        - findJoinMeetMatPower
-        - testJoinMeetMatPower
+      covers: []
       ignore_lines: []
