@@ -4,7 +4,7 @@
     "jar": "uacalc.jar",
     "package": "org.uacalc.conlat",
     "runtime": "jython",
-    "test_cases": 212,
+    "test_cases": 215,
     "type": "package"
   },
   "test_cases": [
@@ -5205,6 +5205,72 @@
       },
       "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, BinaryRelation, CentralityData,\n    Polymorphisms, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\ntf_c2 = TypeFinder(c2)\ntf_c3 = TypeFinder(c3)\ntf_lat2 = TypeFinder(lat2)\ntf_m3 = TypeFinder(m3)\ntf_n5 = TypeFinder(n5)\nst = Subtrace(0, 1, True)\nst_t = Subtrace(1, 2, False, 3)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nident = BasicBinaryRelation.identity(3)\nbeta_rel = BasicBinaryRelation(3)\nbeta_rel.add(1, 0)\ncoll = BasicBinaryRelation([IntArray([0, 1]), IntArray([1, 0])], 3)\nzero3 = BasicPartition.zero(3)\ncd = CentralityData(ident, ident, zero3)\npoly = Polymorphisms(1, [BasicPartition.zero(2)], True, None)\njis_c2 = list(c2.con().joinIrreducibles())\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    return [_ia(x) for x in list(lst)]\n\ndef _st(s):\n    if s is None:\n        return None\n    return [int(s.first()), int(s.second()), int(s.type()), bool(s.hasInvolution()), str(s.toString())]\n\ndef _hs():\n    try:\n        from java.util import HashSet\n        return HashSet()\n    except ImportError:\n        return set()\n\ndef _al():\n    try:\n        from java.util import ArrayList\n        return ArrayList()\n    except ImportError:\n        return []\n\ndef _ia_sorted(coll):\n    rows = [_ia(x) for x in list(coll)]\n    rows.sort()\n    return rows\n\ndef _next_snap(tf, pair):\n    univHS = _hs()\n    unordered = _hs()\n    univ = _al()\n    result = tf.nextPairForSubtrace(pair, univHS, unordered, univ)\n    return [_ia(result), _ia_sorted(univHS), _ia_sorted(unordered), [_ia(x) for x in list(univ)]]\n\nfrom org.uacalc.alg import BasicAlgebra\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.example import Type1\nba2 = AlgebraIO.readAlgebraFile(\"resources/algebras/ba2.ua\")\nz3a = AlgebraIO.readAlgebraFile(\"resources/algebras/z3.ua\")\ns3 = AlgebraIO.readAlgebraFile(\"resources/algebras/sym3.ua\")\nmeet = Operations.makeIntOperation(OperationSymbol(\"m\", 2), 2, [0, 0, 0, 1])\nsem2 = BasicAlgebra(\"sem2\", 2, [meet])\nunary3 = Type1.cyclicPermutationAlgebra(3)\ntf_ba2 = TypeFinder(ba2)\ntf_sem2 = TypeFinder(sem2)\ntf_unary3 = TypeFinder(unary3)\ntf_z3 = TypeFinder(z3a)\njis_lat2 = list(lat2.con().joinIrreducibles())\n",
       "skip_string_check": true,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "con.matrices(con.Tg(0, 0), con.Tg(0, 1), None).cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "M(S,T) cardinality for Tg(0,0), Tg(0,1) on C2",
+      "expected_exception": null,
+      "id": "cl_matrices_card",
+      "kwargs": {},
+      "method": "CongruenceLattice.matrices",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 4,
+        "string_repr": "4",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "str(con.commutator(con.Tg(0, 0), con.Tg(0, 1)))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "commutator of Tg(0,0) and Tg(0,1) on C2",
+      "expected_exception": null,
+      "id": "cl_commutator_tg",
+      "kwargs": {},
+      "method": "CongruenceLattice.commutator",
+      "notes": "",
+      "result": {
+        "return_type": "str",
+        "return_value": "|0|1|",
+        "string_repr": "|0|1|",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "str(con.weakCommutator(con.Tg(0, 0), con.Tg(0, 1)))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "weakCommutator of Tg(0,0) and Tg(0,1) on C2",
+      "expected_exception": null,
+      "id": "cl_weak_commutator_tg",
+      "kwargs": {},
+      "method": "CongruenceLattice.weakCommutator",
+      "notes": "",
+      "result": {
+        "return_type": "str",
+        "return_value": "|0|1|",
+        "string_repr": "|0|1|",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import BasicPartition, Partition, CongruenceLattice\nfrom org.uacalc.io import AlgebraIO\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\np01 = BasicPartition('|0 1|2|')\np12 = BasicPartition('|0|1 2|')\np_arr = BasicPartition([-2, 0, -1])\nalg = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\ncon = CongruenceLattice(alg)\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
       "xfail_reason": null
     }
   ]

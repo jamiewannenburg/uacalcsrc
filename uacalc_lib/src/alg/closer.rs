@@ -120,6 +120,19 @@ impl PyCloser {
         }
     }
 
+    /// Java `sgClose(elems, closedMark, termMap)` element-set path.
+    fn sg_close_from(
+        &mut self,
+        elems: &Bound<'_, PyAny>,
+        closed_mark: usize,
+    ) -> PyResult<Vec<PyIntArray>> {
+        let rust_elems = extract_int_arrays(elems)?;
+        match self.inner.sg_close_from(Some(rust_elems), closed_mark) {
+            Ok(result) => Ok(to_py_int_arrays(&result)),
+            Err(e) => Err(PyValueError::new_err(e)),
+        }
+    }
+
     fn sg_close_power(&mut self) -> PyResult<Vec<PyIntArray>> {
         match self.inner.sg_close_power() {
             Ok(result) => Ok(to_py_int_arrays(&result)),

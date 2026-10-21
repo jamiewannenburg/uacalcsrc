@@ -521,6 +521,14 @@ h2 = Homomorphism(read, read, {0: 0, 1: 1})
         **_LIST
     ),
     TestCaseSpec(
+        id="cl_sg_close_from",
+        method="Closer.sgClose",
+        setup=_SETUP,
+        call="sorted(_ias(Closer(bp, [g00]).sgClose([g00, g11], 0, None)))",
+        description="sgClose(elems, closedMark, termMap) from diagonal gens",
+        **_LIST
+    ),
+    TestCaseSpec(
         id="cl_get_answer_after",
         method="Closer.getAnswer",
         setup=_SETUP + "\ncloser.sgClose()\n",

@@ -965,29 +965,41 @@ def _install(alg_module_globals: dict) -> None:
 
         doParallel = False
 
-        def sgClose(self) -> Any:
-            # Java Closer.doParallel routes sgClose() through sgCloseParallel.
-            if getattr(Closer, "doParallel", False):
-                fn = getattr(self._inner, "sg_close_parallel", None)
-                if callable(fn):
-                    self._ans = _lib_call(fn)
-                    self._ans_set = True
-                    return self._ans
-            self._ans = _lib_call(self._inner.sg_close)
+        def sgClose(self, elems: Any = None, closedMark: Any = None, termMap: Any = None) -> Any:
+            # Java Closer.doParallel routes no-arg sgClose() through sgCloseParallel.
+            if elems is None and closedMark is None and termMap is None:
+                if getattr(Closer, "doParallel", False):
+                    fn = getattr(self._inner, "sg_close_parallel", None)
+                    if callable(fn):
+                        self._ans = _lib_call(fn)
+                        self._ans_set = True
+                        return self._ans
+                self._ans = _lib_call(self._inner.sg_close)
+                self._ans_set = True
+                return self._ans
+            if termMap is not None:
+                setter = getattr(self._inner, "set_term_map", None) or getattr(
+                    self._inner, "setTermMap", None
+                )
+                if callable(setter):
+                    setter(termMap)
+            fn = getattr(self._inner, "sg_close_from", None)
+            if not callable(fn):
+                raise TypeError("sgClose(elems, closedMark, termMap) is not bound")
+            mark = 0 if closedMark is None else int(closedMark)
+            self._ans = _lib_call(fn, elems, mark)
             self._ans_set = True
             return self._ans
 
         def sgCloseParallel(self, elems: Any = None, closedMark: Any = None, termMap: Any = None) -> Any:
             """No-arg form uses the library parallel closer on the stored gens.
 
-            The Java 3-arg ``(elems, closedMark, ConcurrentMap)`` overload plus
-            thread/timing internals are not reimplemented here.
+            The Java 3-arg ``(elems, closedMark, ConcurrentMap)`` overload is
+            wrapped as the matching serial ``sgClose`` element-set path
+            (thread/timing internals are not compared).
             """
             if elems is not None or closedMark is not None or termMap is not None:
-                raise TypeError(
-                    "sgCloseParallel(elems, closedMark, termMap) is not wrapped; "
-                    "use sgClose() with Closer.doParallel = True"
-                )
+                return sgClose(self, elems, closedMark, termMap)
             fn = getattr(self._inner, "sg_close_parallel", None)
             if not callable(fn):
                 raise TypeError("sgCloseParallel is not bound")
@@ -3314,18 +3326,26 @@ def _install(alg_module_globals: dict) -> None:
             return None
         return getattr(self, "_ans", None)
 
-    def closerSgClose(self: Any) -> Any:
-        if getattr(Closer, "doParallel", False):
-            fn = getattr(self, "sg_close_parallel", None)
-            if callable(fn):
-                return _mark_closer_answer(self, _lib_call(fn))
-        return _mark_closer_answer(self, _lib_call(self.sg_close))
+    def closerSgClose(self: Any, elems: Any = None, closedMark: Any = None, termMap: Any = None) -> Any:
+        if elems is None and closedMark is None and termMap is None:
+            if getattr(Closer, "doParallel", False):
+                fn = getattr(self, "sg_close_parallel", None)
+                if callable(fn):
+                    return _mark_closer_answer(self, _lib_call(fn))
+            return _mark_closer_answer(self, _lib_call(self.sg_close))
+        if termMap is not None:
+            setter = getattr(self, "set_term_map", None) or getattr(self, "setTermMap", None)
+            if callable(setter):
+                setter(termMap)
+        fn = getattr(self, "sg_close_from", None)
+        if not callable(fn):
+            raise TypeError("sgClose(elems, closedMark, termMap) is not bound")
+        mark = 0 if closedMark is None else int(closedMark)
+        return _mark_closer_answer(self, _lib_call(fn, elems, mark))
 
     def closerSgCloseParallel(self: Any, elems: Any = None, closedMark: Any = None, termMap: Any = None) -> Any:
         if elems is not None or closedMark is not None or termMap is not None:
-            raise TypeError(
-                "sgCloseParallel(elems, closedMark, termMap) is not wrapped"
-            )
+            return closerSgClose(self, elems, closedMark, termMap)
         fn = getattr(self, "sg_close_parallel", None)
         if not callable(fn):
             raise TypeError("sgCloseParallel is not bound")

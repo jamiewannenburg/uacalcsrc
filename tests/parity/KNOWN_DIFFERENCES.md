@@ -516,10 +516,13 @@ Malcev is wrapped; remaining gaps are listed under org.uacalc.alg.Malcev.
 
 - **Java**: TCT `typeSet()` of a unique covering congruence on some
   3-element magmas is `{3}` (or `{4}` for seed 841).
-- **Python**: TypeFinder reports `{1}` (seeds 582, 621, 687, 863), `{2}`
-  (seed 632), or `{5}` (seed 841). Hand-picked type 1–5 goldens still match.
-  Not a contained TCT fix.
-- **Status**: Strict xfail (library)
+- **Python**: TypeFinder constructor used to skip `set_alpha` when the
+  stored zero partition equalled the argument, leaving `diagonal4` empty
+  and mis-typing Con-card-2 magmas. `set_alpha` now always populates
+  roots/diagonals on first call; subtrace/type finding also uses Java's
+  3-arg `sequenceIncrementor(..., closedMark)` and only adds alpha-unrelated
+  pairs. Hand-picked C2/C3/lat2/m3/n5/ba2 typeSets still match.
+- **Status**: Fixed in the library (strict xfails removed)
 - **Tests**: `random_seed_582`, `random_seed_621`, `random_seed_632`,
   `random_seed_687`, `random_seed_841`, `random_seed_863`
 - **Owner vs shim**: Owner/library — `src/alg/conlat/type_finder.rs`
@@ -699,9 +702,10 @@ the org shim's `leftSide` / `rightSide` return term objects via
 
 - **Java**: `con()` / `sub()` go through `getBasicLattice()` and compute
   `Con(Sub(A))` / `Sub(Sub(A))` (card 4 and 8 on cyclic2).
-- **Python**: `BasicLattice` built from a `BasicSet` universe cannot extract i32
-  join/meet tables (`get_element` is ops-only).
-- **Status**: Strict xfail (roadmap)
+- **Python**: `BasicLattice` now builds integer join/meet tables by universe
+  index (true LUB/GLB; Rust subalgebra universes are not a linear extension).
+  `con()` / `sub()` construct a `BasicAlgebra` of those tables.
+- **Status**: Fixed in the library (strict xfails removed)
 - **Tests**: `sl_con`, `sl_sub`
 - **Owner vs shim**: Owner/library — BasicLattice over `BasicSet`
 
@@ -883,10 +887,10 @@ the org shim's `leftSide` / `rightSide` return term objects via
 ### SingleClose.doOneStep on a Java IntOperation (`valueAt(int[][])`)
 
 - **Java**: `IntOperation.valueAt(int[][])` is `UnsupportedOperationException`. Calling `SingleClose.doOneStep` with a table operation from `Operations.makeIntOperation` therefore does not produce new elements that way.
-- **Python**: Rust `SingleClose` uses `value_at_arrays` and returns new elements. CPython `BigProductAlgebra.operations()` is also not bound, so the script-usable parallel closer remains `Closer.doParallel` / `sgClose`.
-- **Status**: Strict xfail (roadmap). Parallel element-set parity is covered by the `Closer.doParallel` `sgClose` goldens.
+- **Python**: Rust `SingleClose` uses `value_at_arrays` and returns new elements. CPython `BigProductAlgebra.operations()` is bound (`_BigProductOp`). The leftover mismatch is the Java UOE, not a missing `operations()` binding. Results are not faked.
+- **Status**: Strict xfail (Java limitation). Parallel element-set parity is covered by the `Closer.doParallel` `sgClose` goldens.
 - **Tests**: `single_close_c2_one_step`, `single_close_m3_one_step` strict xfail
-- **Owner vs shim**: Owner/library — `value_at_arrays` vs Java UOE. Not a shim issue.
+- **Owner vs shim**: Java limitation — `valueAt(int[][])` UOE. Not a Python gap.
 
 ### Closer.doParallel / sgCloseParallel
 

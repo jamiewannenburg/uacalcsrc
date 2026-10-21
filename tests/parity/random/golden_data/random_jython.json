@@ -17243,7 +17243,7 @@
       "setup": "\nimport sys, os\nsys.path.insert(0, os.path.join(REPO_ROOT, \"jython_comparison\", \"scripts\"))\nfrom random_parity import run_seed\n",
       "skip_string_check": true,
       "timeout_seconds": 15,
-      "xfail_reason": "Random parity xfail seed 582: con.typeSet: uacalc_lib CongruenceLattice.typeSet / TypeFinder disagrees with Java on some size-3 random algebras with a unique covering congruence (Con card 2). Not a contained TCT fix here. Minimal repro seed 582 (n=3, arities (1,2)): Python typeSet [1] vs Java [3]. Related: 621, 687, 863 ([1] vs [3]); 632 ([2] vs [3]); 841 ([5] vs [4])."
+      "xfail_reason": null
     },
     {
       "args": [],
@@ -17848,7 +17848,7 @@
       "setup": "\nimport sys, os\nsys.path.insert(0, os.path.join(REPO_ROOT, \"jython_comparison\", \"scripts\"))\nfrom random_parity import run_seed\n",
       "skip_string_check": true,
       "timeout_seconds": 15,
-      "xfail_reason": "Random parity xfail seed 621: con.typeSet: uacalc_lib CongruenceLattice.typeSet / TypeFinder disagrees with Java on some size-3 random algebras with a unique covering congruence (Con card 2). Not a contained TCT fix here. Minimal repro seed 582 (n=3, arities (1,2)): Python typeSet [1] vs Java [3]. Related: 621, 687, 863 ([1] vs [3]); 632 ([2] vs [3]); 841 ([5] vs [4])."
+      "xfail_reason": null
     },
     {
       "args": [],
@@ -18454,7 +18454,7 @@
       "setup": "\nimport sys, os\nsys.path.insert(0, os.path.join(REPO_ROOT, \"jython_comparison\", \"scripts\"))\nfrom random_parity import run_seed\n",
       "skip_string_check": true,
       "timeout_seconds": 15,
-      "xfail_reason": "Random parity xfail seed 632: con.typeSet: uacalc_lib CongruenceLattice.typeSet / TypeFinder disagrees with Java on some size-3 random algebras with a unique covering congruence (Con card 2). Not a contained TCT fix here. Minimal repro seed 582 (n=3, arities (1,2)): Python typeSet [1] vs Java [3]. Related: 621, 687, 863 ([1] vs [3]); 632 ([2] vs [3]); 841 ([5] vs [4])."
+      "xfail_reason": null
     },
     {
       "args": [],
@@ -19066,7 +19066,7 @@
       "setup": "\nimport sys, os\nsys.path.insert(0, os.path.join(REPO_ROOT, \"jython_comparison\", \"scripts\"))\nfrom random_parity import run_seed\n",
       "skip_string_check": true,
       "timeout_seconds": 15,
-      "xfail_reason": "Random parity xfail seed 687: con.typeSet: uacalc_lib CongruenceLattice.typeSet / TypeFinder disagrees with Java on some size-3 random algebras with a unique covering congruence (Con card 2). Not a contained TCT fix here. Minimal repro seed 582 (n=3, arities (1,2)): Python typeSet [1] vs Java [3]. Related: 621, 687, 863 ([1] vs [3]); 632 ([2] vs [3]); 841 ([5] vs [4])."
+      "xfail_reason": null
     },
     {
       "args": [],
@@ -19672,7 +19672,7 @@
       "setup": "\nimport sys, os\nsys.path.insert(0, os.path.join(REPO_ROOT, \"jython_comparison\", \"scripts\"))\nfrom random_parity import run_seed\n",
       "skip_string_check": true,
       "timeout_seconds": 15,
-      "xfail_reason": "Random parity xfail seed 841: con.typeSet: uacalc_lib CongruenceLattice.typeSet / TypeFinder disagrees with Java on some size-3 random algebras with a unique covering congruence (Con card 2). Not a contained TCT fix here. Minimal repro seed 582 (n=3, arities (1,2)): Python typeSet [1] vs Java [3]. Related: 621, 687, 863 ([1] vs [3]); 632 ([2] vs [3]); 841 ([5] vs [4])."
+      "xfail_reason": null
     },
     {
       "args": [],
@@ -20281,7 +20281,7 @@
       "setup": "\nimport sys, os\nsys.path.insert(0, os.path.join(REPO_ROOT, \"jython_comparison\", \"scripts\"))\nfrom random_parity import run_seed\n",
       "skip_string_check": true,
       "timeout_seconds": 15,
-      "xfail_reason": "Random parity xfail seed 863: con.typeSet: uacalc_lib CongruenceLattice.typeSet / TypeFinder disagrees with Java on some size-3 random algebras with a unique covering congruence (Con card 2). Not a contained TCT fix here. Minimal repro seed 582 (n=3, arities (1,2)): Python typeSet [1] vs Java [3]. Related: 621, 687, 863 ([1] vs [3]); 632 ([2] vs [3]); 841 ([5] vs [4])."
+      "xfail_reason": null
     }
   ]
 }

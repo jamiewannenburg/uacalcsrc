@@ -725,6 +725,22 @@ where
     /// // let closure = closer.sg_close()?;
     /// ```
     pub fn sg_close(&mut self) -> Result<Vec<IntArray>, String> {
+        self.sg_close_from(None, 0)
+    }
+
+    /// Java `sgClose(elems, closedMark, termMap)` without requiring a term map.
+    ///
+    /// `elems` replaces the stored generators (Java mutates `ans` from the
+    /// given list). `closed_mark` is the already-closed prefix, matching
+    /// Java's `sequenceIncrementor(..., closedMark)`.
+    pub fn sg_close_from(
+        &mut self,
+        elems: Option<Vec<IntArray>>,
+        closed_mark: usize,
+    ) -> Result<Vec<IntArray>, String> {
+        if let Some(elems) = elems {
+            self.generators = elems;
+        }
         // Check if algebra is a power algebra and use specialized path
         // Java uses sgClosePower for ALL power algebras, including free algebras
         if self.algebra.is_power() {
@@ -737,13 +753,13 @@ where
                     // Try to use power path like Java does
                     // Java calls alg.makeOperationTables() first, but we can't mutate
                     // So we'll try the power path and it will use int_value_at fallback if tables don't exist
-                    return self.sg_close_power_impl(0);
+                    return self.sg_close_power_impl(closed_mark);
                 }
             }
             // Fall through to specialized path if we can't determine
-            return self.sg_close_power_impl(0);
+            return self.sg_close_power_impl(closed_mark);
         }
-        self.sg_close_impl(0)
+        self.sg_close_impl(closed_mark)
     }
 
     /// Compute the closure using the specialized power algebra algorithm.

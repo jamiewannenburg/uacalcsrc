@@ -198,6 +198,89 @@ impl PyCongruenceLattice {
         self.inner.centralizes(&s.inner, &t.inner, &delta.inner)
     }
 
+    fn matrices(
+        &self,
+        s: &PyBasicBinaryRelation,
+        t: &PyBasicBinaryRelation,
+    ) -> PyResult<crate::alg::sub_product_algebra::PySubProductAlgebra> {
+        match self.inner.matrices(&s.inner, &t.inner) {
+            Ok(mats) => Ok(crate::alg::sub_product_algebra::PySubProductAlgebra::from_inner(mats)),
+            Err(e) => Err(PyRuntimeError::new_err(e)),
+        }
+    }
+
+    fn commutator(&mut self, s: &PyBasicBinaryRelation, t: &PyBasicBinaryRelation) -> PyPartition {
+        PyPartition { inner: self.inner.commutator(&s.inner, &t.inner) }
+    }
+
+    fn weak_commutator(&mut self, s: &PyBasicBinaryRelation, t: &PyBasicBinaryRelation) -> PyPartition {
+        PyPartition { inner: self.inner.weak_commutator(&s.inner, &t.inner) }
+    }
+
+    fn strong_rectangularity_commutator(
+        &mut self,
+        s: &PyBasicBinaryRelation,
+        t: &PyBasicBinaryRelation,
+    ) -> PyPartition {
+        PyPartition {
+            inner: self.inner.strong_rectangularity_commutator(&s.inner, &t.inner),
+        }
+    }
+
+    fn centrality_failure(
+        &self,
+        s: &PyBasicBinaryRelation,
+        t: &PyBasicBinaryRelation,
+        delta: &PyPartition,
+    ) -> Option<PyIntArray> {
+        self.inner
+            .centrality_failure(&s.inner, &t.inner, &delta.inner)
+            .map(|ia| PyIntArray { inner: ia })
+    }
+
+    fn weak_centrality_failure(
+        &self,
+        s: &PyBasicBinaryRelation,
+        t: &PyBasicBinaryRelation,
+        delta: &PyPartition,
+    ) -> Option<PyIntArray> {
+        self.inner
+            .weak_centrality_failure(&s.inner, &t.inner, &delta.inner)
+            .map(|ia| PyIntArray { inner: ia })
+    }
+
+    fn strong_rectangularity_failure(
+        &self,
+        s: &PyBasicBinaryRelation,
+        t: &PyBasicBinaryRelation,
+        delta: &PyPartition,
+    ) -> Option<PyIntArray> {
+        self.inner
+            .strong_rectangularity_failure(&s.inner, &t.inner, &delta.inner)
+            .map(|ia| PyIntArray { inner: ia })
+    }
+
+    fn calc_centrality(
+        &mut self,
+        s: &PyBasicBinaryRelation,
+        t: &PyBasicBinaryRelation,
+    ) -> PyResult<Vec<(PyPartition, Option<PyIntArray>, Option<PyIntArray>, Option<PyIntArray>)>> {
+        match self.inner.calc_centrality(&s.inner, &t.inner) {
+            Ok(rows) => Ok(rows
+                .into_iter()
+                .map(|(p, c, w, r)| {
+                    (
+                        PyPartition { inner: p },
+                        c.map(|ia| PyIntArray { inner: ia }),
+                        w.map(|ia| PyIntArray { inner: ia }),
+                        r.map(|ia| PyIntArray { inner: ia }),
+                    )
+                })
+                .collect()),
+            Err(e) => Err(PyRuntimeError::new_err(e)),
+        }
+    }
+
     /// Get the cardinality of the congruence lattice.
     ///
     /// Returns:

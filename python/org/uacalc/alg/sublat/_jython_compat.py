@@ -527,7 +527,6 @@ def _install(sublat_globals: dict) -> None:
         return _lib_call(fn, g, gb, a, b)
 
     def con(self: Any) -> Any:
-        # Deep: BasicLattice from a BasicSet universe cannot yet build Con.
         lat = getBasicLattice(self)
         fn = getattr(lat, "con", None)
         if not callable(fn):

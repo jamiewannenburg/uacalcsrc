@@ -51,6 +51,10 @@ impl PySubProductAlgebra {
     pub(crate) fn as_inner(&self) -> &uacalc::alg::SubProductAlgebra<i32> {
         &self.inner
     }
+
+    pub(crate) fn from_inner(inner: uacalc::alg::SubProductAlgebra<i32>) -> Self {
+        PySubProductAlgebra { inner }
+    }
 }
 
 #[pymethods]

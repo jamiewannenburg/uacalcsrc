@@ -970,6 +970,30 @@ def _install(conlat_globals: dict) -> None:
             "centralizes": lambda self, s, t, d, _orig=_LibCongruenceLattice.centralizes: bool(
                 _orig(self, s, t, d)
             ),
+            "matrices": lambda self, s, t, report=None, _orig=getattr(
+                _LibCongruenceLattice, "matrices", None
+            ): _orig(self, s, t),
+            "commutator": lambda self, s, t, _orig=getattr(
+                _LibCongruenceLattice, "commutator", None
+            ): _orig(self, s, t),
+            "weakCommutator": lambda self, s, t, _orig=getattr(
+                _LibCongruenceLattice, "weak_commutator", None
+            ): _orig(self, s, t),
+            "strongRectangularityCommutator": lambda self, s, t, _orig=getattr(
+                _LibCongruenceLattice, "strong_rectangularity_commutator", None
+            ): _orig(self, s, t),
+            "centralityFailure": lambda self, s, t, d, _orig=getattr(
+                _LibCongruenceLattice, "centrality_failure", None
+            ): _orig(self, s, t, d),
+            "weakCentralityFailure": lambda self, s, t, d, _orig=getattr(
+                _LibCongruenceLattice, "weak_centrality_failure", None
+            ): _orig(self, s, t, d),
+            "strongRectangularityFailure": lambda self, s, t, d, _orig=getattr(
+                _LibCongruenceLattice, "strong_rectangularity_failure", None
+            ): _orig(self, s, t, d),
+            "calcCentrality": lambda self, s, t, report=None, _orig=getattr(
+                _LibCongruenceLattice, "calc_centrality", None
+            ): _orig(self, s, t),
             "idempotentPolynomials": lambda self: list(self.idempotent_polynomials()),
             "joinIrreducible": lambda self, p: bool(self.join_irreducible(p)),
             "meetIrreducible": lambda self, p: bool(self.meet_irreducible(p)),

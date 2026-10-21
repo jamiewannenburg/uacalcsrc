@@ -1758,17 +1758,15 @@ where
     
     /// Test if S centralizes T modulo delta.
     ///
-    /// # Arguments
-    /// * `s` - First binary relation
-    /// * `t` - Second binary relation
-    /// * `delta` - The congruence to test modulo
-    ///
-    /// # Returns
-    /// `true` if S centralizes T modulo delta
-    pub fn centralizes(&self, _s: &dyn BinaryRelation, _t: &dyn BinaryRelation, _delta: &Partition) -> bool {
-        // This is a stub implementation
-        // The full implementation would test centrality conditions
-        true
+    /// Java: no matrix in M(S,T) has `delta` relating the first row and not
+    /// the second (`a00 ≡ a01` and `a10 ≢ a11`).
+    pub fn centralizes(
+        &self,
+        s: &dyn BinaryRelation,
+        t: &dyn BinaryRelation,
+        delta: &Partition,
+    ) -> bool {
+        self.centrality_failure(s, t, delta).is_none()
     }
     
     /// Find nonconstant idempotent members of Pol_1(A).
@@ -1804,76 +1802,124 @@ where
         Ok(idempotent)
     }
     
-    /// Calculate centrality data for two binary relations (STUBBED).
+    /// Calculate centrality data for every congruence delta.
     ///
-    /// This method requires CentralityData which is not yet implemented.
-    ///
-    /// # Arguments
-    /// * `s` - First binary relation
-    /// * `t` - Second binary relation
-    ///
-    /// # Returns
-    /// Error indicating the method is not implemented
+    /// Returns one `CentralityData` per `delta` in `Con(A)`, with failure
+    /// witnesses as 4-tuples from `M(S,T)` (Java `SubProductElement`).
+    /// Witnesses are stored as `IntArray` coordinates; the originating
+    /// `SubProductAlgebra` is not retained (the Java object identity of
+    /// the matrix algebra is not compared).
     pub fn calc_centrality(
-        &self,
-        _s: &dyn BinaryRelation,
-        _t: &dyn BinaryRelation,
-    ) -> Result<Vec<()>, String> {
-        Err("CentralityData not implemented yet".to_string())
+        &mut self,
+        s: &dyn BinaryRelation,
+        t: &dyn BinaryRelation,
+    ) -> Result<Vec<(Partition, Option<IntArray>, Option<IntArray>, Option<IntArray>)>, String> {
+        let mats = self.matrices(s, t)?;
+        let univ = self.universe().clone();
+        let mut ans = Vec::with_capacity(univ.len());
+        for par in univ {
+            let cent = Self::matrix_witness(&mats, &par, |x, y, u, v| {
+                delta_related(&par, x, y) && !delta_related(&par, u, v)
+            });
+            let weak = Self::matrix_witness(&mats, &par, |x, y, u, v| {
+                delta_related(&par, x, y)
+                    && delta_related(&par, y, u)
+                    && !delta_related(&par, u, v)
+            });
+            let strong = Self::matrix_witness(&mats, &par, |_x, y, u, v| {
+                delta_related(&par, y, u) && !delta_related(&par, u, v)
+            });
+            ans.push((par, cent, weak, strong));
+        }
+        ans.sort_by(|a, b| a.0.cmp(&b.0));
+        Ok(ans)
     }
-    
-    /// Compute the strong rectangularity commutator (STUBBED).
-    ///
-    /// Returns the one congruence as a default stub.
-    ///
-    /// # Arguments
-    /// * `s` - First binary relation
-    /// * `t` - Second binary relation
-    ///
-    /// # Returns
-    /// The one congruence (stub implementation)
+
+    fn matrix_witness(
+        mats: &SubProductAlgebra<T>,
+        _delta: &Partition,
+        pred: impl Fn(i32, i32, i32, i32) -> bool,
+    ) -> Option<IntArray> {
+        for mat in mats.get_universe_list() {
+            let x = mat.get(0)?;
+            let y = mat.get(1)?;
+            let u = mat.get(2)?;
+            let v = mat.get(3)?;
+            if pred(x, y, u, v) {
+                return Some(mat.clone());
+            }
+        }
+        None
+    }
+
+    fn fold_commutator<F>(
+        &mut self,
+        s: &dyn BinaryRelation,
+        t: &dyn BinaryRelation,
+        keep: F,
+    ) -> Partition
+    where
+        F: Fn(&Partition, &SubProductAlgebra<T>) -> bool,
+    {
+        match self.matrices(s, t) {
+            Ok(mats) => {
+                let univ = self.universe().clone();
+                let mut ans = self.one();
+                for par in univ {
+                    if keep(&par, &mats) {
+                        if let Ok(met) = ans.meet(&par) {
+                            ans = met;
+                        }
+                    }
+                }
+                ans
+            }
+            Err(_) => self.one(),
+        }
+    }
+
+    /// Strong rectangularity commutator of tolerances/congruences S and T.
     pub fn strong_rectangularity_commutator(
-        &self,
-        _s: &dyn BinaryRelation,
-        _t: &dyn BinaryRelation,
+        &mut self,
+        s: &dyn BinaryRelation,
+        t: &dyn BinaryRelation,
     ) -> Partition {
-        self.one()
+        self.fold_commutator(s, t, |par, mats| {
+            Self::matrix_witness(mats, par, |_x, y, u, v| {
+                delta_related(par, y, u) && !delta_related(par, u, v)
+            })
+            .is_none()
+        })
     }
-    
-    /// Compute the weak commutator (STUBBED).
-    ///
-    /// Returns the one congruence as a default stub.
-    ///
-    /// # Arguments
-    /// * `s` - First binary relation
-    /// * `t` - Second binary relation
-    ///
-    /// # Returns
-    /// The one congruence (stub implementation)
+
+    /// Weak commutator of tolerances/congruences S and T.
     pub fn weak_commutator(
-        &self,
-        _s: &dyn BinaryRelation,
-        _t: &dyn BinaryRelation,
+        &mut self,
+        s: &dyn BinaryRelation,
+        t: &dyn BinaryRelation,
     ) -> Partition {
-        self.one()
+        self.fold_commutator(s, t, |par, mats| {
+            Self::matrix_witness(mats, par, |x, y, u, v| {
+                delta_related(par, x, y)
+                    && delta_related(par, y, u)
+                    && !delta_related(par, u, v)
+            })
+            .is_none()
+        })
     }
-    
-    /// Compute the commutator (STUBBED).
-    ///
-    /// Returns the one congruence as a default stub.
-    ///
-    /// # Arguments
-    /// * `s` - First binary relation
-    /// * `t` - Second binary relation
-    ///
-    /// # Returns
-    /// The one congruence (stub implementation)
+
+    /// Commutator of tolerances/congruences S and T (Java `commutator(S, T)`).
     pub fn commutator(
-        &self,
-        _s: &dyn BinaryRelation,
-        _t: &dyn BinaryRelation,
+        &mut self,
+        s: &dyn BinaryRelation,
+        t: &dyn BinaryRelation,
     ) -> Partition {
-        self.one()
+        self.fold_commutator(s, t, |par, mats| {
+            Self::matrix_witness(mats, par, |x, y, u, v| {
+                delta_related(par, x, y) && !delta_related(par, u, v)
+            })
+            .is_none()
+        })
     }
     
     /// Find the TCT type of a join irreducible element (STUBBED).
@@ -1923,81 +1969,80 @@ where
         Err("TypeFinder not implemented yet".to_string())
     }
     
-    /// Compute the matrices M(S,T) for centrality testing (STUBBED).
-    ///
-    /// This method requires BigProductAlgebra which is not yet implemented.
-    ///
-    /// # Arguments
-    /// * `s` - First binary relation
-    /// * `t` - Second binary relation
-    ///
-    /// # Returns
-    /// Error indicating the method is not implemented
+    /// The set M(S,T): subalgebra of A^4 generated by the diagonal, the
+    /// row embeddings of S, and the column embeddings of T.
     pub fn matrices(
         &self,
-        _s: &dyn BinaryRelation,
-        _t: &dyn BinaryRelation,
-    ) -> Result<(), String> {
-        Err("matrices requires BigProductAlgebra which is not yet implemented".to_string())
+        s: &dyn BinaryRelation,
+        t: &dyn BinaryRelation,
+    ) -> Result<SubProductAlgebra<T>, String> {
+        let mut gens = Vec::new();
+        for i in 0..self.alg_size as i32 {
+            gens.push(IntArray::from_array(vec![i, i, i, i])?);
+        }
+        for pair in s.get_pairs() {
+            let a = pair.get(0).unwrap_or(0);
+            let b = pair.get(1).unwrap_or(0);
+            if a != b {
+                gens.push(IntArray::from_array(vec![a, a, b, b])?);
+            }
+        }
+        for pair in t.get_pairs() {
+            let a = pair.get(0).unwrap_or(0);
+            let b = pair.get(1).unwrap_or(0);
+            if a != b {
+                gens.push(IntArray::from_array(vec![a, b, a, b])?);
+            }
+        }
+        let product = BigProductAlgebra::new_power_safe(self.alg.clone_box(), 4)?;
+        SubProductAlgebra::new_safe(String::new(), product, gens, true)
     }
-    
-    /// Find a centrality failure witness (STUBBED).
-    ///
-    /// This method requires BigProductAlgebra which is not yet implemented.
-    ///
-    /// # Arguments
-    /// * `s` - First binary relation
-    /// * `t` - Second binary relation
-    /// * `delta` - A congruence
-    ///
-    /// # Returns
-    /// None (stub implementation)
+
+    /// Witness that S does not centralize T modulo delta, or None.
     pub fn centrality_failure(
         &self,
-        _s: &dyn BinaryRelation,
-        _t: &dyn BinaryRelation,
-        _delta: &Partition,
-    ) -> Option<()> {
-        None
+        s: &dyn BinaryRelation,
+        t: &dyn BinaryRelation,
+        delta: &Partition,
+    ) -> Option<IntArray> {
+        let mats = self.matrices(s, t).ok()?;
+        Self::matrix_witness(&mats, delta, |x, y, u, v| {
+            delta_related(delta, x, y) && !delta_related(delta, u, v)
+        })
     }
-    
-    /// Find a weak centrality failure witness (STUBBED).
-    ///
-    /// This method requires BigProductAlgebra which is not yet implemented.
-    ///
-    /// # Arguments
-    /// * `s` - First binary relation
-    /// * `t` - Second binary relation
-    /// * `delta` - A congruence
-    ///
-    /// # Returns
-    /// None (stub implementation)
+
+    /// Witness that S does not weakly centralize T modulo delta, or None.
     pub fn weak_centrality_failure(
         &self,
-        _s: &dyn BinaryRelation,
-        _t: &dyn BinaryRelation,
-        _delta: &Partition,
-    ) -> Option<()> {
-        None
+        s: &dyn BinaryRelation,
+        t: &dyn BinaryRelation,
+        delta: &Partition,
+    ) -> Option<IntArray> {
+        let mats = self.matrices(s, t).ok()?;
+        Self::matrix_witness(&mats, delta, |x, y, u, v| {
+            delta_related(delta, x, y)
+                && delta_related(delta, y, u)
+                && !delta_related(delta, u, v)
+        })
     }
-    
-    /// Find a strong rectangularity failure witness (STUBBED).
-    ///
-    /// This method requires BigProductAlgebra which is not yet implemented.
-    ///
-    /// # Arguments
-    /// * `s` - First binary relation
-    /// * `t` - Second binary relation
-    /// * `delta` - A congruence
-    ///
-    /// # Returns
-    /// None (stub implementation)
+
+    /// Witness that S is not strongly rectangular modulo delta, or None.
     pub fn strong_rectangularity_failure(
         &self,
-        _s: &dyn BinaryRelation,
-        _t: &dyn BinaryRelation,
-        _delta: &Partition,
-    ) -> Option<()> {
-        None
+        s: &dyn BinaryRelation,
+        t: &dyn BinaryRelation,
+        delta: &Partition,
+    ) -> Option<IntArray> {
+        let mats = self.matrices(s, t).ok()?;
+        Self::matrix_witness(&mats, delta, |_x, y, u, v| {
+            delta_related(delta, y, u) && !delta_related(delta, u, v)
+        })
     }
+}
+
+fn delta_related(delta: &Partition, a: i32, b: i32) -> bool {
+    if a < 0 || b < 0 {
+        return false;
+    }
+    delta.is_related(a as usize, b as usize)
 }
