@@ -318,6 +318,40 @@ where
         self.elt_to_find.as_ref()
     }
 
+    /// Java stops the instant the closure fills the product universe, but only
+    /// when it is not also tracking a homomorphism (equation search).
+    ///
+    /// `Closer.sgClose` / `sgClosePower`:
+    /// `if (imgAlgNull && algebra.cardinality() > 0 && ans.size() == algebra.cardinality()) return ans;`
+    fn product_universe_just_filled(&self) -> bool {
+        if self.homomorphism.is_some() {
+            return false;
+        }
+        let card = self.algebra.cardinality();
+        card > 0 && self.ans.len() as i32 == card
+    }
+
+    /// End-of-pass form of the same bound (`currentMark >= algebra.cardinality()`).
+    fn product_universe_filled_at(&self, mark: usize) -> bool {
+        if self.homomorphism.is_some() {
+            return false;
+        }
+        let card = self.algebra.cardinality();
+        card > 0 && (mark as i32) >= card
+    }
+
+    /// Report and return if the product universe is now complete.
+    fn stop_if_product_universe_full(&self) -> Option<Vec<IntArray>> {
+        if !self.product_universe_just_filled() {
+            return None;
+        }
+        if let Some(ref report) = self.report {
+            report.add_end_line(&format!("found all {} elements", self.ans.len()));
+            report.set_size(self.ans.len());
+        }
+        Some(self.ans.clone())
+    }
+
     /// Get the elements to find.
     ///
     /// # Returns
@@ -1263,6 +1297,11 @@ where
                                             }
                                         }
 
+                                        // Java: stop as soon as the product universe is full.
+                                        if let Some(ans) = self.stop_if_product_universe_full() {
+                                            return Ok(ans);
+                                        }
+
                                         // Check max size
                                         if let Some(max_size) = self.max_size {
                                             if self.ans.len() >= max_size {
@@ -1401,6 +1440,9 @@ where
             let old_current_mark = current_mark;
             closed_mark = current_mark;
             current_mark = self.ans.len();
+            if self.product_universe_filled_at(current_mark) {
+                break;
+            }
         }
 
         if let Some(ref report) = self.report {
@@ -2040,6 +2082,11 @@ where
                                 }
                             }
 
+                            // Java: stop as soon as the product universe is full.
+                            if let Some(ans) = self.stop_if_product_universe_full() {
+                                return Ok(ans);
+                            }
+
                             // Check max size
                             if let Some(max_size) = self.max_size {
                                 if self.ans.len() >= max_size {
@@ -2149,11 +2196,8 @@ where
             closed_mark = current_mark;
             current_mark = self.ans.len();
 
-            if !img_ops_not_null {
-                let algebra_cardinality = self.algebra.cardinality();
-                if algebra_cardinality > 0 && current_mark >= algebra_cardinality as usize {
-                    break;
-                }
+            if self.product_universe_filled_at(current_mark) {
+                break;
             }
         }
 

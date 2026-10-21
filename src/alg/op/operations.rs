@@ -537,22 +537,35 @@ pub fn make_random_operation(n: i32, op_sym: OperationSymbol) -> Result<Box<dyn 
 }
 
 /// Make a random operation with a specific seed.
+///
+/// Uses `java.util.Random(seed)` so tables match Java `Operations.makeRandomOperation`.
 pub fn make_random_operation_with_seed(
     n: i32,
     op_sym: OperationSymbol,
     seed: u64,
 ) -> Result<Box<dyn Operation>, String> {
+    let mut rng = crate::util::java_random::JavaRandom::new(seed as i64);
+    make_random_operation_with_rng(n, op_sym, &mut rng)
+}
+
+fn make_random_operation_with_rng(
+    n: i32,
+    op_sym: OperationSymbol,
+    rng: &mut crate::util::java_random::JavaRandom,
+) -> Result<Box<dyn Operation>, String> {
+    if n <= 0 {
+        return Err(format!("Set size must be positive, got {}", n));
+    }
     let arity = op_sym.arity();
-    let table_size = (n as usize).pow(arity as u32);
-    
-    // Simple LCG (Linear Congruential Generator) for deterministic randomness
-    let mut rng_state = seed;
+    let table_size = if arity == 0 {
+        1
+    } else {
+        (n as usize).pow(arity as u32)
+    };
     let mut values = Vec::with_capacity(table_size);
     for _ in 0..table_size {
-        rng_state = rng_state.wrapping_mul(1103515245).wrapping_add(12345);
-        values.push(((rng_state / 65536) % (n as u64)) as i32);
+        values.push(rng.next_int(n));
     }
-    
     make_int_operation(op_sym, n, values)
 }
 
@@ -572,21 +585,21 @@ pub fn make_random_operations(
 }
 
 /// Make a list of random operations with an optional seed.
+///
+/// Matches Java `Operations.makeRandomOperations`: one `java.util.Random`
+/// instance is advanced sequentially across the similarity type. Unseeded
+/// calls stay deterministic (`seed = 12345`) so existing tests do not flake.
 pub fn make_random_operations_with_seed(
     n: i32,
     sim_type: &SimilarityType,
     seed: Option<u64>,
 ) -> Result<Vec<Box<dyn Operation>>, String> {
-    let base_seed = seed.unwrap_or(12345);
-    
+    let mut rng = crate::util::java_random::JavaRandom::new(seed.unwrap_or(12345) as i64);
     let op_syms = sim_type.get_operation_symbols();
     let mut ops = Vec::with_capacity(op_syms.len());
-    
-    for (i, op_sym) in op_syms.iter().enumerate() {
-        let op_seed = base_seed.wrapping_add(i as u64);
-        ops.push(make_random_operation_with_seed(n, op_sym.clone(), op_seed)?);
+    for op_sym in op_syms {
+        ops.push(make_random_operation_with_rng(n, op_sym.clone(), &mut rng)?);
     }
-    
     Ok(ops)
 }
 
@@ -861,5 +874,13 @@ mod tests {
         let op2 = IntOperation::binary_xor("xor2").unwrap(); // Same values, different name
         
         assert!(equal_values(&op1, &op2).unwrap());
+    }
+
+    #[test]
+    fn test_make_random_operation_matches_java_util_random() {
+        let sym = OperationSymbol::new("r0", 2, false);
+        let op = make_random_operation_with_seed(3, sym, 11).unwrap();
+        let table: Vec<i32> = (0..9).map(|i| op.int_value_at_horner(i).unwrap()).collect();
+        assert_eq!(table, vec![0, 2, 0, 0, 0, 0, 1, 2, 0]);
     }
 }

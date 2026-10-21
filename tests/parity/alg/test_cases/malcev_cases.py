@@ -689,7 +689,11 @@ unary3 = Type1.cyclicPermutationAlgebra(3)
 qstar = Operations.makeIntOperation(OperationSymbol("*", 2), 3, [0, 2, 1, 2, 1, 0, 1, 0, 2])
 quasi3 = BasicAlgebra("quasi3", 3, [qstar])
 rand2 = Algebras.makeRandomAlgebra(2, [1], 7)
-rand_bin = Algebras.makeRandomAlgebra(2, [2], 11)
+rand_bin2 = Algebras.makeRandomAlgebra(2, [2], 11)
+rand_bin = Algebras.makeRandomAlgebra(3, [2], 11)
+rand_bin_3b = Algebras.makeRandomAlgebra(3, [2], 13)
+rand_bin_3c = Algebras.makeRandomAlgebra(3, [2], 19)
+rand_bin_3d = Algebras.makeRandomAlgebra(3, [2], 97)
 """
 
 TEST_CASES.extend([
@@ -922,11 +926,20 @@ TEST_CASES.extend([
         **_NONE
     ),
     TestCaseSpec(
+        id="malcev_term_rand_bin2",
+        method="Malcev.malcevTerm",
+        setup=_WIDE_SETUP,
+        call="[rand_bin2.cardinality(), _term(Malcev.malcevTerm(rand_bin2))]",
+        description="seeded random binary algebra of size 2: card and Malcev term",
+        **_LIST
+    ),
+    TestCaseSpec(
         id="malcev_term_rand_bin",
         method="Malcev.malcevTerm",
         setup=_WIDE_SETUP,
         call="[rand_bin.cardinality(), _term(Malcev.malcevTerm(rand_bin))]",
-        description="seeded random binary algebra of size 2: card and Malcev term",
+        description="seeded random binary magma of size 3: card and Malcev term",
+        timeout_seconds=120,
         **_LIST
     ),
     TestCaseSpec(
@@ -985,3 +998,58 @@ TEST_CASES.extend([
         **_BOOL
     ),
 ])
+
+# Random magmas: Java returns quickly (typically null) for F(2)^2 searches
+# when F(2) is modest. Time out a hang so CI fails rather than stalling.
+# Size-3 seed 11 is the case PR #79 swapped away (Java ~10s, F(2)=409).
+# Extra size-3 seeds were chosen so Java malcevTerm returns in <2s (F(2) << 500).
+# Size-4 random magmas have huge F(2) even in Java (construction itself >20s),
+# so they are not in this CI set. F(2)^3 searches on size-3 magmas are slow
+# even in Java; those related searches are covered on the size-2 magma.
+_MAGMA_TIMEOUT = dict(size2=30, size3=120)
+_RANDOM_MAGMAS = (
+    ("rand_bin2", 2, 11, "rand_bin2"),
+    ("rand_bin", 3, 11, "rand_bin"),
+    ("rand_bin_3b", 3, 13, "rand_bin_3b"),
+    ("rand_bin_3c", 3, 19, "rand_bin_3c"),
+    ("rand_bin_3d", 3, 97, "rand_bin_3d"),
+)
+_F2_SQUARED_SEARCHES = (
+    ("malcev_term", "Malcev.malcevTerm", "_term(Malcev.malcevTerm({alg}))", _TERM),
+    ("hagemann_mitschke", "Malcev.hagemannMitschkeTerms", "_terms(Malcev.hagemannMitschkeTerms({alg}))", _LIST),
+)
+_F2_CUBED_SEARCHES = (
+    ("majority_term", "Malcev.majorityTerm", "_term(Malcev.majorityTerm({alg}))", _TERM),
+    ("minority_term", "Malcev.minorityTerm", "_term(Malcev.minorityTerm({alg}))", _TERM),
+    ("pixley_term", "Malcev.pixleyTerm", "_term(Malcev.pixleyTerm({alg}))", _TERM),
+    ("nu_term", "Malcev.nuTerm", "_term(Malcev.nuTerm({alg}, 3))", _TERM),
+    ("jonsson_terms", "Malcev.jonssonTerms", "_terms(Malcev.jonssonTerms({alg}))", _LIST),
+    # gummTerms(alg) NPEs in Java (null ProgressReport); covered elsewhere as an xfail.
+)
+
+_random_magma_cases = []
+for _alg, _n, _seed, _var in _RANDOM_MAGMAS:
+    _timeout = _MAGMA_TIMEOUT["size2"] if _n == 2 else _MAGMA_TIMEOUT["size3"]
+    _searches = list(_F2_SQUARED_SEARCHES)
+    if _n == 2:
+        _searches.extend(_F2_CUBED_SEARCHES)
+    for _sid, _method, _call, _flags in _searches:
+        if _alg == "rand_bin" and _sid == "malcev_term":
+            continue  # already restored above as malcev_term_rand_bin
+        if _alg == "rand_bin2" and _sid == "malcev_term":
+            continue  # already present as malcev_term_rand_bin2
+        _random_magma_cases.append(
+            TestCaseSpec(
+                id="{0}_{1}".format(_sid, _alg),
+                method=_method,
+                setup=_WIDE_SETUP,
+                call=_call.format(alg=_var),
+                description="seeded random binary magma of size {0} seed {1}: {2}".format(
+                    _n, _seed, _method
+                ),
+                timeout_seconds=_timeout,
+                **_flags
+            )
+        )
+
+TEST_CASES.extend(_random_magma_cases)

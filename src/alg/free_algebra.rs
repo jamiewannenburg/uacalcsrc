@@ -1050,14 +1050,11 @@ impl Algebra for FreeAlgebra {
     }
 
     fn make_operation_tables(&mut self) {
-        // Free algebras should NOT create operation tables.
-        // They use SubProductOpWrapper operations that dynamically compute values
-        // by converting indices to IntArray elements and calling the product algebra.
-        // Creating IntOperation tables would be incorrect because:
-        // 1. Free algebras have IntArray universe items, not integer items
-        // 2. The operations need to work with IntArray elements, not just indices
-        // SubProductAlgebra.make_operation_tables() is already a no-op, but we're explicit here.
-        // Do nothing - keep the SubProductOpWrapper operations.
+        // Java FreeAlgebra extends SubProductAlgebra, so this delegates to
+        // SubProductAlgebra.makeOperationTables: table-ize intValueAt when
+        // inputSize <= 8e6. Tables map index tuples to index results; the
+        // IntArray universe is only used while the table is filled.
+        self.inner.make_operation_tables();
     }
 
     fn constant_operations(&self) -> Vec<Box<dyn Operation>> {

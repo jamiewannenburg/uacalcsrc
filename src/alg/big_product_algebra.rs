@@ -811,17 +811,10 @@ where
             return self.cardinality;
         }
 
-        // Calculate cardinality using ProductAlgebra logic
-        let mut total_size = 1i64;
-        for &size in &self.sizes {
-            total_size *= size as i64;
-            // Check for overflow
-            if total_size > i32::MAX as i64 {
-                return -1; // Too big
-            }
-        }
-
-        total_size as i32
+        // Java: cardinality = ProductAlgebra.calcCard(sizes);
+        // 0 if any factor is empty, -1 if the product overflows i32.
+        crate::alg::product_algebra::ProductAlgebra::calc_card_safe(&self.sizes)
+            .unwrap_or(-1)
     }
 
     fn input_size(&self) -> i32 {

@@ -46,6 +46,7 @@ class TestCaseSpec:
     capture_file: bool = False
     xfail_reason: Optional[str] = None
     notes: str = ""
+    timeout_seconds: Optional[float] = None
 
 
 @dataclass
@@ -406,6 +407,7 @@ def spec_to_dict(spec: TestCaseSpec) -> Dict[str, Any]:
         "capture_file": spec.capture_file,
         "xfail_reason": spec.xfail_reason,
         "notes": spec.notes,
+        "timeout_seconds": spec.timeout_seconds,
     }
 
 
@@ -443,7 +445,11 @@ class BehavioralParityTest(TestCase):
 
         expected = self.test_cases_by_id[test_id]
         expected_result = expected["result"]
-        actual_result = self._execute_case(expected)
+        timeout = expected.get("timeout_seconds")
+        if timeout:
+            actual_result = self._execute_case_with_timeout(expected, float(timeout))
+        else:
+            actual_result = self._execute_case(expected)
 
         if expected_result.get("success"):
             self.assertTrue(
@@ -532,6 +538,40 @@ class BehavioralParityTest(TestCase):
                 exception_type=exception_simple_name(exc),
                 exception_message=str(exc),
             )
+
+    def _execute_case_with_timeout(
+        self, expected: Dict[str, Any], timeout_seconds: float
+    ) -> TestResult:
+        """Run a case in a child process so a native hang fails the test."""
+        import multiprocessing as mp
+
+        queue: mp.Queue = mp.Queue()
+
+        def _target() -> None:
+            queue.put(self._execute_case(expected))
+
+        ctx = mp.get_context("fork")
+        proc = ctx.Process(target=_target)
+        proc.start()
+        proc.join(timeout_seconds)
+        if proc.is_alive():
+            proc.terminate()
+            proc.join(5)
+            if proc.is_alive():
+                proc.kill()
+                proc.join()
+            self.fail(
+                "{0} timed out after {1}s (possible hang in Malcev search)".format(
+                    expected.get("id"), timeout_seconds
+                )
+            )
+        if queue.empty():
+            self.fail(
+                "{0} produced no result after {1}s".format(
+                    expected.get("id"), timeout_seconds
+                )
+            )
+        return queue.get()
 
     def _file_payload(self, path: Any, content: str) -> Dict[str, Any]:
         return {
