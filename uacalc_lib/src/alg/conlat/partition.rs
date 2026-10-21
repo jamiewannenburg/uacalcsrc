@@ -351,9 +351,9 @@ impl PyPartition {
         Ok(PyBasicBinaryRelation { inner: rel })
     }
 
-    /// leq alias for 'le' method.
+    /// Java ``Partition.leq``: refinement order, not ``compareTo`` / PartialOrd.
     fn leq(&self, other: &PyPartition) -> bool {
-        self.le(other)
+        self.inner.leq(&other.inner)
     }
 
     /// Convert to string with specified print type and maximum length.

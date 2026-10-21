@@ -156,7 +156,8 @@ def _install(conlat_globals: dict) -> None:
     _orig_representatives = getattr(_LibPartition, "representatives", None)
     _orig_normalize = getattr(_LibPartition, "normalize", None)
     _orig_rank = getattr(_LibPartition, "rank", None)
-    _orig_leq = getattr(_LibPartition, "le", None) or getattr(_LibPartition, "leq", None)
+    # Java Partition.leq is refinement, not PartialOrd/compareTo (`le`).
+    _orig_leq = getattr(_LibPartition, "leq", None) or getattr(_LibPartition, "le", None)
     _orig_get = getattr(_LibPartition, "get", None)
     _orig_join = getattr(_LibPartition, "join", None)
     _orig_meet = getattr(_LibPartition, "meet", None)
@@ -296,6 +297,7 @@ def _install(conlat_globals: dict) -> None:
         "joinBlocks": joinBlocks,
         "join": join,
         "meet": meet,
+        "leq": leq,
         "normalize": normalize,
         "isZero": isZero,
         "isUniform": isUniform,

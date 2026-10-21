@@ -70,3 +70,12 @@ testing:
         - "pass 0 of"
         - "pass 1 of"
         - "pass "
+    - path: jython_comparison/scripts/random_parity.py
+      covers:
+        - Sg
+        - calcCard
+        - con
+        - getName
+        - numberOfFactors
+        - sgClose
+        - sub

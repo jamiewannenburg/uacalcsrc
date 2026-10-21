@@ -27,3 +27,5 @@ testing:
     - path: jython_comparison/scripts/terms_string_to_term.py
       covers: []
       ignore_lines: []
+    - path: jython_comparison/scripts/random_parity.py
+      covers: []

@@ -484,6 +484,46 @@ Malcev is wrapped; remaining gaps are listed under org.uacalc.alg.Malcev.
 
 ## org.uacalc.alg.conlat
 
+### Partition.leq vs PartialOrd.le
+
+- **Java**: `Partition.leq` is the refinement order (`this` refines `other`).
+  `compareTo` is a different total order (block count, then array).
+- **Python**: `uacalc_lib.Partition.leq` used to call PartialOrd `le`
+  (`compareTo`). Random parity (`part.leq` on incomparable partitions) caught
+  this. `leq` now calls the native refinement method. The org shim prefers
+  `leq` over `le` and always installs the camelCase `leq` patch.
+- **Status**: Fixed in the library and shim
+- **Tests**: `bp_leq_true`, `bp_leq_false`, randomized `part.leq` in
+  `tests/parity/random`
+- **Owner vs shim**: Both — `uacalc_lib/src/alg/conlat/partition.rs` and
+  `python/org/uacalc/alg/conlat/_jython_compat.py`
+
+### CongruenceLattice.meetIrreducibles / makeUpperCovers
+
+- **Java**: `makeUpperCovers` walks existing covers with a `ListIterator`:
+  if `cov.leq(join)` it sets `above` and **breaks** (keeping `cov`); if
+  `join.leq(cov)` it removes `cov`. Meet-irreducibles are elements whose
+  upper-cover list has size 1.
+- **Python**: `Vec::retain` dropped `cov` when `cov.leq(join)` and kept
+  scanning, so some random algebras had a proper subset of Java's
+  meet-irreducibles (minimal repro: `Algebras.makeRandomAlgebra` seed 4,
+  unary size 3). The loop now matches Java's iterator.
+- **Status**: Fixed in the library
+- **Tests**: randomized `con.meetIrreducibles` in `tests/parity/random`
+- **Owner vs shim**: Owner/library — `src/alg/conlat/congruence_lattice.rs`
+
+### CongruenceLattice.typeSet on some random size-3 algebras
+
+- **Java**: TCT `typeSet()` of a unique covering congruence on some
+  3-element magmas is `{3}` (or `{4}` for seed 841).
+- **Python**: TypeFinder reports `{1}` (seeds 582, 621, 687, 863), `{2}`
+  (seed 632), or `{5}` (seed 841). Hand-picked type 1–5 goldens still match.
+  Not a contained TCT fix.
+- **Status**: Strict xfail (library)
+- **Tests**: `random_seed_582`, `random_seed_621`, `random_seed_632`,
+  `random_seed_687`, `random_seed_841`, `random_seed_863`
+- **Owner vs shim**: Owner/library — `src/alg/conlat/type_finder.rs`
+
 ### CongruenceLattice.getDescription (default)
 
 - **Java**: `"Congruence Lattice of " + alg` uses `Algebra.toString()`, i.e.
@@ -608,6 +648,19 @@ the org shim's `leftSide` / `rightSide` return term objects via
 ---
 
 ## org.uacalc.alg.sublat
+
+### SubalgebraLattice.makeSg skipped argument permutations
+
+- **Java**: `makeSg` walks nondecreasing index tuples then applies
+  `PermutationGenerator.arrayIncrementor` so every ordered tuple in the
+  current set is evaluated (needed for non-commutative operations).
+- **Python**: a "pilot: skip permutations" path applied each nondecreasing
+  tuple once, so some size-3 magmas under-closed (`sg` a proper subset of
+  Java; `Sub` cardinality too large). Minimal repro: random seed 32
+  (`n=3`, arities `(1,2)`) and seed 60 (`n=3`, binary).
+- **Status**: Fixed in the library
+- **Tests**: randomized `sg` / `sub.card` in `tests/parity/random`
+- **Owner vs shim**: Owner/library — `src/alg/sublat/mod.rs`
 
 ### BasicSet.union index bug
 
@@ -865,6 +918,17 @@ count match.
   `HashMap.keySet()`.
 - **Status**: Deterministic on Rust; presence/count compared to Java.
 - **Tests**: `test_sd_meet_terms_with_z3_java_comparison`
+
+### alg.Malcev.malcevTerm (known Java bug)
+
+- **Java**: `malcevTerm(alg)` NPEs when `ProgressReport.addStartLine` is
+  invoked on a null report. Unary clones always take this path; some tiny
+  binary algebras do too. Same class of bug as `gummTerms` / `primalityTerms`.
+- **Python**: Returns a term or `None` (no ProgressReport required).
+- **Status**: Known Java bug. The randomized harness skips unary
+  `malcevTerm` and treats remaining Java-only NPEs as known Java bugs
+  (`KNOWN_JAVA_NPE_PATHS`).
+- **Tests**: `tests/parity/random` (`malcev.malcevTerm`)
 
 ### alg.Malcev.gummTerms / primalityTerms (known Java bugs)
 

@@ -42,3 +42,11 @@ testing:
         - toString
         - universeSize
       ignore_lines: []
+    - path: jython_comparison/scripts/random_parity.py
+      covers:
+        - getBlocks
+        - isInitialLexRepresentative
+        - isRelated
+        - numberOfBlocks
+        - toArray
+        - universeSize

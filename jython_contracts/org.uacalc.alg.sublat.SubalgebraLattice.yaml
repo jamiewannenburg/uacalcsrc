@@ -92,3 +92,25 @@ testing:
         - "pass 0 of"
         - "pass 1 of"
         - "pass "
+    - path: jython_comparison/scripts/random_parity.py
+      covers:
+        - Sg
+        - atoms
+        - cardinality
+        - coatoms
+        - con
+        - getName
+        - isIdempotent
+        - isTotal
+        - isUnary
+        - join
+        - joinIrreducibles
+        - leq
+        - meet
+        - meetIrreducibles
+        - one
+        - operations
+        - sg
+        - sub
+        - universe
+        - zero

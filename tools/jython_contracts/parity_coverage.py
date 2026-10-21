@@ -360,7 +360,10 @@ def build_parity_coverage(
         parity_root = PROJECT_ROOT / "tests" / "parity"
         packages = [
             p.name for p in parity_root.iterdir()
-            if p.is_dir() and not p.name.startswith('_')
+            if p.is_dir()
+            and not p.name.startswith('_')
+            # Cross-package randomized snapshots, not a Java org.uacalc.* dir.
+            and p.name != "random"
         ]
         # UI packages have no parity tests but hold most GUI exclusions.
         for extra in ("ui", "nbui"):

@@ -117,3 +117,14 @@ testing:
         - con
       ignore_lines:
         - "Universe:"
+    - path: jython_comparison/scripts/random_parity.py
+      covers:
+        - cardinality
+        - con
+        - getName
+        - isIdempotent
+        - isTotal
+        - isUnary
+        - operations
+        - sub
+        - universe

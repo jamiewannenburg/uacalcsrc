@@ -35,3 +35,8 @@ testing:
       covers:
         - initialPartition
       ignore_lines: []
+    - path: jython_comparison/scripts/random_parity.py
+      covers:
+        - initialPartition
+        - partitionArrayIncrementor
+        - sequenceIncrementor

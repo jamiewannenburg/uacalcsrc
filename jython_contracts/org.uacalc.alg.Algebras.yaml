@@ -33,7 +33,8 @@ testing:
   notes: |
     algebras_smoke.py plus tests/parity/alg/test_cases/free_hom_closer_cases.py
     and malcev_cases.py for findNUF / jonssonTerms / jonssonLevel.
-    Tiny C2 inputs. Random algebras compare name/card only (RNG differs).
+    Tiny C2 inputs. Seeded makeRandomAlgebra matches java.util.Random (PR #81);
+    randomized snapshots are tests/parity/random plus random_parity.py.
     fullTransformationSemigroup n=10 is IAE. findInClone empty/null is IAE.
     matrixPower k=0 is IOBE. 2-arg unaryCloneAlgFromPartitions is null.
   task_refs:
@@ -52,3 +53,7 @@ testing:
         - memberOfQuasivariety
         - ternaryDiscriminatorAlgebra
         - unaryCloneAlgFromPartitions
+    - path: jython_comparison/scripts/random_parity.py
+      covers:
+        - isHomomorphism
+        - makeRandomAlgebra

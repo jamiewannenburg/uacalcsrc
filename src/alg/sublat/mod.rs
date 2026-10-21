@@ -698,6 +698,46 @@ where
         nodups
     }
     
+    /// Apply `op` at every permutation of `arg`.
+    ///
+    /// Matches Java ``PermutationGenerator.arrayIncrementor`` used by
+    /// ``SubalgebraLattice.makeSg``. Skipping permutations under-closes
+    /// non-commutative operations (random parity: size-3 magmas).
+    fn for_each_op_perm(op: &dyn Operation, arg: &[i32], mut visit: impl FnMut(i32)) {
+        let n = arg.len();
+        if n == 0 {
+            if let Ok(v) = op.int_value_at(arg) {
+                visit(v);
+            }
+            return;
+        }
+        let mut a = arg.to_vec();
+        let mut c = vec![0usize; n];
+        let mut i = 0;
+        loop {
+            if let Ok(v) = op.int_value_at(&a) {
+                visit(v);
+            }
+            while i < n {
+                if c[i] < i {
+                    if i % 2 == 0 {
+                        a.swap(0, i);
+                    } else {
+                        a.swap(c[i], i);
+                    }
+                    c[i] += 1;
+                    i = 0;
+                    break;
+                }
+                c[i] = 0;
+                i += 1;
+            }
+            if i >= n {
+                break;
+            }
+        }
+    }
+
     /// Static helper to generate subuniverse closure (used in constructor).
     /// 
     /// This extracts the closure logic from make_sg_with_max_size so it can be
@@ -758,19 +798,13 @@ where
                     for i in 0..arity {
                         arg[i as usize] = lst[arg_indices_copy[i as usize] as usize];
                     }
-                    // Apply operation once for this argument (pilot: skip permutations)
-                    match op.int_value_at(&arg) {
-                        Ok(v) => {
-                            if su.insert(v) {
-                                lst.push(v);
-                                if lst.len() > max_size {
-                                    return Ok(one_subalg);
-                                }
-                            }
+                    Self::for_each_op_perm(*op, &arg, |v| {
+                        if su.insert(v) {
+                            lst.push(v);
                         }
-                        Err(_) => {
-                            // Ignore errors for partial operations
-                        }
+                    });
+                    if lst.len() > max_size {
+                        return Ok(one_subalg);
                     }
                     // Increment sequence (clone to avoid borrow)
                     if !inc.increment() {
@@ -1037,19 +1071,13 @@ where
                     for i in 0..arity {
                         arg[i as usize] = lst[arg_indices_copy[i as usize] as usize];
                     }
-                    // Apply operation once for this argument (pilot: skip permutations)
-                    match op.int_value_at(&arg) {
-                        Ok(v) => {
-                            if su.insert(v) {
-                                lst.push(v);
-                                if lst.len() > max_size {
-                                    return self.one().clone();
-                                }
-                            }
+                    Self::for_each_op_perm(*op, &arg, |v| {
+                        if su.insert(v) {
+                            lst.push(v);
                         }
-                        Err(_) => {
-                            // Ignore errors for partial operations
-                        }
+                    });
+                    if lst.len() > max_size {
+                        return self.one().clone();
                     }
                     // Increment sequence (clone to avoid borrow)
                     if !inc.increment() {

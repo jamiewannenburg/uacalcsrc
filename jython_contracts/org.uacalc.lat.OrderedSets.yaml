@@ -31,3 +31,6 @@ testing:
       covers:
         - OrderedSets.maximals
       ignore_lines: []
+    - path: jython_comparison/scripts/random_parity.py
+      covers:
+        - OrderedSets.maximals

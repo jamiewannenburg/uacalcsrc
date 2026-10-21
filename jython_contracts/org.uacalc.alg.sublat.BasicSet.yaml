@@ -50,3 +50,15 @@ testing:
         - union
         - universeSize
       ignore_lines: []
+    - path: jython_comparison/scripts/random_parity.py
+      covers:
+        - BasicSet.intersection
+        - BasicSet.leq
+        - BasicSet.union
+        - contains
+        - get
+        - intersection
+        - leq
+        - toArray
+        - union
+        - universeSize

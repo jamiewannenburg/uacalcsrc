@@ -87,3 +87,8 @@ testing:
         - majorityTerm
         - jonssonLevel
         - jonssonTerms
+    - path: jython_comparison/scripts/random_parity.py
+      covers:
+        - majorityTerm
+        - malcevTerm
+        - minorityTerm
