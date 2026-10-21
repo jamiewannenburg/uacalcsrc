@@ -6,6 +6,7 @@ Library logic stays in ``uacalc_lib``.
 
 from __future__ import annotations
 
+from functools import cmp_to_key
 from typing import Any, Optional, Sequence
 
 _MISSING = object()
@@ -991,9 +992,6 @@ def _install(conlat_globals: dict) -> None:
             "strongRectangularityFailure": lambda self, s, t, d, _orig=getattr(
                 _LibCongruenceLattice, "strong_rectangularity_failure", None
             ): _orig(self, s, t, d),
-            "calcCentrality": lambda self, s, t, report=None, _orig=getattr(
-                _LibCongruenceLattice, "calc_centrality", None
-            ): _orig(self, s, t),
             "idempotentPolynomials": lambda self: list(self.idempotent_polynomials()),
             "joinIrreducible": lambda self, p: bool(self.join_irreducible(p)),
             "meetIrreducible": lambda self, p: bool(self.meet_irreducible(p)),
@@ -1516,6 +1514,7 @@ def _install(conlat_globals: dict) -> None:
     # --- CentralityData ---
     _LibCD = conlat_globals.get("CentralityData")
     _CD_FAIL: dict = {}
+    _CD_ORIG: dict = {}
 
     def _cd_fail(self: Any) -> dict:
         slot = _CD_FAIL.get(id(self))
@@ -1524,28 +1523,54 @@ def _install(conlat_globals: dict) -> None:
             _CD_FAIL[id(self)] = slot
         return slot[1]
 
+    def _cd_orig(self: Any) -> Any:
+        slot = _CD_ORIG.get(id(self))
+        if slot is None or slot[0] is not self:
+            return None
+        return slot
+
+    def _as_binrel(obj: Any) -> Any:
+        if obj is None:
+            _raise_npe()
+        tname = type(obj).__name__
+        if "BinaryRelation" in tname and "Partition" not in tname:
+            return obj
+        fn = getattr(obj, "to_binary_relation", None) or getattr(
+            obj, "toBinaryRelation", None
+        )
+        if callable(fn):
+            return fn()
+        return obj
+
     def _patch_cd() -> None:
         if _LibCD is None:
             return
         _orig_left = getattr(_LibCD, "left", None)
         _orig_right = getattr(_LibCD, "right", None)
         _orig_delta = getattr(_LibCD, "delta", None)
-        _orig_compare = getattr(_LibCD, "compare_to", None)
 
         def getLeft(self: Any) -> Any:
+            orig = _cd_orig(self)
+            if orig is not None:
+                return orig[1]
             return _orig_left(self) if callable(_orig_left) else self.left()
 
         def getRight(self: Any) -> Any:
+            orig = _cd_orig(self)
+            if orig is not None:
+                return orig[2]
             return _orig_right(self) if callable(_orig_right) else self.right()
 
         def getDelta(self: Any) -> Any:
             return _orig_delta(self) if callable(_orig_delta) else self.delta()
 
         def compareTo(self: Any, other: Any) -> int:
+            # Java CentralityData.compareTo is delta.compareTo, and
+            # BasicPartition.compareTo uses other.array[i] - this.array[i].
+            # Rust Partition::Ord flips that array walk, so do not use
+            # PyCentralityData.compare_to / delta.cmp.
             if other is None:
                 _raise_npe()
-            if callable(_orig_compare):
-                return int(_orig_compare(self, other))
             return int(getDelta(self).compareTo(other.getDelta()))
 
         def setCentralityFailure(self: Any, failure: Any) -> None:
@@ -1629,7 +1654,9 @@ def _install(conlat_globals: dict) -> None:
                 raise TypeError("CentralityData is not bound")
             if left is None or right is None or delta is None:
                 _raise_npe()
-            return _lib_call(_LibCD, left, right, delta)
+            obj = _lib_call(_LibCD, _as_binrel(left), _as_binrel(right), delta)
+            _CD_ORIG[id(obj)] = (obj, left, right)
+            return obj
 
         def compareTo(self, other):
             raise NotImplementedError
@@ -1819,6 +1846,58 @@ def _install(conlat_globals: dict) -> None:
 
     Partition.PrintType = PrintType
     BasicPartition.PrintType = PrintType
+
+    def _wrap_failure(ia: Any, mats: Any) -> Any:
+        if ia is None:
+            return None
+        if mats is None:
+            return ia
+        from org.uacalc.element import SubProductElement
+        from org.uacalc.util import IntArray
+
+        elt = ia
+        tname = type(ia).__name__
+        if tname not in ("IntArray", "PyIntArray"):
+            try:
+                elt = IntArray([int(x) for x in list(ia)])
+            except TypeError:
+                elt = ia
+        return SubProductElement(elt, mats)
+
+    def calcCentrality(self: Any, s: Any, t: Any, report: Any = None) -> list:
+        if report is not None:
+            raise NotImplementedError(
+                "calcCentrality(..., ProgressReport) is not bound"
+            )
+        if s is None or t is None:
+            _raise_npe()
+        _orig = getattr(_LibCongruenceLattice, "calc_centrality", None)
+        if _orig is None:
+            raise TypeError("calc_centrality is not bound")
+        s_rel = _as_binrel(s)
+        t_rel = _as_binrel(t)
+        rows = _orig(self, s_rel, t_rel)
+        mats_fn = getattr(self, "matrices", None)
+        mats = mats_fn(s_rel, t_rel) if callable(mats_fn) else None
+        out = []
+        for row in list(rows):
+            delta, cent, weak, strong = row
+            cd = CentralityData(s, t, delta)
+            cd.setCentralityFailure(_wrap_failure(cent, mats))
+            cd.setWeakCentralityFailure(_wrap_failure(weak, mats))
+            cd.setStrongRectangularityFailure(_wrap_failure(strong, mats))
+            out.append(cd)
+        # Java calcCentrality finishes with Collections.sort(ans) using
+        # CentralityData.compareTo. Keep that order, including for
+        # incomparable same-rank congruences (N5).
+        out.sort(key=cmp_to_key(lambda a, b: a.compareTo(b)))
+        return out
+
+    if _LibCongruenceLattice is not None:
+        try:
+            _LibCongruenceLattice.calcCentrality = calcCentrality
+        except (TypeError, AttributeError):
+            pass
 
     conlat_globals["PrintType"] = PrintType
     conlat_globals["Partition"] = Partition

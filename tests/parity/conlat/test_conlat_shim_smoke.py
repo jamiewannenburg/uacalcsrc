@@ -5,8 +5,6 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-import pytest
-
 REPO_ROOT = Path(__file__).resolve().parents[3]
 
 
@@ -52,9 +50,7 @@ def test_conlat_minimal_if_bindings():
     _ensure_python_org_on_path()
     import org.uacalc.alg.conlat as shim  # noqa: PLC0415
 
-    BP = getattr(shim, "BasicPartition", None)
-    if BP is None:
-        pytest.skip("BasicPartition not exposed on org.uacalc.alg.conlat shim")
+    BP = shim.BasicPartition
     z = BP.zero(3)
     assert z is not None
     assert int(z.universeSize()) == 3

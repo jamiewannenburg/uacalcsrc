@@ -218,7 +218,7 @@ def test_idempotent_polynomials():
 
 
 def test_delta():
-    """Test delta method (stubbed)."""
+    """Test Delta(zero, one) matches Java (one-congruence)."""
     alg = BasicAlgebra("TestAlg", [0, 1, 2] ,[])
     con_lat = CongruenceLattice(alg)
     
@@ -227,12 +227,12 @@ def test_delta():
     
     delta_result = con_lat.delta(zero_partition, one_partition)
     assert isinstance(delta_result, Partition)
-    # Since it's stubbed, it should return the zero partition
-    assert delta_result == zero_partition
+    # Delta(zero, one) joins the diagonal pairs of the full relation.
+    assert delta_result == one_partition
 
 
 def test_commutator2():
-    """Test commutator2 method (stubbed)."""
+    """Test commutator2(zero, one) matches Java (stays zero)."""
     alg = BasicAlgebra("TestAlg", [0, 1, 2] ,[])
     con_lat = CongruenceLattice(alg)
     
@@ -241,7 +241,6 @@ def test_commutator2():
     
     comm_result = con_lat.commutator2(zero_partition, one_partition)
     assert isinstance(comm_result, Partition)
-    # Since it's stubbed, it should return the zero partition
     assert comm_result == zero_partition
 
 

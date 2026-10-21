@@ -638,3 +638,112 @@ TEST_CASES.extend([
         skip_string_check=True,
     ),
 ])
+
+_CENT_SETUP = _TCT_SETUP + r"""
+qstar = Operations.makeIntOperation(OperationSymbol("*", 2), 3, [0, 2, 1, 2, 1, 0, 1, 0, 2])
+quasi3 = BasicAlgebra("quasi3", 3, [qstar])
+
+def _cent_bundle(alg):
+    con = alg.con()
+    z = con.zero()
+    o = con.one()
+    cds_zo = list(con.calcCentrality(z, o))
+    cds_oo = list(con.calcCentrality(o, o))
+    return {
+        "card": int(alg.cardinality()),
+        "con_card": int(con.cardinality()),
+        "calc_z_o": cds_zo,
+        "calc_o_o": cds_oo,
+        "c2_z_o": con.commutator2(z, o),
+        "c2_o_o": con.commutator2(o, o),
+        "c2_o_z": con.commutator2(o, z),
+        "delta_z_o": con.Delta(z, o),
+        "delta_o_o": con.Delta(o, o),
+        "delta_o_z": con.Delta(o, z),
+        "cd0_str": None if not cds_zo else cds_zo[0].toString(),
+        "cd0_left": None if not cds_zo else str(cds_zo[0].getLeft()),
+        "cd0_right": None if not cds_zo else str(cds_zo[0].getRight()),
+        "cd0_delta": None if not cds_zo else str(cds_zo[0].getDelta()),
+        "nfail_cent": sum(1 for cd in cds_zo if cd.getCentralityFailure() is not None),
+        "nfail_weak": sum(1 for cd in cds_zo if cd.getWeakCentralityFailure() is not None),
+        "nfail_strong": sum(1 for cd in cds_zo if cd.getStrongRectangularityFailure() is not None),
+    }
+"""
+
+_CENT = dict(
+    skip_string_check=True,
+    notes="Java dict/List toString vs Python; values compared.",
+)
+
+TEST_CASES.extend([
+    TestCaseSpec(
+        id="cent_c2",
+        method="CongruenceLattice.calcCentrality",
+        setup=_CENT_SETUP,
+        call="_cent_bundle(c2)",
+        description="calcCentrality/commutator2/Delta on cyclic2",
+        **_CENT
+    ),
+    TestCaseSpec(
+        id="cent_c3",
+        method="CongruenceLattice.calcCentrality",
+        setup=_CENT_SETUP,
+        call="_cent_bundle(c3)",
+        description="calcCentrality/commutator2/Delta on cyclic3",
+        **_CENT
+    ),
+    TestCaseSpec(
+        id="cent_z3",
+        method="CongruenceLattice.calcCentrality",
+        setup=_CENT_SETUP,
+        call="_cent_bundle(z3a)",
+        description="calcCentrality/commutator2/Delta on z3",
+        **_CENT
+    ),
+    TestCaseSpec(
+        id="cent_s3",
+        method="CongruenceLattice.calcCentrality",
+        setup=_CENT_SETUP,
+        call="_cent_bundle(s3)",
+        description="calcCentrality/commutator2/Delta on S3/sym3",
+        **_CENT
+    ),
+    TestCaseSpec(
+        id="cent_m3",
+        method="CongruenceLattice.calcCentrality",
+        setup=_CENT_SETUP,
+        call="_cent_bundle(m3)",
+        description="calcCentrality/commutator2/Delta on m3",
+        **_CENT
+    ),
+    TestCaseSpec(
+        id="cent_n5",
+        method="CongruenceLattice.calcCentrality",
+        setup=_CENT_SETUP,
+        call="_cent_bundle(n5)",
+        description="calcCentrality/commutator2/Delta on n5",
+        **_CENT
+    ),
+    TestCaseSpec(
+        id="cent_quasi3",
+        method="CongruenceLattice.calcCentrality",
+        setup=_CENT_SETUP,
+        call="_cent_bundle(quasi3)",
+        description="calcCentrality/commutator2/Delta on a 3-element quasigroup",
+        **_CENT
+    ),
+    TestCaseSpec(
+        id="cent_c2_tostring",
+        method="CentralityData.toString",
+        setup=_CENT_SETUP,
+        call="c2.con().calcCentrality(c2.con().zero(), c2.con().one())[0].toString()",
+        description="calcCentrality(zero, one)[0].toString() on cyclic2",
+    ),
+    TestCaseSpec(
+        id="cent_c2_compare",
+        method="CentralityData.compareTo",
+        setup=_CENT_SETUP,
+        call="(lambda xs: xs[0].compareTo(xs[-1]))(list(c2.con().calcCentrality(c2.con().zero(), c2.con().one())))",
+        description="compareTo first vs last calcCentrality row on cyclic2",
+    ),
+])

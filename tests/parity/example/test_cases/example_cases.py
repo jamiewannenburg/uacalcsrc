@@ -80,7 +80,7 @@ ff21 = FiniteField(2, 1)
 _SKIP = dict(skip_string_check=True)
 
 _GUI_XFAIL = "GUI/interactive/demo main; not part of the constructable parity surface"
-_MALCEV_XFAIL = "FilteringAlgebras.main uses Malcev.sdMeetIdempotent (Malcev is out of scope)"
+_MALCEV_XFAIL = "FilteringAlgebras.main is a NotImplementedError stub"
 _PARALLEL8_XFAIL = "Incomplete Java 8 stream closer; constructor is not a portable API"
 _HASKARY_XFAIL = "HasKaryNU.hasNUHorowitz uses ProgressReport and a large BigProduct close"
 _CONLYNDON_XFAIL = "Computes Con(F(4)) of the Lyndon algebra; too heavy for parity"

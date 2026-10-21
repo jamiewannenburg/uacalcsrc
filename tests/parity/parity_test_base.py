@@ -274,6 +274,28 @@ def serialize_for_golden(obj: Any) -> Any:
             ),
         }
 
+    # CentralityData (before Algebra: getLeft is a relation, not an algebra)
+    if class_name == "CentralityData" or class_name.endswith("CentralityData"):
+        return {
+            "__type__": "centrality_data",
+            "class": "CentralityData",
+            "string": str(
+                obj.toString() if callable(getattr(obj, "toString", None)) else obj
+            ),
+            "left": serialize_for_golden(_call_or_get(obj, "getLeft")),
+            "right": serialize_for_golden(_call_or_get(obj, "getRight")),
+            "delta": serialize_for_golden(_call_or_get(obj, "getDelta")),
+            "centralityFailure": serialize_for_golden(
+                _call_or_get(obj, "getCentralityFailure")
+            ),
+            "weakCentralityFailure": serialize_for_golden(
+                _call_or_get(obj, "getWeakCentralityFailure")
+            ),
+            "strongRectangularityFailure": serialize_for_golden(
+                _call_or_get(obj, "getStrongRectangularityFailure")
+            ),
+        }
+
     # SubProductElement (before Algebra: getAlgebra would otherwise match)
     if class_name == "SubProductElement":
         term = _call_or_get(obj, "getTerm", "get_term")

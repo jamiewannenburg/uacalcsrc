@@ -5,8 +5,6 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-import pytest
-
 REPO_ROOT = Path(__file__).resolve().parents[3]
 
 
@@ -39,8 +37,6 @@ def test_parallel_minimal_if_bindings():
     _ensure_python_org_on_path()
     import org.uacalc.alg.parallel as shim  # noqa: PLC0415
 
-    pool = getattr(shim, "Pool", None)
-    if pool is None:
-        pytest.skip("Pool not exposed on org.uacalc.alg.parallel shim")
+    pool = shim.Pool
     assert pool.is_initialized() in (True, False)
     assert hasattr(shim, "SingleClose")

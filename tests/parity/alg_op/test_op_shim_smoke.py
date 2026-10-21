@@ -74,8 +74,5 @@ def test_op_minimal_if_bindings():
     _ensure_python_org_on_path()
     import org.uacalc.alg.op as shim  # noqa: PLC0415
 
-    sym = getattr(shim, "OperationSymbol", None)
-    if sym is None:
-        pytest.skip("OperationSymbol not exposed on org.uacalc.alg.op shim")
-    s = sym("*", 2)
+    s = shim.OperationSymbol("*", 2)
     assert s is not None
