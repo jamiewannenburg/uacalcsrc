@@ -357,6 +357,14 @@ def snapshot_con(alg, rng, n):
     perm = _safe(lambda: _as_int(con.permutabilityLevel()))
     dist = _safe(lambda: _as_bool(con.isDistributive()))
     zero, one = con.zero(), con.one()
+    # commutator2 builds congruence-as-algebra + Delta; keep it on n<=3
+    # and rely on DEFAULT_CASE_TIMEOUT (15s) so a hang cannot stall CI.
+    if n <= 3:
+        c2_zo = _safe(lambda: _part(con.commutator2(zero, one)))
+        c2_oo = _safe(lambda: _part(con.commutator2(one, one)))
+    else:
+        c2_zo = {"skipped": "size"}
+        c2_oo = {"skipped": "size"}
     return {
         "card": _as_int(con.cardinality()),
         "cg": _part(cg),
@@ -371,6 +379,8 @@ def snapshot_con(alg, rng, n):
         "join_zero_one": _part(con.join(zero, one)),
         "meet_zero_one": _part(con.meet(zero, one)),
         "leq_zero_one": _as_bool(con.leq(zero, one)),
+        "commutator2_zero_one": c2_zo,
+        "commutator2_one_one": c2_oo,
     }
 
 

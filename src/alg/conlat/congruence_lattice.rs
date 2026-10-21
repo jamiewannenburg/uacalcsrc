@@ -4,7 +4,7 @@
  * Ralph Freese's fast algorithms from "Computing Congruences Efficiently".
  */
 
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeSet, HashMap, HashSet};
 use std::sync::Arc;
 use std::fmt::{self, Display, Debug};
 use std::hash::Hash;
@@ -1744,16 +1744,68 @@ where
     
     /// Alternative commutator using Delta.
     ///
-    /// # Arguments
-    /// * `alpha` - First congruence
-    /// * `beta` - Second congruence
-    ///
-    /// # Returns
-    /// The commutator using Delta
-    pub fn commutator2(&mut self, _alpha: &Partition, _beta: &Partition) -> Partition {
-        // This is a simplified implementation
-        // The full implementation would use Delta to compute the commutator
-        self.zero()
+    /// Java `CongruenceLattice.commutator2(alpha, beta)`:
+    /// `B = congruenceAsAlgebra(A, beta)`, `Delta = Delta(beta, alpha)`,
+    /// then the join of `Cg(x, y)` for every pair `(x, y)` in a Delta-block
+    /// of some diagonal `(a, a)`.
+    pub fn commutator2(&mut self, alpha: &Partition, beta: &Partition) -> Partition {
+        match self.commutator2_matching_java(alpha, beta) {
+            Ok(part) => part,
+            Err(_) => self.zero(),
+        }
+    }
+
+    fn commutator2_matching_java(
+        &mut self,
+        alpha: &Partition,
+        beta: &Partition,
+    ) -> Result<Partition, String> {
+        let universe: HashSet<i32> = (0..self.alg_size as i32).collect();
+        let ops = crate::alg::op::ops::make_int_operations(self.alg.operations())?;
+        let snapshot = BasicAlgebra::new(self.alg.name().to_string(), universe, ops);
+        let alg_box = Box::new(snapshot) as Box<dyn SmallAlgebra<UniverseItem = i32>>;
+        let b_alg = Subalgebra::<i32>::congruence_as_algebra(alg_box, beta)?;
+        let delta = self.delta(beta, alpha);
+        let blocks = delta.get_blocks();
+        let n = self.alg_size as i32;
+        let mut ans = self.zero();
+        let mut visited: BTreeSet<usize> = BTreeSet::new();
+        for i in 0..self.alg_size {
+            let aa_enc = horner::horner_same_size(&[i as i32, i as i32], n);
+            let aa = match b_alg.element_index(&aa_enc) {
+                Some(idx) => idx,
+                None => continue,
+            };
+            let aa_block_index = match delta.block_index(aa) {
+                Ok(idx) => idx,
+                Err(_) => continue,
+            };
+            if !visited.insert(aa_block_index) {
+                continue;
+            }
+            let block = match blocks.get(aa_block_index) {
+                Some(b) => b,
+                None => continue,
+            };
+            for &elem in block {
+                let encoded = match b_alg.get_element(elem) {
+                    Some(e) => e,
+                    None => continue,
+                };
+                let pair = horner::horner_inv_same_size(encoded, n, 2);
+                if pair.len() < 2 {
+                    continue;
+                }
+                let x = pair[0];
+                let y = pair[1];
+                if x < 0 || y < 0 {
+                    continue;
+                }
+                let cong = self.cg(x as usize, y as usize);
+                ans = ans.join(&cong)?;
+            }
+        }
+        Ok(ans)
     }
     
     /// Test if S centralizes T modulo delta.

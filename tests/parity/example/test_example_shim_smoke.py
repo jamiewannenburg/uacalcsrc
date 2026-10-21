@@ -82,7 +82,7 @@ def test_haskary_nu_progress_report():
     raise AssertionError("unreachable")
 
 
-@pytest.mark.skip(reason="FilteringAlgebras.main uses Malcev.sdMeetIdempotent (Malcev is out of scope)")
+@pytest.mark.skip(reason="FilteringAlgebras.main is a NotImplementedError stub")
 def test_filtering_algebras_main_malcev():
     raise AssertionError("unreachable")
 

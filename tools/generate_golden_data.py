@@ -243,6 +243,23 @@ def serialize(obj):
             "universe_size": int(us) if us is not None else 0,
             "number_of_blocks": int(nb) if nb is not None else 0,
         }
+    if class_name == "CentralityData" or class_name.endswith("CentralityData"):
+        ts = getattr(obj, "toString", None)
+        return {
+            "__type__": "centrality_data",
+            "class": "CentralityData",
+            "string": str(ts() if ts is not None and callable(ts) else obj),
+            "left": serialize(call_or_get(obj, "getLeft")),
+            "right": serialize(call_or_get(obj, "getRight")),
+            "delta": serialize(call_or_get(obj, "getDelta")),
+            "centralityFailure": serialize(call_or_get(obj, "getCentralityFailure")),
+            "weakCentralityFailure": serialize(
+                call_or_get(obj, "getWeakCentralityFailure")
+            ),
+            "strongRectangularityFailure": serialize(
+                call_or_get(obj, "getStrongRectangularityFailure")
+            ),
+        }
     if class_name == "SubProductElement":
         term = call_or_get(obj, "getTerm", "get_term")
         idx = call_or_get(obj, "index")

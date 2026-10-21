@@ -12,8 +12,7 @@ This file is a **snapshot** of progress, not a claim that every `org.uacalc.*` s
 
 ## Not done / in flight
 
-- **`uacalc_lib.types`** is a placeholder Rust module; `org.uacalc.types` tracks it under the `core-util` workstream but may export nothing until stubs are implemented.
-- **Swing / NetBeans UI** packages are **out of scope** for the parity slice manifest (not listed in `parity_slices.yaml`).
+- **Swing / NetBeans UI** packages are **out of scope** for the parity slice manifest (not listed in `parity_slices.yaml`). Java has no `org.uacalc.types` package; that empty placeholder was removed.
 - **String-level parity** (`repr` / `toString`) and **full alias coverage** across all types are ongoing where tests do not yet enforce them; some slices still have richer behavior on Jython than on CPython until Rust exposes matching types.
 
 ## How to verify locally

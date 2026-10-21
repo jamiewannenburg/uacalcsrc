@@ -57,10 +57,7 @@ def test_sublat_minimal_if_bindings():
     _ensure_python_org_on_path()
     import org.uacalc.alg.sublat as shim  # noqa: PLC0415
 
-    bs = getattr(shim, "BasicSet", None)
-    if bs is None:
-        pytest.skip("BasicSet not exposed on org.uacalc.alg.sublat shim")
-    s = bs([0, 1])
+    s = shim.BasicSet([0, 1])
     assert s.size() == 2
     assert int(s.universeSize()) == 2
     assert str(s) == "[0, 1]"

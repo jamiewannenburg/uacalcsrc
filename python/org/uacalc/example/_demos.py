@@ -51,7 +51,7 @@ GUI_OR_INTERACTIVE = {
     "HasKaryNU.main": "CLI with optional filesystem args and ProgressReport",
     "TupleStream.main": "Timing benchmark (serial vs parallel stream counts)",
     "ConLyndonF3.main": "Computes Con(F(4)) of the Lyndon algebra; too heavy for parity",
-    "FilteringAlgebras.main": "Uses Malcev.sdMeetIdempotent (Malcev is out of scope)",
+    "FilteringAlgebras.main": "FilteringAlgebras.main is a NotImplementedError stub",
     "Type1.main": "Prints subtraces of a size-5 matrix power; interactive/demo main",
     "Average.main": "Writes sample algebras to /tmp",
     "FiniteField.main": "Prints Conway polynomials and multiplication tables",

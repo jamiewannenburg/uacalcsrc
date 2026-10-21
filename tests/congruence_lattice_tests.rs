@@ -363,7 +363,7 @@ fn test_delta_zero_one_is_one() {
 }
 
 #[test]
-fn test_commutator2_stubbed() {
+fn test_commutator2_zero_one() {
     let alg = Box::new(BasicAlgebra::new(
         "TestAlg".to_string(),
         HashSet::from([0, 1, 2]),
@@ -372,12 +372,11 @@ fn test_commutator2_stubbed() {
     
     let mut con_lat = CongruenceLattice::new(alg);
     
-    // Test commutator2 (stubbed method)
+    // Java: commutator2(zero, one) joins only diagonal Cg(i,i), so stays zero.
     let zero = con_lat.zero();
     let one = con_lat.one();
     let commutator = con_lat.commutator2(&zero, &one);
     
-    // Should return zero (stubbed implementation)
     assert_eq!(commutator.number_of_blocks(), 3);
 }
 

@@ -319,12 +319,6 @@ slices:
     owner: agent-a
     status: parity_golden
     last_updated: "2026-10-16"
-    workstreams:
-      - >-
-        core-types (agent-f): org.uacalc.types shim + tests/parity/types. There is no
-        org.uacalc.* Java package for ``types`` in parity_inventory, so this workstream is
-        tracked here instead of a separate slice row (avoids validate_parity_slices gaps).
-        uacalc_lib.types is a Rust stub module until IDE/type stubs land.
     parity_tests_dir: tests/parity/util
     notes: >-
       Finish wrap+test for org.uacalc.util (branch util-tests-finish). Behavioral
@@ -335,8 +329,8 @@ slices:
       previousIndex. Skipped: main; commented-out Java (satisfiesConstraint,
       regenerate, reinitialize, removeConflicts). GUI/Swing out of scope. Keep
       xfails ia_getarray_copy, ia_setintarray_replace, ll_stream, plus
-      ll_parallel_stream and sl_app/sl_rev (commented Java). See workstreams for
-      org.uacalc.types.
+      ll_parallel_stream and sl_app/sl_rev (commented Java). Java has no
+      org.uacalc.types package; the empty placeholder was removed.
 
   - id: examples-org
     title: org.uacalc.example scripts and demos
