@@ -89,6 +89,15 @@ where
     
     /// Cached type set
     type_set: Option<HashSet<i32>>,
+
+    /// Whether `set_alpha` has populated roots/diagonals at least once.
+    ///
+    /// Java `TypeFinder.alpha` starts null, so the constructor always runs
+    /// `setAlpha`. Rust stored the initial partition before calling
+    /// `set_alpha`, which then early-returned on equality and left
+    /// `diagonal4` empty. That skips the constant tuples in A^4 and
+    /// mis-types simple algebras (Con card 2).
+    alpha_ready: bool,
 }
 
 impl<T> TypeFinder<T>
@@ -164,6 +173,7 @@ where
             diagonal4_hs,
             diagonal4,
             type_set: None,
+            alpha_ready: false,
         };
         
         type_finder.set_alpha(init_alpha)?;
@@ -192,9 +202,10 @@ where
     
     /// Set the alpha partition and update related structures.
     fn set_alpha(&mut self, alpha: Partition) -> Result<(), String> {
-        if alpha == self.alpha {
+        if self.alpha_ready && alpha == self.alpha {
             return Ok(());
         }
+        self.alpha_ready = true;
         
         self.visited.clear();
         self.alpha = alpha.clone();
@@ -402,9 +413,11 @@ where
                 let mut arg_indices = vec![0_i32; arity as usize];
                 arg_indices[(arity - 1) as usize] = closed_mark as i32;
                 
-                let mut inc = SequenceGenerator::sequence_incrementor(
+                // Java: sequenceIncrementor(argIndeces, currentMark - 1, closedMark)
+                let mut inc = SequenceGenerator::sequence_incrementor_with_min(
                     &mut arg_indices,
-                    (current_mark - 1) as i32
+                    (current_mark - 1) as i32,
+                    closed_mark as i32,
                 );
                 
                 loop {
@@ -429,6 +442,9 @@ where
                     let v0 = v.get(0).ok_or_else(|| "Invalid result: missing first element".to_string())?;
                     let v1 = v.get(1).ok_or_else(|| "Invalid result: missing second element".to_string())?;
                     
+                    // Java only considers pairs not related by alpha, and only
+                    // then adds the ordered pair to univ (after the unordered
+                    // "start over" check).
                     if !self.alpha.is_related(v0 as usize, v1 as usize) {
                         let v_unordered = if v0 < v1 {
                             IntArray::from_array(vec![v0, v1])?
@@ -440,10 +456,9 @@ where
                             // v is new; start over with it
                             return Ok(Some(v));
                         }
-                    }
-                    
-                    if univ_hs.insert(v.clone()) {
-                        univ.push(v);
+                        if univ_hs.insert(v.clone()) {
+                            univ.push(v);
+                        }
                     }
                     
                     if !inc.increment() {
@@ -548,9 +563,11 @@ where
                 let mut arg_indices = vec![0_i32; arity as usize];
                 arg_indices[(arity - 1) as usize] = closed_mark as i32;
                 
-                let mut inc = SequenceGenerator::sequence_incrementor(
+                // Java: sequenceIncrementor(argIndeces, currentMark - 1, closedMark)
+                let mut inc = SequenceGenerator::sequence_incrementor_with_min(
                     &mut arg_indices,
-                    (current_mark - 1) as i32
+                    (current_mark - 1) as i32,
+                    closed_mark as i32,
                 );
                 
                 loop {
@@ -669,6 +686,8 @@ mod tests {
         
         let type_finder = TypeFinder::new(alg).unwrap();
         assert_eq!(type_finder.alg_size(), 3);
+        assert_eq!(type_finder.diagonal4.len(), 3);
+        assert_eq!(type_finder.diagonal.len(), 3);
     }
     
     #[test]

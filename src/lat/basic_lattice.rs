@@ -296,6 +296,11 @@ where
         &self.join_operation
     }
 
+    /// Get the meet operation.
+    pub fn get_meet_operation(&self) -> &Arc<dyn Operation> {
+        &self.meet_operation
+    }
+
     /// Get cardinality.
     pub fn cardinality(&self) -> usize {
         self.univ_list.len()

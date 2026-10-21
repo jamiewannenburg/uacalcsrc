@@ -171,10 +171,11 @@ TEST_CASES = [
         "_one_step([IntArray([1])], c2_op, 0, 0)",
         "one pass of SingleClose on C2 from {1}",
         xfail_reason=(
-            "Java IntOperation.valueAt(int[][]) is UOE; Rust SingleClose uses "
-            "value_at_arrays and returns new elements. Product-algebra "
-            "operations() are not bound on CPython BigProductAlgebra, so the "
-            "script-usable parallel closer is Closer.doParallel / sgClose."
+            "Java IntOperation.valueAt(int[][]) throws UnsupportedOperationException, "
+            "so SingleClose.doOneStep on a table operation does not produce elements. "
+            "Rust uses value_at_arrays and returns the closure step. Not faked: this "
+            "is a Java limitation. Parallel element-set parity is covered by "
+            "Closer.doParallel / sgClose. CPython BigProductAlgebra.operations() is bound."
         ),
         **_LIST
     ),
@@ -184,9 +185,10 @@ TEST_CASES = [
         "_one_step([IntArray([1]), IntArray([2])], m3_join, 0, 1)",
         "one pass of SingleClose on M3 join of 1 and 2",
         xfail_reason=(
-            "Java IntOperation.valueAt(int[][]) is UOE; Rust SingleClose uses "
-            "value_at_arrays. Parallel element-set parity is covered by "
-            "Closer.doParallel sgClose goldens."
+            "Java IntOperation.valueAt(int[][]) throws UnsupportedOperationException, "
+            "so SingleClose.doOneStep on a table operation does not produce elements. "
+            "Rust uses value_at_arrays. Not faked: this is a Java limitation. "
+            "Parallel element-set parity is covered by Closer.doParallel sgClose goldens."
         ),
         **_LIST
     ),

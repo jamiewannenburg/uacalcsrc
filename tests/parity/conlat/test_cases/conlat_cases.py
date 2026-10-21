@@ -1158,4 +1158,25 @@ _rt = {
         description="centralizes S, T, delta",
         **_BOOL
     ),
+    TestCaseSpec(
+        id="cl_matrices_card",
+        method="CongruenceLattice.matrices",
+        setup=_SETUP,
+        call="con.matrices(con.Tg(0, 0), con.Tg(0, 1), None).cardinality()",
+        description="M(S,T) cardinality for Tg(0,0), Tg(0,1) on C2",
+    ),
+    TestCaseSpec(
+        id="cl_commutator_tg",
+        method="CongruenceLattice.commutator",
+        setup=_SETUP,
+        call="str(con.commutator(con.Tg(0, 0), con.Tg(0, 1)))",
+        description="commutator of Tg(0,0) and Tg(0,1) on C2",
+    ),
+    TestCaseSpec(
+        id="cl_weak_commutator_tg",
+        method="CongruenceLattice.weakCommutator",
+        setup=_SETUP,
+        call="str(con.weakCommutator(con.Tg(0, 0), con.Tg(0, 1)))",
+        description="weakCommutator of Tg(0,0) and Tg(0,1) on C2",
+    ),
 ]

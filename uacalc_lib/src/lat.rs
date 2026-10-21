@@ -7,6 +7,7 @@ use uacalc::alg::op::Operation;
 use uacalc::lat::lattices;
 use crate::alg::op::int_operation::PyIntOperation;
 use crate::alg::op::operation::PyBasicOperation;
+use std::collections::HashSet;
 use std::ops::Deref;
 
 /// Internal enum to hold either type of BasicLattice
@@ -15,6 +16,101 @@ pub(crate) enum BasicLatticeInner {
     Partition(std::sync::Arc<std::sync::Mutex<uacalc::lat::BasicLattice<uacalc::alg::conlat::Partition>>>),
     BasicSet(std::sync::Arc<std::sync::Mutex<uacalc::lat::BasicLattice<uacalc::alg::sublat::BasicSet>>>),
     Int32(std::sync::Arc<std::sync::Mutex<uacalc::lat::BasicLattice<i32>>>),
+}
+
+/// Build flattened n×n join/meet tables by universe index.
+///
+/// Java `BasicLattice` join/meet `intValueAt` assumes `univList` is a
+/// linear extension. Rust `SubalgebraLattice` universes are generation
+/// order, so we compute true LUB/GLB via `poset.leq` over the whole
+/// universe. The resulting integer algebra has the same Con/Sub as Java.
+fn join_meet_tables<T>(
+    lat: &uacalc::lat::BasicLattice<T>,
+) -> PyResult<(usize, Vec<i32>, Vec<i32>)>
+where
+    T: Clone + PartialEq + Eq + std::hash::Hash + std::fmt::Debug + std::fmt::Display + Send + Sync + 'static,
+{
+    let n = lat.cardinality();
+    let mut join_table = Vec::with_capacity(n * n);
+    let mut meet_table = Vec::with_capacity(n * n);
+    for i in 0..n {
+        for j in 0..n {
+            join_table.push(lub_index(lat, i, j)?);
+            meet_table.push(glb_index(lat, i, j)?);
+        }
+    }
+    Ok((n, join_table, meet_table))
+}
+
+fn lub_index<T>(lat: &uacalc::lat::BasicLattice<T>, i: usize, j: usize) -> PyResult<i32>
+where
+    T: Clone + PartialEq + Eq + std::hash::Hash + std::fmt::Debug + std::fmt::Display + Send + Sync + 'static,
+{
+    let univ = lat.get_universe_list();
+    let poset = lat.get_poset();
+    let a = &univ[i];
+    let b = &univ[j];
+    let mut best: Option<usize> = None;
+    for k in 0..univ.len() {
+        let elem = &univ[k];
+        if poset.leq(a, elem) && poset.leq(b, elem) {
+            best = Some(match best {
+                Some(cur) if poset.leq(elem, &univ[cur]) => k,
+                Some(cur) => cur,
+                None => k,
+            });
+        }
+    }
+    best.map(|k| k as i32).ok_or_else(|| {
+        PyValueError::new_err(format!("no join for indices {}, {}", i, j))
+    })
+}
+
+fn glb_index<T>(lat: &uacalc::lat::BasicLattice<T>, i: usize, j: usize) -> PyResult<i32>
+where
+    T: Clone + PartialEq + Eq + std::hash::Hash + std::fmt::Debug + std::fmt::Display + Send + Sync + 'static,
+{
+    let univ = lat.get_universe_list();
+    let poset = lat.get_poset();
+    let a = &univ[i];
+    let b = &univ[j];
+    let mut best: Option<usize> = None;
+    for k in 0..univ.len() {
+        let elem = &univ[k];
+        if poset.leq(elem, a) && poset.leq(elem, b) {
+            best = Some(match best {
+                Some(cur) if poset.leq(&univ[cur], elem) => k,
+                Some(cur) => cur,
+                None => k,
+            });
+        }
+    }
+    best.map(|k| k as i32).ok_or_else(|| {
+        PyValueError::new_err(format!("no meet for indices {}, {}", i, j))
+    })
+}
+
+fn index_binop<T>(
+    lat: &uacalc::lat::BasicLattice<T>,
+    a: i32,
+    b: i32,
+    is_join: bool,
+) -> PyResult<i32>
+where
+    T: Clone + PartialEq + Eq + std::hash::Hash + std::fmt::Debug + std::fmt::Display + Send + Sync + 'static,
+{
+    let n = lat.cardinality() as i32;
+    if a < 0 || b < 0 || a >= n || b >= n {
+        return Err(PyValueError::new_err(format!(
+            "index {} or {} out of range (n={})",
+            a, b, n
+        )));
+    }
+    if is_join {
+        lub_index(lat, a as usize, b as usize)
+    } else {
+        glb_index(lat, a as usize, b as usize)
+    }
 }
 
 /// Python wrapper for DivisibilityOrder
@@ -883,7 +979,55 @@ impl PyBasicLattice {
         format!("BasicLattice({})", self.name())
     }
     
-    /// Get universe as a list of integers (for BasicLattice<i32> only)
+    /// Flattened n×n join and meet tables by universe index.
+    ///
+    /// Returns `(n, join_table, meet_table)` in row-major order, matching
+    /// Java `intValueAt` on POElem indices. Used to build a `BasicAlgebra`
+    /// so `con()` / `sub()` work over `BasicSet` and `Partition` lattices.
+    fn int_join_meet_tables(&self) -> PyResult<(usize, Vec<i32>, Vec<i32>)> {
+        match &self.inner {
+            BasicLatticeInner::Partition(inner) => {
+                join_meet_tables(&*inner.lock().unwrap())
+            }
+            BasicLatticeInner::BasicSet(inner) => {
+                join_meet_tables(&*inner.lock().unwrap())
+            }
+            BasicLatticeInner::Int32(inner) => {
+                join_meet_tables(&*inner.lock().unwrap())
+            }
+        }
+    }
+
+    /// Integer-universe BasicAlgebra of join/meet tables (Java getBasicLattice ops).
+    fn as_indexed_algebra(&self) -> PyResult<crate::alg::PyBasicAlgebra> {
+        let (n, join_table, meet_table) = self.int_join_meet_tables()?;
+        let n = n as i32;
+        let join_op = uacalc::alg::op::ops::make_int_operation_str("join", 2, n, join_table)
+            .map_err(PyValueError::new_err)?;
+        let meet_op = uacalc::alg::op::ops::make_int_operation_str("meet", 2, n, meet_table)
+            .map_err(PyValueError::new_err)?;
+        let univ: HashSet<i32> = (0..n).collect();
+        Ok(crate::alg::PyBasicAlgebra::from_inner(
+            uacalc::alg::BasicAlgebra::new(self.name(), univ, vec![join_op, meet_op]),
+        ))
+    }
+
+    /// Java `BasicLattice.con()`: CongruenceLattice of the join/meet algebra.
+    fn con(&self) -> PyResult<crate::alg::PyCongruenceLattice> {
+        let alg = self.as_indexed_algebra()?;
+        Ok(crate::alg::PyCongruenceLattice::from_algebra(&alg))
+    }
+
+    /// Java `BasicLattice.sub()`: SubalgebraLattice of the join/meet algebra.
+    fn sub(&self) -> PyResult<crate::alg::PySubalgebraLattice> {
+        let alg = self.as_indexed_algebra()?;
+        crate::alg::sublat::subalgebra_lattice::PySubalgebraLattice::from_basic(&alg)
+    }
+
+    /// Get universe as a list of integers.
+    ///
+    /// For `BasicLattice<i32>` this is the element labels. For `BasicSet` /
+    /// `Partition` lattices it is the universe indices `0..n-1`.
     fn universe(&self) -> PyResult<Vec<i32>> {
         match &self.inner {
             BasicLatticeInner::Int32(inner) => {
@@ -893,7 +1037,14 @@ impl PyBasicLattice {
                     .map(|po_elem| *po_elem.get_underlying_object())
                     .collect())
             }
-            _ => Err(PyValueError::new_err("universe() is only available for BasicLattice<i32> created from operations")),
+            BasicLatticeInner::BasicSet(inner) => {
+                let n = inner.lock().unwrap().cardinality();
+                Ok((0..n as i32).collect())
+            }
+            BasicLatticeInner::Partition(inner) => {
+                let n = inner.lock().unwrap().cardinality();
+                Ok((0..n as i32).collect())
+            }
         }
     }
     
@@ -950,7 +1101,12 @@ impl PyBasicLattice {
                     _ => Err(PyValueError::new_err(format!("Element {} or {} not found in universe", a, b))),
                 }
             }
-            _ => Err(PyValueError::new_err("join() is only available for BasicLattice<i32> created from operations")),
+            BasicLatticeInner::BasicSet(inner) => {
+                index_binop(&*inner.lock().unwrap(), a, b, true)
+            }
+            BasicLatticeInner::Partition(inner) => {
+                index_binop(&*inner.lock().unwrap(), a, b, true)
+            }
         }
     }
     
@@ -973,7 +1129,12 @@ impl PyBasicLattice {
                     _ => Err(PyValueError::new_err(format!("Elements {} or {} not found in universe", a, b))),
                 }
             }
-            _ => Err(PyValueError::new_err("meet() is only available for BasicLattice<i32> created from operations")),
+            BasicLatticeInner::BasicSet(inner) => {
+                index_binop(&*inner.lock().unwrap(), a, b, false)
+            }
+            BasicLatticeInner::Partition(inner) => {
+                index_binop(&*inner.lock().unwrap(), a, b, false)
+            }
         }
     }
     
@@ -1266,6 +1427,9 @@ impl PyBasicLattice {
     }
 
     /// Universe element at index `k` (Java `getElement`).
+    ///
+    /// For `BasicSet` / `Partition` lattices this is the index itself, so
+    /// callers can build int join/meet tables without extracting labels.
     fn get_element(&self, k: usize) -> PyResult<i32> {
         match &self.inner {
             BasicLatticeInner::Int32(inner) => {
@@ -1275,11 +1439,29 @@ impl PyBasicLattice {
                     .map(|e| *e.get_underlying_object())
                     .ok_or_else(|| PyValueError::new_err(format!("index {} out of range", k)))
             }
-            _ => Err(PyValueError::new_err("get_element() is only available for BasicLattice<i32> created from operations")),
+            BasicLatticeInner::BasicSet(inner) => {
+                let n = inner.lock().unwrap().cardinality();
+                if k < n {
+                    Ok(k as i32)
+                } else {
+                    Err(PyValueError::new_err(format!("index {} out of range", k)))
+                }
+            }
+            BasicLatticeInner::Partition(inner) => {
+                let n = inner.lock().unwrap().cardinality();
+                if k < n {
+                    Ok(k as i32)
+                } else {
+                    Err(PyValueError::new_err(format!("index {} out of range", k)))
+                }
+            }
         }
     }
 
     /// Index of an element label (Java `elementIndex` on the POElem's label).
+    ///
+    /// For `BasicSet` / `Partition` lattices the public elements *are* the
+    /// indices, so this is the identity on `0..n-1`.
     fn element_index(&self, element: i32) -> PyResult<i32> {
         match &self.inner {
             BasicLatticeInner::Int32(inner) => {
@@ -1290,7 +1472,22 @@ impl PyBasicLattice {
                     .map(|i| i as i32)
                     .ok_or_else(|| PyValueError::new_err(format!("Element {} not found in universe", element)))
             }
-            _ => Err(PyValueError::new_err("element_index() is only available for BasicLattice<i32> created from operations")),
+            BasicLatticeInner::BasicSet(inner) => {
+                let n = inner.lock().unwrap().cardinality() as i32;
+                if element >= 0 && element < n {
+                    Ok(element)
+                } else {
+                    Err(PyValueError::new_err(format!("Element {} not found in universe", element)))
+                }
+            }
+            BasicLatticeInner::Partition(inner) => {
+                let n = inner.lock().unwrap().cardinality() as i32;
+                if element >= 0 && element < n {
+                    Ok(element)
+                } else {
+                    Err(PyValueError::new_err(format!("Element {} not found in universe", element)))
+                }
+            }
         }
     }
 

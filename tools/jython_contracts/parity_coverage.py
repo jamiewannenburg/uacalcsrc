@@ -107,10 +107,6 @@ PENDING_BINDINGS = {
             "getDiagram and ProgressReport monitor overloads",
             "Swing/latdraw and org.uacalc.ui.tm.ProgressReport are out of scope",
         ),
-        (
-            "SubalgebraLattice.con / sub of the lattice itself",
-            "BasicLattice from a BasicSet universe cannot yet extract i32 join/meet tables",
-        ),
     ],
     "conlat": [
         (
@@ -125,7 +121,9 @@ PENDING_BINDINGS = {
             "CongruenceLattice type theory / commutator SubProduct overloads",
             "typeSet/type/typeJI/subtrace/getTypeFinder are wrapped in the "
             "org shim (TypeFinder + originating algebra stashed on con()). "
-            "matrices / commutator-with-report / SubProduct overloads stay unbound.",
+            "matrices / commutator(S,T) / weakCommutator / centralityFailure "
+            "are bound (witnesses as IntArray coordinates). commutator-with-report "
+            "ProgressReport overloads stay unbound.",
         ),
     ],
     "alg_op": [

@@ -2412,7 +2412,7 @@
       },
       "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
       "skip_string_check": true,
-      "xfail_reason": "SubalgebraLattice.con() builds Con of the lattice via BasicLattice; uacalc_lib BasicLattice from a BasicSet universe cannot yet extract i32 join/meet tables (get_element is i32-ops only)."
+      "xfail_reason": null
     },
     {
       "args": [],
@@ -2433,7 +2433,7 @@
       },
       "setup": "\nfrom org.uacalc.alg.sublat import BasicSet, SubalgebraLattice\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import ProductAlgebra, QuotientAlgebra\nempty = BasicSet.EMPTY_SET\ns01 = BasicSet([0, 1])\ns02 = BasicSet([0, 2])\ns13 = BasicSet([1, 3])\ns12 = BasicSet([1, 2])\ns012 = BasicSet([0, 1, 2])\ns123 = BasicSet([1, 2, 3])\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nm3 = AlgebraIO.readAlgebraFile('resources/algebras/m3.ua')\nn5 = AlgebraIO.readAlgebraFile('resources/algebras/n5.ua')\nc3 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic3.ua')\nba2 = AlgebraIO.readAlgebraFile('resources/algebras/ba2.ua')\nsl = SubalgebraLattice(c2)\nsl2 = SubalgebraLattice(lat2)\nslm = SubalgebraLattice(m3)\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
       "skip_string_check": true,
-      "xfail_reason": "SubalgebraLattice.sub() builds Sub of the lattice via BasicLattice; uacalc_lib BasicLattice from a BasicSet universe cannot yet extract i32 join/meet tables (get_element is i32-ops only)."
+      "xfail_reason": null
     },
     {
       "args": [],

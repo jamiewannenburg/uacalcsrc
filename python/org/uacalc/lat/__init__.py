@@ -373,14 +373,21 @@ if not is_jython:
             from org.uacalc.alg import BasicAlgebra
             from org.uacalc.alg.op import Operations, OperationSymbol
 
-            n = int(self.cardinality())
-            join_table = []
-            meet_table = []
-            elems = [self.getElement(i) for i in range(n)]
-            for ei in elems:
-                for ej in elems:
-                    join_table.append(int(self.elementIndex(join(self, ei, ej))))
-                    meet_table.append(int(self.elementIndex(meet(self, ei, ej))))
+            tables = getattr(self, "int_join_meet_tables", None)
+            if callable(tables):
+                n, join_table, meet_table = tables()
+                n = int(n)
+                join_table = [int(x) for x in list(join_table)]
+                meet_table = [int(x) for x in list(meet_table)]
+            else:
+                n = int(self.cardinality())
+                join_table = []
+                meet_table = []
+                elems = [self.getElement(i) for i in range(n)]
+                for ei in elems:
+                    for ej in elems:
+                        join_table.append(int(self.elementIndex(join(self, ei, ej))))
+                        meet_table.append(int(self.elementIndex(meet(self, ei, ej))))
             make = getattr(Operations, "makeIntOperation", None)
             if make is None:
                 make = Operations.make_int_operation

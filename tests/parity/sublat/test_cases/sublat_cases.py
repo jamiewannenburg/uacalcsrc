@@ -42,16 +42,6 @@ _LAT = dict(skip_string_check=True, notes="Java lattice toString is Class@hex; v
 _ALG = dict(skip_string_check=True, notes="Java Algebra toString is Class@hex; values compared.")
 _SET = dict(skip_string_check=True, notes="BasicSet identity toString vs Python; elements compared.")
 
-_CON_XFAIL = (
-    "SubalgebraLattice.con() builds Con of the lattice via BasicLattice; "
-    "uacalc_lib BasicLattice from a BasicSet universe cannot yet extract i32 "
-    "join/meet tables (get_element is i32-ops only)."
-)
-_SUB_XFAIL = (
-    "SubalgebraLattice.sub() builds Sub of the lattice via BasicLattice; "
-    "uacalc_lib BasicLattice from a BasicSet universe cannot yet extract i32 "
-    "join/meet tables (get_element is i32-ops only)."
-)
 _DIAGRAM_XFAIL = (
     "getDiagram() returns a latdraw Diagram; Swing/latdraw GUI is out of scope."
 )
@@ -842,7 +832,6 @@ TEST_CASES = [
         setup=_SETUP,
         call="sl.con().cardinality()",
         description="Con(Sub(C2)) cardinality",
-        xfail_reason=_CON_XFAIL,
         **_LAT
     ),
     TestCaseSpec(
@@ -851,7 +840,6 @@ TEST_CASES = [
         setup=_SETUP,
         call="sl.sub().cardinality()",
         description="Sub(Sub(C2)) cardinality",
-        xfail_reason=_SUB_XFAIL,
         **_LAT
     ),
     TestCaseSpec(
