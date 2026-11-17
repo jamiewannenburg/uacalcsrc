@@ -2552,17 +2552,61 @@ def _install(alg_module_globals: dict) -> None:
                 return impl()
         return None
 
+    def _projection_kernel_by_coords(self: Any, k: int) -> Any:
+        """Java ``projectionKernel`` when Rust binding is missing."""
+        from org.uacalc.alg.conlat import BasicPartition
+
+        n = int(self.cardinality())
+        kern = BasicPartition.zero(n)
+        get_fn = getattr(self, "getElement", None) or getattr(self, "get_element", None)
+        if not callable(get_fn):
+            get_fn = lambda idx, _s=self: subproductGetElement(_s, idx)
+        for i in range(n):
+            for j in range(i + 1, n):
+                ei = get_fn(i)
+                ej = get_fn(j)
+                ai = _int_array_values(ei)
+                aj = _int_array_values(ej)
+                if k < len(ai) and k < len(aj) and int(ai[k]) == int(aj[k]):
+                    r = int(kern.representative(i))
+                    s = int(kern.representative(j))
+                    if r != s:
+                        kern.joinBlocks(r, s)
+        return kern
+
     def projection(self: Any, k: Any) -> Any:
         fn = getattr(self, "projection", None)
         if callable(fn):
             return _lib_call(fn, int(k))
         return None
 
+    def _subproduct_algebra_type(self: Any) -> bool:
+        """True when ``self`` is a SubProduct algebra (Java implements ``projectionKernel``)."""
+        alg_type = getattr(self, "algebra_type", None) or getattr(self, "algebraType", None)
+        if callable(alg_type):
+            try:
+                return str(alg_type()).upper() == "SUBPRODUCT"
+            except (TypeError, ValueError):
+                pass
+        return type(self).__name__ == "SubProductAlgebra"
+
     def projectionKernel(self: Any, k: Any) -> Any:
+        """Java ``projectionKernel(int)``; org shim fills SubProduct when Rust is unbound."""
         fn = getattr(self, "projection_kernel", None)
+        idx = int(k)
         if callable(fn):
-            return fn(int(k))
-        return None
+            try:
+                result = fn(idx)
+            except ValueError as exc:
+                # uacalc_lib / Rust ``projection_kernel`` unimplemented (see RUST_GAPS.md).
+                if "projection kernel" not in str(exc).lower():
+                    raise
+                result = None
+            if result is not None or not _subproduct_algebra_type(self):
+                return result
+        elif not _subproduct_algebra_type(self):
+            return None
+        return _projection_kernel_by_coords(self, idx)
 
     def getRoot(self: Any) -> Any:
         fn = getattr(self, "get_root", None)
@@ -2715,6 +2759,27 @@ def _install(alg_module_globals: dict) -> None:
         fn = getattr(self, "get_term", None)
         if callable(fn):
             return fn(elt)
+        return None
+
+    def subproductGetTermMap(self: Any) -> Any:
+        fn = getattr(self, "get_term_map", None)
+        if callable(fn):
+            return fn()
+        return None
+
+    def subproductGetElementFromTerm(self: Any, term: Any) -> Any:
+        fn = getattr(self, "get_element_from_term", None)
+        if callable(fn):
+            return fn(term)
+        terms = getTerms(self)
+        if not terms:
+            return None
+        for i, t in enumerate(list(terms)):
+            eq = getattr(t, "equals", None)
+            if callable(eq) and eq(term):
+                return subproductGetElement(self, i)
+            if t == term:
+                return subproductGetElement(self, i)
         return None
 
     def getVariableToGeneratorMap(self: Any) -> Any:
@@ -3183,6 +3248,9 @@ def _install(alg_module_globals: dict) -> None:
         "getProductAlgebra": getProductAlgebra,
         "getTerms": getTerms,
         "getTerm": getTerm,
+        "getTermMap": subproductGetTermMap,
+        "getElementFromTerm": subproductGetElementFromTerm,
+        "projectionKernel": projectionKernel,
         "getVariableToGeneratorMap": getVariableToGeneratorMap,
         "getVariables": getVariables,
         "convertToDefaultValueOps": convertToDefaultValueOps_uoe,
@@ -3251,6 +3319,7 @@ def _install(alg_module_globals: dict) -> None:
         "getUniverseList": lambda self: list(self.universe()) if hasattr(self, "universe") else None,
         "iterator": _algebra_iterator,
         "convertToDefaultValueOps": convertToDefaultValueOps_uoe,
+        "resetConAndSub": resetConAndSub,
     }
     for camel, impl in _GENERAL_EXTRA.items():
         _bind(_LibGeneralAlgebra, camel, impl)
@@ -4742,6 +4811,9 @@ def _install(alg_module_globals: dict) -> None:
             "convertToDefaultValueOps": "convertToDefaultValueOps",
             "getTerms": "get_terms",
             "getTerm": "get_term",
+            "getTermMap": "get_term_map",
+            "getElementFromTerm": "get_element_from_term",
+            "projectionKernel": "projectionKernel",
             "getVariableToGeneratorMap": "get_variable_to_generator_map",
             "getVariables": "get_variables",
             "con": "con",
@@ -4802,8 +4874,13 @@ def _install(alg_module_globals: dict) -> None:
             "elementIndex": "element_index",
             "getElement": "get_element",
             "getUniverseList": "get_universe_list",
+            "getUniverseOrder": "get_universe_order",
             "algebraType": "algebra_type",
             "congruenceAsAlgebra": "congruenceAsAlgebra",
+            "con": "con",
+            "sub": "sub",
+            "makeOperationTables": "make_operation_tables",
+            "convertToDefaultValueOps": "convertToDefaultValueOps",
         },
         "AlgebraFromMinimalSets": {
             "getName": "name",
@@ -4826,6 +4903,7 @@ def _install(alg_module_globals: dict) -> None:
             "getElement": "getElement",
             "elementIndex": "elementIndex",
             "getUniverseList": "getUniverseList",
+            "getUniverseOrder": "getUniverseOrder",
             "algebraType": "algebra_type",
             "convertToDefaultValueOps": "convertToDefaultValueOps",
             "con": "con",
@@ -4861,6 +4939,7 @@ def _install(alg_module_globals: dict) -> None:
             "getName": "name",
             "setName": "set_name",
             "getOperation": "getOperation",
+            "resetConAndSub": "resetConAndSub",
             "getDescription": "description",
             "setDescription": "set_description",
             "universe": "universe",

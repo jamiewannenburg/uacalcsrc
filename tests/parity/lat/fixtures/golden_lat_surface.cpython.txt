@@ -1,11 +1,12 @@
 MODULE: org.uacalc.lat
 RUNTIME: cpython
-PUBLIC_COUNT: 42
+PUBLIC_COUNT: 43
 HAS_BASIC_LATTICE: yes
 NAME: BasicLattice
 NAME: BooleanLattice
 NAME: DiamondLattice
 NAME: DivisibilityOrder
+NAME: Lattice
 NAME: LatticeGraphData
 NAME: Lattices
 NAME: NaturalOrder

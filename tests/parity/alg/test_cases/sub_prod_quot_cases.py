@@ -752,6 +752,21 @@ TEST_CASES = [
         **_NONE
     ),
     TestCaseSpec(
+        id="sp_term_map",
+        method="SubProductAlgebra.getTermMap",
+        setup=_SETUP,
+        call="sp.getTermMap()",
+        description="getTermMap is null when findTerms is false",
+        **_NONE
+    ),
+    TestCaseSpec(
+        id="sp_proj_kern",
+        method="SubProductAlgebra.projectionKernel",
+        setup=_SETUP,
+        call="str(sp.projectionKernel(0).numberOfBlocks())",
+        description="projectionKernel on first coordinate",
+    ),
+    TestCaseSpec(
         id="sp_op_table",
         method="SubProductAlgebra.getOperation",
         setup=_SETUP,

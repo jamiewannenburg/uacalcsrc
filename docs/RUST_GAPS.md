@@ -58,6 +58,12 @@ test(s) that surface it.
 - **Missing:** Enumerate small products; compare similarity types; fill symbols from operations; compute the projection kernel (Java's public method is a null stub, but the Rust `Result` path is still unimplemented).
 - **Tests:** `test_rust_gap_big_product_universe`, `test_rust_gap_big_product_is_similar_to`, `test_rust_gap_big_product_update_similarity_type`; ignored `big_product_universe_not_empty`, `big_product_is_similar_to_self`, `big_product_update_similarity_type`, `big_product_projection_kernel`.
 
+### SubProductAlgebra projection_kernel
+
+- **Rust:** `src/alg/sub_product_algebra.rs` has no `projection_kernel`; `uacalc_lib/src/alg/sub_product_algebra.rs` does not expose `projection_kernel` / `projectionKernel` on `PySubProductAlgebra` (unlike `ProductAlgebra` / `BigProductAlgebra`, which return Java-null `None`).
+- **Missing:** Build the coordinate agreement partition in Rust and bind it on `PySubProductAlgebra` (Java implements this on `SubProductAlgebra`; parity golden `sp_proj_kern`).
+- **Tests:** `tests/parity/test_rust_gaps.py` `test_rust_gap_sub_product_projection_kernel` (strict xfail on the `uacalc_lib` binding); ignored `tests/rust_gaps.rs` `sub_product_projection_kernel`. The `org.uacalc` shim may compute the partition in Python until Rust is filled in.
+
 ### SmallLattice is_similar_to always true
 
 - **Rust:** `src/lat/small_lattice.rs` `DiamondLattice` / `BooleanLattice` `is_similar_to` always `true`.

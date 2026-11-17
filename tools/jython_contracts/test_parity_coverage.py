@@ -13,11 +13,16 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT / "tools"))
 
 from jython_contracts.parity_coverage import (  # noqa: E402
+    build_java_type_index,
     build_parity_coverage,
+    build_python_type_index,
+    clear_parity_coverage_caches,
+    expand_java_methods_with_inheritance,
     format_parity_coverage,
     scan_behavioral_test_methods,
     scan_java_public_methods,
     scan_python_wrapper_methods,
+    _java_method_wrapped,
 )
 
 
@@ -75,6 +80,7 @@ def mini_pkg(tmp_path: Path, monkeypatch):
 
     import jython_contracts.parity_coverage as pc
 
+    clear_parity_coverage_caches()
     monkeypatch.setattr(pc, "PROJECT_ROOT", repo)
     return repo
 
@@ -140,6 +146,95 @@ def test_behavioral_scan_keeps_class_prefix(mini_pkg):
     tested = scan_behavioral_test_methods(parity_dir)
     assert "Alpha.shared" in tested
     assert "shared" not in tested
+
+
+def test_java_inheritance_adds_supertype_methods(tmp_path: Path):
+    repo = tmp_path / "repo"
+    (repo / "org" / "uacalc" / "demo").mkdir(parents=True)
+    java_base = textwrap.dedent(
+        """
+        package org.uacalc.demo;
+        public interface Base {
+            public int inherited();
+        }
+        """
+    )
+    java_sub = textwrap.dedent(
+        """
+        package org.uacalc.demo;
+        public class Child implements Base {
+            public int ownOnly() { return 0; }
+        }
+        """
+    )
+    (repo / "org" / "uacalc" / "demo" / "Base.java").write_text(java_base, encoding="utf-8")
+    (repo / "org" / "uacalc" / "demo" / "Child.java").write_text(java_sub, encoding="utf-8")
+    idx = build_java_type_index(repo / "org" / "uacalc")
+    expanded = expand_java_methods_with_inheritance(
+        {"Child.ownOnly", "Base.inherited"}, idx
+    )
+    assert "Child.inherited" in expanded
+    assert "Child.ownOnly" in expanded
+
+
+def test_python_mro_counts_base_wrapper(tmp_path: Path):
+    py = textwrap.dedent(
+        """
+        class Base:
+            def shared(self):
+                pass
+        class Child(Base):
+            pass
+        """
+    )
+    path = tmp_path / "w.py"
+    path.write_text(py, encoding="utf-8")
+    qualified = scan_python_wrapper_methods(path)
+    py_idx = build_python_type_index(tmp_path)
+    java_idx = build_java_type_index(tmp_path)
+    assert _java_method_wrapped(
+        "Child.shared",
+        qualified,
+        java_index=java_idx,
+        python_index=py_idx,
+    )
+
+
+def test_java_supertype_bridge_for_interface_impl(tmp_path: Path):
+    repo = tmp_path / "repo"
+    (repo / "org" / "uacalc" / "demo").mkdir(parents=True)
+    (repo / "python" / "org" / "uacalc" / "demo").mkdir(parents=True)
+    java_iface = textwrap.dedent(
+        """
+        package org.uacalc.demo;
+        public interface Face { int arity(); }
+        """
+    )
+    java_impl = textwrap.dedent(
+        """
+        package org.uacalc.demo;
+        public class Impl implements Face { public int arity() { return 1; } }
+        """
+    )
+    (repo / "org" / "uacalc" / "demo" / "Face.java").write_text(java_iface, encoding="utf-8")
+    (repo / "org" / "uacalc" / "demo" / "Impl.java").write_text(java_impl, encoding="utf-8")
+    py = textwrap.dedent(
+        """
+        class Face:
+            def arity(self):
+                pass
+        """
+    )
+    (repo / "python" / "org" / "uacalc" / "demo" / "m.py").write_text(py, encoding="utf-8")
+    java_idx = build_java_type_index(repo / "org" / "uacalc")
+    py_idx = build_python_type_index(repo / "python" / "org" / "uacalc")
+    qualified = scan_python_wrapper_methods(repo / "python" / "org" / "uacalc" / "demo" / "m.py")
+    assert _java_method_wrapped(
+        "Impl.arity",
+        qualified,
+        java_index=java_idx,
+        python_index=py_idx,
+    )
 
 
 def test_comparison_allowlist_paths_exist():

@@ -6,10 +6,30 @@ CPython re-exports ``uacalc_lib.terms`` and adds Jython facades used by
 """
 
 _CLASS_ALIASES = {
+    "Term": {
+        "isaVariable": "isa_variable",
+        "leadingOperationSymbol": "leading_operation_symbol",
+        "getOperationSymbols": "get_operation_symbols",
+        "getChildren": "get_children",
+        "eval": "eval",
+        "intEval": "int_eval",
+        "interpretation": "interpretation",
+        "depth": "depth",
+        "length": "length",
+        "getVariableList": "get_variable_list",
+        "substitute": "substitute",
+        "toString": "to_string",
+        "writeStringBuffer": "write_string_buffer",
+    },
     "NonVariableTerm": {
         "makeConstantTerm": "make_constant_term",
+        "eval": "eval",
         "intEval": "int_eval",
         "isaVariable": "isa_variable",
+        "interpretation": "interpretation",
+        "depth": "depth",
+        "length": "length",
+        "substitute": "substitute",
         "getVariableList": "get_variable_list",
         "leadingOperationSymbol": "leading_operation_symbol",
         "getOperationSymbols": "get_operation_symbols",
@@ -62,6 +82,48 @@ else:
     _string_to_term = _terms.string_to_term
     VariableImp = _terms.VariableImp
     Variable = VariableImp
+
+    class Term(object):
+        """Java ``org.uacalc.terms.Term`` interface surface for contracts."""
+
+        def isaVariable(self):
+            raise NotImplementedError
+
+        def leadingOperationSymbol(self):
+            raise NotImplementedError
+
+        def getOperationSymbols(self):
+            raise NotImplementedError
+
+        def getChildren(self):
+            raise NotImplementedError
+
+        def eval(self, alg, mmap):
+            raise NotImplementedError
+
+        def intEval(self, alg, mmap):
+            raise NotImplementedError
+
+        def interpretation(self, alg, varlist=None, useAll=None):
+            raise NotImplementedError
+
+        def depth(self):
+            raise NotImplementedError
+
+        def length(self):
+            raise NotImplementedError
+
+        def getVariableList(self):
+            raise NotImplementedError
+
+        def substitute(self, mmap):
+            raise NotImplementedError
+
+        def toString(self):
+            raise NotImplementedError
+
+        def writeStringBuffer(self, sb):
+            raise NotImplementedError
 
     _make_constant_term = _LibNonVariableTerm.make_constant_term
 

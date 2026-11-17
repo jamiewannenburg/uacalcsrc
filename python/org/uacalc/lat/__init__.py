@@ -2,6 +2,14 @@ import sys
 
 # Literal map for jython_contracts validate() (also applied below).
 _CLASS_ALIASES = {
+    "Lattice": {
+        "join": "join",
+        "meet": "meet",
+        "cardinality": "cardinality",
+        "universe": "universe",
+        "con": "con",
+        "sub": "sub",
+    },
     "BasicLattice": {
         "getName": "name",
         "getUniverseList": "universe",
@@ -111,6 +119,27 @@ if not is_jython:
             except Exception:
                 return False
         return True
+
+    class Lattice(object):
+        """Java ``org.uacalc.lat.Lattice`` interface surface."""
+
+        def join(self, a, b=None):
+            raise NotImplementedError
+
+        def meet(self, a, b=None):
+            raise NotImplementedError
+
+        def cardinality(self):
+            raise NotImplementedError
+
+        def universe(self):
+            raise NotImplementedError
+
+        def con(self):
+            raise NotImplementedError
+
+        def sub(self):
+            raise NotImplementedError
 
     class Lattices(object):
         """Static facade matching Java ``org.uacalc.lat.Lattices``."""

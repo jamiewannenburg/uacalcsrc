@@ -262,6 +262,27 @@ def test_rust_gap_big_product_is_similar_to():
 
 
 @pytest.mark.xfail(
+    reason="Rust gap: SubProductAlgebra.projection_kernel is not bound on uacalc_lib",
+    strict=True,
+)
+def test_rust_gap_sub_product_projection_kernel():
+    from uacalc_lib.alg import BigProductAlgebra, SubProductAlgebra
+
+    IntArray = uacalc_lib.util.IntArray
+    c2 = _c2()
+    bp = BigProductAlgebra.new_power(c2, 2)
+    gens = [IntArray.from_array([0, 0]), IntArray.from_array([1, 1])]
+    sp = SubProductAlgebra("SP", bp, gens, False)
+    fn = getattr(sp, "projection_kernel", None) or getattr(sp, "projectionKernel", None)
+    assert callable(fn), "projection_kernel should be bound on uacalc_lib.SubProductAlgebra"
+    part = fn(0)
+    assert part is not None
+    blocks = getattr(part, "number_of_blocks", None) or getattr(part, "numberOfBlocks", None)
+    assert callable(blocks)
+    assert int(blocks()) >= 1
+
+
+@pytest.mark.xfail(
     reason="Rust gap: BigProductAlgebra.update_similarity_type is a no-op",
     strict=True,
 )
