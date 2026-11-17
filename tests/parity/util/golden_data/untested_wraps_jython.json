@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "generated_at": "2026-11-17T10:41:53.899148+00:00",
+    "generated_at": "2026-11-17T17:33:22.016185+00:00",
     "jar": "uacalc.jar",
     "package": "org.uacalc.util",
     "runtime": "jython",
-    "test_cases": 8,
+    "test_cases": 10,
     "type": "untested_wraps"
   },
   "test_cases": [
@@ -194,6 +194,50 @@
       },
       "setup": "\nimport sys\nfrom org.uacalc.util import IntArray, PermutationGenerator, SimpleList\nfrom org.uacalc.util.virtuallist import TupleWithMin\n\ndef _ia_vals(a):\n    if a is None:\n        return None\n    try:\n        return [int(x) for x in list(a)]\n    except TypeError:\n        fn = getattr(a, \"getArray\", None) or getattr(a, \"toArray\", None)\n        if callable(fn):\n            return [int(x) for x in list(fn())]\n        return str(a)\n\ndef _sl_vals(sl):\n    if sl is None:\n        return None\n    out = []\n    n = int(sl.size()) if hasattr(sl, \"size\") else len(list(sl))\n    for i in range(n):\n        out.append(sl.get(i))\n    return out\n\nia = IntArray([1, 2, 3])\npg = PermutationGenerator(3)\nsl = SimpleList.makeList().cons(3).cons(2).cons(1)\ntwm = TupleWithMin(3, 4, 2)\n",
       "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "str(sl)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "SimpleList toString",
+      "expected_exception": null,
+      "id": "inh_sl_tostr",
+      "kwargs": {},
+      "method": "SimpleList.toString",
+      "notes": "Java List toString vs Python list.",
+      "result": {
+        "return_type": "str",
+        "return_value": "(1 2 3)",
+        "string_repr": "(1 2 3)",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.util import IntArray, PermutationGenerator, SimpleList\nfrom org.uacalc.util.virtuallist import TupleWithMin\n\ndef _ia_vals(a):\n    if a is None:\n        return None\n    try:\n        return [int(x) for x in list(a)]\n    except TypeError:\n        fn = getattr(a, \"getArray\", None) or getattr(a, \"toArray\", None)\n        if callable(fn):\n            return [int(x) for x in list(fn())]\n        return str(a)\n\ndef _sl_vals(sl):\n    if sl is None:\n        return None\n    out = []\n    n = int(sl.size()) if hasattr(sl, \"size\") else len(list(sl))\n    for i in range(n):\n        out.append(sl.get(i))\n    return out\n\nia = IntArray([1, 2, 3])\npg = PermutationGenerator(3)\nsl = SimpleList.makeList().cons(3).cons(2).cons(1)\ntwm = TupleWithMin(3, 4, 2)\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "int(twm.size())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "TupleWithMin size",
+      "expected_exception": null,
+      "id": "inh_twm_size",
+      "kwargs": {},
+      "method": "TupleWithMin.size",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 56,
+        "string_repr": "56",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.util import IntArray, PermutationGenerator, SimpleList\nfrom org.uacalc.util.virtuallist import TupleWithMin\n\ndef _ia_vals(a):\n    if a is None:\n        return None\n    try:\n        return [int(x) for x in list(a)]\n    except TypeError:\n        fn = getattr(a, \"getArray\", None) or getattr(a, \"toArray\", None)\n        if callable(fn):\n            return [int(x) for x in list(fn())]\n        return str(a)\n\ndef _sl_vals(sl):\n    if sl is None:\n        return None\n    out = []\n    n = int(sl.size()) if hasattr(sl, \"size\") else len(list(sl))\n    for i in range(n):\n        out.append(sl.get(i))\n    return out\n\nia = IntArray([1, 2, 3])\npg = PermutationGenerator(3)\nsl = SimpleList.makeList().cons(3).cons(2).cons(1)\ntwm = TupleWithMin(3, 4, 2)\n",
+      "skip_string_check": false,
       "timeout_seconds": null,
       "xfail_reason": null
     }

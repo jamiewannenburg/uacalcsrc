@@ -147,6 +147,30 @@ test(s) that surface it.
 - **Missing:** Expose Java-compatible `getElement` / universe element handles for matrix-power algebras.
 - **Tests:** `jython_comparison/scripts/matrix_power_algebra_smoke.py` (`getElement0`, `op_plus`).
 
+### MatrixPowerAlgebra con / sub / universe list / elementIndex
+
+- **Rust:** `uacalc_lib` `PyMatrixPowerAlgebra` has no `con` / `sub`; `getUniverseList` / `elementIndex` disagree with Java on small examples.
+- **Missing:** Bind congruence/subalgebra lattices and match Java universe indexing for matrix-power algebras.
+- **Tests:** `tests/parity/alg/test_cases/untested_wraps_cases.py` `inh_mp_con`, `inh_mp_sub`, `inh_mp_elem_idx`, `inh_mp_univ_list`.
+
+### ReductAlgebra sub / getUniverseOrder
+
+- **Rust:** `ReductAlgebra.sub()` cardinality and `getUniverseOrder()` differ from Java on a C2 reduct.
+- **Missing:** Match Java subalgebra-lattice size and universe-order map for reducts.
+- **Tests:** `inh_red_sub`, `inh_red_univ_order` in `untested_wraps_cases.py`.
+
+### ReductAlgebra.convertToDefaultValueOps / SubProductAlgebra getElementFromTerm
+
+- **Rust:** `ReductAlgebra.convertToDefaultValueOps` is a silent no-op on `uacalc_lib`; Java throws `UnsupportedOperationException` on non-basic algebras. `SubProductAlgebra.getElementFromTerm` succeeds where Java NPEs on the bundled thin subproduct fixture.
+- **Missing:** Match Java exception/success boundaries for reduct conversion and subproduct term round-trips.
+- **Tests:** `inh_red_convert`, `inh_sp_get_elem_term` in `tests/parity/alg/test_cases/untested_wraps_cases.py`.
+
+### example.FiniteField GeneralAlgebra surface
+
+- **Rust:** `org.uacalc.example.FiniteField` on `uacalc_lib` does not expose `convertToDefaultValueOps`, `getUniverseList`, or `getUniverseOrder`.
+- **Missing:** Inherit the same GeneralAlgebra API as Java `FiniteField`.
+- **Tests:** `inh_ff_convert`, `inh_ff_univ_list`, `inh_ff_univ_order` in `tests/parity/example/test_cases/untested_wraps_cases.py`.
+
 ## Platform notes (not Rust-gap xfails)
 
 On Windows, `malcev_term_rand_bin` and `hagemann_mitschke_rand_bin`

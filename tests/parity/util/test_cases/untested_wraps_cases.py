@@ -74,4 +74,6 @@ TEST_CASES = [
        "_sl_vals(sl.subList(1, 2))", "subList of a singleton middle", **_LIST),
     _c("sl_sublist_empty", "SimpleList.subList",
        "_sl_vals(sl.subList(1, 1))", "subList empty range", **_LIST),
+    _c("inh_sl_tostr", "SimpleList.toString", "str(sl)", "SimpleList toString", **_LIST),
+    _c("inh_twm_size", "TupleWithMin.size", "int(twm.size())", "TupleWithMin size"),
 ]

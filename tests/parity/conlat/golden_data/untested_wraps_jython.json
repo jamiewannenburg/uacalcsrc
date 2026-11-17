@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "generated_at": "2026-11-17T10:50:14.100833+00:00",
+    "generated_at": "2026-11-17T17:32:16.032265+00:00",
     "jar": "uacalc.jar",
     "package": "org.uacalc.conlat",
     "runtime": "jython",
-    "test_cases": 25,
+    "test_cases": 47,
     "type": "untested_wraps"
   },
   "test_cases": [
@@ -579,6 +579,504 @@
       },
       "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, CentralityData, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nident = BasicBinaryRelation.identity(3)\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\ncd = CentralityData(ident, ident, zero3)\nst = Subtrace(0, 1, True)\ntf_c2 = TypeFinder(c2)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nrel_sym = BasicBinaryRelation(3)\nrel_sym.add(0, 1)\nrel_sym.add(1, 0)\nz_c2 = c2.con().zero()\no_c2 = c2.con().one()\nz_n5 = n5.con().zero()\no_n5 = n5.con().one()\nz_m3 = m3.con().zero()\no_m3 = m3.con().one()\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _par(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toArray\", None) or getattr(p, \"to_array\", None)\n    if callable(fn):\n        return [int(x) for x in list(fn())]\n    return str(p)\n\ndef _fail(obj):\n    if obj is None:\n        return None\n    fn = getattr(obj, \"toString\", None)\n    if callable(fn):\n        return str(fn())\n    return str(obj)\n\ndef _rel(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toBinaryRelation\", None) or getattr(p, \"to_binary_relation\", None)\n    if callable(fn):\n        return fn()\n    return p\n",
       "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "rel.compose(rel_sym).toString()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "BasicBinaryRelation compose",
+      "expected_exception": null,
+      "id": "inh_bbr_compose",
+      "kwargs": {},
+      "method": "BasicBinaryRelation.compose",
+      "notes": "BinaryRelation toString vs Python.",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "[[0, 0]]",
+        "string_repr": "[[0, 0]]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, CentralityData, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nident = BasicBinaryRelation.identity(3)\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\ncd = CentralityData(ident, ident, zero3)\nst = Subtrace(0, 1, True)\ntf_c2 = TypeFinder(c2)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nrel_sym = BasicBinaryRelation(3)\nrel_sym.add(0, 1)\nrel_sym.add(1, 0)\nz_c2 = c2.con().zero()\no_c2 = c2.con().one()\nz_n5 = n5.con().zero()\no_n5 = n5.con().one()\nz_m3 = m3.con().zero()\no_m3 = m3.con().one()\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _par(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toArray\", None) or getattr(p, \"to_array\", None)\n    if callable(fn):\n        return [int(x) for x in list(fn())]\n    return str(p)\n\ndef _fail(obj):\n    if obj is None:\n        return None\n    fn = getattr(obj, \"toString\", None)\n    if callable(fn):\n        return str(fn())\n    return str(obj)\n\ndef _rel(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toBinaryRelation\", None) or getattr(p, \"to_binary_relation\", None)\n    if callable(fn):\n        return fn()\n    return p\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "len(list(rel.getPairs()))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "BasicBinaryRelation getPairs",
+      "expected_exception": null,
+      "id": "inh_bbr_pairs",
+      "kwargs": {},
+      "method": "BasicBinaryRelation.getPairs",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, CentralityData, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nident = BasicBinaryRelation.identity(3)\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\ncd = CentralityData(ident, ident, zero3)\nst = Subtrace(0, 1, True)\ntf_c2 = TypeFinder(c2)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nrel_sym = BasicBinaryRelation(3)\nrel_sym.add(0, 1)\nrel_sym.add(1, 0)\nz_c2 = c2.con().zero()\no_c2 = c2.con().one()\nz_n5 = n5.con().zero()\no_n5 = n5.con().one()\nz_m3 = m3.con().zero()\no_m3 = m3.con().one()\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _par(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toArray\", None) or getattr(p, \"to_array\", None)\n    if callable(fn):\n        return [int(x) for x in list(fn())]\n    return str(p)\n\ndef _fail(obj):\n    if obj is None:\n        return None\n    fn = getattr(obj, \"toString\", None)\n    if callable(fn):\n        return str(fn())\n    return str(obj)\n\ndef _rel(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toBinaryRelation\", None) or getattr(p, \"to_binary_relation\", None)\n    if callable(fn):\n        return fn()\n    return p\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "rel.isRelated(0, 1)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "BasicBinaryRelation isRelated",
+      "expected_exception": null,
+      "id": "inh_bbr_is_related",
+      "kwargs": {},
+      "method": "BasicBinaryRelation.isRelated",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, CentralityData, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nident = BasicBinaryRelation.identity(3)\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\ncd = CentralityData(ident, ident, zero3)\nst = Subtrace(0, 1, True)\ntf_c2 = TypeFinder(c2)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nrel_sym = BasicBinaryRelation(3)\nrel_sym.add(0, 1)\nrel_sym.add(1, 0)\nz_c2 = c2.con().zero()\no_c2 = c2.con().one()\nz_n5 = n5.con().zero()\no_n5 = n5.con().one()\nz_m3 = m3.con().zero()\no_m3 = m3.con().one()\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _par(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toArray\", None) or getattr(p, \"to_array\", None)\n    if callable(fn):\n        return [int(x) for x in list(fn())]\n    return str(p)\n\ndef _fail(obj):\n    if obj is None:\n        return None\n    fn = getattr(obj, \"toString\", None)\n    if callable(fn):\n        return str(fn())\n    return str(obj)\n\ndef _rel(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toBinaryRelation\", None) or getattr(p, \"to_binary_relation\", None)\n    if callable(fn):\n        return fn()\n    return p\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "len(list(rel.iterator()))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "BasicBinaryRelation iterator",
+      "expected_exception": null,
+      "id": "inh_bbr_iter",
+      "kwargs": {},
+      "method": "BasicBinaryRelation.iterator",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, CentralityData, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nident = BasicBinaryRelation.identity(3)\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\ncd = CentralityData(ident, ident, zero3)\nst = Subtrace(0, 1, True)\ntf_c2 = TypeFinder(c2)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nrel_sym = BasicBinaryRelation(3)\nrel_sym.add(0, 1)\nrel_sym.add(1, 0)\nz_c2 = c2.con().zero()\no_c2 = c2.con().one()\nz_n5 = n5.con().zero()\no_n5 = n5.con().one()\nz_m3 = m3.con().zero()\no_m3 = m3.con().one()\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _par(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toArray\", None) or getattr(p, \"to_array\", None)\n    if callable(fn):\n        return [int(x) for x in list(fn())]\n    return str(p)\n\ndef _fail(obj):\n    if obj is None:\n        return None\n    fn = getattr(obj, \"toString\", None)\n    if callable(fn):\n        return str(fn())\n    return str(obj)\n\ndef _rel(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toBinaryRelation\", None) or getattr(p, \"to_binary_relation\", None)\n    if callable(fn):\n        return fn()\n    return p\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "int(rel.universeSize())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "BasicBinaryRelation universeSize",
+      "expected_exception": null,
+      "id": "inh_bbr_univ",
+      "kwargs": {},
+      "method": "BasicBinaryRelation.universeSize",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 3,
+        "string_repr": "3",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, CentralityData, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nident = BasicBinaryRelation.identity(3)\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\ncd = CentralityData(ident, ident, zero3)\nst = Subtrace(0, 1, True)\ntf_c2 = TypeFinder(c2)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nrel_sym = BasicBinaryRelation(3)\nrel_sym.add(0, 1)\nrel_sym.add(1, 0)\nz_c2 = c2.con().zero()\no_c2 = c2.con().one()\nz_n5 = n5.con().zero()\no_n5 = n5.con().one()\nz_m3 = m3.con().zero()\no_m3 = m3.con().one()\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _par(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toArray\", None) or getattr(p, \"to_array\", None)\n    if callable(fn):\n        return [int(x) for x in list(fn())]\n    return str(p)\n\ndef _fail(obj):\n    if obj is None:\n        return None\n    fn = getattr(obj, \"toString\", None)\n    if callable(fn):\n        return str(fn())\n    return str(obj)\n\ndef _rel(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toBinaryRelation\", None) or getattr(p, \"to_binary_relation\", None)\n    if callable(fn):\n        return fn()\n    return p\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "int(zero3.blockIndex(0))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "BasicPartition blockIndex",
+      "expected_exception": null,
+      "id": "inh_bp_block_idx",
+      "kwargs": {},
+      "method": "BasicPartition.blockIndex",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 0,
+        "string_repr": "0",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, CentralityData, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nident = BasicBinaryRelation.identity(3)\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\ncd = CentralityData(ident, ident, zero3)\nst = Subtrace(0, 1, True)\ntf_c2 = TypeFinder(c2)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nrel_sym = BasicBinaryRelation(3)\nrel_sym.add(0, 1)\nrel_sym.add(1, 0)\nz_c2 = c2.con().zero()\no_c2 = c2.con().one()\nz_n5 = n5.con().zero()\no_n5 = n5.con().one()\nz_m3 = m3.con().zero()\no_m3 = m3.con().one()\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _par(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toArray\", None) or getattr(p, \"to_array\", None)\n    if callable(fn):\n        return [int(x) for x in list(fn())]\n    return str(p)\n\ndef _fail(obj):\n    if obj is None:\n        return None\n    fn = getattr(obj, \"toString\", None)\n    if callable(fn):\n        return str(fn())\n    return str(obj)\n\ndef _rel(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toBinaryRelation\", None) or getattr(p, \"to_binary_relation\", None)\n    if callable(fn):\n        return fn()\n    return p\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "(lambda p1, p2: p1.compose(p2).numberOfBlocks())(BasicPartition('|0 1|2|'), BasicPartition('|0|1 2|'))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "BasicPartition compose",
+      "expected_exception": null,
+      "id": "inh_bp_compose",
+      "kwargs": {},
+      "method": "BasicPartition.compose",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "'org.uacalc.alg.conlat.BasicBinaryRelation' object has no attribute 'numberOfBlocks'",
+          "type": "AttributeError"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, CentralityData, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nident = BasicBinaryRelation.identity(3)\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\ncd = CentralityData(ident, ident, zero3)\nst = Subtrace(0, 1, True)\ntf_c2 = TypeFinder(c2)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nrel_sym = BasicBinaryRelation(3)\nrel_sym.add(0, 1)\nrel_sym.add(1, 0)\nz_c2 = c2.con().zero()\no_c2 = c2.con().one()\nz_n5 = n5.con().zero()\no_n5 = n5.con().one()\nz_m3 = m3.con().zero()\no_m3 = m3.con().one()\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _par(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toArray\", None) or getattr(p, \"to_array\", None)\n    if callable(fn):\n        return [int(x) for x in list(fn())]\n    return str(p)\n\ndef _fail(obj):\n    if obj is None:\n        return None\n    fn = getattr(obj, \"toString\", None)\n    if callable(fn):\n        return str(fn())\n    return str(obj)\n\ndef _rel(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toBinaryRelation\", None) or getattr(p, \"to_binary_relation\", None)\n    if callable(fn):\n        return fn()\n    return p\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "[_ia(b) for b in list(zero3.getBlocks())]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "BasicPartition getBlocks",
+      "expected_exception": null,
+      "id": "inh_bp_blocks",
+      "kwargs": {},
+      "method": "BasicPartition.getBlocks",
+      "notes": "Java List toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            0
+          ],
+          [
+            1
+          ],
+          [
+            2
+          ]
+        ],
+        "string_repr": "[[0], [1], [2]]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, CentralityData, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nident = BasicBinaryRelation.identity(3)\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\ncd = CentralityData(ident, ident, zero3)\nst = Subtrace(0, 1, True)\ntf_c2 = TypeFinder(c2)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nrel_sym = BasicBinaryRelation(3)\nrel_sym.add(0, 1)\nrel_sym.add(1, 0)\nz_c2 = c2.con().zero()\no_c2 = c2.con().one()\nz_n5 = n5.con().zero()\no_n5 = n5.con().one()\nz_m3 = m3.con().zero()\no_m3 = m3.con().one()\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _par(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toArray\", None) or getattr(p, \"to_array\", None)\n    if callable(fn):\n        return [int(x) for x in list(fn())]\n    return str(p)\n\ndef _fail(obj):\n    if obj is None:\n        return None\n    fn = getattr(obj, \"toString\", None)\n    if callable(fn):\n        return str(fn())\n    return str(obj)\n\ndef _rel(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toBinaryRelation\", None) or getattr(p, \"to_binary_relation\", None)\n    if callable(fn):\n        return fn()\n    return p\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "len(list(zero3.getPairs()))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "BasicPartition getPairs",
+      "expected_exception": null,
+      "id": "inh_bp_pairs",
+      "kwargs": {},
+      "method": "BasicPartition.getPairs",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 3,
+        "string_repr": "3",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, CentralityData, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nident = BasicBinaryRelation.identity(3)\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\ncd = CentralityData(ident, ident, zero3)\nst = Subtrace(0, 1, True)\ntf_c2 = TypeFinder(c2)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nrel_sym = BasicBinaryRelation(3)\nrel_sym.add(0, 1)\nrel_sym.add(1, 0)\nz_c2 = c2.con().zero()\no_c2 = c2.con().one()\nz_n5 = n5.con().zero()\no_n5 = n5.con().one()\nz_m3 = m3.con().zero()\no_m3 = m3.con().one()\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _par(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toArray\", None) or getattr(p, \"to_array\", None)\n    if callable(fn):\n        return [int(x) for x in list(fn())]\n    return str(p)\n\ndef _fail(obj):\n    if obj is None:\n        return None\n    fn = getattr(obj, \"toString\", None)\n    if callable(fn):\n        return str(fn())\n    return str(obj)\n\ndef _rel(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toBinaryRelation\", None) or getattr(p, \"to_binary_relation\", None)\n    if callable(fn):\n        return fn()\n    return p\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "zero3.isInitialLexRepresentative()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "BasicPartition isInitialLexRepresentative",
+      "expected_exception": null,
+      "id": "inh_bp_init_lex",
+      "kwargs": {},
+      "method": "BasicPartition.isInitialLexRepresentative",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, CentralityData, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nident = BasicBinaryRelation.identity(3)\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\ncd = CentralityData(ident, ident, zero3)\nst = Subtrace(0, 1, True)\ntf_c2 = TypeFinder(c2)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nrel_sym = BasicBinaryRelation(3)\nrel_sym.add(0, 1)\nrel_sym.add(1, 0)\nz_c2 = c2.con().zero()\no_c2 = c2.con().one()\nz_n5 = n5.con().zero()\no_n5 = n5.con().one()\nz_m3 = m3.con().zero()\no_m3 = m3.con().one()\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _par(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toArray\", None) or getattr(p, \"to_array\", None)\n    if callable(fn):\n        return [int(x) for x in list(fn())]\n    return str(p)\n\ndef _fail(obj):\n    if obj is None:\n        return None\n    fn = getattr(obj, \"toString\", None)\n    if callable(fn):\n        return str(fn())\n    return str(obj)\n\ndef _rel(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toBinaryRelation\", None) or getattr(p, \"to_binary_relation\", None)\n    if callable(fn):\n        return fn()\n    return p\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "BasicPartition('|0 1|2|').isRelated(0, 1)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "BasicPartition isRelated",
+      "expected_exception": null,
+      "id": "inh_bp_is_related",
+      "kwargs": {},
+      "method": "BasicPartition.isRelated",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, CentralityData, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nident = BasicBinaryRelation.identity(3)\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\ncd = CentralityData(ident, ident, zero3)\nst = Subtrace(0, 1, True)\ntf_c2 = TypeFinder(c2)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nrel_sym = BasicBinaryRelation(3)\nrel_sym.add(0, 1)\nrel_sym.add(1, 0)\nz_c2 = c2.con().zero()\no_c2 = c2.con().one()\nz_n5 = n5.con().zero()\no_n5 = n5.con().one()\nz_m3 = m3.con().zero()\no_m3 = m3.con().one()\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _par(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toArray\", None) or getattr(p, \"to_array\", None)\n    if callable(fn):\n        return [int(x) for x in list(fn())]\n    return str(p)\n\ndef _fail(obj):\n    if obj is None:\n        return None\n    fn = getattr(obj, \"toString\", None)\n    if callable(fn):\n        return str(fn())\n    return str(obj)\n\ndef _rel(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toBinaryRelation\", None) or getattr(p, \"to_binary_relation\", None)\n    if callable(fn):\n        return fn()\n    return p\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "zero3.isRepresentative(0)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "BasicPartition isRepresentative",
+      "expected_exception": null,
+      "id": "inh_bp_is_rep",
+      "kwargs": {},
+      "method": "BasicPartition.isRepresentative",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, CentralityData, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nident = BasicBinaryRelation.identity(3)\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\ncd = CentralityData(ident, ident, zero3)\nst = Subtrace(0, 1, True)\ntf_c2 = TypeFinder(c2)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nrel_sym = BasicBinaryRelation(3)\nrel_sym.add(0, 1)\nrel_sym.add(1, 0)\nz_c2 = c2.con().zero()\no_c2 = c2.con().one()\nz_n5 = n5.con().zero()\no_n5 = n5.con().one()\nz_m3 = m3.con().zero()\no_m3 = m3.con().one()\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _par(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toArray\", None) or getattr(p, \"to_array\", None)\n    if callable(fn):\n        return [int(x) for x in list(fn())]\n    return str(p)\n\ndef _fail(obj):\n    if obj is None:\n        return None\n    fn = getattr(obj, \"toString\", None)\n    if callable(fn):\n        return str(fn())\n    return str(obj)\n\ndef _rel(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toBinaryRelation\", None) or getattr(p, \"to_binary_relation\", None)\n    if callable(fn):\n        return fn()\n    return p\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "zero3.isUniform()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "BasicPartition isUniform",
+      "expected_exception": null,
+      "id": "inh_bp_is_uniform",
+      "kwargs": {},
+      "method": "BasicPartition.isUniform",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, CentralityData, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nident = BasicBinaryRelation.identity(3)\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\ncd = CentralityData(ident, ident, zero3)\nst = Subtrace(0, 1, True)\ntf_c2 = TypeFinder(c2)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nrel_sym = BasicBinaryRelation(3)\nrel_sym.add(0, 1)\nrel_sym.add(1, 0)\nz_c2 = c2.con().zero()\no_c2 = c2.con().one()\nz_n5 = n5.con().zero()\no_n5 = n5.con().one()\nz_m3 = m3.con().zero()\no_m3 = m3.con().one()\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _par(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toArray\", None) or getattr(p, \"to_array\", None)\n    if callable(fn):\n        return [int(x) for x in list(fn())]\n    return str(p)\n\ndef _fail(obj):\n    if obj is None:\n        return None\n    fn = getattr(obj, \"toString\", None)\n    if callable(fn):\n        return str(fn())\n    return str(obj)\n\ndef _rel(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toBinaryRelation\", None) or getattr(p, \"to_binary_relation\", None)\n    if callable(fn):\n        return fn()\n    return p\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "zero3.isZero()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "BasicPartition isZero",
+      "expected_exception": null,
+      "id": "inh_bp_is_zero",
+      "kwargs": {},
+      "method": "BasicPartition.isZero",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, CentralityData, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nident = BasicBinaryRelation.identity(3)\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\ncd = CentralityData(ident, ident, zero3)\nst = Subtrace(0, 1, True)\ntf_c2 = TypeFinder(c2)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nrel_sym = BasicBinaryRelation(3)\nrel_sym.add(0, 1)\nrel_sym.add(1, 0)\nz_c2 = c2.con().zero()\no_c2 = c2.con().one()\nz_n5 = n5.con().zero()\no_n5 = n5.con().one()\nz_m3 = m3.con().zero()\no_m3 = m3.con().one()\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _par(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toArray\", None) or getattr(p, \"to_array\", None)\n    if callable(fn):\n        return [int(x) for x in list(fn())]\n    return str(p)\n\ndef _fail(obj):\n    if obj is None:\n        return None\n    fn = getattr(obj, \"toString\", None)\n    if callable(fn):\n        return str(fn())\n    return str(obj)\n\ndef _rel(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toBinaryRelation\", None) or getattr(p, \"to_binary_relation\", None)\n    if callable(fn):\n        return fn()\n    return p\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "(lambda p1, p2: p1.join(p2).numberOfBlocks())(BasicPartition('|0 1|2|'), BasicPartition('|0|1 2|'))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "BasicPartition join",
+      "expected_exception": null,
+      "id": "inh_bp_join",
+      "kwargs": {},
+      "method": "BasicPartition.join",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 1,
+        "string_repr": "1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, CentralityData, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nident = BasicBinaryRelation.identity(3)\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\ncd = CentralityData(ident, ident, zero3)\nst = Subtrace(0, 1, True)\ntf_c2 = TypeFinder(c2)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nrel_sym = BasicBinaryRelation(3)\nrel_sym.add(0, 1)\nrel_sym.add(1, 0)\nz_c2 = c2.con().zero()\no_c2 = c2.con().one()\nz_n5 = n5.con().zero()\no_n5 = n5.con().one()\nz_m3 = m3.con().zero()\no_m3 = m3.con().one()\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _par(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toArray\", None) or getattr(p, \"to_array\", None)\n    if callable(fn):\n        return [int(x) for x in list(fn())]\n    return str(p)\n\ndef _fail(obj):\n    if obj is None:\n        return None\n    fn = getattr(obj, \"toString\", None)\n    if callable(fn):\n        return str(fn())\n    return str(obj)\n\ndef _rel(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toBinaryRelation\", None) or getattr(p, \"to_binary_relation\", None)\n    if callable(fn):\n        return fn()\n    return p\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "BasicPartition('|0 1|2|').joinBlocks(0, 2).numberOfBlocks()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "BasicPartition joinBlocks",
+      "expected_exception": null,
+      "id": "inh_bp_join_blocks",
+      "kwargs": {},
+      "method": "BasicPartition.joinBlocks",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "'NoneType' object has no attribute 'numberOfBlocks'",
+          "type": "AttributeError"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, CentralityData, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nident = BasicBinaryRelation.identity(3)\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\ncd = CentralityData(ident, ident, zero3)\nst = Subtrace(0, 1, True)\ntf_c2 = TypeFinder(c2)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nrel_sym = BasicBinaryRelation(3)\nrel_sym.add(0, 1)\nrel_sym.add(1, 0)\nz_c2 = c2.con().zero()\no_c2 = c2.con().one()\nz_n5 = n5.con().zero()\no_n5 = n5.con().one()\nz_m3 = m3.con().zero()\no_m3 = m3.con().one()\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _par(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toArray\", None) or getattr(p, \"to_array\", None)\n    if callable(fn):\n        return [int(x) for x in list(fn())]\n    return str(p)\n\ndef _fail(obj):\n    if obj is None:\n        return None\n    fn = getattr(obj, \"toString\", None)\n    if callable(fn):\n        return str(fn())\n    return str(obj)\n\ndef _rel(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toBinaryRelation\", None) or getattr(p, \"to_binary_relation\", None)\n    if callable(fn):\n        return fn()\n    return p\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "(lambda p1, p2: p1.meet(p2).numberOfBlocks())(BasicPartition('|0 1|2|'), BasicPartition('|0|1 2|'))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "BasicPartition meet",
+      "expected_exception": null,
+      "id": "inh_bp_meet",
+      "kwargs": {},
+      "method": "BasicPartition.meet",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 3,
+        "string_repr": "3",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, CentralityData, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nident = BasicBinaryRelation.identity(3)\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\ncd = CentralityData(ident, ident, zero3)\nst = Subtrace(0, 1, True)\ntf_c2 = TypeFinder(c2)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nrel_sym = BasicBinaryRelation(3)\nrel_sym.add(0, 1)\nrel_sym.add(1, 0)\nz_c2 = c2.con().zero()\no_c2 = c2.con().one()\nz_n5 = n5.con().zero()\no_n5 = n5.con().one()\nz_m3 = m3.con().zero()\no_m3 = m3.con().one()\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _par(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toArray\", None) or getattr(p, \"to_array\", None)\n    if callable(fn):\n        return [int(x) for x in list(fn())]\n    return str(p)\n\ndef _fail(obj):\n    if obj is None:\n        return None\n    fn = getattr(obj, \"toString\", None)\n    if callable(fn):\n        return str(fn())\n    return str(obj)\n\ndef _rel(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toBinaryRelation\", None) or getattr(p, \"to_binary_relation\", None)\n    if callable(fn):\n        return fn()\n    return p\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "int(zero3.numberOfBlocks())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "BasicPartition numberOfBlocks",
+      "expected_exception": null,
+      "id": "inh_bp_nblocks",
+      "kwargs": {},
+      "method": "BasicPartition.numberOfBlocks",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 3,
+        "string_repr": "3",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, CentralityData, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nident = BasicBinaryRelation.identity(3)\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\ncd = CentralityData(ident, ident, zero3)\nst = Subtrace(0, 1, True)\ntf_c2 = TypeFinder(c2)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nrel_sym = BasicBinaryRelation(3)\nrel_sym.add(0, 1)\nrel_sym.add(1, 0)\nz_c2 = c2.con().zero()\no_c2 = c2.con().one()\nz_n5 = n5.con().zero()\no_n5 = n5.con().one()\nz_m3 = m3.con().zero()\no_m3 = m3.con().one()\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _par(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toArray\", None) or getattr(p, \"to_array\", None)\n    if callable(fn):\n        return [int(x) for x in list(fn())]\n    return str(p)\n\ndef _fail(obj):\n    if obj is None:\n        return None\n    fn = getattr(obj, \"toString\", None)\n    if callable(fn):\n        return str(fn())\n    return str(obj)\n\ndef _rel(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toBinaryRelation\", None) or getattr(p, \"to_binary_relation\", None)\n    if callable(fn):\n        return fn()\n    return p\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "int(BasicPartition('|0 1|2|').representative(1))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "BasicPartition representative",
+      "expected_exception": null,
+      "id": "inh_bp_rep",
+      "kwargs": {},
+      "method": "BasicPartition.representative",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 0,
+        "string_repr": "0",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, CentralityData, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nident = BasicBinaryRelation.identity(3)\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\ncd = CentralityData(ident, ident, zero3)\nst = Subtrace(0, 1, True)\ntf_c2 = TypeFinder(c2)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nrel_sym = BasicBinaryRelation(3)\nrel_sym.add(0, 1)\nrel_sym.add(1, 0)\nz_c2 = c2.con().zero()\no_c2 = c2.con().one()\nz_n5 = n5.con().zero()\no_n5 = n5.con().one()\nz_m3 = m3.con().zero()\no_m3 = m3.con().one()\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _par(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toArray\", None) or getattr(p, \"to_array\", None)\n    if callable(fn):\n        return [int(x) for x in list(fn())]\n    return str(p)\n\ndef _fail(obj):\n    if obj is None:\n        return None\n    fn = getattr(obj, \"toString\", None)\n    if callable(fn):\n        return str(fn())\n    return str(obj)\n\ndef _rel(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toBinaryRelation\", None) or getattr(p, \"to_binary_relation\", None)\n    if callable(fn):\n        return fn()\n    return p\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "list(one3.representatives())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "BasicPartition representatives",
+      "expected_exception": null,
+      "id": "inh_bp_reps",
+      "kwargs": {},
+      "method": "BasicPartition.representatives",
+      "notes": "Java List toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          0
+        ],
+        "string_repr": "[0]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, CentralityData, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nident = BasicBinaryRelation.identity(3)\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\ncd = CentralityData(ident, ident, zero3)\nst = Subtrace(0, 1, True)\ntf_c2 = TypeFinder(c2)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nrel_sym = BasicBinaryRelation(3)\nrel_sym.add(0, 1)\nrel_sym.add(1, 0)\nz_c2 = c2.con().zero()\no_c2 = c2.con().one()\nz_n5 = n5.con().zero()\no_n5 = n5.con().one()\nz_m3 = m3.con().zero()\no_m3 = m3.con().one()\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _par(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toArray\", None) or getattr(p, \"to_array\", None)\n    if callable(fn):\n        return [int(x) for x in list(fn())]\n    return str(p)\n\ndef _fail(obj):\n    if obj is None:\n        return None\n    fn = getattr(obj, \"toString\", None)\n    if callable(fn):\n        return str(fn())\n    return str(obj)\n\ndef _rel(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toBinaryRelation\", None) or getattr(p, \"to_binary_relation\", None)\n    if callable(fn):\n        return fn()\n    return p\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "zero3.toString()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "BasicPartition toString",
+      "expected_exception": null,
+      "id": "inh_bp_tostr",
+      "kwargs": {},
+      "method": "BasicPartition.toString",
+      "notes": "",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "|0|1|2|",
+        "string_repr": "|0|1|2|",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, CentralityData, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nident = BasicBinaryRelation.identity(3)\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\ncd = CentralityData(ident, ident, zero3)\nst = Subtrace(0, 1, True)\ntf_c2 = TypeFinder(c2)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nrel_sym = BasicBinaryRelation(3)\nrel_sym.add(0, 1)\nrel_sym.add(1, 0)\nz_c2 = c2.con().zero()\no_c2 = c2.con().one()\nz_n5 = n5.con().zero()\no_n5 = n5.con().one()\nz_m3 = m3.con().zero()\no_m3 = m3.con().one()\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _par(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toArray\", None) or getattr(p, \"to_array\", None)\n    if callable(fn):\n        return [int(x) for x in list(fn())]\n    return str(p)\n\ndef _fail(obj):\n    if obj is None:\n        return None\n    fn = getattr(obj, \"toString\", None)\n    if callable(fn):\n        return str(fn())\n    return str(obj)\n\ndef _rel(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toBinaryRelation\", None) or getattr(p, \"to_binary_relation\", None)\n    if callable(fn):\n        return fn()\n    return p\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "int(st.type())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Subtrace type",
+      "expected_exception": null,
+      "id": "inh_st_type",
+      "kwargs": {},
+      "method": "Subtrace.type",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": -1,
+        "string_repr": "-1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.conlat import (\n    BasicBinaryRelation, BasicPartition, CentralityData, Subtrace, TypeFinder,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nm3 = AlgebraIO.readAlgebraFile(\"resources/algebras/m3.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nident = BasicBinaryRelation.identity(3)\nzero3 = BasicPartition.zero(3)\none3 = BasicPartition.one(3)\ncd = CentralityData(ident, ident, zero3)\nst = Subtrace(0, 1, True)\ntf_c2 = TypeFinder(c2)\nrel = BasicBinaryRelation(3)\nrel.add(0, 1)\nrel.add(0, 2)\nrel_sym = BasicBinaryRelation(3)\nrel_sym.add(0, 1)\nrel_sym.add(1, 0)\nz_c2 = c2.con().zero()\no_c2 = c2.con().one()\nz_n5 = n5.con().zero()\no_n5 = n5.con().one()\nz_m3 = m3.con().zero()\no_m3 = m3.con().one()\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        pass\n    for attr in (\"getArray\", \"get_array\", \"toArray\", \"to_array\"):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            return [int(x) for x in fn()]\n    return str(obj)\n\ndef _par(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toArray\", None) or getattr(p, \"to_array\", None)\n    if callable(fn):\n        return [int(x) for x in list(fn())]\n    return str(p)\n\ndef _fail(obj):\n    if obj is None:\n        return None\n    fn = getattr(obj, \"toString\", None)\n    if callable(fn):\n        return str(fn())\n    return str(obj)\n\ndef _rel(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toBinaryRelation\", None) or getattr(p, \"to_binary_relation\", None)\n    if callable(fn):\n        return fn()\n    return p\n",
+      "skip_string_check": false,
       "timeout_seconds": null,
       "xfail_reason": null
     }

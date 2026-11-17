@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "generated_at": "2026-11-17T10:41:47.024306+00:00",
+    "generated_at": "2026-11-17T17:33:09.794903+00:00",
     "jar": "uacalc.jar",
     "package": "org.uacalc.io",
     "runtime": "jython",
-    "test_cases": 6,
+    "test_cases": 7,
     "type": "untested_wraps"
   },
   "test_cases": [
@@ -119,6 +119,28 @@
       },
       "setup": "\nfrom org.uacalc.io import ExtFileFilter\nfilt = ExtFileFilter(\"UA Files\", \"ua\")\n",
       "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "len(list(reader.readAlgebraListFromStream()))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "AlgebraReader readAlgebraListFromStream",
+      "expected_exception": null,
+      "id": "inh_reader_list_stream",
+      "kwargs": {},
+      "method": "AlgebraReader.readAlgebraListFromStream",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 1,
+        "string_repr": "1",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.io import AlgebraReader\npath = \"resources/algebras/cyclic2.ua\"\nif sys.platform.startswith(\"java\"):\n    from java.io import FileInputStream\n    reader = AlgebraReader(FileInputStream(path))\nelse:\n    reader = AlgebraReader(open(path, \"rb\"))\n",
+      "skip_string_check": true,
       "timeout_seconds": null,
       "xfail_reason": null
     },
