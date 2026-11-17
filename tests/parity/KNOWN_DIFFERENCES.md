@@ -93,13 +93,12 @@ Malcev is wrapped; remaining gaps are listed under org.uacalc.alg.Malcev.
 - **Java**: does not close/flush the `PrintWriter`, so a subsequent file read is empty
   until `writeAlgebraXML()` (which closes). Java has no `flush()` method.
 - **Python**: org wrapper `writeAlgebra` / `writeBasicAlgebra` leave the destination
-  file unflushed (empty). `AlgebraWriter.flush()` is a no-op so an explicit flush
-  still matches Java. `uacalc_lib` still writes and flushes; only the org wrapper
-  changed.
+  file unflushed (empty). The shim does not expose `flush()` (callers that invoke it
+  on Jython fail with `AttributeError`, matching Java). `uacalc_lib` still writes and
+  flushes; only the org wrapper changed.
 - **Status**: Fixed in the shim
 - **Tests**: `writer_write_algebra`, `writer_write_basic_algebra` pass
-- **Owner vs shim**: Shim — no-op `flush` / unflushed `writeAlgebra` in
-  `python/org/uacalc/io` only.
+- **Owner vs shim**: Shim — unflushed `writeAlgebra` in `python/org/uacalc/io` only.
 
 ### Mace4Reader missing file
 
@@ -115,14 +114,12 @@ Malcev is wrapped; remaining gaps are listed under org.uacalc.alg.Malcev.
   `cyclic2_cyclic3_list.ua` (C3). This is a **known Java bug**, not a shim or
   library defect. Java golden expected values are left unchanged.
 - **Python**: the org wrapper (`AlgebraIO.readAlgebraListFile` and
-  `AlgebraReader.readAlgebraListFile`) deliberately returns the full list of
-  every algebra (C2 and C3), including in its Jython-compatible API.
-  `uacalc_lib` is unchanged.
-- **Status**: Known Java bug — intentional difference; Python is the desired
-  behavior
-- **Tests**: `read_algebra_list_file`, `reader_read_algebra_list_file` strict
-  xfail (Java golden still records last-only C3)
-- **Owner vs shim**: Known Java bug. Not a shim issue and not a library issue.
+  `AlgebraReader.readAlgebraListFile`) matches Java and returns only the last
+  algebra from multi-algebra list files. `uacalc_lib` still parses the full list;
+  the shim truncates when exposing the Java API.
+- **Status**: Shim matches Java (last algebra only)
+- **Tests**: `read_algebra_list_file`, `reader_read_algebra_list_file` pass
+- **Owner vs shim**: Known Java bug mirrored in the shim for script parity.
 
 ---
 

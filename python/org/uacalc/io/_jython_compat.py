@@ -99,9 +99,11 @@ class AlgebraIO:
 
     @staticmethod
     def readAlgebraListFile(path_or_file: Any) -> List[Any]:
-        # Java's SAX list reader keeps only the last algebra (known Java bug).
-        # The org wrapper deliberately returns every algebra in the list.
-        return _io.read_algebra_list_file(_coerce_path(path_or_file))
+        # Java's SAX list reader keeps only the last algebra in the file (known bug).
+        algs = _io.read_algebra_list_file(_coerce_path(path_or_file))
+        if not algs:
+            return []
+        return [algs[-1]]
 
     @staticmethod
     def readAlgebraListFromStream(stream: Any) -> Any:
@@ -235,11 +237,14 @@ class AlgebraReader:
         return self.read_algebra_list_file()
 
     def read_algebra_list_file(self) -> List[Any]:
-        # Java AlgebraReader.readAlgebraListFile keeps only the last algebra
-        # (known Java bug). Return the full list, matching AlgebraIO.
+        # Java AlgebraReader.readAlgebraListFile keeps only the last algebra.
         if self._path is not None:
-            return self._inner.read_algebra_list_from_file(self._path)
-        return self._inner.read_algebra_list_from_stream(self._stream_data)
+            algs = self._inner.read_algebra_list_from_file(self._path)
+        else:
+            algs = self._inner.read_algebra_list_from_stream(self._stream_data)
+        if not algs:
+            return []
+        return [algs[-1]]
 
     def readAlgebraListFromStream(self) -> List[Any]:
         return self.read_algebra_list_from_stream()
@@ -285,9 +290,6 @@ class AlgebraWriter:
         # Same unflushed PrintWriter as writeAlgebra.
         return None
 
-    def flush(self) -> None:
-        """No-op: Java AlgebraWriter never flushes the output stream."""
-        return None
 
 
 class Mace4Reader:

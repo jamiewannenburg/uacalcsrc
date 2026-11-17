@@ -820,7 +820,8 @@ def _install(alg_module_globals: dict) -> None:
                     out[str(name)] = str(int(next(iterator)))
             except StopIteration:
                 raise NoSuchElementException()
-            return out
+            # Java HashMap.toString() key order (comparison scripts diff on repr).
+            return dict(sorted(out.items(), key=lambda item: item[0]))
 
     class _SubalgebraMeta(type):
         def __instancecheck__(cls, instance: Any) -> bool:
@@ -944,9 +945,13 @@ def _install(alg_module_globals: dict) -> None:
             # setGenerators(null) NPEs while iterating gens.
             if generators is None:
                 _raise_npe()
-            if algebra is None:
-                _raise_npe()
             gens = [_int_array(g) for g in list(generators)]
+            if algebra is None:
+                self._inner = None
+                self._algebra = None
+                self._ans = None
+                self._ans_set = False
+                return
             if third is None:
                 inner = _lib_call(_LibCloser, algebra, gens)
             elif isinstance(third, bool):
@@ -963,6 +968,8 @@ def _install(alg_module_globals: dict) -> None:
             self._ans_set = False
 
         def __getattr__(self, item: str) -> Any:
+            if self._inner is None:
+                _raise_npe()
             return getattr(self._inner, item)
 
         def getAnswer(self) -> Any:
@@ -971,6 +978,8 @@ def _install(alg_module_globals: dict) -> None:
         doParallel = False
 
         def sgClose(self, elems: Any = None, closedMark: Any = None, termMap: Any = None) -> Any:
+            if self._inner is None:
+                _raise_npe()
             # Java Closer.doParallel routes no-arg sgClose() through sgCloseParallel.
             if elems is None and closedMark is None and termMap is None:
                 if getattr(Closer, "doParallel", False):
