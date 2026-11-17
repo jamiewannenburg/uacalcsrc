@@ -1,0 +1,148 @@
+{
+  "metadata": {
+    "generated_at": "2026-11-17T10:41:47.024306+00:00",
+    "jar": "uacalc.jar",
+    "package": "org.uacalc.io",
+    "runtime": "jython",
+    "test_cases": 6,
+    "type": "untested_wraps"
+  },
+  "test_cases": [
+    {
+      "args": [],
+      "call": "reader.readAlgebraFile().cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "AlgebraReader constructor then read cyclic2",
+      "expected_exception": null,
+      "id": "ctor_algebra_reader",
+      "kwargs": {},
+      "method": "AlgebraReader.AlgebraReader",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.io import AlgebraReader\npath = \"resources/algebras/cyclic2.ua\"\nif sys.platform.startswith(\"java\"):\n    from java.io import File\n    reader = AlgebraReader(File(path))\nelse:\n    reader = AlgebraReader(path)\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "reader.readAlgebraFile().cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "AlgebraReader constructor then read cyclic3",
+      "expected_exception": null,
+      "id": "ctor_algebra_reader_c3",
+      "kwargs": {},
+      "method": "AlgebraReader.AlgebraReader",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 3,
+        "string_repr": "3",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.io import AlgebraReader\npath = \"resources/algebras/cyclic3.ua\"\nif sys.platform.startswith(\"java\"):\n    from java.io import File\n    reader = AlgebraReader(File(path))\nelse:\n    reader = AlgebraReader(path)\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "writer.writeAlgebraXML() or True",
+      "capture_file": true,
+      "compare_exception_message": false,
+      "description": "AlgebraWriter constructor then writeAlgebraXML",
+      "expected_exception": null,
+      "id": "ctor_algebra_writer",
+      "kwargs": {},
+      "method": "AlgebraWriter.AlgebraWriter",
+      "notes": "",
+      "result": {
+        "return_type": "dict",
+        "return_value": {
+          "__type__": "file",
+          "normalized": "<?xml version=\"1.0\"?> <algebra> <basicAlgebra> <algName>C2</algName> <desc>The two element group.</desc> <cardinality>2</cardinality> <operations> <op> <opSymbol> <opName>+</opName> <arity>2</arity> </opSymbol> <opTable> <intArray> <row r=\"[0]\">0,1</row> <row r=\"[1]\">1,0</row> </intArray> </opTable> </op> </operations> </basicAlgebra> </algebra>",
+          "suffix": ".xml"
+        },
+        "string_repr": "{'normalized': '<?xml version=\"1.0\"?> <algebra> <basicAlgebra> <algName>C2</algName> <desc>The two element group.</desc> <cardinality>2</cardinality> <operations> <op> <opSymbol> <opName>+</opName> <arity>2</arity> </opSymbol> <opTable> <intArray> <row r=\"[0]\">0,1</row> <row r=\"[1]\">1,0</row> </intArray> </opTable> </op> </operations> </basicAlgebra> </algebra>', 'suffix': '.xml', '__type__': 'file'}",
+        "success": true
+      },
+      "setup": "\nimport os, tempfile\nfrom org.uacalc.io import AlgebraIO, AlgebraWriter\nalg = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nfd, OUT_PATH = tempfile.mkstemp(suffix=\".xml\")\nos.close(fd)\nCAPTURE_PATH = OUT_PATH\nwriter = AlgebraWriter(alg, OUT_PATH)\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "reader.parseAlgebra().cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Mace4Reader constructor then parseAlgebra",
+      "expected_exception": null,
+      "id": "ctor_mace4_reader",
+      "kwargs": {},
+      "method": "Mace4Reader.Mace4Reader",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 8,
+        "string_repr": "8",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.io import Mace4Reader\npath = \"resources/mace4/KR-8.model\"\nif sys.platform.startswith(\"java\"):\n    from java.io import FileInputStream\n    reader = Mace4Reader(FileInputStream(path))\nelse:\n    fh = open(path, \"rb\")\n    reader = Mace4Reader(fh)\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "filt.getDescription()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "ExtFileFilter constructor description",
+      "expected_exception": null,
+      "id": "ctor_ext_file_filter",
+      "kwargs": {},
+      "method": "ExtFileFilter.ExtFileFilter",
+      "notes": "",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "UA Files",
+        "string_repr": "UA Files",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import ExtFileFilter\nfilt = ExtFileFilter(\"UA Files\", \"ua\")\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "str(exc)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "BadAlgebraFileException constructor message",
+      "expected_exception": null,
+      "id": "ctor_bad_algebra_file_exc",
+      "kwargs": {},
+      "method": "BadAlgebraFileException.BadAlgebraFileException",
+      "notes": "Exception toString prefix differs (Java vs Python).",
+      "result": {
+        "return_type": "str",
+        "return_value": "org.uacalc.io.BadAlgebraFileException: bad file",
+        "string_repr": "org.uacalc.io.BadAlgebraFileException: bad file",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import BadAlgebraFileException\nexc = BadAlgebraFileException(\"bad file\")\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    }
+  ]
+}

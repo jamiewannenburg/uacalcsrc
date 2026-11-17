@@ -1,0 +1,56 @@
+{
+  "metadata": {
+    "generated_at": "2026-11-17T10:40:53.639705+00:00",
+    "jar": "uacalc.jar",
+    "package": "org.uacalc.fplat",
+    "runtime": "jython",
+    "test_cases": 2,
+    "type": "untested_wraps"
+  },
+  "test_cases": [
+    {
+      "args": [],
+      "call": "named.leq(x, y)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "PartiallyDefinedLattice constructor",
+      "expected_exception": null,
+      "id": "ctor_pdl_named",
+      "kwargs": {},
+      "method": "PartiallyDefinedLattice.PartiallyDefinedLattice",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.fplat import PartiallyDefinedLattice\nfrom org.uacalc.lat import Order\nfrom org.uacalc.terms import VariableImp\n\ndef _name(v):\n    fn = getattr(v, 'getName', None) or getattr(v, 'get_name', None)\n    if callable(fn):\n        return str(fn())\n    return str(v)\n\nclass NameOrder(Order):\n    def leq(self, a, b):\n        return _name(a) <= _name(b)\n\nx = VariableImp('x')\ny = VariableImp('y')\nnat = NameOrder()\nnamed = PartiallyDefinedLattice('T', nat, [[x, y]], [[y, x]])\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "PartiallyDefinedLattice('empty', nat, [], []).leq(x, x)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "empty PartiallyDefinedLattice constructor",
+      "expected_exception": null,
+      "id": "ctor_pdl_empty",
+      "kwargs": {},
+      "method": "PartiallyDefinedLattice.PartiallyDefinedLattice",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.fplat import PartiallyDefinedLattice\nfrom org.uacalc.lat import Order\nfrom org.uacalc.terms import VariableImp\n\ndef _name(v):\n    fn = getattr(v, 'getName', None) or getattr(v, 'get_name', None)\n    if callable(fn):\n        return str(fn())\n    return str(v)\n\nclass NameOrder(Order):\n    def leq(self, a, b):\n        return _name(a) <= _name(b)\n\nx = VariableImp('x')\ny = VariableImp('y')\nnat = NameOrder()\nnamed = PartiallyDefinedLattice('T', nat, [[x, y]], [[y, x]])\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    }
+  ]
+}

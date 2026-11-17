@@ -1,0 +1,201 @@
+{
+  "metadata": {
+    "generated_at": "2026-11-17T10:41:53.899148+00:00",
+    "jar": "uacalc.jar",
+    "package": "org.uacalc.util",
+    "runtime": "jython",
+    "test_cases": 8,
+    "type": "untested_wraps"
+  },
+  "test_cases": [
+    {
+      "args": [],
+      "call": "_ia_vals(ia)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "IntArray constructor",
+      "expected_exception": null,
+      "id": "ctor_int_array",
+      "kwargs": {},
+      "method": "IntArray.IntArray",
+      "notes": "Java List toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          1,
+          2,
+          3
+        ],
+        "string_repr": "[1, 2, 3]",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.util import IntArray, PermutationGenerator, SimpleList\nfrom org.uacalc.util.virtuallist import TupleWithMin\n\ndef _ia_vals(a):\n    if a is None:\n        return None\n    try:\n        return [int(x) for x in list(a)]\n    except TypeError:\n        fn = getattr(a, \"getArray\", None) or getattr(a, \"toArray\", None)\n        if callable(fn):\n            return [int(x) for x in list(fn())]\n        return str(a)\n\ndef _sl_vals(sl):\n    if sl is None:\n        return None\n    out = []\n    n = int(sl.size()) if hasattr(sl, \"size\") else len(list(sl))\n    for i in range(n):\n        out.append(sl.get(i))\n    return out\n\nia = IntArray([1, 2, 3])\npg = PermutationGenerator(3)\nsl = SimpleList.makeList().cons(3).cons(2).cons(1)\ntwm = TupleWithMin(3, 4, 2)\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_ia_vals(IntArray([]))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "IntArray empty constructor",
+      "expected_exception": null,
+      "id": "ctor_int_array_empty",
+      "kwargs": {},
+      "method": "IntArray.IntArray",
+      "notes": "Java List toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [],
+        "string_repr": "[]",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.util import IntArray, PermutationGenerator, SimpleList\nfrom org.uacalc.util.virtuallist import TupleWithMin\n\ndef _ia_vals(a):\n    if a is None:\n        return None\n    try:\n        return [int(x) for x in list(a)]\n    except TypeError:\n        fn = getattr(a, \"getArray\", None) or getattr(a, \"toArray\", None)\n        if callable(fn):\n            return [int(x) for x in list(fn())]\n        return str(a)\n\ndef _sl_vals(sl):\n    if sl is None:\n        return None\n    out = []\n    n = int(sl.size()) if hasattr(sl, \"size\") else len(list(sl))\n    for i in range(n):\n        out.append(sl.get(i))\n    return out\n\nia = IntArray([1, 2, 3])\npg = PermutationGenerator(3)\nsl = SimpleList.makeList().cons(3).cons(2).cons(1)\ntwm = TupleWithMin(3, 4, 2)\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "int(pg.nextIndex()) >= 0",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "PermutationGenerator constructor nextIndex",
+      "expected_exception": null,
+      "id": "ctor_perm_gen",
+      "kwargs": {},
+      "method": "PermutationGenerator.PermutationGenerator",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.util import IntArray, PermutationGenerator, SimpleList\nfrom org.uacalc.util.virtuallist import TupleWithMin\n\ndef _ia_vals(a):\n    if a is None:\n        return None\n    try:\n        return [int(x) for x in list(a)]\n    except TypeError:\n        fn = getattr(a, \"getArray\", None) or getattr(a, \"toArray\", None)\n        if callable(fn):\n            return [int(x) for x in list(fn())]\n        return str(a)\n\ndef _sl_vals(sl):\n    if sl is None:\n        return None\n    out = []\n    n = int(sl.size()) if hasattr(sl, \"size\") else len(list(sl))\n    for i in range(n):\n        out.append(sl.get(i))\n    return out\n\nia = IntArray([1, 2, 3])\npg = PermutationGenerator(3)\nsl = SimpleList.makeList().cons(3).cons(2).cons(1)\ntwm = TupleWithMin(3, 4, 2)\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_sl_vals(SimpleList(1, SimpleList.makeList(2)))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "SimpleList(obj, rest) constructor",
+      "expected_exception": null,
+      "id": "ctor_simple_list",
+      "kwargs": {},
+      "method": "SimpleList.SimpleList",
+      "notes": "Java List toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          1,
+          2
+        ],
+        "string_repr": "[1, 2]",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.util import IntArray, PermutationGenerator, SimpleList\nfrom org.uacalc.util.virtuallist import TupleWithMin\n\ndef _ia_vals(a):\n    if a is None:\n        return None\n    try:\n        return [int(x) for x in list(a)]\n    except TypeError:\n        fn = getattr(a, \"getArray\", None) or getattr(a, \"toArray\", None)\n        if callable(fn):\n            return [int(x) for x in list(fn())]\n        return str(a)\n\ndef _sl_vals(sl):\n    if sl is None:\n        return None\n    out = []\n    n = int(sl.size()) if hasattr(sl, \"size\") else len(list(sl))\n    for i in range(n):\n        out.append(sl.get(i))\n    return out\n\nia = IntArray([1, 2, 3])\npg = PermutationGenerator(3)\nsl = SimpleList.makeList().cons(3).cons(2).cons(1)\ntwm = TupleWithMin(3, 4, 2)\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "int(twm.size())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "TupleWithMin constructor size",
+      "expected_exception": null,
+      "id": "ctor_tuple_with_min",
+      "kwargs": {},
+      "method": "TupleWithMin.TupleWithMin",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 56,
+        "string_repr": "56",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.util import IntArray, PermutationGenerator, SimpleList\nfrom org.uacalc.util.virtuallist import TupleWithMin\n\ndef _ia_vals(a):\n    if a is None:\n        return None\n    try:\n        return [int(x) for x in list(a)]\n    except TypeError:\n        fn = getattr(a, \"getArray\", None) or getattr(a, \"toArray\", None)\n        if callable(fn):\n            return [int(x) for x in list(fn())]\n        return str(a)\n\ndef _sl_vals(sl):\n    if sl is None:\n        return None\n    out = []\n    n = int(sl.size()) if hasattr(sl, \"size\") else len(list(sl))\n    for i in range(n):\n        out.append(sl.get(i))\n    return out\n\nia = IntArray([1, 2, 3])\npg = PermutationGenerator(3)\nsl = SimpleList.makeList().cons(3).cons(2).cons(1)\ntwm = TupleWithMin(3, 4, 2)\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_sl_vals(sl.subList(0, 3))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "subList of the whole list",
+      "expected_exception": null,
+      "id": "sl_sublist_full",
+      "kwargs": {},
+      "method": "SimpleList.subList",
+      "notes": "Java List toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          1,
+          2,
+          3
+        ],
+        "string_repr": "[1, 2, 3]",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.util import IntArray, PermutationGenerator, SimpleList\nfrom org.uacalc.util.virtuallist import TupleWithMin\n\ndef _ia_vals(a):\n    if a is None:\n        return None\n    try:\n        return [int(x) for x in list(a)]\n    except TypeError:\n        fn = getattr(a, \"getArray\", None) or getattr(a, \"toArray\", None)\n        if callable(fn):\n            return [int(x) for x in list(fn())]\n        return str(a)\n\ndef _sl_vals(sl):\n    if sl is None:\n        return None\n    out = []\n    n = int(sl.size()) if hasattr(sl, \"size\") else len(list(sl))\n    for i in range(n):\n        out.append(sl.get(i))\n    return out\n\nia = IntArray([1, 2, 3])\npg = PermutationGenerator(3)\nsl = SimpleList.makeList().cons(3).cons(2).cons(1)\ntwm = TupleWithMin(3, 4, 2)\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_sl_vals(sl.subList(1, 2))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "subList of a singleton middle",
+      "expected_exception": null,
+      "id": "sl_sublist_middle",
+      "kwargs": {},
+      "method": "SimpleList.subList",
+      "notes": "Java List toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          2
+        ],
+        "string_repr": "[2]",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.util import IntArray, PermutationGenerator, SimpleList\nfrom org.uacalc.util.virtuallist import TupleWithMin\n\ndef _ia_vals(a):\n    if a is None:\n        return None\n    try:\n        return [int(x) for x in list(a)]\n    except TypeError:\n        fn = getattr(a, \"getArray\", None) or getattr(a, \"toArray\", None)\n        if callable(fn):\n            return [int(x) for x in list(fn())]\n        return str(a)\n\ndef _sl_vals(sl):\n    if sl is None:\n        return None\n    out = []\n    n = int(sl.size()) if hasattr(sl, \"size\") else len(list(sl))\n    for i in range(n):\n        out.append(sl.get(i))\n    return out\n\nia = IntArray([1, 2, 3])\npg = PermutationGenerator(3)\nsl = SimpleList.makeList().cons(3).cons(2).cons(1)\ntwm = TupleWithMin(3, 4, 2)\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_sl_vals(sl.subList(1, 1))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "subList empty range",
+      "expected_exception": null,
+      "id": "sl_sublist_empty",
+      "kwargs": {},
+      "method": "SimpleList.subList",
+      "notes": "Java List toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [],
+        "string_repr": "[]",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.util import IntArray, PermutationGenerator, SimpleList\nfrom org.uacalc.util.virtuallist import TupleWithMin\n\ndef _ia_vals(a):\n    if a is None:\n        return None\n    try:\n        return [int(x) for x in list(a)]\n    except TypeError:\n        fn = getattr(a, \"getArray\", None) or getattr(a, \"toArray\", None)\n        if callable(fn):\n            return [int(x) for x in list(fn())]\n        return str(a)\n\ndef _sl_vals(sl):\n    if sl is None:\n        return None\n    out = []\n    n = int(sl.size()) if hasattr(sl, \"size\") else len(list(sl))\n    for i in range(n):\n        out.append(sl.get(i))\n    return out\n\nia = IntArray([1, 2, 3])\npg = PermutationGenerator(3)\nsl = SimpleList.makeList().cons(3).cons(2).cons(1)\ntwm = TupleWithMin(3, 4, 2)\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    }
+  ]
+}

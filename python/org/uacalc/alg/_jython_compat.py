@@ -1004,7 +1004,7 @@ def _install(alg_module_globals: dict) -> None:
             (thread/timing internals are not compared).
             """
             if elems is not None or closedMark is not None or termMap is not None:
-                return sgClose(self, elems, closedMark, termMap)
+                return self.sgClose(elems, closedMark, termMap)
             fn = getattr(self._inner, "sg_close_parallel", None)
             if not callable(fn):
                 raise TypeError("sgCloseParallel is not bound")

@@ -1,0 +1,408 @@
+{
+  "metadata": {
+    "generated_at": "2026-11-17T10:41:40.136003+00:00",
+    "jar": "uacalc.jar",
+    "package": "org.uacalc.alg_op",
+    "runtime": "jython",
+    "test_cases": 17,
+    "type": "untested_wraps"
+  },
+  "test_cases": [
+    {
+      "args": [],
+      "call": "aio_sym.getSetSize()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "AbstractIntOperation constructor",
+      "expected_exception": null,
+      "id": "ctor_aio",
+      "kwargs": {},
+      "method": "AbstractIntOperation.AbstractIntOperation",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 3,
+        "string_repr": "3",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, AbstractOperation, OperationSymbol,\n    OperationWithDefaultValue, Operations, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nplus = OperationSymbol(\"+\", 2)\nunary = OperationSymbol(\"u\", 1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\ntoi_c2 = TermOperationImp(NonVariableTerm(plus, _varlist(x, y)), _varlist(x, y), c2)\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(v) for v in list(t)]\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "plus.arity()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "OperationSymbol constructor arity",
+      "expected_exception": null,
+      "id": "ctor_os",
+      "kwargs": {},
+      "method": "OperationSymbol.OperationSymbol",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, AbstractOperation, OperationSymbol,\n    OperationWithDefaultValue, Operations, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nplus = OperationSymbol(\"+\", 2)\nunary = OperationSymbol(\"u\", 1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\ntoi_c2 = TermOperationImp(NonVariableTerm(plus, _varlist(x, y)), _varlist(x, y), c2)\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(v) for v in list(t)]\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "ow_def.getDefaultValue()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "OperationWithDefaultValue constructor",
+      "expected_exception": null,
+      "id": "ctor_owdv",
+      "kwargs": {},
+      "method": "OperationWithDefaultValue.OperationWithDefaultValue",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 7,
+        "string_repr": "7",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, AbstractOperation, OperationSymbol,\n    OperationWithDefaultValue, Operations, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nplus = OperationSymbol(\"+\", 2)\nunary = OperationSymbol(\"u\", 1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\ntoi_c2 = TermOperationImp(NonVariableTerm(plus, _varlist(x, y)), _varlist(x, y), c2)\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(v) for v in list(t)]\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "toi_c2.intValueAt([0, 1])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "TermOperationImp constructor",
+      "expected_exception": null,
+      "id": "ctor_toi",
+      "kwargs": {},
+      "method": "TermOperationImp.TermOperationImp",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 1,
+        "string_repr": "1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, AbstractOperation, OperationSymbol,\n    OperationWithDefaultValue, Operations, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nplus = OperationSymbol(\"+\", 2)\nunary = OperationSymbol(\"u\", 1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\ntoi_c2 = TermOperationImp(NonVariableTerm(plus, _varlist(x, y)), _varlist(x, y), c2)\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(v) for v in list(t)]\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "xor.arity()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "table operation is an AbstractOperation",
+      "expected_exception": null,
+      "id": "ctor_ao_via_xor",
+      "kwargs": {},
+      "method": "AbstractOperation.AbstractOperation",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, AbstractOperation, OperationSymbol,\n    OperationWithDefaultValue, Operations, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nplus = OperationSymbol(\"+\", 2)\nunary = OperationSymbol(\"u\", 1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\ntoi_c2 = TermOperationImp(NonVariableTerm(plus, _varlist(x, y)), _varlist(x, y), c2)\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(v) for v in list(t)]\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "plus.name()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "binary plus name",
+      "expected_exception": null,
+      "id": "os_name_plus",
+      "kwargs": {},
+      "method": "OperationSymbol.name",
+      "notes": "",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "+",
+        "string_repr": "+",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, AbstractOperation, OperationSymbol,\n    OperationWithDefaultValue, Operations, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nplus = OperationSymbol(\"+\", 2)\nunary = OperationSymbol(\"u\", 1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\ntoi_c2 = TermOperationImp(NonVariableTerm(plus, _varlist(x, y)), _varlist(x, y), c2)\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(v) for v in list(t)]\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "unary.name()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "unary name",
+      "expected_exception": null,
+      "id": "os_name_unary",
+      "kwargs": {},
+      "method": "OperationSymbol.name",
+      "notes": "",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "u",
+        "string_repr": "u",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, AbstractOperation, OperationSymbol,\n    OperationWithDefaultValue, Operations, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nplus = OperationSymbol(\"+\", 2)\nunary = OperationSymbol(\"u\", 1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\ntoi_c2 = TermOperationImp(NonVariableTerm(plus, _varlist(x, y)), _varlist(x, y), c2)\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(v) for v in list(t)]\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "OperationSymbol('join', 2).name()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "join symbol name",
+      "expected_exception": null,
+      "id": "os_name_join",
+      "kwargs": {},
+      "method": "OperationSymbol.name",
+      "notes": "",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "join",
+        "string_repr": "join",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, AbstractOperation, OperationSymbol,\n    OperationWithDefaultValue, Operations, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nplus = OperationSymbol(\"+\", 2)\nunary = OperationSymbol(\"u\", 1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\ntoi_c2 = TermOperationImp(NonVariableTerm(plus, _varlist(x, y)), _varlist(x, y), c2)\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(v) for v in list(t)]\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "ow_name.isIdempotentSet()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "isIdempotentSet default is false",
+      "expected_exception": null,
+      "id": "ow_is_idempotent_set_default",
+      "kwargs": {},
+      "method": "OperationWithDefaultValue.isIdempotentSet",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": false,
+        "string_repr": "False",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, AbstractOperation, OperationSymbol,\n    OperationWithDefaultValue, Operations, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nplus = OperationSymbol(\"+\", 2)\nunary = OperationSymbol(\"u\", 1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\ntoi_c2 = TermOperationImp(NonVariableTerm(plus, _varlist(x, y)), _varlist(x, y), c2)\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(v) for v in list(t)]\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "(ow_name.setIdempotent(True), ow_name.isIdempotentSet())[1]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "isIdempotentSet after setIdempotent(True)",
+      "expected_exception": null,
+      "id": "ow_is_idempotent_set_after",
+      "kwargs": {},
+      "method": "OperationWithDefaultValue.isIdempotentSet",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, AbstractOperation, OperationSymbol,\n    OperationWithDefaultValue, Operations, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nplus = OperationSymbol(\"+\", 2)\nunary = OperationSymbol(\"u\", 1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\ntoi_c2 = TermOperationImp(NonVariableTerm(plus, _varlist(x, y)), _varlist(x, y), c2)\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(v) for v in list(t)]\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "(ow_name.makeIdempotent(), _tab(ow_name)[0], _tab(ow_name)[4], _tab(ow_name)[8])[1:]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "makeIdempotent fills the diagonal of size 3",
+      "expected_exception": null,
+      "id": "ow_make_idempotent",
+      "kwargs": {},
+      "method": "OperationWithDefaultValue.makeIdempotent",
+      "notes": "Java array/List toString vs Python list.",
+      "result": {
+        "return_type": "tuple",
+        "return_value": [
+          0,
+          1,
+          2
+        ],
+        "string_repr": "(0, 1, 2)",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, AbstractOperation, OperationSymbol,\n    OperationWithDefaultValue, Operations, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nplus = OperationSymbol(\"+\", 2)\nunary = OperationSymbol(\"u\", 1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\ntoi_c2 = TermOperationImp(NonVariableTerm(plus, _varlist(x, y)), _varlist(x, y), c2)\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(v) for v in list(t)]\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "(ow_tab.makeIdempotent(), _tab(ow_tab)[0], _tab(ow_tab)[3])[1:]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "makeIdempotent fills the diagonal of size 2",
+      "expected_exception": null,
+      "id": "ow_make_idempotent_size2",
+      "kwargs": {},
+      "method": "OperationWithDefaultValue.makeIdempotent",
+      "notes": "Java array/List toString vs Python list.",
+      "result": {
+        "return_type": "tuple",
+        "return_value": [
+          0,
+          1
+        ],
+        "string_repr": "(0, 1)",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, AbstractOperation, OperationSymbol,\n    OperationWithDefaultValue, Operations, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nplus = OperationSymbol(\"+\", 2)\nunary = OperationSymbol(\"u\", 1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\ntoi_c2 = TermOperationImp(NonVariableTerm(plus, _varlist(x, y)), _varlist(x, y), c2)\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(v) for v in list(t)]\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "list(ow_def.getTotalTable())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getTotalTable fills default 7",
+      "expected_exception": null,
+      "id": "ow_get_total_table_default",
+      "kwargs": {},
+      "method": "OperationWithDefaultValue.getTotalTable",
+      "notes": "Java array/List toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          7,
+          7,
+          7,
+          7
+        ],
+        "string_repr": "[7, 7, 7, 7]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, AbstractOperation, OperationSymbol,\n    OperationWithDefaultValue, Operations, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nplus = OperationSymbol(\"+\", 2)\nunary = OperationSymbol(\"u\", 1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\ntoi_c2 = TermOperationImp(NonVariableTerm(plus, _varlist(x, y)), _varlist(x, y), c2)\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(v) for v in list(t)]\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "list(ow_tab.getTotalTable())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getTotalTable fills default 5 at -1 cells",
+      "expected_exception": null,
+      "id": "ow_get_total_table_partial",
+      "kwargs": {},
+      "method": "OperationWithDefaultValue.getTotalTable",
+      "notes": "Java array/List toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          5,
+          0,
+          1,
+          1
+        ],
+        "string_repr": "[5, 0, 1, 1]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, AbstractOperation, OperationSymbol,\n    OperationWithDefaultValue, Operations, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nplus = OperationSymbol(\"+\", 2)\nunary = OperationSymbol(\"u\", 1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\ntoi_c2 = TermOperationImp(NonVariableTerm(plus, _varlist(x, y)), _varlist(x, y), c2)\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(v) for v in list(t)]\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "(ow_def.setDefaultValue(1), list(ow_def.getTotalTable()))[1]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getTotalTable after setDefaultValue(1)",
+      "expected_exception": null,
+      "id": "ow_get_total_table_after_set",
+      "kwargs": {},
+      "method": "OperationWithDefaultValue.getTotalTable",
+      "notes": "Java array/List toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "string_repr": "[1, 1, 1, 1]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, AbstractOperation, OperationSymbol,\n    OperationWithDefaultValue, Operations, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nplus = OperationSymbol(\"+\", 2)\nunary = OperationSymbol(\"u\", 1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\ntoi_c2 = TermOperationImp(NonVariableTerm(plus, _varlist(x, y)), _varlist(x, y), c2)\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(v) for v in list(t)]\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "(ow_def.updateRandomValueTable(), len(list(ow_def.getRandomValueTable())))[1]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "updateRandomValueTable length is algSize**arity",
+      "expected_exception": null,
+      "id": "ow_update_random_len",
+      "kwargs": {},
+      "method": "OperationWithDefaultValue.updateRandomValueTable",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 4,
+        "string_repr": "4",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, AbstractOperation, OperationSymbol,\n    OperationWithDefaultValue, Operations, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nplus = OperationSymbol(\"+\", 2)\nunary = OperationSymbol(\"u\", 1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\ntoi_c2 = TermOperationImp(NonVariableTerm(plus, _varlist(x, y)), _varlist(x, y), c2)\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(v) for v in list(t)]\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "(ow_name.updateRandomValueTable(), len(list(ow_name.getRandomValueTable())))[1]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "updateRandomValueTable length for size 3 binary",
+      "expected_exception": null,
+      "id": "ow_update_random_len_size3",
+      "kwargs": {},
+      "method": "OperationWithDefaultValue.updateRandomValueTable",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 9,
+        "string_repr": "9",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import (\n    AbstractIntOperation, AbstractOperation, OperationSymbol,\n    OperationWithDefaultValue, Operations, TermOperationImp,\n)\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nplus = OperationSymbol(\"+\", 2)\nunary = OperationSymbol(\"u\", 1)\nxor = Operations.makeIntOperation(OperationSymbol(\"xor\", 2), 2, [0, 1, 1, 0])\now_def = OperationWithDefaultValue(OperationSymbol(\"f\", 2), 2, 7)\now_name = OperationWithDefaultValue(\"h\", 2, 3, -1)\now_tab = OperationWithDefaultValue(\"g\", 2, 2, [-1, 0, 1, 1], 5)\naio_sym = AbstractIntOperation(OperationSymbol(\"*\", 2), 3)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\ntoi_c2 = TermOperationImp(NonVariableTerm(plus, _varlist(x, y)), _varlist(x, y), c2)\n\ndef _tab(op):\n    t = op.getTable()\n    if t is None:\n        return None\n    return [int(v) for v in list(t)]\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    }
+  ]
+}

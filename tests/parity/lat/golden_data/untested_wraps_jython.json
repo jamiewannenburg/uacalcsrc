@@ -1,0 +1,56 @@
+{
+  "metadata": {
+    "generated_at": "2026-11-17T10:50:20.616920+00:00",
+    "jar": "uacalc.jar",
+    "package": "org.uacalc.lat",
+    "runtime": "jython",
+    "test_cases": 2,
+    "type": "untested_wraps"
+  },
+  "test_cases": [
+    {
+      "args": [],
+      "call": "lat.cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "BasicLattice via latticeFromJoin",
+      "expected_exception": null,
+      "id": "ctor_basic_lattice",
+      "kwargs": {},
+      "method": "BasicLattice.BasicLattice",
+      "notes": "Java lattice toString is Class@hex.",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, BasicLattice\n\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\n\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "BasicLattice('C', lat.con(), False).cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "BasicLattice from Con(chain2) constructor",
+      "expected_exception": null,
+      "id": "ctor_basic_lattice_named",
+      "kwargs": {},
+      "method": "BasicLattice.BasicLattice",
+      "notes": "Java lattice toString is Class@hex.",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, BasicLattice\n\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\n\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    }
+  ]
+}

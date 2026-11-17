@@ -1,0 +1,56 @@
+{
+  "metadata": {
+    "generated_at": "2026-11-17T10:40:38.748668+00:00",
+    "jar": "uacalc.jar",
+    "package": "org.uacalc.element",
+    "runtime": "jython",
+    "test_cases": 2,
+    "type": "untested_wraps"
+  },
+  "test_cases": [
+    {
+      "args": [],
+      "call": "e_f1_0.getAlgebra().getName()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "SubProductElement of F(1) constructor",
+      "expected_exception": null,
+      "id": "ctor_spe_free",
+      "kwargs": {},
+      "method": "SubProductElement.SubProductElement",
+      "notes": "Java Algebra toString is Class@hex.",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "F1",
+        "string_repr": "F1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.element import SubProductElement\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import FreeAlgebra, SubProductAlgebra, BigProductAlgebra\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nf1 = FreeAlgebra(c2, 1)\nf1.setName('F1')\nbp2 = BigProductAlgebra(c2, 2)\nsp = SubProductAlgebra('SP', bp2, [IntArray([0, 0]), IntArray([1, 1])], True)\ne_f1_0 = SubProductElement(f1.getElement(0), f1)\ne_sp_0 = SubProductElement(sp.getElement(0), sp)\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "e_sp_0.getAlgebra().getName()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "SubProductElement of a subproduct constructor",
+      "expected_exception": null,
+      "id": "ctor_spe_subprod",
+      "kwargs": {},
+      "method": "SubProductElement.SubProductElement",
+      "notes": "Java Algebra toString is Class@hex.",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "SP",
+        "string_repr": "SP",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.element import SubProductElement\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import FreeAlgebra, SubProductAlgebra, BigProductAlgebra\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nf1 = FreeAlgebra(c2, 1)\nf1.setName('F1')\nbp2 = BigProductAlgebra(c2, 2)\nsp = SubProductAlgebra('SP', bp2, [IntArray([0, 0]), IntArray([1, 1])], True)\ne_f1_0 = SubProductElement(f1.getElement(0), f1)\ne_sp_0 = SubProductElement(sp.getElement(0), sp)\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    }
+  ]
+}

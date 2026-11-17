@@ -1,0 +1,78 @@
+{
+  "metadata": {
+    "generated_at": "2026-11-17T10:40:46.477565+00:00",
+    "jar": "uacalc.jar",
+    "package": "org.uacalc.eq",
+    "runtime": "jython",
+    "test_cases": 3,
+    "type": "untested_wraps"
+  },
+  "test_cases": [
+    {
+      "args": [],
+      "call": "str(eq_xy.leftSide()) + '=' + str(eq_xy.rightSide())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Equation(x, y) constructor",
+      "expected_exception": null,
+      "id": "ctor_equation_xy",
+      "kwargs": {},
+      "method": "Equation.Equation",
+      "notes": "",
+      "result": {
+        "return_type": "str",
+        "return_value": "x=y",
+        "string_repr": "x=y",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.eq import Equation, Presentation\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nfrom org.uacalc.alg.op import OperationSymbol\nplus = OperationSymbol(\"+\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\neq_xy = Equation(x, y)\neq_xx = Equation(x, x)\npres = Presentation([x, y], [eq_xy])\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "str(eq_xx.leftSide())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Equation(x, x) constructor",
+      "expected_exception": null,
+      "id": "ctor_equation_xx",
+      "kwargs": {},
+      "method": "Equation.Equation",
+      "notes": "",
+      "result": {
+        "return_type": "str",
+        "return_value": "x",
+        "string_repr": "x",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.eq import Equation, Presentation\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nfrom org.uacalc.alg.op import OperationSymbol\nplus = OperationSymbol(\"+\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\neq_xy = Equation(x, y)\neq_xx = Equation(x, x)\npres = Presentation([x, y], [eq_xy])\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "len(list(pres.getRelations()))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Presentation constructor relation count",
+      "expected_exception": null,
+      "id": "ctor_presentation",
+      "kwargs": {},
+      "method": "Presentation.Presentation",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 1,
+        "string_repr": "1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.eq import Equation, Presentation\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nfrom org.uacalc.alg.op import OperationSymbol\nplus = OperationSymbol(\"+\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\neq_xy = Equation(x, y)\neq_xx = Equation(x, x)\npres = Presentation([x, y], [eq_xy])\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    }
+  ]
+}

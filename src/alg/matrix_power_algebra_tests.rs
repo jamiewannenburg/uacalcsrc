@@ -159,7 +159,7 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "TODO: Fix universe comparison issue - Java returns -1 (not found) while Rust returns 0 (found at index 0). The Java elementIndex implementation has a universe comparison issue where the universe elements don't match between Rust and Java implementations."]
+    #[ignore = "Rust gap: MatrixPowerAlgebra.elementIndex disagrees with Java (Rust 0 vs Java -1 on universe compare)"]
     fn test_element_index() {
         let config = get_test_config();
         
