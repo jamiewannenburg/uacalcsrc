@@ -6,7 +6,7 @@ Library logic stays in ``uacalc_lib``.
 
 from __future__ import annotations
 
-from typing import Any, Iterable, List, Optional, Sequence, Union
+from typing import Any, Iterable, List, Optional, Sequence, Tuple, Union
 
 from org.uacalc._exceptions import (
     ArrayIndexOutOfBoundsException,
@@ -2325,7 +2325,19 @@ def _install(alg_module_globals: dict) -> None:
             return None
         fn = getattr(self, "get_universe_order", None)
         if callable(fn):
-            return fn()
+            order = fn()
+            if order is not None:
+                return order
+        lst = getUniverseList(self)
+        if lst is not None:
+            try:
+                out = {}
+                for i, elem in enumerate(list(lst)):
+                    key = tuple(elem) if isinstance(elem, (list, tuple)) else elem
+                    out[key] = i
+                return out
+            except TypeError:
+                return None
         return None
 
     def setUniverseOrder(self: Any, ord_map: Any) -> None:
@@ -3137,6 +3149,39 @@ def _install(alg_module_globals: dict) -> None:
         univ = _orig(self)
         return None if univ is None else [_int_array(row) for row in univ]
 
+    class _SubProductUniverseOrder(object):
+        """Java HashMap-style ``toString`` for universe index maps."""
+
+        def __init__(self, entries: List[Tuple[List[int], int]]) -> None:
+            self._entries = entries
+
+        def __str__(self) -> str:
+            parts = []
+            for key, idx in self._entries:
+                parts.append(
+                    "[%s]: %d" % (",".join(str(x) for x in key), int(idx))
+                )
+            return "{" + ",".join(parts) + "}"
+
+    def subproductGetUniverseOrder(self: Any) -> Any:
+        import sys
+
+        lst = subproductUniverseListBound(self)
+        if lst is None:
+            return None
+        entries: List[Tuple[List[int], int]] = []
+        for i, row in enumerate(list(lst)):
+            entries.append((list(_int_array_values(row)), i))
+        if sys.platform.startswith("java"):
+            from jarray import array
+            from java.util import HashMap
+
+            m = HashMap()
+            for key, idx in entries:
+                m.put(array([int(x) for x in key], "i"), idx)
+            return m
+        return _SubProductUniverseOrder(entries)
+
     def transpose(lst: Any) -> Any:
         """Java ``SubProductAlgebra.transpose(List<IntArray>)``."""
         if lst is None:
@@ -3243,7 +3288,7 @@ def _install(alg_module_globals: dict) -> None:
         "getElement": subproductGetElement,
         "elementIndex": subproductElementIndex,
         "getUniverseList": subproductUniverseListBound,
-        "getUniverseOrder": lambda self: None,
+        "getUniverseOrder": subproductGetUniverseOrder,
         "generators": subproductGeneratorsBound,
         "getProductAlgebra": getProductAlgebra,
         "getTerms": getTerms,

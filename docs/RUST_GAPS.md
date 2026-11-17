@@ -135,6 +135,18 @@ test(s) that surface it.
 - **Rust:** `src/alg/closer.rs` / Python shim `python/org/uacalc/alg/_jython_compat.py` — the parallel worker body is not bound. Success-path fixtures still hit Java's empty-`rawList` / null-`termMap` exceptions first.
 - **Missing:** Bind the worker. No `Rust gap:` xfail yet (unchanged from leftover wraps).
 
+### AlgebraFromMinimalSets operation table from a basic algebra
+
+- **Rust:** `uacalc_lib` `AlgebraFromMinimalSets` built from `cyclic2.ua` exposes a unary `s` operation via `get_operation`; Java returns null for `OperationSymbol("s", 1)`.
+- **Missing:** Match Java minimal-sets operation naming when cloning from a `BasicAlgebra`.
+- **Tests:** `jython_comparison/scripts/algebra_from_minimal_sets_smoke.py` (`op_s`).
+
+### MatrixPowerAlgebra.getElement typing
+
+- **Rust:** `uacalc_lib` `PyMatrixPowerAlgebra.get_element` returns a `PyIntArray` that CPython scripts cannot iterate like Java `IntArray`.
+- **Missing:** Expose Java-compatible `getElement` / universe element handles for matrix-power algebras.
+- **Tests:** `jython_comparison/scripts/matrix_power_algebra_smoke.py` (`getElement0`).
+
 ## Platform notes (not Rust-gap xfails)
 
 On Windows, `malcev_term_rand_bin` and `hagemann_mitschke_rand_bin`

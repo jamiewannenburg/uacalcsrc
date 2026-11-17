@@ -174,6 +174,8 @@ def collect_script_entries(
         testing = normalize_testing(contract.testing)
         for script in testing["scripts"]:
             path = script["path"]
+            if "/test_cases/" in path.replace("\\", "/"):
+                continue
             if path not in by_path:
                 by_path[path] = {
                     "path": path,
