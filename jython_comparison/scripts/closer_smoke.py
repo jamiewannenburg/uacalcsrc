@@ -72,7 +72,7 @@ def test():
     print("suppress=" + str(closer.isSuppressOutput()))
     closer.setSuppressOutput(True)
     print("suppress_set=" + str(closer.isSuppressOutput()))
-    _show("ctor_null", lambda: Closer(None, [g00]))
+    _show("ctor_null", lambda: Closer(None, [g00]) is not None)
 
 
 if __name__ == "__main__":

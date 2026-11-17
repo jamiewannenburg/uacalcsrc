@@ -37,7 +37,7 @@ def test():
     print("disc=" + str(disc.cardinality()) + "," + str(disc.getName()))
     rnd = Algebras.makeRandomAlgebra(2, [1])
     print("random=" + str(rnd.cardinality()) + "," + str(rnd.getName()))
-    _show("findInClone_empty", lambda: Algebras.findInClone([], c2))
+    _show("findInClone_empty", lambda: Algebras.findInClone([], c2, None))
     _show("unary2arg", lambda: Algebras.unaryCloneAlgFromPartitions([zero_p], [zero_p]))
     _show("memberQV_null", lambda: Algebras.memberOfQuasivariety(None, c2))
     _show("findNUF_c2", lambda: Algebras.findNUF(c2, 3))

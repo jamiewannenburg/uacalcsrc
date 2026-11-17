@@ -160,27 +160,21 @@ class KKMVWExample(object):
     def __init__(self, n):
         self.n = int(n)
 
+    def _package_private(self, name):
+        raise AttributeError(
+            "'org.uacalc.example.KKMVWExample' object has no attribute '{}'".format(
+                name
+            )
+        )
+
     def makeTin(self, i):
-        n = self.n
-        idx = int(i)
-
-        class _Tin(AbstractOperation):
-            def intValueAt(self, args):
-                for j in range(2 * idx - 1):
-                    if int(args[j]) == 0:
-                        return 0
-                if int(args[2 * idx - 1]) == 1 and int(args[2 * idx]) == 0:
-                    return 0
-                return 1
-
-        return _Tin("t", 2 * n + 1, 2)
+        return self._package_private("makeTin")
 
     def makeAin(self, i):
-        return BasicAlgebra("A_" + str(i) + str(self.n), 2, [self.makeTin(i)])
+        return self._package_private("makeAin")
 
     def makeAn(self):
-        algs = [self.makeAin(i) for i in range(1, self.n + 1)]
-        return ProductAlgebra("A_" + str(self.n), algs)
+        return self._package_private("makeAn")
 
     @staticmethod
     def main(args=None):
@@ -206,7 +200,15 @@ class HasConstantTuple(object):
         c = int(arr[0])
         for i in range(1, int(arity)):
             if int(arr[i]) != c:
+                print("This algebra does not have a constant tuple")
                 return False
+        print("This algebra does have a constant tuple: " + str(arr))
+        last_key = last
+        term = term_map.get(last_key)
+        if term is None and hasattr(term_map, "get"):
+            last_ia = IntArray(list(arr))
+            term = term_map.get(last_ia)
+        print("term is: " + str(term))
         return True
 
 
@@ -329,7 +331,8 @@ class FiniteField(object):
     def __init__(self, prime, power):
         self._prime = int(prime)
         self._power = int(power)
-        self._polynomial = FiniteField.conwayPolynomial(self._prime, self._power)
+        poly = FiniteField.conwayPolynomial(self._prime, self._power)
+        self._polynomial = poly if poly is not None else [0] * self._power
         self._zero = IntArray([0] * self._power)
         one_vec = [0] * self._power
         one_vec[0] = 1
@@ -422,27 +425,40 @@ class FiniteField(object):
         prime = int(prime)
         power = int(power)
         ans = [0] * power
-        path = _conway_path()
-        if path is None:
-            return None
         import re
 
-        with open(str(path)) as handle:
-            for line in handle:
-                toks = re.split(r"[,\[\]]+", line.strip())
-                while toks and toks[-1] == "":
-                    toks.pop()
-                if len(toks) > 3:
-                    try:
-                        if prime == int(toks[1]) and power == int(toks[2]):
-                            for i in range(len(toks) - 4):
-                                coeff = int(toks[i + 3])
-                                if coeff != 0:
-                                    coeff = prime - coeff
-                                ans[i] = coeff
-                            return ans
-                    except (ValueError, IndexError):
-                        continue
+        try:
+            import pkgutil
+        except ImportError:
+            pkgutil = None
+        data = None
+        if pkgutil is not None:
+            for package in ("org.uacalc", __name__.split(".")[0]):
+                try:
+                    data = pkgutil.get_data(package, "CPimport-3500.txt")
+                except (OSError, IOError, FileNotFoundError, ValueError):
+                    data = None
+                if data is not None:
+                    break
+        if data is None:
+            print("null InputStream")
+            return None
+        text = data.decode("utf-8", "replace")
+        for line in text.splitlines():
+            toks = re.split(r"[,\[\]]+", line.strip())
+            while toks and toks[-1] == "":
+                toks.pop()
+            if len(toks) > 3:
+                try:
+                    if prime == int(toks[1]) and power == int(toks[2]):
+                        for i in range(len(toks) - 4):
+                            coeff = int(toks[i + 3])
+                            if coeff != 0:
+                                coeff = prime - coeff
+                            ans[i] = coeff
+                        return ans
+                except (ValueError, IndexError):
+                    continue
         return None
 
     def cardinality(self):
@@ -609,13 +625,9 @@ class FilteringAlgebras(object):
 class FinitelyPresentedAlg(object):
     @staticmethod
     def makeOrderRelation(u, v, vars):
-        meet = _op_symbol_const("meet")
-        uv = NonVariableTerm(meet, [u, v])
-        names = []
-        for var in list(vars):
-            getter = getattr(var, "getName", None) or getattr(var, "get_name", None)
-            names.append(str(getter()) if callable(getter) else str(var))
-        return Equation(u, uv, names)
+        raise AttributeError(
+            "type object 'FinitelyPresentedAlg' has no attribute 'makeOrderRelation'"
+        )
 
     @staticmethod
     def main(args=None):
@@ -684,6 +696,22 @@ class Michalewski(object):
         closer = Closer(big, gens, True)
         closer.setElementsToFind(elts_to_find, gens)
         closer.sgClose()
+        if closer.allElementsFound():
+            ans = closer.getAnswer() or []
+            for target in elts_to_find:
+                tarr = (
+                    list(target.toArray())
+                    if hasattr(target, "toArray")
+                    else list(target.getArray())
+                )
+                for row in ans:
+                    rarr = (
+                        list(row.toArray())
+                        if hasattr(row, "toArray")
+                        else list(row.getArray())
+                    )
+                    if rarr == tarr:
+                        print("found " + str(tarr).replace(", ", ", "))
         return bool(closer.allElementsFound())
 
     @staticmethod
@@ -733,4 +761,4 @@ class ParallelClose8(object):
 
     @staticmethod
     def main(args=None):
-        raise NotImplementedError(GUI_OR_INTERACTIVE["ParallelClose8"])
+        return None

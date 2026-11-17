@@ -285,10 +285,6 @@ class AlgebraWriter:
         # Same unflushed PrintWriter as writeAlgebra.
         return None
 
-    def flush(self) -> None:
-        """No-op: Java AlgebraWriter never flushes the output stream."""
-        return None
-
 
 class Mace4Reader:
     """Mace4 parser matching ``org.uacalc.io.Mace4Reader``.

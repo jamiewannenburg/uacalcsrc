@@ -15,15 +15,17 @@ from org.uacalc.alg import ParameterizedAlgebra
 
 
 def _set_parameter_names(p, names):
-    if sys.platform.startswith("java"):
+    try:
+        p.parameterNames = list(names)
+    except Exception:
+        field = p.getClass().getDeclaredField("parameterNames")
+        field.setAccessible(True)
         from java.util import ArrayList
 
         lst = ArrayList()
         for n in names:
             lst.add(n)
-        p.parameterNames = lst
-    else:
-        p.parameterNames = list(names)
+        field.set(p, lst)
 
 
 def test():
