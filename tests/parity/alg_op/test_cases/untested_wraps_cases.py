@@ -11,7 +11,7 @@ from parity_test_base import TestCaseSpec
 _SETUP = r"""
 from org.uacalc.alg.op import (
     AbstractIntOperation, AbstractOperation, OperationSymbol,
-    OperationWithDefaultValue, Operations, TermOperationImp,
+    OperationWithDefaultValue, Operations, SimilarityType, TermOperationImp,
 )
 from org.uacalc.io import AlgebraIO
 from org.uacalc.terms import NonVariableTerm, VariableImp
@@ -101,4 +101,28 @@ TEST_CASES = [
     _c("ow_update_random_len_size3", "OperationWithDefaultValue.updateRandomValueTable",
        "(ow_name.updateRandomValueTable(), len(list(ow_name.getRandomValueTable())))[1]",
        "updateRandomValueTable length for size 3 binary"),
+    _c("inh_ao_arity", "AbstractOperation.arity", "int(xor.arity())", "AbstractOperation arity on xor"),
+    _c("inh_ao_set_size", "AbstractOperation.getSetSize", "int(xor.getSetSize())", "AbstractOperation getSetSize"),
+    _c("inh_ao_get_table", "AbstractOperation.getTable",
+       "[int(v) for v in list(xor.getTable())]", "AbstractOperation getTable", **_LIST),
+    _c("inh_ao_int_value", "AbstractOperation.intValueAt", "int(xor.intValueAt([1, 0]))", "AbstractOperation intValueAt"),
+    _c("inh_ao_is_assoc", "AbstractOperation.isAssociative", "xor.isAssociative()", "AbstractOperation isAssociative", **_BOOL),
+    _c("inh_ao_is_comm", "AbstractOperation.isCommutative", "xor.isCommutative()", "AbstractOperation isCommutative", **_BOOL),
+    _c("inh_ao_is_idem", "AbstractOperation.isIdempotent", "xor.isIdempotent()", "AbstractOperation isIdempotent", **_BOOL),
+    _c("inh_ao_is_maltsev", "AbstractOperation.isMaltsev", "xor.isMaltsev()", "AbstractOperation isMaltsev", **_BOOL),
+    _c("inh_ao_is_table", "AbstractOperation.isTableBased", "xor.isTableBased()", "AbstractOperation isTableBased", **_BOOL),
+    _c("inh_ao_is_total", "AbstractOperation.isTotal", "xor.isTotal()", "AbstractOperation isTotal", **_BOOL),
+    _c("inh_ao_is_tsym", "AbstractOperation.isTotallySymmetric", "xor.isTotallySymmetric()", "AbstractOperation isTotallySymmetric", **_BOOL),
+    _c("inh_ao_make_table", "AbstractOperation.makeTable",
+       "(xor.makeTable(), len(list(xor.getTable())))[1]", "AbstractOperation makeTable"),
+    _c("inh_ao_symbol", "AbstractOperation.symbol", "xor.symbol().name()", "AbstractOperation symbol"),
+    _c("inh_ao_value_at", "AbstractOperation.valueAt", "xor.valueAt([0, 1])", "AbstractOperation valueAt"),
+    _c("inh_ow_make_table", "OperationWithDefaultValue.makeTable",
+       "(ow_def.makeTable(), _tab(ow_def)[0])[1]", "OperationWithDefaultValue makeTable"),
+    _c("inh_st_ctor", "SimilarityType.SimilarityType",
+       "SimilarityType(_varlist(plus, unary)).getMaxArity()", "SimilarityType constructor"),
+    _c("inh_st_hash", "SimilarityType.hashCode",
+       "SimilarityType(_varlist(plus)).hashCode()", "SimilarityType hashCode"),
+    _c("inh_toi_ordered_vars", "TermOperationImp.getOrderedVariables",
+       "[v.getName() for v in list(toi_c2.getOrderedVariables())]", "TermOperationImp getOrderedVariables", **_LIST),
 ]

@@ -1,10 +1,10 @@
 {
   "metadata": {
-    "generated_at": "2026-11-17T10:40:15.642867+00:00",
+    "generated_at": "2026-11-17T17:38:51.336638+00:00",
     "jar": "uacalc.jar",
     "package": "org.uacalc.terms",
     "runtime": "jython",
-    "test_cases": 3,
+    "test_cases": 17,
     "type": "untested_wraps"
   },
   "test_cases": [
@@ -25,7 +25,7 @@
         "string_repr": "x",
         "success": true
       },
-      "setup": "\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nfrom org.uacalc.alg.op import OperationSymbol\nplus = OperationSymbol(\"+\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nfxy = NonVariableTerm(plus, [x, y])\n",
+      "setup": "\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _wsb(term, prefix=\"\"):\n    try:\n        from java.lang import StringBuffer\n        sb = StringBuffer(prefix)\n        term.writeStringBuffer(sb)\n        return sb.toString()\n    except ImportError:\n        return term.writeStringBuffer(prefix)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        out.append(getter() if getter is not None else str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nplus = OperationSymbol(\"+\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nfxy = NonVariableTerm(plus, _varlist(x, y))\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\n",
       "skip_string_check": false,
       "timeout_seconds": null,
       "xfail_reason": null
@@ -47,7 +47,7 @@
         "string_repr": "y",
         "success": true
       },
-      "setup": "\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nfrom org.uacalc.alg.op import OperationSymbol\nplus = OperationSymbol(\"+\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nfxy = NonVariableTerm(plus, [x, y])\n",
+      "setup": "\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _wsb(term, prefix=\"\"):\n    try:\n        from java.lang import StringBuffer\n        sb = StringBuffer(prefix)\n        term.writeStringBuffer(sb)\n        return sb.toString()\n    except ImportError:\n        return term.writeStringBuffer(prefix)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        out.append(getter() if getter is not None else str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nplus = OperationSymbol(\"+\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nfxy = NonVariableTerm(plus, _varlist(x, y))\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\n",
       "skip_string_check": false,
       "timeout_seconds": null,
       "xfail_reason": null
@@ -69,7 +69,315 @@
         "string_repr": "+(x,y)",
         "success": true
       },
-      "setup": "\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nfrom org.uacalc.alg.op import OperationSymbol\nplus = OperationSymbol(\"+\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nfxy = NonVariableTerm(plus, [x, y])\n",
+      "setup": "\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _wsb(term, prefix=\"\"):\n    try:\n        from java.lang import StringBuffer\n        sb = StringBuffer(prefix)\n        term.writeStringBuffer(sb)\n        return sb.toString()\n    except ImportError:\n        return term.writeStringBuffer(prefix)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        out.append(getter() if getter is not None else str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nplus = OperationSymbol(\"+\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nfxy = NonVariableTerm(plus, _varlist(x, y))\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "int(fxy.depth())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Term depth on compound term",
+      "expected_exception": null,
+      "id": "inh_term_depth",
+      "kwargs": {},
+      "method": "Term.depth",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 1,
+        "string_repr": "1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _wsb(term, prefix=\"\"):\n    try:\n        from java.lang import StringBuffer\n        sb = StringBuffer(prefix)\n        term.writeStringBuffer(sb)\n        return sb.toString()\n    except ImportError:\n        return term.writeStringBuffer(prefix)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        out.append(getter() if getter is not None else str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nplus = OperationSymbol(\"+\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nfxy = NonVariableTerm(plus, _varlist(x, y))\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "int(fxy.eval(c2, _map((x, 1), (y, 0))))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Term eval on cyclic2",
+      "expected_exception": null,
+      "id": "inh_term_eval",
+      "kwargs": {},
+      "method": "Term.eval",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 1,
+        "string_repr": "1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _wsb(term, prefix=\"\"):\n    try:\n        from java.lang import StringBuffer\n        sb = StringBuffer(prefix)\n        term.writeStringBuffer(sb)\n        return sb.toString()\n    except ImportError:\n        return term.writeStringBuffer(prefix)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        out.append(getter() if getter is not None else str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nplus = OperationSymbol(\"+\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nfxy = NonVariableTerm(plus, _varlist(x, y))\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "len(list(fxy.getChildren()))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Term getChildren",
+      "expected_exception": null,
+      "id": "inh_term_children",
+      "kwargs": {},
+      "method": "Term.getChildren",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _wsb(term, prefix=\"\"):\n    try:\n        from java.lang import StringBuffer\n        sb = StringBuffer(prefix)\n        term.writeStringBuffer(sb)\n        return sb.toString()\n    except ImportError:\n        return term.writeStringBuffer(prefix)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        out.append(getter() if getter is not None else str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nplus = OperationSymbol(\"+\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nfxy = NonVariableTerm(plus, _varlist(x, y))\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_syms(fxy.getOperationSymbols())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Term getOperationSymbols",
+      "expected_exception": null,
+      "id": "inh_term_op_syms",
+      "kwargs": {},
+      "method": "Term.getOperationSymbols",
+      "notes": "",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "+/2",
+        "string_repr": "+/2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _wsb(term, prefix=\"\"):\n    try:\n        from java.lang import StringBuffer\n        sb = StringBuffer(prefix)\n        term.writeStringBuffer(sb)\n        return sb.toString()\n    except ImportError:\n        return term.writeStringBuffer(prefix)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        out.append(getter() if getter is not None else str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nplus = OperationSymbol(\"+\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nfxy = NonVariableTerm(plus, _varlist(x, y))\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_names(fxy.getVariableList())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Term getVariableList",
+      "expected_exception": null,
+      "id": "inh_term_var_list",
+      "kwargs": {},
+      "method": "Term.getVariableList",
+      "notes": "",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "x,y",
+        "string_repr": "x,y",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _wsb(term, prefix=\"\"):\n    try:\n        from java.lang import StringBuffer\n        sb = StringBuffer(prefix)\n        term.writeStringBuffer(sb)\n        return sb.toString()\n    except ImportError:\n        return term.writeStringBuffer(prefix)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        out.append(getter() if getter is not None else str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nplus = OperationSymbol(\"+\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nfxy = NonVariableTerm(plus, _varlist(x, y))\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "int(fxy.intEval(c2, _map((x, 1), (y, 1))))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Term intEval",
+      "expected_exception": null,
+      "id": "inh_term_int_eval",
+      "kwargs": {},
+      "method": "Term.intEval",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 0,
+        "string_repr": "0",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _wsb(term, prefix=\"\"):\n    try:\n        from java.lang import StringBuffer\n        sb = StringBuffer(prefix)\n        term.writeStringBuffer(sb)\n        return sb.toString()\n    except ImportError:\n        return term.writeStringBuffer(prefix)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        out.append(getter() if getter is not None else str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nplus = OperationSymbol(\"+\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nfxy = NonVariableTerm(plus, _varlist(x, y))\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "int(fxy.interpretation(c2).arity())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Term interpretation",
+      "expected_exception": null,
+      "id": "inh_term_interp",
+      "kwargs": {},
+      "method": "Term.interpretation",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _wsb(term, prefix=\"\"):\n    try:\n        from java.lang import StringBuffer\n        sb = StringBuffer(prefix)\n        term.writeStringBuffer(sb)\n        return sb.toString()\n    except ImportError:\n        return term.writeStringBuffer(prefix)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        out.append(getter() if getter is not None else str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nplus = OperationSymbol(\"+\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nfxy = NonVariableTerm(plus, _varlist(x, y))\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "x.isaVariable()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Term isaVariable on variable",
+      "expected_exception": null,
+      "id": "inh_term_is_var",
+      "kwargs": {},
+      "method": "Term.isaVariable",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _wsb(term, prefix=\"\"):\n    try:\n        from java.lang import StringBuffer\n        sb = StringBuffer(prefix)\n        term.writeStringBuffer(sb)\n        return sb.toString()\n    except ImportError:\n        return term.writeStringBuffer(prefix)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        out.append(getter() if getter is not None else str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nplus = OperationSymbol(\"+\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nfxy = NonVariableTerm(plus, _varlist(x, y))\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "fxy.leadingOperationSymbol().name()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Term leadingOperationSymbol",
+      "expected_exception": null,
+      "id": "inh_term_lead",
+      "kwargs": {},
+      "method": "Term.leadingOperationSymbol",
+      "notes": "",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "+",
+        "string_repr": "+",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _wsb(term, prefix=\"\"):\n    try:\n        from java.lang import StringBuffer\n        sb = StringBuffer(prefix)\n        term.writeStringBuffer(sb)\n        return sb.toString()\n    except ImportError:\n        return term.writeStringBuffer(prefix)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        out.append(getter() if getter is not None else str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nplus = OperationSymbol(\"+\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nfxy = NonVariableTerm(plus, _varlist(x, y))\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "int(fxy.length())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Term length",
+      "expected_exception": null,
+      "id": "inh_term_length",
+      "kwargs": {},
+      "method": "Term.length",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 3,
+        "string_repr": "3",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _wsb(term, prefix=\"\"):\n    try:\n        from java.lang import StringBuffer\n        sb = StringBuffer(prefix)\n        term.writeStringBuffer(sb)\n        return sb.toString()\n    except ImportError:\n        return term.writeStringBuffer(prefix)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        out.append(getter() if getter is not None else str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nplus = OperationSymbol(\"+\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nfxy = NonVariableTerm(plus, _varlist(x, y))\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "str(fxy.substitute(_map((x, y))))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Term substitute",
+      "expected_exception": null,
+      "id": "inh_term_substitute",
+      "kwargs": {},
+      "method": "Term.substitute",
+      "notes": "",
+      "result": {
+        "return_type": "str",
+        "return_value": "+(y,y)",
+        "string_repr": "+(y,y)",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _wsb(term, prefix=\"\"):\n    try:\n        from java.lang import StringBuffer\n        sb = StringBuffer(prefix)\n        term.writeStringBuffer(sb)\n        return sb.toString()\n    except ImportError:\n        return term.writeStringBuffer(prefix)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        out.append(getter() if getter is not None else str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nplus = OperationSymbol(\"+\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nfxy = NonVariableTerm(plus, _varlist(x, y))\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "fxy.toString()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Term toString",
+      "expected_exception": null,
+      "id": "inh_term_tostr",
+      "kwargs": {},
+      "method": "Term.toString",
+      "notes": "",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "+(x,y)",
+        "string_repr": "+(x,y)",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _wsb(term, prefix=\"\"):\n    try:\n        from java.lang import StringBuffer\n        sb = StringBuffer(prefix)\n        term.writeStringBuffer(sb)\n        return sb.toString()\n    except ImportError:\n        return term.writeStringBuffer(prefix)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        out.append(getter() if getter is not None else str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nplus = OperationSymbol(\"+\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nfxy = NonVariableTerm(plus, _varlist(x, y))\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_wsb(fxy, 't=')",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Term writeStringBuffer",
+      "expected_exception": null,
+      "id": "inh_term_wsb",
+      "kwargs": {},
+      "method": "Term.writeStringBuffer",
+      "notes": "",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "t=+(x,y)",
+        "string_repr": "t=+(x,y)",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _wsb(term, prefix=\"\"):\n    try:\n        from java.lang import StringBuffer\n        sb = StringBuffer(prefix)\n        term.writeStringBuffer(sb)\n        return sb.toString()\n    except ImportError:\n        return term.writeStringBuffer(prefix)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        out.append(getter() if getter is not None else str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nplus = OperationSymbol(\"+\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nfxy = NonVariableTerm(plus, _varlist(x, y))\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "fxy.hashCode()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "NonVariableTerm hashCode",
+      "expected_exception": null,
+      "id": "inh_nvt_hash",
+      "kwargs": {},
+      "method": "NonVariableTerm.hashCode",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 4847,
+        "string_repr": "4847",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.io import AlgebraIO\n\ndef _map(*pairs):\n    try:\n        from java.util import HashMap\n        m = HashMap()\n        for k, v in pairs:\n            m.put(k, v)\n        return m\n    except ImportError:\n        return dict(pairs)\n\ndef _wsb(term, prefix=\"\"):\n    try:\n        from java.lang import StringBuffer\n        sb = StringBuffer(prefix)\n        term.writeStringBuffer(sb)\n        return sb.toString()\n    except ImportError:\n        return term.writeStringBuffer(prefix)\n\ndef _names(lst):\n    if lst is None:\n        return None\n    out = []\n    for v in list(lst):\n        getter = getattr(v, \"getName\", None)\n        out.append(getter() if getter is not None else str(v))\n    return \",\".join(out)\n\ndef _syms(coll):\n    if coll is None:\n        return None\n    parts = sorted([x.name() + \"/\" + str(int(x.arity())) for x in list(coll)])\n    return \",\".join(parts)\n\ndef _varlist(*vars):\n    try:\n        from java.util import ArrayList\n        lst = ArrayList()\n        for v in vars:\n            lst.add(v)\n        return lst\n    except ImportError:\n        return list(vars)\n\nplus = OperationSymbol(\"+\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nfxy = NonVariableTerm(plus, _varlist(x, y))\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\n",
       "skip_string_check": false,
       "timeout_seconds": null,
       "xfail_reason": null

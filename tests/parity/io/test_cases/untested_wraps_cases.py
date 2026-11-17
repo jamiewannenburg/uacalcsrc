@@ -103,6 +103,23 @@ filt = ExtFileFilter("UA Files", "ua")
         "ExtFileFilter constructor description",
     ),
     _c(
+        "inh_reader_list_stream",
+        "AlgebraReader.readAlgebraListFromStream",
+        """
+import sys
+from org.uacalc.io import AlgebraReader
+path = "resources/algebras/cyclic2.ua"
+if sys.platform.startswith("java"):
+    from java.io import FileInputStream
+    reader = AlgebraReader(FileInputStream(path))
+else:
+    reader = AlgebraReader(open(path, "rb"))
+""",
+        "len(list(reader.readAlgebraListFromStream()))",
+        "AlgebraReader readAlgebraListFromStream",
+        **_SKIP
+    ),
+    _c(
         "ctor_bad_algebra_file_exc",
         "BadAlgebraFileException.BadAlgebraFileException",
         """

@@ -41,4 +41,11 @@ TEST_CASES = [
        "e_f1_0.getAlgebra().getName()", "SubProductElement of F(1) constructor", **_ALG),
     _c("ctor_spe_subprod", "SubProductElement.SubProductElement",
        "e_sp_0.getAlgebra().getName()", "SubProductElement of a subproduct constructor", **_ALG),
+    _c("inh_elem_parent", "Element.getParent", "e_f1_0.getParent()", "Element getParent on F(1) element", **_ALG),
+    _c("inh_elem_parent_arr", "Element.getParentArray",
+       "list(e_f1_0.getParentArray())", "Element getParentArray", skip_string_check=True),
+    _c("inh_elem_index", "Element.index", "int(e_f1_0.index())", "Element index"),
+    _c("inh_elem_parent_idx", "Element.parentIndexArray",
+       "list(e_f1_0.parentIndexArray())", "Element parentIndexArray", skip_string_check=True),
+    _c("inh_elem_tostr", "Element.toString", "e_f1_0.toString()", "Element toString", skip_string_check=True),
 ]
