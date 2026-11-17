@@ -265,6 +265,21 @@ def compare_one_script(
             f"(ignore_prefixes={prefixes!r}).",
             file=sys.stderr,
         )
+
+    try:
+        from jython_contracts.comparison_allowlist import known_difference_reason
+    except ImportError:
+        known_difference_reason = None  # type: ignore[assignment,misc]
+
+    if known_difference_reason is not None:
+        reason = known_difference_reason(script, repo)
+        if reason:
+            note = f"ALLOWLISTED: {reason}"
+            print(note, file=sys.stderr)
+            if not args.quiet:
+                print(note)
+            return True
+
     return False
 
 
