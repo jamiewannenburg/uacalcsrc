@@ -2,22 +2,17 @@
 # Dual-runtime parity script for org.uacalc.fplat.PartiallyDefinedLattice.
 from __future__ import print_function
 
+import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from parity_probe import probe as _show, section
+
 import sys
 
 from org.uacalc.fplat import PartiallyDefinedLattice
 from org.uacalc.lat import Order
 from org.uacalc.terms import VariableImp
-
-
-def _show(label, thunk):
-    try:
-        print(label + "=" + str(thunk()))
-    except:  # noqa: E722 — Jython 2: Java NPE is not always a Python Exception
-        e = sys.exc_info()[1]
-        name = type(e).__name__
-        if "." in name:
-            name = name.rsplit(".", 1)[-1]
-        print(label + "=EXC:" + name)
 
 
 def _name(v):

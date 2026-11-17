@@ -2,6 +2,12 @@
 # Dual-runtime parity script for org.uacalc.util and util.virtuallist.
 from __future__ import print_function
 
+import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from parity_probe import probe as _show, section
+
 import sys
 
 from org.uacalc.util import (
@@ -38,15 +44,6 @@ else:
 
     def _jlist(vals):
         return [int(x) for x in vals]
-
-
-def _show(label, thunk):
-    try:
-        print(label + "=" + str(thunk()))
-    except Exception:
-        e = sys.exc_info()[1]
-        msg = str(e).replace("\n", " ").replace("\r", " ")
-        print(label + "=EXC:" + type(e).__name__ + ":" + msg)
 
 
 def _tolist(a):

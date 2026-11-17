@@ -145,7 +145,7 @@ test(s) that surface it.
 
 - **Rust:** `uacalc_lib` `PyMatrixPowerAlgebra.get_element` returns a `PyIntArray` that CPython scripts cannot iterate like Java `IntArray`.
 - **Missing:** Expose Java-compatible `getElement` / universe element handles for matrix-power algebras.
-- **Tests:** `jython_comparison/scripts/matrix_power_algebra_smoke.py` (`getElement0`).
+- **Tests:** `jython_comparison/scripts/matrix_power_algebra_smoke.py` (`getElement0`, `op_plus`).
 
 ## Platform notes (not Rust-gap xfails)
 

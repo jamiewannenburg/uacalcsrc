@@ -2,6 +2,12 @@
 # Dual-runtime parity script for AlgebraWithGeneratingVector.
 from __future__ import print_function
 
+import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from parity_probe import probe as _show, section
+
 import sys
 
 from org.uacalc.io import AlgebraIO
@@ -9,14 +15,6 @@ from org.uacalc.alg import AlgebraWithGeneratingVector
 from org.uacalc.eq import Equation
 from org.uacalc.terms import Variable
 
-
-def _show(label, thunk):
-    try:
-        print(label + "=" + str(thunk()))
-    except Exception:
-        e = sys.exc_info()[1]
-        msg = str(e).replace("\n", " ").replace("\r", " ")
-        print(label + "=EXC:" + type(e).__name__ + ":" + msg)
 
 
 def test():

@@ -2,19 +2,16 @@
 # Dual-runtime parity script for Homomorphism (Java/Jython source of truth).
 from __future__ import print_function
 
+import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from parity_probe import probe as _show, section
+
 import sys
 
 from org.uacalc.io import AlgebraIO
 from org.uacalc.alg import Homomorphism
-
-
-def _show(label, thunk):
-    try:
-        print(label + "=" + str(thunk()))
-    except Exception:
-        e = sys.exc_info()[1]
-        msg = str(e).replace("\n", " ").replace("\r", " ")
-        print(label + "=EXC:" + type(e).__name__ + ":" + msg)
 
 
 def _as_list(obj):
@@ -72,11 +69,19 @@ def test():
     _show("productHomo_null", lambda: Homomorphism.productHomo(None))
     _show("ctor_null_domain", lambda: Homomorphism(None, c2, {0: 0, 1: 1}))
     _show("kernel_incomplete", lambda: Homomorphism(c2, c2, {0: 0}).kernel())
-    h.setMap({0: 0, 1: 0})
-    print("after_setMap=" + _hmap(h.getMap()))
-    h.setDomain(c2)
-    h.setRange(c2)
-    print("after_set_domain_range=" + str(h.getDomain().cardinality()) + "," + str(h.getRange().getName()))
+
+    def _after_set_map():
+        h.setMap({0: 0, 1: 0})
+        return _hmap(h.getMap())
+
+    _show("after_setMap", _after_set_map)
+
+    def _after_set_domain_range():
+        h.setDomain(c2)
+        h.setRange(c2)
+        return str(h.getDomain().cardinality()) + "," + str(h.getRange().getName())
+
+    _show("after_set_domain_range", _after_set_domain_range)
 
 
 if __name__ == "__main__":
