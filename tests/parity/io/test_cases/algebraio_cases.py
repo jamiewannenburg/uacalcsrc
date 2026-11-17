@@ -97,6 +97,11 @@ TEST_CASES = [
         call='AlgebraIO.readAlgebraListFile("resources/algebras/cyclic2_cyclic3_list.ua")',
         description="Read multi-algebra list file (Java returns the last algebra only)",
         skip_string_check=True,
+        xfail_reason=(
+            "Known Java bug: AlgebraIO.readAlgebraListFile returns only the last "
+            "algebra (C3). The org wrapper deliberately returns the full list "
+            "(C2 and C3). Java golden values are left unchanged."
+        ),
     ),
     TestCaseSpec(
         id="read_algebra_list_from_stream",
@@ -194,6 +199,11 @@ else:
         call="reader.readAlgebraListFile()",
         description="AlgebraReader.readAlgebraListFile",
         skip_string_check=True,
+        xfail_reason=(
+            "Known Java bug: AlgebraReader.readAlgebraListFile returns only the last "
+            "algebra (C3). The org wrapper deliberately returns the full list "
+            "(C2 and C3). Java golden values are left unchanged."
+        ),
     ),
     TestCaseSpec(
         id="writer_write_algebra_xml",

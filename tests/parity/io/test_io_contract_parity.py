@@ -192,11 +192,12 @@ def test_algebra_io_read_algebra_list_file(io_pkg):
 
     lib_list = _lib_io().read_algebra_list_file(path)
     shim_list = io_pkg.AlgebraIO.readAlgebraListFile(path)
-    assert len(shim_list) == 1
-    assert summaries_equal(
-        semantic_algebra_summary(lib_list[-1]),
-        semantic_algebra_summary(shim_list[0]),
+    assert format_algebra_list_summaries(lib_list) == format_algebra_list_summaries(
+        shim_list
     )
+    # Count vs Java is a behavioral strict xfail (Java last-only, Python may
+    # return both). This test only checks shim == uacalc_lib.
+    assert len(shim_list) >= 1
 
 
 def test_mace4_reader_parse_algebra(io_pkg):

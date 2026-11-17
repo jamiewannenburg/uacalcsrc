@@ -41,13 +41,14 @@ def test_parameterized_algebra_null_names_npe():
         ParameterizedAlgebra().getParameterMap([1])
 
 
-def test_algebra_list_file_keeps_last_algebra_only():
+def test_algebra_list_file_returns_full_list_despite_java_bug():
     path = os.path.join(
         _repo_root(), "resources", "algebras", "cyclic2_cyclic3_list.ua"
     )
     algs = AlgebraIO.readAlgebraListFile(path)
-    assert len(algs) == 1
-    assert int(algs[0].cardinality()) == 3
+    assert len(algs) == 2
+    cards = sorted(int(a.cardinality()) for a in algs)
+    assert cards == [2, 3]
 
 
 def test_algebra_writer_has_no_flush_like_java():
