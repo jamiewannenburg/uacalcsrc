@@ -1,0 +1,78 @@
+{
+  "metadata": {
+    "generated_at": "2026-11-17T10:40:15.642867+00:00",
+    "jar": "uacalc.jar",
+    "package": "org.uacalc.terms",
+    "runtime": "jython",
+    "test_cases": 3,
+    "type": "untested_wraps"
+  },
+  "test_cases": [
+    {
+      "args": [],
+      "call": "x.getName()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "VariableImp constructor",
+      "expected_exception": null,
+      "id": "ctor_variable_imp",
+      "kwargs": {},
+      "method": "VariableImp.VariableImp",
+      "notes": "",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "x",
+        "string_repr": "x",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nfrom org.uacalc.alg.op import OperationSymbol\nplus = OperationSymbol(\"+\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nfxy = NonVariableTerm(plus, [x, y])\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "y.getName()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "VariableImp('y') constructor",
+      "expected_exception": null,
+      "id": "ctor_variable_imp_y",
+      "kwargs": {},
+      "method": "VariableImp.VariableImp",
+      "notes": "",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "y",
+        "string_repr": "y",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nfrom org.uacalc.alg.op import OperationSymbol\nplus = OperationSymbol(\"+\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nfxy = NonVariableTerm(plus, [x, y])\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "str(fxy).replace(' ', '')",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "NonVariableTerm constructor",
+      "expected_exception": null,
+      "id": "ctor_non_variable_term",
+      "kwargs": {},
+      "method": "NonVariableTerm.NonVariableTerm",
+      "notes": "",
+      "result": {
+        "return_type": "str",
+        "return_value": "+(x,y)",
+        "string_repr": "+(x,y)",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.terms import NonVariableTerm, VariableImp\nfrom org.uacalc.alg.op import OperationSymbol\nplus = OperationSymbol(\"+\", 2)\nx = VariableImp(\"x\")\ny = VariableImp(\"y\")\nfxy = NonVariableTerm(plus, [x, y])\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    }
+  ]
+}

@@ -1,0 +1,800 @@
+{
+  "metadata": {
+    "generated_at": "2026-11-17T10:53:46.427349+00:00",
+    "jar": "uacalc.jar",
+    "package": "org.uacalc.alg",
+    "runtime": "jython",
+    "test_cases": 34,
+    "type": "untested_wraps"
+  },
+  "test_cases": [
+    {
+      "args": [],
+      "call": "basic.cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "BasicAlgebra constructor cardinality",
+      "expected_exception": null,
+      "id": "ctor_basic_algebra",
+      "kwargs": {},
+      "method": "BasicAlgebra.BasicAlgebra",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    AlgebraFromMinimalSets, AlgebraWithGeneratingVector, BasicAlgebra,\n    BigProductAlgebra, Closer, CloserTiming, FreeAlgebra, GeneralAlgebra,\n    Homomorphism, MaltsevDecompositionIterator, MaltsevProductDecomposition,\n    MatrixPowerAlgebra, PolinLikeAlgebra, PowerAlgebra, ProductAlgebra,\n    QuotientAlgebra, QuotientElement, ReductAlgebra, SubProductAlgebra,\n    Subalgebra, UnaryTermsMonoid,\n)\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nid1 = Operations.makeIntOperation(OperationSymbol(\"id\", 1), 2, [0, 1])\nplus = OperationSymbol(\"+\", 2)\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\ncloser = Closer(bp2, [g00, g11], True)\ncloser.setSuppressOutput(True)\nprod = ProductAlgebra(\"C2xC2\", [c2, c2])\npwr = PowerAlgebra(\"C2^2\", c2, 2)\ns0 = Subalgebra(\"S0\", c2, [0])\nh = Homomorphism(c2, c2, {0: 0, 1: 1})\nafms = AlgebraFromMinimalSets(\"fromC2\", c2)\nawgv = AlgebraWithGeneratingVector(c2, [0, 1])\nmp = MatrixPowerAlgebra(\"mp\", c2, 1)\npol = PolinLikeAlgebra(\"pol\", c2, c2, None, 0, 0)\ntry:\n    from java.util import HashSet\n    _univ = HashSet()\n    _univ.add(0)\n    _univ.add(1)\nexcept ImportError:\n    _univ = [0, 1]\nga = GeneralAlgebra(\"G\", _univ, [id1])\nutm = UnaryTermsMonoid(c2)\nf1 = FreeAlgebra(c2, 1)\nct = CloserTiming(bp2, None)\nbasic = BasicAlgebra(\"B\", 2, [id1])\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _term_str(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _alg_card(alg):\n    if alg is None:\n        return None\n    return int(alg.cardinality())\n\ndef _term_map():\n    try:\n        from java.util.concurrent import ConcurrentHashMap\n        return ConcurrentHashMap()\n    except ImportError:\n        return {}\n\ndef _par_close(alg, gens):\n    cl = Closer(alg, gens, True)\n    setter = getattr(cl, 'setSuppressOutput', None) or getattr(cl, 'set_suppress_output', None)\n    if callable(setter):\n        setter(True)\n    tm = _term_map()\n    orig = cl.getTermMap()\n    if orig is not None:\n        try:\n            tm.putAll(orig)\n        except Exception:\n            try:\n                for k in orig:\n                    tm[k] = orig[k]\n            except Exception:\n                pass\n    return _sorted_ias(cl.sgCloseParallel(list(cl.getGenerators()), 0, tm))\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "BasicAlgebra('C3copy', int(c3.cardinality()), list(c3.operations())).cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "BasicAlgebra copy of cyclic3 cardinality",
+      "expected_exception": null,
+      "id": "ctor_basic_algebra_c3",
+      "kwargs": {},
+      "method": "BasicAlgebra.BasicAlgebra",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 3,
+        "string_repr": "3",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    AlgebraFromMinimalSets, AlgebraWithGeneratingVector, BasicAlgebra,\n    BigProductAlgebra, Closer, CloserTiming, FreeAlgebra, GeneralAlgebra,\n    Homomorphism, MaltsevDecompositionIterator, MaltsevProductDecomposition,\n    MatrixPowerAlgebra, PolinLikeAlgebra, PowerAlgebra, ProductAlgebra,\n    QuotientAlgebra, QuotientElement, ReductAlgebra, SubProductAlgebra,\n    Subalgebra, UnaryTermsMonoid,\n)\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nid1 = Operations.makeIntOperation(OperationSymbol(\"id\", 1), 2, [0, 1])\nplus = OperationSymbol(\"+\", 2)\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\ncloser = Closer(bp2, [g00, g11], True)\ncloser.setSuppressOutput(True)\nprod = ProductAlgebra(\"C2xC2\", [c2, c2])\npwr = PowerAlgebra(\"C2^2\", c2, 2)\ns0 = Subalgebra(\"S0\", c2, [0])\nh = Homomorphism(c2, c2, {0: 0, 1: 1})\nafms = AlgebraFromMinimalSets(\"fromC2\", c2)\nawgv = AlgebraWithGeneratingVector(c2, [0, 1])\nmp = MatrixPowerAlgebra(\"mp\", c2, 1)\npol = PolinLikeAlgebra(\"pol\", c2, c2, None, 0, 0)\ntry:\n    from java.util import HashSet\n    _univ = HashSet()\n    _univ.add(0)\n    _univ.add(1)\nexcept ImportError:\n    _univ = [0, 1]\nga = GeneralAlgebra(\"G\", _univ, [id1])\nutm = UnaryTermsMonoid(c2)\nf1 = FreeAlgebra(c2, 1)\nct = CloserTiming(bp2, None)\nbasic = BasicAlgebra(\"B\", 2, [id1])\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _term_str(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _alg_card(alg):\n    if alg is None:\n        return None\n    return int(alg.cardinality())\n\ndef _term_map():\n    try:\n        from java.util.concurrent import ConcurrentHashMap\n        return ConcurrentHashMap()\n    except ImportError:\n        return {}\n\ndef _par_close(alg, gens):\n    cl = Closer(alg, gens, True)\n    setter = getattr(cl, 'setSuppressOutput', None) or getattr(cl, 'set_suppress_output', None)\n    if callable(setter):\n        setter(True)\n    tm = _term_map()\n    orig = cl.getTermMap()\n    if orig is not None:\n        try:\n            tm.putAll(orig)\n        except Exception:\n            try:\n                for k in orig:\n                    tm[k] = orig[k]\n            except Exception:\n                pass\n    return _sorted_ias(cl.sgCloseParallel(list(cl.getGenerators()), 0, tm))\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "bp2.cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "BigProductAlgebra(C2, 2) constructor",
+      "expected_exception": null,
+      "id": "ctor_big_product",
+      "kwargs": {},
+      "method": "BigProductAlgebra.BigProductAlgebra",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 4,
+        "string_repr": "4",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    AlgebraFromMinimalSets, AlgebraWithGeneratingVector, BasicAlgebra,\n    BigProductAlgebra, Closer, CloserTiming, FreeAlgebra, GeneralAlgebra,\n    Homomorphism, MaltsevDecompositionIterator, MaltsevProductDecomposition,\n    MatrixPowerAlgebra, PolinLikeAlgebra, PowerAlgebra, ProductAlgebra,\n    QuotientAlgebra, QuotientElement, ReductAlgebra, SubProductAlgebra,\n    Subalgebra, UnaryTermsMonoid,\n)\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nid1 = Operations.makeIntOperation(OperationSymbol(\"id\", 1), 2, [0, 1])\nplus = OperationSymbol(\"+\", 2)\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\ncloser = Closer(bp2, [g00, g11], True)\ncloser.setSuppressOutput(True)\nprod = ProductAlgebra(\"C2xC2\", [c2, c2])\npwr = PowerAlgebra(\"C2^2\", c2, 2)\ns0 = Subalgebra(\"S0\", c2, [0])\nh = Homomorphism(c2, c2, {0: 0, 1: 1})\nafms = AlgebraFromMinimalSets(\"fromC2\", c2)\nawgv = AlgebraWithGeneratingVector(c2, [0, 1])\nmp = MatrixPowerAlgebra(\"mp\", c2, 1)\npol = PolinLikeAlgebra(\"pol\", c2, c2, None, 0, 0)\ntry:\n    from java.util import HashSet\n    _univ = HashSet()\n    _univ.add(0)\n    _univ.add(1)\nexcept ImportError:\n    _univ = [0, 1]\nga = GeneralAlgebra(\"G\", _univ, [id1])\nutm = UnaryTermsMonoid(c2)\nf1 = FreeAlgebra(c2, 1)\nct = CloserTiming(bp2, None)\nbasic = BasicAlgebra(\"B\", 2, [id1])\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _term_str(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _alg_card(alg):\n    if alg is None:\n        return None\n    return int(alg.cardinality())\n\ndef _term_map():\n    try:\n        from java.util.concurrent import ConcurrentHashMap\n        return ConcurrentHashMap()\n    except ImportError:\n        return {}\n\ndef _par_close(alg, gens):\n    cl = Closer(alg, gens, True)\n    setter = getattr(cl, 'setSuppressOutput', None) or getattr(cl, 'set_suppress_output', None)\n    if callable(setter):\n        setter(True)\n    tm = _term_map()\n    orig = cl.getTermMap()\n    if orig is not None:\n        try:\n            tm.putAll(orig)\n        except Exception:\n            try:\n                for k in orig:\n                    tm[k] = orig[k]\n            except Exception:\n                pass\n    return _sorted_ias(cl.sgCloseParallel(list(cl.getGenerators()), 0, tm))\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "bp3.cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "BigProductAlgebra(C3, 2) constructor",
+      "expected_exception": null,
+      "id": "ctor_big_product_c3",
+      "kwargs": {},
+      "method": "BigProductAlgebra.BigProductAlgebra",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 9,
+        "string_repr": "9",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    AlgebraFromMinimalSets, AlgebraWithGeneratingVector, BasicAlgebra,\n    BigProductAlgebra, Closer, CloserTiming, FreeAlgebra, GeneralAlgebra,\n    Homomorphism, MaltsevDecompositionIterator, MaltsevProductDecomposition,\n    MatrixPowerAlgebra, PolinLikeAlgebra, PowerAlgebra, ProductAlgebra,\n    QuotientAlgebra, QuotientElement, ReductAlgebra, SubProductAlgebra,\n    Subalgebra, UnaryTermsMonoid,\n)\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nid1 = Operations.makeIntOperation(OperationSymbol(\"id\", 1), 2, [0, 1])\nplus = OperationSymbol(\"+\", 2)\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\ncloser = Closer(bp2, [g00, g11], True)\ncloser.setSuppressOutput(True)\nprod = ProductAlgebra(\"C2xC2\", [c2, c2])\npwr = PowerAlgebra(\"C2^2\", c2, 2)\ns0 = Subalgebra(\"S0\", c2, [0])\nh = Homomorphism(c2, c2, {0: 0, 1: 1})\nafms = AlgebraFromMinimalSets(\"fromC2\", c2)\nawgv = AlgebraWithGeneratingVector(c2, [0, 1])\nmp = MatrixPowerAlgebra(\"mp\", c2, 1)\npol = PolinLikeAlgebra(\"pol\", c2, c2, None, 0, 0)\ntry:\n    from java.util import HashSet\n    _univ = HashSet()\n    _univ.add(0)\n    _univ.add(1)\nexcept ImportError:\n    _univ = [0, 1]\nga = GeneralAlgebra(\"G\", _univ, [id1])\nutm = UnaryTermsMonoid(c2)\nf1 = FreeAlgebra(c2, 1)\nct = CloserTiming(bp2, None)\nbasic = BasicAlgebra(\"B\", 2, [id1])\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _term_str(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _alg_card(alg):\n    if alg is None:\n        return None\n    return int(alg.cardinality())\n\ndef _term_map():\n    try:\n        from java.util.concurrent import ConcurrentHashMap\n        return ConcurrentHashMap()\n    except ImportError:\n        return {}\n\ndef _par_close(alg, gens):\n    cl = Closer(alg, gens, True)\n    setter = getattr(cl, 'setSuppressOutput', None) or getattr(cl, 'set_suppress_output', None)\n    if callable(setter):\n        setter(True)\n    tm = _term_map()\n    orig = cl.getTermMap()\n    if orig is not None:\n        try:\n            tm.putAll(orig)\n        except Exception:\n            try:\n                for k in orig:\n                    tm[k] = orig[k]\n            except Exception:\n                pass\n    return _sorted_ias(cl.sgCloseParallel(list(cl.getGenerators()), 0, tm))\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "len(list(closer.getGenerators()))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Closer constructor stores generators",
+      "expected_exception": null,
+      "id": "ctor_closer",
+      "kwargs": {},
+      "method": "Closer.Closer",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    AlgebraFromMinimalSets, AlgebraWithGeneratingVector, BasicAlgebra,\n    BigProductAlgebra, Closer, CloserTiming, FreeAlgebra, GeneralAlgebra,\n    Homomorphism, MaltsevDecompositionIterator, MaltsevProductDecomposition,\n    MatrixPowerAlgebra, PolinLikeAlgebra, PowerAlgebra, ProductAlgebra,\n    QuotientAlgebra, QuotientElement, ReductAlgebra, SubProductAlgebra,\n    Subalgebra, UnaryTermsMonoid,\n)\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nid1 = Operations.makeIntOperation(OperationSymbol(\"id\", 1), 2, [0, 1])\nplus = OperationSymbol(\"+\", 2)\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\ncloser = Closer(bp2, [g00, g11], True)\ncloser.setSuppressOutput(True)\nprod = ProductAlgebra(\"C2xC2\", [c2, c2])\npwr = PowerAlgebra(\"C2^2\", c2, 2)\ns0 = Subalgebra(\"S0\", c2, [0])\nh = Homomorphism(c2, c2, {0: 0, 1: 1})\nafms = AlgebraFromMinimalSets(\"fromC2\", c2)\nawgv = AlgebraWithGeneratingVector(c2, [0, 1])\nmp = MatrixPowerAlgebra(\"mp\", c2, 1)\npol = PolinLikeAlgebra(\"pol\", c2, c2, None, 0, 0)\ntry:\n    from java.util import HashSet\n    _univ = HashSet()\n    _univ.add(0)\n    _univ.add(1)\nexcept ImportError:\n    _univ = [0, 1]\nga = GeneralAlgebra(\"G\", _univ, [id1])\nutm = UnaryTermsMonoid(c2)\nf1 = FreeAlgebra(c2, 1)\nct = CloserTiming(bp2, None)\nbasic = BasicAlgebra(\"B\", 2, [id1])\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _term_str(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _alg_card(alg):\n    if alg is None:\n        return None\n    return int(alg.cardinality())\n\ndef _term_map():\n    try:\n        from java.util.concurrent import ConcurrentHashMap\n        return ConcurrentHashMap()\n    except ImportError:\n        return {}\n\ndef _par_close(alg, gens):\n    cl = Closer(alg, gens, True)\n    setter = getattr(cl, 'setSuppressOutput', None) or getattr(cl, 'set_suppress_output', None)\n    if callable(setter):\n        setter(True)\n    tm = _term_map()\n    orig = cl.getTermMap()\n    if orig is not None:\n        try:\n            tm.putAll(orig)\n        except Exception:\n            try:\n                for k in orig:\n                    tm[k] = orig[k]\n            except Exception:\n                pass\n    return _sorted_ias(cl.sgCloseParallel(list(cl.getGenerators()), 0, tm))\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "ct is not None",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "CloserTiming(algebra, None) constructs",
+      "expected_exception": null,
+      "id": "ctor_closer_timing",
+      "kwargs": {},
+      "method": "CloserTiming.CloserTiming",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    AlgebraFromMinimalSets, AlgebraWithGeneratingVector, BasicAlgebra,\n    BigProductAlgebra, Closer, CloserTiming, FreeAlgebra, GeneralAlgebra,\n    Homomorphism, MaltsevDecompositionIterator, MaltsevProductDecomposition,\n    MatrixPowerAlgebra, PolinLikeAlgebra, PowerAlgebra, ProductAlgebra,\n    QuotientAlgebra, QuotientElement, ReductAlgebra, SubProductAlgebra,\n    Subalgebra, UnaryTermsMonoid,\n)\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nid1 = Operations.makeIntOperation(OperationSymbol(\"id\", 1), 2, [0, 1])\nplus = OperationSymbol(\"+\", 2)\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\ncloser = Closer(bp2, [g00, g11], True)\ncloser.setSuppressOutput(True)\nprod = ProductAlgebra(\"C2xC2\", [c2, c2])\npwr = PowerAlgebra(\"C2^2\", c2, 2)\ns0 = Subalgebra(\"S0\", c2, [0])\nh = Homomorphism(c2, c2, {0: 0, 1: 1})\nafms = AlgebraFromMinimalSets(\"fromC2\", c2)\nawgv = AlgebraWithGeneratingVector(c2, [0, 1])\nmp = MatrixPowerAlgebra(\"mp\", c2, 1)\npol = PolinLikeAlgebra(\"pol\", c2, c2, None, 0, 0)\ntry:\n    from java.util import HashSet\n    _univ = HashSet()\n    _univ.add(0)\n    _univ.add(1)\nexcept ImportError:\n    _univ = [0, 1]\nga = GeneralAlgebra(\"G\", _univ, [id1])\nutm = UnaryTermsMonoid(c2)\nf1 = FreeAlgebra(c2, 1)\nct = CloserTiming(bp2, None)\nbasic = BasicAlgebra(\"B\", 2, [id1])\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _term_str(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _alg_card(alg):\n    if alg is None:\n        return None\n    return int(alg.cardinality())\n\ndef _term_map():\n    try:\n        from java.util.concurrent import ConcurrentHashMap\n        return ConcurrentHashMap()\n    except ImportError:\n        return {}\n\ndef _par_close(alg, gens):\n    cl = Closer(alg, gens, True)\n    setter = getattr(cl, 'setSuppressOutput', None) or getattr(cl, 'set_suppress_output', None)\n    if callable(setter):\n        setter(True)\n    tm = _term_map()\n    orig = cl.getTermMap()\n    if orig is not None:\n        try:\n            tm.putAll(orig)\n        except Exception:\n            try:\n                for k in orig:\n                    tm[k] = orig[k]\n            except Exception:\n                pass\n    return _sorted_ias(cl.sgCloseParallel(list(cl.getGenerators()), 0, tm))\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "f1.cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "FreeAlgebra(C2, 1) constructor",
+      "expected_exception": null,
+      "id": "ctor_free_algebra",
+      "kwargs": {},
+      "method": "FreeAlgebra.FreeAlgebra",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    AlgebraFromMinimalSets, AlgebraWithGeneratingVector, BasicAlgebra,\n    BigProductAlgebra, Closer, CloserTiming, FreeAlgebra, GeneralAlgebra,\n    Homomorphism, MaltsevDecompositionIterator, MaltsevProductDecomposition,\n    MatrixPowerAlgebra, PolinLikeAlgebra, PowerAlgebra, ProductAlgebra,\n    QuotientAlgebra, QuotientElement, ReductAlgebra, SubProductAlgebra,\n    Subalgebra, UnaryTermsMonoid,\n)\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nid1 = Operations.makeIntOperation(OperationSymbol(\"id\", 1), 2, [0, 1])\nplus = OperationSymbol(\"+\", 2)\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\ncloser = Closer(bp2, [g00, g11], True)\ncloser.setSuppressOutput(True)\nprod = ProductAlgebra(\"C2xC2\", [c2, c2])\npwr = PowerAlgebra(\"C2^2\", c2, 2)\ns0 = Subalgebra(\"S0\", c2, [0])\nh = Homomorphism(c2, c2, {0: 0, 1: 1})\nafms = AlgebraFromMinimalSets(\"fromC2\", c2)\nawgv = AlgebraWithGeneratingVector(c2, [0, 1])\nmp = MatrixPowerAlgebra(\"mp\", c2, 1)\npol = PolinLikeAlgebra(\"pol\", c2, c2, None, 0, 0)\ntry:\n    from java.util import HashSet\n    _univ = HashSet()\n    _univ.add(0)\n    _univ.add(1)\nexcept ImportError:\n    _univ = [0, 1]\nga = GeneralAlgebra(\"G\", _univ, [id1])\nutm = UnaryTermsMonoid(c2)\nf1 = FreeAlgebra(c2, 1)\nct = CloserTiming(bp2, None)\nbasic = BasicAlgebra(\"B\", 2, [id1])\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _term_str(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _alg_card(alg):\n    if alg is None:\n        return None\n    return int(alg.cardinality())\n\ndef _term_map():\n    try:\n        from java.util.concurrent import ConcurrentHashMap\n        return ConcurrentHashMap()\n    except ImportError:\n        return {}\n\ndef _par_close(alg, gens):\n    cl = Closer(alg, gens, True)\n    setter = getattr(cl, 'setSuppressOutput', None) or getattr(cl, 'set_suppress_output', None)\n    if callable(setter):\n        setter(True)\n    tm = _term_map()\n    orig = cl.getTermMap()\n    if orig is not None:\n        try:\n            tm.putAll(orig)\n        except Exception:\n            try:\n                for k in orig:\n                    tm[k] = orig[k]\n            except Exception:\n                pass\n    return _sorted_ias(cl.sgCloseParallel(list(cl.getGenerators()), 0, tm))\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "ga.cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "GeneralAlgebra constructor cardinality",
+      "expected_exception": null,
+      "id": "ctor_general_algebra",
+      "kwargs": {},
+      "method": "GeneralAlgebra.GeneralAlgebra",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    AlgebraFromMinimalSets, AlgebraWithGeneratingVector, BasicAlgebra,\n    BigProductAlgebra, Closer, CloserTiming, FreeAlgebra, GeneralAlgebra,\n    Homomorphism, MaltsevDecompositionIterator, MaltsevProductDecomposition,\n    MatrixPowerAlgebra, PolinLikeAlgebra, PowerAlgebra, ProductAlgebra,\n    QuotientAlgebra, QuotientElement, ReductAlgebra, SubProductAlgebra,\n    Subalgebra, UnaryTermsMonoid,\n)\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nid1 = Operations.makeIntOperation(OperationSymbol(\"id\", 1), 2, [0, 1])\nplus = OperationSymbol(\"+\", 2)\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\ncloser = Closer(bp2, [g00, g11], True)\ncloser.setSuppressOutput(True)\nprod = ProductAlgebra(\"C2xC2\", [c2, c2])\npwr = PowerAlgebra(\"C2^2\", c2, 2)\ns0 = Subalgebra(\"S0\", c2, [0])\nh = Homomorphism(c2, c2, {0: 0, 1: 1})\nafms = AlgebraFromMinimalSets(\"fromC2\", c2)\nawgv = AlgebraWithGeneratingVector(c2, [0, 1])\nmp = MatrixPowerAlgebra(\"mp\", c2, 1)\npol = PolinLikeAlgebra(\"pol\", c2, c2, None, 0, 0)\ntry:\n    from java.util import HashSet\n    _univ = HashSet()\n    _univ.add(0)\n    _univ.add(1)\nexcept ImportError:\n    _univ = [0, 1]\nga = GeneralAlgebra(\"G\", _univ, [id1])\nutm = UnaryTermsMonoid(c2)\nf1 = FreeAlgebra(c2, 1)\nct = CloserTiming(bp2, None)\nbasic = BasicAlgebra(\"B\", 2, [id1])\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _term_str(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _alg_card(alg):\n    if alg is None:\n        return None\n    return int(alg.cardinality())\n\ndef _term_map():\n    try:\n        from java.util.concurrent import ConcurrentHashMap\n        return ConcurrentHashMap()\n    except ImportError:\n        return {}\n\ndef _par_close(alg, gens):\n    cl = Closer(alg, gens, True)\n    setter = getattr(cl, 'setSuppressOutput', None) or getattr(cl, 'set_suppress_output', None)\n    if callable(setter):\n        setter(True)\n    tm = _term_map()\n    orig = cl.getTermMap()\n    if orig is not None:\n        try:\n            tm.putAll(orig)\n        except Exception:\n            try:\n                for k in orig:\n                    tm[k] = orig[k]\n            except Exception:\n                pass\n    return _sorted_ias(cl.sgCloseParallel(list(cl.getGenerators()), 0, tm))\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "h.kernel().numberOfBlocks()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Homomorphism constructor kernel",
+      "expected_exception": null,
+      "id": "ctor_homomorphism",
+      "kwargs": {},
+      "method": "Homomorphism.Homomorphism",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    AlgebraFromMinimalSets, AlgebraWithGeneratingVector, BasicAlgebra,\n    BigProductAlgebra, Closer, CloserTiming, FreeAlgebra, GeneralAlgebra,\n    Homomorphism, MaltsevDecompositionIterator, MaltsevProductDecomposition,\n    MatrixPowerAlgebra, PolinLikeAlgebra, PowerAlgebra, ProductAlgebra,\n    QuotientAlgebra, QuotientElement, ReductAlgebra, SubProductAlgebra,\n    Subalgebra, UnaryTermsMonoid,\n)\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nid1 = Operations.makeIntOperation(OperationSymbol(\"id\", 1), 2, [0, 1])\nplus = OperationSymbol(\"+\", 2)\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\ncloser = Closer(bp2, [g00, g11], True)\ncloser.setSuppressOutput(True)\nprod = ProductAlgebra(\"C2xC2\", [c2, c2])\npwr = PowerAlgebra(\"C2^2\", c2, 2)\ns0 = Subalgebra(\"S0\", c2, [0])\nh = Homomorphism(c2, c2, {0: 0, 1: 1})\nafms = AlgebraFromMinimalSets(\"fromC2\", c2)\nawgv = AlgebraWithGeneratingVector(c2, [0, 1])\nmp = MatrixPowerAlgebra(\"mp\", c2, 1)\npol = PolinLikeAlgebra(\"pol\", c2, c2, None, 0, 0)\ntry:\n    from java.util import HashSet\n    _univ = HashSet()\n    _univ.add(0)\n    _univ.add(1)\nexcept ImportError:\n    _univ = [0, 1]\nga = GeneralAlgebra(\"G\", _univ, [id1])\nutm = UnaryTermsMonoid(c2)\nf1 = FreeAlgebra(c2, 1)\nct = CloserTiming(bp2, None)\nbasic = BasicAlgebra(\"B\", 2, [id1])\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _term_str(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _alg_card(alg):\n    if alg is None:\n        return None\n    return int(alg.cardinality())\n\ndef _term_map():\n    try:\n        from java.util.concurrent import ConcurrentHashMap\n        return ConcurrentHashMap()\n    except ImportError:\n        return {}\n\ndef _par_close(alg, gens):\n    cl = Closer(alg, gens, True)\n    setter = getattr(cl, 'setSuppressOutput', None) or getattr(cl, 'set_suppress_output', None)\n    if callable(setter):\n        setter(True)\n    tm = _term_map()\n    orig = cl.getTermMap()\n    if orig is not None:\n        try:\n            tm.putAll(orig)\n        except Exception:\n            try:\n                for k in orig:\n                    tm[k] = orig[k]\n            except Exception:\n                pass\n    return _sorted_ias(cl.sgCloseParallel(list(cl.getGenerators()), 0, tm))\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "MaltsevDecompositionIterator(n5).hasNext()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "MaltsevDecompositionIterator constructor",
+      "expected_exception": null,
+      "id": "ctor_mdi",
+      "kwargs": {},
+      "method": "MaltsevDecompositionIterator.MaltsevDecompositionIterator",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    AlgebraFromMinimalSets, AlgebraWithGeneratingVector, BasicAlgebra,\n    BigProductAlgebra, Closer, CloserTiming, FreeAlgebra, GeneralAlgebra,\n    Homomorphism, MaltsevDecompositionIterator, MaltsevProductDecomposition,\n    MatrixPowerAlgebra, PolinLikeAlgebra, PowerAlgebra, ProductAlgebra,\n    QuotientAlgebra, QuotientElement, ReductAlgebra, SubProductAlgebra,\n    Subalgebra, UnaryTermsMonoid,\n)\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nid1 = Operations.makeIntOperation(OperationSymbol(\"id\", 1), 2, [0, 1])\nplus = OperationSymbol(\"+\", 2)\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\ncloser = Closer(bp2, [g00, g11], True)\ncloser.setSuppressOutput(True)\nprod = ProductAlgebra(\"C2xC2\", [c2, c2])\npwr = PowerAlgebra(\"C2^2\", c2, 2)\ns0 = Subalgebra(\"S0\", c2, [0])\nh = Homomorphism(c2, c2, {0: 0, 1: 1})\nafms = AlgebraFromMinimalSets(\"fromC2\", c2)\nawgv = AlgebraWithGeneratingVector(c2, [0, 1])\nmp = MatrixPowerAlgebra(\"mp\", c2, 1)\npol = PolinLikeAlgebra(\"pol\", c2, c2, None, 0, 0)\ntry:\n    from java.util import HashSet\n    _univ = HashSet()\n    _univ.add(0)\n    _univ.add(1)\nexcept ImportError:\n    _univ = [0, 1]\nga = GeneralAlgebra(\"G\", _univ, [id1])\nutm = UnaryTermsMonoid(c2)\nf1 = FreeAlgebra(c2, 1)\nct = CloserTiming(bp2, None)\nbasic = BasicAlgebra(\"B\", 2, [id1])\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _term_str(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _alg_card(alg):\n    if alg is None:\n        return None\n    return int(alg.cardinality())\n\ndef _term_map():\n    try:\n        from java.util.concurrent import ConcurrentHashMap\n        return ConcurrentHashMap()\n    except ImportError:\n        return {}\n\ndef _par_close(alg, gens):\n    cl = Closer(alg, gens, True)\n    setter = getattr(cl, 'setSuppressOutput', None) or getattr(cl, 'set_suppress_output', None)\n    if callable(setter):\n        setter(True)\n    tm = _term_map()\n    orig = cl.getTermMap()\n    if orig is not None:\n        try:\n            tm.putAll(orig)\n        except Exception:\n            try:\n                for k in orig:\n                    tm[k] = orig[k]\n            except Exception:\n                pass\n    return _sorted_ias(cl.sgCloseParallel(list(cl.getGenerators()), 0, tm))\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "decomp.getAlgebra().cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "MaltsevProductDecomposition constructor",
+      "expected_exception": null,
+      "id": "ctor_mpd",
+      "kwargs": {},
+      "method": "MaltsevProductDecomposition.MaltsevProductDecomposition",
+      "notes": "Java Algebra toString is Class@hex; values compared.",
+      "result": {
+        "return_type": "int",
+        "return_value": 5,
+        "string_repr": "5",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    AlgebraFromMinimalSets, AlgebraWithGeneratingVector, BasicAlgebra,\n    BigProductAlgebra, Closer, CloserTiming, FreeAlgebra, GeneralAlgebra,\n    Homomorphism, MaltsevDecompositionIterator, MaltsevProductDecomposition,\n    MatrixPowerAlgebra, PolinLikeAlgebra, PowerAlgebra, ProductAlgebra,\n    QuotientAlgebra, QuotientElement, ReductAlgebra, SubProductAlgebra,\n    Subalgebra, UnaryTermsMonoid,\n)\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nid1 = Operations.makeIntOperation(OperationSymbol(\"id\", 1), 2, [0, 1])\nplus = OperationSymbol(\"+\", 2)\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\ncloser = Closer(bp2, [g00, g11], True)\ncloser.setSuppressOutput(True)\nprod = ProductAlgebra(\"C2xC2\", [c2, c2])\npwr = PowerAlgebra(\"C2^2\", c2, 2)\ns0 = Subalgebra(\"S0\", c2, [0])\nh = Homomorphism(c2, c2, {0: 0, 1: 1})\nafms = AlgebraFromMinimalSets(\"fromC2\", c2)\nawgv = AlgebraWithGeneratingVector(c2, [0, 1])\nmp = MatrixPowerAlgebra(\"mp\", c2, 1)\npol = PolinLikeAlgebra(\"pol\", c2, c2, None, 0, 0)\ntry:\n    from java.util import HashSet\n    _univ = HashSet()\n    _univ.add(0)\n    _univ.add(1)\nexcept ImportError:\n    _univ = [0, 1]\nga = GeneralAlgebra(\"G\", _univ, [id1])\nutm = UnaryTermsMonoid(c2)\nf1 = FreeAlgebra(c2, 1)\nct = CloserTiming(bp2, None)\nbasic = BasicAlgebra(\"B\", 2, [id1])\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _term_str(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _alg_card(alg):\n    if alg is None:\n        return None\n    return int(alg.cardinality())\n\ndef _term_map():\n    try:\n        from java.util.concurrent import ConcurrentHashMap\n        return ConcurrentHashMap()\n    except ImportError:\n        return {}\n\ndef _par_close(alg, gens):\n    cl = Closer(alg, gens, True)\n    setter = getattr(cl, 'setSuppressOutput', None) or getattr(cl, 'set_suppress_output', None)\n    if callable(setter):\n        setter(True)\n    tm = _term_map()\n    orig = cl.getTermMap()\n    if orig is not None:\n        try:\n            tm.putAll(orig)\n        except Exception:\n            try:\n                for k in orig:\n                    tm[k] = orig[k]\n            except Exception:\n                pass\n    return _sorted_ias(cl.sgCloseParallel(list(cl.getGenerators()), 0, tm))\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "mp.cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "MatrixPowerAlgebra constructor",
+      "expected_exception": null,
+      "id": "ctor_matrix_power",
+      "kwargs": {},
+      "method": "MatrixPowerAlgebra.MatrixPowerAlgebra",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    AlgebraFromMinimalSets, AlgebraWithGeneratingVector, BasicAlgebra,\n    BigProductAlgebra, Closer, CloserTiming, FreeAlgebra, GeneralAlgebra,\n    Homomorphism, MaltsevDecompositionIterator, MaltsevProductDecomposition,\n    MatrixPowerAlgebra, PolinLikeAlgebra, PowerAlgebra, ProductAlgebra,\n    QuotientAlgebra, QuotientElement, ReductAlgebra, SubProductAlgebra,\n    Subalgebra, UnaryTermsMonoid,\n)\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nid1 = Operations.makeIntOperation(OperationSymbol(\"id\", 1), 2, [0, 1])\nplus = OperationSymbol(\"+\", 2)\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\ncloser = Closer(bp2, [g00, g11], True)\ncloser.setSuppressOutput(True)\nprod = ProductAlgebra(\"C2xC2\", [c2, c2])\npwr = PowerAlgebra(\"C2^2\", c2, 2)\ns0 = Subalgebra(\"S0\", c2, [0])\nh = Homomorphism(c2, c2, {0: 0, 1: 1})\nafms = AlgebraFromMinimalSets(\"fromC2\", c2)\nawgv = AlgebraWithGeneratingVector(c2, [0, 1])\nmp = MatrixPowerAlgebra(\"mp\", c2, 1)\npol = PolinLikeAlgebra(\"pol\", c2, c2, None, 0, 0)\ntry:\n    from java.util import HashSet\n    _univ = HashSet()\n    _univ.add(0)\n    _univ.add(1)\nexcept ImportError:\n    _univ = [0, 1]\nga = GeneralAlgebra(\"G\", _univ, [id1])\nutm = UnaryTermsMonoid(c2)\nf1 = FreeAlgebra(c2, 1)\nct = CloserTiming(bp2, None)\nbasic = BasicAlgebra(\"B\", 2, [id1])\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _term_str(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _alg_card(alg):\n    if alg is None:\n        return None\n    return int(alg.cardinality())\n\ndef _term_map():\n    try:\n        from java.util.concurrent import ConcurrentHashMap\n        return ConcurrentHashMap()\n    except ImportError:\n        return {}\n\ndef _par_close(alg, gens):\n    cl = Closer(alg, gens, True)\n    setter = getattr(cl, 'setSuppressOutput', None) or getattr(cl, 'set_suppress_output', None)\n    if callable(setter):\n        setter(True)\n    tm = _term_map()\n    orig = cl.getTermMap()\n    if orig is not None:\n        try:\n            tm.putAll(orig)\n        except Exception:\n            try:\n                for k in orig:\n                    tm[k] = orig[k]\n            except Exception:\n                pass\n    return _sorted_ias(cl.sgCloseParallel(list(cl.getGenerators()), 0, tm))\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "pol.getName()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "PolinLikeAlgebra constructor name",
+      "expected_exception": null,
+      "id": "ctor_polin",
+      "kwargs": {},
+      "method": "PolinLikeAlgebra.PolinLikeAlgebra",
+      "notes": "",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "pol",
+        "string_repr": "pol",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    AlgebraFromMinimalSets, AlgebraWithGeneratingVector, BasicAlgebra,\n    BigProductAlgebra, Closer, CloserTiming, FreeAlgebra, GeneralAlgebra,\n    Homomorphism, MaltsevDecompositionIterator, MaltsevProductDecomposition,\n    MatrixPowerAlgebra, PolinLikeAlgebra, PowerAlgebra, ProductAlgebra,\n    QuotientAlgebra, QuotientElement, ReductAlgebra, SubProductAlgebra,\n    Subalgebra, UnaryTermsMonoid,\n)\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nid1 = Operations.makeIntOperation(OperationSymbol(\"id\", 1), 2, [0, 1])\nplus = OperationSymbol(\"+\", 2)\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\ncloser = Closer(bp2, [g00, g11], True)\ncloser.setSuppressOutput(True)\nprod = ProductAlgebra(\"C2xC2\", [c2, c2])\npwr = PowerAlgebra(\"C2^2\", c2, 2)\ns0 = Subalgebra(\"S0\", c2, [0])\nh = Homomorphism(c2, c2, {0: 0, 1: 1})\nafms = AlgebraFromMinimalSets(\"fromC2\", c2)\nawgv = AlgebraWithGeneratingVector(c2, [0, 1])\nmp = MatrixPowerAlgebra(\"mp\", c2, 1)\npol = PolinLikeAlgebra(\"pol\", c2, c2, None, 0, 0)\ntry:\n    from java.util import HashSet\n    _univ = HashSet()\n    _univ.add(0)\n    _univ.add(1)\nexcept ImportError:\n    _univ = [0, 1]\nga = GeneralAlgebra(\"G\", _univ, [id1])\nutm = UnaryTermsMonoid(c2)\nf1 = FreeAlgebra(c2, 1)\nct = CloserTiming(bp2, None)\nbasic = BasicAlgebra(\"B\", 2, [id1])\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _term_str(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _alg_card(alg):\n    if alg is None:\n        return None\n    return int(alg.cardinality())\n\ndef _term_map():\n    try:\n        from java.util.concurrent import ConcurrentHashMap\n        return ConcurrentHashMap()\n    except ImportError:\n        return {}\n\ndef _par_close(alg, gens):\n    cl = Closer(alg, gens, True)\n    setter = getattr(cl, 'setSuppressOutput', None) or getattr(cl, 'set_suppress_output', None)\n    if callable(setter):\n        setter(True)\n    tm = _term_map()\n    orig = cl.getTermMap()\n    if orig is not None:\n        try:\n            tm.putAll(orig)\n        except Exception:\n            try:\n                for k in orig:\n                    tm[k] = orig[k]\n            except Exception:\n                pass\n    return _sorted_ias(cl.sgCloseParallel(list(cl.getGenerators()), 0, tm))\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "pwr.cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "PowerAlgebra constructor",
+      "expected_exception": null,
+      "id": "ctor_power",
+      "kwargs": {},
+      "method": "PowerAlgebra.PowerAlgebra",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 4,
+        "string_repr": "4",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    AlgebraFromMinimalSets, AlgebraWithGeneratingVector, BasicAlgebra,\n    BigProductAlgebra, Closer, CloserTiming, FreeAlgebra, GeneralAlgebra,\n    Homomorphism, MaltsevDecompositionIterator, MaltsevProductDecomposition,\n    MatrixPowerAlgebra, PolinLikeAlgebra, PowerAlgebra, ProductAlgebra,\n    QuotientAlgebra, QuotientElement, ReductAlgebra, SubProductAlgebra,\n    Subalgebra, UnaryTermsMonoid,\n)\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nid1 = Operations.makeIntOperation(OperationSymbol(\"id\", 1), 2, [0, 1])\nplus = OperationSymbol(\"+\", 2)\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\ncloser = Closer(bp2, [g00, g11], True)\ncloser.setSuppressOutput(True)\nprod = ProductAlgebra(\"C2xC2\", [c2, c2])\npwr = PowerAlgebra(\"C2^2\", c2, 2)\ns0 = Subalgebra(\"S0\", c2, [0])\nh = Homomorphism(c2, c2, {0: 0, 1: 1})\nafms = AlgebraFromMinimalSets(\"fromC2\", c2)\nawgv = AlgebraWithGeneratingVector(c2, [0, 1])\nmp = MatrixPowerAlgebra(\"mp\", c2, 1)\npol = PolinLikeAlgebra(\"pol\", c2, c2, None, 0, 0)\ntry:\n    from java.util import HashSet\n    _univ = HashSet()\n    _univ.add(0)\n    _univ.add(1)\nexcept ImportError:\n    _univ = [0, 1]\nga = GeneralAlgebra(\"G\", _univ, [id1])\nutm = UnaryTermsMonoid(c2)\nf1 = FreeAlgebra(c2, 1)\nct = CloserTiming(bp2, None)\nbasic = BasicAlgebra(\"B\", 2, [id1])\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _term_str(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _alg_card(alg):\n    if alg is None:\n        return None\n    return int(alg.cardinality())\n\ndef _term_map():\n    try:\n        from java.util.concurrent import ConcurrentHashMap\n        return ConcurrentHashMap()\n    except ImportError:\n        return {}\n\ndef _par_close(alg, gens):\n    cl = Closer(alg, gens, True)\n    setter = getattr(cl, 'setSuppressOutput', None) or getattr(cl, 'set_suppress_output', None)\n    if callable(setter):\n        setter(True)\n    tm = _term_map()\n    orig = cl.getTermMap()\n    if orig is not None:\n        try:\n            tm.putAll(orig)\n        except Exception:\n            try:\n                for k in orig:\n                    tm[k] = orig[k]\n            except Exception:\n                pass\n    return _sorted_ias(cl.sgCloseParallel(list(cl.getGenerators()), 0, tm))\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "prod.cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "ProductAlgebra constructor",
+      "expected_exception": null,
+      "id": "ctor_product",
+      "kwargs": {},
+      "method": "ProductAlgebra.ProductAlgebra",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 4,
+        "string_repr": "4",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    AlgebraFromMinimalSets, AlgebraWithGeneratingVector, BasicAlgebra,\n    BigProductAlgebra, Closer, CloserTiming, FreeAlgebra, GeneralAlgebra,\n    Homomorphism, MaltsevDecompositionIterator, MaltsevProductDecomposition,\n    MatrixPowerAlgebra, PolinLikeAlgebra, PowerAlgebra, ProductAlgebra,\n    QuotientAlgebra, QuotientElement, ReductAlgebra, SubProductAlgebra,\n    Subalgebra, UnaryTermsMonoid,\n)\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nid1 = Operations.makeIntOperation(OperationSymbol(\"id\", 1), 2, [0, 1])\nplus = OperationSymbol(\"+\", 2)\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\ncloser = Closer(bp2, [g00, g11], True)\ncloser.setSuppressOutput(True)\nprod = ProductAlgebra(\"C2xC2\", [c2, c2])\npwr = PowerAlgebra(\"C2^2\", c2, 2)\ns0 = Subalgebra(\"S0\", c2, [0])\nh = Homomorphism(c2, c2, {0: 0, 1: 1})\nafms = AlgebraFromMinimalSets(\"fromC2\", c2)\nawgv = AlgebraWithGeneratingVector(c2, [0, 1])\nmp = MatrixPowerAlgebra(\"mp\", c2, 1)\npol = PolinLikeAlgebra(\"pol\", c2, c2, None, 0, 0)\ntry:\n    from java.util import HashSet\n    _univ = HashSet()\n    _univ.add(0)\n    _univ.add(1)\nexcept ImportError:\n    _univ = [0, 1]\nga = GeneralAlgebra(\"G\", _univ, [id1])\nutm = UnaryTermsMonoid(c2)\nf1 = FreeAlgebra(c2, 1)\nct = CloserTiming(bp2, None)\nbasic = BasicAlgebra(\"B\", 2, [id1])\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _term_str(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _alg_card(alg):\n    if alg is None:\n        return None\n    return int(alg.cardinality())\n\ndef _term_map():\n    try:\n        from java.util.concurrent import ConcurrentHashMap\n        return ConcurrentHashMap()\n    except ImportError:\n        return {}\n\ndef _par_close(alg, gens):\n    cl = Closer(alg, gens, True)\n    setter = getattr(cl, 'setSuppressOutput', None) or getattr(cl, 'set_suppress_output', None)\n    if callable(setter):\n        setter(True)\n    tm = _term_map()\n    orig = cl.getTermMap()\n    if orig is not None:\n        try:\n            tm.putAll(orig)\n        except Exception:\n            try:\n                for k in orig:\n                    tm[k] = orig[k]\n            except Exception:\n                pass\n    return _sorted_ias(cl.sgCloseParallel(list(cl.getGenerators()), 0, tm))\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "q.cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "QuotientAlgebra constructor",
+      "expected_exception": null,
+      "id": "ctor_quotient",
+      "kwargs": {},
+      "method": "QuotientAlgebra.QuotientAlgebra",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 1,
+        "string_repr": "1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    AlgebraFromMinimalSets, AlgebraWithGeneratingVector, BasicAlgebra,\n    BigProductAlgebra, Closer, CloserTiming, FreeAlgebra, GeneralAlgebra,\n    Homomorphism, MaltsevDecompositionIterator, MaltsevProductDecomposition,\n    MatrixPowerAlgebra, PolinLikeAlgebra, PowerAlgebra, ProductAlgebra,\n    QuotientAlgebra, QuotientElement, ReductAlgebra, SubProductAlgebra,\n    Subalgebra, UnaryTermsMonoid,\n)\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nid1 = Operations.makeIntOperation(OperationSymbol(\"id\", 1), 2, [0, 1])\nplus = OperationSymbol(\"+\", 2)\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\ncloser = Closer(bp2, [g00, g11], True)\ncloser.setSuppressOutput(True)\nprod = ProductAlgebra(\"C2xC2\", [c2, c2])\npwr = PowerAlgebra(\"C2^2\", c2, 2)\ns0 = Subalgebra(\"S0\", c2, [0])\nh = Homomorphism(c2, c2, {0: 0, 1: 1})\nafms = AlgebraFromMinimalSets(\"fromC2\", c2)\nawgv = AlgebraWithGeneratingVector(c2, [0, 1])\nmp = MatrixPowerAlgebra(\"mp\", c2, 1)\npol = PolinLikeAlgebra(\"pol\", c2, c2, None, 0, 0)\ntry:\n    from java.util import HashSet\n    _univ = HashSet()\n    _univ.add(0)\n    _univ.add(1)\nexcept ImportError:\n    _univ = [0, 1]\nga = GeneralAlgebra(\"G\", _univ, [id1])\nutm = UnaryTermsMonoid(c2)\nf1 = FreeAlgebra(c2, 1)\nct = CloserTiming(bp2, None)\nbasic = BasicAlgebra(\"B\", 2, [id1])\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _term_str(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _alg_card(alg):\n    if alg is None:\n        return None\n    return int(alg.cardinality())\n\ndef _term_map():\n    try:\n        from java.util.concurrent import ConcurrentHashMap\n        return ConcurrentHashMap()\n    except ImportError:\n        return {}\n\ndef _par_close(alg, gens):\n    cl = Closer(alg, gens, True)\n    setter = getattr(cl, 'setSuppressOutput', None) or getattr(cl, 'set_suppress_output', None)\n    if callable(setter):\n        setter(True)\n    tm = _term_map()\n    orig = cl.getTermMap()\n    if orig is not None:\n        try:\n            tm.putAll(orig)\n        except Exception:\n            try:\n                for k in orig:\n                    tm[k] = orig[k]\n            except Exception:\n                pass\n    return _sorted_ias(cl.sgCloseParallel(list(cl.getGenerators()), 0, tm))\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "qe.getIndex()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "QuotientElement constructor index",
+      "expected_exception": null,
+      "id": "ctor_quotient_element",
+      "kwargs": {},
+      "method": "QuotientElement.QuotientElement",
+      "notes": "Java Algebra toString is Class@hex; values compared.",
+      "result": {
+        "return_type": "int",
+        "return_value": 0,
+        "string_repr": "0",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    AlgebraFromMinimalSets, AlgebraWithGeneratingVector, BasicAlgebra,\n    BigProductAlgebra, Closer, CloserTiming, FreeAlgebra, GeneralAlgebra,\n    Homomorphism, MaltsevDecompositionIterator, MaltsevProductDecomposition,\n    MatrixPowerAlgebra, PolinLikeAlgebra, PowerAlgebra, ProductAlgebra,\n    QuotientAlgebra, QuotientElement, ReductAlgebra, SubProductAlgebra,\n    Subalgebra, UnaryTermsMonoid,\n)\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nid1 = Operations.makeIntOperation(OperationSymbol(\"id\", 1), 2, [0, 1])\nplus = OperationSymbol(\"+\", 2)\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\ncloser = Closer(bp2, [g00, g11], True)\ncloser.setSuppressOutput(True)\nprod = ProductAlgebra(\"C2xC2\", [c2, c2])\npwr = PowerAlgebra(\"C2^2\", c2, 2)\ns0 = Subalgebra(\"S0\", c2, [0])\nh = Homomorphism(c2, c2, {0: 0, 1: 1})\nafms = AlgebraFromMinimalSets(\"fromC2\", c2)\nawgv = AlgebraWithGeneratingVector(c2, [0, 1])\nmp = MatrixPowerAlgebra(\"mp\", c2, 1)\npol = PolinLikeAlgebra(\"pol\", c2, c2, None, 0, 0)\ntry:\n    from java.util import HashSet\n    _univ = HashSet()\n    _univ.add(0)\n    _univ.add(1)\nexcept ImportError:\n    _univ = [0, 1]\nga = GeneralAlgebra(\"G\", _univ, [id1])\nutm = UnaryTermsMonoid(c2)\nf1 = FreeAlgebra(c2, 1)\nct = CloserTiming(bp2, None)\nbasic = BasicAlgebra(\"B\", 2, [id1])\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _term_str(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _alg_card(alg):\n    if alg is None:\n        return None\n    return int(alg.cardinality())\n\ndef _term_map():\n    try:\n        from java.util.concurrent import ConcurrentHashMap\n        return ConcurrentHashMap()\n    except ImportError:\n        return {}\n\ndef _par_close(alg, gens):\n    cl = Closer(alg, gens, True)\n    setter = getattr(cl, 'setSuppressOutput', None) or getattr(cl, 'set_suppress_output', None)\n    if callable(setter):\n        setter(True)\n    tm = _term_map()\n    orig = cl.getTermMap()\n    if orig is not None:\n        try:\n            tm.putAll(orig)\n        except Exception:\n            try:\n                for k in orig:\n                    tm[k] = orig[k]\n            except Exception:\n                pass\n    return _sorted_ias(cl.sgCloseParallel(list(cl.getGenerators()), 0, tm))\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "ReductAlgebra('R', c2, []).cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "ReductAlgebra constructor",
+      "expected_exception": null,
+      "id": "ctor_reduct",
+      "kwargs": {},
+      "method": "ReductAlgebra.ReductAlgebra",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    AlgebraFromMinimalSets, AlgebraWithGeneratingVector, BasicAlgebra,\n    BigProductAlgebra, Closer, CloserTiming, FreeAlgebra, GeneralAlgebra,\n    Homomorphism, MaltsevDecompositionIterator, MaltsevProductDecomposition,\n    MatrixPowerAlgebra, PolinLikeAlgebra, PowerAlgebra, ProductAlgebra,\n    QuotientAlgebra, QuotientElement, ReductAlgebra, SubProductAlgebra,\n    Subalgebra, UnaryTermsMonoid,\n)\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nid1 = Operations.makeIntOperation(OperationSymbol(\"id\", 1), 2, [0, 1])\nplus = OperationSymbol(\"+\", 2)\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\ncloser = Closer(bp2, [g00, g11], True)\ncloser.setSuppressOutput(True)\nprod = ProductAlgebra(\"C2xC2\", [c2, c2])\npwr = PowerAlgebra(\"C2^2\", c2, 2)\ns0 = Subalgebra(\"S0\", c2, [0])\nh = Homomorphism(c2, c2, {0: 0, 1: 1})\nafms = AlgebraFromMinimalSets(\"fromC2\", c2)\nawgv = AlgebraWithGeneratingVector(c2, [0, 1])\nmp = MatrixPowerAlgebra(\"mp\", c2, 1)\npol = PolinLikeAlgebra(\"pol\", c2, c2, None, 0, 0)\ntry:\n    from java.util import HashSet\n    _univ = HashSet()\n    _univ.add(0)\n    _univ.add(1)\nexcept ImportError:\n    _univ = [0, 1]\nga = GeneralAlgebra(\"G\", _univ, [id1])\nutm = UnaryTermsMonoid(c2)\nf1 = FreeAlgebra(c2, 1)\nct = CloserTiming(bp2, None)\nbasic = BasicAlgebra(\"B\", 2, [id1])\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _term_str(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _alg_card(alg):\n    if alg is None:\n        return None\n    return int(alg.cardinality())\n\ndef _term_map():\n    try:\n        from java.util.concurrent import ConcurrentHashMap\n        return ConcurrentHashMap()\n    except ImportError:\n        return {}\n\ndef _par_close(alg, gens):\n    cl = Closer(alg, gens, True)\n    setter = getattr(cl, 'setSuppressOutput', None) or getattr(cl, 'set_suppress_output', None)\n    if callable(setter):\n        setter(True)\n    tm = _term_map()\n    orig = cl.getTermMap()\n    if orig is not None:\n        try:\n            tm.putAll(orig)\n        except Exception:\n            try:\n                for k in orig:\n                    tm[k] = orig[k]\n            except Exception:\n                pass\n    return _sorted_ias(cl.sgCloseParallel(list(cl.getGenerators()), 0, tm))\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sp.cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "SubProductAlgebra constructor",
+      "expected_exception": null,
+      "id": "ctor_subproduct",
+      "kwargs": {},
+      "method": "SubProductAlgebra.SubProductAlgebra",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    AlgebraFromMinimalSets, AlgebraWithGeneratingVector, BasicAlgebra,\n    BigProductAlgebra, Closer, CloserTiming, FreeAlgebra, GeneralAlgebra,\n    Homomorphism, MaltsevDecompositionIterator, MaltsevProductDecomposition,\n    MatrixPowerAlgebra, PolinLikeAlgebra, PowerAlgebra, ProductAlgebra,\n    QuotientAlgebra, QuotientElement, ReductAlgebra, SubProductAlgebra,\n    Subalgebra, UnaryTermsMonoid,\n)\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nid1 = Operations.makeIntOperation(OperationSymbol(\"id\", 1), 2, [0, 1])\nplus = OperationSymbol(\"+\", 2)\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\ncloser = Closer(bp2, [g00, g11], True)\ncloser.setSuppressOutput(True)\nprod = ProductAlgebra(\"C2xC2\", [c2, c2])\npwr = PowerAlgebra(\"C2^2\", c2, 2)\ns0 = Subalgebra(\"S0\", c2, [0])\nh = Homomorphism(c2, c2, {0: 0, 1: 1})\nafms = AlgebraFromMinimalSets(\"fromC2\", c2)\nawgv = AlgebraWithGeneratingVector(c2, [0, 1])\nmp = MatrixPowerAlgebra(\"mp\", c2, 1)\npol = PolinLikeAlgebra(\"pol\", c2, c2, None, 0, 0)\ntry:\n    from java.util import HashSet\n    _univ = HashSet()\n    _univ.add(0)\n    _univ.add(1)\nexcept ImportError:\n    _univ = [0, 1]\nga = GeneralAlgebra(\"G\", _univ, [id1])\nutm = UnaryTermsMonoid(c2)\nf1 = FreeAlgebra(c2, 1)\nct = CloserTiming(bp2, None)\nbasic = BasicAlgebra(\"B\", 2, [id1])\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _term_str(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _alg_card(alg):\n    if alg is None:\n        return None\n    return int(alg.cardinality())\n\ndef _term_map():\n    try:\n        from java.util.concurrent import ConcurrentHashMap\n        return ConcurrentHashMap()\n    except ImportError:\n        return {}\n\ndef _par_close(alg, gens):\n    cl = Closer(alg, gens, True)\n    setter = getattr(cl, 'setSuppressOutput', None) or getattr(cl, 'set_suppress_output', None)\n    if callable(setter):\n        setter(True)\n    tm = _term_map()\n    orig = cl.getTermMap()\n    if orig is not None:\n        try:\n            tm.putAll(orig)\n        except Exception:\n            try:\n                for k in orig:\n                    tm[k] = orig[k]\n            except Exception:\n                pass\n    return _sorted_ias(cl.sgCloseParallel(list(cl.getGenerators()), 0, tm))\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "s0.cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Subalgebra constructor",
+      "expected_exception": null,
+      "id": "ctor_subalgebra",
+      "kwargs": {},
+      "method": "Subalgebra.Subalgebra",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 1,
+        "string_repr": "1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    AlgebraFromMinimalSets, AlgebraWithGeneratingVector, BasicAlgebra,\n    BigProductAlgebra, Closer, CloserTiming, FreeAlgebra, GeneralAlgebra,\n    Homomorphism, MaltsevDecompositionIterator, MaltsevProductDecomposition,\n    MatrixPowerAlgebra, PolinLikeAlgebra, PowerAlgebra, ProductAlgebra,\n    QuotientAlgebra, QuotientElement, ReductAlgebra, SubProductAlgebra,\n    Subalgebra, UnaryTermsMonoid,\n)\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nid1 = Operations.makeIntOperation(OperationSymbol(\"id\", 1), 2, [0, 1])\nplus = OperationSymbol(\"+\", 2)\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\ncloser = Closer(bp2, [g00, g11], True)\ncloser.setSuppressOutput(True)\nprod = ProductAlgebra(\"C2xC2\", [c2, c2])\npwr = PowerAlgebra(\"C2^2\", c2, 2)\ns0 = Subalgebra(\"S0\", c2, [0])\nh = Homomorphism(c2, c2, {0: 0, 1: 1})\nafms = AlgebraFromMinimalSets(\"fromC2\", c2)\nawgv = AlgebraWithGeneratingVector(c2, [0, 1])\nmp = MatrixPowerAlgebra(\"mp\", c2, 1)\npol = PolinLikeAlgebra(\"pol\", c2, c2, None, 0, 0)\ntry:\n    from java.util import HashSet\n    _univ = HashSet()\n    _univ.add(0)\n    _univ.add(1)\nexcept ImportError:\n    _univ = [0, 1]\nga = GeneralAlgebra(\"G\", _univ, [id1])\nutm = UnaryTermsMonoid(c2)\nf1 = FreeAlgebra(c2, 1)\nct = CloserTiming(bp2, None)\nbasic = BasicAlgebra(\"B\", 2, [id1])\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _term_str(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _alg_card(alg):\n    if alg is None:\n        return None\n    return int(alg.cardinality())\n\ndef _term_map():\n    try:\n        from java.util.concurrent import ConcurrentHashMap\n        return ConcurrentHashMap()\n    except ImportError:\n        return {}\n\ndef _par_close(alg, gens):\n    cl = Closer(alg, gens, True)\n    setter = getattr(cl, 'setSuppressOutput', None) or getattr(cl, 'set_suppress_output', None)\n    if callable(setter):\n        setter(True)\n    tm = _term_map()\n    orig = cl.getTermMap()\n    if orig is not None:\n        try:\n            tm.putAll(orig)\n        except Exception:\n            try:\n                for k in orig:\n                    tm[k] = orig[k]\n            except Exception:\n                pass\n    return _sorted_ias(cl.sgCloseParallel(list(cl.getGenerators()), 0, tm))\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "utm.getName() if hasattr(utm, 'getName') else utm.name()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "UnaryTermsMonoid constructor",
+      "expected_exception": null,
+      "id": "ctor_utm",
+      "kwargs": {},
+      "method": "UnaryTermsMonoid.UnaryTermsMonoid",
+      "notes": "",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "UnaryTerms(C2)",
+        "string_repr": "UnaryTerms(C2)",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    AlgebraFromMinimalSets, AlgebraWithGeneratingVector, BasicAlgebra,\n    BigProductAlgebra, Closer, CloserTiming, FreeAlgebra, GeneralAlgebra,\n    Homomorphism, MaltsevDecompositionIterator, MaltsevProductDecomposition,\n    MatrixPowerAlgebra, PolinLikeAlgebra, PowerAlgebra, ProductAlgebra,\n    QuotientAlgebra, QuotientElement, ReductAlgebra, SubProductAlgebra,\n    Subalgebra, UnaryTermsMonoid,\n)\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nid1 = Operations.makeIntOperation(OperationSymbol(\"id\", 1), 2, [0, 1])\nplus = OperationSymbol(\"+\", 2)\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\ncloser = Closer(bp2, [g00, g11], True)\ncloser.setSuppressOutput(True)\nprod = ProductAlgebra(\"C2xC2\", [c2, c2])\npwr = PowerAlgebra(\"C2^2\", c2, 2)\ns0 = Subalgebra(\"S0\", c2, [0])\nh = Homomorphism(c2, c2, {0: 0, 1: 1})\nafms = AlgebraFromMinimalSets(\"fromC2\", c2)\nawgv = AlgebraWithGeneratingVector(c2, [0, 1])\nmp = MatrixPowerAlgebra(\"mp\", c2, 1)\npol = PolinLikeAlgebra(\"pol\", c2, c2, None, 0, 0)\ntry:\n    from java.util import HashSet\n    _univ = HashSet()\n    _univ.add(0)\n    _univ.add(1)\nexcept ImportError:\n    _univ = [0, 1]\nga = GeneralAlgebra(\"G\", _univ, [id1])\nutm = UnaryTermsMonoid(c2)\nf1 = FreeAlgebra(c2, 1)\nct = CloserTiming(bp2, None)\nbasic = BasicAlgebra(\"B\", 2, [id1])\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _term_str(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _alg_card(alg):\n    if alg is None:\n        return None\n    return int(alg.cardinality())\n\ndef _term_map():\n    try:\n        from java.util.concurrent import ConcurrentHashMap\n        return ConcurrentHashMap()\n    except ImportError:\n        return {}\n\ndef _par_close(alg, gens):\n    cl = Closer(alg, gens, True)\n    setter = getattr(cl, 'setSuppressOutput', None) or getattr(cl, 'set_suppress_output', None)\n    if callable(setter):\n        setter(True)\n    tm = _term_map()\n    orig = cl.getTermMap()\n    if orig is not None:\n        try:\n            tm.putAll(orig)\n        except Exception:\n            try:\n                for k in orig:\n                    tm[k] = orig[k]\n            except Exception:\n                pass\n    return _sorted_ias(cl.sgCloseParallel(list(cl.getGenerators()), 0, tm))\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "afms.getName()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "AlgebraFromMinimalSets constructor",
+      "expected_exception": null,
+      "id": "ctor_afms",
+      "kwargs": {},
+      "method": "AlgebraFromMinimalSets.AlgebraFromMinimalSets",
+      "notes": "",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "fromC2",
+        "string_repr": "fromC2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    AlgebraFromMinimalSets, AlgebraWithGeneratingVector, BasicAlgebra,\n    BigProductAlgebra, Closer, CloserTiming, FreeAlgebra, GeneralAlgebra,\n    Homomorphism, MaltsevDecompositionIterator, MaltsevProductDecomposition,\n    MatrixPowerAlgebra, PolinLikeAlgebra, PowerAlgebra, ProductAlgebra,\n    QuotientAlgebra, QuotientElement, ReductAlgebra, SubProductAlgebra,\n    Subalgebra, UnaryTermsMonoid,\n)\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nid1 = Operations.makeIntOperation(OperationSymbol(\"id\", 1), 2, [0, 1])\nplus = OperationSymbol(\"+\", 2)\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\ncloser = Closer(bp2, [g00, g11], True)\ncloser.setSuppressOutput(True)\nprod = ProductAlgebra(\"C2xC2\", [c2, c2])\npwr = PowerAlgebra(\"C2^2\", c2, 2)\ns0 = Subalgebra(\"S0\", c2, [0])\nh = Homomorphism(c2, c2, {0: 0, 1: 1})\nafms = AlgebraFromMinimalSets(\"fromC2\", c2)\nawgv = AlgebraWithGeneratingVector(c2, [0, 1])\nmp = MatrixPowerAlgebra(\"mp\", c2, 1)\npol = PolinLikeAlgebra(\"pol\", c2, c2, None, 0, 0)\ntry:\n    from java.util import HashSet\n    _univ = HashSet()\n    _univ.add(0)\n    _univ.add(1)\nexcept ImportError:\n    _univ = [0, 1]\nga = GeneralAlgebra(\"G\", _univ, [id1])\nutm = UnaryTermsMonoid(c2)\nf1 = FreeAlgebra(c2, 1)\nct = CloserTiming(bp2, None)\nbasic = BasicAlgebra(\"B\", 2, [id1])\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _term_str(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _alg_card(alg):\n    if alg is None:\n        return None\n    return int(alg.cardinality())\n\ndef _term_map():\n    try:\n        from java.util.concurrent import ConcurrentHashMap\n        return ConcurrentHashMap()\n    except ImportError:\n        return {}\n\ndef _par_close(alg, gens):\n    cl = Closer(alg, gens, True)\n    setter = getattr(cl, 'setSuppressOutput', None) or getattr(cl, 'set_suppress_output', None)\n    if callable(setter):\n        setter(True)\n    tm = _term_map()\n    orig = cl.getTermMap()\n    if orig is not None:\n        try:\n            tm.putAll(orig)\n        except Exception:\n            try:\n                for k in orig:\n                    tm[k] = orig[k]\n            except Exception:\n                pass\n    return _sorted_ias(cl.sgCloseParallel(list(cl.getGenerators()), 0, tm))\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "awgv.getName() if hasattr(awgv, 'getName') else True",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "AlgebraWithGeneratingVector constructor",
+      "expected_exception": null,
+      "id": "ctor_awgv",
+      "kwargs": {},
+      "method": "AlgebraWithGeneratingVector.AlgebraWithGeneratingVector",
+      "notes": "Java Algebra toString is Class@hex; values compared.",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    AlgebraFromMinimalSets, AlgebraWithGeneratingVector, BasicAlgebra,\n    BigProductAlgebra, Closer, CloserTiming, FreeAlgebra, GeneralAlgebra,\n    Homomorphism, MaltsevDecompositionIterator, MaltsevProductDecomposition,\n    MatrixPowerAlgebra, PolinLikeAlgebra, PowerAlgebra, ProductAlgebra,\n    QuotientAlgebra, QuotientElement, ReductAlgebra, SubProductAlgebra,\n    Subalgebra, UnaryTermsMonoid,\n)\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nid1 = Operations.makeIntOperation(OperationSymbol(\"id\", 1), 2, [0, 1])\nplus = OperationSymbol(\"+\", 2)\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\ncloser = Closer(bp2, [g00, g11], True)\ncloser.setSuppressOutput(True)\nprod = ProductAlgebra(\"C2xC2\", [c2, c2])\npwr = PowerAlgebra(\"C2^2\", c2, 2)\ns0 = Subalgebra(\"S0\", c2, [0])\nh = Homomorphism(c2, c2, {0: 0, 1: 1})\nafms = AlgebraFromMinimalSets(\"fromC2\", c2)\nawgv = AlgebraWithGeneratingVector(c2, [0, 1])\nmp = MatrixPowerAlgebra(\"mp\", c2, 1)\npol = PolinLikeAlgebra(\"pol\", c2, c2, None, 0, 0)\ntry:\n    from java.util import HashSet\n    _univ = HashSet()\n    _univ.add(0)\n    _univ.add(1)\nexcept ImportError:\n    _univ = [0, 1]\nga = GeneralAlgebra(\"G\", _univ, [id1])\nutm = UnaryTermsMonoid(c2)\nf1 = FreeAlgebra(c2, 1)\nct = CloserTiming(bp2, None)\nbasic = BasicAlgebra(\"B\", 2, [id1])\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _term_str(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _alg_card(alg):\n    if alg is None:\n        return None\n    return int(alg.cardinality())\n\ndef _term_map():\n    try:\n        from java.util.concurrent import ConcurrentHashMap\n        return ConcurrentHashMap()\n    except ImportError:\n        return {}\n\ndef _par_close(alg, gens):\n    cl = Closer(alg, gens, True)\n    setter = getattr(cl, 'setSuppressOutput', None) or getattr(cl, 'set_suppress_output', None)\n    if callable(setter):\n        setter(True)\n    tm = _term_map()\n    orig = cl.getTermMap()\n    if orig is not None:\n        try:\n            tm.putAll(orig)\n        except Exception:\n            try:\n                for k in orig:\n                    tm[k] = orig[k]\n            except Exception:\n                pass\n    return _sorted_ias(cl.sgCloseParallel(list(cl.getGenerators()), 0, tm))\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "len(list(decomp.getBlockAlgebras() or []))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getBlockAlgebras after construction",
+      "expected_exception": null,
+      "id": "mpd_get_block_algebras",
+      "kwargs": {},
+      "method": "MaltsevProductDecomposition.getBlockAlgebras",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    AlgebraFromMinimalSets, AlgebraWithGeneratingVector, BasicAlgebra,\n    BigProductAlgebra, Closer, CloserTiming, FreeAlgebra, GeneralAlgebra,\n    Homomorphism, MaltsevDecompositionIterator, MaltsevProductDecomposition,\n    MatrixPowerAlgebra, PolinLikeAlgebra, PowerAlgebra, ProductAlgebra,\n    QuotientAlgebra, QuotientElement, ReductAlgebra, SubProductAlgebra,\n    Subalgebra, UnaryTermsMonoid,\n)\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nid1 = Operations.makeIntOperation(OperationSymbol(\"id\", 1), 2, [0, 1])\nplus = OperationSymbol(\"+\", 2)\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\ncloser = Closer(bp2, [g00, g11], True)\ncloser.setSuppressOutput(True)\nprod = ProductAlgebra(\"C2xC2\", [c2, c2])\npwr = PowerAlgebra(\"C2^2\", c2, 2)\ns0 = Subalgebra(\"S0\", c2, [0])\nh = Homomorphism(c2, c2, {0: 0, 1: 1})\nafms = AlgebraFromMinimalSets(\"fromC2\", c2)\nawgv = AlgebraWithGeneratingVector(c2, [0, 1])\nmp = MatrixPowerAlgebra(\"mp\", c2, 1)\npol = PolinLikeAlgebra(\"pol\", c2, c2, None, 0, 0)\ntry:\n    from java.util import HashSet\n    _univ = HashSet()\n    _univ.add(0)\n    _univ.add(1)\nexcept ImportError:\n    _univ = [0, 1]\nga = GeneralAlgebra(\"G\", _univ, [id1])\nutm = UnaryTermsMonoid(c2)\nf1 = FreeAlgebra(c2, 1)\nct = CloserTiming(bp2, None)\nbasic = BasicAlgebra(\"B\", 2, [id1])\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _term_str(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _alg_card(alg):\n    if alg is None:\n        return None\n    return int(alg.cardinality())\n\ndef _term_map():\n    try:\n        from java.util.concurrent import ConcurrentHashMap\n        return ConcurrentHashMap()\n    except ImportError:\n        return {}\n\ndef _par_close(alg, gens):\n    cl = Closer(alg, gens, True)\n    setter = getattr(cl, 'setSuppressOutput', None) or getattr(cl, 'set_suppress_output', None)\n    if callable(setter):\n        setter(True)\n    tm = _term_map()\n    orig = cl.getTermMap()\n    if orig is not None:\n        try:\n            tm.putAll(orig)\n        except Exception:\n            try:\n                for k in orig:\n                    tm[k] = orig[k]\n            except Exception:\n                pass\n    return _sorted_ias(cl.sgCloseParallel(list(cl.getGenerators()), 0, tm))\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "(decomp.setBlockAlgebras([]), len(list(decomp.getBlockAlgebras())))[1]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getBlockAlgebras after setBlockAlgebras([])",
+      "expected_exception": null,
+      "id": "mpd_get_block_algebras_empty",
+      "kwargs": {},
+      "method": "MaltsevProductDecomposition.getBlockAlgebras",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 0,
+        "string_repr": "0",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    AlgebraFromMinimalSets, AlgebraWithGeneratingVector, BasicAlgebra,\n    BigProductAlgebra, Closer, CloserTiming, FreeAlgebra, GeneralAlgebra,\n    Homomorphism, MaltsevDecompositionIterator, MaltsevProductDecomposition,\n    MatrixPowerAlgebra, PolinLikeAlgebra, PowerAlgebra, ProductAlgebra,\n    QuotientAlgebra, QuotientElement, ReductAlgebra, SubProductAlgebra,\n    Subalgebra, UnaryTermsMonoid,\n)\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nid1 = Operations.makeIntOperation(OperationSymbol(\"id\", 1), 2, [0, 1])\nplus = OperationSymbol(\"+\", 2)\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\ncloser = Closer(bp2, [g00, g11], True)\ncloser.setSuppressOutput(True)\nprod = ProductAlgebra(\"C2xC2\", [c2, c2])\npwr = PowerAlgebra(\"C2^2\", c2, 2)\ns0 = Subalgebra(\"S0\", c2, [0])\nh = Homomorphism(c2, c2, {0: 0, 1: 1})\nafms = AlgebraFromMinimalSets(\"fromC2\", c2)\nawgv = AlgebraWithGeneratingVector(c2, [0, 1])\nmp = MatrixPowerAlgebra(\"mp\", c2, 1)\npol = PolinLikeAlgebra(\"pol\", c2, c2, None, 0, 0)\ntry:\n    from java.util import HashSet\n    _univ = HashSet()\n    _univ.add(0)\n    _univ.add(1)\nexcept ImportError:\n    _univ = [0, 1]\nga = GeneralAlgebra(\"G\", _univ, [id1])\nutm = UnaryTermsMonoid(c2)\nf1 = FreeAlgebra(c2, 1)\nct = CloserTiming(bp2, None)\nbasic = BasicAlgebra(\"B\", 2, [id1])\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _term_str(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _alg_card(alg):\n    if alg is None:\n        return None\n    return int(alg.cardinality())\n\ndef _term_map():\n    try:\n        from java.util.concurrent import ConcurrentHashMap\n        return ConcurrentHashMap()\n    except ImportError:\n        return {}\n\ndef _par_close(alg, gens):\n    cl = Closer(alg, gens, True)\n    setter = getattr(cl, 'setSuppressOutput', None) or getattr(cl, 'set_suppress_output', None)\n    if callable(setter):\n        setter(True)\n    tm = _term_map()\n    orig = cl.getTermMap()\n    if orig is not None:\n        try:\n            tm.putAll(orig)\n        except Exception:\n            try:\n                for k in orig:\n                    tm[k] = orig[k]\n            except Exception:\n                pass\n    return _sorted_ias(cl.sgCloseParallel(list(cl.getGenerators()), 0, tm))\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_alg_card(decomp.getQuotientAlgebra())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getQuotientAlgebra of N5/Cg(0,1)",
+      "expected_exception": null,
+      "id": "mpd_get_quotient_algebra",
+      "kwargs": {},
+      "method": "MaltsevProductDecomposition.getQuotientAlgebra",
+      "notes": "Java Algebra toString is Class@hex; values compared.",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    AlgebraFromMinimalSets, AlgebraWithGeneratingVector, BasicAlgebra,\n    BigProductAlgebra, Closer, CloserTiming, FreeAlgebra, GeneralAlgebra,\n    Homomorphism, MaltsevDecompositionIterator, MaltsevProductDecomposition,\n    MatrixPowerAlgebra, PolinLikeAlgebra, PowerAlgebra, ProductAlgebra,\n    QuotientAlgebra, QuotientElement, ReductAlgebra, SubProductAlgebra,\n    Subalgebra, UnaryTermsMonoid,\n)\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nid1 = Operations.makeIntOperation(OperationSymbol(\"id\", 1), 2, [0, 1])\nplus = OperationSymbol(\"+\", 2)\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\ncloser = Closer(bp2, [g00, g11], True)\ncloser.setSuppressOutput(True)\nprod = ProductAlgebra(\"C2xC2\", [c2, c2])\npwr = PowerAlgebra(\"C2^2\", c2, 2)\ns0 = Subalgebra(\"S0\", c2, [0])\nh = Homomorphism(c2, c2, {0: 0, 1: 1})\nafms = AlgebraFromMinimalSets(\"fromC2\", c2)\nawgv = AlgebraWithGeneratingVector(c2, [0, 1])\nmp = MatrixPowerAlgebra(\"mp\", c2, 1)\npol = PolinLikeAlgebra(\"pol\", c2, c2, None, 0, 0)\ntry:\n    from java.util import HashSet\n    _univ = HashSet()\n    _univ.add(0)\n    _univ.add(1)\nexcept ImportError:\n    _univ = [0, 1]\nga = GeneralAlgebra(\"G\", _univ, [id1])\nutm = UnaryTermsMonoid(c2)\nf1 = FreeAlgebra(c2, 1)\nct = CloserTiming(bp2, None)\nbasic = BasicAlgebra(\"B\", 2, [id1])\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _term_str(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _alg_card(alg):\n    if alg is None:\n        return None\n    return int(alg.cardinality())\n\ndef _term_map():\n    try:\n        from java.util.concurrent import ConcurrentHashMap\n        return ConcurrentHashMap()\n    except ImportError:\n        return {}\n\ndef _par_close(alg, gens):\n    cl = Closer(alg, gens, True)\n    setter = getattr(cl, 'setSuppressOutput', None) or getattr(cl, 'set_suppress_output', None)\n    if callable(setter):\n        setter(True)\n    tm = _term_map()\n    orig = cl.getTermMap()\n    if orig is not None:\n        try:\n            tm.putAll(orig)\n        except Exception:\n            try:\n                for k in orig:\n                    tm[k] = orig[k]\n            except Exception:\n                pass\n    return _sorted_ias(cl.sgCloseParallel(list(cl.getGenerators()), 0, tm))\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "(decomp.setQuotientAlgebra(c2), _alg_card(decomp.getQuotientAlgebra()))[1]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getQuotientAlgebra after setQuotientAlgebra(C2)",
+      "expected_exception": null,
+      "id": "mpd_get_quotient_after_set",
+      "kwargs": {},
+      "method": "MaltsevProductDecomposition.getQuotientAlgebra",
+      "notes": "Java Algebra toString is Class@hex; values compared.",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    AlgebraFromMinimalSets, AlgebraWithGeneratingVector, BasicAlgebra,\n    BigProductAlgebra, Closer, CloserTiming, FreeAlgebra, GeneralAlgebra,\n    Homomorphism, MaltsevDecompositionIterator, MaltsevProductDecomposition,\n    MatrixPowerAlgebra, PolinLikeAlgebra, PowerAlgebra, ProductAlgebra,\n    QuotientAlgebra, QuotientElement, ReductAlgebra, SubProductAlgebra,\n    Subalgebra, UnaryTermsMonoid,\n)\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nid1 = Operations.makeIntOperation(OperationSymbol(\"id\", 1), 2, [0, 1])\nplus = OperationSymbol(\"+\", 2)\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\ncloser = Closer(bp2, [g00, g11], True)\ncloser.setSuppressOutput(True)\nprod = ProductAlgebra(\"C2xC2\", [c2, c2])\npwr = PowerAlgebra(\"C2^2\", c2, 2)\ns0 = Subalgebra(\"S0\", c2, [0])\nh = Homomorphism(c2, c2, {0: 0, 1: 1})\nafms = AlgebraFromMinimalSets(\"fromC2\", c2)\nawgv = AlgebraWithGeneratingVector(c2, [0, 1])\nmp = MatrixPowerAlgebra(\"mp\", c2, 1)\npol = PolinLikeAlgebra(\"pol\", c2, c2, None, 0, 0)\ntry:\n    from java.util import HashSet\n    _univ = HashSet()\n    _univ.add(0)\n    _univ.add(1)\nexcept ImportError:\n    _univ = [0, 1]\nga = GeneralAlgebra(\"G\", _univ, [id1])\nutm = UnaryTermsMonoid(c2)\nf1 = FreeAlgebra(c2, 1)\nct = CloserTiming(bp2, None)\nbasic = BasicAlgebra(\"B\", 2, [id1])\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _term_str(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _alg_card(alg):\n    if alg is None:\n        return None\n    return int(alg.cardinality())\n\ndef _term_map():\n    try:\n        from java.util.concurrent import ConcurrentHashMap\n        return ConcurrentHashMap()\n    except ImportError:\n        return {}\n\ndef _par_close(alg, gens):\n    cl = Closer(alg, gens, True)\n    setter = getattr(cl, 'setSuppressOutput', None) or getattr(cl, 'set_suppress_output', None)\n    if callable(setter):\n        setter(True)\n    tm = _term_map()\n    orig = cl.getTermMap()\n    if orig is not None:\n        try:\n            tm.putAll(orig)\n        except Exception:\n            try:\n                for k in orig:\n                    tm[k] = orig[k]\n            except Exception:\n                pass\n    return _sorted_ias(cl.sgCloseParallel(list(cl.getGenerators()), 0, tm))\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "bp2.getConstantTerm(g00)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Java NPEs on a non-constant; Python raises ValueError",
+      "expected_exception": null,
+      "id": "bpa_get_constant_term_missing",
+      "kwargs": {},
+      "method": "BigProductAlgebra.getConstantTerm",
+      "notes": "Java null vs Python None.",
+      "result": {
+        "exception": {
+          "message": "java.lang.NullPointerException: Cannot invoke \"org.uacalc.alg.op.OperationSymbol.name()\" because the return value of \"org.uacalc.terms.NonVariableTerm.leadingOperationSymbol()\" is null",
+          "type": "NullPointerException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    AlgebraFromMinimalSets, AlgebraWithGeneratingVector, BasicAlgebra,\n    BigProductAlgebra, Closer, CloserTiming, FreeAlgebra, GeneralAlgebra,\n    Homomorphism, MaltsevDecompositionIterator, MaltsevProductDecomposition,\n    MatrixPowerAlgebra, PolinLikeAlgebra, PowerAlgebra, ProductAlgebra,\n    QuotientAlgebra, QuotientElement, ReductAlgebra, SubProductAlgebra,\n    Subalgebra, UnaryTermsMonoid,\n)\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nid1 = Operations.makeIntOperation(OperationSymbol(\"id\", 1), 2, [0, 1])\nplus = OperationSymbol(\"+\", 2)\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\ncloser = Closer(bp2, [g00, g11], True)\ncloser.setSuppressOutput(True)\nprod = ProductAlgebra(\"C2xC2\", [c2, c2])\npwr = PowerAlgebra(\"C2^2\", c2, 2)\ns0 = Subalgebra(\"S0\", c2, [0])\nh = Homomorphism(c2, c2, {0: 0, 1: 1})\nafms = AlgebraFromMinimalSets(\"fromC2\", c2)\nawgv = AlgebraWithGeneratingVector(c2, [0, 1])\nmp = MatrixPowerAlgebra(\"mp\", c2, 1)\npol = PolinLikeAlgebra(\"pol\", c2, c2, None, 0, 0)\ntry:\n    from java.util import HashSet\n    _univ = HashSet()\n    _univ.add(0)\n    _univ.add(1)\nexcept ImportError:\n    _univ = [0, 1]\nga = GeneralAlgebra(\"G\", _univ, [id1])\nutm = UnaryTermsMonoid(c2)\nf1 = FreeAlgebra(c2, 1)\nct = CloserTiming(bp2, None)\nbasic = BasicAlgebra(\"B\", 2, [id1])\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _term_str(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _alg_card(alg):\n    if alg is None:\n        return None\n    return int(alg.cardinality())\n\ndef _term_map():\n    try:\n        from java.util.concurrent import ConcurrentHashMap\n        return ConcurrentHashMap()\n    except ImportError:\n        return {}\n\ndef _par_close(alg, gens):\n    cl = Closer(alg, gens, True)\n    setter = getattr(cl, 'setSuppressOutput', None) or getattr(cl, 'set_suppress_output', None)\n    if callable(setter):\n        setter(True)\n    tm = _term_map()\n    orig = cl.getTermMap()\n    if orig is not None:\n        try:\n            tm.putAll(orig)\n        except Exception:\n            try:\n                for k in orig:\n                    tm[k] = orig[k]\n            except Exception:\n                pass\n    return _sorted_ias(cl.sgCloseParallel(list(cl.getGenerators()), 0, tm))\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": "Java-limitation: getConstantTerm of a non-constant tuple NPEs; Python raises ValueError"
+    },
+    {
+      "args": [],
+      "call": "[_term_str(bp2.getConstantTerm(c)) for c in list(bp2.getConstants() or [])]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getConstantTerm of each C2^2 constant",
+      "expected_exception": null,
+      "id": "bpa_get_constant_term_from_list",
+      "kwargs": {},
+      "method": "BigProductAlgebra.getConstantTerm",
+      "notes": "Term toString spacing.",
+      "result": {
+        "return_type": "list",
+        "return_value": [],
+        "string_repr": "[]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    AlgebraFromMinimalSets, AlgebraWithGeneratingVector, BasicAlgebra,\n    BigProductAlgebra, Closer, CloserTiming, FreeAlgebra, GeneralAlgebra,\n    Homomorphism, MaltsevDecompositionIterator, MaltsevProductDecomposition,\n    MatrixPowerAlgebra, PolinLikeAlgebra, PowerAlgebra, ProductAlgebra,\n    QuotientAlgebra, QuotientElement, ReductAlgebra, SubProductAlgebra,\n    Subalgebra, UnaryTermsMonoid,\n)\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nid1 = Operations.makeIntOperation(OperationSymbol(\"id\", 1), 2, [0, 1])\nplus = OperationSymbol(\"+\", 2)\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\ncloser = Closer(bp2, [g00, g11], True)\ncloser.setSuppressOutput(True)\nprod = ProductAlgebra(\"C2xC2\", [c2, c2])\npwr = PowerAlgebra(\"C2^2\", c2, 2)\ns0 = Subalgebra(\"S0\", c2, [0])\nh = Homomorphism(c2, c2, {0: 0, 1: 1})\nafms = AlgebraFromMinimalSets(\"fromC2\", c2)\nawgv = AlgebraWithGeneratingVector(c2, [0, 1])\nmp = MatrixPowerAlgebra(\"mp\", c2, 1)\npol = PolinLikeAlgebra(\"pol\", c2, c2, None, 0, 0)\ntry:\n    from java.util import HashSet\n    _univ = HashSet()\n    _univ.add(0)\n    _univ.add(1)\nexcept ImportError:\n    _univ = [0, 1]\nga = GeneralAlgebra(\"G\", _univ, [id1])\nutm = UnaryTermsMonoid(c2)\nf1 = FreeAlgebra(c2, 1)\nct = CloserTiming(bp2, None)\nbasic = BasicAlgebra(\"B\", 2, [id1])\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _term_str(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _alg_card(alg):\n    if alg is None:\n        return None\n    return int(alg.cardinality())\n\ndef _term_map():\n    try:\n        from java.util.concurrent import ConcurrentHashMap\n        return ConcurrentHashMap()\n    except ImportError:\n        return {}\n\ndef _par_close(alg, gens):\n    cl = Closer(alg, gens, True)\n    setter = getattr(cl, 'setSuppressOutput', None) or getattr(cl, 'set_suppress_output', None)\n    if callable(setter):\n        setter(True)\n    tm = _term_map()\n    orig = cl.getTermMap()\n    if orig is not None:\n        try:\n            tm.putAll(orig)\n        except Exception:\n            try:\n                for k in orig:\n                    tm[k] = orig[k]\n            except Exception:\n                pass\n    return _sorted_ias(cl.sgCloseParallel(list(cl.getGenerators()), 0, tm))\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "[_term_str(bp3.getConstantTerm(c)) for c in list(bp3.getConstants() or [])]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getConstantTerm of each C3^2 constant",
+      "expected_exception": null,
+      "id": "bpa_get_constant_term_c3",
+      "kwargs": {},
+      "method": "BigProductAlgebra.getConstantTerm",
+      "notes": "Term toString spacing.",
+      "result": {
+        "return_type": "list",
+        "return_value": [],
+        "string_repr": "[]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    AlgebraFromMinimalSets, AlgebraWithGeneratingVector, BasicAlgebra,\n    BigProductAlgebra, Closer, CloserTiming, FreeAlgebra, GeneralAlgebra,\n    Homomorphism, MaltsevDecompositionIterator, MaltsevProductDecomposition,\n    MatrixPowerAlgebra, PolinLikeAlgebra, PowerAlgebra, ProductAlgebra,\n    QuotientAlgebra, QuotientElement, ReductAlgebra, SubProductAlgebra,\n    Subalgebra, UnaryTermsMonoid,\n)\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nid1 = Operations.makeIntOperation(OperationSymbol(\"id\", 1), 2, [0, 1])\nplus = OperationSymbol(\"+\", 2)\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\ncloser = Closer(bp2, [g00, g11], True)\ncloser.setSuppressOutput(True)\nprod = ProductAlgebra(\"C2xC2\", [c2, c2])\npwr = PowerAlgebra(\"C2^2\", c2, 2)\ns0 = Subalgebra(\"S0\", c2, [0])\nh = Homomorphism(c2, c2, {0: 0, 1: 1})\nafms = AlgebraFromMinimalSets(\"fromC2\", c2)\nawgv = AlgebraWithGeneratingVector(c2, [0, 1])\nmp = MatrixPowerAlgebra(\"mp\", c2, 1)\npol = PolinLikeAlgebra(\"pol\", c2, c2, None, 0, 0)\ntry:\n    from java.util import HashSet\n    _univ = HashSet()\n    _univ.add(0)\n    _univ.add(1)\nexcept ImportError:\n    _univ = [0, 1]\nga = GeneralAlgebra(\"G\", _univ, [id1])\nutm = UnaryTermsMonoid(c2)\nf1 = FreeAlgebra(c2, 1)\nct = CloserTiming(bp2, None)\nbasic = BasicAlgebra(\"B\", 2, [id1])\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _term_str(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _alg_card(alg):\n    if alg is None:\n        return None\n    return int(alg.cardinality())\n\ndef _term_map():\n    try:\n        from java.util.concurrent import ConcurrentHashMap\n        return ConcurrentHashMap()\n    except ImportError:\n        return {}\n\ndef _par_close(alg, gens):\n    cl = Closer(alg, gens, True)\n    setter = getattr(cl, 'setSuppressOutput', None) or getattr(cl, 'set_suppress_output', None)\n    if callable(setter):\n        setter(True)\n    tm = _term_map()\n    orig = cl.getTermMap()\n    if orig is not None:\n        try:\n            tm.putAll(orig)\n        except Exception:\n            try:\n                for k in orig:\n                    tm[k] = orig[k]\n            except Exception:\n                pass\n    return _sorted_ias(cl.sgCloseParallel(list(cl.getGenerators()), 0, tm))\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_par_close(bp2, [g00, g11])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "sgCloseParallel 3-arg on C2^2 diagonal gens",
+      "expected_exception": null,
+      "id": "closer_sg_close_parallel_c2",
+      "kwargs": {},
+      "method": "Closer.sgCloseParallel",
+      "notes": "Java List toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            0,
+            0
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "string_repr": "[[0, 0], [1, 1]]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    AlgebraFromMinimalSets, AlgebraWithGeneratingVector, BasicAlgebra,\n    BigProductAlgebra, Closer, CloserTiming, FreeAlgebra, GeneralAlgebra,\n    Homomorphism, MaltsevDecompositionIterator, MaltsevProductDecomposition,\n    MatrixPowerAlgebra, PolinLikeAlgebra, PowerAlgebra, ProductAlgebra,\n    QuotientAlgebra, QuotientElement, ReductAlgebra, SubProductAlgebra,\n    Subalgebra, UnaryTermsMonoid,\n)\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nid1 = Operations.makeIntOperation(OperationSymbol(\"id\", 1), 2, [0, 1])\nplus = OperationSymbol(\"+\", 2)\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\ncloser = Closer(bp2, [g00, g11], True)\ncloser.setSuppressOutput(True)\nprod = ProductAlgebra(\"C2xC2\", [c2, c2])\npwr = PowerAlgebra(\"C2^2\", c2, 2)\ns0 = Subalgebra(\"S0\", c2, [0])\nh = Homomorphism(c2, c2, {0: 0, 1: 1})\nafms = AlgebraFromMinimalSets(\"fromC2\", c2)\nawgv = AlgebraWithGeneratingVector(c2, [0, 1])\nmp = MatrixPowerAlgebra(\"mp\", c2, 1)\npol = PolinLikeAlgebra(\"pol\", c2, c2, None, 0, 0)\ntry:\n    from java.util import HashSet\n    _univ = HashSet()\n    _univ.add(0)\n    _univ.add(1)\nexcept ImportError:\n    _univ = [0, 1]\nga = GeneralAlgebra(\"G\", _univ, [id1])\nutm = UnaryTermsMonoid(c2)\nf1 = FreeAlgebra(c2, 1)\nct = CloserTiming(bp2, None)\nbasic = BasicAlgebra(\"B\", 2, [id1])\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _term_str(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _alg_card(alg):\n    if alg is None:\n        return None\n    return int(alg.cardinality())\n\ndef _term_map():\n    try:\n        from java.util.concurrent import ConcurrentHashMap\n        return ConcurrentHashMap()\n    except ImportError:\n        return {}\n\ndef _par_close(alg, gens):\n    cl = Closer(alg, gens, True)\n    setter = getattr(cl, 'setSuppressOutput', None) or getattr(cl, 'set_suppress_output', None)\n    if callable(setter):\n        setter(True)\n    tm = _term_map()\n    orig = cl.getTermMap()\n    if orig is not None:\n        try:\n            tm.putAll(orig)\n        except Exception:\n            try:\n                for k in orig:\n                    tm[k] = orig[k]\n            except Exception:\n                pass\n    return _sorted_ias(cl.sgCloseParallel(list(cl.getGenerators()), 0, tm))\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_par_close(bp2, [g00, g01, g11])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "sgCloseParallel 3-arg on C2^2 three gens",
+      "expected_exception": null,
+      "id": "closer_sg_close_parallel_all",
+      "kwargs": {},
+      "method": "Closer.sgCloseParallel",
+      "notes": "Java List toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "string_repr": "[[0, 0], [0, 1], [1, 0], [1, 1]]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    AlgebraFromMinimalSets, AlgebraWithGeneratingVector, BasicAlgebra,\n    BigProductAlgebra, Closer, CloserTiming, FreeAlgebra, GeneralAlgebra,\n    Homomorphism, MaltsevDecompositionIterator, MaltsevProductDecomposition,\n    MatrixPowerAlgebra, PolinLikeAlgebra, PowerAlgebra, ProductAlgebra,\n    QuotientAlgebra, QuotientElement, ReductAlgebra, SubProductAlgebra,\n    Subalgebra, UnaryTermsMonoid,\n)\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nid1 = Operations.makeIntOperation(OperationSymbol(\"id\", 1), 2, [0, 1])\nplus = OperationSymbol(\"+\", 2)\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\ncloser = Closer(bp2, [g00, g11], True)\ncloser.setSuppressOutput(True)\nprod = ProductAlgebra(\"C2xC2\", [c2, c2])\npwr = PowerAlgebra(\"C2^2\", c2, 2)\ns0 = Subalgebra(\"S0\", c2, [0])\nh = Homomorphism(c2, c2, {0: 0, 1: 1})\nafms = AlgebraFromMinimalSets(\"fromC2\", c2)\nawgv = AlgebraWithGeneratingVector(c2, [0, 1])\nmp = MatrixPowerAlgebra(\"mp\", c2, 1)\npol = PolinLikeAlgebra(\"pol\", c2, c2, None, 0, 0)\ntry:\n    from java.util import HashSet\n    _univ = HashSet()\n    _univ.add(0)\n    _univ.add(1)\nexcept ImportError:\n    _univ = [0, 1]\nga = GeneralAlgebra(\"G\", _univ, [id1])\nutm = UnaryTermsMonoid(c2)\nf1 = FreeAlgebra(c2, 1)\nct = CloserTiming(bp2, None)\nbasic = BasicAlgebra(\"B\", 2, [id1])\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _term_str(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _alg_card(alg):\n    if alg is None:\n        return None\n    return int(alg.cardinality())\n\ndef _term_map():\n    try:\n        from java.util.concurrent import ConcurrentHashMap\n        return ConcurrentHashMap()\n    except ImportError:\n        return {}\n\ndef _par_close(alg, gens):\n    cl = Closer(alg, gens, True)\n    setter = getattr(cl, 'setSuppressOutput', None) or getattr(cl, 'set_suppress_output', None)\n    if callable(setter):\n        setter(True)\n    tm = _term_map()\n    orig = cl.getTermMap()\n    if orig is not None:\n        try:\n            tm.putAll(orig)\n        except Exception:\n            try:\n                for k in orig:\n                    tm[k] = orig[k]\n            except Exception:\n                pass\n    return _sorted_ias(cl.sgCloseParallel(list(cl.getGenerators()), 0, tm))\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_par_close(bp3, [IntArray([0, 0]), IntArray([1, 1])])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "sgCloseParallel 3-arg on C3^2 diagonal gens",
+      "expected_exception": null,
+      "id": "closer_sg_close_parallel_c3",
+      "kwargs": {},
+      "method": "Closer.sgCloseParallel",
+      "notes": "Java List toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            0,
+            0
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            2
+          ]
+        ],
+        "string_repr": "[[0, 0], [1, 1], [2, 2]]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    AlgebraFromMinimalSets, AlgebraWithGeneratingVector, BasicAlgebra,\n    BigProductAlgebra, Closer, CloserTiming, FreeAlgebra, GeneralAlgebra,\n    Homomorphism, MaltsevDecompositionIterator, MaltsevProductDecomposition,\n    MatrixPowerAlgebra, PolinLikeAlgebra, PowerAlgebra, ProductAlgebra,\n    QuotientAlgebra, QuotientElement, ReductAlgebra, SubProductAlgebra,\n    Subalgebra, UnaryTermsMonoid,\n)\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nid1 = Operations.makeIntOperation(OperationSymbol(\"id\", 1), 2, [0, 1])\nplus = OperationSymbol(\"+\", 2)\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\ncloser = Closer(bp2, [g00, g11], True)\ncloser.setSuppressOutput(True)\nprod = ProductAlgebra(\"C2xC2\", [c2, c2])\npwr = PowerAlgebra(\"C2^2\", c2, 2)\ns0 = Subalgebra(\"S0\", c2, [0])\nh = Homomorphism(c2, c2, {0: 0, 1: 1})\nafms = AlgebraFromMinimalSets(\"fromC2\", c2)\nawgv = AlgebraWithGeneratingVector(c2, [0, 1])\nmp = MatrixPowerAlgebra(\"mp\", c2, 1)\npol = PolinLikeAlgebra(\"pol\", c2, c2, None, 0, 0)\ntry:\n    from java.util import HashSet\n    _univ = HashSet()\n    _univ.add(0)\n    _univ.add(1)\nexcept ImportError:\n    _univ = [0, 1]\nga = GeneralAlgebra(\"G\", _univ, [id1])\nutm = UnaryTermsMonoid(c2)\nf1 = FreeAlgebra(c2, 1)\nct = CloserTiming(bp2, None)\nbasic = BasicAlgebra(\"B\", 2, [id1])\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _term_str(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _alg_card(alg):\n    if alg is None:\n        return None\n    return int(alg.cardinality())\n\ndef _term_map():\n    try:\n        from java.util.concurrent import ConcurrentHashMap\n        return ConcurrentHashMap()\n    except ImportError:\n        return {}\n\ndef _par_close(alg, gens):\n    cl = Closer(alg, gens, True)\n    setter = getattr(cl, 'setSuppressOutput', None) or getattr(cl, 'set_suppress_output', None)\n    if callable(setter):\n        setter(True)\n    tm = _term_map()\n    orig = cl.getTermMap()\n    if orig is not None:\n        try:\n            tm.putAll(orig)\n        except Exception:\n            try:\n                for k in orig:\n                    tm[k] = orig[k]\n            except Exception:\n                pass\n    return _sorted_ias(cl.sgCloseParallel(list(cl.getGenerators()), 0, tm))\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_par_close(bp2, [g00, g11]) == _sorted_ias(Closer(bp2, [g00, g11], True).sgClose())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "sgCloseParallel universe equals sequential sgClose",
+      "expected_exception": null,
+      "id": "closer_sg_close_parallel_matches_seq",
+      "kwargs": {},
+      "method": "Closer.sgCloseParallel",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    AlgebraFromMinimalSets, AlgebraWithGeneratingVector, BasicAlgebra,\n    BigProductAlgebra, Closer, CloserTiming, FreeAlgebra, GeneralAlgebra,\n    Homomorphism, MaltsevDecompositionIterator, MaltsevProductDecomposition,\n    MatrixPowerAlgebra, PolinLikeAlgebra, PowerAlgebra, ProductAlgebra,\n    QuotientAlgebra, QuotientElement, ReductAlgebra, SubProductAlgebra,\n    Subalgebra, UnaryTermsMonoid,\n)\nfrom org.uacalc.alg.op import OperationSymbol, Operations\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nc3 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic3.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nlat2 = AlgebraIO.readAlgebraFile(\"resources/algebras/lat2.ua\")\nid1 = Operations.makeIntOperation(OperationSymbol(\"id\", 1), 2, [0, 1])\nplus = OperationSymbol(\"+\", 2)\nbp2 = BigProductAlgebra(c2, 2)\nbp3 = BigProductAlgebra(c3, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\ng01 = IntArray([0, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\ncloser = Closer(bp2, [g00, g11], True)\ncloser.setSuppressOutput(True)\nprod = ProductAlgebra(\"C2xC2\", [c2, c2])\npwr = PowerAlgebra(\"C2^2\", c2, 2)\ns0 = Subalgebra(\"S0\", c2, [0])\nh = Homomorphism(c2, c2, {0: 0, 1: 1})\nafms = AlgebraFromMinimalSets(\"fromC2\", c2)\nawgv = AlgebraWithGeneratingVector(c2, [0, 1])\nmp = MatrixPowerAlgebra(\"mp\", c2, 1)\npol = PolinLikeAlgebra(\"pol\", c2, c2, None, 0, 0)\ntry:\n    from java.util import HashSet\n    _univ = HashSet()\n    _univ.add(0)\n    _univ.add(1)\nexcept ImportError:\n    _univ = [0, 1]\nga = GeneralAlgebra(\"G\", _univ, [id1])\nutm = UnaryTermsMonoid(c2)\nf1 = FreeAlgebra(c2, 1)\nct = CloserTiming(bp2, None)\nbasic = BasicAlgebra(\"B\", 2, [id1])\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ndef _sorted_ias(lst):\n    got = _ias(lst)\n    if got is None:\n        return None\n    return sorted(got)\n\ndef _term_str(t):\n    if t is None:\n        return None\n    return str(t).replace(\" \", \"\")\n\ndef _alg_card(alg):\n    if alg is None:\n        return None\n    return int(alg.cardinality())\n\ndef _term_map():\n    try:\n        from java.util.concurrent import ConcurrentHashMap\n        return ConcurrentHashMap()\n    except ImportError:\n        return {}\n\ndef _par_close(alg, gens):\n    cl = Closer(alg, gens, True)\n    setter = getattr(cl, 'setSuppressOutput', None) or getattr(cl, 'set_suppress_output', None)\n    if callable(setter):\n        setter(True)\n    tm = _term_map()\n    orig = cl.getTermMap()\n    if orig is not None:\n        try:\n            tm.putAll(orig)\n        except Exception:\n            try:\n                for k in orig:\n                    tm[k] = orig[k]\n            except Exception:\n                pass\n    return _sorted_ias(cl.sgCloseParallel(list(cl.getGenerators()), 0, tm))\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    }
+  ]
+}

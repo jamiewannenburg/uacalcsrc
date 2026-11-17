@@ -1,0 +1,56 @@
+{
+  "metadata": {
+    "generated_at": "2026-11-17T10:40:29.932131+00:00",
+    "jar": "uacalc.jar",
+    "package": "org.uacalc.group",
+    "runtime": "jython",
+    "test_cases": 2,
+    "type": "untested_wraps"
+  },
+  "test_cases": [
+    {
+      "args": [],
+      "call": "s2.getName()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "PermutationGroup constructor name",
+      "expected_exception": null,
+      "id": "ctor_perm_group_s2",
+      "kwargs": {},
+      "method": "PermutationGroup.PermutationGroup",
+      "notes": "",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "S2",
+        "string_repr": "S2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.group import PermutationGroup\nfrom org.uacalc.util import IntArray\n\ndef _ia(vals):\n    return IntArray([int(x) for x in list(vals)])\n\nswap2 = _ia([1, 0])\nid2 = PermutationGroup.id(2)\ns2 = PermutationGroup('S2', [swap2])\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "PermutationGroup('G', []).getName()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "PermutationGroup empty generators",
+      "expected_exception": null,
+      "id": "ctor_perm_group_empty",
+      "kwargs": {},
+      "method": "PermutationGroup.PermutationGroup",
+      "notes": "",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "G",
+        "string_repr": "G",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.group import PermutationGroup\nfrom org.uacalc.util import IntArray\n\ndef _ia(vals):\n    return IntArray([int(x) for x in list(vals)])\n\nswap2 = _ia([1, 0])\nid2 = PermutationGroup.id(2)\ns2 = PermutationGroup('S2', [swap2])\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    }
+  ]
+}

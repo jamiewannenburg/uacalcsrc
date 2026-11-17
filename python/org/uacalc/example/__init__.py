@@ -46,6 +46,7 @@ _CLASS_ALIASES = {
         "getPower": "getPower",
         "plusInt": "plusInt",
         "timesInt": "timesInt",
+        "times": "times",
         "inverseInt": "inverseInt",
         "zeroIndex": "zeroIndex",
         "oneIndex": "oneIndex",

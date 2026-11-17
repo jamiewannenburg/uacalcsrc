@@ -1,0 +1,34 @@
+{
+  "metadata": {
+    "generated_at": "2026-11-17T10:41:32.574209+00:00",
+    "jar": "uacalc.jar",
+    "package": "org.uacalc.parallel",
+    "runtime": "jython",
+    "test_cases": 1,
+    "type": "untested_wraps"
+  },
+  "test_cases": [
+    {
+      "args": [],
+      "call": "_cls(sc)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "SingleClose constructor class name",
+      "expected_exception": null,
+      "id": "ctor_single_close",
+      "kwargs": {},
+      "method": "SingleClose.SingleClose",
+      "notes": "",
+      "result": {
+        "return_type": "str",
+        "return_value": "SingleClose",
+        "string_repr": "SingleClose",
+        "success": true
+      },
+      "setup": "\nimport sys\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import BigProductAlgebra\nfrom org.uacalc.alg.parallel import SingleClose\nfrom org.uacalc.util import IntArray\nfrom org.uacalc.terms import VariableImp\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nop = list(c2.operations())[0]\ng1 = IntArray([1])\nif sys.platform.startswith('java'):\n    from java.util.concurrent import ConcurrentHashMap\n    from java.util.concurrent.atomic import AtomicInteger\n    mmap = ConcurrentHashMap()\n    mmap.put(g1, VariableImp('x0'))\n    sc = SingleClose([g1], mmap, op, 0, 0, AtomicInteger(1))\nelse:\n    sc = SingleClose([g1], None, op, 0, 0, 1)\n\ndef _cls(o):\n    n = type(o).__name__.split('.')[-1]\n    if n.startswith('Py') and len(n) > 2:\n        n = n[2:]\n    return n\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    }
+  ]
+}

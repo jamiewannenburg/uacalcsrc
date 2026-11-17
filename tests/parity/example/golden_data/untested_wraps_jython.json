@@ -1,0 +1,582 @@
+{
+  "metadata": {
+    "generated_at": "2026-11-17T10:55:40.986088+00:00",
+    "jar": "uacalc.jar",
+    "package": "org.uacalc.example",
+    "runtime": "jython",
+    "test_cases": 24,
+    "type": "untested_wraps"
+  },
+  "test_cases": [
+    {
+      "args": [],
+      "call": "ff21.cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "FiniteField(2,1) constructor",
+      "expected_exception": null,
+      "id": "ctor_finite_field_21",
+      "kwargs": {},
+      "method": "FiniteField.FiniteField",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.example import FiniteField, KKMVWExample, TupleStream, Type1, Kearnes, HasKaryNU, ParallelClose8\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\n# GF(2) = FiniteField(2,1) never calls nextVector, so it constructs even\n# when CPimport-3500.txt is missing. Larger fields NPE in Java.\nff21 = FiniteField(2, 1)\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in ('getArray', 'get_array', 'toArray', 'to_array'):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            try:\n                return [int(x) for x in list(fn())]\n            except TypeError:\n                continue\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "FiniteField(3, 1).cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "FiniteField(3,1) NPEs without Conway polynomials",
+      "expected_exception": null,
+      "id": "ctor_finite_field_31",
+      "kwargs": {},
+      "method": "FiniteField.FiniteField",
+      "notes": "",
+      "result": {
+        "exception": {
+          "message": "java.lang.NullPointerException: Cannot load from int array because the return value of \"org.uacalc.example.FiniteField.getPolynomial()\" is null",
+          "type": "NullPointerException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.example import FiniteField, KKMVWExample, TupleStream, Type1, Kearnes, HasKaryNU, ParallelClose8\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\n# GF(2) = FiniteField(2,1) never calls nextVector, so it constructs even\n# when CPimport-3500.txt is missing. Larger fields NPE in Java.\nff21 = FiniteField(2, 1)\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in ('getArray', 'get_array', 'toArray', 'to_array'):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            try:\n                return [int(x) for x in list(fn())]\n            except TypeError:\n                continue\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": "Java FiniteField.conwayPolynomial loads CPimport-3500.txt from the classpath; the UACalc jar does not ship that resource, so Java returns null."
+    },
+    {
+      "args": [],
+      "call": "kkm is not None",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "KKMVWExample(2) constructor",
+      "expected_exception": null,
+      "id": "ctor_kkm",
+      "kwargs": {},
+      "method": "KKMVWExample.KKMVWExample",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.example import FiniteField, KKMVWExample, TupleStream, Type1, Kearnes, HasKaryNU, ParallelClose8\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\n# GF(2) = FiniteField(2,1) never calls nextVector, so it constructs even\n# when CPimport-3500.txt is missing. Larger fields NPE in Java.\nff21 = FiniteField(2, 1)\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in ('getArray', 'get_array', 'toArray', 'to_array'):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            try:\n                return [int(x) for x in list(fn())]\n            except TypeError:\n                continue\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "ts is not None",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "TupleStream constructor",
+      "expected_exception": null,
+      "id": "ctor_tuple_stream",
+      "kwargs": {},
+      "method": "TupleStream.TupleStream",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.example import FiniteField, KKMVWExample, TupleStream, Type1, Kearnes, HasKaryNU, ParallelClose8\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\n# GF(2) = FiniteField(2,1) never calls nextVector, so it constructs even\n# when CPimport-3500.txt is missing. Larger fields NPE in Java.\nff21 = FiniteField(2, 1)\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in ('getArray', 'get_array', 'toArray', 'to_array'):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            try:\n                return [int(x) for x in list(fn())]\n            except TypeError:\n                continue\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "list(ff21.getPolynomial() or [])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Java getPolynomial is null without classpath Conway data",
+      "expected_exception": null,
+      "id": "ff_get_polynomial_21",
+      "kwargs": {},
+      "method": "FiniteField.getPolynomial",
+      "notes": "Java List toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [],
+        "string_repr": "[]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.example import FiniteField, KKMVWExample, TupleStream, Type1, Kearnes, HasKaryNU, ParallelClose8\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\n# GF(2) = FiniteField(2,1) never calls nextVector, so it constructs even\n# when CPimport-3500.txt is missing. Larger fields NPE in Java.\nff21 = FiniteField(2, 1)\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in ('getArray', 'get_array', 'toArray', 'to_array'):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            try:\n                return [int(x) for x in list(fn())]\n            except TypeError:\n                continue\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": "Java FiniteField.conwayPolynomial loads CPimport-3500.txt from the classpath; the UACalc jar does not ship that resource, so Java returns null."
+    },
+    {
+      "args": [],
+      "call": "_ia(ff21.plus(ff21.getElement(0), ff21.getElement(1)))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "GF(2) plus(0,1)",
+      "expected_exception": null,
+      "id": "ff_plus_01",
+      "kwargs": {},
+      "method": "FiniteField.plus",
+      "notes": "Java List toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          1
+        ],
+        "string_repr": "[1]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.example import FiniteField, KKMVWExample, TupleStream, Type1, Kearnes, HasKaryNU, ParallelClose8\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\n# GF(2) = FiniteField(2,1) never calls nextVector, so it constructs even\n# when CPimport-3500.txt is missing. Larger fields NPE in Java.\nff21 = FiniteField(2, 1)\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in ('getArray', 'get_array', 'toArray', 'to_array'):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            try:\n                return [int(x) for x in list(fn())]\n            except TypeError:\n                continue\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_ia(ff21.plus(ff21.getElement(1), ff21.getElement(1)))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "GF(2) plus(1,1)",
+      "expected_exception": null,
+      "id": "ff_plus_11",
+      "kwargs": {},
+      "method": "FiniteField.plus",
+      "notes": "Java List toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          0
+        ],
+        "string_repr": "[0]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.example import FiniteField, KKMVWExample, TupleStream, Type1, Kearnes, HasKaryNU, ParallelClose8\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\n# GF(2) = FiniteField(2,1) never calls nextVector, so it constructs even\n# when CPimport-3500.txt is missing. Larger fields NPE in Java.\nff21 = FiniteField(2, 1)\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in ('getArray', 'get_array', 'toArray', 'to_array'):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            try:\n                return [int(x) for x in list(fn())]\n            except TypeError:\n                continue\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_ia(ff21.times(ff21.getElement(1), ff21.getElement(1)))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "GF(2) times(1,1)",
+      "expected_exception": null,
+      "id": "ff_times_11",
+      "kwargs": {},
+      "method": "FiniteField.times",
+      "notes": "Java List toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          1
+        ],
+        "string_repr": "[1]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.example import FiniteField, KKMVWExample, TupleStream, Type1, Kearnes, HasKaryNU, ParallelClose8\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\n# GF(2) = FiniteField(2,1) never calls nextVector, so it constructs even\n# when CPimport-3500.txt is missing. Larger fields NPE in Java.\nff21 = FiniteField(2, 1)\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in ('getArray', 'get_array', 'toArray', 'to_array'):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            try:\n                return [int(x) for x in list(fn())]\n            except TypeError:\n                continue\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_ia(ff21.times(ff21.getElement(0), ff21.getElement(1)))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "GF(2) times(0,1)",
+      "expected_exception": null,
+      "id": "ff_times_01",
+      "kwargs": {},
+      "method": "FiniteField.times",
+      "notes": "Java List toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          0
+        ],
+        "string_repr": "[0]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.example import FiniteField, KKMVWExample, TupleStream, Type1, Kearnes, HasKaryNU, ParallelClose8\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\n# GF(2) = FiniteField(2,1) never calls nextVector, so it constructs even\n# when CPimport-3500.txt is missing. Larger fields NPE in Java.\nff21 = FiniteField(2, 1)\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in ('getArray', 'get_array', 'toArray', 'to_array'):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            try:\n                return [int(x) for x in list(fn())]\n            except TypeError:\n                continue\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "ParallelClose8(None, [], None)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "ParallelClose8 constructor",
+      "expected_exception": null,
+      "id": "ctor_parallel_close8",
+      "kwargs": {},
+      "method": "ParallelClose8.ParallelClose8",
+      "notes": "",
+      "result": {
+        "return_type": "ParallelClose8",
+        "return_value": {
+          "__repr__": "org.uacalc.example.ParallelClose8@4b76aa5a",
+          "__type__": "ParallelClose8",
+          "string": "org.uacalc.example.ParallelClose8@4b76aa5a"
+        },
+        "string_repr": "org.uacalc.example.ParallelClose8@4b76aa5a",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.example import FiniteField, KKMVWExample, TupleStream, Type1, Kearnes, HasKaryNU, ParallelClose8\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\n# GF(2) = FiniteField(2,1) never calls nextVector, so it constructs even\n# when CPimport-3500.txt is missing. Larger fields NPE in Java.\nff21 = FiniteField(2, 1)\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in ('getArray', 'get_array', 'toArray', 'to_array'):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            try:\n                return [int(x) for x in list(fn())]\n            except TypeError:\n                continue\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": "Incomplete Java 8 stream closer; constructor is not a portable API"
+    },
+    {
+      "args": [],
+      "call": "_ia(ff21.negation(ff21.getElement(1)))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "GF(2) negation(1)",
+      "expected_exception": null,
+      "id": "ff_negation_1",
+      "kwargs": {},
+      "method": "FiniteField.negation",
+      "notes": "Java List toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          1
+        ],
+        "string_repr": "[1]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.example import FiniteField, KKMVWExample, TupleStream, Type1, Kearnes, HasKaryNU, ParallelClose8\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\n# GF(2) = FiniteField(2,1) never calls nextVector, so it constructs even\n# when CPimport-3500.txt is missing. Larger fields NPE in Java.\nff21 = FiniteField(2, 1)\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in ('getArray', 'get_array', 'toArray', 'to_array'):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            try:\n                return [int(x) for x in list(fn())]\n            except TypeError:\n                continue\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_ia(ff21.negation(ff21.getElement(0)))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "GF(2) negation(0)",
+      "expected_exception": null,
+      "id": "ff_negation_0",
+      "kwargs": {},
+      "method": "FiniteField.negation",
+      "notes": "Java List toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          0
+        ],
+        "string_repr": "[0]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.example import FiniteField, KKMVWExample, TupleStream, Type1, Kearnes, HasKaryNU, ParallelClose8\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\n# GF(2) = FiniteField(2,1) never calls nextVector, so it constructs even\n# when CPimport-3500.txt is missing. Larger fields NPE in Java.\nff21 = FiniteField(2, 1)\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in ('getArray', 'get_array', 'toArray', 'to_array'):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            try:\n                return [int(x) for x in list(fn())]\n            except TypeError:\n                continue\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "ff21.negationInt(1)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "GF(2) negationInt(1)",
+      "expected_exception": null,
+      "id": "ff_negation_int_1",
+      "kwargs": {},
+      "method": "FiniteField.negationInt",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 1,
+        "string_repr": "1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.example import FiniteField, KKMVWExample, TupleStream, Type1, Kearnes, HasKaryNU, ParallelClose8\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\n# GF(2) = FiniteField(2,1) never calls nextVector, so it constructs even\n# when CPimport-3500.txt is missing. Larger fields NPE in Java.\nff21 = FiniteField(2, 1)\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in ('getArray', 'get_array', 'toArray', 'to_array'):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            try:\n                return [int(x) for x in list(fn())]\n            except TypeError:\n                continue\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "ff21.negationInt(0)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "GF(2) negationInt(0)",
+      "expected_exception": null,
+      "id": "ff_negation_int_0",
+      "kwargs": {},
+      "method": "FiniteField.negationInt",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 0,
+        "string_repr": "0",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.example import FiniteField, KKMVWExample, TupleStream, Type1, Kearnes, HasKaryNU, ParallelClose8\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\n# GF(2) = FiniteField(2,1) never calls nextVector, so it constructs even\n# when CPimport-3500.txt is missing. Larger fields NPE in Java.\nff21 = FiniteField(2, 1)\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in ('getArray', 'get_array', 'toArray', 'to_array'):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            try:\n                return [int(x) for x in list(fn())]\n            except TypeError:\n                continue\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "str(ff21.algebraType())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "FiniteField algebraType",
+      "expected_exception": null,
+      "id": "ff_algebra_type",
+      "kwargs": {},
+      "method": "FiniteField.algebraType",
+      "notes": "",
+      "result": {
+        "return_type": "str",
+        "return_value": "FINITE_FIELD",
+        "string_repr": "FINITE_FIELD",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.example import FiniteField, KKMVWExample, TupleStream, Type1, Kearnes, HasKaryNU, ParallelClose8\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\n# GF(2) = FiniteField(2,1) never calls nextVector, so it constructs even\n# when CPimport-3500.txt is missing. Larger fields NPE in Java.\nff21 = FiniteField(2, 1)\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in ('getArray', 'get_array', 'toArray', 'to_array'):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            try:\n                return [int(x) for x in list(fn())]\n            except TypeError:\n                continue\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_ia(ff21.getElement(0))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "FiniteField getElement(0)",
+      "expected_exception": null,
+      "id": "ff_get_element_0",
+      "kwargs": {},
+      "method": "FiniteField.getElement",
+      "notes": "Java List toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          0
+        ],
+        "string_repr": "[0]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.example import FiniteField, KKMVWExample, TupleStream, Type1, Kearnes, HasKaryNU, ParallelClose8\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\n# GF(2) = FiniteField(2,1) never calls nextVector, so it constructs even\n# when CPimport-3500.txt is missing. Larger fields NPE in Java.\nff21 = FiniteField(2, 1)\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in ('getArray', 'get_array', 'toArray', 'to_array'):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            try:\n                return [int(x) for x in list(fn())]\n            except TypeError:\n                continue\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_ia(ff21.getElement(1))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "FiniteField getElement(1)",
+      "expected_exception": null,
+      "id": "ff_get_element_1",
+      "kwargs": {},
+      "method": "FiniteField.getElement",
+      "notes": "Java List toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          1
+        ],
+        "string_repr": "[1]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.example import FiniteField, KKMVWExample, TupleStream, Type1, Kearnes, HasKaryNU, ParallelClose8\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\n# GF(2) = FiniteField(2,1) never calls nextVector, so it constructs even\n# when CPimport-3500.txt is missing. Larger fields NPE in Java.\nff21 = FiniteField(2, 1)\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in ('getArray', 'get_array', 'toArray', 'to_array'):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            try:\n                return [int(x) for x in list(fn())]\n            except TypeError:\n                continue\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "ff21.elementIndex(ff21.getElement(0))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "elementIndex of zero",
+      "expected_exception": null,
+      "id": "ff_element_index_0",
+      "kwargs": {},
+      "method": "FiniteField.elementIndex",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 0,
+        "string_repr": "0",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.example import FiniteField, KKMVWExample, TupleStream, Type1, Kearnes, HasKaryNU, ParallelClose8\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\n# GF(2) = FiniteField(2,1) never calls nextVector, so it constructs even\n# when CPimport-3500.txt is missing. Larger fields NPE in Java.\nff21 = FiniteField(2, 1)\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in ('getArray', 'get_array', 'toArray', 'to_array'):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            try:\n                return [int(x) for x in list(fn())]\n            except TypeError:\n                continue\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "ff21.elementIndex(ff21.getElement(1))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "elementIndex of one",
+      "expected_exception": null,
+      "id": "ff_element_index_1",
+      "kwargs": {},
+      "method": "FiniteField.elementIndex",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 1,
+        "string_repr": "1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.example import FiniteField, KKMVWExample, TupleStream, Type1, Kearnes, HasKaryNU, ParallelClose8\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\n# GF(2) = FiniteField(2,1) never calls nextVector, so it constructs even\n# when CPimport-3500.txt is missing. Larger fields NPE in Java.\nff21 = FiniteField(2, 1)\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in ('getArray', 'get_array', 'toArray', 'to_array'):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            try:\n                return [int(x) for x in list(fn())]\n            except TypeError:\n                continue\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "len(list(Kearnes.makeKearnesOps(3)))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "makeKearnesOps(3) length",
+      "expected_exception": null,
+      "id": "kearnes_make_ops_len",
+      "kwargs": {},
+      "method": "Kearnes.makeKearnesOps",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 4,
+        "string_repr": "4",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.example import FiniteField, KKMVWExample, TupleStream, Type1, Kearnes, HasKaryNU, ParallelClose8\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\n# GF(2) = FiniteField(2,1) never calls nextVector, so it constructs even\n# when CPimport-3500.txt is missing. Larger fields NPE in Java.\nff21 = FiniteField(2, 1)\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in ('getArray', 'get_array', 'toArray', 'to_array'):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            try:\n                return [int(x) for x in list(fn())]\n            except TypeError:\n                continue\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "list(Kearnes.makeKearnesOps(3))[0].intValueAt([1, 2])",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "makeKearnesOps(3) first op at (1,2)",
+      "expected_exception": null,
+      "id": "kearnes_make_ops_join",
+      "kwargs": {},
+      "method": "Kearnes.makeKearnesOps",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.example import FiniteField, KKMVWExample, TupleStream, Type1, Kearnes, HasKaryNU, ParallelClose8\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\n# GF(2) = FiniteField(2,1) never calls nextVector, so it constructs even\n# when CPimport-3500.txt is missing. Larger fields NPE in Java.\nff21 = FiniteField(2, 1)\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in ('getArray', 'get_array', 'toArray', 'to_array'):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            try:\n                return [int(x) for x in list(fn())]\n            except TypeError:\n                continue\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "[_ia(a) for a in list(Type1.subtraces(c2, list(c2.con().joinIrreducibles())[0]))]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Type1.subtraces of the unique JI of Con(C2)",
+      "expected_exception": null,
+      "id": "type1_subtraces_c2",
+      "kwargs": {},
+      "method": "Type1.subtraces",
+      "notes": "Java List toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            0,
+            1
+          ],
+          [
+            0,
+            0
+          ],
+          [
+            1,
+            1
+          ],
+          [
+            1,
+            0
+          ]
+        ],
+        "string_repr": "[[0, 1], [0, 0], [1, 1], [1, 0]]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.example import FiniteField, KKMVWExample, TupleStream, Type1, Kearnes, HasKaryNU, ParallelClose8\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\n# GF(2) = FiniteField(2,1) never calls nextVector, so it constructs even\n# when CPimport-3500.txt is missing. Larger fields NPE in Java.\nff21 = FiniteField(2, 1)\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in ('getArray', 'get_array', 'toArray', 'to_array'):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            try:\n                return [int(x) for x in list(fn())]\n            except TypeError:\n                continue\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_alg_info(Type1.reductAlg(c2))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Type1.reductAlg of C2",
+      "expected_exception": null,
+      "id": "type1_reduct_c2",
+      "kwargs": {},
+      "method": "Type1.reductAlg",
+      "notes": "",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          "reduct",
+          8,
+          2
+        ],
+        "string_repr": "['reduct', 8, 2]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.example import FiniteField, KKMVWExample, TupleStream, Type1, Kearnes, HasKaryNU, ParallelClose8\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\n# GF(2) = FiniteField(2,1) never calls nextVector, so it constructs even\n# when CPimport-3500.txt is missing. Larger fields NPE in Java.\nff21 = FiniteField(2, 1)\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in ('getArray', 'get_array', 'toArray', 'to_array'):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            try:\n                return [int(x) for x in list(fn())]\n            except TypeError:\n                continue\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": "Type1.reductAlg builds a size-8 matrix-power reduct and looks up terms by IntArray identity"
+    },
+    {
+      "args": [],
+      "call": "HasKaryNU.hasNUHorowitz(c2, 2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "hasNUHorowitz on C2 arity 2",
+      "expected_exception": null,
+      "id": "haskary_nu_c2",
+      "kwargs": {},
+      "method": "HasKaryNU.hasNUHorowitz",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 0,
+        "string_repr": "0",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.example import FiniteField, KKMVWExample, TupleStream, Type1, Kearnes, HasKaryNU, ParallelClose8\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile('resources/algebras/cyclic2.ua')\nlat2 = AlgebraIO.readAlgebraFile('resources/algebras/lat2.ua')\nkkm = KKMVWExample(2)\nts = TupleStream([10, 20, 30])\n# GF(2) = FiniteField(2,1) never calls nextVector, so it constructs even\n# when CPimport-3500.txt is missing. Larger fields NPE in Java.\nff21 = FiniteField(2, 1)\n\ndef _ia(obj):\n    if obj is None:\n        return None\n    for attr in ('getArray', 'get_array', 'toArray', 'to_array'):\n        fn = getattr(obj, attr, None)\n        if callable(fn):\n            try:\n                return [int(x) for x in list(fn())]\n            except TypeError:\n                continue\n    try:\n        return [int(x) for x in list(obj)]\n    except TypeError:\n        return str(obj)\n\ndef _alg_info(alg):\n    name = alg.getName() if hasattr(alg, 'getName') else alg.name()\n    ops = alg.operations()\n    nops = 0 if ops is None else len(list(ops))\n    return [str(name), int(alg.cardinality()), nops]\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": "HasKaryNU.hasNUHorowitz uses ProgressReport and a large BigProduct close; GUI/IO-environment-bound"
+    }
+  ]
+}

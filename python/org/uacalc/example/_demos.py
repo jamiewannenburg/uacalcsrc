@@ -489,6 +489,11 @@ class FiniteField(object):
         b = list(arg1.toArray() if hasattr(arg1, "toArray") else arg1)
         return IntArray([(int(a[i]) + int(b[i])) % self._prime for i in range(self._power)])
 
+    def times(self, arg0, arg1):
+        i0 = self.elementIndex(arg0)
+        i1 = self.elementIndex(arg1)
+        return self.getElement(self.timesInt(i0, i1))
+
     def negation(self, arg):
         a = list(arg.toArray() if hasattr(arg, "toArray") else arg)
         out = []
