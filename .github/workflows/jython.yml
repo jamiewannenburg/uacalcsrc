@@ -141,8 +141,8 @@ jobs:
           python jython_comparison/scripts/generate_parity_inventory.py --verify
           python tools/jython_contracts_cli.py parity-coverage
 
-      # - name: Jython vs CPython (default script)
-      #   run: python jython_comparison/run_comparison.py -q
+      - name: Jython vs CPython (contract scripts)
+        run: python jython_comparison/run_comparison.py -q
 
   jython-summary:
     name: Jython workflow summary

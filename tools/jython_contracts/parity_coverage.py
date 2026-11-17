@@ -213,13 +213,24 @@ class PackageCoverage:
 
 
 def scan_java_public_methods(java_file: Path) -> Set[str]:
-    """Scan a Java file for public library-surface methods and constructors."""
+    """Scan a Java file for public library-surface methods and constructors.
+
+    Returns qualified keys ``ClassName.method`` (constructors use ``ClassName.ClassName``).
+    Overloads are collapsed by method name within each type.
+    """
     if not java_file.exists():
         return set()
-    names: Set[str] = set()
+    qualified: Set[str] = set()
     for typ in scan_java_file(java_file).types:
-        names.update(typ.public_surface)
-    return names
+        cls = typ.simple_name
+        for member in typ.members:
+            if member.exclusion is not None:
+                continue
+            if member.kind == "constructor":
+                qualified.add(f"{cls}.{cls}")
+            elif member.kind == "method":
+                qualified.add(f"{cls}.{member.name}")
+    return qualified
 
 
 def scan_java_exclusions(java_file: Path) -> Dict[str, Set[str]]:
@@ -247,81 +258,143 @@ def _is_exported_name(name: str) -> bool:
     return bool(name) and not name.startswith("_")
 
 
-def scan_python_wrapper_methods(python_file: Path) -> Set[str]:
-    """Scan a Python wrapper file for exported methods and class names.
+def _lib_to_java_class(name: str) -> Optional[str]:
+    if name.startswith("_Lib") and len(name) > 4:
+        return name[4:]
+    if name and name[0].isupper() and not name.startswith("_"):
+        return name
+    return None
 
-    Returns Java-style (camelCase) names that are wrapped, including
-    constructor names (ClassDef / imported class names).
+
+def _resolve_type_expr(node: ast.expr) -> Optional[str]:
+    if isinstance(node, ast.Name):
+        return _lib_to_java_class(node.id)
+    if isinstance(node, ast.Attribute):
+        return _lib_to_java_class(node.attr)
+    return None
+
+
+def _add_qualified(qualified: Set[str], class_name: str, method_name: str) -> None:
+    if not class_name or not method_name or not _is_exported_name(method_name):
+        return
+    qualified.add(f"{class_name}.{method_name}")
+    camel = _snake_to_camel(method_name)
+    if camel != method_name:
+        qualified.add(f"{class_name}.{camel}")
+
+
+def _record_class_aliases(assign: ast.Assign, qualified: Set[str]) -> None:
+    if not any(
+        isinstance(t, ast.Name) and t.id == "_CLASS_ALIASES" for t in assign.targets
+    ):
+        return
+    inner = assign.value
+    if not isinstance(inner, ast.Dict):
+        return
+    for cls_key, method_map in zip(inner.keys, inner.values):
+        if not isinstance(cls_key, ast.Constant) or not isinstance(cls_key.value, str):
+            continue
+        cls_name = cls_key.value
+        if isinstance(method_map, ast.Dict):
+            for jk in method_map.keys:
+                if isinstance(jk, ast.Constant) and isinstance(jk.value, str):
+                    _add_qualified(qualified, cls_name, jk.value)
+
+
+def _record_bind_call(call: ast.Call, qualified: Set[str]) -> None:
+    func = call.func
+    fname = ""
+    if isinstance(func, ast.Name):
+        fname = func.id
+    elif isinstance(func, ast.Attribute):
+        fname = func.attr
+    if fname not in {"_bind", "setattr"} or len(call.args) < 2:
+        return
+    cls = _resolve_type_expr(call.args[0])
+    arg = call.args[1]
+    if cls and isinstance(arg, ast.Constant) and isinstance(arg.value, str):
+        _add_qualified(qualified, cls, arg.value)
+
+
+def _record_class_surface(class_node: ast.ClassDef, qualified: Set[str]) -> None:
+    cls = class_node.name
+    if cls and cls[0].isupper():
+        _add_qualified(qualified, cls, cls)
+    for item in class_node.body:
+        if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            if item.name == "__init__":
+                _add_qualified(qualified, cls, cls)
+            elif _is_exported_name(item.name):
+                _add_qualified(qualified, cls, item.name)
+        elif isinstance(item, ast.ClassDef):
+            _record_class_surface(item, qualified)
+
+
+def scan_python_wrapper_methods(python_file: Path) -> Set[str]:
+    """Scan a Python wrapper file for per-class wrapped surface.
+
+    Returns ``ClassName.method`` keys (constructors ``ClassName.ClassName``).
     """
     if not python_file.exists():
         return set()
 
-    raw: Set[str] = set()
+    qualified: Set[str] = set()
     content = python_file.read_text(encoding="utf-8", errors="ignore")
 
     try:
         tree = ast.parse(content)
         for node in ast.walk(tree):
-            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
-                raw.add(node.name)
+            if isinstance(node, ast.ClassDef):
+                _record_class_surface(node, qualified)
             elif isinstance(node, ast.ImportFrom):
                 for alias in node.names:
-                    raw.add(alias.asname or alias.name)
+                    name = alias.asname or alias.name
+                    if name and name[0].isupper():
+                        _add_qualified(qualified, name, name)
             elif isinstance(node, ast.Assign):
+                _record_class_aliases(node, qualified)
                 for target in node.targets:
-                    if isinstance(target, ast.Name):
-                        raw.add(target.id)
-            elif isinstance(node, ast.Dict):
-                # Runtime patches often live in dicts: _CL_PATCHES["centralityFailure"]
-                # and _CLASS_ALIASES["BasicLattice"] / ["getAlgebra"].
-                for key in node.keys:
-                    if isinstance(key, ast.Constant) and isinstance(key.value, str):
-                        raw.add(key.value)
+                    if isinstance(target, ast.Name) and target.id[0].isupper():
+                        _add_qualified(qualified, target.id, target.id)
             elif isinstance(node, ast.Call):
-                func = node.func
-                fname = ""
-                if isinstance(func, ast.Name):
-                    fname = func.id
-                elif isinstance(func, ast.Attribute):
-                    fname = func.attr
-                if fname in {"_bind", "setattr"} and len(node.args) >= 2:
-                    arg = node.args[1]
-                    if isinstance(arg, ast.Constant) and isinstance(arg.value, str):
-                        raw.add(arg.value)
+                _record_bind_call(node, qualified)
     except SyntaxError:
         pass
 
-    methods = set()
-    for name in raw:
-        if not _is_exported_name(name):
-            continue
-        methods.add(name)
-        methods.add(_snake_to_camel(name))
-    return methods
+    return qualified
+
+
+def _java_method_wrapped(java_q: str, python_qualified: Set[str]) -> bool:
+    if java_q in python_qualified:
+        return True
+    if "." not in java_q:
+        return False
+    cls, meth = java_q.split(".", 1)
+    return f"{cls}.{_snake_to_camel(meth)}" in python_qualified
 
 
 def scan_behavioral_test_methods(parity_dir: Path) -> Set[str]:
     """Scan parity test directory for behavioral test methods.
-    
-    Returns set of method names covered by behavioral tests.
+
+    Returns qualified ``ClassName.method`` keys where available.
     """
-    methods = set()
-    
-    # Check for golden data files
+    methods: Set[str] = set()
+
+    def _add_tested(method_full: str) -> None:
+        method_full = method_full.strip()
+        if method_full:
+            methods.add(method_full)
+
     golden_data_dir = parity_dir / "golden_data"
     if golden_data_dir.exists():
         for golden_file in golden_data_dir.glob("*_jython.json"):
             try:
-                data = json.loads(golden_file.read_text(encoding='utf-8'))
-                for test_case in data.get('test_cases', []):
-                    method_full = test_case.get('method', '')
-                    # Extract method name from "ClassName.methodName"
-                    if '.' in method_full:
-                        method_name = method_full.split('.')[-1]
-                        methods.add(method_name)
+                data = json.loads(golden_file.read_text(encoding="utf-8"))
+                for test_case in data.get("test_cases", []):
+                    _add_tested(test_case.get("method", ""))
             except (json.JSONDecodeError, OSError):
                 pass
-    
+
     cases_dir = parity_dir / "test_cases"
     if cases_dir.exists():
         for cases_file in cases_dir.glob("*_cases.py"):
@@ -330,32 +403,8 @@ def scan_behavioral_test_methods(parity_dir: Path) -> Set[str]:
             except OSError:
                 continue
             for match in re.finditer(r'method\s*=\s*["\']([^"\']+)["\']', content):
-                method_full = match.group(1)
-                methods.add(method_full.split(".")[-1] if "." in method_full else method_full)
+                _add_tested(match.group(1))
 
-    # Also check test files with @pytest.mark.behavioral
-    for test_file in parity_dir.glob("test_*_behavioral_parity.py"):
-        try:
-            content = test_file.read_text(encoding='utf-8', errors='ignore')
-            tree = ast.parse(content)
-            
-            for node in ast.walk(tree):
-                # Look for test methods with behavioral marker
-                if isinstance(node, ast.FunctionDef) and node.name.startswith('test_'):
-                    # Check if behavioral marker is present
-                    has_behavioral = any(
-                        isinstance(dec, ast.Name) and 'behavioral' in dec.id.lower()
-                        or isinstance(dec, ast.Attribute) and 'behavioral' in dec.attr.lower()
-                        for dec in node.decorator_list
-                    )
-                    if has_behavioral:
-                        # Extract method name from test name
-                        # e.g., test_read_cyclic2 -> readCyclic2 or read_cyclic2
-                        method_part = node.name.replace('test_', '', 1)
-                        methods.add(method_part)
-        except (SyntaxError, OSError):
-            pass
-    
     return methods
 
 
@@ -416,12 +465,10 @@ def build_parity_coverage(
             )
             for python_file in py_iter:
                 python_names.update(scan_python_wrapper_methods(python_file))
-            # Wrapped := Java public methods that exist on the Python shim
-            # (camelCase Java name or snake_case equivalent).
             coverage.wrapped_methods = {
-                java_name
-                for java_name in coverage.java_methods
-                if java_name in python_names or _snake_to_camel(java_name) in python_names
+                java_q
+                for java_q in coverage.java_methods
+                if _java_method_wrapped(java_q, python_names)
             }
         
         # Scan behavioral tests
@@ -446,7 +493,8 @@ def format_parity_coverage(
     *,
     show_unwrapped: bool = False,
     show_untested: bool = False,
-    verbose: bool = False
+    verbose: bool = False,
+    list_limit: Optional[int] = None,
 ) -> str:
     """Format parity coverage report as text."""
     lines = []
@@ -486,19 +534,23 @@ def format_parity_coverage(
         
         if verbose or show_unwrapped:
             if coverage.unwrapped_methods:
-                lines.append(f"  Unwrapped methods ({len(coverage.unwrapped_methods)}):")
-                for method in sorted(coverage.unwrapped_methods)[:20]:  # Limit output
+                ordered = sorted(coverage.unwrapped_methods)
+                lines.append(f"  Unwrapped methods ({len(ordered)}):")
+                shown = ordered if list_limit is None else ordered[:list_limit]
+                for method in shown:
                     lines.append(f"    - {method}")
-                if len(coverage.unwrapped_methods) > 20:
-                    lines.append(f"    ... and {len(coverage.unwrapped_methods) - 20} more")
+                if list_limit is not None and len(ordered) > list_limit:
+                    lines.append(f"    ... and {len(ordered) - list_limit} more")
         
         if verbose or show_untested:
             if coverage.untested_methods:
-                lines.append(f"  Wrapped but untested methods ({len(coverage.untested_methods)}):")
-                for method in sorted(coverage.untested_methods)[:20]:
+                ordered = sorted(coverage.untested_methods)
+                lines.append(f"  Wrapped but untested methods ({len(ordered)}):")
+                shown = ordered if list_limit is None else ordered[:list_limit]
+                for method in shown:
                     lines.append(f"    - {method}")
-                if len(coverage.untested_methods) > 20:
-                    lines.append(f"    ... and {len(coverage.untested_methods) - 20} more")
+                if list_limit is not None and len(ordered) > list_limit:
+                    lines.append(f"    ... and {len(ordered) - list_limit} more")
         if coverage.excluded_counts:
             lines.append(
                 f"  Excluded by category ({coverage.excluded_occurrence_count} members):"

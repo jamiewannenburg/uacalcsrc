@@ -177,11 +177,13 @@ def cmd_parity_coverage(args: argparse.Namespace) -> int:
     """Show parity test coverage (wrapper + behavioral test coverage)."""
     packages = args.packages if args.packages else None
     report = build_parity_coverage(packages=packages)
+    limit = getattr(args, "limit", None)
     print(format_parity_coverage(
         report,
         show_unwrapped=args.unwrapped,
         show_untested=args.untested,
-        verbose=args.verbose or getattr(args, "full", False)
+        verbose=args.verbose or getattr(args, "full", False),
+        list_limit=limit,
     ), end="")
     return 0
 
@@ -306,6 +308,13 @@ def build_parser() -> argparse.ArgumentParser:
         "--full",
         action="store_true",
         help="Same as --verbose (unwrapped + untested + exclusions)",
+    )
+    p_pcov.add_argument(
+        "--limit",
+        type=int,
+        default=None,
+        metavar="N",
+        help="Cap unwrapped/untested listing to N items (default: no cap)",
     )
     p_pcov.set_defaults(func=cmd_parity_coverage)
 
