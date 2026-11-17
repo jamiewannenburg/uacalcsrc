@@ -93,13 +93,12 @@ Malcev is wrapped; remaining gaps are listed under org.uacalc.alg.Malcev.
 - **Java**: does not close/flush the `PrintWriter`, so a subsequent file read is empty
   until `writeAlgebraXML()` (which closes). Java has no `flush()` method.
 - **Python**: org wrapper `writeAlgebra` / `writeBasicAlgebra` leave the destination
-  file unflushed (empty). `AlgebraWriter.flush()` is a no-op so scripts can call it;
-  Jython still raises `AttributeError` (Java has no `flush()`). `uacalc_lib` still
-  writes and flushes; only the org wrapper changed.
-- **Status**: Fixed in the shim (no-op flush); comparison allowlists `io_surface.py`
+  file unflushed (empty). The shim does not expose `flush()` (callers that invoke it
+  on Jython fail with `AttributeError`, matching Java). `uacalc_lib` still writes and
+  flushes; only the org wrapper changed.
+- **Status**: Fixed in the shim
 - **Tests**: `writer_write_algebra`, `writer_write_basic_algebra` pass
-- **Owner vs shim**: Shim — no-op `flush` / unflushed `writeAlgebra` in
-  `python/org/uacalc/io` only.
+- **Owner vs shim**: Shim — unflushed `writeAlgebra` in `python/org/uacalc/io` only.
 
 ### Mace4Reader missing file
 

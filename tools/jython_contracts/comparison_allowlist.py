@@ -18,11 +18,6 @@ KNOWN_OUTPUT_DIFFERENCES: Dict[str, str] = {
     "jython_comparison/scripts/matrix_power_algebra_smoke.py": (
         "Rust gap: MatrixPowerAlgebra getElement(0) NPE on shim; op_plus False vs True on Java."
     ),
-    "jython_comparison/scripts/io_surface.py": (
-        "Known Java bug / wrapper gap: AlgebraWriter has no flush() on Java "
-        "(io_surface calls flush in writerXML probe); shim exposes no-op flush "
-        "so writerXML stdout differs from Jython AttributeError."
-    ),
 }
 
 
