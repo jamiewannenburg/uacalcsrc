@@ -3,6 +3,19 @@
 Measures:
 1. Wrapper coverage: which Java public methods have Python wrappers
 2. Test coverage: which wrapped methods have exact behavioral parity tests
+
+Inheritance rules (see ``build_java_type_index`` / ``build_python_type_index``):
+- Java: a method on a per-class surface includes members declared on that type
+  plus public members inherited from direct supertypes (extends/implements), when
+  the subclass does not declare the same name.
+- Python wrapping: ``Class.method`` counts as wrapped if the method appears on the
+  class or any entry in the wrapper module's AST MRO for that class (bases), with
+  camelCase/snake_case aliasing.
+- Java supertype bridge: if type *C* has Java supertype *S* and Python wraps
+  ``S.method``, then ``C.method`` counts as wrapped (interface implementation or
+  parent patch), including when *C* redeclares the method in Java.
+- Tests: ``S.method`` counts toward ``C.method`` only when *C* does **not** declare
+  ``method`` in Java (pure inheritance — same inherited API).
 """
 
 from __future__ import annotations
@@ -11,8 +24,9 @@ import ast
 import json
 import re
 from dataclasses import dataclass, field
+from functools import lru_cache
 from pathlib import Path
-from typing import Dict, List, Optional, Set
+from typing import Dict, FrozenSet, List, Optional, Set, Tuple
 
 from . import PROJECT_ROOT
 from .java_surface import (
@@ -233,6 +247,201 @@ def scan_java_public_methods(java_file: Path) -> Set[str]:
     return qualified
 
 
+_JAVA_TYPE_HEADER_RE = re.compile(
+    r"(?:public\s+|protected\s+|private\s+)?"
+    r"(?:(?:abstract|static|final|strictfp)\s+)*"
+    r"(?P<kind>class|interface|enum)\s+(?P<name>\w+)"
+    r"(?:\s+extends\s+(?P<extends>[^<{]+?))?"
+    r"(?:\s+implements\s+(?P<implements>[^<{]+?))?"
+    r"\s*\{",
+    re.MULTILINE,
+)
+
+
+def _parse_java_supertype_names(fragment: Optional[str]) -> List[str]:
+    if not fragment:
+        return []
+    text = re.sub(r"<[^>]*>", "", fragment)
+    text = text.split("{", 1)[0]
+    parts = re.split(r"\s*,\s*|\s+&\s*", text.strip())
+    out: List[str] = []
+    for part in parts:
+        part = part.strip()
+        if not part:
+            continue
+        simple = part.split(".")[-1].strip()
+        if simple and simple not in _SKIP_JAVA_TYPES:
+            out.append(simple)
+    return out
+
+
+_SKIP_JAVA_TYPES = frozenset({"Object", "Enum", "Cloneable", "Serializable", "Comparable"})
+
+
+def scan_java_type_supers(java_file: Path) -> Dict[str, List[str]]:
+    """Map each public type in a file to direct Java supertypes (simple names)."""
+    if not java_file.exists():
+        return {}
+    try:
+        text = java_file.read_text(encoding="utf-8", errors="ignore")
+    except OSError:
+        return {}
+    supers: Dict[str, List[str]] = {}
+    for m in _JAVA_TYPE_HEADER_RE.finditer(text):
+        name = m.group("name")
+        parents: List[str] = []
+        if m.group("extends"):
+            parents.extend(_parse_java_supertype_names(m.group("extends")))
+        if m.group("implements"):
+            parents.extend(_parse_java_supertype_names(m.group("implements")))
+        supers[name] = parents
+    return supers
+
+
+@dataclass(frozen=True)
+class JavaTypeIndex:
+    """Global Java public-type hierarchy and per-type declared method names."""
+
+    supers: Dict[str, Tuple[str, ...]]
+    declared: Dict[str, FrozenSet[str]]
+
+
+def build_java_type_index(java_root: Optional[Path] = None) -> JavaTypeIndex:
+    root = java_root or (PROJECT_ROOT / "org" / "uacalc")
+    supers: Dict[str, Tuple[str, ...]] = {}
+    declared: Dict[str, Set[str]] = {}
+    if not root.exists():
+        return JavaTypeIndex(supers={}, declared={})
+    for java_file in root.rglob("*.java"):
+        for cls, parents in scan_java_type_supers(java_file).items():
+            supers[cls] = tuple(parents)
+        for typ in scan_java_file(java_file).types:
+            if typ.visibility != "public":
+                continue
+            names: Set[str] = set()
+            for member in typ.members:
+                if member.exclusion is not None:
+                    continue
+                if member.kind == "constructor":
+                    names.add(typ.simple_name)
+                elif member.kind == "method":
+                    names.add(member.name)
+            if names:
+                declared.setdefault(typ.simple_name, set()).update(names)
+    return JavaTypeIndex(
+        supers=supers,
+        declared={k: frozenset(v) for k, v in declared.items()},
+    )
+
+
+def _transitive_java_supers(
+    cls: str, supers: Dict[str, Tuple[str, ...]]
+) -> Tuple[str, ...]:
+    seen: Set[str] = set()
+    order: List[str] = []
+
+    def walk(name: str) -> None:
+        for parent in supers.get(name, ()):
+            if parent in seen or parent in _SKIP_JAVA_TYPES:
+                continue
+            seen.add(parent)
+            order.append(parent)
+            walk(parent)
+
+    walk(cls)
+    return tuple(order)
+
+
+def expand_java_methods_with_inheritance(
+    declared_qualified: Set[str],
+    java_index: JavaTypeIndex,
+) -> Set[str]:
+    """Add inherited ``Class.method`` keys for types that do not declare ``method``."""
+    by_class: Dict[str, Set[str]] = {}
+    for q in declared_qualified:
+        if "." not in q:
+            continue
+        cls, meth = q.split(".", 1)
+        by_class.setdefault(cls, set()).add(meth)
+
+    expanded = set(declared_qualified)
+    for cls, meths in by_class.items():
+        for parent in _transitive_java_supers(cls, java_index.supers):
+            for pm in java_index.declared.get(parent, ()):
+                if pm not in meths:
+                    expanded.add(f"{cls}.{pm}")
+    return expanded
+
+
+@dataclass(frozen=True)
+class PythonTypeIndex:
+    """AST-derived Python class bases and per-class direct method names."""
+
+    bases: Dict[str, Tuple[str, ...]]
+    declared: Dict[str, FrozenSet[str]]
+
+
+def _class_bases_from_node(class_node: ast.ClassDef) -> Tuple[str, ...]:
+    bases: List[str] = []
+    for base in class_node.bases:
+        if isinstance(base, ast.Name) and base.id[0].isupper():
+            bases.append(base.id)
+        elif isinstance(base, ast.Attribute) and isinstance(base.attr, str):
+            if base.attr[0].isupper():
+                bases.append(base.attr)
+    return tuple(bases)
+
+
+def build_python_type_index(python_root: Optional[Path] = None) -> PythonTypeIndex:
+    root = python_root or (PROJECT_ROOT / "python" / "org" / "uacalc")
+    bases: Dict[str, Tuple[str, ...]] = {}
+    declared: Dict[str, Set[str]] = {}
+    if not root.exists():
+        return PythonTypeIndex(bases={}, declared={})
+    for py_file in root.rglob("*.py"):
+        try:
+            tree = ast.parse(py_file.read_text(encoding="utf-8", errors="ignore"))
+        except SyntaxError:
+            continue
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.ClassDef):
+                continue
+            name = node.name
+            if not name or not name[0].isupper():
+                continue
+            bases[name] = _class_bases_from_node(node)
+            methods: Set[str] = {name}
+            for item in node.body:
+                if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                    if item.name == "__init__":
+                        methods.add(name)
+                    elif _is_exported_name(item.name):
+                        methods.add(item.name)
+            declared.setdefault(name, set()).update(methods)
+    return PythonTypeIndex(
+        bases=bases,
+        declared={k: frozenset(v) for k, v in declared.items()},
+    )
+
+
+def _transitive_python_bases(
+    cls: str, bases: Dict[str, Tuple[str, ...]]
+) -> Tuple[str, ...]:
+    seen: Set[str] = set()
+    order: List[str] = []
+
+    def walk(name: str) -> None:
+        for parent in bases.get(name, ()):
+            if parent in seen:
+                continue
+            seen.add(parent)
+            order.append(parent)
+            walk(parent)
+
+    walk(cls)
+    return tuple(order)
+
+
 def scan_java_exclusions(java_file: Path) -> Dict[str, Set[str]]:
     if not java_file.exists():
         return {}
@@ -283,10 +492,18 @@ def _add_qualified(qualified: Set[str], class_name: str, method_name: str) -> No
         qualified.add(f"{class_name}.{camel}")
 
 
+def _is_class_aliases_assign_target(target: ast.expr) -> bool:
+    if isinstance(target, ast.Name) and target.id == "_CLASS_ALIASES":
+        return True
+    if isinstance(target, ast.Subscript):
+        sl = target.slice
+        if isinstance(sl, ast.Constant) and sl.value == "_CLASS_ALIASES":
+            return True
+    return False
+
+
 def _record_class_aliases(assign: ast.Assign, qualified: Set[str]) -> None:
-    if not any(
-        isinstance(t, ast.Name) and t.id == "_CLASS_ALIASES" for t in assign.targets
-    ):
+    if not any(_is_class_aliases_assign_target(t) for t in assign.targets):
         return
     inner = assign.value
     if not isinstance(inner, ast.Dict):
@@ -364,13 +581,66 @@ def scan_python_wrapper_methods(python_file: Path) -> Set[str]:
     return qualified
 
 
-def _java_method_wrapped(java_q: str, python_qualified: Set[str]) -> bool:
+def _direct_python_match(java_q: str, python_qualified: Set[str]) -> bool:
     if java_q in python_qualified:
         return True
     if "." not in java_q:
         return False
     cls, meth = java_q.split(".", 1)
-    return f"{cls}.{_snake_to_camel(meth)}" in python_qualified
+    alt = f"{cls}.{_snake_to_camel(meth)}"
+    if alt in python_qualified:
+        return True
+    snake = re.sub(r"(?<!^)(?=[A-Z])", "_", meth).lower()
+    if snake != meth and f"{cls}.{snake}" in python_qualified:
+        return True
+    return False
+
+
+def _java_method_wrapped(
+    java_q: str,
+    python_qualified: Set[str],
+    *,
+    java_index: Optional[JavaTypeIndex] = None,
+    python_index: Optional[PythonTypeIndex] = None,
+) -> bool:
+    """Whether Java ``Class.method`` is considered wrapped in Python."""
+    if _direct_python_match(java_q, python_qualified):
+        return True
+    if "." not in java_q:
+        return False
+    cls, meth = java_q.split(".", 1)
+
+    if python_index is not None:
+        for base in _transitive_python_bases(cls, python_index.bases):
+            if _direct_python_match(f"{base}.{meth}", python_qualified):
+                return True
+
+    if java_index is not None:
+        for parent in _transitive_java_supers(cls, java_index.supers):
+            if _direct_python_match(f"{parent}.{meth}", python_qualified):
+                return True
+
+    return False
+
+
+def _java_method_tested(
+    java_q: str,
+    tested_qualified: Set[str],
+    *,
+    java_index: Optional[JavaTypeIndex] = None,
+) -> bool:
+    """Whether a behavioral golden exists for ``Class.method``, with inheritance."""
+    if java_q in tested_qualified:
+        return True
+    if java_index is None or "." not in java_q:
+        return False
+    cls, meth = java_q.split(".", 1)
+    if meth in java_index.declared.get(cls, ()):
+        return False
+    for parent in _transitive_java_supers(cls, java_index.supers):
+        if f"{parent}.{meth}" in tested_qualified:
+            return True
+    return False
 
 
 def scan_behavioral_test_methods(parity_dir: Path) -> Set[str]:
@@ -408,6 +678,33 @@ def scan_behavioral_test_methods(parity_dir: Path) -> Set[str]:
     return methods
 
 
+def clear_parity_coverage_caches() -> None:
+    """Clear cached Java/Python indexes (for tests that patch ``PROJECT_ROOT``)."""
+    _cached_java_index.cache_clear()
+    _cached_python_index.cache_clear()
+    _cached_global_python_qualified.cache_clear()
+
+
+@lru_cache(maxsize=1)
+def _cached_java_index() -> JavaTypeIndex:
+    return build_java_type_index()
+
+
+@lru_cache(maxsize=1)
+def _cached_python_index() -> PythonTypeIndex:
+    return build_python_type_index()
+
+
+@lru_cache(maxsize=1)
+def _cached_global_python_qualified() -> FrozenSet[str]:
+    root = PROJECT_ROOT / "python" / "org" / "uacalc"
+    qualified: Set[str] = set()
+    if root.exists():
+        for py_file in root.rglob("*.py"):
+            qualified.update(scan_python_wrapper_methods(py_file))
+    return frozenset(qualified)
+
+
 def build_parity_coverage(
     packages: Optional[List[str]] = None
 ) -> ParityCoverageReport:
@@ -418,6 +715,9 @@ def build_parity_coverage(
                  If None, scans all packages with parity tests.
     """
     report = ParityCoverageReport()
+    java_index = _cached_java_index()
+    python_index = _cached_python_index()
+    global_python = set(_cached_global_python_qualified())
     
     # Find packages to scan
     if packages is None:
@@ -439,6 +739,7 @@ def build_parity_coverage(
         
         # Scan Java sources for public library surface (exclusions categorised)
         java_package_dir = _java_package_dir(package)
+        declared_java: Set[str] = set()
         if java_package_dir.exists():
             # Nested alg.* packages have their own coverage buckets; only
             # util/ui/nbui should recurse into subdirectories.
@@ -448,16 +749,18 @@ def build_parity_coverage(
                 else java_package_dir.glob("*.java")
             )
             for java_file in java_iter:
-                coverage.java_methods.update(scan_java_public_methods(java_file))
+                declared_java.update(scan_java_public_methods(java_file))
                 for cat, names in scan_java_exclusions(java_file).items():
                     coverage.excluded_by_category.setdefault(cat, set()).update(names)
                 for cat, n in scan_java_exclusion_counts(java_file).items():
                     coverage.excluded_counts[cat] = coverage.excluded_counts.get(cat, 0) + n
+        # Per-class Java surface = members declared on each type (not inherited keys).
+        coverage.java_methods = declared_java
         
-        # Scan Python wrappers (package dir, including _jython_compat)
+        # Python wrappers: global org.uacalc scan for inheritance / cross-package binds
+        python_names: Set[str] = set(global_python)
         python_package_dir = _python_package_dir(package)
         if python_package_dir.exists():
-            python_names: Set[str] = set()
             py_iter = (
                 python_package_dir.rglob("*.py")
                 if package == "util"
@@ -465,19 +768,30 @@ def build_parity_coverage(
             )
             for python_file in py_iter:
                 python_names.update(scan_python_wrapper_methods(python_file))
-            coverage.wrapped_methods = {
-                java_q
-                for java_q in coverage.java_methods
-                if _java_method_wrapped(java_q, python_names)
-            }
+        coverage.wrapped_methods = {
+            java_q
+            for java_q in coverage.java_methods
+            if _java_method_wrapped(
+                java_q,
+                python_names,
+                java_index=java_index,
+                python_index=python_index,
+            )
+        }
         
         # Scan behavioral tests
         parity_dir = PROJECT_ROOT / "tests" / "parity" / package
         if parity_dir.exists():
-            tested = scan_behavioral_test_methods(parity_dir) & coverage.java_methods
-            coverage.tested_methods.update(tested)
+            tested_raw = scan_behavioral_test_methods(parity_dir)
+            coverage.tested_methods = {
+                java_q
+                for java_q in coverage.java_methods
+                if _java_method_tested(
+                    java_q, tested_raw, java_index=java_index
+                )
+            }
             # A Java method with a golden/behavioral case is wrapped enough to call.
-            coverage.wrapped_methods.update(tested)
+            coverage.wrapped_methods.update(coverage.tested_methods)
         
         report.by_package[package] = coverage
         report.total_java_methods += len(coverage.java_methods)
@@ -505,6 +819,9 @@ def format_parity_coverage(
     lines.append("  1. Wrapper coverage: Java public library surface wrapped in Python")
     lines.append("  2. Test coverage: Wrapped methods with behavioral parity tests")
     lines.append("  3. Exclusions: scanner false-positives categorised (not in Java column)")
+    lines.append(
+        "  Inheritance: Java extends/implements + Python MRO (see module docstring)"
+    )
     lines.append("")
     
     # Per-package summary

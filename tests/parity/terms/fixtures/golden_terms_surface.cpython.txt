@@ -1,9 +1,10 @@
 MODULE: org.uacalc.terms
 RUNTIME: cpython
-PUBLIC_COUNT: 10
+PUBLIC_COUNT: 11
 HAS_IS_VALID_VAR_STRING: yes
 NAME: NonVariableTerm
 NAME: Taylor
+NAME: Term
 NAME: TermOperationImp
 NAME: Terms
 NAME: Variable

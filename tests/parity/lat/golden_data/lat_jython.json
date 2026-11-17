@@ -4779,6 +4779,50 @@
       "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nif sys.platform.startswith(\"java\"):\n    from org.uacalc.io import AlgebraIO\n    from org.uacalc.alg.conlat import CongruenceLattice\n    alg = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\n    con = CongruenceLattice(alg)\n    _ctors = Lattices.getDeclaredConstructors()\n    _ctors[0].setAccessible(True)\n    _helper = _ctors[0].newInstance()\n    def _uci():\n        return list(_helper.conToSmallLattice(con).upperCoversIndices(0))\nelse:\n    from org.uacalc.lat import DiamondLattice\n    d = DiamondLattice()\n    def _uci():\n        fn = getattr(d, \"upperCoversIndices\", None) or d.upper_covers_indices\n        return [int(x) for x in list(fn(0))]\n",
       "skip_string_check": true,
       "xfail_reason": "Known Java bug: Lattices.conToSmallLattice always returns null, so Jython raises AttributeError: 'NoneType' object has no attribute 'upperCoversIndices'. Python DiamondLattice.upperCoversIndices(0) is [1, 2] (the desired SmallLattice behaviour). Java golden values are left unchanged."
+    },
+    {
+      "args": [],
+      "call": "lat.join(a, b)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Lattice interface join on BasicLattice instance",
+      "expected_exception": null,
+      "id": "lattice_iface_join",
+      "kwargs": {},
+      "method": "Lattice.join",
+      "notes": "Same as BasicLattice.join; keys the Lattice interface for coverage.",
+      "result": {
+        "return_type": "POElem",
+        "return_value": 1,
+        "string_repr": "1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromJoin(\"chain2j\", join2)\nif sys.platform.startswith(\"java\"):\n    a = lat.getElement(0)\n    b = lat.getElement(1)\nelse:\n    a = 0\n    b = 1\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "lat.meet(a, b)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Lattice interface meet on BasicLattice instance",
+      "expected_exception": null,
+      "id": "lattice_iface_meet",
+      "kwargs": {},
+      "method": "Lattice.meet",
+      "notes": "",
+      "result": {
+        "return_type": "POElem",
+        "return_value": 0,
+        "string_repr": "0",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import Operations, OperationSymbol\nfrom org.uacalc.lat import Lattices, OrderedSets\ndef _make_int_op(name, arity, size, table):\n    make = getattr(Operations, \"makeIntOperation\", None)\n    if make is None:\n        make = Operations.make_int_operation\n    return make(OperationSymbol(name, arity), size, table)\njoin2 = _make_int_op(\"v\", 2, 2, [0, 1, 1, 1])\nmeet2 = _make_int_op(\"meet\", 2, 2, [0, 0, 0, 1])\njoin_m3 = _make_int_op(\"v\", 2, 4, [\n    0, 1, 2, 3,\n    1, 1, 3, 3,\n    2, 3, 2, 3,\n    3, 3, 3, 3,\n])\nbad_join = _make_int_op(\"v\", 2, 2, [0, 0, 1, 0])\n\nimport sys\nlat = Lattices.latticeFromMeet(\"chain2m\", meet2)\nif sys.platform.startswith(\"java\"):\n    a = lat.getElement(0)\n    b = lat.getElement(1)\nelse:\n    a = 0\n    b = 1\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
     }
   ]
 }

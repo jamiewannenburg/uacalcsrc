@@ -10752,6 +10752,50 @@
       "skip_string_check": true,
       "timeout_seconds": null,
       "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sp.getTermMap()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getTermMap is null when findTerms is false",
+      "expected_exception": null,
+      "id": "sp_term_map",
+      "kwargs": {},
+      "method": "SubProductAlgebra.getTermMap",
+      "notes": "Java null vs Python None.",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    ProductAlgebra, PowerAlgebra, QuotientAlgebra, Subalgebra,\n    SubProductAlgebra, BigProductAlgebra, SmallAlgebra,\n)\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.util import IntArray\nfrom org.uacalc.alg.conlat import Partition\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nplus = OperationSymbol(\"+\", 2)\nprod = ProductAlgebra(\"C2xC2\", [c2, c2])\nprod_list = ProductAlgebra([c2, c2])\npwr = PowerAlgebra(\"C2^2\", c2, 2)\npwr_unnamed = PowerAlgebra(c2, 2)\ns0 = Subalgebra(\"S0\", c2, [0])\nfull = Subalgebra(c2, [0, 1])\ncong = c2.con().Cg(0, 1)\nzero_cong = c2.con().zero()\nq = QuotientAlgebra(\"Q\", c2, cong)\nq_unnamed = QuotientAlgebra(c2, cong)\nq_zero = QuotientAlgebra(\"Qz\", c2, zero_cong)\nbp = BigProductAlgebra(c2, 2)\nsp = SubProductAlgebra(\"SP\", bp, [IntArray([0, 0]), IntArray([1, 1])])\n\ndef _tbl(alg):\n    op = alg.getOperation(plus)\n    n = int(alg.cardinality())\n    return [int(op.intValueAt([i, j])) for i in range(n) for j in range(n)]\n\ndef _elems(alg):\n    n = int(alg.cardinality())\n    out = []\n    for i in range(n):\n        el = alg.getElement(i)\n        try:\n            out.append([int(x) for x in list(el)])\n        except TypeError:\n            out.append(el if not hasattr(el, \"toString\") else str(el))\n    return out\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "str(sp.projectionKernel(0).numberOfBlocks())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "projectionKernel on first coordinate",
+      "expected_exception": null,
+      "id": "sp_proj_kern",
+      "kwargs": {},
+      "method": "SubProductAlgebra.projectionKernel",
+      "notes": "",
+      "result": {
+        "return_type": "str",
+        "return_value": "2",
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    ProductAlgebra, PowerAlgebra, QuotientAlgebra, Subalgebra,\n    SubProductAlgebra, BigProductAlgebra, SmallAlgebra,\n)\nfrom org.uacalc.alg.op import OperationSymbol\nfrom org.uacalc.util import IntArray\nfrom org.uacalc.alg.conlat import Partition\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nplus = OperationSymbol(\"+\", 2)\nprod = ProductAlgebra(\"C2xC2\", [c2, c2])\nprod_list = ProductAlgebra([c2, c2])\npwr = PowerAlgebra(\"C2^2\", c2, 2)\npwr_unnamed = PowerAlgebra(c2, 2)\ns0 = Subalgebra(\"S0\", c2, [0])\nfull = Subalgebra(c2, [0, 1])\ncong = c2.con().Cg(0, 1)\nzero_cong = c2.con().zero()\nq = QuotientAlgebra(\"Q\", c2, cong)\nq_unnamed = QuotientAlgebra(c2, cong)\nq_zero = QuotientAlgebra(\"Qz\", c2, zero_cong)\nbp = BigProductAlgebra(c2, 2)\nsp = SubProductAlgebra(\"SP\", bp, [IntArray([0, 0]), IntArray([1, 1])])\n\ndef _tbl(alg):\n    op = alg.getOperation(plus)\n    n = int(alg.cardinality())\n    return [int(op.intValueAt([i, j])) for i in range(n) for j in range(n)]\n\ndef _elems(alg):\n    n = int(alg.cardinality())\n    out = []\n    for i in range(n):\n        el = alg.getElement(i)\n        try:\n            out.append([int(x) for x in list(el)])\n        except TypeError:\n            out.append(el if not hasattr(el, \"toString\") else str(el))\n    return out\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
     }
   ]
 }

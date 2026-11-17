@@ -122,6 +122,41 @@ else:
         notes="Java returns a POElem that stringifies to 1; Python returns int 1.",
     ),
     TestCaseSpec(
+        id="lattice_iface_join",
+        method="Lattice.join",
+        setup=_MAKE_OPS + """
+import sys
+lat = Lattices.latticeFromJoin("chain2j", join2)
+if sys.platform.startswith("java"):
+    a = lat.getElement(0)
+    b = lat.getElement(1)
+else:
+    a = 0
+    b = 1
+""",
+        call="lat.join(a, b)",
+        description="Lattice interface join on BasicLattice instance",
+        skip_string_check=True,
+        notes="Same as BasicLattice.join; keys the Lattice interface for coverage.",
+    ),
+    TestCaseSpec(
+        id="lattice_iface_meet",
+        method="Lattice.meet",
+        setup=_MAKE_OPS + """
+import sys
+lat = Lattices.latticeFromMeet("chain2m", meet2)
+if sys.platform.startswith("java"):
+    a = lat.getElement(0)
+    b = lat.getElement(1)
+else:
+    a = 0
+    b = 1
+""",
+        call="lat.meet(a, b)",
+        description="Lattice interface meet on BasicLattice instance",
+        skip_string_check=True,
+    ),
+    TestCaseSpec(
         id="basic_lattice_meet",
         method="BasicLattice.meet",
         setup=_MAKE_OPS + """
