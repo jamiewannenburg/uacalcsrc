@@ -254,6 +254,22 @@ impl PySubProductAlgebra {
 
     fn reset_con_and_sub(&mut self) {}
 
+    fn set_thin_generators(&mut self, v: bool) {
+        self.inner.set_thin_generators(v);
+    }
+
+    fn get_thin_generators(&self) -> bool {
+        self.inner.get_thin_generators()
+    }
+
+    fn set_decompose(&mut self, v: bool) {
+        self.inner.set_decompose(v);
+    }
+
+    fn get_decompose(&self) -> bool {
+        self.inner.get_decompose()
+    }
+
     fn to_basic_algebra(&self) -> PyResult<PyBasicAlgebra> {
         ops_to_basic_algebra(
             Algebra::name(&self.inner).to_string(),

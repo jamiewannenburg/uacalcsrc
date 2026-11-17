@@ -262,7 +262,7 @@ def scan_python_wrapper_methods(python_file: Path) -> Set[str]:
     try:
         tree = ast.parse(content)
         for node in ast.walk(tree):
-            if isinstance(node, (ast.FunctionDef, ast.ClassDef)):
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
                 raw.add(node.name)
             elif isinstance(node, ast.ImportFrom):
                 for alias in node.names:
@@ -271,6 +271,23 @@ def scan_python_wrapper_methods(python_file: Path) -> Set[str]:
                 for target in node.targets:
                     if isinstance(target, ast.Name):
                         raw.add(target.id)
+            elif isinstance(node, ast.Dict):
+                # Runtime patches often live in dicts: _CL_PATCHES["centralityFailure"]
+                # and _CLASS_ALIASES["BasicLattice"] / ["getAlgebra"].
+                for key in node.keys:
+                    if isinstance(key, ast.Constant) and isinstance(key.value, str):
+                        raw.add(key.value)
+            elif isinstance(node, ast.Call):
+                func = node.func
+                fname = ""
+                if isinstance(func, ast.Name):
+                    fname = func.id
+                elif isinstance(func, ast.Attribute):
+                    fname = func.attr
+                if fname in {"_bind", "setattr"} and len(node.args) >= 2:
+                    arg = node.args[1]
+                    if isinstance(arg, ast.Constant) and isinstance(arg.value, str):
+                        raw.add(arg.value)
     except SyntaxError:
         pass
 

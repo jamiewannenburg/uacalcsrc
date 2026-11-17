@@ -91,6 +91,8 @@ _CLASS_ALIASES = {
     "OperationSymbol": {
         "hashCode": "hash_code",
         "compareTo": "compare_to",
+        "setAssociative": "setAssociative",
+        "getOperationSymbol": "getOperationSymbol",
     },
 }
 
