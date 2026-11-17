@@ -91,6 +91,7 @@ def io_pkg():
         ("AlgebraWriter", "writeAlgebraXML"),
         ("AlgebraWriter", "writeAlgebra"),
         ("AlgebraWriter", "writeBasicAlgebra"),
+        ("AlgebraWriter", "flush"),
         ("Mace4Reader", "parseAlgebra"),
         ("Mace4Reader", "parseAlgebraList"),
     ],

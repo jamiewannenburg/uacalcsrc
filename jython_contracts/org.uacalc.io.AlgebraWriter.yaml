@@ -4,7 +4,8 @@ status: implemented
 java_source: org/uacalc/io/AlgebraWriter.java
 notes: |
   writeAlgebraXML writes and closes. writeAlgebra / writeBasicAlgebra /
-  flush match Java's unflushed PrintWriter (no-op until writeAlgebraXML).
+  flush match Java's unflushed PrintWriter (shim flush is a no-op; Java has
+  no flush() method).
   FreeAlgebra is written as <freeAlgebra> coordinate tuples. Product /
   power / quotient / subalgebra / bigProduct writers remain stubs;
   those types still go through to_basic_algebra() and are flagged.

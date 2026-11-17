@@ -51,13 +51,14 @@ def test_algebra_list_file_returns_full_list_despite_java_bug():
     assert cards == [2, 3]
 
 
-def test_algebra_writer_has_no_flush_like_java():
+def test_algebra_writer_flush_is_no_op():
     c2_path = os.path.join(_repo_root(), "resources", "algebras", "cyclic2.ua")
     c2 = AlgebraIO.readAlgebraFile(c2_path)
     fd, path = tempfile.mkstemp(suffix=".ua")
     os.close(fd)
     try:
         writer = AlgebraWriter(c2, path)
-        assert not hasattr(writer, "flush")
+        writer.flush()
+        assert writer.flush() is None
     finally:
         os.unlink(path)
