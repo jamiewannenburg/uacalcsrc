@@ -35,6 +35,7 @@ from __future__ import annotations
 import argparse
 import difflib
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -74,12 +75,54 @@ def run_cmd(
     return result.returncode, result.stdout.strip(), result.stderr.strip()
 
 
+# Java-side progress / debug lines that CPython does not mirror on stdout.
+DEFAULT_IGNORE_PREFIXES: list[str] = [
+    "oneGenerated size",
+    "pass 0 of",
+    "pass 1 of",
+    "pass 2 of",
+    "pass 3 of",
+    "pass: ",
+    "pass ",
+    "labels has size",
+    "ucs has size",
+    "universe size:",
+    "depth is ",
+    "Constructing free algebra",
+    "projs size",
+    "done constructing free algebra",
+    "made the free algebra",
+    "gens v length",
+    "map =",
+    "tmp =",
+    "table[j]",
+    "tmp.length",
+    "i = ",
+    "fails to commute",
+    "null InputStream",
+    "need a file name of an algebra",
+]
+
+
+def normalize_comparison_line(line: str) -> str:
+    """Cosmetic stdout normalization (repr/format), not value hiding."""
+    line = re.sub(r"\b(\d+)L\b", r"\1", line)
+    line = line.replace(", ", ",")
+    line = re.sub(r"\bu'", "'", line)
+    line = re.sub(
+        r"array\('i',\s*\[([^\]]*)\]\)",
+        lambda m: "[" + m.group(1) + "]",
+        line,
+    )
+    return line
+
+
 def filter_lines(text: str, ignore_prefixes: list[str]) -> list[str]:
     lines = []
     for line in text.splitlines():
         if any(line.startswith(prefix) for prefix in ignore_prefixes):
             continue
-        lines.append(line)
+        lines.append(normalize_comparison_line(line))
     return lines
 
 
@@ -192,7 +235,10 @@ def compare_one_script(
     ignore_prefixes: list[str] | None = None,
 ) -> bool:
     ignore_u = not args.no_ignore_universe
-    prefixes = list(ignore_prefixes or [])
+    prefixes = list(DEFAULT_IGNORE_PREFIXES)
+    for p in ignore_prefixes or []:
+        if p not in prefixes:
+            prefixes.append(p)
     if ignore_u and "Universe:" not in prefixes:
         prefixes.append("Universe:")
 

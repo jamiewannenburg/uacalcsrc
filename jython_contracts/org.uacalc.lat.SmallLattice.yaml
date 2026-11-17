@@ -25,10 +25,4 @@ testing:
     Python DiamondLattice.upperCoversIndices(0) is [1, 2].
   task_refs:
     - tests/parity/lat/test_cases/lattices_cases.py
-  scripts:
-    - path: tests/parity/lat/test_cases/lattices_cases.py
-      covers:
-        - upperCoversIndices
-        - getName
-        - getUniverseList
-      ignore_lines: []
+  scripts: []

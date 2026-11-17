@@ -11,92 +11,66 @@ from typing import Dict, Optional
 
 # Repo-relative posix path -> human-readable reason
 KNOWN_OUTPUT_DIFFERENCES: Dict[str, str] = {
-    "jython_comparison/scripts/algebra_api.py": (
-        "Algebra metadata and operation-table lines differ between Java/Jython and CPython shims."
-    ),
     "jython_comparison/scripts/algebra_from_minimal_sets_smoke.py": (
-        "Minimal-sets construction stdout ordering differs on CPython."
+        "Rust gap: AlgebraFromMinimalSets from cyclic2 reports unary operation "
+        "`s` via getOperation; Java/Jython returns null for that symbol."
     ),
     "jython_comparison/scripts/algebras_smoke.py": (
-        "Jython hits Java Operations INFO commute failure; CPython uacalc_lib path continues."
-    ),
-    "jython_comparison/scripts/basic_lattice_api.py": (
-        "Lattice API facade prints differ (ordering / formatting)."
+        "Java bug: Jython subprocess exits after Operations commute INFO "
+        "(fails to commute) before later Algebras smoke lines run."
     ),
     "jython_comparison/scripts/closer_smoke.py": (
-        "Closer smoke: Jython closure path errors or logs where CPython shim succeeds."
-    ),
-    "jython_comparison/scripts/conlat_leftovers.py": (
-        "Congruence-lattice leftover probes differ on stdout normalization."
+        "Jython exit 1: Java Closer paths abort before CPython-only stdout tail."
     ),
     "jython_comparison/scripts/element_ops.py": (
-        "Element operations: Jython/Java exceptions vs CPython shim behavior."
+        "Jython exit 1: extended SubProductElement probes abort the script early."
     ),
     "jython_comparison/scripts/example_ops.py": (
-        "Example package ops: interactive/Java-only paths fail under Jython."
+        "Jython exit 1: example package Java-only helpers stop the script early."
     ),
     "jython_comparison/scripts/free_algebra_smoke.py": (
-        "Free algebra construction progress lines differ or Jython aborts early."
+        "Jython exit 1: findEq NullPointerException on Java path before stdout tail."
     ),
     "jython_comparison/scripts/general_algebra_smoke.py": (
-        "GeneralAlgebra smoke: Jython Java path diverges from CPython lib."
+        "Jython exit 1: GeneralAlgebra smoke stops before con/sub/empty lines."
     ),
     "jython_comparison/scripts/homomorphism_smoke.py": (
-        "Homomorphism smoke: Jython raises where CPython shim returns."
+        "Jython exit 1: homomorphism smoke aborts before productHomo extra cases."
     ),
     "jython_comparison/scripts/io_surface.py": (
-        "IO surface script: Jython/Java reader errors vs CPython org.uacalc.io."
-    ),
-    "jython_comparison/scripts/lattices_facade_smoke.py": (
-        "Lattices facade string output differs between runtimes."
+        "Jython exit 1: AlgebraIO list/reader surface differs before full stdout."
     ),
     "jython_comparison/scripts/malcev_smoke.py": (
-        "Malcev terms: Jython Java exceptions on several algebras."
+        "Jython exit 1: Malcev/Jonsson paths abort before malcev_null case."
     ),
     "jython_comparison/scripts/matrix_power_algebra_smoke.py": (
-        "MatrixPowerAlgebra smoke: non-zero Jython exit on Java-only checks."
-    ),
-    "jython_comparison/scripts/op_leftovers.py": (
-        "Operation leftovers: stdout mismatch after ignore rules."
+        "Rust gap: PyMatrixPowerAlgebra getElement(0) is not iterable on CPython; "
+        "Jython exits on Java-only checks before convert."
     ),
     "jython_comparison/scripts/parameterized_algebra_smoke.py": (
-        "ParameterizedAlgebra construction fails on Jython for some inputs."
+        "Jython exit 1: ParameterizedAlgebra constructor paths missing on Java run."
     ),
     "jython_comparison/scripts/polin_like_algebra_smoke.py": (
-        "PolinLikeAlgebra smoke: Jython/Java errors vs CPython success."
+        "Jython exit 1: PolinLikeAlgebra smoke aborts before convert case."
     ),
     "jython_comparison/scripts/power_algebra_smoke.py": (
-        "PowerAlgebra smoke: Jython subprocess failure on Java path."
+        "Jython exit 1: PowerAlgebra smoke aborts before convert/con/sub tail."
     ),
     "jython_comparison/scripts/product_algebra_smoke.py": (
-        "ProductAlgebra smoke: Jython subprocess failure on Java path."
+        "Jython exit 1: ProductAlgebra smoke aborts before universeList/con tail."
     ),
     "jython_comparison/scripts/quotient_algebra_smoke.py": (
-        "QuotientAlgebra smoke: Jython subprocess failure on Java path."
-    ),
-    "jython_comparison/scripts/random_parity.py": (
-        "Randomized parity driver: aggregate stdout includes seeds/xfails not matched yet on CPython."
-    ),
-    "jython_comparison/scripts/subalgebra_lattice_smoke.py": (
-        "Subalgebra lattice smoke: stdout mismatch after ignore rules."
+        "Jython exit 1: QuotientAlgebra smoke aborts before convert/con tail."
     ),
     "jython_comparison/scripts/subalgebra_smoke.py": (
-        "Subalgebra smoke: Jython/Java errors on sgClose paths."
+        "Jython exit 1: Subalgebra smoke aborts before convert/restrict tail."
     ),
     "jython_comparison/scripts/subproduct_algebra_smoke.py": (
-        "SubProductAlgebra smoke: Jython subprocess failure."
-    ),
-    "jython_comparison/scripts/terms_variable_eval.py": (
-        "Terms variable eval: Jython fails on Java term evaluation edge cases."
+        "Jython exit 1: SubProductAlgebra convertToDefaultValueOps throws on "
+        "Java without being caught before extra con/sub lines."
     ),
     "jython_comparison/scripts/unary_terms_monoid_smoke.py": (
-        "UnaryTermsMonoid smoke: Jython subprocess failure."
-    ),
-    "jython_comparison/scripts/util_ops.py": (
-        "Util ops script: IntArray/LongList lines differ between runtimes."
-    ),
-    "tests/parity/lat/test_cases/lattices_cases.py": (
-        "Parity case module (specs only); not a standalone comparison script."
+        "Jython exit 1: UnaryTermsMonoid smoke aborts before convert case."
     ),
 }
 

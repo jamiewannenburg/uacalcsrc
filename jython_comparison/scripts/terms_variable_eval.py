@@ -51,7 +51,7 @@ def test():
     x = VariableImp("x")
     y = VariableImp("y")
     plus = OperationSymbol("+", 2)
-    fxy = NonVariableTerm(plus, [x, y])
+    fxy = NonVariableTerm(plus, _varlist(x, y))
     print("name=" + x.getName())
     print("isa=" + str(x.isaVariable()).lower())
     print("lead=" + str(x.leadingOperationSymbol()))
@@ -95,8 +95,9 @@ def test():
         print("fxy_wsb=" + sb2.toString())
     except ImportError:
         print("fxy_wsb=" + fxy.writeStringBuffer("t="))
-    print("fxy_eq=" + str(fxy.equals(NonVariableTerm(plus, [x, y]))).lower())
-    print("fxy_hash=" + str(fxy.hashCode() == NonVariableTerm(plus, [x, y]).hashCode()).lower())
+    ref = NonVariableTerm(plus, _varlist(x, y))
+    print("fxy_eq=" + str(fxy.equals(ref)).lower())
+    print("fxy_hash=" + str(fxy.hashCode() == ref.hashCode()).lower())
 
 
 if __name__ == "__main__":

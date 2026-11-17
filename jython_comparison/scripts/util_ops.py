@@ -16,18 +16,28 @@ from org.uacalc.util.virtuallist import LongList, VirtualLists, TupleWithMin
 
 if sys.platform.startswith("java"):
     from jarray import array as _jarray
+    from java.util import ArrayList
 
     def _ia(vals):
         return _jarray([int(x) for x in vals], "i")
 
     def _snap(a):
         return [int(a[i]) for i in range(len(a))]
+
+    def _jlist(vals):
+        lst = ArrayList()
+        for v in vals:
+            lst.add(int(v))
+        return lst
 else:
     def _ia(vals):
         return [int(x) for x in vals]
 
     def _snap(a):
         return [int(x) for x in list(a)]
+
+    def _jlist(vals):
+        return [int(x) for x in vals]
 
 
 def _show(label, thunk):
@@ -53,6 +63,19 @@ def _tolist(a):
 
 def _collect(factory, start, *args):
     a = _ia(list(start))
+    inc = factory(a, *args)
+    out = [_snap(a)]
+    n = 0
+    while inc.increment():
+        out.append(_snap(a))
+        n += 1
+        if n > 2000:
+            break
+    return out
+
+
+def _collect_list(factory, start, *args):
+    a = _jlist(list(start))
     inc = factory(a, *args)
     out = [_snap(a)]
     n = 0
@@ -107,7 +130,7 @@ def test():
     g = PermutationGenerator(3)
     _show("nextIndex", lambda: g.nextIndex())
     _show("perm_arr", lambda: _collect(PermutationGenerator.arrayIncrementor, [0, 1]))
-    _show("perm_list", lambda: _collect(PermutationGenerator.listIncrementor, [0, 1]))
+    _show("perm_list", lambda: _collect_list(PermutationGenerator.listIncrementor, [0, 1]))
     it = PermutationGenerator.iterator(2)
     perms = []
     while it.hasNext():
