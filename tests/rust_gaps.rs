@@ -176,6 +176,20 @@ fn quotient_value_at_arrays() {
 }
 
 #[test]
+#[ignore = "Rust gap: SubProductAlgebra::projection_kernel is unimplemented"]
+fn sub_product_projection_kernel() {
+    let bp = BigProductAlgebra::new_power_safe(empty_alg("A", 2), 2).unwrap();
+    let gens = vec![
+        IntArray::from_array(vec![0, 0]).unwrap(),
+        IntArray::from_array(vec![1, 1]).unwrap(),
+    ];
+    let sp = SubProductAlgebra::new_safe("SP".to_string(), bp, gens, false).unwrap();
+    // When implemented, merge universe elements that agree on coordinate k.
+    let _ = sp;
+    panic!("SubProductAlgebra::projection_kernel is not implemented");
+}
+
+#[test]
 #[ignore = "Rust gap: SubProductElement::get_algebra panics"]
 fn sub_product_element_get_algebra() {
     let bp = BigProductAlgebra::new_power_safe(empty_alg("A", 2), 2).unwrap();

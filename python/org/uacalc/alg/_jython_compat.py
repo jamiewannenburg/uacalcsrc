@@ -2580,14 +2580,33 @@ def _install(alg_module_globals: dict) -> None:
             return _lib_call(fn, int(k))
         return None
 
+    def _subproduct_algebra_type(self: Any) -> bool:
+        """True when ``self`` is a SubProduct algebra (Java implements ``projectionKernel``)."""
+        alg_type = getattr(self, "algebra_type", None) or getattr(self, "algebraType", None)
+        if callable(alg_type):
+            try:
+                return str(alg_type()).upper() == "SUBPRODUCT"
+            except (TypeError, ValueError):
+                pass
+        return type(self).__name__ == "SubProductAlgebra"
+
     def projectionKernel(self: Any, k: Any) -> Any:
+        """Java ``projectionKernel(int)``; org shim fills SubProduct when Rust is unbound."""
         fn = getattr(self, "projection_kernel", None)
+        idx = int(k)
         if callable(fn):
             try:
-                return fn(int(k))
-            except Exception:
-                pass
-        return _projection_kernel_by_coords(self, int(k))
+                result = fn(idx)
+            except ValueError as exc:
+                # uacalc_lib / Rust ``projection_kernel`` unimplemented (see RUST_GAPS.md).
+                if "projection kernel" not in str(exc).lower():
+                    raise
+                result = None
+            if result is not None or not _subproduct_algebra_type(self):
+                return result
+        elif not _subproduct_algebra_type(self):
+            return None
+        return _projection_kernel_by_coords(self, idx)
 
     def getRoot(self: Any) -> Any:
         fn = getattr(self, "get_root", None)
