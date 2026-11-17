@@ -416,10 +416,14 @@ def _install(alg_module_globals: dict) -> None:
                 raise TypeError("QuotientAlgebra is not bound")
             if len(args) == 2:
                 alg, cong = args
-                return _lib_call(_LibQuotientAlgebra, "", alg, cong)
+                return _lib_call(
+                    _LibQuotientAlgebra, "", _as_basic_algebra(alg), cong
+                )
             if len(args) == 3:
                 name, alg, cong = args
-                return _lib_call(_LibQuotientAlgebra, str(name), alg, cong)
+                return _lib_call(
+                    _LibQuotientAlgebra, str(name), _as_basic_algebra(alg), cong
+                )
             raise TypeError("QuotientAlgebra() takes 2 or 3 arguments")
 
     class _SubProductAlgebraMeta(type):
@@ -954,6 +958,7 @@ def _install(alg_module_globals: dict) -> None:
                     _LibCloser.new_with_term_map, algebra, gens, third
                 )
             self._inner = inner
+            self._algebra = algebra
             self._ans = None
             self._ans_set = False
 
@@ -1126,6 +1131,32 @@ def _install(alg_module_globals: dict) -> None:
 
         def setSuppressOutput(self, suppress: Any) -> None:
             closerSetSuppressOutput(self._inner, suppress)
+
+        def countFuncApplications(self, size0: Any, size1: Any) -> int:
+            return closerCountFuncApplications(self, size0, size1)
+
+        def doOneStagePartialClosure(
+            self,
+            mapping: Any,
+            indexInCPUs: Any,
+            numOfOps: Any,
+            closedMark: Any,
+            currentMark: Any,
+            reportNotNull: Any,
+            rawList: Any,
+            timing: Any,
+        ) -> None:
+            closerDoOneStagePartialClosure(
+                self,
+                mapping,
+                indexInCPUs,
+                numOfOps,
+                closedMark,
+                currentMark,
+                reportNotNull,
+                rawList,
+                timing,
+            )
 
     def _algebras_fn(name: str) -> Any:
         fn = alg_module_globals.get(name)
@@ -2962,6 +2993,52 @@ def _install(alg_module_globals: dict) -> None:
     for camel, impl in _QUOT_EXTRA.items():
         _bind(_LibQuotientAlgebra, camel, impl)
 
+    class _QuotientElementMeta(type):
+        def __instancecheck__(cls, instance: Any) -> bool:
+            if type(instance) is cls:
+                return True
+            return _LibQuotientElement is not None and isinstance(
+                instance, _LibQuotientElement
+            )
+
+    class QuotientElement(object, metaclass=_QuotientElementMeta):
+        """Java ``QuotientElement(QuotientAlgebra, int)``."""
+
+        def __init__(self, alg: Any, index: Any) -> None:
+            if alg is None:
+                _raise_npe()
+            self._alg = alg
+            self._index = int(index)
+
+        def getAlgebra(self) -> Any:
+            return self._alg
+
+        def superAlgebra(self) -> Any:
+            fn = getattr(self._alg, "superAlgebra", None) or getattr(
+                self._alg, "super_algebra", None
+            )
+            return fn() if callable(fn) else None
+
+        def getCongruence(self) -> Any:
+            fn = getattr(self._alg, "getCongruence", None) or getattr(
+                self._alg, "get_congruence", None
+            )
+            return fn() if callable(fn) else None
+
+        def getIndex(self) -> int:
+            return self._index
+
+        def getIndexInSuperAlgebra(self) -> int:
+            cong = self.getCongruence()
+            reps = getattr(cong, "representatives", None)
+            if callable(reps):
+                arr = list(reps())
+                return int(arr[self._index])
+            return self._index
+
+        def toString(self) -> str:
+            return str(self)
+
     if _LibQuotientElement is not None:
         for camel, impl in (
             ("getAlgebra", getAlgebra),
@@ -2995,6 +3072,108 @@ def _install(alg_module_globals: dict) -> None:
         univ = _orig(self)
         return None if univ is None else [_int_array(row) for row in univ]
 
+    def transpose(lst: Any) -> Any:
+        """Java ``SubProductAlgebra.transpose(List<IntArray>)``."""
+        if lst is None:
+            _raise_npe()
+        items = list(lst)
+        if not items:
+            raise IllegalArgumentException()
+        rows = [_int_array_values(ia) for ia in items]
+        k = len(rows)
+        n = len(rows[0])
+        return [_int_array([rows[j][i] for j in range(k)]) for i in range(n)]
+
+    def universeFromRelations(n: Any, power: Any, rels: Any) -> Any:
+        """Java ``SubProductAlgebra.universeFromRelations(int, int, Map)``."""
+        if rels is None:
+            _raise_npe()
+        from org.uacalc.util import SequenceGenerator
+
+        n_i = int(n)
+        pow_i = int(power)
+        arr = [0] * pow_i
+        inc = SequenceGenerator.sequenceIncrementor(arr, n_i - 1)
+        ans = [_int_array(list(arr))]
+        while inc.increment():
+            if _universe_respects(arr, rels):
+                ans.append(_int_array(list(arr)))
+        return ans
+
+    def _universe_respects(arr: List[int], rels: Any) -> bool:
+        keys_fn = getattr(rels, "keySet", None)
+        items = list(keys_fn()) if callable(keys_fn) else list(rels)
+        getter = getattr(rels, "get", None)
+        for pair in items:
+            par = getter(pair) if callable(getter) else rels[pair]
+            coords = _int_array_values(pair)
+            related = getattr(par, "isRelated", None) or getattr(par, "is_related", None)
+            if not bool(related(int(arr[int(coords[0])]), int(arr[int(coords[1])]))):
+                return False
+        return True
+
+    def setThinGenerators(self: Any, v: Any) -> None:
+        fn = getattr(self, "set_thin_generators", None)
+        if callable(fn):
+            fn(bool(v))
+            return
+        try:
+            object.__setattr__(self, "_thin_generators", bool(v))
+        except Exception:
+            pass
+
+    def getThinGenerators(self: Any, v: Any = None) -> bool:
+        # Java getThinGenerators(boolean v) ignores v.
+        fn = getattr(self, "get_thin_generators", None)
+        if callable(fn):
+            return bool(fn())
+        return bool(getattr(self, "_thin_generators", False))
+
+    def setDecompose(self: Any, v: Any) -> None:
+        fn = getattr(self, "set_decompose", None)
+        if callable(fn):
+            fn(bool(v))
+            return
+        try:
+            object.__setattr__(self, "_decompose", bool(v))
+        except Exception:
+            pass
+
+    def getDecompose(self: Any) -> bool:
+        fn = getattr(self, "get_decompose", None)
+        if callable(fn):
+            return bool(fn())
+        return bool(getattr(self, "_decompose", False))
+
+    def thinGenerators(self: Any) -> Any:
+        """Java ``SubProductAlgebra.thinGenerators()``."""
+        from org.uacalc.lat import OrderedSets, Order
+        from org.uacalc.alg.sublat import SubalgebraLattice
+
+        gens = subproductGeneratorsBound(self)
+        if gens is None:
+            gens = []
+        projs = transpose(gens)
+        prod = getProductAlgebra(self)
+        proj_map = {}
+        for k, ia in enumerate(projs):
+            key = tuple(_int_array_values(ia))
+            proj_fn = getattr(prod, "projection", None)
+            proj_map[key] = proj_fn(k) if callable(proj_fn) else None
+
+        def _leq(a: Any, b: Any) -> bool:
+            a_arr = _int_array_values(a)
+            b_arr = _int_array_values(b)
+            a_key = tuple(a_arr)
+            b_key = tuple(b_arr)
+            homo = SubalgebraLattice.extendToHomomorphism(
+                b_arr, a_arr, proj_map.get(b_key), proj_map.get(a_key)
+            )
+            return homo is not None
+
+        thinned = OrderedSets.maximals(projs, Order(_leq))
+        return transpose(thinned)
+
     _SUBPROD_EXTRA = {
         "getElement": subproductGetElement,
         "elementIndex": subproductElementIndex,
@@ -3011,9 +3190,23 @@ def _install(alg_module_globals: dict) -> None:
         "parent": parent,
         "parents": parents,
         "numberOfFactors": numberOfFactors,
+        "setThinGenerators": setThinGenerators,
+        "getThinGenerators": getThinGenerators,
+        "setDecompose": setDecompose,
+        "getDecompose": getDecompose,
+        "thinGenerators": thinGenerators,
+        "transpose": transpose,
+        "universeFromRelations": universeFromRelations,
     }
     for camel, impl in _SUBPROD_EXTRA.items():
         _bind(_LibSubProductAlgebra, camel, impl)
+    try:
+        _LibSubProductAlgebra.transpose = staticmethod(transpose)
+        _LibSubProductAlgebra.universeFromRelations = staticmethod(universeFromRelations)
+    except (TypeError, AttributeError):
+        pass
+    SubProductAlgebra.transpose = staticmethod(transpose)
+    SubProductAlgebra.universeFromRelations = staticmethod(universeFromRelations)
 
     def generalAlgebraCon(self: Any) -> Any:
         raise UnsupportedOperationException()
@@ -3499,6 +3692,105 @@ def _install(alg_module_globals: dict) -> None:
     def closerSetSuppressOutput(self: Any, suppress: Any) -> None:
         self.set_suppress_output(bool(suppress))
 
+    def closerCountFuncApplications(self: Any, size0: Any, size1: Any) -> int:
+        """Java ``Closer.countFuncApplications(int, int)``."""
+        alg = getattr(self, "_algebra", None)
+        if alg is None:
+            get = getattr(self, "get_algebra", None) or getattr(self, "getAlgebra", None)
+            alg = get() if callable(get) else None
+        if alg is None:
+            _raise_npe()
+        ops_fn = getattr(alg, "operations", None)
+        ops = list(ops_fn() if callable(ops_fn) else ops_fn or [])
+        s0 = int(size0)
+        s1 = int(size1)
+        ans = 0
+        for op in ops:
+            arity_fn = getattr(op, "arity", None)
+            r = int(arity_fn() if callable(arity_fn) else arity_fn)
+            ans += (s1 ** r) - (s0 ** r)
+        nfactors_fn = (
+            getattr(alg, "getNumberOfFactors", None)
+            or getattr(alg, "numberOfFactors", None)
+            or getattr(alg, "number_of_factors", None)
+        )
+        nfactors = int(nfactors_fn() if callable(nfactors_fn) else nfactors_fn or 1)
+        result = ans * nfactors
+        if result > (2 ** 63) - 1:
+            return -1
+        return int(result)
+
+    def closerDoOneStagePartialClosure(
+        self: Any,
+        mapping: Any,
+        indexInCPUs: Any,
+        numOfOps: Any,
+        closedMark: Any,
+        currentMark: Any,
+        reportNotNull: Any,
+        rawList: Any,
+        timing: Any,
+    ) -> None:
+        """Java ``Closer.doOneStagePartialClosure``.
+
+        The parallel worker itself is not bound (Rust gap). Match Java
+        short-circuits: ``numOfOps <= 0`` is a no-op; empty ``rawList``
+        throws IndexOutOfBoundsException on the first ``rawList.get``.
+        """
+        if int(numOfOps) <= 0:
+            return None
+        if rawList is None:
+            _raise_npe()
+        items = list(rawList)
+        if not items:
+            raise IndexOutOfBoundsException("Index: 0, Size: 0")
+        if mapping is None:
+            _raise_npe()
+        term_map = getattr(self, "termMap", None)
+        if term_map is None:
+            getter = getattr(self, "getTermMap", None) or getattr(
+                self, "get_term_map", None
+            )
+            term_map = getter() if callable(getter) else None
+        if term_map is None:
+            inner = getattr(self, "_inner", None)
+            if inner is not None:
+                getter = getattr(inner, "getTermMap", None) or getattr(
+                    inner, "get_term_map", None
+                )
+                term_map = getter() if callable(getter) else None
+        if term_map is None:
+            _raise_npe()
+        raise NotImplementedError(
+            "doOneStagePartialClosure parallel worker is not bound"
+        )
+
+    def countFuncApplications(self: Any, size0: Any, size1: Any) -> int:
+        return closerCountFuncApplications(self, size0, size1)
+
+    def doOneStagePartialClosure(
+        self: Any,
+        mapping: Any,
+        indexInCPUs: Any,
+        numOfOps: Any,
+        closedMark: Any,
+        currentMark: Any,
+        reportNotNull: Any,
+        rawList: Any,
+        timing: Any,
+    ) -> None:
+        closerDoOneStagePartialClosure(
+            self,
+            mapping,
+            indexInCPUs,
+            numOfOps,
+            closedMark,
+            currentMark,
+            reportNotNull,
+            rawList,
+            timing,
+        )
+
     _CLOSER_EXTRA = {
         "getAnswer": closerGetAnswer,
         "sgClose": closerSgClose,
@@ -3541,6 +3833,8 @@ def _install(alg_module_globals: dict) -> None:
         "setOperations": closerSetOperations,
         "isSuppressOutput": closerIsSuppressOutput,
         "setSuppressOutput": closerSetSuppressOutput,
+        "countFuncApplications": closerCountFuncApplications,
+        "doOneStagePartialClosure": closerDoOneStagePartialClosure,
     }
     if _LibCloser is not None:
         for camel, impl in _CLOSER_EXTRA.items():
@@ -3693,13 +3987,227 @@ def _install(alg_module_globals: dict) -> None:
         ):
             _bind(_LibBigProductAlgebra, camel, impl)
 
+    _MPD_STATE: dict = {}
+
+    def _mpd_state(self: Any) -> dict:
+        return _MPD_STATE.setdefault(id(self), {})
+
+    def mpdGetAlgebra(self: Any) -> Any:
+        st = _mpd_state(self)
+        if "algebra" in st:
+            return st["algebra"]
+        fn = getattr(self, "get_algebra", None)
+        return fn() if callable(fn) else None
+
+    def mpdSetAlgebra(self: Any, algebra: Any) -> None:
+        _mpd_state(self)["algebra"] = algebra
+        fn = getattr(self, "set_algebra", None) or getattr(self, "setAlgebra", None)
+        if callable(fn) and fn is not mpdSetAlgebra:
+            try:
+                fn(algebra)
+            except Exception:
+                pass
+
+    def mpdGetCongruence(self: Any) -> Any:
+        st = _mpd_state(self)
+        if "congruence" in st:
+            return st["congruence"]
+        fn = getattr(self, "get_congruence", None)
+        return fn() if callable(fn) else None
+
+    def mpdSetCongruence(self: Any, congruence: Any) -> None:
+        _mpd_state(self)["congruence"] = congruence
+        fn = getattr(self, "set_congruence", None)
+        if callable(fn) and fn is not mpdSetCongruence:
+            try:
+                fn(congruence)
+            except Exception:
+                pass
+
+    def mpdGetBlockAlgebras(self: Any) -> Any:
+        st = _mpd_state(self)
+        if "blockAlgebras" in st:
+            return list(st["blockAlgebras"])
+        return getBlockAlgebras(self)
+
+    def mpdSetBlockAlgebras(self: Any, block_algebras: Any) -> None:
+        items = None if block_algebras is None else list(block_algebras)
+        _mpd_state(self)["blockAlgebras"] = items
+        fn = getattr(self, "set_block_algebras", None)
+        if callable(fn) and fn is not mpdSetBlockAlgebras:
+            try:
+                fn(items)
+            except Exception:
+                pass
+
+    def mpdGetQuotientAlgebra(self: Any) -> Any:
+        st = _mpd_state(self)
+        if "quotientAlgebra" in st:
+            return st["quotientAlgebra"]
+        return getQuotientAlgebra(self)
+
+    def mpdSetQuotientAlgebra(self: Any, quotient: Any) -> None:
+        _mpd_state(self)["quotientAlgebra"] = quotient
+        fn = getattr(self, "set_quotient_algebra", None)
+        if callable(fn) and fn is not mpdSetQuotientAlgebra:
+            try:
+                fn(quotient)
+            except Exception:
+                pass
+
+    def setAlgebra(self: Any, algebra: Any) -> None:
+        mpdSetAlgebra(self, algebra)
+
+    def setCongruence(self: Any, congruence: Any) -> None:
+        mpdSetCongruence(self, congruence)
+
+    def setBlockAlgebras(self: Any, block_algebras: Any) -> None:
+        mpdSetBlockAlgebras(self, block_algebras)
+
+    def setQuotientAlgebra(self: Any, quotient: Any) -> None:
+        mpdSetQuotientAlgebra(self, quotient)
+
     if _LibMaltsevProductDecomposition is not None:
+        _orig_mpd_new = getattr(_LibMaltsevProductDecomposition, "__new__", None)
+
+        class _MPDMeta(type):
+            def __instancecheck__(cls, instance: Any) -> bool:
+                return _LibMaltsevProductDecomposition is not None and isinstance(
+                    instance, _LibMaltsevProductDecomposition
+                )
+
+        class MaltsevProductDecomposition(object, metaclass=_MPDMeta):
+            """Java ``MaltsevProductDecomposition(alg, cong)`` plus field setters."""
+
+            def __new__(cls, alg: Any, cong: Any) -> Any:
+                if _LibMaltsevProductDecomposition is None:
+                    raise TypeError("MaltsevProductDecomposition is not bound")
+                obj = _LibMaltsevProductDecomposition(alg, cong)
+                _MPD_STATE[id(obj)] = {
+                    "algebra": alg,
+                    "congruence": cong,
+                }
+                return obj
+
         for camel, impl in (
-            ("getBlockAlgebras", getBlockAlgebras),
-            ("getQuotientAlgebra", getQuotientAlgebra),
-            ("getCongruence", lambda self: self.get_congruence()),
+            ("getBlockAlgebras", mpdGetBlockAlgebras),
+            ("getQuotientAlgebra", mpdGetQuotientAlgebra),
+            ("getCongruence", mpdGetCongruence),
+            ("getAlgebra", mpdGetAlgebra),
+            ("setAlgebra", mpdSetAlgebra),
+            ("setCongruence", mpdSetCongruence),
+            ("setBlockAlgebras", mpdSetBlockAlgebras),
+            ("setQuotientAlgebra", mpdSetQuotientAlgebra),
         ):
             _bind(_LibMaltsevProductDecomposition, camel, impl)
+        alg_module_globals["MaltsevProductDecomposition"] = MaltsevProductDecomposition
+
+    class MaltsevDecompositionIterator(object):
+        """Java ``org.uacalc.alg.MaltsevDecompositionIterator``.
+
+        Yields real section algebras (quotients of block subalgebras), not
+        cardinality dicts.
+        """
+
+        def __init__(self, alg: Any) -> None:
+            if alg is None:
+                _raise_npe()
+            is_id = getattr(alg, "isIdempotent", None) or getattr(
+                alg, "is_idempotent", None
+            )
+            if not bool(is_id() if callable(is_id) else is_id):
+                raise IllegalArgumentException(
+                    "Alg: {0} must be idempotent".format(alg)
+                )
+            self.algebra = alg
+            con = alg.con()
+            zero_fn = getattr(con, "zero", None)
+            self.upper = zero_fn() if callable(zero_fn) else None
+            self.lower = None
+            self.blocks: List[Any] = []
+            self.numBlocks = 0
+            self.blockIndex = 0
+            self._has_next = True
+            self._resetCongs()
+
+        def _partition_equals(self, left: Any, right: Any) -> bool:
+            eq = getattr(left, "equals", None)
+            if callable(eq):
+                return bool(eq(right))
+            return left == right
+
+        def _resetCongs(self) -> bool:
+            con = self.algebra.con()
+            one_fn = getattr(con, "one", None)
+            one = one_fn() if callable(one_fn) else None
+            if self._partition_equals(self.upper, one):
+                self._has_next = False
+                return False
+            self.lower = self.upper
+            finder = getattr(con, "findUpperCover", None) or getattr(
+                con, "find_upper_cover", None
+            )
+            self.upper = finder(self.lower) if callable(finder) else self.upper
+            blocks_fn = getattr(self.upper, "getBlocks", None) or getattr(
+                self.upper, "get_blocks", None
+            )
+            raw = blocks_fn() if callable(blocks_fn) else None
+            self.blocks = list(raw) if raw is not None else []
+            nfn = getattr(self.upper, "numberOfBlocks", None) or getattr(
+                self.upper, "number_of_blocks", None
+            )
+            self.numBlocks = int(nfn() if callable(nfn) else len(self.blocks))
+            self.blockIndex = 0
+            return True
+
+        def hasNext(self) -> bool:
+            return bool(self._has_next)
+
+        def next(self) -> Any:
+            if not self._has_next:
+                raise NoSuchElementException()
+            from org.uacalc.alg import QuotientAlgebra, Subalgebra
+
+            block = self.blocks[self.blockIndex]
+            try:
+                block_list = [int(x) for x in list(block)]
+            except TypeError:
+                block_list = list(block)
+            subalg = Subalgebra(self.algebra, block_list)
+            par = subalg.restrictPartition(self.lower)
+            alg = QuotientAlgebra(subalg, par)
+            self.blockIndex += 1
+            if self.blockIndex == self.numBlocks:
+                self._resetCongs()
+            return alg
+
+        def remove(self) -> None:
+            raise UnsupportedOperationException()
+
+        def __iter__(self) -> Any:
+            return self
+
+        def __next__(self) -> Any:
+            if not self._has_next:
+                raise StopIteration
+            return self.next()
+
+    def hasNext(self: Any) -> bool:
+        fn = getattr(self, "has_next", None)
+        if callable(fn):
+            return bool(fn())
+        return bool(self.hasNext()) if type(self) is not MaltsevDecompositionIterator else self._has_next
+
+    def next(self: Any) -> Any:
+        fn = getattr(self, "__next__", None)
+        if callable(fn):
+            return fn()
+        raise NoSuchElementException()
+
+    def remove(self: Any) -> None:
+        raise UnsupportedOperationException()
+
+    alg_module_globals["MaltsevDecompositionIterator"] = MaltsevDecompositionIterator
 
     if _LibCloserTiming is not None:
         for camel, impl in (
@@ -3983,8 +4491,8 @@ def _install(alg_module_globals: dict) -> None:
     if _LibSubalgebra is not None:
         alg_module_globals["Subalgebra"] = Subalgebra
         alg_module_globals["_LibSubalgebra"] = _LibSubalgebra
+    alg_module_globals["QuotientElement"] = QuotientElement
     if _LibQuotientElement is not None:
-        alg_module_globals["QuotientElement"] = _LibQuotientElement
         alg_module_globals["_LibQuotientElement"] = _LibQuotientElement
     if _LibAlgebraFromMinimalSets is not None:
         alg_module_globals["AlgebraFromMinimalSets"] = AlgebraFromMinimalSets
@@ -4146,6 +4654,8 @@ def _install(alg_module_globals: dict) -> None:
             "setOperations": "set_operations",
             "isSuppressOutput": "is_suppress_output",
             "setSuppressOutput": "set_suppress_output",
+            "countFuncApplications": "countFuncApplications",
+            "doOneStagePartialClosure": "doOneStagePartialClosure",
         },
         "Algebras": {},
         "ProductAlgebra": {
@@ -4237,6 +4747,13 @@ def _install(alg_module_globals: dict) -> None:
             "con": "con",
             "sub": "sub",
             "makeOperationTables": "make_operation_tables",
+            "setThinGenerators": "setThinGenerators",
+            "getThinGenerators": "getThinGenerators",
+            "setDecompose": "setDecompose",
+            "getDecompose": "getDecompose",
+            "thinGenerators": "thinGenerators",
+            "transpose": "transpose",
+            "universeFromRelations": "universeFromRelations",
         },
         "BigProductAlgebra": {
             "numberOfFactors": "number_of_factors",
@@ -4266,6 +4783,16 @@ def _install(alg_module_globals: dict) -> None:
             "getBlockAlgebras": "getBlockAlgebras",
             "getQuotientAlgebra": "getQuotientAlgebra",
             "getCongruence": "getCongruence",
+            "getAlgebra": "getAlgebra",
+            "setAlgebra": "setAlgebra",
+            "setCongruence": "setCongruence",
+            "setBlockAlgebras": "setBlockAlgebras",
+            "setQuotientAlgebra": "setQuotientAlgebra",
+        },
+        "MaltsevDecompositionIterator": {
+            "hasNext": "hasNext",
+            "next": "next",
+            "remove": "remove",
         },
         "ReductAlgebra": {
             "getName": "name",

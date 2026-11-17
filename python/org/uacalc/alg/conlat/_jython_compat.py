@@ -918,6 +918,251 @@ def _install(conlat_globals: dict) -> None:
                 return self.get_basic_lattice(True)
             return self.get_basic_lattice(bool(makeIfNull))
 
+        _CL_UNIVERSE_STATE: dict = {}
+
+        def _cl_state(self: Any) -> dict:
+            return _CL_UNIVERSE_STATE.setdefault(id(self), {"k": 0, "stop": False})
+
+        def con(self: Any) -> Any:
+            """Java ``CongruenceLattice.con()`` = Con(the lattice)."""
+            lat = getBasicLattice(self)
+            fn = getattr(lat, "con", None)
+            return fn() if callable(fn) else None
+
+        def sub(self: Any) -> Any:
+            """Java ``CongruenceLattice.sub()`` = Sub(the lattice)."""
+            lat = getBasicLattice(self)
+            fn = getattr(lat, "sub", None)
+            return fn() if callable(fn) else None
+
+        def getMakeUniverseK(self: Any) -> int:
+            fn = getattr(self, "get_make_universe_k", None)
+            if callable(fn):
+                return int(fn())
+            return int(_cl_state(self).get("k", 0))
+
+        def getSizeComputed(self: Any) -> int:
+            fn = getattr(self, "get_size_computed", None)
+            if callable(fn):
+                return int(fn())
+            found = getattr(self, "universeFound", None) or getattr(
+                self, "universe_found", None
+            )
+            if callable(found) and found():
+                # Java sizeComputed is the JI-join generation count;
+                # zero is inserted afterwards and is not counted.
+                univ = self.universe()
+                n = len(list(univ))
+                return max(0, n - 1)
+            return 0
+
+        def stopMakeUniverse(self: Any) -> None:
+            fn = getattr(self, "stop_make_universe", None)
+            if callable(fn):
+                fn()
+                return
+            _cl_state(self)["stop"] = True
+
+        def sortByRank(self: Any, lst: Any) -> None:
+            """Java ``sortByRank``: descending numberOfBlocks, in place."""
+            if lst is None:
+                _raise_npe()
+
+            def _nblocks(p: Any) -> int:
+                fn = getattr(p, "numberOfBlocks", None) or getattr(
+                    p, "number_of_blocks", None
+                )
+                return int(fn() if callable(fn) else 0)
+
+            items = list(lst)
+            items.sort(key=lambda p: -_nblocks(p))
+            try:
+                lst[:] = items
+            except TypeError:
+                if hasattr(lst, "clear") and hasattr(lst, "add"):
+                    lst.clear()
+                    for item in items:
+                        lst.add(item)
+
+        def makeIrredundantMeet(self: Any, lst: Any) -> Any:
+            if lst is None:
+                _raise_npe()
+            fn = getattr(self, "make_irredundant_meet", None)
+            if callable(fn):
+                try:
+                    return list(fn(list(lst)))
+                except TypeError:
+                    pass
+            items = list(lst)
+
+            def _meet_list(parts: list) -> Any:
+                if not parts:
+                    return self.one()
+                acc = parts[0]
+                for p in parts[1:]:
+                    acc = self.meet(acc, p)
+                return acc
+
+            bot = _meet_list(items)
+            ans = []
+            ans_meet = self.one()
+            for i, a in enumerate(items):
+                rest = items[i + 1 :]
+                b = self.meet(ans_meet, _meet_list(rest))
+                eq = getattr(b, "equals", None)
+                same = bool(eq(bot)) if callable(eq) else b == bot
+                if not same:
+                    ans.append(a)
+                    ans_meet = self.meet(ans_meet, a)
+            return ans
+
+        def irredundantMeetDecompositionOld(self: Any) -> Any:
+            decomp = []
+            meet_p = self.one()
+            zero_p = self.zero()
+            while True:
+                eq = getattr(meet_p, "equals", None)
+                if callable(eq) and eq(zero_p):
+                    break
+                if meet_p == zero_p:
+                    break
+                blocks_fn = getattr(meet_p, "getBlocks", None) or getattr(
+                    meet_p, "get_blocks", None
+                )
+                blocks = list(blocks_fn()) if callable(blocks_fn) else []
+                a = -1
+                b = -1
+                for block in blocks:
+                    vals = list(block)
+                    if len(vals) > 1:
+                        a = int(vals[0])
+                        b = int(vals[1])
+                        break
+                mi = self.zero()
+                jis = list(self.joinIrreducibles())
+                related = getattr(mi, "isRelated", None) or getattr(mi, "is_related", None)
+                for ji in jis:
+                    ji_rel = getattr(ji, "isRelated", None) or getattr(
+                        ji, "is_related", None
+                    )
+                    if not bool(ji_rel(a, b)):
+                        ji_plus = self.join(mi, ji)
+                        plus_rel = getattr(ji_plus, "isRelated", None) or getattr(
+                            ji_plus, "is_related", None
+                        )
+                        if not bool(plus_rel(a, b)):
+                            mi = ji_plus
+                leq = getattr(meet_p, "leq", None)
+                if not bool(leq(mi) if callable(leq) else False):
+                    meet_p = self.meet(meet_p, mi)
+                    decomp.append(mi)
+            return makeIrredundantMeet(self, decomp)
+
+        def _gamma_is_lex_first(alpha: Any, gamma: Any) -> bool:
+            blocks_fn = getattr(alpha, "getBlocks", None) or getattr(
+                alpha, "get_blocks", None
+            )
+            blocks = list(blocks_fn()) if callable(blocks_fn) else []
+            repr_fn = getattr(gamma, "representative", None)
+            for block in blocks:
+                vals = [int(x) for x in list(block)]
+                if not vals:
+                    continue
+                previous = int(repr_fn(vals[0])) if callable(repr_fn) else vals[0]
+                for val in vals[1:]:
+                    root = int(repr_fn(val)) if callable(repr_fn) else val
+                    if previous > root:
+                        return False
+                    previous = root
+            return True
+
+        def _is_lex_rep(p: Any) -> bool:
+            fn = getattr(p, "isInitialLexRepresentative", None) or getattr(
+                p, "is_initial_lex_representative", None
+            )
+            return bool(fn() if callable(fn) else False)
+
+        def findL3Generators(self: Any) -> Any:
+            univ = list(self.universe())
+            zero_p = self.zero()
+            one_p = self.one()
+            for alpha in univ:
+                if not _is_lex_rep(alpha):
+                    continue
+                comps = list(self.complements(alpha))
+                for gamma in comps:
+                    if not _gamma_is_lex_first(alpha, gamma):
+                        continue
+                    for beta in univ:
+                        if (
+                            not self.leq(alpha, beta)
+                            and not self.leq(beta, gamma)
+                            and self.meet(alpha, beta).equals(zero_p)
+                            and self.join(gamma, beta).equals(one_p)
+                            and self.leq(self.meet(gamma, self.join(alpha, beta)), beta)
+                            and self.leq(beta, self.join(alpha, self.meet(gamma, beta)))
+                        ):
+                            ans = [alpha, beta, gamma]
+                            from org.uacalc.alg.conlat import BasicPartition
+
+                            alg = BasicPartition.unaryPolymorphismsAlgebra(ans)
+                            if int(alg.con().cardinality()) == 7:
+                                return ans
+            return None
+
+        def findLXXGenerators(self: Any) -> Any:
+            # Java scans then always returns null (the early return is commented out).
+            univ = list(self.universe())
+            zero_p = self.zero()
+            one_p = self.one()
+            for alpha in univ:
+                if not _is_lex_rep(alpha):
+                    continue
+                comps = list(self.complements(alpha))
+                for gamma in comps:
+                    if not _gamma_is_lex_first(alpha, gamma):
+                        continue
+                    for beta in univ:
+                        if (
+                            not self.leq(alpha, beta)
+                            and not self.leq(beta, gamma)
+                            and self.meet(alpha, beta).equals(zero_p)
+                            and self.join(gamma, beta).equals(one_p)
+                            and self.meet(self.join(alpha, beta), gamma).equals(zero_p)
+                        ):
+                            aplusb = self.join(alpha, beta)
+                            for delta in univ:
+                                if (
+                                    self.leq(delta, aplusb)
+                                    and self.leq(beta, delta)
+                                    and not beta.equals(delta)
+                                    and not delta.equals(aplusb)
+                                ):
+                                    pass
+            return None
+
+        def findLPJ10Generators(self: Any) -> Any:
+            # Java implementation also prints diagnostics and typically returns null.
+            univ = list(self.universe())
+            zero_p = self.zero()
+            one_p = self.one()
+            for alpha in univ:
+                if not _is_lex_rep(alpha):
+                    continue
+                comps = list(self.complements(alpha))
+                for gamma in comps:
+                    if not _gamma_is_lex_first(alpha, gamma):
+                        continue
+                    for beta in univ:
+                        if (
+                            not self.leq(alpha, beta)
+                            and not self.leq(beta, gamma)
+                            and self.meet(alpha, beta).equals(zero_p)
+                            and self.join(gamma, beta).equals(one_p)
+                        ):
+                            pass
+            return None
+
         _CL_PATCHES = {
             "getName": getName,
             "getAlgebra": getAlgebra,
@@ -1012,6 +1257,17 @@ def _install(conlat_globals: dict) -> None:
             "subtrace": subtrace,
             "getTypeFinder": getTypeFinder,
             "getJoinIrredToSubtraceMap": getJoinIrredToSubtraceMap,
+            "con": con,
+            "sub": sub,
+            "getMakeUniverseK": getMakeUniverseK,
+            "getSizeComputed": getSizeComputed,
+            "stopMakeUniverse": stopMakeUniverse,
+            "sortByRank": sortByRank,
+            "makeIrredundantMeet": makeIrredundantMeet,
+            "irredundantMeetDecompositionOld": irredundantMeetDecompositionOld,
+            "findL3Generators": findL3Generators,
+            "findLXXGenerators": findLXXGenerators,
+            "findLPJ10Generators": findLPJ10Generators,
         }
         for camel, impl in _CL_PATCHES.items():
             try:

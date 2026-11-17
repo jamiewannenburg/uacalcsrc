@@ -1,0 +1,101 @@
+{
+  "metadata": {
+    "generated_at": "2026-11-17T10:12:05.312221+00:00",
+    "jar": "uacalc.jar",
+    "package": "org.uacalc.alg_op",
+    "runtime": "jython",
+    "test_cases": 4,
+    "type": "leftover_wraps"
+  },
+  "test_cases": [
+    {
+      "args": [],
+      "call": "plus.setAssociative(True) or plus.isAssociative()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "binary OperationSymbol can be marked associative",
+      "expected_exception": null,
+      "id": "os_set_associative_true",
+      "kwargs": {},
+      "method": "OperationSymbol.setAssociative",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import OperationSymbol\nplus = OperationSymbol(\"+\", 2)\nunary = OperationSymbol(\"u\", 1)\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "unary.setAssociative(True)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "unary setAssociative(True) is IllegalArgumentException",
+      "expected_exception": null,
+      "id": "os_set_associative_unary_iae",
+      "kwargs": {},
+      "method": "OperationSymbol.setAssociative",
+      "notes": "Java exception vs Python.",
+      "result": {
+        "exception": {
+          "message": "java.lang.IllegalArgumentException: Only binary terms can be associative.",
+          "type": "IllegalArgumentException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.alg.op import OperationSymbol\nplus = OperationSymbol(\"+\", 2)\nunary = OperationSymbol(\"u\", 1)\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "OperationSymbol.getOperationSymbol(11).name()[:2]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getOperationSymbol(11) uses the uniform high-arity prefix",
+      "expected_exception": null,
+      "id": "os_get_operation_symbol_11",
+      "kwargs": {},
+      "method": "OperationSymbol.getOperationSymbol",
+      "notes": "",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "op",
+        "string_repr": "op",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import OperationSymbol\nplus = OperationSymbol(\"+\", 2)\nunary = OperationSymbol(\"u\", 1)\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "OperationSymbol.getOperationSymbol(12).name()[:2]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getOperationSymbol(12) uses the uniform high-arity prefix",
+      "expected_exception": null,
+      "id": "os_get_operation_symbol_12",
+      "kwargs": {},
+      "method": "OperationSymbol.getOperationSymbol",
+      "notes": "",
+      "result": {
+        "return_type": "unicode",
+        "return_value": "op",
+        "string_repr": "op",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.alg.op import OperationSymbol\nplus = OperationSymbol(\"+\", 2)\nunary = OperationSymbol(\"u\", 1)\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    }
+  ]
+}

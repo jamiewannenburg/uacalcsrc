@@ -235,6 +235,49 @@ def _install(op_globals: dict) -> None:
         except (TypeError, AttributeError):
             pass
 
+    def setAssociative(self: Any, assoc: Any) -> None:
+        """Java ``OperationSymbol.setAssociative(boolean)``."""
+        flag = bool(assoc)
+        arity_fn = getattr(self, "arity", None)
+        arity = int(arity_fn() if callable(arity_fn) else arity_fn)
+        if flag and arity != 2:
+            raise IllegalArgumentException(
+                "Only binary terms can be associative."
+            )
+        impl = getattr(self, "set_associative", None)
+        if callable(impl):
+            try:
+                impl(flag)
+                return
+            except ValueError as exc:
+                translate_illegal_argument(exc)
+        object.__setattr__(self, "associative", flag)
+
+    def getOperationSymbol(arity: Any) -> Any:
+        """Java ``OperationSymbol.getOperationSymbol(int)``."""
+        fn = getattr(OperationSymbol, "get_operation_symbol", None)
+        if callable(fn):
+            return fn(int(arity))
+        names = {0: "c_0", 1: "u_0", 2: "b_0", 3: "t_0"}
+        k = int(arity)
+        return OperationSymbol(names.get(k, "op{0}_0".format(k)), k)
+
+    try:
+        OperationSymbol.setAssociative = setAssociative
+    except (TypeError, AttributeError):
+        pass
+    try:
+        OperationSymbol.getOperationSymbol = staticmethod(getOperationSymbol)
+    except (TypeError, AttributeError):
+        OperationSymbol.getOperationSymbol = getOperationSymbol
+    if hasattr(OperationSymbol, "is_associative") and not hasattr(
+        OperationSymbol, "isAssociative"
+    ):
+        try:
+            OperationSymbol.isAssociative = OperationSymbol.is_associative
+        except (TypeError, AttributeError):
+            pass
+
     class Operation(object):
         """Java ``org.uacalc.alg.op.Operation`` surface (instances are bound ops)."""
 
@@ -1259,6 +1302,8 @@ def _install(op_globals: dict) -> None:
         "OperationSymbol": {
             "hashCode": "hash_code",
             "compareTo": "compare_to",
+            "setAssociative": "setAssociative",
+            "getOperationSymbol": "getOperationSymbol",
         },
         "AbstractIntOperation": {
             "intValueAt": "int_value_at",

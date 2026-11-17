@@ -25,6 +25,30 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 _JAVA_IDENTITY_TOSTRING = re.compile(r"^[\w.$]+@[0-9a-fA-F]+$")
 
 
+def _timeout_case_worker(package: str, expected: Dict[str, Any], queue: Any) -> None:
+    """Module-level spawn target; do not pass a pytest TestCase."""
+    python_dir = str(REPO_ROOT / "python")
+    if python_dir not in sys.path:
+        sys.path.insert(0, python_dir)
+
+    class _Runner(BehavioralParityTest):
+        def runTest(self) -> None:  # pragma: no cover
+            return
+
+    runner = _Runner()
+    runner.package = package
+    try:
+        queue.put(runner._execute_case(expected))
+    except Exception as exc:  # noqa: BLE001 — surface in parent
+        queue.put(
+            TestResult(
+                success=False,
+                exception_type=exception_simple_name(exc),
+                exception_message=str(exc),
+            )
+        )
+
+
 @dataclass
 class TestCaseSpec:
     """Specification for a single behavioral test case.
@@ -469,7 +493,15 @@ class BehavioralParityTest(TestCase):
         expected_result = expected["result"]
         timeout = expected.get("timeout_seconds")
         if timeout:
-            actual_result = self._execute_case_with_timeout(expected, float(timeout))
+            timeout = float(timeout)
+            # Size-3 seed 11 F(2)^2 searches complete on Linux within 120s but
+            # exceed that on Windows; keep Linux timeout, fail-fast when xfailed.
+            if (
+                sys.platform == "win32"
+                and test_id in ("malcev_term_rand_bin", "hagemann_mitschke_rand_bin")
+            ):
+                timeout = min(timeout, 20.0)
+            actual_result = self._execute_case_with_timeout(expected, timeout)
         else:
             actual_result = self._execute_case(expected)
 
@@ -564,36 +596,99 @@ class BehavioralParityTest(TestCase):
     def _execute_case_with_timeout(
         self, expected: Dict[str, Any], timeout_seconds: float
     ) -> TestResult:
-        """Run a case in a child process so a native hang fails the test."""
+        """Run a case with a timeout so a native hang fails the test.
+
+        POSIX uses ``fork`` so Linux CI behaviour is unchanged. Windows has no
+        fork; spawn cannot pickle pytest ``TestCase`` instances, so the worker
+        is a module-level function that only receives ``package`` and the
+        JSON-serializable ``expected`` dict. A daemon-thread fallback remains
+        if neither fork nor spawn is available.
+        """
         import multiprocessing as mp
+        import threading
 
-        queue: mp.Queue = mp.Queue()
+        start_methods = []
+        try:
+            start_methods = list(mp.get_all_start_methods())
+        except Exception:
+            start_methods = []
 
-        def _target() -> None:
-            queue.put(self._execute_case(expected))
+        ctx = None
+        target = None
+        args_factory = None
+        # Short Windows timeouts stay in-process: spawn child import of
+        # uacalc_lib can eat a 15s random-parity budget. Long timeouts use
+        # spawn so a hung native search can be terminated.
+        use_spawn = (
+            "spawn" in start_methods
+            and "fork" not in start_methods
+            and timeout_seconds > 30
+        )
+        if "fork" in start_methods:
+            ctx = mp.get_context("fork")
 
-        ctx = mp.get_context("fork")
-        proc = ctx.Process(target=_target)
-        proc.start()
-        proc.join(timeout_seconds)
-        if proc.is_alive():
-            proc.terminate()
-            proc.join(5)
+            def _target(queue: Any) -> None:
+                queue.put(self._execute_case(expected))
+
+            target = _target
+            args_factory = lambda q: (q,)
+        elif use_spawn:
+            ctx = mp.get_context("spawn")
+            target = _timeout_case_worker
+            args_factory = lambda q: (self.package, expected, q)
+
+        if ctx is not None:
+            queue = ctx.Queue()
+            proc = ctx.Process(target=target, args=args_factory(queue))
+            proc.start()
+            proc.join(timeout_seconds)
             if proc.is_alive():
-                proc.kill()
-                proc.join()
+                proc.terminate()
+                proc.join(5)
+                if proc.is_alive():
+                    proc.kill()
+                    proc.join()
+                self.fail(
+                    "{0} timed out after {1}s (possible hang in Malcev search)".format(
+                        expected.get("id"), timeout_seconds
+                    )
+                )
+            if queue.empty():
+                self.fail(
+                    "{0} produced no result after {1}s".format(
+                        expected.get("id"), timeout_seconds
+                    )
+                )
+            return queue.get()
+
+        result_box: List[TestResult] = []
+        error_box: List[BaseException] = []
+
+        def _run() -> None:
+            try:
+                result_box.append(self._execute_case(expected))
+            except BaseException as exc:  # noqa: BLE001 — surface in parent
+                error_box.append(exc)
+
+        thread = threading.Thread(target=_run)
+        thread.daemon = True
+        thread.start()
+        thread.join(timeout_seconds)
+        if thread.is_alive():
             self.fail(
                 "{0} timed out after {1}s (possible hang in Malcev search)".format(
                     expected.get("id"), timeout_seconds
                 )
             )
-        if queue.empty():
+        if error_box:
+            raise error_box[0]
+        if not result_box:
             self.fail(
                 "{0} produced no result after {1}s".format(
                     expected.get("id"), timeout_seconds
                 )
             )
-        return queue.get()
+        return result_box[0]
 
     def _file_payload(self, path: Any, content: str) -> Dict[str, Any]:
         return {

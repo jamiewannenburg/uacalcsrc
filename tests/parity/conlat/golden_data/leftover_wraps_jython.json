@@ -1,0 +1,299 @@
+{
+  "metadata": {
+    "generated_at": "2026-11-17T09:49:13.943393+00:00",
+    "jar": "uacalc.jar",
+    "package": "org.uacalc.conlat",
+    "runtime": "jython",
+    "test_cases": 11,
+    "type": "leftover_wraps"
+  },
+  "test_cases": [
+    {
+      "args": [],
+      "call": "int(con_c2.con().cardinality())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Con(Con(C2)) cardinality",
+      "expected_exception": null,
+      "id": "cl_con_card",
+      "kwargs": {},
+      "method": "CongruenceLattice.con",
+      "notes": "Java lattice toString is Class@hex; values compared.",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\ncon_c2 = c2.con()\ncon_n5 = n5.con()\nzero_n5 = n5.con().zero()\none_n5 = n5.con().one()\njis_n5 = list(n5.con().joinIrreducibles())\n\ndef _par_arr(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toArray\", None) or getattr(p, \"to_array\", None) or getattr(p, \"getArray\", None)\n    if callable(fn):\n        return [int(x) for x in list(fn())]\n    return str(p)\n\ndef _par_list(lst):\n    if lst is None:\n        return None\n    return [_par_arr(p) for p in list(lst)]\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "int(con_c2.sub().cardinality()) if hasattr(con_c2.sub(), 'cardinality') else int(con_c2.sub().universeSize() if hasattr(con_c2.sub(), 'universeSize') else len(list(con_c2.sub().universe())))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "Sub(Con(C2)) cardinality",
+      "expected_exception": null,
+      "id": "cl_sub_card",
+      "kwargs": {},
+      "method": "CongruenceLattice.sub",
+      "notes": "Java lattice toString is Class@hex; values compared.",
+      "result": {
+        "return_type": "int",
+        "return_value": 4,
+        "string_repr": "4",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\ncon_c2 = c2.con()\ncon_n5 = n5.con()\nzero_n5 = n5.con().zero()\none_n5 = n5.con().one()\njis_n5 = list(n5.con().joinIrreducibles())\n\ndef _par_arr(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toArray\", None) or getattr(p, \"to_array\", None) or getattr(p, \"getArray\", None)\n    if callable(fn):\n        return [int(x) for x in list(fn())]\n    return str(p)\n\ndef _par_list(lst):\n    if lst is None:\n        return None\n    return [_par_arr(p) for p in list(lst)]\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "(con_c2.universe() and 1) * con_c2.getSizeComputed()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getSizeComputed after universe() of C2",
+      "expected_exception": null,
+      "id": "cl_size_computed_after_univ",
+      "kwargs": {},
+      "method": "CongruenceLattice.getSizeComputed",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 1,
+        "string_repr": "1",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\ncon_c2 = c2.con()\ncon_n5 = n5.con()\nzero_n5 = n5.con().zero()\none_n5 = n5.con().one()\njis_n5 = list(n5.con().joinIrreducibles())\n\ndef _par_arr(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toArray\", None) or getattr(p, \"to_array\", None) or getattr(p, \"getArray\", None)\n    if callable(fn):\n        return [int(x) for x in list(fn())]\n    return str(p)\n\ndef _par_list(lst):\n    if lst is None:\n        return None\n    return [_par_arr(p) for p in list(lst)]\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "c2.con().getMakeUniverseK()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getMakeUniverseK starts at 0 on a fresh lattice",
+      "expected_exception": null,
+      "id": "cl_make_universe_k_fresh",
+      "kwargs": {},
+      "method": "CongruenceLattice.getMakeUniverseK",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 0,
+        "string_repr": "0",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\ncon_c2 = c2.con()\ncon_n5 = n5.con()\nzero_n5 = n5.con().zero()\none_n5 = n5.con().one()\njis_n5 = list(n5.con().joinIrreducibles())\n\ndef _par_arr(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toArray\", None) or getattr(p, \"to_array\", None) or getattr(p, \"getArray\", None)\n    if callable(fn):\n        return [int(x) for x in list(fn())]\n    return str(p)\n\ndef _par_list(lst):\n    if lst is None:\n        return None\n    return [_par_arr(p) for p in list(lst)]\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "con_c2.stopMakeUniverse() or True",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "stopMakeUniverse is callable",
+      "expected_exception": null,
+      "id": "cl_stop_make_universe",
+      "kwargs": {},
+      "method": "CongruenceLattice.stopMakeUniverse",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\ncon_c2 = c2.con()\ncon_n5 = n5.con()\nzero_n5 = n5.con().zero()\none_n5 = n5.con().one()\njis_n5 = list(n5.con().joinIrreducibles())\n\ndef _par_arr(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toArray\", None) or getattr(p, \"to_array\", None) or getattr(p, \"getArray\", None)\n    if callable(fn):\n        return [int(x) for x in list(fn())]\n    return str(p)\n\ndef _par_list(lst):\n    if lst is None:\n        return None\n    return [_par_arr(p) for p in list(lst)]\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "[_par_arr(p) for p in lst]",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "sortByRank orders by descending numberOfBlocks",
+      "expected_exception": null,
+      "id": "cl_sort_by_rank",
+      "kwargs": {},
+      "method": "CongruenceLattice.sortByRank",
+      "notes": "Java List toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            -1,
+            -1,
+            -1,
+            -1,
+            -1
+          ],
+          [
+            -1,
+            -2,
+            -1,
+            1,
+            -1
+          ],
+          [
+            -3,
+            0,
+            -2,
+            0,
+            2
+          ],
+          [
+            -5,
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "string_repr": "[[-1, -1, -1, -1, -1], [-1, -2, -1, 1, -1], [-3, 0, -2, 0, 2], [-5, 0, 0, 0, 0]]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\ncon_c2 = c2.con()\ncon_n5 = n5.con()\nzero_n5 = n5.con().zero()\none_n5 = n5.con().one()\njis_n5 = list(n5.con().joinIrreducibles())\n\ndef _par_arr(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toArray\", None) or getattr(p, \"to_array\", None) or getattr(p, \"getArray\", None)\n    if callable(fn):\n        return [int(x) for x in list(fn())]\n    return str(p)\n\ndef _par_list(lst):\n    if lst is None:\n        return None\n    return [_par_arr(p) for p in list(lst)]\n\nlst = [n5.con().zero(), n5.con().one()] + list(n5.con().joinIrreducibles())[:2]\ncon_n5.sortByRank(lst)\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_par_list(con_n5.makeIrredundantMeet(list(n5.con().meetIrreducibles())))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "makeIrredundantMeet of N5 meet-irreducibles",
+      "expected_exception": null,
+      "id": "cl_make_irredundant_meet",
+      "kwargs": {},
+      "method": "CongruenceLattice.makeIrredundantMeet",
+      "notes": "Java List toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            -1,
+            -1,
+            -1,
+            -1,
+            -1
+          ]
+        ],
+        "string_repr": "[[-1, -1, -1, -1, -1]]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\ncon_c2 = c2.con()\ncon_n5 = n5.con()\nzero_n5 = n5.con().zero()\none_n5 = n5.con().one()\njis_n5 = list(n5.con().joinIrreducibles())\n\ndef _par_arr(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toArray\", None) or getattr(p, \"to_array\", None) or getattr(p, \"getArray\", None)\n    if callable(fn):\n        return [int(x) for x in list(fn())]\n    return str(p)\n\ndef _par_list(lst):\n    if lst is None:\n        return None\n    return [_par_arr(p) for p in list(lst)]\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_par_list(con_n5.irredundantMeetDecompositionOld())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "irredundantMeetDecompositionOld of N5",
+      "expected_exception": null,
+      "id": "cl_irredundant_meet_old",
+      "kwargs": {},
+      "method": "CongruenceLattice.irredundantMeetDecompositionOld",
+      "notes": "Java List toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            -1,
+            -1,
+            -1,
+            -1,
+            -1
+          ]
+        ],
+        "string_repr": "[[-1, -1, -1, -1, -1]]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\ncon_c2 = c2.con()\ncon_n5 = n5.con()\nzero_n5 = n5.con().zero()\none_n5 = n5.con().one()\njis_n5 = list(n5.con().joinIrreducibles())\n\ndef _par_arr(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toArray\", None) or getattr(p, \"to_array\", None) or getattr(p, \"getArray\", None)\n    if callable(fn):\n        return [int(x) for x in list(fn())]\n    return str(p)\n\ndef _par_list(lst):\n    if lst is None:\n        return None\n    return [_par_arr(p) for p in list(lst)]\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_par_list(con_c2.findL3Generators())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "findL3Generators of C2",
+      "expected_exception": null,
+      "id": "cl_find_l3_c2",
+      "kwargs": {},
+      "method": "CongruenceLattice.findL3Generators",
+      "notes": "Java null vs Python None.",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\ncon_c2 = c2.con()\ncon_n5 = n5.con()\nzero_n5 = n5.con().zero()\none_n5 = n5.con().one()\njis_n5 = list(n5.con().joinIrreducibles())\n\ndef _par_arr(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toArray\", None) or getattr(p, \"to_array\", None) or getattr(p, \"getArray\", None)\n    if callable(fn):\n        return [int(x) for x in list(fn())]\n    return str(p)\n\ndef _par_list(lst):\n    if lst is None:\n        return None\n    return [_par_arr(p) for p in list(lst)]\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "con_c2.findLXXGenerators()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "findLXXGenerators of C2 returns null",
+      "expected_exception": null,
+      "id": "cl_find_lxx_c2",
+      "kwargs": {},
+      "method": "CongruenceLattice.findLXXGenerators",
+      "notes": "Java null vs Python None.",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\ncon_c2 = c2.con()\ncon_n5 = n5.con()\nzero_n5 = n5.con().zero()\none_n5 = n5.con().one()\njis_n5 = list(n5.con().joinIrreducibles())\n\ndef _par_arr(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toArray\", None) or getattr(p, \"to_array\", None) or getattr(p, \"getArray\", None)\n    if callable(fn):\n        return [int(x) for x in list(fn())]\n    return str(p)\n\ndef _par_list(lst):\n    if lst is None:\n        return None\n    return [_par_arr(p) for p in list(lst)]\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "con_c2.findLPJ10Generators()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "findLPJ10Generators of C2 returns null",
+      "expected_exception": null,
+      "id": "cl_find_lpj10_c2",
+      "kwargs": {},
+      "method": "CongruenceLattice.findLPJ10Generators",
+      "notes": "Java null vs Python None.",
+      "result": {
+        "return_type": "NoneType",
+        "return_value": null,
+        "string_repr": "",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\ncon_c2 = c2.con()\ncon_n5 = n5.con()\nzero_n5 = n5.con().zero()\none_n5 = n5.con().one()\njis_n5 = list(n5.con().joinIrreducibles())\n\ndef _par_arr(p):\n    if p is None:\n        return None\n    fn = getattr(p, \"toArray\", None) or getattr(p, \"to_array\", None) or getattr(p, \"getArray\", None)\n    if callable(fn):\n        return [int(x) for x in list(fn())]\n    return str(p)\n\ndef _par_list(lst):\n    if lst is None:\n        return None\n    return [_par_arr(p) for p in list(lst)]\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    }
+  ]
+}

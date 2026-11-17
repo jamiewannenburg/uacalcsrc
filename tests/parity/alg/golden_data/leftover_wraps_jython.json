@@ -1,0 +1,496 @@
+{
+  "metadata": {
+    "generated_at": "2026-11-17T09:52:50.619707+00:00",
+    "jar": "uacalc.jar",
+    "package": "org.uacalc.alg",
+    "runtime": "jython",
+    "test_cases": 20,
+    "type": "leftover_wraps"
+  },
+  "test_cases": [
+    {
+      "args": [],
+      "call": "_ias(SubProductAlgebra.transpose([IntArray([0, 1]), IntArray([1, 0])]))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "transpose of two length-2 IntArrays",
+      "expected_exception": null,
+      "id": "sp_transpose_two",
+      "kwargs": {},
+      "method": "SubProductAlgebra.transpose",
+      "notes": "Java List toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ]
+        ],
+        "string_repr": "[[0, 1], [1, 0]]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    BigProductAlgebra, Closer, MaltsevDecompositionIterator,\n    MaltsevProductDecomposition, QuotientAlgebra, QuotientElement,\n    SubProductAlgebra,\n)\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nbp2 = BigProductAlgebra(c2, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncloser = Closer(bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sp.getThinGenerators(False)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getThinGenerators default is false",
+      "expected_exception": null,
+      "id": "sp_get_thin_default",
+      "kwargs": {},
+      "method": "SubProductAlgebra.getThinGenerators",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": false,
+        "string_repr": "False",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    BigProductAlgebra, Closer, MaltsevDecompositionIterator,\n    MaltsevProductDecomposition, QuotientAlgebra, QuotientElement,\n    SubProductAlgebra,\n)\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nbp2 = BigProductAlgebra(c2, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncloser = Closer(bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sp.setThinGenerators(True) or sp.getThinGenerators(True)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "setThinGenerators True then getThinGenerators",
+      "expected_exception": null,
+      "id": "sp_set_get_thin",
+      "kwargs": {},
+      "method": "SubProductAlgebra.setThinGenerators",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    BigProductAlgebra, Closer, MaltsevDecompositionIterator,\n    MaltsevProductDecomposition, QuotientAlgebra, QuotientElement,\n    SubProductAlgebra,\n)\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nbp2 = BigProductAlgebra(c2, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncloser = Closer(bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sp.getDecompose()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getDecompose default is false",
+      "expected_exception": null,
+      "id": "sp_get_decompose_default",
+      "kwargs": {},
+      "method": "SubProductAlgebra.getDecompose",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": false,
+        "string_repr": "False",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    BigProductAlgebra, Closer, MaltsevDecompositionIterator,\n    MaltsevProductDecomposition, QuotientAlgebra, QuotientElement,\n    SubProductAlgebra,\n)\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nbp2 = BigProductAlgebra(c2, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncloser = Closer(bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "sp.setDecompose(True) or sp.getDecompose()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "setDecompose True then getDecompose",
+      "expected_exception": null,
+      "id": "sp_set_get_decompose",
+      "kwargs": {},
+      "method": "SubProductAlgebra.setDecompose",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    BigProductAlgebra, Closer, MaltsevDecompositionIterator,\n    MaltsevProductDecomposition, QuotientAlgebra, QuotientElement,\n    SubProductAlgebra,\n)\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nbp2 = BigProductAlgebra(c2, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncloser = Closer(bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_ias(sp.thinGenerators())",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "thinGenerators of a 2-generated C2 power",
+      "expected_exception": null,
+      "id": "sp_thin_generators",
+      "kwargs": {},
+      "method": "SubProductAlgebra.thinGenerators",
+      "notes": "Java List toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            0
+          ],
+          [
+            1
+          ]
+        ],
+        "string_repr": "[[0], [1]]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    BigProductAlgebra, Closer, MaltsevDecompositionIterator,\n    MaltsevProductDecomposition, QuotientAlgebra, QuotientElement,\n    SubProductAlgebra,\n)\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nbp2 = BigProductAlgebra(c2, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncloser = Closer(bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "_ias(SubProductAlgebra.universeFromRelations(2, 2, {}))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "universeFromRelations with empty rels is the full power",
+      "expected_exception": null,
+      "id": "sp_universe_from_relations_empty",
+      "kwargs": {},
+      "method": "SubProductAlgebra.universeFromRelations",
+      "notes": "Java List toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        "string_repr": "[[0, 0], [0, 1], [1, 0], [1, 1]]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    BigProductAlgebra, Closer, MaltsevDecompositionIterator,\n    MaltsevProductDecomposition, QuotientAlgebra, QuotientElement,\n    SubProductAlgebra,\n)\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nbp2 = BigProductAlgebra(c2, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncloser = Closer(bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "closer.countFuncApplications(1, 2)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "countFuncApplications from size 1 to 2 on C2^2",
+      "expected_exception": null,
+      "id": "closer_count_func_apps",
+      "kwargs": {},
+      "method": "Closer.countFuncApplications",
+      "notes": "",
+      "result": {
+        "return_type": "long",
+        "return_value": 6,
+        "string_repr": "6",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    BigProductAlgebra, Closer, MaltsevDecompositionIterator,\n    MaltsevProductDecomposition, QuotientAlgebra, QuotientElement,\n    SubProductAlgebra,\n)\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nbp2 = BigProductAlgebra(c2, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncloser = Closer(bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "closer.doOneStagePartialClosure(None, 0, 1, 0, 1, False, [], None)",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "doOneStagePartialClosure IOBE on empty rawList before map is used",
+      "expected_exception": null,
+      "id": "closer_do_one_stage_null_map",
+      "kwargs": {},
+      "method": "Closer.doOneStagePartialClosure",
+      "notes": "Java null vs Python None.",
+      "result": {
+        "exception": {
+          "message": "java.lang.IndexOutOfBoundsException: Index 0 out of bounds for length 0",
+          "type": "IndexOutOfBoundsException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    BigProductAlgebra, Closer, MaltsevDecompositionIterator,\n    MaltsevProductDecomposition, QuotientAlgebra, QuotientElement,\n    SubProductAlgebra,\n)\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nbp2 = BigProductAlgebra(c2, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncloser = Closer(bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "closer.doOneStagePartialClosure(chm, 0, 0, 0, 0, False, [], None) or True",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "doOneStagePartialClosure with numOfOps=0 is a no-op",
+      "expected_exception": null,
+      "id": "closer_do_one_stage_zero_ops",
+      "kwargs": {},
+      "method": "Closer.doOneStagePartialClosure",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    BigProductAlgebra, Closer, MaltsevDecompositionIterator,\n    MaltsevProductDecomposition, QuotientAlgebra, QuotientElement,\n    SubProductAlgebra,\n)\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nbp2 = BigProductAlgebra(c2, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncloser = Closer(bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ntry:\n    from java.util.concurrent import ConcurrentHashMap\n    from jarray import array as _jarray\n    chm = ConcurrentHashMap()\n    raw00 = _jarray([0, 0], 'i')\nexcept ImportError:\n    chm = {}\n    raw00 = [0, 0]\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "closer.doOneStagePartialClosure(chm, 0, 1, 0, 1, False, [raw00], None) or True",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "doOneStagePartialClosure NPEs when termMap is null",
+      "expected_exception": null,
+      "id": "closer_do_one_stage_worker",
+      "kwargs": {},
+      "method": "Closer.doOneStagePartialClosure",
+      "notes": "Java null vs Python None.",
+      "result": {
+        "exception": {
+          "message": "java.lang.NullPointerException: Cannot invoke \"java.util.Map.containsKey(Object)\" because \"this.termMap\" is null",
+          "type": "NullPointerException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    BigProductAlgebra, Closer, MaltsevDecompositionIterator,\n    MaltsevProductDecomposition, QuotientAlgebra, QuotientElement,\n    SubProductAlgebra,\n)\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nbp2 = BigProductAlgebra(c2, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncloser = Closer(bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\ntry:\n    from java.util.concurrent import ConcurrentHashMap\n    from jarray import array as _jarray\n    chm = ConcurrentHashMap()\n    raw00 = _jarray([0, 0], 'i')\nexcept ImportError:\n    chm = {}\n    raw00 = [0, 0]\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "decomp.getAlgebra().cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "getAlgebra returns the original algebra",
+      "expected_exception": null,
+      "id": "mpd_get_algebra_card",
+      "kwargs": {},
+      "method": "MaltsevProductDecomposition.getAlgebra",
+      "notes": "Java Algebra toString is Class@hex; values compared.",
+      "result": {
+        "return_type": "int",
+        "return_value": 5,
+        "string_repr": "5",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    BigProductAlgebra, Closer, MaltsevDecompositionIterator,\n    MaltsevProductDecomposition, QuotientAlgebra, QuotientElement,\n    SubProductAlgebra,\n)\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nbp2 = BigProductAlgebra(c2, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncloser = Closer(bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "decomp.setAlgebra(c2) or decomp.getAlgebra().cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "setAlgebra then getAlgebra cardinality",
+      "expected_exception": null,
+      "id": "mpd_set_algebra_roundtrip",
+      "kwargs": {},
+      "method": "MaltsevProductDecomposition.setAlgebra",
+      "notes": "Java Algebra toString is Class@hex; values compared.",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    BigProductAlgebra, Closer, MaltsevDecompositionIterator,\n    MaltsevProductDecomposition, QuotientAlgebra, QuotientElement,\n    SubProductAlgebra,\n)\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nbp2 = BigProductAlgebra(c2, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncloser = Closer(bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "decomp.setCongruence(n5.con().zero()) or decomp.getCongruence().numberOfBlocks()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "setCongruence then getCongruence",
+      "expected_exception": null,
+      "id": "mpd_set_congruence_roundtrip",
+      "kwargs": {},
+      "method": "MaltsevProductDecomposition.setCongruence",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 5,
+        "string_repr": "5",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    BigProductAlgebra, Closer, MaltsevDecompositionIterator,\n    MaltsevProductDecomposition, QuotientAlgebra, QuotientElement,\n    SubProductAlgebra,\n)\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nbp2 = BigProductAlgebra(c2, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncloser = Closer(bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "decomp.setBlockAlgebras([]) or len(list(decomp.getBlockAlgebras()))",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "setBlockAlgebras empty list then getBlockAlgebras",
+      "expected_exception": null,
+      "id": "mpd_set_block_algebras",
+      "kwargs": {},
+      "method": "MaltsevProductDecomposition.setBlockAlgebras",
+      "notes": "",
+      "result": {
+        "return_type": "int",
+        "return_value": 0,
+        "string_repr": "0",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    BigProductAlgebra, Closer, MaltsevDecompositionIterator,\n    MaltsevProductDecomposition, QuotientAlgebra, QuotientElement,\n    SubProductAlgebra,\n)\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nbp2 = BigProductAlgebra(c2, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncloser = Closer(bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n",
+      "skip_string_check": false,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "decomp.setQuotientAlgebra(c2) or decomp.getQuotientAlgebra().cardinality()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "setQuotientAlgebra then getQuotientAlgebra",
+      "expected_exception": null,
+      "id": "mpd_set_quotient_algebra",
+      "kwargs": {},
+      "method": "MaltsevProductDecomposition.setQuotientAlgebra",
+      "notes": "Java Algebra toString is Class@hex; values compared.",
+      "result": {
+        "return_type": "int",
+        "return_value": 2,
+        "string_repr": "2",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    BigProductAlgebra, Closer, MaltsevDecompositionIterator,\n    MaltsevProductDecomposition, QuotientAlgebra, QuotientElement,\n    SubProductAlgebra,\n)\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nbp2 = BigProductAlgebra(c2, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncloser = Closer(bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "MaltsevDecompositionIterator(n5).hasNext()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "idempotent N5 iterator hasNext",
+      "expected_exception": null,
+      "id": "mdi_has_next_n5",
+      "kwargs": {},
+      "method": "MaltsevDecompositionIterator.hasNext",
+      "notes": "Java str(true/false) vs Python str(True/False).",
+      "result": {
+        "return_type": "bool",
+        "return_value": true,
+        "string_repr": "True",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    BigProductAlgebra, Closer, MaltsevDecompositionIterator,\n    MaltsevProductDecomposition, QuotientAlgebra, QuotientElement,\n    SubProductAlgebra,\n)\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nbp2 = BigProductAlgebra(c2, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncloser = Closer(bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "mdi_cards",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "N5 MaltsevDecompositionIterator yields real algebras",
+      "expected_exception": null,
+      "id": "mdi_next_cards_n5",
+      "kwargs": {},
+      "method": "MaltsevDecompositionIterator.next",
+      "notes": "Java List toString vs Python list.",
+      "result": {
+        "return_type": "list",
+        "return_value": [
+          1,
+          2,
+          1,
+          1,
+          2,
+          2,
+          2
+        ],
+        "string_repr": "[1, 2, 1, 1, 2, 2, 2]",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    BigProductAlgebra, Closer, MaltsevDecompositionIterator,\n    MaltsevProductDecomposition, QuotientAlgebra, QuotientElement,\n    SubProductAlgebra,\n)\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nbp2 = BigProductAlgebra(c2, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncloser = Closer(bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n\nit = MaltsevDecompositionIterator(n5)\nmdi_cards = []\nwhile it.hasNext():\n    mdi_cards.append(int(it.next().cardinality()))\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "MaltsevDecompositionIterator(n5).remove()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "remove() is UnsupportedOperationException",
+      "expected_exception": null,
+      "id": "mdi_remove_uoe",
+      "kwargs": {},
+      "method": "MaltsevDecompositionIterator.remove",
+      "notes": "Java null vs Python None.",
+      "result": {
+        "exception": {
+          "message": "java.lang.UnsupportedOperationException",
+          "type": "UnsupportedOperationException"
+        },
+        "success": false
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    BigProductAlgebra, Closer, MaltsevDecompositionIterator,\n    MaltsevProductDecomposition, QuotientAlgebra, QuotientElement,\n    SubProductAlgebra,\n)\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nbp2 = BigProductAlgebra(c2, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncloser = Closer(bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    },
+    {
+      "args": [],
+      "call": "qe.getIndex()",
+      "capture_file": false,
+      "compare_exception_message": false,
+      "description": "QuotientElement(q, 0).getIndex",
+      "expected_exception": null,
+      "id": "qe_construct_index",
+      "kwargs": {},
+      "method": "QuotientElement.getIndex",
+      "notes": "Java Algebra toString is Class@hex; values compared.",
+      "result": {
+        "return_type": "int",
+        "return_value": 0,
+        "string_repr": "0",
+        "success": true
+      },
+      "setup": "\nfrom org.uacalc.io import AlgebraIO\nfrom org.uacalc.alg import (\n    BigProductAlgebra, Closer, MaltsevDecompositionIterator,\n    MaltsevProductDecomposition, QuotientAlgebra, QuotientElement,\n    SubProductAlgebra,\n)\nfrom org.uacalc.util import IntArray\nc2 = AlgebraIO.readAlgebraFile(\"resources/algebras/cyclic2.ua\")\nn5 = AlgebraIO.readAlgebraFile(\"resources/algebras/n5.ua\")\nbp2 = BigProductAlgebra(c2, 2)\ng00 = IntArray([0, 0])\ng11 = IntArray([1, 1])\nsp = SubProductAlgebra(\"SP\", bp2, [g00, g11])\ncloser = Closer(bp2, [g00, g11])\ncong = n5.con().Cg(0, 1)\ndecomp = MaltsevProductDecomposition(n5, cong)\nq = QuotientAlgebra(c2, c2.con().Cg(0, 1))\nqe = QuotientElement(q, 0)\n\ndef _ias(lst):\n    if lst is None:\n        return None\n    out = []\n    for x in list(lst):\n        try:\n            out.append([int(v) for v in list(x)])\n        except TypeError:\n            getter = getattr(x, \"getArray\", None) or getattr(x, \"to_array\", None) or getattr(x, \"get_array\", None)\n            out.append([int(v) for v in getter()] if callable(getter) else x)\n    return out\n",
+      "skip_string_check": true,
+      "timeout_seconds": null,
+      "xfail_reason": null
+    }
+  ]
+}

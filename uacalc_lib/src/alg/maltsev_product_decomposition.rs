@@ -100,6 +100,39 @@ impl PyMaltsevProductDecomposition {
         self.get_quotient_algebra()
     }
 
+    /// Java ``getAlgebra()`` as a table-backed BasicAlgebra.
+    fn get_algebra(&self) -> PyResult<PyBasicAlgebra> {
+        let alg = self.inner.get_algebra();
+        ops_to_basic_algebra(
+            alg.name().to_string(),
+            alg.cardinality(),
+            alg.operations(),
+        )
+    }
+
+    #[allow(non_snake_case)]
+    fn getAlgebra(&self) -> PyResult<PyBasicAlgebra> {
+        self.get_algebra()
+    }
+
+    fn set_algebra(&mut self, algebra: &PyBasicAlgebra) {
+        self.inner.set_algebra(algebra.clone_box());
+    }
+
+    #[allow(non_snake_case)]
+    fn setAlgebra(&mut self, algebra: &PyBasicAlgebra) {
+        self.set_algebra(algebra)
+    }
+
+    fn set_congruence(&mut self, congruence: &PyPartition) {
+        self.inner.set_congruence(congruence.get_inner().clone());
+    }
+
+    #[allow(non_snake_case)]
+    fn setCongruence(&mut self, congruence: &PyPartition) {
+        self.set_congruence(congruence)
+    }
+
     /// String representation of the decomposition.
     ///
     /// Returns:
