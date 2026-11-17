@@ -76,33 +76,29 @@ def run_cmd(
 
 
 # Java-side progress / debug lines that CPython does not mirror on stdout.
-DEFAULT_IGNORE_PREFIXES: list[str] = [
-    "oneGenerated size",
-    "pass 0 of",
-    "pass 1 of",
-    "pass 2 of",
-    "pass 3 of",
-    "pass: ",
-    "pass ",
-    "labels has size",
-    "ucs has size",
-    "universe size:",
-    "depth is ",
-    "Constructing free algebra",
-    "projs size",
-    "done constructing free algebra",
-    "made the free algebra",
-    "gens v length",
-    "map =",
-    "tmp =",
-    "table[j]",
-    "tmp.length",
-    "i = ",
-    "fails to commute",
-    "null InputStream",
-    "need a file name of an algebra",
+# Anchored regexes only — avoid broad prefixes that could hide real probes.
+DEFAULT_IGNORE_LINE_PATTERNS: list[str] = [
+    r"^oneGenerated size = \d+$",
+    r"^pass \d+ of \d+, size = \d+$",
+    r"^pass: \d+, size: \d+$",
+    r"^labels has size \d+$",
+    r"^ucs has size \d+$",
+    r"^universe size: \d+$",
+    r"^depth is -?\d+$",
+    r"^Constructing free algebra on \d+ generators over .+$",
+    r"^projs size = \d+$",
+    r"^done constructing free algebra, size = \d+$",
+    r"^made the free algebra, but haven't found the elements\.$",
+    r"^gens v length = \d+$",
+    r"^map = .+$",
+    r"^tmp = .+$",
+    r"^i = \d+, j = \d+$",
+    r"^table\[j\]\[i\] = -?\d+$",
+    r"^tmp\.length = \d+$",
+    r"^fails to commute at .+$",
+    r"^null InputStream$",
+    r"^need a file name of an algebra$",
 ]
-
 
 def normalize_comparison_line(line: str) -> str:
     """Cosmetic stdout normalization (repr/format), not value hiding."""
@@ -117,10 +113,20 @@ def normalize_comparison_line(line: str) -> str:
     return line
 
 
-def filter_lines(text: str, ignore_prefixes: list[str]) -> list[str]:
+def _line_ignored(line: str, ignore_rules: list[str]) -> bool:
+    for rule in ignore_rules:
+        if rule.startswith("^") or rule.endswith("$") or "\\" in rule:
+            if re.match(rule, line):
+                return True
+        elif line.startswith(rule):
+            return True
+    return False
+
+
+def filter_lines(text: str, ignore_rules: list[str]) -> list[str]:
     lines = []
     for line in text.splitlines():
-        if any(line.startswith(prefix) for prefix in ignore_prefixes):
+        if _line_ignored(line, ignore_rules):
             continue
         lines.append(normalize_comparison_line(line))
     return lines
@@ -130,7 +136,7 @@ def compare_outputs(
     jython_out: str,
     python_out: str,
     *,
-    ignore_prefixes: list[str] | None = None,
+    ignore_rules: list[str] | None = None,
     ignore_universe_line: bool = False,
 ) -> tuple[bool, str, str]:
     """
@@ -139,14 +145,14 @@ def compare_outputs(
     if jython_out == python_out:
         return True, jython_out, python_out
 
-    prefixes = list(ignore_prefixes or [])
-    if ignore_universe_line and "Universe:" not in prefixes:
-        prefixes.append("Universe:")
-    if not prefixes:
+    rules = list(ignore_rules or [])
+    if ignore_universe_line and "Universe:" not in rules:
+        rules.append("Universe:")
+    if not rules:
         return False, jython_out, python_out
 
-    j_norm = "\n".join(filter_lines(jython_out, prefixes))
-    p_norm = "\n".join(filter_lines(python_out, prefixes))
+    j_norm = "\n".join(filter_lines(jython_out, rules))
+    p_norm = "\n".join(filter_lines(python_out, rules))
     return j_norm == p_norm, j_norm, p_norm
 
 
@@ -232,15 +238,15 @@ def compare_one_script(
     *,
     repo: Path,
     args: argparse.Namespace,
-    ignore_prefixes: list[str] | None = None,
+    ignore_rules: list[str] | None = None,
 ) -> bool:
     ignore_u = not args.no_ignore_universe
-    prefixes = list(DEFAULT_IGNORE_PREFIXES)
-    for p in ignore_prefixes or []:
-        if p not in prefixes:
-            prefixes.append(p)
-    if ignore_u and "Universe:" not in prefixes:
-        prefixes.append("Universe:")
+    rules = list(DEFAULT_IGNORE_LINE_PATTERNS)
+    for p in ignore_rules or []:
+        if p not in rules:
+            rules.append(p)
+    if ignore_u and "Universe:" not in rules:
+        rules.append("Universe:")
 
     jython_env = os.environ.copy()
     jython_env["CLASSPATH"] = args.classpath
@@ -274,7 +280,7 @@ def compare_one_script(
     match, j_cmp, p_cmp = compare_outputs(
         jython_out,
         python_out,
-        ignore_prefixes=prefixes,
+        ignore_rules=rules,
         ignore_universe_line=False,
     )
     ok = j_code == 0 and p_code == 0 and match
@@ -308,7 +314,7 @@ def compare_one_script(
     if j_code == 0 and p_code == 0:
         print(
             "Stdout mismatch after comparison rules "
-            f"(ignore_prefixes={prefixes!r}).",
+            f"(ignore_rules={rules!r}).",
             file=sys.stderr,
         )
 
@@ -374,7 +380,7 @@ def main() -> int:
             ok = False
             continue
         if not compare_one_script(
-            script, repo=repo, args=args, ignore_prefixes=list(ignore)
+            script, repo=repo, args=args, ignore_rules=list(ignore)
         ):
             ok = False
 

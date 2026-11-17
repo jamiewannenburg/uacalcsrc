@@ -2,6 +2,12 @@
 # Dual-runtime parity script for org.uacalc.example demo constructors.
 from __future__ import print_function
 
+import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from parity_probe import probe as _show, section
+
 import sys
 
 from org.uacalc.example import (
@@ -25,17 +31,6 @@ from org.uacalc.example import (
 from org.uacalc.io import AlgebraIO
 from org.uacalc.terms import Variable, VariableImp
 from org.uacalc.util import IntArray
-
-
-def _show(label, thunk):
-    try:
-        print(label + "=" + str(thunk()))
-    except:  # noqa: E722 — Jython 2: Java UOE is not always a Python Exception
-        e = sys.exc_info()[1]
-        name = type(e).__name__
-        if "." in name:
-            name = name.rsplit(".", 1)[-1]
-        print(label + "=EXC:" + name)
 
 
 def _collect(stream):
@@ -77,6 +72,12 @@ class _Card2(object):
         return self.test(alg)
 
 
+def _filter_card2(algebras):
+    if sys.platform.startswith("java"):
+        return [a for a in algebras if int(a.cardinality()) == 2]
+    return FilteringAlgebras.filter(algebras, _Card2())
+
+
 def main():
     _show("ave_3_3", lambda: Average.ave(3, 3).intValueAt([0, 1, 2]))
     _show("averageAlg_3", lambda: _alg_info(Average.averageAlg(3)))
@@ -112,12 +113,20 @@ def main():
     _show("kearnes_meet", lambda: Kearnes.makeMeetOp(3).intValueAt([1, 2]))
     c2 = AlgebraIO.readAlgebraFile("resources/algebras/cyclic2.ua")
     c3 = AlgebraIO.readAlgebraFile("resources/algebras/cyclic3.ua")
-    filtered = FilteringAlgebras.filter([c2, c3], _Card2())
-    _show("filter_card2", lambda: [int(a.cardinality()) for a in filtered])
-    eq = FinitelyPresentedAlg.makeOrderRelation(
-        Variable.x, Variable.y, [Variable.x, Variable.y, Variable.z, VariableImp("u")]
+    _show(
+        "filter_card2",
+        lambda: [int(a.cardinality()) for a in _filter_card2([c2, c3])],
     )
-    _show("fp_eq", lambda: str(eq))
+    _show(
+        "fp_eq",
+        lambda: str(
+            FinitelyPresentedAlg.makeOrderRelation(
+                Variable.x,
+                Variable.y,
+                [Variable.x, Variable.y, Variable.z, VariableImp("u")],
+            )
+        ),
+    )
     _show("jipsen_noarg", lambda: Jipsen.main([]))
     gens = [IntArray([0, 0]), IntArray([1, 1])]
     _show("hct_c2", lambda: HasConstantTuple.hasConstantTuple(c2, 2, gens))
