@@ -7,6 +7,7 @@ import os
 import subprocess
 import threading
 import time
+import _thread
 
 import pytest
 
@@ -120,6 +121,94 @@ def _stress_lib_con_universe(con: uacalc_lib.alg.CongruenceLattice, repeats: int
         uacalc_lib.alg, "_stress_con_universe"
     )
     return stress(con, repeats)
+
+
+def _reset_cooperative_limits() -> None:
+    """No limits and no pending cancel (production default)."""
+    uacalc_lib.set_memory_limit(None)
+    uacalc_lib.set_element_limit(None)
+    uacalc_lib.set_time_limit(None)
+    uacalc_lib.clear_cancel()
+
+
+def _fresh_m4_sub():
+    return uacalc_lib.alg.SubalgebraLattice(_m4_lib_algebra())
+
+
+def _fresh_lyndon_con():
+    return uacalc_lib.alg.CongruenceLattice(_lyndon_lib_algebra())
+
+
+def _production_sub_universe_stress() -> None:
+    """Fresh ``SubalgebraLattice.universe()`` each iteration (PyO3 + allow_threads path)."""
+    i = 0
+    while i < STRESS_REPEATS:
+        _fresh_m4_sub().universe()
+        i += 1
+
+
+def _production_sub_cardinality_stress() -> None:
+    i = 0
+    while i < STRESS_REPEATS:
+        _fresh_m4_sub().cardinality()
+        i += 1
+
+
+def _production_sub_join_irreducibles_stress() -> None:
+    i = 0
+    while i < STRESS_REPEATS:
+        _fresh_m4_sub().join_irreducibles()
+        i += 1
+
+
+def _production_sub_one_generated_stress() -> None:
+    i = 0
+    while i < STRESS_REPEATS:
+        _fresh_m4_sub().one_generated_subalgebras()
+        i += 1
+
+
+def _production_sub_filter_stress() -> None:
+    i = 0
+    while i < STRESS_REPEATS:
+        sub = _fresh_m4_sub()
+        one = sub.zero()
+        sub.filter(one)
+        i += 1
+
+
+def _production_con_universe_stress() -> None:
+    i = 0
+    while i < STRESS_REPEATS:
+        list(_fresh_lyndon_con().universe())
+        i += 1
+
+
+def _cancel_from_other_thread_background(work, *, recovery_check) -> None:
+    """`work()` runs on a worker; main thread calls `cancel()` after start."""
+    _reset_cooperative_limits()
+    started = threading.Event()
+    outcome: dict = {"exc": None}
+
+    def run() -> None:
+        started.set()
+        try:
+            work()
+            outcome["exc"] = "completed"
+        except KeyboardInterrupt as exc:
+            outcome["exc"] = exc
+
+    thread = threading.Thread(target=run)
+    cancel_t0 = time.perf_counter()
+    thread.start()
+    assert started.wait(timeout=30.0)
+    time.sleep(CANCEL_WAKE_SEC)
+    uacalc_lib.cancel()
+    thread.join(timeout=GENEROUS_TEST_BOUND_SEC)
+    assert isinstance(outcome["exc"], KeyboardInterrupt), outcome["exc"]
+    assert time.perf_counter() - cancel_t0 < GENEROUS_TEST_BOUND_SEC
+    _reset_cooperative_limits()
+    recovery_check()
 
 
 def test_limit_setters_exported():
@@ -569,6 +658,115 @@ def test_lib_con_universe_cancel_from_other_thread():
     assert time.perf_counter() - cancel_t0 < GENEROUS_TEST_BOUND_SEC
     uacalc_lib.clear_cancel()
     assert len(list(_lyndon_lib_algebra().con().universe())) >= LYNDON_CON_CARD_MIN
+
+
+def _recovery_m4_sub_cardinality() -> None:
+    assert _m4_lib_algebra().sub().cardinality() == M4_SUB_CARD
+
+
+def test_lib_subalgebra_universe_cancel_no_limits_production_background():
+    """Production ``universe()`` with no limits set; cancel from another thread."""
+    _cancel_from_other_thread_background(
+        _production_sub_universe_stress,
+        recovery_check=_recovery_m4_sub_cardinality,
+    )
+
+
+def test_lib_subalgebra_cardinality_cancel_no_limits_production_background():
+    _cancel_from_other_thread_background(
+        _production_sub_cardinality_stress,
+        recovery_check=_recovery_m4_sub_cardinality,
+    )
+
+
+def test_lib_subalgebra_join_irreducibles_cancel_no_limits_production_background():
+    def recovery() -> None:
+        assert len(_m4_lib_algebra().sub().join_irreducibles()) > 0
+
+    _cancel_from_other_thread_background(
+        _production_sub_join_irreducibles_stress,
+        recovery_check=recovery,
+    )
+
+
+def test_lib_subalgebra_one_generated_cancel_no_limits_production_background():
+    def recovery() -> None:
+        assert len(_m4_lib_algebra().sub().one_generated_subalgebras()) > 0
+
+    _cancel_from_other_thread_background(
+        _production_sub_one_generated_stress,
+        recovery_check=recovery,
+    )
+
+
+def test_lib_subalgebra_filter_cancel_no_limits_production_background():
+    _cancel_from_other_thread_background(
+        _production_sub_filter_stress,
+        recovery_check=_recovery_m4_sub_cardinality,
+    )
+
+
+def test_lib_con_universe_cancel_no_limits_production_background():
+    def recovery() -> None:
+        assert len(list(_lyndon_lib_algebra().con().universe())) >= LYNDON_CON_CARD_MIN
+
+    _cancel_from_other_thread_background(
+        _production_con_universe_stress,
+        recovery_check=recovery,
+    )
+
+
+def test_lib_subalgebra_universe_signal_interrupt_no_limits_on_main_thread():
+    """Signal hook path on main thread with no cooperative limits configured."""
+    _reset_cooperative_limits()
+    poke_ready = threading.Event()
+    started = threading.Event()
+
+    def poke() -> None:
+        assert started.wait(timeout=30.0)
+        time.sleep(CANCEL_WAKE_SEC)
+        _thread.interrupt_main()
+
+    threading.Thread(target=poke, daemon=True).start()
+    started.set()
+    t0 = time.perf_counter()
+    with pytest.raises(KeyboardInterrupt):
+        _production_sub_universe_stress()
+    assert time.perf_counter() - t0 < GENEROUS_TEST_BOUND_SEC
+    _reset_cooperative_limits()
+    assert _m4_lib_algebra().sub().cardinality() == M4_SUB_CARD
+
+
+def test_lib_con_universe_signal_interrupt_no_limits_on_main_thread():
+    _reset_cooperative_limits()
+    started = threading.Event()
+
+    def poke() -> None:
+        assert started.wait(timeout=30.0)
+        time.sleep(CANCEL_WAKE_SEC)
+        _thread.interrupt_main()
+
+    threading.Thread(target=poke, daemon=True).start()
+    started.set()
+    t0 = time.perf_counter()
+    with pytest.raises(KeyboardInterrupt):
+        _production_con_universe_stress()
+    assert time.perf_counter() - t0 < GENEROUS_TEST_BOUND_SEC
+    _reset_cooperative_limits()
+    assert len(list(_lyndon_lib_algebra().con().universe())) >= LYNDON_CON_CARD_MIN
+
+
+def test_lib_subalgebra_memory_limit_propagates_on_allow_threads_worker():
+    """Limits set on the main thread apply inside ``allow_threads`` lattice workers."""
+    _reset_cooperative_limits()
+    sub = _fresh_m4_sub()
+    uacalc_lib.set_memory_limit(PYTHON_SUB_MEM_LOW)
+    try:
+        with pytest.raises(MemoryError, match="memory limit"):
+            sub.universe()
+    finally:
+        _reset_cooperative_limits()
+    assert len(_fresh_m4_sub().universe()) == M4_SUB_CARD
 
 
 def test_org_product_lazy_get_table_memory_and_recovery():

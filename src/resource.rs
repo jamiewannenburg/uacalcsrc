@@ -300,17 +300,61 @@ pub fn cancel_requested() -> bool {
     CANCEL_REQUESTED.load(Ordering::SeqCst)
 }
 
-/// True when any cooperative limit or cancel is in play (tests / user configuration).
-pub fn cooperative_limits_active() -> bool {
-    cancel_requested() || LIMITS_CONFIGURED.load(Ordering::Acquire)
+/// True when any thread has configured a cooperative limit (global flag, see [`sync_limits_configured`]).
+pub fn limits_configured_globally() -> bool {
+    LIMITS_CONFIGURED.load(Ordering::Acquire)
 }
 
-/// Enter a computation scope only when limits are active (fast path for overhead-free runs).
+/// Enter a computation scope only when a limit is configured (not for cancel alone).
+///
+/// Cancel and Python signals are still honored via [`checkpoint`] / [`poll_cancel`] on the
+/// global cancel flag and signal hook without a scope. Core lattice paths may still enter
+/// their own inner scopes.
 pub fn maybe_computation_scope() -> Option<ComputationScope> {
-    if cooperative_limits_active() {
+    if limits_configured_globally() {
         Some(ComputationScope::enter())
     } else {
         None
+    }
+}
+
+/// Limit knobs from the thread that schedules `py.allow_threads` work (usually the main thread).
+#[derive(Clone, Copy, Debug)]
+pub struct WorkerLimitsSnapshot {
+    memory_limit: Option<u64>,
+    element_limit: Option<u64>,
+    time_limit: Option<Duration>,
+}
+
+/// Copy configured limits from the current thread before moving closure to a worker thread.
+pub fn snapshot_worker_limits() -> WorkerLimitsSnapshot {
+    with_state(|s| WorkerLimitsSnapshot {
+        memory_limit: s.memory_limit,
+        element_limit: s.element_limit,
+        time_limit: s.time_limit,
+    })
+}
+
+fn install_worker_limits(snapshot: WorkerLimitsSnapshot) {
+    with_state(|s| {
+        s.memory_limit = snapshot.memory_limit;
+        s.element_limit = snapshot.element_limit;
+        s.time_limit = snapshot.time_limit;
+    });
+}
+
+/// RAII: install caller limits on a worker thread and optionally open a top-level scope.
+pub struct AllowThreadsResourceGuard {
+    _scope: Option<ComputationScope>,
+}
+
+impl AllowThreadsResourceGuard {
+    /// Call at the start of every `py.allow_threads` lattice/closure body.
+    pub fn enter() -> Self {
+        install_worker_limits(snapshot_worker_limits());
+        AllowThreadsResourceGuard {
+            _scope: maybe_computation_scope(),
+        }
     }
 }
 
@@ -646,6 +690,35 @@ mod tests {
         let _scope = ComputationScope::enter();
         thread::sleep(Duration::from_millis(5));
         assert!(matches!(checkpoint_force(), Err(UaError::TimeLimit)));
+    }
+
+    #[test]
+    fn worker_inherits_caller_memory_limit() {
+        clear_cancel();
+        set_memory_limit(Some(64));
+        let snap = snapshot_worker_limits();
+        set_memory_limit(None);
+        let err = thread::spawn(move || {
+            install_worker_limits(snap);
+            let _scope = maybe_computation_scope();
+            try_charge(128)
+        })
+        .join()
+        .unwrap();
+        assert!(matches!(err, Err(UaError::Memory { .. })));
+        reset_all_limits();
+    }
+
+    #[test]
+    fn cancel_without_scope_or_limits_at_checkpoints() {
+        clear_cancel();
+        reset_all_limits();
+        for _ in 0..CHECKPOINT_INTERVAL - 1 {
+            checkpoint().unwrap();
+        }
+        request_cancel();
+        assert!(matches!(checkpoint(), Err(UaError::Interrupted)));
+        clear_cancel();
     }
 
     #[test]

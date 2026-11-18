@@ -13,6 +13,12 @@ Cooperative **per-computation** limits live in the Rust core. There is no subpro
 | `clear_cancel()` | Clear the cancel flag without consuming it |
 | `checkpoint()` | Poll limits/cancel from pure-Python loops (e.g. org term table build) |
 
+Limit configuration (`set_*_limit`) is **thread-local**: only the thread that called the setter stores the values in its TLS budget.
+
+When Python releases the GIL (`py.allow_threads` on `SubalgebraLattice` / `CongruenceLattice` methods), the worker thread copies the caller’s limit snapshot via `AllowThreadsResourceGuard::enter()` before running checked Rust code, so limits set on the main thread still apply inside the worker. The global `LIMITS_CONFIGURED` atomic reflects whether **any** thread has a non-`None` limit (used to decide whether to open a top-level `ComputationScope` on the fast path).
+
+**Cancel** and **Python signals** do not require a scope: `cancel()` sets a global flag read at every [`CHECKPOINT_INTERVAL`] (256) step and in `poll_cancel` / `checkpoint_force`. With no limits configured, lattice code may skip the outer `ComputationScope` but checkpoints and the signal hook still run on the inner loops.
+
 Limits apply when a **top-level** `ComputationScope` starts (e.g. `Closer.sg_close`, `con_cardinality`, `SubalgebraLattice.cardinality` / `universe`). Nested scopes share the same budget and do **not** reset counters.
 
 Parallel closure workers attach to a **shared budget** (`SharedBudget`) so charges and checkpoints on all threads count against one computation.

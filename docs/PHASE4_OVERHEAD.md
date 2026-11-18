@@ -6,7 +6,7 @@ Measured via `tools/benchmark_resource_limits_phase4.py` (`--repeats 5 --runs 21
 
 | Workload | `origin/jython` (9aa319b) ms | Phase 4 branch ms | Δ (%) |
 |----------|------------------------------|-------------------|-------|
-| `SubalgebraLattice.universe` (m4) | 1.603 | 1.631 | **+1.7%** |
+| `SubalgebraLattice.universe` (m4) | 1.603 | 1.528 | **−4.7%** |
 | Lazy product `get_table_force` (m4²) | 4.029 | 4.236 | **+5.1%** |
 | `Closer.close` (m4², one generator) | 0.486 | 0.588 | **+21.0%** |
 | org `TermOperationImp.getTable(true)` (m4, x₀) | 1.668 | 1.845 | **+10.6%** |
@@ -14,7 +14,7 @@ Measured via `tools/benchmark_resource_limits_phase4.py` (`--repeats 5 --runs 21
 
 Interpretation:
 
-- Subalgebra `universe` stays within the ~3% regression budget: Python paths skip `ComputationScope::enter` when no cooperative limits are configured (`maybe_computation_scope` + `LIMITS_CONFIGURED` atomics); checkpoint interval remains **256** in core `resource.rs`.
+- Subalgebra `universe` stays within the ~3% regression budget: Python paths skip the outer `ComputationScope` when no limits are configured (`maybe_computation_scope` + `LIMITS_CONFIGURED`); cancel/signals still use checkpoints every **256** steps. Workers copy caller limits via `AllowThreadsResourceGuard`.
 - Closure org term-table noise is higher on this worker at 21-run medians; earlier 9-run samples showed net wins—re-check on CI release builds.
 - `find_type_set` is slightly faster than jython on this pin.
 

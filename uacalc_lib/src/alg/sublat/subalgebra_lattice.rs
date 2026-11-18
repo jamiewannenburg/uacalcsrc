@@ -111,7 +111,7 @@ impl PySubalgebraLattice {
         let lat = std::sync::Arc::clone(&self.inner);
         let one_gens = py
             .allow_threads(move || {
-                let _scope = uacalc::resource::maybe_computation_scope();
+                let _resource = crate::worker_limits::AllowThreadsResourceGuard::enter();
                 lat.lock()
                     .unwrap()
                     .one_generated_subalgebras_checked()
@@ -132,7 +132,7 @@ impl PySubalgebraLattice {
         let lat = std::sync::Arc::clone(&self.inner);
         let jis = py
             .allow_threads(move || {
-                let _scope = uacalc::resource::maybe_computation_scope();
+                let _resource = crate::worker_limits::AllowThreadsResourceGuard::enter();
                 lat.lock()
                     .unwrap()
                     .join_irreducibles_checked()
@@ -231,7 +231,7 @@ impl PySubalgebraLattice {
         let lat = std::sync::Arc::clone(&self.inner);
         let univ = py
             .allow_threads(move || {
-                let _scope = uacalc::resource::maybe_computation_scope();
+                let _resource = crate::worker_limits::AllowThreadsResourceGuard::enter();
                 lat.lock()
                     .unwrap()
                     .universe_checked()
@@ -252,7 +252,7 @@ impl PySubalgebraLattice {
         let lat = std::sync::Arc::clone(&self.inner);
         let n = py
             .allow_threads(move || {
-                let _scope = uacalc::resource::maybe_computation_scope();
+                let _resource = crate::worker_limits::AllowThreadsResourceGuard::enter();
                 lat.lock().unwrap().cardinality_checked()
             })
             .map_err(|e| crate::resource::ua_to_py(e, py))?;
@@ -271,7 +271,7 @@ impl PySubalgebraLattice {
         let lat = std::sync::Arc::clone(&self.inner);
         let filtered = py
             .allow_threads(move || {
-                let _scope = uacalc::resource::maybe_computation_scope();
+                let _resource = crate::worker_limits::AllowThreadsResourceGuard::enter();
                 lat.lock()
                     .unwrap()
                     .filter_checked(&element)

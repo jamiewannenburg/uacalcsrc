@@ -1,6 +1,7 @@
 use pyo3::prelude::*;
 
 pub mod resource;
+pub mod worker_limits;
 pub mod alg;
 pub mod element;
 pub mod eq;
