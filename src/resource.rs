@@ -310,6 +310,14 @@ pub fn charge_kept_partition(universe_size: usize) -> Result<(), UaError> {
     try_charge_element()
 }
 
+/// Estimate for one newly kept subalgebra-lattice element (`BasicSet`).
+pub fn charge_kept_subalgebra(encoded_size: usize) -> Result<(), UaError> {
+    const BASICSET_OVERHEAD: u64 = 48;
+    let bytes = BASICSET_OVERHEAD + (encoded_size as u64).saturating_mul(4);
+    try_charge(bytes)?;
+    try_charge_element()
+}
+
 /// Allocate a flat `i32` op table with charging and checked size.
 pub fn alloc_i32_table(n: usize, arity: u32) -> Result<Vec<i32>, UaError> {
     let table_size = n

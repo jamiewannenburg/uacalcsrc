@@ -12,6 +12,7 @@ from org.uacalc._exceptions import (
     ArrayIndexOutOfBoundsException,
     IllegalArgumentException,
     NullPointerException,
+    OutOfMemoryError,
     UnsupportedOperationException,
     translate_illegal_argument,
 )
@@ -34,6 +35,8 @@ def _install(sublat_globals: dict) -> None:
     _ORIG_SL_LEQ = getattr(_LibSubalgebraLattice, "leq", None)
     _ORIG_SL_SG = getattr(_LibSubalgebraLattice, "sg", None)
     _ORIG_SL_FILTER = getattr(_LibSubalgebraLattice, "filter", None)
+    _ORIG_SL_CARD = getattr(_LibSubalgebraLattice, "cardinality", None)
+    _ORIG_SL_UNIVERSE = getattr(_LibSubalgebraLattice, "universe", None)
 
     def _raise_npe(what: str = "null") -> None:
         raise NullPointerException(what)
@@ -41,6 +44,10 @@ def _install(sublat_globals: dict) -> None:
     def _lib_call(fn, *args, **kwargs):
         try:
             return fn(*args, **kwargs)
+        except MemoryError as exc:
+            raise OutOfMemoryError(str(exc)) from exc
+        except (KeyboardInterrupt, TimeoutError):
+            raise
         except ValueError as exc:
             msg = str(exc)
             if "generating sets must have the same size" in msg:
@@ -436,8 +443,18 @@ def _install(sublat_globals: dict) -> None:
         if elt is None:
             _raise_npe()
         if callable(_ORIG_SL_FILTER):
-            return list(_ORIG_SL_FILTER(self, elt))
+            return list(_lib_call(_ORIG_SL_FILTER, self, elt))
         return [x for x in self.universe() if leq_sl(self, elt, x)]
+
+    def cardinality(self: Any) -> int:
+        if callable(_ORIG_SL_CARD):
+            return int(_lib_call(_ORIG_SL_CARD, self))
+        raise UnsupportedOperationException("cardinality")
+
+    def universe(self: Any) -> list:
+        if callable(_ORIG_SL_UNIVERSE):
+            return list(_lib_call(_ORIG_SL_UNIVERSE, self))
+        raise UnsupportedOperationException("universe")
 
     def getBasicLattice(self: Any, makeIfNull: Optional[bool] = None) -> Any:
         fn = getattr(self, "get_basic_lattice", None)
@@ -580,6 +597,8 @@ def _install(sublat_globals: dict) -> None:
         "makeSg": makeSg,
         "joinClosure": joinClosure,
         "filter": filter,
+        "cardinality": cardinality,
+        "universe": universe,
         "getBasicLattice": getBasicLattice,
         "inputSize": inputSize,
         "isSmallerThan": isSmallerThan,

@@ -40,6 +40,8 @@ JAVA_LOW_XMX_MB = 32
 JAVA_HIGH_XMX_MB = 512
 JAVA_SUBPROCESS_TIMEOUT_SEC = 180
 TIME_LIMIT_REALISTIC_SEC = 0.2
+M4_SUB_CARD = 31
+LYNDON_CON_CARD_MIN = 10
 
 
 def _repo_root() -> str:
@@ -78,7 +80,17 @@ def _heavy_lib_closer() -> uacalc_lib.alg.Closer:
 
 def _stress_lib_closer(closer: uacalc_lib.alg.Closer, repeats: int) -> None:
     closer.set_suppress_output(True)
-    uacalc_lib.alg._stress_sg_close_power(closer, repeats)
+    stress = getattr(uacalc_lib.alg, "stress_sg_close_power", None) or getattr(
+        uacalc_lib.alg, "_stress_sg_close_power"
+    )
+    stress(closer, repeats)
+
+
+def _stress_lib_sub_universe(sub: uacalc_lib.alg.SubalgebraLattice, repeats: int) -> int:
+    stress = getattr(uacalc_lib.alg, "stress_sub_universe", None) or getattr(
+        uacalc_lib.alg, "_stress_sub_universe"
+    )
+    return stress(sub, repeats)
 
 
 def test_limit_setters_exported():
@@ -184,6 +196,96 @@ def test_limits_reset_allows_repeat_after_failure():
     uacalc_lib.set_memory_limit(None)
     op = LibOps.make_int_operation("h", 2, 2, [0, 1, 1, 0])
     assert op is not None
+
+
+def _m4_lib_algebra():
+    os.chdir(_repo_root())
+    path = os.path.join(_repo_root(), "resources", "algebras", "m4.ua")
+    return uacalc_lib.io.AlgebraReader.new_from_file(path).read_algebra_file()
+
+
+def _lyndon_lib_algebra():
+    os.chdir(_repo_root())
+    path = os.path.join(_repo_root(), "resources", "algebras", "lyndon.ua")
+    return uacalc_lib.io.AlgebraReader.new_from_file(path).read_algebra_file()
+
+
+def test_lib_subalgebra_cardinality_memory_and_recompute():
+    sub = _m4_lib_algebra().sub()
+    uacalc_lib.set_memory_limit(64)
+    try:
+        with pytest.raises(MemoryError, match="memory limit"):
+            sub.cardinality()
+    finally:
+        uacalc_lib.set_memory_limit(None)
+    card = sub.cardinality()
+    assert card == M4_SUB_CARD
+    assert sub.cardinality() == card
+
+
+def test_lib_subalgebra_universe_element_limit():
+    sub = _m4_lib_algebra().sub()
+    uacalc_lib.set_element_limit(4)
+    try:
+        with pytest.raises(MemoryError, match="element limit"):
+            sub.universe()
+    finally:
+        uacalc_lib.set_element_limit(None)
+    assert len(sub.universe()) == M4_SUB_CARD
+
+
+def test_lib_subalgebra_cancel_from_other_thread():
+    uacalc_lib.clear_cancel()
+    started = threading.Event()
+    outcome: dict = {"exc": None}
+
+    def run() -> None:
+        sub = _m4_lib_algebra().sub()
+        started.set()
+        try:
+            _stress_lib_sub_universe(sub, STRESS_REPEATS)
+            outcome["exc"] = "completed"
+        except KeyboardInterrupt as exc:
+            outcome["exc"] = exc
+
+    thread = threading.Thread(target=run)
+    cancel_t0 = time.perf_counter()
+    thread.start()
+    assert started.wait(timeout=30.0)
+    time.sleep(CANCEL_WAKE_SEC)
+    uacalc_lib.cancel()
+    thread.join(timeout=GENEROUS_TEST_BOUND_SEC)
+    assert isinstance(outcome["exc"], KeyboardInterrupt)
+    assert time.perf_counter() - cancel_t0 < GENEROUS_TEST_BOUND_SEC
+    uacalc_lib.clear_cancel()
+    assert _m4_lib_algebra().sub().cardinality() == M4_SUB_CARD
+
+
+def test_org_subalgebra_universe_out_of_memory():
+    from org.uacalc.io import AlgebraIO
+
+    m4 = AlgebraIO.readAlgebraFile(os.path.join(_repo_root(), M4_ALGEBRA))
+    sub = m4.sub()
+    uacalc_lib.set_memory_limit(64)
+    try:
+        with pytest.raises(OutOfMemoryError):
+            sub.cardinality()
+    finally:
+        uacalc_lib.set_memory_limit(None)
+    assert int(sub.cardinality()) == M4_SUB_CARD
+
+
+def test_lib_con_universe_lyndon_memory_and_recompute():
+    con = _lyndon_lib_algebra().con()
+    uacalc_lib.set_memory_limit(128)
+    try:
+        with pytest.raises(MemoryError, match="memory limit"):
+            con.con_cardinality()
+    finally:
+        uacalc_lib.set_memory_limit(None)
+    card = con.con_cardinality()
+    assert card >= LYNDON_CON_CARD_MIN
+    assert con.con_cardinality() == card
 
 
 def test_lib_con_cardinality_memory_and_recompute():
