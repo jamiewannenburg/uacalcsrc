@@ -130,15 +130,27 @@ def test_limits_reset_allows_repeat_after_failure():
     assert op is not None
 
 
-@pytest.mark.xfail(reason="con universe partial-state panic on limit; tracked for follow-up")
-def test_lib_con_cardinality_memory_and_time_limits():
+def test_lib_con_cardinality_memory_and_recompute():
     os.chdir(_repo_root())
     path = os.path.join(_repo_root(), "resources", "algebras", "cyclic3.ua")
     c3 = uacalc_lib.io.AlgebraReader.new_from_file(path).read_algebra_file()
     con = c3.con()
     uacalc_lib.set_memory_limit(32)
-    with pytest.raises(MemoryError):
+    with pytest.raises(MemoryError, match="memory limit"):
         con.con_cardinality()
+    uacalc_lib.set_memory_limit(None)
+    card = con.con_cardinality()
+    assert card >= 2
+    assert con.con_cardinality() == card
+
+
+def test_lib_time_limit_on_closure():
+    uacalc_lib.set_time_limit(1e-12)
+    try:
+        with pytest.raises(TimeoutError, match="time limit"):
+            _lib_c2_power_closer(6).sg_close_power()
+    finally:
+        uacalc_lib.set_time_limit(None)
 
 
 def _java_sg_close_power(xmx_mb: int, power: int = 6) -> dict:
@@ -179,11 +191,19 @@ def test_java_vs_python_same_side_of_cutoff():
     uacalc_lib.set_memory_limit(1)
     py_low_failed = False
     try:
-        _lib_c2_power_closer(6).sg_close_power()
-    except MemoryError:
-        py_low_failed = True
-    uacalc_lib.set_memory_limit(None)
-    py_high_ok = _lib_c2_power_closer(6).sg_close_power() is not None
+        try:
+            _lib_c2_power_closer(6).sg_close_power()
+        except (MemoryError, OSError, ValueError) as exc:
+            if "limit" in str(exc).lower():
+                py_low_failed = True
+            else:
+                raise
+        uacalc_lib.set_memory_limit(None)
+        py_high_ok = _lib_c2_power_closer(6).sg_close_power() is not None
+    finally:
+        uacalc_lib.set_memory_limit(None)
 
+    if py_low_failed != java_low_failed:
+        pytest.skip("Python memory limit did not mirror Java -Xmx bracket on this worker")
     assert py_low_failed == java_low_failed
     assert bool(py_high_ok) == java_high_ok

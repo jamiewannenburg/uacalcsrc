@@ -8,7 +8,7 @@
 #![allow(unused_imports, dead_code, unused_variables)]
 
 use crate::alg::big_product_algebra::BigProductAlgebra;
-use crate::resource::{charge_kept_closure_element, checkpoint, ComputationScope, UaError};
+use crate::resource::{charge_kept_closure_element, checkpoint, checkpoint_entry, ComputationScope, UaError};
 use crate::alg::conlat::partition::Partition;
 use crate::alg::parallel::SingleClose;
 use crate::alg::Algebra;
@@ -795,8 +795,7 @@ where
     /// * `Err(String)` - If computation fails
     fn sg_close_impl(&mut self, closed_mark: usize) -> Result<Vec<IntArray>, UaError> {
         let _scope = ComputationScope::enter();
-        crate::resource::checkpoint_force()?;
-        checkpoint()?;
+        checkpoint_entry()?;
         if let Some(ref report) = self.report {
             report.add_start_line("subpower closing ...");
         }
@@ -1497,8 +1496,7 @@ where
     /// * `Err(String)` - If computation fails
     fn sg_close_power_impl(&mut self, closed_mark: usize) -> Result<Vec<IntArray>, UaError> {
         let _scope = ComputationScope::enter();
-        crate::resource::checkpoint_force()?;
-        checkpoint()?;
+        checkpoint_entry()?;
         if let Some(ref report) = self.report {
             report.add_start_line("subpower closing ...");
         }

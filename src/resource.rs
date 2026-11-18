@@ -225,6 +225,15 @@ fn maybe_poll_signals(s: &mut ThreadState) -> Result<(), UaError> {
     Ok(())
 }
 
+/// Entry check: honor cancel/deadline before a heavy computation (no signal poll).
+pub fn checkpoint_entry() -> Result<(), UaError> {
+    with_state(|s| {
+        consume_cancel_if_set()?;
+        check_deadline(s)?;
+        Ok(())
+    })
+}
+
 /// Amortized cancel / deadline / budget check (every [`CHECKPOINT_INTERVAL`] calls).
 pub fn checkpoint() -> Result<(), UaError> {
     with_state(|s| {
@@ -239,7 +248,7 @@ pub fn checkpoint() -> Result<(), UaError> {
     })
 }
 
-/// Force a full checkpoint (for tests).
+/// Force a full checkpoint (for tests and explicit polling).
 pub fn checkpoint_force() -> Result<(), UaError> {
     with_state(|s| {
         consume_cancel_if_set()?;
@@ -249,11 +258,9 @@ pub fn checkpoint_force() -> Result<(), UaError> {
     })
 }
 
-/// Record `bytes` against the memory budget (checks limit after increment).
+/// Record `bytes` against the memory budget (limit only; cancel/time at checkpoints).
 pub fn try_charge(bytes: u64) -> Result<(), UaError> {
     with_state(|s| {
-        consume_cancel_if_set()?;
-        check_deadline(s)?;
         s.memory_used = s.memory_used.saturating_add(bytes);
         if let Some(limit) = s.memory_limit {
             if s.memory_used > limit {

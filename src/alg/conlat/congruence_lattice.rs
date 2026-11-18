@@ -633,6 +633,19 @@ where
         self.principal_congruences_rep = None;
     }
 
+    fn clear_join_irreducibles_cache(&mut self) {
+        self.join_irreducibles = None;
+        self.lower_cover_of_jis = None;
+    }
+
+    /// Drop partial congruence-lattice caches after a limit/cancel failure.
+    fn clear_con_lattice_computation_caches(&mut self) {
+        self.universe = None;
+        self.size_computed = 0;
+        self.clear_principals_cache();
+        self.clear_join_irreducibles_cache();
+    }
+
     pub fn make_principals(&mut self) {
         let _ = self.make_principals_checked();
     }
@@ -645,35 +658,51 @@ where
         let mut lookup = HashMap::new();
         let mut rep_map = HashMap::new();
 
-        for i in 0..(self.alg_size - 1) {
-            checkpoint()?;
-            for j in (i + 1)..self.alg_size {
+        let result = (|| {
+            for i in 0..(self.alg_size - 1) {
                 checkpoint()?;
-                let part_cong = self.make_cg_checked(i, j)?;
+                for j in (i + 1)..self.alg_size {
+                    checkpoint()?;
+                    let part_cong = self.make_cg_checked(i, j)?;
 
-                if !pc_id_map.contains_key(&part_cong) {
-                    charge_kept_partition(self.alg_size)?;
-                    pc_id_map.insert(part_cong.clone(), part_cong.clone());
-                    principals.push(part_cong.clone());
-                    let mut rep_key = IntArray::new(2).map_err(crate::resource::UaError::message)?;
-                    rep_key.set(0, i as i32).map_err(crate::resource::UaError::message)?;
-                    rep_key.set(1, j as i32).map_err(crate::resource::UaError::message)?;
-                    rep_map.insert(part_cong.clone(), rep_key);
+                    if !pc_id_map.contains_key(&part_cong) {
+                        charge_kept_partition(self.alg_size)?;
+                        pc_id_map.insert(part_cong.clone(), part_cong.clone());
+                        principals.push(part_cong.clone());
+                        let mut rep_key =
+                            IntArray::new(2).map_err(crate::resource::UaError::message)?;
+                        rep_key
+                            .set(0, i as i32)
+                            .map_err(crate::resource::UaError::message)?;
+                        rep_key
+                            .set(1, j as i32)
+                            .map_err(crate::resource::UaError::message)?;
+                        rep_map.insert(part_cong.clone(), rep_key);
+                    }
+
+                    let canonical = pc_id_map
+                        .get(&part_cong)
+                        .ok_or_else(|| {
+                            crate::resource::UaError::message("principal congruence map")
+                        })?
+                        .clone();
+                    let mut lookup_key =
+                        IntArray::new(2).map_err(crate::resource::UaError::message)?;
+                    lookup_key
+                        .set(0, i as i32)
+                        .map_err(crate::resource::UaError::message)?;
+                    lookup_key
+                        .set(1, j as i32)
+                        .map_err(crate::resource::UaError::message)?;
+                    lookup.insert(lookup_key, canonical);
                 }
-
-                let canonical = pc_id_map
-                    .get(&part_cong)
-                    .ok_or_else(|| crate::resource::UaError::message("principal congruence map"))?
-                    .clone();
-                let mut lookup_key = IntArray::new(2).map_err(crate::resource::UaError::message)?;
-                lookup_key
-                    .set(0, i as i32)
-                    .map_err(crate::resource::UaError::message)?;
-                lookup_key
-                    .set(1, j as i32)
-                    .map_err(crate::resource::UaError::message)?;
-                lookup.insert(lookup_key, canonical);
             }
+            Ok::<(), crate::resource::UaError>(())
+        })();
+
+        if let Err(e) = result {
+            self.clear_principals_cache();
+            return Err(e);
         }
 
         Self::sort_by_rank(&mut principals);
@@ -726,9 +755,9 @@ where
     /// # Arguments
     /// * `max_size` - Maximum size before stopping (usize::MAX for no limit)
     pub fn make_universe_with_limit(&mut self, max_size: usize) -> Result<(), crate::resource::UaError> {
-        use crate::resource::{charge_kept_partition, checkpoint, ComputationScope};
+        use crate::resource::{charge_kept_partition, checkpoint, checkpoint_entry, ComputationScope};
         let _scope = ComputationScope::enter();
-        crate::resource::checkpoint_force()?;
+        checkpoint_entry()?;
         let stop_if_big = max_size < usize::MAX;
 
         if self.join_irreducibles.is_none() {
@@ -785,11 +814,7 @@ where
         match self.make_universe_with_limit(max_size) {
             Ok(()) => Ok(()),
             Err(e) => {
-                self.universe = None;
-                self.size_computed = 0;
-                self.clear_principals_cache();
-                self.join_irreducibles = None;
-                self.lower_cover_of_jis = None;
+                self.clear_con_lattice_computation_caches();
                 Err(e)
             }
         }
@@ -850,31 +875,39 @@ where
         let mut jis = Vec::new();
         let mut lower_covers = HashMap::new();
 
-        for part in principals {
-            checkpoint()?;
-            let mut join = self.zero();
+        let result = (|| {
+            for part in principals {
+                checkpoint()?;
+                let mut join = self.zero();
 
-            for part2 in principals {
-                if part2.leq(part) && part != part2 {
-                    join = join
-                        .join(part2)
-                        .map_err(crate::resource::UaError::message)?;
+                for part2 in principals {
+                    if part2.leq(part) && part != part2 {
+                        join = join
+                            .join(part2)
+                            .map_err(crate::resource::UaError::message)?;
+                    }
+                    if join.number_of_blocks() == part.number_of_blocks()
+                        && join.leq(part)
+                        && part.leq(&join)
+                    {
+                        break;
+                    }
                 }
-                if join.number_of_blocks() == part.number_of_blocks()
+
+                if !(join.number_of_blocks() == part.number_of_blocks()
                     && join.leq(part)
-                    && part.leq(&join)
+                    && part.leq(&join))
                 {
-                    break;
+                    jis.push(part.clone());
+                    lower_covers.insert(part.clone(), join);
                 }
             }
+            Ok::<(), crate::resource::UaError>(())
+        })();
 
-            if !(join.number_of_blocks() == part.number_of_blocks()
-                && join.leq(part)
-                && part.leq(&join))
-            {
-                jis.push(part.clone());
-                lower_covers.insert(part.clone(), join);
-            }
+        if let Err(e) = result {
+            self.clear_join_irreducibles_cache();
+            return Err(e);
         }
 
         self.join_irreducibles = Some(jis);
@@ -888,7 +921,7 @@ where
     /// A list of join irreducible congruences (sorted by rank)
     pub fn join_irreducibles(&mut self) -> &Vec<Partition> {
         if self.join_irreducibles.is_none() {
-            self.make_join_irreducibles();
+            self.make_join_irreducibles_checked().unwrap_or_else(|e| panic!("{}", e));
         }
         self.join_irreducibles.as_ref().unwrap()
     }
