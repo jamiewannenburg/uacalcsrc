@@ -524,20 +524,20 @@ impl PyPartition {
     }
 
     #[staticmethod]
-    fn unary_polymorphisms(pars: &Bound<'_, PyAny>) -> PyResult<Vec<PyIntArray>> {
+    fn unary_polymorphisms(py: Python<'_>, pars: &Bound<'_, PyAny>) -> PyResult<Vec<PyIntArray>> {
         let rust = extract_partition_list(pars)?;
         match Partition::unary_polymorphisms(&rust) {
             Ok(set) => Ok(set.into_iter().map(|ia| PyIntArray { inner: ia }).collect()),
-            Err(e) => Err(PyValueError::new_err(e)),
+            Err(e) => Err(crate::resource::limit_string_to_py(&e, py)),
         }
     }
 
     #[staticmethod]
-    fn binary_polymorphisms(pars: &Bound<'_, PyAny>) -> PyResult<Vec<PyIntArray>> {
+    fn binary_polymorphisms(py: Python<'_>, pars: &Bound<'_, PyAny>) -> PyResult<Vec<PyIntArray>> {
         let rust = extract_partition_list(pars)?;
         match Partition::binary_polymorphisms(&rust, None) {
             Ok(set) => Ok(set.into_iter().map(|ia| PyIntArray { inner: ia }).collect()),
-            Err(e) => Err(PyValueError::new_err(e)),
+            Err(e) => Err(crate::resource::limit_string_to_py(&e, py)),
         }
     }
 

@@ -855,6 +855,9 @@ impl Partition {
     /// assert!(polys.len() > 0);
     /// ```
     pub fn unary_polymorphisms(pars: &[Partition]) -> Result<BTreeSet<IntArray>, String> {
+        use crate::resource::{checkpoint_entry, ComputationScope};
+        let _scope = ComputationScope::enter();
+        checkpoint_entry().map_err(|e| e.to_string())?;
         if pars.is_empty() {
             return Err("Partition list cannot be empty".to_string());
         }
@@ -875,7 +878,7 @@ impl Partition {
         
         let mut set = BTreeSet::new();
         let mut ia = IntArray::from_array(vec![0; n]).unwrap();
-        Self::unary_polymorphisms_aux(&mut ia, 0, n, &mut set, pars);
+        Self::unary_polymorphisms_aux(&mut ia, 0, n, &mut set, pars)?;
         
         Ok(set)
     }
@@ -897,20 +900,24 @@ impl Partition {
         n: usize,
         ans: &mut BTreeSet<IntArray>,
         pars: &[Partition],
-    ) {
+    ) -> Result<(), crate::resource::UaError> {
+        use crate::resource::{checkpoint, try_charge, try_charge_element};
+        checkpoint()?;
         if k == n {
-            // We have a complete function, add it to the answer set
+            let bytes = (n as u64).saturating_mul(4);
+            try_charge(bytes)?;
+            try_charge_element()?;
             ans.insert(arr.clone());
-            return;
+            return Ok(());
         }
         
-        // Try each possible value for position k
         for value in 0..n {
             if Self::respects_unary(arr, k, value as i32, pars) {
                 let _ = arr.set(k, value as i32);
-                Self::unary_polymorphisms_aux(arr, k + 1, n, ans, pars);
+                Self::unary_polymorphisms_aux(arr, k + 1, n, ans, pars)?;
             }
         }
+        Ok(())
     }
     
     /// Check if a partial function respects the partitions.
@@ -969,6 +976,9 @@ impl Partition {
         pars: &[Partition],
         unary_clone: Option<BTreeSet<IntArray>>,
     ) -> Result<BTreeSet<IntArray>, String> {
+        use crate::resource::{checkpoint_entry, ComputationScope};
+        let _scope = ComputationScope::enter();
+        checkpoint_entry().map_err(|e| e.to_string())?;
         if pars.is_empty() {
             return Err("Partition list cannot be empty".to_string());
         }
@@ -996,7 +1006,7 @@ impl Partition {
         let mut set = BTreeSet::new();
         let mut partial_op: Vec<Option<IntArray>> = vec![None; n];
         
-        Self::binary_polymorphisms_aux(&mut partial_op, 0, n, &unary_clone, &mut set);
+        Self::binary_polymorphisms_aux(&mut partial_op, 0, n, &unary_clone, &mut set)?;
         
         Ok(set)
     }
@@ -1015,9 +1025,13 @@ impl Partition {
         n: usize,
         unary_clone: &BTreeSet<IntArray>,
         set: &mut BTreeSet<IntArray>,
-    ) {
+    ) -> Result<(), crate::resource::UaError> {
+        use crate::resource::{checkpoint, try_charge, try_charge_element};
+        checkpoint()?;
         if index == n {
-            // We have a complete binary operation, convert to flat array
+            let bytes = (n as u64).saturating_mul(n as u64).saturating_mul(4);
+            try_charge(bytes)?;
+            try_charge_element()?;
             let mut op = vec![0; n * n];
             for i in 0..n {
                 if let Some(ref row) = partial_op[i] {
@@ -1027,16 +1041,16 @@ impl Partition {
                 }
             }
             set.insert(IntArray::from_array(op).unwrap());
-            return;
+            return Ok(());
         }
         
-        // Try each unary function as the next row
         for unary_fn in unary_clone.iter() {
             if Self::respects_binary(partial_op, index, n, unary_fn, unary_clone) {
                 partial_op[index] = Some(unary_fn.clone());
-                Self::binary_polymorphisms_aux(partial_op, index + 1, n, unary_clone, set);
+                Self::binary_polymorphisms_aux(partial_op, index + 1, n, unary_clone, set)?;
             }
         }
+        Ok(())
     }
     
     /// Check if adding a unary function as a row respects the binary operation constraints.

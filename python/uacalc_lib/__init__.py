@@ -24,10 +24,19 @@ _package_dir = Path(__file__).parent
 # Maturin installs it with a platform-specific name (e.g., uacalc_lib.cp310-win_amd64.pyd)
 _native_loaded = False
 
-# Search for native extension files in the package directory
-_extensions = list(_package_dir.glob('uacalc_lib.*.pyd')) + list(_package_dir.glob('uacalc_lib.*.so')) + list(_package_dir.glob('uacalc_lib.*.dylib'))
+# Search for native extension files (editable: maturin puts the .pyd under repo python/uacalc_lib)
+_ext_roots = [_package_dir]
+_repo_native = _package_dir.parent / "uacalc_lib"
+if _repo_native.is_dir() and _repo_native != _package_dir:
+    _ext_roots.append(_repo_native)
+_extensions = []
+for root in _ext_roots:
+    _extensions.extend(root.glob("uacalc_lib.*.pyd"))
+    _extensions.extend(root.glob("uacalc_lib.*.so"))
+    _extensions.extend(root.glob("uacalc_lib.*.dylib"))
+_extensions.sort(key=lambda p: p.stat().st_mtime, reverse=True)
 
-for ext_file in sorted(_extensions):
+for ext_file in _extensions:
     try:
         # Load the native extension module directly
         spec = importlib.util.spec_from_file_location('uacalc_lib', ext_file)

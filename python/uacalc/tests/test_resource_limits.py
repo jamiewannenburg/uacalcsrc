@@ -166,6 +166,133 @@ def test_org_closer_pre_cancel_returns_none():
     assert _heavy_org_closer().sgClosePower() is not None
 
 
+def test_lib_closer_production_cancel_from_other_thread():
+    """Cross-thread cancel on real sg_close_power (GIL released), not stress helper."""
+    uacalc_lib.clear_cancel()
+    started = threading.Event()
+    outcome: dict = {"exc": None, "finished": False}
+
+    def run() -> None:
+        started.set()
+        try:
+            while True:
+                worker = _heavy_lib_closer()
+                worker.set_suppress_output(True)
+                worker.sg_close_power()
+        except KeyboardInterrupt as exc:
+            outcome["exc"] = exc
+        finally:
+            outcome["finished"] = True
+
+    thread = threading.Thread(target=run, name="prod-close")
+    cancel_t0 = time.perf_counter()
+    thread.start()
+    assert started.wait(timeout=30.0)
+    time.sleep(CANCEL_WAKE_SEC)
+    uacalc_lib.cancel()
+    thread.join(timeout=GENEROUS_TEST_BOUND_SEC)
+    interrupted = time.perf_counter() - cancel_t0
+    assert not thread.is_alive()
+    assert outcome["finished"] is True
+    assert isinstance(outcome["exc"], KeyboardInterrupt), outcome["exc"]
+    assert interrupted < GENEROUS_TEST_BOUND_SEC
+    uacalc_lib.clear_cancel()
+    assert len(_heavy_lib_closer().sg_close_power()) == HEAVY_CLOSURE_SIZE
+
+
+def test_lib_main_thread_responsive_during_closure():
+    done = threading.Event()
+    started = threading.Event()
+
+    def run() -> None:
+        closer = _heavy_lib_closer()
+        closer.set_suppress_output(True)
+        started.set()
+        end = time.perf_counter() + 1.0
+        while time.perf_counter() < end:
+            closer.sg_close_power()
+        done.set()
+
+    t = threading.Thread(target=run, daemon=True)
+    t.start()
+    assert started.wait(timeout=GENEROUS_TEST_BOUND_SEC)
+    ticks = 0
+    deadline = time.perf_counter() + 0.5
+    while time.perf_counter() < deadline and not done.is_set():
+        ticks += 1
+        time.sleep(0.01)
+    assert ticks >= 20, "main thread starved while closure ran (GIL not released)"
+    done.wait(timeout=GENEROUS_TEST_BOUND_SEC)
+    t.join(timeout=GENEROUS_TEST_BOUND_SEC)
+
+
+def test_lib_term_interpretation_memory_limit():
+    m4 = _m4_lib_algebra()
+    var = uacalc_lib.terms.VariableImp("x0")
+    uacalc_lib.set_memory_limit(32)
+    try:
+        with pytest.raises(MemoryError, match="memory limit"):
+            var.interpretation(m4, ["x0", "x1"], True)
+    finally:
+        uacalc_lib.set_memory_limit(None)
+    op = var.interpretation(m4, ["x0", "x1"], True)
+    assert op is not None
+
+
+def test_org_unary_polymorphisms_element_limit():
+    from org.uacalc.alg.conlat import BasicPartition
+
+    pars = [BasicPartition.zero(3), BasicPartition.one(3)]
+    uacalc_lib.set_element_limit(4)
+    try:
+        with pytest.raises(OutOfMemoryError):
+            BasicPartition.unaryPolymorphisms(pars)
+    finally:
+        uacalc_lib.set_element_limit(None)
+    polys = BasicPartition.unaryPolymorphisms(pars)
+    assert len(polys) > 0
+
+
+def test_org_closer_production_cancel_returns_none():
+    closer = _heavy_org_closer()
+    uacalc_lib.clear_cancel()
+    started = threading.Event()
+    holder: dict = {"ans": "pending"}
+
+    def run() -> None:
+        started.set()
+        while True:
+            ans = _heavy_org_closer().sgClosePower()
+            if ans is None:
+                holder["ans"] = None
+                break
+            holder["ans"] = ans
+
+    thread = threading.Thread(target=run)
+    thread.start()
+    assert started.wait(timeout=30.0)
+    time.sleep(CANCEL_WAKE_SEC)
+    uacalc_lib.cancel()
+    thread.join(timeout=GENEROUS_TEST_BOUND_SEC)
+    assert holder["ans"] is None
+    uacalc_lib.clear_cancel()
+    assert _heavy_org_closer().sgClosePower() is not None
+
+
+def test_lib_type_set_time_limit():
+    lyndon = _lyndon_lib_algebra()
+    tf = uacalc_lib.alg.TypeFinder(lyndon)
+    tf.init()
+    uacalc_lib.set_time_limit(0)
+    try:
+        with pytest.raises(TimeoutError):
+            tf.find_type_set()
+    finally:
+        uacalc_lib.set_time_limit(None)
+    types = tf.find_type_set()
+    assert len(types) >= 1
+
+
 def test_lib_closer_cancel_from_other_thread():
     uacalc_lib.clear_cancel()
     started = threading.Event()

@@ -8,7 +8,10 @@
 #![allow(unused_imports, dead_code, unused_variables)]
 
 use crate::alg::big_product_algebra::BigProductAlgebra;
-use crate::resource::{charge_kept_closure_element, checkpoint, checkpoint_entry, ComputationScope, UaError};
+use crate::resource::{
+    begin_shared_budget, charge_kept_closure_element, checkpoint, checkpoint_entry,
+    end_shared_budget, ComputationScope, UaError,
+};
 use crate::alg::conlat::partition::Partition;
 use crate::alg::parallel::SingleClose;
 use crate::alg::Algebra;
@@ -2288,7 +2291,17 @@ where
     /// # Returns
     /// * `Ok(Vec<IntArray>)` - The closure (list of elements)
     /// * `Err(String)` - If closure computation fails
-    pub fn sg_close_parallel(&mut self) -> Result<Vec<IntArray>, String> {
+    pub fn sg_close_parallel(&mut self) -> Result<Vec<IntArray>, UaError> {
+        let _scope = ComputationScope::enter();
+        checkpoint_entry()?;
+        let shared = begin_shared_budget();
+        struct EndSharedBudget;
+        impl Drop for EndSharedBudget {
+            fn drop(&mut self) {
+                end_shared_budget();
+            }
+        }
+        let _shared_guard = EndSharedBudget;
         if let Some(ref report) = self.report {
             report.add_start_line("subpower closing ...");
         }
@@ -2340,7 +2353,7 @@ where
         {
             let mut map_guard = term_map_arc
                 .lock()
-                .map_err(|e| format!("term map lock: {}", e))?;
+                .map_err(|e| UaError::message(format!("term map lock: {e}")))?;
             for (i, ia) in self.ans.iter().enumerate() {
                 if !map_guard.contains_key(ia) {
                     map_guard.insert(
@@ -2368,6 +2381,7 @@ where
 
         // Main closure loop
         while closed_mark < current_mark {
+            checkpoint()?;
             let status_str = format!("pass: {}, size: {}", pass, self.ans.len());
 
             if let Some(ref report) = self.report {
@@ -2421,6 +2435,7 @@ where
                     closed_mark,
                     current_mark - 1,
                     Arc::clone(&elts_found),
+                    Some(Arc::clone(&shared)),
                 ) {
                     Ok(mut single_close) => {
                         // Execute parallel closure step
@@ -2516,14 +2531,10 @@ where
                                     }
                                 }
                             }
-                            Err(e) => {
-                                return Err(format!("SingleClose failed: {}", e));
-                            }
+                            Err(e) => return Err(e),
                         }
                     }
-                    Err(e) => {
-                        return Err(format!("Failed to create SingleClose: {}", e));
-                    }
+                    Err(e) => return Err(UaError::message(e)),
                 }
             }
 

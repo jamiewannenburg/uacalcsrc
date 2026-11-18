@@ -3659,8 +3659,8 @@ def _install(alg_module_globals: dict) -> None:
             if getattr(Closer, "doParallel", False):
                 fn = getattr(self, "sg_close_parallel", None)
                 if callable(fn):
-                    return _mark_closer_answer(self, _lib_call(fn))
-            return _mark_closer_answer(self, _lib_call(self.sg_close))
+                    return _mark_closer_answer(self, _lib_call_closer(fn))
+            return _mark_closer_answer(self, _lib_call_closer(self.sg_close))
         if termMap is not None:
             setter = getattr(self, "set_term_map", None) or getattr(self, "setTermMap", None)
             if callable(setter):
@@ -3677,10 +3677,10 @@ def _install(alg_module_globals: dict) -> None:
         fn = getattr(self, "sg_close_parallel", None)
         if not callable(fn):
             raise TypeError("sgCloseParallel is not bound")
-        return _mark_closer_answer(self, _lib_call(fn))
+        return _mark_closer_answer(self, _lib_call_closer(fn))
 
     def closerSgClosePower(self: Any) -> Any:
-        return _mark_closer_answer(self, _lib_call(self.sg_close_power))
+        return _mark_closer_answer(self, _lib_call_closer(self.sg_close_power))
 
     def closerClose(self: Any) -> Any:
         orig = _CLOSER_ORIG_CLOSE[0]

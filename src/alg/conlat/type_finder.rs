@@ -243,11 +243,15 @@ where
         if let Some(ref ts) = self.type_set {
             return Ok(ts.clone());
         }
+        use crate::resource::{checkpoint, checkpoint_entry, ComputationScope};
+        let _scope = ComputationScope::enter();
+        checkpoint_entry().map_err(|e| e.to_string())?;
         
         let mut type_set = HashSet::new();
         let join_irr = self.con.join_irreducibles().to_vec();
         
         for par in &join_irr {
+            checkpoint().map_err(|e| e.to_string())?;
             let typ = self.find_type(par)?;
             type_set.insert(typ);
         }
@@ -402,6 +406,7 @@ where
         let mut current_mark = univ.len();
         
         while closed_mark < current_mark {
+            crate::resource::checkpoint().map_err(|e| e.to_string())?;
             let ops = self.a_squared.operations();
             
             for f in &ops {
@@ -421,6 +426,7 @@ where
                 );
                 
                 loop {
+                    crate::resource::checkpoint().map_err(|e| e.to_string())?;
                     let current_indices = inc.get_current();
                     let mut arg = vec![Vec::new(); arity as usize];
                     
@@ -457,6 +463,7 @@ where
                             return Ok(Some(v));
                         }
                         if univ_hs.insert(v.clone()) {
+                            crate::resource::try_charge_element().map_err(|e| e.to_string())?;
                             univ.push(v);
                         }
                     }
@@ -552,6 +559,7 @@ where
         let mut current_mark = universe.len();
         
         while closed_mark < current_mark {
+            crate::resource::checkpoint().map_err(|e| e.to_string())?;
             let ops = self.a_fourth.operations();
             
             for f in &ops {
@@ -571,6 +579,7 @@ where
                 );
                 
                 loop {
+                    crate::resource::checkpoint().map_err(|e| e.to_string())?;
                     let current_indices = inc.get_current();
                     let mut arg = vec![Vec::new(); arity as usize];
                     
@@ -596,6 +605,7 @@ where
                         continue;
                     }
                     
+                    crate::resource::try_charge_element().map_err(|e| e.to_string())?;
                     universe.push(vec);
                     
                     // Check type based on v_raw mod alpha

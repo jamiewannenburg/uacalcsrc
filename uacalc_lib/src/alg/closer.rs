@@ -115,10 +115,9 @@ impl PyCloser {
     }
 
     fn sg_close(&mut self, py: Python<'_>) -> PyResult<Vec<PyIntArray>> {
-        match self.inner.sg_close() {
-            Ok(result) => Ok(to_py_int_arrays(&result)),
-            Err(e) => Err(ua_to_py(e, py)),
-        }
+        py.allow_threads(|| self.inner.sg_close())
+            .map(|result| to_py_int_arrays(&result))
+            .map_err(|e| ua_to_py(e, py))
     }
 
     /// Java `sgClose(elems, closedMark, termMap)` element-set path.
@@ -129,24 +128,21 @@ impl PyCloser {
         closed_mark: usize,
     ) -> PyResult<Vec<PyIntArray>> {
         let rust_elems = extract_int_arrays(elems)?;
-        match self.inner.sg_close_from(Some(rust_elems), closed_mark) {
-            Ok(result) => Ok(to_py_int_arrays(&result)),
-            Err(e) => Err(ua_to_py(e, py)),
-        }
+        py.allow_threads(|| self.inner.sg_close_from(Some(rust_elems), closed_mark))
+            .map(|result| to_py_int_arrays(&result))
+            .map_err(|e| ua_to_py(e, py))
     }
 
     fn sg_close_power(&mut self, py: Python<'_>) -> PyResult<Vec<PyIntArray>> {
-        match self.inner.sg_close_power() {
-            Ok(result) => Ok(to_py_int_arrays(&result)),
-            Err(e) => Err(ua_to_py(e, py)),
-        }
+        py.allow_threads(|| self.inner.sg_close_power())
+            .map(|result| to_py_int_arrays(&result))
+            .map_err(|e| ua_to_py(e, py))
     }
 
-    fn sg_close_parallel(&mut self) -> PyResult<Vec<PyIntArray>> {
-        match self.inner.sg_close_parallel() {
-            Ok(result) => Ok(to_py_int_arrays(&result)),
-            Err(e) => Err(PyValueError::new_err(e)),
-        }
+    fn sg_close_parallel(&mut self, py: Python<'_>) -> PyResult<Vec<PyIntArray>> {
+        py.allow_threads(|| self.inner.sg_close_parallel())
+            .map(|result| to_py_int_arrays(&result))
+            .map_err(|e| ua_to_py(e, py))
     }
 
     fn get_term_map(&self, py: Python<'_>) -> PyResult<Option<PyObject>> {

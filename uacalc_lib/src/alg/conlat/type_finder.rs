@@ -69,10 +69,10 @@ impl PyTypeFinder {
     ///
     /// Raises:
     ///     ValueError: If computation fails
-    fn find_type_set(&mut self) -> PyResult<std::collections::HashSet<i32>> {
+    fn find_type_set(&mut self, py: Python<'_>) -> PyResult<std::collections::HashSet<i32>> {
         match self.inner.find_type_set() {
             Ok(type_set) => Ok(type_set),
-            Err(e) => Err(PyValueError::new_err(e)),
+            Err(e) => Err(crate::resource::limit_string_to_py(&e, py)),
         }
     }
 

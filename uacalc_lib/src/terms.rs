@@ -118,6 +118,7 @@ impl PyVariableImp {
     /// An IntOperation that interprets this term
     fn interpretation(
         &self,
+        py: Python<'_>,
         algebra: &PyBasicAlgebra,
         varlist: Vec<String>,
         use_all: bool,
@@ -128,8 +129,10 @@ impl PyVariableImp {
         let alg_arc: Arc<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>> = 
             Arc::new(algebra.inner.clone());
         
-        let op = self.inner.interpretation(alg_arc, &varlist, use_all)
-            .map_err(|e| PyValueError::new_err(e))?;
+        let op = self
+            .inner
+            .interpretation(alg_arc, &varlist, use_all)
+            .map_err(|e| crate::resource::limit_string_to_py(&e, py))?;
         
         // Extract table and symbol from the operation to create PyIntOperation
         let table = op.get_table()
@@ -320,6 +323,7 @@ impl PyNonVariableTerm {
     /// An IntOperation that interprets this term
     fn interpretation(
         &self,
+        py: Python<'_>,
         algebra: &PyBasicAlgebra,
         varlist: Vec<String>,
         use_all: bool,
@@ -330,8 +334,10 @@ impl PyNonVariableTerm {
         let alg_arc: Arc<dyn uacalc::alg::SmallAlgebra<UniverseItem = i32>> = 
             Arc::new(algebra.inner.clone());
         
-        let op = self.inner.interpretation(alg_arc, &varlist, use_all)
-            .map_err(|e| PyValueError::new_err(e))?;
+        let op = self
+            .inner
+            .interpretation(alg_arc, &varlist, use_all)
+            .map_err(|e| crate::resource::limit_string_to_py(&e, py))?;
         
         // Extract table and symbol from the operation to create PyIntOperation
         let table = op.get_table()

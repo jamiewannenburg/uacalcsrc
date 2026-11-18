@@ -52,11 +52,12 @@ impl PyCongruenceLattice {
     fn one(&self) -> PyPartition { PyPartition { inner: self.inner.one() } }
 
     fn con_cardinality(&mut self, py: Python<'_>) -> PyResult<usize> {
-        use uacalc::resource::ComputationScope;
-        let _scope = ComputationScope::enter();
-        self.inner
-            .con_cardinality_checked()
-            .map_err(|e| crate::resource::ua_to_py(e, py))
+        py.allow_threads(|| {
+            use uacalc::resource::ComputationScope;
+            let _scope = ComputationScope::enter();
+            self.inner.con_cardinality_checked()
+        })
+        .map_err(|e| crate::resource::ua_to_py(e, py))
     }
 
     fn is_distributive(&mut self) -> bool { self.inner.is_distributive() }
@@ -529,11 +530,12 @@ impl PyCongruenceLatticeIntArray {
     fn one(&self) -> PyPartition { PyPartition { inner: self.inner.one() } }
 
     fn con_cardinality(&mut self, py: Python<'_>) -> PyResult<usize> {
-        use uacalc::resource::ComputationScope;
-        let _scope = ComputationScope::enter();
-        self.inner
-            .con_cardinality_checked()
-            .map_err(|e| crate::resource::ua_to_py(e, py))
+        py.allow_threads(|| {
+            use uacalc::resource::ComputationScope;
+            let _scope = ComputationScope::enter();
+            self.inner.con_cardinality_checked()
+        })
+        .map_err(|e| crate::resource::ua_to_py(e, py))
     }
 
     fn cardinality(&mut self, py: Python<'_>) -> PyResult<usize> { self.con_cardinality(py) }

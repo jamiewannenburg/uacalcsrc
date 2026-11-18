@@ -5,8 +5,8 @@
 
 use std::cell::RefCell;
 use std::fmt;
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::Mutex;
+use std::sync::atomic::{AtomicBool, AtomicU32, AtomicU64, Ordering};
+use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
 pub const CHECKPOINT_INTERVAL: u32 = 256;
@@ -102,6 +102,151 @@ impl ThreadState {
 
 thread_local! {
     static TLS: RefCell<ThreadState> = RefCell::new(ThreadState::new());
+    static SHARED_BUDGET: RefCell<Option<Arc<SharedBudget>>> = RefCell::new(None);
+}
+
+/// Per-computation counters shared across parallel worker threads.
+#[derive(Debug)]
+pub struct SharedBudget {
+    memory_used: AtomicU64,
+    element_count: AtomicU64,
+    checkpoint_counter: AtomicU32,
+    memory_limit: Option<u64>,
+    element_limit: Option<u64>,
+    deadline: Option<Instant>,
+}
+
+impl SharedBudget {
+    fn from_thread(s: &ThreadState) -> Self {
+        Self {
+            memory_used: AtomicU64::new(s.memory_used),
+            element_count: AtomicU64::new(s.element_count),
+            checkpoint_counter: AtomicU32::new(s.checkpoint_counter),
+            memory_limit: s.memory_limit,
+            element_limit: s.element_limit,
+            deadline: s.deadline,
+        }
+    }
+
+    fn sync_to_thread(&self, s: &mut ThreadState) {
+        s.memory_used = self.memory_used.load(Ordering::SeqCst);
+        s.element_count = self.element_count.load(Ordering::SeqCst);
+        s.checkpoint_counter = self.checkpoint_counter.load(Ordering::SeqCst);
+    }
+
+    fn try_charge_shared(&self, bytes: u64) -> Result<(), UaError> {
+        let prev = self.memory_used.fetch_add(bytes, Ordering::SeqCst);
+        let new_used = prev.saturating_add(bytes);
+        if let Some(limit) = self.memory_limit {
+            if new_used > limit {
+                return Err(UaError::Memory {
+                    used: new_used,
+                    limit,
+                });
+            }
+        }
+        Ok(())
+    }
+
+    fn try_charge_element_shared(&self) -> Result<(), UaError> {
+        let prev = self.element_count.fetch_add(1, Ordering::SeqCst);
+        let new_count = prev.saturating_add(1);
+        if let Some(limit) = self.element_limit {
+            if new_count > limit {
+                return Err(UaError::ElementLimit {
+                    count: new_count,
+                    limit,
+                });
+            }
+        }
+        Ok(())
+    }
+
+    fn checkpoint_shared(&self) -> Result<(), UaError> {
+        let n = self
+            .checkpoint_counter
+            .fetch_add(1, Ordering::SeqCst)
+            .wrapping_add(1);
+        if n % CHECKPOINT_INTERVAL != 0 {
+            return Ok(());
+        }
+        consume_cancel_if_set()?;
+        if let Some(deadline) = self.deadline {
+            if Instant::now() >= deadline {
+                return Err(UaError::TimeLimit);
+            }
+        }
+        let used = self.memory_used.load(Ordering::SeqCst);
+        if let Some(limit) = self.memory_limit {
+            if used > limit {
+                return Err(UaError::Memory {
+                    used,
+                    limit,
+                });
+            }
+        }
+        let count = self.element_count.load(Ordering::SeqCst);
+        if let Some(limit) = self.element_limit {
+            if count > limit {
+                return Err(UaError::ElementLimit {
+                    count,
+                    limit,
+                });
+            }
+        }
+        with_state(|s| maybe_poll_signals(s))
+    }
+
+    fn checkpoint_force_shared(&self) -> Result<(), UaError> {
+        consume_cancel_if_set()?;
+        if let Some(deadline) = self.deadline {
+            if Instant::now() >= deadline {
+                return Err(UaError::TimeLimit);
+            }
+        }
+        let used = self.memory_used.load(Ordering::SeqCst);
+        if let Some(limit) = self.memory_limit {
+            if used > limit {
+                return Err(UaError::Memory {
+                    used,
+                    limit,
+                });
+            }
+        }
+        let count = self.element_count.load(Ordering::SeqCst);
+        if let Some(limit) = self.element_limit {
+            if count > limit {
+                return Err(UaError::ElementLimit {
+                    count,
+                    limit,
+                });
+            }
+        }
+        with_state(|s| maybe_poll_signals(s))
+    }
+}
+
+fn shared_budget_ref() -> Option<Arc<SharedBudget>> {
+    SHARED_BUDGET.with(|c| c.borrow().clone())
+}
+
+/// Fork thread-local usage into a budget shared by parallel workers.
+pub fn begin_shared_budget() -> Arc<SharedBudget> {
+    let arc = with_state(|s| Arc::new(SharedBudget::from_thread(s)));
+    SHARED_BUDGET.with(|c| *c.borrow_mut() = Some(Arc::clone(&arc)));
+    arc
+}
+
+/// Attach an existing shared budget on a worker thread (no scope reset).
+pub fn attach_shared_budget(arc: Arc<SharedBudget>) {
+    SHARED_BUDGET.with(|c| *c.borrow_mut() = Some(arc));
+}
+
+/// Detach shared budget and merge counters back into thread-local state.
+pub fn end_shared_budget() {
+    if let Some(arc) = SHARED_BUDGET.with(|c| c.borrow_mut().take()) {
+        with_state(|s| arc.sync_to_thread(s));
+    }
 }
 
 fn with_state<R>(f: impl FnOnce(&mut ThreadState) -> R) -> R {
@@ -227,6 +372,15 @@ fn maybe_poll_signals(s: &mut ThreadState) -> Result<(), UaError> {
 
 /// Entry check: honor cancel/deadline before a heavy computation (no signal poll).
 pub fn checkpoint_entry() -> Result<(), UaError> {
+    if let Some(shared) = shared_budget_ref() {
+        consume_cancel_if_set()?;
+        if let Some(deadline) = shared.deadline {
+            if Instant::now() >= deadline {
+                return Err(UaError::TimeLimit);
+            }
+        }
+        return Ok(());
+    }
     with_state(|s| {
         consume_cancel_if_set()?;
         check_deadline(s)?;
@@ -236,6 +390,9 @@ pub fn checkpoint_entry() -> Result<(), UaError> {
 
 /// Amortized cancel / deadline / budget check (every [`CHECKPOINT_INTERVAL`] calls).
 pub fn checkpoint() -> Result<(), UaError> {
+    if let Some(shared) = shared_budget_ref() {
+        return shared.checkpoint_shared();
+    }
     with_state(|s| {
         s.checkpoint_counter = s.checkpoint_counter.wrapping_add(1);
         if s.checkpoint_counter % CHECKPOINT_INTERVAL != 0 {
@@ -250,6 +407,9 @@ pub fn checkpoint() -> Result<(), UaError> {
 
 /// Force a full checkpoint (for tests and explicit polling).
 pub fn checkpoint_force() -> Result<(), UaError> {
+    if let Some(shared) = shared_budget_ref() {
+        return shared.checkpoint_force_shared();
+    }
     with_state(|s| {
         consume_cancel_if_set()?;
         check_deadline(s)?;
@@ -260,6 +420,9 @@ pub fn checkpoint_force() -> Result<(), UaError> {
 
 /// Record `bytes` against the memory budget (limit only; cancel/time at checkpoints).
 pub fn try_charge(bytes: u64) -> Result<(), UaError> {
+    if let Some(shared) = shared_budget_ref() {
+        return shared.try_charge_shared(bytes);
+    }
     with_state(|s| {
         s.memory_used = s.memory_used.saturating_add(bytes);
         if let Some(limit) = s.memory_limit {
@@ -275,6 +438,9 @@ pub fn try_charge(bytes: u64) -> Result<(), UaError> {
 }
 
 pub fn try_charge_element() -> Result<(), UaError> {
+    if let Some(shared) = shared_budget_ref() {
+        return shared.try_charge_element_shared();
+    }
     with_state(|s| {
         s.element_count = s.element_count.saturating_add(1);
         if let Some(limit) = s.element_limit {
@@ -287,6 +453,26 @@ pub fn try_charge_element() -> Result<(), UaError> {
         }
         Ok(())
     })
+}
+
+/// RAII: merge shared-budget counters when parallel section ends.
+pub struct SharedBudgetGuard {
+    _private: (),
+}
+
+impl SharedBudgetGuard {
+    pub fn attach(arc: Arc<SharedBudget>) -> Self {
+        attach_shared_budget(arc);
+        SharedBudgetGuard { _private: () }
+    }
+}
+
+impl Drop for SharedBudgetGuard {
+    fn drop(&mut self) {
+        SHARED_BUDGET.with(|c| {
+            c.borrow_mut().take();
+        });
+    }
 }
 
 /// Estimate for one newly kept closure element (IntArray + HashSet node + vec slot).

@@ -14,6 +14,8 @@ Cooperative **per-computation** limits live in the Rust core. There is no subpro
 
 Limits apply when a **top-level** `ComputationScope` starts (e.g. `Closer.sg_close`, `con_cardinality`, `SubalgebraLattice.cardinality` / `universe`). Nested scopes share the same budget and do **not** reset counters.
 
+Parallel closure workers attach to a **shared budget** (`SharedBudget`) so charges and checkpoints on all threads count against one computation.
+
 ## Error mapping (`uacalc_lib`)
 
 | `UaError` | Python |
@@ -26,7 +28,7 @@ Limits apply when a **top-level** `ComputationScope` starts (e.g. `Closer.sg_clo
 ## `org.uacalc` shim
 
 - `MemoryError` → `OutOfMemoryError` (`java.lang.OutOfMemoryError`) via `_lib_call` on `alg`, `alg.sublat`, and related shims
-- `Closer.sgClose*` → `None` on `KeyboardInterrupt` (Java interrupt behaviour)
+- `Closer.sgClose*` / `sg_close` / `sg_close_power` / `sg_close_parallel` → `None` on `KeyboardInterrupt` via `_lib_call_closer`
 - `uacalc_lib` itself raises `KeyboardInterrupt` directly
 
 ## Choke points
@@ -39,19 +41,32 @@ Limits apply when a **top-level** `ComputationScope` starts (e.g. `Closer.sg_clo
 
 ### Phase 2
 
-4. **`SubalgebraLattice`** — `make_sg_with_max_size_checked` (checkpoints + memory charge on new closure elements); `make_one_generated_subalgebras_checked`, `make_join_irreducibles_checked`, `join_closure_checked`, `make_universe_with_limit_checked` / `cardinality_checked` / `universe_checked` / `filter_checked` with `charge_kept_subalgebra` on kept `BasicSet`s; `clear_sublat_computation_caches` on failure; Python `cardinality`, `universe`, `filter`, `sg`, `one_generated_subalgebras`, `join_irreducibles`.
-5. **`Partition::join_closure_checked` / `meet_closure_checked`** — checkpoints and `charge_kept_partition` when new partitions are kept (used by lattice closures and partition helpers).
-6. **`CongruenceLattice::permutability_level`** — checkpoints over incomparable pairs once the universe is known.
+4. **`SubalgebraLattice`** — checked universe / cardinality / filter / sg paths with `charge_kept_subalgebra`; cache cleared on failure.
+5. **`Partition::join_closure_checked` / `meet_closure_checked`** — checkpoints and partition charges.
+6. **`CongruenceLattice::permutability_level`** — checkpoints over incomparable pairs.
 
-## Not covered (later phases)
+### Phase 3
 
-- Term interpretation tables (except op-table materialization)
-- Polymorphisms search
-- **`sg_close_parallel`**
-- Releasing the GIL on routine `sg()` / `SubalgebraLattice` methods (stress helper `_stress_sub_universe` releases the GIL for tests)
+7. **Term interpretation** (`VariableImp` / `NonVariableTerm::interpretation*`) — `alloc_i32_table` up front, checkpoints in the Horner fill loop, `make_int_operation_precharged`; `ComputationScope` per interpretation call.
+8. **`make_int_operation_from_dyn`** — checkpoints in the materialization loop.
+9. **`Partition::unary_polymorphisms` / `binary_polymorphisms`** — scope, checkpoints in search, charge per kept polymorphism table.
+10. **`TypeFinder::find_type_set`**, **`next_pair_for_subtrace`**, **`find_type_from_subtrace`** — scope and checkpoints; element charge when growing A² / A⁴ universes.
+11. **`Closer::sg_close_parallel`** — `ComputationScope`, shared budget across `SingleClose` workers, checkpoints and `charge_kept_closure_element` in worker loops; `UaError` propagation (Python `ua_to_py`).
+12. **Python GIL** — `py.allow_threads` on `Closer::sg_close`, `sg_close_from`, `sg_close_power`, `sg_close_parallel`, and `CongruenceLattice::con_cardinality` (checked). **`SubalgebraLattice` universe/cardinality/filter** still hold the GIL: `PySubalgebraLattice` uses an internal `RefCell`, which is not `Sync` and cannot be used inside `allow_threads` without restructuring the wrapper.
 
-## Python GIL and cross-thread `cancel()` (phase 3)
+Stress helpers (`_stress_sg_close_power`, `_stress_sub_universe`) remain for focused tests.
 
-`cancel()` sets a **global** flag that Rust checkpoints honor on any thread. Most Python entry points still run **while holding the GIL**, so another Python thread often cannot call `cancel()` until the call returns. Cooperative stop from another thread during a normal computation therefore does not work today; only **Ctrl-C** (main thread) is polled via the signal hook inside checkpoints.
+## Phase 4 (not covered)
 
-Phase 1–2 tests use private stress helpers (`_stress_sg_close_power`, `_stress_sub_universe`) that release the GIL with `allow_threads` so cross-thread cancel can be exercised. **Phase 3:** release the GIL around the Rust body of long-running exported methods so `cancel()` from a worker thread matches Rust behaviour.
+- Lazy `make_table` on `ProductOperation`, `SubgroupOperation`, `uacalc_lib::abstract_operation::make_table`, and manual n^arity builders in `power_algebra` / `convert` paths
+- **`VirtualLists`** / combination enumeration helpers
+- **`make_random_operations*`** large table batches beyond existing `make_int_operation` charge
+- **`Closer::close`** (non–sub-power) and most **`BigProductAlgebra`** entry points without `allow_threads`
+- **`SubalgebraLattice` GIL release** (requires `RefCell` → `Mutex` or owned-lattice transfer before `allow_threads`)
+- **`CongruenceLattice::universe`** Python accessor (still uncached infallible path; limits apply via `con_cardinality_checked` / `make_universe_with_limit_checked` on other entry points)
+- Term interpretation during **Jython compat** table builds in `python/org/uacalc/alg/op/_jython_compat.py` (pure Python loops)
+- Homomorphism / equation checking inside serial closure (no extra charges beyond kept elements)
+
+## Python GIL and cross-thread `cancel()`
+
+`cancel()` sets a **global** flag honored at checkpoints (including on parallel worker threads when a shared budget is attached). Phase 3 releases the GIL on long-running **`Closer`** closure methods so another Python thread can call `cancel()` while subpower closure runs. Ctrl-C on the main thread is still polled via the signal hook inside checkpoints.

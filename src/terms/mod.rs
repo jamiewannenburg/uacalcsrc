@@ -338,18 +338,17 @@ impl Term for VariableImp {
         let name = format!("Op_{}", self.name);
         let symbol = OperationSymbol::new(&name, arity, false);
         
-        // Build value table for projection operation
-        // For projection, the value at args is just args[index]
-        let table_size = (alg_size as usize).pow(arity as u32);
-        let mut table = Vec::with_capacity(table_size);
-        
+        use crate::resource::{checkpoint, alloc_i32_table, ComputationScope};
+        let _scope = ComputationScope::enter();
+        let mut table =
+            alloc_i32_table(alg_size as usize, arity as u32).map_err(|e| e.to_string())?;
         use crate::util::horner;
-        for k in 0..table_size {
+        for k in 0..table.len() {
+            checkpoint().map_err(|e| e.to_string())?;
             let args = horner::horner_inv_same_size(k as i32, alg_size, arity as usize);
-            table.push(args[index]);
+            table[k] = args[index];
         }
-        
-        operations::make_int_operation(symbol, alg_size, table).map_err(|e| e.to_string()).map_err(|e| e.to_string())
+        operations::make_int_operation_precharged(symbol, alg_size, table).map_err(|e| e.to_string())
     }
     
     fn interpretation_simple(
@@ -384,18 +383,17 @@ impl Term for VariableImp {
         let index = varlist.iter().position(|v| v == &self.name)
             .ok_or_else(|| format!("Variable {} not found in varlist", self.name))?;
         
-        // Build value table - works on indices into the free algebra
-        let table_size = (free_card as usize).pow(arity as u32);
-        let mut table = Vec::with_capacity(table_size);
-        
+        use crate::resource::{checkpoint, alloc_i32_table, ComputationScope};
+        let _scope = ComputationScope::enter();
+        let mut table =
+            alloc_i32_table(free_card as usize, arity as u32).map_err(|e| e.to_string())?;
         use crate::util::horner;
-        for k in 0..table_size {
+        for k in 0..table.len() {
+            checkpoint().map_err(|e| e.to_string())?;
             let args = horner::horner_inv_same_size(k as i32, free_card, arity as usize);
-            // The value is the argument at that position (index into free algebra)
-            table.push(args[index]);
+            table[k] = args[index];
         }
-        
-        operations::make_int_operation(symbol, free_card, table).map_err(|e| e.to_string())
+        operations::make_int_operation_precharged(symbol, free_card, table).map_err(|e| e.to_string())
     }
     
     fn depth(&self) -> i32 {
@@ -622,26 +620,21 @@ impl Term for NonVariableTerm {
         let alg_size = alg.cardinality();
         let symbol = OperationSymbol::new(&format!("{}", self), arity, false);
         
-        // Build value table by evaluating the term for all possible argument combinations
-        let table_size = (alg_size as usize).pow(arity as u32);
-        let mut table = Vec::with_capacity(table_size);
-        
+        use crate::resource::{checkpoint, alloc_i32_table, ComputationScope};
+        let _scope = ComputationScope::enter();
+        let mut table =
+            alloc_i32_table(alg_size as usize, arity as u32).map_err(|e| e.to_string())?;
         use crate::util::horner;
-        for k in 0..table_size {
+        for k in 0..table.len() {
+            checkpoint().map_err(|e| e.to_string())?;
             let args = horner::horner_inv_same_size(k as i32, alg_size, arity as usize);
-            
-            // Build variable assignment map
             let mut var_map = HashMap::new();
             for (i, var) in ans_var_list.iter().enumerate() {
                 var_map.insert(var.clone(), args[i]);
             }
-            
-            // Evaluate the term with this assignment
-            let value = self.eval(&*alg, &var_map)?;
-            table.push(value);
+            table[k] = self.eval(&*alg, &var_map)?;
         }
-        
-        operations::make_int_operation(symbol, alg_size, table).map_err(|e| e.to_string())
+        operations::make_int_operation_precharged(symbol, alg_size, table).map_err(|e| e.to_string())
     }
     
     fn interpretation_on_free_algebra(
@@ -680,31 +673,21 @@ impl Term for NonVariableTerm {
         let free_card = free_alg.get_inner().cardinality();
         let symbol = OperationSymbol::new(&format!("{}", self), arity, false);
         
-        // Build value table by evaluating the term on the free algebra
-        // We evaluate using the free algebra's operations which work on indices
-        let table_size = (free_card as usize).pow(arity as u32);
-        let mut table = Vec::with_capacity(table_size);
-        
+        use crate::resource::{checkpoint, alloc_i32_table, ComputationScope};
+        let _scope = ComputationScope::enter();
+        let mut table =
+            alloc_i32_table(free_card as usize, arity as u32).map_err(|e| e.to_string())?;
         use crate::util::horner;
-        // Get the free algebra's operations
-        let free_ops = free_alg.get_inner().operations_ref_arc();
-        
-        for k in 0..table_size {
+        for k in 0..table.len() {
+            checkpoint().map_err(|e| e.to_string())?;
             let args = horner::horner_inv_same_size(k as i32, free_card, arity as usize);
-            
-            // Build variable assignment map (maps variable names to indices)
             let mut var_map = HashMap::new();
             for (i, var) in ans_var_list.iter().enumerate() {
                 var_map.insert(var.clone(), args[i]);
             }
-            
-            // Evaluate the term on the free algebra using indices
-            // This recursively evaluates children and applies operations
-            let value = self.eval_on_free_algebra(free_alg, &var_map)?;
-            table.push(value);
+            table[k] = self.eval_on_free_algebra(free_alg, &var_map)?;
         }
-        
-        operations::make_int_operation(symbol, free_card, table).map_err(|e| e.to_string())
+        operations::make_int_operation_precharged(symbol, free_card, table).map_err(|e| e.to_string())
     }
     
     fn interpretation_simple(
