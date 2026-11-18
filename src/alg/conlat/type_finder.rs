@@ -249,7 +249,6 @@ where
         
         let mut type_set = HashSet::new();
         let join_irr = self.con.join_irreducibles().to_vec();
-        
         for par in &join_irr {
             checkpoint().map_err(|e| e.to_string())?;
             let typ = self.find_type(par)?;

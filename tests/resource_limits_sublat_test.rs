@@ -162,6 +162,50 @@ fn sublattice_no_stale_cache_after_limit_failure() {
 
 #[test]
 #[serial]
+fn sublattice_checked_paths_usable_after_cancelled_universe() {
+    reset_all_limits();
+    let (ready_tx, ready_rx) = sync_channel::<()>(0);
+    let outcome: Arc<Mutex<Option<Result<usize, UaError>>>> = Arc::new(Mutex::new(None));
+    let outcome_worker = outcome.clone();
+    let handle = thread::spawn(move || {
+        let mut lat = m4_sub_lat();
+        ready_tx.send(()).unwrap();
+        outcome_worker
+            .lock()
+            .unwrap()
+            .replace(lat.universe_stress(STRESS_REPEATS_UNBOUNDED));
+    });
+    ready_rx.recv().unwrap();
+    thread::sleep(Duration::from_millis(CANCEL_WAKE_MS));
+    request_cancel();
+    handle.join().unwrap();
+    assert!(matches!(
+        outcome.lock().unwrap().take().unwrap(),
+        Err(UaError::Interrupted)
+    ));
+    reset_all_limits();
+    let mut lat = m4_sub_lat();
+    let _scope = ComputationScope::enter();
+    lat.join_irreducibles_checked().expect("join irreducibles after cancel");
+    let one = lat.zero().clone();
+    lat.filter_checked(&one).expect("filter after cancel");
+    assert_eq!(lat.cardinality_checked().unwrap(), M4_SUB_CARD);
+}
+
+#[test]
+fn sublattice_join_irreducibles_then_filter_same_lattice() {
+    reset_all_limits();
+    let mut lat = m4_sub_lat();
+    let _scope = ComputationScope::enter();
+    let jis = lat.join_irreducibles_checked().unwrap().clone();
+    assert!(!jis.is_empty());
+    lat.filter_checked(&jis[0]).expect("filter needs universe cache");
+    assert_eq!(lat.cardinality_checked().unwrap(), M4_SUB_CARD);
+    reset_all_limits();
+}
+
+#[test]
+#[serial]
 fn cancel_consumed_at_checkpoint_force() {
     reset_all_limits();
     request_cancel();

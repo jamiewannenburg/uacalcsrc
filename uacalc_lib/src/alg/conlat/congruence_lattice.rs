@@ -519,6 +519,25 @@ impl PyCongruenceLattice {
     }
 }
 
+/// Test-only: many congruence-universe recomputations under one scope (GIL released).
+#[pyfunction]
+#[pyo3(name = "stress_con_universe")]
+fn stress_con_universe(py: Python<'_>, lat: &PyCongruenceLattice, repeats: usize) -> PyResult<i32> {
+    let alg = lat.inner.alg.clone_box();
+    let n = py
+        .allow_threads(move || {
+            let mut fresh = uacalc::alg::conlat::CongruenceLattice::new(alg);
+            fresh.con_universe_stress(repeats)
+        })
+        .map_err(|e| crate::resource::ua_to_py(e, py))?;
+    Ok(n as i32)
+}
+
+pub fn register_stress_con_universe(m: &Bound<'_, PyModule>) -> PyResult<()> {
+    m.add_function(wrap_pyfunction!(stress_con_universe, m)?)?;
+    Ok(())
+}
+
 /// Python wrapper for CongruenceLattice<IntArray>
 #[pyclass]
 pub struct PyCongruenceLatticeIntArray {

@@ -388,6 +388,11 @@ pub fn checkpoint_entry() -> Result<(), UaError> {
     })
 }
 
+/// Cheap cooperative cancel poll (no counter increment, no memory budget scan).
+pub fn poll_cancel() -> Result<(), UaError> {
+    consume_cancel_if_set()
+}
+
 /// Amortized cancel / deadline / budget check (every [`CHECKPOINT_INTERVAL`] calls).
 pub fn checkpoint() -> Result<(), UaError> {
     if let Some(shared) = shared_budget_ref() {

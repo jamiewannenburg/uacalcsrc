@@ -747,7 +747,8 @@ where
     /// This method computes all congruences on the algebra by taking joins
     /// of join irreducibles.
     pub fn make_universe(&mut self) {
-        let _ = self.make_universe_with_limit(usize::MAX);
+        self.make_universe_with_limit_checked(usize::MAX)
+            .expect("failed to build congruence lattice universe");
     }
     
     /// Generate the universe with a size limit.
@@ -826,9 +827,12 @@ where
     /// A vector of all congruences (generates if not already computed)
     pub fn universe(&mut self) -> &Vec<Partition> {
         if self.universe.is_none() {
-            self.make_universe();
+            self.make_universe_with_limit_checked(usize::MAX)
+                .expect("failed to build congruence lattice universe");
         }
-        self.universe.as_ref().unwrap()
+        self.universe
+            .as_ref()
+            .expect("congruence lattice universe missing")
     }
 
     /// Universe with resource limits; clears partial caches on failure.
@@ -851,6 +855,23 @@ where
             self.make_universe_with_limit_checked(usize::MAX)?;
         }
         Ok(self.universe.as_ref().unwrap().len())
+    }
+
+    /// Recompute the congruence universe `repeats` times (for limit/cancel tests).
+    pub fn con_universe_stress(&mut self, repeats: usize) -> Result<usize, crate::resource::UaError> {
+        use crate::resource::{checkpoint_entry, ComputationScope};
+        let _scope = ComputationScope::enter();
+        checkpoint_entry()?;
+        for _ in 0..repeats {
+            self.clear_con_lattice_computation_caches();
+            self.make_universe_with_limit_checked(usize::MAX)?;
+            checkpoint_entry()?;
+        }
+        Ok(self
+            .universe
+            .as_ref()
+            .map(|u| u.len())
+            .unwrap_or(0))
     }
     
     /// Check if the universe has been computed.

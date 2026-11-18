@@ -115,6 +115,13 @@ def _stress_lib_sub_universe(sub: uacalc_lib.alg.SubalgebraLattice, repeats: int
     return stress(sub, repeats)
 
 
+def _stress_lib_con_universe(con: uacalc_lib.alg.CongruenceLattice, repeats: int) -> int:
+    stress = getattr(uacalc_lib.alg, "stress_con_universe", None) or getattr(
+        uacalc_lib.alg, "_stress_con_universe"
+    )
+    return stress(con, repeats)
+
+
 def test_limit_setters_exported():
     for name in (
         "set_memory_limit",
@@ -510,6 +517,129 @@ def test_lib_subalgebra_cancel_from_other_thread():
     assert time.perf_counter() - cancel_t0 < GENEROUS_TEST_BOUND_SEC
     uacalc_lib.clear_cancel()
     assert _m4_lib_algebra().sub().cardinality() == M4_SUB_CARD
+
+
+def test_lib_con_universe_main_thread_responsive_during_compute():
+    done = threading.Event()
+    started = threading.Event()
+
+    def run() -> None:
+        started.set()
+        end = time.perf_counter() + 0.8
+        while time.perf_counter() < end:
+            con = _lyndon_lib_algebra().con()
+            list(con.universe())
+        done.set()
+
+    t = threading.Thread(target=run, daemon=True)
+    t.start()
+    assert started.wait(timeout=GENEROUS_TEST_BOUND_SEC)
+    ticks = 0
+    deadline = time.perf_counter() + 0.4
+    while time.perf_counter() < deadline and not done.is_set():
+        ticks += 1
+        time.sleep(0.01)
+    assert ticks >= 10, "main thread starved during CongruenceLattice.universe"
+    done.wait(timeout=GENEROUS_TEST_BOUND_SEC)
+    t.join(timeout=GENEROUS_TEST_BOUND_SEC)
+
+
+def test_lib_con_universe_cancel_from_other_thread():
+    uacalc_lib.clear_cancel()
+    started = threading.Event()
+    outcome: dict = {"exc": None}
+
+    def run() -> None:
+        con = _m4_lib_algebra().con()
+        started.set()
+        try:
+            _stress_lib_con_universe(con, STRESS_REPEATS)
+            outcome["exc"] = "completed"
+        except KeyboardInterrupt as exc:
+            outcome["exc"] = exc
+
+    thread = threading.Thread(target=run)
+    cancel_t0 = time.perf_counter()
+    thread.start()
+    assert started.wait(timeout=30.0)
+    time.sleep(CANCEL_WAKE_SEC)
+    uacalc_lib.cancel()
+    thread.join(timeout=GENEROUS_TEST_BOUND_SEC)
+    assert isinstance(outcome["exc"], KeyboardInterrupt)
+    assert time.perf_counter() - cancel_t0 < GENEROUS_TEST_BOUND_SEC
+    uacalc_lib.clear_cancel()
+    assert len(list(_lyndon_lib_algebra().con().universe())) >= LYNDON_CON_CARD_MIN
+
+
+def test_org_product_lazy_get_table_memory_and_recovery():
+    """Org op-table materialization under cooperative memory limits (same path as lazy product tables in Rust)."""
+    import org.uacalc.alg  # noqa: F401
+    from org.uacalc._exceptions import OutOfMemoryError
+
+    uacalc_lib.set_memory_limit(64)
+    try:
+        with pytest.raises(OutOfMemoryError):
+            Operations.makeIntOperation("h", 2, 500, [0] * (500 * 500))
+    finally:
+        uacalc_lib.set_memory_limit(None)
+    op = Operations.makeIntOperation("h", 2, 8, [0] * 64)
+    assert op is not None
+
+
+def test_org_random_operations_memory_and_recovery():
+    import org.uacalc.alg.op  # noqa: F401
+    from org.uacalc._exceptions import OutOfMemoryError
+    from org.uacalc.alg.op import OperationSymbol, Operations, SimilarityType
+
+    sim = SimilarityType([OperationSymbol("f", 2), OperationSymbol("g", 2)])
+    uacalc_lib.set_memory_limit(128)
+    try:
+        with pytest.raises(OutOfMemoryError):
+            Operations.makeRandomOperations(8, sim)
+    finally:
+        uacalc_lib.set_memory_limit(None)
+    ops = Operations.makeRandomOperations(2, sim)
+    assert len(ops) == 2
+
+
+def test_org_closer_close_recovery_after_failed_closure():
+    import org.uacalc.alg  # noqa: F401
+    from org.uacalc._exceptions import OutOfMemoryError
+
+    closer = _heavy_org_closer()
+    uacalc_lib.set_memory_limit(MEM_LIMIT_LOW)
+    try:
+        with pytest.raises(OutOfMemoryError):
+            closer.sgClosePower()
+    finally:
+        uacalc_lib.set_memory_limit(None)
+    bp = BigProductAlgebra(_m4_org(), 2)
+    small = Closer(bp, [IntArray([0, 0])])
+    ans = small.close()
+    assert ans is not None
+    assert len(ans) >= 1
+
+
+def test_org_term_table_time_limit_and_recovery():
+    import org.uacalc.alg  # noqa: F401
+    import org.uacalc.alg.op  # noqa: F401 — TermOperationImp getTable checkpoints
+    import org.uacalc.terms  # noqa: F401
+    from org.uacalc.io import AlgebraIO
+    from org.uacalc.terms import VariableImp
+
+    m4 = AlgebraIO.readAlgebraFile(os.path.join(_repo_root(), M4_ALGEBRA))
+    var = VariableImp("x0")
+    uacalc_lib.set_time_limit(0)
+    try:
+        op = var.interpretation(m4)
+        with pytest.raises(TimeoutError):
+            op.getTable(True)
+    finally:
+        uacalc_lib.set_time_limit(None)
+    uacalc_lib.clear_cancel()
+    op = var.interpretation(m4)
+    table = op.getTable(True)
+    assert table is not None
 
 
 def test_org_subalgebra_universe_out_of_memory():

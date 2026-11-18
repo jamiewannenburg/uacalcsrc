@@ -100,6 +100,17 @@ fn checkpoint(py: Python<'_>) -> PyResult<()> {
     resource::checkpoint().map_err(|e| ua_to_py(e, py))
 }
 
+/// Fast cancel-only poll for tight Python loops between full checkpoints.
+#[pyfunction]
+fn poll_cancel(py: Python<'_>) -> PyResult<()> {
+    resource::poll_cancel().map_err(|e| ua_to_py(e, py))
+}
+
+#[pyfunction]
+fn checkpoint_force(py: Python<'_>) -> PyResult<()> {
+    resource::checkpoint_force().map_err(|e| ua_to_py(e, py))
+}
+
 pub fn register(_py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
     install_signal_hook();
     m.add_function(wrap_pyfunction!(set_memory_limit, m)?)?;
@@ -108,5 +119,7 @@ pub fn register(_py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(cancel, m)?)?;
     m.add_function(wrap_pyfunction!(clear_cancel, m)?)?;
     m.add_function(wrap_pyfunction!(checkpoint, m)?)?;
+    m.add_function(wrap_pyfunction!(poll_cancel, m)?)?;
+    m.add_function(wrap_pyfunction!(checkpoint_force, m)?)?;
     Ok(())
 }
