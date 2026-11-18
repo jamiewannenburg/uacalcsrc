@@ -1,18 +1,36 @@
 # Phase 3 resource-limits overhead
 
-Medians from `tools/benchmark_resource_limits_phase3.py` (`--repeats 3 --runs 7`, no limits set, debug `uacalc_lib` on this worker). Compare against `origin/jython` (988bd1b, phase 1+2) on the same machine when possible.
+Median wall time per iteration with **no** resource limits (`set_*_limit(None)`, `clear_cancel()`), **release** `uacalc_lib`, same Windows worker.
 
-## Branch (`feature/resource-limits-phase3`)
+Measured via `tools/benchmark_resource_limits_phase3.py` (`--repeats 5 --runs 11`).
 
-| Workload | Median (ms) |
-|----------|-------------|
-| `sg_close_power` (m4⁵, 3 gens) | 2.50 |
-| `sg_close_parallel` (m4⁴, 2 gens) | 1.09 |
-| Term interpretation (m4, arity 3) | 1.07 |
-| `TypeFinder.find_type_set` (lyndon) | 19.46 |
+| Workload | `origin/jython` (988bd1b) ms | Phase 3 branch ms | Δ (%) |
+|----------|------------------------------|-------------------|-------|
+| `sg_close_power` (m4⁵) | 0.884 | 0.851 | **−3.7%** |
+| `sg_close_parallel` (m4⁴, term map) | 0.594 | 0.592 | **−0.4%** |
+| Term interpretation (m4, arity 3) | 0.637 | 0.570 | **−10.5%** |
+| `TypeFinder.find_type_set` (lyndon) | 4.454 | 4.735 | **+6.3%** |
 
-These workloads complete in a few milliseconds; amortized checkpoints (every 256 iterations) and one `checkpoint_entry` per `ComputationScope` add **well under ~3%** on medians here (noise-dominated at sub-3 ms scales). The lyndon type-set path is dominated by congruence-lattice work (~19 ms); scope entry adds negligible share.
+Interpretation:
 
-## Jython baseline
+- Sub‑millisecond workloads are noise‑dominated; power / parallel / term medians are flat or faster than jython.
+- Type set adds one `ComputationScope` and join‑irreducible checkpoints (+0.28 ms median here). Re‑measure on CI release builds; target remains **≤ ~3%** on primary closure paths.
 
-Re-run on `origin/jython` with the same script after `maturin develop` for apples-to-apples numbers in CI or release builds. Release profiles typically shrink absolute times but preserve relative overhead.
+## Reproduce
+
+**Jython baseline** (isolated venv, release build from `origin/jython` worktree):
+
+```powershell
+cd uacalcsrc-jython\uacalc_lib
+cargo build --release
+# install .pyd + python/uacalc_lib/__init__.py into a fresh venv site-packages
+python tools/benchmark_resource_limits_phase3.py --label jython
+```
+
+**Phase 3 branch**:
+
+```powershell
+maturin develop --release
+$env:PYTHONPATH = "python"
+python tools/benchmark_resource_limits_phase3.py --label branch
+```

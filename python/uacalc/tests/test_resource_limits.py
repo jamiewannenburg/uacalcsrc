@@ -88,6 +88,18 @@ def _heavy_lib_closer() -> uacalc_lib.alg.Closer:
     return uacalc_lib.alg.Closer(bp, _heavy_gens())
 
 
+def _heavy_lib_gens_lib() -> list:
+    return [uacalc_lib.util.IntArray.from_array(list(g)) for g in HEAVY_GENERATORS]
+
+
+def _heavy_lib_closer_with_term_map() -> uacalc_lib.alg.Closer:
+    os.chdir(_repo_root())
+    path = os.path.join(_repo_root(), M4_ALGEBRA)
+    m4 = uacalc_lib.io.AlgebraReader.new_from_file(path).read_algebra_file()
+    bp = uacalc_lib.alg.BigProductAlgebra.new_power(m4, HEAVY_POWER)
+    return uacalc_lib.alg.Closer.new_with_make_term_map(bp, _heavy_lib_gens_lib(), True)
+
+
 def _stress_lib_closer(closer: uacalc_lib.alg.Closer, repeats: int) -> None:
     closer.set_suppress_output(True)
     stress = getattr(uacalc_lib.alg, "stress_sg_close_power", None) or getattr(
@@ -188,16 +200,93 @@ def test_lib_closer_production_cancel_from_other_thread():
     cancel_t0 = time.perf_counter()
     thread.start()
     assert started.wait(timeout=30.0)
-    time.sleep(CANCEL_WAKE_SEC)
+    ticks = 0
+    wake_deadline = time.perf_counter() + CANCEL_WAKE_SEC
+    while time.perf_counter() < wake_deadline:
+        ticks += 1
+        time.sleep(0.01)
     uacalc_lib.cancel()
     thread.join(timeout=GENEROUS_TEST_BOUND_SEC)
     interrupted = time.perf_counter() - cancel_t0
+    assert ticks >= 5, "main thread blocked while closure ran"
     assert not thread.is_alive()
     assert outcome["finished"] is True
     assert isinstance(outcome["exc"], KeyboardInterrupt), outcome["exc"]
     assert interrupted < GENEROUS_TEST_BOUND_SEC
     uacalc_lib.clear_cancel()
     assert len(_heavy_lib_closer().sg_close_power()) == HEAVY_CLOSURE_SIZE
+
+
+def test_lib_closer_production_sg_close_cancel_from_other_thread():
+    """Cross-thread cancel on real ``sg_close`` (not stress helper)."""
+    uacalc_lib.clear_cancel()
+    started = threading.Event()
+    outcome: dict = {"exc": None, "finished": False}
+
+    def run() -> None:
+        started.set()
+        worker = _heavy_lib_closer()
+        worker.set_suppress_output(True)
+        try:
+            while True:
+                worker.sg_close()
+        except KeyboardInterrupt as exc:
+            outcome["exc"] = exc
+        finally:
+            outcome["finished"] = True
+
+    thread = threading.Thread(target=run, name="prod-sg-close")
+    cancel_t0 = time.perf_counter()
+    thread.start()
+    assert started.wait(timeout=30.0)
+    ticks = 0
+    wake_deadline = time.perf_counter() + CANCEL_WAKE_SEC
+    while time.perf_counter() < wake_deadline:
+        ticks += 1
+        time.sleep(0.01)
+    uacalc_lib.cancel()
+    thread.join(timeout=GENEROUS_TEST_BOUND_SEC)
+    assert ticks >= 3, "main thread blocked before cancel"
+    assert not thread.is_alive()
+    assert outcome["finished"] is True
+    assert isinstance(outcome["exc"], KeyboardInterrupt), outcome["exc"]
+    assert time.perf_counter() - cancel_t0 < GENEROUS_TEST_BOUND_SEC
+    uacalc_lib.clear_cancel()
+    ans = _heavy_lib_closer().sg_close_power()
+    assert len(ans) == HEAVY_CLOSURE_SIZE
+
+
+def test_lib_parallel_closer_production_cancel_from_other_thread():
+    """Parallel ``sg_close_parallel`` honors cancel from another thread (shared budget)."""
+    uacalc_lib.clear_cancel()
+    started = threading.Event()
+    outcome: dict = {"exc": None, "finished": False}
+
+    def run() -> None:
+        started.set()
+        try:
+            while True:
+                worker = _heavy_lib_closer_with_term_map()
+                worker.set_suppress_output(True)
+                worker.sg_close_parallel()
+        except KeyboardInterrupt as exc:
+            outcome["exc"] = exc
+        finally:
+            outcome["finished"] = True
+
+    thread = threading.Thread(target=run, name="prod-parallel-close")
+    cancel_t0 = time.perf_counter()
+    thread.start()
+    assert started.wait(timeout=30.0)
+    time.sleep(CANCEL_WAKE_SEC)
+    uacalc_lib.cancel()
+    thread.join(timeout=GENEROUS_TEST_BOUND_SEC)
+    assert not thread.is_alive()
+    assert outcome["finished"] is True
+    assert isinstance(outcome["exc"], KeyboardInterrupt), outcome["exc"]
+    assert time.perf_counter() - cancel_t0 < GENEROUS_TEST_BOUND_SEC
+    uacalc_lib.clear_cancel()
+    assert len(_heavy_lib_closer_with_term_map().sg_close_parallel()) > 0
 
 
 def test_lib_main_thread_responsive_during_closure():
