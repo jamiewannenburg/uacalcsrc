@@ -35,6 +35,8 @@ def _install(sublat_globals: dict) -> None:
     _ORIG_SL_LEQ = getattr(_LibSubalgebraLattice, "leq", None)
     _ORIG_SL_SG = getattr(_LibSubalgebraLattice, "sg", None)
     _ORIG_SL_FILTER = getattr(_LibSubalgebraLattice, "filter", None)
+    _ORIG_SL_ONE_GENS = getattr(_LibSubalgebraLattice, "one_generated_subalgebras", None)
+    _ORIG_SL_JOIN_IRRED = getattr(_LibSubalgebraLattice, "join_irreducibles", None)
     _ORIG_SL_CARD = getattr(_LibSubalgebraLattice, "cardinality", None)
     _ORIG_SL_UNIVERSE = getattr(_LibSubalgebraLattice, "universe", None)
 
@@ -355,7 +357,7 @@ def _install(sublat_globals: dict) -> None:
             gens = _as_int_list(gens)
         if _ORIG_SL_SG is None:
             raise TypeError("sg is not bound")
-        return _ORIG_SL_SG(self, _as_int_list(gens))
+        return _lib_call(_ORIG_SL_SG, self, _as_int_list(gens))
 
     def Sg(self: Any, gens: Any) -> Any:
         from org.uacalc.alg import Subalgebra
@@ -377,9 +379,13 @@ def _install(sublat_globals: dict) -> None:
         return iter(self.universe())
 
     def oneGeneratedSubalgebras(self: Any) -> list:
+        if callable(_ORIG_SL_ONE_GENS):
+            return list(_lib_call(_ORIG_SL_ONE_GENS, self))
         return list(self.one_generated_subalgebras())
 
     def joinIrreducibles(self: Any) -> list:
+        if callable(_ORIG_SL_JOIN_IRRED):
+            return list(_lib_call(_ORIG_SL_JOIN_IRRED, self))
         return list(self.join_irreducibles())
 
     def joinIrreducible(self: Any, subalg: Any) -> bool:

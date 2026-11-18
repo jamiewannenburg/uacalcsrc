@@ -108,6 +108,29 @@ fn con_lattice_memory_limit_universe_lyndon() {
     reset_all_limits();
     let card = con.con_cardinality_checked().unwrap();
     assert!(card >= 10);
+    assert_eq!(con.con_cardinality_checked().unwrap(), card);
+}
+
+#[test]
+fn con_lattice_element_limit_universe_lyndon_recovery() {
+    reset_all_limits();
+    let expected = {
+        let mut con = lyndon_con_lat();
+        con.con_cardinality_checked().unwrap()
+    };
+    assert!(expected >= 10);
+    reset_all_limits();
+    set_element_limit(Some(4));
+    let _scope = ComputationScope::enter();
+    let mut con = lyndon_con_lat();
+    assert!(matches!(
+        con.con_cardinality_checked(),
+        Err(UaError::ElementLimit { .. })
+    ));
+    assert!(!con.universe_found());
+    reset_all_limits();
+    let mut con = lyndon_con_lat();
+    assert_eq!(con.con_cardinality_checked().unwrap(), expected);
 }
 
 #[test]
