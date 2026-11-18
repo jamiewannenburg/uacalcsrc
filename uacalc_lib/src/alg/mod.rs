@@ -131,6 +131,7 @@ pub fn register_alg_module(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()>
     closer::register_closer(_py, m)?;
     closer_timing::register_closer_timing(_py, m)?;
     sublat::subalgebra_lattice::register_stress_sub_universe(m)?;
+    conlat::congruence_lattice::register_stress_con_universe(m)?;
 
     // Export only clean names (without Py prefix)
     m.add("Closer", m.getattr("PyCloser")?)?;

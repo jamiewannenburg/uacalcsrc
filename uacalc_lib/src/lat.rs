@@ -1582,7 +1582,7 @@ impl PyBasicLattice {
         }
         Some((|| {
             let py_sub = bound.extract::<PyRef<'_, PySubalgebraLattice>>()?;
-            let mut inner = py_sub.inner.borrow_mut();
+            let mut inner = py_sub.inner.lock().unwrap();
             let _ = inner.universe_mut();
             let _ = inner.join_irreducibles_mut();
             match uacalc::lat::BasicLattice::new_from_lattice(

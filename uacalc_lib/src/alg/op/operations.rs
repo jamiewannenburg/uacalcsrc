@@ -1,6 +1,6 @@
 //! Python wrapper for Operations utility class
 
-use crate::resource::ua_to_py;
+use crate::resource::{limit_string_to_py, ua_to_py};
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
 use pyo3::types::{PyAny, PyDict};
@@ -448,7 +448,7 @@ impl PyOperations {
     }
 
     #[staticmethod]
-    fn make_random_operations(n: i32, sim_type: &PySimilarityType) -> PyResult<Vec<PyIntOperation>> {
+    fn make_random_operations(py: Python<'_>, n: i32, sim_type: &PySimilarityType) -> PyResult<Vec<PyIntOperation>> {
         match uacalc::alg::op::ops::make_random_operations(n, &sim_type.get_inner()) {
             Ok(vec) => {
                 let mut out = Vec::with_capacity(vec.len());
@@ -461,12 +461,17 @@ impl PyOperations {
                 }
                 Ok(out)
             },
-            Err(e) => Err(PyValueError::new_err(e)),
+            Err(e) => Err(limit_string_to_py(&e, py)),
         }
     }
 
     #[staticmethod]
-    fn make_random_operations_with_seed(n: i32, sim_type: &PySimilarityType, seed: u64) -> PyResult<Vec<PyIntOperation>> {
+    fn make_random_operations_with_seed(
+        py: Python<'_>,
+        n: i32,
+        sim_type: &PySimilarityType,
+        seed: u64,
+    ) -> PyResult<Vec<PyIntOperation>> {
         match uacalc::alg::op::ops::make_random_operations_with_seed(n, &sim_type.get_inner(), Some(seed)) {
             Ok(vec) => {
                 let mut out = Vec::with_capacity(vec.len());
@@ -479,7 +484,7 @@ impl PyOperations {
                 }
                 Ok(out)
             },
-            Err(e) => Err(PyValueError::new_err(e)),
+            Err(e) => Err(limit_string_to_py(&e, py)),
         }
     }
 

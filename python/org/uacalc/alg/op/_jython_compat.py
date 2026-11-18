@@ -34,15 +34,17 @@ def _install(op_globals: dict) -> None:
     def _lib_call(fn, *args, **kwargs):
         try:
             return fn(*args, **kwargs)
+        except MemoryError as exc:
+            raise OutOfMemoryError(str(exc)) from exc
+        except (KeyboardInterrupt, TimeoutError):
+            raise
         except ValueError as exc:
             msg = str(exc)
+            if "memory limit" in msg or "element limit" in msg:
+                raise OutOfMemoryError(msg) from exc
             if "Unsupported operation" in msg:
                 raise ClassCastException(msg) from exc
             translate_illegal_argument(exc)
-        except MemoryError as exc:
-            raise OutOfMemoryError(str(exc)) from exc
-        except TimeoutError as exc:
-            raise RuntimeException(str(exc)) from exc
 
     # PyIntOperation is not weakrefable and compares by value, so record
     # construction by identity. Java IntOperationImp / value-at / function
@@ -752,7 +754,14 @@ def _install(op_globals: dict) -> None:
             for _ in range(arity):
                 total *= size
             values = []
+            import uacalc_lib
+
             for idx in range(total):
+                if idx % 64 == 0:
+                    uacalc_lib.poll_cancel()
+                    uacalc_lib.checkpoint_force()
+                elif idx % 1024 == 0:
+                    uacalc_lib.checkpoint()
                 args = []
                 remaining = idx
                 for _ in range(arity):

@@ -62,6 +62,15 @@ impl From<UaError> for String {
 }
 
 static CANCEL_REQUESTED: AtomicBool = AtomicBool::new(false);
+/// Set when any thread has a non-None memory/element/time limit (fast path for overhead-free runs).
+static LIMITS_CONFIGURED: AtomicBool = AtomicBool::new(false);
+
+fn sync_limits_configured() {
+    let configured = with_state(|s| {
+        s.memory_limit.is_some() || s.element_limit.is_some() || s.time_limit.is_some()
+    });
+    LIMITS_CONFIGURED.store(configured, Ordering::Release);
+}
 
 type SignalHookFn = Box<dyn Fn() -> Result<(), UaError> + Send + Sync>;
 
@@ -255,14 +264,17 @@ fn with_state<R>(f: impl FnOnce(&mut ThreadState) -> R) -> R {
 
 pub fn set_memory_limit(limit: Option<u64>) {
     with_state(|s| s.memory_limit = limit);
+    sync_limits_configured();
 }
 
 pub fn set_element_limit(limit: Option<u64>) {
     with_state(|s| s.element_limit = limit);
+    sync_limits_configured();
 }
 
 pub fn set_time_limit(limit: Option<Duration>) {
     with_state(|s| s.time_limit = limit);
+    sync_limits_configured();
 }
 
 pub fn request_cancel() {
@@ -276,13 +288,74 @@ pub fn clear_cancel() {
 /// Reset all limit configuration and cancel flag (for tests).
 pub fn reset_all_limits() {
     clear_cancel();
-    set_memory_limit(None);
-    set_element_limit(None);
-    set_time_limit(None);
+    with_state(|s| {
+        s.memory_limit = None;
+        s.element_limit = None;
+        s.time_limit = None;
+    });
+    sync_limits_configured();
 }
 
 pub fn cancel_requested() -> bool {
     CANCEL_REQUESTED.load(Ordering::SeqCst)
+}
+
+/// True when any thread has configured a cooperative limit (global flag, see [`sync_limits_configured`]).
+pub fn limits_configured_globally() -> bool {
+    LIMITS_CONFIGURED.load(Ordering::Acquire)
+}
+
+/// Enter a computation scope only when a limit is configured (not for cancel alone).
+///
+/// Cancel and Python signals are still honored via [`checkpoint`] / [`poll_cancel`] on the
+/// global cancel flag and signal hook without a scope. Core lattice paths may still enter
+/// their own inner scopes.
+pub fn maybe_computation_scope() -> Option<ComputationScope> {
+    if limits_configured_globally() {
+        Some(ComputationScope::enter())
+    } else {
+        None
+    }
+}
+
+/// Limit knobs from the thread that schedules `py.allow_threads` work (usually the main thread).
+#[derive(Clone, Copy, Debug)]
+pub struct WorkerLimitsSnapshot {
+    memory_limit: Option<u64>,
+    element_limit: Option<u64>,
+    time_limit: Option<Duration>,
+}
+
+/// Copy configured limits from the current thread before moving closure to a worker thread.
+pub fn snapshot_worker_limits() -> WorkerLimitsSnapshot {
+    with_state(|s| WorkerLimitsSnapshot {
+        memory_limit: s.memory_limit,
+        element_limit: s.element_limit,
+        time_limit: s.time_limit,
+    })
+}
+
+fn install_worker_limits(snapshot: WorkerLimitsSnapshot) {
+    with_state(|s| {
+        s.memory_limit = snapshot.memory_limit;
+        s.element_limit = snapshot.element_limit;
+        s.time_limit = snapshot.time_limit;
+    });
+}
+
+/// RAII: install caller limits on a worker thread and optionally open a top-level scope.
+pub struct AllowThreadsResourceGuard {
+    _scope: Option<ComputationScope>,
+}
+
+impl AllowThreadsResourceGuard {
+    /// Call at the start of every `py.allow_threads` lattice/closure body.
+    pub fn enter() -> Self {
+        install_worker_limits(snapshot_worker_limits());
+        AllowThreadsResourceGuard {
+            _scope: maybe_computation_scope(),
+        }
+    }
 }
 
 /// RAII guard: entering depth 0 resets per-computation counters and deadline.
@@ -386,6 +459,11 @@ pub fn checkpoint_entry() -> Result<(), UaError> {
         check_deadline(s)?;
         Ok(())
     })
+}
+
+/// Cheap cooperative cancel poll (no counter increment, no memory budget scan).
+pub fn poll_cancel() -> Result<(), UaError> {
+    consume_cancel_if_set()
 }
 
 /// Amortized cancel / deadline / budget check (every [`CHECKPOINT_INTERVAL`] calls).
@@ -525,6 +603,38 @@ pub fn alloc_i32_table(n: usize, arity: u32) -> Result<Vec<i32>, UaError> {
     Ok(table)
 }
 
+/// Fill an operation table by Horner index (charges up front; checkpoints in the loop).
+pub fn build_i32_table_horner<F>(
+    set_size: i32,
+    arity: usize,
+    mut fill: F,
+) -> Result<Vec<i32>, UaError>
+where
+    F: FnMut(&[i32]) -> Result<i32, String>,
+{
+    use crate::util::horner;
+    if arity == 0 {
+        let v = fill(&[]).map_err(UaError::from)?;
+        let mut table = alloc_i32_table(1, 0)?;
+        table[0] = v;
+        return Ok(table);
+    }
+    let mut table = alloc_i32_table(set_size as usize, arity as u32)?;
+    for i in 0..table.len() {
+        checkpoint()?;
+        let args = horner::horner_inv_same_size(i as i32, set_size, arity);
+        table[i] = fill(&args).map_err(UaError::from)?;
+    }
+    Ok(table)
+}
+
+/// Charge for a newly stored homomorphism / equation-search map entry.
+pub fn charge_homomorphism_entry(slice_len: usize) -> Result<(), UaError> {
+    const MAP_ENTRY: u64 = 96;
+    let bytes = MAP_ENTRY.saturating_add((slice_len as u64).saturating_mul(4));
+    try_charge(bytes)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -580,6 +690,35 @@ mod tests {
         let _scope = ComputationScope::enter();
         thread::sleep(Duration::from_millis(5));
         assert!(matches!(checkpoint_force(), Err(UaError::TimeLimit)));
+    }
+
+    #[test]
+    fn worker_inherits_caller_memory_limit() {
+        clear_cancel();
+        set_memory_limit(Some(64));
+        let snap = snapshot_worker_limits();
+        set_memory_limit(None);
+        let err = thread::spawn(move || {
+            install_worker_limits(snap);
+            let _scope = maybe_computation_scope();
+            try_charge(128)
+        })
+        .join()
+        .unwrap();
+        assert!(matches!(err, Err(UaError::Memory { .. })));
+        reset_all_limits();
+    }
+
+    #[test]
+    fn cancel_without_scope_or_limits_at_checkpoints() {
+        clear_cancel();
+        reset_all_limits();
+        for _ in 0..CHECKPOINT_INTERVAL - 1 {
+            checkpoint().unwrap();
+        }
+        request_cancel();
+        assert!(matches!(checkpoint(), Err(UaError::Interrupted)));
+        clear_cancel();
     }
 
     #[test]

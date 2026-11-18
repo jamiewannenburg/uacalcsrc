@@ -575,16 +575,13 @@ fn make_random_operation_with_rng(
         return Err(format!("Set size must be positive, got {}", n));
     }
     let arity = op_sym.arity();
-    let table_size = if arity == 0 {
-        1
-    } else {
-        (n as usize).pow(arity as u32)
-    };
-    let mut values = Vec::with_capacity(table_size);
-    for _ in 0..table_size {
-        values.push(rng.next_int(n));
+    let mut values = crate::resource::alloc_i32_table(n as usize, arity as u32)
+        .map_err(|e| e.to_string())?;
+    for i in 0..values.len() {
+        crate::resource::checkpoint().map_err(|e| e.to_string())?;
+        values[i] = rng.next_int(n);
     }
-    int_op_string(make_int_operation(op_sym, n, values))
+    int_op_string(make_int_operation_precharged(op_sym, n, values))
 }
 
 /// Make a list of random operations corresponding to a similarity type and set size.
@@ -616,6 +613,7 @@ pub fn make_random_operations_with_seed(
     let op_syms = sim_type.get_operation_symbols();
     let mut ops = Vec::with_capacity(op_syms.len());
     for op_sym in op_syms {
+        crate::resource::checkpoint().map_err(|e| e.to_string())?;
         ops.push(make_random_operation_with_rng(n, op_sym.clone(), &mut rng)?);
     }
     Ok(ops)

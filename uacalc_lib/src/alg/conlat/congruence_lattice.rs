@@ -53,8 +53,7 @@ impl PyCongruenceLattice {
 
     fn con_cardinality(&mut self, py: Python<'_>) -> PyResult<usize> {
         py.allow_threads(|| {
-            use uacalc::resource::ComputationScope;
-            let _scope = ComputationScope::enter();
+            let _resource = crate::worker_limits::AllowThreadsResourceGuard::enter();
             self.inner.con_cardinality_checked()
         })
         .map_err(|e| crate::resource::ua_to_py(e, py))
@@ -136,10 +135,13 @@ impl PyCongruenceLattice {
         }
     }
 
-    fn universe(&mut self) -> Vec<PyPartition> {
-        use uacalc::alg::conlat::CongruenceLattice;
-        let univ: &Vec<uacalc::alg::conlat::partition::Partition> = CongruenceLattice::universe(&mut self.inner);
-        univ.iter().map(|p| PyPartition { inner: p.clone() }).collect()
+    fn universe(&mut self, py: Python<'_>) -> PyResult<Vec<PyPartition>> {
+        py.allow_threads(|| {
+            let _resource = crate::worker_limits::AllowThreadsResourceGuard::enter();
+            self.inner.universe_checked()
+        })
+        .map(|univ| univ.into_iter().map(|p| PyPartition { inner: p }).collect())
+        .map_err(|e| crate::resource::ua_to_py(e, py))
     }
 
     fn permutability_level(&mut self) -> i32 { self.inner.permutability_level() }
@@ -436,8 +438,8 @@ impl PyCongruenceLattice {
         self.inner.make_join_irreducibles();
     }
 
-    fn get_universe_list(&mut self) -> Vec<PyPartition> {
-        self.universe()
+    fn get_universe_list(&mut self, py: Python<'_>) -> PyResult<Vec<PyPartition>> {
+        self.universe(py)
     }
 
     fn lattice_join(&self, a: &PyPartition, b: &PyPartition) -> PyResult<PyPartition> {
@@ -515,6 +517,25 @@ impl PyCongruenceLattice {
     }
 }
 
+/// Test-only: many congruence-universe recomputations under one scope (GIL released).
+#[pyfunction]
+#[pyo3(name = "stress_con_universe")]
+fn stress_con_universe(py: Python<'_>, lat: &PyCongruenceLattice, repeats: usize) -> PyResult<i32> {
+    let alg = lat.inner.alg.clone_box();
+    let n = py
+        .allow_threads(move || {
+            let mut fresh = uacalc::alg::conlat::CongruenceLattice::new(alg);
+            fresh.con_universe_stress(repeats)
+        })
+        .map_err(|e| crate::resource::ua_to_py(e, py))?;
+    Ok(n as i32)
+}
+
+pub fn register_stress_con_universe(m: &Bound<'_, PyModule>) -> PyResult<()> {
+    m.add_function(wrap_pyfunction!(stress_con_universe, m)?)?;
+    Ok(())
+}
+
 /// Python wrapper for CongruenceLattice<IntArray>
 #[pyclass]
 pub struct PyCongruenceLatticeIntArray {
@@ -531,8 +552,7 @@ impl PyCongruenceLatticeIntArray {
 
     fn con_cardinality(&mut self, py: Python<'_>) -> PyResult<usize> {
         py.allow_threads(|| {
-            use uacalc::resource::ComputationScope;
-            let _scope = ComputationScope::enter();
+            let _resource = crate::worker_limits::AllowThreadsResourceGuard::enter();
             self.inner.con_cardinality_checked()
         })
         .map_err(|e| crate::resource::ua_to_py(e, py))
@@ -616,10 +636,13 @@ impl PyCongruenceLatticeIntArray {
         }
     }
 
-    fn universe(&mut self) -> Vec<PyPartition> {
-        use uacalc::alg::conlat::CongruenceLattice;
-        let univ: &Vec<uacalc::alg::conlat::partition::Partition> = CongruenceLattice::universe(&mut self.inner);
-        univ.iter().map(|p| PyPartition { inner: p.clone() }).collect()
+    fn universe(&mut self, py: Python<'_>) -> PyResult<Vec<PyPartition>> {
+        py.allow_threads(|| {
+            let _resource = crate::worker_limits::AllowThreadsResourceGuard::enter();
+            self.inner.universe_checked()
+        })
+        .map(|univ| univ.into_iter().map(|p| PyPartition { inner: p }).collect())
+        .map_err(|e| crate::resource::ua_to_py(e, py))
     }
 
     fn permutability_level(&mut self) -> i32 { self.inner.permutability_level() }

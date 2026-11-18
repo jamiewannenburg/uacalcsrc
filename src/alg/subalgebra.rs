@@ -747,19 +747,18 @@ where
     }
     
     fn make_table(&mut self) -> Result<(), String> {
-        let mut h = 1;
-        for _ in 0..self.arity {
-            h *= self.size;
+        let size = self.size as i32;
+        let arity = self.arity as usize;
+        match crate::resource::build_i32_table_horner(size, arity, |args| self.int_value_at(args)) {
+            Ok(table) => {
+                self.value_table = Some(table);
+                Ok(())
+            }
+            Err(e) => {
+                self.value_table = None;
+                Err(e.to_string())
+            }
         }
-        
-        let mut table = Vec::with_capacity(h);
-        for i in 0..h {
-            let args = horner::horner_inv_same_size(i as i32, self.size as i32, self.arity as usize);
-            table.push(self.int_value_at(&args)?);
-        }
-        
-        self.value_table = Some(table);
-        Ok(())
     }
     
     fn get_table(&self) -> Option<&[i32]> {
