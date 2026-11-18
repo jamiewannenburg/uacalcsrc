@@ -785,6 +785,17 @@ where
         self.sg_close_power_impl(0)
     }
 
+    /// Run [`sg_close_power_compute`] `repeats` times under one [`ComputationScope`].
+    pub fn sg_close_power_stress(&mut self, repeats: usize) -> Result<(), UaError> {
+        let _scope = ComputationScope::enter();
+        checkpoint_entry()?;
+        for _ in 0..repeats {
+            checkpoint_entry()?;
+            self.sg_close_power_compute(0)?;
+        }
+        Ok(())
+    }
+
     /// Implementation of closure computation.
     ///
     /// # Arguments
@@ -1497,6 +1508,11 @@ where
     fn sg_close_power_impl(&mut self, closed_mark: usize) -> Result<Vec<IntArray>, UaError> {
         let _scope = ComputationScope::enter();
         checkpoint_entry()?;
+        self.sg_close_power_compute(closed_mark)
+    }
+
+    /// Closure compute without opening a [`ComputationScope`] (caller owns the scope).
+    fn sg_close_power_compute(&mut self, closed_mark: usize) -> Result<Vec<IntArray>, UaError> {
         if let Some(ref report) = self.report {
             report.add_start_line("subpower closing ...");
         }

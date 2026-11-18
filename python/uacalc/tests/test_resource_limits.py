@@ -18,6 +18,28 @@ from org.uacalc.io import AlgebraIO
 from org.uacalc.util import IntArray
 from test_utils import build_java_command
 
+# Calibrated on worker (m4.ua product closure + Java free-algebra closure).
+M4_ALGEBRA = os.path.join("resources", "algebras", "m4.ua")
+HEAVY_POWER = 5
+HEAVY_GENERATORS: tuple[tuple[int, ...], ...] = (
+    (0, 0, 1, 0, 0),
+    (1, 1, 0, 1, 0),
+    (2, 1, 2, 0, 1),
+)
+HEAVY_CLOSURE_SIZE = 13
+STRESS_REPEATS = 5000
+STRESS_UNCANCELLED_TARGET_SEC = 10.0
+CANCEL_WAKE_SEC = 0.5
+MEM_LIMIT_LOW = 512
+MEM_LIMIT_HIGH = 4096
+JAVA_FREE_NUM_GENS = 3
+JAVA_FREE_POWER = 2
+JAVA_FREE_GENERATORS = "0,0,1;1,1,0"
+JAVA_LOW_XMX_MB = 32
+JAVA_HIGH_XMX_MB = 512
+JAVA_SUBPROCESS_TIMEOUT_SEC = 180
+TIME_LIMIT_REALISTIC_SEC = 0.2
+
 
 def _repo_root() -> str:
     return os.path.abspath(
@@ -25,29 +47,36 @@ def _repo_root() -> str:
     )
 
 
-_C2_CACHE = None
+_M4_CACHE = None
 
 
-def _cyclic2():
-    global _C2_CACHE
-    if _C2_CACHE is None:
-        path = os.path.join(_repo_root(), "resources", "algebras", "cyclic2.ua")
-        _C2_CACHE = AlgebraIO.readAlgebraFile(path)
-    return _C2_CACHE
+def _m4_org():
+    global _M4_CACHE
+    if _M4_CACHE is None:
+        path = os.path.join(_repo_root(), M4_ALGEBRA)
+        _M4_CACHE = AlgebraIO.readAlgebraFile(path)
+    return _M4_CACHE
 
 
-def _c2_power_closer(power: int = 2):
-    bp = BigProductAlgebra(_cyclic2(), power)
-    return Closer(bp, [IntArray([0] * power), IntArray([1] * power)])
+def _heavy_gens() -> list[IntArray]:
+    return [IntArray(list(g)) for g in HEAVY_GENERATORS]
 
 
-def _lib_c2_power_closer(power: int = 2):
+def _heavy_org_closer() -> Closer:
+    bp = BigProductAlgebra(_m4_org(), HEAVY_POWER)
+    return Closer(bp, _heavy_gens())
+
+
+def _heavy_lib_closer() -> uacalc_lib.alg.Closer:
     os.chdir(_repo_root())
-    path = os.path.join(_repo_root(), "resources", "algebras", "cyclic2.ua")
-    c2 = uacalc_lib.io.AlgebraReader.new_from_file(path).read_algebra_file()
-    bp = uacalc_lib.alg.BigProductAlgebra.new_power(c2, power)
-    gens = [IntArray([0] * power), IntArray([1] * power)]
-    return uacalc_lib.alg.Closer(bp, gens)
+    path = os.path.join(_repo_root(), M4_ALGEBRA)
+    m4 = uacalc_lib.io.AlgebraReader.new_from_file(path).read_algebra_file()
+    bp = uacalc_lib.alg.BigProductAlgebra.new_power(m4, HEAVY_POWER)
+    return uacalc_lib.alg.Closer(bp, _heavy_gens())
+
+
+def _stress_lib_closer(closer: uacalc_lib.alg.Closer, repeats: int) -> None:
+    uacalc_lib.alg.stress_sg_close_power(closer, repeats)
 
 
 def test_limit_setters_exported():
@@ -75,49 +104,74 @@ def test_org_operations_make_int_operation_out_of_memory():
 
 
 def test_org_closer_sg_close_power_out_of_memory():
-    uacalc_lib.set_memory_limit(64)
-    with pytest.raises(OutOfMemoryError):
-        Operations.makeIntOperation("x", 2, 400, [0] * (400 * 400))
+    closer = _heavy_org_closer()
+    try:
+        uacalc_lib.set_memory_limit(MEM_LIMIT_LOW)
+        with pytest.raises(OutOfMemoryError):
+            closer.sgClosePower()
+        uacalc_lib.set_memory_limit(MEM_LIMIT_HIGH)
+        ans = closer.sgClosePower()
+        assert ans is not None
+        assert len(ans) == HEAVY_CLOSURE_SIZE
+        uacalc_lib.set_memory_limit(MEM_LIMIT_LOW)
+        with pytest.raises(OutOfMemoryError):
+            closer.sgClose()
+        uacalc_lib.set_memory_limit(None)
+        ans2 = closer.sgClose()
+        assert ans2 is not None
+        assert len(ans2) == HEAVY_CLOSURE_SIZE
+    finally:
+        uacalc_lib.set_memory_limit(None)
 
 
 def test_lib_closer_pre_cancel_keyboard_interrupt():
+    closer = _heavy_lib_closer()
     uacalc_lib.clear_cancel()
     uacalc_lib.cancel()
-    try:
-        _lib_c2_power_closer(2).sg_close_power()
-    except KeyboardInterrupt:
-        return
-    pytest.skip("C2^2 closure completes before cancel is observed on this build")
+    with pytest.raises(KeyboardInterrupt):
+        closer.sg_close_power()
+    uacalc_lib.clear_cancel()
 
 
 def test_org_closer_pre_cancel_returns_none():
+    closer = _heavy_org_closer()
     uacalc_lib.clear_cancel()
-    closer = _c2_power_closer(2)
     uacalc_lib.cancel()
-    ans = closer.sgClosePower()
-    if ans is not None:
-        pytest.skip("diagonal C2^2 closure completes before org shim sees cancel")
+    assert closer.sgClosePower() is None
     uacalc_lib.clear_cancel()
+    assert _heavy_org_closer().sgClosePower() is not None
 
 
 def test_lib_closer_cancel_from_other_thread():
     uacalc_lib.clear_cancel()
-    result: dict = {}
-    barrier = threading.Barrier(2)
+    started = threading.Event()
+    outcome: dict = {"exc": None, "finished": False}
 
-    def run():
-        barrier.wait(timeout=30)
+    def run() -> None:
+        worker = _heavy_lib_closer()
+        started.set()
         try:
-            result["ans"] = _lib_c2_power_closer(6).sg_close_power()
-        except KeyboardInterrupt:
-            result["ans"] = None
+            _stress_lib_closer(worker, STRESS_REPEATS)
+            outcome["exc"] = "completed"
+        except KeyboardInterrupt as exc:
+            outcome["exc"] = exc
+        finally:
+            outcome["finished"] = True
 
-    thread = threading.Thread(target=run)
+    thread = threading.Thread(target=run, name="stress-close")
+    cancel_t0 = time.perf_counter()
     thread.start()
-    barrier.wait(timeout=30)
+    assert started.wait(timeout=30.0)
+    time.sleep(CANCEL_WAKE_SEC)
     uacalc_lib.cancel()
-    thread.join(timeout=120)
-    assert result.get("ans") is None
+    thread.join(timeout=max(60.0, STRESS_UNCANCELLED_TARGET_SEC * 2))
+    interrupted = time.perf_counter() - cancel_t0
+    assert not thread.is_alive(), "closure thread did not finish after cancel"
+    assert outcome["finished"] is True
+    assert isinstance(outcome["exc"], KeyboardInterrupt), outcome["exc"]
+    assert interrupted < STRESS_UNCANCELLED_TARGET_SEC * 0.35
+    uacalc_lib.clear_cancel()
+    _stress_lib_closer(_heavy_lib_closer(), min(50, STRESS_REPEATS))
 
 
 def test_limits_reset_allows_repeat_after_failure():
@@ -144,36 +198,68 @@ def test_lib_con_cardinality_memory_and_recompute():
     assert con.con_cardinality() == card
 
 
-def test_lib_time_limit_on_closure():
+def test_lib_time_limit_instant_on_closure_entry():
+    closer = _heavy_lib_closer()
     uacalc_lib.set_time_limit(1e-12)
     try:
         with pytest.raises(TimeoutError, match="time limit"):
-            _lib_c2_power_closer(6).sg_close_power()
+            closer.sg_close_power()
     finally:
         uacalc_lib.set_time_limit(None)
 
 
-def _java_sg_close_power(xmx_mb: int, power: int = 6) -> dict:
+def test_lib_time_limit_realistic_on_stress_closure():
+    uacalc_lib.set_time_limit(None)
+    closer = _heavy_lib_closer()
+    uacalc_lib.set_time_limit(TIME_LIMIT_REALISTIC_SEC)
+    t0 = time.perf_counter()
+    try:
+        with pytest.raises(TimeoutError, match="time limit"):
+            _stress_lib_closer(closer, STRESS_REPEATS)
+    finally:
+        uacalc_lib.set_time_limit(None)
+    elapsed = time.perf_counter() - t0
+    assert elapsed < TIME_LIMIT_REALISTIC_SEC + 1.5
+
+
+def _java_sg_close_free_algebra(xmx_mb: int) -> tuple[bool, bool, str]:
+    """Return (ran_to_completion, success, detail)."""
     cmd = build_java_command(
         "java_wrapper.src.alg.CloserWrapper",
         [
-            "sg_close_power",
-            "--base_size",
-            "2",
+            "sg_close_free_algebra",
+            "--num_gens",
+            str(JAVA_FREE_NUM_GENS),
             "--power",
-            str(power),
+            str(JAVA_FREE_POWER),
             "--generators",
-            "0,0,0,0,0,0;1,1,1,1,1,1",
+            JAVA_FREE_GENERATORS,
         ],
     )
     cmd.insert(1, f"-Xmx{xmx_mb}m")
-    proc = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
+    try:
+        proc = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=JAVA_SUBPROCESS_TIMEOUT_SEC,
+        )
+    except subprocess.TimeoutExpired:
+        return (False, False, "timeout")
+    combined = (proc.stderr or "") + (proc.stdout or "")
+    if "OutOfMemoryError" in combined:
+        return (True, False, "oom")
     if proc.returncode != 0:
-        return {"status": "error", "stderr": proc.stderr, "stdout": proc.stdout}
-    payload = json.loads(proc.stdout)
-    if isinstance(payload.get("data"), str):
-        payload["data"] = json.loads(payload["data"])
-    return payload.get("data", payload)
+        return (True, False, f"exit {proc.returncode}")
+    marker = combined.find('{"success"')
+    if marker < 0:
+        return (True, False, "no json")
+    payload = json.loads(combined[marker:])
+    data = payload.get("data", payload)
+    if isinstance(data, str):
+        data = json.loads(data)
+    ok = data.get("status") == "success"
+    return (True, ok, "success" if ok else str(data.get("status")))
 
 
 @pytest.mark.slow
@@ -181,29 +267,22 @@ def test_java_vs_python_same_side_of_cutoff():
     if not os.environ.get("JAVA_HOME"):
         pytest.skip("JAVA_HOME not set")
 
-    low = _java_sg_close_power(8, power=6)
-    high = _java_sg_close_power(512, power=6)
-    java_low_failed = low.get("status") != "success"
-    java_high_ok = high.get("status") == "success"
-    if java_low_failed == java_high_ok:
-        pytest.skip("Java heap did not bracket closure workload")
+    java_low_ran, java_low_ok, _ = _java_sg_close_free_algebra(JAVA_LOW_XMX_MB)
+    java_high_ran, java_high_ok, _ = _java_sg_close_free_algebra(JAVA_HIGH_XMX_MB)
+    if not (java_low_ran and not java_low_ok and java_high_ran and java_high_ok):
+        pytest.skip("Java -Xmx did not bracket the calibrated free-algebra workload")
 
-    uacalc_lib.set_memory_limit(1)
-    py_low_failed = False
+    uacalc_lib.set_memory_limit(MEM_LIMIT_LOW)
     try:
-        try:
-            _lib_c2_power_closer(6).sg_close_power()
-        except (MemoryError, OSError, ValueError) as exc:
-            if "limit" in str(exc).lower():
-                py_low_failed = True
-            else:
-                raise
-        uacalc_lib.set_memory_limit(None)
-        py_high_ok = _lib_c2_power_closer(6).sg_close_power() is not None
+        with pytest.raises(MemoryError, match="memory limit"):
+            _heavy_lib_closer().sg_close_power()
     finally:
         uacalc_lib.set_memory_limit(None)
 
-    if py_low_failed != java_low_failed:
-        pytest.skip("Python memory limit did not mirror Java -Xmx bracket on this worker")
-    assert py_low_failed == java_low_failed
-    assert bool(py_high_ok) == java_high_ok
+    uacalc_lib.set_memory_limit(MEM_LIMIT_HIGH)
+    try:
+        result = _heavy_lib_closer().sg_close_power()
+    finally:
+        uacalc_lib.set_memory_limit(None)
+    assert result is not None
+    assert len(result) == HEAVY_CLOSURE_SIZE
