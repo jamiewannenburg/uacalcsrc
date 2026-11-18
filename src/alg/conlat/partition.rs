@@ -1295,16 +1295,27 @@ impl Partition {
 
     /// Java `BasicPartition.joinClosure(List)` (one-pass; not a full closure).
     pub fn join_closure(pars: &[Partition]) -> Result<Vec<Partition>, String> {
+        Self::join_closure_checked(pars).map_err(|e| e.to_string())
+    }
+
+    pub fn join_closure_checked(pars: &[Partition]) -> Result<Vec<Partition>, crate::resource::UaError> {
+        use crate::resource::{charge_kept_partition, checkpoint};
         let mut hs: std::collections::HashSet<Partition> = pars.iter().cloned().collect();
         let mut ans: Vec<Partition> = pars.to_vec();
         let orig: Vec<Partition> = pars.to_vec();
         let mut k = 0;
         for elt in &orig {
             k += 1;
+            checkpoint()?;
             let n = ans.len();
             for i in k..n {
-                let join = elt.join(&ans[i])?;
+                checkpoint()?;
+                let join = elt
+                    .join(&ans[i])
+                    .map_err(crate::resource::UaError::message)?;
                 if hs.insert(join.clone()) {
+                    let universe_size = join.universe_size();
+                    charge_kept_partition(universe_size)?;
                     ans.push(join);
                 }
             }
@@ -1314,16 +1325,26 @@ impl Partition {
 
     /// Java `BasicPartition.meetClosure(List)`.
     pub fn meet_closure(pars: &[Partition]) -> Result<Vec<Partition>, String> {
+        Self::meet_closure_checked(pars).map_err(|e| e.to_string())
+    }
+
+    pub fn meet_closure_checked(pars: &[Partition]) -> Result<Vec<Partition>, crate::resource::UaError> {
+        use crate::resource::{charge_kept_partition, checkpoint};
         let mut hs: std::collections::HashSet<Partition> = pars.iter().cloned().collect();
         let mut ans: Vec<Partition> = pars.to_vec();
         let orig: Vec<Partition> = pars.to_vec();
         let mut k = 0;
         for elt in &orig {
             k += 1;
+            checkpoint()?;
             let n = ans.len();
             for i in k..n {
-                let meet = elt.meet(&ans[i])?;
+                checkpoint()?;
+                let meet = elt
+                    .meet(&ans[i])
+                    .map_err(crate::resource::UaError::message)?;
                 if hs.insert(meet.clone()) {
+                    charge_kept_partition(meet.universe_size())?;
                     ans.push(meet);
                 }
             }

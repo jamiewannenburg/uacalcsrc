@@ -40,6 +40,18 @@ JAVA_LOW_XMX_MB = 32
 JAVA_HIGH_XMX_MB = 512
 JAVA_SUBPROCESS_TIMEOUT_SEC = 180
 TIME_LIMIT_REALISTIC_SEC = 0.2
+M4_SUB_CARD = 31
+LYNDON_CON_CARD_MIN = 10
+LYNDON_ALGEBRA = os.path.join("resources", "algebras", "lyndon.ua")
+JAVA_SUB_LOW_XMX_MB = 32
+JAVA_SUB_HIGH_XMX_MB = 512
+PYTHON_SUB_MEM_LOW = 64
+PYTHON_SUB_MEM_HIGH = 4096
+PYTHON_CON_MEM_LOW = 128
+PYTHON_CON_ELEMENT_LOW = 4
+JAVA_SUB_STRESS_COPIES = 48
+JAVA_SUB_STRESS_RESERVE_MB = 4
+PYTHON_SUB_STRESS_MEM_LOW = 64
 
 
 def _repo_root() -> str:
@@ -78,7 +90,17 @@ def _heavy_lib_closer() -> uacalc_lib.alg.Closer:
 
 def _stress_lib_closer(closer: uacalc_lib.alg.Closer, repeats: int) -> None:
     closer.set_suppress_output(True)
-    uacalc_lib.alg._stress_sg_close_power(closer, repeats)
+    stress = getattr(uacalc_lib.alg, "stress_sg_close_power", None) or getattr(
+        uacalc_lib.alg, "_stress_sg_close_power"
+    )
+    stress(closer, repeats)
+
+
+def _stress_lib_sub_universe(sub: uacalc_lib.alg.SubalgebraLattice, repeats: int) -> int:
+    stress = getattr(uacalc_lib.alg, "stress_sub_universe", None) or getattr(
+        uacalc_lib.alg, "_stress_sub_universe"
+    )
+    return stress(sub, repeats)
 
 
 def test_limit_setters_exported():
@@ -186,6 +208,161 @@ def test_limits_reset_allows_repeat_after_failure():
     assert op is not None
 
 
+def _m4_lib_algebra():
+    os.chdir(_repo_root())
+    path = os.path.join(_repo_root(), "resources", "algebras", "m4.ua")
+    return uacalc_lib.io.AlgebraReader.new_from_file(path).read_algebra_file()
+
+
+def _lyndon_lib_algebra():
+    os.chdir(_repo_root())
+    path = os.path.join(_repo_root(), "resources", "algebras", "lyndon.ua")
+    return uacalc_lib.io.AlgebraReader.new_from_file(path).read_algebra_file()
+
+
+def test_lib_subalgebra_cardinality_memory_and_recompute():
+    sub = _m4_lib_algebra().sub()
+    uacalc_lib.set_memory_limit(64)
+    try:
+        with pytest.raises(MemoryError, match="memory limit"):
+            sub.cardinality()
+    finally:
+        uacalc_lib.set_memory_limit(None)
+    card = sub.cardinality()
+    assert card == M4_SUB_CARD
+    assert sub.cardinality() == card
+
+
+def test_lib_subalgebra_universe_element_limit():
+    sub = _m4_lib_algebra().sub()
+    uacalc_lib.set_element_limit(4)
+    try:
+        with pytest.raises(MemoryError, match="element limit"):
+            sub.universe()
+    finally:
+        uacalc_lib.set_element_limit(None)
+    assert len(sub.universe()) == M4_SUB_CARD
+
+
+def test_lib_subalgebra_cancel_from_other_thread():
+    uacalc_lib.clear_cancel()
+    started = threading.Event()
+    outcome: dict = {"exc": None}
+
+    def run() -> None:
+        sub = _m4_lib_algebra().sub()
+        started.set()
+        try:
+            _stress_lib_sub_universe(sub, STRESS_REPEATS)
+            outcome["exc"] = "completed"
+        except KeyboardInterrupt as exc:
+            outcome["exc"] = exc
+
+    thread = threading.Thread(target=run)
+    cancel_t0 = time.perf_counter()
+    thread.start()
+    assert started.wait(timeout=30.0)
+    time.sleep(CANCEL_WAKE_SEC)
+    uacalc_lib.cancel()
+    thread.join(timeout=GENEROUS_TEST_BOUND_SEC)
+    assert isinstance(outcome["exc"], KeyboardInterrupt)
+    assert time.perf_counter() - cancel_t0 < GENEROUS_TEST_BOUND_SEC
+    uacalc_lib.clear_cancel()
+    assert _m4_lib_algebra().sub().cardinality() == M4_SUB_CARD
+
+
+def test_org_subalgebra_universe_out_of_memory():
+    from org.uacalc.io import AlgebraIO
+
+    m4 = AlgebraIO.readAlgebraFile(os.path.join(_repo_root(), M4_ALGEBRA))
+    sub = m4.sub()
+    uacalc_lib.set_memory_limit(PYTHON_SUB_MEM_LOW)
+    try:
+        with pytest.raises(OutOfMemoryError):
+            sub.cardinality()
+    finally:
+        uacalc_lib.set_memory_limit(None)
+    assert int(sub.cardinality()) == M4_SUB_CARD
+
+
+def test_org_subalgebra_universe_and_filter_out_of_memory_and_recovery():
+    from org.uacalc.alg.sublat import BasicSet
+    from org.uacalc.io import AlgebraIO
+
+    m4 = AlgebraIO.readAlgebraFile(os.path.join(_repo_root(), M4_ALGEBRA))
+    sub = m4.sub()
+    elt = BasicSet([0])
+    uacalc_lib.set_memory_limit(PYTHON_SUB_MEM_LOW)
+    try:
+        with pytest.raises(OutOfMemoryError):
+            list(sub.universe())
+        with pytest.raises(OutOfMemoryError):
+            list(sub.filter(elt))
+    finally:
+        uacalc_lib.set_memory_limit(None)
+    assert len(list(sub.universe())) == M4_SUB_CARD
+    assert len(list(sub.filter(elt))) >= 1
+
+
+def test_org_subalgebra_one_gens_and_join_irreducibles_out_of_memory():
+    import org.uacalc.alg.sublat  # noqa: F401 — install shim methods on PySubalgebraLattice
+    from org.uacalc.io import AlgebraIO
+
+    m4 = AlgebraIO.readAlgebraFile(os.path.join(_repo_root(), M4_ALGEBRA))
+    uacalc_lib.set_memory_limit(PYTHON_SUB_MEM_LOW)
+    try:
+        with pytest.raises(OutOfMemoryError):
+            list(m4.sub().oneGeneratedSubalgebras())
+        with pytest.raises(OutOfMemoryError):
+            list(m4.sub().joinIrreducibles())
+    finally:
+        uacalc_lib.set_memory_limit(None)
+    assert int(m4.sub().cardinality()) == M4_SUB_CARD
+
+
+def test_org_con_lattice_cardinality_out_of_memory_and_recovery():
+    from org.uacalc.io import AlgebraIO
+
+    path = os.path.join(_repo_root(), LYNDON_ALGEBRA)
+    lyndon = AlgebraIO.readAlgebraFile(path)
+    con = lyndon.con()
+    uacalc_lib.set_memory_limit(PYTHON_CON_MEM_LOW)
+    try:
+        with pytest.raises(OutOfMemoryError):
+            int(con.cardinality())
+    finally:
+        uacalc_lib.set_memory_limit(None)
+    card = int(con.cardinality())
+    assert card >= LYNDON_CON_CARD_MIN
+    assert int(con.cardinality()) == card
+
+
+def test_lib_con_universe_lyndon_memory_and_recompute():
+    con = _lyndon_lib_algebra().con()
+    uacalc_lib.set_memory_limit(PYTHON_CON_MEM_LOW)
+    try:
+        with pytest.raises(MemoryError, match="memory limit"):
+            con.con_cardinality()
+    finally:
+        uacalc_lib.set_memory_limit(None)
+    card = con.con_cardinality()
+    assert card >= LYNDON_CON_CARD_MIN
+    assert con.con_cardinality() == card
+
+
+def test_lib_con_universe_lyndon_element_limit_and_recovery():
+    uacalc_lib.set_memory_limit(None)
+    expected = _lyndon_lib_algebra().con().con_cardinality()
+    uacalc_lib.set_element_limit(PYTHON_CON_ELEMENT_LOW)
+    try:
+        con = _lyndon_lib_algebra().con()
+        with pytest.raises(MemoryError, match="element limit"):
+            con.con_cardinality()
+    finally:
+        uacalc_lib.set_element_limit(None)
+    assert _lyndon_lib_algebra().con().con_cardinality() == expected
+
+
 def test_lib_con_cardinality_memory_and_recompute():
     os.chdir(_repo_root())
     path = os.path.join(_repo_root(), "resources", "algebras", "cyclic3.ua")
@@ -224,6 +401,28 @@ def test_lib_time_limit_realistic_on_stress_closure():
     assert elapsed < GENEROUS_TEST_BOUND_SEC
 
 
+def _parse_java_wrapper_json(combined: str) -> dict | None:
+    idx = combined.rfind('"success"')
+    if idx < 0:
+        return None
+    start = combined.rfind("{", 0, idx)
+    if start < 0:
+        return None
+    depth = 0
+    for pos in range(start, len(combined)):
+        ch = combined[pos]
+        if ch == "{":
+            depth += 1
+        elif ch == "}":
+            depth -= 1
+            if depth == 0:
+                try:
+                    return json.loads(combined[start : pos + 1])
+                except json.JSONDecodeError:
+                    return None
+    return None
+
+
 def _java_sg_close_free_algebra(xmx_mb: int) -> tuple[bool, bool, str]:
     """Return (ran_to_completion, success, detail)."""
     cmd = build_java_command(
@@ -253,15 +452,108 @@ def _java_sg_close_free_algebra(xmx_mb: int) -> tuple[bool, bool, str]:
         return (True, False, "oom")
     if proc.returncode != 0:
         return (True, False, f"exit {proc.returncode}")
-    marker = combined.find('{"success"')
-    if marker < 0:
+    payload = _parse_java_wrapper_json(combined)
+    if payload is None:
         return (True, False, "no json")
-    payload = json.loads(combined[marker:])
     data = payload.get("data", payload)
     if isinstance(data, str):
         data = json.loads(data)
     ok = data.get("status") == "success"
     return (True, ok, "success" if ok else str(data.get("status")))
+
+
+def _java_subalgebra_cardinality(xmx_mb: int) -> tuple[bool, bool, str]:
+    """Return (ran_to_completion, success, detail)."""
+    cmd = build_java_command(
+        "java_wrapper.src.alg.sublat.SubalgebraLatticeWrapper",
+        [
+            "sub_cardinality_stress",
+            "--algebra",
+            os.path.join(_repo_root(), M4_ALGEBRA),
+            "--copies",
+            str(JAVA_SUB_STRESS_COPIES),
+            "--reserve_mb",
+            str(JAVA_SUB_STRESS_RESERVE_MB),
+        ],
+    )
+    cmd.insert(1, f"-Xmx{xmx_mb}m")
+    try:
+        proc = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=JAVA_SUBPROCESS_TIMEOUT_SEC,
+            cwd=_repo_root(),
+        )
+    except subprocess.TimeoutExpired:
+        return (False, False, "timeout")
+    combined = (proc.stderr or "") + (proc.stdout or "")
+    if "OutOfMemoryError" in combined:
+        return (True, False, "oom")
+    if proc.returncode != 0:
+        return (True, False, f"exit {proc.returncode}")
+    payload = _parse_java_wrapper_json(combined)
+    if payload is None:
+        return (True, False, "no json")
+    data = payload.get("data", payload)
+    if isinstance(data, str):
+        data = json.loads(data)
+    ok = data.get("status") == "success" and int(data.get("cardinality", 0)) == M4_SUB_CARD
+    return (True, ok, "success" if ok else str(data))
+
+
+def _java_con_cardinality(xmx_mb: int) -> tuple[bool, bool, str]:
+    cmd = build_java_command(
+        "java_wrapper.src.alg.conlat.CongruenceLatticeWrapper",
+        ["con_cardinality", "--algebra", os.path.join(_repo_root(), LYNDON_ALGEBRA)],
+    )
+    cmd.insert(1, f"-Xmx{xmx_mb}m")
+    try:
+        proc = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=JAVA_SUBPROCESS_TIMEOUT_SEC,
+            cwd=_repo_root(),
+        )
+    except subprocess.TimeoutExpired:
+        return (False, False, "timeout")
+    combined = (proc.stderr or "") + (proc.stdout or "")
+    if "OutOfMemoryError" in combined:
+        return (True, False, "oom")
+    if proc.returncode != 0:
+        return (True, False, f"exit {proc.returncode}")
+    payload = _parse_java_wrapper_json(combined)
+    if payload is None:
+        return (True, False, "no json")
+    data = payload.get("data", payload)
+    card = int(data.get("cardinality", 0))
+    ok = card >= LYNDON_CON_CARD_MIN
+    return (True, ok, f"card={card}")
+
+
+@pytest.mark.slow
+def test_java_subalgebra_vs_python_same_side_of_cutoff():
+    if not os.environ.get("JAVA_HOME"):
+        pytest.skip("JAVA_HOME not set")
+    java_low_ran, java_low_ok, low_detail = _java_subalgebra_cardinality(JAVA_SUB_LOW_XMX_MB)
+    java_high_ran, java_high_ok, high_detail = _java_subalgebra_cardinality(JAVA_SUB_HIGH_XMX_MB)
+    assert java_low_ran and not java_low_ok, f"Java low -Xmx should OOM or fail: {low_detail}"
+    assert java_high_ran and java_high_ok, f"Java high -Xmx should succeed: {high_detail}"
+
+    m4 = _m4_lib_algebra()
+    uacalc_lib.set_memory_limit(PYTHON_SUB_STRESS_MEM_LOW)
+    try:
+        with pytest.raises(MemoryError, match="memory limit"):
+            m4.sub().cardinality()
+    finally:
+        uacalc_lib.set_memory_limit(None)
+
+    uacalc_lib.set_memory_limit(PYTHON_SUB_MEM_HIGH)
+    try:
+        assert m4.sub().cardinality() == M4_SUB_CARD
+    finally:
+        uacalc_lib.set_memory_limit(None)
 
 
 @pytest.mark.slow

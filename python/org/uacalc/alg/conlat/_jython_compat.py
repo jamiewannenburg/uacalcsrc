@@ -17,6 +17,7 @@ from org.uacalc._exceptions import (
     IndexOutOfBoundsException,
     NullPointerException,
     NumberFormatException,
+    OutOfMemoryError,
     RuntimeException,
     StringIndexOutOfBoundsException,
     UnsupportedOperationException,
@@ -37,6 +38,10 @@ def _install(conlat_globals: dict) -> None:
     def _lib_call(fn, *args, **kwargs):
         try:
             return fn(*args, **kwargs)
+        except MemoryError as exc:
+            raise OutOfMemoryError(str(exc)) from exc
+        except (KeyboardInterrupt, TimeoutError):
+            raise
         except ValueError as exc:
             msg = str(exc)
             if msg == "RuntimeException":
@@ -780,12 +785,12 @@ def _install(conlat_globals: dict) -> None:
         def makePrincipals(self: Any, report: Any = None) -> None:
             if report is not None:
                 raise NotImplementedError("makePrincipals(ProgressReport) is not bound")
-            self.make_principals()
+            _lib_call(self.make_principals)
 
         def makeJoinIrreducibles(self: Any, report: Any = None) -> None:
             if report is not None:
                 raise NotImplementedError("makeJoinIrreducibles(ProgressReport) is not bound")
-            self.make_join_irreducibles()
+            _lib_call(self.make_join_irreducibles)
 
         def getPermutabilityLevelWitnesses(self: Any) -> Any:
             fn = getattr(self, "get_permutability_level_witnesses", None)
@@ -917,6 +922,26 @@ def _install(conlat_globals: dict) -> None:
             if makeIfNull is None:
                 return self.get_basic_lattice(True)
             return self.get_basic_lattice(bool(makeIfNull))
+
+        _ORIG_CON_CARDINALITY = getattr(_LibCongruenceLattice, "con_cardinality", None)
+        _ORIG_CARDINALITY = getattr(_LibCongruenceLattice, "cardinality", None)
+        _ORIG_JOIN_IRREDUCIBLES = getattr(_LibCongruenceLattice, "join_irreducibles", None)
+        _ORIG_PRINCIPALS = getattr(_LibCongruenceLattice, "principals", None)
+
+        def conCardinality(self: Any) -> int:
+            if _ORIG_CON_CARDINALITY is None:
+                raise UnsupportedOperationException("con_cardinality")
+            return int(_lib_call(_ORIG_CON_CARDINALITY, self))
+
+        def cardinality(self: Any) -> int:
+            if _ORIG_CARDINALITY is not None:
+                return int(_lib_call(_ORIG_CARDINALITY, self))
+            return conCardinality(self)
+
+        def joinIrreduciblesChecked(self: Any) -> list:
+            if _ORIG_JOIN_IRREDUCIBLES is None:
+                return []
+            return list(_lib_call(_ORIG_JOIN_IRREDUCIBLES, self))
 
         _CL_UNIVERSE_STATE: dict = {}
 
@@ -1194,10 +1219,12 @@ def _install(conlat_globals: dict) -> None:
             "getMonitor": getMonitor,
             "monitoring": monitoring,
             "getBasicLattice": getBasicLattice,
-            "joinIrreducibles": lambda self: list(self.join_irreducibles()),
+            "conCardinality": conCardinality,
+            "cardinality": cardinality,
+            "joinIrreducibles": joinIrreduciblesChecked,
             "joinIrreduciblesFound": lambda self: bool(self.join_irreducibles_found()),
             "meetIrreducibles": lambda self: list(self.meet_irreducibles()),
-            "principals": lambda self, _orig=_LibCongruenceLattice.principals: list(_orig(self)),
+            "principals": lambda self, _orig=_ORIG_PRINCIPALS: list(_lib_call(_orig, self)),
             "atoms": lambda self, _orig=_LibCongruenceLattice.atoms: list(_orig(self)),
             "isDistributive": lambda self: bool(self.is_distributive()),
             "complements": lambda self, p, _orig=_LibCongruenceLattice.complements: list(_orig(self, p)),
@@ -1285,9 +1312,12 @@ def _install(conlat_globals: dict) -> None:
             def _universe(self: Any, report: Any = None, _orig=_orig_univ) -> list:
                 if report is not None:
                     raise NotImplementedError("universe(ProgressReport) is not bound")
-                return list(_orig(self))
+                return list(_lib_call(_orig, self))
 
             _LibCongruenceLattice.universe = _universe
+            if _ORIG_CON_CARDINALITY is not None:
+                _LibCongruenceLattice.con_cardinality = conCardinality
+                _LibCongruenceLattice.cardinality = cardinality
         except (TypeError, AttributeError):
             pass
 

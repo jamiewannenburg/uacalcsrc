@@ -1250,9 +1250,12 @@ where
         // Java `new Partition[2]` is `[null, null]` until an incomparable pair is found.
         let mut hi_level_pars: [Option<Partition>; 2] = [None, None];
         
+        use crate::resource::checkpoint;
         for i in 0..size {
+            checkpoint().unwrap_or_else(|e| panic!("{}", e));
             let par0 = &univ[i];
             for j in (i + 1)..size {
+                checkpoint().unwrap_or_else(|e| panic!("{}", e));
                 let par1 = &univ[j];
                 
                 // Skip if comparable

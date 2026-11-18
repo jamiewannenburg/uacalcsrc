@@ -20,6 +20,9 @@ public class SubalgebraLatticeWrapper extends WrapperBase {
     
     private SubalgebraLattice subLat;
     private SmallAlgebra algebra;
+    /** Keeps stress copies reachable until the CLI response is emitted. */
+    private List<SubalgebraLattice> stressRetained;
+    private List<byte[]> stressHeapPadding;
     
     /**
      * Main entry point for the SubalgebraLattice CLI wrapper.
@@ -122,6 +125,14 @@ public class SubalgebraLatticeWrapper extends WrapperBase {
                 
             case "cardinality":
                 handleCardinality(options);
+                break;
+
+            case "sub_cardinality":
+                handleSubCardinalityFromFile(options);
+                break;
+
+            case "sub_cardinality_stress":
+                handleSubCardinalityStressFromFile(options);
                 break;
                 
             case "filter":
@@ -431,6 +442,67 @@ public class SubalgebraLatticeWrapper extends WrapperBase {
         result.put("cardinality", card);
         
         handleSuccess(result);
+    }
+
+    /**
+     * One-shot: load algebra file and compute subalgebra-lattice cardinality (for -Xmx tests).
+     */
+    private void handleSubCardinalityFromFile(Map<String, String> options) throws Exception {
+        String algebraFile = getRequiredArg(options, "algebra");
+        algebra = (SmallAlgebra) AlgebraIO.readAlgebraFile(algebraFile);
+        subLat = new SubalgebraLattice(algebra);
+        int card = subLat.cardinality();
+        Map<String, Object> result = new HashMap<>();
+        result.put("command", "sub_cardinality");
+        result.put("algebra_file", algebraFile);
+        result.put("cardinality", card);
+        result.put("status", "success");
+        handleSuccess(result);
+    }
+
+    /**
+     * Repeat subalgebra-lattice cardinality while retaining every lattice (for -Xmx bracket tests).
+     */
+    private void handleSubCardinalityStressFromFile(Map<String, String> options) throws Exception {
+        String algebraFile = getRequiredArg(options, "algebra");
+        int copies = getIntArg(options, "copies", 48);
+        int reserveMb = getIntArg(options, "reserve_mb", 0);
+        fillHeapReserve(reserveMb);
+        algebra = (SmallAlgebra) AlgebraIO.readAlgebraFile(algebraFile);
+        stressRetained = new ArrayList<>(copies);
+        int card = 0;
+        for (int i = 0; i < copies; i++) {
+            SubalgebraLattice sl = new SubalgebraLattice(algebra);
+            card = sl.cardinality();
+            stressRetained.add(sl);
+        }
+        Map<String, Object> result = new HashMap<>();
+        result.put("command", "sub_cardinality_stress");
+        result.put("algebra_file", algebraFile);
+        result.put("copies", copies);
+        result.put("cardinality", card);
+        result.put("status", "success");
+        handleSuccess(result);
+    }
+
+    /** Pre-allocate heap so subsequent lattice work can trip -Xmx in tests. */
+    private void fillHeapReserve(int reserveMb) {
+        if (reserveMb <= 0) {
+            return;
+        }
+        Runtime rt = Runtime.getRuntime();
+        long cap = rt.maxMemory();
+        long reserveBytes = reserveMb * 1024L * 1024L;
+        long targetUsed = Math.max(0, cap - reserveBytes);
+        stressHeapPadding = new ArrayList<>();
+        int chunk = 256 * 1024;
+        try {
+            while (rt.totalMemory() - rt.freeMemory() < targetUsed) {
+                stressHeapPadding.add(new byte[chunk]);
+            }
+        } catch (OutOfMemoryError ignored) {
+            // Already within reserve of the ceiling.
+        }
     }
     
     private void handleFilter(Map<String, String> options) throws Exception {

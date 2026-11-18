@@ -28,8 +28,14 @@ def build_java_command(wrapper_class: str, args: List[str]) -> List[str]:
     """Build platform-independent Java command."""
     separator = ";" if platform.system() == "Windows" else ":"
     classpath = f"java_wrapper/build/classes{separator}build/classes{separator}org{separator}jars/*"
-    
-    return ["java", "-cp", classpath, wrapper_class] + args
+    java_home = os.environ.get("JAVA_HOME")
+    if java_home:
+        java_bin = "java.exe" if platform.system() == "Windows" else "java"
+        java_exe = str(Path(java_home) / "bin" / java_bin)
+    else:
+        java_exe = "java"
+
+    return [java_exe, "-cp", classpath, wrapper_class] + args
 
 
 @dataclass
